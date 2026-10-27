@@ -13,3 +13,9 @@
 - §16 migration applied: waits on K2b/K3 cleared, GATE-A marked SKIPPED. Inbox was empty.
 - Smoke test on main: no app code yet; main's tree equals the tested K0 head plus the docs-only change in #4. Not red.
 - K1 claimed (lease 3h), worker on claude-opus-5-5.
+
+## 2026-10-27 · Runner cycle 2 (cont.) · K1
+- Worker: Opus subagent (transcript shows only claude-opus-5-5). Wrote `docs/constitution.md` (249 lines) and `CLAUDE.md` (61 lines); citations script-checked by the worker.
+- Opus fresh-eyes review: no blocking findings, 11 non-blocking; all applied in one round.
+- Path check: only CLAUDE.md and docs/constitution.md changed. gitleaks is not installed in this session, so I did not run it here; CI runs it.
+- Pushed `claude/task/K1-constitution` @ b2ddaa3. K1 is MERGE_PENDING.

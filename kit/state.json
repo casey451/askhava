@@ -4,12 +4,7 @@
   "current": "K1",
   "backup_runner": "off",
   "ruleset_verified": true,
-  "lease": {
-    "task": "K1",
-    "session": "https://claude.ai/code/session_01DyjzW8T2f9i8c571YYsDqT",
-    "claimed_at": "2026-10-27T14:52:45Z",
-    "expires_at": "2026-10-27T17:52:45Z"
-  },
+  "lease": null,
   "tasks": [
     {
       "id": "K0",
@@ -44,13 +39,16 @@
       "model": "claude-opus-5-5",
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
-      "status": "IN_PROGRESS",
+      "status": "MERGE_PENDING",
       "attempts": 1,
-      "model_used": null,
+      "model_used": "claude-opus-5-5",
       "branch": "claude/task/K1-constitution",
       "pr": null,
-      "head_sha": null,
-      "waits_on_owner": null
+      "head_sha": "b2ddaa3e3c82e69b9b112271a45c071351cb9f83",
+      "waits_on_owner": null,
+      "reviewed_by": "claude-opus-5-5",
+      "review_rounds": 1,
+      "model_evidence": "subagent transcript: all 37 assistant records model=claude-opus-5-5 (first pass); fix round resumed same agent"
     },
     {
       "id": "K2",
@@ -253,12 +251,13 @@
   "usage": {
     "last_reading": null
   },
-  "updated_at": "2026-10-27T14:52:45Z",
+  "updated_at": "2026-10-27T15:01:08Z",
   "notes": [
     "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
     "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
     "Phase 2: deny rules block curl/wget to vendor API hosts outright, test mode included; sandbox checks need another route (K0 review N7).",
     "K8: add the PII scanner step to Ci (currently a visible 'skipped' stub).",
-    "Bare 'git push' while on main is not denied locally; the protect-main ruleset blocks it on GitHub (K0 review N7)."
+    "Bare 'git push' while on main is not denied locally; the protect-main ruleset blocks it on GitHub (K0 review N7).",
+    "K1: docs/sources.md:29 says stop-and-ask on brief/changes conflict; overridden by BUILD_BRIEF \u00a716. Fix in a later docs task. Log in decisions.md (K3): check names Ci/Twin/Ally vs changes file; Insurance (business-reported) wording."
   ]
 }
