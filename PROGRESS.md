@@ -7,3 +7,9 @@
 - **Opus fresh-eyes review:** 2 blocking findings (gaps in the deny rules for deleting kit-state and for Railway) plus 11 non-blocking ones. The worker fixed them in one round (commit 291cf8d). Follow-ups for K8 and Phase 2 are recorded in `kit/state.json` notes.
 - **Pushed:** `claude/task/K0-setup` @ 291cf8d. K0 is MERGE_PENDING.
 - **Next cycle:** confirm the PR merged with `Ci`, `Twin` and `Ally` green and that the tree matches. Check the ruleset with `GET /rulesets`. Then mark K0 DONE and claim K1.
+
+## 2026-10-27 · Runner cycle 2 · K0 DONE, K1 claimed
+- K0 confirmed DONE: PR #3 merged; `Ci`, `Twin`, `Ally` all success on head 291cf8d; head tree d4ee3cc9 equals squash commit 4bab4c0's tree. Ruleset `protect-main` lists Ci, Ally, Twin as required (checked via API).
+- §16 migration applied: waits on K2b/K3 cleared, GATE-A marked SKIPPED. Inbox was empty.
+- Smoke test on main: no app code yet; main's tree equals the tested K0 head plus the docs-only change in #4. Not red.
+- K1 claimed (lease 3h), worker on claude-opus-5-5.
