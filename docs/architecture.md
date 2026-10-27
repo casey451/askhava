@@ -49,7 +49,7 @@ app/
     handlers.py      task handlers registered in main.py (timers and events)
     routes.py        HTTP routes, only in modules that own a web surface (portals, site, webhooks)
 migrations/          Alembic, forward-only, each migration tested (BUILD_BRIEF.md:107)
-stand_ins/           fake Twilio, fake Resend, fake Lob, stand-in AI, Stripe mock config (BUILD_BRIEF.md:92)
+stand_ins/           fake Twilio, fake Resend, fake Lob, stand-in AI, Stripe mock config (BUILD_BRIEF.md:91)
 ```
 
 ## 3. Modules, what each owns, and its tables
@@ -61,9 +61,9 @@ Each module owns its files and its tables, and no module reaches into another's 
 | `ops` | Alerts, pause switches, safe mode, status banner, web-and-email mode, audit log | `ops.audit_log` (append-only), `ops.alert`, `ops.alert_ack`, `ops.pause_switch`, `ops.switch_history`, `ops.safe_mode`, `ops.status_banner` | — |
 | `adapters` | One interface per vendor; real, sandbox and stand-in implementations chosen by configuration | none | — |
 | `catalog` | Categories, job types, license rules, fee rules, feature switches (fee mode, category on/off) and numeric settings | `catalog.category`, `catalog.job_type`, `catalog.license_rule`, `catalog.fee_rule`, `catalog.setting`, `catalog.setting_history` | `ops` |
-| `privacy` | The plain-code scrubber; the contact vault (field-level encrypted); retention and purge jobs; photos | `privacy.contact`, `privacy.contact_index` (blind index), `privacy.message_body`, `privacy.photo`, `privacy.retention_hold`, `privacy.purge_run` | `ops` |
+| `privacy` | The plain-code scrubber; the contact vault (field-level encrypted); the inbound reader that is the only code to see raw homeowner text (section 8); retention and purge jobs; photos | `privacy.contact`, `privacy.contact_index` (blind index), `privacy.message_body` (homeowner message text only), `privacy.photo`, `privacy.retention_hold`, `privacy.purge_run` | `ops` |
 | `ai` | Request reading and quote summarizing through the AI adapter; strict schemas; accepts only `ScrubbedText` | `ai.reading` (fields only, no personal details), `ai.call_stat` | `adapters`, `privacy` (the `ScrubbedText` type only), `ops` |
-| `messaging` | Outbox and inbox (never send twice); templates in English and Spanish; quiet hours; opt-out keywords and the opt-out list; delivery tracking; email and letters | `messaging.outbox`, `messaging.inbox`, `messaging.delivery_event`, `messaging.opt_out`, `messaging.opt_out_event`, `messaging.email_outbox`, `messaging.letter`, `messaging.webhook_event` | `adapters`, `privacy`, `catalog`, `ops` |
+| `messaging` | Outbox and inbox (never send twice); templates in English and Spanish; quiet hours; opt-out keywords and the opt-out list; the sender directory (which numbers are business phones); delivery tracking; email and letters | `messaging.outbox`, `messaging.inbox` (scrubbed homeowner text and flags; business text as sent), `messaging.sender_directory` (blind-indexed business and staff phones), `messaging.delivery_event`, `messaging.opt_out`, `messaging.opt_out_event`, `messaging.email_outbox`, `messaging.letter`, `messaging.webhook_event` | `adapters`, `privacy`, `catalog`, `ops` |
 | `payments` | Stripe customers, SetupIntents, card authorization, charges, refunds, disputes, free first wins, the ledger, nightly reconcile | `payments.customer`, `payments.payment_method`, `payments.card_authorization`, `payments.charge_attempt`, `payments.ledger_entry` (append-only), `payments.refund`, `payments.dispute`, `payments.free_win`, `payments.webhook_event`, `payments.reconcile_run` | `adapters`, `catalog`, `ops` |
 | `licensing` | Agency daily lists; live lookup at pick; other agencies; the city license list; handyman rules | `licensing.list_import`, `licensing.agency_record`, `licensing.city_license_entry`, `licensing.business_license`, `licensing.license_check` | `adapters`, `catalog`, `ops` |
 | `businesses` | Sign-up, identity chain, job-type checklist, towns, tags, business consent records, pause rules, staff phones, complaints | `businesses.business`, `businesses.town`, `businesses.job_type_choice`, `businesses.tag`, `businesses.staff_phone`, `businesses.consent_record`, `businesses.identity_attempt`, `businesses.signup_review`, `businesses.pause_event`, `businesses.complaint` | `licensing`, `payments`, `messaging`, `catalog`, `adapters`, `ops` |
@@ -71,14 +71,14 @@ Each module owns its files and its tables, and no module reaches into another's 
 | `calls` | Masked numbers from a pool, PIN routing, call sessions, call logs (never recorded) | `calls.number_pool`, `calls.call_session`, `calls.call_log`, `calls.webhook_event` | `businesses`, `privacy`, `messaging`, `adapters`, `ops` |
 | `quotes` | Matching and job cards; quote intake and parsing; eligibility rules; arrival order; original wording beside any summary | `quotes.job_card`, `quotes.quote`, `quotes.quote_bounce` | `jobs`, `businesses`, `licensing`, `catalog`, `ai`, `privacy`, `messaging`, `ops` |
 | `picks` | Pick by code; contact-method choice; confirm window; payment hand-off; release of contact details; losers notified | `picks.pick`, `picks.code_attempt`, `picks.release` | `quotes`, `jobs`, `payments`, `calls`, `businesses`, `licensing`, `privacy`, `messaging`, `adapters`, `ops` |
-| `intake` | Inbound SMS and web chat routing; conversation state; homeowner consent; emergency detection; category matching; homeowners and properties | `intake.homeowner`, `intake.property`, `intake.conversation`, `intake.consent_record`, `intake.intake_answer`, `intake.emergency_event`, `intake.recruiting_demand` | `picks`, `quotes`, `jobs`, `businesses`, `ai`, `privacy`, `catalog`, `messaging`, `ops` |
-| `recovery` | Backup checks, the restore drill, replay with derived IDs | `recovery.backup_check`, `recovery.restore_drill`, `recovery.replay_run`, `recovery.replay_item` | every module's `api.py`, `adapters` |
-| `portals` | Homeowner page and portal, business portal, owner portal; their sign-in, sessions and second factors | `portals.session`, `portals.login_link`, `portals.known_device`, `portals.owner_credential`, `portals.passkey`, `portals.totp_secret` (encrypted), `portals.recovery_code` (hashed) | every module's `api.py` except `recovery`'s internals |
+| `intake` | Inbound SMS and web chat routing (from flags and `ScrubbedText`, never raw homeowner text); conversation state; homeowner consent; the emergency safety flow and its keyword list; category matching; homeowners and properties | `intake.homeowner`, `intake.property`, `intake.conversation`, `intake.consent_record`, `intake.intake_answer`, `intake.emergency_event`, `intake.recruiting_demand` | `picks`, `quotes`, `jobs`, `businesses`, `ai`, `privacy`, `catalog`, `messaging`, `ops` |
+| `recovery` | Backup checks, the restore drill, replay with derived IDs | `recovery.backup_check`, `recovery.restore_drill`, `recovery.replay_run`, `recovery.replay_item` | the `api.py` of every module in layers 0–7 |
+| `portals` | Homeowner page and portal, business portal, owner portal; their sign-in, sessions and second factors | `portals.session`, `portals.login_link`, `portals.known_device`, `portals.owner_credential`, `portals.passkey`, `portals.totp_secret` (encrypted), `portals.recovery_code` (hashed) | the `api.py` of every module in layers 0–7 |
 | `site` | Public website built from the prototype; the web-chat page | none (web-chat text goes to `intake`) | `intake`, `catalog` |
 
 `core` owns `core.task` (the task queue and timers) and `core.rate_limit` (D-090).
 
-Twelve v9.3 record types map onto these tables (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:79`–`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:96`): Contact → `privacy.contact`; Homeowner, Property → `intake`; Request → `jobs.job`; Photo → `privacy.photo`; Contractor → `businesses.business` plus `licensing.business_license` and `payments.customer`; Job card, Quote → `quotes`; Pick → `picks.pick`; Ledger entry → `payments.ledger_entry`; Message → `messaging.outbox`/`messaging.inbox` with bodies in `privacy.message_body`; Alert/audit → `ops`.
+Twelve v9.3 record types map onto these tables (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:79`–`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:96`): Contact → `privacy.contact`; Homeowner, Property → `intake`; Request → `jobs.job`; Photo → `privacy.photo`; Contractor → `businesses.business` plus `licensing.business_license` and `payments.customer`; Job card, Quote → `quotes`; Pick → `picks.pick`; Ledger entry → `payments.ledger_entry`; Message → `messaging.outbox`/`messaging.inbox`, with homeowner message text in `privacy.message_body`; Alert/audit → `ops`.
 
 ## 4. Dependency rules
 
@@ -108,7 +108,8 @@ Twelve v9.3 record types map onto these tables (`sources/01_spec/Havasu_Home_Quo
 
 - **Settings:** one pydantic-settings class reads environment variables at startup and refuses to start on a missing value, a live key in a non-live environment, or a test key in live (SEC-002; `BUILD_BRIEF.md:521`).
 - **Database:** engine, session and unit of work; row locks with "only if still in the expected status" updates (JOB-004; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:689`). Two database roles: a migration role that owns the schemas, and an app role with no `UPDATE` or `DELETE` on append-only tables (D-092).
-- **Clock:** UTC storage; Arizona time (no daylight saving) and the business clock of 8:00 a.m.–8:00 p.m. every day (JOB-007, D-004); tests inject the clock.
+- **Clock:** UTC storage; Arizona time (no daylight saving) and the business clock of 8:00 a.m.–8:00 p.m. every day (JOB-007, D-004); the local time in a recipient's zone, which `messaging` uses for quiet hours (D-003, D-025); tests inject the clock.
+- **Webhook dedupe:** one helper that records a vendor event ID in the calling module's own `webhook_event` table and reports whether it was new, so every module dedupes the same way (SEC-017).
 - **Derived IDs:** HMAC-SHA-256 under a server secret over what an ID identifies, for job cards, quotes, picks, quote-page links and Stripe idempotency keys (CARD-017, PICK-028, OPS-016).
 - **Task queue:** `core.task` (kind, IDs-only payload, `run_at`, attempts, lease, unique dedupe key). Workers claim with `FOR UPDATE SKIP LOCKED`, hold a lease, and a crashed worker's lease expires so another picks the task up. Every handler first re-checks the current status and does nothing if things moved on (JOB-006).
 - **Rate limits:** `core.rate_limit` counters per phone, IP and business (SEC-014, SEC-015).
@@ -126,7 +127,7 @@ Intake ──> Open ──> Quotes ready ──> Awaiting confirm ──> Paymen
   │          │          └─────┘ (a quote)     ineligible at Confirm, no call in 72 h)
   │          └─> Not covered
   └─> Closed early
-Quotes ready, No quotes yet, Connected ──> Closed     Any status before Done ──> Cancelled
+Quotes ready, No quotes yet, Connected ──> Closed     Any non-final status ──> Cancelled
 ```
 
 (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:155`–`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:177`, as changed by D-011, D-030, D-043, D-045, D-046.)
@@ -135,7 +136,7 @@ Quotes ready, No quotes yet, Connected ──> Closed     Any status before Done
 
 | Status | Waiting for | Timeout | Then | Requirement |
 |---|---|---|---|---|
-| Intake | Consent, answers, the "I'm safe" reply after an emergency | Reminder at 24 h; close at 72 h | Closed early, reason "no reply", text "Text us any time to restart" (D-095) | INT-019, INT-005 |
+| Intake | Consent, answers, the "I'm safe" reply after an emergency | With consent recorded: reminder at 24 h, close at 72 h. With consent still pending: no reminder and no closing text (only the consent text may go to that number, CON-025); close silently at 72 h, and a returning web-chat visitor just sees the request closed | Closed early, reason "no reply"; the text "Text us any time to restart" only when consent was recorded (D-095) | INT-019, INT-005, CON-025 |
 | Open | The first quote | 6 p.m. Arizona time the next day | No quotes yet, with the "no quotes yet" text | JOB-009, JOB-010 |
 | No quotes yet | A quote | 5 days | Closed | JOB-011 |
 | Quotes ready | A pick | 3 days, restarted on every entry; at once if no choosable quote is left | Closed | JOB-012, JOB-025 |
@@ -146,7 +147,7 @@ Quotes ready, No quotes yet, Connected ──> Closed     Any status before Done
 
 Timers that are not job statuses but still bound every wait: each job card's 24-hour quote window (PICK-001); quote-count updates at most every 3 hours (TXT-017); pick code 10 minutes, 5 tries, 15-minute cooldown (PICK-013); sign-in links 15 minutes (SEC-004); masked line closes at 30 days or earlier (CALL-009); text retries 3 times over 30 minutes then email (TXT-014); quote-page tokens die 30 days after close (PICK-011); a failed refund retries hourly (FEE-026); the "we have your message" AI retry every 30 minutes (INT-021); safe mode 24 hours after an unacknowledged High alert (OPS-001).
 
-**Pick sub-states** (inside Awaiting confirm and Payment pending, owned by `picks`): awaiting confirm, needs card, charging, auth needed, payment failed, paid, free, expired, cancelled, no-show (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:93`). Release happens only on paid or free (PICK-022).
+**Pick status** (owned by `picks`, kept beside the job status from the pick onward, including while the job is Connected, where paid, free and no-show still apply): awaiting confirm, needs card, charging, auth needed, payment failed, paid, free, expired, cancelled, no-show (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:93`). Release happens only on paid or free (PICK-022).
 
 ## 7. Adapters and stand-ins
 
@@ -168,20 +169,32 @@ Each stand-in has contract tests written from the vendor's published API documen
 
 ## 8. Contact vault data flow
 
-**What is in the vault** (`privacy.contact` and friends): names, phone numbers, emails, street addresses, on-site contacts, original photos, and the raw text of every inbound and outbound message and web-chat line (PRIV-001; D-093). Every other table refers to them by ID.
+**What is in the vault** (`privacy.contact` and friends): homeowner names, phone numbers, emails, street addresses, on-site contacts, original photos, and the raw text of homeowner messages (texts and web-chat lines, both ways) (PRIV-001; D-093). Every other table refers to them by ID. Business text is not homeowner data: a business's quote stays in `quotes.quote` as its original wording (PICK-003), checked there for contact details (PICK-007).
 
 **Protection:** each field is encrypted with AES-256-GCM under `VAULT_KEY`, a variable separate from the database credentials (PRIV-002); the associated data binds each ciphertext to its table, column and row, so a ciphertext copied to another row fails to decrypt; each ciphertext names its key version so the key can be rotated. Phone lookup uses a blind index, HMAC-SHA-256 of the normalized number under `VAULT_INDEX_KEY`, so the database can find a number without holding it in clear. Every plaintext read writes an audit row naming the reader, the purpose and the record (PRIV-003).
 
-**Who may read plaintext** (D-093, from PRIV-004): `messaging` (to send a text, email or letter), `picks` (the release), `calls` (to bridge a masked call; the number goes straight to the voice adapter), `portals` (a signed-in homeowner sees their own record, PRIV-021; a business sees what `picks` released to it), and `privacy` itself (scrubbing the homeowner's own name, purges). Nobody else.
+**Who may read plaintext** (D-093, from PRIV-004), each read through `privacy.api` and audit-logged:
+
+- `messaging`: to send a text, email or letter, and to hand a raw inbound homeowner message to the inbound reader;
+- `picks`: the release, and the only path by which a business sees released details (the business portal asks `picks.api`, never `privacy`);
+- `calls`: to bridge a masked call; the number goes straight to the voice adapter;
+- `portals`, homeowner realm: a signed-in homeowner's own record (PRIV-021);
+- `portals`, owner realm: the contact on a call-back alert only (INT-023, CON-016, TXT-015, TXT-023). Alerts in `ops.alert` carry the contact ID, never the number (PRIV-006); Casey's view reads the number at the moment he opens the alert;
+- `privacy` itself: the inbound reader, scrubbing, purges.
+
+Nobody else.
 
 **Flow of one request:**
 
-1. **Inbound.** Twilio's webhook (signature checked) reaches `messaging`; it dedupes by message ID (TXT-012), stores the number through `privacy` (getting a contact ID back) and the body in `privacy.message_body`, and applies opt-out, HELP and START words first (CON-008 to CON-018). Web chat follows the same path from `site`.
-2. **Intake.** `intake` runs the emergency keyword list on the raw text before anything else (INT-002), then asks `privacy.scrub()` for `ScrubbedText`: names after "this is / my name is", street-number patterns, 7+ digit runs, emails, and the homeowner's vault name removed (AI-002, AI-003).
+1. **Inbound.** Twilio's webhook (signature checked) reaches `messaging`, which dedupes by message ID (TXT-012) and looks the sender up in its sender directory.
+   - **From a business phone:** the text is business text. It is stored in `messaging.inbox` and passed on (as an event with its ID) to `intake`, which routes it to `quotes` or `picks`.
+   - **From anyone else (a homeowner):** `messaging` hands the raw text, with the keyword lists it reads from `catalog`, to `privacy.api.read_inbound()`. This is the only code that sees raw homeowner text. It stores the text in `privacy.message_body`; stores contact details the person gave ("my name is …", "my email is …") in the contact record (INT-012); matches the emergency keyword stems (INT-002) and the sole-word opt-out, HELP and START words (CON-008, CON-018) on the raw text; and returns the flags plus `ScrubbedText` (names after "this is / my name is", street-number patterns, 7+ digit runs, emails, and the homeowner's vault name removed; AI-002, AI-003). Short commands ("2 YES", "CLOSE 1042", "1", "ok") survive the scrub.
+   - **Order** (`messaging`, then `intake`): dedupe; emergency check; then opt-out, HELP and START. An emergency match from an opted-out number still raises the critical alert to Casey and sends no text (CON-017, CON-013). Then `intake` gets an event with the message ID, the flags and the `ScrubbedText` (stored in `messaging.inbox`) and runs the safety flow, consent and routing. Web chat follows the same path from `site`.
+2. **Intake** never sees raw homeowner text; it works from the flags and `ScrubbedText`. `businesses` keeps the sender directory current through `messaging.api` whenever a main or staff phone is added or removed.
 3. **AI.** `ai` accepts only `ScrubbedText`, a type only `privacy` can build (AI-004); it returns schema-checked fields or nothing (AI-005). No AI call happens in live until zero retention is signed (AI-008).
 4. **Card.** `quotes` builds the card from the scrubbed description and fixed fields and runs the final plain-code gate on every card (CARD-007, CARD-008). Cards carry town and kind of place only (CARD-006).
-5. **Pick and release.** `picks` asks `payments` whether the pick is paid (or free); only then does it read first name, address and photos from `privacy` and hand them to `messaging` for the details text and to the business portal (PICK-022, PRIV-005). The homeowner's phone number is never released; `calls` reads it only to connect a masked call (PICK-023, CALL-002). The owner portal's release power only re-sends such a release (D-074).
-6. **Purge.** A daily `privacy` job deletes name, address, email and photos 180 days after close unless a dispute or complaint hold exists; keeps the phone, encrypted, only with its consent and opt-out records for 5 years after the last message; deletes photos 30 days after close; and cuts message bodies to their template ID after 30 days (PRIV-007, PRIV-009, TXT-020, D-079).
+5. **Pick and release.** `picks` asks `payments` whether the pick is paid (or free); only then does it read first name, address, photos and, when the homeowner chose email contact, the email they chose to share (PICK-018), and hand them to `messaging` for the details text and, through `picks.api`, to the business portal (PICK-022, PRIV-005). The homeowner's phone number is never released; `calls` reads it only to connect a masked call (PICK-023, CALL-002). The owner portal's release power only re-sends such a release (D-074).
+6. **Purge.** A daily `privacy` job deletes name, address, email and photos 180 days after close unless a dispute or complaint hold exists; keeps the phone, encrypted, only with its consent and opt-out records for 5 years after the last message; deletes photos 30 days after close; and after 30 days cuts every message body (TXT-020, D-079): an outbound text keeps only its template ID; an inbound text, which has no template ID, keeps only its kind (for example "inbound homeowner text" or "inbound business text"), its time, its sender reference and its job ID, and its raw text in `privacy.message_body` and its `ScrubbedText` copy in `messaging.inbox` are both deleted. The job's scrubbed description in `jobs.job` is kept 3 years (PRIV-008), and a business's quote wording stays in `quotes.quote` (PICK-003) (PRIV-007, PRIV-009).
 
 ## 9. Environments and deployment shape
 
@@ -256,7 +269,9 @@ Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_s
 | OWASP ZAP baseline image | **verify at K8** (Phase 2) | not checked | pinned by digest |
 | Docker base image | **verify at K8** | not checked | `python:3.12.13-slim` family, pinned by digest (SEC-021) |
 
-**Resolution and audit run in this session:** `uv pip compile` of the runtime and development lists above for Python 3.12 on x86-64 Linux resolved 118 packages. `pip-audit 2.10.1 -r <compiled list> --no-deps --disable-pip` first reported 38 known vulnerabilities in pillow 12.3.0, all fixed in 13.0.0; with pillow 13.0.0 it reported "No known vulnerabilities found". This audit covers PyPI packages only; axe-core and the images are not covered by it.
+**Resolution and audit run in this session:** `uv pip compile` of the runtime and development lists above for Python 3.12 on x86-64 Linux resolved 118 packages. `pip-audit 2.10.1 -r <compiled list> --no-deps --disable-pip` first reported 38 known vulnerabilities in pillow 12.3.0, all fixed in 13.0.0; with pillow 13.0.0 it reported "No known vulnerabilities found". This audit covers PyPI packages only; axe-core and the images are not covered by it. The compiled list was a scratch file and is not committed: K8 re-runs the resolution and pip-audit when it writes `uv.lock`, and pip-audit runs on every PR after that (SEC-021).
+
+The task that builds photo handling checks pillow 13.x's release notes for breaking changes before writing the code (pillow 13.0.0 is a new major version).
 
 ## 12. Keeping this file true
 
