@@ -320,13 +320,13 @@
       "model": null,
       "effort": null,
       "reviewer_model": null,
-      "status": "QUEUED",
+      "status": "WAITING_FOR_OWNER",
       "attempts": 0,
       "model_used": null,
       "branch": null,
       "pr": null,
       "head_sha": null,
-      "waits_on_owner": "Casey replies 'approved to build'"
+      "waits_on_owner": "Casey replies 'approved to build' on the Gate P issue"
     }
   ],
   "owner_waits": [],
@@ -343,7 +343,7 @@
   "usage": {
     "last_reading": null
   },
-  "updated_at": "2026-10-27T21:50:00Z",
+  "updated_at": "2026-10-27T22:15:00Z",
   "notes": [
     "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
     "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

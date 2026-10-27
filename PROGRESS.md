@@ -54,3 +54,4 @@
   - K9 is MERGE_PENDING and the lease is released.
 
 - 2026-10-27 21:50Z runner (webhook, PR #23 closed): K9 marked DONE (Ci/Twin/Ally green on 95e21ee; tree ee0348f9 == squash 632c400). Now at Gate P, waiting for Casey.
+- 2026-10-27 22:15Z: The Gate P outbox message never reached Casey. `notify` run 40585857931 failed because `outbox/gate-p.md` had no `id:` line (`kit/outbox_format.md`). Added `id: gate-p` and set GATE-P to WAITING_FOR_OWNER (`BUILD_BRIEF.md` §16). The build waits for "approved to build".

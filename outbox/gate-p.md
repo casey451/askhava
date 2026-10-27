@@ -1,4 +1,5 @@
 ---
+id: gate-p
 title: Gate P - approved to build?
 kind: gate
 ---
