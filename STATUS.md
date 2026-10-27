@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 19:25 UTC · **Phase:** kit · **Done:** 10 of 11 kit steps (K0–K8 plus K2b), plus one fix-main task
+**Updated:** 2026-10-27 20:20 UTC · **Phase:** kit · **Done:** 10 of 11 kit steps (K0–K8 plus K2b), plus one fix-main task
 
 ## Running now
 - **K9 rehearsal:** in progress, held by the hourly runner.
   - **P1 (should pass):** passed and merged (PR #18).
   - **P2 (fails on purpose):** went red and never merged (PR #17 closed).
   - **P3 double trigger:** the second claim was rejected, as it should be.
-  - **P3 usage limit:** waiting for its simulated reset. The 20:07 UTC cycle should resume it.
+  - **P3 usage limit:** resumed after the reset; PR #21 is open and waiting for checks and merge.
   - Then the K9 report and `kit/schedule.json` go in as one pull request.
 
 ## Blocked

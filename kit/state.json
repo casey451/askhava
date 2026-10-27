@@ -343,7 +343,7 @@
   "usage": {
     "last_reading": null
   },
-  "updated_at": "2026-10-27T19:25:00Z",
+  "updated_at": "2026-10-27T20:20:00Z",
   "notes": [
     "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
     "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -380,10 +380,15 @@
       },
       "P3": {
         "goal": "triggered twice + simulated usage-limit rejection",
-        "status": "RETRY_AFTER_RESET",
+        "status": "MERGE_PENDING",
         "reset_at": "2026-10-27T20:00:00Z",
         "evidence_double_trigger": "19:15Z two claims pushed from the same base 3aab38a: first accepted (bf39373), second rejected non-fast-forward; the loser would exit",
-        "next": "the 20:07Z hourly cycle must pick P3 up after reset_at, run it (a docs-only practice file), and confirm it merges; that proves resume-after-reset"
+        "next": "the 20:07Z hourly cycle must pick P3 up after reset_at, run it (a docs-only practice file), and confirm it merges; that proves resume-after-reset",
+        "branch": "claude/task/P3-rehearsal-resume",
+        "pr": 21,
+        "head_sha": "eafe11428764f35889fb9ff3ff5dfad3af9d3158",
+        "model": "claude-haiku-5-5",
+        "evidence": "20:2xZ after reset_at: runner resumed P3; main green (257 tests, pii_scan, validate_tasks); auto-pr opened #21; awaiting Ci/Twin/Ally and merge. Fresh-eyes reviewer skipped (one docs file)."
       }
     },
     "cloud_checks": {
