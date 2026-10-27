@@ -189,3 +189,20 @@ The round-3 simulation showed that two of the round-2 fixes caused new problems.
 1. **Street names no longer set off the emergency text.** The danger-word list matched "Smoketree Ave", so a homeowner who just typed their address got the "if you smell gas, leave now and call 911" text. Addresses are now skipped by that check. (D-165)
 
 **Still your decision (not changed by any fix):** during a texting suspension, homeowners with no email on file can't get the safety text. The changes file rejected a backup texting number. One option is an automated voice call that reads the safety text, but that has its own consent and cost questions, so it's yours to decide. Until then, emergencies during a suspension raise a critical alert to you (D-144).
+
+## From K9 (the rehearsal), October 27, 2026
+
+The runner tried itself out on three harmless practice tasks before any real building. The full proof is `docs/rehearsal.md`. In short: the passing task merged, the failing task was blocked and never merged, and the task that hit a pretend usage limit picked up again after the reset and merged. Nothing is being built: Gate P still holds until you say "approved to build".
+
+**Worth a second look**
+
+1. **Two schedulers were starting runners, and only one should.** One wakes up a single long-lived session every hour; the other starts a fresh session each time. At 8:11 p.m. UTC a fresh session finished a practice task, and a minute later the hourly one tried to do the same task. Git stopped a double merge, so no harm was done, but the hourly one shouldn't have started work while another session held the lock. The fix: keep only the fresh-session routine (the one in Appendix A, which runs Sonnet), delete the hourly wake-up, and treat a lock held by another session as "stop", always. (D-171)
+2. **Merges don't start the next run; the hourly run does.** The hourly scheduled task was set up in a way that can't listen for merges, so the build moves about one task an hour, around the clock while limits allow. If you ever add the "Pull request closed" trigger from Appendix A on the claude.ai routines page, tasks can run back to back. Nothing waits on it. (D-169)
+3. **How fast it goes.** Each kit step took 10 to 30 minutes, so one task an hour is the expected pace. How much of your plan's limit that uses can't be seen from inside a session; the rehearsal measured tokens per model instead (`kit/schedule.json`). (D-169)
+
+**Routine**
+
+- The model check works: each worker's record shows exactly which model ran. The call that starts a worker takes "haiku", "sonnet" or "opus" rather than the full model name, so the runner checks the full name in the record. (D-170)
+- Stripe's test server can't run inside a session (no Docker there), so it runs only in GitHub's checks; sessions use the build's own fake Stripe. (D-167)
+- Browser tests can run inside a session; the browsers are already installed. (D-168)
+- The runner ran the rehearsal itself, without a separate task prompt. Two practice tasks skipped the second-reviewer step (each was a 6-line note), the failing one wasn't retried (it fails on purpose, and the retry path is already tested offline), and two practice tasks were open at once (safe, because the failing one could never merge). (D-166)
