@@ -28,3 +28,5 @@
 
 ## Last usage reading
 - Not measured yet (K9 measures usage per model).
+
+_Update 2026-10-27: FIX1 done; K8 (harness) pushed, MERGE_PENDING; K9 next, then Gate P._
