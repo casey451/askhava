@@ -213,14 +213,15 @@
       "attempts": 1,
       "model_used": "claude-sonnet-5-5",
       "branch": "claude/task/K7-prompts",
-      "pr": null,
-      "head_sha": "1175b4b",
+      "pr": 13,
+      "head_sha": "703f71d",
       "waits_on_owner": null,
       "check_model": "claude-haiku-5-5",
       "reviewed_by": "claude-sonnet-5-5",
       "review_rounds": 1,
       "model_evidence": "subagent transcript: all 15 assistant records model=claude-sonnet-5-5 (first pass); fix round resumed same agent",
-      "haiku_check": "no discrepancies, 139 prompts"
+      "haiku_check": "no discrepancies, 139 prompts",
+      "note": "auto-pr failed to enable auto-merge; runner enabled it via MCP. Merged main (PR #14) into branch, re-running checks."
     },
     {
       "id": "K8",
@@ -314,7 +315,7 @@
   "usage": {
     "last_reading": null
   },
-  "updated_at": "2026-10-27T17:22:55Z",
+  "updated_at": "2026-10-27T17:45:00Z",
   "notes": [
     "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
     "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
