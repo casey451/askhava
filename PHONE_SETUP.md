@@ -98,12 +98,9 @@ This is how Claude reaches you during the build.
 
 ## What happens next
 
-- **The first sessions plan the build:** sources and rules, the spec, the category list, architecture, tests, the task list and the runner. No app code is written until you approve Gate A.
-- **When Claude needs you,** a GitHub issue appears and the GitHub app notifies you. Reply in the issue. Don't reply in chat; the build only reads GitHub.
-- **Expect these questions during planning:**
-  - a few one-at-a-time questions (K3);
-  - approval of the category list and worked examples (K2b);
-  - Gate A.
+- **The build runs on its own.** It plans, builds and tests everything, decides its own questions, and logs each decision in `docs/for-casey-review.md` for you to read at the end.
+- **You only hear from it when it needs your hands:** a setting it can't change, creating the test accounts at the end of Phase 1, or a go for anything live (real texts, publishing the page, real charges). It sends a GitHub issue, and the GitHub app notifies you. Reply in the issue, not in chat; the build only reads GitHub.
+- **When it's done,** you get one issue: "Finished: ready for your review".
 - **Progress:** check STATUS.md any time at **github.com/casey451/askhava/blob/claude/kit-state/STATUS.md**.
 
 ## Later, at a computer (optional)
