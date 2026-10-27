@@ -117,3 +117,18 @@ Claude drew up how the app is split into parts, wrote the security threat model,
 - Each part keeps its own tables, and a test fails the build if one part reaches into another's. (D-091)
 - The app can't edit or delete money and audit records once written; only database upgrades can. (D-092)
 - Library versions are the newest that had been out for at least two weeks. One exception: the photo library is newer because the older version had known security holes. A security scan of the full set found no known problems. (D-096, D-097)
+
+## From K5 (test design and the twin), October 27, 2026
+
+**Worth a second look**
+
+1. **The six "business left out" warnings were one bug, and it's fixable.** When both AI readings guessed the wrong trade and the homeowner corrected it ("it's the AC"), the twin forgot the words that said what the job was ("AC blowing warm air") and filed it as "other heating/AC". AC-only businesses and those who hadn't ticked "other" then never got the card; three of those requests got no quotes. The build keeps those words. A test copy of the twin with the fix had no warnings left in that run. (D-102)
+2. **The twin couldn't see a broken license rule.** It checks licenses against the same table the app uses, so when we broke the table on purpose (AC-only licenses also getting furnace jobs), 81 wrong cards went out and the twin didn't notice. The new check uses its own table, and a written list of matching examples (like the fee examples) comes before any matching code. (D-107, D-110)
+3. **The `Twin` check now fails on any problem, with only two kinds of exception.** A known problem from the old twin is listed one by one until the twin is updated in the first build stage, which must end with none left. The one permanent exception: a simulated homeowner who deliberately answers a question wrongly, and only when the record shows that, up to a set number per run. (D-106, D-107)
+4. **Questions to homeowners get clearer.** A repeated question repeats the choices; "just a small repair" is read as handyman, not heating; up to three trades can be offered; and words like "water heater" always count, so a job isn't sent to the wrong kind of license on one guess or one wrong answer. (D-103, D-104, D-105)
+
+**Routine (how testing works)**
+
+- Tests are written per behavior, edge and failure, each naming the requirements it covers; every requirement is covered by at least one. Edges: texts may go from 8:00:00 a.m. up to but not including 8:00 p.m.; "within 90 days" means less than 90 full days. (D-101)
+- Deliberate-break tests: the 4-month rule, the fee tiers, the license filter, opt-out and quiet hours are each broken on purpose in many small ways, and the tests must catch every one. (D-108)
+- Test data uses fictional phone numbers (555-0100 to 555-0199) and example.com emails only. (D-109)
