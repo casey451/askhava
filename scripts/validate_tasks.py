@@ -72,7 +72,33 @@ PROTECTED = (
     "tests/mutation/",
     "tests/test_trace_spec.py",
     "tests/test_check_catalog.py",
+    "scripts/validate_tasks.py",
+    "scripts/trace_spec.py",
+    "tests/test_validate_tasks.py",
 )
+# Paths K7 to K9 create; a task may read them before any task in this file makes them.
+KIT_OUTPUTS = (
+    "kit/prompts/",
+    "runner/",
+    "stand_ins/",
+    "twin/",
+    "tests/twin/",
+    "tests/mutation/",
+    "tests/contract/",
+    "tests/coverage_floor.json",
+    "pyproject.toml",
+    "uv.lock",
+)
+# Owned paths that make a task money, privacy, security or recovery work, whatever it declares.
+SENSITIVE_PREFIXES = {
+    "app/payments/": "money",
+    "app/privacy/": "privacy",
+    "app/picks/": "privacy",
+    "app/portals/": "security",
+    "app/core/": "security",
+    "app/adapters/": "security",
+    "app/recovery/": "recovery",
+}
 FORBIDDEN = ("sources/",)
 ALLOWED_SHARED = frozenset(
     {"docs/architecture.md", "docs/decisions.md", "docs/for-casey-review.md", "app/main.py"}
@@ -87,6 +113,20 @@ GATE_KINDS = (
     "gate-c",
     "first-live-charge",
 )
+# Whether each gate waits for Casey (BUILD_BRIEF.md:546-553).
+# Only the real-texts gate is conditional.
+GATE_WAITS = {
+    "account-checkpoint": True,
+    "stage-0.5-go": True,
+    "real-texts-casey-phone": True,
+    "finished": False,
+    "gate-b": True,
+    "gate-c": True,
+    "first-live-charge": True,
+}
+CONDITIONAL_GATE = "real-texts-casey-phone"
+NO_DEPENDENTS = ("stage-0.5-go", "first-live-charge")
+TWILIO_SANDBOX_PATH = "app/adapters/twilio_sms.py"
 MAX_OWNS = 14
 MAX_FILES = 14
 MAX_LINES = 800
@@ -179,13 +219,33 @@ def check_identity(task: Task) -> list[str]:
     return errors
 
 
-def check_models(task: Task) -> list[str]:
-    """Full model IDs; Opus reviewer where the brief requires one; effort rules."""
+def derived_areas(task: Task) -> set[str]:
+    """Sensitive areas implied by the owned paths (a directory implies all it contains)."""
+    return {
+        area
+        for path in task["owns"]
+        for prefix, area in SENSITIVE_PREFIXES.items()
+        if overlaps(path, prefix)
+    }
+
+
+def check_areas(task: Task) -> list[str]:
+    """Review areas are known and include every area the owned paths imply."""
     errors: list[str] = []
-    areas = set(task["review_areas"])
-    unknown = sorted(areas - AREAS)
+    derived = derived_areas(task)
+    unknown = sorted((set(task["review_areas"]) | derived) - AREAS)
     if unknown:
         errors.append(f"{where(task)}: unknown review areas {unknown}")
+    missing = sorted(derived - set(task["review_areas"]))
+    if missing:
+        errors.append(f"{where(task)}: review_areas must include {missing} (from owned paths)")
+    return errors
+
+
+def check_models(task: Task) -> list[str]:
+    """Full model IDs; Opus for money, privacy, security and recovery work; effort rules."""
+    errors: list[str] = []
+    areas = set(task["review_areas"]) | derived_areas(task)
     if task["type"] == "gate":
         if task["model"] or task["effort"] or task["reviewer_model"]:
             errors.append(f"{where(task)}: a gate runs no model")
@@ -203,6 +263,11 @@ def check_models(task: Task) -> list[str]:
         errors.append(
             f"{where(task)}: money, privacy, security, recovery and harness tasks"
             " need an Opus reviewer"
+        )
+    if areas & OPUS_REVIEW_AREAS and task["model"] != OPUS:
+        errors.append(
+            f"{where(task)}: money, privacy, security and recovery work runs on Opus"
+            " (BUILD_BRIEF.md:498)"
         )
     if task["effort"] == "high" and task["model"] != OPUS:
         errors.append(f"{where(task)}: high effort is only for Opus tasks")
@@ -232,10 +297,16 @@ def check_size(task: Task) -> list[str]:
         for value, limit, name in limits
         if value > limit
     ]
-    if task["type"] != "gate" and files < len(task["owns"]):
+    has_dir = any(p.endswith("/") for p in task["owns"])
+    if task["type"] != "gate" and not has_dir and files != len(task["owns"]):
         errors.append(
-            f"{where(task)}: budget files {files} is less than the {len(task['owns'])} owned paths"
+            f"{where(task)}: budget files {files} does not match"
+            f" the {len(task['owns'])} owned files"
         )
+    if has_dir and task["type"] not in ("cleanup", "harness"):
+        errors.append(f"{where(task)}: only cleanup and harness tasks may own a directory")
+    if has_dir and task["reviewer_model"] != OPUS:
+        errors.append(f"{where(task)}: a task owning a directory needs an Opus reviewer")
     return errors
 
 
@@ -244,16 +315,17 @@ def check_gate_fields(task: Task) -> list[str]:
     if task["type"] != "gate":
         missing = [c for c in CHECKS if c not in task["checks"]]
         extra = "gate" in task
-        errors = [f"{where(task)}: checks must include {missing}"] if missing else []
-        return errors + ([f"{where(task)}: only a gate task has 'gate'"] if extra else [])
+        work = [f"{where(task)}: checks must include {missing}"] if missing else []
+        return work + ([f"{where(task)}: only a gate task has 'gate'"] if extra else [])
     gate = task.get("gate")
     if not isinstance(gate, dict) or gate.get("kind") not in GATE_KINDS:
         return [f"{where(task)}: a gate needs 'gate.kind', one of {list(GATE_KINDS)}"]
-    errors = (
-        []
-        if isinstance(gate.get("waits_on_owner"), bool)
-        else [f"{where(task)}: gate.waits_on_owner missing"]
-    )
+    kind = gate["kind"]
+    errors: list[str] = []
+    if gate.get("waits_on_owner") is not GATE_WAITS[kind]:
+        errors.append(f"{where(task)}: gate {kind} must have waits_on_owner {GATE_WAITS[kind]}")
+    if gate.get("conditional", False) is not (kind == CONDITIONAL_GATE):
+        errors.append(f"{where(task)}: only gate {CONDITIONAL_GATE} is conditional, and it must be")
     if task["owns"] or task["checks"]:
         errors.append(f"{where(task)}: a gate owns no paths and runs no checks")
     return errors
@@ -277,6 +349,7 @@ def check_task(task: Task) -> list[str]:
         return errors
     for check in (
         check_identity,
+        check_areas,
         check_models,
         check_size,
         check_gate_fields,
@@ -379,23 +452,29 @@ def check_ownership(graph: Graph) -> list[str]:
     return errors
 
 
-def read_known(root: Path, graph: Graph, task: Task, path: str, kit_outputs: list[str]) -> bool:
+def from_kit(path: str) -> bool:
+    """A directory entry covers what it contains; a file entry only itself."""
+    return any(
+        (k.endswith("/") and (path.startswith(k) or path == k.rstrip("/"))) or path == k
+        for k in KIT_OUTPUTS
+    )
+
+
+def read_known(root: Path, graph: Graph, task: Task, path: str) -> bool:
     """A read path exists, is made by the kit (K7 to K9), or is owned by an ancestor task."""
-    if (root / path).exists() or any(
-        path.startswith(k) or path == k.rstrip("/") for k in kit_outputs
-    ):
+    if (root / path).exists() or from_kit(path):
         return True
     return any(
         overlaps(path, p) for a in graph.ancestors[task["id"]] for p in graph.by_id[a]["owns"]
     )
 
 
-def check_reads(root: Path, graph: Graph, kit_outputs: list[str]) -> list[str]:
+def check_reads(root: Path, graph: Graph) -> list[str]:
     return [
         f"{where(task)}: reads {path}, which doesn't exist and no earlier task makes"
         for task in graph.tasks
         for path in task["reads"]
-        if not read_known(root, graph, task, path, kit_outputs)
+        if not read_known(root, graph, task, path)
     ]
 
 
@@ -492,6 +571,25 @@ def check_gate_order(graph: Graph) -> list[str]:
     for later, earlier in must_follow:
         if kinds[earlier] not in graph.ancestors[kinds[later]]:
             errors.append(f"gate {later} must come after gate {earlier}")
+    return errors + check_gate_dependents(graph, kinds)
+
+
+def check_gate_dependents(graph: Graph, kinds: dict[str, str]) -> list[str]:
+    """Nothing waits on the page go or the first charge; only Gate C waits on Gate B;
+    the real-texts question comes after the Twilio sandbox task (D-116)."""
+    errors: list[str] = []
+    for task in graph.tasks:
+        for kind in NO_DEPENDENTS:
+            if kinds[kind] in task["deps"]:
+                errors.append(f"{where(task)}: nothing may depend on gate {kind}")
+        if kinds["gate-b"] in task["deps"] and task["id"] != kinds["gate-c"]:
+            errors.append(f"{where(task)}: only gate-c may depend on gate-b")
+    sandbox = [t["id"] for t in graph.tasks if TWILIO_SANDBOX_PATH in t["owns"]]
+    texts = kinds[CONDITIONAL_GATE]
+    if not any(s in graph.ancestors[texts] for s in sandbox):
+        errors.append(
+            f"gate {CONDITIONAL_GATE} must come after the task owning {TWILIO_SANDBOX_PATH}"
+        )
     return errors
 
 
@@ -531,6 +629,8 @@ def check_file_header(data: dict[str, Any]) -> list[str]:
         errors.append("tasks file: protected_paths must list every protected path")
     if not set(data.get("shared_paths", [])) <= ALLOWED_SHARED:
         errors.append(f"tasks file: shared_paths may only be {sorted(ALLOWED_SHARED)}")
+    if data.get("kit_outputs") != list(KIT_OUTPUTS):
+        errors.append(f"tasks file: kit_outputs must be exactly {list(KIT_OUTPUTS)}")
     if not isinstance(data.get("tasks"), list) or not data["tasks"]:
         errors.append("tasks file: 'tasks' must be a non-empty list")
     return errors
@@ -577,7 +677,7 @@ def run(root: Path, tasks_path: Path | None = None) -> Report:
     td_ids = set(td_entries(root))
     errors += [f"spec: {e}" for e in spec.errors]
     errors += [e for t in tasks for e in check_path_rules(t)]
-    errors += check_ownership(graph) + check_reads(root, graph, list(data.get("kit_outputs", [])))
+    errors += check_ownership(graph) + check_reads(root, graph)
     errors += check_coverage(graph, req_ids, td_ids) + check_references(root, graph)
     errors += check_gate_order(graph) + check_stage_order(graph)
     return Report(tasks, len(req_ids), len(td_ids), errors)

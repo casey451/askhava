@@ -17,7 +17,10 @@
     "tests/twin/",
     "tests/mutation/",
     "tests/test_trace_spec.py",
-    "tests/test_check_catalog.py"
+    "tests/test_check_catalog.py",
+    "scripts/validate_tasks.py",
+    "scripts/trace_spec.py",
+    "tests/test_validate_tasks.py"
   ],
   "shared_paths": [
     "docs/architecture.md",
@@ -258,8 +261,8 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "licensing",
-        "harness"
+        "harness",
+        "licensing"
       ],
       "owns": [
         "twin/app.py",
@@ -319,9 +322,9 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
+        "harness",
         "money",
-        "privacy",
-        "harness"
+        "privacy"
       ],
       "owns": [
         "twin/app.py",
@@ -389,9 +392,9 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "money",
+        "harness",
         "licensing",
-        "harness"
+        "money"
       ],
       "owns": [
         "twin/app.py",
@@ -461,7 +464,7 @@
       "reviewer_model": "claude-sonnet-5-5",
       "review_areas": [],
       "owns": [
-        "scripts/"
+        "scripts/check_catalog.py"
       ],
       "reads": [
         "docs/architecture.md"
@@ -497,7 +500,7 @@
       "deps": [
         "T008"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -551,7 +554,7 @@
       "deps": [
         "T009"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -599,12 +602,12 @@
       "deps": [
         "T009"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
-        "privacy"
+        "privacy",
+        "security"
       ],
       "owns": [
         "app/core/settings.py",
@@ -656,7 +659,7 @@
       "deps": [
         "T011"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -709,11 +712,12 @@
       "deps": [
         "T012"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "recovery"
+        "recovery",
+        "security"
       ],
       "owns": [
         "app/core/tasks.py",
@@ -756,12 +760,12 @@
       "deps": [
         "T012"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
-        "recovery"
+        "recovery",
+        "security"
       ],
       "owns": [
         "app/core/ids.py",
@@ -813,7 +817,7 @@
       "deps": [
         "T013"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -868,7 +872,7 @@
       "deps": [
         "T011"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -930,7 +934,7 @@
         "T015",
         "T016"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -982,7 +986,7 @@
         "T014",
         "T016"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -1034,7 +1038,7 @@
       "deps": [
         "T009"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -1081,7 +1085,7 @@
         "T013",
         "T016"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -1310,7 +1314,7 @@
         "T023",
         "T016"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -1369,7 +1373,7 @@
         "T024",
         "T017"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -1557,7 +1561,7 @@
         "T023",
         "T014"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -1614,7 +1618,7 @@
       "deps": [
         "T028"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -1732,7 +1736,7 @@
         "T015",
         "T021"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -2155,7 +2159,7 @@
         "T030",
         "T031"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -2341,7 +2345,7 @@
         "T036",
         "T028"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -2666,7 +2670,7 @@
         "T045",
         "T025"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -2944,7 +2948,7 @@
         "T020",
         "T012"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -3004,7 +3008,7 @@
         "T051",
         "T047"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -3123,10 +3127,11 @@
         "T052",
         "T016"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
+        "privacy",
         "security"
       ],
       "owns": [
@@ -3185,11 +3190,12 @@
         "T054",
         "T053"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "accessibility"
+        "accessibility",
+        "security"
       ],
       "owns": [
         "app/portals/pick_flow.py",
@@ -3256,9 +3262,9 @@
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
+        "harness",
         "licensing",
-        "privacy",
-        "harness"
+        "privacy"
       ],
       "owns": [
         "tests/mutation/mutants.toml",
@@ -3353,10 +3359,15 @@
         "T055",
         "T056"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
-      "reviewer_model": "claude-sonnet-5-5",
-      "review_areas": [],
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "money",
+        "privacy",
+        "recovery",
+        "security"
+      ],
       "owns": [
         "app/"
       ],
@@ -3468,7 +3479,7 @@
       "deps": [
         "T058"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -3700,12 +3711,13 @@
       "deps": [
         "T062"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
+        "licensing",
         "money",
-        "licensing"
+        "privacy"
       ],
       "owns": [
         "app/picks/confirm.py",
@@ -3972,7 +3984,7 @@
       "deps": [
         "T067"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -4030,8 +4042,8 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "privacy",
-        "money"
+        "money",
+        "privacy"
       ],
       "owns": [
         "app/picks/release.py",
@@ -4088,10 +4100,12 @@
       "deps": [
         "T069"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
-      "reviewer_model": "claude-sonnet-5-5",
-      "review_areas": [],
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "privacy"
+      ],
       "owns": [
         "app/picks/aftermath.py",
         "tests/integration/test_pick_aftermath.py"
@@ -4139,7 +4153,7 @@
         "T070",
         "T068"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -4191,7 +4205,7 @@
       "deps": [
         "T071"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -4244,8 +4258,8 @@
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "money",
-        "harness"
+        "harness",
+        "money"
       ],
       "owns": [
         "tests/mutation/mutants.toml",
@@ -4295,9 +4309,9 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "money",
+        "harness",
         "licensing",
-        "harness"
+        "money"
       ],
       "owns": [
         "twin/app.py",
@@ -4364,10 +4378,15 @@
         "T073",
         "T074"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
-      "reviewer_model": "claude-sonnet-5-5",
-      "review_areas": [],
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "money",
+        "privacy",
+        "recovery",
+        "security"
+      ],
       "owns": [
         "app/"
       ],
@@ -4405,7 +4424,7 @@
       "deps": [
         "T075"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -4461,7 +4480,7 @@
       "deps": [
         "T076"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -4514,7 +4533,7 @@
       "deps": [
         "T077"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -4568,7 +4587,7 @@
       "deps": [
         "T078"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -4673,12 +4692,12 @@
       "deps": [
         "T075"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
-        "money"
+        "money",
+        "security"
       ],
       "owns": [
         "app/businesses/signup.py",
@@ -4836,7 +4855,7 @@
       "deps": [
         "T081"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -4894,12 +4913,13 @@
         "T084",
         "T083"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
         "money",
-        "privacy"
+        "privacy",
+        "security"
       ],
       "owns": [
         "app/portals/business_portal.py",
@@ -5007,7 +5027,7 @@
       "deps": [
         "T086"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -5112,7 +5132,7 @@
       "deps": [
         "T088"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -5162,7 +5182,7 @@
       "deps": [
         "T075"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -5216,7 +5236,7 @@
       "deps": [
         "T090"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -5326,7 +5346,7 @@
       "deps": [
         "T092"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -5429,10 +5449,11 @@
       "deps": [
         "T094"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
+        "privacy",
         "security"
       ],
       "owns": [
@@ -5582,12 +5603,12 @@
         "T096",
         "T088"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "privacy",
-        "accessibility"
+        "accessibility",
+        "privacy"
       ],
       "owns": [
         "tests/e2e/test_j1_homeowner.py",
@@ -5633,12 +5654,12 @@
         "T098",
         "T089"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "money",
-        "accessibility"
+        "accessibility",
+        "money"
       ],
       "owns": [
         "tests/e2e/test_j2_business.py",
@@ -5706,10 +5727,15 @@
         "T098",
         "T099"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
-      "reviewer_model": "claude-sonnet-5-5",
-      "review_areas": [],
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "money",
+        "privacy",
+        "recovery",
+        "security"
+      ],
       "owns": [
         "app/"
       ],
@@ -5879,7 +5905,7 @@
       "deps": [
         "T102"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -6105,12 +6131,12 @@
       "deps": [
         "T105"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "privacy",
-        "compliance"
+        "compliance",
+        "privacy"
       ],
       "owns": [
         "app/messaging/consent_alerts.py",
@@ -6159,7 +6185,7 @@
         "T106",
         "T107"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -6222,8 +6248,8 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "recovery",
-        "privacy"
+        "privacy",
+        "recovery"
       ],
       "owns": [
         "app/recovery/__init__.py",
@@ -6276,8 +6302,8 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "recovery",
-        "money"
+        "money",
+        "recovery"
       ],
       "owns": [
         "app/recovery/replay.py",
@@ -6398,8 +6424,8 @@
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "privacy",
-        "compliance"
+        "compliance",
+        "privacy"
       ],
       "owns": [
         "docs/legal/privacy-policy.md",
@@ -6519,7 +6545,7 @@
       "deps": [
         "T113"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -6676,7 +6702,7 @@
       "deps": [
         "T110"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -6729,13 +6755,13 @@
       "deps": [
         "T108"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
+        "accessibility",
         "money",
-        "accessibility"
+        "security"
       ],
       "owns": [
         "tests/e2e/test_j3_operator.py",
@@ -6781,13 +6807,13 @@
         "T118",
         "T103"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
+        "accessibility",
         "money",
-        "recovery",
-        "accessibility"
+        "recovery"
       ],
       "owns": [
         "tests/e2e/test_j4_outage.py",
@@ -6882,7 +6908,7 @@
       "deps": [
         "T120"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -6934,7 +6960,7 @@
         "T116",
         "T117"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -7074,9 +7100,9 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
+        "money",
         "privacy",
-        "money"
+        "security"
       ],
       "owns": [
         "docs/audits/phase1-audit.md"
@@ -7139,10 +7165,15 @@
         "T124",
         "T125"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
-      "reviewer_model": "claude-sonnet-5-5",
-      "review_areas": [],
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "money",
+        "privacy",
+        "recovery",
+        "security"
+      ],
       "owns": [
         "app/"
       ],
@@ -7259,12 +7290,12 @@
       "deps": [
         "T127"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
-        "harness"
+        "harness",
+        "security"
       ],
       "owns": [
         "app/adapters/twilio_sms.py",
@@ -7360,12 +7391,12 @@
       "deps": [
         "T130"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
-        "harness"
+        "harness",
+        "security"
       ],
       "owns": [
         "app/adapters/twilio_voice.py",
@@ -7420,9 +7451,9 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
+        "harness",
         "money",
-        "security",
-        "harness"
+        "security"
       ],
       "owns": [
         "app/adapters/stripe_real.py",
@@ -7480,12 +7511,12 @@
       "deps": [
         "T132"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
-        "harness"
+        "harness",
+        "security"
       ],
       "owns": [
         "app/adapters/resend_real.py",
@@ -7540,13 +7571,13 @@
       "deps": [
         "T133"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
+        "harness",
         "recovery",
-        "harness"
+        "security"
       ],
       "owns": [
         "app/adapters/license_real.py",
@@ -7602,7 +7633,7 @@
       "deps": [
         "T134"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -7700,7 +7731,7 @@
       "deps": [
         "T136"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
@@ -7758,12 +7789,12 @@
       "deps": [
         "T137"
       ],
-      "model": "claude-sonnet-5-5",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
-        "harness"
+        "harness",
+        "security"
       ],
       "owns": [
         ".github/workflows/zap.yml",
@@ -7864,9 +7895,9 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "security",
+        "money",
         "privacy",
-        "money"
+        "security"
       ],
       "owns": [
         "docs/audits/final-audit.md"
@@ -7944,6 +7975,63 @@
     },
     {
       "id": "T142",
+      "slug": "cleanup-stage6",
+      "title": "Stage 6 cleanup: dead code, duplicates, docs up to date (end of Phase 2)",
+      "goal": "Cleanup after Phase 2's adapter and fix work, before 'Finished'.",
+      "type": "cleanup",
+      "phase": 2,
+      "stage": "6",
+      "module": null,
+      "deps": [
+        "T129",
+        "T131",
+        "T132",
+        "T133",
+        "T134",
+        "T135",
+        "T136",
+        "T137",
+        "T138",
+        "T139",
+        "T140",
+        "T141"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "money",
+        "privacy",
+        "recovery",
+        "security"
+      ],
+      "owns": [
+        "app/"
+      ],
+      "reads": [
+        "docs/architecture.md"
+      ],
+      "requirements": [],
+      "tests": [],
+      "decisions": [],
+      "cites": [
+        "BUILD_BRIEF.md:488"
+      ],
+      "budget": {
+        "files": 1,
+        "lines": 200,
+        "context_pct": 8
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T142-cleanup-stage6",
+      "prompt": "kit/prompts/T142.md"
+    },
+    {
+      "id": "T143",
       "slug": "finished",
       "title": "Send 'Finished: ready for your review'",
       "goal": "One outbox message linking the handover pack, docs/for-casey-review.md and the Gate B script.",
@@ -7952,7 +8040,7 @@
       "stage": "6",
       "module": null,
       "deps": [
-        "T141"
+        "T142"
       ],
       "model": null,
       "effort": null,
@@ -7981,7 +8069,7 @@
       }
     },
     {
-      "id": "T143",
+      "id": "T144",
       "slug": "gate-b",
       "title": "Gate B: Casey's click-through and VoiceOver check",
       "goal": "Casey's own review; nothing waits on it except Gate C.",
@@ -7990,7 +8078,7 @@
       "stage": "6",
       "module": null,
       "deps": [
-        "T142"
+        "T143"
       ],
       "model": null,
       "effort": null,
@@ -8024,7 +8112,7 @@
       }
     },
     {
-      "id": "T144",
+      "id": "T145",
       "slug": "gate-c",
       "title": "Gate C: live keys and 'go live', real-phone rehearsal",
       "goal": "After the business accounts; a real-phone rehearsal runs on Casey's phone.",
@@ -8033,7 +8121,7 @@
       "stage": "7",
       "module": null,
       "deps": [
-        "T143"
+        "T144"
       ],
       "model": null,
       "effort": null,
@@ -8063,7 +8151,7 @@
       }
     },
     {
-      "id": "T145",
+      "id": "T146",
       "slug": "first-live-charge",
       "title": "First live charge: Casey's explicit go",
       "goal": "No live charge happens before this go (BUILD_BRIEF.md:61).",
@@ -8072,7 +8160,7 @@
       "stage": "7",
       "module": null,
       "deps": [
-        "T144"
+        "T145"
       ],
       "model": null,
       "effort": null,

@@ -68,7 +68,16 @@ def make_task(tid: str, slug: str, **over: Any) -> dict[str, Any]:
         "prompt": f"kit/prompts/{tid}.md",
     }
     task.update(over)
+    if "budget" not in over:
+        task["budget"]["files"] = len(task["owns"])
     return task
+
+
+def gate_fields(kind: str) -> dict[str, Any]:
+    fields: dict[str, Any] = {"kind": kind, "waits_on_owner": vt.GATE_WAITS[kind]}
+    if kind == vt.CONDITIONAL_GATE:
+        fields["conditional"] = True
+    return fields
 
 
 def make_gate(
@@ -89,7 +98,7 @@ def make_gate(
         branch=None,
         prompt=None,
         budget={"files": 0, "lines": 0, "context_pct": 0},
-        gate={"kind": kind, "waits_on_owner": True},
+        gate=gate_fields(kind),
     )
 
 
@@ -113,9 +122,10 @@ def valid_tasks() -> list[dict[str, Any]]:
             stage="6",
             phase=2,
             deps=["T002"],
+            model=OPUS,
             reviewer_model=OPUS,
-            review_areas=["harness"],
-            owns=["stand_ins/fake/"],
+            review_areas=["harness", "security"],
+            owns=["stand_ins/fake/", "app/adapters/twilio_sms.py"],
             cites=["src.md:3"],
         ),
         make_gate("T005", "real-texts", "real-texts-casey-phone", ["T004"], "6", 2),
@@ -140,7 +150,7 @@ def write_repo(root: Path, tasks: list[dict[str, Any]], **header: Any) -> Path:
         "schema": 1,
         "protected_paths": list(vt.PROTECTED),
         "shared_paths": sorted(vt.ALLOWED_SHARED),
-        "kit_outputs": ["runner/"],
+        "kit_outputs": list(vt.KIT_OUTPUTS),
         "tasks": tasks,
     }
     data.update(header)
@@ -220,13 +230,15 @@ def test_protected_path_needs_a_harness_task(tmp_path: Path) -> None:
 
 def test_sources_are_read_only_even_for_harness(tmp_path: Path) -> None:
     tasks = valid_tasks()
-    task(tasks, "T004")["owns"] = ["sources/01_spec/fake.md"]
+    task(tasks, "T004")["owns"] = ["sources/01_spec/fake.md", "app/adapters/twilio_sms.py"]
     assert_error(errors_for(tmp_path, tasks), "sources/ is read-only")
 
 
 def test_unordered_tasks_may_not_share_a_path(tmp_path: Path) -> None:
     tasks = valid_tasks()
-    tasks.insert(1, make_task("T010", "fake-other", owns=["app/fake/"], requirements=["TST-001"]))
+    tasks.insert(
+        1, make_task("T010", "fake-other", owns=["app/fake/rules.py"], requirements=["TST-001"])
+    )
     task(tasks, "T002")["deps"] = ["T001", "T010"]
     assert_error(errors_for(tmp_path, tasks), "can run in either order but both own")
 
@@ -236,7 +248,11 @@ def test_ordered_tasks_may_share_an_app_path(tmp_path: Path) -> None:
     tasks.insert(
         1,
         make_task(
-            "T010", "fake-other", deps=["T001"], owns=["app/fake/"], requirements=["TST-001"]
+            "T010",
+            "fake-other",
+            deps=["T001"],
+            owns=["app/fake/rules.py"],
+            requirements=["TST-001"],
         ),
     )
     task(tasks, "T002")["deps"] = ["T010"]
@@ -283,8 +299,10 @@ def test_models_must_be_full_ids(tmp_path: Path) -> None:
 def test_sensitive_areas_need_an_opus_reviewer(tmp_path: Path, area: str) -> None:
     tasks = valid_tasks()
     task(tasks, "T001")["review_areas"] = [area]
-    assert_error(errors_for(tmp_path, tasks), "need an Opus reviewer")
-    task(tasks, "T001")["reviewer_model"] = OPUS
+    errors = errors_for(tmp_path, tasks)
+    assert_error(errors, "need an Opus reviewer")
+    assert_error(errors, "runs on Opus (BUILD_BRIEF.md:498)")
+    task(tasks, "T001").update(reviewer_model=OPUS, model=OPUS)
     assert errors_for(tmp_path, tasks) == []
 
 
@@ -314,7 +332,7 @@ def test_size_limits(tmp_path: Path) -> None:
     assert_error(errors, "owned paths 15 over the limit")
     assert_error(errors, "budget lines 801 over the limit")
     assert_error(errors, "budget context_pct 25 over the limit")
-    assert_error(errors, "less than the 15 owned paths")
+    assert_error(errors, "budget files 2 does not match the 15 owned files")
 
 
 def test_every_gate_kind_once(tmp_path: Path) -> None:
@@ -422,3 +440,109 @@ def test_main_exit_codes(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> 
     write_repo(tmp_path, broken)
     assert vt.main(["--root", str(root)]) == 1
     assert "ERROR dependency cycle" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("path", "area"),
+    [
+        ("app/payments/rules.py", "money"),
+        ("app/privacy/vault.py", "privacy"),
+        ("app/portals/owner_auth.py", "security"),
+        ("app/recovery/replay.py", "recovery"),
+    ],
+)
+def test_review_areas_are_derived_from_owned_paths(tmp_path: Path, path: str, area: str) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T001")["owns"] = [path, "tests/unit/fake/test_rules.py"]
+    errors = errors_for(tmp_path, tasks)
+    assert_error(errors, f"review_areas must include ['{area}']")
+    assert_error(errors, "need an Opus reviewer")
+    assert_error(errors, "runs on Opus")
+
+
+def test_only_cleanup_or_harness_may_own_a_directory(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T001")["owns"] = ["app/fake/", "tests/unit/fake/test_rules.py"]
+    assert_error(errors_for(tmp_path, tasks), "only cleanup and harness tasks may own a directory")
+
+
+def test_cleanup_owning_app_needs_opus(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    cleanup = make_task("T010", "fake-cleanup", type="cleanup", deps=["T001"], owns=["app/"])
+    tasks.insert(1, cleanup)
+    task(tasks, "T002")["deps"] = ["T010"]
+    errors = errors_for(tmp_path, tasks)
+    assert_error(errors, "a task owning a directory needs an Opus reviewer")
+    assert_error(errors, "review_areas must include ['money', 'privacy', 'recovery', 'security']")
+    areas = ["money", "privacy", "recovery", "security"]
+    cleanup.update(model=OPUS, reviewer_model=OPUS, review_areas=areas)
+    assert errors_for(tmp_path, tasks) == []
+
+
+@pytest.mark.parametrize(
+    ("tid", "change", "fragment"),
+    [
+        ("T006", {"waits_on_owner": True}, "gate finished must have waits_on_owner False"),
+        ("T007", {"waits_on_owner": False}, "gate gate-b must have waits_on_owner True"),
+        ("T007", {"conditional": True}, "only gate real-texts-casey-phone is conditional"),
+        ("T005", {"conditional": False}, "only gate real-texts-casey-phone is conditional"),
+    ],
+)
+def test_gate_flags_are_fixed(
+    tmp_path: Path, tid: str, change: dict[str, Any], fragment: str
+) -> None:
+    tasks = valid_tasks()
+    task(tasks, tid)["gate"].update(change)
+    assert_error(errors_for(tmp_path, tasks), fragment)
+
+
+@pytest.mark.parametrize(
+    ("gate_id", "kind"), [("T003", "stage-0.5-go"), ("T009", "first-live-charge")]
+)
+def test_nothing_depends_on_page_go_or_first_charge(
+    tmp_path: Path, gate_id: str, kind: str
+) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T006")["deps"] = ["T005", gate_id]
+    if gate_id == "T009":
+        task(tasks, "T006")["deps"] = ["T005"]
+        tasks.append(
+            make_task(
+                "T010",
+                "after-charge",
+                stage="7",
+                phase=2,
+                deps=["T009"],
+                cites=["src.md:3"],
+                type="docs",
+            )
+        )
+    assert_error(errors_for(tmp_path, tasks), f"nothing may depend on gate {kind}")
+
+
+def test_only_gate_c_depends_on_gate_b(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T009")["deps"] = ["T008", "T007"]
+    assert_error(errors_for(tmp_path, tasks), "only gate-c may depend on gate-b")
+
+
+def test_real_texts_gate_follows_the_twilio_sandbox(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T004")["owns"] = ["stand_ins/fake/"]
+    task(tasks, "T004")["review_areas"] = ["harness"]
+    assert_error(
+        errors_for(tmp_path, tasks), "must come after the task owning app/adapters/twilio_sms.py"
+    )
+
+
+def test_kit_outputs_must_match(tmp_path: Path) -> None:
+    errors = errors_for(tmp_path, valid_tasks(), kit_outputs=["runner/", "app/"])
+    assert_error(errors, "kit_outputs must be exactly")
+
+
+def test_kit_file_entries_match_exactly(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T004")["reads"] = ["uv.lock", "uv.lock.old", "tests/contract/x.py"]
+    errors = errors_for(tmp_path, tasks)
+    assert_error(errors, "reads uv.lock.old")
+    assert not any("reads uv.lock," in e or "tests/contract/x.py" in e for e in errors)
