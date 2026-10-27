@@ -7261,7 +7261,7 @@
       "decisions": [],
       "cites": [
         "BUILD_BRIEF.md:201",
-        "BUILD_BRIEF.md:550"
+        "BUILD_BRIEF.md:551"
       ],
       "budget": {
         "files": 0,
@@ -7361,7 +7361,7 @@
       "decisions": [],
       "cites": [
         "BUILD_BRIEF.md:190",
-        "BUILD_BRIEF.md:549"
+        "BUILD_BRIEF.md:550"
       ],
       "budget": {
         "files": 0,
@@ -7625,7 +7625,7 @@
       "id": "T135",
       "slug": "deploy-test-project",
       "title": "Railway test project: release step, web and worker, /healthz green",
-      "goal": "Phase 2 step 3: the test project (set up by Casey at the checkpoint) deploys main with a separate migration release step; Claude holds no hosting key, so any step that needs one becomes a hands-on stop (BUILD_BRIEF.md:547).",
+      "goal": "Phase 2 step 3: the test project (set up by Casey at the checkpoint) deploys main with a separate migration release step; Claude holds no hosting key, so any step that needs one becomes a hands-on stop (BUILD_BRIEF.md:548).",
       "type": "build",
       "phase": 2,
       "stage": "6",
@@ -7829,7 +7829,7 @@
       "id": "T139",
       "slug": "restore-drill-railway",
       "title": "Restore drill on Railway, including the switch to the restored database",
-      "goal": "Phase 2 step 7: restore drill with replay and the switch to the restored database; a step that needs Casey's hands becomes a hands-on stop (BUILD_BRIEF.md:547).",
+      "goal": "Phase 2 step 7: restore drill with replay and the switch to the restored database; a step that needs Casey's hands becomes a hands-on stop (BUILD_BRIEF.md:548).",
       "type": "build",
       "phase": 2,
       "stage": "6",
@@ -8052,7 +8052,7 @@
       "tests": [],
       "decisions": [],
       "cites": [
-        "BUILD_BRIEF.md:553"
+        "BUILD_BRIEF.md:554"
       ],
       "budget": {
         "files": 0,
@@ -8134,7 +8134,7 @@
       "decisions": [],
       "cites": [
         "BUILD_BRIEF.md:203",
-        "BUILD_BRIEF.md:551"
+        "BUILD_BRIEF.md:552"
       ],
       "budget": {
         "files": 0,
@@ -8173,7 +8173,7 @@
       "decisions": [],
       "cites": [
         "BUILD_BRIEF.md:203",
-        "BUILD_BRIEF.md:551"
+        "BUILD_BRIEF.md:552"
       ],
       "budget": {
         "files": 0,
