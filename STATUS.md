@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 8 of 11 (K0-K6)
+**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 12 of 14 (K0-K8, FIX1)
 
 ## Running now
 - **K7 task prompts:** handed in, waiting to merge (MERGE_PENDING).
@@ -30,3 +30,5 @@
 - Not measured yet (K9 measures usage per model).
 
 _Update 2026-10-27: FIX1 done; K8 (harness) pushed, MERGE_PENDING; K9 next, then Gate P._
+
+_Update 2026-10-27 18:30Z: K8 (harness) merged and verified DONE; K9 rehearsal next, then Gate P._
