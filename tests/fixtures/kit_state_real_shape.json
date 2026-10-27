@@ -1,0 +1,159 @@
+{
+ "schema": 1,
+ "phase": "kit",
+ "current": "K8",
+ "backup_runner": "off",
+ "ruleset_verified": true,
+ "lease": {
+  "task": "K8",
+  "session": "https://example.com/fake-session",
+  "expires": "2026-10-27T20:49:58Z"
+ },
+ "tasks": [
+  {
+   "id": "K0",
+   "slug": "setup",
+   "title": "Set up the kit repo: deny rules, sources fingerprint, workfl",
+   "type": "harness",
+   "deps": [],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-sonnet-5-5",
+   "branch": "claude/task/K0-setup",
+   "pr": null,
+   "head_sha": "fake-head_sha",
+   "waits_on_owner": null,
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "fake-model_evidence",
+   "merged_sha": "fake-merged_sha",
+   "evidence": "fake-evidence"
+  },
+  {
+   "id": "K7",
+   "slug": "prompts",
+   "title": "kit/prompts/T###.md from one template",
+   "type": "kit",
+   "deps": [
+    "K6"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-sonnet-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-sonnet-5-5",
+   "branch": "claude/task/K7-prompts",
+   "pr": null,
+   "head_sha": "fake-head_sha",
+   "waits_on_owner": null,
+   "check_model": "claude-haiku-5-5",
+   "reviewed_by": "claude-sonnet-5-5",
+   "review_rounds": 1,
+   "model_evidence": "fake-model_evidence",
+   "haiku_check": "no discrepancies, 139 prompts",
+   "note": "auto-pr failed to enable auto-merge; runner enabled it via MCP. Merged main (PR #14) into branch, re-running checks.",
+   "merged_sha": "fake-merged_sha",
+   "evidence": "fake-evidence"
+  },
+  {
+   "id": "K8",
+   "slug": "harness",
+   "title": "Harness, runner, stand-ins, contract tests, failure drills",
+   "type": "harness",
+   "deps": [
+    "K7"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "IN_PROGRESS",
+   "attempts": 1,
+   "model_used": null,
+   "branch": "claude/task/K8-harness",
+   "pr": null,
+   "head_sha": "fake-head_sha",
+   "waits_on_owner": null
+  },
+  {
+   "id": "K9",
+   "slug": "rehearsal",
+   "title": "Rehearsal with three practice tasks; usage measured; kit/sch",
+   "type": "harness",
+   "deps": [
+    "K8"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "QUEUED",
+   "attempts": 0,
+   "model_used": null,
+   "branch": null,
+   "pr": null,
+   "head_sha": "fake-head_sha",
+   "waits_on_owner": null
+  },
+  {
+   "id": "GATE-A",
+   "slug": "gate-a",
+   "title": "One-page summary and K9 proof; Casey says OK go",
+   "type": "gate",
+   "deps": [
+    "K9"
+   ],
+   "model": null,
+   "effort": null,
+   "reviewer_model": "claude-sonnet-5-5",
+   "status": "SKIPPED",
+   "attempts": 0,
+   "model_used": null,
+   "branch": null,
+   "pr": null,
+   "head_sha": "fake-head_sha",
+   "waits_on_owner": "Casey replies 'OK go'",
+   "reason": "removed by Casey, Oct 27"
+  },
+  {
+   "id": "GATE-P",
+   "slug": "gate-p",
+   "title": "Casey reviews the investor presentation and says 'approved t",
+   "type": "gate",
+   "deps": [
+    "K9"
+   ],
+   "model": null,
+   "effort": null,
+   "reviewer_model": null,
+   "status": "QUEUED",
+   "attempts": 0,
+   "model_used": null,
+   "branch": null,
+   "pr": null,
+   "head_sha": "fake-head_sha",
+   "waits_on_owner": "Casey replies 'approved to build'"
+  }
+ ],
+ "owner_waits": [],
+ "owner_answers": [
+  {
+   "issue": 6,
+   "file": "6-closed-1.md",
+   "note": "fake"
+  }
+ ],
+ "inbox_processed": [
+  "6-closed-1.md"
+ ],
+ "usage": {
+  "last_reading": null
+ },
+ "updated_at": "2026-10-27T18:20:00Z",
+ "notes": [
+  "fake note"
+ ],
+ "build_hold": "Gate P: Casey reviews an investor-style presentation first; build tasks (T001+) wait for his 'approved to build' (set Oct 27)"
+}
