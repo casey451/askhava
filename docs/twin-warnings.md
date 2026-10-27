@@ -31,7 +31,7 @@ python3 -c "import twin,json; c=twin.deep_update(json.load(open('twin_config.jso
 
 Both judge against the simulated person's true job (`_sim_truth`), not against what the app read. The app routes on what it read: two AI readings, plain keyword rules, and the homeowner's answers to the trade question and the "Which fits best?" question (`sources/01_spec/hhq_twin/app.py:586`–`sources/01_spec/hhq_twin/app.py:606`, `sources/01_spec/hhq_twin/app.py:704`–`sources/01_spec/hhq_twin/app.py:731`), then sends a card to every business whose license covers every candidate job type and which ticked one of them (`sources/01_spec/hhq_twin/app.py:762`–`sources/01_spec/hhq_twin/app.py:767`; CARD-001). So every matching warning is a case where the job types the app stored differ from the truth.
 
-**A blind spot found on the way.** The outside-license check imports the app's own license table (`from app import CLASS_ALLOWS` at `sources/01_spec/hhq_twin/twin.py:853`, used at `sources/01_spec/hhq_twin/twin.py:858`), and the simulated businesses tick job types from that same table. In a scratch copy, the AC-only sub-license `R-39R-ac` was given `heating_repair` on purpose (the LIC-035 mistake): 81 heating-repair cards went to AC-only licenses over `normal_fixed` seeds 1–5, yet the twin reported 3.4 outside-license warnings per run, the same background level as before, none of them about that mistake. The oracle shares the code it is checking, which is the circular-oracle risk of F07 (`sources/04_reviews/ChatGPT_Build_StressTest_Report.md:66`). Disposition: **resolve** (D-107): the gate's license oracle is an independent table, never imported from the code under test.
+**A blind spot found on the way.** The outside-license check imports the app's own license table (`from app import CLASS_ALLOWS` at `sources/01_spec/hhq_twin/twin.py:853`, used at `sources/01_spec/hhq_twin/twin.py:858`), and the simulated businesses tick job types from that same table. In a scratch copy, the AC-only sub-license `R-39R-ac` was given `heating_repair` on purpose (the LIC-035 mistake): 81 heating-repair cards went to AC-only licenses over `normal_fixed` seeds 1–5, yet the twin's outside-license count moved only from 2.8 to 3.4 per run (the random path shifts with any rule change), because the check reads the same broken table and so cannot flag any of the 81. This is a scratch-copy observation, not a committed test; the gate's self-tests (6.5) make it one. The oracle shares the code it is checking, which is the circular-oracle risk of F07 (`sources/04_reviews/ChatGPT_Build_StressTest_Report.md:66`). Disposition: **resolve** (D-107): the gate's license oracle is an independent table, never imported from the code under test.
 
 ## 3. The six baseline warnings
 
@@ -55,7 +55,7 @@ Both judge against the simulated person's true job (`_sim_truth`), not against w
 
 **Disposition: resolve (D-102).** This is a bug in the twin's reference rules, and it breaks two rules the spec already has: plain keyword rules are "an independent second opinion on trade **and job type**" (AI-011; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:119`), and every qualified, opted-in business gets the card (CARD-001; `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:13`). The rule for the build: a trade answer narrows the candidates to that trade's job types, but the plain-keyword job types of the chosen trade stay; `<trade>_other` is used only when neither the readings nor the keywords give a job type of that trade, and then the "Which fits best?" question lists that trade's job types.
 
-**Verified in a scratch copy:** re-adding the chosen trade's keyword job types after a trade answer (three lines in `_job_types_for`) removed all six; `normal_fixed` seed 1 then reported no problems at all, and cause C1 disappeared from seeds 1–5 of both scenarios.
+**Observed in a scratch copy** (not a committed test; the stage 1 twin task proves it through the gate): re-adding the chosen trade's keyword job types after a trade answer (three lines in `_job_types_for`) removed all six; `normal_fixed` seed 1 then reported no problems at all, and cause C1 disappeared from seeds 1–5 of both scenarios.
 
 ## 4. Every matching warning in the v9.3 scenarios, by cause
 
@@ -72,7 +72,7 @@ Counts are instances over seeds 1–5 (divide by 5 for the per-run rate the twin
 | **C3** | The homeowner picked the wrong job type in "Which fits best?" (about 10% wrong, `sources/01_spec/hhq_twin/twin.py:250`) | 0 / 1 | 4 / 0 | **Document** (D-106) |
 | **Total** | | 27 / 14 | 26 / 12 | |
 
-After C1, C2b and C2c were fixed in the scratch copy, the remaining instances were only C2a, C2d and C2e, as expected (the run's random path shifts with any rule change, so the counts move: `normal_fixed` 2.4 left out and 1.8 outside per run, `vendor_chaos_fixed` 1.4 and 2.6). C2d and C2e were not patched in the scratch copy, because the fix needs the simulated homeowner to read three options and a catalog-based keyword list; they are left for the stage 1 twin task, which proves them with the gate.
+Scratch-copy observation, not a committed test (the stage 1 twin task proves it through the gate): after C1, C2b and C2c were fixed in the scratch copy, the remaining instances were only C2a, C2d and C2e, as expected (the run's random path shifts with any rule change, so the counts move: `normal_fixed` 2.4 left out and 1.8 outside per run, `vendor_chaos_fixed` 1.4 and 2.6). C2d and C2e were not patched in the scratch copy, because the fix needs the simulated homeowner to read three options and a catalog-based keyword list; they are left for the stage 1 twin task, which proves them with the gate.
 
 **Why C2a and C3 are documented, not resolved.** The homeowner is asked because "they know their job" (`sources/01_spec/hhq_twin/app.py:601`; INT-013, INT-014); the app cannot know better than an explicit wrong answer, and the oracle knows the truth only because it wrote the person. Two limits keep this from becoming a loophole:
 
@@ -94,14 +94,15 @@ After C1, C2b and C2c were fixed in the scratch copy, the remaining instances we
 - An **invariant failure** is any instance reported by any of the twin's checks (the 56 in `sources/01_spec/hhq_twin/README.md:13`, listed at `sources/01_spec/hhq_twin/README.md:55`–`sources/01_spec/hhq_twin/README.md:70`, plus any the stage 1 twin adds) in any gate scenario and seed.
 - The **gate scenarios** are every scenario whose name ends in `_fixed` (11 today), seeds 1–5, with `PYTHONHASHSEED=0`. The stage 1 twin replaces them with scenarios for the changes file and keeps the same rule.
 - An instance is **waived** only by an entry in `twin/waivers.json` that names a decision in `docs/decisions.md`. Nothing else waives: no environment variable, no command-line flag, no "known flaky" list.
-- The `Twin` check fails (non-zero exit) when any instance is not waived, when a negative control does not fail, or when the waiver file is wrong (6.4). It passes only with zero unwaived instances.
+- The `Twin` check fails (non-zero exit) when any instance is not waived, when a negative control does not fail, when a required check is missing from the report, or when the waiver file is wrong (6.4). It passes only with zero unwaived instances.
+- **Status today:** this rule is not yet in force. `.github/workflows/twin.yml` is still the informational smoke run of `normal_fixed` seed 1, and the gate lives in protected paths, so K8 builds it (D-107). The rule covers only the stand-alone twin, not `app/`, until stage 1 links the two.
 
 ### 6.2 Two kinds of waiver
 
 | Kind | Matches | Allowed for | Lifetime |
 |---|---|---|---|
 | **pinned** | One exact instance: scenario, seed, check key and the instance's reference (request, business, card or pick ID) | A failure explained in this file whose fix belongs to a later task (C1, C2b–C2e, and the not-yet-triaged items in section 7) | Until the stage 1 twin task, whose done criterion is `gate.py --no-pinned` passing (no pinned entry left) |
-| **class** | Any instance of the named checks whose evidence predicate holds | C2a and C3 only (`homeowner_answered_wrong`) | Permanent, with a per-scenario ceiling: more instances per run than the ceiling fails the gate even if each has evidence |
+| **class** | Any instance of the named checks whose evidence predicate holds | C2a and C3 only (`homeowner_answered_wrong`) | Permanent, with an integer ceiling per scenario and seed: more instances in one seed than the ceiling fails the gate even if each has evidence. K8 sets the ceilings from its measured run; the stage 1 twin task re-measures them after its fixes |
 
 A pinned waiver that no longer matches any instance is **stale** and fails the gate: if a fix (or any change) moves the random path, the stale entries must be deleted and anything new triaged, so nothing hides behind an old list.
 
@@ -110,17 +111,19 @@ A pinned waiver that no longer matches any instance is **stale** and fails the g
 1. **`twin/`:** copy `sources/01_spec/hhq_twin/` verbatim to `twin/` (the layout's twin folder, `BUILD_BRIEF.md:92`), so the gate and stage 1 edit the copy and `sources/` stays fingerprinted.
 2. **Structured instances.** In `twin/twin.py`, give `check()`'s `bad()` a third argument with the instance's IDs (request, business, card, pick, call session) and return it with each instance; the printed report stays as it is.
 3. **Actor evidence.** In `twin/twin.py`, where the simulated homeowner answers the trade question and "Which fits best?" (`sources/01_spec/hhq_twin/twin.py:250`, `sources/01_spec/hhq_twin/twin.py:258`), record on its job (`_sim_truth`) whether the option it sent differs from the option matching its own job, and which option it sent.
-4. **Independent license oracle.** In `twin/gate.py`, check `job_card_outside_license` and `qualified_business_left_out` against a license-coverage table held by the gate (a frozen copy of the v9.3 table for the old twin; in stage 1, read from `docs/catalog/categories.yaml`), never one imported from `twin/app.py` or `app/`. The simulated businesses' ticked job types also come from the gate's table.
+4. **Independent license oracle.** The gate checks `job_card_outside_license` and `qualified_business_left_out` against `twin/oracle/license_scope.json`, never a table imported from `twin/app.py` or `app/`. For the old twin it is written by hand from v9.3's license table (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:133`–`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:142`), not copied from `CLASS_ALLOWS`; in stage 1 it is generated from `docs/catalog/categories.yaml`. The simulated businesses' ticked job types also come from this file. A gate self-test (6.5) checks it against every row of `docs/catalog/matching_examples.yaml` (D-110) that its job types can express.
 5. **`twin/gate.py`** (standard library only):
-   - runs every gate scenario and seed in-process through `build`, `run` and `check`, with `PYTHONHASHSEED=0` set by the workflow;
+   - refuses to run (exit 2) unless `PYTHONHASHSEED` is `0`, which the workflow sets;
+   - runs every gate scenario and seed in-process through `build`, `run` and `check`;
+   - holds a frozen list of the required check keys (the 56 today, plus any stage 1 adds through a harness change) and exits 2 if the twin no longer declares one of them, so removing or renaming a check can't make the gate pass;
    - applies `twin/waivers.json` (6.4) to every instance;
    - runs the negative control (section 5) and the self-tests (6.5);
    - prints a table per scenario (instances, waived by which entry, unwaived) and every unwaived instance with its IDs, then writes `twin-report.json` (uploaded as a workflow artifact);
-   - exit 0: no unwaived instance, controls fired, waiver file valid; exit 1: any unwaived instance, a class ceiling exceeded, or a negative control that did not fire; exit 2: waiver-file error (unknown check key, unknown evidence predicate, decision ID missing from `docs/decisions.md`, stale pinned entry, malformed entry);
+   - exit 0: no unwaived instance, controls fired, waiver file valid; exit 1: any unwaived instance, a class ceiling exceeded, or a negative control that did not fire; exit 2: `PYTHONHASHSEED` not `0`, a required check missing, or a waiver-file error (unknown check key, unknown evidence predicate, decision ID missing from `docs/decisions.md`, stale pinned entry, malformed entry);
    - `--no-pinned` ignores pinned entries (used by the stage 1 done check); `--seeds N` widens the seed range.
 6. **`twin/waivers.json`:** written by K8 from one gate run with the twin as-is: one pinned entry per current instance, each with its cause code from sections 3, 4 and 7 and decision ID; the class entry for `homeowner_answered_wrong` (D-106) with ceilings set from the measured counts. An Opus reviewer checks that every pinned entry has a cause listed in this file.
 7. **`.github/workflows/twin.yml`:** replace the smoke run (`python3 twin.py normal_fixed 1` on a copy) with `PYTHONHASHSEED=0 python3 twin/gate.py`; drop the "INFORMATIONAL" comment; keep the job name `Twin` and `permissions: contents: read`. `nightly-main.yml` already calls it. Once the pinned list is empty, the nightly run adds `--seeds 20`.
-8. **Path protection:** add `twin/gate.py`, `twin/waivers.json` and the gate's license table to the runner's protected paths, so only a `harness` task with an Opus review can add a waiver (rule 6, `BUILD_BRIEF.md:69`).
+8. **Path protection:** add the whole of `twin/` to the runner's protected paths: the checks (`check()` and `bad()` in `twin/twin.py`), the simulated people's wrong-answer evidence, `twin/gate.py`, `twin/waivers.json` and `twin/oracle/license_scope.json`. Only a `harness` task with an Opus review may change any of it (rule 7, `BUILD_BRIEF.md:70`; rule 6, `BUILD_BRIEF.md:69`), so K6 types the stage 1 twin task as `harness`.
 9. **PII scanner:** the twin's generated phone numbers (for example `+1928700` followed by four digits) look real. The scanner allowlists the twin's generator patterns explicitly, never the whole `twin/` path, and new fixtures use the fictional `555-01xx` range (D-109).
 10. **Running and summarizing:** the gate is run in sessions by the Haiku twin-runner subagent, which returns only the summary table and unwaived instances (`sources/02_build_plan/Build_Plan.md:189`).
 
@@ -132,7 +135,7 @@ A pinned waiver that no longer matches any instance is **stale** and fails the g
   "class": [
     {"id": "WV-HO-ANSWER", "checks": ["qualified_business_left_out", "job_card_outside_license"],
      "evidence": "homeowner_answered_wrong", "decision": "D-106",
-     "max_per_run": {"normal_fixed": 0.0, "...": 0.0}}
+     "max_per_seed": {"normal_fixed": 0, "...": 0}}
   ],
   "pinned": [
     {"id": "WV-0001", "scenario": "normal_fixed", "seed": 1, "check": "qualified_business_left_out",
@@ -142,7 +145,7 @@ A pinned waiver that no longer matches any instance is **stale** and fails the g
 }
 ```
 
-`homeowner_answered_wrong` holds for an instance when its request's simulated homeowner recorded a wrong answer for that conversation and the request's stored trade or job type is the option it sent. The `max_per_run` values above are placeholders; K8 fills them from its measured run.
+`homeowner_answered_wrong` holds for an instance when its request's simulated homeowner recorded a wrong answer for that conversation and the request's stored trade or job type is the option it sent. The `max_per_seed` values are integers per scenario and seed; the zeros above are placeholders that K8 fills from its measured run and the stage 1 twin task re-measures.
 
 ### 6.5 Tests of the gate itself (`tests/twin/`, owned by K8)
 
@@ -150,9 +153,12 @@ A pinned waiver that no longer matches any instance is **stale** and fails the g
 - A pinned entry whose instance no longer occurs → exit 2.
 - A waiver naming a decision ID not in `docs/decisions.md` → exit 2.
 - A class waiver whose evidence is absent for an instance → that instance is unwaived → exit 1.
-- More class-waived instances than the ceiling → exit 1.
+- More class-waived instances in one seed than the ceiling → exit 1.
+- `PYTHONHASHSEED` unset or not `0` → exit 2.
+- A required check key removed from the twin → exit 2.
+- `twin/oracle/license_scope.json` disagrees with a row of `docs/catalog/matching_examples.yaml` it can express → the self-test fails.
 - The negative control replaced by a scenario that reports nothing → exit 1.
-- **Deliberate breaks of the twin's rules** (each in a temporary copy) must make the gate exit 1: the AC-only sub-license given `heating_repair` (section 2); the license check at card time removed; job-type matching switched off (`job_matching: false`); the opt-out check removed from sending; the quiet-hours check removed. The first one is exactly the break the current twin cannot see.
+- **Deliberate breaks of the twin's rules** (each in a temporary copy) must make the gate exit 1: the AC-only sub-license given `heating_repair` (section 2); the license check at card time removed; job-type matching switched off (`job_matching: false`); the opt-out check removed from sending; the quiet-hours check removed; the per-attempt Stripe idempotency key reused across picks so a business is charged twice (`double_charge`); contact details released before payment succeeds (`details_released_wrongly`). The first one is exactly the break the current twin cannot see.
 
 ## 7. Other failures in the v9.3 scenarios (not investigated in K5)
 
@@ -173,5 +179,7 @@ The rule in section 6 also catches these, from the committed 5-seed results (rep
 
 - Fix C1 (D-102), C2b and C2c (D-103), C2d (D-104) and C2e (D-105) in the twin's rules, and the same rules in the app's intake through its tests (`docs/test-design.md`, TD-INT-03 to TD-INT-06).
 - Triage every R-TRIAGE item in section 7 to resolve or document.
+- Run as a `harness` task with an Opus review, since all of `twin/` is protected.
+- Re-measure the D-106 class-waiver ceilings after the fixes.
 - Pass `gate.py --no-pinned`: no pinned waiver left, only the D-106 class waiver.
 - Keep the negative control and the gate self-tests green.
