@@ -4,7 +4,7 @@ Prefix: `WORD` · Modules: `messaging`, `site`, `portals` · Format and checks: 
 
 - **WORD-001** The brand in every template, page and document is "Ask Hava" (and "Ask Hava for Business"), and the legal entity is "Ask Hava LLC". Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:24`.
 - **WORD-002** The terms, the quote page and the site state "Ask Hava is not a contractor and does not perform, bid on or supervise work." Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:237`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:188`, `BUILD_BRIEF.md:453`.
-- **WORD-003** No template or page uses "vetted", "background-checked" or "best", or ranks businesses, and a test scans every template and page for these words. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:194`, `BUILD_BRIEF.md:454`.
+- **WORD-003** No template or page uses "vetted" or "background-checked", calls or ranks any business "best" (the neutral homeowner prompt in INT-014 is exempt, D-029), and a test scans every template and page for these claims. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:194`, `BUILD_BRIEF.md:454`.
 - **WORD-004** The fee is called an "introduction fee" (by job size) and never a "commission" or "share". Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:238`, `BUILD_BRIEF.md:455`.
 - **WORD-005** The quote page says "Every eligible quote shown, in the order received." Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:189`, `BUILD_BRIEF.md:452`.
 - **WORD-006** No-license quote cards say "Insurance (business-reported): Yes" or "Insurance (business-reported): No" (D-023). Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:190`, `BUILD_BRIEF.md:452`.
