@@ -1,10 +1,14 @@
 {
   "schema": 1,
   "phase": "kit",
-  "current": "K5",
+  "current": "K6",
   "backup_runner": "off",
   "ruleset_verified": true,
-  "lease": null,
+  "lease": {
+    "task": "K6",
+    "session": "https://claude.ai/code/session_01DyjzW5ifAkDmzxPdtBEHQ7",
+    "expires": "2026-10-27T19:59:24Z"
+  },
   "tasks": [
     {
       "id": "K0",
@@ -160,17 +164,19 @@
       "model": "claude-opus-5-5",
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
-      "status": "MERGE_PENDING",
+      "status": "DONE",
       "attempts": 1,
       "model_used": "claude-opus-5-5",
-      "branch": "claude/task/K5-tests",
-      "pr": null,
-      "head_sha": "f4f17e0",
+      "branch": "claude/task/K5-test-design",
+      "pr": 11,
+      "head_sha": "f4f17e023475439085775cf5ca18d52a3f69866b",
       "waits_on_owner": null,
       "models_note": "Opus designs, Sonnet writes, Haiku runs",
       "reviewed_by": "claude-opus-5-5",
       "review_rounds": 1,
-      "model_evidence": "subagent transcript: 129 assistant records all claude-opus-5-5 (first pass); fix round resumed same agent"
+      "model_evidence": "subagent transcript: 129 assistant records all claude-opus-5-5 (first pass); fix round resumed same agent",
+      "merged_sha": "c8ffcc8",
+      "evidence": "PR #11 merged; Ci/Twin/Ally success on head f4f17e0; tree d94e5454 == squash c8ffcc8"
     },
     {
       "id": "K6",
@@ -183,10 +189,10 @@
       "model": "claude-opus-5-5",
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
-      "status": "QUEUED",
-      "attempts": 0,
+      "status": "CLAIMED",
+      "attempts": 1,
       "model_used": null,
-      "branch": null,
+      "branch": "claude/task/K6-task-graph",
       "pr": null,
       "head_sha": null,
       "waits_on_owner": null
@@ -276,7 +282,7 @@
   "usage": {
     "last_reading": null
   },
-  "updated_at": "2026-10-27T17:30:00Z",
+  "updated_at": "2026-10-27T16:59:24Z",
   "notes": [
     "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
     "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
