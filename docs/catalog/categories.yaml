@@ -1,0 +1,687 @@
+# Ask Hava category catalog (K2b).
+#
+# Derived from the changes file, sections 2, 3, 7 and 7.1
+# (sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:32-49, :196-210, :231-256)
+# and the 25-category list in
+# sources/06_briefs_sent_to_other_ais/Havasu_Home_Quotes_Full_Business_Simulation_for_Grok.md:77-103.
+# Decisions: docs/decisions.md D-031 to D-036. Checked by scripts/check_catalog.py.
+#
+# Field meanings (LIC-001):
+#   enabled           true | false. A category not listed here, or listed false, is never routed (LIC-003).
+#   license.kind      none (city business-license list only) | roc | state_agency | roc_and_state_agency
+#   license.classes   ROC classes that may receive the card.
+#   license.agency    the other state agency whose record is checked.
+#   handyman_allowed  handymen (no license) may also receive cards in this category, only for
+#                     construction-type jobs under $1,000 total with no permit, no gas, no hardwired
+#                     smoke alarms and no fire sprinklers (LIC-019 to LIC-025).
+#   construction_type the $1,000 handyman limit applies to this category's work (LIC-019, LIC-020).
+#   recurring         fee basis is 4 months of the monthly price (REC-002).
+#   trip_fee_tier     the set introduction fee in dollars for a trip-fee-plus-estimate quote (FEE-004).
+#   after_hours_emergency  the category takes after-hours emergency requests.
+#   refused / routed_to    job types this category never takes, and where they go instead.
+#   review            who confirmed the row and what an attorney may still look at.
+
+version: 1
+as_of: "2026-10-27"
+reviewed_by: "Claude (K2b self-check); Casey reviews at the end (BUILD_BRIEF.md:536)"
+
+not_offered_at_launch:
+  - childcare
+  - home care
+  - massage
+  - mobile hair and nails
+  - mobile vets
+  - catering
+  - towing
+  - property management
+
+categories:
+
+  # ---- The 25 categories of the financial model ----
+
+  - id: plumbing_repair
+    name: Plumbing repair
+    group: home systems/repair
+    enabled: true
+    license: {kind: roc, classes: [R-37]}
+    handyman_allowed: true
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: true
+    job_types: [leak repair, toilet repair, drain clearing, faucet replacement]
+    refused:
+      - {job: "gas line work", routed_to: "licensed only (R-37)", reason: "gas work is never handyman work (LIC-021)"}
+      - {job: "water heater replacement", routed_to: "licensed only (R-37)", reason: "permit-type job (LIC-022)"}
+    intake_questions: ["What is leaking or not working?", "Is water shut off right now?"]
+    keywords: [leak, toilet, drain, faucet, pipe, clog]
+    review: "Class per changes file :38. Confirmed K2b."
+
+  - id: hvac_repair
+    name: Heating and cooling repair
+    group: home systems/repair
+    enabled: true
+    license: {kind: roc, classes: [R-39, R-39R]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: true
+    job_types: [AC not cooling, thermostat, duct repair, furnace repair]
+    refused: []
+    intake_questions: ["Is it heating or cooling?", "How old is the system?"]
+    keywords: [ac, air conditioner, hvac, cooling, furnace, thermostat]
+    review: "Class per changes file :38. Confirmed K2b."
+
+  - id: hvac_replacement
+    name: Heating and cooling replacement
+    group: home systems/repair
+    enabled: true
+    license: {kind: roc, classes: [R-39, R-39R]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 199
+    after_hours_emergency: false
+    job_types: [full system replacement, condenser replacement]
+    refused: []
+    intake_questions: ["How many tons or square feet?", "Is the unit on the roof or the ground?"]
+    keywords: [new ac, replace ac, new unit, system replacement]
+    review: "Permit-type work; never handyman. Confirmed K2b."
+
+  - id: electrical
+    name: Electrical
+    group: home systems/repair
+    enabled: true
+    license: {kind: roc, classes: [R-11]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: true
+    job_types: [outlet repair, breaker trips, light fixture, panel upgrade, new circuit, hardwired smoke alarm]
+    refused: []
+    intake_questions: ["What stopped working?", "Is anything sparking, hot or smoking?"]
+    keywords: [outlet, breaker, panel, wiring, circuit, light fixture]
+    review: "Class per changes file :38. Hardwired smoke alarms and new circuits never handyman (LIC-021, LIC-022). Confirmed K2b."
+
+  - id: pool_repair
+    name: Pool and spa repair
+    group: pool/spa/water
+    enabled: true
+    license: {kind: roc, classes: [R-6, B-6]}
+    handyman_allowed: true
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [pump repair, filter repair, pool leak, equipment replacement]
+    refused:
+      - {job: "gas pool heater", routed_to: "licensed only (R-6 or B-6)", reason: "gas heaters only to licensed businesses (changes file :240)"}
+    intake_questions: ["What equipment is not working?", "Pool, spa or both?"]
+    keywords: [pool pump, pool filter, pool leak, spa heater]
+    review: "Changes file 7.1 item 4. Confirmed K2b."
+
+  - id: handyman
+    name: Handyman
+    group: home systems/repair
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: true
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [drywall patch, door repair, shelves, fence repair, dryer vent reroute]
+    refused:
+      - {job: "gas work", routed_to: "plumbing_repair", reason: "never handyman at any price (LIC-021)"}
+      - {job: "hardwired smoke alarm", routed_to: "electrical", reason: "never handyman at any price (LIC-021)"}
+      - {job: "fire sprinklers", routed_to: "licensed only", reason: "never handyman at any price (LIC-021)"}
+      - {job: "wall removal or any permit-type job", routed_to: "licensed only", reason: "permit-type job (LIC-022)"}
+    intake_questions: ["What needs fixing?", "Roughly how big is the job?"]
+    keywords: [handyman, drywall, door, shelf, fence, small repair]
+    review: "A.R.S. 32-1121(A)(14); changes file :40-45. Confirmed K2b."
+
+  - id: pool_cleaning
+    name: Weekly pool cleaning
+    group: pool/spa/water
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: true
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [weekly pool service, chemical balancing, green pool cleanup]
+    refused:
+      - {job: "pool equipment repair", routed_to: "pool_repair", reason: "repair goes to R-6 or a handyman under $1,000 (changes file :240)"}
+    intake_questions: ["How often would you like service?", "Pool, spa or both?"]
+    keywords: [pool cleaning, pool service, weekly pool, green pool]
+    review: "Changes file 7.1 item 4 (no license). Attorney may confirm."
+
+  - id: landscape_maintenance
+    name: Yard and landscape maintenance
+    group: yard/outdoor
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: true
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [mowing, trimming, yard cleanup, gravel raking]
+    refused:
+      - {job: "pre-emergent or advertised weed control", routed_to: "pest_control", reason: "AZ Dept of Agriculture licensees only (LIC-012)"}
+    intake_questions: ["How often would you like service?", "About how big is the yard?"]
+    keywords: [yard, landscaping, mowing, trimming, gardener]
+    review: "Gardener exemption, A.R.S. 32-1121(A)(16) (changes file :47). Confirmed K2b."
+
+  - id: house_cleaning
+    name: House cleaning
+    group: cleaning/property care
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: true
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [regular cleaning, deep cleaning, move-out cleaning]
+    refused: []
+    intake_questions: ["How many bedrooms and bathrooms?", "How often?"]
+    keywords: [house cleaning, maid, cleaner, deep clean]
+    review: "No license. Confirmed K2b."
+
+  - id: pest_control
+    name: Pest control
+    group: home systems/repair
+    enabled: true
+    advertised: false
+    license: {kind: state_agency, agency: AZ Department of Agriculture (pest management)}
+    handyman_allowed: false
+    construction_type: false
+    recurring: true
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [general pest service, scorpions, termites, pre-emergent weed control]
+    refused: []
+    intake_questions: ["What pests are you seeing?", "One-time or ongoing service?"]
+    keywords: [pest, bugs, scorpion, termite, pre-emergent, weed control]
+    review: "Available but never advertised (changes file 7.1 item 3). License number shown (LIC-012). Confirmed K2b."
+
+  - id: dog_waste_pickup
+    name: Dog waste pickup
+    group: pets
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: true
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [weekly yard pickup]
+    refused: []
+    intake_questions: ["How many dogs?", "How often?"]
+    keywords: [dog waste, poop scoop, pet waste]
+    review: "No license. Confirmed K2b."
+
+  - id: trash_can_cleaning
+    name: Trash-can cleaning
+    group: cleaning/property care
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: true
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [bin washing]
+    refused: []
+    intake_questions: ["How many bins?", "How often?"]
+    keywords: [trash can cleaning, bin cleaning, garbage can wash]
+    review: "Cleaning only, not refuse collection. Confirmed K2b."
+
+  - id: turnover_cleaning
+    name: Vacation-rental turnover cleaning
+    group: cleaning/property care
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: true
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [turnover clean, linen change, restock]
+    refused:
+      - {job: "rent collection, finding tenants or leasing", routed_to: "none", reason: "never included (LIC-018)"}
+    intake_questions: ["How many bedrooms?", "How many turnovers a month?"]
+    keywords: [turnover, vacation rental, airbnb cleaning, vrbo cleaning]
+    review: "Changes file :207. Confirmed K2b."
+
+  - id: junk_removal
+    name: Junk removal
+    group: moving/hauling
+    enabled: false
+    off_reason: "Off at launch until Lake Havasu City Code ch. 8.04 is read (changes file 7.1 item 13)."
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [junk haul-away]
+    refused: []
+    intake_questions: ["What needs hauling?", "About how many truckloads?"]
+    keywords: [junk removal, haul away, dump run]
+    review: "Off (LIC-005). Switch on is a logged settings change after the city-code check."
+
+  - id: car_detailing
+    name: Car detailing
+    group: vehicle
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [interior detail, exterior detail, full detail]
+    refused: []
+    intake_questions: ["What kind of vehicle?", "Where is it parked?"]
+    keywords: [car detail, auto detail, vehicle cleaning]
+    review: "Non-construction: no $1,000 limit (LIC-020). Confirmed K2b."
+
+  - id: boat_detailing
+    name: Boat detailing
+    group: boat/lake
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [hull cleaning, interior detail, waxing]
+    refused: []
+    intake_questions: ["How long is the boat?", "Is it in the water, on a trailer or in storage?"]
+    keywords: [boat detail, boat cleaning, boat wax]
+    review: "Non-construction. Location may be a marina or storage lot. Confirmed K2b."
+
+  - id: boat_repair
+    name: Boat repair
+    group: boat/lake
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 75
+    after_hours_emergency: false
+    job_types: [engine repair, outboard service, trailer repair]
+    refused: []
+    intake_questions: ["What kind of boat and engine?", "What is going wrong?"]
+    keywords: [boat repair, outboard, marine mechanic, boat engine]
+    review: "Vessel work, not construction on real property; no ROC license. Attorney may confirm."
+
+  - id: window_cleaning
+    name: Window cleaning
+    group: cleaning/property care
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [inside and outside windows, screens, hard-water removal]
+    refused: []
+    intake_questions: ["About how many windows?", "One or two stories?"]
+    keywords: [window cleaning, window washing]
+    review: "No license. Confirmed K2b."
+
+  - id: pressure_washing
+    name: Pressure washing
+    group: cleaning/property care
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [driveway, patio, house wash]
+    refused:
+      - {job: "sealing or painting", routed_to: "painting", reason: "R-34 work"}
+    intake_questions: ["What surfaces?", "About how many square feet?"]
+    keywords: [pressure washing, power washing]
+    review: "No license; sealing or painting goes to R-34. Confirmed K2b."
+
+  - id: solar_screens
+    name: Solar screens and window film
+    group: interior/remodel
+    enabled: true
+    license: {kind: roc, classes: [R-65]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 75
+    after_hours_emergency: false
+    job_types: [solar screens, window film]
+    refused: []
+    intake_questions: ["About how many windows?", "Screens, film or both?"]
+    keywords: [solar screen, sun screen, window film, window tint]
+    review: "R-65 per Grok class mapping (changes file :209). Attorney may confirm whether screens need a class."
+
+  - id: roof_repair
+    name: Roof repair
+    group: home systems/repair
+    enabled: true
+    license: {kind: roc, classes: [R-42]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 75
+    after_hours_emergency: true
+    job_types: [leak repair, tile replacement, re-roof]
+    refused: []
+    intake_questions: ["Tile, shingle or flat roof?", "Is it leaking now?"]
+    keywords: [roof, roof leak, roofer, re-roof]
+    review: "Re-roof is permit-type (LIC-022). Class per changes file :38. Confirmed K2b."
+
+  - id: painting
+    name: Painting
+    group: interior/remodel
+    enabled: true
+    license: {kind: roc, classes: [R-34]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 75
+    after_hours_emergency: false
+    job_types: [interior painting, exterior painting, cabinet painting]
+    refused: []
+    intake_questions: ["Inside, outside or both?", "About how many rooms or square feet?"]
+    keywords: [painting, painter, paint]
+    review: "Class per changes file :38. Confirmed K2b."
+
+  - id: local_moving
+    name: Local moving (within Arizona)
+    group: moving/hauling
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 75
+    after_hours_emergency: false
+    job_types: [in-town move, loading help, in-state move]
+    refused:
+      - {job: "move leaving Arizona", routed_to: "none", reason: "interstate broker rules (LIC-017)"}
+    intake_questions: ["Moving from where to where (towns only)?", "How many bedrooms?"]
+    keywords: [movers, moving, moving help]
+    review: "Non-construction: no $1,000 limit (LIC-020). Confirmed K2b."
+
+  - id: appliance_repair
+    name: Freestanding appliance repair
+    group: home systems/repair
+    enabled: true
+    license: {kind: roc, classes: [R-63]}
+    handyman_allowed: true
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [washer, dryer, refrigerator, dishwasher repair]
+    refused:
+      - {job: "gas, plumbing or electrical line work", routed_to: "licensed only", reason: "never part of appliance repair (changes file :240)"}
+    intake_questions: ["Which appliance and brand?", "What is it doing?"]
+    keywords: [appliance repair, washer, dryer, fridge, dishwasher]
+    review: "Changes file 7.1 item 4. Confirmed K2b."
+
+  - id: garage_doors
+    name: Garage doors
+    group: home systems/repair
+    enabled: false
+    off_reason: "Off at launch (changes file 7.1 item 4)."
+    license: {kind: roc, classes: []}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [spring repair, opener repair, door replacement]
+    refused: []
+    intake_questions: ["What is the door doing?", "Single or double door?"]
+    keywords: [garage door, garage opener, garage spring]
+    review: "Off (LIC-005). ROC class unresolved; stays off until confirmed."
+
+  # ---- Rows required by changes file section 7 and 7.1 ----
+
+  - id: dryer_vent_cleaning
+    name: Dryer-vent cleaning
+    group: cleaning/property care
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [dryer vent cleaning]
+    refused:
+      - {job: "rerouting or replacing a vent", routed_to: "handyman", reason: "handyman job under the $1,000 cap (LIC-028)"}
+    intake_questions: ["How long since the last cleaning?", "Does the vent exit on the roof or a wall?"]
+    keywords: [dryer vent, lint, vent cleaning]
+    review: "Changes file 7.1 item 4. Confirmed K2b."
+
+  - id: holiday_lights
+    name: Holiday lights (plug-in)
+    group: events/tech
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [plug-in light hanging, take-down]
+    refused:
+      - {job: "new outlet, circuit or hardwiring", routed_to: "electrical", reason: "R-11 only (LIC-029)"}
+    intake_questions: ["Roofline, trees or both?", "Hang only or hang and take down?"]
+    keywords: [christmas lights, holiday lights, light hanging]
+    review: "Changes file 7.1 item 4. Confirmed K2b."
+
+  - id: estate_cleanout
+    name: Estate cleanout
+    group: moving/hauling
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 75
+    after_hours_emergency: false
+    job_types: [whole-house cleanout, sorting for donation]
+    refused: []
+    intake_questions: ["How many rooms?", "Any items to keep or donate?"]
+    keywords: [estate cleanout, house cleanout]
+    review: "Not refuse collection; stays on (changes file 7.1 item 13). Confirmed K2b."
+
+  - id: donation_pickup
+    name: Donation pickup
+    group: moving/hauling
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [furniture donation pickup]
+    refused: []
+    intake_questions: ["What items?", "Any stairs?"]
+    keywords: [donation pickup, donate furniture]
+    review: "Not refuse collection; stays on (changes file 7.1 item 13). Confirmed K2b."
+
+  - id: septic_pumping
+    name: Septic pumping
+    group: home systems/repair
+    enabled: true
+    license: {kind: state_agency, agency: ADEQ septage-hauler vehicle license}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: true
+    job_types: [tank pumping, tank inspection]
+    refused: []
+    intake_questions: ["When was it last pumped?", "Is it backing up now?"]
+    keywords: [septic, septic pumping, septic tank]
+    review: "Changes file :205 (LIC-016). Confirmed K2b."
+
+  - id: alarm_systems
+    name: Alarm systems
+    group: events/tech
+    enabled: true
+    license: {kind: roc_and_state_agency, classes: [R-67], agency: Board of Technical Registration (alarm business certificate)}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [alarm install, alarm monitoring setup]
+    refused: []
+    intake_questions: ["New system or existing?", "About how many doors and windows?"]
+    keywords: [alarm, security system, alarm monitoring]
+    review: "Changes file :204 (LIC-013). Confirmed K2b."
+
+  - id: security_cameras
+    name: Security cameras
+    group: events/tech
+    enabled: true
+    license: {kind: roc, classes: [R-67]}
+    handyman_allowed: true
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [camera install, doorbell camera]
+    refused: []
+    intake_questions: ["How many cameras?", "Wired or wireless?"]
+    keywords: [security camera, cctv, doorbell camera]
+    review: "R-67 (or broader) or handyman under $1,000 with no permit (LIC-014). Broader classes are listed when the ROC scope table is loaded."
+
+  - id: home_inspection
+    name: Home inspection
+    group: home systems/repair
+    enabled: true
+    license: {kind: state_agency, agency: Board of Technical Registration (certified home inspector)}
+    handyman_allowed: false
+    construction_type: false
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [buyer inspection, pre-listing inspection]
+    refused: []
+    intake_questions: ["About how many square feet?", "Buying or selling?"]
+    keywords: [home inspection, inspector]
+    review: "Changes file :204 (LIC-015). Confirmed K2b."
+
+  - id: home_watch
+    name: Home watch
+    group: cleaning/property care
+    enabled: true
+    license: {kind: none}
+    handyman_allowed: false
+    construction_type: false
+    recurring: true
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [weekly house check, storm check]
+    refused:
+      - {job: "rent collection, finding tenants or leasing", routed_to: "none", reason: "never included (LIC-018)"}
+    intake_questions: ["How often should someone check?", "Any special tasks (water plants, run taps)?"]
+    keywords: [home watch, house check, snowbird]
+    review: "Changes file :207. Not property management (LIC-004). Confirmed K2b."
+
+  # ---- ROC class mapping from Grok, confirmed in K2b (changes file :209) ----
+
+  - id: water_treatment
+    name: Water softeners, RO and misting
+    group: pool/spa/water
+    enabled: true
+    license: {kind: roc, classes: [R-54]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [softener install, RO system, misting system]
+    refused: []
+    intake_questions: ["New install or repair?", "Which system?"]
+    keywords: [water softener, reverse osmosis, misting system]
+    review: "R-54 per changes file :209. Confirmed K2b."
+
+  - id: gutters
+    name: Gutters
+    group: home systems/repair
+    enabled: true
+    license: {kind: roc, classes: [R-45]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 25
+    after_hours_emergency: false
+    job_types: [gutter install, gutter repair]
+    refused: []
+    intake_questions: ["About how many feet of gutter?", "Install or repair?"]
+    keywords: [gutter, downspout, rain gutter]
+    review: "R-45 per changes file :209. Confirmed K2b."
+
+  - id: insulation
+    name: Insulation
+    group: interior/remodel
+    enabled: true
+    license: {kind: roc, classes: [R-40]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 75
+    after_hours_emergency: false
+    job_types: [attic insulation, blown-in insulation]
+    refused: []
+    intake_questions: ["About how many square feet?", "Add to existing or replace?"]
+    keywords: [insulation, attic insulation]
+    review: "R-40 per changes file :209. Confirmed K2b."
+
+  - id: pavers_hardscape
+    name: Pavers, hardscape and irrigation
+    group: yard/outdoor
+    enabled: true
+    license: {kind: roc, classes: [R-21]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 75
+    after_hours_emergency: false
+    job_types: [paver patio, walkway, irrigation install]
+    refused: []
+    intake_questions: ["About how many square feet?", "New or repair?"]
+    keywords: [pavers, hardscape, irrigation, drip system]
+    review: "R-21 per changes file :38 and :209. Confirmed K2b."
+
+  - id: epoxy_floors
+    name: Epoxy floors
+    group: interior/remodel
+    enabled: true
+    license: {kind: roc, classes: [R-8, R-34]}
+    handyman_allowed: false
+    construction_type: true
+    recurring: false
+    trip_fee_tier: 75
+    after_hours_emergency: false
+    job_types: [garage floor epoxy]
+    refused: []
+    intake_questions: ["About how many square feet?", "Any cracks to repair first?"]
+    keywords: [epoxy, garage floor coating]
+    review: "R-8 or R-34 per changes file :209. Confirmed K2b."
