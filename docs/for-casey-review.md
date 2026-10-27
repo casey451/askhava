@@ -146,3 +146,31 @@ Claude drew up how the app is split into parts, wrote the security threat model,
 
 - Changes to protected files (the twin, stand-ins, workflows, the deliberate-break list, the task-graph checker itself) happen only in steps marked "harness" with an Opus review. (D-113, D-114, D-118)
 - The v9.3 blueprint's "build tests T01–T24" are never defined anywhere, so coverage is checked against the test design instead. (D-117)
+
+## From the round-2 simulation fixes ("Fix it all"), October 27, 2026
+
+You said "Fix it all" on the round-2 simulation findings. Every fix is in the spec now, logged as D-127 to D-162. Nothing is being built: Gate P still holds until you say "approved to build". The items below change something you had decided or been shown before, so they come first.
+
+**Changes to earlier decisions: please look at these**
+
+1. **Clean business sign-ups now go live on their own (replaces D-060).** Before, every business waited for your approval. Now a business whose identity code is done and whose license or city-list check passes, with nothing flagged, is switched on automatically, and you see a list of who went live. Anything odd (a name that doesn't match the record, the mailed-letter path, a fraud signal) still waits for you, and your approval alone still never switches anyone on. You can pause any business at any time. Why: in the simulation, approvals were most of your weekly time, and in a crowded launch half the businesses waited more than 18 days. If you'd rather keep approving every one by hand, say so and it goes back. (D-145)
+2. **Safe mode no longer stops texts (changes D-075's effect and the brief's wording).** When you're away and a serious alert isn't acknowledged for 24 hours, the app now stops only charging cards and handing out homeowner details. Texts keep going, so safety texts, STOP confirmations and quotes are never held. (D-133)
+3. **Backup contact for safe mode: your decision, still open.** The spec still says there is no backup person. Nobody has been named, and Claude won't name one. The working answer: a texting-delivery alert that clears up by itself (the next 50 texts go through fine) is acknowledged automatically and listed for you, so it can't start safe mode while you're away. Every other serious alert still waits for you. If you want someone to be able to acknowledge alerts while you're gone, tell us who and what they may do. (D-134)
+4. **More replies count as "yes" to the first text (changes D-021), and people who answer something else get the first text once more (changes D-095).** "okay", "yes please", "Y", "yep" and Spanish "si" (without the accent) now count. Any other answer gets the consent text once more, and someone who never answers gets it one last time at 24 hours. Before, they heard nothing, ever. (D-127)
+5. **A bare "CANCEL" from someone with an open request now pauses that request (refines D-005).** It still stops all texts, as the law requires, and it still doesn't close the job. But no business can confirm, be charged or get the address until the homeowner picks or closes on their quote page or by email, and they're told the request is still open. (D-129)
+6. **Short answered calls now count as talking (changes v9.3's 45-second rule).** A business whose call was answered by a person, even briefly, no longer gets the automatic "couldn't reach the homeowner" refund. In the simulation about 6 in 10 of those refunds went to businesses that had actually spoken to the homeowner. (D-141)
+7. **Losing businesses hear sooner (refines D-044).** When the chosen business pays, the others get "The homeowner picked another quote." right away, and "This job is no longer active." still goes when the job ends. The winning business no longer gets that second text. (D-150)
+8. **The handyman split-job check is narrower (refines D-081).** The same handyman can come back to the same house within 30 days for a different small job, unless the two jobs share a job type or together reach $1,000. (D-154)
+9. **A business owner who texts the main number gets the sign-up link first**, not the homeowner consent text. And someone whose first text is just "HELP" gets the help reply first. These are the only exceptions to "consent text first", besides the emergency safety text. (D-131, D-132)
+
+**Fixes that don't change an earlier decision**
+
+- Night emergencies: a business's quote for an emergency the homeowner chose is texted to them at night instead of waiting until 8 a.m. (D-136)
+- More danger words get the safety text at once: buzzing, melting, sizzling, propane, carbon monoxide, CO alarm, and "hot" when an outlet, breaker or similar is named. Plain "hot water heater" doesn't trigger it. (D-137, D-138)
+- A failed pick no longer closes the job while other businesses still have time to quote. (D-140)
+- A homeowner who chose email contact isn't treated as a no-show because the business emailed instead of calling. (D-143)
+- During a texting suspension, emergency messages raise a critical alert, the site banner turns on by itself, and businesses get their notices by email. (D-144)
+- The privacy scrubber catches "im steve" and dashed phone numbers, and name-and-address answers never go to the AI. (D-146)
+- A homeowner can change their pick before the business confirms; businesses can confirm by texting back "CONFIRM 1042" after seeing the fee; the 2-hour confirm window starts when the pick text arrives. (D-147, D-148)
+- A price the AI read from a text is always shown back to the business to confirm. (D-149)
+- Smaller items: second free win through a DBA closed (D-151); "join in the first 90 days" means the sign-up date (D-152); no double card charge after a timeout (D-153); "own or rent?" is asked when unsure (D-155); no double texts after a restore (D-156); wider gas word list (D-157); overnight updates merged into one text (D-158); recurring quotes must say per month, week, etc. (D-159); the masked-number pool starts at 10 numbers (D-160); card timers stop while charging is paused (D-135); opt-outs during a texting outage (D-130); quiet-hours rule for unknown area codes dropped (D-139); numbering note (D-161); two pairs of planned tests that couldn't both pass were fixed (D-162).
