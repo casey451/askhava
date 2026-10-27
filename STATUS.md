@@ -3,7 +3,7 @@
 **Updated:** 2026-10-27 · **Phase:** kit · **Done:** 4 of 11 (K0, K1, K2, K2b)
 
 ## Running now
-- **K3 clarify:** worker running.
+- **K3 clarify:** handed in, waiting to merge (MERGE_PENDING).
 
 ## Blocked
 - Nothing.

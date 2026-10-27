@@ -23,3 +23,4 @@
 - 2026-10-27: K2 DONE (PR #7 merged, Ci/Twin/Ally green, tree == squash). K2b claimed.
 - 2026-10-27: K2b pushed @ 8cb43dd; Opus review had 2 blocking (gas appliance handyman, one-time jobs in recurring categories) fixed in one round; checks run here: catalog check 0 errors, pytest 64 passed. K2b MERGE_PENDING.
 - 2026-10-27: K2b DONE (PR #8 merged, Ci/Twin/Ally green on 8cb43dd, tree == squash 9981709). K3 claimed.
+- 2026-10-27: K3 pushed @ f1234ad; 52 decisions (D-038..D-089). Opus review: 3 blocking + 8 non-blocking, all fixed in one round. Checks run here: trace_spec 0 errors, check_catalog 0 errors, pytest 64 passed, sources fingerprint ok; path check: docs only. K3 MERGE_PENDING.
