@@ -160,7 +160,7 @@ Gate items and other pre-launch requirements:
 ## 8. Texting
 
 **Consent**
-- The full consent text is the first message to any new number, on every path. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:113`; `BUILD_BRIEF.md:445`)
+- The full consent text is the first message to any new number, on every path; the only exceptions are the safety text (D-008), the business sign-up reply (D-132) and the bare-HELP reply (D-131). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:113`; `BUILD_BRIEF.md:445`)
 - The first text also says the business you pick pays a small fee. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:81`)
 - Emergencies: the safety text goes **before** the consent text. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:86`) A plain keyword list runs before the AI at intake, on every message. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:290`)
 - Only people who contacted us or signed up are texted; never tenants or on-site contacts. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:258`)
@@ -204,7 +204,7 @@ Full list in `BUILD_BRIEF.md:293`–`BUILD_BRIEF.md:382`. The non-negotiables:
 - Vault: AES-GCM field-level encryption, key separate from DB credentials; encrypted backups; vault access audit-logged. (`BUILD_BRIEF.md:348`–`BUILD_BRIEF.md:349`)
 - Card data never touches our servers (PCI SAQ A). (`BUILD_BRIEF.md:363`)
 - Supply chain: committed lock file, pip-audit and bandit on every PR, Dependabot, base image pinned by digest. (`BUILD_BRIEF.md:365`–`BUILD_BRIEF.md:369`) New libraries need a `docs/decisions.md` entry with purpose, license and a pip-audit result. (`BUILD_BRIEF.md:122`)
-- Sentry `send_default_pii=False` plus scrubber; logs carry request IDs, never phone numbers; incident runbook includes Arizona's 45-day breach notice (A.R.S. 18-552); safe mode after 24 hours without acknowledgement of a High alert. (`BUILD_BRIEF.md:372`–`BUILD_BRIEF.md:375`)
+- Sentry `send_default_pii=False` plus scrubber; logs carry request IDs, never phone numbers; incident runbook includes Arizona's 45-day breach notice (A.R.S. 18-552); safe mode after 24 hours without acknowledgement of a High alert; what it pauses is narrowed to charges and releases by D-133, following the changes file's "pauses risky actions" (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:73`). (`BUILD_BRIEF.md:372`–`BUILD_BRIEF.md:375`)
 - Architecture invariants: idempotency key on every outside action; audit row on every state change; money moves only through `payments` and the ledger reconciles to Stripe. (`BUILD_BRIEF.md:148`–`BUILD_BRIEF.md:152`)
 
 ## 10. Retention (decided defaults)
