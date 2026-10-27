@@ -42,6 +42,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Unit, contract and drill tests (pytest)
+        run: |
+          python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
+          python3 -m pytest tests -q -p no:cacheprovider
+
       - name: Static security scan (bandit)
         run: |
           if [ -d app ]; then

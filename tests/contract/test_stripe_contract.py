@@ -17,9 +17,17 @@ def setup(method: str = "pm_card_visa") -> tuple[stripe.FakeStripe, str]:
     return fake, cus
 
 
-def charge(fake: stripe.FakeStripe, cus: str, method: str = "pm_card_visa", amount: int = 7500, key: str | None = None) -> tuple[int, dict[str, Any]]:
-    params = {"amount": amount, "currency": "usd", "customer": cus, "payment_method": method,
-              "off_session": True, "confirm": True}
+def charge(
+    fake: stripe.FakeStripe, cus: str, method: str = "pm_card_visa", amount: int = 7500, key: str | None = None
+) -> tuple[int, dict[str, Any]]:
+    params = {
+        "amount": amount,
+        "currency": "usd",
+        "customer": cus,
+        "payment_method": method,
+        "off_session": True,
+        "confirm": True,
+    }
     return fake.create_payment_intent(params, key)
 
 

@@ -10,10 +10,20 @@ import pytest
 
 from stand_ins import lob
 
-ADDRESS = {"name": "Zelda Canary", "address_line1": "1 Test Way", "address_city": "Lake Havasu City",
-           "address_state": "AZ", "address_zip": "86403"}
-LETTER = {"description": "identity letter", "to": ADDRESS, "from": {**ADDRESS, "name": "Ask Hava"},
-          "file": "<html>Code 000000</html>", "color": False}
+ADDRESS = {
+    "name": "Zelda Canary",
+    "address_line1": "1 Test Way",
+    "address_city": "Lake Havasu City",
+    "address_state": "AZ",
+    "address_zip": "86403",
+}
+LETTER = {
+    "description": "identity letter",
+    "to": ADDRESS,
+    "from": {**ADDRESS, "name": "Ask Hava"},
+    "file": "<html>Code 000000</html>",
+    "color": False,
+}
 
 
 def test_create_letter_shape() -> None:

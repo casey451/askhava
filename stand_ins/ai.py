@@ -13,8 +13,14 @@ from typing import Any
 
 TRADES = ("plumbing", "heating_ac", "electrical", "handyman", "other")
 FIELDS: dict[str, type] = {
-    "trade": str, "job_type": str, "emergency": bool, "urgent": bool,
-    "language": str, "rental": bool, "major": bool, "missing_info": list,
+    "trade": str,
+    "job_type": str,
+    "emergency": bool,
+    "urgent": bool,
+    "language": str,
+    "rental": bool,
+    "major": bool,
+    "missing_info": list,
 }
 KEYWORDS = {
     "plumbing": ("leak", "toilet", "drain", "faucet", "pipe", "sink"),

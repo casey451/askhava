@@ -5,7 +5,7 @@ Body), 201 with a message resource, errors as {code, message, more_info, status}
 Magic numbers (Twilio test credentials docs): From +15005550006 is valid; To
 +15005550001 invalid (21211), +15005550002 cannot be routed (21612), +15005550003 no
 permission (21408), +15005550004 blocked (21610), +15005550009 cannot receive SMS (21614).
-Opt-out: STOP, STOPALL, UNSUBSCRIBE, CANCEL, END, QUIT block later sends (21610) until
+Opt-out: STOP, STOPALL, UNSUBSCRIBE, CANCEL, END, QUIT, REVOKE, OPTOUT block later sends (21610) until
 START, YES or UNSTOP. Webhooks carry X-Twilio-Signature: base64(HMAC-SHA1(auth token,
 URL + sorted key+value pairs)). Verify: POST /v2/Services/{sid}/Verifications and
 /VerificationCheck.
@@ -25,12 +25,18 @@ from stand_ins.common import Reply, fake_id
 VALID_FROM = "+15005550006"
 MAGIC_TO = {
     "+15005550001": (21211, "The 'To' number {to} is not a valid phone number."),
-    "+15005550002": (21612, "The 'To' phone number: {to}, is not currently reachable using the 'From' phone number: {frm} via SMS."),
-    "+15005550003": (21408, "Permission to send an SMS has not been enabled for the region indicated by the 'To' number: {to}."),
+    "+15005550002": (
+        21612,
+        "The 'To' phone number: {to}, is not currently reachable using the 'From' phone number: {frm} via SMS.",
+    ),
+    "+15005550003": (
+        21408,
+        "Permission to send an SMS has not been enabled for the region indicated by the 'To' number: {to}.",
+    ),
     "+15005550004": (21610, "Attempt to send to unsubscribed recipient"),
     "+15005550009": (21614, "'To' number is not a valid mobile number"),
 }
-OPT_OUT = {"STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"}
+OPT_OUT = {"STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "REVOKE", "OPTOUT"}
 OPT_IN = {"START", "YES", "UNSTOP"}
 E164 = re.compile(r"^\+[1-9]\d{7,14}$")
 GSM_BASIC = (

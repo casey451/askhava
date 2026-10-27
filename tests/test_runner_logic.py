@@ -20,11 +20,14 @@ def task(tid: str, deps: list[str] | None = None, **extra: Any) -> dict[str, Any
     return {"id": tid, "deps": deps or [], "type": "build", "owns": [f"app/{tid}/"], "model": MODELS["sonnet"], **extra}
 
 
+def eligible(graph: list[dict[str, Any]], s: st.State, now: datetime) -> list[str]:
+    return st.eligible(st.sync_graph(s, graph), now)
+
+
 def test_claim_sets_a_three_hour_lease() -> None:
     s = st.claim(st.new_state(), "T001", "session-a", NOW)
-    lease = st.entry(s, "T001")["lease"]
     assert st.status(s, "T001") == st.IN_PROGRESS
-    assert datetime.fromisoformat(lease["expires"]) == NOW + timedelta(hours=3)
+    assert s["lease"] == {"task": "T001", "session": "session-a", "expires": "2026-11-01T15:00:00Z"}
 
 
 def test_one_task_in_flight() -> None:
@@ -47,11 +50,12 @@ def test_cannot_claim_done_or_blocked() -> None:
 
 def test_renewal_extends_and_is_due_after_thirty_minutes() -> None:
     s = st.claim(st.new_state(), "T001", "a", NOW)
-    assert not st.renewal_due(s, "T001", NOW + timedelta(minutes=29))
-    assert st.renewal_due(s, "T001", NOW + timedelta(minutes=30))
+    assert not st.renewal_due(s, NOW + timedelta(minutes=29))
+    assert st.renewal_due(s, NOW + timedelta(minutes=30))
     later = NOW + timedelta(minutes=30)
     s = st.renew(s, "T001", "a", later)
-    assert datetime.fromisoformat(st.entry(s, "T001")["lease"]["expires"]) == later + timedelta(hours=3)
+    assert st.parse(s["lease"]["expires"]) == later + timedelta(hours=3)
+    assert not st.renewal_due(s, later + timedelta(minutes=29))
 
 
 def test_renewal_refused_for_other_session_or_after_expiry() -> None:
@@ -62,15 +66,16 @@ def test_renewal_refused_for_other_session_or_after_expiry() -> None:
         st.renew(s, "T001", "a", NOW + timedelta(hours=3))
     with pytest.raises(st.LeaseError):
         st.renew(st.new_state(), "T001", "a", NOW)
-    assert not st.renewal_due(st.new_state(), "T001", NOW)
+    assert not st.renewal_due(st.new_state(), NOW)
 
 
 def test_expired_lease_returns_task_and_keeps_evidence() -> None:
     s = st.claim(st.new_state(), "T001", "a", NOW)
     assert st.release_expired(s, NOW + timedelta(hours=2)) == s
     freed = st.release_expired(s, NOW + timedelta(hours=3, minutes=1))
-    assert st.status(freed, "T001") == st.PENDING
+    assert st.status(freed, "T001") == st.QUEUED
     assert st.entry(freed, "T001")["stale_leases"][0]["session"] == "a"
+    assert freed["lease"] is None
 
 
 def test_state_functions_do_not_mutate_their_input() -> None:
@@ -86,40 +91,42 @@ def test_backoff_doubles_to_a_cap() -> None:
 def test_blocked_holds_only_its_dependents() -> None:
     graph = [task("T001"), task("T002", ["T001"]), task("T003"), task("T004", ["T003"])]
     s = st.with_task(st.new_state(), "T001", status=st.BLOCKED)
-    assert st.eligible(graph, s, NOW) == ["T003"]
+    assert eligible(graph, s, NOW) == ["T003"]
     s = st.with_task(s, "T003", status=st.DONE)
-    assert st.eligible(graph, s, NOW) == ["T004"]
+    assert eligible(graph, s, NOW) == ["T004"]
 
 
 def test_retry_waits_for_its_time() -> None:
     graph = [task("T001")]
     after = (NOW + timedelta(hours=1)).isoformat()
     s = st.with_task(st.new_state(), "T001", status=st.RETRY_AFTER_RESET, retry_after=after)
-    assert st.eligible(graph, s, NOW) == []
-    assert st.eligible(graph, s, NOW + timedelta(hours=1)) == ["T001"]
+    assert eligible(graph, s, NOW) == []
+    assert eligible(graph, s, NOW + timedelta(hours=1)) == ["T001"]
 
 
 def test_hold_and_red_main() -> None:
     graph = [task("T001")]
     held = st.new_state()
     held["build_hold"] = True
-    assert st.eligible(graph, held, NOW) == []
+    assert eligible(graph, held, NOW) == []
     red = st.new_state()
     red["main_red"] = True
-    assert st.eligible(graph, red, NOW) == [st.FIX_MAIN]
+    assert eligible(graph, red, NOW) == [st.FIX_MAIN]
 
 
 def test_gates_are_never_eligible_and_skipped_satisfies_deps() -> None:
     gate = task("T127", type="gate")
     graph = [gate, task("T130", ["T127"])]
-    assert st.eligible(graph, st.new_state(), NOW) == []
-    assert st.next_gate(graph, st.new_state()) == gate
+    assert eligible(graph, st.new_state(), NOW) == []
+    opened = st.next_gate(st.sync_graph(st.new_state(), graph))
+    assert opened is not None and opened["id"] == "T127"
     s = st.with_task(st.new_state(), "T127", status=st.SKIPPED)
-    assert st.eligible(graph, s, NOW) == ["T130"]
-    assert st.next_gate(graph, s) is None
+    assert eligible(graph, s, NOW) == ["T130"]
+    assert st.next_gate(st.sync_graph(s, graph)) is None
 
 
 # ---- path check
+
 
 def test_owned_and_shared_paths_pass() -> None:
     t = task("T010")
@@ -157,6 +164,7 @@ def test_exact_file_ownership_does_not_cover_siblings() -> None:
 
 # ---- model check
 
+
 def line(model: str) -> str:
     return json.dumps({"type": "assistant", "message": {"model": model, "role": "assistant"}})
 
@@ -169,12 +177,15 @@ def test_models_read_from_transcript_not_from_claims() -> None:
 def test_model_check() -> None:
     known = MODELS.values()
     assert verify.check_model(["claude-sonnet-5-5"] * 3, MODELS["sonnet"], known) == []
-    assert "claude-haiku-5-5" in verify.check_model(["claude-haiku-5-5", "claude-sonnet-5-5"], MODELS["sonnet"], known)[0]
+    assert (
+        "claude-haiku-5-5" in verify.check_model(["claude-haiku-5-5", "claude-sonnet-5-5"], MODELS["sonnet"], known)[0]
+    )
     assert "no model evidence" in verify.check_model([], MODELS["sonnet"], known)[0]
     assert "full model ID" in verify.check_model(["sonnet"], "sonnet", known)[0]
 
 
 # ---- done check
+
 
 def pr(**over: Any) -> dict[str, Any]:
     checks = [{"name": n, "sha": "abc1234", "conclusion": "success"} for n in ("Ci", "Twin", "Ally")]
@@ -209,8 +220,13 @@ def test_one_red_check_blocks_done() -> None:
 
 # ---- outbox and gates
 
+
 def gate(gid: str = "T127") -> dict[str, Any]:
-    return {"id": gid, "type": "gate", "gate": {"outbox": "Your turn: set up accounts", "resume": "Casey comments 'accounts done' in the issue"}}
+    return {
+        "id": gid,
+        "type": "gate",
+        "gate": {"outbox": "Your turn: set up accounts", "resume": "Casey comments 'accounts done' in the issue"},
+    }
 
 
 def test_outbox_file_format(tmp_path: Path) -> None:
@@ -218,7 +234,9 @@ def test_outbox_file_format(tmp_path: Path) -> None:
     assert path.read_text(encoding="utf-8") == "---\nid: K3-q1\ntitle: Question: x\nkind: question\n---\nbody text\n"
 
 
-@pytest.mark.parametrize("args", [("bad id", "t", "gate"), ("ok", "t", "nope"), ("ok", "two\nlines", "gate"), ("ok", " ", "gate")])
+@pytest.mark.parametrize(
+    "args", [("bad id", "t", "gate"), ("ok", "t", "nope"), ("ok", "two\nlines", "gate"), ("ok", " ", "gate")]
+)
 def test_outbox_rejects_bad_input(tmp_path: Path, args: tuple[str, str, str]) -> None:
     with pytest.raises(ValueError):
         outbox.write_outbox(tmp_path, args[0], args[1], args[2], "b")
@@ -233,7 +251,7 @@ def test_account_checkpoint_writes_your_turn_and_waits(tmp_path: Path) -> None:
 
 def test_gateclears_only_on_its_phrase() -> None:
     s = outbox.apply_owner_answer(st.new_state(), gate(), "working on it", NOW)
-    assert st.status(s, "T127") == st.PENDING
+    assert st.status(s, "T127") == st.QUEUED
     s = outbox.apply_owner_answer(s, gate(), "Accounts DONE, thanks", NOW)
     assert st.status(s, "T127") == st.DONE
     assert st.entry(s, "T127")["answers"] == ["working on it", "Accounts DONE, thanks"]
@@ -243,9 +261,9 @@ def test_gate_without_a_quoted_phrase_needs_an_affirmative_word() -> None:
     odd = gate()
     odd["gate"]["resume"] = "Casey reports the results"
     assert outbox.resume_phrase(odd) == ""
-    assert st.status(outbox.apply_owner_answer(st.new_state(), odd, "wait, not yet", NOW), "T127") == st.PENDING
+    assert st.status(outbox.apply_owner_answer(st.new_state(), odd, "wait, not yet", NOW), "T127") == st.QUEUED
     assert st.status(outbox.apply_owner_answer(st.new_state(), odd, "Yes, all good", NOW), "T127") == st.DONE
-    assert st.status(outbox.apply_owner_answer(st.new_state(), odd, "ago", NOW), "T127") == st.PENDING
+    assert st.status(outbox.apply_owner_answer(st.new_state(), odd, "ago", NOW), "T127") == st.QUEUED
 
 
 def test_apostrophe_in_resume_text_is_not_a_quote() -> None:
@@ -255,7 +273,11 @@ def test_apostrophe_in_resume_text_is_not_a_quote() -> None:
 
 
 def test_finished_gate_sends_and_does_not_wait(tmp_path: Path) -> None:
-    g = {"id": "T143", "type": "gate", "gate": {"kind": "finished", "waits_on_owner": False, "outbox": "Finished: ready for your review"}}
+    g = {
+        "id": "T143",
+        "type": "gate",
+        "gate": {"kind": "finished", "waits_on_owner": False, "outbox": "Finished: ready for your review"},
+    }
     s = outbox.open_gate(st.new_state(), g, "links", tmp_path)
     assert st.status(s, "T143") == st.DONE and (tmp_path / "T143.md").exists()
 
@@ -268,11 +290,11 @@ def test_gate_without_title_gets_one(tmp_path: Path) -> None:
 
 def test_gate_p_holds_until_approved_to_build(tmp_path: Path) -> None:
     s = outbox.hold_for_gate_p(st.new_state(), tmp_path)
-    assert s["build_hold"] is True and st.eligible([task("T001")], s, NOW) == []
+    assert s["build_hold"] and eligible([task("T001"), task("K9")], s, NOW) == ["K9"]
     s = outbox.apply_gate_p_answer(s, "looks good")
-    assert s["build_hold"] is True
+    assert s["build_hold"]
     s = outbox.apply_gate_p_answer(s, "Approved to build")
-    assert s["build_hold"] is False and st.status(s, "GATE-P") == st.DONE
+    assert s["build_hold"] is None and st.status(s, "GATE-P") == st.DONE
 
 
 def test_real_task_file_gates_clear_on_their_own_phrase() -> None:
@@ -283,3 +305,38 @@ def test_real_task_file_gates_clear_on_their_own_phrase() -> None:
         phrase = outbox.resume_phrase(g)
         assert outbox.clears(g, phrase or "go")
         assert not outbox.clears(g, "not yet")
+
+
+# ---- the real kit/state.json shape (a trimmed copy with fake values)
+
+
+def real_state() -> st.State:
+    state: st.State = json.loads(
+        (REPO / "tests" / "fixtures" / "kit_state_real_shape.json").read_text(encoding="utf-8")
+    )
+    return state
+
+
+def test_real_shape_is_read_as_is() -> None:
+    s = real_state()
+    assert s["schema"] == 1 and isinstance(s["tasks"], list)
+    assert st.status(s, "K8") == st.IN_PROGRESS and st.status(s, "GATE-P") == st.QUEUED
+    assert st.live_lease(s, datetime(2026, 10, 27, 20, 0, tzinfo=timezone.utc)) == s["lease"]
+    assert st.live_lease(s, datetime(2026, 10, 27, 21, 0, tzinfo=timezone.utc)) is None
+
+
+def test_real_shape_round_trips_with_unknown_keys_kept() -> None:
+    s = real_state()
+    out = st.claim(st.release_expired(s, datetime(2026, 10, 27, 21, 0, tzinfo=timezone.utc)), "K9", "fake", NOW)
+    assert out["notes"] == s["notes"] and out["owner_answers"] == s["owner_answers"] and out["phase"] == "kit"
+    assert set(out) - set(s) <= {"current"} and out["lease"]["task"] == "K9"
+    assert json.loads(json.dumps(out)) == out
+
+
+def test_real_shape_gate_p_holds_t_tasks_but_not_kit_tasks() -> None:
+    s = real_state()
+    s = st.with_task(st.release_expired(s, datetime(2026, 10, 27, 21, 0, tzinfo=timezone.utc)), "K8", status=st.DONE)
+    s = st.sync_graph(s, [task("T001")])
+    assert s["build_hold"] and st.eligible(s, NOW) == ["K9"]
+    done = st.with_task(s, "K9", status=st.DONE)
+    assert st.eligible(done, NOW) == []

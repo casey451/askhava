@@ -7,7 +7,6 @@ from collections.abc import Iterable
 from typing import Any
 
 REQUIRED_CHECKS = ("Ci", "Twin", "Ally")
-PROTECTED_DEFAULT = (".github/", ".claude/", "runner/", "stand_ins/", "sources/")
 NEVER_TOUCH = ("kit/state.json", "STATUS.md", "PROGRESS.md", "outbox/", "inbox/")
 
 

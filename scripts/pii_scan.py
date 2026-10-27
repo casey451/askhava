@@ -27,8 +27,15 @@ MAX_BYTES = 1_000_000
 
 FAKE_STREETS = {"Test", "Example", "Sample", "Fake", "Canary", "Sentinel", "Placeholder"}
 FAKE_NAMES = {
-    "Zelda Canary", "Ada Example", "Sam Sample", "Pat Placeholder", "Alex Fakeperson",
-    "Test Homeowner", "Test Business", "Test Owner", "Test User",
+    "Zelda Canary",
+    "Ada Example",
+    "Sam Sample",
+    "Pat Placeholder",
+    "Alex Fakeperson",
+    "Test Homeowner",
+    "Test Business",
+    "Test Owner",
+    "Test User",
 }
 FAKE_NAME_WORDS = {"Test", "Example", "Sample", "Fake", "Canary", "Sentinel", "Placeholder"}
 ALLOWED_PHONE = re.compile(r"^(?:555-?01\d\d|500-?555-?00\d\d)$")
@@ -37,7 +44,8 @@ ZERO_SID = re.compile(r"^(?:AC|SK)(0{32})$")
 PHONE = re.compile(r"(?<![\w.])(?:\+?1[\s.-]?)?\(?([2-9]\d{2})\)?[\s.-]?(\d{3})[\s.-]?(\d{4})(?![\w])")
 PHONE_PLUS = re.compile(r"\+1\d{10}(?!\d)")
 STREET_TYPES = "Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Way|Court|Ct|Circle|Cir|Place|Pl"
-ADDRESS = re.compile(rf"\b\d{{1,5}} ((?:[A-Z][a-z]+ ){{1,3}})(?:{STREET_TYPES})\b\.?")
+STREET_WORD = r"[A-Z][a-z]+(?:[A-Z][a-z]+)?"  # also Mc/Mac names such as McDowell
+ADDRESS = re.compile(rf"\b\d{{1,5}} (?:(?:[NSEW]|[NS][EW])\.? )?((?:{STREET_WORD} ){{1,3}})(?:{STREET_TYPES})\b\.?")
 NAME_FIELD = re.compile(
     r"(?i:(?:full_?name|first_?name|last_?name|homeowner_?name|customer_?name|owner_?name|contact_?name))"
     r"[\"']?\s*[:=]\s*[\"']([A-Z][a-z]+(?: [A-Z][a-z]+)+)[\"']"
@@ -64,12 +72,14 @@ def _phone_findings(line: str) -> Iterator[str]:
         local = f"{match.group(2)}-{match.group(3)}"
         if ALLOWED_PHONE.match(local) or ALLOWED_PHONE.match(f"{match.group(1)}-{match.group(2)}-{match.group(3)}"):
             continue
-        if re.fullmatch(r"\d{10}", match.group(0)):
-            continue  # a bare 10-digit run is an ID or timestamp, not a phone
+        if re.fullmatch(r"1\d{9}", match.group(0)):
+            continue  # a bare run starting with 1 is a Unix timestamp or ID; area codes never start with 1
         yield "phone"
     for match in PHONE_PLUS.finditer(line):
         digits = match.group(0)[2:]
-        if not ALLOWED_PHONE.match(f"{digits[3:6]}-{digits[6:]}") and not ALLOWED_PHONE.match(f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"):
+        if not ALLOWED_PHONE.match(f"{digits[3:6]}-{digits[6:]}") and not ALLOWED_PHONE.match(
+            f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"
+        ):
             yield "phone"
 
 
@@ -106,26 +116,29 @@ def scan_text(path: str, text: str) -> list[Finding]:
 def tracked_files(root: Path) -> list[str]:
     try:
         out = subprocess.run(
-            ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"], capture_output=True, check=True
+            ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+            capture_output=True,
+            check=True,
         ).stdout.decode()
         return [p for p in out.split("\0") if p]
     except (OSError, subprocess.CalledProcessError):
         return sorted(str(p.relative_to(root)) for p in root.rglob("*") if p.is_file() and ".git" not in p.parts)
 
 
-def scan_files(root: Path, paths: Iterable[str]) -> list[Finding]:
+def scan_files(root: Path, paths: Iterable[str], skipped: list[str] | None = None) -> list[Finding]:
+    """Scan files; paths that could not be scanned (too large) are appended to `skipped`."""
     found: list[Finding] = []
     for rel in paths:
         if rel.startswith(SKIP_PREFIXES) or rel in SKIP_FILES:
             continue
         file = root / rel
-        if not file.is_file() or file.stat().st_size > MAX_BYTES:
+        if not file.is_file():
             continue
-        try:
-            text = file.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
+        if file.stat().st_size > MAX_BYTES:
+            if skipped is not None:
+                skipped.append(f"{rel} (over {MAX_BYTES} bytes)")
             continue
-        found.extend(scan_text(rel, text))
+        found.extend(scan_text(rel, file.read_text(encoding="utf-8", errors="replace")))
     return found
 
 
@@ -134,10 +147,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", default=".")
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
-    findings = scan_files(root, tracked_files(root))
+    skipped: list[str] = []
+    findings = scan_files(root, tracked_files(root), skipped)
     for path, line, rule in findings:
         print(f"{path}:{line}: {rule} (match redacted)")
-    print(f"pii_scan: {len(findings)} finding(s)")
+    for item in skipped:
+        print(f"skipped, not scanned: {item}")
+    print(f"pii_scan: {len(findings)} finding(s), {len(skipped)} file(s) skipped")
     return 1 if findings else 0
 
 

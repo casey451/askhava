@@ -46,8 +46,11 @@ def test_idempotency() -> None:
 
 def test_test_addresses_drive_events() -> None:
     fake = resend.FakeResend()
-    for addr, event in [("delivered@resend.dev", "email.delivered"), ("bounced@resend.dev", "email.bounced"),
-                        ("complained@resend.dev", "email.complained")]:
+    for addr, event in [
+        ("delivered@resend.dev", "email.delivered"),
+        ("bounced@resend.dev", "email.bounced"),
+        ("complained@resend.dev", "email.complained"),
+    ]:
         fake.events.clear()
         fake.send({**MAIL, "to": [addr]})
         assert [e["type"] for e in fake.events] == ["email.sent", event]

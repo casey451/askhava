@@ -61,7 +61,9 @@ class FakeResend:
         if state == "replay" and reply is not None:
             return reply
         if state == "conflict":
-            return error(409, "invalid_idempotent_request", "Same idempotency key used with a different request payload.")
+            return error(
+                409, "invalid_idempotent_request", "Same idempotency key used with a different request payload."
+            )
         return self._idem.store(idempotency_key, params, self._send_new(params))
 
     def _send_new(self, params: dict[str, Any]) -> Reply:
@@ -88,6 +90,9 @@ class FakeResend:
     def signed_webhook(self, event: dict[str, Any], timestamp: int) -> tuple[str, dict[str, str]]:
         payload = json.dumps(event, sort_keys=True)
         msg_id = fake_id("msg_", len(self.events), 16)
-        headers = {"svix-id": msg_id, "svix-timestamp": str(timestamp),
-                   "svix-signature": sign(self.secret, msg_id, timestamp, payload)}
+        headers = {
+            "svix-id": msg_id,
+            "svix-timestamp": str(timestamp),
+            "svix-signature": sign(self.secret, msg_id, timestamp, payload),
+        }
         return payload, headers

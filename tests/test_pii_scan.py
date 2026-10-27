@@ -25,8 +25,12 @@ def test_real_looking_phones_fail() -> None:
     assert rules("928." + "444.1212") == ["phone"]
 
 
-def test_bare_ten_digit_run_is_not_a_phone() -> None:
+def test_bare_ten_digit_run_starting_with_one_is_not_a_phone() -> None:
     assert rules("created_at = 1798400000") == []
+
+
+def test_bare_ten_digit_run_that_could_be_a_phone_fails() -> None:
+    assert rules("contact = 92870" + "01234") == ["phone"]
 
 
 def test_addresses() -> None:
@@ -34,6 +38,11 @@ def test_addresses() -> None:
     assert rules("12 Example Street") == []
     assert rules("4521 Maple" + " Avenue") == ["address"]
     assert rules("987 Lake Havasu" + " Boulevard") == ["address"]
+    assert rules("120 N " + "Smith Street") == ["address"]
+    assert rules("120 NE " + "Smith Street") == ["address"]
+    assert rules("77 " + "McDowell Road") == ["address"]
+    assert rules("9 " + "MacArthur Drive") == ["address"]
+    assert rules("120 N Test Street") == []
 
 
 def test_names_only_from_the_fake_list() -> None:
@@ -76,3 +85,15 @@ def test_output_never_echoes_the_match(tmp_path: Path, capsys: pytest.CaptureFix
 def test_repository_is_clean() -> None:
     root = Path(__file__).resolve().parent.parent
     assert pii_scan.scan_files(root, pii_scan.tracked_files(root)) == []
+
+
+def test_oversize_files_are_reported_and_bad_encoding_is_still_scanned(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (tmp_path / "big.txt").write_text("x" * (pii_scan.MAX_BYTES + 1), encoding="utf-8")
+    (tmp_path / "latin.txt").write_bytes(b"caf\xe9 phone 928-" + b"700-1234")
+    skipped: list[str] = []
+    found = pii_scan.scan_files(tmp_path, ["big.txt", "latin.txt"], skipped)
+    assert [rule for _, _, rule in found] == ["phone"] and skipped == [f"big.txt (over {pii_scan.MAX_BYTES} bytes)"]
+    pii_scan.main(["--root", str(tmp_path)])
+    assert "skipped, not scanned: big.txt" in capsys.readouterr().out

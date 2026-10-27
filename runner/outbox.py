@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from runner.state import State, WAITING_FOR_OWNER, with_task
+from runner.state import WAITING_FOR_OWNER, State, entry, with_task
 
 KINDS = ("question", "approval", "gate", "blocked", "info")
 ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
@@ -57,7 +57,7 @@ def clears(gate: dict[str, Any], text: str) -> bool:
 
 def apply_owner_answer(state: State, gate: dict[str, Any], text: str, now: datetime) -> State:
     """Clear a gate only on its exact phrase; any other answer is recorded and the gate stays."""
-    answers = list(state["tasks"].get(gate["id"], {}).get("answers", [])) + [text]
+    answers = list(entry(state, gate["id"]).get("answers", [])) + [text]
     if clears(gate, text):
         return with_task(state, gate["id"], status="DONE", answers=answers, cleared=now.isoformat())
     return with_task(state, gate["id"], answers=answers)
@@ -68,7 +68,7 @@ def hold_for_gate_p(state: State, outbox_dir: Path) -> State:
     body = f"Your presentation is ready. Reply '{GATE_P_PHRASE}' to start building."
     write_outbox(outbox_dir, GATE_P, "Gate P: your presentation is ready", "gate", body)
     out = with_task(state, GATE_P, status=WAITING_FOR_OWNER)
-    out["build_hold"] = True
+    out["build_hold"] = out.get("build_hold") or f"Gate P: build tasks wait for '{GATE_P_PHRASE}'"
     return out
 
 
@@ -76,5 +76,5 @@ def apply_gate_p_answer(state: State, text: str) -> State:
     out = with_task(state, GATE_P, answer=text)
     if GATE_P_PHRASE in text.lower():
         out = with_task(out, GATE_P, status="DONE")
-        out["build_hold"] = False
+        out["build_hold"] = None
     return out

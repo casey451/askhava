@@ -87,7 +87,9 @@ class FakeStripe:
 
     def create_customer(self, params: dict[str, Any], idempotency_key: str | None = None) -> Reply:
         def make() -> Reply:
-            return 200, dict(self._new("cus_", object="customer", email=params.get("email"), metadata=params.get("metadata", {})))
+            return 200, dict(
+                self._new("cus_", object="customer", email=params.get("email"), metadata=params.get("metadata", {}))
+            )
 
         return self._once(idempotency_key, params, make)
 
@@ -95,11 +97,28 @@ class FakeStripe:
         def make() -> Reply:
             cust, method = params.get("customer"), params.get("payment_method")
             if cust not in self.objects:
-                return error("invalid_request_error", "resource_missing", f"No such customer: '{cust}'", 400, "customer")
+                return error(
+                    "invalid_request_error", "resource_missing", f"No such customer: '{cust}'", 400, "customer"
+                )
             if method is not None and method not in KNOWN_METHODS:
-                return error("invalid_request_error", "resource_missing", f"No such PaymentMethod: '{method}'", 400, "payment_method")
+                return error(
+                    "invalid_request_error",
+                    "resource_missing",
+                    f"No such PaymentMethod: '{method}'",
+                    400,
+                    "payment_method",
+                )
             status = "succeeded" if method else "requires_payment_method"
-            return 200, dict(self._new("seti_", object="setup_intent", customer=cust, payment_method=method, status=status, usage="off_session"))
+            return 200, dict(
+                self._new(
+                    "seti_",
+                    object="setup_intent",
+                    customer=cust,
+                    payment_method=method,
+                    status=status,
+                    usage="off_session",
+                )
+            )
 
         return self._once(idempotency_key, params, make)
 
@@ -111,15 +130,26 @@ class FakeStripe:
         if not isinstance(amount, int) or isinstance(amount, bool):
             return error("invalid_request_error", "parameter_missing", "Missing required param: amount.", 400, "amount")
         if params.get("currency") != "usd":
-            return error("invalid_request_error", "parameter_invalid_empty", "Missing required param: currency.", 400, "currency")
+            return error(
+                "invalid_request_error", "parameter_invalid_empty", "Missing required param: currency.", 400, "currency"
+            )
         if amount < MIN_USD_CENTS:
-            return error("invalid_request_error", "amount_too_small", "Amount must be at least $0.50 usd", 400, "amount")
+            return error(
+                "invalid_request_error", "amount_too_small", "Amount must be at least $0.50 usd", 400, "amount"
+            )
         method = params.get("payment_method")
         if method not in KNOWN_METHODS or params.get("customer") not in self.objects:
             return error("invalid_request_error", "resource_missing", "No such customer or payment method", 400)
         decline = DECLINES.get(method)
-        fields = {"object": "payment_intent", "amount": amount, "currency": "usd", "customer": params["customer"],
-                  "payment_method": method, "amount_refunded": 0, "metadata": params.get("metadata", {})}
+        fields = {
+            "object": "payment_intent",
+            "amount": amount,
+            "currency": "usd",
+            "customer": params["customer"],
+            "payment_method": method,
+            "amount_refunded": 0,
+            "metadata": params.get("metadata", {}),
+        }
         if decline is None:
             pi = self._new("pi_", status="succeeded", amount_received=amount, **fields)
             self._event("payment_intent.succeeded", pi)
@@ -142,10 +172,17 @@ class FakeStripe:
         left = pi["amount_received"] - pi["amount_refunded"]
         amount = params.get("amount", left)
         if not isinstance(amount, int) or amount <= 0 or amount > left:
-            return error("invalid_request_error", "charge_already_refunded" if left == 0 else "parameter_invalid_integer",
-                         "Refund amount is greater than unrefunded amount on charge", 400, "amount")
+            return error(
+                "invalid_request_error",
+                "charge_already_refunded" if left == 0 else "parameter_invalid_integer",
+                "Refund amount is greater than unrefunded amount on charge",
+                400,
+                "amount",
+            )
         pi["amount_refunded"] += amount
-        refund = self._new("re_", object="refund", payment_intent=pi["id"], amount=amount, currency="usd", status="succeeded")
+        refund = self._new(
+            "re_", object="refund", payment_intent=pi["id"], amount=amount, currency="usd", status="succeeded"
+        )
         self._event("charge.refunded", pi)
         return 200, dict(refund)
 

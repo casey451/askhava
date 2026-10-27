@@ -32,8 +32,13 @@ def test_errors_use_twilio_envelope() -> None:
 
 def test_magic_numbers() -> None:
     fake = twilio.FakeTwilio()
-    for to, code in [("+15005550001", 21211), ("+15005550002", 21612), ("+15005550003", 21408),
-                     ("+15005550004", 21610), ("+15005550009", 21614)]:
+    for to, code in [
+        ("+15005550001", 21211),
+        ("+15005550002", 21612),
+        ("+15005550003", 21408),
+        ("+15005550004", 21610),
+        ("+15005550009", 21614),
+    ]:
         assert fake.create_message(to, OURS, "x")[1]["code"] == code
     assert fake.messages == []
 
@@ -56,7 +61,7 @@ def test_segment_counting() -> None:
 
 def test_stop_words_opt_out_until_start() -> None:
     fake = twilio.FakeTwilio()
-    for word in ["STOP", "stopall", "Unsubscribe", "CANCEL", "end", "QUIT"]:
+    for word in ["STOP", "stopall", "Unsubscribe", "CANCEL", "end", "QUIT", "revoke", "OptOut"]:
         fake.opted_out.clear()
         fake.receive(HOMEOWNER, OURS, word)
         assert fake.create_message(HOMEOWNER, OURS, "x")[1]["code"] == 21610
