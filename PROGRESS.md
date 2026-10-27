@@ -30,3 +30,4 @@
 - 2026-10-27: K5 pushed @ f4f17e0 (docs/test-design.md, docs/twin-warnings.md, D-101..D-110). Opus review: 2 blocking + 8 non-blocking, all fixed in one round. Checks run here: trace_spec 0 errors, check_catalog 0 errors, sources fingerprint ok (pytest 64 passed on first pass; not re-run after fixes); path check: docs only. K5 MERGE_PENDING.
 - 2026-10-27: K5 DONE (PR #11 merged, Ci/Twin/Ally green on f4f17e0, tree d94e5454 == squash c8ffcc8). K6 claimed.
 - 2026-10-27: K6 pushed @ 4e18e4c (kit/tasks.json 146 steps, validate_tasks.py, D-111..D-119). Opus review: 4 blocking + 6 non-blocking, all fixed in one round. Checks run here: validate_tasks 0 errors, trace_spec 0, check_catalog 0, fingerprint ok, pytest 115 passed; path check: kit/, scripts/, tests/, docs only. K6 MERGE_PENDING.
+- 2026-10-27: K6 DONE (PR #12 merged, Ci/Twin/Ally green on 4e18e4c, tree 6738ea03 == squash aa995a7). Inbox: Casey closed test issue #6; no wait pending.

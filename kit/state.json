@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "phase": "kit",
-  "current": "K6",
+  "current": "K7",
   "backup_runner": "off",
   "ruleset_verified": true,
   "lease": null,
@@ -185,16 +185,18 @@
       "model": "claude-opus-5-5",
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
-      "status": "MERGE_PENDING",
+      "status": "DONE",
       "attempts": 1,
       "model_used": "claude-opus-5-5",
       "branch": "claude/task/K6-task-graph",
-      "pr": null,
-      "head_sha": "4e18e4c",
+      "pr": 12,
+      "head_sha": "4e18e4cf165944337d272643bb621c1d35f1dea5",
       "waits_on_owner": null,
       "reviewed_by": "claude-opus-5-5",
       "review_rounds": 1,
-      "model_evidence": "worker run with model=opus; not independently verified from transcript"
+      "model_evidence": "worker run with model=opus; not independently verified from transcript",
+      "merged_sha": "aa995a7",
+      "evidence": "PR #12 merged; Ci/Twin/Ally success on head 4e18e4c; tree 6738ea03 == squash aa995a7"
     },
     {
       "id": "K7",
@@ -276,8 +278,16 @@
     }
   ],
   "owner_waits": [],
-  "owner_answers": [],
-  "inbox_processed": [],
+  "owner_answers": [
+    {
+      "issue": 6,
+      "file": "6-closed-40546715805.md",
+      "note": "Casey closed notify-test issue #6 (after replying \"Got it\"); no wait pending"
+    }
+  ],
+  "inbox_processed": [
+    "6-closed-40546715805.md"
+  ],
   "usage": {
     "last_reading": null
   },
