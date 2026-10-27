@@ -26,3 +26,4 @@
 - 2026-10-27: K3 pushed @ f1234ad; 52 decisions (D-038..D-089). Opus review: 3 blocking + 8 non-blocking, all fixed in one round. Checks run here: trace_spec 0 errors, check_catalog 0 errors, pytest 64 passed, sources fingerprint ok; path check: docs only. K3 MERGE_PENDING.
 - 2026-10-27: K3 DONE (PR #9 merged, Ci/Twin/Ally green on f1234ad, tree f114dc61 == squash 52fa19d). K4 claimed.
 - 2026-10-27: K4 pushed @ 75610c4 (architecture, threat model, D-090..D-100). Opus review: 4 blocking + 12 non-blocking, all fixed in one round. Checks run here: trace_spec 0 errors, check_catalog 0 errors, pytest 64 passed, sources fingerprint ok; path check: docs only. K4 MERGE_PENDING.
+- 2026-10-27: K4 DONE (PR #10 merged, Ci/Twin/Ally green on 75610c4, tree 3f7f5847 == squash 5b020c7).

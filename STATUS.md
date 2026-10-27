@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 5 of 11 (K0, K1, K2, K2b, K3)
+**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 6 of 11 (K0, K1, K2, K2b, K3, K4)
 
 ## Running now
 - **K4 architecture:** handed in, waiting to merge (MERGE_PENDING).
