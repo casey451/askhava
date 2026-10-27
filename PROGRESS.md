@@ -46,3 +46,9 @@
   - P2 (Haiku, model verified): Ci red by design and not merged; PR #17 closed, branch kept.
   - P3 is set to RETRY_AFTER_RESET (reset at 20:00Z) to prove an hourly resume.
   - Next cycle: run P3, then the K9 report PR (`docs/rehearsal.md`, `kit/schedule.json`, decisions D-127 onward).
+- 2026-10-27 21:40Z: **K9 handed in** at 95e21ee: `docs/rehearsal.md`, `kit/schedule.json`, decisions D-166 to D-171 and the K9 section of `for-casey-review.md`.
+  - Worker: Opus (model verified, 46 records).
+  - Opus fresh-eyes review: 3 blocking findings (the lease incident written backwards, an overclaimed resume proof, the merge-trigger wording) and 6 non-blocking, all fixed in one round.
+  - Checks run here: pytest 257 passed; validate_tasks, trace_spec and check_catalog 0 errors; pii_scan 0; gen_prompts 0 problems; sources fingerprint ok.
+  - Finding: two schedulers are firing runners. The fresh sessions worked inside this session's live K9 lease at 20:11 and 20:14. Recommendation: keep the UI routine and delete the hourly session trigger.
+  - K9 is MERGE_PENDING and the lease is released.

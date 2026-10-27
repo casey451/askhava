@@ -3,12 +3,11 @@
 **Updated:** 2026-10-27 20:30 UTC · **Phase:** kit · **Done:** 10 of 11 kit steps (K0–K8 plus K2b), plus one fix-main task
 
 ## Running now
-- **K9 rehearsal:** in progress, held by the hourly runner.
-  - **P1 (should pass):** passed and merged (PR #18).
-  - **P2 (fails on purpose):** went red and never merged (PR #17 closed).
-  - **P3 double trigger:** the second claim was rejected, as it should be.
-  - **P3 usage limit:** resumed after the reset; PR #21 merged.
-  - Then the K9 report and `kit/schedule.json` go in as one pull request.
+- **K9 rehearsal:** handed in (branch `claude/task/K9-rehearsal`) and waiting to merge.
+  - P1 passed and merged (#18).
+  - P2 failed on purpose and never merged (#17 closed).
+  - P3 resumed and merged after its simulated usage-limit reset (#21).
+  - Report: `docs/rehearsal.md`, `kit/schedule.json`, decisions D-166 to D-171.
 
 ## Blocked
 - Nothing. P2 is BLOCKED on purpose as part of the rehearsal.
@@ -30,7 +29,7 @@
 | K7 Task prompts | Done (#13) |
 | Fix main (Gate P citations) | Done (#15) |
 | K8 Harness and runner | Done (#16) |
-| K9 Rehearsal | In progress |
+| K9 Rehearsal | Waiting to merge |
 | Gate A | Skipped (replaced by Gate P) |
 | Gate P (your "approved to build") | Next, after K9 |
 
