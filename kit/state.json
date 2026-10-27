@@ -1,10 +1,14 @@
 {
   "schema": 1,
   "phase": "kit",
-  "current": "K2b",
+  "current": "K3",
   "backup_runner": "off",
   "ruleset_verified": true,
-  "lease": null,
+  "lease": {
+    "task": "K3",
+    "session": "https://claude.ai/code/session_01DyjzW6Z8iLMkrdpignKGvK",
+    "expires": "2026-10-27T18:42:43.422606Z"
+  },
   "tasks": [
     {
       "id": "K0",
@@ -87,16 +91,18 @@
       "model": "claude-opus-5-5",
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
-      "status": "MERGE_PENDING",
+      "status": "DONE",
       "attempts": 1,
       "model_used": "claude-opus-5-5",
       "branch": "claude/task/K2b-catalog",
-      "pr": null,
+      "pr": 8,
       "head_sha": "8cb43dd727c503435644bccc703f69d154ad0546",
       "waits_on_owner": null,
       "reviewed_by": "claude-opus-5-5",
       "review_rounds": 1,
-      "model_evidence": "worker run with model=opus; not independently verified from transcript"
+      "model_evidence": "worker run with model=opus; not independently verified from transcript",
+      "merged_sha": "9981709",
+      "evidence": "PR #8 merged; Ci/Twin/Ally success on head 8cb43dd; tree 3da17a2b == squash 9981709"
     },
     {
       "id": "K3",
@@ -110,10 +116,10 @@
       "model": "claude-opus-5-5",
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
-      "status": "QUEUED",
-      "attempts": 0,
+      "status": "CLAIMED",
+      "attempts": 1,
       "model_used": null,
-      "branch": null,
+      "branch": "claude/task/K3-clarify",
       "pr": null,
       "head_sha": null,
       "waits_on_owner": null
