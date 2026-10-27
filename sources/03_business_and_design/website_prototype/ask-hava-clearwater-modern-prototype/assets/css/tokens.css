@@ -1,0 +1,11 @@
+:root {
+  --ink: #153342; --ink-soft:#3a5661; --lake:#086e76; --lake-dark:#07555d; --lake-light:#e3f0ef;
+  --cream:#fbfaf6; --paper:#ffffff; --sand:#efe8db; --sand-deep:#aa8657; --border:#b6c8ca;
+  --alert:#8c291d; --alert-bg:#fff1eb; --success:#22614d; --success-bg:#e8f4ed;
+  --focus:#9a4900; --muted:#60757d; --night:#112b38;
+  --font-body:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-display:'DM Serif Display',Georgia,serif;
+  --s1:.35rem; --s2:.65rem; --s3:1rem; --s4:1.5rem; --s5:2rem; --s6:3rem; --s7:4.5rem;
+  --round-sm:.6rem; --round:1.25rem; --round-lg:2rem; --shadow:0 20px 60px rgba(21,51,66,.08);
+  --content:1160px;
+}

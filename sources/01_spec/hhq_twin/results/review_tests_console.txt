@@ -1,0 +1,76 @@
+
+Neighboring-town jobs respect the license
+   v9.1:  FAIL - a drains-only license GOT a water-heater job in the neighboring town
+   v9.3:  PASS - a drains-only license did not get a water-heater job in the neighboring town
+
+Restore: payment notice landed in the lost window, Stripe down at restore time
+   v9.1:  FAIL - request PAYMENT_PENDING, free wins recorded 0, charges booked 0, problems: none
+   v9.3:  PASS - request CONNECTED, free wins recorded 0, charges booked 1, problems: none
+
+Restore: free first win confirmed in the lost window
+   v9.1:  FAIL - request QUOTES_READY, first win used: False, homeowner wrongly told 'couldn't take': True
+   v9.3:  PASS - request CONNECTED, first win used: True, homeowner wrongly told 'couldn't take': False
+
+Restore: contractor talked to the homeowner, then the homeowner closed the job, in the lost window
+   v9.1:  PASS - contractor talked to the homeowner before the CLOSE; refunded $0 (should be $0)
+   v9.3:  PASS - contractor talked to the homeowner before the CLOSE; refunded $0 (should be $0)
+
+Restore: partial refund and a dispute on an older charge in the lost window
+   v9.1:  FAIL - dispute booked: False; refund books match Stripe: False ['pi_1 refunds: books $0 vs Stripe $10.0']
+   v9.3:  PASS - dispute booked: True; refund books match Stripe: True 
+
+Restore: quotes and quote links from the lost window
+   v9.1:  FAIL - quotes before restore 3, after 0; the texted link is dead
+   v9.3:  PASS - quotes before restore 1, after 1; the texted link still works
+
+Collision: homeowner closes the job as Stripe confirms payment (both orders)
+   v9.1:  PASS - AB: ok | BA: ok
+   v9.3:  PASS - AB: ok | BA: ok
+
+Collision: Confirm deadline vs a late Confirm (both orders)
+   v9.1:  PASS - AB: ok | BA: ok
+   v9.3:  PASS - AB: ok | BA: ok
+
+Collision: bank-approval deadline vs the approval (both orders)
+   v9.1:  PASS - AB: ok | BA: ok
+   v9.3:  PASS - AB: ok | BA: ok
+
+Collision: refund decision vs a connected call (both orders)
+   v9.1:  PASS - AB: ok | BA: ok
+   v9.3:  PASS - AB: ok | BA: ok
+
+Collision: Stripe's notice arrives before the app saves the charge
+   v9.1:  PASS - pick is 'payment_failed', contractor told about the declined card: True
+   v9.3:  PASS - pick is 'payment_failed', contractor told about the declined card: True
+
+Database restored to before a paid introduction
+   v9.1:  FAIL - after the restore: request 1041 is QUOTES_READY (the contractor already has the details); 1 charge(s) kept with no record; job number 1042 REUSED for a different homeowner
+   v9.3:  PASS - after the restore: request 1041 is CONNECTED (the contractor already has the details); 0 charge(s) kept with no record; job number 1042 not reused
+
+Cancelled during a Stripe outage, contractor charged anyway
+   v9.1:  FAIL - request CANCELLED, contractor charged and kept: ['$59']
+   v9.3:  PASS - request CANCELLED, contractor charged and kept: nothing
+
+Homeowner texts CANCEL: request should close
+   v9.1:  FAIL - after a bare CANCEL the request is OPEN and has 2 quotes nobody will see
+   v9.3:  PASS - after a bare CANCEL the request is CANCELLED and has 0 quotes nobody will see
+
+'I smell gas' at the consent step during an AI outage
+   v9.1:  FAIL - safety text within 5 minutes: no
+   v9.3:  PASS - safety text within 5 minutes: yes
+
+Homeowner answers the consent prompt with 'Yes'
+   v9.1:  FAIL - 'Yes' accepted as consent: False; requests created: 0
+   v9.3:  PASS - 'Yes' accepted as consent: True; requests created: 1
+
+Stripe's payment notice is lost
+   v9.1:  FAIL - Stripe took the money but its notice never arrived: request is PAYMENT_PENDING, contractor does NOT have the job
+   v9.3:  PASS - Stripe took the money but its notice never arrived: request is CONNECTED, contractor has the job
+
+Same business, two accounts: one free first win
+   v9.1:  FAIL - free first wins given to one business: 2
+   v9.3:  PASS - free first wins given to one business: 1
+
+Handyman quote over $1,000
+   v9.1:  FAIL - a $1,350 handyman quote was shown to the homeowner
+   v9.3:  PASS - a $1,350 handyman quote was blocked

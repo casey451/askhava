@@ -1,0 +1,122 @@
+{
+ "plumbing": {
+  "activated_per_run": 6.62,
+  "left_per_run": 5.14,
+  "left_share": 0.7764350453172205,
+  "left_with_0_wins_share": 0.038910505836575876
+ },
+ "boat": {
+  "activated_per_run": 22.84,
+  "left_per_run": 15.18,
+  "left_share": 0.6646234676007006,
+  "left_with_0_wins_share": 0.2859025032938076
+ },
+ "pwash": {
+  "activated_per_run": 2.22,
+  "left_per_run": 1.36,
+  "left_share": 0.6126126126126126,
+  "left_with_0_wins_share": 0.45588235294117646
+ },
+ "landscape": {
+  "activated_per_run": 18.98,
+  "left_per_run": 5.94,
+  "left_share": 0.3129610115911486,
+  "left_with_0_wins_share": 0.632996632996633
+ },
+ "detail": {
+  "activated_per_run": 9.82,
+  "left_per_run": 7.1,
+  "left_share": 0.7230142566191446,
+  "left_with_0_wins_share": 0.11549295774647887
+ },
+ "pool": {
+  "activated_per_run": 17.62,
+  "left_per_run": 9.56,
+  "left_share": 0.5425652667423383,
+  "left_with_0_wins_share": 0.2405857740585774
+ },
+ "hvac": {
+  "activated_per_run": 7.32,
+  "left_per_run": 5.76,
+  "left_share": 0.7868852459016393,
+  "left_with_0_wins_share": 0.059027777777777776
+ },
+ "pest": {
+  "activated_per_run": 5.64,
+  "left_per_run": 2.76,
+  "left_share": 0.48936170212765956,
+  "left_with_0_wins_share": 0.1956521739130435
+ },
+ "junk": {
+  "activated_per_run": 1.94,
+  "left_per_run": 1.14,
+  "left_share": 0.5876288659793815,
+  "left_with_0_wins_share": 0.21052631578947367
+ },
+ "movers": {
+  "activated_per_run": 1.74,
+  "left_per_run": 0.94,
+  "left_share": 0.5402298850574713,
+  "left_with_0_wins_share": 0.40425531914893614
+ },
+ "cleaning": {
+  "activated_per_run": 11.18,
+  "left_per_run": 4.84,
+  "left_share": 0.4329159212880143,
+  "left_with_0_wins_share": 0.17768595041322313
+ },
+ "electrical": {
+  "activated_per_run": 9.06,
+  "left_per_run": 6.56,
+  "left_share": 0.7240618101545254,
+  "left_with_0_wins_share": 0.12195121951219512
+ },
+ "roof": {
+  "activated_per_run": 6.38,
+  "left_per_run": 3.56,
+  "left_share": 0.5579937304075235,
+  "left_with_0_wins_share": 0.42696629213483145
+ },
+ "handyman": {
+  "activated_per_run": 2.42,
+  "left_per_run": 1.88,
+  "left_share": 0.7768595041322314,
+  "left_with_0_wins_share": 0.010638297872340425
+ },
+ "solar": {
+  "activated_per_run": 2.08,
+  "left_per_run": 1.1,
+  "left_share": 0.5288461538461539,
+  "left_with_0_wins_share": 0.3090909090909091
+ },
+ "painting": {
+  "activated_per_run": 5.2,
+  "left_per_run": 3.68,
+  "left_share": 0.7076923076923077,
+  "left_with_0_wins_share": 0.1793478260869565
+ },
+ "window": {
+  "activated_per_run": 2.22,
+  "left_per_run": 1.08,
+  "left_share": 0.4864864864864865,
+  "left_with_0_wins_share": 0.42592592592592593
+ },
+ "appliance": {
+  "activated_per_run": 1.74,
+  "left_per_run": 1.06,
+  "left_share": 0.6091954022988506,
+  "left_with_0_wins_share": 0.4716981132075472
+ },
+ "garage": {
+  "activated_per_run": 1.36,
+  "left_per_run": 0.88,
+  "left_share": 0.6470588235294118,
+  "left_with_0_wins_share": 0.4090909090909091
+ },
+ "trashcan": {
+  "activated_per_run": 0.42,
+  "left_per_run": 0.14,
+  "left_share": 0.3333333333333333,
+  "left_with_0_wins_share": 0.42857142857142855
+ }
+}

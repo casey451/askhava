@@ -1,0 +1,440 @@
+
+== normal: Pilot-to-launch in Lake Havasu City, 5 requests a day, normal vendor reliability
+   requests 309, cards 936, quotes 569, picks 63, paid 23, free 15, charged $1314, net $722.66, owner 95 min
+     285.8 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     173.2 x  job_card_outside_license   e.g. water_heater job to a R-6 license (Lake Pool Co 19)
+      76.6 x  qualified_business_left_out   e.g. request 1086 (water_heater) not sent to Lake Plumbing Co 4
+      48.6 x  english_text_to_spanish_speaker   e.g. consent
+      29.8 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Electri'
+      29.6 x  identifying_text_in_job_card   e.g. card K33: 'Heater makes a loud rattle 86403 my number is nine two eight five five'
+      23.4 x  duplicate_open_requests   e.g. 1256 and 1263
+      17.6 x  text_in_quiet_hours   e.g. yes_request at 7:00
+      14.8 x  handyman_over_1000   e.g. quote Q21 $1266-1379
+      13.8 x  texter_never_answered   e.g. 0004 asked for help on day 2 and heard nothing for 24 hours
+      10.2 x  identifying_photo_in_job_card   e.g. card K21
+       7.2 x  help_not_answered   e.g. HELP from ...0074
+       7.0 x  job_card_to_unlicensed_contractor   e.g. Lake Hvac Co 6 (lapsing)
+       3.2 x  request_left_open_after_stop   e.g. request 1055 was NO_QUOTES_YET when the homeowner texted STOP/CANCEL
+       3.0 x  promise_missed   e.g. request 1079
+       2.8 x  quotes_never_reached_homeowner   e.g. request 1079
+       1.8 x  natural_optout_ignored   e.g. 'please stop texting me' then duplicate
+       1.2 x  free_first_win_reused   e.g. ENT11
+       1.0 x  call_blocked_unlinked_staff_phone   e.g. KS16: staff phone blocked and no call got through within 3 hours
+       1.0 x  request_stuck_waiting   e.g. request 1239 in PAYMENT_PENDING since day 38
+       1.0 x  pick_stuck   e.g. pick P42 still 'charging' after 2 days
+       0.8 x  major_fee_on_small_job   e.g. request 1114
+       0.8 x  rental_without_onsite_contact   e.g. request 1075
+       0.6 x  job_card_sent_for_emergency   e.g. Burning plastic smell from an outlet 86406
+       0.4 x  pick_lost_to_failed_text   e.g. pick P31
+       0.4 x  pick_not_intended_by_homeowner   e.g. request 1192
+       0.4 x  unreached_homeowner_no_refund   e.g. pick P21 (2 attempts, no conversation)
+       0.4 x  emergency_without_safety_message   e.g. Breaker panel is sparking
+       0.2 x  details_released_to_unlicensed   e.g. request 1145 to Lake Hvac Co 6 (lapsing)
+       0.2 x  details_released_wrongly   e.g. request 1310 to Lake Handyman Co 15: paid=True free=False request_live=False
+       0.2 x  charged_but_not_introduced   e.g. pick P43 ($29 kept)
+       0.2 x  safety_message_late   e.g. 7 min: Pilot light smells funny and my head hurts
+
+== normal_fixed: Pilot-to-launch in Lake Havasu City, 5 requests a day, normal vendor reliability - WITH the v9.3 fixes
+   requests 298, cards 757, quotes 466, picks 161, paid 87, free 16, charged $5227, net $3972.16, owner 300 min
+       5.4 x  qualified_business_left_out   e.g. request 1044 (doors) not sent to Lake Handyman Co 14
+       2.8 x  job_card_outside_license   e.g. heating_repair job to a HANDYMAN license (Lake Handyman Co 14)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS37: staff phone blocked and no call got through within 3 hours
+
+== busy: 16 requests a day (about 5 booked jobs a day), summer HVAC-heavy
+   requests 952, cards 2540, quotes 1536, picks 165, paid 92, free 20, charged $5931, net $4676.34, owner 205 min
+     869.2 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     431.8 x  job_card_outside_license   e.g. pool_remodel job to a R-6 license (Lake Pool Co 19)
+     197.8 x  qualified_business_left_out   e.g. request 1081 (heating_repair) not sent to Lake Hvac Co 8
+     129.2 x  english_text_to_spanish_speaker   e.g. consent
+      80.8 x  identifying_text_in_job_card   e.g. card K127: 'AC blowing warm air my number is nine two eight five five five one two'
+      80.0 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Plumbin'
+      66.4 x  duplicate_open_requests   e.g. 1069 and 1081
+      51.2 x  text_in_quiet_hours   e.g. yes_request at 21:00
+      44.8 x  handyman_over_1000   e.g. quote Q171 $1231-None
+      41.2 x  job_card_to_unlicensed_contractor   e.g. Lake Plumbing Co 21 (fraud)
+      34.6 x  texter_never_answered   e.g. 0030 asked for help on day 2 and heard nothing for 24 hours
+      27.4 x  identifying_photo_in_job_card   e.g. card K234
+      18.2 x  help_not_answered   e.g. HELP from ...0059
+      15.4 x  request_left_open_after_stop   e.g. request 1119 was AWAITING_YES when the homeowner texted STOP/CANCEL
+      10.2 x  promise_missed   e.g. request 1071
+      10.0 x  quotes_never_reached_homeowner   e.g. request 1071
+       6.2 x  request_stuck_waiting   e.g. request 1103 in AWAITING_CONFIRM since day 3
+       6.2 x  pick_stuck   e.g. pick P13 still 'needs_card' after 2 days
+       3.4 x  pick_lost_to_failed_text   e.g. pick P34
+       3.0 x  natural_optout_ignored   e.g. 'please stop texting me' then status
+       2.6 x  rental_without_onsite_contact   e.g. request 1280
+       2.4 x  details_released_to_unlicensed   e.g. request 1119 to Lake Plumbing Co 21 (fraud)
+       1.6 x  charged_but_not_introduced   e.g. pick P31 ($45 kept)
+       1.6 x  emergency_without_safety_message   e.g. Water everywhere from a burst pipe in the wall
+       1.6 x  pick_not_intended_by_homeowner   e.g. request 1482
+       1.4 x  major_fee_on_small_job   e.g. request 1122
+       1.2 x  details_released_wrongly   e.g. request 1218 to Lake Electrical Co 11: paid=True free=False request_live=False
+       1.2 x  call_blocked_unlinked_staff_phone   e.g. KS1: staff phone blocked and no call got through within 3 hours
+       1.2 x  job_card_sent_for_emergency   e.g. Pilot light smells funny and my head hurts 86406
+       1.2 x  free_first_win_reused   e.g. ENT1
+       1.0 x  unreached_homeowner_no_refund   e.g. pick P30 (2 attempts, no conversation)
+       0.4 x  stripe_charge_missing_from_ledger   e.g. pi_28
+       0.4 x  contractor_statement_mismatch   e.g. B19: portal $180 vs Stripe $225
+       0.2 x  fraudulent_contractor_activated   e.g. Lake Plumbing Co 21
+       0.2 x  safety_message_late   e.g. 20 min: Pilot light smells funny and my head hurts
+
+== busy_fixed: 16 requests a day (about 5 booked jobs a day), summer HVAC-heavy - WITH the v9.3 fixes
+   requests 909, cards 1778, quotes 1047, picks 360, paid 225, free 17, charged $13727, net $10651.99, owner 375 min
+      15.4 x  qualified_business_left_out   e.g. request 1067 (thermostat) not sent to Lake Hvac Co 8
+       7.0 x  job_card_outside_license   e.g. thermostat job to a HANDYMAN license (Lake Handyman Co 15)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS60: staff phone blocked and no call got through within 3 hours
+       0.2 x  texter_never_answered   e.g. 0308 asked for help on day 43 and heard nothing for 24 hours
+
+== vendor_chaos: Vendors misbehave: 5% texts fail, delays, 20% duplicate and 30% delayed webhooks, a Stripe outage, an AI outage, ROC CAPTCHAs
+   requests 332, cards 920, quotes 523, picks 37, paid 7, free 15, charged $343, net $-60.95, owner 130 min
+     286.4 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     233.0 x  job_card_outside_license   e.g. pool_remodel job to a R-37 license (Lake Plumbing Co 2)
+     115.4 x  qualified_business_left_out   e.g. request 1044 (pool_remodel) not sent to Lake Pool Co 17
+      45.8 x  english_text_to_spanish_speaker   e.g. consent
+      39.8 x  duplicate_open_requests   e.g. 1060 and 1061
+      32.8 x  identifying_text_in_job_card   e.g. card K21: 'Half the outlets in the garage stopped working 86406 my number is nine'
+      24.2 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Pool Co'
+      21.0 x  texter_never_answered   e.g. 0004 asked for help on day 2 and heard nothing for 24 hours
+      19.6 x  text_in_quiet_hours   e.g. yes_request at 7:00
+      15.8 x  handyman_over_1000   e.g. quote Q57 $1043-1174
+      10.6 x  identifying_photo_in_job_card   e.g. card K145
+      10.2 x  promise_missed   e.g. request 1041
+      10.0 x  job_card_to_unlicensed_contractor   e.g. Lake Hvac Co 6 (lapsing)
+       9.8 x  quotes_never_reached_homeowner   e.g. request 1041
+       6.8 x  request_left_open_after_stop   e.g. request 1074 was NO_QUOTES_YET when the homeowner texted STOP/CANCEL
+       5.4 x  help_not_answered   e.g. HELP from ...0002
+       2.4 x  natural_optout_ignored   e.g. 'please stop texting me' then duplicate
+       2.2 x  pick_stuck   e.g. pick P10 still 'charging' after 2 days
+       2.0 x  pick_lost_to_failed_text   e.g. pick P18
+       1.8 x  request_stuck_waiting   e.g. request 1118 in PAYMENT_PENDING since day 10
+       1.2 x  more_than_one_optout_confirmation   e.g. ...0197
+       1.2 x  charged_but_not_introduced   e.g. pick P10 ($149 kept)
+       1.2 x  stripe_charge_missing_from_ledger   e.g. pi_2
+       1.2 x  contractor_statement_mismatch   e.g. B8: portal $0 vs Stripe $45
+       1.0 x  job_card_sent_for_emergency   e.g. Pilot light smells funny and my head hurts 86403
+       1.0 x  rental_without_onsite_contact   e.g. request 1339
+       0.8 x  call_blocked_unlinked_staff_phone   e.g. KS4: staff phone blocked and no call got through within 3 hours
+       0.6 x  free_first_win_reused   e.g. ENT1
+       0.6 x  charged_after_confirm_window   e.g. pick P20
+       0.4 x  emergency_without_safety_message   e.g. Pilot light smells funny and my head hurts 86403
+       0.4 x  safety_message_late   e.g. 16 min: Burning plastic smell from an outlet 86406
+       0.4 x  unreached_homeowner_no_refund   e.g. pick P24 (2 attempts, no conversation)
+       0.4 x  major_fee_on_small_job   e.g. request 1248
+       0.2 x  details_released_to_unlicensed   e.g. request 1228 to Lake Hvac Co 7 (lapsing)
+       0.2 x  details_released_wrongly   e.g. request 1267 to Lake Hvac Co 5: paid=True free=False request_live=False
+
+== vendor_chaos_fixed: Vendors misbehave: 5% texts fail, delays, 20% duplicate and 30% delayed webhooks, a Stripe outage, an AI outage, ROC CAPTCHAs - WITH the v9.3 fixes
+   requests 297, cards 798, quotes 471, picks 162, paid 88, free 15, charged $5412, net $3868.15, owner 330 min
+       5.2 x  qualified_business_left_out   e.g. request 1170 (heating_repair) not sent to Lake Hvac Co 6
+       2.4 x  job_card_outside_license   e.g. water_heater job to a R-39 license (Lake Hvac Co 6)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS76: staff phone blocked and no call got through within 3 hours
+
+== adversarial: Bad actors: oversharers, prompt injection, forwarded links, fee bypassers, fraud sign-ups, impatient duplicates
+   requests 327, cards 990, quotes 562, picks 65, paid 27, free 19, charged $1492, net $939.43, owner 160 min
+     297.8 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     202.6 x  job_card_outside_license   e.g. drain_sewer job to a R-11 license (Lake Electrical Co 10)
+      93.2 x  identifying_text_in_job_card   e.g. card K51: 'Pool filter needs replacing 86403 ask for Pat22'
+      78.4 x  qualified_business_left_out   e.g. request 1050 (drain_sewer) not sent to Lake Plumbing Co 4
+      42.8 x  english_text_to_spanish_speaker   e.g. consent
+      28.2 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Handyma'
+      22.2 x  duplicate_open_requests   e.g. 1073 and 1081
+      19.2 x  text_in_quiet_hours   e.g. yes_request at 21:10
+      13.2 x  texter_never_answered   e.g. 0001 asked for help on day 0 and heard nothing for 24 hours
+      12.0 x  handyman_over_1000   e.g. quote Q49 $1256-1504
+      10.4 x  identifying_photo_in_job_card   e.g. card K255
+       5.8 x  job_card_to_unlicensed_contractor   e.g. Lake Pool Co 17 (lapsing)
+       5.2 x  promise_missed   e.g. request 1167
+       5.0 x  help_not_answered   e.g. HELP from ...0009
+       4.2 x  quotes_never_reached_homeowner   e.g. request 1167
+       3.6 x  call_blocked_unlinked_staff_phone   e.g. KS5: staff phone blocked and no call got through within 3 hours
+       2.8 x  request_left_open_after_stop   e.g. request 1153 was NO_QUOTES_YET when the homeowner texted STOP/CANCEL
+       1.2 x  natural_optout_ignored   e.g. 'please stop texting me' then duplicate
+       1.2 x  free_first_win_reused   e.g. ENT1
+       1.0 x  emergency_without_safety_message   e.g. Burning plastic smell from an outlet 86406
+       0.8 x  pick_not_intended_by_homeowner   e.g. request 1210
+       0.8 x  rental_without_onsite_contact   e.g. request 1159
+       0.8 x  details_released_to_unlicensed   e.g. request 1058 to Lake Electrical Co 22 (fraud)
+       0.6 x  charged_but_not_introduced   e.g. pick P21 ($59 kept)
+       0.4 x  fraudulent_contractor_activated   e.g. Lake Handyman Co 22
+       0.4 x  stripe_charge_missing_from_ledger   e.g. pi_9
+       0.4 x  contractor_statement_mismatch   e.g. B8: portal $118 vs Stripe $177
+       0.4 x  request_stuck_waiting   e.g. request 1169 in PAYMENT_PENDING since day 20
+       0.4 x  pick_stuck   e.g. pick P21 still 'charging' after 2 days
+       0.4 x  pick_lost_to_failed_text   e.g. pick P35
+       0.4 x  major_fee_on_small_job   e.g. request 1124
+       0.2 x  details_released_wrongly   e.g. request 1330 to Lake Handyman Co 22: paid=True free=False request_live=False
+       0.2 x  job_card_sent_for_emergency   e.g. Burning plastic smell from an outlet 86406
+       0.2 x  safety_message_late   e.g. 8 min: Burning plastic smell from an outlet 86405
+       0.2 x  unreached_homeowner_no_refund   e.g. pick P24 (2 attempts, no conversation)
+
+== adversarial_fixed: Bad actors: oversharers, prompt injection, forwarded links, fee bypassers, fraud sign-ups, impatient duplicates - WITH the v9.3 fixes
+   requests 314, cards 771, quotes 370, picks 136, paid 71, free 16, charged $4279, net $3116.0, owner 375 min
+       4.6 x  qualified_business_left_out   e.g. request 1105 (drain_sewer) not sent to Lake Plumbing Co 2
+       2.6 x  job_card_outside_license   e.g. leak_repair job to a R-6 license (Lake Pool Co 18)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS17: staff phone blocked and no call got through within 3 hours
+       0.2 x  texter_never_answered   e.g. 0001 asked for help on day 10 and heard nothing for 24 hours
+
+== owner_away: Casey unavailable days 20-34 (illness or training)
+   requests 309, cards 936, quotes 569, picks 63, paid 23, free 15, charged $1314, net $722.66, owner 95 min
+     285.8 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     173.2 x  job_card_outside_license   e.g. water_heater job to a R-6 license (Lake Pool Co 19)
+      76.6 x  qualified_business_left_out   e.g. request 1086 (water_heater) not sent to Lake Plumbing Co 4
+      48.6 x  english_text_to_spanish_speaker   e.g. consent
+      29.8 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Electri'
+      29.6 x  identifying_text_in_job_card   e.g. card K33: 'Heater makes a loud rattle 86403 my number is nine two eight five five'
+      23.4 x  duplicate_open_requests   e.g. 1256 and 1263
+      17.6 x  text_in_quiet_hours   e.g. yes_request at 7:00
+      14.8 x  handyman_over_1000   e.g. quote Q21 $1266-1379
+      13.8 x  texter_never_answered   e.g. 0004 asked for help on day 2 and heard nothing for 24 hours
+      10.2 x  identifying_photo_in_job_card   e.g. card K21
+       7.2 x  help_not_answered   e.g. HELP from ...0074
+       7.0 x  job_card_to_unlicensed_contractor   e.g. Lake Hvac Co 6 (lapsing)
+       3.2 x  request_left_open_after_stop   e.g. request 1055 was NO_QUOTES_YET when the homeowner texted STOP/CANCEL
+       3.0 x  promise_missed   e.g. request 1079
+       2.8 x  quotes_never_reached_homeowner   e.g. request 1079
+       1.8 x  natural_optout_ignored   e.g. 'please stop texting me' then duplicate
+       1.2 x  free_first_win_reused   e.g. ENT11
+       1.0 x  call_blocked_unlinked_staff_phone   e.g. KS16: staff phone blocked and no call got through within 3 hours
+       1.0 x  request_stuck_waiting   e.g. request 1239 in PAYMENT_PENDING since day 38
+       1.0 x  pick_stuck   e.g. pick P42 still 'charging' after 2 days
+       0.8 x  major_fee_on_small_job   e.g. request 1114
+       0.8 x  rental_without_onsite_contact   e.g. request 1075
+       0.6 x  job_card_sent_for_emergency   e.g. Burning plastic smell from an outlet 86406
+       0.4 x  pick_lost_to_failed_text   e.g. pick P31
+       0.4 x  pick_not_intended_by_homeowner   e.g. request 1192
+       0.4 x  unreached_homeowner_no_refund   e.g. pick P21 (2 attempts, no conversation)
+       0.4 x  emergency_without_safety_message   e.g. Breaker panel is sparking
+       0.2 x  details_released_to_unlicensed   e.g. request 1145 to Lake Hvac Co 6 (lapsing)
+       0.2 x  details_released_wrongly   e.g. request 1310 to Lake Handyman Co 15: paid=True free=False request_live=False
+       0.2 x  charged_but_not_introduced   e.g. pick P43 ($29 kept)
+       0.2 x  safety_message_late   e.g. 7 min: Pilot light smells funny and my head hurts
+
+== owner_away_fixed: Casey unavailable days 20-34 (illness or training) - WITH the v9.3 fixes
+   requests 298, cards 812, quotes 490, picks 143, paid 81, free 15, charged $4772, net $3504.89, owner 215 min
+       4.6 x  qualified_business_left_out   e.g. request 1044 (doors) not sent to Lake Handyman Co 14
+       2.8 x  job_card_outside_license   e.g. heating_repair job to a HANDYMAN license (Lake Handyman Co 14)
+       0.4 x  call_blocked_unlinked_staff_phone   e.g. KS71: staff phone blocked and no call got through within 3 hours
+
+== texting_suspended: The texting provider suspends the number on day 30
+   requests 151, cards 452, quotes 241, picks 35, paid 8, free 12, charged $611, net $82.56, owner 155 min
+     153.8 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     149.2 x  texter_never_answered   e.g. 0004 asked for help on day 2 and heard nothing for 24 hours
+      71.2 x  job_card_outside_license   e.g. water_heater job to a R-6 license (Lake Pool Co 19)
+      26.8 x  english_text_to_spanish_speaker   e.g. consent
+      25.4 x  qualified_business_left_out   e.g. request 1086 (water_heater) not sent to Lake Plumbing Co 4
+      14.6 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Electri'
+      10.8 x  identifying_text_in_job_card   e.g. card K33: 'Heater makes a loud rattle 86403 my number is nine two eight five five'
+       7.8 x  text_in_quiet_hours   e.g. yes_request at 7:00
+       7.4 x  duplicate_open_requests   e.g. 1180 and 1182
+       7.2 x  promise_missed   e.g. request 1079
+       6.8 x  handyman_over_1000   e.g. quote Q21 $1266-1379
+       6.8 x  job_card_to_unlicensed_contractor   e.g. Lake Hvac Co 6 (lapsing)
+       5.2 x  help_not_answered   e.g. HELP from ...0074
+       3.0 x  identifying_photo_in_job_card   e.g. card K21
+       1.8 x  request_left_open_after_stop   e.g. request 1055 was NO_QUOTES_YET when the homeowner texted STOP/CANCEL
+       1.4 x  quotes_never_reached_homeowner   e.g. request 1079
+       1.0 x  natural_optout_ignored   e.g. 'please stop texting me' then duplicate
+       1.0 x  free_first_win_reused   e.g. ENT1
+       0.8 x  emergency_without_safety_message   e.g. Burning plastic smell from an outlet 86405
+       0.8 x  rental_without_onsite_contact   e.g. request 1075
+       0.6 x  major_fee_on_small_job   e.g. request 1114
+       0.6 x  job_card_sent_for_emergency   e.g. Burning plastic smell from an outlet 86406
+       0.4 x  unreached_homeowner_no_refund   e.g. pick P21 (2 attempts, no conversation)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS16: staff phone blocked and no call got through within 3 hours
+       0.2 x  pick_lost_to_failed_text   e.g. pick P31
+       0.2 x  details_released_to_unlicensed   e.g. request 1145 to Lake Hvac Co 6 (lapsing)
+       0.2 x  safety_message_late   e.g. 7 min: Pilot light smells funny and my head hurts
+
+== texting_suspended_fixed: The texting provider suspends the number on day 30 - WITH the v9.3 fixes
+   requests 293, cards 745, quotes 271, picks 89, paid 48, free 16, charged $2718, net $2011.87, owner 3011 min
+       2.2 x  texter_never_answered   e.g. 0244 asked for help on day 57 and heard nothing for 24 hours
+       2.0 x  promise_missed   e.g. request 1185
+       1.6 x  qualified_business_left_out   e.g. request 1044 (doors) not sent to Lake Handyman Co 14
+       0.6 x  help_not_answered   e.g. HELP from ...0200
+       0.4 x  charged_but_not_introduced   e.g. pick P403e36b291 ($29 kept)
+       0.4 x  job_card_outside_license   e.g. ac_repair job to a R-37 license (Lake Plumbing Co 4)
+
+== disputes_wave: A wave of card disputes on day 40 (10% of charges)
+   requests 342, cards 989, quotes 580, picks 60, paid 18, free 18, charged $1222, net $587.11, owner 110 min
+     285.8 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     162.0 x  job_card_outside_license   e.g. water_heater job to a R-6 license (Lake Pool Co 19)
+      71.0 x  qualified_business_left_out   e.g. request 1086 (water_heater) not sent to Lake Plumbing Co 4
+      52.2 x  english_text_to_spanish_speaker   e.g. consent
+      30.8 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Electri'
+      30.4 x  identifying_text_in_job_card   e.g. card K33: 'Heater makes a loud rattle 86403 my number is nine two eight five five'
+      21.8 x  duplicate_open_requests   e.g. 1180 and 1182
+      17.2 x  text_in_quiet_hours   e.g. yes_request at 7:00
+      16.8 x  handyman_over_1000   e.g. quote Q21 $1266-1379
+      12.8 x  texter_never_answered   e.g. 0004 asked for help on day 2 and heard nothing for 24 hours
+      11.2 x  identifying_photo_in_job_card   e.g. card K21
+       7.0 x  job_card_to_unlicensed_contractor   e.g. Lake Hvac Co 6 (lapsing)
+       6.6 x  help_not_answered   e.g. HELP from ...0074
+       3.4 x  request_left_open_after_stop   e.g. request 1055 was NO_QUOTES_YET when the homeowner texted STOP/CANCEL
+       2.6 x  promise_missed   e.g. request 1079
+       2.4 x  quotes_never_reached_homeowner   e.g. request 1079
+       1.4 x  natural_optout_ignored   e.g. 'please stop texting me' then duplicate
+       1.4 x  rental_without_onsite_contact   e.g. request 1075
+       1.2 x  free_first_win_reused   e.g. ENT11
+       1.0 x  job_card_sent_for_emergency   e.g. Burning plastic smell from an outlet
+       0.8 x  major_fee_on_small_job   e.g. request 1114
+       0.8 x  request_stuck_waiting   e.g. request 1239 in PAYMENT_PENDING since day 38
+       0.8 x  pick_stuck   e.g. pick P42 still 'charging' after 2 days
+       0.6 x  unreached_homeowner_no_refund   e.g. pick P21 (2 attempts, no conversation)
+       0.6 x  emergency_without_safety_message   e.g. Breaker panel is sparking 86404
+       0.4 x  pick_lost_to_failed_text   e.g. pick P31
+       0.4 x  pick_not_intended_by_homeowner   e.g. request 1192
+       0.4 x  details_released_wrongly   e.g. request 1297 to Lake Plumbing Co 4: paid=True free=False request_live=False
+       0.4 x  charged_but_not_introduced   e.g. pick P45 ($45 kept)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS16: staff phone blocked and no call got through within 3 hours
+       0.2 x  details_released_to_unlicensed   e.g. request 1145 to Lake Hvac Co 6 (lapsing)
+       0.2 x  safety_message_late   e.g. 7 min: Pilot light smells funny and my head hurts
+
+== disputes_wave_fixed: A wave of card disputes on day 40 (10% of charges) - WITH the v9.3 fixes
+   requests 298, cards 730, quotes 435, picks 150, paid 90, free 17, charged $4928, net $3642.1, owner 420 min
+       5.4 x  qualified_business_left_out   e.g. request 1044 (doors) not sent to Lake Handyman Co 14
+       1.6 x  job_card_outside_license   e.g. ac_repair job to a R-37 license (Lake Plumbing Co 1)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS37: staff phone blocked and no call got through within 3 hours
+
+== shortcut_summary: A tempting shortcut: the weekly AI summary includes recent job descriptions
+   requests 338, cards 1044, quotes 649, picks 59, paid 22, free 16, charged $1327, net $728.98, owner 95 min
+     287.0 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     164.0 x  job_card_outside_license   e.g. pool_remodel job to a R-6 license (Lake Pool Co 19)
+     142.0 x  identifying_text_in_job_card   e.g. card K33: 'Pool pump making grinding noise ask for Pat12'
+      67.0 x  qualified_business_left_out   e.g. request 1063 (leak_repair) not sent to Lake Plumbing Co 1
+      25.6 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Hvac Co'
+      22.8 x  english_text_to_spanish_speaker   e.g. consent
+      19.8 x  duplicate_open_requests   e.g. 1129 and 1131
+      18.0 x  text_in_quiet_hours   e.g. yes_request at 7:00
+      16.4 x  handyman_over_1000   e.g. quote Q105 $1155-None
+      14.4 x  job_card_to_unlicensed_contractor   e.g. Lake Hvac Co 6 (lapsing)
+      11.4 x  texter_never_answered   e.g. 0004 asked for help on day 2 and heard nothing for 24 hours
+       7.0 x  identifying_photo_in_job_card   e.g. card K105
+       7.0 x  help_not_answered   e.g. HELP from ...0015
+       5.6 x  personal_details_to_non_zero_retention_ai   e.g. weekly_summary
+       4.0 x  promise_missed   e.g. request 1062
+       3.6 x  request_left_open_after_stop   e.g. request 1222 was AWAITING_CONFIRM when the homeowner texted STOP/CANCEL
+       3.4 x  quotes_never_reached_homeowner   e.g. request 1062
+       2.4 x  request_stuck_waiting   e.g. request 1210 in AWAITING_CONFIRM since day 32
+       2.4 x  pick_stuck   e.g. pick P32 still 'needs_card' after 2 days
+       1.0 x  free_first_win_reused   e.g. ENT1
+       1.0 x  natural_optout_ignored   e.g. 'Stop sending me these, too bus' then job_card
+       1.0 x  details_released_to_unlicensed   e.g. request 1048 to Lake Plumbing Co 22 (fraud)
+       1.0 x  emergency_without_safety_message   e.g. Water everywhere from a burst pipe in the wall
+       1.0 x  major_fee_on_small_job   e.g. request 1045
+       0.6 x  call_blocked_unlinked_staff_phone   e.g. KS8: staff phone blocked and no call got through within 3 hours
+       0.6 x  job_card_sent_for_emergency   e.g. Pilot light smells funny and my head hurts 86403
+       0.6 x  rental_without_onsite_contact   e.g. request 1215
+       0.6 x  pick_lost_to_failed_text   e.g. pick P16
+       0.6 x  unreached_homeowner_no_refund   e.g. pick P17 (2 attempts, no conversation)
+       0.4 x  pick_not_intended_by_homeowner   e.g. request 1165
+       0.2 x  fraudulent_contractor_activated   e.g. Lake Handyman Co 22
+
+== shortcut_summary_fixed: A tempting shortcut: the weekly AI summary includes recent job descriptions - WITH the v9.3 fixes
+   requests 300, cards 670, quotes 413, picks 143, paid 82, free 15, charged $4412, net $3447.24, owner 315 min
+       6.6 x  qualified_business_left_out   e.g. request 1061 (ac_repair) not sent to Lake Hvac Co 8
+       2.2 x  job_card_outside_license   e.g. ac_repair job to a R-37 license (Lake Plumbing Co 4)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS51: staff phone blocked and no call got through within 3 hours
+
+== races: Same-minute collisions: every event snaps to the minute and ties run in random order (16 requests a day)
+   requests 1018, cards 3001, quotes 1800, picks 168, paid 91, free 21, charged $5175, net $4254.59, owner 150 min
+     869.2 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     521.8 x  job_card_outside_license   e.g. pool_remodel job to a R-6 license (Lake Pool Co 18)
+     254.0 x  qualified_business_left_out   e.g. request 1065 (pool_remodel) not sent to Lake Pool Co 17
+     155.8 x  english_text_to_spanish_speaker   e.g. consent
+      93.6 x  identifying_text_in_job_card   e.g. card K440: 'Need a ceiling fan installed ask for Pat115'
+      82.0 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Electri'
+      76.4 x  duplicate_open_requests   e.g. 1058 and 1065
+      68.6 x  job_card_to_unlicensed_contractor   e.g. Lake Hvac Co 6 (lapsing)
+      53.8 x  text_in_quiet_hours   e.g. yes_request at 7:00
+      53.0 x  handyman_over_1000   e.g. quote Q42 $1285-None
+      36.6 x  identifying_photo_in_job_card   e.g. card K708
+      34.4 x  texter_never_answered   e.g. 0028 asked for help on day 1 and heard nothing for 24 hours
+      17.4 x  help_not_answered   e.g. HELP from ...0076
+      12.8 x  request_left_open_after_stop   e.g. request 1173 was NO_QUOTES_YET when the homeowner texted STOP/CANCEL
+      11.0 x  promise_missed   e.g. request 1112
+       9.4 x  quotes_never_reached_homeowner   e.g. request 1112
+       8.2 x  request_stuck_waiting   e.g. request 1091 in AWAITING_CONFIRM since day 2
+       8.2 x  pick_stuck   e.g. pick P9 still 'needs_card' after 2 days
+       4.0 x  call_blocked_unlinked_staff_phone   e.g. KS2: staff phone blocked and no call got through within 3 hours
+       3.8 x  details_released_to_unlicensed   e.g. request 1402 to Lake Hvac Co 6 (lapsing)
+       2.4 x  pick_lost_to_failed_text   e.g. pick P4
+       2.2 x  natural_optout_ignored   e.g. 'please stop texting me' then duplicate
+       1.8 x  emergency_without_safety_message   e.g. Burning plastic smell from an outlet 86406
+       1.6 x  rental_without_onsite_contact   e.g. request 1046
+       1.4 x  pick_not_intended_by_homeowner   e.g. request 1688
+       1.4 x  unreached_homeowner_no_refund   e.g. pick P51 (2 attempts, no conversation)
+       1.4 x  major_fee_on_small_job   e.g. request 1190
+       1.2 x  free_first_win_reused   e.g. ENT7
+       1.0 x  charged_but_not_introduced   e.g. pick P40 ($45 kept)
+       0.8 x  job_card_sent_for_emergency   e.g. Burning plastic smell from an outlet
+       0.6 x  safety_message_late   e.g. 6 min: Burning plastic smell from an outlet 86406
+       0.6 x  stripe_charge_missing_from_ledger   e.g. pi_15
+       0.4 x  details_released_wrongly   e.g. request 1384 to Lake Plumbing Co 4: paid=True free=False request_live=False
+       0.4 x  fraudulent_contractor_activated   e.g. Lake Handyman Co 22
+       0.4 x  contractor_statement_mismatch   e.g. B9: portal $270 vs Stripe $315
+       0.4 x  charged_after_confirm_window   e.g. pick P25
+
+== races_fixed: Same-minute collisions: every event snaps to the minute and ties run in random order (16 requests a day) - WITH the v9.3 fixes
+   requests 914, cards 1977, quotes 1197, picks 414, paid 266, free 17, charged $15300, net $12632.3, owner 435 min
+      20.6 x  qualified_business_left_out   e.g. request 1122 (ac_repair) not sent to Lake Hvac Co 7
+       9.4 x  job_card_outside_license   e.g. fixture_install job to a B-6 license (Lake Pool Co 19)
+       0.4 x  duplicate_open_requests   e.g. 1102 and 1111
+       0.4 x  call_blocked_unlinked_staff_phone   e.g. KS155: staff phone blocked and no call got through within 3 hours
+       0.2 x  pick_not_intended_by_homeowner   e.g. request 1554
+
+== db_restore: A bad change on day 30 at 10 a.m. is found at 1 p.m.; the database is restored to 10 a.m. (3 hours lost). Stripe and Twilio keep everything.
+   requests 482, cards 1356, quotes 854, picks 68, paid 32, free 17, charged $2089, net $1448.61, owner 150 min
+     434.0 x  first_text_missing_disclosures   e.g. first text to homeowner (consent) lacks brand/STOP/HELP
+     301.4 x  job_card_outside_license   e.g. mounting job to a R-11 license (Lake Electrical Co 11)
+     107.0 x  qualified_business_left_out   e.g. request 1053 (doors) not sent to Lake Handyman Co 16
+      71.4 x  english_text_to_spanish_speaker   e.g. consent
+      52.2 x  identifying_text_in_job_card   e.g. card K117: 'Heater makes a loud rattle 86404 ask for Pat39'
+      36.6 x  duplicate_open_requests   e.g. 1052 and 1055
+      36.6 x  promotional_content_in_text   e.g. review_request: 'Glad it's fixed. If you'd like, leave Lake Electri'
+      25.6 x  text_in_quiet_hours   e.g. unlinked_phone at 23:47
+      22.4 x  handyman_over_1000   e.g. quote Q18 $980-1121
+      17.8 x  texter_never_answered   e.g. 0005 asked for help on day 0 and heard nothing for 24 hours
+      12.8 x  identifying_photo_in_job_card   e.g. card K410
+      10.6 x  job_card_to_unlicensed_contractor   e.g. Lake Hvac Co 6 (lapsing)
+       9.4 x  help_not_answered   e.g. HELP from ...0009
+       8.0 x  promise_missed   e.g. request 1177
+       7.6 x  quotes_never_reached_homeowner   e.g. request 1177
+       7.2 x  request_left_open_after_stop   e.g. request 1172 was NO_QUOTES_YET when the homeowner texted STOP/CANCEL
+       2.4 x  request_stuck_waiting   e.g. request 1098 in AWAITING_CONFIRM since day 7
+       2.4 x  pick_stuck   e.g. pick P14 still 'needs_card' after 2 days
+       2.2 x  natural_optout_ignored   e.g. 'Stop sending me these, too bus' then job_card
+       2.0 x  call_blocked_unlinked_staff_phone   e.g. KS1: staff phone blocked and no call got through within 3 hours
+       1.4 x  rental_without_onsite_contact   e.g. request 1489
+       1.4 x  pick_lost_to_failed_text   e.g. pick P5
+       1.0 x  major_fee_on_small_job   e.g. request 1103
+       0.8 x  free_first_win_reused   e.g. ENT1
+       0.8 x  pick_not_intended_by_homeowner   e.g. request 1472
+       0.6 x  emergency_without_safety_message   e.g. Burning plastic smell from an outlet
+       0.6 x  details_released_wrongly   e.g. request 1268 to Lake Electrical Co 12: paid=False free=False request_live=True
+       0.6 x  charged_but_not_introduced   e.g. pick P54 ($59 kept)
+       0.6 x  safety_message_late   e.g. 11 min: Pilot light smells funny and my head hurts
+       0.4 x  stripe_charge_missing_from_ledger   e.g. pi_15
+       0.2 x  details_released_to_unlicensed   e.g. request 1252 to Lake Hvac Co 6 (lapsing)
+       0.2 x  fraudulent_contractor_activated   e.g. Lake Handyman Co 22
+       0.2 x  unreached_homeowner_no_refund   e.g. pick P71 (2 attempts, no conversation)
+       0.2 x  charge_record_lost_or_mismatched   e.g. pi_14 (pick P34) is kept but the app has no matching pick
+       0.2 x  contractor_statement_mismatch   e.g. B15: portal $59 vs Stripe $118
+       0.2 x  quote_without_card   e.g. B5 quoted 1261 without a job card
+       0.2 x  request_number_reused   e.g. request 1261 was texted to 2 different homeowners
+       0.2 x  more_than_one_optout_confirmation   e.g. ...0247
+       0.2 x  job_card_sent_for_emergency   e.g. Burning plastic smell from an outlet 86406
+
+== db_restore_fixed: A bad change on day 30 at 10 a.m. is found at 1 p.m.; the database is restored to 10 a.m. (3 hours lost). Stripe and Twilio keep everything. - WITH the v9.3 fixes
+   requests 475, cards 1041, quotes 700, picks 200, paid 129, free 16, charged $8000, net $6408.53, owner 330 min
+       6.4 x  qualified_business_left_out   e.g. request 1068 (ac_repair) not sent to Lake Hvac Co 8
+       4.8 x  job_card_outside_license   e.g. ac_repair job to a B-6 license (Lake Pool Co 17)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS100: staff phone blocked and no call got through within 3 hours
+
+== crowded_fixed: Crowded market: 15 businesses per trade, every qualified one that opted in gets each job card - WITH the v9.3 fixes
+   requests 314, cards 3250, quotes 1645, picks 227, paid 98, free 51, charged $6362, net $4393.91, owner 485 min
+      35.2 x  qualified_business_left_out   e.g. request 1062 (ac_repair) not sent to Lake Hvac Co 18
+      16.4 x  job_card_outside_license   e.g. outlets_breakers job to a R-6 license (Lake Pool Co 64)
+       0.2 x  call_blocked_unlinked_staff_phone   e.g. KS25: staff phone blocked and no call got through within 3 hours
+       0.2 x  duplicate_open_requests   e.g. 1098 and 1100
+       0.2 x  texter_never_answered   e.g. 0009 asked for help on day 9 and heard nothing for 24 hours
+       0.2 x  details_released_to_unlicensed   e.g. request 1234 to Lake Hvac Co 24 (lapsing)
