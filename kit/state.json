@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "phase": "kit",
-  "current": "K7",
+  "current": "K8",
   "backup_runner": "off",
   "ruleset_verified": true,
   "lease": null,
@@ -209,19 +209,21 @@
       "model": "claude-sonnet-5-5",
       "effort": "medium",
       "reviewer_model": "claude-sonnet-5-5",
-      "status": "MERGE_PENDING",
+      "status": "DONE",
       "attempts": 1,
       "model_used": "claude-sonnet-5-5",
       "branch": "claude/task/K7-prompts",
       "pr": 13,
-      "head_sha": "703f71d",
+      "head_sha": "703f71d95e8577953eabba44356f8266a6fcde8f",
       "waits_on_owner": null,
       "check_model": "claude-haiku-5-5",
       "reviewed_by": "claude-sonnet-5-5",
       "review_rounds": 1,
       "model_evidence": "subagent transcript: all 15 assistant records model=claude-sonnet-5-5 (first pass); fix round resumed same agent",
       "haiku_check": "no discrepancies, 139 prompts",
-      "note": "auto-pr failed to enable auto-merge; runner enabled it via MCP. Merged main (PR #14) into branch, re-running checks."
+      "note": "auto-pr failed to enable auto-merge; runner enabled it via MCP. Merged main (PR #14) into branch, re-running checks.",
+      "merged_sha": "5489a99",
+      "evidence": "PR #13 merged; Ci/Twin/Ally success on head 703f71d; tree d4b8274e == squash 5489a99"
     },
     {
       "id": "K8",
@@ -315,7 +317,7 @@
   "usage": {
     "last_reading": null
   },
-  "updated_at": "2026-10-27T17:45:00Z",
+  "updated_at": "2026-10-27T18:00:00Z",
   "notes": [
     "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
     "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
