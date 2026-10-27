@@ -535,7 +535,7 @@ All configuration comes from environment variables validated at startup. The app
 **Decided by Claude, never asked (log each one):**
 - **K2b category list and worked examples:** derived from the changes file and the 18 legal decisions (§7.1). Auto-approved when every worked example's fee matches the fee rules (including the 4-month recurring rule) in a test that passes here, and the Opus reviewer finds no conflict with the changes file. Otherwise fix and re-check; never wait.
 - **K3 questions:** for each open question, Claude decides using the order of authority (changes file, then the v9.3 blueprint, then the other sources). Where the sources leave it open, pick the option that is legally safest, then simplest to change later, then smallest in scope. Never pick an option that breaks §2.
-- **Gate A:** removed. When K9's rehearsal passes, the runner moves straight on to the build tasks.
+- **Gate A:** removed, **but replaced by Gate P (Casey, Oct 27, 10:41 a.m.):** no build task (T001 onward) may be claimed until Casey has reviewed an investor-style presentation of the whole business, with screenshots, and has said "approved to build" in an `owner` issue. When K9 is DONE, the runner marks `GATE-P` `WAITING_FOR_OWNER`, writes an outbox message ("Gate P: your presentation is ready; reply 'approved to build' to start building"), and stops. Casey prepares the presentation himself outside the build, so the runner builds nothing for it and does not wait on anything else. Only an `approved to build` comment from Casey in `inbox/` clears `GATE-P`; any other answer is recorded and the gate stays closed. If `kit/state.json` has `"build_hold"` set, treat it as this gate even before K9 is done.
 - **Conflicts** between this file and the changes file: the changes file wins on *what* is built; this file wins on *how* it's built. Log both lines and the choice.
 - **`BLOCKED` tasks:** Claude retries with a different approach (up to 3 attempts, Opus on the last one). If one is still stuck, it stays `BLOCKED`, only its dependents wait, and it goes on the end-of-build list. It never becomes a question unless a human action is the only way through.
 
@@ -544,6 +544,7 @@ All configuration comes from environment variables validated at startup. The app
 **One-time migration:** on the first cycle after this section lands, the runner clears `waits_on_owner` on K2b and K3 in `kit/state.json`, marks `GATE-A` as `SKIPPED` (reason: "removed by Casey, Oct 27"), and notes it in PROGRESS.md.
 
 **Claude stops and asks Casey only at these points:**
+0. **Gate P:** Casey's go to start building, after he has reviewed the presentation (above).
 1. **Hands-on tasks only a human can do:** a GitHub setting Claude can't change, for example. One issue, with exact taps, sent only after Claude has checked it can't do the task itself.
 2. **The account checkpoint** (§6): Casey creates the accounts and puts in the keys. Claude never creates accounts or accepts terms.
 3. **Real texts to Casey's own phone** in Phase 2, only if Twilio's test credentials can't be used (§6).
