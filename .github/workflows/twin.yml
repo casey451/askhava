@@ -1,0 +1,24 @@
+# Required check "Twin" (ruleset protect-main). Job name must stay exactly "Twin".
+# INFORMATIONAL until K5 makes the twin hard-failing: today this only smoke-runs
+# the existing read-only twin (stdlib only, under a second) on a copy.
+name: twin
+on:
+  push:
+    branches: ["claude/**"]
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  twin:
+    name: "Twin"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Twin smoke run (copy, read-only)
+        run: |
+          cp -r sources/01_spec/hhq_twin "$RUNNER_TEMP/hhq_twin"
+          cd "$RUNNER_TEMP/hhq_twin"
+          python3 twin.py normal_fixed 1

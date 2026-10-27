@@ -1,0 +1,54 @@
+# Required check "Ci" (ruleset protect-main). Job name must stay exactly "Ci".
+name: ci
+on:
+  push:
+    branches: ["claude/**"]
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  ci:
+    name: "Ci"
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: "8.28.0"
+      GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Sources unchanged (fingerprint)
+        run: |
+          sha256sum -c --quiet kit/sources.sha256
+          test "$(find sources -type f | wc -l)" -eq "$(wc -l < kit/sources.sha256)"
+          echo "sources/ matches kit/sources.sha256"
+
+      - name: Secret scan (gitleaks, working tree)
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/gitleaks"
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
+          "$RUNNER_TEMP/gitleaks/gitleaks" dir . --no-banner --redact --exit-code 1
+
+      - name: Static security scan (bandit)
+        run: |
+          if [ -d app ]; then
+            python3 -m pip install --quiet bandit==1.8.6
+            python3 -m bandit -r app -ll
+          else
+            echo "bandit skipped: no app yet"
+          fi
+
+      - name: Dependency audit (pip-audit)
+        run: |
+          if [ -f uv.lock ]; then
+            python3 -m pip install --quiet uv pip-audit==2.9.0
+            uv export --frozen --no-hashes -o "$RUNNER_TEMP/requirements.txt"
+            python3 -m pip_audit -r "$RUNNER_TEMP/requirements.txt" --no-deps --disable-pip
+          else
+            echo "pip-audit skipped: no app yet"
+          fi

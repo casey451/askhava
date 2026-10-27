@@ -1,0 +1,22 @@
+# Required check "Ally" (ruleset protect-main). Job name must stay exactly "Ally".
+# Stub until there are pages to test.
+name: a11y
+on:
+  push:
+    branches: ["claude/**"]
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  a11y:
+    name: "Ally"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Accessibility checks (stub)
+        run: |
+          # Passes on an empty app. The real suite arrives with the first pages.
+          echo "skipped: no pages yet"

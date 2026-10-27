@@ -1,0 +1,78 @@
+# Backup runner: runs the same Appendix A cycle through the Claude Code GitHub Action
+# (subscription token, not pay-per-use). Off unless kit/state.json on claude/kit-state
+# has "backup_runner": "on" AND the secret CLAUDE_CODE_OAUTH_TOKEN is set.
+name: backup-runner
+on:
+  schedule:
+    - cron: "37 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+concurrency:
+  group: backup-runner
+  cancel-in-progress: false
+jobs:
+  gate:
+    name: gate
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read the flag on claude/kit-state
+        id: check
+        env:
+          HAS_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+        run: |
+          set -u
+          echo "run=false" >> "$GITHUB_OUTPUT"
+          # The branch may not exist yet; exit quietly if so.
+          if ! git fetch --quiet --depth=1 origin claude/kit-state 2>/dev/null; then
+            echo "claude/kit-state not found: nothing to do"
+            exit 0
+          fi
+          if ! git show FETCH_HEAD:kit/state.json > "$RUNNER_TEMP/state.json" 2>/dev/null; then
+            echo "kit/state.json not found: nothing to do"
+            exit 0
+          fi
+          flag="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("backup_runner",""))' "$RUNNER_TEMP/state.json" 2>/dev/null || true)"
+          if [ "$flag" != "on" ]; then
+            echo "backup_runner is not on: nothing to do"
+            exit 0
+          fi
+          if [ "$HAS_TOKEN" != "true" ]; then
+            echo "backup_runner is on but the OAuth token secret is not set: nothing to do"
+            exit 0
+          fi
+          echo "run=true" >> "$GITHUB_OUTPUT"
+  backup:
+    name: backup
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: --model claude-sonnet-5-5
+          prompt: |
+            You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now and follow them exactly.
+
+            Do exactly one cycle:
+            1. Fetch branch claude/kit-state and read kit/state.json. If it does not exist yet, the next task is K0 (Appendix B).
+            2. Read new files in inbox/ on claude/kit-state. Each is Casey's answer to an owner issue: record it in kit/state.json, clear that wait, and move the file to inbox/done/. To ask Casey anything, write a file to outbox/ (section 7); never post to GitHub directly.
+            3. If any task is MERGE_PENDING: if its PR merged with `Ci`, `Twin` and `Ally` green on its head SHA, and main's squash commit has the same tree as that head, mark it DONE. If it failed, apply the failure rules in section 7. If it is still pending, update STATUS.md if stale and stop; never claim a second task while one is pending.
+            4. If the build is at a gate or WAITING_FOR_OWNER with no answer yet, or no task is eligible (BLOCKED tasks hold only their dependents), update STATUS.md if stale and stop.
+            5. Run the smoke test on main. If main is red, the next task is "fix main".
+            6. Claim the next eligible task with a lease (push to claude/kit-state; if the push is rejected, another runner has it, so stop). Renew the lease every 30 minutes.
+            7. Run the task through a worker subagent on the model named in the task, check the model and the changed paths, run the fresh-eyes reviewer subagent, then push claude/task/T###-<slug> so the auto-pr workflow opens the pull request with auto-merge.
+            8. Update kit/state.json (MERGE_PENDING), STATUS.md and PROGRESS.md on claude/kit-state, then stop.
+
+            Never break section 2. Never claim a test passed unless you ran it here.

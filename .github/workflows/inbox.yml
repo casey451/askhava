@@ -1,0 +1,91 @@
+# Inbox: the repository owner's comment (or closing) on an "owner" issue is written
+# to inbox/ on claude/kit-state, where the runner reads it as Casey's answer.
+# Event text reaches the script only through env: vars, never through shell text.
+name: inbox
+on:
+  issue_comment:
+    types: [created]
+  issues:
+    types: [closed]
+permissions:
+  contents: write
+concurrency:
+  group: kit-state-writer
+  cancel-in-progress: false
+jobs:
+  inbox:
+    name: inbox
+    if: >-
+      contains(github.event.issue.labels.*.name, 'owner') &&
+      github.event.sender.login == github.repository_owner &&
+      (github.event_name == 'issues' || github.event.issue.pull_request == null)
+    runs-on: ubuntu-latest
+    env:
+      EVENT_NAME: ${{ github.event_name }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      ISSUE_TITLE: ${{ github.event.issue.title }}
+      ISSUE_BODY: ${{ github.event.issue.body }}
+      COMMENT_ID: ${{ github.event.comment.id }}
+      COMMENT_BODY: ${{ github.event.comment.body }}
+      COMMENT_URL: ${{ github.event.comment.html_url }}
+      ISSUE_URL: ${{ github.event.issue.html_url }}
+      SENDER: ${{ github.event.sender.login }}
+      RUN_ID: ${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/kit-state
+
+      - name: Write the inbox file
+        run: |
+          python3 - <<'PY'
+          import datetime, json, os, re
+
+          e = os.environ
+          kind = "comment" if e["EVENT_NAME"] == "issue_comment" else "closed"
+          num = e["ISSUE_NUMBER"]
+          tail = e["COMMENT_ID"] if kind == "comment" else "closed-" + e["RUN_ID"]
+          if not (num.isdigit() and re.fullmatch(r"\d+|closed-\d+", tail)):
+              raise SystemExit("unexpected ids")
+          m = re.search(r"<!-- outbox-id: ([A-Za-z0-9._-]+) -->", e.get("ISSUE_BODY", ""))
+          url = e["COMMENT_URL"] if kind == "comment" else e["ISSUE_URL"]
+          now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          head = [
+              "---",
+              f"issue: {num}",
+              f"issue_title: {json.dumps(e['ISSUE_TITLE'])}",
+              f"outbox_id: {json.dumps(m.group(1)) if m else 'null'}",
+              f"event: {kind}",
+              f"author: {json.dumps(e['SENDER'])}",
+              f"url: {json.dumps(url)}",
+              f"timestamp: {now}",
+              "---",
+              "",
+          ]
+          body = e.get("COMMENT_BODY", "") if kind == "comment" else ""
+          os.makedirs("inbox", exist_ok=True)
+          path = f"inbox/{num}-{tail}.md"
+          with open(path, "w", encoding="utf-8", newline="\n") as f:
+              f.write("\n".join(head) + body + ("\n" if body and not body.endswith("\n") else ""))
+          print("wrote", path)
+          PY
+
+      - name: Commit and push (never force)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A inbox
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -m "inbox: owner reply on issue #${ISSUE_NUMBER}"
+          for i in 1 2 3; do
+            if git push origin HEAD:claude/kit-state; then
+              exit 0
+            fi
+            echo "push rejected (attempt $i); rebasing"
+            git pull --rebase origin claude/kit-state
+          done
+          echo "::error::push failed after 3 attempts"
+          exit 1
