@@ -1,0 +1,23 @@
+name: name-test
+on:
+  push:
+    branches: ["claude/check-name-test"]
+permissions:
+  contents: read
+jobs:
+  ci:
+    name: "Ci"
+    runs-on: ubuntu-latest
+    steps: [{run: "echo ok"}]
+  twin:
+    name: "Twin"
+    runs-on: ubuntu-latest
+    steps: [{run: "echo ok"}]
+  security:
+    name: "Security "
+    runs-on: ubuntu-latest
+    steps: [{run: "echo ok"}]
+  a11y:
+    name: "Ally"
+    runs-on: ubuntu-latest
+    steps: [{run: "echo ok"}]
