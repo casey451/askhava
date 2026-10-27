@@ -1,0 +1,52 @@
+# Opens a PR for each pushed runner task branch and turns on squash auto-merge.
+# The branch ruleset still enforces the required checks (Ci, Twin, Ally).
+name: auto-pr
+on:
+  push:
+    branches: ["claude/task/**"]
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: auto-pr-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  auto-pr:
+    name: auto-pr
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BRANCH: ${{ github.ref_name }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Open PR and enable auto-merge
+        run: |
+          set -euo pipefail
+          task="${BRANCH#claude/task/}"          # e.g. K0-setup
+          id="${task%%-*}"                       # e.g. K0
+          slug="${task#*-}"                      # e.g. setup
+          if [ "$slug" = "$task" ]; then slug=""; fi
+          title="${id}: ${slug//-/ }"
+          title="${title%: }"
+          pr="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$pr" ]; then
+            body="$(printf 'Opened by auto-pr for runner task %s.\n\nBuild status: https://github.com/%s/blob/claude/kit-state/STATUS.md\n' "$id" "$REPO")"
+            url="$(gh pr create --base main --head "$BRANCH" --title "$title" --body "$body")"
+            pr="${url##*/}"
+            echo "opened PR #$pr"
+          else
+            echo "PR #$pr already open"
+          fi
+          if gh pr merge --auto --squash "$pr"; then
+            echo "auto-merge enabled on #$pr"
+          else
+            state="$(gh pr view "$pr" --json mergeStateStatus -q .mergeStateStatus)"
+            if [ "$state" = "CLEAN" ]; then
+              echo "PR is already CLEAN; squash merging directly"
+              gh pr merge --squash "$pr"
+            else
+              echo "::error::could not enable auto-merge on #$pr (mergeStateStatus: $state)"
+              exit 1
+            fi
+          fi

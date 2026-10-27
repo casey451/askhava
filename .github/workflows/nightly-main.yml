@@ -1,0 +1,15 @@
+# Full suite on main every night (scheduled workflows always run on the default branch).
+name: nightly-main
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+  twin:
+    uses: ./.github/workflows/twin.yml
+  a11y:
+    uses: ./.github/workflows/a11y.yml

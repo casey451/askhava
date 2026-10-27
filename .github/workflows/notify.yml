@@ -1,0 +1,125 @@
+# Outbox -> GitHub issue. The runner commits outbox/<id>.md to claude/kit-state;
+# this opens (or updates) an issue as github-actions[bot], labelled "owner", that
+# @-mentions the repository owner, then moves the file to outbox/sent/.
+# File format: kit/outbox_format.md
+name: notify
+on:
+  push:
+    branches: ["claude/kit-state"]
+    paths: ["outbox/**"]
+permissions:
+  issues: write
+  contents: write
+concurrency:
+  group: kit-state-writer
+  cancel-in-progress: false
+jobs:
+  notify:
+    name: notify
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      OWNER: ${{ github.repository_owner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/kit-state
+
+      - name: Ensure the owner label exists
+        run: gh label create owner --color B60205 --description "Needs the owner (Casey)" || true
+
+      - name: Send outbox messages
+        run: |
+          python3 - <<'PY'
+          import glob, json, os, re, subprocess, sys
+
+          repo = os.environ["GH_REPO"]
+          owner = os.environ["OWNER"]
+          status_url = f"https://github.com/{repo}/blob/claude/kit-state/STATUS.md"
+          kinds = {"question", "approval", "gate", "blocked", "info"}
+
+
+          def gh(*args):
+              return subprocess.run(["gh", *args], check=True, capture_output=True, text=True).stdout
+
+
+          def parse(path):
+              text = open(path, encoding="utf-8").read().replace("\r\n", "\n")
+              if not text.startswith("---\n"):
+                  raise ValueError("missing front matter")
+              head, sep, body = text[4:].partition("\n---\n")
+              if not sep:
+                  if text[4:].endswith("\n---"):
+                      head, body = text[4:-4], ""
+                  else:
+                      raise ValueError("unterminated front matter")
+              meta = {}
+              for line in head.split("\n"):
+                  if line.strip():
+                      key, colon, val = line.partition(":")
+                      if not colon:
+                          raise ValueError(f"bad front matter line: {line!r}")
+                      meta[key.strip()] = val.strip()
+              if not re.fullmatch(r"[A-Za-z0-9._-]+", meta.get("id", "")):
+                  raise ValueError("id missing or has characters outside A-Za-z0-9._-")
+              if not meta.get("title"):
+                  raise ValueError("title missing")
+              if meta.get("kind") not in kinds:
+                  raise ValueError("kind must be one of " + ", ".join(sorted(kinds)))
+              return meta, body.strip("\n")
+
+
+          issues = json.loads(gh("issue", "list", "--label", "owner", "--state", "all",
+                                 "--limit", "1000", "--json", "number,state,body") or "[]")
+          failed = False
+          for path in sorted(glob.glob("outbox/*.md")):
+              try:
+                  meta, body = parse(path)
+                  marker = f"<!-- outbox-id: {meta['id']} -->"
+                  text = (f"@{owner}\n\n{body}\n\n"
+                          f"Build status: {status_url}\n\n{marker}\n")
+                  tmp = os.path.join(os.environ["RUNNER_TEMP"], "issue_body.md")
+                  with open(tmp, "w", encoding="utf-8") as f:
+                      f.write(text)
+                  found = [i for i in issues if marker in (i.get("body") or "")]
+                  if found:
+                      num = str(found[0]["number"])
+                      if found[0]["state"].upper() == "CLOSED":
+                          gh("issue", "reopen", num)
+                      gh("issue", "comment", num, "--body-file", tmp)
+                      print(f"{path}: commented on #{num}")
+                  else:
+                      out = gh("issue", "create", "--label", "owner",
+                               "--title", meta["title"], "--body-file", tmp)
+                      print(f"{path}: created {out.strip()}")
+                      issues.append({"number": int(out.strip().rsplit("/", 1)[1]),
+                                     "state": "OPEN", "body": text})
+                  os.makedirs("outbox/sent", exist_ok=True)
+                  subprocess.run(["git", "mv", path, "outbox/sent/" + os.path.basename(path)], check=True)
+              except Exception as e:  # keep going; the file stays in outbox/ for a retry
+                  failed = True
+                  print(f"::error::{path}: {e}")
+          sys.exit(1 if failed else 0)
+          PY
+
+      - name: Commit and push (never force)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A outbox
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -m "notify: move sent outbox files to outbox/sent"
+          for i in 1 2 3; do
+            if git push origin HEAD:claude/kit-state; then
+              exit 0
+            fi
+            echo "push rejected (attempt $i); rebasing"
+            git pull --rebase origin claude/kit-state
+          done
+          echo "::error::push failed after 3 attempts"
+          exit 1
