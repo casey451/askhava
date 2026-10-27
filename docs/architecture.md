@@ -278,5 +278,6 @@ The task that builds photo handling checks pillow 13.x's release notes for break
 ## 12. Keeping this file true
 
 - A new module, table, cross-module call, status, timeout, adapter or pinned version changes this file in the same PR, with a `docs/decisions.md` entry when it is a choice (`BUILD_BRIEF.md:489`).
+- **Build order and file ownership** live in `kit/tasks.json` (K6): each build task names the module and the files it owns (`app/<module>/…`, its own `migrations/versions/t###_<slug>.py`, its own test files), and `python3 scripts/validate_tasks.py` fails if two tasks that can run in either order own the same file, or if a non-`harness` task owns a protected path (D-111, D-118). `app/main.py`, this file, `docs/decisions.md` and `docs/for-casey-review.md` are the only shared files. Stage 2 builds layers 0 to 7 far enough for job cards, the quote page and the pick (including the license imports and business records that matching reads); later stages add to each module's own files in dependency order (D-112).
 - A new library needs a decisions entry with purpose, license and a pip-audit result (`BUILD_BRIEF.md:122`).
 - The threat model (`docs/threat-model.md`) changes with any new trust boundary or asset.
