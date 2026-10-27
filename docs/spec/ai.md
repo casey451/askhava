@@ -1,0 +1,21 @@
+# Spec: AI boundary
+
+Prefix: `AI` · Modules: `ai`, `privacy` · Format and checks: [index.md](index.md)
+
+- **AI-001** The app's AI calls go only to the zero-retention Claude API (Haiku 5.5), through the `ai` adapter. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:58`, `BUILD_BRIEF.md:112`.
+- **AI-002** A plain-code scrubber runs before every AI call and removes names after "this is" or "my name is", street-number patterns, runs of 7 or more digits, and emails. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:58`.
+- **AI-003** The homeowner's name from the vault is also removed by code before any AI call. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:291`.
+- **AI-004** The `ai` module never receives unscrubbed text. Source: `BUILD_BRIEF.md:133`.
+- **AI-005** The AI returns only schema-validated fixed fields, and anything that fails the schema is discarded. Source: `BUILD_BRIEF.md:343`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:192`.
+- **AI-006** The AI has no tools, nothing it returns is executed, and it never writes homeowner texts, moves money or releases details. Source: `BUILD_BRIEF.md:344`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:286`.
+- **AI-007** Prompt-injection text in homeowner or business messages never changes routing, fees or disclosures, and tests prove it. Source: `BUILD_BRIEF.md:345`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:296`.
+- **AI-008** Until the zero-retention agreement is signed, the app uses plain-code scrubbing and keyword rules only and sends no homeowner text to the AI. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:298`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:58`.
+- **AI-009** During the build the AI adapter uses the deterministic stand-in, and no real AI key is used before the Phase 2 Railway test project. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:262`, `BUILD_BRIEF.md:162`, `BUILD_BRIEF.md:194`.
+- **AI-010** Intake reading returns trade, job type, emergency, urgent, language, rental, major and missing-info fields only. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:290`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:304`.
+- **AI-011** Each request is read twice, and plain keyword rules give an independent second opinion on trade and job type. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:118`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:119`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:304`.
+- **AI-012** The gas keyword list overrides the AI's reading of whether a job is handyman work. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:42`.
+- **AI-013** Structured AI readings (trade, job type and flags only, no personal details) are written outside the database as they happen. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:305`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:690`.
+- **AI-014** The weekly summary takes counts only, built by code, and never free text. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:294`.
+- **AI-015** The instructions for each AI job are versioned in code. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:300`.
+- **AI-016** Photos are not sent to the AI unless needed, and photo screening uses two independent AI checks plus an on-server check, any flag keeping the photo off the card. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:222`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:293`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:307`.
+- **AI-017** The AI never guesses a license class, and a category that isn't confirmed stays switched off. Source: `sources/02_build_plan/Build_Plan.md:34`.
