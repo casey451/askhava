@@ -41,12 +41,12 @@ I'll tell you when the push is done. **Wait for that before step 5.**
    - **Restrict deletions**
    - **Require a pull request before merging**. Set "Required approvals" to **0**.
    - **Require status checks to pass**. Then:
-     - tick **Require branches to be up to date before merging**;
-     - tap **Add checks** and type each name, adding it one at a time: `ci`, `twin`, `security`, `a11y`.
+     - leave **Require branches to be up to date before merging** unticked;
+     - tap **Add checks** and type each name exactly, one at a time: `Ci`, `Twin`, `Ally`.
    - **Block force pushes**
 7. Tap **Create**.
 
-If GitHub won't let you add check names that haven't run yet, skip just the four check names for now. Claude will send you an issue after its first task reminding you to add them; everything else in this step still applies.
+If GitHub won't let you add check names that haven't run yet, skip just the three check names for now. Claude checks the ruleset after its first task and opens an issue if they're missing; everything else in this step still applies.
 
 **6. Merge settings.**
 1. Open **github.com/casey451/askhava/settings**.

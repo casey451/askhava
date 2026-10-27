@@ -27,7 +27,7 @@ YOUR JOB RIGHT NOW is the planning phase only: kit steps K0 through K9, then Gat
 Do exactly ONE cycle, as BUILD_BRIEF.md Appendix A describes:
 1. Fetch branch claude/kit-state and read kit/state.json. If it does not exist, your task is K0 (BUILD_BRIEF.md Appendix B): deny rules first, fingerprint sources/, add the workflows, create claude/kit-state from the K0 task branch, and seed the queue with K1-K9 and Gate A.
 2. Read new files in inbox/ on claude/kit-state. These are Casey's answers. Record them and move them to inbox/done/.
-3. If a task is MERGE_PENDING, check whether its pull request merged with ci, twin, security and a11y green, and whether main's squash commit has the same tree as the tested head. If so, mark it DONE. If it is still pending, update STATUS.md and stop. Never start a second task while one is pending.
+3. If a task is MERGE_PENDING, check whether its pull request merged with the Ci, Twin and Ally checks green, and whether main's squash commit has the same tree as the tested head. If so, mark it DONE. If it is still pending, update STATUS.md and stop. Never start a second task while one is pending.
 4. If the build is waiting on Casey (a K3 question, the K2b category approval, Gate A) and no answer is in inbox/, update STATUS.md and stop.
 5. Claim the next eligible task with a lease on claude/kit-state, then do it with a subagent on the model the task names. Check the model actually used and the files changed, run the fresh-eyes reviewer subagent, then push branch claude/task/<id>-<slug>.
 6. Update kit/state.json, STATUS.md and PROGRESS.md on claude/kit-state, then stop.
@@ -43,7 +43,7 @@ At the end, reply in this chat with three lines: what you did, what's next, and 
 
 | When | What happens |
 |---|---|
-| First session | K0 sets up the rules, workflows and state branch. After it merges, you get a GitHub issue reminding you to add the four check names if you skipped them in PHONE_SETUP step 5 |
+| First session | K0 sets up the rules, workflows and state branch. After it merges, Claude checks the ruleset itself and only opens an issue if something needs fixing |
 | K2b | You get an issue asking you to approve the category list and worked prices |
 | K3 | A few questions, one issue at a time |
 | K9 | The practice run proves the runner works |
