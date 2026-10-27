@@ -1,10 +1,14 @@
 {
   "schema": 1,
   "phase": "kit",
-  "current": "FIX1",
+  "current": "K8",
   "backup_runner": "off",
   "ruleset_verified": true,
-  "lease": null,
+  "lease": {
+    "task": "K8",
+    "session": "https://claude.ai/code/session_01DyjzWACtum94KSWnH8kphC",
+    "expires": "2026-10-27T20:49:58Z"
+  },
   "tasks": [
     {
       "id": "FIX1",
@@ -13,12 +17,14 @@
       "type": "kit",
       "deps": [],
       "model": "claude-sonnet-5-5",
-      "status": "MERGE_PENDING",
+      "status": "DONE",
       "attempts": 1,
       "branch": "claude/task/fix-main-brief-citations",
-      "pr": null,
-      "head_sha": null,
-      "waits_on_owner": null
+      "pr": 15,
+      "head_sha": "3817a1180e38c242578a60c7ed38b0cfc7843af4",
+      "waits_on_owner": null,
+      "merged_sha": "cf319c3",
+      "evidence": "PR #15 merged; Ci/Twin/Ally success on head 3817a11; tree 2a171924 == squash cf319c3"
     },
     {
       "id": "K0",
@@ -250,10 +256,10 @@
       "model": "claude-sonnet-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
-      "status": "QUEUED",
-      "attempts": 0,
+      "status": "IN_PROGRESS",
+      "attempts": 1,
       "model_used": null,
-      "branch": null,
+      "branch": "claude/task/K8-harness",
       "pr": null,
       "head_sha": null,
       "waits_on_owner": null
