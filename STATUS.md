@@ -3,7 +3,7 @@
 **Updated:** 2026-10-27 · **Phase:** kit · **Done:** 5 of 11 (K0, K1, K2, K2b, K3)
 
 ## Running now
-- **K4 architecture:** claimed, worker running.
+- **K4 architecture:** handed in, waiting to merge (MERGE_PENDING).
 
 ## Blocked
 - Nothing.
