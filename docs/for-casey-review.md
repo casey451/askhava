@@ -132,3 +132,17 @@ Claude drew up how the app is split into parts, wrote the security threat model,
 - Tests are written per behavior, edge and failure, each naming the requirements it covers; every requirement is covered by at least one. Edges: texts may go from 8:00:00 a.m. up to but not including 8:00 p.m.; anything that lasts a set time ends exactly at that time (a 10-minute code is refused at 10:00; "within 90 days" means less than 90 full days). (D-101)
 - Deliberate-break tests: the 4-month rule, the fee tiers, the license filter, opt-out and quiet hours are each broken on purpose in many small ways, and the tests must catch every one. (D-108)
 - Test data uses fictional phone numbers (555-0100 to 555-0199) and example.com emails only. (D-109)
+
+## From K6 (task graph), October 27, 2026
+
+**Worth a second look**
+
+1. **The build is 146 steps: 139 pieces of work and 7 stops.** Phase 1 has 126 work steps: stage 1 fixes the twin and the catalog follow-ups (8), stage 2 the core (49), stage 3 money (18), stage 4 calls, checks and portals (25), stage 5 the website, owner tools and documents (26). Phase 2, with real test accounts, has 13 work steps. The 7 stops are the account checkpoint, the askhava.com page go, the real-texts question, "Finished", Gate B, Gate C and the first live charge. A script checks that every one of the 431 requirements and every planned test is covered by some step, that nothing depends on itself in a loop, and that no two steps that could run in either order change the same file. (D-111, D-119)
+2. **Much more Opus than the build plan guessed.** The brief says money, privacy, security and recovery work is done by Opus, so every step touching those (including the clean-ups, the end-to-end journeys and the real-vendor adapters) runs on Opus: 105 of 139 work steps, against the plan's guess of 1 in 10. That uses the plan's limits faster. The rehearsal (K9) measures real usage; if it's too slow, a logged decision can let Sonnet write test-only steps under Opus review. (D-115)
+3. **Your stops are steps in the list:** accounts after Phase 1; the askhava.com page go (nothing waits on it, and after your go you get one message with the exact steps to publish it, since Claude can't deploy to the live site); real texts to your phone only if Twilio's test credentials don't work; "Finished"; your click-through (Gate B); going live (Gate C); and the first live charge. Each can only come after the steps before it. (D-116)
+4. **Some checks moved earlier than the build plan's stages.** License list checks and business records come in stage 2, because job cards can't go out without them. (D-112)
+
+**Routine**
+
+- Changes to protected files (the twin, stand-ins, workflows, the deliberate-break list, the task-graph checker itself) happen only in steps marked "harness" with an Opus review. (D-113, D-114, D-118)
+- The v9.3 blueprint's "build tests T01–T24" are never defined anywhere, so coverage is checked against the test design instead. (D-117)
