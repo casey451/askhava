@@ -1,0 +1,20 @@
+# Spec: Terms, privacy policy and texting registration
+
+Prefix: `TERMS` · Modules: `site`, docs · Format and checks: [index.md](index.md)
+
+- **TERMS-001** The homeowner terms are linked in the first text and accepted by replying OK, and the OK is stored. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:213`.
+- **TERMS-002** The homeowner terms require users to be 18 or older, choose Arizona law, and contain no arbitration clause and no class waiver. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:213`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:244`.
+- **TERMS-003** The terms say Ask Hava is not an emergency service. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:246`.
+- **TERMS-004** The terms include the independent-business statement and a warranty disclaimer, and limit liability to fees paid. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:247`.
+- **TERMS-005** The business terms state each automatic-refund trigger, timing and method exactly as coded, and a test checks that they match the code. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:212`, `BUILD_BRIEF.md:465`.
+- **TERMS-006** The business terms include a non-discrimination clause. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:212`.
+- **TERMS-007** The business terms include the card-charge authorization and the handyman certification. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:212`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:241`, `BUILD_BRIEF.md:465`.
+- **TERMS-008** The privacy policy covers what is collected, who it is shared with (the picked business and the texting, payment, AI, mail and email providers), the AI zero-retention agreement, how to review or change data, how changes are announced with the effective date, and Do Not Track. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:214`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:215`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:216`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:217`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:218`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:219`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:220`.
+- **TERMS-009** The privacy policy includes "No mobile information will be shared with third parties or affiliates for marketing or promotional purposes." Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:180`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:221`.
+- **TERMS-010** The privacy policy and terms never say phone numbers or opt-ins are shared, sold or transferred. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:176`.
+- **TERMS-011** The Twilio campaign description uses the drafted wording, use case Customer Care, Low-Volume Standard. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:179`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:51`.
+- **TERMS-012** The campaign description and sample messages never use "leads", "lead generation", "referral network", "marketplace of providers" or "connect you with". Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:174`.
+- **TERMS-013** The campaign sample messages are real templates: the consent text, "your first quote is in", the pick confirmation and the STOP reply. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:175`.
+- **TERMS-014** The account checklist says the texting campaign is registered only once the full site is live, including the request page, privacy policy and SMS terms. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:173`.
+- **TERMS-015** The terms, privacy policy, SMS terms and Twilio campaign description are drafted in Phase 1. Source: `BUILD_BRIEF.md:168`, `BUILD_BRIEF.md:169`.
+- **TERMS-016** Each accepted terms version and its acceptance time are stored for homeowners and businesses. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:212`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:252`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:213`.

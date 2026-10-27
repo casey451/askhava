@@ -1,0 +1,26 @@
+# Spec: Operations, monitoring and recovery
+
+Prefix: `OPS` · Modules: `ops`, `recovery` · Format and checks: [index.md](index.md)
+
+- **OPS-001** Safe mode pauses charges, releases and outbound texts when Casey has not acknowledged a High alert within 24 hours. Source: `BUILD_BRIEF.md:375`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:73`.
+- **OPS-002** There is no backup person, so alerts wait for Casey (D-024). Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:73`.
+- **OPS-003** Owner pause switches (all, town, trade, charging, texting) are checked by every action and each change is logged. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:407`, `BUILD_BRIEF.md:464`.
+- **OPS-004** Casey is alerted when text delivery is below 95% for 30 minutes, the Twilio number is suspended, Stripe or webhook errors last over 30 minutes, the 5-minute health check fails twice, or the nightly ledger check finds any difference. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:457`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:458`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:459`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:460`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:461`.
+- **OPS-005** Every complaint, safety report or dispute alerts Casey. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:462`.
+- **OPS-006** Casey is alerted when a trade or town has fewer than 2 active businesses. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:463`.
+- **OPS-007** The app exposes `/healthz`, checked by UptimeRobot. Source: `BUILD_BRIEF.md:118`.
+- **OPS-008** The owner portal shows system health: delivery rate, failed texts, payment errors, AI errors, uptime and last backup. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:408`.
+- **OPS-009** The owner portal offers a weekly spot-check of 10 random job cards. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:410`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:316`.
+- **OPS-010** The audit log is append-only and exportable, and it is copied off the database as it happens. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:96`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:475`.
+- **OPS-011** The audit stream, web request log and AI structured readings are written off the database as they happen, so a restore can be replayed. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:690`.
+- **OPS-012** The app host is Railway Pro if its Postgres Backups tab shows point-in-time recovery, otherwise Render (D-024). Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:72`.
+- **OPS-013** A nightly encrypted export goes to separate storage, kept 30 days, with a monthly test restore. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:469`.
+- **OPS-014** The restore drill includes switching the app to the restored database. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:265`, `BUILD_BRIEF.md:52`.
+- **OPS-015** After a restore, the lost window is replayed as one timeline in time order from vendor records (texts, website actions, Stripe events, calls), with deadlines running in their place. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:480`.
+- **OPS-016** The replay recreates the same job-card links, quote links, pick IDs and Stripe charge keys from derived IDs. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:481`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:109`.
+- **OPS-017** The replay sends nothing twice: a text Twilio already delivered is not re-sent, and an open masked call line is reused. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:482`, `BUILD_BRIEF.md:479`.
+- **OPS-018** When Stripe can't be reached during a replay, the replay waits and retries and never guesses. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:483`.
+- **OPS-019** After a replay, any unmatched payment is refunded and flagged, and any job that couldn't be rebuilt is listed for Casey to call. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:484`.
+- **OPS-020** The incident runbook includes Arizona's 45-day breach notice (A.R.S. 18-552). Source: `BUILD_BRIEF.md:374`.
+- **OPS-021** The breach steps start by pausing texting and charging and preserving the logs. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:447`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:448`.
+- **OPS-022** The live service deploys only when Casey presses Deploy at Gate C, and Claude never holds a hosting key. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:305`, `BUILD_BRIEF.md:203`.

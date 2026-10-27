@@ -1,0 +1,21 @@
+# Spec: Job cards and matching
+
+Prefix: `CARD` · Modules: `quotes`, `catalog`, `licensing`, `privacy` · Format and checks: [index.md](index.md)
+
+- **CARD-001** A job card goes to every active, verified business serving the job's town whose license covers every remaining candidate job type and which ticked at least one of them. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:124`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:13`.
+- **CARD-002** The same license and checklist rules apply when a job is offered to businesses in neighboring towns. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:131`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:645`.
+- **CARD-003** There is no cap on how many businesses receive a job card or join a trade (D-028). Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:13`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:113`.
+- **CARD-004** When no business's checklist covers the job, the card goes to licensed businesses that left "also send me jobs nobody else covers" switched on. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:125`.
+- **CARD-005** A job card never contains a homeowner name, phone number, email, street address or on-site contact. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:81`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:91`.
+- **CARD-006** A card shows the town and the kind of place only (for example house, marina, storage lot or ramp). Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:49`.
+- **CARD-007** A card's description is built only from the scrubbed description plus fixed fields. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:291`.
+- **CARD-008** A final plain-code gate runs on every card: anything shaped like a name ("ask for Pat"), a contact phrase ("text me"), a run of number words or 7 or more digits removes the rest of that sentence. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:306`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:58`.
+- **CARD-009** When little text is left after the final gate, the card says "<Category> job (details on the job page)". Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:306`.
+- **CARD-010** Homeowner job descriptions are screened for carrier-restricted content before they go on a job card. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:185`.
+- **CARD-011** A card for a rental property says "Landlord approval may be needed.", and there is no option for a business to skip tenant requests. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:89`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:251`.
+- **CARD-012** "Homeowner prefers Spanish" is shown only to businesses that ticked "We speak Spanish", and no business can filter or skip jobs by language. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:88`, `BUILD_BRIEF.md:461`.
+- **CARD-013** Photos are never placed on job cards until the zero-retention AI agreement is signed. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:58`, `BUILD_BRIEF.md:340`.
+- **CARD-014** Once photos are allowed, a card photo exists only after location data is stripped and every screening (two independent AI checks and the on-server check) passes. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:89`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:293`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:307`.
+- **CARD-015** Before a card is sent, the business's license status is re-checked if the last check is more than 12 hours old. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:128`.
+- **CARD-016** A business that is paused, or covered by an owner pause switch for its town or trade, receives no job cards. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:407`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:90`.
+- **CARD-017** Job card IDs are derived from what they identify plus a server secret, so they can't be guessed and a replay recreates them exactly. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:109`.

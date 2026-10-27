@@ -1,0 +1,19 @@
+# Spec: Business sign-up and accounts
+
+Prefix: `BIZ` · Modules: `businesses`, `portals` · Format and checks: [index.md](index.md)
+
+- **BIZ-001** Sign-up creates a Stripe customer and needs no card. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:324`.
+- **BIZ-002** Identity is checked by a chain: a text code to the phone on the state record, then a voice call reading the code (landlines), then email to the address on the state record, then an automatically mailed letter (Lob) as the last resort. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:93`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:428`.
+- **BIZ-003** Owner approval never activates a business by itself; the identity code is still required, and unlicensed businesses also need a city-license-list name match. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:115`.
+- **BIZ-004** A business ticks a job-type checklist at sign-up and can change it any time. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:116`.
+- **BIZ-005** A business can switch on "also send me jobs nobody else covers". Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:104`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:125`.
+- **BIZ-006** A business can tick "We speak Spanish", which is shown on its quote card. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:88`.
+- **BIZ-007** A business can tick "after-hours emergencies". Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:87`.
+- **BIZ-008** A business can record insurance (yes or no), which is shown as business-reported. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:48`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:190`.
+- **BIZ-009** A business account is pending, active, paused (with a reason), waitlist, needs review or removed. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:90`.
+- **BIZ-010** A business can pause itself and change its towns and job types in the portal; there is no weekly card limit (D-028). Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:396`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:13`.
+- **BIZ-011** A complaint gets an apology, an explanation that the business is independent, the business's own phone, the job details and the ROC complaint link through askhava.com. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:91`.
+- **BIZ-012** A business is paused only after 3 complaints in 90 days, and every complaint alerts Casey (D-016). Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:91`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:462`.
+- **BIZ-013** The business portal shows how the homeowner chose to be contacted after a pick. Source: `BUILD_BRIEF.md:409`.
+- **BIZ-014** The business portal can never release contact details without a confirmed pick. Source: `BUILD_BRIEF.md:315`.
+- **BIZ-015** The business portal shows billing (charges, free first win, refunds, credits, statements as PDF and CSV, payment methods) built from the ledger. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:393`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:361`.
