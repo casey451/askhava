@@ -50,6 +50,8 @@ app/
     routes.py        HTTP routes, only in modules that own a web surface (portals, site, webhooks)
 migrations/          Alembic, forward-only, each migration tested (BUILD_BRIEF.md:107)
 stand_ins/           fake Twilio, fake Resend, fake Lob, stand-in AI, Stripe mock config (BUILD_BRIEF.md:91)
+tests/               one folder per test layer (docs/test-design.md section 2)
+twin/                the twin and its hard-failing gate (docs/twin-warnings.md section 6)
 ```
 
 ## 3. Modules, what each owns, and its tables
