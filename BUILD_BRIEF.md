@@ -22,11 +22,11 @@ Do these in this order. Protecting `main` first would stop you from adding the f
 4. **Repository settings:**
    - **Rules → Rulesets → New branch ruleset** for `main`:
      - require a pull request (0 approvals);
-     - require status checks, **typing these four names in yourself**: `ci`, `twin`, `security`, `a11y`;
-     - require branches to be up to date before merging;
+     - require status checks, **typing these three names in yourself, exactly**: `Ci`, `Twin`, `Ally`;
+     - leave "require branches to be up to date" off (the tree-hash check in §7 covers it);
      - block force pushes;
      - restrict deletions.
-   - **General:** allow auto-merge; allow squash merging only; automatically delete head branches.
+   - **General:** allow auto-merge; allow squash merging only; automatically delete head branches (optional: if it's off, the runner lists merged branches in STATUS.md for occasional cleanup).
    - **Actions → General:** leave workflow permissions at "Read repository contents" (each workflow asks for what it needs), and tick "Allow GitHub Actions to create and approve pull requests."
 5. **Cloud environment** at claude.ai/code: name it `ask-hava-build`, set network access to Trusted (the default), and leave variables and secrets empty for now.
 6. **Create the scheduled task** at claude.ai/code/routines, using the exact settings and prompt in Appendix A. Then tap **Run now** once. If the scheduled-task page won't work on your phone, use Appendix C instead: start each cycle by hand from the Claude app until you're at a computer.
@@ -255,10 +255,11 @@ Then **Gate B**: Casey's guided click-through, plus his screen-reader check (§9
 
    Findings go back to the worker subagent once.
 5. **Hand in:** push the branch. The push comes from Claude's GitHub identity, so workflows run. The `auto-pr` workflow (triggered `on: push` for `claude/task/**`, `permissions: contents: write, pull-requests: write`) opens a PR and enables squash auto-merge.
-6. **Required checks:** `ci`, `twin`, `security` and `a11y` each trigger **`on: push` for `claude/task/**`** as well as `on: pull_request`. A PR opened by `GITHUB_TOKEN` doesn't start `pull_request` workflows; checks attach to the commit, so the push-started runs satisfy the PR. Each workflow's **job name equals the required check name exactly**, and each sets `permissions: contents: read`.
+   **Fallback (tested from a session on Oct 27):** if no PR appears within 10 minutes, the runner opens it itself with the REST API (`POST /repos/casey451/askhava/pulls`) and turns on auto-merge with `PUT /repos/casey451/askhava/pulls/<n>/ccr/auto_merge` (body `{"merge_method":"squash"}`). GitHub GraphQL and the `gh pr` commands that rely on it are blocked from sessions, so always use REST.
+6. **Required checks:** the three required checks are named **`Ci`, `Twin` and `Ally`** (capitalised, and `Ally` for accessibility) because that is how they are set in the live ruleset; security scans run as steps inside the `Ci` job. Each check workflow (`ci.yml` → job `Ci`, `twin.yml` → job `Twin`, `a11y.yml` → job `Ally`) triggers **`on: push` for `claude/**`** as well as `on: pull_request`. A PR opened by `GITHUB_TOKEN` doesn't start `pull_request` workflows; checks attach to the commit, so the push-started runs satisfy the PR. Each workflow's **job name equals the required check name exactly**, and each sets `permissions: contents: read`.
 7. **Merge:** GitHub merges automatically when the checks pass on an up-to-date branch. The merge event should start the next runner session (K9 proves this; otherwise the hourly run carries on).
 8. **Finish:** the next runner marks the task `DONE` only after confirming two things:
-   - the PR merged with all four checks green on its head SHA;
+   - the PR merged with `Ci`, `Twin` and `Ally` green on its head SHA;
    - **the squash commit on `main` has exactly the same tree as that tested head** (`git rev-parse <sha>^{tree}` matches).
 
    That proves `main` is the tested code, even though a merge done through `GITHUB_TOKEN`'s auto-merge may not start workflows on `main`. A `nightly-main` workflow (scheduled, so it always runs) runs the full suite on `main` every night and at the end of every stage. A red nightly run makes "fix main" the next task. The runner then updates STATUS.md and PROGRESS.md on `claude/kit-state`.
@@ -283,7 +284,7 @@ Then **Gate B**: Casey's guided click-through, plus his screen-reader check (§9
 **Notifications to Casey** go through the outbox: GitHub emails him and notifies him in its phone app. They cover gate requests, `BLOCKED` tasks, the account checkpoint, and Phase 1 or Phase 2 being complete.
 
 **Things K8 must check in the real cloud environment, with a fallback for each:**
-- **Browsers in the session:** can Playwright's browsers be installed? If not, browser and accessibility tests run only in GitHub Actions, which is where the `a11y` check runs anyway.
+- **Browsers in the session:** can Playwright's browsers be installed? If not, browser and accessibility tests run only in GitHub Actions, which is where the `Ally` check runs anyway.
 - **Stripe's mock server:** can `stripe/stripe-mock` be pulled from Docker Hub? If not, it runs in CI only, and the twin's fake Stripe is used in sessions.
 - **Merges starting the next run:** does the GitHub trigger fire on merges done by auto-merge? If not, the hourly run carries the chain.
 
@@ -420,7 +421,7 @@ Then **Gate B**: Casey's guided click-through, plus his screen-reader check (§9
 **Accessibility statement page:** the conformance target, known limits, and a phone and email contact for help, answered within 2 business days.
 
 **Testing**
-- axe-core on every page and state at 320, 768 and 1280px. Any violation fails the `a11y` check.
+- axe-core on every page and state at 320, 768 and 1280px. Any violation fails the `Ally` check.
 - Playwright keyboard-only journeys for all four end-to-end flows.
 - Automated reflow and zoom checks.
 - **The manual check Claude can't do:** at Gate B, Casey runs VoiceOver on his iPhone through the homeowner flow and the business card-entry step, using `docs/a11y.md`'s script. Stripe's card form is inside an embedded frame that axe-core can't scan, so it's checked by hand with the keyboard and VoiceOver. Claude records the results.
@@ -467,14 +468,14 @@ The list below is the minimum, not the whole set:
 
 | Layer | What | Gate |
 |---|---|---|
-| Unit and property | Fee calculation from the worked examples (including the $150/month → $600 → $75 case), scrubber, keyword matching, eligibility, quiet hours, state transitions | `ci` |
-| Mutation | mutmut on `payments`, `catalog` and `licensing`: breaking the 4-month rule or the license filter must turn tests red | `ci` (nightly full run) |
-| Integration | Real Postgres in the session; the job queue; outbox and inbox never double-send | `ci` |
-| Contract | Each stand-in against the vendor's documented API; in Phase 2, the same tests against real sandboxes | `ci` and Phase 2 |
-| Twin | The updated twin as the oracle. Any failed check makes the run fail (the old twin exited 0 despite failures); each pre-existing warning is explained in K5 | `twin` |
-| End to end | The four journeys (homeowner, business, operator, vendor outage) in Playwright | `ci` |
-| Security | Auth matrix, token isolation, brute force, webhook forgery, replay, PII and secret scan, bandit, pip-audit | `security` |
-| Accessibility | §9 | `a11y` |
+| Unit and property | Fee calculation from the worked examples (including the $150/month → $600 → $75 case), scrubber, keyword matching, eligibility, quiet hours, state transitions | `Ci` |
+| Mutation | mutmut on `payments`, `catalog` and `licensing`: breaking the 4-month rule or the license filter must turn tests red | `Ci` (nightly full run) |
+| Integration | Real Postgres in the session; the job queue; outbox and inbox never double-send | `Ci` |
+| Contract | Each stand-in against the vendor's documented API; in Phase 2, the same tests against real sandboxes | `Ci` and Phase 2 |
+| Twin | The updated twin as the oracle. Any failed check makes the run fail (the old twin exited 0 despite failures); each pre-existing warning is explained in K5 | `Twin` |
+| End to end | The four journeys (homeowner, business, operator, vendor outage) in Playwright | `Ci` |
+| Security | Auth matrix, token isolation, brute force, webhook forgery, replay, PII and secret scan, bandit, pip-audit | `Ci` (security step; also gitleaks) |
+| Accessibility | §9 | `Ally` |
 | Recovery | Restore drill with replay, no duplicate sends or charges | Phase 2 |
 
 **Coverage:** the overall coverage may never drop, and money, privacy and licensing code must stay at or above 95% branch coverage.
@@ -566,7 +567,7 @@ You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now 
 Do exactly one cycle:
 1. Fetch branch claude/kit-state and read kit/state.json. If it does not exist yet, the next task is K0 (Appendix B).
 2. Read new files in inbox/ on claude/kit-state. Each is Casey's answer to an owner issue: record it in kit/state.json, clear that wait, and move the file to inbox/done/. To ask Casey anything, write a file to outbox/ (section 7); never post to GitHub directly.
-3. If any task is MERGE_PENDING: if its PR merged with all four checks green on its head SHA, and main's squash commit has the same tree as that head, mark it DONE. If it failed, apply the failure rules in section 7. If it is still pending, update STATUS.md if stale and stop; never claim a second task while one is pending.
+3. If any task is MERGE_PENDING: if its PR merged with `Ci`, `Twin` and `Ally` green on its head SHA, and main's squash commit has the same tree as that head, mark it DONE. If it failed, apply the failure rules in section 7. If it is still pending, update STATUS.md if stale and stop; never claim a second task while one is pending.
 4. If the build is at a gate or WAITING_FOR_OWNER with no answer yet, or no task is eligible (BLOCKED tasks hold only their dependents), update STATUS.md if stale and stop.
 5. Run the smoke test on main. If main is red, the next task is "fix main".
 6. Claim the next eligible task with a lease (push to claude/kit-state; if the push is rejected, another runner has it, so stop). Renew the lease every 30 minutes.
@@ -580,7 +581,7 @@ Never break section 2. Never claim a test passed unless you ran it here.
 
 | Step | What happens |
 |---|---|
-| **K0** | Done in this order, in one PR:<br>1. **Deny rules first** (`.claude/settings.json`, §8).<br>2. Fingerprint `sources/` and write the order of authority.<br>3. Add the workflows:<br>• `ci`, `twin`, `security` and `a11y` start as stubs that pass on an empty app. Each triggers `on: push` for `claude/task/**` plus `pull_request`, has a job name exactly equal to the check name, and sets `permissions: contents: read`;<br>• `auto-pr` (`on: push`, `claude/task/**`);<br>• `nightly-main` (schedule);<br>• `backup-runner` (schedule, off by flag);<br>• `notify` (`on: push` to `claude/kit-state`; creates the `owner` label on first use);<br>• `inbox` (`on: issue_comment` and `issues: closed`; only the repository owner's comments are captured).<br>4. Create `claude/kit-state` **from the K0 task branch** (so it carries the workflow files), with the initial state, STATUS.md, PROGRESS.md, `outbox/` and `inbox/`. Each cycle, the runner merges `main` into `claude/kit-state` with a normal merge commit, so workflow updates reach it.<br>K0's own branch is `claude/task/K0-setup`, so its push starts the new workflows and its PR can merge.<br>6. After K0 merges, send an outbox message: "The four checks (ci, twin, security, a11y) have now run once. If you skipped adding them in PHONE_SETUP step 5, add them to the protect-main ruleset now." Until Casey confirms, no task is marked DONE unless all four checks show green on its PR. |
+| **K0** | Done in this order, in one PR:<br>1. **Deny rules first** (`.claude/settings.json`, §8).<br>2. Fingerprint `sources/` and write the order of authority.<br>3. Add the workflows:<br>• `ci.yml`, `twin.yml` and `a11y.yml` replace the temporary `checks-placeholder.yml` (delete it in the same PR). They start as stubs that pass on an empty app; `ci.yml` also carries the security steps. Each triggers `on: push` for `claude/**` plus `pull_request`, has a job `name:` exactly `Ci`, `Twin` or `Ally`, and sets `permissions: contents: read`;<br>• `auto-pr` (`on: push`, `claude/task/**`);<br>• `nightly-main` (schedule);<br>• `backup-runner` (schedule, off by flag);<br>• `notify` (`on: push` to `claude/kit-state`; creates the `owner` label on first use);<br>• `inbox` (`on: issue_comment` and `issues: closed`; only the repository owner's comments are captured).<br>4. Create `claude/kit-state` **from the K0 task branch** (so it carries the workflow files), with the initial state, STATUS.md, PROGRESS.md, `outbox/` and `inbox/`. Each cycle, the runner merges `main` into `claude/kit-state` with a normal merge commit, so workflow updates reach it.<br>K0's own branch is `claude/task/K0-setup`, so its push starts the new workflows and its PR can merge.<br>5. After K0 merges, confirm from the API (`GET /repos/casey451/askhava/rulesets`) that `Ci`, `Twin` and `Ally` are the required checks. If they are not, send an outbox message asking Casey to fix the ruleset, and mark no task DONE until all three show green on its PR. |
 | **K0 also seeds the queue** | `kit/state.json` lists K1–K9 and Gate A as tasks, with dependencies, models and types (`harness` for K0 and K8), taken from the Kit Plan. K6 later adds the build tasks |
 | **K1** | Write the constitution and CLAUDE.md |
 | **K2** | Write the spec, one area per session |
