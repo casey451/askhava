@@ -21,3 +21,4 @@
 - Pushed `claude/task/K1-constitution` @ b2ddaa3. K1 is MERGE_PENDING.
 - 2026-10-27: K1 DONE. K2 pushed (407 requirements, trace script clean; reviewer blocking finding fixed).
 - 2026-10-27: K2 DONE (PR #7 merged, Ci/Twin/Ally green, tree == squash). K2b claimed.
+- 2026-10-27: K2b pushed @ 8cb43dd; Opus review had 2 blocking (gas appliance handyman, one-time jobs in recurring categories) fixed in one round; checks run here: catalog check 0 errors, pytest 64 passed. K2b MERGE_PENDING.
