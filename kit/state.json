@@ -39,16 +39,18 @@
       "model": "claude-opus-5-5",
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
-      "status": "MERGE_PENDING",
+      "status": "DONE",
       "attempts": 1,
       "model_used": "claude-opus-5-5",
       "branch": "claude/task/K1-constitution",
-      "pr": null,
+      "pr": 5,
       "head_sha": "b2ddaa3e3c82e69b9b112271a45c071351cb9f83",
       "waits_on_owner": null,
       "reviewed_by": "claude-opus-5-5",
       "review_rounds": 1,
-      "model_evidence": "subagent transcript: all 37 assistant records model=claude-opus-5-5 (first pass); fix round resumed same agent"
+      "model_evidence": "subagent transcript: all 37 assistant records model=claude-opus-5-5 (first pass); fix round resumed same agent",
+      "merged_sha": "e0de672",
+      "evidence": "PR #5 merged; Ci/Twin/Ally success on head b2ddaa3; tree f7caed20 == squash e0de672"
     },
     {
       "id": "K2",

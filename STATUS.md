@@ -1,9 +1,9 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 · **Phase:** kit (planning, no app code) · **Done:** 1 of 11 kit steps (K0 done; Gate A removed)
+**Updated:** 2026-10-27 · **Phase:** kit (planning, no app code) · **Done:** 2 of 11 kit steps (K0, K1 done)
 
 ## Running now
-- **K1 constitution + CLAUDE.md:** handed in and waiting to merge (MERGE_PENDING).
+- Nothing running; K2 is next.
 
 ## Blocked
 - Nothing.
@@ -15,7 +15,7 @@
 | Step | Status | Model |
 |---|---|---|
 | K0 Set up the kit repo | Done | Sonnet (Opus review) |
-| K1 Constitution + CLAUDE.md | Waiting to merge | Opus |
+| K1 Constitution + CLAUDE.md | Done | Opus |
 | K2 Requirements | Queued | Opus |
 | K2b Category list and worked examples | Queued (needs your approval) | Opus |
 | K3 Clarify and check for conflicts | Queued (questions for you) | Opus |
