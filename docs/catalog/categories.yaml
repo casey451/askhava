@@ -16,6 +16,8 @@
 #                     smoke alarms and no fire sprinklers (LIC-019 to LIC-025).
 #   construction_type the $1,000 handyman limit applies to this category's work (LIC-019, LIC-020).
 #   recurring         fee basis is 4 months of the monthly price (REC-002).
+#   one_time_job_types  in a recurring category, the job types that are one-time jobs:
+#                     quoted with no period and priced at face value, no 4-month rule.
 #   trip_fee_tier     the set introduction fee in dollars for a trip-fee-plus-estimate quote (FEE-004).
 #   after_hours_emergency  the category takes after-hours emergency requests.
 #   refused / routed_to    job types this category never takes, and where they go instead.
@@ -153,6 +155,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [weekly pool service, chemical balancing, green pool cleanup]
+    one_time_job_types: [green pool cleanup]
     refused:
       - {job: "pool equipment repair", routed_to: "pool_repair", reason: "repair goes to R-6 or a handyman under $1,000 (changes file :240)"}
     intake_questions: ["How often would you like service?", "Pool, spa or both?"]
@@ -170,6 +173,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [mowing, trimming, yard cleanup, gravel raking]
+    one_time_job_types: [yard cleanup]
     refused:
       - {job: "pre-emergent or advertised weed control", routed_to: "pest_control", reason: "AZ Dept of Agriculture licensees only (LIC-012)"}
     intake_questions: ["How often would you like service?", "About how big is the yard?"]
@@ -187,6 +191,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [regular cleaning, deep cleaning, move-out cleaning]
+    one_time_job_types: [deep cleaning, move-out cleaning]
     refused: []
     intake_questions: ["How many bedrooms and bathrooms?", "How often?"]
     keywords: [house cleaning, maid, cleaner, deep clean]
@@ -204,6 +209,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [general pest service, scorpions, termites, pre-emergent weed control]
+    one_time_job_types: [termites]
     refused: []
     intake_questions: ["What pests are you seeing?", "One-time or ongoing service?"]
     keywords: [pest, bugs, scorpion, termite, pre-emergent, weed control]
@@ -318,7 +324,8 @@ categories:
     trip_fee_tier: 75
     after_hours_emergency: false
     job_types: [engine repair, outboard service, trailer repair]
-    refused: []
+    refused:
+      - {job: "dock, boat lift or seawall work", routed_to: "licensed only (ROC)", reason: "construction on real property, not vessel work"}
     intake_questions: ["What kind of boat and engine?", "What is going wrong?"]
     keywords: [boat repair, outboard, marine mechanic, boat engine]
     review: "Vessel work, not construction on real property; no ROC license. Attorney may confirm."
@@ -434,6 +441,7 @@ categories:
     job_types: [washer, dryer, refrigerator, dishwasher repair]
     refused:
       - {job: "gas, plumbing or electrical line work", routed_to: "licensed only", reason: "never part of appliance repair (changes file :240)"}
+      - {job: "gas appliance repair (gas dryer, range or oven)", routed_to: "licensed only (R-63)", reason: "gas work is never handyman work (LIC-021)"}
     intake_questions: ["Which appliance and brand?", "What is it doing?"]
     keywords: [appliance repair, washer, dryer, fridge, dishwasher]
     review: "Changes file 7.1 item 4. Confirmed K2b."
@@ -598,6 +606,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [weekly house check, storm check]
+    one_time_job_types: [storm check]
     refused:
       - {job: "rent collection, finding tenants or leasing", routed_to: "none", reason: "never included (LIC-018)"}
     intake_questions: ["How often should someone check?", "Any special tasks (water plants, run taps)?"]

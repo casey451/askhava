@@ -48,7 +48,15 @@ EXPECTED_FEE_RULES: dict[str, Any] = {
         {"fee": 199, "basis_above": "1500.00"},
     ],
     "recurring_months": RECURRING_MONTHS,
+    "monthly_conversion": {
+        "weekly": "x 52 / 12",
+        "every_two_weeks": "x 26 / 12",
+        "monthly": "x 1",
+        "quarterly": "/ 3",
+        "yearly": "/ 12",
+    },
     "range_basis": "midpoint",
+    "basis_rounding": "round down to the whole cent before choosing the tier (D-033)",
     "handyman_limit": "1000.00",
 }
 
@@ -144,11 +152,15 @@ def quote_amount(quote: dict[str, Any]) -> Fraction:
 
 
 def fee_basis(quote: dict[str, Any], category: dict[str, Any]) -> Fraction:
-    """The fee basis, with the 4-month rule for recurring services (REC-002, REC-004)."""
+    """The fee basis, with the 4-month rule for recurring services (REC-002, REC-004).
+
+    A quote with no period is a one-time job priced at face value, even in a
+    recurring category (for example a move-out clean from a house cleaner).
+    """
     amount = quote_amount(quote)
     period = quote.get("period")
-    if bool(category["recurring"]) != (period is not None):
-        raise ValueError("a quote has a period exactly when its category is recurring")
+    if period is not None and not category["recurring"]:
+        raise ValueError("a quote has a period but its category is not recurring")
     if period is None:
         return cents_down(amount)
     if period not in MONTHLY_FACTOR:
@@ -172,8 +184,21 @@ def over_handyman_limit(example: dict[str, Any], category: dict[str, Any]) -> bo
     return top >= HANDYMAN_LIMIT
 
 
+def check_one_time(example: dict[str, Any], category: dict[str, Any]) -> None:
+    """A recurring category's quote with no period must name one of its one-time jobs."""
+    quote = example["quote"]
+    if not category["recurring"] or quote["type"] == "trip_fee" or "period" in quote:
+        return
+    job = example.get("job_type")
+    if job not in category.get("one_time_job_types", []):
+        raise ValueError(
+            f"recurring category quote with no period must name a one-time job_type, got {job!r}"
+        )
+
+
 def compute(example: dict[str, Any], category: dict[str, Any]) -> Outcome:
     """The outcome the fee rules give for one worked example."""
+    check_one_time(example, category)
     if over_handyman_limit(example, category):
         return Outcome("refused", None, 0, 0)
     quote = example["quote"]
@@ -272,6 +297,13 @@ def check_category(cat: dict[str, Any]) -> list[str]:
     for key in ("enabled", "handyman_allowed", "construction_type", "recurring"):
         if not isinstance(cat[key], bool):
             errors.append(f"category {cat_id}: {key} must be true or false")
+    one_time = cat.get("one_time_job_types", [])
+    if one_time and not cat["recurring"]:
+        errors.append(
+            f"category {cat_id}: one_time_job_types in a non-recurring category"
+        )
+    if not set(one_time) <= set(cat["job_types"]):
+        errors.append(f"category {cat_id}: one_time_job_types not in job_types")
     if not cat["enabled"] and not cat.get("off_reason"):
         errors.append(f"category {cat_id}: off without an off_reason")
     return errors
@@ -292,6 +324,13 @@ def check_categories(
             errors.append(
                 f"category {cat_id}: must be listed and off at launch (LIC-005)"
             )
+    if (
+        "pest_control" not in cats
+        or cats["pest_control"].get("advertised") is not False
+    ):
+        errors.append(
+            "category pest_control: must be listed with advertised: false (7.1 item 3)"
+        )
     if set(data.get("not_offered_at_launch", [])) != NOT_AT_LAUNCH:
         errors.append("not_offered_at_launch does not match LIC-004")
     names = {str(cat.get("name", "")).lower() for cat in cats.values()}

@@ -255,6 +255,84 @@ def test_non_mapping_file_fails(tmp_path: Path) -> None:
         check_catalog.run(root)
 
 
+def test_one_time_job_in_recurring_category_is_face_value() -> None:
+    cats, _ = check_catalog.check_categories(
+        check_catalog.load(REPO_ROOT, check_catalog.CATEGORIES_FILE)
+    )
+    example: dict[str, object] = {
+        "id": "X02",
+        "category": "house_cleaning",
+        "job_type": "move-out cleaning",
+        "business": "qualified",
+        "situation": "new_customer",
+        "quote": {"type": "fixed", "amount": "300.00"},
+        "expected": {
+            "outcome": "charged",
+            "fee_basis": "300.00",
+            "fee": 25,
+            "waived": 0,
+        },
+    }
+    assert check_catalog.check_example(example, cats) == ""
+    for job in (None, "regular cleaning"):
+        bad = {**example, "job_type": job}
+        assert "must name a one-time job_type" in check_catalog.check_example(bad, cats)
+
+
+@pytest.mark.parametrize(
+    ("name", "old", "new", "expected"),
+    [
+        (
+            "worked_examples.yaml",
+            'fee_basis: "1500.00", fee: 75, waived: 0}\n\n  - id: W31',
+            'fee_basis: "1500.00", fee: 199, waived: 0}\n\n  - id: W31',
+            "W30: expected",
+        ),
+        (
+            "worked_examples.yaml",
+            "    job_type: move-out cleaning\n",
+            "",
+            "W32: recurring category quote with no period",
+        ),
+        (
+            "worked_examples.yaml",
+            'basis_rounding: "round down',
+            'basis_rounding: "round up',
+            "fee_rules.basis_rounding",
+        ),
+        (
+            "worked_examples.yaml",
+            'weekly: "x 52 / 12"',
+            'weekly: "x 4"',
+            "fee_rules.monthly_conversion",
+        ),
+        (
+            "categories.yaml",
+            "    advertised: false\n",
+            "",
+            "pest_control: must be listed",
+        ),
+        (
+            "categories.yaml",
+            "    one_time_job_types: [termites]\n",
+            "    one_time_job_types: [bed bugs]\n",
+            "one_time_job_types not in job_types",
+        ),
+        (
+            "categories.yaml",
+            "    job_types: [drywall patch,",
+            "    one_time_job_types: [drywall patch]\n    job_types: [drywall patch,",
+            "one_time_job_types in a non-recurring category",
+        ),
+    ],
+)
+def test_review_fixes_are_enforced(
+    tmp_path: Path, name: str, old: str, new: str, expected: str
+) -> None:
+    errors = errors_after(tmp_path, name, old, new)
+    assert any(expected in e for e in errors), errors
+
+
 def test_missing_files_fail(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     assert check_catalog.main(["--root", str(tmp_path)]) == 1
     assert "missing docs/catalog/categories.yaml" in capsys.readouterr().err

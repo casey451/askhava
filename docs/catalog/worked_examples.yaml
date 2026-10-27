@@ -8,7 +8,10 @@
 # Money is written as quoted strings so no amount is ever read as a float.
 #
 # quote.type      fixed | range | trip_fee (trip fee plus estimate: the category's set tier)
-# quote.period    recurring only: weekly | every_two_weeks | monthly | quarterly | yearly
+# quote.period    recurring only: weekly | every_two_weeks | monthly | quarterly | yearly.
+#                 A quote with no period is a one-time job at face value, even in a
+#                 recurring category; it must then name one of the category's
+#                 one_time_job_types in job_type.
 # business        qualified (holds what the category requires, which may be nothing) |
 #                 handyman_exemption (unlicensed, under A.R.S. 32-1121(A)(14)). The $1,000
 #                 limit applies to construction-type work by a handyman_exemption business or
@@ -171,7 +174,7 @@ examples:
     expected: {outcome: charged, fee_basis: "466.66", fee: 25, waived: 0}
 
   - id: W17
-    description: Yearly price whose 4-month basis rounds down under $500 (D-033)
+    description: Yearly price just under the $500 edge stays $25
     category: home_watch
     business: qualified
     situation: new_customer
@@ -279,3 +282,32 @@ examples:
     situation: new_customer
     quote: {type: fixed, amount: "1200.00"}
     expected: {outcome: charged, fee_basis: "1200.00", fee: 75, waived: 0}
+
+  # ---- Rounding down to the cent at the $1,500 edge (D-033) ----
+
+  - id: W30
+    description: Yearly price whose 4-month basis is $1,500.0033, rounded down to $1,500.00
+    category: home_watch
+    business: qualified
+    situation: new_customer
+    quote: {type: fixed, amount: "4500.01", period: yearly}
+    expected: {outcome: charged, fee_basis: "1500.00", fee: 75, waived: 0}
+
+  - id: W31
+    description: Range midpoint of $1,500.005 is rounded down to $1,500.00
+    category: painting
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "1500.00", high: "1500.01"}
+    expected: {outcome: charged, fee_basis: "1500.00", fee: 75, waived: 0}
+
+  # ---- One-time job in a recurring category: face value, no 4-month rule ----
+
+  - id: W32
+    description: Move-out clean from a house cleaner is a one-time job
+    category: house_cleaning
+    job_type: move-out cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: fixed, amount: "300.00"}
+    expected: {outcome: charged, fee_basis: "300.00", fee: 25, waived: 0}
