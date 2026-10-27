@@ -1,20 +1,44 @@
 {
   "schema": 1,
-  "cadence": "hourly, one runner cycle per firing; Appendix A cron 7 * * * * (UTC)",
-  "scheduler": "exactly one: the fresh-session routine 'Ask Hava build runner' from BUILD_BRIEF.md Appendix A; the hourly wake-up of one persistent session is to be deleted (D-171)",
-  "merge_trigger": "absent: the scheduled task was created via the API and only the claude.ai routines page can add a GitHub merge trigger; the hourly run carries the chain (D-169)",
+  "cadence": "hourly at :50 (routine 'Ask Hava build runner', cron 50 * * * * UTC, confirmed by the trigger listing); one runner cycle per firing",
+  "scheduler": "exactly one: the routine 'Ask Hava build runner' created from the claude.ai routines page (fresh session each firing, claude-sonnet-5-5, Appendix A prompt); the API-created 'Ask Hava build runner (hourly)' that wakes one persistent session is to be deleted (D-171)",
+  "merge_trigger": "unverified (not shown by the trigger listing; timings at 20:11 and 20:14 are consistent with one); the hourly run carries the chain (D-169)",
   "runner_model": "claude-sonnet-5-5",
   "per_model_sample": {
-    "note": "Tokens from subagent transcripts in the runner session, October 27, 2026. Plan quota is not observable from a session.",
-    "sonnet": {"run": "K0 worker", "turns": 29, "output": 29914, "cache_read": 2587807, "cache_write": 116108},
-    "opus": {"run": "K0 review", "turns": 6, "output": 15900, "cache_read": 392149, "cache_write": 93620},
+    "note": "Tokens from subagent transcripts in the runner session, October 27, 2026. The sonnet and opus samples are from K0; no Sonnet or Opus worker ran during K9 except the K9 report (Opus, not sampled). P3 has no token sample. Plan quota is not observable from a session.",
+    "sonnet": {
+      "run": "K0 worker",
+      "turns": 29,
+      "output": 29914,
+      "cache_read": 2587807,
+      "cache_write": 116108
+    },
+    "opus": {
+      "run": "K0 review",
+      "turns": 6,
+      "output": 15900,
+      "cache_read": 392149,
+      "cache_write": 93620
+    },
     "haiku": [
-      {"run": "P1 worker", "turns": 3, "output": 1183, "cache_read": 113521, "cache_write": 59239},
-      {"run": "P2 worker", "turns": 5, "output": 2165, "cache_read": 233242, "cache_write": 60668}
+      {
+        "run": "P1 worker",
+        "turns": 3,
+        "output": 1183,
+        "cache_read": 113521,
+        "cache_write": 59239
+      },
+      {
+        "run": "P2 worker",
+        "turns": 5,
+        "output": 2165,
+        "cache_read": 233242,
+        "cache_write": 60668
+      }
     ]
   },
   "kit_step_minutes": {
-    "note": "Claim to hand-in, from the claude/kit-state git log; K0 and K1 are approximate.",
+    "note": "Approximate, claim to hand-in from the claude/kit-state log; K0 and K1 are runner observations, not in state.",
     "K0": 25,
     "K1": 10,
     "K2": 16,
@@ -28,10 +52,11 @@
   },
   "expected_tasks_per_hour": 1,
   "notes": [
-    "Throughput is based on the observed one-step-per-cycle hourly cadence: each firing marks the previous task DONE and claims the next. Every kit step (10 to 30 minutes) fit inside one hour.",
-    "A GitHub merge trigger on the routine would start the next cycle as soon as a merge lands, allowing back-to-back cycles and more than one task per hour.",
+    "Throughput is based on the observed one-step-per-cycle hourly cadence with the merge trigger unverified: each firing marks the previous task DONE and claims the next. Every kit step (about 10 to 30 minutes) fit inside one hour.",
+    "If the routine has, or is given, the GitHub 'pull request closed, merged into main' trigger, the next cycle starts as soon as a merge lands, allowing back-to-back cycles and more than one task per hour.",
     "At a usage limit the task goes to RETRY_AFTER_RESET and the next hourly run after the reset picks it up; never pay per use (BUILD_BRIEF.md:274, BUILD_BRIEF.md:509).",
     "The Haiku samples come from tiny rehearsal tasks and understate a real build task; K0 is the closest sample of real work.",
-    "A live lease naming a different session always means stop (D-171)."
+    "A live lease naming a different session always means stop, with no exceptions (D-171).",
+    "BUILD_BRIEF.md Appendix A shows cron 7 * * * *; the live routine uses 50 * * * *. Either is hourly; the schedule follows the live routine."
   ]
 }
