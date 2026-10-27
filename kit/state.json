@@ -4,7 +4,12 @@
   "current": "K7",
   "backup_runner": "off",
   "ruleset_verified": true,
-  "lease": null,
+  "lease": {
+    "task": "K7",
+    "session": "https://claude.ai/code/session_01DyjzW9o8RiGQc2Uyuukz1n",
+    "claimed_at": "2026-10-27T17:27:25Z",
+    "expires_at": "2026-10-27T20:27:25Z"
+  },
   "tasks": [
     {
       "id": "K0",
@@ -209,8 +214,8 @@
       "model": "claude-sonnet-5-5",
       "effort": "medium",
       "reviewer_model": "claude-sonnet-5-5",
-      "status": "QUEUED",
-      "attempts": 0,
+      "status": "IN_PROGRESS",
+      "attempts": 1,
       "model_used": null,
       "branch": null,
       "pr": null,
