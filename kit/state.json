@@ -346,7 +346,8 @@
     "K8: add the PII scanner step to Ci (currently a visible 'skipped' stub).",
     "Bare 'git push' while on main is not denied locally; the protect-main ruleset blocks it on GitHub (K0 review N7).",
     "K1: docs/sources.md:29 says stop-and-ask on brief/changes conflict; overridden by BUILD_BRIEF \u00a716. Fix in a later docs task. Log in decisions.md (K3): check names Ci/Twin/Ally vs changes file; Insurance (business-reported) wording.",
-    "K7 review non-blocking, log in decisions.md by a later docs task: template makes app/main.py shared for all types; template stops-and-reports on red smoke test (Kit Plan says fix first); workers leave PROGRESS.md to the runner; twin/ added to protected list; 118 prompts have goal==title; CI could run gen_prompts.py --check (harness task)."
+    "K7 review non-blocking, log in decisions.md by a later docs task: template makes app/main.py shared for all types; template stops-and-reports on red smoke test (Kit Plan says fix first); workers leave PROGRESS.md to the runner; twin/ added to protected list; 118 prompts have goal==title; CI could run gen_prompts.py --check (harness task).",
+    "2026-10-27 runner: main green (257 tests, pii_scan, validate_tasks, gen_prompts --check). K9 NOT claimed: no kit/prompts/K9.md exists and it needs scheduler-started sessions, real usage readings and practice PRs that a single in-session cycle cannot honestly produce. Needs a prompt/plan for K9 before it can be claimed."
   ],
   "build_hold": "Gate P: Casey reviews an investor-style presentation first; build tasks (T001+) wait for his 'approved to build' (set Oct 27)"
 }

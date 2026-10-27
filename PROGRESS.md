@@ -38,3 +38,4 @@
 - 2026-10-27: K8 pushed @ c4023ed (runner/, stand_ins/, pii_scan, failure drills, CI pytest step, D-121..D-126). Sonnet worker (transcript verified). Opus review: 5 blocking + many non-blocking, all fixed in one round. Checks run here: pytest 257 passed, validate_tasks 0, gen_prompts 0 problems, trace_spec 0, check_catalog 0, pii_scan 0; path check: no sources/ or .claude/ changes. Note: kit-task path rules to define at K9. K8 MERGE_PENDING.
 
 - 2026-10-27 18:30Z: K8 DONE (PR #16, tree acbbe2d0 == squash 6d10456; Ci/Twin/Ally green on head c4023ed).
+- 2026-10-27 18:40Z: K9 not claimed (no task prompt; needs scheduler/usage evidence). Waiting for a K9 plan.
