@@ -93,6 +93,8 @@ jobs:
                       out = gh("issue", "create", "--label", "owner",
                                "--title", meta["title"], "--body-file", tmp)
                       print(f"{path}: created {out.strip()}")
+                      issues.append({"number": int(out.strip().rsplit("/", 1)[1]),
+                                     "state": "OPEN", "body": text})
                   os.makedirs("outbox/sent", exist_ok=True)
                   subprocess.run(["git", "mv", path, "outbox/sent/" + os.path.basename(path)], check=True)
               except Exception as e:  # keep going; the file stays in outbox/ for a retry

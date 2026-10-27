@@ -9,9 +9,8 @@ on:
     types: [closed]
 permissions:
   contents: write
-concurrency:
-  group: kit-state-writer
-  cancel-in-progress: false
+# No concurrency group on purpose: a pending run in a shared group can be cancelled
+# and Casey's answer lost. File names are unique and the push loop rebases and retries.
 jobs:
   inbox:
     name: inbox

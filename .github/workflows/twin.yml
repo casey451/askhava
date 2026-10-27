@@ -4,7 +4,7 @@
 name: twin
 on:
   push:
-    branches: ["claude/**"]
+    branches: ["claude/**", "!claude/kit-state"]
   pull_request:
   workflow_call:
 permissions:

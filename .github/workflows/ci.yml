@@ -2,7 +2,7 @@
 name: ci
 on:
   push:
-    branches: ["claude/**"]
+    branches: ["claude/**", "!claude/kit-state"]
   pull_request:
   workflow_call:
 permissions:
@@ -33,6 +33,14 @@ jobs:
           mkdir -p "$RUNNER_TEMP/gitleaks"
           tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
           "$RUNNER_TEMP/gitleaks/gitleaks" dir . --no-banner --redact --exit-code 1
+
+      - name: PII scan
+        run: |
+          echo "skipped: PII scanner arrives in K8"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Static security scan (bandit)
         run: |

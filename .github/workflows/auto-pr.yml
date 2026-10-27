@@ -41,6 +41,12 @@ jobs:
           if gh pr merge --auto --squash "$pr"; then
             echo "auto-merge enabled on #$pr"
           else
-            echo "auto-merge not enabled (PR may already be clean); trying direct squash merge"
-            gh pr merge --squash "$pr"
+            state="$(gh pr view "$pr" --json mergeStateStatus -q .mergeStateStatus)"
+            if [ "$state" = "CLEAN" ]; then
+              echo "PR is already CLEAN; squash merging directly"
+              gh pr merge --squash "$pr"
+            else
+              echo "::error::could not enable auto-merge on #$pr (mergeStateStatus: $state)"
+              exit 1
+            fi
           fi

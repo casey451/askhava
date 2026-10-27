@@ -7,10 +7,7 @@ on:
     - cron: "37 * * * *"
   workflow_dispatch:
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-  id-token: write
+  contents: read
 concurrency:
   group: backup-runner
   cancel-in-progress: false
@@ -18,6 +15,8 @@ jobs:
   gate:
     name: gate
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       run: ${{ steps.check.outputs.run }}
     steps:
@@ -53,11 +52,20 @@ jobs:
     needs: gate
     if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
     steps:
+      # persist-credentials: false so pushes go out as the Claude GitHub App,
+      # not as GITHUB_TOKEN.
+      # TODO(K8/K9): verify the action's allowed tools let the runner cycle do its work.
       - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
+          persist-credentials: false
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
