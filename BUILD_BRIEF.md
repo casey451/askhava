@@ -4,7 +4,7 @@
 
 This file tells Claude Code how to build Ask Hava from start to finish. It sits at the repository root. Everything it refers to is in `sources/`, which is read-only.
 
-**Rule zero: this file decides *how* to build, and `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md` decides *what* to build.** If anything else in the repo contradicts them, they win. If they contradict each other, stop and ask Casey (§16).
+**Rule zero: this file decides *how* to build, and `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md` decides *what* to build.** If anything else in the repo contradicts them, they win. If they contradict each other, decide and log it by the §16 rule; don't stop.
 
 ---
 
@@ -52,7 +52,7 @@ Build the Ask Hava quote service exactly as specified:
 4. The restore drill passed on Railway, including the switch to the restored database.
 5. A fresh Opus audit found no open Critical or High findings.
 6. The handover pack is complete (§15).
-7. Casey approved Gate B. Gate C (going live) is his alone.
+7. Casey has been told the build is finished and has his review pack (§16, "Finished"). Gate B (his own click-through and screen-reader check) and Gate C (going live) are his alone and happen after that.
 
 Never report something as done, tested or passing unless a tool run in this repository shows it.
 
@@ -78,7 +78,7 @@ CLAUDE.md                 short session rules (<200 lines), written in K1
 sources/                  read-only inputs (the package); fingerprinted in K0
 docs/constitution.md      K1
 docs/spec/*.md            K2: numbered requirements, one file per area
-docs/catalog/             K2b: categories.yaml + worked_examples.yaml (Casey-approved)
+docs/catalog/             K2b: categories.yaml + worked_examples.yaml (self-checked; Casey reviews at the end)
 docs/decisions.md         decision log (append-only)
 docs/architecture.md      K4
 docs/threat-model.md      K4
@@ -196,7 +196,7 @@ The runner resumes when Casey comments "accounts done" in the issue (§7, "Owner
 7. Run the restore drill with the switchover.
 8. Run a fresh Opus audit.
 
-Then **Gate B**: Casey's guided click-through, plus his screen-reader check (§9).
+Then the runner sends the **"Finished: ready for your review"** message (§16). **Gate B** is Casey's guided click-through plus his screen-reader check (§9), done whenever he's ready; nothing waits on it except Gate C.
 
 **Stage 0.5** (the simple askhava.com page) comes after the checkpoint and only with Casey's separate go.
 
@@ -228,7 +228,7 @@ Then **Gate B**: Casey's guided click-through, plus his screen-reader check (§9
 - **Outbox:** to ask or tell Casey something, the runner commits a file to `outbox/` on `claude/kit-state` (`outbox/<id>.md`: title, body, kind). The **`notify`** workflow (`on: push` to `claude/kit-state`, `permissions: issues: write, contents: write`) opens or updates an issue as `github-actions[bot]`, labels it `owner`, @-mentions the repository owner (so GitHub notifies him), and moves the file to `outbox/sent/`.
 - **Inbox:** the **`inbox`** workflow (`on: issue_comment` and `issues: closed`, for issues labeled `owner`) runs only when the commenter is the repository owner (`github.event.sender.login == github.repository_owner`). It writes the comment text to `inbox/<issue>-<comment-id>.md` on `claude/kit-state`.
 - **Reading answers:** every runner cycle reads new `inbox/` files first. Each one is Casey's answer to that issue. The runner records it in `kit/state.json` (and in `docs/decisions.md` through the next task's PR), clears that wait, and moves the file to `inbox/done/`.
-- This covers K3 questions, the K2b approval, Gate A ("OK go"), `BLOCKED` questions, "accounts done," the Stage 0.5 go, Gate B, Gate C and the first live charge.
+- This covers only the stops in §16: hands-on tasks Claude can't do, "accounts done," and the live-action goes (real texts to Casey's phone, Stage 0.5, Gate B, Gate C, first live charge). Questions and approvals are decided by Claude and logged instead (§16).
 - Chat with Claude elsewhere is never read by the build.
 
 **Blocking is narrow:** a `BLOCKED` task holds only the tasks that depend on it. Other eligible tasks continue. The whole build waits only at a gate, or when no eligible task remains.
@@ -268,7 +268,7 @@ Then **Gate B**: Casey's guided click-through, plus his screen-reader check (§9
 
 | What happened | What the runner does |
 |---|---|
-| Checks fail | The same model gets one more try with the failure log. A Sonnet task that fails twice gets one Opus try, logged. After that the task is `BLOCKED`: dependents wait, and an outbox message asks Casey one plain question |
+| Checks fail | The same model gets one more try with the failure log. A Sonnet task that fails twice gets one Opus try, logged. After that the task is `BLOCKED`: dependents wait, other work continues, and it goes on the end-of-build list (§16). Casey is asked only if a human action is the only way through |
 | Flaky test (passes on rerun with no change) | Logged, and a fix task is queued first in line. A quarantined test keeps running and reporting; it may leave its required check for at most 48 hours. It is never deleted |
 | Vendor sandbox outage (Phase 2) | `RETRY_LATER` with backoff, so it isn't counted as a failure |
 | Usage limit hit, or a run rejected | `RETRY_AFTER_RESET`; the hourly run picks it up after the reset. No pay-per-use |
@@ -281,14 +281,14 @@ Then **Gate B**: Casey's guided click-through, plus his screen-reader check (§9
 - the next owner action, if any;
 - the last usage reading.
 
-**Notifications to Casey** go through the outbox: GitHub emails him and notifies him in its phone app. They cover gate requests, `BLOCKED` tasks, the account checkpoint, and Phase 1 or Phase 2 being complete.
+**Notifications to Casey** go through the outbox: GitHub emails him and notifies him in its phone app. They cover only the §16 stops: hands-on tasks, the account checkpoint (end of Phase 1), live-action goes, and "Finished: ready for your review" (end of Phase 2).
 
 **Things K8 must check in the real cloud environment, with a fallback for each:**
 - **Browsers in the session:** can Playwright's browsers be installed? If not, browser and accessibility tests run only in GitHub Actions, which is where the `Ally` check runs anyway.
 - **Stripe's mock server:** can `stripe/stripe-mock` be pulled from Docker Hub? If not, it runs in CI only, and the twin's fake Stripe is used in sessions.
 - **Merges starting the next run:** does the GitHub trigger fire on merges done by auto-merge? If not, the hourly run carries the chain.
 
-**K8 builds this runner and K9 proves it.** The rehearsal uses three practice tasks: one passes, one fails on purpose, and one is triggered twice. It also includes a simulated usage-limit rejection. If any mechanism here doesn't behave as described, K9 must record that and switch to the documented fallback before Gate A.
+**K8 builds this runner and K9 proves it.** The rehearsal uses three practice tasks: one passes, one fails on purpose, and one is triggered twice. It also includes a simulated usage-limit rejection. If any mechanism here doesn't behave as described, K9 must record that and switch to the documented fallback before any build task starts.
 
 ## 8. Security (OWASP ASVS Level 2 as the checklist)
 
@@ -528,21 +528,29 @@ All configuration comes from environment variables validated at startup. The app
 - Restore drill results; the final audit report; test results; the accessibility conformance notes and statement.
 - `docs/account-checklist.md`, with Gate C's live-key checklist.
 
-## 16. When Claude stops and asks Casey
+## 16. When Claude stops and asks Casey (autonomous mode)
 
-Claude stops and asks Casey at each of these points, and at nothing else:
+**Casey's standing instruction (Oct 27):** the build runs on its own from start to finish. Claude asks Casey only for things that truly need a human's hands. Every question or approval that a decision can settle is settled by Claude from the plan, logged, and shown to Casey at the end for review. This section overrides any older text in `sources/` or elsewhere in this file about K3 questions, the K2b approval or Gate A.
 
-1. K3 questions, one at a time.
-2. Approval of the category list and worked examples (K2b).
-3. Gate A (approve the kit, then "OK go").
-4. Any `BLOCKED` task.
-5. The account checkpoint.
-6. The go for the askhava.com page (Stage 0.5).
-7. Gate B.
-8. Gate C.
-9. The first live charge.
+**Decided by Claude, never asked (log each one):**
+- **K2b category list and worked examples:** derived from the changes file and the 18 legal decisions (§7.1). Auto-approved when every worked example's fee matches the fee rules (including the 4-month recurring rule) in a test that passes here, and the Opus reviewer finds no conflict with the changes file. Otherwise fix and re-check; never wait.
+- **K3 questions:** for each open question, Claude decides using the order of authority (changes file, then the v9.3 blueprint, then the other sources). Where the sources leave it open, pick the option that is legally safest, then simplest to change later, then smallest in scope. Never pick an option that breaks §2.
+- **Gate A:** removed. When K9's rehearsal passes, the runner moves straight on to the build tasks.
+- **Conflicts** between this file and the changes file: the changes file wins on *what* is built; this file wins on *how* it's built. Log both lines and the choice.
+- **`BLOCKED` tasks:** Claude retries with a different approach (up to 3 attempts, Opus on the last one). If one is still stuck, it stays `BLOCKED`, only its dependents wait, and it goes on the end-of-build list. It never becomes a question unless a human action is the only way through.
 
-**Conflicts between this file and the changes file:** stop, send an outbox message quoting both lines. Never pick one silently.
+**Where decisions go:** `docs/decisions.md` (one line per decision: the question, the choice, the reason, and the source line it rests on) and `docs/for-casey-review.md` (the same items in plain language, the ones most worth a second look first). Neither ever blocks the build.
+
+**One-time migration:** on the first cycle after this section lands, the runner clears `waits_on_owner` on K2b and K3 in `kit/state.json`, marks `GATE-A` as `SKIPPED` (reason: "removed by Casey, Oct 27"), and notes it in PROGRESS.md.
+
+**Claude stops and asks Casey only at these points:**
+1. **Hands-on tasks only a human can do:** a GitHub setting Claude can't change, for example. One issue, with exact taps, sent only after Claude has checked it can't do the task itself.
+2. **The account checkpoint** (§6): Casey creates the accounts and puts in the keys. Claude never creates accounts or accepts terms.
+3. **Real texts to Casey's own phone** in Phase 2, only if Twilio's test credentials can't be used (§6).
+4. **The go for the askhava.com page** (Stage 0.5), which publishes something.
+5. **Gate C and the first live charge.**
+
+**Finished:** when Phase 2 is done (everything in §1 except Gate B and Gate C), the runner sends one outbox message titled **"Finished: ready for your review"**, linking the handover pack, `docs/for-casey-review.md` and the Gate B click-through script. It also sends one short message when Phase 1 ends, which is the account checkpoint itself.
 
 ---
 
@@ -582,18 +590,18 @@ Never break section 2. Never claim a test passed unless you ran it here.
 | Step | What happens |
 |---|---|
 | **K0** | Done in this order, in one PR:<br>1. **Deny rules first** (`.claude/settings.json`, §8).<br>2. Fingerprint `sources/` and write the order of authority.<br>3. Add the workflows:<br>• `ci.yml`, `twin.yml` and `a11y.yml` replace the temporary `checks-placeholder.yml` (delete it in the same PR). They start as stubs that pass on an empty app; `ci.yml` also carries the security steps. Each triggers `on: push` for `claude/**` plus `pull_request`, has a job `name:` exactly `Ci`, `Twin` or `Ally`, and sets `permissions: contents: read`;<br>• `auto-pr` (`on: push`, `claude/task/**`);<br>• `nightly-main` (schedule);<br>• `backup-runner` (schedule, off by flag);<br>• `notify` (`on: push` to `claude/kit-state`; creates the `owner` label on first use);<br>• `inbox` (`on: issue_comment` and `issues: closed`; only the repository owner's comments are captured).<br>4. Create `claude/kit-state` **from the K0 task branch** (so it carries the workflow files), with the initial state, STATUS.md, PROGRESS.md, `outbox/` and `inbox/`. Each cycle, the runner merges `main` into `claude/kit-state` with a normal merge commit, so workflow updates reach it.<br>K0's own branch is `claude/task/K0-setup`, so its push starts the new workflows and its PR can merge.<br>5. After K0 merges, confirm from the API (`GET /repos/casey451/askhava/rulesets`) that `Ci`, `Twin` and `Ally` are the required checks. If they are not, send an outbox message asking Casey to fix the ruleset, and mark no task DONE until all three show green on its PR. |
-| **K0 also seeds the queue** | `kit/state.json` lists K1–K9 and Gate A as tasks, with dependencies, models and types (`harness` for K0 and K8), taken from the Kit Plan. K6 later adds the build tasks |
+| **K0 also seeds the queue** | `kit/state.json` lists K1–K9 (and formerly Gate A, now skipped per §16) as tasks, with dependencies, models and types (`harness` for K0 and K8), taken from the Kit Plan. K6 later adds the build tasks |
 | **K1** | Write the constitution and CLAUDE.md |
 | **K2** | Write the spec, one area per session |
-| **K2b** | Write the category list and worked examples, then wait for Casey's approval |
-| **K3** | Check for conflicts; ask Casey's questions one at a time |
+| **K2b** | Write the category list and worked examples; self-check them and log them for Casey's end review (§16). No waiting |
+| **K3** | Check for conflicts; decide each open question by the §16 rule and log it. No questions to Casey |
 | **K4** | Architecture, threat model and stack versions |
 | **K5** | Test design; the twin made hard-failing |
 | **K6** | Task graph |
 | **K7** | Task prompts |
 | **K8** | Harness, runner, stand-ins and contract tests |
 | **K9** | Rehearsal with the three practice tasks; usage measured |
-| **Gate A** | The one-page summary; Casey says "OK go" |
+| ~~Gate A~~ | Removed (§16). The one-page kit summary goes into `docs/for-casey-review.md` instead, and the build continues |
 
 ## Appendix C — running cycles by hand (phone, before the scheduled task exists)
 
