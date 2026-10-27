@@ -1,34 +1,38 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 12 of 14 steps (K0-K8, FIX1)
+**Updated:** 2026-10-27 19:25 UTC · **Phase:** kit · **Done:** 10 of 11 kit steps (K0–K8 plus K2b), plus one fix-main task
 
 ## Running now
-- **Nothing running.** K9 (rehearsal) has no task prompt yet, so it is not claimed; then Gate P (your 'approved to build').
+- **K9 rehearsal:** in progress, held by the hourly runner.
+  - **P1 (should pass):** passed and merged (PR #18).
+  - **P2 (fails on purpose):** went red and never merged (PR #17 closed).
+  - **P3 double trigger:** the second claim was rejected, as it should be.
+  - **P3 usage limit:** waiting for its simulated reset. The 20:07 UTC cycle should resume it.
+  - Then the K9 report and `kit/schedule.json` go in as one pull request.
 
 ## Blocked
-- Nothing.
+- Nothing. P2 is BLOCKED on purpose as part of the rehearsal.
 
 ## Your next action
-- **None right now.** The next questions for you come at K2b (nothing; decided automatically) and K3.
+- **None right now.** When K9 is done you'll get a GitHub issue for **Gate P**: reply `approved to build` after you've reviewed your investor presentation. No app code is written before that.
 
 ## Queue
-| Step | Status | Model |
-|---|---|---|
-| K0 Set up the kit repo | Done | Sonnet (Opus review) |
-| K1 Constitution + CLAUDE.md | Done | Opus |
-| K2 Requirements | Queued | Opus |
-| K2b Category list and worked examples | Queued (needs your approval) | Opus |
-| K3 Clarify and check for conflicts | Queued (questions for you) | Opus |
-| K4 Architecture | Queued | Opus |
-| K5 Test design | Queued | Opus / Sonnet / Haiku |
-| K6 Task graph | Queued | Opus |
-| K7 Task prompts | Queued | Sonnet + Haiku check |
-| K8 Harness and runner | Queued | Sonnet (Opus review) |
-| K9 Rehearsal | Queued | Opus review |
+| Step | Status |
+|---|---|
+| K0 Set up the kit repo | Done (#3) |
+| K1 Constitution + CLAUDE.md | Done (#5) |
+| K2 Requirements | Done (#7) |
+| K2b Category list and worked examples | Done (#8), decided by Claude |
+| K3 Clarify and check for conflicts | Done (#9), decided by Claude |
+| K4 Architecture | Done (#10) |
+| K5 Test design | Done (#11) |
+| K6 Task graph | Done (#12) |
+| K7 Task prompts | Done (#13) |
+| Fix main (Gate P citations) | Done (#15) |
+| K8 Harness and runner | Done (#16) |
+| K9 Rehearsal | In progress |
+| Gate A | Skipped (replaced by Gate P) |
+| Gate P (your "approved to build") | Next, after K9 |
 
 ## Last usage reading
-- Not measured yet (K9 measures usage per model).
-
-_Update 2026-10-27: FIX1 done; K8 (harness) pushed, MERGE_PENDING; K9 next, then Gate P._
-
-_Update 2026-10-27 18:30Z: K8 (harness) merged and verified DONE; K9 rehearsal next, then Gate P._
+- Tokens are measured from worker transcripts (see `k9_rehearsal.usage_sample` in `kit/state.json`). Plan quota itself can't be seen from a session.

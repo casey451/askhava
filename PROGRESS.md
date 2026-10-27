@@ -39,3 +39,10 @@
 
 - 2026-10-27 18:30Z: K8 DONE (PR #16, tree acbbe2d0 == squash 6d10456; Ci/Twin/Ally green on head c4023ed).
 - 2026-10-27 18:40Z: K9 not claimed (no task prompt; needs scheduler/usage evidence). Waiting for a K9 plan.
+- 2026-10-27 19:25Z: **K9 claimed and started** by the hourly runner (session 01DyjzW8Ex…). The 18:40 note said there was no K9 prompt; K1–K8 had none either, and §16 says Claude decides rather than waits, so the runner runs the rehearsal itself.
+  - P3 double trigger: two claims raced from the same base; the second push was rejected non-fast-forward.
+  - Cloud checks: Playwright with Chromium works in the session. There is no Docker daemon, so stripe-mock is CI-only (fallback). There is no merge trigger, so the hourly run carries the chain (fallback). Model evidence from the transcript is confirmed (D-122).
+  - P1 (Haiku, model verified): PR #18 green and merged at 19:13Z; tree 365b99d7 equals the head tree.
+  - P2 (Haiku, model verified): Ci red by design and not merged; PR #17 closed, branch kept.
+  - P3 is set to RETRY_AFTER_RESET (reset at 20:00Z) to prove an hourly resume.
+  - Next cycle: run P3, then the K9 report PR (`docs/rehearsal.md`, `kit/schedule.json`, decisions D-127 onward).

@@ -8,7 +8,7 @@
     "task": "K9",
     "session": "https://claude.ai/code/session_01DyjzW8ExsUbZmEvuYtzNvz",
     "expires": "2026-10-27T22:15:00Z",
-    "claimant": "ks"
+    "note": "held across hourly cycles of this same session until the K9 report PR is pushed"
   },
   "tasks": [
     {
@@ -343,7 +343,7 @@
   "usage": {
     "last_reading": null
   },
-  "updated_at": "2026-10-27T19:15:00Z",
+  "updated_at": "2026-10-27T19:25:00Z",
   "notes": [
     "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
     "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -354,5 +354,84 @@
     "K7 review non-blocking, log in decisions.md by a later docs task: template makes app/main.py shared for all types; template stops-and-reports on red smoke test (Kit Plan says fix first); workers leave PROGRESS.md to the runner; twin/ added to protected list; 118 prompts have goal==title; CI could run gen_prompts.py --check (harness task).",
     "2026-10-27 runner: main green (257 tests, pii_scan, validate_tasks, gen_prompts --check). K9 NOT claimed: no kit/prompts/K9.md exists and it needs scheduler-started sessions, real usage readings and practice PRs that a single in-session cycle cannot honestly produce. Needs a prompt/plan for K9 before it can be claimed."
   ],
-  "build_hold": "Gate P: Casey reviews an investor-style presentation first; build tasks (T001+) wait for his 'approved to build' (set Oct 27)"
+  "build_hold": "Gate P: Casey reviews an investor-style presentation first; build tasks (T001+) wait for his 'approved to build' (set Oct 27)",
+  "k9_rehearsal": {
+    "plan": "Runner-run rehearsal (no K9 prompt file needed; kit steps K1-K8 had none either). Decided by Claude under BUILD_BRIEF section 16 autonomous mode; logged for docs/decisions.md in the K9 report PR.",
+    "practice": {
+      "P1": {
+        "goal": "pass end to end",
+        "status": "DONE",
+        "branch": "claude/task/P1-rehearsal-pass",
+        "pr": 18,
+        "head_sha": "8c0c51843cdd6b00faadd6f7dd70d798ab9ba1be",
+        "model": "claude-haiku-5-5",
+        "model_evidence": "subagent transcript: 6 records, all claude-haiku-5-5",
+        "evidence": "auto-pr opened #18; Ci/Twin/Ally green on head; auto-merged 19:13Z as 1cac5d7; tree 365b99d7 == head tree"
+      },
+      "P2": {
+        "goal": "fail on purpose, never merge",
+        "status": "BLOCKED",
+        "branch": "claude/task/P2-rehearsal-fail",
+        "pr": 17,
+        "head_sha": "78dd86bddfd4776e8646610da694ee07452e1dd6",
+        "model": "claude-haiku-5-5",
+        "model_evidence": "subagent transcript: 10 records, all claude-haiku-5-5",
+        "evidence": "Ci failure (deliberate failing test), Twin/Ally green; not merged; PR #17 closed by runner, branch kept for evidence. Retry/Opus-escalation path is covered offline by tests/test_failure_drills.py; a live retry would fail identically by design, so it was not spent."
+      },
+      "P3": {
+        "goal": "triggered twice + simulated usage-limit rejection",
+        "status": "RETRY_AFTER_RESET",
+        "reset_at": "2026-10-27T20:00:00Z",
+        "evidence_double_trigger": "19:15Z two claims pushed from the same base 3aab38a: first accepted (bf39373), second rejected non-fast-forward; the loser would exit",
+        "next": "the 20:07Z hourly cycle must pick P3 up after reset_at, run it (a docs-only practice file), and confirm it merges; that proves resume-after-reset"
+      }
+    },
+    "cloud_checks": {
+      "playwright": "OK in session: Node playwright launches pre-installed Chromium 153; Python playwright package not installed (pip install needed; browsers at /opt/pw-browsers)",
+      "stripe_mock": "FALLBACK: no Docker daemon in the session (docker.sock missing) -> stripe-mock runs in CI only; sessions use the twin's fake Stripe",
+      "merge_trigger": "FALLBACK: the scheduled task 'Ask Hava build runner (hourly)' has no GitHub merge trigger (created via API; only the claude.ai routines UI can add one) -> hourly run carries the chain",
+      "model_evidence": "CONFIRMED (D-122): subagent transcripts at ~/.claude/projects/<proj>/<session>/subagents/agent-<id>.jsonl are readable from the runner session and carry message.model with the full ID; the Agent call accepts aliases (haiku/sonnet/opus), not full IDs"
+    },
+    "usage_sample": {
+      "note": "Plan quota is not observable from a session; measured tokens from subagent transcripts in this session",
+      "K0_worker_sonnet": {
+        "turns": 29,
+        "output": 29914,
+        "cache_read": 2587807,
+        "cache_write": 116108
+      },
+      "K0_review_opus": {
+        "turns": 6,
+        "output": 15900,
+        "cache_read": 392149,
+        "cache_write": 93620
+      },
+      "P1_worker_haiku": {
+        "turns": 3,
+        "output": 1183,
+        "cache_read": 113521,
+        "cache_write": 59239
+      },
+      "P2_worker_haiku": {
+        "turns": 5,
+        "output": 2165,
+        "cache_read": 233242,
+        "cache_write": 60668
+      },
+      "kit_step_wall_clock_minutes": {
+        "K2": 16,
+        "K2b": 13,
+        "K3": 18,
+        "K4": 23,
+        "K5": 30,
+        "K6": 25,
+        "K7": 20,
+        "K8": 20
+      }
+    },
+    "deviations": [
+      "P1/P2 skipped the fresh-eyes reviewer (6-line rehearsal files reviewed by the runner)",
+      "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
+    ]
+  }
 }
