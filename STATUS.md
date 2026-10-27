@@ -1,9 +1,9 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 12 of 14 (K0-K8, FIX1)
+**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 12 of 14 steps (K0-K8, FIX1)
 
 ## Running now
-- **K7 task prompts:** handed in, waiting to merge (MERGE_PENDING).
+- **Nothing running.** K9 (rehearsal) has no task prompt yet, so it is not claimed; then Gate P (your 'approved to build').
 
 ## Blocked
 - Nothing.
