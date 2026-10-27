@@ -1,19 +1,16 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 20:30 UTC · **Phase:** kit · **Done:** 10 of 11 kit steps (K0–K8 plus K2b), plus one fix-main task
+**Updated:** 2026-10-27 21:50 UTC · **Phase:** kit · **Done:** 11 of 11 kit steps (K0–K8 plus K2b), plus one fix-main task
 
 ## Running now
-- **K9 rehearsal:** handed in (branch `claude/task/K9-rehearsal`) and waiting to merge.
-  - P1 passed and merged (#18).
-  - P2 failed on purpose and never merged (#17 closed).
-  - P3 resumed and merged after its simulated usage-limit reset (#21).
-  - Report: `docs/rehearsal.md`, `kit/schedule.json`, decisions D-166 to D-171.
+- **Nothing.** K9 rehearsal merged (#23); Ci/Twin/Ally green on head 95e21ee, tree matches squash 632c400. Build is at **Gate P**.
 
 ## Blocked
 - Nothing. P2 is BLOCKED on purpose as part of the rehearsal.
 
 ## Your next action
-- **None right now.** When K9 is done you'll get a GitHub issue for **Gate P**: reply `approved to build` after you've reviewed your investor presentation. No app code is written before that.
+- **Gate P:** review your investor presentation, then reply `approved to build` on the Gate P issue. No app code is written before that.
+- Also pending your go: delete the duplicate scheduler "Ask Hava build runner (hourly)" (see D-171).
 
 ## Queue
 | Step | Status |

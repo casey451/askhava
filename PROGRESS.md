@@ -52,3 +52,5 @@
   - Checks run here: pytest 257 passed; validate_tasks, trace_spec and check_catalog 0 errors; pii_scan 0; gen_prompts 0 problems; sources fingerprint ok.
   - Finding: two schedulers are firing runners. The fresh sessions worked inside this session's live K9 lease at 20:11 and 20:14. Recommendation: keep the UI routine and delete the hourly session trigger.
   - K9 is MERGE_PENDING and the lease is released.
+
+- 2026-10-27 21:50Z runner (webhook, PR #23 closed): K9 marked DONE (Ci/Twin/Ally green on 95e21ee; tree ee0348f9 == squash 632c400). Now at Gate P, waiting for Casey.
