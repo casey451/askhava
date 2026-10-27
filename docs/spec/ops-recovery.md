@@ -2,7 +2,7 @@
 
 Prefix: `OPS` · Modules: `ops`, `recovery` · Format and checks: [index.md](index.md)
 
-- **OPS-001** Safe mode pauses charges, releases and outbound texts when Casey has not acknowledged a High alert within 24 hours. Source: `BUILD_BRIEF.md:375`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:73`.
+- **OPS-001** Safe mode pauses charges, releases and outbound texts when Casey has not acknowledged a High alert (any OPS-004 alert or any critical alert) within 24 hours (D-075). Source: `BUILD_BRIEF.md:375`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:73`.
 - **OPS-002** There is no backup person, so alerts wait for Casey (D-024). Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:73`.
 - **OPS-003** Owner pause switches (all, town, trade, charging, texting) are checked by every action and each change is logged. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:407`, `BUILD_BRIEF.md:464`.
 - **OPS-004** Casey is alerted when text delivery is below 95% for 30 minutes, the Twilio number is suspended, Stripe or webhook errors last over 30 minutes, the 5-minute health check fails twice, or the nightly ledger check finds any difference. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:457`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:458`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:459`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:460`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:461`.

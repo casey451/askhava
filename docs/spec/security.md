@@ -7,7 +7,7 @@ Prefix: `SEC` · Modules: all · Format and checks: [index.md](index.md)
 - **SEC-003** Test and live run as separate projects with separate keys, databases, webhook endpoints and phone numbers, and the live project has auto-deploy off. Source: `BUILD_BRIEF.md:299`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:305`.
 - **SEC-004** Business portal sign-in uses a single-use link emailed to the address on file that expires in 15 minutes, plus an SMS code on a new device, with 30-day sessions (D-014). Source: `BUILD_BRIEF.md:315`.
 - **SEC-005** Owner portal sign-in uses an argon2id password plus a passkey or TOTP, with sessions of at most 12 hours (D-014). Source: `BUILD_BRIEF.md:316`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:375`.
-- **SEC-006** The owner portal is the only portal with pause, refund and release powers, and every owner action is audit-logged. Source: `BUILD_BRIEF.md:316`.
+- **SEC-006** The owner portal is the only portal with pause, refund and release powers, a release there only completes or re-sends one for a pick already confirmed and paid or a recorded free win, and every owner action is audit-logged (D-074). Source: `BUILD_BRIEF.md:316`.
 - **SEC-007** Owner recovery needs at least two registered passkeys or authenticators plus offline one-time recovery codes, and there is no email-only recovery. Source: `BUILD_BRIEF.md:317`.
 - **SEC-008** Homeowner portal sign-in uses the phone number plus a texted 6-digit code, with 30-day sessions per device (D-014). Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:373`.
 - **SEC-009** Cookies are `Secure`, `HttpOnly` and `SameSite=Lax` and rotate on login, and every form carries a CSRF token. Source: `BUILD_BRIEF.md:318`.
