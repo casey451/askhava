@@ -17,3 +17,4 @@ Prefix: `WEB` · Modules: `site` · Format and checks: [index.md](index.md)
 - **WEB-013** The Stage 0.5 page shows what's coming, the privacy policy, the SMS terms and the opt-in description, and is published only with Casey's separate go. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:27`, `BUILD_BRIEF.md:201`.
 - **WEB-014** The request page shows the full consent text, and the privacy policy and SMS terms pages exist. Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:173`.
 - **WEB-015** Site copy for licensed trades follows the form "Get quotes from licensed plumbers. Ask Hava is not a contractor and does not perform, bid on or supervise work." Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:188`.
+- **WEB-016** The DNS records keep any existing Google Search Console verification (D-087). Source: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:26`, `sources/02_build_plan/Build_Plan.md:142`.

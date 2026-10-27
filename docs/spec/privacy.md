@@ -8,7 +8,7 @@ Prefix: `PRIV` · Modules: `privacy` · Format and checks: [index.md](index.md)
 - **PRIV-004** Only the messaging and release code can read the vault. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:85`.
 - **PRIV-005** No homeowner contact detail leaves the vault except to the business on a confirmed, paid pick (or a recorded free win). Source: `BUILD_BRIEF.md:151`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:225`.
 - **PRIV-006** Job cards, logs, dashboards and AI prompts never contain vault fields. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:81`.
-- **PRIV-007** Homeowner contact details are purged 180 days after the job closes, unless a dispute or complaint is open (D-013). Source: `BUILD_BRIEF.md:354`.
+- **PRIV-007** Homeowner contact details are purged 180 days after the job closes, unless a dispute or complaint is open, except the phone number, which stays encrypted with its consent and opt-out records for the consent-log period and is used only for them (D-013, D-079). Source: `BUILD_BRIEF.md:354`, `BUILD_BRIEF.md:356`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:183`.
 - **PRIV-008** Job text is kept with contact details removed, for 3 years (D-013). Source: `BUILD_BRIEF.md:355`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:437`.
 - **PRIV-009** Photos are deleted 30 days after the job closes (D-013). Source: `BUILD_BRIEF.md:358`.
 - **PRIV-010** Ledger and payment records, and the audit log, are kept 7 years. Source: `BUILD_BRIEF.md:357`, `BUILD_BRIEF.md:359`.
