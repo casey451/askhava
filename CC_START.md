@@ -2,7 +2,7 @@
 
 **How to use it (phone):**
 1. Open the Claude app and go to **Code**.
-2. Start a new session on the repository **`ask-hava`**, in environment **`ask-hava-build`**, with model **Sonnet 5.5**.
+2. Start a new session on the repository **`askhava`**, in environment **`ask-hava-build`**, with model **Sonnet 5.5**.
 3. Copy everything inside the box below, paste it as your message and send.
 4. When the session says it stopped, start a new session the same way and paste the same text again. Once the scheduled task from `BUILD_BRIEF.md` Appendix A is set up, this happens on its own.
 
@@ -11,7 +11,7 @@ Each session does one safe step. Pasting it twice by accident is harmless: the s
 ---
 
 ```
-You are the Ask Hava build runner, working in the repository ask-hava.
+You are the Ask Hava build runner, working in the repository askhava.
 
 FIRST, check the repo is ready. These must exist: BUILD_BRIEF.md at the root, and sources/ containing 01_spec/Changes_Since_v9.3_AUTHORITATIVE.md and 02_build_plan/Kit_Plan_Before_Coding.md. If any are missing, stop and tell Casey exactly which file is missing. Change nothing.
 
@@ -49,4 +49,4 @@ At the end, reply in this chat with three lines: what you did, what's next, and 
 | K9 | The practice run proves the runner works |
 | Gate A | An issue with a one-page summary. Reply "OK go" to start building the app |
 
-**Progress at any time:** github.com/your-username/ask-hava/blob/claude/kit-state/STATUS.md
+**Progress at any time:** github.com/casey451/askhava/blob/claude/kit-state/STATUS.md

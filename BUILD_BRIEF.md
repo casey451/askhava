@@ -12,7 +12,7 @@ This file tells Claude Code how to build Ask Hava from start to finish. It sits 
 
 Do these in this order. Protecting `main` first would stop you from adding the files. **Everything here can be done on a phone.** `PHONE_SETUP.md` gives the exact taps for each step.
 
-1. **GitHub:** create a private repository named `ask-hava` and tick "Add a README" so `main` exists.
+1. **GitHub:** create a private repository named `askhava` and tick "Add a README" so `main` exists.
 2. **Claude GitHub App:** install it on that repository (github.com/apps/claude).
 3. **Put the files in the repo:**
    - `BUILD_BRIEF.md` at the root;
@@ -94,7 +94,7 @@ twin/                     the digital twin (updated in stage 1)
 .github/workflows/        ci, twin, security, a11y, auto-pr, nightly-main, backup-runner
 ```
 
-**The runner's branch:** runner state, STATUS.md and PROGRESS.md live on the separate branch **`claude/kit-state`** (§7), never on `main`. Writing them to `main` would need a pull request, and that merge would start another runner. Casey reads STATUS.md at `github.com/<owner>/ask-hava/blob/claude/kit-state/STATUS.md`. Every runner issue links to it.
+**The runner's branch:** runner state, STATUS.md and PROGRESS.md live on the separate branch **`claude/kit-state`** (§7), never on `main`. Writing them to `main` would need a pull request, and that merge would start another runner. Casey reads STATUS.md at `github.com/casey451/askhava/blob/claude/kit-state/STATUS.md`. Every runner issue links to it.
 
 **Branch names:** all branches Claude pushes start with `claude/`: `claude/kit-state` and `claude/task/T###-<slug>`. Scheduled-task runs push to `claude/` branches by default, so no extra permission is needed.
 
@@ -551,7 +551,7 @@ At **claude.ai/code/routines → New task**:
 
 - **Name:** `Ask Hava build runner`
 - **Model:** Sonnet 5.5 (`claude-sonnet-5-5`)
-- **Repository:** `ask-hava`
+- **Repository:** `askhava`
 - **Cloud environment:** `ask-hava-build`
 - **Connectors:** remove all of them (none needed)
 - **Triggers:**
@@ -599,7 +599,7 @@ Never break section 2. Never claim a test passed unless you ran it here.
 If you can't create the scheduled task yet, the build can still run, one cycle at a time:
 
 1. In the Claude app, open **Code** and start a new session.
-2. Pick the repository `ask-hava` and the environment `ask-hava-build`.
+2. Pick the repository `askhava` and the environment `ask-hava-build`.
 3. Pick the model **Sonnet 5.5**.
 4. Paste the Appendix A prompt exactly and send it.
 5. When the session says it stopped, start another session the same way.
