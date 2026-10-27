@@ -174,3 +174,12 @@ You said "Fix it all" on the round-2 simulation findings. Every fix is in the sp
 - A homeowner can change their pick before the business confirms; businesses can confirm by texting back "CONFIRM 1042" after seeing the fee; the 2-hour confirm window starts when the pick text arrives. (D-147, D-148)
 - A price the AI read from a text is always shown back to the business to confirm. (D-149)
 - Smaller items: second free win through a DBA closed (D-151); "join in the first 90 days" means the sign-up date (D-152); no double card charge after a timeout (D-153); "own or rent?" is asked when unsure (D-155); no double texts after a restore (D-156); wider gas word list (D-157); overnight updates merged into one text (D-158); recurring quotes must say per month, week, etc. (D-159); the masked-number pool starts at 10 numbers (D-160); card timers stop while charging is paused (D-135); opt-outs during a texting outage (D-130); quiet-hours rule for unknown area codes dropped (D-139); numbering note (D-161); two pairs of planned tests that couldn't both pass were fixed (D-162).
+
+## From the round-3 simulation fixes, October 27, 2026
+
+The round-3 simulation showed that two of the round-2 fixes caused new problems. Both are now fixed (D-163, D-164). Nothing is being built: Gate P still holds.
+
+**Changes to something you saw in the round-2 fixes**
+
+1. **Texting-delivery alerts are quieter (changes D-134).** The round-2 rule ("fewer than 95% of the last 50 texts") went off on normal noise several times a month, and right away again after you acknowledged one. Now it alerts when fewer than 90% of the last 50, or fewer than 95% of the last 200, texts get through. Only one such alert is open at a time, and it clears itself once 97% of the last 200 get through. The backup-contact question above is still yours to decide. (D-163)
+2. **Emergencies reach businesses first, and the questions come after (refines D-146 and D-155).** When someone with an emergency says they're safe and wants urgent service, the job goes to after-hours businesses as soon as the ZIP code is in. "Do you own or rent?" and the name-and-address question come right after. Nothing is released to a business until the address is in. (D-164)
