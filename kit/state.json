@@ -4,12 +4,7 @@
   "current": "K7",
   "backup_runner": "off",
   "ruleset_verified": true,
-  "lease": {
-    "task": "K7",
-    "session": "https://claude.ai/code/session_01DyjzW9o8RiGQc2Uyuukz1n",
-    "claimed_at": "2026-10-27T17:27:25Z",
-    "expires_at": "2026-10-27T20:27:25Z"
-  },
+  "lease": null,
   "tasks": [
     {
       "id": "K0",
@@ -214,14 +209,18 @@
       "model": "claude-sonnet-5-5",
       "effort": "medium",
       "reviewer_model": "claude-sonnet-5-5",
-      "status": "IN_PROGRESS",
+      "status": "MERGE_PENDING",
       "attempts": 1,
-      "model_used": null,
-      "branch": null,
+      "model_used": "claude-sonnet-5-5",
+      "branch": "claude/task/K7-prompts",
       "pr": null,
-      "head_sha": null,
+      "head_sha": "1175b4b",
       "waits_on_owner": null,
-      "check_model": "claude-haiku-5-5"
+      "check_model": "claude-haiku-5-5",
+      "reviewed_by": "claude-sonnet-5-5",
+      "review_rounds": 1,
+      "model_evidence": "subagent transcript: all 15 assistant records model=claude-sonnet-5-5 (first pass); fix round resumed same agent",
+      "haiku_check": "no discrepancies, 139 prompts"
     },
     {
       "id": "K8",
@@ -303,6 +302,7 @@
     "Phase 2: deny rules block curl/wget to vendor API hosts outright, test mode included; sandbox checks need another route (K0 review N7).",
     "K8: add the PII scanner step to Ci (currently a visible 'skipped' stub).",
     "Bare 'git push' while on main is not denied locally; the protect-main ruleset blocks it on GitHub (K0 review N7).",
-    "K1: docs/sources.md:29 says stop-and-ask on brief/changes conflict; overridden by BUILD_BRIEF \u00a716. Fix in a later docs task. Log in decisions.md (K3): check names Ci/Twin/Ally vs changes file; Insurance (business-reported) wording."
+    "K1: docs/sources.md:29 says stop-and-ask on brief/changes conflict; overridden by BUILD_BRIEF \u00a716. Fix in a later docs task. Log in decisions.md (K3): check names Ci/Twin/Ally vs changes file; Insurance (business-reported) wording.",
+    "K7 review non-blocking, log in decisions.md by a later docs task: template makes app/main.py shared for all types; template stops-and-reports on red smoke test (Kit Plan says fix first); workers leave PROGRESS.md to the runner; twin/ added to protected list; 118 prompts have goal==title; CI could run gen_prompts.py --check (harness task)."
   ]
 }

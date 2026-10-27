@@ -1,9 +1,9 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 7 of 11 (K0-K5)
+**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 8 of 11 (K0-K6)
 
 ## Running now
-- **K6 task graph:** handed in, waiting to merge (MERGE_PENDING).
+- **K7 task prompts:** handed in, waiting to merge (MERGE_PENDING).
 
 ## Blocked
 - Nothing.
