@@ -1,9 +1,9 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 · **Phase:** kit (planning, no app code) · **Done:** 2 of 11 kit steps (K0, K1 done)
+**Updated:** 2026-10-27 · **Phase:** kit · **Done:** 2 of 11 (K0, K1)
 
 ## Running now
-- Nothing running; K2 is next.
+- **K2 requirements:** handed in, waiting to merge (MERGE_PENDING).
 
 ## Blocked
 - Nothing.

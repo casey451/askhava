@@ -4,12 +4,7 @@
   "current": "K2",
   "backup_runner": "off",
   "ruleset_verified": true,
-  "lease": {
-    "task": "K2",
-    "holder": "runner-1",
-    "claimed_at": "2026-10-27T15:04:42.467759Z",
-    "renewed_at": "2026-10-27T15:04:42.467759Z"
-  },
+  "lease": null,
   "tasks": [
     {
       "id": "K0",
@@ -68,13 +63,16 @@
       "model": "claude-opus-5-5",
       "effort": "medium",
       "reviewer_model": "claude-opus-5-5",
-      "status": "IN_PROGRESS",
+      "status": "MERGE_PENDING",
       "attempts": 1,
-      "model_used": null,
+      "model_used": "claude-opus-5-5",
       "branch": "claude/task/K2-spec",
       "pr": null,
-      "head_sha": null,
-      "waits_on_owner": null
+      "head_sha": "c0a03821495c12f65fe3adc867b0d0a3192eb18d",
+      "waits_on_owner": null,
+      "reviewed_by": "claude-opus-5-5",
+      "review_rounds": 1,
+      "model_evidence": "worker run with model=opus; not independently verified from transcript"
     },
     {
       "id": "K2b",
