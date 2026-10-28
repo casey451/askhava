@@ -95,6 +95,13 @@ NOT_AT_LAUNCH = frozenset(
         "property management",
     }
 )
+SALE_INSPECTIONS = frozenset(  # LIC-015, D-376 (RESPA)
+    {"buyer inspection", "pre-listing inspection", "refinance inspection"}
+)
+SALE_WORDS = ("buyer", "pre-listing", "listing", "refinanc", "purchase", "sale")
+WARRANTY_WORDS = re.compile(  # LIC-042, D-376
+    r"\b(?:warrant(?:y|ies)|protection plans?|service contracts?)\b", re.IGNORECASE
+)
 BANNED: tuple[tuple[re.Pattern[str], str], ...] = (
     *SUPERSEDED,
     (re.compile(r"\bcommission\b", re.IGNORECASE), "banned wording"),
@@ -322,6 +329,34 @@ def check_category(cat: dict[str, Any]) -> list[str]:
     return errors
 
 
+def check_legal_holds(cats: dict[str, dict[str, Any]]) -> list[str]:
+    """D-376: pest off until a written answer, no sale-related inspections, no warranties."""
+    errors: list[str] = []
+    pest = cats.get("pest_control", {})
+    if pest.get("enabled") is not False and not pest.get("agriculture_answer_decision"):
+        errors.append(
+            "category pest_control: must stay off until the AZ Department of Agriculture "
+            "answers in writing, logged as agriculture_answer_decision (LIC-012)"
+        )
+    inspection = cats.get("home_inspection")
+    if inspection is not None:
+        # A job type's own words, without any "(no sale or refinance)" note.
+        taken = [str(j).lower().split("(")[0] for j in inspection.get("job_types", [])]
+        refused = {str(r.get("job", "")).lower() for r in inspection.get("refused", [])}
+        if any(word in job for job in taken for word in SALE_WORDS):
+            errors.append("category home_inspection: takes a sale-related inspection (LIC-015)")
+        if not SALE_INSPECTIONS <= refused:
+            errors.append(
+                "category home_inspection: must refuse buyer, pre-listing and refinance "
+                "inspections (LIC-015)"
+            )
+    for cat in cats.values():
+        text = " ".join([str(cat.get("name", "")), *map(str, cat.get("job_types", []))])
+        if WARRANTY_WORDS.search(text):
+            errors.append(f"category {cat.get('id')}: warranty or protection plan (LIC-042)")
+    return errors
+
+
 def check_categories(
     data: dict[str, Any],
 ) -> tuple[dict[str, dict[str, Any]], list[str]]:
@@ -344,6 +379,7 @@ def check_categories(
         errors.append(
             "category pest_control: must be listed with advertised: false (7.1 item 3)"
         )
+    errors.extend(check_legal_holds(cats))
     if set(data.get("not_offered_at_launch", [])) != NOT_AT_LAUNCH:
         errors.append("not_offered_at_launch does not match LIC-004")
     names = {str(cat.get("name", "")).lower() for cat in cats.values()}

@@ -171,6 +171,33 @@ def test_wording_rules_may_quote_banned_phrases(tmp_path: Path) -> None:
         "WORD-011",
         "WORD-020",
         "WORD-022",
+        "WORD-023",
         "TERMS-012",
         "TERMS-026",
+        "TERMS-027",
     }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The policy says \"We connect you with the business you choose.\"",
+        "The site says \"Ask Hava connects homeowners with local pros.\"",
+        "The trademark says \"consumer referral services\".",
+        "The campaign says \"a referral network\".",
+    ],
+)
+def test_banned_description_fails(tmp_path: Path, text: str) -> None:
+    """WORD-023 (D-377): "connect you with" and referral-network wording fail the check."""
+    errors = errors_for(tmp_path, f"- **TST-001** {text} Source: `src.md:3`.\n")
+    assert any("WORD-022" in e for e in errors), errors
+
+
+def test_honest_description_passes(tmp_path: Path) -> None:
+    """WORD-023 (D-377): the one honest description passes."""
+    body = (
+        "- **TST-001** The site says \"Ask Hava is a quote-request service; the business the "
+        "homeowner chooses pays Ask Hava a set introduction fee.\" and \"isn't connected to "
+        "any business with Hava in its name\". Source: `src.md:3`.\n"
+    )
+    assert errors_for(tmp_path, body) == []

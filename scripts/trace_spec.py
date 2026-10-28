@@ -4,7 +4,8 @@ Checks that requirement IDs are unique and use their file's prefix, that every
 requirement cites at least one `path:LINE` whose file exists in the repository
 with a non-blank line at that number, that every named decision (D-###) exists
 in docs/decisions.md, that no requirement contains a superseded value, and that
-no requirement's text implies Ask Hava is a contractor (WORD-022).
+no requirement's text implies Ask Hava is a contractor (WORD-022) or uses a
+banned description such as "connect you with" (WORD-023).
 Prints counts; exits 1 on any error.
 
 Usage: python3 scripts/trace_spec.py [--root REPO_ROOT]
@@ -75,13 +76,18 @@ _NOT_A_CONTRACTOR_PATTERNS: tuple[str, ...] = (
     r"\bnuestr[oa]s? (?:profesionales|red|contratistas|técnicos|plomeros|electricistas)\b",
     r"\ble enviaremos (?:un|una) (?:plomero|técnico|profesional|contratista|electricista)\b",
     r"\bsubcontrat\w*",
+    # WORD-023 (D-377): one honest description; never "connect you with" or a referral network.
+    r"\bconnect(?:s|ing)? (?:you|homeowners|customers|people) (?:with|to)\b",
+    r"\breferral (?:network|service)s?\b",
 )
 NOT_A_CONTRACTOR: tuple[tuple[re.Pattern[str], str], ...] = tuple(
     (re.compile(p, re.IGNORECASE), "implies Ask Hava is a contractor (WORD-022)")
     for p in _NOT_A_CONTRACTOR_PATTERNS
 )
 # Rules that quote the banned phrases in order to ban them (D-360).
-WORDING_RULE_IDS = frozenset({"WORD-011", "WORD-020", "WORD-022", "TERMS-012", "TERMS-026"})
+WORDING_RULE_IDS = frozenset(
+    {"WORD-011", "WORD-020", "WORD-022", "WORD-023", "TERMS-012", "TERMS-026", "TERMS-027"}
+)
 
 
 @dataclass(frozen=True)
