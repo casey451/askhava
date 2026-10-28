@@ -365,7 +365,8 @@
         "D-277",
         "D-289",
         "D-290",
-        "D-295"
+        "D-295",
+        "D-337"
       ],
       "cites": [],
       "budget": {
@@ -1560,7 +1561,8 @@
         "D-270",
         "D-271",
         "D-308",
-        "D-314"
+        "D-314",
+        "D-323"
       ],
       "cites": [],
       "budget": {
@@ -1746,7 +1748,8 @@
         "D-131",
         "D-289",
         "D-290",
-        "D-295"
+        "D-295",
+        "D-337"
       ],
       "cites": [],
       "budget": {
@@ -2195,7 +2198,8 @@
         "D-057",
         "D-061",
         "D-190",
-        "D-288"
+        "D-288",
+        "D-336"
       ],
       "cites": [],
       "budget": {
@@ -2286,7 +2290,8 @@
         "D-289",
         "D-290",
         "D-295",
-        "D-298"
+        "D-298",
+        "D-337"
       ],
       "cites": [],
       "budget": {
@@ -2346,7 +2351,8 @@
         "INT-030",
         "INT-031",
         "INT-033",
-        "INT-034"
+        "INT-034",
+        "INT-035"
       ],
       "tests": [
         "TD-INT-01",
@@ -2370,7 +2376,10 @@
         "D-273",
         "D-274",
         "D-277",
-        "D-292"
+        "D-292",
+        "D-325",
+        "D-324",
+        "D-326"
       ],
       "cites": [],
       "budget": {
@@ -2507,7 +2516,8 @@
         "D-028",
         "D-085",
         "D-112",
-        "D-191"
+        "D-191",
+        "D-323"
       ],
       "cites": [],
       "budget": {
@@ -2773,7 +2783,8 @@
         "D-188",
         "D-202",
         "D-276",
-        "D-292"
+        "D-292",
+        "D-326"
       ],
       "cites": [],
       "budget": {
@@ -2906,7 +2917,8 @@
       "tests": [
         "TD-TXT-06",
         "TD-TXT-11",
-        "TD-TXT-14"
+        "TD-TXT-14",
+        "TD-TXT-20"
       ],
       "decisions": [
         "D-012",
@@ -2919,7 +2931,11 @@
         "D-292",
         "D-293",
         "D-294",
-        "D-295"
+        "D-295",
+        "D-338",
+        "D-339",
+        "D-324",
+        "D-340"
       ],
       "cites": [],
       "budget": {
@@ -3981,7 +3997,9 @@
         "D-285",
         "D-286",
         "D-309",
-        "D-310"
+        "D-310",
+        "D-332",
+        "D-327"
       ],
       "cites": [],
       "budget": {
@@ -4107,7 +4125,8 @@
         "D-286",
         "D-288",
         "D-293",
-        "D-308"
+        "D-308",
+        "D-336"
       ],
       "cites": [],
       "budget": {
@@ -5126,7 +5145,11 @@
         "D-287",
         "D-309",
         "D-311",
-        "D-312"
+        "D-312",
+        "D-323",
+        "D-334",
+        "D-335",
+        "D-328"
       ],
       "cites": [],
       "budget": {
@@ -5260,7 +5283,8 @@
         "D-179",
         "D-191",
         "D-313",
-        "D-318"
+        "D-318",
+        "D-333"
       ],
       "cites": [],
       "budget": {
@@ -5321,7 +5345,8 @@
       "decisions": [
         "D-193",
         "D-284",
-        "D-286"
+        "D-286",
+        "D-331"
       ],
       "cites": [],
       "budget": {
@@ -5383,7 +5408,8 @@
       ],
       "decisions": [
         "D-098",
-        "D-313"
+        "D-313",
+        "D-333"
       ],
       "cites": [],
       "budget": {
@@ -5490,7 +5516,8 @@
         "TD-SEC-01"
       ],
       "decisions": [
-        "D-313"
+        "D-313",
+        "D-333"
       ],
       "cites": [],
       "budget": {
@@ -6071,7 +6098,9 @@
         "T098",
         "T089",
         "T147",
-        "T148"
+        "T148",
+        "T149",
+        "T150"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -6186,7 +6215,11 @@
         "D-308",
         "D-312",
         "D-318",
-        "D-320"
+        "D-320",
+        "D-323",
+        "D-334",
+        "D-335",
+        "D-328"
       ],
       "cites": [],
       "budget": {
@@ -6269,7 +6302,8 @@
       "tests": [
         "TD-BIZ-15",
         "TD-PICK-25",
-        "TD-BIZ-16"
+        "TD-BIZ-16",
+        "TD-PICK-26"
       ],
       "decisions": [
         "D-309",
@@ -6277,7 +6311,14 @@
         "D-311",
         "D-317",
         "D-318",
-        "D-320"
+        "D-320",
+        "D-333",
+        "D-327",
+        "D-334",
+        "D-332",
+        "D-328",
+        "D-323",
+        "D-341"
       ],
       "cites": [],
       "budget": {
@@ -6292,6 +6333,169 @@
       ],
       "branch": "claude/task/T148-business-actions-pick-call",
       "prompt": "kit/prompts/T148.md"
+    },
+    {
+      "id": "T149",
+      "slug": "business-email-reliability",
+      "title": "messaging and businesses: sign-up deliverability check with a sample card, backup notice address, daily open-cards email, missed-card account email and the per-job notice log",
+      "goal": "messaging and businesses: sign-up deliverability check with a sample card, backup notice address, daily open-cards email, missed-card account email and the per-job notice log",
+      "type": "build",
+      "phase": 1,
+      "stage": "4",
+      "module": "messaging",
+      "deps": [
+        "T147",
+        "T148"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "privacy",
+        "security",
+        "compliance"
+      ],
+      "owns": [
+        "app/businesses/deliverability_check.py",
+        "app/businesses/backup_address.py",
+        "app/messaging/open_cards_digest.py",
+        "app/messaging/missed_cards.py",
+        "app/portals/notice_log.py",
+        "app/portals/templates/notice_log.html",
+        "migrations/versions/t149_email_reliability.py",
+        "tests/integration/test_deliverability_check.py",
+        "tests/integration/test_open_cards_digest.py",
+        "tests/integration/test_missed_cards.py",
+        "tests/integration/test_notice_log.py",
+        "tests/security/test_backup_address.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/threat-model.md",
+        "docs/spec/businesses.md",
+        "docs/spec/messaging.md",
+        "docs/test-design.md",
+        "docs/spec/job-cards.md",
+        "docs/spec/quiet-hours.md",
+        "docs/spec/security.md",
+        "docs/spec/consent.md",
+        "docs/spec/ops-recovery.md"
+      ],
+      "requirements": [
+        "BIZ-042",
+        "BIZ-043",
+        "BIZ-044",
+        "BIZ-045",
+        "CARD-022"
+      ],
+      "tests": [
+        "TD-BIZ-18",
+        "TD-BIZ-19",
+        "TD-BIZ-20",
+        "TD-BIZ-21",
+        "TD-CARD-10"
+      ],
+      "decisions": [
+        "D-328",
+        "D-329",
+        "D-330",
+        "D-331",
+        "D-332",
+        "D-341"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 12,
+        "lines": 800,
+        "context_pct": 17
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T149-business-email-reliability",
+      "prompt": "kit/prompts/T149.md"
+    },
+    {
+      "id": "T150",
+      "slug": "business-calls-link-hardening",
+      "title": "picks, quotes and portals: emergency-job calls with the EMERGENCY card subject, activation test calls and account calls, the Ask Hava contact card, and action links that act only from a button, with the shared-inbox switch",
+      "goal": "picks, quotes and portals: emergency-job calls with the EMERGENCY card subject, activation test calls and account calls, the Ask Hava contact card, and action links that act only from a button, with the shared-inbox switch",
+      "type": "build",
+      "phase": 1,
+      "stage": "4",
+      "module": "picks",
+      "deps": [
+        "T148",
+        "T149"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "privacy",
+        "security",
+        "compliance",
+        "accessibility"
+      ],
+      "owns": [
+        "app/picks/business_calls.py",
+        "app/quotes/emergency_card_notice.py",
+        "app/portals/action_links.py",
+        "app/portals/business_actions.py",
+        "app/portals/templates/contact_card.vcf",
+        "migrations/versions/t150_business_calls.py",
+        "tests/integration/test_emergency_card_call.py",
+        "tests/integration/test_business_test_call.py",
+        "tests/security/test_link_scanners.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/threat-model.md",
+        "docs/spec/businesses.md",
+        "docs/spec/messaging.md",
+        "docs/test-design.md",
+        "docs/spec/job-cards.md",
+        "docs/spec/quotes-pick.md",
+        "docs/spec/calls.md",
+        "docs/spec/quiet-hours.md",
+        "docs/spec/security.md",
+        "docs/spec/consent.md",
+        "docs/spec/accessibility.md",
+        "docs/spec/intake.md"
+      ],
+      "requirements": [
+        "CARD-021",
+        "BIZ-046",
+        "SEC-026",
+        "SEC-027"
+      ],
+      "tests": [
+        "TD-CARD-09",
+        "TD-BIZ-22",
+        "TD-SEC-08"
+      ],
+      "decisions": [
+        "D-323",
+        "D-333",
+        "D-334",
+        "D-335",
+        "D-341"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 9,
+        "lines": 800,
+        "context_pct": 18
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T150-business-calls-link-hardening",
+      "prompt": "kit/prompts/T150.md"
     },
     {
       "id": "T100",
@@ -6328,7 +6532,9 @@
         "T098",
         "T099",
         "T147",
-        "T148"
+        "T148",
+        "T149",
+        "T150"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -6506,7 +6712,8 @@
         "D-297",
         "D-300",
         "D-307",
-        "D-316"
+        "D-316",
+        "D-337"
       ],
       "cites": [],
       "budget": {
@@ -6734,7 +6941,8 @@
         "D-284",
         "D-289",
         "D-314",
-        "D-319"
+        "D-319",
+        "D-323"
       ],
       "cites": [],
       "budget": {
@@ -6784,7 +6992,8 @@
         "TD-OPS-02"
       ],
       "decisions": [
-        "D-319"
+        "D-319",
+        "D-331"
       ],
       "cites": [],
       "budget": {

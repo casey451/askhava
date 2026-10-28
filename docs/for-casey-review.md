@@ -586,3 +586,119 @@ Its answer: Twilio could be a problem for **texts to businesses**, and switching
   - Is email fast enough for job cards, or do they miss them during the workday?
   - Do they notice the pick call, and is "press 2 for more time" clear?
   - Would they pay attention to texts more than email, if business texting is approved later?
+
+## From fix round 9 ("Ok fix everything we need to"), October 28, 2026
+
+You asked to fix everything the round-9 simulations found and to do whatever research the changes need. The plan is `/home/claude/hhq/outputs/sim_v9/Fix_Round_9_Plan.md`, and its changes are in the spec as D-323 to D-343. The order used was: safety, then the business email frictions, then homeowners. The owner-angle round-9 simulation was still running, so its results come in a later round. The frictions came from AI-simulated people, not real ones. Nothing is built, nothing was bought, sent or signed, and Gate P and build_hold are unchanged. Business texting stays off until Twilio says yes in writing.
+
+**To decide, ask or buy (the spec already works without each one)**
+
+1. **Widen the TCPA attorney question.** Business automated calls never needed a lawyer switch, and they still don't. The safety voice call to homeowners is the only call behind one. So the new calls go on the same footing as the pick call, and the question already on your list (D-322) now covers all of them:
+   - recorded pick calls;
+   - the new **emergency-job calls**, including at night to businesses that ticked after-hours. These have their own optional, unticked box that says "Not required to join.";
+   - the **test call** at activation;
+   - the **account call** when a business's emails stop working.
+
+   Also ask whether you may phone a homeowner yourself, live, during a texting suspension. The owner guide would add that step only if the lawyer says yes.
+   (D-323, D-334, D-335, D-343)
+2. **Branded caller ID (costs money, your call).** Registered caller name (CNAM) or Twilio's branded calling for the Ask Hava number. Without it, the "Save as Ask Hava" contact card still shows the name on phones that saved it. (D-334, D-343)
+3. **Inbox placement test, before the first sign-up.** Send the real card, pick and verification emails from the production sending address to test inboxes you own: Gmail, Outlook.com, Yahoo and iCloud. Add a Microsoft 365 business inbox only if you already have one. Note whether each one lands in the inbox, a tab such as Promotions, or Spam. Use free accounts only, and no real business addresses. (D-343)
+4. **Launch week.** Walk each founding business through the new "Did the sample card arrive in your inbox?" step in person. (D-328)
+5. **When to build the app with phone alerts (your call).** Suggested trigger: build it first after launch if, in the first 60 days, more than 25% of job cards to active businesses end without a quote, or more than 3 of the first 10 businesses say they missed emails. The new missed-card numbers supply the data. (D-331, D-343)
+6. **The pitch file** (`/home/claude/hhq/outputs/gtm/Ask_Hava_GoToMarket_Plan_REVIEWED.md`, outside the repo) still says:
+   - "no bidding wars";
+   - "a text-based quote service";
+   - "check back next week".
+
+   Use the business page's line instead: "Job requests come by email, and we call you when a homeowner picks you. We don't text businesses." When someone asks "Can I get jobs by text?", the honest answer is "Not yet; you get an email and a phone call." (D-343)
+7. **Fire and gas desk check.** Add these to the review:
+   - the new smoke-alarm line;
+   - the "Has your gas company checked it?" question;
+   - the wider keyword list.
+
+   Also ask 10 or more people, in English and Spanish, how they'd text about a gas leak, a burst pipe, a CO alarm and a dead AC, and check each phrase against the list. (D-325, D-326)
+
+**Worth a second look**
+
+1. **Emergency job cards no longer rely on email alone.** For a job the homeowner marked as an emergency:
+   - The email subject starts "Ask Hava: EMERGENCY".
+   - Ask Hava also places one recorded call: "This is Ask Hava LLC. New emergency HVAC job in Lake Havasu City, job 1042. The homeowner chose emergency. Check your email or askhava.com to quote."
+   - At night only businesses that take after-hours calls get the email and the call.
+   - A business can tick "after-hours emergencies" only while at least one of its phones has these calls turned on.
+
+   (D-323)
+2. **More safety words are caught**, in English and Spanish:
+   - gas leaks and hissing gas lines ("huele a gas", "fuga de gas");
+   - burst or broken pipes ("se reventó la tubería");
+   - "detector going off" and "CO is beeping";
+   - fire and flames;
+   - electric shocks;
+   - headaches and "dolor de cabeza".
+
+   A sounding alarm gets the get-outside lines. A detector that only chirps is a low battery and isn't treated as an alarm. After SAFE on a gas problem, one question asks whether the gas company has checked it, and the card shows the answer. (D-325, D-326)
+3. **Emergency picks.**
+   - The 30-minute reminder also calls.
+   - "You can choose another quote" now appears only when there is one.
+   - A pick made just before 8 p.m. of a business without after-hours calls warns the homeowner.
+   - With a single after-hours business, the night count now reads "1 HVAC business ... takes".
+   - The 60-minute "no quote yet" text now also goes in the daytime.
+
+   (D-324, D-327)
+4. **Missed card emails.**
+   - At sign-up, a sample card email asks "Did it arrive in your inbox?" and shows how to fix Gmail, Outlook, Yahoo or iPhone Mail.
+   - Each person can add a backup email address.
+   - A daily "Your job requests still open" email goes out (5 p.m. by default, and it can be switched off).
+   - A monthly note goes out only when at least half of a business's cards ended without a quote.
+   - The 24-hour quote window still counts from when the card is sent. Counting from when the email is "opened" can't be measured honestly: Apple Mail opens tracking pixels on its own, and mail scanners open links.
+
+   (D-328 to D-332)
+5. **Fewer sign-ins.**
+   - The Quote link in a card email now opens the quote form without signing in. It's tied to one person and one job and ends with the card's window.
+   - Confirm from your own pick email now needs only a phone code.
+   - Opening a link never does anything by itself; you always press a button on the page. This stops office mail scanners from using links up or triggering a Hold.
+   - A "This inbox is shared" switch asks for a phone code on every Confirm.
+
+   (D-333)
+6. **The pick call.**
+   - It comes from the Ask Hava number.
+   - Sign-up offers a "Save as Ask Hava" contact card and places a test call.
+   - Setup asks who should get pick calls and emergency-job calls.
+   - The call names the trade.
+   - If a business's only email starts bouncing or is marked as spam, one call tells the owner.
+
+   (D-334, D-335)
+7. **The HELP line** now reads: "Casey, the local owner, reads HELP messages twice a week, and within 24 hours if your job is urgent." It replaces "A person reads HELP messages within 4 days". Your actual deadlines don't change: your two weekly windows already sit at most 4 days apart. (D-337)
+
+**Routine**
+
+- Each job page shows businesses a notice log: what was sent and when, whether their mail server accepted it, and how each call went. It shows no opens or clicks. If all of a pick's emails bounced and its call failed, the business gets one extra business hour. (D-332)
+- Refund decisions now say why. Public business names are screened like the "About us" line. (D-336)
+- Homeowner texts:
+  - the first-quote text puts "Reply LIST" before the link;
+  - homeowners who chose email are told the business will email them;
+  - "Today" jobs are told the first quote can take a few hours;
+  - a trade with only 1 or 2 businesses says so.
+
+  (D-324, D-338 to D-340)
+- Two new build tasks: T149 (email reliability) and T150 (business calls and link hardening). (D-341)
+- Not adopted: see plan section 3 (D-342):
+  - counting the quote window from first open, or extending it;
+  - email open tracking;
+  - "Reply CALL ME";
+  - a weekly Away schedule;
+  - owner approval of staff Confirms;
+  - water keywords without the SAFE step;
+  - a deadline time-of-day question;
+  - a 7-day trade-open reminder.
+
+**New things to test with real people**
+
+- **Businesses:**
+  - When do you see a supplier email (C27)?
+  - Would you answer an automated call from an unknown number, and would you save it (C28)?
+  - Spanish-first owners: who reads your business email (C29)?
+  - Office managers: does IT quarantine new senders, and who should get pick calls (C30)?
+  - Text versus email card on a job site (C31).
+- **Homeowners:**
+  - "Twice a week" versus "within 4 days": which feels more trustworthy?
+  - At 10 p.m., what would you do after the "no quote yet" text?
