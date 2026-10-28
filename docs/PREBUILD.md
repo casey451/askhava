@@ -225,6 +225,7 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | Phase 2 sandbox calls blocked by the deny rules (noted at K0) | The sandbox tasks use the vendor SDKs; if one blocks, it's listed at the end, not asked mid-build |
 | Safety-number verification can't reach city or utility sites | Unverified numbers are left out of texts; never a stop (item 12 in section 3 avoids it) |
 | Stale lines in `BUILD_BRIEF.md` (Part 2 lists "Arizona TPT license" and "zero retention"; Appendix A says 7 past, the live routine runs at 50 past) | Logged; the decisions (D-412, D-414) win; fix in a docs task, no stop |
+| Older source lines that round 14 reversed (changes file :58, :86, :89, :196, :247, :248; `BUILD_BRIEF.md` :182, :340: photos off cards, heat and water safety lines, tenant line, TPT license, insurance first) | `docs/constitution.md` updated to match; the protected files stay as they are and are superseded by D-417, D-426, D-430, D-432, D-436, D-437, D-444 (D-450) |
 
 **Proposed rehearsal (waiting for your OK; nothing has been run)**
 - **What:** a paper rehearsal. Claude runs the build's own runner code (`runner/cycle.py`) against the real task list with fake GitHub and fake workers, every task passing, then once with one task failing on purpose.
