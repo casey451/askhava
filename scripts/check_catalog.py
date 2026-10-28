@@ -1,7 +1,7 @@
 """Self-check for the K2b catalog in docs/catalog/.
 
 Recomputes every worked example's introduction fee from the fee rules (FEE-001 to
-FEE-013, REC-002 to REC-005, LIC-019, LIC-020, D-009, D-010, D-033) and fails on any
+FEE-013, FEE-039, REC-002 to REC-005, LIC-019, LIC-020, D-009, D-010, D-033, D-196) and fails on any
 mismatch. The rules are written here as constants, independent of the YAML, and the
 YAML's own fee_rules block must match them. Also checks the category list's shape,
 the categories that must be off or absent at launch, and that neither file contains a
@@ -33,6 +33,7 @@ TIER_HIGH_UP_TO = Fraction(1500)  # FEE-001: up to and including $1,500.00 is $7
 FEE_SMALL, FEE_MEDIUM, FEE_LARGE = 25, 75, 199
 TIER_FEES = (FEE_SMALL, FEE_MEDIUM, FEE_LARGE)
 RECURRING_MONTHS = 4  # REC-002
+RECURRING_FEE_CAP = 75  # FEE-039 / D-196: a quote with a period never pays more than this
 HANDYMAN_LIMIT = Fraction(1000)  # LIC-019
 MONTHLY_FACTOR: dict[str, Fraction] = {  # REC-004
     "weekly": Fraction(52, 12),
@@ -48,6 +49,7 @@ EXPECTED_FEE_RULES: dict[str, Any] = {
         {"fee": 199, "basis_above": "1500.00"},
     ],
     "recurring_months": RECURRING_MONTHS,
+    "recurring_fee_cap": RECURRING_FEE_CAP,
     "monthly_conversion": {
         "weekly": "x 52 / 12",
         "every_two_weeks": "x 26 / 12",
@@ -209,6 +211,8 @@ def compute(example: dict[str, Any], category: dict[str, Any]) -> Outcome:
     else:
         basis = fee_basis(quote, category)
         fee = tier_fee(basis)
+        if quote.get("period") is not None:
+            fee = min(fee, RECURRING_FEE_CAP)
     situation = example["situation"]
     if situation == "repeat_customer":
         return Outcome("charged", basis, 0, 0)
