@@ -99,8 +99,8 @@ The full table is `docs/sources.md:38`–`docs/sources.md:53`. The ones most lik
 Gate items and other pre-launch requirements:
 - **Business consent:** sign-up checkbox with written E-SIGN consent to job-card texts and automated calls; version and timestamp stored. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:181`)
 - **Business setup:** LLC via a commercial registered agent with a Maricopa County address; Lake Havasu City business license (home-occupation if run from home; never publish the home address); USPTO search for "Ask Hava" and "Hava" in Classes 35 and 42 before brand spending. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:226`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:229`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:254`)
-- **Before Gate C:** general liability plus tech E&O insurance. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:247`)
-- **Before the first live charge:** an Arizona TPT license; fees are tax-included. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:248`)
+- **Insurance:** later, after the business is fully working (Casey, D-426, `docs/decisions.md:575`); the changes file's "before Gate C" line (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:247`) is superseded by that decision.
+- **Sales tax:** fees are tax-included; an 8.6% set-aside until an ADOR private taxpayer ruling is filed, requested after the LLC exists; no TPT license taken only "in case" (D-444, `docs/decisions.md:598`). This supersedes the changes file's TPT-license line (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:248`).
 - **Before launch:** read the ROC website terms; file a commercial-purpose statement if required. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:250`)
 
 **Not a contractor.** Ask Hava never prices, bids, negotiates, schedules, supervises or guarantees work; refusals are worded as eligibility rules. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:237`)
@@ -146,8 +146,8 @@ Gate items and other pre-launch requirements:
 ## 7. Privacy
 
 1. **Fake data only** in the build: no real names, phones, addresses or photos in code, tests or logs; a scanner fails the build on real-looking personal data or keys. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:263`; `sources/02_build_plan/Build_Plan.md:36`; environments `BUILD_BRIEF.md:516`–`BUILD_BRIEF.md:518`)
-2. **AI and homeowner details:** allowed only to the Claude API (Haiku 5.5): under the zero-retention agreement once signed, and before that only on scrubbed text under the provider's recorded API terms, with the owner's switch and the privacy policy updated (AI-008, D-412, default pending Casey). A plain-code scrubber runs before **every** AI call (names after "this is / my name is", street-number patterns, 7+ digit runs, emails); the final text gate still runs on every card. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:58`)
-3. **Until the zero-retention agreement is signed:** photos stay off job cards (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:58`; `BUILD_BRIEF.md:340`), and, unless the D-412 switch is on, the app uses plain-code scrubbing, keyword rules and the question bank only (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:298`; D-412).
+2. **AI and homeowner details:** allowed only to the Claude API (Haiku 5.5): under the zero-retention agreement once signed, and before that only on scrubbed text under the provider's recorded API terms, with the owner's switch and the privacy policy updated (AI-008, D-412, confirmed D-418). A plain-code scrubber runs before **every** AI call (names after "this is / my name is", street-number patterns, 7+ digit runs, emails); the final text gate still runs on every card. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:58`)
+3. **Until the zero-retention agreement is signed:** photos go on job cards only after metadata stripping and Ask Hava's own on-server check, and are never sent to any AI (D-432, `docs/decisions.md:586`, which supersedes `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:58` and `BUILD_BRIEF.md:340` on photos), and, unless the D-412 switch is on, the app uses plain-code scrubbing, keyword rules and the question bank only (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:298`; D-412).
 4. The build's Claude plan and the app's zero-retention Console organization stay separate accounts. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:307`)
 5. The `ai` module never sees unscrubbed text. (`BUILD_BRIEF.md:133`)
 6. The weekly AI summary takes counts only, never free text. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:294`)
@@ -260,7 +260,7 @@ From the AI legal-research memos (Memo 1 Part V.B and R-14, Memo 4 Part F), adop
 6. No percentage fees and no fee tied to the final bill.
 7. No requests from outside sources without disclosure; no buying or selling of request data.
 8. No inspection tied to a home sale, purchase or refinance (LIC-015, RESPA section 8, D-376).
-9. No pest-control intake until the Arizona Department of Agriculture answers in writing (LIC-012, D-376).
+9. Pest control only for businesses that attest to a Department of Agriculture license, with every pest card saying it isn't independently verified (LIC-012, LIC-047, LIC-048; Casey's D-417, `docs/decisions.md:559`, replaces the written-answer hold).
 10. No recruiting texts or calls to businesses (BIZ-048, A.R.S. 44-1282 and 44-1272, D-374, `docs/decisions.md:504`).
 11. No town outside Arizona (INT-022, D-382, `docs/decisions.md:512`).
-12. No AI-written text shown to homeowners or businesses unless Casey turns on AI quote summaries with the label and the policy line (PICK-003, D-373, `docs/decisions.md:503`).
+12. AI-written words only inside AI-019: reworded intake questions and the job card and project file the homeowner sees and approves before they go; never a diagnosis, price, safety call or business recommendation; AI quote summaries stay off unless Casey turns them on with the label and the policy line (AI-019, PICK-003, D-373, D-430, `docs/decisions.md:584`, which rests on legal Memo 4's points: no diagnosing or pricing in Ask Hava's words, homeowner approval of the card).
