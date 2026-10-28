@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-**Updated:** 2026-10-27 21:50 UTC · **Phase:** kit · **Done:** 11 of 11 kit steps (K0–K8 plus K2b), plus one fix-main task
+**Updated:** 2026-10-28 UTC · **Phase:** kit · **Done:** 11 of 11 kit steps (K0–K8 plus K2b), plus one fix-main task
 
 ## Running now
 - **Nothing.** K9 rehearsal merged (#23); Ci/Twin/Ally green on head 95e21ee, tree matches squash 632c400. Build is at **Gate P**.
@@ -26,7 +26,7 @@
 | K7 Task prompts | Done (#13) |
 | Fix main (Gate P citations) | Done (#15) |
 | K8 Harness and runner | Done (#16) |
-| K9 Rehearsal | Waiting to merge |
+| K9 Rehearsal | Done (#23) |
 | Gate A | Skipped (replaced by Gate P) |
 | Gate P (your "approved to build") | Next, after K9 |
 
