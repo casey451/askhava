@@ -29,7 +29,9 @@ ROW = re.compile(r"^- \*\*([A-Z0-9]+-\d+)\*\* (.*)$")
 QUOTED = re.compile(r"\"([^\"\n]{3,})\"|“([^”\n]{3,})”")
 TAG = re.compile(r"<[^>]+>")
 BLOCK = re.compile(r"<(style|script)\b.*?</\1>", re.S | re.I)
-APP_GLOBS = ("app/**/templates/**/*", "app/**/*.txt", "app/**/messages/*.yaml", "app/**/*.css")
+TEMPLATE_TAG = re.compile(r"\{%.*?%\}|\{\{.*?\}\}|\{#.*?#\}", re.S)
+TS_STRING = re.compile(r"\"((?:[^\"\\\n]|\\.)*)\"|'((?:[^'\\\n]|\\.)*)'|`([^`]*)`")
+APP_GLOBS = ("app/**/templates/**/*", "app/**/*.txt", "app/**/messages/*.yaml", "app/**/*.css", "app/**/*.ts")
 MARKUP = (".html", ".css", ".j2", ".jinja")
 
 
@@ -141,7 +143,7 @@ def yaml_copy(lists: Lists, path: Path, rel: str) -> Iterator[Hit]:
 def visible_lines(source: str) -> Iterator[tuple[int, str]]:
     """The text a reader sees in a page, by source line."""
     keep_lines = lambda m: " " + "\n" * m.group(0).count("\n")  # noqa: E731
-    blanked = TAG.sub(keep_lines, BLOCK.sub(keep_lines, source))
+    blanked = TAG.sub(keep_lines, BLOCK.sub(keep_lines, TEMPLATE_TAG.sub(keep_lines, source)))
     for number, raw in enumerate(blanked.splitlines(), 1):
         text = re.sub(r"\s+", " ", html.unescape(raw)).strip()
         if text:
@@ -163,6 +165,15 @@ def markup_file(lists: Lists, path: Path, rel: str) -> Iterator[Hit]:
                 yield Hit(rel, number, rule.name, match.group(0)[:60], rule.fix)
 
 
+def script_file(lists: Lists, path: Path, rel: str) -> Iterator[Hit]:
+    """Only the string literals in a TypeScript file are words a person might read."""
+    for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        for match in TS_STRING.finditer(raw):
+            text = next(g for g in match.groups() if g is not None)
+            if " " in text:
+                yield from scan_text(lists, rel, number, text)
+
+
 def plain_file(lists: Lists, path: Path, rel: str) -> Iterator[Hit]:
     for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         yield from scan_text(lists, rel, number, raw)
@@ -176,6 +187,8 @@ def scan_file(lists: Lists, root: Path, path: Path) -> Iterator[Hit]:
         yield from voice_copy(lists, path, rel)
     elif path.suffix == ".yaml":
         yield from yaml_copy(lists, path, rel)
+    elif path.suffix == ".ts":
+        yield from script_file(lists, path, rel)
     elif path.suffix in MARKUP:
         yield from markup_file(lists, path, rel)
     else:

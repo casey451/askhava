@@ -24,7 +24,7 @@ Files you read (do not change):
 
 ${reads}
 
-Shared paths any task may edit: `docs/architecture.md`, `docs/decisions.md`, `docs/for-casey-review.md`, `app/main.py`.
+Shared paths any task may edit: `docs/architecture.md`, `docs/decisions.md`, `docs/for-casey-review.md`, `app/server/src/main.rs`, the workspace `Cargo.toml` and `Cargo.lock`, every crate's `Cargo.toml` (to add an allowed path dependency or the `testing` feature), `.sqlx/` (offline query data from `cargo sqlx prepare --workspace`), `package.json` and `package-lock.json`.
 
 Size budget: at most ${budget_files} files, ${budget_lines} changed lines, ${budget_context}% of the context window. Keep the pull request small.
 
@@ -61,7 +61,7 @@ ${cites}
 ## Definition of done
 
 - Required checks pass on your commit: ${checks}.
-- `ruff check`, `ruff format --check` and `mypy --strict` are clean for the code you changed (where the task has code).
+- `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings` and `cargo test` are clean for the Rust you changed; `tsc --strict` and eslint for any TypeScript; `ruff check` for any Python tooling (where the task has code).
 - ${tests_done}
 - Coverage does not drop; money, privacy and licensing code stays at or above 95% branch coverage.
 - A fresh-eyes review of the diff (reviewer model above) finds nothing open.

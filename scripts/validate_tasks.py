@@ -86,8 +86,7 @@ KIT_OUTPUTS = (
     "tests/mutation/",
     "tests/contract/",
     "tests/coverage_floor.json",
-    "pyproject.toml",
-    "uv.lock",
+    "Cargo.lock",
 )
 # Owned paths that make a task money, privacy, security or recovery work, whatever it declares.
 SENSITIVE_PREFIXES = {
@@ -100,8 +99,43 @@ SENSITIVE_PREFIXES = {
     "app/recovery/": "recovery",
 }
 FORBIDDEN = ("sources/",)
+# Crate manifests are shared: a module or test crate gains a path dependency when a later task needs it (D-453).
+CRATE_MODULES = (
+    "core",
+    "ops",
+    "adapters",
+    "catalog",
+    "privacy",
+    "ai",
+    "messaging",
+    "payments",
+    "licensing",
+    "businesses",
+    "jobs",
+    "calls",
+    "quotes",
+    "picks",
+    "intake",
+    "recovery",
+    "portals",
+    "site",
+    "server",
+)
+TEST_CRATES = ("unit", "property", "integration", "security", "recovery", "fixtures")
 ALLOWED_SHARED = frozenset(
-    {"docs/architecture.md", "docs/decisions.md", "docs/for-casey-review.md", "app/main.py"}
+    {
+        "docs/architecture.md",
+        "docs/decisions.md",
+        "docs/for-casey-review.md",
+        "app/server/src/main.rs",
+        "Cargo.toml",
+        "Cargo.lock",
+        ".sqlx/",
+        "package.json",
+        "package-lock.json",
+    }
+    | {f"app/{m}/Cargo.toml" for m in CRATE_MODULES}
+    | {f"tests/{layer}/Cargo.toml" for layer in TEST_CRATES}
 )
 JOURNEYS = ("J1", "J2", "J3", "J4")
 GATE_KINDS = (
@@ -126,7 +160,7 @@ GATE_WAITS = {
 }
 CONDITIONAL_GATE = "real-texts-casey-phone"
 NO_DEPENDENTS = ("stage-0.5-go", "first-live-charge")
-TWILIO_SANDBOX_PATH = "app/adapters/twilio_sms.py"
+TWILIO_SANDBOX_PATH = "app/adapters/src/twilio_sms.rs"
 MAX_OWNS = 14
 MAX_FILES = 14
 MAX_LINES = 800

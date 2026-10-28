@@ -11,7 +11,22 @@ jobs:
   ci:
     name: "Ci"
     runs-on: ubuntu-latest
+    # Postgres for the Rust integration tests (D-453); T169 pins the image by digest.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
       GITLEAKS_VERSION: "8.28.0"
       GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
     steps:
@@ -47,21 +62,36 @@ jobs:
           python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
           python3 -m pytest tests -q -p no:cacheprovider
 
-      - name: Static security scan (bandit)
+      - name: Rust format, lint and tests (once the workspace exists, D-453)
         run: |
-          if [ -d app ]; then
-            python3 -m pip install --quiet bandit==1.8.6
-            python3 -m bandit -r app -ll
+          if [ -f Cargo.toml ]; then
+            rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
+            cargo fmt --all --check
+            cargo clippy --workspace --all-targets --locked -- -D warnings
+            # Built alone, no test crate turns on a `testing` feature, so only each crate's api is public.
+            cargo build -p server --locked
+            cargo test --workspace --locked
           else
-            echo "bandit skipped: no app yet"
+            echo "rust checks skipped: no Cargo workspace yet"
           fi
 
-      - name: Dependency audit (pip-audit)
+      - name: Rust dependency audit (cargo-audit, cargo-deny)
         run: |
-          if [ -f uv.lock ]; then
-            python3 -m pip install --quiet uv pip-audit==2.9.0
-            uv export --frozen --no-hashes -o "$RUNNER_TEMP/requirements.txt"
-            python3 -m pip_audit -r "$RUNNER_TEMP/requirements.txt" --no-deps --disable-pip
+          if [ -f Cargo.lock ]; then
+            cargo install --locked cargo-audit@0.22.2 cargo-deny@0.20.2
+            cargo audit
+            cargo deny check licenses bans sources advisories
           else
-            echo "pip-audit skipped: no app yet"
+            echo "cargo-audit and cargo-deny skipped: no Cargo.lock yet"
+          fi
+
+      - name: TypeScript checks and npm audit
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts
+            npx tsc --noEmit
+            if [ -f eslint.config.js ]; then npx eslint .; fi
+            npm audit --audit-level=low
+          else
+            echo "npm checks skipped: no package-lock.json yet"
           fi

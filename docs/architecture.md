@@ -1,6 +1,6 @@
 # Ask Hava architecture
 
-Written in kit step K4 (`BUILD_BRIEF.md:598`). This file finalizes the module boundaries that `BUILD_BRIEF.md:124`–`BUILD_BRIEF.md:152` fixes, and pins the stack versions (`BUILD_BRIEF.md:121`). It restates and arranges rules; where it had to choose, the choice is logged in `docs/decisions.md` (D-090 to D-100) and named here. If this file and a cited source disagree, the source wins and this file is the bug. Every PR that changes a boundary, table owner, state, timeout or pinned version updates this file in the same PR (`BUILD_BRIEF.md:489`).
+Written in kit step K4 (`BUILD_BRIEF.md:598`). This file finalizes the module boundaries that `BUILD_BRIEF.md:124`–`BUILD_BRIEF.md:152` fixes, and pins the stack versions (`BUILD_BRIEF.md:121`). Since D-453 the server is Rust (`BUILD_BRIEF.md:105`); sections 2, 4, 5, 7 and 11 describe the Rust layout. It restates and arranges rules; where it had to choose, the choice is logged in `docs/decisions.md` (D-090 to D-100) and named here. If this file and a cited source disagree, the source wins and this file is the bug. Every PR that changes a boundary, table owner, state, timeout or pinned version updates this file in the same PR (`BUILD_BRIEF.md:489`).
 
 Citations are `path:LINE`. "Changes file" means `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md`; "v9.3" means `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md`. Requirement IDs (for example `PRIV-005`) are in `docs/spec/`.
 
@@ -15,9 +15,9 @@ One web app and one PostgreSQL database do all the work; every outside service s
  quote page, homeowner portal)   links; no calls; text    alert emails, HELP
                                  only if chosen)          notifications, calls)
             \                         |                        /
-             +------------- web process (FastAPI + Jinja2) ---+
+             +------------ web process (Rust: Axum + Askama) -+
                                       |
-              worker process (scheduler + task runner, same code)
+          worker process (Rust: scheduler + task runner, same crates)
                                       |
                 PostgreSQL 16: one schema per module, contact vault encrypted
                                       |
@@ -33,32 +33,63 @@ One web app and one PostgreSQL database do all the work; every outside service s
 
 | Process | Runs | Notes |
 |---|---|---|
-| `web` | `uvicorn` serving the FastAPI app: pages, portals, web chat, webhooks, `/healthz` | Stateless; any number of replicas; server-rendered, works without JS (`BUILD_BRIEF.md:106`) |
-| `worker` | The scheduler and the task runner: polls `core.task` with `SELECT … FOR UPDATE SKIP LOCKED` | Timers, outbox sends, retries, nightly jobs (`BUILD_BRIEF.md:108`; JOB-006). One image, started with a different command |
+| `web` | The `server` binary (Axum on Tokio): pages, portals, web chat, webhooks, `/healthz` | Stateless; any number of replicas; server-rendered Askama pages that work without JS (`BUILD_BRIEF.md:106`) |
+| `worker` | The `worker` binary: the scheduler and the task runner, polling `core.task` with `SELECT … FOR UPDATE SKIP LOCKED` | Timers, outbox sends, retries, nightly jobs (`BUILD_BRIEF.md:108`; JOB-006). Same image, started with a different command |
 
-Both processes run the same Docker image (`BUILD_BRIEF.md:119`), pinned by digest (SEC-021).
+Both binaries are built from one Cargo workspace into one Docker image (`BUILD_BRIEF.md:119`), pinned by digest (SEC-021).
 
 ```
+Cargo.toml           the workspace: members "app/*" and the Rust test-layer crates; every approved crate and its exact
+                     version under [workspace.dependencies]; lints (unsafe_code forbid, clippy) under [workspace.lints]
+Cargo.lock           committed
+.sqlx/               offline query data from `cargo sqlx prepare --workspace`, committed; `Ci` builds with SQLX_OFFLINE
+rust-toolchain.toml  the pinned Rust release (section 11)
+clippy.toml          too-many-lines-threshold = 50, excessive-nesting-threshold
+deny.toml            cargo-deny policy: license allow-list, crates.io only, banned crates (SEC-021)
 app/
-  main.py            composition root: builds the FastAPI app, registers routes and task handlers
-  worker.py          worker entry point
-  core/              shared kernel (section 4); not a business module
-  <module>/          one package per module in section 3
-    api.py           the module's public functions and pydantic types; the only thing other modules import
-    models.py        SQLAlchemy tables, all in the module's own Postgres schema
-    rules.py         pure decision logic (no I/O), the main target of unit and property tests
-    service.py       orchestration: transactions, calls to lower modules' api.py, audit rows
-    handlers.py      task handlers registered in main.py (timers and events)
-    routes.py        HTTP routes, only in modules that own a web surface (portals, site, webhooks)
-migrations/          Alembic, forward-only, each migration tested (BUILD_BRIEF.md:107)
-stand_ins/           fake Twilio, fake Resend, fake Lob, stand-in AI, Stripe mock config (BUILD_BRIEF.md:91)
-tests/               one folder per test layer (docs/test-design.md section 2)
-twin/                the twin and its hard-failing gate (docs/twin-warnings.md section 6)
+  server/            composition root (a crate that depends on every module)
+    src/main.rs      builds the Axum router, registers routes and task handlers (the shared composition file)
+    src/bin/worker.rs        worker entry point
+    src/bin/rules_bridge.rs  JSON-in, JSON-out door to the rules for the twin (T074); behind the server crate's
+                     `rules-bridge` feature (`required-features`), never in the production image
+  core/              shared kernel (section 5); not a business module
+  <module>/          one crate per module in section 3
+    Cargo.toml       depends only on the lower crates section 4 allows (the compiler refuses anything else)
+    src/lib.rs       `automod::dir!("src")` declares every file, so a task adds a file without editing lib.rs;
+                     re-exports `api` as the crate's public surface; under the crate's `testing` feature the same
+                     macro declares every module `pub`, so the test crates reach `rules` and the rest, and no
+                     production crate may enable `testing` (the architecture test checks it, SEC-029). Cargo turns a
+                     feature on for the whole build, so a workspace build makes internals visible everywhere;
+                     `Ci` therefore also builds `-p server` alone, where only `api` is public, and that build is
+                     the one that enforces the boundary
+    src/api.rs       the module's public functions and types; everything else is `pub(crate)`
+    src/models.rs    row types and SQLx queries, all in the module's own Postgres schema
+    src/rules.rs     pure decision logic (no I/O), the main target of unit and property tests
+    src/service.rs   orchestration: transactions, calls to lower crates' api, audit rows
+    src/handlers.rs  task handlers registered in main.rs (timers and events)
+    src/routes.rs    HTTP routes, only in crates that own a web surface (portals, site, webhooks)
+    templates/       Askama templates (checked when the crate compiles); all customer-facing words live in
+                     templates and message files, never in `.rs` string literals, so the AI-smell scan sees them.
+                     The `.vcf` contact card is not Askama: one function escapes each field per RFC 6350
+                     (backslash, comma, semicolon, newline) before it is written
+    static/          CSS, fonts, images and `.ts` sources; `npm run build` (tsc) writes the `.js` beside each
+                     source in the Docker build stage (T169); the generated `.js` is not committed
+migrations/          SQL files `0NNN_<slug>.sql`, NNN the task number, forward-only, each tested; SQLx applies
+                     any not yet applied in number order, including a lower number added later (checked, D-453).
+                     On a fresh database the files run in number order, not task order; that is safe only
+                     because no migration refers to another module's schema (section 4, rule 3)
+stand_ins/           Python fakes of Twilio, Stripe, Resend, Lob and the AI, served over HTTP by `stand_ins/server.py`
+                     at the vendors' URL shapes, so the Rust adapters use the same client code everywhere (SEC-032)
+tests/               Rust layers unit, property, integration, security, recovery: one test crate each (T168, and
+                     integration in T009), files in tests/<layer>/tests/, compile-fail cases with their expected
+                     `.stderr` in tests/security/ui/; `tests/fixtures` (T010) is the fake-data crate; Playwright in
+                     TypeScript for e2e and a11y; pytest for docs and contract
+twin/                the twin (Python) and its hard-failing gate, calling the Rust rules through rules_bridge
 ```
 
 ## 3. Modules, what each owns, and its tables
 
-Each module owns its files and its tables, and no module reaches into another's tables (`BUILD_BRIEF.md:126`). Each module's tables live in a Postgres schema named after it (D-091). "Calls" lists the lower modules whose `api.py` it may import; `core` is always allowed and is not repeated.
+Each module owns its files and its tables, and no module reaches into another's tables (`BUILD_BRIEF.md:126`). Each module's tables live in a Postgres schema named after it (D-091). "Calls" lists the lower crates whose `api` it may use, which are exactly the path dependencies in its `Cargo.toml`; `core` is always allowed and is not repeated.
 
 | Module | Owns (`BUILD_BRIEF.md:128`–`BUILD_BRIEF.md:146`) | Tables (schema-qualified) | Calls |
 |---|---|---|---|
@@ -76,8 +107,8 @@ Each module owns its files and its tables, and no module reaches into another's 
 | `quotes` | Who receives each job card, and the cards themselves; quote intake and parsing, including the required quote facts, pre-filled per job type from the business's last answers (D-233, D-283); eligibility rules; arrival order; original wording beside any summary | `quotes.job_card`, `quotes.quote`, `quotes.quote_bounce` | `jobs`, `businesses`, `licensing`, `catalog`, `ai`, `privacy`, `messaging`, `ops` |
 | `picks` | Pick by code; contact-method choice; confirm window of 4 business hours by email alone, counted from when the pick email is sent, with a reminder every business hour, each carrying the Hold link, the last one marked "Last reminder" (PICK-019, PICK-037, D-345, D-380); the homeowner's end-time and lapse re-pick texts (PICK-045, PICK-046); EMERGENCY card and pick emails, at night only to people with "Emergency emails at any hour" on (CARD-021, D-346); no automated call to any business phone (BIZ-039, D-344); payment hand-off; release of contact details (portal and email only, PICK-024); losers notified | `picks.pick`, `picks.code_attempt`, `picks.release`, `picks.confirm_reminder` | `quotes`, `jobs`, `payments`, `calls`, `businesses`, `licensing`, `privacy`, `messaging`, `adapters`, `ops` |
 | `intake` | Inbound SMS and web chat routing (from flags and `ScrubbedText`, never raw homeowner text); conversation state; homeowner consent; the one 911 text and its keyword list for gas, a CO alarm going off, smoke or fire, sparking or burning electrical and a downed power line (INT-002, INT-004, D-436); the one intake order (INT-043); photos, inspiration pictures and concept images (INT-044 to INT-046), photo checks running on Ask Hava's own server, never an outside AI, until zero retention (D-432); category matching; homeowners and properties | `intake.homeowner`, `intake.property`, `intake.conversation`, `intake.consent_record`, `intake.intake_answer`, `intake.emergency_event`, `intake.recruiting_demand` | `picks`, `quotes`, `jobs`, `businesses`, `ai`, `privacy`, `catalog`, `messaging`, `ops` |
-| `recovery` | Backup checks, the restore drill, replay with derived IDs | `recovery.backup_check`, `recovery.restore_drill`, `recovery.replay_run`, `recovery.replay_item` | the `api.py` of every module in layers 0–7 |
-| `portals` | Homeowner page and portal, business portal, owner portal; their sign-in, sessions and second factors; the business action pages and signed single-purpose links in business emails that replace text keywords (BIZ-038, SEC-025, D-309), which act only from the page's button, never on opening (SEC-026), with Quote links that need no session, Confirm by link plus a Verify code, and the shared-inbox switch (SEC-004, SEC-027, D-333); the per-job notice log (BIZ-045, D-332); no service worker until the later app phase (BIZ-041) | `portals.session`, `portals.login_link`, `portals.known_device`, `portals.owner_credential`, `portals.passkey`, `portals.totp_secret` (encrypted), `portals.recovery_code` (hashed), `portals.action_link` (hashed) | the `api.py` of every module in layers 0–7 |
+| `recovery` | Backup checks, the restore drill, replay with derived IDs | `recovery.backup_check`, `recovery.restore_drill`, `recovery.replay_run`, `recovery.replay_item` | the `api` of every module in layers 0–7 |
+| `portals` | Homeowner page and portal, business portal, owner portal; their sign-in, sessions and second factors; the business action pages and signed single-purpose links in business emails that replace text keywords (BIZ-038, SEC-025, D-309), which act only from the page's button, never on opening (SEC-026), with Quote links that need no session, Confirm by link plus a Verify code, and the shared-inbox switch (SEC-004, SEC-027, D-333); the per-job notice log (BIZ-045, D-332); no service worker until the later app phase (BIZ-041) | `portals.session`, `portals.login_link`, `portals.known_device`, `portals.owner_credential`, `portals.passkey`, `portals.totp_secret` (encrypted), `portals.recovery_code` (hashed), `portals.action_link` (hashed) | the `api` of every module in layers 0–7 |
 | `site` | Public website in the plaster and brass look of `docs/design/DESIGN_SPEC.md` (D-451); the web-chat page | none (web-chat text goes to `intake`) | `intake`, `catalog` |
 
 `core` owns `core.task` (the task queue and timers) and `core.rate_limit` (D-090).
@@ -86,7 +117,7 @@ Twelve v9.3 record types map onto these tables (`sources/01_spec/Havasu_Home_Quo
 
 ## 4. Dependency rules
 
-1. **Layers.** A module may import only the `api.py` of a module in a lower layer, never its `models.py`, `service.py` or `rules.py` (D-091):
+1. **Layers.** A module may use only the `api` of a module in a lower layer, never its `models`, `service` or `rules` (D-091). In Rust this is a compile error, not a convention: a crate lists only its allowed lower crates in `Cargo.toml`, Cargo refuses a dependency cycle, and only `api` is `pub` (D-453):
 
    | Layer | Modules |
    |---|---|
@@ -100,24 +131,25 @@ Twelve v9.3 record types map onto these tables (`sources/01_spec/Havasu_Home_Quo
    | 7 | `intake` |
    | 8 | `recovery`, `portals`, `site` |
 
-   `adapters` imports only `core` and vendor SDKs. Same-layer imports are allowed only where section 3's "Calls" column lists them (none today).
-2. **Events go up, calls go down.** When a lower module must tell a higher one something (Stripe says a charge succeeded; an inbound text arrives; a license lapses; an alert is raised), it enqueues a `core.task` with an event kind and IDs only, never personal details. `app/main.py` registers which module's handler runs for each kind. No module imports a higher one.
-3. **Tables.** Each SQLAlchemy model sets `schema=` to its own module. A test reads every model and every `import` statement (Python's `ast`, no extra library) and fails on any cross-schema foreign key, any import of another module's internals, and any upward import.
-4. **Money** moves only through `payments` (FEE-032). **Vault plaintext** comes only from `privacy.api` and only to the readers in section 8.
-5. **Invariants** (`BUILD_BRIEF.md:148`–`BUILD_BRIEF.md:152`): every outside action carries an idempotency key derived from what it identifies (SEC-018); every state change writes an audit row through `ops.api.audit()` in the same transaction (JOB-005); no homeowner contact detail leaves the vault except on a confirmed, paid pick (PRIV-005); the ledger always reconciles to Stripe (FEE-029, FEE-030).
+   `adapters` uses only `core` and the HTTP and crypto crates. Same-layer imports are allowed only where section 3's "Calls" column lists them (none today).
+2. **Events go up, calls go down.** When a lower module must tell a higher one something (Stripe says a charge succeeded; an inbound text arrives; a license lapses; an alert is raised), it enqueues a `core.task` with an event kind and IDs only, never personal details. `app/server/src/main.rs` registers which module's handler runs for each kind. No module imports a higher one.
+3. **Tables.** Every query and migration names its own module's schema. The architecture test (T009, SEC-029) reads every crate's `Cargo.toml` and every migration and fails on a dependency not allowed by the layer table, any cross-schema foreign key, and any query that names another module's schema; SQLx checks each query against the schema when it compiles.
+4. **Money** moves only through `payments` (FEE-032). **Vault plaintext** comes only from `privacy::api` and only to the readers in section 8. **Release needs proof:** the function that reads contact fields for a release takes a `ReleaseProof`, a type with private fields that only `payments` creates, from a signature-checked Stripe event for a succeeded charge or from a fee decision of no fee due; code anywhere else cannot build one, and a compile-fail test proves it (SEC-030).
+5. **Statuses are enums.** Job, pick, quote, charge and consent statuses are Rust enums; every `match` on them names every status: the modules that act on statuses deny clippy `wildcard_enum_match_arm` (not the whole workspace, since `Option` and foreign non-exhaustive enums need a wildcard arm), and a source scan fails on `_ =>`, `matches!` or `if let` on a status enum outside its own helpers, so a new status does not build until every place handles it (SEC-031).
+6. **Invariants** (`BUILD_BRIEF.md:148`–`BUILD_BRIEF.md:152`): every outside action carries an idempotency key derived from what it identifies (SEC-018); every state change writes an audit row through `ops.api.audit()` in the same transaction (JOB-005); no homeowner contact detail leaves the vault except on a confirmed, paid pick (PRIV-005); the ledger always reconciles to Stripe (FEE-029, FEE-030).
 
 ## 5. Shared kernel (`core`)
 
 `core` holds what every module needs and owns no business data (D-090):
 
-- **Settings:** one pydantic-settings class reads environment variables at startup and refuses to start on a missing value, a live key in a non-live environment, or a test key in live (SEC-002; `BUILD_BRIEF.md:521`).
-- **Database:** engine, session and unit of work; row locks with "only if still in the expected status" updates (JOB-004; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:689`). Two database roles: a migration role that owns the schemas, and an app role with no `UPDATE` or `DELETE` on append-only tables (D-092).
+- **Settings:** one settings struct, parsed from environment variables with serde at startup, and refuses to start on a missing value, a live key in a non-live environment, or a test key in live (SEC-002; `BUILD_BRIEF.md:521`).
+- **Database:** the SQLx connection pool and a transaction helper; row locks with "only if still in the expected status" updates (JOB-004; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:689`). Two database roles: a migration role that owns the schemas, and an app role with no `UPDATE` or `DELETE` on append-only tables (D-092).
 - **Clock:** UTC storage; Arizona time (no daylight saving) and the business clock of 8:00 a.m.–8:00 p.m. every day (JOB-007, D-004); the local time in a recipient's zone, which `messaging` uses for quiet hours (D-003, D-025); tests inject the clock.
 - **Webhook dedupe:** one helper that records a vendor event ID in the calling module's own `webhook_event` table and reports whether it was new, so every module dedupes the same way (SEC-017).
 - **Derived IDs:** HMAC-SHA-256 under a server secret over what an ID identifies, for job cards, quotes, picks, quote-page links and Stripe idempotency keys (CARD-017, PICK-028, OPS-016).
 - **Task queue:** `core.task` (kind, IDs-only payload, `run_at`, attempts, lease, unique dedupe key). Workers claim with `FOR UPDATE SKIP LOCKED`, hold a lease, and a crashed worker's lease expires so another picks the task up. Every handler first re-checks the current status and does nothing if things moved on (JOB-006).
 - **Rate limits:** `core.rate_limit` counters per phone, IP and business (SEC-014, SEC-015).
-- **Logging:** a request ID on every log line; no phone numbers, names or tokens in logs (PRIV-016); Sentry with `send_default_pii=False` plus a scrubber (PRIV-017).
+- **Logging:** `tracing` with a request ID on every line; contact values are wrapped in a `Redacted` type whose `Debug` and `Display` print only a marker, so they cannot reach a log by accident; no phone numbers, names or tokens in logs (PRIV-016); Sentry with default PII off plus a scrubber (PRIV-017). Secrets are `secrecy::SecretString`, zeroed on drop.
 
 ## 6. Job lifecycle state machine
 
@@ -155,7 +187,7 @@ Timers that are not job statuses but still bound every wait: each job card's 24-
 
 ## 7. Adapters and stand-ins
 
-One interface (a `typing.Protocol`) per vendor in `adapters`; each has a real implementation, and a stand-in that `stand_ins/` serves (`BUILD_BRIEF.md:158`–`BUILD_BRIEF.md:165`). The setting `ADAPTER_MODE_<VENDOR>` picks `stand_in`, `sandbox` or `live`; `live` is accepted only when `APP_ENV=live`, and `stand_in` never in live (SEC-002). Every inbound webhook is signature-checked in the adapter before any module sees it, and recorded by event ID in the owning module's `webhook_event` table (SEC-016, SEC-017).
+One trait per vendor in `adapters`, implemented by an HTTP client (reqwest with rustls) whose base URL points at the stand-in server, the vendor's sandbox or the live API; the stand-ins in `stand_ins/` are served over HTTP (SEC-032) (`BUILD_BRIEF.md:158`–`BUILD_BRIEF.md:165`). The setting `ADAPTER_MODE_<VENDOR>` picks `stand_in`, `sandbox` or `live`; `live` is accepted only when `APP_ENV=live`, and `stand_in` never in live (SEC-002). Every inbound webhook is signature-checked in the adapter before any module sees it, and recorded by event ID in the owning module's `webhook_event` table (SEC-016, SEC-017).
 
 | Adapter | Outbound calls | Inbound (owner module) | Phase 1 stand-in | Phase 2 |
 |---|---|---|---|---|
@@ -171,7 +203,7 @@ One interface (a `typing.Protocol`) per vendor in `adapters`; each has a real im
 
 Each stand-in has contract tests written from the vendor's published API documentation, run again against the real sandbox in Phase 2 (`BUILD_BRIEF.md:165`, `BUILD_BRIEF.md:191`).
 
-**What K8 built (D-121 to D-126).** `stand_ins/` holds in-process Python stand-ins, standard library only, with the vendors' response shapes, error envelopes, idempotency-key behavior and webhook signatures: `twilio.py` (Messages with magic numbers, opt-out words and segment counting, plus Verify), `stripe.py` (a stateful fake with stripe-mock's resource shapes, declines by test payment method, refund limits, events and signed webhooks), `resend.py` (Svix signatures), `lob.py`, and `ai.py` (keyword rules, `ScrubbedText` only, no tools, output validated against the fixed intake fields). The contract tests are in `tests/contract/`; in Phase 2 the same cases run against each vendor's sandbox. Twilio Voice and the HTTP serving layer (so the app talks to them over a socket, and `stripe/stripe-mock` itself in CI) come with the adapter tasks.
+**What K8 built (D-121 to D-126).** `stand_ins/` holds Python stand-ins, standard library only, with the vendors' response shapes, error envelopes, idempotency-key behavior and webhook signatures: `twilio.py` (Messages with magic numbers, opt-out words and segment counting, plus Verify), `stripe.py` (a stateful fake with stripe-mock's resource shapes, declines by test payment method, refund limits, events and signed webhooks), `resend.py` (Svix signatures), `lob.py`, and `ai.py` (keyword rules, `ScrubbedText` only, no tools, output validated against the fixed intake fields). The contract tests are in `tests/contract/`; in Phase 2 the same cases run against each vendor's sandbox. Twilio Voice comes with the adapter tasks; the HTTP serving layer (`stand_ins/server.py`, so the Rust app talks to them over a socket) is T167, ahead of the adapters (D-453), and `stripe/stripe-mock` itself runs in CI.
 
 **The runner's logic** is `runner/`: `state.py` (the real `kit/state.json` shape: list of tasks, one top-level lease; claims, eligibility, backoff), `verify.py` (path check, model check from session records, the DONE check), `outbox.py` (outbox files, the account checkpoint and other owner gates, Gate P) and `cycle.py` (one cycle, with git, GitHub and the worker session behind the `Env` protocol; inbox files are acknowledged only after the state recording them is pushed). The scheduled session supplies the real `Env`; `tests/test_failure_drills.py` supplies a fake one.
 
@@ -223,71 +255,72 @@ Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_s
 
 ## 11. Pinned stack versions
 
-**Policy (D-096):** the newest stable release published on or before October 13, 2026 (14 days before K4), unless pip-audit reports a known vulnerability fixed only in a later release, in which case the fixed release. Versions and dates were read from PyPI's JSON API in this session on October 27, 2026. K8 writes them into `pyproject.toml` and commits `uv.lock` with hashes (`BUILD_BRIEF.md:114`).
+**Policy (D-096, D-453):** the newest stable release published on or before October 14, 2026 (14 days before this plan change), unless cargo-audit or npm audit reports a known vulnerability fixed only in a later release, in which case the fixed release. Versions, dates and licenses were read from the crates.io and npm registry APIs and the Rust release channel in this session on October 28, 2026. T009 writes them into the workspace `Cargo.toml` as exact (`=`) versions and commits `Cargo.lock`; T020 writes `package.json` and commits `package-lock.json` (`BUILD_BRIEF.md:114`). The Python versions this section listed before D-453 now apply only to the tooling, stand-ins and twin (pytest 9.1.1 and PyYAML 6.0.1 in `Ci`).
 
-**Runtime and platform**
+**Toolchain and platform**
 
 | Component | Version | How verified | Note |
 |---|---|---|---|
-| Python | 3.12.13 | `uv python list 3.12` in this session (newest 3.12 build listed) | Build VM has 3.12.3; the Docker base tag and digest are **verify at K8** |
-| PostgreSQL | 16 (16.15 in the build VM) | `psql --version` in this session | Railway's minor version and the CI service image digest: **verify at K8** |
-| uv | 0.13.0 (2026-10-09) | PyPI | Build VM has 0.11.32 |
-| fastapi | 0.143.0 (2026-10-08) | PyPI | |
-| jinja2 | 3.1.6 (2025-03-05) | PyPI | |
-| sqlalchemy | 2.1.4 (2026-10-07) | PyPI | |
-| alembic | 1.20.0 (2026-09-11) | PyPI | |
-| pydantic | 2.14.1 (2026-10-11) | PyPI | |
-| twilio | 9.12.0 (2026-10-12) | PyPI | |
-| stripe | 16.0.0 (2026-10-01) | PyPI | |
-| anthropic | 1.13.0 (2026-10-09) | PyPI | 2.x was released after the cutoff |
-| sentry-sdk | 2.72.0 (2026-10-12) | PyPI | |
-| uvicorn | 0.54.0 (2026-09-25) | PyPI | new library, D-097 |
-| psycopg[binary] | 3.3.6 (2026-09-18) | PyPI | new library, D-097 |
-| pydantic-settings | 2.15.0 (2026-08-07) | PyPI | new library, D-097 |
-| resend | 2.49.1 (2026-10-03) | PyPI | new library, D-097 |
-| lob-python | 5.2.1 (2026-09-02) | PyPI | new library, D-097 |
-| cryptography | 50.0.2 (2026-09-30) | PyPI | new library, D-097 |
-| argon2-cffi | 25.1.0 (2025-06-03) | PyPI | new library, D-097 |
-| webauthn | 3.0.1 (2026-09-25) | PyPI | new library, D-097, D-098 |
-| pyotp | 2.10.0 (2026-06-14) | PyPI | new library, D-097, D-098 |
-| python-multipart | 0.0.32 (2026-06-04) | PyPI | new library, D-097 |
-| pillow | 13.0.0 (2026-10-16) | PyPI | new library, D-097; after the cutoff because 12.3.0 has known vulnerabilities (D-096) |
-| tzdata | 2026.5 (2026-10-03) | PyPI | new library, D-097 |
-| pyyaml | 6.0.3 (2025-09-25) | PyPI | D-036, version updated by D-096 |
+| Rust | 1.99.0 (2026-10-01), `rust-toolchain.toml` with clippy and rustfmt | Rust release channel; installed and used in this session | 1.99.1 (2026-10-15) is past the cutoff; T009 reads its notes and takes it only for a security fix |
+| Edition | 2024 | the scratch workspace built with it | |
+| PostgreSQL | 16 (16.15 in the build VM) | `psql --version` | Railway's minor version and the CI service image digest: **verify at T009** |
+| Node | 22 (22.23.4 in the build VM) | `node --version` | Only for `tsc`, eslint and Playwright; never in the production image |
+
+**Runtime crates** (each MIT, Apache-2.0, BSD-3-Clause, Unlicense or MPL-2.0; `deny.toml` allows those plus the permissive licenses their dependencies use: MIT-0, ISC, Zlib, Unicode-3.0 and CDLA-Permissive-2.0, and skips the unpublished first-party crates)
+
+| Crate | Version (date) | License | Use |
+|---|---|---|---|
+| axum (features `multipart`) | 0.8.9 (2026-04-14) | MIT | HTTP server and routing |
+| axum-extra (`cookie`) | 0.12.6 (2026-04-14) | MIT | Signed `__Host-` cookies |
+| tokio | 1.53.3 (2026-10-13) | MIT | Async runtime; 1.54.1 is past the cutoff |
+| tower / tower-http | 0.5.3 / 0.7.1 | MIT | Middleware: headers, body limits, static files, tracing |
+| askama | 0.16.1 (2026-09-04) | MIT OR Apache-2.0 | Compile-time HTML templates, autoescaped |
+| serde / serde_json | 1.0.229 / 1.0.154 | MIT OR Apache-2.0 | Parsing with `deny_unknown_fields` |
+| serde-saphyr | 2.0.0 (2026-10-13) | MIT OR Apache-2.0 | Reading the catalog YAML (`serde_yaml` is unmaintained) |
+| sqlx (`postgres`, `runtime-tokio`, `tls-rustls`, `macros`, `migrate`, `uuid`, `json`) | 0.9.0 (2026-05-21) | MIT OR Apache-2.0 | Postgres pool, compile-checked queries, migrations |
+| reqwest (`rustls`, `json`, `form`) | 0.13.5 (2026-09-08) | MIT OR Apache-2.0 | Every vendor API client |
+| hmac / sha1 / sha2 | 0.13.0 / 0.11.0 / 0.11.1 | MIT OR Apache-2.0 | Webhook signatures (Twilio HMAC-SHA1, Stripe and Svix HMAC-SHA256), derived IDs, blind index |
+| aes-gcm | 0.11.1 (2026-08-21) | Apache-2.0 OR MIT | Vault field encryption (PRIV-002) |
+| argon2 | 0.6.0 (2026-08-27) | MIT OR Apache-2.0 | Owner password hashing |
+| webauthn-rs | 0.5.5 (2026-04-30) | MPL-2.0 | Owner passkeys (D-098); brings in OpenSSL, so the image carries `libssl3` |
+| totp-rs | 6.0.0 (2026-08-06) | MIT | Owner TOTP second factor (D-098) |
+| rand | 0.10.3 (2026-09-20) | MIT OR Apache-2.0 | Codes and tokens from the OS random source |
+| subtle | 2.6.1 (2024-06-24) | BSD-3-Clause | Constant-time comparison of codes and tokens |
+| secrecy / zeroize | 0.10.3 / 1.9.1 | Apache-2.0 OR MIT | Secrets kept out of `Debug` and zeroed on drop |
+| uuid | 1.28.0 (2026-10-10) | Apache-2.0 OR MIT | Row IDs; 1.29.0 is past the cutoff |
+| jiff (`tzdb-bundle-always`) | 0.2.38 (2026-10-06) | Unlicense OR MIT | Arizona time and area-code time zones for quiet hours, with the zone data built in |
+| image (`jpeg`, `png`, `webp`) | 0.25.10 (2026-03-10) | MIT OR Apache-2.0 | Photo re-encoding with metadata removed (PRIV-014). It cannot decode HEIC, which TD-PRIV-08 needs: T090 picks a HEIC decoder under the new-library rule (logged with its license and audit result) |
+| tracing / tracing-subscriber (`json`, `env-filter`) | 0.1.44 / 0.3.23 | MIT | Structured logs with redaction |
+| sentry (`rustls`, `reqwest`, `tracing`, `panic`, `backtrace`) | 0.49.3 (2026-09-21) | MIT | Error reports with PII off |
+| thiserror / base64 / automod | 2.0.21 / 0.23.1 / 1.0.17 | MIT OR Apache-2.0 | Error types; encoding; per-crate file declarations |
 
 **Development and checks**
 
-| Component | Version | How verified | Note |
+| Component | Version (date) | License | Note |
 |---|---|---|---|
-| pytest | 9.1.1 (2026-06-19) | PyPI | |
-| hypothesis | 6.169.0 (2026-10-11) | PyPI | |
-| playwright | 1.64.0 (2026-10-13) | PyPI | Browser downloads: K8 checks whether they install in sessions (`BUILD_BRIEF.md:287`) |
-| mutmut | 3.8.0 (2026-09-12) | PyPI | |
-| ruff | 0.17.0 (2026-10-09) | PyPI | |
-| mypy | 2.4.0 (2026-10-01) | PyPI | |
-| bandit | 1.9.4 (2026-02-25) | PyPI | |
-| pip-audit | 2.10.1 (2026-06-10) | PyPI | |
-| pytest-cov / coverage | 7.1.0 (2026-03-21) / 7.16.2 (2026-09-27) | PyPI | new library, D-097 |
-| pytest-playwright | 0.10.0 (2026-10-08) | PyPI | new library, D-097 |
-| httpx | 0.28.1 (2024-12-06) | PyPI | new library (FastAPI's test client needs it), D-097 |
-| types-PyYAML | 6.0.12.20260906 (2026-09-06) | PyPI | new library, D-097 |
-| axe-core (JavaScript, injected) | 4.14.0 (2026-10-05) | npm registry | new library, D-097; vendored file, no Node at runtime |
-| gitleaks | **verify at K8** | GitHub API not reachable from this session | |
-| stripe/stripe-mock image | **verify at K8** | not checked | pinned by digest |
-| OWASP ZAP baseline image | **verify at K8** (Phase 2) | not checked | pinned by digest |
-| Docker base image | **verify at K8** | not checked | `python:3.12.13-slim` family, pinned by digest (SEC-021) |
+| proptest | 1.12.0 (2026-10-10) | MIT OR Apache-2.0 | Property tests |
+| trybuild | 1.0.122 (2026-10-07) | MIT OR Apache-2.0 | Compile-fail proofs (SEC-030, SEC-031) |
+| cargo-mutants | 27.1.0 (2026-06-02) | MIT | Nightly mutation tests |
+| cargo-audit | 0.22.2 (2026-06-05) | Apache-2.0 OR MIT | RustSec advisories on every PR |
+| cargo-deny | 0.20.2 (2026-07-09) | MIT OR Apache-2.0 | Licenses, bans, sources |
+| cargo-llvm-cov | 0.9.1 (2026-09-06) | Apache-2.0 OR MIT | Coverage; branch mode on a pinned nightly used only to measure |
+| sqlx-cli | 0.9.0 (2026-05-21) | MIT OR Apache-2.0 | `cargo sqlx prepare` for the committed offline query data |
+| typescript | 7.0.2 (2026-07-08) | Apache-2.0 | `tsc --strict` for the browser extras |
+| @playwright/test | 1.64.1 (2026-10-14) | Apache-2.0 | e2e and accessibility journeys |
+| @axe-core/playwright | 4.13.0 (2026-08-11) | MPL-2.0 | axe in Playwright; 4.14.0 is past the cutoff |
+| eslint / typescript-eslint | 10.12.0 / 8.71.2 | MIT | TypeScript lint |
+| gitleaks | 8.28.0 (pinned with its SHA-256 in `ci.yml`) | MIT | Secret scan |
+| stripe/stripe-mock image, OWASP ZAP image, Docker base image | **verify at T009 / T019** | — | Pinned by digest (SEC-021); the base is a Debian slim image with `libssl3` and CA certificates |
 
-**Resolution and audit run in this session:** `uv pip compile` of the runtime and development lists above for Python 3.12 on x86-64 Linux resolved 118 packages. `pip-audit 2.10.1 -r <compiled list> --no-deps --disable-pip` first reported 38 known vulnerabilities in pillow 12.3.0, all fixed in 13.0.0; with pillow 13.0.0 it reported "No known vulnerabilities found". This audit covers PyPI packages only; axe-core and the images are not covered by it. The compiled list was a scratch file and is not committed: K8 re-runs the resolution and pip-audit when it writes `uv.lock`, and pip-audit runs on every PR after that (SEC-021).
+**Resolution and audit run in this session:** a scratch workspace with every crate above at its exact version, on Rust 1.99.0, resolved 401 crates and built; `cargo clippy --workspace --all-targets -- -D warnings` passed. `cargo audit` (0.22.2, 1,381 advisories) found no vulnerabilities and one unmaintained warning: RUSTSEC-2026-0374, `basic-toml`, used only at compile time by `askama_derive` to read Askama's config. `cargo deny check licenses bans sources advisories` (0.20.2) passed with the license list above, crates.io as the only source, wildcard versions denied except workspace paths, and that one advisory ignored with its reason; duplicate versions are warnings only. T009 writes this `deny.toml` and re-runs both; `Ci` runs `cargo audit` (fails on any vulnerability) and `cargo deny` on every PR. The scratch workspace is not committed. npm packages are audited when T020 writes `package-lock.json`.
 
-No Web Push library is pinned: the installable business app with push is a later, optional phase (BIZ-041, D-307), and the spec change that adds it picks the library under the policy above and logs its purpose, license and pip-audit result.
-
-The task that builds photo handling checks pillow 13.x's release notes for breaking changes before writing the code (pillow 13.0.0 is a new major version).
+No Web Push crate is pinned: the installable business app with push is a later, optional phase (BIZ-041, D-307), and the spec change that adds it picks the crate under the policy above and logs its purpose, license and audit result.
 
 ## 12. Keeping this file true
 
 - A new module, table, cross-module call, status, timeout, adapter or pinned version changes this file in the same PR, with a `docs/decisions.md` entry when it is a choice (`BUILD_BRIEF.md:489`).
-- **Build order and file ownership** live in `kit/tasks.json` (K6): each build task names the module and the files it owns (`app/<module>/…`, its own `migrations/versions/t###_<slug>.py`, its own test files), and `python3 scripts/validate_tasks.py` fails if two tasks that can run in either order own the same file, or if a non-`harness` task owns a protected path (D-111, D-118). `app/main.py`, this file, `docs/decisions.md` and `docs/for-casey-review.md` are the only shared files. Stage 2 builds layers 0 to 7 far enough for job cards, the quote page and the pick (including the license imports and business records that matching reads); later stages add to each module's own files in dependency order (D-112).
-- A new library needs a decisions entry with purpose, license and a pip-audit result (`BUILD_BRIEF.md:122`).
+- **Build order and file ownership** live in `kit/tasks.json` (K6): each build task names the module and the files it owns (`app/<module>/src/…`, its own `migrations/0NNN_<slug>.sql`, its own test files), and `python3 scripts/validate_tasks.py` fails if two tasks that can run in either order own the same file, or if a non-`harness` task owns a protected path (D-111, D-118). The shared files are this file, `docs/decisions.md`, `docs/for-casey-review.md`, `app/server/src/main.rs`, the workspace `Cargo.toml`, `Cargo.lock`, `.sqlx/`, `package.json`, `package-lock.json` and every crate's `Cargo.toml` (D-453): a crate can only list a path dependency once that crate exists, so the task that first needs `picks` to call `payments`, or the server or a test crate to use a new module, adds that line. A new outside crate still needs its decision entry and must be in the workspace table. The first task of each module creates its crate's `Cargo.toml` and `src/lib.rs`. Stage 2 builds layers 0 to 7 far enough for job cards, the quote page and the pick (including the license imports and business records that matching reads); later stages add to each module's own files in dependency order (D-112).
+- A new library needs a decisions entry with purpose, license and a cargo-audit (or npm audit) result, and must pass cargo-deny (`BUILD_BRIEF.md:122`).
 - The threat model (`docs/threat-model.md`) changes with any new trust boundary or asset.
 - The not-a-contractor phrase list (WORD-022) lives in one place, `NOT_A_CONTRACTOR` in `scripts/trace_spec.py`; the spec check, the catalog check (`scripts/check_catalog.py`) and the app's wording scan (T104) all read it (D-360). It also holds the WORD-023 banned descriptions ("connect you with", "referral network/service", D-377).
 - The legal document drafts live in `docs/legal/` (TERMS-028, D-389). `scripts/check_legal_docs.py` keeps them true to the spec: each key phrase it lists must appear word for word in its spec requirement and in its draft, and it reuses the banned-phrase list from `scripts/trace_spec.py`; `tests/test_check_legal_docs.py` runs it in `Ci`. When the site pages are built (T111, T112), the published terms and policy come from these drafts.
@@ -295,5 +328,5 @@ The task that builds photo handling checks pillow 13.x's release notes for break
 - Fix round 13 adds three catalog files, all checked by `scripts/check_catalog.py`: `docs/catalog/license_map.yaml` (which license classes receive which job types, LIC-043, D-392), `docs/catalog/question_bank.yaml` (the intake question sets and trade safety prompts, LIC-040, INT-042, D-394) and, written by T154, `docs/catalog/intake_golden.yaml` (golden sample requests, OPS-040, D-395). `catalog` loads them; `licensing.class_map` (T153) decides coverage from the map; `intake.question_bank`, `intake.routing_confidence` and `intake.summary_step` (T156) ask the questions and confirm before cards go; `businesses.capability` (T155) pre-ticks the checklist; `picks.backup_choice` and `picks.auto_confirm` (T157) handle the backup and the optional auto-confirm charge; `ops.scorecard`, `ops.intake_report` and `payments.money_view` (T158) are owner pages; `portals.push` (T160) is the optional push channel. Each category has a `launch_open` flag (LIC-046, D-396).
 - The voice guide for texts and emails is `docs/voice.md` (WORD-024, D-406); the before-build list is `docs/PREBUILD.md` (D-416).
 - Fix round 14 (D-429 to D-449): `docs/catalog/trade_kb/` holds the Grok trade knowledge base as the expert brief for intake (read by `catalog`, never deciding who gets a card); `categories.yaml` names each category's `quote_format` and `design` flag (PICK-053, D-433, D-441); `ai.writer` and `ai.output_checks` (T163) write and check the AI-reworded questions, the job card and the project file inside AI-019, falling back to the fixed templates; `quotes.job_page` and `quotes.update_texts` (T163) are the business job page and the short portal-link texts; `intake.order`, `intake.photos` and `intake.design` (T162); `quotes.formats`, `quotes.notes`, `quotes.edit_withdraw`, `picks.share_consent` and `picks.cant_take` (T164); `businesses.links`, `businesses.leaving`, `businesses.pest_identity` and `ops.coverage_email` (T165). The concept-image provider is a new adapter chosen at the account checkpoint, receiving only the written project file; until then its switch is off. The safety-contacts file is withdrawn (D-436).
-- Design (D-451): `docs/design/DESIGN_SPEC.md` sets the look for `site`, `portals` and emails; `site` (T166) serves the self-hosted fonts and the plaster, brass and paper textures from `app/site/static/`, and `tests/a11y/test_design_tokens.py` checks every color pair against the spec's contrast values.
+- Design (D-451): `docs/design/DESIGN_SPEC.md` sets the look for `site`, `portals` and emails; `site` (T166) serves the self-hosted fonts and the plaster, brass and paper textures from `app/site/static/`, and `tests/a11y/design_tokens.spec.ts` checks every color pair against the spec's contrast values.
 - AI smell (D-452): `docs/ai_smell.yaml` lists the words, patterns and page habits that read as machine-made; `scripts/check_ai_smell.py` scans the spec's quoted copy, the voice guide, the question bank, the design reference and everything customer-facing under `app/` (templates, message files, stylesheets), and `tests/test_check_ai_smell.py` runs it on every push, so a hit fails `Ci`. Every task prompt adds a cold read of changed copy (WORD-028).

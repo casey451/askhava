@@ -1042,3 +1042,14 @@ You noticed the mock-up wording sounded like AI. The build now checks for that t
 - **A cold read.** For every task that writes words people see, a second AI reads only the finished words aloud, as the homeowner or business owner would, and flags anything that doesn't sound like a local person talking to a neighbour.
 
 The home page mock-ups were rewritten that way. "Text us the job. Local businesses quote. You pick." is now "Get local quotes by text." The paragraph under it now says what actually happens.
+
+## Built in Rust (D-453, October 28)
+
+You chose Rust for the whole server, with the server building the pages. What changed in the plan:
+- **The stack:** Rust replaces Python for everything that runs Ask Hava. Pages are still plain HTML built on the server, so they work with JavaScript off. A little TypeScript handles small extras in the browser.
+- **What the compiler now guarantees:** a homeowner's address can only be released with a "proof of payment" that only the payments part of the code can create, and a test proves nothing else can fake one. Every job and pick status has to be handled everywhere, or the code won't build. And each part of the app can only call the parts below it.
+- **From your directive:** two more security tests. Changing a price or ID in the browser changes nothing, and no secret or contact detail ever appears in a page, script or web address.
+- **What stays Python:** the build tools, the fake Twilio, Stripe and email services used for testing, and the twin. None of it runs in the live service. The fake services now answer over the network, so the real Rust code talks to them exactly as it will talk to Twilio and Stripe.
+- **Checked here:** a trial Rust project with the chosen versions built cleanly. It blocked a planted script on a page, refused to compile a faked payment proof, and applied a database update added later even when it carried a lower number.
+
+Every build task's files were re-pointed to the Rust layout, and three new tasks were added (169 in total): the fake services answering over the network, the Rust test folders, and the automatic checks for Rust and the browser tests. An independent reviewer checked the whole change, and every problem it found was fixed. Nothing for you to do.

@@ -40,8 +40,8 @@ Short rules loaded into every session. The full rules live elsewhere; read them,
 
 ## Quality (BUILD_BRIEF.md §12)
 
-- Python 3.12, FastAPI + Jinja2, PostgreSQL 16, uv lock file. The stack is decided (`BUILD_BRIEF.md:101`). New libraries need a `docs/decisions.md` entry with purpose, license and pip-audit result (`BUILD_BRIEF.md:122`).
-- Functions under 50 lines; ruff complexity limits; `mypy --strict` clean; no `# type: ignore` without a reason (`BUILD_BRIEF.md:486`–`BUILD_BRIEF.md:487`).
+- Rust (Axum, Askama pages, SQLx), PostgreSQL 16, Cargo workspace with one crate per module and a committed `Cargo.lock`; TypeScript only for small browser extras; Python only for tooling, stand-ins and the twin (D-453). The stack is decided (`BUILD_BRIEF.md:101`). New libraries need a `docs/decisions.md` entry with purpose, license and cargo-audit result, and must pass cargo-deny (`BUILD_BRIEF.md:122`).
+- Functions under 50 lines; clippy with warnings denied and `cargo fmt --check` clean; `unsafe_code` forbidden; no `#[allow(...)]` without a reason (`BUILD_BRIEF.md:486`–`BUILD_BRIEF.md:487`).
 - No commented-out code, TODOs or unused code on `main` (`BUILD_BRIEF.md:488`).
 - Update `docs/architecture.md` and `docs/decisions.md` in the same PR as the change (`BUILD_BRIEF.md:489`).
 - Coverage never drops; money, privacy and licensing code at or above 95% branch coverage (`BUILD_BRIEF.md:481`).
