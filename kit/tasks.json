@@ -26,7 +26,8 @@
     "docs/architecture.md",
     "docs/decisions.md",
     "docs/for-casey-review.md",
-    "app/main.py"
+    "app/server/src/main.rs",
+    "Cargo.lock"
   ],
   "kit_outputs": [
     "kit/prompts/",
@@ -37,8 +38,7 @@
     "tests/mutation/",
     "tests/contract/",
     "tests/coverage_floor.json",
-    "pyproject.toml",
-    "uv.lock"
+    "Cargo.lock"
   ],
   "journeys": [
     "J1",
@@ -503,8 +503,8 @@
     {
       "id": "T009",
       "slug": "app-skeleton",
-      "title": "App skeleton: composition root, worker entry, module-boundary architecture test",
-      "goal": "The app and worker start on an empty app; an ast-based test fails on upward imports, internal imports and cross-schema keys.",
+      "title": "App skeleton: Cargo workspace, one crate per module, server and worker binaries, module-boundary architecture test",
+      "goal": "The server and worker start on an empty app; the workspace, toolchain, cargo-deny policy and the test-layer crates exist; an architecture test reads every crate's Cargo.toml and SQL and fails on an upward crate dependency, a dependency not in the architecture table and a cross-schema key (D-453).",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -519,12 +519,20 @@
         "security"
       ],
       "owns": [
-        "app/__init__.py",
-        "app/main.py",
-        "app/worker.py",
-        "app/core/__init__.py",
-        "tests/conftest.py",
-        "tests/integration/test_architecture.py"
+        "Cargo.toml",
+        "rust-toolchain.toml",
+        "deny.toml",
+        "app/server/src/main.rs",
+        "app/server/src/bin/worker.rs",
+        "app/core/Cargo.toml",
+        "app/core/src/lib.rs",
+        "tests/unit/Cargo.toml",
+        "tests/property/Cargo.toml",
+        "tests/integration/Cargo.toml",
+        "tests/security/Cargo.toml",
+        "tests/recovery/Cargo.toml",
+        "tests/integration/tests/architecture.rs",
+        "app/server/Cargo.toml"
       ],
       "reads": [
         "docs/architecture.md",
@@ -533,16 +541,20 @@
       ],
       "requirements": [
         "FEE-032",
-        "SEC-010"
+        "SEC-010",
+        "SEC-029"
       ],
-      "tests": [],
+      "tests": [
+        "TD-SEC-10"
+      ],
       "decisions": [
         "D-090",
-        "D-091"
+        "D-091",
+        "D-453"
       ],
       "cites": [],
       "budget": {
-        "files": 6,
+        "files": 14,
         "lines": 350,
         "context_pct": 11
       },
@@ -573,9 +585,10 @@
         "privacy"
       ],
       "owns": [
-        "tests/fixtures/__init__.py",
-        "tests/fixtures/fake_data.py",
-        "tests/unit/core/test_fake_data.py"
+        "tests/fixtures/Cargo.toml",
+        "tests/fixtures/src/lib.rs",
+        "tests/fixtures/src/fake_data.rs",
+        "tests/unit/tests/core_fake_data.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -590,7 +603,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 3,
+        "files": 4,
         "lines": 250,
         "context_pct": 9
       },
@@ -622,12 +635,12 @@
         "security"
       ],
       "owns": [
-        "app/core/settings.py",
-        "app/core/clock.py",
-        "app/core/logging.py",
-        "tests/unit/core/test_settings.py",
-        "tests/unit/core/test_clock.py",
-        "tests/unit/core/test_logging.py"
+        "app/core/src/settings.rs",
+        "app/core/src/clock.rs",
+        "app/core/src/logging.rs",
+        "tests/unit/tests/core_settings.rs",
+        "tests/unit/tests/core_clock.rs",
+        "tests/unit/tests/core_logging.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -662,8 +675,8 @@
     {
       "id": "T012",
       "slug": "core-db-migrations",
-      "title": "core: database session, row locks, Alembic, two database roles",
-      "goal": "core: database session, row locks, Alembic, two database roles",
+      "title": "core: database pool, row locks, sqlx migrations, two database roles",
+      "goal": "core: database pool, row locks, sqlx migrations, two database roles",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -678,13 +691,10 @@
         "security"
       ],
       "owns": [
-        "app/core/db.py",
-        "alembic.ini",
-        "migrations/env.py",
-        "migrations/script.py.mako",
-        "migrations/versions/t012_core_db_migrations.py",
-        "tests/integration/conftest.py",
-        "tests/integration/test_migrations.py"
+        "app/core/src/db.rs",
+        "migrations/0012_core_db_migrations.sql",
+        "tests/integration/src/lib.rs",
+        "tests/integration/tests/migrations.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -700,7 +710,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 7,
+        "files": 4,
         "lines": 400,
         "context_pct": 11
       },
@@ -732,10 +742,10 @@
         "security"
       ],
       "owns": [
-        "app/core/tasks.py",
-        "app/core/rate_limit.py",
-        "migrations/versions/t013_core_task_queue.py",
-        "tests/integration/test_task_queue.py"
+        "app/core/src/tasks.rs",
+        "app/core/src/rate_limit.rs",
+        "migrations/0013_core_task_queue.sql",
+        "tests/integration/tests/task_queue.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -780,11 +790,11 @@
         "security"
       ],
       "owns": [
-        "app/core/ids.py",
-        "app/core/webhooks.py",
-        "tests/unit/core/test_ids.py",
-        "tests/property/test_derived_ids.py",
-        "tests/integration/test_webhook_dedupe.py"
+        "app/core/src/ids.rs",
+        "app/core/src/webhooks.rs",
+        "tests/unit/tests/core_ids.rs",
+        "tests/property/tests/derived_ids.rs",
+        "tests/integration/tests/webhook_dedupe.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -836,12 +846,13 @@
         "security"
       ],
       "owns": [
-        "app/ops/__init__.py",
-        "app/ops/api.py",
-        "app/ops/models.py",
-        "app/ops/service.py",
-        "migrations/versions/t015_ops_audit.py",
-        "tests/integration/test_audit_log.py"
+        "app/ops/Cargo.toml",
+        "app/ops/src/lib.rs",
+        "app/ops/src/api.rs",
+        "app/ops/src/models.rs",
+        "app/ops/src/service.rs",
+        "migrations/0015_ops_audit.sql",
+        "tests/integration/tests/audit_log.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -860,7 +871,7 @@
       "decisions": [],
       "cites": [],
       "budget": {
-        "files": 6,
+        "files": 7,
         "lines": 450,
         "context_pct": 12
       },
@@ -875,14 +886,15 @@
     {
       "id": "T016",
       "slug": "adapters-protocols",
-      "title": "adapters: one Protocol per vendor, mode selection, stand-in clients",
-      "goal": "adapters: one Protocol per vendor, mode selection, stand-in clients",
+      "title": "adapters: one trait per vendor, mode selection, HTTP clients pointed at the stand-ins or the vendor",
+      "goal": "adapters: one trait per vendor, mode selection, HTTP clients pointed at the stand-ins or the vendor",
       "type": "build",
       "phase": 1,
       "stage": "2",
       "module": "adapters",
       "deps": [
-        "T011"
+        "T011",
+        "T167"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -891,19 +903,20 @@
         "security"
       ],
       "owns": [
-        "app/adapters/__init__.py",
-        "app/adapters/base.py",
-        "app/adapters/config.py",
-        "app/adapters/sms.py",
-        "app/adapters/voice.py",
-        "app/adapters/verify.py",
-        "app/adapters/payments.py",
-        "app/adapters/ai.py",
-        "app/adapters/email.py",
-        "app/adapters/letters.py",
-        "app/adapters/license_sources.py",
-        "app/adapters/storage.py",
-        "tests/unit/adapters/test_adapter_config.py"
+        "app/adapters/Cargo.toml",
+        "app/adapters/src/lib.rs",
+        "app/adapters/src/base.rs",
+        "app/adapters/src/config.rs",
+        "app/adapters/src/sms.rs",
+        "app/adapters/src/voice.rs",
+        "app/adapters/src/verify.rs",
+        "app/adapters/src/payments.rs",
+        "app/adapters/src/ai.rs",
+        "app/adapters/src/email.rs",
+        "app/adapters/src/letters.rs",
+        "app/adapters/src/license_sources.rs",
+        "app/adapters/src/storage.rs",
+        "tests/unit/tests/adapters_adapter_config.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -923,7 +936,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 13,
+        "files": 14,
         "lines": 700,
         "context_pct": 16
       },
@@ -955,8 +968,8 @@
         "recovery"
       ],
       "owns": [
-        "app/ops/stream.py",
-        "tests/integration/test_offdb_stream.py"
+        "app/ops/src/stream.rs",
+        "tests/integration/tests/offdb_stream.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1007,10 +1020,10 @@
         "security"
       ],
       "owns": [
-        "app/adapters/signatures.py",
-        "tests/security/test_webhook_forgery.py",
-        "tests/security/test_replay.py",
-        "tests/security/test_idempotency_keys.py"
+        "app/adapters/src/signatures.rs",
+        "tests/security/tests/webhook_forgery.rs",
+        "tests/security/tests/replay.rs",
+        "tests/security/tests/idempotency_keys.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1061,7 +1074,7 @@
       "owns": [
         "Dockerfile",
         ".dockerignore",
-        "tests/security/test_image_pinned.py"
+        "tests/security/tests/image_pinned.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1071,7 +1084,9 @@
         "SEC-021"
       ],
       "tests": [],
-      "decisions": [],
+      "decisions": [
+        "D-453"
+      ],
       "cites": [],
       "budget": {
         "files": 3,
@@ -1106,10 +1121,13 @@
         "security"
       ],
       "owns": [
-        "app/core/test_control.py",
-        "tests/e2e/__init__.py",
-        "tests/e2e/conftest.py",
-        "tests/security/test_control_router_absent.py"
+        "app/core/src/test_control.rs",
+        "tests/e2e/playwright.config.ts",
+        "tests/e2e/fixtures.ts",
+        "tests/security/tests/control_router_absent.rs",
+        "package.json",
+        "package-lock.json",
+        "tsconfig.json"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1119,10 +1137,12 @@
         "SEC-002"
       ],
       "tests": [],
-      "decisions": [],
+      "decisions": [
+        "D-453"
+      ],
       "cites": [],
       "budget": {
-        "files": 4,
+        "files": 7,
         "lines": 400,
         "context_pct": 11
       },
@@ -1153,14 +1173,15 @@
         "licensing"
       ],
       "owns": [
-        "app/catalog/__init__.py",
-        "app/catalog/api.py",
-        "app/catalog/models.py",
-        "app/catalog/service.py",
-        "app/catalog/loader.py",
-        "migrations/versions/t021_catalog_module.py",
-        "tests/unit/catalog/test_loader.py",
-        "tests/integration/test_catalog_settings.py"
+        "app/catalog/Cargo.toml",
+        "app/catalog/src/lib.rs",
+        "app/catalog/src/api.rs",
+        "app/catalog/src/models.rs",
+        "app/catalog/src/service.rs",
+        "app/catalog/src/loader.rs",
+        "migrations/0021_catalog_module.sql",
+        "tests/unit/tests/catalog_loader.rs",
+        "tests/integration/tests/catalog_settings.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1192,7 +1213,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 8,
+        "files": 9,
         "lines": 650,
         "context_pct": 14
       },
@@ -1224,13 +1245,14 @@
         "security"
       ],
       "owns": [
-        "app/privacy/__init__.py",
-        "app/privacy/api.py",
-        "app/privacy/models.py",
-        "app/privacy/vault.py",
-        "migrations/versions/t022_privacy_vault.py",
-        "tests/integration/test_vault.py",
-        "tests/security/test_vault_readers.py"
+        "app/privacy/Cargo.toml",
+        "app/privacy/src/lib.rs",
+        "app/privacy/src/api.rs",
+        "app/privacy/src/models.rs",
+        "app/privacy/src/vault.rs",
+        "migrations/0022_privacy_vault.sql",
+        "tests/integration/tests/vault.rs",
+        "tests/security/tests/vault_readers.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1251,7 +1273,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 7,
+        "files": 8,
         "lines": 550,
         "context_pct": 12
       },
@@ -1283,12 +1305,12 @@
         "privacy"
       ],
       "owns": [
-        "app/privacy/scrub.py",
-        "app/privacy/reader.py",
-        "app/privacy/api.py",
-        "tests/unit/privacy/test_scrub.py",
-        "tests/property/test_scrub_props.py",
-        "tests/integration/test_read_inbound.py"
+        "app/privacy/src/scrub.rs",
+        "app/privacy/src/reader.rs",
+        "app/privacy/src/api.rs",
+        "tests/unit/tests/privacy_scrub.rs",
+        "tests/property/tests/scrub_props.rs",
+        "tests/integration/tests/read_inbound.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1348,14 +1370,15 @@
         "security"
       ],
       "owns": [
-        "app/ai/__init__.py",
-        "app/ai/api.py",
-        "app/ai/models.py",
-        "app/ai/schemas.py",
-        "app/ai/service.py",
-        "migrations/versions/t024_ai_adapter.py",
-        "tests/unit/ai/test_schemas.py",
-        "tests/unit/ai/test_no_tools.py"
+        "app/ai/Cargo.toml",
+        "app/ai/src/lib.rs",
+        "app/ai/src/api.rs",
+        "app/ai/src/models.rs",
+        "app/ai/src/schemas.rs",
+        "app/ai/src/service.rs",
+        "migrations/0024_ai_adapter.sql",
+        "tests/unit/tests/ai_schemas.rs",
+        "tests/unit/tests/ai_no_tools.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1377,7 +1400,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 8,
+        "files": 9,
         "lines": 500,
         "context_pct": 12
       },
@@ -1409,9 +1432,9 @@
         "privacy"
       ],
       "owns": [
-        "app/ai/switch.py",
-        "app/ai/service.py",
-        "tests/integration/test_ai_zero_retention.py"
+        "app/ai/src/switch.rs",
+        "app/ai/src/service.rs",
+        "tests/integration/tests/ai_zero_retention.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1464,11 +1487,12 @@
         "compliance"
       ],
       "owns": [
-        "app/messaging/__init__.py",
-        "app/messaging/templates.py",
+        "app/messaging/Cargo.toml",
+        "app/messaging/src/lib.rs",
+        "app/messaging/src/templates.rs",
         "app/messaging/templates/en.json",
         "app/messaging/templates/es.json",
-        "tests/unit/messaging/test_template_registry.py",
+        "tests/unit/tests/messaging_template_registry.rs",
         "tests/docs/test_template_scan.py"
       ],
       "reads": [
@@ -1510,7 +1534,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 6,
+        "files": 7,
         "lines": 600,
         "context_pct": 15
       },
@@ -1542,10 +1566,10 @@
         "compliance"
       ],
       "owns": [
-        "app/messaging/rules.py",
+        "app/messaging/src/rules.rs",
         "app/messaging/area_codes.json",
-        "tests/unit/messaging/test_quiet_hours.py",
-        "tests/property/test_quiet_hours_props.py"
+        "tests/unit/tests/messaging_quiet_hours.rs",
+        "tests/property/tests/quiet_hours_props.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1621,13 +1645,13 @@
         "privacy"
       ],
       "owns": [
-        "app/messaging/api.py",
-        "app/messaging/models.py",
-        "app/messaging/service.py",
-        "app/messaging/handlers.py",
-        "migrations/versions/t028_messaging_outbox.py",
-        "tests/integration/test_outbox.py",
-        "tests/integration/test_inbox.py"
+        "app/messaging/src/api.rs",
+        "app/messaging/src/models.rs",
+        "app/messaging/src/service.rs",
+        "app/messaging/src/handlers.rs",
+        "migrations/0028_messaging_outbox.sql",
+        "tests/integration/tests/outbox.rs",
+        "tests/integration/tests/inbox.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1679,11 +1703,11 @@
         "privacy"
       ],
       "owns": [
-        "app/messaging/optout.py",
-        "app/messaging/rules.py",
-        "tests/unit/messaging/test_optout_words.py",
-        "tests/property/test_optout_props.py",
-        "tests/integration/test_optout_flow.py"
+        "app/messaging/src/optout.rs",
+        "app/messaging/src/rules.rs",
+        "tests/unit/tests/messaging_optout_words.rs",
+        "tests/property/tests/optout_props.rs",
+        "tests/integration/tests/optout_flow.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1753,8 +1777,8 @@
         "compliance"
       ],
       "owns": [
-        "app/messaging/keywords.py",
-        "tests/integration/test_help_start.py"
+        "app/messaging/src/keywords.rs",
+        "tests/integration/tests/help_start.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1816,15 +1840,17 @@
         "recovery"
       ],
       "owns": [
-        "app/jobs/__init__.py",
-        "app/jobs/api.py",
-        "app/jobs/models.py",
-        "app/jobs/rules.py",
-        "app/jobs/service.py",
-        "migrations/versions/t031_jobs_state_machine.py",
-        "tests/unit/jobs/test_transitions.py",
-        "tests/property/test_job_machine.py",
-        "tests/integration/test_job_numbers.py"
+        "app/jobs/Cargo.toml",
+        "app/jobs/src/lib.rs",
+        "app/jobs/src/api.rs",
+        "app/jobs/src/models.rs",
+        "app/jobs/src/rules.rs",
+        "app/jobs/src/service.rs",
+        "migrations/0031_jobs_state_machine.sql",
+        "tests/unit/tests/jobs_transitions.rs",
+        "tests/property/tests/job_machine.rs",
+        "tests/integration/tests/job_numbers.rs",
+        "tests/security/tests/status_enums.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1837,16 +1863,20 @@
         "JOB-003",
         "JOB-005",
         "JOB-006",
-        "JOB-024"
+        "JOB-024",
+        "SEC-031"
       ],
       "tests": [
         "TD-JOB-01",
-        "TD-JOB-06"
+        "TD-JOB-06",
+        "TD-SEC-12"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-453"
+      ],
       "cites": [],
       "budget": {
-        "files": 9,
+        "files": 11,
         "lines": 650,
         "context_pct": 13
       },
@@ -1876,11 +1906,11 @@
       "reviewer_model": "claude-sonnet-5-5",
       "review_areas": [],
       "owns": [
-        "app/jobs/handlers.py",
-        "app/jobs/rules.py",
-        "app/jobs/service.py",
-        "tests/unit/jobs/test_business_clock.py",
-        "tests/integration/test_job_timers.py"
+        "app/jobs/src/handlers.rs",
+        "app/jobs/src/rules.rs",
+        "app/jobs/src/service.rs",
+        "tests/unit/tests/jobs_business_clock.rs",
+        "tests/integration/tests/job_timers.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1951,8 +1981,8 @@
         "recovery"
       ],
       "owns": [
-        "app/jobs/service.py",
-        "tests/integration/test_job_races.py"
+        "app/jobs/src/service.rs",
+        "tests/integration/tests/job_races.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -1999,13 +2029,14 @@
         "licensing"
       ],
       "owns": [
-        "app/licensing/__init__.py",
-        "app/licensing/api.py",
-        "app/licensing/models.py",
-        "app/licensing/rules.py",
-        "migrations/versions/t034_licensing_agency_rules.py",
-        "tests/unit/licensing/test_agency_rules.py",
-        "tests/unit/licensing/test_scope_examples.py"
+        "app/licensing/Cargo.toml",
+        "app/licensing/src/lib.rs",
+        "app/licensing/src/api.rs",
+        "app/licensing/src/models.rs",
+        "app/licensing/src/rules.rs",
+        "migrations/0034_licensing_agency_rules.sql",
+        "tests/unit/tests/licensing_agency_rules.rs",
+        "tests/unit/tests/licensing_scope_examples.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2040,7 +2071,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 7,
+        "files": 8,
         "lines": 550,
         "context_pct": 12
       },
@@ -2071,10 +2102,10 @@
         "licensing"
       ],
       "owns": [
-        "app/licensing/handyman.py",
-        "app/licensing/rules.py",
-        "tests/unit/licensing/test_handyman.py",
-        "tests/property/test_handyman_never_gas.py"
+        "app/licensing/src/handyman.rs",
+        "app/licensing/src/rules.rs",
+        "tests/unit/tests/licensing_handyman.rs",
+        "tests/property/tests/handyman_never_gas.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2140,11 +2171,11 @@
         "licensing"
       ],
       "owns": [
-        "app/licensing/service.py",
-        "app/licensing/imports.py",
-        "app/licensing/handlers.py",
-        "tests/integration/test_license_imports.py",
-        "tests/integration/test_license_lookup_failures.py"
+        "app/licensing/src/service.rs",
+        "app/licensing/src/imports.rs",
+        "app/licensing/src/handlers.rs",
+        "tests/integration/tests/license_imports.rs",
+        "tests/integration/tests/license_lookup_failures.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2210,8 +2241,8 @@
         "compliance"
       ],
       "owns": [
-        "app/licensing/lines.py",
-        "tests/unit/licensing/test_license_lines.py"
+        "app/licensing/src/lines.rs",
+        "tests/unit/tests/licensing_license_lines.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2275,15 +2306,16 @@
         "privacy"
       ],
       "owns": [
-        "app/intake/__init__.py",
-        "app/intake/api.py",
-        "app/intake/models.py",
-        "app/intake/rules.py",
-        "app/intake/service.py",
-        "migrations/versions/t038_intake_consent.py",
-        "tests/unit/intake/test_consent.py",
-        "tests/property/test_consent_first.py",
-        "tests/integration/test_consent_records.py"
+        "app/intake/Cargo.toml",
+        "app/intake/src/lib.rs",
+        "app/intake/src/api.rs",
+        "app/intake/src/models.rs",
+        "app/intake/src/rules.rs",
+        "app/intake/src/service.rs",
+        "migrations/0038_intake_consent.sql",
+        "tests/unit/tests/intake_consent.rs",
+        "tests/property/tests/consent_first.rs",
+        "tests/integration/tests/consent_records.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2342,7 +2374,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 9,
+        "files": 10,
         "lines": 700,
         "context_pct": 15
       },
@@ -2374,10 +2406,10 @@
         "compliance"
       ],
       "owns": [
-        "app/intake/emergency.py",
-        "app/intake/service.py",
-        "tests/unit/intake/test_emergency.py",
-        "tests/integration/test_emergency_flow.py"
+        "app/intake/src/emergency.rs",
+        "app/intake/src/service.rs",
+        "tests/unit/tests/intake_emergency.rs",
+        "tests/integration/tests/emergency_flow.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2469,9 +2501,9 @@
       "reviewer_model": "claude-sonnet-5-5",
       "review_areas": [],
       "owns": [
-        "app/intake/conversation.py",
-        "app/intake/rules.py",
-        "tests/unit/intake/test_conversation.py"
+        "app/intake/src/conversation.rs",
+        "app/intake/src/rules.rs",
+        "tests/unit/tests/intake_conversation.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2546,15 +2578,16 @@
         "privacy"
       ],
       "owns": [
-        "app/businesses/__init__.py",
-        "app/businesses/api.py",
-        "app/businesses/models.py",
-        "app/businesses/rules.py",
-        "app/businesses/service.py",
-        "migrations/versions/t041_businesses_records.py",
-        "tests/unit/businesses/test_account_status.py",
-        "tests/unit/businesses/test_own_quiet_times.py",
-        "tests/integration/test_sender_directory_sync.py"
+        "app/businesses/Cargo.toml",
+        "app/businesses/src/lib.rs",
+        "app/businesses/src/api.rs",
+        "app/businesses/src/models.rs",
+        "app/businesses/src/rules.rs",
+        "app/businesses/src/service.rs",
+        "migrations/0041_businesses_records.sql",
+        "tests/unit/tests/businesses_account_status.rs",
+        "tests/unit/tests/businesses_own_quiet_times.rs",
+        "tests/integration/tests/sender_directory_sync.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2586,7 +2619,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 9,
+        "files": 10,
         "lines": 650,
         "context_pct": 13
       },
@@ -2619,11 +2652,11 @@
         "licensing"
       ],
       "owns": [
-        "app/intake/matching.py",
-        "app/intake/rules.py",
-        "tests/unit/intake/test_trade_question.py",
-        "tests/unit/intake/test_twin_warnings_regression.py",
-        "tests/property/test_keyword_boundary.py"
+        "app/intake/src/matching.rs",
+        "app/intake/src/rules.rs",
+        "tests/unit/tests/intake_trade_question.rs",
+        "tests/unit/tests/intake_twin_warnings_regression.rs",
+        "tests/property/tests/keyword_boundary.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2686,9 +2719,9 @@
         "licensing"
       ],
       "owns": [
-        "app/intake/routing.py",
-        "tests/unit/intake/test_routing_outcomes.py",
-        "tests/integration/test_not_covered.py"
+        "app/intake/src/routing.rs",
+        "tests/unit/tests/intake_routing_outcomes.rs",
+        "tests/integration/tests/not_covered.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2748,15 +2781,16 @@
         "licensing"
       ],
       "owns": [
-        "app/quotes/__init__.py",
-        "app/quotes/api.py",
-        "app/quotes/models.py",
-        "app/quotes/rules.py",
-        "app/quotes/service.py",
-        "migrations/versions/t044_quotes_matching.py",
-        "tests/unit/quotes/test_matching_examples.py",
-        "tests/property/test_matching_props.py",
-        "tests/integration/test_card_late_eligible.py"
+        "app/quotes/Cargo.toml",
+        "app/quotes/src/lib.rs",
+        "app/quotes/src/api.rs",
+        "app/quotes/src/models.rs",
+        "app/quotes/src/rules.rs",
+        "app/quotes/src/service.rs",
+        "migrations/0044_quotes_matching.sql",
+        "tests/unit/tests/quotes_matching_examples.rs",
+        "tests/property/tests/matching_props.rs",
+        "tests/integration/tests/card_late_eligible.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2785,7 +2819,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 9,
+        "files": 10,
         "lines": 650,
         "context_pct": 14
       },
@@ -2816,10 +2850,10 @@
         "privacy"
       ],
       "owns": [
-        "app/quotes/cards.py",
-        "app/quotes/gate.py",
-        "tests/property/test_card_no_contact.py",
-        "tests/unit/quotes/test_card_lines.py"
+        "app/quotes/src/cards.rs",
+        "app/quotes/src/gate.rs",
+        "tests/property/tests/card_no_contact.rs",
+        "tests/unit/tests/quotes_card_lines.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2890,11 +2924,11 @@
         "privacy"
       ],
       "owns": [
-        "app/quotes/intake.py",
-        "app/quotes/handlers.py",
-        "tests/unit/quotes/test_quote_parse.py",
-        "tests/unit/quotes/test_quote_bounce.py",
-        "tests/integration/test_quote_window.py"
+        "app/quotes/src/intake.rs",
+        "app/quotes/src/handlers.rs",
+        "tests/unit/tests/quotes_quote_parse.rs",
+        "tests/unit/tests/quotes_quote_bounce.rs",
+        "tests/integration/tests/quote_window.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -2970,8 +3004,8 @@
         "compliance"
       ],
       "owns": [
-        "app/quotes/notify.py",
-        "tests/integration/test_quote_texts.py"
+        "app/quotes/src/notify.rs",
+        "tests/integration/tests/quote_texts.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3056,8 +3090,8 @@
         "compliance"
       ],
       "owns": [
-        "app/intake/handlers.py",
-        "tests/integration/test_intake_timeouts.py"
+        "app/intake/src/handlers.rs",
+        "tests/integration/tests/intake_timeouts.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3110,10 +3144,10 @@
         "compliance"
       ],
       "owns": [
-        "app/intake/closing.py",
-        "app/intake/rules.py",
-        "tests/unit/intake/test_close_cancel.py",
-        "tests/integration/test_close_which.py"
+        "app/intake/src/closing.rs",
+        "app/intake/src/rules.rs",
+        "tests/unit/tests/intake_close_cancel.rs",
+        "tests/integration/tests/close_which.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3166,8 +3200,8 @@
         "compliance"
       ],
       "owns": [
-        "app/intake/service.py",
-        "tests/property/test_optout_no_close.py"
+        "app/intake/src/service.rs",
+        "tests/property/tests/optout_no_close.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3225,14 +3259,16 @@
         "security"
       ],
       "owns": [
-        "app/portals/__init__.py",
-        "app/portals/security.py",
-        "app/portals/session.py",
+        "app/portals/Cargo.toml",
+        "app/portals/src/lib.rs",
+        "app/portals/src/security.rs",
+        "app/portals/src/session.rs",
         "app/portals/templates/base.html",
-        "migrations/versions/t051_portals_base_security.py",
-        "tests/security/test_headers.py",
-        "tests/security/test_cookies_csrf.py",
-        "tests/security/test_no_third_party.py"
+        "migrations/0051_portals_base_security.sql",
+        "tests/security/tests/headers.rs",
+        "tests/security/tests/cookies_csrf.rs",
+        "tests/security/tests/no_third_party.rs",
+        "tests/security/tests/browser_tamper.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3244,17 +3280,20 @@
         "SEC-009",
         "SEC-011",
         "SEC-012",
-        "SEC-013"
+        "SEC-013",
+        "SEC-033"
       ],
       "tests": [
-        "TD-SEC-04"
+        "TD-SEC-04",
+        "TD-SEC-14"
       ],
       "decisions": [
-        "D-099"
+        "D-099",
+        "D-453"
       ],
       "cites": [],
       "budget": {
-        "files": 8,
+        "files": 10,
         "lines": 600,
         "context_pct": 13
       },
@@ -3287,10 +3326,10 @@
         "security"
       ],
       "owns": [
-        "app/portals/quote_page.py",
+        "app/portals/src/quote_page.rs",
         "app/portals/templates/quote_page.html",
-        "tests/security/test_quote_token.py",
-        "tests/property/test_arrival_order.py"
+        "tests/security/tests/quote_token.rs",
+        "tests/property/tests/arrival_order.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3347,12 +3386,12 @@
         "accessibility"
       ],
       "owns": [
-        "tests/a11y/__init__.py",
-        "tests/a11y/conftest.py",
-        "tests/a11y/test_axe_all_pages.py",
-        "tests/a11y/test_page_structure.py",
-        "tests/a11y/test_reflow_spacing.py",
-        "tests/a11y/test_targets_contrast.py"
+        "tests/a11y/playwright.config.ts",
+        "tests/a11y/fixtures.ts",
+        "tests/a11y/axe_all_pages.spec.ts",
+        "tests/a11y/page_structure.spec.ts",
+        "tests/a11y/reflow_spacing.spec.ts",
+        "tests/a11y/targets_contrast.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3407,14 +3446,15 @@
         "security"
       ],
       "owns": [
-        "app/picks/__init__.py",
-        "app/picks/api.py",
-        "app/picks/models.py",
-        "app/picks/rules.py",
-        "app/picks/service.py",
-        "migrations/versions/t054_picks_code.py",
-        "tests/security/test_pick_code.py",
-        "tests/integration/test_text_pick.py"
+        "app/picks/Cargo.toml",
+        "app/picks/src/lib.rs",
+        "app/picks/src/api.rs",
+        "app/picks/src/models.rs",
+        "app/picks/src/rules.rs",
+        "app/picks/src/service.rs",
+        "migrations/0054_picks_code.sql",
+        "tests/security/tests/pick_code.rs",
+        "tests/integration/tests/text_pick.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3445,7 +3485,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 8,
+        "files": 9,
         "lines": 600,
         "context_pct": 13
       },
@@ -3478,11 +3518,11 @@
         "security"
       ],
       "owns": [
-        "app/portals/pick_flow.py",
+        "app/portals/src/pick_flow.rs",
         "app/portals/templates/pick_review.html",
         "app/portals/templates/pick_code.html",
-        "tests/e2e/test_pick_flow.py",
-        "tests/a11y/test_pick_forms.py"
+        "tests/e2e/pick_flow.spec.ts",
+        "tests/a11y/pick_forms.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3723,13 +3763,14 @@
         "money"
       ],
       "owns": [
-        "app/payments/__init__.py",
-        "app/payments/api.py",
-        "app/payments/rules.py",
-        "tests/unit/payments/test_fee_tiers.py",
-        "tests/unit/payments/test_worked_examples.py",
-        "tests/unit/payments/test_recurring.py",
-        "tests/property/test_fee_props.py"
+        "app/payments/Cargo.toml",
+        "app/payments/src/lib.rs",
+        "app/payments/src/api.rs",
+        "app/payments/src/rules.rs",
+        "tests/unit/tests/payments_fee_tiers.rs",
+        "tests/unit/tests/payments_worked_examples.rs",
+        "tests/unit/tests/payments_recurring.rs",
+        "tests/property/tests/fee_props.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3783,7 +3824,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 7,
+        "files": 8,
         "lines": 650,
         "context_pct": 13
       },
@@ -3815,11 +3856,11 @@
         "security"
       ],
       "owns": [
-        "app/payments/models.py",
-        "app/payments/service.py",
-        "migrations/versions/t059_payments_customers_cards.py",
-        "tests/integration/test_setup_intent.py",
-        "tests/security/test_no_homeowner_charge.py"
+        "app/payments/src/models.rs",
+        "app/payments/src/service.rs",
+        "migrations/0059_payments_customers_cards.sql",
+        "tests/integration/tests/setup_intent.rs",
+        "tests/security/tests/no_homeowner_charge.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3876,10 +3917,10 @@
         "money"
       ],
       "owns": [
-        "app/payments/service.py",
-        "app/payments/rules.py",
-        "tests/integration/test_fee_at_pick.py",
-        "tests/integration/test_fee_mode_switch.py"
+        "app/payments/src/service.rs",
+        "app/payments/src/rules.rs",
+        "tests/integration/tests/fee_at_pick.rs",
+        "tests/integration/tests/fee_mode_switch.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3937,12 +3978,12 @@
         "money"
       ],
       "owns": [
-        "app/payments/free_wins.py",
-        "app/payments/models.py",
-        "app/payments/api.py",
-        "migrations/versions/t061_payments_free_wins.py",
-        "tests/integration/test_free_wins.py",
-        "tests/integration/test_repeat_customer.py"
+        "app/payments/src/free_wins.rs",
+        "app/payments/src/models.rs",
+        "app/payments/src/api.rs",
+        "migrations/0061_payments_free_wins.sql",
+        "tests/integration/tests/free_wins.rs",
+        "tests/integration/tests/repeat_customer.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3999,11 +4040,12 @@
         "money"
       ],
       "owns": [
-        "app/payments/charge.py",
-        "app/payments/handlers.py",
-        "app/payments/models.py",
-        "migrations/versions/t062_payments_charge.py",
-        "tests/integration/test_charge_attempts.py"
+        "app/payments/src/charge.rs",
+        "app/payments/src/handlers.rs",
+        "app/payments/src/models.rs",
+        "migrations/0062_payments_charge.sql",
+        "tests/integration/tests/charge_attempts.rs",
+        "app/payments/src/release_proof.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4027,7 +4069,8 @@
         "PICK-021",
         "PICK-022",
         "PICK-033",
-        "JOB-014"
+        "JOB-014",
+        "SEC-030"
       ],
       "tests": [
         "TD-FEE-11",
@@ -4042,11 +4085,12 @@
         "D-270",
         "D-308",
         "D-365",
-        "D-368"
+        "D-368",
+        "D-453"
       ],
       "cites": [],
       "budget": {
-        "files": 5,
+        "files": 6,
         "lines": 650,
         "context_pct": 12
       },
@@ -4079,9 +4123,9 @@
         "privacy"
       ],
       "owns": [
-        "app/picks/confirm.py",
-        "app/picks/handlers.py",
-        "tests/integration/test_confirm_window.py"
+        "app/picks/src/confirm.rs",
+        "app/picks/src/handlers.rs",
+        "tests/integration/tests/confirm_window.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4165,8 +4209,8 @@
         "money"
       ],
       "owns": [
-        "app/payments/late.py",
-        "tests/integration/test_late_success.py"
+        "app/payments/src/late.rs",
+        "tests/integration/tests/late_success.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4213,9 +4257,9 @@
         "money"
       ],
       "owns": [
-        "app/payments/refund_rules.py",
-        "tests/unit/payments/test_refund_rules.py",
-        "tests/integration/test_refund_decisions.py"
+        "app/payments/src/refund_rules.rs",
+        "tests/unit/tests/payments_refund_rules.rs",
+        "tests/integration/tests/refund_decisions.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4292,12 +4336,12 @@
         "money"
       ],
       "owns": [
-        "app/payments/refunds.py",
-        "app/payments/disputes.py",
-        "app/payments/models.py",
-        "migrations/versions/t066_payments_refunds_disputes.py",
-        "tests/property/test_one_refund.py",
-        "tests/integration/test_disputes.py"
+        "app/payments/src/refunds.rs",
+        "app/payments/src/disputes.rs",
+        "app/payments/src/models.rs",
+        "migrations/0066_payments_refunds_disputes.sql",
+        "tests/property/tests/one_refund.rs",
+        "tests/integration/tests/disputes.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4353,14 +4397,14 @@
         "recovery"
       ],
       "owns": [
-        "app/payments/ledger.py",
-        "app/payments/reconcile.py",
-        "app/payments/models.py",
-        "app/payments/api.py",
-        "migrations/versions/t067_payments_ledger_reconcile.py",
-        "tests/property/test_ledger_matches_stripe.py",
-        "tests/integration/test_reconcile.py",
-        "tests/integration/test_ledger_append_only.py"
+        "app/payments/src/ledger.rs",
+        "app/payments/src/reconcile.rs",
+        "app/payments/src/models.rs",
+        "app/payments/src/api.rs",
+        "migrations/0067_payments_ledger_reconcile.sql",
+        "tests/property/tests/ledger_matches_stripe.rs",
+        "tests/integration/tests/reconcile.rs",
+        "tests/integration/tests/ledger_append_only.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4412,10 +4456,10 @@
         "money"
       ],
       "owns": [
-        "app/payments/receipts.py",
-        "app/payments/flags.py",
-        "tests/integration/test_receipts.py",
-        "tests/unit/payments/test_tier_edge_flag.py"
+        "app/payments/src/receipts.rs",
+        "app/payments/src/flags.rs",
+        "tests/integration/tests/receipts.rs",
+        "tests/unit/tests/payments_tier_edge_flag.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4474,12 +4518,14 @@
         "privacy"
       ],
       "owns": [
-        "app/picks/release.py",
-        "app/picks/models.py",
-        "app/picks/api.py",
-        "migrations/versions/t069_picks_release.py",
-        "tests/property/test_release_only_paid.py",
-        "tests/security/test_no_phone_released.py"
+        "app/picks/src/release.rs",
+        "app/picks/src/models.rs",
+        "app/picks/src/api.rs",
+        "migrations/0069_picks_release.sql",
+        "tests/property/tests/release_only_paid.rs",
+        "tests/security/tests/no_phone_released.rs",
+        "tests/security/tests/release_proof_compile_fail.rs",
+        "tests/security/ui/forge_release_proof.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4494,20 +4540,23 @@
         "PICK-023",
         "PICK-024",
         "PRIV-005",
-        "PRIV-020"
+        "PRIV-020",
+        "SEC-030"
       ],
       "tests": [
-        "TD-PICK-10"
+        "TD-PICK-10",
+        "TD-SEC-11"
       ],
       "decisions": [
         "D-074",
         "D-201",
         "D-306",
-        "D-365"
+        "D-365",
+        "D-453"
       ],
       "cites": [],
       "budget": {
-        "files": 6,
+        "files": 8,
         "lines": 500,
         "context_pct": 14
       },
@@ -4538,8 +4587,8 @@
         "privacy"
       ],
       "owns": [
-        "app/picks/aftermath.py",
-        "tests/integration/test_pick_aftermath.py"
+        "app/picks/src/aftermath.rs",
+        "tests/integration/tests/pick_aftermath.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4600,7 +4649,7 @@
         "money"
       ],
       "owns": [
-        "tests/integration/test_ledger_1000_jobs.py"
+        "tests/integration/tests/ledger_1000_jobs.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4652,7 +4701,7 @@
         "security"
       ],
       "owns": [
-        "tests/property/test_prompt_injection.py"
+        "tests/property/tests/prompt_injection.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4736,7 +4785,7 @@
       "id": "T074",
       "slug": "twin-link-app",
       "title": "Twin: run the gate against the app's rules modules",
-      "goal": "The twin uses the app's fee, matching, quiet-hours and lifecycle rules, so Twin checks app/ (docs/test-design.md section 2).",
+      "goal": "The twin uses the app's fee, matching, quiet-hours and lifecycle rules through the rules_bridge binary (JSON in, JSON out), so Twin checks app/ (docs/test-design.md section 2, D-453).",
       "type": "harness",
       "phase": 1,
       "stage": "3",
@@ -4756,7 +4805,8 @@
       "owns": [
         "twin/app.py",
         "twin/rules_bridge.py",
-        "twin/gate.py"
+        "twin/gate.py",
+        "app/server/src/bin/rules_bridge.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4778,7 +4828,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 3,
+        "files": 4,
         "lines": 450,
         "context_pct": 14
       },
@@ -4871,12 +4921,13 @@
         "privacy"
       ],
       "owns": [
-        "app/calls/__init__.py",
-        "app/calls/api.py",
-        "app/calls/models.py",
-        "app/calls/service.py",
-        "migrations/versions/t076_calls_pool.py",
-        "tests/integration/test_number_pool.py"
+        "app/calls/Cargo.toml",
+        "app/calls/src/lib.rs",
+        "app/calls/src/api.rs",
+        "app/calls/src/models.rs",
+        "app/calls/src/service.rs",
+        "migrations/0076_calls_pool.sql",
+        "tests/integration/tests/number_pool.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4900,7 +4951,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 6,
+        "files": 7,
         "lines": 500,
         "context_pct": 12
       },
@@ -4932,8 +4983,8 @@
         "security"
       ],
       "owns": [
-        "app/calls/routing.py",
-        "tests/integration/test_pin_routing.py"
+        "app/calls/src/routing.rs",
+        "tests/integration/tests/pin_routing.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -4985,10 +5036,10 @@
         "privacy"
       ],
       "owns": [
-        "app/calls/rules.py",
-        "app/calls/handlers.py",
-        "tests/unit/calls/test_connection.py",
-        "tests/integration/test_no_recording.py"
+        "app/calls/src/rules.rs",
+        "app/calls/src/handlers.rs",
+        "tests/unit/tests/calls_connection.rs",
+        "tests/integration/tests/no_recording.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5040,8 +5091,8 @@
         "privacy"
       ],
       "owns": [
-        "app/calls/lifecycle.py",
-        "tests/integration/test_line_lifecycle.py"
+        "app/calls/src/lifecycle.rs",
+        "tests/integration/tests/line_lifecycle.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5106,8 +5157,8 @@
         "accessibility"
       ],
       "owns": [
-        "app/calls/voice.py",
-        "tests/integration/test_voice_calls.py"
+        "app/calls/src/voice.rs",
+        "tests/integration/tests/voice_calls.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5171,12 +5222,12 @@
         "security"
       ],
       "owns": [
-        "app/businesses/signup.py",
-        "app/businesses/identity.py",
-        "app/businesses/api.py",
-        "app/businesses/models.py",
-        "migrations/versions/t081_businesses_signup_identity.py",
-        "tests/integration/test_identity_chain.py"
+        "app/businesses/src/signup.rs",
+        "app/businesses/src/identity.rs",
+        "app/businesses/src/api.rs",
+        "app/businesses/src/models.rs",
+        "migrations/0081_businesses_signup_identity.sql",
+        "tests/integration/tests/identity_chain.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5269,8 +5320,8 @@
         "compliance"
       ],
       "owns": [
-        "app/businesses/consent.py",
-        "tests/integration/test_business_consent.py"
+        "app/businesses/src/consent.rs",
+        "tests/integration/tests/business_consent.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5350,10 +5401,10 @@
       "reviewer_model": "claude-sonnet-5-5",
       "review_areas": [],
       "owns": [
-        "app/businesses/complaints.py",
-        "app/businesses/models.py",
-        "migrations/versions/t083_businesses_complaints.py",
-        "tests/integration/test_complaints.py"
+        "app/businesses/src/complaints.rs",
+        "app/businesses/src/models.rs",
+        "migrations/0083_businesses_complaints.sql",
+        "tests/integration/tests/complaints.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5420,11 +5471,11 @@
         "security"
       ],
       "owns": [
-        "app/portals/business_auth.py",
-        "app/portals/models.py",
-        "migrations/versions/t084_portals_business_signin.py",
+        "app/portals/src/business_auth.rs",
+        "app/portals/src/models.rs",
+        "migrations/0084_portals_business_signin.sql",
         "app/portals/templates/business_signin.html",
-        "tests/security/test_business_signin.py"
+        "tests/security/tests/business_signin.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5492,10 +5543,10 @@
         "security"
       ],
       "owns": [
-        "app/portals/business_portal.py",
+        "app/portals/src/business_portal.rs",
         "app/portals/templates/business_home.html",
         "app/portals/templates/business_billing.html",
-        "tests/e2e/test_business_portal.py"
+        "tests/e2e/business_portal.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5554,11 +5605,11 @@
         "security"
       ],
       "owns": [
-        "app/portals/owner_auth.py",
-        "app/portals/models.py",
-        "migrations/versions/t086_portals_owner_auth.py",
+        "app/portals/src/owner_auth.rs",
+        "app/portals/src/models.rs",
+        "migrations/0086_portals_owner_auth.sql",
         "app/portals/templates/owner_signin.html",
-        "tests/security/test_owner_auth.py"
+        "tests/security/tests/owner_auth.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5620,9 +5671,9 @@
         "security"
       ],
       "owns": [
-        "app/portals/homeowner_portal.py",
+        "app/portals/src/homeowner_portal.rs",
         "app/portals/templates/homeowner_home.html",
-        "tests/e2e/test_homeowner_portal.py"
+        "tests/e2e/homeowner_portal.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5674,7 +5725,7 @@
         "security"
       ],
       "owns": [
-        "tests/security/test_auth_matrix.py"
+        "tests/security/tests/auth_matrix.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5729,8 +5780,8 @@
         "security"
       ],
       "owns": [
-        "app/portals/limits.py",
-        "tests/security/test_rate_limits.py"
+        "app/portals/src/limits.rs",
+        "tests/security/tests/rate_limits.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5780,11 +5831,11 @@
         "security"
       ],
       "owns": [
-        "app/privacy/photos.py",
-        "app/privacy/models.py",
-        "migrations/versions/t090_privacy_photos.py",
-        "tests/unit/privacy/test_photo_checks.py",
-        "tests/integration/test_photo_links.py"
+        "app/privacy/src/photos.rs",
+        "app/privacy/src/models.rs",
+        "migrations/0090_privacy_photos.sql",
+        "tests/unit/tests/privacy_photo_checks.rs",
+        "tests/integration/tests/photo_links.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5836,8 +5887,8 @@
         "privacy"
       ],
       "owns": [
-        "app/quotes/photos.py",
-        "tests/integration/test_card_photos.py"
+        "app/quotes/src/photos.rs",
+        "tests/integration/tests/card_photos.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5888,11 +5939,11 @@
         "privacy"
       ],
       "owns": [
-        "app/privacy/purge.py",
-        "app/privacy/handlers.py",
-        "app/privacy/models.py",
-        "migrations/versions/t092_privacy_retention_purge.py",
-        "tests/integration/test_retention_purge.py"
+        "app/privacy/src/purge.rs",
+        "app/privacy/src/handlers.rs",
+        "app/privacy/src/models.rs",
+        "migrations/0092_privacy_retention_purge.sql",
+        "tests/integration/tests/retention_purge.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5946,8 +5997,8 @@
         "privacy"
       ],
       "owns": [
-        "app/messaging/retention.py",
-        "tests/integration/test_message_log_retention.py"
+        "app/messaging/src/retention.rs",
+        "tests/integration/tests/message_log_retention.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -5997,11 +6048,11 @@
         "compliance"
       ],
       "owns": [
-        "app/messaging/email.py",
-        "app/messaging/retries.py",
-        "app/messaging/models.py",
-        "migrations/versions/t094_messaging_retries_email.py",
-        "tests/integration/test_text_retries.py"
+        "app/messaging/src/email.rs",
+        "app/messaging/src/retries.rs",
+        "app/messaging/src/models.rs",
+        "migrations/0094_messaging_retries_email.sql",
+        "tests/integration/tests/text_retries.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6057,8 +6108,8 @@
         "security"
       ],
       "owns": [
-        "app/picks/email_code.py",
-        "tests/integration/test_email_pick_code.py"
+        "app/picks/src/email_code.rs",
+        "tests/integration/tests/email_pick_code.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6110,8 +6161,8 @@
         "compliance"
       ],
       "owns": [
-        "app/messaging/mode.py",
-        "tests/integration/test_web_email_mode.py"
+        "app/messaging/src/mode.rs",
+        "tests/integration/tests/web_email_mode.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6178,8 +6229,8 @@
       "reviewer_model": "claude-sonnet-5-5",
       "review_areas": [],
       "owns": [
-        "app/jobs/followups.py",
-        "tests/integration/test_followups.py"
+        "app/jobs/src/followups.rs",
+        "tests/integration/tests/followups.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6244,8 +6295,8 @@
         "privacy"
       ],
       "owns": [
-        "tests/e2e/test_j1_homeowner.py",
-        "tests/a11y/test_j1_keyboard.py"
+        "tests/e2e/j1_homeowner.spec.ts",
+        "tests/a11y/j1_keyboard.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6299,8 +6350,8 @@
         "money"
       ],
       "owns": [
-        "tests/e2e/test_j2_business.py",
-        "tests/a11y/test_j2_keyboard.py"
+        "tests/e2e/j2_business.spec.ts",
+        "tests/a11y/j2_keyboard.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6352,13 +6403,13 @@
         "compliance"
       ],
       "owns": [
-        "app/messaging/business_notices.py",
-        "app/businesses/channel_preference.py",
-        "app/businesses/email_verification.py",
-        "migrations/versions/t147_business_notices.py",
-        "tests/integration/test_business_notices.py",
-        "tests/integration/test_email_verification.py",
-        "tests/security/test_notice_addresses.py"
+        "app/messaging/src/business_notices.rs",
+        "app/businesses/src/channel_preference.rs",
+        "app/businesses/src/email_verification.rs",
+        "migrations/0147_business_notices.sql",
+        "tests/integration/tests/business_notices.rs",
+        "tests/integration/tests/email_verification.rs",
+        "tests/security/tests/notice_addresses.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6456,13 +6507,13 @@
         "compliance"
       ],
       "owns": [
-        "app/portals/business_actions.py",
+        "app/portals/src/business_actions.rs",
         "app/portals/templates/business_actions.html",
-        "app/portals/action_links.py",
-        "app/picks/confirm_reminders.py",
-        "tests/integration/test_business_actions.py",
-        "tests/integration/test_confirm_reminders.py",
-        "tests/security/test_action_links.py"
+        "app/portals/src/action_links.rs",
+        "app/picks/src/confirm_reminders.rs",
+        "tests/integration/tests/business_actions.rs",
+        "tests/integration/tests/confirm_reminders.rs",
+        "tests/security/tests/action_links.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6567,19 +6618,19 @@
         "compliance"
       ],
       "owns": [
-        "app/businesses/deliverability_check.py",
-        "app/businesses/backup_address.py",
-        "app/messaging/open_cards_digest.py",
-        "app/messaging/missed_cards.py",
-        "app/portals/notice_log.py",
-        "app/messaging/email_timing.py",
+        "app/businesses/src/deliverability_check.rs",
+        "app/businesses/src/backup_address.rs",
+        "app/messaging/src/open_cards_digest.rs",
+        "app/messaging/src/missed_cards.rs",
+        "app/portals/src/notice_log.rs",
+        "app/messaging/src/email_timing.rs",
         "app/portals/templates/notice_log.html",
-        "migrations/versions/t149_email_reliability.py",
-        "tests/integration/test_deliverability_check.py",
-        "tests/integration/test_open_cards_digest.py",
-        "tests/integration/test_missed_cards.py",
-        "tests/integration/test_notice_log.py",
-        "tests/security/test_backup_address.py"
+        "migrations/0149_email_reliability.sql",
+        "tests/integration/tests/deliverability_check.rs",
+        "tests/integration/tests/open_cards_digest.rs",
+        "tests/integration/tests/missed_cards.rs",
+        "tests/integration/tests/notice_log.rs",
+        "tests/security/tests/backup_address.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6662,15 +6713,15 @@
         "accessibility"
       ],
       "owns": [
-        "app/picks/emergency_emails.py",
-        "app/quotes/emergency_card_notice.py",
-        "app/portals/action_links.py",
-        "app/portals/business_actions.py",
+        "app/picks/src/emergency_emails.rs",
+        "app/quotes/src/emergency_card_notice.rs",
+        "app/portals/src/action_links.rs",
+        "app/portals/src/business_actions.rs",
         "app/portals/templates/contact_card.vcf",
-        "migrations/versions/t150_emergency_emails.py",
-        "tests/integration/test_emergency_card_email.py",
-        "tests/integration/test_no_business_calls.py",
-        "tests/security/test_link_scanners.py"
+        "migrations/0150_emergency_emails.sql",
+        "tests/integration/tests/emergency_card_email.rs",
+        "tests/integration/tests/no_business_calls.rs",
+        "tests/security/tests/link_scanners.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6765,14 +6816,14 @@
         "compliance"
       ],
       "owns": [
-        "app/ops/help_requests.py",
-        "app/ops/help_answers.py",
+        "app/ops/src/help_requests.rs",
+        "app/ops/src/help_answers.rs",
         "app/ops/templates/help_request.html",
         "app/portals/templates/get_help.html",
-        "migrations/versions/t151_help_requests.py",
-        "tests/integration/test_help_requests.py",
-        "tests/unit/ops/test_help_answers.py",
-        "tests/security/test_owner_help_reply.py"
+        "migrations/0151_help_requests.sql",
+        "tests/integration/tests/help_requests.rs",
+        "tests/unit/tests/ops_help_answers.rs",
+        "tests/security/tests/owner_help_reply.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6838,8 +6889,8 @@
         "compliance"
       ],
       "owns": [
-        "app/intake/safety_text.py",
-        "tests/unit/intake/test_safety_text.py",
+        "app/intake/src/safety_text.rs",
+        "tests/unit/tests/intake_safety_text.rs",
         "tests/docs/test_no_phone_numbers_in_templates.py"
       ],
       "reads": [
@@ -6977,12 +7028,13 @@
         "accessibility"
       ],
       "owns": [
-        "app/site/__init__.py",
-        "app/site/routes.py",
+        "app/site/Cargo.toml",
+        "app/site/src/lib.rs",
+        "app/site/src/routes.rs",
         "app/site/templates/base.html",
         "app/site/static/site.css",
-        "app/site/static/site.js",
-        "tests/e2e/test_site_no_js.py"
+        "app/site/static/site.ts",
+        "tests/e2e/site_no_js.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -7006,7 +7058,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 6,
+        "files": 7,
         "lines": 600,
         "context_pct": 14
       },
@@ -7037,13 +7089,13 @@
         "compliance"
       ],
       "owns": [
-        "app/site/pages.py",
+        "app/site/src/pages.rs",
         "app/site/templates/home.html",
         "app/site/templates/how_it_works.html",
         "app/site/templates/services.html",
         "app/site/templates/help.html",
         "app/site/templates/es_home.html",
-        "tests/e2e/test_site_pages.py",
+        "tests/e2e/site_pages.spec.ts",
         "tests/docs/test_required_lines.py"
       ],
       "reads": [
@@ -7153,9 +7205,9 @@
         "privacy"
       ],
       "owns": [
-        "app/site/chat.py",
+        "app/site/src/chat.rs",
         "app/site/templates/request.html",
-        "tests/e2e/test_web_chat.py"
+        "tests/e2e/web_chat.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -7312,13 +7364,13 @@
         "security"
       ],
       "owns": [
-        "app/ops/alerts.py",
-        "app/ops/safe_mode.py",
-        "app/ops/handlers.py",
-        "app/ops/models.py",
-        "migrations/versions/t105_ops_alerts_safe_mode.py",
-        "tests/integration/test_safe_mode.py",
-        "tests/property/test_pause_checked.py"
+        "app/ops/src/alerts.rs",
+        "app/ops/src/safe_mode.rs",
+        "app/ops/src/handlers.rs",
+        "app/ops/src/models.rs",
+        "migrations/0105_ops_alerts_safe_mode.sql",
+        "tests/integration/tests/safe_mode.rs",
+        "tests/property/tests/pause_checked.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -7414,8 +7466,8 @@
       "reviewer_model": "claude-sonnet-5-5",
       "review_areas": [],
       "owns": [
-        "app/ops/health.py",
-        "tests/integration/test_health.py"
+        "app/ops/src/health.rs",
+        "tests/integration/tests/health.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -7472,8 +7524,8 @@
         "privacy"
       ],
       "owns": [
-        "app/messaging/consent_alerts.py",
-        "tests/integration/test_consent_records_alerts.py"
+        "app/messaging/src/consent_alerts.rs",
+        "tests/integration/tests/consent_records_alerts.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -7526,11 +7578,11 @@
         "security"
       ],
       "owns": [
-        "app/portals/owner_portal.py",
+        "app/portals/src/owner_portal.rs",
         "app/portals/templates/owner_home.html",
         "app/portals/templates/owner_refund.html",
         "app/portals/templates/owner_settings.html",
-        "tests/e2e/test_owner_tools.py"
+        "tests/e2e/owner_tools.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -7589,12 +7641,13 @@
         "recovery"
       ],
       "owns": [
-        "app/recovery/__init__.py",
-        "app/recovery/api.py",
-        "app/recovery/models.py",
-        "app/recovery/backup.py",
-        "migrations/versions/t109_recovery_backup_export.py",
-        "tests/recovery/test_export_restores.py"
+        "app/recovery/Cargo.toml",
+        "app/recovery/src/lib.rs",
+        "app/recovery/src/api.rs",
+        "app/recovery/src/models.rs",
+        "app/recovery/src/backup.rs",
+        "migrations/0109_recovery_backup_export.sql",
+        "tests/recovery/tests/export_restores.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -7612,7 +7665,7 @@
       ],
       "cites": [],
       "budget": {
-        "files": 6,
+        "files": 7,
         "lines": 450,
         "context_pct": 12
       },
@@ -7644,11 +7697,11 @@
         "recovery"
       ],
       "owns": [
-        "app/recovery/replay.py",
-        "app/recovery/service.py",
-        "app/recovery/models.py",
-        "migrations/versions/t110_recovery_replay.py",
-        "tests/recovery/test_local_drill.py"
+        "app/recovery/src/replay.rs",
+        "app/recovery/src/service.rs",
+        "app/recovery/src/models.rs",
+        "migrations/0110_recovery_replay.sql",
+        "tests/recovery/tests/local_drill.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -8020,7 +8073,7 @@
       "owns": [
         "docs/a11y.md",
         "app/site/templates/accessibility.html",
-        "tests/a11y/test_statement.py",
+        "tests/a11y/statement.spec.ts",
         "tests/docs/test_email_accessibility.py"
       ],
       "reads": [
@@ -8183,8 +8236,8 @@
         "security"
       ],
       "owns": [
-        "tests/e2e/test_j3_operator.py",
-        "tests/a11y/test_j3_keyboard.py"
+        "tests/e2e/j3_operator.spec.ts",
+        "tests/a11y/j3_keyboard.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -8235,8 +8288,8 @@
         "recovery"
       ],
       "owns": [
-        "tests/e2e/test_j4_outage.py",
-        "tests/a11y/test_j4_keyboard.py"
+        "tests/e2e/j4_outage.spec.ts",
+        "tests/a11y/j4_keyboard.spec.ts"
       ],
       "reads": [
         "docs/architecture.md",
@@ -8283,7 +8336,7 @@
         "privacy"
       ],
       "owns": [
-        "tests/security/test_sentinel.py"
+        "tests/security/tests/sentinel.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -8334,7 +8387,7 @@
         "security"
       ],
       "owns": [
-        "tests/security/test_startup_and_supply.py"
+        "tests/security/tests/startup_and_supply.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -8726,7 +8779,7 @@
         "security"
       ],
       "owns": [
-        "app/adapters/twilio_sms.py",
+        "app/adapters/src/twilio_sms.rs",
         "stand_ins/twilio/"
       ],
       "reads": [
@@ -8827,8 +8880,8 @@
         "security"
       ],
       "owns": [
-        "app/adapters/twilio_voice.py",
-        "app/adapters/twilio_verify.py",
+        "app/adapters/src/twilio_voice.rs",
+        "app/adapters/src/twilio_verify.rs",
         "stand_ins/twilio/"
       ],
       "reads": [
@@ -8886,7 +8939,7 @@
         "security"
       ],
       "owns": [
-        "app/adapters/stripe_real.py",
+        "app/adapters/src/stripe_real.rs",
         "stand_ins/stripe/"
       ],
       "reads": [
@@ -8951,8 +9004,8 @@
         "security"
       ],
       "owns": [
-        "app/adapters/resend_real.py",
-        "app/adapters/lob_real.py",
+        "app/adapters/src/resend_real.rs",
+        "app/adapters/src/lob_real.rs",
         "stand_ins/resend/",
         "stand_ins/lob/"
       ],
@@ -9018,8 +9071,8 @@
         "security"
       ],
       "owns": [
-        "app/adapters/license_real.py",
-        "app/adapters/storage_real.py",
+        "app/adapters/src/license_real.rs",
+        "app/adapters/src/storage_real.rs",
         "stand_ins/storage/"
       ],
       "reads": [
@@ -9283,7 +9336,7 @@
       ],
       "owns": [
         "docs/phase2/restore-drill.md",
-        "tests/recovery/test_railway_drill.py"
+        "tests/recovery/tests/railway_drill.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -9650,9 +9703,9 @@
         "compliance"
       ],
       "owns": [
-        "app/licensing/class_map.py",
-        "tests/unit/licensing/test_class_map.py",
-        "tests/unit/licensing/test_class_limits.py"
+        "app/licensing/src/class_map.rs",
+        "tests/unit/tests/licensing_class_map.rs",
+        "tests/unit/tests/licensing_class_limits.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -9764,10 +9817,10 @@
         "security"
       ],
       "owns": [
-        "app/businesses/capability.py",
+        "app/businesses/src/capability.rs",
         "app/portals/templates/capability_setup.html",
-        "tests/integration/test_capability_setup.py",
-        "tests/integration/test_license_change_reapply.py"
+        "tests/integration/tests/capability_setup.rs",
+        "tests/integration/tests/license_change_reapply.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -9825,12 +9878,12 @@
         "compliance"
       ],
       "owns": [
-        "app/intake/question_bank.py",
-        "app/intake/routing_confidence.py",
-        "app/intake/summary_step.py",
-        "tests/unit/intake/test_question_bank.py",
-        "tests/integration/test_routing_confidence.py",
-        "tests/integration/test_summary_step.py"
+        "app/intake/src/question_bank.rs",
+        "app/intake/src/routing_confidence.rs",
+        "app/intake/src/summary_step.rs",
+        "tests/unit/tests/intake_question_bank.rs",
+        "tests/integration/tests/routing_confidence.rs",
+        "tests/integration/tests/summary_step.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -9903,11 +9956,11 @@
         "privacy"
       ],
       "owns": [
-        "app/picks/backup_choice.py",
-        "app/picks/auto_confirm.py",
-        "tests/integration/test_backup_choice.py",
-        "tests/integration/test_auto_confirm.py",
-        "tests/property/test_no_other_off_session_charge.py"
+        "app/picks/src/backup_choice.rs",
+        "app/picks/src/auto_confirm.rs",
+        "tests/integration/tests/backup_choice.rs",
+        "tests/integration/tests/auto_confirm.rs",
+        "tests/property/tests/no_other_off_session_charge.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -9967,13 +10020,13 @@
         "security"
       ],
       "owns": [
-        "app/ops/scorecard.py",
-        "app/ops/intake_report.py",
-        "app/payments/money_view.py",
+        "app/ops/src/scorecard.rs",
+        "app/ops/src/intake_report.rs",
+        "app/payments/src/money_view.rs",
         "app/portals/templates/scorecard.html",
-        "tests/integration/test_scorecard.py",
-        "tests/integration/test_intake_report.py",
-        "tests/unit/payments/test_money_view.py"
+        "tests/integration/tests/scorecard.rs",
+        "tests/integration/tests/intake_report.rs",
+        "tests/unit/tests/payments_money_view.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -10088,12 +10141,12 @@
         "accessibility"
       ],
       "owns": [
-        "app/portals/push.py",
+        "app/portals/src/push.rs",
         "app/portals/static/manifest.webmanifest",
-        "app/portals/static/sw.js",
+        "app/portals/static/sw.ts",
         "app/portals/templates/job_alerts.html",
-        "tests/integration/test_push_alerts.py",
-        "tests/security/test_push_subscriptions.py"
+        "tests/integration/tests/push_alerts.rs",
+        "tests/security/tests/push_subscriptions.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -10223,12 +10276,12 @@
         "privacy"
       ],
       "owns": [
-        "app/intake/order.py",
-        "app/intake/photos.py",
-        "app/intake/design.py",
-        "tests/integration/test_intake_order.py",
-        "tests/integration/test_intake_photos.py",
-        "tests/integration/test_design_intake.py"
+        "app/intake/src/order.rs",
+        "app/intake/src/photos.rs",
+        "app/intake/src/design.rs",
+        "tests/integration/tests/intake_order.rs",
+        "tests/integration/tests/intake_photos.rs",
+        "tests/integration/tests/design_intake.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -10292,13 +10345,13 @@
         "privacy"
       ],
       "owns": [
-        "app/ai/writer.py",
-        "app/ai/output_checks.py",
-        "app/quotes/job_page.py",
-        "app/quotes/update_texts.py",
-        "tests/property/test_ai_output_limits.py",
-        "tests/integration/test_job_page.py",
-        "tests/unit/quotes/test_update_texts.py"
+        "app/ai/src/writer.rs",
+        "app/ai/src/output_checks.rs",
+        "app/quotes/src/job_page.rs",
+        "app/quotes/src/update_texts.rs",
+        "tests/property/tests/ai_output_limits.rs",
+        "tests/integration/tests/job_page.rs",
+        "tests/unit/tests/quotes_update_texts.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -10360,14 +10413,14 @@
         "money"
       ],
       "owns": [
-        "app/quotes/formats.py",
-        "app/quotes/notes.py",
-        "app/quotes/edit_withdraw.py",
-        "app/picks/share_consent.py",
-        "app/picks/cant_take.py",
-        "tests/integration/test_quote_formats.py",
-        "tests/integration/test_quote_notes.py",
-        "tests/integration/test_share_and_cant_take.py",
+        "app/quotes/src/formats.rs",
+        "app/quotes/src/notes.rs",
+        "app/quotes/src/edit_withdraw.rs",
+        "app/picks/src/share_consent.rs",
+        "app/picks/src/cant_take.rs",
+        "tests/integration/tests/quote_formats.rs",
+        "tests/integration/tests/quote_notes.rs",
+        "tests/integration/tests/share_and_cant_take.rs",
         "tests/docs/test_introduction_fee_wording.py"
       ],
       "reads": [
@@ -10433,14 +10486,14 @@
         "money"
       ],
       "owns": [
-        "app/businesses/links.py",
-        "app/businesses/leaving.py",
-        "app/businesses/pest_identity.py",
-        "app/ops/coverage_email.py",
-        "tests/integration/test_business_links.py",
-        "tests/integration/test_business_leaving.py",
-        "tests/integration/test_pest_identity.py",
-        "tests/integration/test_coverage_email.py"
+        "app/businesses/src/links.rs",
+        "app/businesses/src/leaving.rs",
+        "app/businesses/src/pest_identity.rs",
+        "app/ops/src/coverage_email.rs",
+        "tests/integration/tests/business_links.rs",
+        "tests/integration/tests/business_leaving.rs",
+        "tests/integration/tests/pest_identity.rs",
+        "tests/integration/tests/coverage_email.rs"
       ],
       "reads": [
         "docs/architecture.md",
@@ -10507,7 +10560,7 @@
         "app/site/static/textures/brass-bar@2x.jpg",
         "app/site/static/textures/brass-plate@2x.jpg",
         "app/site/static/textures/paper@2x.jpg",
-        "tests/a11y/test_design_tokens.py"
+        "tests/a11y/design_tokens.spec.ts"
       ],
       "reads": [
         "docs/design/DESIGN_SPEC.md",
@@ -10537,6 +10590,64 @@
       ],
       "branch": "claude/task/T166-site-design-assets",
       "prompt": "kit/prompts/T166.md"
+    },
+    {
+      "id": "T167",
+      "slug": "stand-ins-http",
+      "title": "Stand-ins served over HTTP at the vendors' URL shapes, so the Rust adapters use one client for stand-in, sandbox and live",
+      "goal": "One standard-library HTTP server exposes every stand-in at its vendor's paths (Twilio Messages and Verify, Stripe, Resend, Lob, the stand-in AI) with the same signatures, errors and idempotency behavior; the existing contract tests also run over HTTP (D-453).",
+      "type": "harness",
+      "phase": 1,
+      "stage": "1",
+      "module": "adapters",
+      "deps": [
+        "T008"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "harness",
+        "security"
+      ],
+      "owns": [
+        "stand_ins/server.py",
+        "tests/contract/test_stand_in_server.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/spec/security.md",
+        "docs/test-design.md",
+        "stand_ins/common.py",
+        "stand_ins/twilio.py",
+        "stand_ins/stripe.py",
+        "stand_ins/resend.py",
+        "stand_ins/lob.py",
+        "stand_ins/ai.py"
+      ],
+      "requirements": [
+        "SEC-032"
+      ],
+      "tests": [
+        "TD-SEC-13"
+      ],
+      "decisions": [
+        "D-121",
+        "D-453"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 2,
+        "lines": 500,
+        "context_pct": 12
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T167-stand-ins-http",
+      "prompt": "kit/prompts/T167.md"
     }
   ]
 }

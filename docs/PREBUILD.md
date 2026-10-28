@@ -10,10 +10,11 @@ This is the only to-do list. The same file is in the repository as `docs/PREBUIL
 
 **Decided and written down**
 - What Ask Hava is: a quote relay that packages the job. A homeowner asks once and answers a few pro-level questions, with photos if easy; she approves the job card; local businesses quote in the same format per job type; she sees every quote, unranked, with license numbers and Google and Yelp links, and picks one; the picked business pays a fixed introduction fee ($25, $75 or $199 by job size). Ask Hava does no work and promotes no business.
-- The plan: 632 numbered requirements in 20 spec files, 452 logged decisions, 166 build tasks with their prompts, 8 legal drafts, a license map, a question bank for 37 trades linked to the Grok trade knowledge base, 40 worked fee examples. Every repo check passes.
+- The plan: 637 numbered requirements in 20 spec files, 453 logged decisions, 167 build tasks with their prompts, 8 legal drafts, a license map, a question bank for 37 trades linked to the Grok trade knowledge base, 40 worked fee examples. Every repo check passes.
 - One rule for every trade: if a license is needed, only licensed businesses get its jobs; if not, any legitimate business with a city license can.
 - No calls to businesses, ever. Businesses get everything by email and on the website.
 - The look: dark plaster and brass, chosen Oct 28 (D-451). `docs/design/DESIGN_SPEC.md` sets colors, fonts, textures and buttons; four mock-ups show the home page (phone and desktop), her quote page and the pick step. Every page the build makes follows it.
+- Built in Rust (D-453): the whole server is Rust, and the server builds the pages. The compiler, not just tests, stops three mistakes: an address released without a verified payment, a job status someone forgot to handle, and one part of the app reaching into another. Python stays only in the build tools, the fake vendor services and the twin.
 - No AI smell (D-452): a scan fails the build on machine-sounding words ("seamless", slogans in threes, em dashes, exclamation marks) and page habits, and a second reviewer reads all new customer copy aloud before it's handed in. The test is whether a local person would say it to a neighbour.
 
 **Built:** nothing. No app code exists. No account is open. Nothing has been sent to Twilio, Stripe or any agency.

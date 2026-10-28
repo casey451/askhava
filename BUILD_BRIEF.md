@@ -98,28 +98,28 @@ twin/                     the digital twin (updated in stage 1)
 
 **Branch names:** all branches Claude pushes start with `claude/`: `claude/kit-state` and `claude/task/T###-<slug>`. Scheduled-task runs push to `claude/` branches by default, so no extra permission is needed.
 
-## 4. Stack (decided; don't reopen)
+## 4. Stack (decided; don't reopen; Rust since D-453)
 
 | Need | Choice | Why |
 |---|---|---|
-| Language | Python 3.12 | The twin and its rules are Python |
-| Web | FastAPI + Jinja2 server-rendered pages; small vanilla JS from the prototype; progressive enhancement (works without JS) | Keeps the prototype's accessible HTML; fewer moving parts |
-| Database | PostgreSQL 16; SQLAlchemy 2; Alembic migrations (forward-only, each tested) | Matches Railway and the cloud VM (Postgres 16 preinstalled) |
+| Language | Rust (stable, pinned in `rust-toolchain.toml`, edition 2024) for all server code; TypeScript only for small browser extras; SQL for schema; Python only for build tooling, the stand-ins and the twin, never in the production path | Casey Oct 28, 2026: "We will use rust" (D-453): the compiler enforces the job statuses, the module boundaries and the paid-pick rule |
+| Web | Axum + Tokio; Askama server-rendered pages (templates checked at compile time, autoescaped); small TypeScript compiled with `tsc` to plain JS; progressive enhancement (works without JS) | Accessible HTML from the server; no front-end framework |
+| Database | PostgreSQL 16; SQLx (queries checked against the schema at compile time, offline data committed); SQL migration files `migrations/0NNN_<slug>.sql` (forward-only, each tested) | Matches Railway and the cloud VM (Postgres 16 preinstalled) |
 | Background jobs and timers | A Postgres job table polled with `SELECT … FOR UPDATE SKIP LOCKED`, plus a scheduler process | No Redis, one data store, survives restarts |
-| Messaging and calls | twilio SDK behind an adapter | Swappable for the stand-in |
-| Payments | stripe SDK; SetupIntent with off-session use; webhooks | Card data never touches our servers (PCI SAQ A) |
-| Email / letters | Resend and Lob, each behind an adapter | — |
-| AI | anthropic SDK, Haiku 5.5, structured output only, behind an adapter | Stand-in during the build |
-| Validation | pydantic v2 | — |
-| Packaging | uv with a committed lock file | Reproducible installs |
-| Tests | pytest, hypothesis (property tests), playwright (Python), axe-core injected into pages, mutmut (mutation tests on money and license rules) | — |
-| Quality | ruff (lint and format), mypy --strict, complexity limits in ruff | — |
-| Security tooling | bandit, pip-audit, gitleaks (secrets), the custom PII scanner, OWASP ZAP baseline scan (Docker) in Phase 2 | — |
-| Monitoring | sentry-sdk with PII scrubbing; `/healthz`; UptimeRobot | — |
-| Deploy | Dockerfile; the app host chosen per changes file §3 (Railway Pro if its Backups tab shows point-in-time recovery, otherwise Render), with a separate test project (Phase 2) and live project (Gate C) | Fully separate projects, keys and data. "Railway" below means whichever host was chosen |
+| Messaging and calls | Twilio REST API through reqwest (rustls) behind an adapter trait | The same HTTP client talks to the stand-in or Twilio |
+| Payments | Stripe REST API through reqwest behind an adapter trait; SetupIntent with off-session use; webhooks verified with HMAC-SHA256 | Card data never touches our servers (PCI SAQ A) |
+| Email / letters | Resend and Lob REST APIs through reqwest, each behind an adapter trait | — |
+| AI | Claude API through reqwest, Haiku 5.5, structured output only, behind an adapter trait | Stand-in during the build |
+| Validation | serde with `deny_unknown_fields`, and parse-into-type newtypes (a phone, code or amount exists only once it is valid) | — |
+| Packaging | Cargo workspace (one crate per module) with a committed `Cargo.lock`; npm with a committed `package-lock.json` for TypeScript and Playwright | Reproducible builds |
+| Tests | `cargo test` with a real Postgres, proptest (property tests), trybuild (compile-fail proofs), Playwright for TypeScript with axe-core, cargo-mutants (mutation tests on money and license rules); pytest only for the tooling, the document checks and the stand-in contracts | — |
+| Quality | rustfmt, clippy with warnings denied (`too_many_lines` 50, cognitive complexity, `wildcard_enum_match_arm`), `unsafe_code = "forbid"` in every crate; `tsc --strict` and eslint for TypeScript | — |
+| Security tooling | cargo-audit (RustSec), cargo-deny (licenses, bans, crates.io only), npm audit, gitleaks (secrets), the custom PII scanner, OWASP ZAP baseline scan (Docker) in Phase 2 | — |
+| Monitoring | tracing with field redaction, the sentry crate with PII scrubbing; `/healthz`; UptimeRobot | — |
+| Deploy | Dockerfile (multi-stage: one server binary and one worker binary); the app host chosen per changes file §3 (Railway Pro if its Backups tab shows point-in-time recovery, otherwise Render), with a separate test project (Phase 2) and live project (Gate C) | Fully separate projects, keys and data. "Railway" below means whichever host was chosen |
 
 - **Versions:** K4 pins exact versions available at that time.
-- **New libraries:** any library not on this list needs a `docs/decisions.md` entry with its purpose, license and a pip-audit result.
+- **New libraries:** any library not on this list needs a `docs/decisions.md` entry with its purpose, license and a cargo-audit (or npm audit) result, and must pass cargo-deny.
 
 ## 5. Architecture (K4 finalizes; these boundaries are fixed)
 
@@ -318,8 +318,8 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 - **Cookies:** `Secure`, `HttpOnly`, `SameSite=Lax`, rotated on login. CSRF tokens on every form.
 
 **Inputs and outputs**
-- Every input is validated by a pydantic schema.
-- Jinja autoescaping is always on, and homeowner and business text is always rendered as text, never as HTML.
+- Every input is parsed by serde into a typed struct that rejects unknown fields.
+- Askama autoescaping is always on, and homeowner and business text is always rendered as text, never as HTML.
 - Strict security headers:
   - a CSP with no inline script (nonces where needed);
   - HSTS;
@@ -364,12 +364,12 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 
 **Supply chain:**
 - the lock file is committed;
-- pip-audit and bandit run on every PR;
+- cargo-audit, cargo-deny and npm audit run on every PR;
 - Dependabot alerts are on;
 - the Docker base image is pinned by digest.
 
 **Operations**
-- Sentry with `send_default_pii=False` plus a scrubber.
+- Sentry with default PII off plus a scrubber, and `tracing` fields redacted.
 - Logs carry request IDs only, never phone numbers.
 - An incident runbook that includes Arizona's 45-day breach notice (A.R.S. 18-552).
 - Safe mode pauses charges, releases and outbound texts if Casey hasn't acknowledged a High alert within 24 hours.
@@ -469,12 +469,12 @@ The list below is the minimum, not the whole set:
 | Layer | What | Gate |
 |---|---|---|
 | Unit and property | Fee calculation from the worked examples (including the $150/month → $600 → $75 case), scrubber, keyword matching, eligibility, quiet hours, state transitions | `Ci` |
-| Mutation | mutmut on `payments`, `catalog` and `licensing`: breaking the 4-month rule or the license filter must turn tests red | `Ci` (nightly full run) |
+| Mutation | cargo-mutants on `payments`, `catalog` and `licensing`: breaking the 4-month rule or the license filter must turn tests red | `Ci` (nightly full run) |
 | Integration | Real Postgres in the session; the job queue; outbox and inbox never double-send | `Ci` |
 | Contract | Each stand-in against the vendor's documented API; in Phase 2, the same tests against real sandboxes | `Ci` and Phase 2 |
 | Twin | The updated twin as the oracle. Any failed check makes the run fail (the old twin exited 0 despite failures); each pre-existing warning is explained in K5 | `Twin` |
 | End to end | The four journeys (homeowner, business, operator, vendor outage) in Playwright | `Ci` |
-| Security | Auth matrix, token isolation, brute force, webhook forgery, replay, PII and secret scan, bandit, pip-audit | `Ci` (security step; also gitleaks) |
+| Security | Auth matrix, token isolation, brute force, webhook forgery, replay, PII and secret scan, cargo-audit, cargo-deny | `Ci` (security step; also gitleaks) |
 | Accessibility | §9 | `Ally` |
 | Recovery | Restore drill with replay, no duplicate sends or charges | Phase 2 |
 
@@ -483,8 +483,8 @@ The list below is the minimum, not the whole set:
 ## 12. Quality rules (no AI-made mess)
 
 - **Task scope:** a task touches only the files it owns. Small PRs.
-- **Code limits:** functions under 50 lines, and complexity limits enforced by ruff.
-- **Strict checks:** `mypy --strict` clean. No `# type: ignore` without a reason comment.
+- **Code limits:** functions under 50 lines, and complexity limits enforced by clippy.
+- **Strict checks:** clippy clean with warnings denied and `cargo fmt --check` clean. No `#[allow(...)]` without a reason comment; no `unsafe`.
 - **No mystery code:** no commented-out code, TODOs or unused code on `main`. A cleanup task runs after every stage.
 - **One source of truth:** `docs/architecture.md` and `docs/decisions.md` are updated in the same PR as the change they describe.
 - **Fixing mistakes:** if something breaks `main`, revert it. Don't patch over it.

@@ -47,21 +47,33 @@ jobs:
           python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
           python3 -m pytest tests -q -p no:cacheprovider
 
-      - name: Static security scan (bandit)
+      - name: Rust format, lint and tests (once the workspace exists, D-453)
         run: |
-          if [ -d app ]; then
-            python3 -m pip install --quiet bandit==1.8.6
-            python3 -m bandit -r app -ll
+          if [ -f Cargo.toml ]; then
+            rustup show active-toolchain
+            cargo fmt --all --check
+            cargo clippy --workspace --all-targets --locked -- -D warnings
+            cargo test --workspace --locked
           else
-            echo "bandit skipped: no app yet"
+            echo "rust checks skipped: no Cargo workspace yet"
           fi
 
-      - name: Dependency audit (pip-audit)
+      - name: Rust dependency audit (cargo-audit, cargo-deny)
         run: |
-          if [ -f uv.lock ]; then
-            python3 -m pip install --quiet uv pip-audit==2.9.0
-            uv export --frozen --no-hashes -o "$RUNNER_TEMP/requirements.txt"
-            python3 -m pip_audit -r "$RUNNER_TEMP/requirements.txt" --no-deps --disable-pip
+          if [ -f Cargo.lock ]; then
+            cargo install --locked cargo-audit@0.22.2 cargo-deny@0.20.2
+            cargo audit
+            cargo deny check licenses bans sources advisories
           else
-            echo "pip-audit skipped: no app yet"
+            echo "cargo-audit and cargo-deny skipped: no Cargo.lock yet"
+          fi
+
+      - name: TypeScript checks and npm audit
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts
+            npx tsc --noEmit
+            npm audit --audit-level=low
+          else
+            echo "npm checks skipped: no package-lock.json yet"
           fi

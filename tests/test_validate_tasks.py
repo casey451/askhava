@@ -125,7 +125,7 @@ def valid_tasks() -> list[dict[str, Any]]:
             model=OPUS,
             reviewer_model=OPUS,
             review_areas=["harness", "security"],
-            owns=["stand_ins/fake/", "app/adapters/twilio_sms.py"],
+            owns=["stand_ins/fake/", "app/adapters/src/twilio_sms.rs"],
             cites=["src.md:3"],
         ),
         make_gate("T005", "real-texts", "real-texts-casey-phone", ["T004"], "6", 2),
@@ -230,7 +230,7 @@ def test_protected_path_needs_a_harness_task(tmp_path: Path) -> None:
 
 def test_sources_are_read_only_even_for_harness(tmp_path: Path) -> None:
     tasks = valid_tasks()
-    task(tasks, "T004")["owns"] = ["sources/01_spec/fake.md", "app/adapters/twilio_sms.py"]
+    task(tasks, "T004")["owns"] = ["sources/01_spec/fake.md", "app/adapters/src/twilio_sms.rs"]
     assert_error(errors_for(tmp_path, tasks), "sources/ is read-only")
 
 
@@ -531,7 +531,7 @@ def test_real_texts_gate_follows_the_twilio_sandbox(tmp_path: Path) -> None:
     task(tasks, "T004")["owns"] = ["stand_ins/fake/"]
     task(tasks, "T004")["review_areas"] = ["harness"]
     assert_error(
-        errors_for(tmp_path, tasks), "must come after the task owning app/adapters/twilio_sms.py"
+        errors_for(tmp_path, tasks), "must come after the task owning app/adapters/src/twilio_sms.rs"
     )
 
 
@@ -542,7 +542,7 @@ def test_kit_outputs_must_match(tmp_path: Path) -> None:
 
 def test_kit_file_entries_match_exactly(tmp_path: Path) -> None:
     tasks = valid_tasks()
-    task(tasks, "T004")["reads"] = ["uv.lock", "uv.lock.old", "tests/contract/x.py"]
+    task(tasks, "T004")["reads"] = ["Cargo.lock", "Cargo.lock.old", "tests/contract/x.py"]
     errors = errors_for(tmp_path, tasks)
-    assert_error(errors, "reads uv.lock.old")
-    assert not any("reads uv.lock," in e or "tests/contract/x.py" in e for e in errors)
+    assert_error(errors, "reads Cargo.lock.old")
+    assert not any("reads Cargo.lock," in e or "tests/contract/x.py" in e for e in errors)

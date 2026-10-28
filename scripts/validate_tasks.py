@@ -86,8 +86,7 @@ KIT_OUTPUTS = (
     "tests/mutation/",
     "tests/contract/",
     "tests/coverage_floor.json",
-    "pyproject.toml",
-    "uv.lock",
+    "Cargo.lock",
 )
 # Owned paths that make a task money, privacy, security or recovery work, whatever it declares.
 SENSITIVE_PREFIXES = {
@@ -101,7 +100,13 @@ SENSITIVE_PREFIXES = {
 }
 FORBIDDEN = ("sources/",)
 ALLOWED_SHARED = frozenset(
-    {"docs/architecture.md", "docs/decisions.md", "docs/for-casey-review.md", "app/main.py"}
+    {
+        "docs/architecture.md",
+        "docs/decisions.md",
+        "docs/for-casey-review.md",
+        "app/server/src/main.rs",
+        "Cargo.lock",
+    }
 )
 JOURNEYS = ("J1", "J2", "J3", "J4")
 GATE_KINDS = (
@@ -126,7 +131,7 @@ GATE_WAITS = {
 }
 CONDITIONAL_GATE = "real-texts-casey-phone"
 NO_DEPENDENTS = ("stage-0.5-go", "first-live-charge")
-TWILIO_SANDBOX_PATH = "app/adapters/twilio_sms.py"
+TWILIO_SANDBOX_PATH = "app/adapters/src/twilio_sms.rs"
 MAX_OWNS = 14
 MAX_FILES = 14
 MAX_LINES = 800
