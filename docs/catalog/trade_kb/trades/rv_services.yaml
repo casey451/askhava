@@ -1,0 +1,448 @@
+# Ask Hava trade knowledge file: rv_services
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: rv_services
+display_name: RV services
+summary: 'Mobile and shop RV services for motorhomes, travel trailers and fifth wheels: roof leaks and roof coatings,
+  AC units (rooftop), slide-outs and awnings, water heaters, furnaces and fridges (propane/electric), generators,
+  plumbing and tanks, batteries and solar, tires and brakes, detailing and wash. Lake Havasu has many winter visitors
+  and RV parks, and summer heat is hard on rooftop AC and roof sealant [judgment]. Ask Hava never says what is wrong
+  with the RV.'
+job_types:
+- id: roof_leak
+  label: Roof leak, reseal or roof coating
+  site_visit_usually_needed: 'yes'
+- id: rv_ac
+  label: Rooftop AC not cooling / replace
+- id: slide_awning
+  label: Slide-out or awning stuck or torn
+- id: appliances_propane
+  label: Water heater, furnace, fridge, stove (propane)
+  site_visit_usually_needed: 'yes'
+- id: generator
+  label: Generator (Onan/Cummins, Generac, etc.)
+  site_visit_usually_needed: 'yes'
+- id: plumbing_tanks
+  label: Water leaks, pump, black/gray tank, sensors
+- id: electrical_solar
+  label: Batteries, converter, inverter, solar, shore power
+  site_visit_usually_needed: 'yes'
+- id: chassis_tires
+  label: Tires, brakes, bearings, hitch (trailers)
+- id: wash_detail
+  label: Wash, wax, detail, oxidation
+- id: inspection
+  label: Pre-purchase or pre-trip inspection
+triggers_en:
+- phrase: RV
+  job_type: null
+- phrase: motorhome
+  job_type: null
+- phrase: camper
+  job_type: null
+- phrase: travel trailer
+  job_type: null
+- phrase: fifth wheel
+  job_type: null
+- phrase: 5th wheel
+  job_type: null
+- phrase: toy hauler
+  job_type: null
+- phrase: class A
+  job_type: null
+- phrase: class C
+  job_type: null
+- phrase: roof leak
+  job_type: roof_leak
+- phrase: dicor
+  job_type: roof_leak
+- phrase: reseal
+  job_type: roof_leak
+- phrase: RV AC
+  job_type: rv_ac
+- phrase: dometic
+  job_type: rv_ac
+- phrase: coleman mach
+  job_type: rv_ac
+- phrase: slide out
+  job_type: slide_awning
+- phrase: slide stuck
+  job_type: slide_awning
+- phrase: awning
+  job_type: slide_awning
+- phrase: water heater
+  job_type: appliances_propane
+- phrase: suburban
+  job_type: appliances_propane
+- phrase: atwood
+  job_type: appliances_propane
+- phrase: furnace
+  job_type: appliances_propane
+- phrase: fridge
+  job_type: appliances_propane
+- phrase: norcold
+  job_type: appliances_propane
+- phrase: propane
+  job_type: appliances_propane
+- phrase: generator
+  job_type: generator
+- phrase: onan
+  job_type: generator
+- phrase: black tank
+  job_type: plumbing_tanks
+- phrase: converter
+  job_type: electrical_solar
+- phrase: inverter
+  job_type: electrical_solar
+- phrase: solar
+  job_type: electrical_solar
+- phrase: shore power
+  job_type: electrical_solar
+- phrase: RV detail
+  job_type: wash_detail
+- phrase: mobile RV tech
+  job_type: null
+triggers_es:
+- phrase: casa rodante
+  job_type: null
+- phrase: camper
+  job_type: null
+- phrase: tráiler
+  job_type: null
+- phrase: quinta rueda
+  job_type: null
+- phrase: motorhome
+  job_type: null
+- phrase: gotera en el techo del camper
+  job_type: roof_leak
+- phrase: aire del camper
+  job_type: rv_ac
+- phrase: no enfría
+  job_type: rv_ac
+- phrase: el slide no sale
+  job_type: slide_awning
+- phrase: toldo
+  job_type: slide_awning
+- phrase: boiler
+  job_type: appliances_propane
+- phrase: calentador de agua
+  job_type: appliances_propane
+- phrase: refri
+  job_type: appliances_propane
+- phrase: gas propano
+  job_type: appliances_propane
+- phrase: huele a gas
+  job_type: appliances_propane
+- phrase: generador
+  job_type: null
+- phrase: tanque negro
+  job_type: plumbing_tanks
+questions:
+- id: rv_type
+  text: What kind of RV?
+  options:
+  - Motorhome (Class A)
+  - Motorhome (Class C or B)
+  - Travel trailer
+  - Fifth wheel / toy hauler
+  - Truck camper / other
+  ask_if: always
+  changes_price: 'yes'
+- id: problem_area
+  text: What needs work?
+  options:
+  - Roof or leak
+  - AC
+  - Slide-out or awning
+  - Propane appliance
+  - Generator
+  - Plumbing or tanks
+  - Electrical / batteries / solar
+  - Tires, brakes or hitch
+  - Wash / detail
+  - Inspection
+  ask_if: always
+  changes_price: 'yes'
+- id: rv_length
+  text: How long is the RV?
+  options:
+  - Under 25 ft
+  - 25-35 ft
+  - Over 35 ft
+  - Not sure
+  ask_if: problem_area in [Roof or leak, Wash / detail, Inspection]
+  changes_price: 'yes'
+- id: mobile_or_shop
+  text: Where can the work happen?
+  options:
+  - Mobile, at my home or lot
+  - At an RV park
+  - I can bring it to a shop
+  - It can't move right now
+  ask_if: always
+  changes_price: 'yes'
+- id: propane_smell
+  text: Do you smell gas or did the propane alarm go off?
+  options:
+  - 'Yes'
+  - 'No'
+  ask_if: problem_area == Propane appliance
+  changes_price: 'no'
+- id: brand_model
+  text: Do you know the year and brand?
+  options:
+  - Yes - I'll type it
+  - I'll send a photo of the sticker
+  - Not sure
+  ask_if: always
+  changes_price: 'no'
+quote_without_visit_needs:
+- Year, make, model and length
+- Photo of the part or problem
+- Appliance brand and model sticker
+- Where the RV is parked and if mobile service can reach it
+site_visit_usually_needed:
+- roof_leak (to find source)
+- appliances_propane
+- generator
+- electrical_solar
+photos_to_request:
+- id: p1
+  ask: Outside of RV, full side
+  for_job_types:
+  - all
+- id: p2
+  ask: Roof (only if safe to take, e.g. from a ladder) [judgment]
+  for_job_types:
+  - all
+- id: p3
+  ask: Water stains inside ceiling or walls
+  for_job_types:
+  - all
+- id: p4
+  ask: Appliance labels (water heater, fridge, AC, generator)
+  for_job_types:
+  - all
+- id: p5
+  ask: Any error codes
+  for_job_types:
+  - all
+- id: p6
+  ask: Tires showing date code and wear
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Cracked sealant around roof vents and AC
+  - Soft spots or ceiling stains
+  - Tire sidewall cracking from sun [judgment]
+  - Burned or melted shore power plug
+photo_red_flags:
+- flag: Melted shore power plug or outlet
+  safety_step_ref: es_smoke_or_burning_smell_from_el
+- flag: Propane tank or line damage
+  safety_step_ref: es_smell_of_propane_or_lp_alarm_s
+- flag: Swollen or leaking batteries
+  safety_step_ref: es_battery_swelling_hissing_or_sm
+- flag: Soot near furnace or water heater vents
+  safety_step_ref: es_co_alarm_sounding_or_people_di
+emergency_signals:
+- id: es_smell_of_propane_or_lp_alarm_s
+  signal: Smell of propane or LP alarm sounding
+  emergency: 'yes'
+  safety_step: Leave the RV now. Do not use lights, switches or phones inside, and no flames. If safe, close the
+    tank valve (turn clockwise). Call 911 or the propane supplier from a safe place, and do not go back in until
+    it is checked.
+  source: Propane Education and Research Council, Safety Guide for Propane Users - https://propane.com/safety/safety-guide-for-propane-users/
+  then_route_to: rv_services
+- id: es_co_alarm_sounding_or_people_di
+  signal: CO alarm sounding or people dizzy, headache, sick
+  emergency: 'yes'
+  safety_step: Get everyone out to fresh air and call 911. CO has no color or smell.
+  source: CDC, Carbon Monoxide Poisoning basics - https://www.cdc.gov/carbon-monoxide/
+  then_route_to: rv_services
+- id: es_smoke_or_burning_smell_from_el
+  signal: Smoke or burning smell from electrical
+  emergency: 'yes'
+  safety_step: Use the matching step in foundation/part1_all_reasons.md section 3 (call 911 if anyone is hurt or
+    in danger).
+  source: foundation/part1_all_reasons.md [no trade-specific official step in this file]
+  then_route_to: rv_services
+- id: es_battery_swelling_hissing_or_sm
+  signal: Battery swelling, hissing or smoking
+  emergency: 'yes'
+  safety_step: Get away from it and call 911. Do not try to put out a lithium battery fire.
+  source: NFPA, Lithium-Ion Battery Safety - https://www.nfpa.org/education-and-research/energy-transition/lithium-ion-batteries
+    ; U.S. Fire Administration (FEMA), Lithium-ion batteries community education - https://www.usfa.fema.gov/a-z/lithium-ion-batteries/community-education/
+  then_route_to: rv_services
+safety_step:
+- when: Propane smell or LP alarm
+  step: Leave the RV now. Do not use lights, switches or phones inside, and no flames. If safe, close the tank valve
+    (turn clockwise). Call 911 or the propane supplier from a safe place, and do not go back in until it is checked.
+  source: Propane Education and Research Council, Safety Guide for Propane Users - https://propane.com/safety/safety-guide-for-propane-users/
+- when: CO alarm or people feel sick
+  step: Get everyone out to fresh air and call 911. CO has no color or smell.
+  source: CDC, Carbon Monoxide Poisoning basics - https://www.cdc.gov/carbon-monoxide/
+- when: Battery smoking or hissing
+  step: Get away from it and call 911. Do not try to put out a lithium battery fire.
+  source: NFPA, Lithium-Ion Battery Safety - https://www.nfpa.org/education-and-research/energy-transition/lithium-ion-batteries
+    ; U.S. Fire Administration (FEMA), Lithium-ion batteries community education - https://www.usfa.fema.gov/a-z/lithium-ion-batteries/community-education/
+- when: Hot weather
+  step: If the AC fails in summer, get people and pets to a cool place; heat can kill.
+  source: National Weather Service, Heat Safety - https://www.weather.gov/safety/heat
+license_classes:
+- job_type:
+  - roof_leak
+  - rv_ac
+  - slide_awning
+  - appliances_propane
+  - generator
+  - plumbing_tanks
+  - electrical_solar
+  - chassis_tires
+  - wash_detail
+  - inspection
+  work: Repair of the RV itself (a vehicle)
+  classes:
+  - 'No ROC license: an RV is a vehicle, not a structure [judgment]. Optional RVIA/RVDA technician certification
+    is not a state license [judgment].'
+  citation: A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener
+    (A)(16), fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - appliances_propane
+  work: Propane work
+  classes:
+  - 'No ROC class for vehicle propane [judgment]. Note A.R.S. 32-1121(D): the handyman exemption never covers fuel
+    gas connections to structures; propane rules for RVs are not ROC rules [open question].'
+  citation: A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener
+    (A)(16), fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - electrical_solar
+  - plumbing_tanks
+  work: Fixed RV hookups at a home (50-amp pedestal, sewer cleanout, water)
+  classes:
+  - R-11 Electrical for power pedestal; R-37 Plumbing for sewer/water hookups; R-3 for RV covers/carports
+  citation: A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+  other_agency: null
+  notes: ''
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: 'Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit,
+    is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)),
+    and ads say ''not a licensed contractor''. Source: A.R.S. 32-1121(A)(14), (C), (D) [S4]; foundation/az_license_master.md
+    section 4.'
+  note: 'Yes for repairs on the RV itself [judgment: vehicle, not ROC work]. Not for a new RV power pedestal or
+    sewer hookup at a house, which is ROC electrical or plumbing work. A.R.S. 32-1121(A)(14): a person may do ''casual
+    or minor'' work without an ROC license only if the whole job (labor, materials, everything) is under $1,000,
+    no building permit is needed, it is not part of a larger job or split up to get under the limit, and their ads
+    say ''not a licensed contractor''. Per 32-1121(D) the exemption never covers work that connects to natural gas,
+    propane or other fuel gas, or hardwired/interconnected fire-safety devices. Lake Havasu City''s permit list
+    decides whether a permit is needed (https://www.lhcaz.gov/development-permitting/building).'
+local_notes:
+- Many winter visitors stay in RVs in and around Lake Havasu City from fall to spring [judgment].
+- Summer heat and UV wear roof sealant, tires and rooftop AC hard [judgment].
+- HOA or RV park rules may limit mobile repairs on site [judgment].
+sample_card: 'REQ-0804 | RV roof leak
+
+  Lake Havasu City, south side
+
+  32 ft fifth wheel, ceiling stain near front AC after rain. Mobile service at home.
+
+  Photos of stain and roof attached.'
+test_messages:
+- id: rv_services_t01
+  message: camper roof leaking by the AC
+  trade: rv_services
+  job_type: roof_leak
+  emergency: 'no'
+  first_question_id: rv_type
+  ideal_first_question: What kind of RV?
+  note: ''
+- id: rv_services_t02
+  message: RV
+  trade: rv_services
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: rv_type
+  ideal_first_question: What kind of RV?
+  note: job_type unknown = too vague; the first question picks the job type.
+- id: rv_services_t03
+  message: propane alarm keeps going off in my trailer and smells like gas
+  trade: rv_services
+  job_type: appliances_propane
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: '[safety_step_first] Give the matching safety step first; ask intake questions only after
+    everyone is safe.'
+  note: ''
+- id: rv_services_t04
+  message: El aire del camper no enfría nada
+  trade: rv_services
+  job_type: rv_ac
+  emergency: 'no'
+  first_question_id: rv_type
+  ideal_first_question: What kind of RV?
+  note: ''
+- id: rv_services_t05
+  message: slide wont come in and we leave tmrw
+  trade: rv_services
+  job_type: slide_awning
+  emergency: 'no'
+  first_question_id: rv_type
+  ideal_first_question: What kind of RV?
+  note: ''
+- id: rv_services_t06
+  message: want 50 amp RV plug installed on side of my house
+  trade: rv_services
+  job_type: electrical_solar
+  emergency: 'no'
+  first_question_id: mobile_or_shop
+  ideal_first_question: Where can the work happen?
+  note: ''
+- id: rv_services_t07
+  message: onan generator surges then dies
+  trade: rv_services
+  job_type: generator
+  emergency: 'no'
+  first_question_id: rv_type
+  ideal_first_question: What kind of RV?
+  note: ''
+- id: rv_services_t08
+  message: need RV pad poured
+  trade: pavers_concrete
+  job_type: slab_pad
+  emergency: 'no'
+  first_question_id: material
+  ideal_first_question: What material do you want?
+  note: ''
+- id: rv_services_t09
+  message: wash and wax our class A, 40 ft
+  trade: rv_services
+  job_type: wash_detail
+  emergency: 'no'
+  first_question_id: mobile_or_shop
+  ideal_first_question: Where can the work happen?
+  note: ''
+- id: rv_services_t10
+  message: Mi tráiler tiene una fuga de agua debajo del fregadero
+  trade: rv_services
+  job_type: plumbing_tanks
+  emergency: 'no'
+  first_question_id: rv_type
+  ideal_first_question: What kind of RV?
+  note: ''
+sources:
+- A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+  fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+- A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+- Propane Education and Research Council, Safety Guide for Propane Users - https://propane.com/safety/safety-guide-for-propane-users/
+- CDC, Carbon Monoxide Poisoning basics - https://www.cdc.gov/carbon-monoxide/
+- NFPA, Lithium-Ion Battery Safety - https://www.nfpa.org/education-and-research/energy-transition/lithium-ion-batteries
+- U.S. Fire Administration (FEMA), Lithium-ion batteries community education - https://www.usfa.fema.gov/a-z/lithium-ion-batteries/community-education/
+- National Weather Service, Heat Safety - https://www.weather.gov/safety/heat

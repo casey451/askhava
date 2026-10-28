@@ -18,12 +18,12 @@
 #   recurring         fee basis is 4 months of the monthly price (REC-002).
 #   one_time_job_types  in a recurring category, the job types that are one-time jobs:
 #                     quoted with no period and priced at face value, no 4-month rule.
-#   trip_fee_tier     the set introduction fee in dollars for a site-visit-needed (trip fee plus
-#                     estimate) quote: $25 by default, never above $75 (FEE-004, D-399, default
-#                     pending Casey).
+#   trip_fee_tier     the set introduction fee in dollars for a diagnostic-visit (visit fee plus
+#                     estimate) quote, used only when quote_format is diagnostic_visit: $25 by
+#                     default, never above $75 (FEE-004, D-399, D-418, D-441).
 #   launch_open       true: "Open now" at Gate C and takes homeowner requests once it has 2 or more
 #                     active businesses; false: "Coming later", waitlist sign-ups only (LIC-046, D-396,
-#                     default pending Casey). A launch-open category must be enabled.
+#                     D-418). A launch-open category must be enabled.
 #   fee_free_job_types  job types whose pick charges no introduction fee (FEE-045, D-403).
 #   licensed_only_decision  pest control only: the decision that switched it on for Department
 #                     licensees only (LIC-012, D-402).
@@ -31,8 +31,16 @@
 # license.classes lists the narrowest residential classes for reading. Which classes (dual CR-,
 # general B and KB, subclassifications) receive which job types is decided only by
 # docs/catalog/license_map.yaml (LIC-043, D-392). The question set for each category is in
-# docs/catalog/question_bank.yaml (LIC-040, D-394); intake_questions below are the short
-# fallback prompts kept from K2b.
+# docs/catalog/question_bank.yaml (LIC-040, D-394, D-431).
+#   quote_format      the one quote format every quote for this category uses (PICK-053, D-441):
+#                     range | monthly | tiers | firm | diagnostic_visit. A recurring category is
+#                     monthly (its one_time_job_types are quoted firm); only a diagnostic_visit
+#                     category takes a visit-fee quote (FEE-004).
+#   job_type_formats  a job type whose quotes use another format than the category's, so every
+#                     quote for that job type lines up (PICK-053); never a visit fee outside a
+#                     diagnostic_visit category's own job types.
+#   design            true: inspiration pictures and, while the switch is on, a labeled AI concept
+#                     image (INT-045, INT-046, D-433); range categories only.
 #   after_hours_emergency  the category takes after-hours emergency requests.
 #   refused / routed_to    job types this category never takes, and where they go instead.
 #   review            who confirmed the row and what an attorney may still look at.
@@ -70,7 +78,8 @@ categories:
     refused:
       - {job: "gas line work", routed_to: "licensed only (R-37)", reason: "gas work is never handyman work (LIC-021)"}
       - {job: "water heater replacement", routed_to: "licensed only (R-37)", reason: "permit-type job (LIC-022)"}
-    intake_questions: ["What is leaking or not working?", "Is water shut off right now?"]
+    quote_format: diagnostic_visit
+    job_type_formats: {drain clearing: firm, faucet replacement: firm}
     keywords: [leak, toilet, drain, faucet, pipe, clog]
     review: "Class per changes file :38. Confirmed K2b."
 
@@ -87,7 +96,7 @@ categories:
     after_hours_emergency: true
     job_types: [AC not cooling, thermostat, duct repair, furnace repair, evaporative (swamp) cooler repair]
     refused: []
-    intake_questions: ["Is it heating or cooling?", "How old is the system?"]
+    quote_format: diagnostic_visit
     keywords: [ac, air conditioner, hvac, cooling, furnace, thermostat, swamp cooler, evaporative cooler]
     review: "Class per changes file :38. Confirmed K2b."
 
@@ -104,7 +113,7 @@ categories:
     after_hours_emergency: false
     job_types: [full system replacement, condenser replacement]
     refused: []
-    intake_questions: ["How many tons or square feet?", "Is the unit on the roof or the ground?"]
+    quote_format: range
     keywords: [new ac, replace ac, new unit, system replacement]
     review: "Permit-type work; never handyman. Confirmed K2b."
 
@@ -121,7 +130,7 @@ categories:
     after_hours_emergency: true
     job_types: [outlet repair, breaker trips, light fixture, panel upgrade, new circuit, hardwired smoke alarm]
     refused: []
-    intake_questions: ["What stopped working?", "Is anything sparking, hot or smoking?"]
+    quote_format: range
     keywords: [outlet, breaker, panel, wiring, circuit, light fixture]
     review: "Class per changes file :38. Hardwired smoke alarms and new circuits never handyman (LIC-021, LIC-022). Confirmed K2b."
 
@@ -139,7 +148,8 @@ categories:
     job_types: [pump repair, filter repair, pool leak, equipment replacement]
     refused:
       - {job: "gas pool heater", routed_to: "licensed only (R-6 or B-6)", reason: "gas heaters only to licensed businesses (changes file :240)"}
-    intake_questions: ["What equipment is not working?", "Pool, spa or both?"]
+    quote_format: diagnostic_visit
+    job_type_formats: {equipment replacement: range}
     keywords: [pool pump, pool filter, pool leak, spa heater]
     review: "Changes file 7.1 item 4. Confirmed K2b."
 
@@ -160,7 +170,7 @@ categories:
       - {job: "hardwired smoke alarm", routed_to: "electrical", reason: "never handyman at any price (LIC-021)"}
       - {job: "fire sprinklers", routed_to: "licensed only", reason: "never handyman at any price (LIC-021)"}
       - {job: "wall removal or any permit-type job", routed_to: "licensed only", reason: "permit-type job (LIC-022)"}
-    intake_questions: ["What needs fixing?", "Roughly how big is the job?"]
+    quote_format: range
     keywords: [handyman, drywall, door, shelf, fence, small repair]
     review: "A.R.S. 32-1121(A)(14); changes file :40-45. Confirmed K2b."
 
@@ -179,7 +189,7 @@ categories:
     one_time_job_types: [green pool cleanup]
     refused:
       - {job: "pool equipment repair", routed_to: "pool_repair", reason: "repair goes to R-6 or a handyman under $1,000 (changes file :240)"}
-    intake_questions: ["How often would you like service?", "Pool, spa or both?"]
+    quote_format: monthly
     keywords: [pool cleaning, pool service, weekly pool, green pool]
     review: "Changes file 7.1 item 4 (no license). Attorney may confirm."
 
@@ -198,7 +208,7 @@ categories:
     one_time_job_types: [yard cleanup]
     refused:
       - {job: "pre-emergent or advertised weed control", routed_to: "pest_control", reason: "businesses attesting to an AZ Dept of Agriculture license only (LIC-012, LIC-047, D-417)"}
-    intake_questions: ["How often would you like service?", "About how big is the yard?"]
+    quote_format: monthly
     keywords: [yard, landscaping, mowing, trimming, gardener]
     review: "Gardener exemption, A.R.S. 32-1121(A)(16) (changes file :47). Confirmed K2b."
 
@@ -216,7 +226,7 @@ categories:
     job_types: [regular cleaning, deep cleaning, move-out cleaning]
     one_time_job_types: [deep cleaning, move-out cleaning]
     refused: []
-    intake_questions: ["How many bedrooms and bathrooms?", "How often?"]
+    quote_format: monthly
     keywords: [house cleaning, maid, cleaner, deep clean]
     review: "No license. Confirmed K2b."
 
@@ -236,7 +246,7 @@ categories:
     job_types: [general pest service, scorpions, termites, pre-emergent weed control]
     one_time_job_types: [termites]
     refused: []
-    intake_questions: ["What pests are you seeing?", "One-time or ongoing service?"]
+    quote_format: monthly
     keywords: [pest, bugs, scorpion, termite, pre-emergent, weed control]
     review: "On for businesses that attest to a Department pest-management license (LIC-012, LIC-047, D-417); never advertised on its own (changes file 7.1 item 3, WEB-010); self-reported license number and a not-independently-verified line on every quote card; termite and pre-emergent job types need the attested matching category (LIC-043). No letter to the Department."
 
@@ -253,7 +263,7 @@ categories:
     after_hours_emergency: false
     job_types: [weekly yard pickup]
     refused: []
-    intake_questions: ["How many dogs?", "How often?"]
+    quote_format: monthly
     keywords: [dog waste, poop scoop, pet waste]
     review: "No license. Confirmed K2b."
 
@@ -270,7 +280,7 @@ categories:
     after_hours_emergency: false
     job_types: [bin washing]
     refused: []
-    intake_questions: ["How many bins?", "How often?"]
+    quote_format: monthly
     keywords: [trash can cleaning, bin cleaning, garbage can wash]
     review: "Cleaning only, not refuse collection. Confirmed K2b."
 
@@ -288,7 +298,7 @@ categories:
     job_types: [turnover clean, linen change, restock]
     refused:
       - {job: "rent collection, finding tenants or leasing", routed_to: "none", reason: "never included (LIC-018)"}
-    intake_questions: ["How many bedrooms?", "How many turnovers a month?"]
+    quote_format: monthly
     keywords: [turnover, vacation rental, airbnb cleaning, vrbo cleaning]
     review: "Changes file :207. Confirmed K2b."
 
@@ -306,7 +316,7 @@ categories:
     after_hours_emergency: false
     job_types: [junk haul-away]
     refused: []
-    intake_questions: ["What needs hauling?", "About how many truckloads?"]
+    quote_format: range
     keywords: [junk removal, haul away, dump run]
     review: "Off (LIC-005). Switch on is a logged settings change after the city-code check."
 
@@ -323,7 +333,7 @@ categories:
     after_hours_emergency: false
     job_types: [interior detail, exterior detail, full detail, RV detailing]
     refused: []
-    intake_questions: ["What kind of vehicle?", "Where is it parked?"]
+    quote_format: tiers
     keywords: [car detail, auto detail, vehicle cleaning, rv detail, motorhome wash]
     review: "Non-construction: no $1,000 limit (LIC-020). Confirmed K2b."
 
@@ -340,7 +350,7 @@ categories:
     after_hours_emergency: false
     job_types: [hull cleaning, interior detail, waxing]
     refused: []
-    intake_questions: ["How long is the boat?", "Is it in the water, on a trailer or in storage?"]
+    quote_format: tiers
     keywords: [boat detail, boat cleaning, boat wax]
     review: "Non-construction. Location may be a marina or storage lot. Confirmed K2b."
 
@@ -358,7 +368,8 @@ categories:
     job_types: [engine repair, outboard service, trailer repair, canvas and upholstery repair]
     refused:
       - {job: "dock, boat lift or seawall work", routed_to: "licensed only (ROC)", reason: "construction on real property, not vessel work"}
-    intake_questions: ["What kind of boat and engine?", "What is going wrong?"]
+    quote_format: diagnostic_visit
+    job_type_formats: {outboard service: firm}
     keywords: [boat repair, outboard, marine mechanic, boat engine, boat canvas, boat upholstery, bimini]
     review: "Vessel work, not construction on real property; no ROC license. Attorney may confirm."
 
@@ -375,7 +386,7 @@ categories:
     after_hours_emergency: false
     job_types: [inside and outside windows, screens, hard-water removal]
     refused: []
-    intake_questions: ["About how many windows?", "One or two stories?"]
+    quote_format: firm
     keywords: [window cleaning, window washing]
     review: "No license. Confirmed K2b."
 
@@ -393,7 +404,7 @@ categories:
     job_types: [driveway, patio, house wash]
     refused:
       - {job: "sealing or painting", routed_to: "painting", reason: "R-34 work"}
-    intake_questions: ["What surfaces?", "About how many square feet?"]
+    quote_format: firm
     keywords: [pressure washing, power washing]
     review: "No license; sealing or painting goes to R-34. Confirmed K2b."
 
@@ -410,7 +421,7 @@ categories:
     after_hours_emergency: false
     job_types: [solar screens, window film]
     refused: []
-    intake_questions: ["About how many windows?", "Screens, film or both?"]
+    quote_format: range
     keywords: [solar screen, sun screen, window film, window tint]
     review: "R-65 per Grok class mapping (changes file :209). Attorney may confirm whether screens need a class."
 
@@ -427,7 +438,7 @@ categories:
     after_hours_emergency: true
     job_types: [leak repair, tile replacement, re-roof]
     refused: []
-    intake_questions: ["Tile, shingle or flat roof?", "Is it leaking now?"]
+    quote_format: range
     keywords: [roof, roof leak, roofer, re-roof]
     review: "Re-roof is permit-type (LIC-022). Class per changes file :38. Confirmed K2b."
 
@@ -444,7 +455,8 @@ categories:
     after_hours_emergency: false
     job_types: [interior painting, exterior painting, cabinet painting]
     refused: []
-    intake_questions: ["Inside, outside or both?", "About how many rooms or square feet?"]
+    quote_format: range
+    design: true
     keywords: [painting, painter, paint]
     review: "Class per changes file :38. Confirmed K2b."
 
@@ -462,7 +474,7 @@ categories:
     job_types: [in-town move, loading help, in-state move]
     refused:
       - {job: "move leaving Arizona", routed_to: "none", reason: "interstate broker rules (LIC-017)"}
-    intake_questions: ["Moving from where to where (towns only)?", "How many bedrooms?"]
+    quote_format: range
     keywords: [movers, moving, moving help]
     review: "Non-construction: no $1,000 limit (LIC-020). Confirmed K2b."
 
@@ -481,7 +493,7 @@ categories:
     refused:
       - {job: "gas, plumbing or electrical line work", routed_to: "licensed only", reason: "never part of appliance repair (changes file :240)"}
       - {job: "gas appliance repair (gas dryer, range or oven)", routed_to: "licensed only (R-63)", reason: "gas work is never handyman work (LIC-021)"}
-    intake_questions: ["Which appliance and brand?", "What is it doing?"]
+    quote_format: diagnostic_visit
     keywords: [appliance repair, washer, dryer, fridge, dishwasher]
     review: "Changes file 7.1 item 4. Confirmed K2b."
 
@@ -499,7 +511,8 @@ categories:
     after_hours_emergency: false
     job_types: [spring repair, opener repair, door replacement]
     refused: []
-    intake_questions: ["What is the door doing?", "Single or double door?"]
+    quote_format: diagnostic_visit
+    job_type_formats: {door replacement: range}
     keywords: [garage door, garage opener, garage spring]
     review: "Off (LIC-005). ROC class unresolved; stays off until confirmed."
 
@@ -519,7 +532,7 @@ categories:
     job_types: [dryer vent cleaning]
     refused:
       - {job: "rerouting or replacing a vent", routed_to: "handyman", reason: "handyman job under the $1,000 cap (LIC-028)"}
-    intake_questions: ["How long since the last cleaning?", "Does the vent exit on the roof or a wall?"]
+    quote_format: firm
     keywords: [dryer vent, lint, vent cleaning]
     review: "Changes file 7.1 item 4. Confirmed K2b."
 
@@ -537,7 +550,7 @@ categories:
     job_types: [plug-in light hanging, take-down]
     refused:
       - {job: "new outlet, circuit or hardwiring", routed_to: "electrical", reason: "R-11 only (LIC-029)"}
-    intake_questions: ["Roofline, trees or both?", "Hang only or hang and take down?"]
+    quote_format: tiers
     keywords: [christmas lights, holiday lights, light hanging]
     review: "Changes file 7.1 item 4. Confirmed K2b."
 
@@ -554,7 +567,7 @@ categories:
     after_hours_emergency: false
     job_types: [whole-house cleanout, sorting for donation]
     refused: []
-    intake_questions: ["How many rooms?", "Any items to keep or donate?"]
+    quote_format: range
     keywords: [estate cleanout, house cleanout]
     review: "Not refuse collection; stays on (changes file 7.1 item 13). Confirmed K2b."
 
@@ -571,7 +584,7 @@ categories:
     after_hours_emergency: false
     job_types: [furniture donation pickup]
     refused: []
-    intake_questions: ["What items?", "Any stairs?"]
+    quote_format: firm
     keywords: [donation pickup, donate furniture]
     review: "Not refuse collection; stays on (changes file 7.1 item 13). Confirmed K2b."
 
@@ -588,7 +601,7 @@ categories:
     after_hours_emergency: true
     job_types: [tank pumping, tank inspection]
     refused: []
-    intake_questions: ["When was it last pumped?", "Is it backing up now?"]
+    quote_format: firm
     keywords: [septic, septic pumping, septic tank]
     review: "Changes file :205 (LIC-016). Confirmed K2b."
 
@@ -605,7 +618,7 @@ categories:
     after_hours_emergency: false
     job_types: [alarm install, alarm monitoring setup]
     refused: []
-    intake_questions: ["New system or existing?", "About how many doors and windows?"]
+    quote_format: range
     keywords: [alarm, security system, alarm monitoring]
     review: "Changes file :204 (LIC-013). Confirmed K2b."
 
@@ -622,7 +635,7 @@ categories:
     after_hours_emergency: false
     job_types: [camera install, doorbell camera]
     refused: []
-    intake_questions: ["How many cameras?", "Wired or wireless?"]
+    quote_format: range
     keywords: [security camera, cctv, doorbell camera]
     review: "R-67 (or broader) or handyman under $1,000 with no permit (LIC-014). Broader classes are listed when the ROC scope table is loaded."
 
@@ -640,7 +653,7 @@ categories:
     job_types: [home condition inspection (no sale or refinance), buyer inspection, pre-listing inspection, refinance inspection, termite report for a sale or loan]
     fee_free_job_types: [buyer inspection, pre-listing inspection, refinance inspection, termite report for a sale or loan]
     refused: []
-    intake_questions: ["About how many square feet?", "Is this inspection for a home sale, purchase or refinance?"]
+    quote_format: firm
     keywords: [home inspection, inspector]
     review: "Changes file :204 (LIC-015). Sale, purchase and refinance inspections and termite reports for a sale or loan are taken with no introduction fee, so no RESPA section 8 fee is accepted (FEE-045, D-403, default pending Casey). Confirmed K2b."
 
@@ -659,7 +672,7 @@ categories:
     one_time_job_types: [storm check]
     refused:
       - {job: "rent collection, finding tenants or leasing", routed_to: "none", reason: "never included (LIC-018)"}
-    intake_questions: ["How often should someone check?", "Any special tasks (water plants, run taps)?"]
+    quote_format: monthly
     keywords: [home watch, house check, snowbird]
     review: "Changes file :207. Not property management (LIC-004). Confirmed K2b."
 
@@ -678,7 +691,7 @@ categories:
     after_hours_emergency: false
     job_types: [softener install, RO system, misting system]
     refused: []
-    intake_questions: ["New install or repair?", "Which system?"]
+    quote_format: range
     keywords: [water softener, reverse osmosis, misting system]
     review: "R-54 per changes file :209. Confirmed K2b."
 
@@ -695,7 +708,7 @@ categories:
     after_hours_emergency: false
     job_types: [gutter install, gutter repair]
     refused: []
-    intake_questions: ["About how many feet of gutter?", "Install or repair?"]
+    quote_format: firm
     keywords: [gutter, downspout, rain gutter]
     review: "R-45 per changes file :209. Confirmed K2b."
 
@@ -712,7 +725,7 @@ categories:
     after_hours_emergency: false
     job_types: [attic insulation, blown-in insulation]
     refused: []
-    intake_questions: ["About how many square feet?", "Add to existing or replace?"]
+    quote_format: range
     keywords: [insulation, attic insulation]
     review: "R-40 per changes file :209. Confirmed K2b."
 
@@ -729,7 +742,8 @@ categories:
     after_hours_emergency: false
     job_types: [paver patio, walkway, irrigation install]
     refused: []
-    intake_questions: ["About how many square feet?", "New or repair?"]
+    quote_format: range
+    design: true
     keywords: [pavers, hardscape, irrigation, drip system]
     review: "R-21 per changes file :38 and :209. Confirmed K2b."
 
@@ -746,6 +760,7 @@ categories:
     after_hours_emergency: false
     job_types: [garage floor epoxy]
     refused: []
-    intake_questions: ["About how many square feet?", "Any cracks to repair first?"]
+    quote_format: range
+    design: true
     keywords: [epoxy, garage floor coating]
     review: "R-8 or R-34 per changes file :209. Confirmed K2b."

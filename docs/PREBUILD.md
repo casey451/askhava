@@ -9,8 +9,8 @@ This is the only to-do list. The same file is in the repository as `docs/PREBUIL
 ## 1. Where we are
 
 **Decided and written down**
-- What Ask Hava is: a quote relay. A homeowner asks once; local businesses quote in their own words; the homeowner sees every quote, unranked, and picks one; the picked business pays a fixed introduction fee ($25, $75 or $199 by job size). Ask Hava does no work and promotes no business.
-- The plan: 611 numbered requirements in 20 spec files, 428 logged decisions, 161 build tasks with their prompts, 8 legal drafts, a license map, a question bank for 37 trades, 40 worked fee examples. Every repo check passes.
+- What Ask Hava is: a quote relay that packages the job. A homeowner asks once and answers a few pro-level questions, with photos if easy; she approves the job card; local businesses quote in the same format per job type; she sees every quote, unranked, with license numbers and Google and Yelp links, and picks one; the picked business pays a fixed introduction fee ($25, $75 or $199 by job size). Ask Hava does no work and promotes no business.
+- The plan: 629 numbered requirements in 20 spec files, 449 logged decisions, 165 build tasks with their prompts, 8 legal drafts, a license map, a question bank for 37 trades linked to the Grok trade knowledge base, 40 worked fee examples. Every repo check passes.
 - One rule for every trade: if a license is needed, only licensed businesses get its jobs; if not, any legitimate business with a city license can.
 - No calls to businesses, ever. Businesses get everything by email and on the website.
 
@@ -29,7 +29,33 @@ This is the only to-do list. The same file is in the repository as `docs/PREBUIL
 
 ---
 
-## 2. What changed in fix round 13
+## 2. What changed in fix round 14 (October 28, packaged jobs)
+
+One pull request. Decisions D-429 to D-449. Plan: `docs/handoff/rework-plan.md`. Your answers: photos now, AI later; she OKs sharing at the pick; the ADOR ruling on the later list; the fire-truck list only; then "Do everything that you recommend." No simulations were run.
+
+| Change | Where |
+|---|---|
+| AI may word questions and write the job card she approves, inside fixed limits (no diagnosing, pricing or safety calls) | AI-006, AI-008, AI-010, AI-019, TXT-004, CARD-007 (D-430) |
+| Pro-level questions per job type from the Grok knowledge base, up to 8; the base kept in `docs/catalog/trade_kb/` | INT-039, LIC-040, OPS-040 (D-431) |
+| Photos from day one, checked on our own server; AI reads them only after zero retention | INT-044, CARD-013, CARD-014, AI-016, PRIV-013, PRIV-015 (D-432) |
+| Design jobs: inspiration pictures and a labeled concept image (switch off until a provider is set up) | INT-045, INT-046 (D-433) |
+| She approves the real card; one business job page | INT-041, CARD-023, JOB-010 (D-434) |
+| Coverage told at once; not-covered requests email the owner inbox | INT-017, TXT-032, OPS-041 (D-435) |
+| One 911 text for the fire-truck list; no heat, water, health or utility lines; safety-numbers file gone | INT-002, INT-004, INT-031, INT-034 to INT-037, INT-042, WEB-022 (D-436) |
+| Own-or-rent and the landlord text removed | INT-028, TXT-028, CARD-011 (D-437) |
+| Short texts linking to her page; license numbers and Google and Yelp links on quotes; "Free for you" said plainly | TXT-016, TXT-040, PICK-041, CON-003 (D-438) |
+| Sign-up collects Google and Yelp links and license numbers | BIZ-052 (D-439) |
+| No scheduling: no call window, no lockbox question | PICK-018, PICK-025, PICK-031, PICK-045, TXT-030 (D-440) |
+| One quote format per job type; site-visit fees only on repairs that need a look | PICK-002, PICK-053, FEE-004, FEE-043, PICK-038 (D-441) |
+| Screened notes; edit or withdraw; "Can't take it" | PICK-050 to PICK-052 (D-442, D-446) |
+| "Share my first name and address" box at the pick; "introduction fee" wording, never "lead" | PICK-049, PICK-037, FEE-031, WORD-026 (D-443) |
+| Sales tax: set-aside 8.6%; ADOR ruling on the company-setup list | FEE-046 (D-444) |
+| AI wording in the privacy policy and the Twilio question | AI-018, TERMS-008 (D-445) |
+| Walkthrough gaps G5 to G21 | LIC-048, TXT-018, PICK-016, OPS-028, OPS-033, PICK-047, BIZ-051, TXT-041, J1, J2 (D-446) |
+| Voice: a sharp, experienced receptionist | WORD-024, `docs/voice.md` (D-447) |
+| Tasks T162 to T165 added; T152 and T159 repurposed | `kit/tasks.json` (D-448) |
+
+## 2a. What changed in fix round 13
 
 One pull request on GitHub (see the link in chat). Decisions D-391 to D-416. No simulations were run.
 
@@ -97,7 +123,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | 9 | Stripe's written answer | outside | waiting on item 8 | Answer saved; auto-confirm stays hidden until it says yes |
 | 10 | ~~Department of Agriculture letter~~ | — | dropped | Casey Oct 28: no letter; pest businesses attest to their license instead (D-417) |
 | 11 | Optional: add the routine's merge trigger (section 6) | Casey | to do | The routine shows "Pull request closed, merged into main" |
-| 12 | Optional: allow the safety-number websites in the build environment (section 5) | Casey | to do | Domains listed in the environment's network settings |
+| 12 | ~~Allow the safety-number websites~~ | — | dropped | Oct 28: texts name no numbers except 911 (D-436) |
 | 13 | Save dated screenshots of today's askhava.com | Casey | to do | Screenshots in your files |
 | 14 | Gate P: reply `approved to build` on GitHub issue #24 | Casey | to do | Reply posted; then resume the runner (item 3) |
 | 15 | Build Phase 1 (stages 1 to 5) | automatic | waiting on item 14 | Account checkpoint issue appears |
@@ -128,12 +154,12 @@ Not needed before the build, but before the pilot: talk to 5 to 10 businesses an
 | B17 | Spanish: launch English-only for conversations; Spanish built and tested but switched off; Spanish safety texts on, checked before launch by back-translation through ChatGPT and Grok with matching meaning; full Spanish after a paid professional review (about $100) | Decided by Casey Oct 28: "your recommendation is going to have to be best" (D-427) |
 | B16 | Short first reply | Replaced Oct 28: no reply OK; a 2-segment first reply (D-419) |
 
-**Still open (2)**
+**Still open (1): B1. B10 is now decided, shown here for reference.**
 
 | # | Decision | Recommended answer |
 |---|---|---|
-| B10 | Sales tax path | Open: ChatGPT researching the tax code (prompt `outputs/ai_prompts/ChatGPT_prompt_sales_tax.md`); no ADOR letter planned. |
-| B1 | Gate P | Approve once fix round 13 is merged and you've read this file. |
+| B10 | Sales tax path | Decided Oct 28: set aside 8.6%; ask ADOR for a private ruling after the LLC exists, before real revenue (D-444) |
+| B1 | Gate P | Approve once fix round 14 is merged and you've looked at the rebuilt walkthrough deck. |
 
 **Your scope call (optional, item 6 of section 2):** keep all 161 tasks (recommended: the build is automatic, and cutting changes the plan again), or postpone team members, the monthly fee limit, the live license lookup and the full restore replay.
 
@@ -154,7 +180,6 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | Now | Twilio (free) | No key yet | To send the eligibility question |
 | Now | Stripe (test mode, don't activate) | No key yet | To send the support question |
 | Now (optional) | Backup runner token (`claude setup-token`, at a computer) | GitHub Actions secret `CLAUDE_CODE_OAUTH_TOKEN` | Only if the scheduled runner fails twice |
-| Now (optional) | Build environment network list: add uesaz.com, lhcaz.gov, epcor.com, hhdwid.com, 211arizona.org | claude.ai environment settings | Lets the build verify safety numbers itself (T159); otherwise unverified entries are left out of texts |
 | Account checkpoint (end of Phase 1) | Railway test project | Railway test variables (app keys) | Test site |
 | Account checkpoint | Stripe test keys | Environment secret locked to api.stripe.com; Railway test variable | Stripe sandbox (T132) |
 | Account checkpoint | Twilio test credentials ("Username and password" secret type) | Environment secret locked to api.twilio.com; Railway test variable | Twilio sandbox (T129, T131) |
@@ -163,6 +188,7 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | Account checkpoint | Sentry | Railway test variable (DSN) | Error monitoring |
 | Account checkpoint | UptimeRobot | No key; you add the test site's /healthz | Uptime alerts |
 | Account checkpoint | Claude Console workspace (separate from your Claude plan) | Environment secret locked to api.anthropic.com; Railway test variable | Real-AI test on fake data (T137); its API terms are recorded for B5 |
+| Account checkpoint (optional) | Concept-image provider (chosen then) | Environment secret locked to its host; Railway test variable | Concept images for design jobs (INT-046); its terms recorded; switch stays off without it |
 | Account checkpoint | Storage bucket (chosen then, D-094) | Railway test variable | Audit stream and backups |
 | After the build plan is complete | LLC, EIN, city license, TPT path, insurance, Google Workspace, DNS (SPF, DKIM, DMARC) | Not keys | Section 8 |
 | Gate C | Twilio brand and campaign registration, Stripe activation, live keys | Railway live project only, by you | Going live |
@@ -232,9 +258,9 @@ The scorecard decides nothing on its own. You decide stop or go at week 8 from r
 
 ## 8. Later
 
-**After the build plan is complete (company setup):** confirm with the Arizona Corporation Commission that an agent or mailbox address can replace a home address; form the LLC with a Maricopa or Pima County statutory agent; free EIN; city business license and home-occupation form; ADOR ruling request and set-aside account; SPF, DKIM and DMARC on askhava.com; Twilio registration (after the answer and the LLC); Stripe activation; Gate C; Resend paid plan at the first 70% alert.
+**After the build plan is complete (company setup):** confirm with the Arizona Corporation Commission that an agent or mailbox address can replace a home address; form the LLC with a Maricopa or Pima County statutory agent; free EIN; city business license and home-occupation form; ADOR private taxpayer ruling request (retail, rental, prime contracting, marketplace, city licensing-for-use and city advertising; D-444) and an 8.6% set-aside account; SPF, DKIM and DMARC on askhava.com; Twilio registration (after the answer and the LLC); Stripe activation; Gate C; Resend paid plan at the first 70% alert.
 
-**After the pilot:** fee review with the real mix; business texting (if Twilio says yes); photos on job cards (after AI screening and zero retention); support bot (past about 15 help requests a week); owner finance assistant; "call and leave a message", then AI voice intake; new trades (pool construction, RV and mobile repair, garage doors once a class is confirmed, junk removal if the city allows); optional monthly business plan with no placement advantage; arbitration review and Spanish legal documents; insurance once the business is fully working (D-426); trademark if Ask Hava grows beyond Havasu or another "Ask Hava" appears (D-425); the paid Spanish review, then Spanish conversations on (D-427).
+**After the pilot:** fee review with the real mix; business texting (if Twilio says yes); AI photo reading (after zero retention); support bot (past about 15 help requests a week); owner finance assistant; "call and leave a message", then AI voice intake; new trades (pool construction, RV and mobile repair, garage doors once a class is confirmed, junk removal if the city allows); optional monthly business plan with no placement advantage; arbitration review and Spanish legal documents; insurance once the business is fully working (D-426); trademark if Ask Hava grows beyond Havasu or another "Ask Hava" appears (D-425); the paid Spanish review, then Spanish conversations on (D-427).
 
 ---
 

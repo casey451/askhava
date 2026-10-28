@@ -1,0 +1,425 @@
+# Ask Hava trade knowledge file: garage_doors
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: garage_doors
+display_name: Garage Doors
+summary: 'Garage door springs, cables, rollers, tracks, panels, openers and remotes. Two spring types: torsion springs
+  sit on a bar above the door and are wound under high tension; extension springs run along the side tracks and
+  should have safety cables through them [judgment]. A broken spring often sounds like a loud bang and the door
+  becomes very heavy [judgment]. Federal rules (16 CFR 1211) require openers to reverse and to have photo eyes or
+  edge sensors, and require manuals to warn that springs, cables and hardware are under high tension and should
+  be fixed by qualified people. Arizona has no separate garage door license class; door work fits ROC R-7 (carpentry,
+  metal doors, hardware) and opener wiring R-11. Confirm with ROC.'
+job_types:
+- id: broken_spring
+  label: Broken spring
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: cable_off
+  label: Cable snapped or off drum
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: off_track
+  label: Door off track/crooked
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: opener_repair
+  label: Opener not working
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: opener_install
+  label: New opener
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: door_replace
+  label: New garage door
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: panel_repair
+  label: Dented/broken panel
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: tune_up
+  label: Noise, rollers, weatherseal, tune-up
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: remote_keypad
+  label: Remote, keypad, smart opener setup
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+triggers_en:
+- phrase: spring broke
+  job_type: broken_spring
+- phrase: loud bang garage
+  job_type: broken_spring
+- phrase: door too heavy
+  job_type: broken_spring
+- phrase: spring snapped
+  job_type: broken_spring
+- phrase: cable snapped
+  job_type: cable_off
+- phrase: cable came off
+  job_type: cable_off
+- phrase: cable loose
+  job_type: cable_off
+- phrase: off track
+  job_type: off_track
+- phrase: door crooked
+  job_type: off_track
+- phrase: door stuck halfway
+  job_type: off_track
+- phrase: hit the door with car
+  job_type: off_track
+- phrase: opener not working
+  job_type: opener_repair
+- phrase: motor hums
+  job_type: opener_repair
+- phrase: door goes back up
+  job_type: opener_repair
+- phrase: lights blink on opener
+  job_type: opener_repair
+- phrase: new opener
+  job_type: opener_install
+- phrase: liftmaster
+  job_type: opener_install
+- phrase: chamberlain
+  job_type: opener_install
+- phrase: genie
+  job_type: opener_install
+- phrase: belt drive
+  job_type: opener_install
+- phrase: new garage door
+  job_type: door_replace
+- phrase: replace garage door
+  job_type: door_replace
+- phrase: insulated door
+  job_type: door_replace
+- phrase: dent
+  job_type: panel_repair
+- phrase: panel cracked
+  job_type: panel_repair
+- phrase: noisy garage
+  job_type: tune_up
+- phrase: squeaks
+  job_type: tune_up
+- phrase: bottom seal
+  job_type: tune_up
+- phrase: remote
+  job_type: remote_keypad
+- phrase: keypad
+  job_type: remote_keypad
+- phrase: myq
+  job_type: remote_keypad
+- phrase: program
+  job_type: remote_keypad
+triggers_es:
+- phrase: resorte roto
+  job_type: broken_spring
+- phrase: se rompió el resorte
+  job_type: broken_spring
+- phrase: muelle
+  job_type: broken_spring
+- phrase: cable roto
+  job_type: cable_off
+- phrase: se salió el cable
+  job_type: cable_off
+- phrase: puerta de cochera atorada
+  job_type: off_track
+- phrase: se salió del riel
+  job_type: off_track
+- phrase: puerta chueca
+  job_type: off_track
+- phrase: el abridor no funciona
+  job_type: opener_repair
+- phrase: motor de la cochera
+  job_type: opener_repair
+- phrase: no abre la cochera
+  job_type: opener_repair
+- phrase: puerta de garaje nueva
+  job_type: door_replace
+- phrase: puerta de cochera nueva
+  job_type: door_replace
+- phrase: control remoto
+  job_type: remote_keypad
+- phrase: programar control
+  job_type: remote_keypad
+questions:
+- id: q1_problem
+  text: What is going on?
+  options:
+  - Spring broke or loud bang
+  - Cable off or snapped
+  - Door off track or crooked
+  - Opener not working
+  - Want a new door or opener
+  - Noisy or slow
+  ask_if: always
+  changes_price: 'yes'
+  why: Spring, cable, opener and panel jobs use different parts.
+- id: q2_door_size
+  text: What size door?
+  options:
+  - 1-car (about 8-9 ft wide)
+  - 2-car (about 16 ft wide)
+  - RV or tall door
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Single or double doors take different springs and panels.
+- id: q3_spring_type
+  text: Where are the springs?
+  options:
+  - On a bar above the door
+  - Along the side tracks
+  - Not sure
+  ask_if: problem in [Spring broke or loud bang, Cable off or snapped, Noisy or slow]
+  changes_price: 'yes'
+  why: Torsion and extension springs are priced differently.
+- id: q4_car_trapped
+  text: Is a car stuck inside, or is the door open and won't close?
+  options:
+  - Car stuck inside
+  - Door stuck open
+  - Neither
+  - Not sure
+  ask_if: always
+  changes_price: 'no'
+  why: A trapped car or open door changes urgency.
+- id: q5_opener_age
+  text: About how old is the opener?
+  options:
+  - Under 10 years
+  - Over 10 years
+  - No opener
+  - Not sure
+  ask_if: problem in [Opener not working, Want a new door or opener]
+  changes_price: 'yes'
+  why: Older openers may lack current safety features, which can change repair vs replace options. [judgment]
+quote_without_visit_needs:
+- Door size
+- Spring location photo
+- Photo of opener label
+- Photo of the problem area
+site_visit_usually_needed:
+- Off-track doors
+- Bent panels or track
+- New door orders (exact measure, headroom)
+photos_to_request:
+- id: p1
+  ask: Whole door from inside, closed
+  for_job_types:
+  - all
+- id: p2
+  ask: Above the door (springs on bar)
+  for_job_types:
+  - all
+- id: p3
+  ask: Side tracks and cables
+  for_job_types:
+  - all
+- id: p4
+  ask: Opener motor label (model on sticker on the motor unit)
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Take photos from the floor, do not climb up near springs
+  - Gap in a torsion spring coil means it broke [judgment]
+photo_red_flags:
+- flag: Gap in torsion spring
+  safety_step_ref: es_garage_doors_1
+- flag: Frayed or loose cable
+  safety_step_ref: es_garage_doors_1
+- flag: Door hanging crooked or out of track
+  safety_step_ref: es_garage_doors_1
+- flag: Extension springs with no safety cable through them [judgment]
+  safety_step_ref: null
+- flag: Photo eyes missing or taped over
+  safety_step_ref: null
+emergency_signals:
+- id: es_garage_doors_1
+  signal: Door crooked, hanging, or partly out of track
+  emergency: 'yes'
+  safety_step: Do not use the opener or try to lift the door. Keep people and pets away from under it. Springs,
+    cables and hardware are under high tension; repairs should be done by qualified people.
+  source: '[T-cfr_1211]'
+  then_route_to: garage_doors
+- id: es_garage_doors_2
+  signal: Person or pet trapped or hit by door
+  emergency: 'yes'
+  intake_note:
+  - Call 911. [judgment]
+  safety_step: Do not use the opener or try to lift the door. Keep people and pets away from under it. Springs,
+    cables and hardware are under high tension; repairs should be done by qualified people.
+  source: '[T-cfr_1211]'
+  then_route_to: none
+  note: 'Routing: none (911 first)'
+- id: es_garage_doors_3
+  signal: Car trapped inside; door stuck open so home can't be secured
+  emergency: depends
+  note: 'Urgent, not life-safety: card goes out marked time-sensitive. [judgment]'
+  safety_step: Do not use the opener or try to lift the door. Keep people and pets away from under it. Springs,
+    cables and hardware are under high tension; repairs should be done by qualified people.
+  source: '[T-cfr_1211]'
+  then_route_to: garage_doors
+- id: es_garage_doors_4
+  signal: Noisy door, slow opener
+  emergency: 'no'
+  safety_step: 'Test the auto-reverse each month: place a 1-1/2 inch object (a 2x4 laid flat) under the door; it
+    should reverse when it hits it.'
+  source: '[T-cfr_1211]'
+  then_route_to: garage_doors
+safety_step:
+- when: Broken spring, frayed cable or crooked door
+  step: Do not use the opener or try to lift the door. Keep people and pets away from under it. Springs, cables
+    and hardware are under high tension; repairs should be done by qualified people.
+  source: '[T-cfr_1211]'
+- when: Monthly check
+  step: 'Test the auto-reverse each month: place a 1-1/2 inch object (a 2x4 laid flat) under the door; it should
+    reverse when it hits it.'
+  source: '[T-cfr_1211]'
+intake_notes_judgment:
+- 'Someone hit or trapped by door: Call 911. [judgment]'
+license_classes:
+- job_type:
+  - broken_spring
+  - cable_off
+  - off_track
+  - door_replace
+  - panel_repair
+  - tune_up
+  classes:
+  - R-7
+  - R-60
+  - B
+  - B-3
+  - R-61
+  - R-14
+  citation: A.A.C. R4-9-103 [S2] R-7; [T-roc_classes] [judgment on mapping]
+  other_agency: none
+  notes: 'No dedicated ROC garage door class. Door, spring and hardware work most likely fits ROC R-7 Carpentry
+    (metal doors, hardware) or R-60 Finish Carpentry (metal doors, automatic door closers), or B/B-3/R-61 [judgment].
+    Automatic driveway gates are a named class: R-14. Confirm classification with ROC.'
+- job_type:
+  - opener_install
+  - opener_repair
+  classes:
+  - R-11
+  citation: A.A.C. R4-9-103 [S2] R-11; A.R.S. 32-1121(A)(14) [S4]
+  other_agency: none
+  notes: Opener on an existing outlet is usually installed with the door contractor; new circuit or outlet is R-11
+    Electrical. Plug-in opener is an appliance under (A)(14) cost rule only if unmodified.
+handyman_ok:
+  allowed_examples:
+  - Remote/keypad programming
+  - Weatherseal, lubricating, a roller swap
+  not_allowed_examples:
+  - Jobs over $1,000 such as new doors
+  - New electrical circuits for openers
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+  note: Spring work is legally possible under the exemption if small, but CPSC rule manuals warn it needs qualified
+    people; most homeowners route spring and cable work to a garage door contractor [judgment].
+local_notes:
+- Desert heat dries rollers and weatherseal fast; garage temps above 120F in summer are common [judgment].
+- Monsoon gusts can push wide doors in; wind-rated doors and struts exist [judgment].
+- Many Havasu homes have RV garages with tall doors that need heavier springs [judgment].
+sample_card: 'REQ-0266 | Garage Door | Lake Havasu City, north side
+
+  2-car door, loud bang then door very heavy. Springs on bar above door. Car stuck inside.
+
+  Opener about 8 years old. 3 photos.
+
+  '
+test_messages:
+- id: garage_doors_t01
+  message: heard a huge bang in garage and now door wont open
+  trade: garage_doors
+  job_type: broken_spring
+  emergency: 'no'
+  first_question_id: q4_car_trapped
+  ideal_first_question: Is a car stuck inside, or is the door open and won't close?
+  note: ''
+- id: garage_doors_t02
+  message: garage door is crooked and hanging on one side
+  trade: garage_doors
+  job_type: off_track
+  emergency: 'yes'
+  first_question_id: q4_car_trapped
+  ideal_first_question: Is a car stuck inside, or is the door open and won't close?
+  note: ''
+- id: garage_doors_t03
+  message: se rompió el resorte de la cochera
+  trade: garage_doors
+  job_type: broken_spring
+  emergency: 'no'
+  first_question_id: q2_door_size
+  ideal_first_question: What size door?
+  note: ''
+- id: garage_doors_t04
+  message: opener just clicks, door doesnt move
+  trade: garage_doors
+  job_type: opener_repair
+  emergency: 'no'
+  first_question_id: q1_problem
+  ideal_first_question: What is going on?
+  note: ''
+- id: garage_doors_t05
+  message: want new insulated garage door and opener 16x7
+  trade: garage_doors
+  job_type: door_replace
+  emergency: 'no'
+  first_question_id: q5_opener_age
+  ideal_first_question: About how old is the opener?
+  note: ''
+- id: garage_doors_t06
+  message: door reverses every time it closes
+  trade: garage_doors
+  job_type: opener_repair
+  emergency: 'no'
+  first_question_id: q1_problem
+  ideal_first_question: What is going on?
+  note: ''
+- id: garage_doors_t07
+  message: need outlet added in garage ceiling for new opener
+  trade: electrical
+  job_type: outlet_switch
+  emergency: 'no'
+  first_question_id: q1_problem
+  ideal_first_question: What is going on?
+  note: ''
+- id: garage_doors_t08
+  message: program my new car to the garage
+  trade: garage_doors
+  job_type: remote_keypad
+  emergency: 'no'
+  first_question_id: q1_problem
+  ideal_first_question: What is going on?
+  note: ''
+- id: garage_doors_t09
+  message: garage door kinda loud
+  trade: garage_doors
+  job_type: tune_up
+  emergency: 'no'
+  first_question_id: q3_spring_type
+  ideal_first_question: Where are the springs?
+  note: ''
+- id: garage_doors_t10
+  message: backed into garage door panel is bent
+  trade: garage_doors
+  job_type: panel_repair
+  emergency: 'no'
+  first_question_id: q2_door_size
+  ideal_first_question: What size door?
+  note: ''
+sources:
+- '[T-cfr_1211] 16 CFR Part 1211, Safety Standard for Automatic Residential Garage Door Operators (1211.7 reversal;
+  1211.16 manual warnings on springs, monthly reverse test) https://www.ecfr.gov/current/title-16/chapter-II/subchapter-B/part-1211'
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'
+- '[T-roc_classes] AZ Registrar of Contractors, License Classifications https://roc.az.gov/license-classifications'

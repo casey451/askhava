@@ -1,0 +1,348 @@
+# Ask Hava trade knowledge file: home_inspection
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: home_inspection
+display_name: Home Inspection
+summary: 'Buyer, seller (pre-listing) and pre-warranty home inspections, plus add-ons such as termite (WDIIR) reports,
+  pool/spa, sewer scope and manufactured-home checks. Arizona home inspectors must be certified by the AZ Board
+  of Technical Registration (BTR) under A.R.S. 32-122.02 and follow BTR standards of practice (A.A.C. R4-30-301.01):
+  a visual, non-invasive look, not a code inspection. Termite (wood-destroying insect) reports must be done by an
+  AZ Dept. of Agriculture pest management licensee (A.R.S. 3-3633). Ask Hava never says what an inspection will
+  find.'
+job_types:
+- id: buyer_inspection
+  label: Buyer's home inspection
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: pre_listing
+  label: Seller pre-listing inspection
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: manufactured_home
+  label: Manufactured/mobile home inspection
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: wdiir
+  label: Termite report (WDIIR)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: addons
+  label: 'Add-ons: pool/spa, sewer scope, roof, mold sampling'
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: warranty_check
+  label: 11-month builder warranty inspection
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: home inspection
+  job_type: buyer_inspection
+- phrase: home inspector
+  job_type: buyer_inspection
+- phrase: buying a house need inspection
+  job_type: buyer_inspection
+- phrase: inspection period
+  job_type: buyer_inspection
+- phrase: pre-listing inspection
+  job_type: pre_listing
+- phrase: inspect before i sell
+  job_type: pre_listing
+- phrase: seller inspection
+  job_type: pre_listing
+- phrase: mobile home inspection
+  job_type: manufactured_home
+- phrase: manufactured home inspection
+  job_type: manufactured_home
+- phrase: termite report
+  job_type: wdiir
+- phrase: wdiir
+  job_type: wdiir
+- phrase: termite inspection for loan
+  job_type: wdiir
+- phrase: sewer scope
+  job_type: addons
+- phrase: pool inspection
+  job_type: addons
+- phrase: spa inspection
+  job_type: addons
+- phrase: mold test
+  job_type: addons
+- phrase: 11 month warranty
+  job_type: warranty_check
+- phrase: builder warranty inspection
+  job_type: warranty_check
+- phrase: new build inspection
+  job_type: warranty_check
+triggers_es:
+- phrase: inspección de casa
+  job_type: buyer_inspection
+- phrase: inspector de casas
+  job_type: buyer_inspection
+- phrase: compra de casa inspección
+  job_type: buyer_inspection
+- phrase: reporte de termitas
+  job_type: wdiir
+- phrase: inspección de casa móvil
+  job_type: manufactured_home
+- phrase: inspección de alberca
+  job_type: addons
+questions:
+- id: q1_type
+  text: What kind of inspection?
+  options:
+  - Buying a home
+  - Selling a home
+  - New-build warranty
+  - Termite report only
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Buyer, seller and warranty inspections differ in scope.
+- id: q2_size
+  text: About how big is the home?
+  options:
+  - Under 1,500 sq ft
+  - 1,500-2,500 sq ft
+  - 2,500-3,500 sq ft
+  - Over 3,500 sq ft
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Square footage drives inspection time and price.
+- id: q3_home_kind
+  text: What type of home?
+  options:
+  - Site-built house
+  - Manufactured/mobile home
+  - Condo/townhome
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Manufactured homes have different systems to check.
+- id: q4_addons
+  text: Any add-ons?
+  options:
+  - Pool or spa
+  - Sewer scope
+  - Termite report
+  - None
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Pool, sewer and termite reports are added services, sometimes by other licensees.
+- id: q5_age
+  text: About how old is the home?
+  options:
+  - Under 10 years
+  - 10-30 years
+  - 30-50 years
+  - Over 50 years
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Older homes take longer to inspect. [judgment]
+- id: q6_deadline
+  text: Is there a contract deadline for the inspection?
+  options:
+  - Yes, within a week
+  - Yes, longer
+  - 'No'
+  - Not sure
+  ask_if: always
+  changes_price: 'no'
+  why: Buyer inspection periods are short, so timing matters.
+quote_without_visit_needs:
+- Square feet
+- Home type
+- Year built (approx)
+- Add-ons
+- General area
+site_visit_usually_needed:
+- All inspections are on site by nature
+photos_to_request:
+- id: p1
+  ask: Listing photos are enough; none needed from the homeowner
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Pool/spa present
+  - Detached structures or casita
+  - Manufactured home skirting
+photo_red_flags:
+- flag: None used for intake [judgment]
+  safety_step_ref: null
+emergency_signals:
+- id: es_home_inspection_1
+  signal: Gas smell during an inspection
+  emergency: 'yes'
+  safety_step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call
+    911 and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+  then_route_to: none
+  note: 'Routing: none (leave, call 911 and UES)'
+- id: es_home_inspection_2
+  signal: CO alarm sounding
+  emergency: 'yes'
+  safety_step: Go outside or to an open window or door, call 911, stay there until help arrives.
+  source: '[T-nfpa_sounds]'
+  then_route_to: hvac
+  note: 'Routing: none (911 first), then hvac'
+- id: es_home_inspection_3
+  signal: Routine inspection request
+  emergency: 'no'
+  safety_step: No special safety step; normal job card.
+  source: none
+  then_route_to: home_inspection
+safety_step:
+- when: Gas smell
+  step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call 911
+    and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+- when: CO alarm (4 beeps, pause, repeat)
+  step: Go outside or to an open window or door, call 911, stay there until help arrives.
+  source: '[T-nfpa_sounds]'
+license_classes:
+- job_type:
+  - buyer_inspection
+  - pre_listing
+  - manufactured_home
+  - addons
+  - warranty_check
+  classes:
+  - none
+  citation: '[S6]; [S5]; [T-aac_r4_30_247]; [T-btr_hi]'
+  other_agency: AZ Board of Technical Registration
+  notes: 'No ROC class. Must be a BTR certified home inspector (A.R.S. 32-122.02): exam, course, fingerprint clearance
+    card, and E&O insurance or bond. ''Home inspection'' covers residential buildings of 4 units or fewer (A.R.S.
+    32-101).'
+- job_type:
+  - wdiir
+  classes:
+  - none
+  citation: '[T-ars_3_3633]; [T-azda_wdiir]'
+  other_agency: AZ Dept. of Agriculture, Pest Management Division
+  notes: 'Wood-destroying insect inspection reports: AZ Dept. of Agriculture Pest Management licensee, not the home
+    inspector certificate alone.'
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples:
+  - Home inspections for others (BTR certificate required)
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+  note: Not a construction trade; the handyman exemption does not apply to inspections.
+local_notes:
+- 'BTR standards of practice: the inspection is visual and not technically exhaustive; it is not a code-compliance
+  check and does not estimate repair costs. Source: [T-aac_r4_30_301_01].'
+- Many Havasu sales include pools; pool and spa checks are often add-ons [judgment].
+- 'Manufactured homes are common in parts of Havasu; installation issues go to an ADOH-licensed installer. Source:
+  [S12].'
+- Buyers often have a short inspection window under their purchase contract [judgment].
+sample_card: 'REQ-0374 | Home inspection | Lake Havasu City, south side
+
+  Buyer inspection, site-built home about 2,000 sq ft, built in the 1990s, pool add-on and termite report.
+
+  Contract deadline within a week.
+
+  '
+test_messages:
+- id: home_inspection_t01
+  message: need inspection
+  trade: home_inspection
+  job_type: buyer_inspection
+  emergency: 'no'
+  first_question_id: q1_type
+  ideal_first_question: What kind of inspection?
+  note: ''
+- id: home_inspection_t02
+  message: buying a 1978 house with pool in havasu, need inspector this week
+  trade: home_inspection
+  job_type: buyer_inspection
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: About how big is the home?
+  note: ''
+- id: home_inspection_t03
+  message: necesito inspección para casa móvil que voy a comprar
+  trade: home_inspection
+  job_type: manufactured_home
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: About how big is the home?
+  note: ''
+- id: home_inspection_t04
+  message: lender needs a termite report
+  trade: home_inspection
+  job_type: wdiir
+  emergency: 'no'
+  first_question_id: q1_type
+  ideal_first_question: What kind of inspection?
+  note: ''
+- id: home_inspection_t05
+  message: can the inspector tell me if the roof needs replacing and what it costs
+  trade: home_inspection
+  job_type: buyer_inspection
+  emergency: 'no'
+  first_question_id: q1_type
+  ideal_first_question: What kind of inspection?
+  note: ''
+- id: home_inspection_t06
+  message: seeing termite tubes on the garage wall
+  trade: pest_control
+  job_type: termites
+  emergency: 'no'
+  first_question_id: pest_type
+  ideal_first_question: What kind of inspection?
+  note: ''
+- id: home_inspection_t07
+  message: 11 month walkthrough on new build
+  trade: home_inspection
+  job_type: warranty_check
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: About how big is the home?
+  note: ''
+- id: home_inspection_t08
+  message: sewer scope and inspection for 3br
+  trade: home_inspection
+  job_type: addons
+  emergency: 'no'
+  first_question_id: q5_age
+  ideal_first_question: About how old is the home?
+  note: ''
+- id: home_inspection_t09
+  message: inspector here and CO alarm going off
+  trade: home_inspection
+  job_type: buyer_inspection
+  emergency: 'yes'
+  first_question_id: q1_type
+  ideal_first_question: What kind of inspection?
+  note: ''
+- id: home_inspection_t10
+  message: selling, want to know problems first
+  trade: home_inspection
+  job_type: pre_listing
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: About how big is the home?
+  note: ''
+sources:
+- '[S6] A.R.S. 32-122.02 Home inspector certification qualifications https://www.azleg.gov/ars/32/00122-02.htm'
+- '[S5] A.R.S. 32-101 Definitions (alarm system, alarm agent, alarm business) https://www.azleg.gov/ars/32/00101.htm'
+- '[T-btr_hi] AZ Board of Technical Registration, Home Inspectors https://btr.az.gov/applicants/home-inspector-applicants'
+- '[T-aac_r4_30_247] A.A.C. R4-30-247 Home inspector certification (exam, 84 hours, 30 parallel inspections) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-30-247'
+- '[T-aac_r4_30_301_01] A.A.C. R4-30-301.01 Home inspector standards of professional practice https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-30-301-01'
+- '[T-ars_3_3633] A.R.S. 3-3633 Wood-destroying insect inspection reports (pest management license) https://www.azleg.gov/ars/3/03633.htm'
+- '[T-azda_wdiir] AZ Dept. of Agriculture, Pest Management, Wood-destroying insect inspection reports https://agriculture.az.gov/pestspest-control/termites/wood-destroying-insect-inspection-reports'
+- '[S12] AZ Dept. of Housing, Office of Manufactured Housing, Licensing (installer classes I-10C, I-10D, I-10G)
+  https://housing.az.gov/manufactured-housing/licensing'
+- '[S23][S22] UniSource Energy Services (UES), Natural Gas Safety Tips (leak signs and steps); 24/7 emergency [number removed, see source]
+  per UES Contact https://www.uesaz.com/news/natural-gas-safety-tips/'
+- '[S22] UES Contact (24/7 emergency line [number removed, see source]) https://www.uesaz.com/contact/'
+- '[T-nfpa_sounds] NFPA Fire Prevention Week 2024, Learn the Sounds (smoke/CO alarm beeps) https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Fire-Prevention-Week/2024/FPW24-Learn-the-Sounds.pdf'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'

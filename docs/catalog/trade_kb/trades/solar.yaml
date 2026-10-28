@@ -1,0 +1,515 @@
+# Ask Hava trade knowledge file: solar
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: solar
+display_name: Solar (PV panels, inverters, batteries, solar water heating)
+summary: Rooftop and ground-mount solar electric (PV) systems, inverters, monitoring, home batteries, panel removal
+  and reinstall for roof work, critter guards, and solar water or pool heating. Arizona law makes it unlawful for
+  a contractor to install, alter or repair a solar device without qualifying as a solar contractor, which means
+  passing a solar exam tied to the license class [ARS-1170][ARS-1762]. Ask Hava learns whether it is a problem,
+  an add-on, a removal or a new system, owned vs leased, system size and brand from photos, then writes a card.
+  It never estimates savings, payback or production, and never says a system is underperforming. PV installs need
+  an LHC permit [S17]. Panel washing routes to gutter_solar_cleaning.
+job_types:
+- id: system_not_producing
+  label: System not producing, inverter error, monitoring offline
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: damage_leak
+  label: Damaged panel, roof leak near panels, loose wiring
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: remove_reinstall
+  label: Remove and reinstall panels for a roof job
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: new_system
+  label: New solar system quote
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: add_battery
+  label: Add a battery or backup to existing solar
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: expand_system
+  label: Add more panels
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: critter_guard
+  label: Pigeon or bird guards under panels
+  site_visit_usually_needed: 'no'
+  handyman_ok: limited
+- id: solar_water_pool
+  label: Solar water heater or solar pool heating
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: panel_cleaning
+  label: Wash solar panels
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+triggers_en:
+- phrase: solar not working
+  job_type: system_not_producing
+- phrase: inverter red light
+  job_type: system_not_producing
+- phrase: inverter error
+  job_type: system_not_producing
+- phrase: solar app shows zero
+  job_type: system_not_producing
+- phrase: solar stopped producing
+  job_type: system_not_producing
+- phrase: enphase offline
+  job_type: system_not_producing
+- phrase: solar edge error
+  job_type: system_not_producing
+- phrase: soler not working
+  job_type: system_not_producing
+- phrase: solor
+  job_type: system_not_producing
+- phrase: solar panel cracked
+  job_type: damage_leak
+- phrase: roof leak by solar panels
+  job_type: damage_leak
+- phrase: wires hanging from panels
+  job_type: damage_leak
+- phrase: panel broke in storm
+  job_type: damage_leak
+- phrase: remove solar for roof
+  job_type: remove_reinstall
+- phrase: detach reset solar
+  job_type: remove_reinstall
+- phrase: take panels off for reroof
+  job_type: remove_reinstall
+- phrase: r&r solar
+  job_type: remove_reinstall
+- phrase: solar quote
+  job_type: new_system
+- phrase: get solar
+  job_type: new_system
+- phrase: new solar panels
+  job_type: new_system
+- phrase: install solar
+  job_type: new_system
+- phrase: how much for solar
+  job_type: new_system
+- phrase: solar battery
+  job_type: add_battery
+- phrase: powerwall
+  job_type: add_battery
+- phrase: add battery backup
+  job_type: add_battery
+- phrase: battery storage
+  job_type: add_battery
+- phrase: add more panels
+  job_type: expand_system
+- phrase: expand solar
+  job_type: expand_system
+- phrase: pigeons under solar panels
+  job_type: critter_guard
+- phrase: birds nesting under panels
+  job_type: critter_guard
+- phrase: critter guard
+  job_type: critter_guard
+- phrase: pigeon mesh
+  job_type: critter_guard
+- phrase: solar water heater
+  job_type: solar_water_pool
+- phrase: solar pool heater
+  job_type: solar_water_pool
+- phrase: pool solar leaking
+  job_type: solar_water_pool
+- phrase: clean solar panels
+  job_type: panel_cleaning
+- phrase: wash panels
+  job_type: panel_cleaning
+- phrase: dusty solar panels
+  job_type: panel_cleaning
+triggers_es:
+- phrase: los paneles solares no funcionan
+  job_type: system_not_producing
+- phrase: el inversor tiene luz roja
+  job_type: system_not_producing
+- phrase: panel solar roto
+  job_type: damage_leak
+- phrase: gotera cerca de los paneles
+  job_type: damage_leak
+- phrase: quitar los paneles para el techo
+  job_type: remove_reinstall
+- phrase: cotización de paneles solares
+  job_type: new_system
+- phrase: quiero paneles solares
+  job_type: new_system
+- phrase: batería para los paneles
+  job_type: add_battery
+- phrase: palomas debajo de los paneles
+  job_type: critter_guard
+- phrase: calentador solar de alberca
+  job_type: solar_water_pool
+- phrase: limpiar paneles solares
+  job_type: panel_cleaning
+questions:
+- id: q1_job
+  text: What do you need?
+  options:
+  - System isn't working right
+  - Damage or roof leak near panels
+  - Remove and reinstall for roof work
+  - New system or more panels
+  - Add a battery
+  - Bird guards or cleaning
+  ask_if: always
+  changes_price: 'yes'
+  why: Service calls, roof R&R and new systems are quoted very differently. [judgment]
+- id: q2_owned
+  text: Do you own the system or lease it?
+  options:
+  - Own it (paid off or loan)
+  - Lease or power purchase agreement
+  - Not sure
+  - No system yet
+  ask_if: q1_job != 'New system or more panels'
+  changes_price: 'yes'
+  why: Leased systems are often serviced by the leasing company under the agreement; owners hire who they choose.
+    [ARS-1763][judgment]
+- id: q3_size
+  text: How many panels, or what size (kW) is the system?
+  options:
+  - Under 15 panels
+  - 15-30 panels
+  - More than 30
+  - Not sure
+  ask_if: q1_job in ['Remove and reinstall for roof work', 'Bird guards or cleaning', 'Add a battery'] or job_type
+    in [remove_reinstall, critter_guard, add_battery]
+  changes_price: 'yes'
+  why: Panel count drives labor for R&R and guards. [judgment]
+- id: q4_roof
+  text: What is the roof like?
+  options:
+  - Flat roof
+  - Tile roof
+  - Shingle roof
+  - Metal roof
+  - Ground mount or patio
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Roof type changes mounting, access and leak work; Arizona law requires a roof evaluation before rooftop installs.
+    [ARS-1762][judgment]
+- id: q5_brand
+  text: Can you send a photo of the inverter or its label (on a wall, often by the meter or panel)?
+  options:
+  - Sent a photo
+  - Can't find it
+  - Not sure
+  ask_if: q1_job in ['System isn\'t working right', 'Add a battery']
+  changes_price: 'yes'
+  why: Brand and type (string inverter, microinverters, optimizers) shape the service call. [judgment]
+- id: q6_bill
+  text: 'For a new system: can you share your yearly electric use (kWh) from a UniSource bill, without account numbers?'
+  options:
+  - Yes, I'll send it
+  - Not now
+  ask_if: q1_job == 'New system or more panels'
+  changes_price: 'yes'
+  why: Usage sizes a quote. Remove account numbers and names before sending. [judgment]
+quote_without_visit_needs:
+- Bird guards with panel count and roof photos [judgment]
+- Remove/reinstall ballpark with panel count, roof type and inverter photo [judgment]
+- Panel cleaning with panel count and stories [judgment]
+site_visit_usually_needed:
+- New systems and batteries (roof, panel, interconnection) [ARS-1762][S17][judgment]
+- Production problems and damage [judgment]
+- Roof leaks near panels (may also need a roofer) [judgment]
+photos_to_request:
+- id: p1_array
+  ask: A photo of the panels on the roof taken from the ground. Please do not go on the roof.
+  for_job_types:
+  - remove_reinstall
+  - critter_guard
+  - damage_leak
+  - expand_system
+  - panel_cleaning
+  - new_system
+- id: p2_inverter
+  ask: A photo of the inverter or its screen and label, and any lights or error codes.
+  for_job_types:
+  - system_not_producing
+  - add_battery
+  - expand_system
+- id: p3_app
+  ask: A screenshot of your solar app's production graph, with any account details cropped out.
+  for_job_types:
+  - system_not_producing
+- id: p4_panel
+  ask: A photo of your main electrical panel and meter with the door open.
+  for_job_types:
+  - new_system
+  - add_battery
+  - expand_system
+- id: p5_damage
+  ask: A photo of the damage or leak from a safe spot. Do not touch broken panels or wires.
+  for_job_types:
+  - damage_leak
+photo_cues:
+- photo_id: p2_inverter
+  look_for:
+  - 'Brand: SolarEdge, Enphase (microinverters, IQ combiner box), SMA, Fronius, Tesla, Generac etc. [judgment]'
+  - Status light color and any code; record only what is shown [judgment]
+  - Rapid shutdown switch or label near the meter [TESLA-PV][judgment]
+  neutral_wording_example: SolarEdge inverter on garage wall; status light red; screen shows an error number.
+- photo_id: p1_array
+  look_for:
+  - Panel count; roof type; panels on several roof faces; gaps where birds can nest; debris [judgment]
+  neutral_wording_example: About 22 panels on a tile roof, two roof faces; nesting material visible under one edge.
+- photo_id: p3_app
+  look_for:
+  - Zero output vs lower output; date of change (record only) [judgment]
+  neutral_wording_example: App graph shows zero production for the last 3 days.
+- photo_id: p4_panel
+  look_for:
+  - Main breaker size; open spaces; existing solar breaker; meter type [judgment]
+  neutral_wording_example: 200 amp panel with a 40 amp solar breaker at the bottom.
+- photo_id: p5_damage
+  look_for:
+  - Cracked glass, scorch marks, hanging conduit or wires [judgment]
+  neutral_wording_example: One panel shows cracked glass; conduit loose along roof edge.
+photo_red_flags:
+- flag: Scorch marks, smoke or melted parts on panels, wiring, inverter or battery
+  safety_step_ref: es_fire
+- flag: Cracked panels or wires hanging loose
+  safety_step_ref: es_damage
+- flag: Battery or inverter in standing water
+  safety_step_ref: es_battery
+emergency_signals:
+- id: es_fire
+  signal: Fire, smoke, sparks or burning smell at panels, roof wiring or inverter
+  emergency: 'yes'
+  safety_step: 'If there is fire or smoke at the panels, roof wiring, inverter or battery: get everyone out and
+    call 911 from outside. Tell the fire crew the home has solar (and a battery, if so). Tesla''s manual says array
+    wiring should be treated as dangerous after a fire, even with rapid shutdown, and to stay away from all parts
+    of the system until it has been made safe.'
+  source: '[NFPA-ESCAPE][TESLA-PV]'
+  then_route_to: solar
+- id: es_battery
+  signal: Home battery smoking, smelling odd, making unusual noise, or in water
+  emergency: 'yes'
+  safety_step: 'Tesla''s Powerwall manual says to call the fire department first and make sure everyone can leave
+    the area. Only if it is safe: turn off the battery and its AC breaker (and the solar inverter breaker). If any
+    part of the battery or wiring is in water, stay out of the water. If there is an unusual smell, ventilate the
+    room. Other brands: follow the owner''s manual.'
+  source: '[TESLA-PW3]'
+  then_route_to: solar
+- id: es_damage
+  signal: Broken panels, loose or hanging wires after a storm
+  emergency: depends
+  safety_step: 'Do not touch broken panels, loose wires or damaged roof wiring; solar panels make power whenever
+    there is daylight. Keep people and pets away. If wires are down from the house to the street, treat them as
+    live: stay away and call 911 and UniSource, [number removed, see source].'
+  source: '[TESLA-PV][S24][S25]'
+  then_route_to: solar
+safety_step:
+- when: Fire, smoke, sparks or burning smell at panels, roof wiring or inverter
+  step: 'If there is fire or smoke at the panels, roof wiring, inverter or battery: get everyone out and call 911
+    from outside. Tell the fire crew the home has solar (and a battery, if so). Tesla''s manual says array wiring
+    should be treated as dangerous after a fire, even with rapid shutdown, and to stay away from all parts of the
+    system until it has been made safe.'
+  source: '[NFPA-ESCAPE][TESLA-PV]'
+- when: Home battery smoking, smelling odd, making unusual noise, or in water
+  step: 'Tesla''s Powerwall manual says to call the fire department first and make sure everyone can leave the area.
+    Only if it is safe: turn off the battery and its AC breaker (and the solar inverter breaker). If any part of
+    the battery or wiring is in water, stay out of the water. If there is an unusual smell, ventilate the room.
+    Other brands: follow the owner''s manual.'
+  source: '[TESLA-PW3]'
+license_classes:
+- job_type:
+  - new_system
+  classes:
+  - R-11 Electrical (with solar qualification) [unverified]
+  - CR-11 Electrical (dual, with solar qualification) [unverified]
+  citation: A.R.S. 32-1170.01 (solar contractor qualification required to install, alter or repair a solar device)
+    [ARS-1170]; A.R.S. 44-1762(E) (installer must hold the appropriate license and pass the solar exam) [ARS-1762];
+    R-11 scope 'install and repair residential electrical systems' R4-9-103 [S2]; A.A.C. R4-9-104 [S3] (CR- dual
+    classes)
+  other_agency: UniSource interconnection and permission to operate [ARS-1763][judgment on process]
+  notes: 'Which ROC class is used for PV comes from secondary sources (IREC: PV under R-11/C-11/CR-11) [S39]; roc.az.gov
+    could not be opened to confirm. Same classes for system_not_producing, damage_leak, remove_reinstall, add_battery,
+    expand_system. Roof patching after R&R may also need R-42 Roofing [S2].'
+- job_type:
+  - solar_water_pool
+  classes:
+  - R-37 Plumbing, Including Solar
+  - CR-77 Plumbing including Solar (C-77 + R-37)
+  - R-37R Solar Plumbing Liquid Systems Only [unverified]
+  - CR-78 Solar Plumbing Liquid Systems Only (C-78 + R-37R) [unverified]
+  - B-6 General Swimming Pool Contractor, Including Solar (pool solar)
+  citation: R4-9-103 (R-37 Plumbing, Including Solar; B-6 Including Solar) [S2]; R4-9-104 (CR-77, CR-78) [S3]; solar
+    qualification per A.R.S. 32-1170.01
+  other_agency: null
+  notes: Solar water heating is a 'solar device' under A.R.S. 32-1170 [ARS-1170].
+- job_type:
+  - critter_guard
+  classes:
+  - R-11 / CR-11 with solar qualification if attached to the array [judgment]
+  citation: A.R.S. 32-1170.01 (alter or repair a solar device) [ARS-1170]; A.A.C. R4-9-103 [S2] (R- residential
+    classes); A.A.C. R4-9-104 [S3] (CR- dual classes)
+  other_agency: null
+  notes: '[judgment]: clip-on guards may be treated as alteration; under $1,000 jobs may fall under the handyman
+    exemption if no permit.'
+- job_type:
+  - panel_cleaning
+  classes:
+  - None for washing [judgment]
+  citation: n/a
+  other_agency: null
+  notes: Route to gutter_solar_cleaning.
+handyman_ok:
+  allowed_examples:
+  - Panel washing from the ground or with proper fall protection [judgment]
+  - Bird guard install under $1,000 with no permit [S4][judgment]
+  not_allowed_examples:
+  - Any new PV system (LHC permit) [S17]
+  - Installing, altering or repairing a solar device as a contractor without solar qualification [ARS-1170]
+  - Battery or inverter installs [judgment]
+  - Any job $1,000 or more [S4]
+  rule_reminder: 'A person without an ROC license may take a job only if ALL are true: total price (labor + materials
+    + everything) is under $1,000; the work is casual, minor or inconsequential; no local building permit is required;
+    it is not part of a larger job or split up to stay under $1,000; and any ad says ''not a licensed contractor''.
+    The exemption never covers work that connects to natural gas, propane or other fuel gas, or fire-safety work
+    such as hardwired/interconnected smoke alarms. Source: A.R.S. 32-1121(A)(14) and (D) [S4]. In Lake Havasu City,
+    check the city permit list: a needed permit removes the exemption [S17].'
+local_notes:
+- 'Arizona law: rooftop solar contractors must evaluate the roof before the first install and suggest the customer
+  get a roofing inspection; they are responsible for roof damage caused by the install [ARS-1762].'
+- Arizona law sets a minimum warranty for residential solar (at least 2 years for collectors, storage and installation,
+  or a written output warranty; 1 year for other parts) [ARS-1762].
+- Arizona solar sale or lease agreements must be signed and dated, list major components and warranties, and give
+  at least 3 business days to cancel before install; lease payments may not start before utility permission to operate
+  [ARS-1763]. Ask Hava only states these as facts if asked and never gives legal advice [judgment].
+- UniSource Energy Services is the electric utility in Lake Havasu City [S22].
+- Pigeons nesting under panels and dust buildup are common requests in Havasu [judgment].
+- Many homes have flat roofs with older swamp cooler or AC equipment; solar quotes may involve working around it
+  [judgment].
+- 'Summer roof heat: crews often start very early; this is a business choice, not something Ask Hava promises [judgment].'
+- 'LHC: PV systems need a permit [S17].'
+sample_card: 'REQ-0207 | Solar | Lake Havasu City, west
+
+  Remove and reinstall about 20 panels for a tile roof re-do. Owned system.
+
+  Inverter photo: SolarEdge. Roofer not yet chosen.'
+test_messages:
+- id: solar_t01
+  message: solar app says 0 for 3 days
+  trade: solar
+  job_type: system_not_producing
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Do you own the system or lease it, and can you send a photo of the inverter?
+  note: ''
+- id: solar_t02
+  message: need solar taken off so i can redo my roof
+  trade: solar
+  job_type: remove_reinstall
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: About how many panels are there, and what kind of roof is it?
+  note: Offer a roofing card too.
+- id: solar_t03
+  message: how much would solar save me
+  trade: solar
+  job_type: new_system
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: A local business can quote a system for your home. Is this for a new system, and do you
+    have a recent UniSource bill showing yearly use?
+  note: Never estimate savings.
+- id: solar_t04
+  message: pigeons living under my panels gross
+  trade: solar
+  job_type: critter_guard
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: About how many panels are there, and are they on a flat or sloped roof?
+  note: ''
+- id: solar_t05
+  message: smoke coming from the solar box on garage wall
+  trade: solar
+  job_type: system_not_producing
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: (Give fire step first.) Is everyone out of the home?
+  note: Emergency.
+- id: solar_t06
+  message: quiero paneles solares para mi casa
+  trade: solar
+  job_type: new_system
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: '¿Qué tipo de techo tiene: plano, de teja, de tejas asfálticas o de metal?'
+  note: Spanish.
+- id: solar_t07
+  message: clean my solar panels and gutters
+  trade: gutter_solar_cleaning
+  job_type: solar_wash
+  emergency: 'no'
+  first_question_id: q1_what
+  ideal_first_question: How many panels are there, and is the home one story or two?
+  note: 'Wrong trade: route gutter_solar_cleaning.'
+- id: solar_t08
+  message: storm cracked a panel and theres a wire hanging
+  trade: solar
+  job_type: damage_leak
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: (Give damage step first.) Is the wire coming from the panels, or is it a line from the street?
+  note: Street line = UniSource/911.
+- id: solar_t09
+  message: add powerwall and maybe a generator
+  trade: solar
+  job_type: add_battery
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Do you already have solar, and do you own it or lease it?
+  note: Mixed; second card generator_ev.
+- id: solar_t10
+  message: leased solar company won't call back can you fix it
+  trade: solar
+  job_type: system_not_producing
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is the system leased? The agreement may say who services it; would you still like quotes
+    from local businesses?
+  note: Do not advise on contracts.
+sources:
+- '[S2] (foundation/sources_foundation.md) A.A.C. R4-9-103 Residential contracting classifications (Cornell LII
+  copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] (foundation/sources_foundation.md) A.A.C. R4-9-104 Dual licensing classifications (Cornell LII copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] (foundation/sources_foundation.md) A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman
+  exemption and (D) fire-safety and fuel-gas carve-outs): https://www.azleg.gov/ars/32/01121.htm'
+- '[ARS-1170] (trade-only source) A.R.S. 32-1170, 32-1170.01, 32-1170.02 (solar contractor: unlawful to install,
+  alter or repair a solar device without qualifying as a solar contractor; solar exam specific to the license classification;
+  license marked to show solar qualification): https://www.azleg.gov/ars/32/01170-01.htm and https://www.azleg.gov/ars/32/01170-02.htm'
+- '[ARS-1762] (trade-only source) A.R.S. 44-1761/44-1762 (solar energy device includes systems producing electrical
+  power and distributed generation; warranty at least 2 years for collectors, heat exchangers, storage and installation,
+  or a written output warranty; installer must be a licensed solar contractor with the appropriate license and pass the
+  solar exam; roof evaluation before rooftop install): https://www.azleg.gov/ars/44/01762.htm'
+- '[ARS-1763] (trade-only source) A.R.S. 44-1763 (solar/distributed generation agreements: signed and dated, 3-business-day
+  rescission before install, major components and warranties disclosed, lease payments not before utility permission
+  to operate, roof acknowledgment): https://www.azleg.gov/ars/44/01763.htm'
+- '[S39] (foundation/sources_foundation.md) IREC, Arizona solar licensing summary (secondary; PV done under electrical
+  classes): https://irecusa.org/blog/solar_licensing/arizona/'
+- '[S17] (foundation/sources_foundation.md) Lake Havasu City Building Division, permit-required and no-permit lists
+  (2024 I-codes, 2023 NEC): https://www.lhcaz.gov/development-permitting/building'
+- '[S22] (foundation/sources_foundation.md) UniSource Energy Services contact page (gas emergency: call 911 and
+  [number removed, see source]; outages [number removed, see source]; LHC electric office [number removed, see source]; LHC gas office [number removed, see source]): https://www.uesaz.com/contact/'
+- '[S24] (foundation/sources_foundation.md) UniSource Electrical Safety Tips (15 ft from overhead lines, downed
+  lines, Arizona 811): https://www.uesaz.com/electric-safety/'
+- '[S25] (foundation/sources_foundation.md) UniSource During a Storm or Service Outage (downed lines; only UniSource
+  field employees may turn gas service back on; do not relight pilots after a shutoff): https://www.uesaz.com/outage-preparation/'
+- '[NFPA-ESCAPE] (trade-only source) NFPA, Home fire escape planning (get out, stay out, call 911 from outside):
+  https://www.nfpa.org/education-and-research/home-fire-safety/escape-planning'
+- '[TESLA-PV] (trade-only source) Tesla solar install manual, Important Safety Instructions (array wiring potentially
+  dangerous after fire even with rapid shutdown; inform fire crew; stay away from all PV elements until made safe):
+  https://energylibrary.tesla.com/docs/Public/Solar/Inverter/InstallManual/en-us/GUID-DE8DA784-E17E-40FB-88A8-D9122AB375AC.html'
+- '[TESLA-PW3] (trade-only source) Tesla Powerwall 3 Owner''s Manual, What to do in case of an emergency (call fire
+  department first; evacuate; only if safe turn off Powerwall and its AC breaker; flooding: stay out of water if
+  battery or wiring submerged; smoke or smell: ventilate): https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/OwnerManual/Print/en-us/Powerwall-3-Owner-Manual-EN-US.pdf'

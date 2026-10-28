@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.2 (draft, fix round 13) · October 28, 2026 · Not yet in effect
+Version 0.3 (draft, packaged jobs) · October 28, 2026 · Not yet in effect
 
 # Ask Hava Business Terms
 
@@ -29,11 +29,14 @@ Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedu
 - You quote once. No bidding rounds, no paid placement.
 - You may quote for 24 hours after your card is sent. A quote must not contain a phone number, a link, an email address or "call me" wording; such a quote bounces back to you.
 - The homeowner sees every eligible quote, numbered in the order received, with your own words as you wrote them. Ask Hava never edits, rounds or converts your amount, never suggests a price and never passes a counter-offer. Only you can change your quote.
-- Everything in your quote, your "About us" line and your quote facts must be true.
+- Every quote for a job uses that job type's format (a range, a monthly price, up to 3 tiers, a firm price, or a diagnostic visit fee on repairs), so the homeowner can compare quotes side by side. Notes (up to 300 characters) must be about the job; notes with contact details, other channels or off-platform payment offers are sent back to you.
+- You may edit or withdraw a quote until the homeowner picks.
+- Your Google Business Profile link, Yelp link and license numbers, if you give them, show on every quote.
+- Everything in your quote, your notes, your "About us" line and your quote facts must be true.
 
 ## 4. Picks and Confirm
 
-- When a homeowner chooses your quote, the owner and each "Confirm and billing" member get a pick email: "Ask Hava: A homeowner chose your quote for job <n>. Confirm by <time>."
+- When a homeowner picks your quote, the owner and each "Confirm and billing" member get a pick email: "Ask Hava: A homeowner picked your quote for job <n>. Accept by <time>." To accept the introduction, tap Confirm and pay. If you can't take the job, tap "Can't take it": no fee, and the homeowner's backup choice, if any, gets the pick.
 - On a regular job you have 4 business hours (8 a.m. to 8 p.m., every day) to confirm, counted from when the pick email is sent. Reminders go every business hour until the window ends. You can use "Hold for 2 more hours" once per pick. On a job the homeowner chose as an emergency, the window is 60 minutes at any hour.
 - If you don't confirm in time, the homeowner may choose another quote.
 - **Confirm and pay is one step.** The Confirm page shows the job number, the fee, its tier and how the fee basis was set, the refund line and the terms version, and one "Confirm and pay $<fee>" button ("Confirm" alone for a free first win). Your Confirm counts only when the payment succeeds.
@@ -72,7 +75,7 @@ Refund if you can't reach them: 2 call attempts at least 3 hours apart, inside t
 
 In full, these are the only refunds, and each happens automatically, once, to the card that paid:
 
-1. **Couldn't reach the homeowner.** Decided at 96 hours after the release, when all of these are true: you made 2 call attempts at least 3 hours apart, within 72 hours, inside the homeowner's chosen call window; no call in either direction was answered by a person; Ask Hava sent or attempted the missed-call text to the homeowner (a delivery failure never counts against you); the homeowner has not replied DONE or PROBLEM; and, when the homeowner chose email, the homeowner did not reply YES to the 72-hour "Did <business> email you and agree a time?" question. The decision email says which condition was or wasn't met.
+1. **Couldn't reach the homeowner.** Decided at 96 hours after the release, when all of these are true: you made 2 call attempts at least 3 hours apart, within 72 hours, inside the window (8 a.m. to 8 p.m. Arizona time, any hour on an emergency job); no call in either direction was answered by a person; Ask Hava sent or attempted the missed-call text to the homeowner (a delivery failure never counts against you); the homeowner has not replied DONE or PROBLEM; and, when the homeowner chose email, the homeowner did not reply YES to the 72-hour "Did <business> email you and agree a time?" question. The decision email says which condition was or wasn't met.
 2. **Homeowner cancelled first.** The homeowner cancels before you have talked to them (any call in either direction answered by a person counts as talking).
 3. **Charged after a cancel or after the job moved on.** Anything charged after a cancel, or a payment that succeeds after the job moved on, is refunded.
 4. **Our mistake.** If a charge was our mistake, it is refunded in full.
@@ -85,7 +88,7 @@ In full, these are the only refunds, and each happens automatically, once, to th
 
 As part of the introduction, Ask Hava gives you the homeowner's first name and the job address so you can contact them about this job. Use them only for this job and follow-up about it. No marketing lists, no resale.
 
-- The homeowner's phone number is never given to you. Call on the masked Ask Hava number, and only inside the homeowner's chosen window. Calls are never recorded.
+- The homeowner's phone number is never given to you. Call on the masked Ask Hava number, and only between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). You and the homeowner set the time of the visit; Ask Hava schedules nothing. Calls are never recorded.
 - Don't pass the homeowner's details, or the job, to another business without the homeowner's OK.
 - A homeowner can report a misuse of their details by replying PROBLEM.
 
@@ -111,7 +114,7 @@ You alone are responsible for:
 - If a homeowner complains, the complaint shows in your portal with its kind and date (no homeowner details) and a reply box open for 5 days. The homeowner gets an explanation that you are independent, your business phone and the Registrar of Contractors complaint link.
 - Your business is paused only after 3 complaints in 90 days.
 - A lapsed license or bond pauses you on that date. While a state lookup fails, you stay as you were for up to 72 hours but can't confirm a pick while your status is unknown.
-- You can pause job cards, set "Busy for <n> days" or leave at any time in the portal.
+- You can pause job cards, set "Busy for <n> days" or leave at any time in the portal. Leaving withdraws your open quotes, ends any waiting pick (the homeowner's backup choice applies), removes your saved cards and ends every sign-in; we keep billing records for 7 years.
 
 ## 12. Electronic records
 

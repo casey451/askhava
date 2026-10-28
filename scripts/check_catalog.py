@@ -34,7 +34,10 @@ LICENSE_MAP_FILE = Path("docs/catalog/license_map.yaml")
 QUESTION_BANK_FILE = Path("docs/catalog/question_bank.yaml")
 ALL_FILES = (CATEGORIES_FILE, EXAMPLES_FILE, LICENSE_MAP_FILE, QUESTION_BANK_FILE)
 TRIP_FEE_TIERS = (25, 75)  # FEE-004, D-399: $25 by default, never above $75
-QUESTIONS_MIN, QUESTIONS_MAX = 3, 6  # LIC-040, D-394
+QUESTIONS_MIN, QUESTIONS_MAX = 3, 8  # LIC-040, D-394, D-431
+QUOTE_FORMATS = frozenset({"range", "monthly", "tiers", "firm", "diagnostic_visit"})  # PICK-053
+KB_TRADES_DIR = Path("docs/catalog/trade_kb/trades")  # D-431
+MAX_PHOTOS = 3  # INT-044, D-432
 
 TIER_LOW_FROM = Fraction(500)  # FEE-001: $500.00 and up is $75
 TIER_HIGH_UP_TO = Fraction(1500)  # FEE-001: up to and including $1,500.00 is $75
@@ -85,7 +88,7 @@ CATEGORY_KEYS = (
     "after_hours_emergency",
     "job_types",
     "refused",
-    "intake_questions",
+    "quote_format",
     "keywords",
     "review",
 )
@@ -256,6 +259,8 @@ def compute(example: dict[str, Any], category: dict[str, Any]) -> Outcome:
     if over_handyman_limit(example, category):
         return Outcome("refused", None, 0, 0)
     quote = example["quote"]
+    if is_site_visit(quote) and category.get("quote_format") != "diagnostic_visit":
+        raise ValueError("a visit-fee quote outside a diagnostic_visit category (FEE-004, D-441)")
     if is_site_visit(quote):
         money(quote["amount"] if quote["type"] == "trip_fee" else quote["rate"])
         basis: Fraction | None = None
@@ -368,8 +373,26 @@ def check_category(cat: dict[str, Any]) -> list[str]:
         )
     if not set(one_time) <= set(cat["job_types"]):
         errors.append(f"category {cat_id}: one_time_job_types not in job_types")
+    errors += check_quote_format(cat)
     if not cat["enabled"] and not cat.get("off_reason"):
         errors.append(f"category {cat_id}: off without an off_reason")
+    return errors
+
+
+def check_quote_format(cat: dict[str, Any]) -> list[str]:
+    """PICK-053, FEE-004 (D-441, D-433): one known format; monthly exactly when recurring."""
+    cat_id = cat.get("id", "?")
+    fmt = cat.get("quote_format")
+    if fmt not in QUOTE_FORMATS:
+        return [f"category {cat_id}: quote_format must be one of {sorted(QUOTE_FORMATS)} (PICK-053)"]
+    errors: list[str] = []
+    if (fmt == "monthly") != bool(cat.get("recurring")):
+        errors.append(f"category {cat_id}: quote_format monthly exactly when recurring (PICK-053)")
+    for job, job_fmt in (cat.get("job_type_formats") or {}).items():
+        if job not in cat.get("job_types", []) or job_fmt not in QUOTE_FORMATS - {"diagnostic_visit"}:
+            errors.append(f"category {cat_id}: job_type_formats {job!r} needs a job type and a non-visit format")
+    if cat.get("design") and fmt != "range":
+        errors.append(f"category {cat_id}: design is for range categories only (INT-045, D-433)")
     return errors
 
 
@@ -569,11 +592,30 @@ def check_question(set_id: str, q: dict[str, Any], seen: set[str]) -> list[str]:
     return errors
 
 
-def check_question_bank(data: dict[str, Any], cats: dict[str, dict[str, Any]]) -> list[str]:
-    """LIC-040, INT-042 (D-394): one 3-to-6-question set per enabled category."""
+def check_kb_link(root: Path, set_id: str, qset: dict[str, Any]) -> list[str]:
+    """LIC-040 (D-431, D-432): kb_trade names a knowledge-base file; photos are its ids."""
+    slug = qset.get("kb_trade")
+    photos = qset.get("photos", []) or []
+    if slug is None:
+        return [f"question bank {set_id}: photos without a kb_trade"] if photos else []
+    path = root / KB_TRADES_DIR / f"{slug}.yaml"
+    if not path.is_file():
+        return [f"question bank {set_id}: kb_trade {slug} has no file (LIC-040)"]
+    if len(photos) > MAX_PHOTOS:
+        return [f"question bank {set_id}: more than {MAX_PHOTOS} photos (INT-044)"]
+    known = {str(p.get("id")) for p in (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("photos_to_request", [])}
+    return [f"question bank {set_id}: photo {p} not in {slug}" for p in photos if str(p) not in known]
+
+
+def check_question_bank(
+    data: dict[str, Any], cats: dict[str, dict[str, Any]], root: Path | None = None
+) -> list[str]:
+    """LIC-040 (D-394, D-431): one 3-to-8-question set per enabled category."""
     errors: list[str] = []
     sets = data.get("sets", {}) or {}
     for set_id, qset in sets.items():
+        if root is not None:
+            errors.extend(check_kb_link(root, str(set_id), qset))
         if str(set_id) not in cats:
             errors.append(f"question bank: set {set_id} has no category")
         questions = qset.get("questions", [])
@@ -624,7 +666,7 @@ def run(root: Path) -> Report:
     lmap = load(root, LICENSE_MAP_FILE)
     report.errors.extend(check_license_map(lmap, cats))
     bank = load(root, QUESTION_BANK_FILE)
-    report.errors.extend(check_question_bank(bank, cats))
+    report.errors.extend(check_question_bank(bank, cats, root))
     report.lines.append(
         f"License map: {len(lmap.get('classes', []))} classes; question sets: "
         f"{len(bank.get('sets', {}))}"

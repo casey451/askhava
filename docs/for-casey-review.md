@@ -30,7 +30,7 @@ The same text is saved at `/home/claude/hhq/outputs/send_drafts/Twilio_question.
 
 > **Subject:** Eligibility check before A2P 10DLC registration – customer care texts
 >
-> Ask Hava (askhava.com) is a local quote-request service in Lake Havasu City, AZ. A homeowner texts us first to ask for quotes on a home job; our first reply includes our name, msg frequency, rates, HELP/STOP and Terms/Privacy links. We only text that homeowner about their own request (confirmations, "your first quote is in," their pick confirmation). We send no marketing texts and never text businesses; businesses get job requests by email only. When the homeowner picks a business, that one business receives the homeowner's first name and address so it can do the job. The homeowner's phone number is never shared, and no consent or data is sold or transferred.
+> Ask Hava (askhava.com) is a local quote-request service in Lake Havasu City, AZ. A homeowner texts us first to ask for quotes on a home job; our first reply includes our name, msg frequency, rates, HELP/STOP and Terms/Privacy links. We only text that homeowner about their own request: a few questions about the job (some worded with help from an AI service, from what the homeowner already told us), a request for optional photos, confirmations, "your first quote is in" with a link to their private quote page, and their pick confirmation. The homeowner may send photos by MMS. We send no marketing texts and never text businesses; businesses get job requests by email only. When the homeowner picks a business and agrees to share, that one business receives the homeowner's first name and address so it can do the job. The homeowner's phone number is never shared, and no consent or data is sold or transferred.
 >
 > Questions:
 > 1) Is this eligible as a Customer Care (or conversational) campaign with the homeowner's inbound text as the opt-in?
@@ -998,3 +998,34 @@ You said: "I think if they text us, that's implied that they want to talk to us.
 6. **Twilio question shortened (D-424):** it's at the top of this file and in `send_drafts/Twilio_question.md`. Signed "Ask Hava (LLC being formed)".
 7. **Your answers today:** trademark skipped for now (D-425); insurance after the business is fully working (D-426); Spanish: launch in English, with the Spanish safety texts on and checked by ChatGPT and Grok translating them back, and full Spanish after a paid review of about $100 (D-427). Sales tax (B10) stays open.
 
+
+## From fix round 14 ("as well packaged as possible"), October 28, 2026
+
+Your four answers (photos now, AI later; she OKs sharing at the pick; the tax ruling on the later list; the fire-truck list only) and "Do everything that you recommend" are in D-429 to D-449. The plan is `docs/handoff/rework-plan.md`. Nothing was sent anywhere, no simulation was run, and nothing is built.
+
+**What changed, in short**
+- The homeowner gets pro-level questions per job type, photos, design pictures and (for design jobs, once you switch it on) a labeled concept image; she approves the real job card before it goes; texts are short and link to her page, which holds the quotes, license numbers and Google and Yelp links (D-430 to D-435, D-438).
+- One "call 911" text, for gas, a CO alarm, smoke or fire, a sparking or burning outlet or panel, and a downed power line. No heat, water, health or utility-number advice anywhere. The safety-numbers file and its verify task are gone (D-436).
+- Own-or-rent and the landlord text are gone (D-437). No call window, no lockbox question, no scheduling (D-440).
+- Quotes line up: one format per job type; site-visit fees only on repairs that need a look; notes screened; "Can't take it" for businesses; edit or withdraw before a pick (D-441, D-442, D-446).
+- Fee wording is "introduction fee", never "lead"; the homeowner ticks "Share my first name and the job address" at the pick (D-443).
+
+**Sales tax (ChatGPT report, AI research, not tax advice)**
+- Best answer: the introduction fee is probably not subject to Arizona TPT (about 80% confidence), because it pays for an introduction, not for a product, software or data. The two real risks are the state calling it a sale of customer data (ADOR ruling LR 21-003; *ADP v. ADOR*, 2023) and the city calling it advertising.
+- The set-aside is now **8.6%**, not 7.6%: Arizona 5.6% plus Mohave County 1.0% (October 1, 2026 table) plus Lake Havasu City 2.0% (D-444).
+- On the company-setup list: ask ADOR for a private taxpayer ruling (A.R.S. 42-2101) after the LLC exists and before real money builds up. A ruling binds the state and, under the city tax code, the city too. Don't take a TPT license just in case.
+- Keep the introduction fee separate from anything like paid placement or software subscriptions, if those ever exist.
+
+**Owner time, re-estimated without a simulation (G11, D-446)**
+These are assumptions to check in the pilot, not measurements. At 60 requests over 8 to 12 weeks (about 6 a week) and about 3 paid introductions a week:
+| What | Per week (assumed) | Minutes each | Minutes a week |
+|---|---|---|---|
+| HELP messages (about 1 in 5 requests, plus businesses) | 2 | 5 | 10 |
+| Flagged sign-ups (early weeks) | 2 | 10 | 20 |
+| Not-covered emails (read, note for recruiting) | 3 | 2 | 6 |
+| Weekly digest and scorecard | 1 | 10 | 10 |
+| Refund or charge questions | 0.5 | 10 | 5 |
+| **Total** | | | **about 50** |
+That is roughly 15 to 20 minutes per paid introduction, inside the 20-minute go line but close to it in the first weeks, when sign-ups are heaviest. The HELP promises (2 days, 24 hours if urgent) stay as they are.
+
+**Still yours, unchanged:** Gate P, the Twilio question (updated: it now mentions AI-worded questions, photos by MMS and "agrees to share"), the Stripe question, and the pilot steps in `docs/PREBUILD.md`.

@@ -348,8 +348,8 @@ examples:
     expected: {outcome: charged, fee_basis: "380.00", fee: 25, waived: 0}
 
   - id: W36
-    description: Hourly quote with no estimated hours is a site-visit-needed quote
-    category: electrical
+    description: Hourly quote with no estimated hours is a diagnostic-visit quote in a diagnostic_visit category (D-441)
+    category: appliance_repair
     business: qualified
     situation: new_customer
     quote: {type: hourly, rate: "120.00"}
@@ -364,8 +364,8 @@ examples:
     expected: {outcome: charged, fee_basis: "693.33", fee: 75, waived: 0}
 
   - id: W38
-    description: Heating and cooling replacement site visit pays $25, not $199 (D-399)
-    category: hvac_replacement
+    description: A $0 diagnostic visit pays the set $25; a replacement can't quote a visit fee, it quotes a range (D-399, D-441)
+    category: plumbing_repair
     business: qualified
     situation: new_customer
     quote: {type: trip_fee, amount: "0.00"}

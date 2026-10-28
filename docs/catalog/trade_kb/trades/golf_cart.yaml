@@ -1,0 +1,392 @@
+# Ask Hava trade knowledge file: golf_cart
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: golf_cart
+display_name: Golf cart repair
+summary: 'Golf cart and low-speed vehicle repair: electric carts (lead-acid or lithium batteries), gas carts, chargers,
+  motors and controllers, brakes, tires, lift kits, lights, seats, and street-legal upgrades. Common brands are
+  Club Car, E-Z-GO, Yamaha, ICON and Evolution. Many Havasu carts are used in neighborhoods and to go to the lake
+  [judgment]. Ask Hava gathers facts and photos; it never says what is wrong or if a cart is street legal.'
+job_types:
+- id: wont_run
+  label: Cart won't move or runs slow
+  site_visit_usually_needed: 'yes'
+- id: batteries
+  label: 'Batteries: replace, lithium conversion, won''t hold charge'
+- id: charger
+  label: Charger not working
+- id: gas_engine
+  label: Gas cart engine won't start or runs rough
+  site_visit_usually_needed: 'yes'
+- id: brakes_tires
+  label: Brakes, tires, steering, suspension
+- id: upgrades
+  label: Lift kit, lights, seats, stereo, street-legal kit
+- id: service
+  label: Routine service / tune-up
+- id: pickup_delivery
+  label: Pickup and delivery for repairs
+triggers_en:
+- phrase: golf cart
+  job_type: null
+- phrase: cart
+  job_type: null
+- phrase: club car
+  job_type: null
+- phrase: ezgo
+  job_type: null
+- phrase: e-z-go
+  job_type: null
+- phrase: yamaha cart
+  job_type: null
+- phrase: icon
+  job_type: null
+- phrase: evolution
+  job_type: null
+- phrase: LSV
+  job_type: upgrades
+- phrase: won't go
+  job_type: wont_run
+- phrase: slow
+  job_type: wont_run
+- phrase: batteries
+  job_type: batteries
+- phrase: lithium
+  job_type: batteries
+- phrase: lead acid
+  job_type: batteries
+- phrase: charger
+  job_type: charger
+- phrase: beeping charger
+  job_type: charger
+- phrase: solenoid
+  job_type: wont_run
+- phrase: controller
+  job_type: wont_run
+- phrase: lift kit
+  job_type: upgrades
+- phrase: street legal
+  job_type: upgrades
+- phrase: headlights
+  job_type: upgrades
+- phrase: turn signals
+  job_type: upgrades
+- phrase: seat belts
+  job_type: upgrades
+- phrase: gas cart
+  job_type: gas_engine
+triggers_es:
+- phrase: carrito de golf
+  job_type: null
+- phrase: carrito
+  job_type: null
+- phrase: no camina
+  job_type: wont_run
+- phrase: no arranca
+  job_type: wont_run
+- phrase: baterías
+  job_type: null
+- phrase: cargador
+  job_type: charger
+- phrase: litio
+  job_type: batteries
+- phrase: llantas
+  job_type: brakes_tires
+- phrase: frenos
+  job_type: brakes_tires
+- phrase: luces
+  job_type: upgrades
+- phrase: levantar el carrito
+  job_type: upgrades
+questions:
+- id: power_type
+  text: Is the cart electric or gas?
+  options:
+  - Electric
+  - Gas
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+- id: problem
+  text: What is going on?
+  options:
+  - Won't move / dead
+  - Slow or dies fast
+  - Batteries
+  - Charger
+  - Brakes, tires or steering
+  - Upgrades / add-ons
+  - Routine service
+  ask_if: always
+  changes_price: 'yes'
+- id: battery_type
+  text: What batteries does it have?
+  options:
+  - Lead-acid (refill with water)
+  - Lithium
+  - Not sure
+  ask_if: power_type == Electric and problem in [Won't move / dead, Slow or dies fast, Batteries, Charger]
+  changes_price: 'yes'
+- id: brand
+  text: What brand and about what year?
+  options:
+  - Club Car
+  - E-Z-GO
+  - Yamaha
+  - ICON / Evolution / other
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+- id: upgrade_kind
+  text: What upgrades?
+  options:
+  - Lift kit / tires
+  - Lights / turn signals / mirrors
+  - Seats / rear seat
+  - Lithium conversion
+  - Other
+  ask_if: problem == Upgrades / add-ons
+  changes_price: 'yes'
+- id: transport
+  text: Can the cart be worked on at home, or does it need pickup?
+  options:
+  - At my home
+  - Needs pickup
+  - I can drop it off
+  ask_if: always
+  changes_price: 'yes'
+quote_without_visit_needs:
+- Brand, model, year (serial plate photo)
+- Battery type and age
+- Photo of battery compartment
+- What happens when you press the pedal (click, nothing, slow)
+- Upgrade list
+site_visit_usually_needed:
+- wont_run (testing)
+- gas_engine
+photos_to_request:
+- id: p1
+  ask: Whole cart
+  for_job_types:
+  - all
+- id: p2
+  ask: Serial number plate
+  for_job_types:
+  - all
+- id: p3
+  ask: Battery compartment with seat up
+  for_job_types:
+  - all
+- id: p4
+  ask: Charger label and any lights or codes
+  for_job_types:
+  - all
+- id: p5
+  ask: Tires and brakes if that is the issue
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Corroded battery terminals or cables [judgment]
+  - Low water or bulging lead-acid batteries
+  - Melted or burned cable ends
+  - Charger brand and connector type
+photo_red_flags:
+- flag: Swollen, smoking or hissing battery
+  safety_step_ref: es_battery_smoking_sparking_hissi
+- flag: Burned wires or melted terminals
+  safety_step_ref: es_smell_of_burning_while_chargin
+- flag: Charging indoors next to living space [judgment]
+  safety_step_ref: null
+emergency_signals:
+- id: es_battery_smoking_sparking_hissi
+  signal: Battery smoking, sparking, hissing or on fire
+  emergency: 'yes'
+  safety_step: Stop using or charging it, get everyone away, close doors if safe, and call 911 from a safe place.
+    Do not try to put out a lithium battery fire yourself.
+  source: NFPA, Lithium-Ion Battery Safety - https://www.nfpa.org/education-and-research/energy-transition/lithium-ion-batteries
+    ; U.S. Fire Administration (FEMA), Lithium-ion batteries community education - https://www.usfa.fema.gov/a-z/lithium-ion-batteries/community-education/
+  then_route_to: golf_cart
+- id: es_smell_of_burning_while_chargin
+  signal: Smell of burning while charging
+  emergency: 'yes'
+  safety_step: Stop using or charging it, get everyone away, close doors if safe, and call 911 from a safe place.
+    Do not try to put out a lithium battery fire yourself.
+  source: NFPA, Lithium-Ion Battery Safety - https://www.nfpa.org/education-and-research/energy-transition/lithium-ion-batteries
+    ; U.S. Fire Administration (FEMA), Lithium-ion batteries community education - https://www.usfa.fema.gov/a-z/lithium-ion-batteries/community-education/
+  then_route_to: golf_cart
+- id: es_cart_rolled_with_someone_hurt
+  signal: Cart rolled with someone hurt
+  emergency: 'yes'
+  safety_step: Use the matching step in foundation/part1_all_reasons.md section 3 (call 911 if anyone is hurt or
+    in danger).
+  source: foundation/part1_all_reasons.md [no trade-specific official step in this file]
+  then_route_to: golf_cart
+safety_step:
+- when: Battery smoking, hissing or on fire
+  step: Stop using or charging it, get everyone away, close doors if safe, and call 911 from a safe place. Do not
+    try to put out a lithium battery fire yourself.
+  source: NFPA, Lithium-Ion Battery Safety - https://www.nfpa.org/education-and-research/energy-transition/lithium-ion-batteries
+    ; U.S. Fire Administration (FEMA), Lithium-ion batteries community education - https://www.usfa.fema.gov/a-z/lithium-ion-batteries/community-education/
+- when: Charging
+  step: Follow the cart maker's manual. Charge in a place with good airflow; lead-acid batteries give off flammable
+    hydrogen gas while charging.
+  source: 'Manufacturer owner''s manual (Club Car / E-Z-GO / Yamaha) [judgment: manual not opened]; NFPA, Lithium-Ion
+    Battery Safety - https://www.nfpa.org/education-and-research/energy-transition/lithium-ion-batteries'
+- when: Street use
+  step: Carts on public streets must meet state rules (registration, equipment). Ask Hava does not decide if a cart
+    is street legal.
+  source: ADOT, Motorcycle / Golf Cart (street-use registration) - https://azdot.gov/az-cities/motorcycle-golf-cart
+license_classes:
+- job_type:
+  - wont_run
+  - batteries
+  - charger
+  - gas_engine
+  - brakes_tires
+  - upgrades
+  - service
+  - pickup_delivery
+  work: Golf cart repair, batteries, upgrades
+  classes:
+  - 'No ROC license needed: carts are vehicles, not structures [judgment]. No Arizona license specific to golf cart
+    repair was found [judgment / open question].'
+  citation: A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener
+    (A)(16), fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - charger
+  work: Installing a new outlet or circuit at home for a charger
+  classes:
+  - R-11 Electrical (or handyman exemption if it fits)
+  citation: A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+    ; A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+    fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - upgrades
+  work: Street-legal registration
+  classes:
+  - ADOT Motor Vehicle Division, not a contractor license
+  citation: ADOT, Motorcycle / Golf Cart (street-use registration) - https://azdot.gov/az-cities/motorcycle-golf-cart
+  other_agency: null
+  notes: ''
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: 'Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit,
+    is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)),
+    and ads say ''not a licensed contractor''. Source: A.R.S. 32-1121(A)(14), (C), (D) [S4]; foundation/az_license_master.md
+    section 4.'
+  note: 'Yes for cart repair [judgment: vehicle, no ROC license]. A new 240V circuit or outlet for a charger at
+    the house is electrical work: A.R.S. 32-1121(A)(14): a person may do ''casual or minor'' work without an ROC
+    license only if the whole job (labor, materials, everything) is under $1,000, no building permit is needed,
+    it is not part of a larger job or split up to get under the limit, and their ads say ''not a licensed contractor''.
+    Per 32-1121(D) the exemption never covers work that connects to natural gas, propane or other fuel gas, or hardwired/interconnected
+    fire-safety devices. Lake Havasu City''s permit list decides whether a permit is needed (https://www.lhcaz.gov/development-permitting/building).'
+local_notes:
+- 'Street use of carts follows state law; Lake Havasu City code requires state-law compliance for odd vehicles on
+  streets. Sources: ADOT, Motorcycle / Golf Cart (street-use registration) - https://azdot.gov/az-cities/motorcycle-golf-cart
+  ; Lake Havasu City Code 10.20 and 11.08.335 (off-road and miscellaneous vehicles) - https://codelibrary.amlegal.com/codes/lakehavasucity/latest/lakehavasu_az/0-0-0-7008'
+- Summer heat shortens lead-acid battery life [judgment].
+- Lithium conversions are a common request [judgment].
+sample_card: 'REQ-0912 | Golf cart repair
+
+  Lake Havasu City, north side
+
+  Electric Club Car, lead-acid batteries, clicks but won''t move. Needs pickup.
+
+  Photos of battery compartment attached.'
+test_messages:
+- id: golf_cart_t01
+  message: golf cart clicks but wont go
+  trade: golf_cart
+  job_type: wont_run
+  emergency: 'no'
+  first_question_id: battery_type
+  ideal_first_question: What batteries does it have?
+  note: ''
+- id: golf_cart_t02
+  message: cart
+  trade: golf_cart
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: power_type
+  ideal_first_question: Is the cart electric or gas?
+  note: job_type unknown = too vague; the first question picks the job type.
+- id: golf_cart_t03
+  message: want lithium batteries in my ezgo and a lift kit
+  trade: golf_cart
+  job_type: batteries
+  emergency: 'no'
+  first_question_id: battery_type
+  ideal_first_question: What batteries does it have?
+  note: ''
+- id: golf_cart_t04
+  message: Mi carrito de golf no carga, el cargador no prende
+  trade: golf_cart
+  job_type: charger
+  emergency: 'no'
+  first_question_id: power_type
+  ideal_first_question: Is the cart electric or gas?
+  note: ''
+- id: golf_cart_t05
+  message: battery smoking in the garage while charging!!
+  trade: golf_cart
+  job_type: batteries
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: '[safety_step_first] Give the matching safety step first; ask intake questions only after
+    everyone is safe.'
+  note: ''
+- id: golf_cart_t06
+  message: make my cart street legal, lights blinkers mirrors
+  trade: golf_cart
+  job_type: upgrades
+  emergency: 'no'
+  first_question_id: power_type
+  ideal_first_question: Is the cart electric or gas?
+  note: ''
+- id: golf_cart_t07
+  message: yamaha gas cart wont start
+  trade: golf_cart
+  job_type: gas_engine
+  emergency: 'no'
+  first_question_id: brand
+  ideal_first_question: What brand and about what year?
+  note: ''
+- id: golf_cart_t08
+  message: need 240 outlet in garage for charger and cart serviced
+  trade: golf_cart
+  job_type: service
+  emergency: 'no'
+  first_question_id: power_type
+  ideal_first_question: Is the cart electric or gas?
+  note: ''
+- id: golf_cart_t09
+  message: boat lift motor is dead
+  trade: boat_dock
+  job_type: boat_lift
+  emergency: 'no'
+  first_question_id: boat_or_dock
+  ideal_first_question: Is this for a boat or a dock / lift?
+  note: ''
+- id: golf_cart_t10
+  message: los frenos del carrito no sirven
+  trade: golf_cart
+  job_type: brakes_tires
+  emergency: 'no'
+  first_question_id: power_type
+  ideal_first_question: Is the cart electric or gas?
+  note: ''
+sources:
+- A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+  fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+- A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+- ADOT, Motorcycle / Golf Cart (street-use registration) - https://azdot.gov/az-cities/motorcycle-golf-cart
+- Lake Havasu City Code 10.20 and 11.08.335 (off-road and miscellaneous vehicles) - https://codelibrary.amlegal.com/codes/lakehavasucity/latest/lakehavasu_az/0-0-0-7008
+- NFPA, Lithium-Ion Battery Safety - https://www.nfpa.org/education-and-research/energy-transition/lithium-ion-batteries
+- U.S. Fire Administration (FEMA), Lithium-ion batteries community education - https://www.usfa.fema.gov/a-z/lithium-ion-batteries/community-education/

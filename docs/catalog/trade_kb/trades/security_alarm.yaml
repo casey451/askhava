@@ -1,0 +1,373 @@
+# Ask Hava trade knowledge file: security_alarm
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: security_alarm
+display_name: Security & Alarm Systems
+summary: Burglar alarm installs and repairs, monitoring setup, cameras and video doorbells, smart-home security,
+  and fire/smoke alarm systems. Alarm businesses and agents must be certified by the AZ Board of Technical Registration
+  (A.R.S. 32-122.05/.06; agents need a DPS fingerprint clearance card). ROC R-67 covers low-voltage alarm installs.
+  The A.R.S. 32-101 'alarm business' definition leaves out fire alarm systems, which fall under ROC R-16 Fire Protection;
+  hardwired or interconnected smoke alarms are never handyman work (32-1121(D)).
+job_types:
+- id: burglar_alarm
+  label: Burglar alarm install/repair/monitoring
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: cameras
+  label: Security cameras / video doorbell
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: smart_home
+  label: Smart-home security, sensors, keypads
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: fire_alarm
+  label: Hardwired smoke/fire alarm systems (R-16)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: battery_smoke
+  label: Battery smoke/CO alarm swap
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: false_alarms
+  label: False alarms, beeping panel
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+triggers_en:
+- phrase: alarm system
+  job_type: burglar_alarm
+- phrase: burglar alarm
+  job_type: burglar_alarm
+- phrase: home security system
+  job_type: burglar_alarm
+- phrase: alarm monitoring
+  job_type: burglar_alarm
+- phrase: adt
+  job_type: burglar_alarm
+- phrase: security cameras
+  job_type: cameras
+- phrase: ring doorbell
+  job_type: cameras
+- phrase: camera install
+  job_type: cameras
+- phrase: cctv
+  job_type: cameras
+- phrase: smart home
+  job_type: smart_home
+- phrase: door sensors
+  job_type: smart_home
+- phrase: motion sensor
+  job_type: smart_home
+- phrase: keypad
+  job_type: smart_home
+- phrase: hardwired smoke detectors
+  job_type: fire_alarm
+- phrase: interconnected smoke alarms
+  job_type: fire_alarm
+- phrase: fire alarm panel
+  job_type: fire_alarm
+- phrase: smoke detector chirping
+  job_type: battery_smoke
+- phrase: replace smoke detector battery
+  job_type: battery_smoke
+- phrase: co detector
+  job_type: battery_smoke
+- phrase: alarm keeps going off
+  job_type: false_alarms
+- phrase: false alarm
+  job_type: false_alarms
+- phrase: panel beeping
+  job_type: false_alarms
+- phrase: alarm wont arm
+  job_type: false_alarms
+triggers_es:
+- phrase: sistema de alarma
+  job_type: burglar_alarm
+- phrase: alarma de casa
+  job_type: burglar_alarm
+- phrase: cámaras de seguridad
+  job_type: cameras
+- phrase: timbre con cámara
+  job_type: cameras
+- phrase: detector de humo pitando
+  job_type: battery_smoke
+- phrase: la alarma suena sola
+  job_type: false_alarms
+questions:
+- id: q1_what
+  text: What do you need?
+  options:
+  - New alarm system
+  - Cameras or video doorbell
+  - Fix or update an alarm
+  - Smoke/fire alarms
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Burglar alarms, cameras and fire alarms are different scopes and licenses.
+- id: q2_wired
+  text: Wired or wireless?
+  options:
+  - Wired (wires in walls)
+  - Wireless/battery
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Wired systems take more labor and need licensed low-voltage work.
+- id: q3_size
+  text: How many doors, windows or cameras?
+  options:
+  - 1-4
+  - 5-10
+  - 11+
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Number of sensors or cameras drives equipment and labor.
+- id: q4_monitoring
+  text: Do you want 24/7 monitoring?
+  options:
+  - 'Yes'
+  - No, self-monitor on phone
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Monitoring is an ongoing contract on top of the install.
+- id: q5_existing
+  text: Is there an old system in the home now?
+  options:
+  - Yes, working
+  - Yes, not working
+  - 'No'
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Reusing old wiring or panels can change the job. [judgment]
+quote_without_visit_needs:
+- Number of doors/windows/cameras
+- Wired vs wireless
+- Monitoring wanted
+- Existing system brand
+- Wi-Fi available
+site_visit_usually_needed:
+- Wired systems
+- Fire alarm systems
+- Camera runs over long distances [judgment]
+photos_to_request:
+- id: p1
+  ask: Existing alarm panel or keypad
+  for_job_types:
+  - all
+- id: p2
+  ask: Where cameras would go
+  for_job_types:
+  - all
+- id: p3
+  ask: Smoke alarms on ceiling
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Panel brand label
+  - Wire vs battery smoke alarms
+  - Manufacture date on smoke alarm back
+photo_red_flags:
+- flag: Smoke alarm missing or hanging by wires
+  safety_step_ref: null
+- flag: Burned or melted panel/transformer
+  safety_step_ref: es_security_alarm_1
+emergency_signals:
+- id: es_security_alarm_1
+  signal: Smoke alarm sounding
+  emergency: 'yes'
+  safety_step: Get out, stay out, call 911.
+  source: '[T-nfpa_sounds]'
+  then_route_to: none
+  note: 'Routing: none (911 first)'
+- id: es_security_alarm_2
+  signal: CO alarm sounding
+  emergency: 'yes'
+  safety_step: Go outside or to an open window or door, call 911, stay there until help arrives.
+  source: '[T-nfpa_sounds]'
+  then_route_to: hvac
+  note: 'Routing: none (911 first), then hvac'
+- id: es_security_alarm_3
+  signal: Break-in in progress
+  emergency: 'yes'
+  safety_step: No official step on file for this signal. If anyone is hurt or in danger, call 911. [judgment]
+  source: '[judgment]'
+  then_route_to: none
+  note: 'Routing: none (911 first)'
+- id: es_security_alarm_4
+  signal: Smoke alarm chirping
+  emergency: 'no'
+  safety_step: That usually means a low battery; an alarm 10 years old or older should be replaced.
+  source: '[T-nfpa_sounds]'
+  then_route_to: security_alarm
+- id: es_security_alarm_5
+  signal: Alarm system false alarms
+  emergency: 'no'
+  safety_step: No special safety step; normal job card.
+  source: none
+  then_route_to: security_alarm
+safety_step:
+- when: Smoke alarm sounding
+  step: Get out, stay out, call 911.
+  source: '[T-nfpa_sounds]'
+- when: CO alarm (4 beeps, pause, repeat)
+  step: Go outside or to an open window or door, call 911, stay there until help arrives.
+  source: '[T-nfpa_sounds]'
+- when: Chirp every 30-60 seconds
+  step: That usually means a low battery; an alarm 10 years old or older should be replaced.
+  source: '[T-nfpa_sounds]'
+license_classes:
+- job_type:
+  - burglar_alarm
+  - smart_home
+  - false_alarms
+  - cameras
+  classes:
+  - R-67
+  - CR-67
+  citation: '[S7]; [S8]; [T-ars_32_121]; A.A.C. R4-9-103 [S2] R-67; R4-9-104 [S3] CR-67'
+  other_agency: AZ Board of Technical Registration
+  notes: 'Alarm business and agents: BTR certification (agents need a DPS fingerprint clearance card and must apply
+    within 5 working days of hire). Install: ROC R-67 / CR-67 Low Voltage Communication Systems. Under 32-121 an
+    alarm business may install while its BTR application is pending, or if it is an ROC licensee.'
+- job_type:
+  - fire_alarm
+  classes:
+  - R-16
+  citation: A.A.C. R4-9-103 [S2] R-16; [S5]; A.R.S. 32-1121(D)(1) [S4]
+  other_agency: none
+  notes: 'Fire alarm and sprinkler systems: ROC R-16 Fire Protection. The 32-101 alarm business definition excludes
+    fire alarm systems. Hardwired/interconnected smoke alarms are never handyman work.'
+- job_type:
+  - cameras
+  classes:
+  - R-67
+  citation: foundation §5 [judgment]; A.A.C. R4-9-103 [S2] (R- residential classes)
+  other_agency: none
+  notes: 'Plug-in or battery cameras may be self-installed; wired cameras tied to an alarm system: R-67 + BTR [judgment
+    on cameras-only].'
+handyman_ok:
+  allowed_examples:
+  - Battery smoke/CO alarm swaps
+  - Plug-in camera or battery doorbell mounting
+  not_allowed_examples:
+  - Hardwired or interconnected smoke alarms (32-1121(D))
+  - Alarm system install for pay without BTR certification
+  - Fire alarm systems
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+local_notes:
+- 'Lake Havasu City Code Ch. 8.12 covers security alarms (false alarms, possible user rules); details not confirmed
+  [unverified]. Source: [T-lhc_alarm].'
+- 'Smoke alarms should be replaced every 10 years. Source: [S28].'
+- 'Vacation rental owners often want remote cameras and noise sensors [judgment]. City rental rules: [T-lhc_vr].'
+sample_card: 'REQ-0390 | Security/alarm | Lake Havasu City, east side
+
+  Replace old wired alarm (not working) with new system, 8 doors/windows, 24/7 monitoring wanted.
+
+  2 photos of panel.
+
+  '
+test_messages:
+- id: security_alarm_t01
+  message: alarm
+  trade: security_alarm
+  job_type: burglar_alarm
+  emergency: 'no'
+  first_question_id: q1_what
+  ideal_first_question: What do you need?
+  note: ''
+- id: security_alarm_t02
+  message: want 4 cameras and a ring doorbell on the vacation house
+  trade: security_alarm
+  job_type: cameras
+  emergency: 'no'
+  first_question_id: q2_wired
+  ideal_first_question: Wired or wireless?
+  note: ''
+- id: security_alarm_t03
+  message: sistema de alarma para mi casa con monitoreo
+  trade: security_alarm
+  job_type: burglar_alarm
+  emergency: 'no'
+  first_question_id: q3_size
+  ideal_first_question: How many doors, windows or cameras?
+  note: ''
+- id: security_alarm_t04
+  message: smoke detector chirping on 12ft ceiling
+  trade: security_alarm
+  job_type: battery_smoke
+  emergency: 'no'
+  first_question_id: q1_what
+  ideal_first_question: What do you need?
+  note: ''
+- id: security_alarm_t05
+  message: alarm panel beeping and says trouble
+  trade: security_alarm
+  job_type: false_alarms
+  emergency: 'no'
+  first_question_id: q5_existing
+  ideal_first_question: Is there an old system in the home now?
+  note: ''
+- id: security_alarm_t06
+  message: all smoke detectors going off and I smell smoke
+  trade: security_alarm
+  job_type: fire_alarm
+  emergency: 'yes'
+  first_question_id: q1_what
+  ideal_first_question: What do you need?
+  note: ''
+- id: security_alarm_t07
+  message: add hardwired interconnected smoke alarms to the house
+  trade: security_alarm
+  job_type: fire_alarm
+  emergency: 'no'
+  first_question_id: q3_size
+  ideal_first_question: How many doors, windows or cameras?
+  note: ''
+- id: security_alarm_t08
+  message: someone is trying to break in right now
+  trade: security_alarm
+  job_type: burglar_alarm
+  emergency: 'yes'
+  first_question_id: q1_what
+  ideal_first_question: What do you need?
+  note: ''
+- id: security_alarm_t09
+  message: cameras plus new locks on all doors
+  trade: security_alarm
+  job_type: cameras
+  emergency: 'no'
+  first_question_id: q3_size
+  ideal_first_question: How many doors, windows or cameras?
+  note: ''
+- id: security_alarm_t10
+  message: old ADT system from last owner, can it be reused
+  trade: security_alarm
+  job_type: burglar_alarm
+  emergency: 'no'
+  first_question_id: q5_existing
+  ideal_first_question: Is there an old system in the home now?
+  note: ''
+sources:
+- '[S5] A.R.S. 32-101 Definitions (alarm system, alarm agent, alarm business) https://www.azleg.gov/ars/32/00101.htm'
+- '[T-ars_32_121] A.R.S. 32-121 Certificate required; alarm business may install while BTR application pending or
+  if ROC-licensed https://www.azleg.gov/ars/32/00121.htm'
+- '[S7] A.R.S. 32-122.05 and 32-122.06 Alarm business and alarm agent certification (BTR) https://www.azleg.gov/ars/32/00122-05.htm'
+- '[S8] AZ Board of Technical Registration, Alarm industry applicants https://btr.az.gov/applicants/alarm-industry-applicants'
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] A.A.C. R4-9-104 Dual license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'
+- '[T-nfpa_sounds] NFPA Fire Prevention Week 2024, Learn the Sounds (smoke/CO alarm beeps) https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Fire-Prevention-Week/2024/FPW24-Learn-the-Sounds.pdf'
+- '[S28] NFPA, Smoke Alarms https://www.nfpa.org/education-and-research/home-fire-safety/smoke-alarms'
+- '[T-lhc_alarm] Lake Havasu City Code Ch. 8.12 Security Alarms https://codelibrary.amlegal.com/codes/lakehavasucityaz/latest/lakehavasucity_az/0-0-0-5613'
+- '[T-lhc_vr] Lake Havasu City, Vacation Rentals (City Code Ch. 5.20) https://www.lhcaz.gov/vacation-rentals'
