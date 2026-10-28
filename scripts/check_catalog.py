@@ -99,6 +99,13 @@ BANNED: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"\bcommission\b", re.IGNORECASE), "banned wording"),
     (re.compile(r"\bvetted\b", re.IGNORECASE), "banned wording"),
     (re.compile(r"\bbest\b", re.IGNORECASE), "banned wording"),
+    (re.compile(r"\bconcierge\b", re.IGNORECASE), "banned wording"),  # WORD-019
+    (re.compile(r"\bexclusive\b", re.IGNORECASE), "banned wording"),  # WORD-020, D-300
+    (re.compile(r"\bpre-vetted\b", re.IGNORECASE), "banned wording"),  # WORD-020, D-300
+    (  # WORD-020, D-300: "lead" in the sales sense; lead paint and lead pipe are allowed
+        re.compile(r"\bleads?\b(?![- ](?:paint|pipes?|based)\b)", re.IGNORECASE),
+        "banned wording",
+    ),
 )
 
 
