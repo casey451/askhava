@@ -10,7 +10,7 @@ This is the only to-do list. The same file is in the repository as `docs/PREBUIL
 
 **Decided and written down**
 - What Ask Hava is: a quote relay. A homeowner asks once; local businesses quote in their own words; the homeowner sees every quote, unranked, and picks one; the picked business pays a fixed introduction fee ($25, $75 or $199 by job size). Ask Hava does no work and promotes no business.
-- The plan: 609 numbered requirements in 20 spec files, 416 logged decisions, 161 build tasks with their prompts, 8 legal drafts, a license map, a question bank for 37 trades, 40 worked fee examples. Every repo check passes.
+- The plan: 611 numbered requirements in 20 spec files, 428 logged decisions, 161 build tasks with their prompts, 8 legal drafts, a license map, a question bank for 37 trades, 40 worked fee examples. Every repo check passes.
 - One rule for every trade: if a license is needed, only licensed businesses get its jobs; if not, any legitimate business with a city license can.
 - No calls to businesses, ever. Businesses get everything by email and on the website.
 
@@ -23,7 +23,7 @@ This is the only to-do list. The same file is in the repository as `docs/PREBUIL
 | Fee math, the 4-month rule and every worked example (repo tests) | Whether Twilio approves homeowner texting |
 | ROC class scopes (A.A.C. R4-9-103, R4-9-104, the ROC class list, checked Oct 28) | Whether Stripe accepts the model, and charges without the business present (auto-confirm) |
 | Statute text for pest control (A.R.S. 3-3601, 3-3615) and RESPA (12 C.F.R. 1024.14) | Whether real businesses quote anonymous job cards and catch picks by email |
-| Consent texts: GSM-7, 4 segments each (counted) | The real fee mix, and whether $25 site visits help |
+| First reply (consent text): GSM-7, 2 segments each (counted) | The real fee mix, and whether $25 site visits help |
 | The build runner: kit steps K0 to K9 ran, one practice task passed, one failed on purpose, one resumed | Whether a merge starts the next runner session (one task an hour assumed) |
 | Every simulation number is marked [sim] and came from AI stand-ins | Whether homeowners trust a text-only, unnamed service |
 
@@ -43,7 +43,7 @@ One pull request on GitHub (see the link in chat). Decisions D-391 to D-416. No 
 | A4 | Expert intake: 3 to 6 questions per trade in English and Spanish, incl. boats, RVs, pools and vacation homes; routing with confidence; "Here's what we'll send" summary step; golden test requests; monthly accuracy report | `docs/catalog/question_bank.yaml`, INT-039 to INT-042, OPS-040 |
 | A5 | Pilot cut: `launch_open` per trade; a trade opens at 2+ businesses; pilot scorecard page | LIC-046, OPS-039 |
 | A6 | Honest count: N = emails the provider accepted; bounces drop out; "Not every business answers." | TXT-032, CARD-019 |
-| A7 | Short consent texts: English 558 characters, Spanish 532, both 4 segments | CON-031, SMS terms |
+| A7 | Short consent texts: English 558 characters, Spanish 532, both 4 segments (replaced Oct 28: no reply OK, 2 segments each, D-419) | CON-031, SMS terms |
 | A8 | Quote types: fixed, range, site visit needed, recurring; hourly needs estimated hours; setup charges never in the fee; site-visit fee $25, never above $75 | FEE-004, FEE-043, FEE-044, W34 to W40 |
 | A9 | Homeowner backup choice at the pick | PICK-047 |
 | A10 | Pest control on for Department licensees only; sale and refinance inspections fee-free | LIC-012, LIC-015, FEE-045 |
@@ -58,6 +58,19 @@ One pull request on GitHub (see the link in chat). Decisions D-391 to D-416. No 
 | A19 | Safety numbers verified by the build itself, re-checked every 90 days; not your task | INT-036, task T159 |
 
 **Other open fixes found and applied (6):** masked-call caller ID steps against "Spam Likely" (CALL-024); R-37R and R-39R read by the subclassification on the state record (LIC-035); commercial-only licenses told why they get no jobs (LIC-044); R-61 and R-62 project limits (LIC-045); a swamp-cooler job type; the legal drafts updated to match (business terms, privacy policy, SMS terms, security program).
+
+**Changed Oct 28 after the master plan (D-419 to D-428)**
+
+Casey: "their reaching out is their consent".
+
+| Change | Where |
+|---|---|
+| No "Reply OK" step: a homeowner's first text, or starting a web chat, is the opt-in; the first reply answers, moves on and carries the disclosures in 2 segments ("Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy"); the emergency check still runs first; the summary step goes out on its own after 2 hours | CON-002 to CON-006, CON-025 to CON-027, CON-031, INT-019, INT-025, INT-026, INT-041, TXT-034, WORD-002 (D-419) |
+| Terms accepted by picking: only "By picking, you agree to the Terms" (linked) beside the Pick button, logged with time, terms version and request number; the $100 cap stays in the Terms under "Limit of liability", not on the page | PICK-016, TERMS-001, TERMS-004, legal drafts (D-420, D-421) |
+| One question after the request goes out: updates by text, email or both, text by default, every update linking to the quote page | TXT-018 (D-422) |
+| Stopping texts unchanged; the first reply says STOP | D-423 |
+| Twilio question shortened to customer-care texts and two questions (item 6) | for-casey-review, `send_drafts/Twilio_question.md` (D-424) |
+| B11 trademark skipped for now, B13 insurance later, B17 Spanish English-first with safety texts on | Section 4; TXT-039, TXT-002, CON-026, TERMS-018, BIZ-018 (D-425 to D-427) |
 
 **Skipped, and why**
 - Shortening the HELP reply (voice rewrite 6): carriers need its contact details, and the legal check uses its reply-time sentence.
@@ -78,7 +91,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | 3 | Pause the build runner while the build is held (section 6) | Casey | to do | "Ask Hava build runner" shows Paused; the old "(hourly)" one is deleted |
 | 4 | Approve or skip the paper rehearsal (section 6) | Casey | to do | You say "run the rehearsal" or "skip it" |
 | 5 | Paper rehearsal run and reported | Claude | waiting on item 4 | Report says every gate opens in order and no task deadlocks |
-| 6 | Open a free Twilio account; send the Twilio question | Casey | to do | Case number saved |
+| 6 | Open a free Twilio account; send the short Twilio question (customer care texts, two questions; `docs/for-casey-review.md` top, D-424) | Casey | to do | Case number saved |
 | 7 | Twilio's written answer | outside | waiting on item 6 | Answer saved; doesn't block the build |
 | 8 | Open a Stripe account (test mode only); send the Stripe question | Casey | to do | Ticket sent |
 | 9 | Stripe's written answer | outside | waiting on item 8 | Answer saved; auto-confirm stays hidden until it says yes |
@@ -89,7 +102,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | 14 | Gate P: reply `approved to build` on GitHub issue #24 | Casey | to do | Reply posted; then resume the runner (item 3) |
 | 15 | Build Phase 1 (stages 1 to 5) | automatic | waiting on item 14 | Account checkpoint issue appears |
 
-Not needed before the build, but before the pilot: talk to 5 to 10 businesses and 5 to 10 homeowners (scripts are written); line up 2 to 4 businesses per pilot trade by email or in person, never by text or call; find a Spanish reviewer.
+Not needed before the build, but before the pilot: talk to 5 to 10 businesses and 5 to 10 homeowners (scripts are written); line up 2 to 4 businesses per pilot trade by email or in person, never by text or call; run the two-AI back-translation check of the Spanish safety texts (D-427). A paid Spanish review (about $100) comes only when you want Spanish switched on.
 
 ---
 
@@ -110,17 +123,17 @@ Not needed before the build, but before the pilot: talk to 5 to 10 businesses an
 | B12 | No owner name online; LLC record link and city license number added once they exist | Confirmed by Casey Oct 28 (D-418) |
 | B14 | Losing businesses told whether the picked quote was lower, about the same or higher | Confirmed by Casey Oct 28 (D-418) |
 | B15 | Safety voice call off | Confirmed by Casey Oct 28 (D-418) |
-| B16 | Short 4-segment consent texts | Confirmed by Casey Oct 28 (D-418) |
+| B11 | Trademark: skip for now; revisit if Ask Hava grows beyond Havasu or another "Ask Hava" appears | Decided by Casey Oct 28: "We can skip trademark for now" (D-425) |
+| B13 | Insurance: later, after the business is fully working | Decided by Casey Oct 28: "We'll work all that out after we have a fully working business" (D-426) |
+| B17 | Spanish: launch English-only for conversations; Spanish built and tested but switched off; Spanish safety texts on, checked before launch by back-translation through ChatGPT and Grok with matching meaning; full Spanish after a paid professional review (about $100) | Decided by Casey Oct 28: "your recommendation is going to have to be best" (D-427) |
+| B16 | Short first reply | Replaced Oct 28: no reply OK; a 2-segment first reply (D-419) |
 
-**Still open (5)**
+**Still open (2)**
 
 | # | Decision | Recommended answer |
 |---|---|---|
 | B10 | Sales tax path | Open: ChatGPT researching the tax code (prompt `outputs/ai_prompts/ChatGPT_prompt_sales_tax.md`); no ADOR letter planned. |
 | B1 | Gate P | Approve once fix round 13 is merged and you've read this file. |
-| B11 | Trademark | File "ASK HAVA" in Class 35 right after launch ($350). |
-| B13 | Insurance | Get a tech E&O plus cyber quote; bind before the first paid introduction. |
-| B17 | Spanish | One paid native-speaker review before Spanish goes live. |
 
 **Your scope call (optional, item 6 of section 2):** keep all 161 tasks (recommended: the build is automatic, and cutting changes the plan again), or postpone team members, the monthly fee limit, the live license lookup and the full restore replay.
 
@@ -219,9 +232,9 @@ The scorecard decides nothing on its own. You decide stop or go at week 8 from r
 
 ## 8. Later
 
-**After the build plan is complete (company setup):** confirm with the Arizona Corporation Commission that an agent or mailbox address can replace a home address; form the LLC with a Maricopa or Pima County statutory agent; free EIN; city business license and home-occupation form; ADOR ruling request and set-aside account; SPF, DKIM and DMARC on askhava.com; bind insurance; Twilio registration (after the answer and the LLC); Stripe activation; Gate C; Resend paid plan at the first 70% alert; trademark filing.
+**After the build plan is complete (company setup):** confirm with the Arizona Corporation Commission that an agent or mailbox address can replace a home address; form the LLC with a Maricopa or Pima County statutory agent; free EIN; city business license and home-occupation form; ADOR ruling request and set-aside account; SPF, DKIM and DMARC on askhava.com; Twilio registration (after the answer and the LLC); Stripe activation; Gate C; Resend paid plan at the first 70% alert.
 
-**After the pilot:** fee review with the real mix; business texting (if Twilio says yes); photos on job cards (after AI screening and zero retention); support bot (past about 15 help requests a week); owner finance assistant; "call and leave a message", then AI voice intake; new trades (pool construction, RV and mobile repair, garage doors once a class is confirmed, junk removal if the city allows); optional monthly business plan with no placement advantage; arbitration review and Spanish legal documents.
+**After the pilot:** fee review with the real mix; business texting (if Twilio says yes); photos on job cards (after AI screening and zero retention); support bot (past about 15 help requests a week); owner finance assistant; "call and leave a message", then AI voice intake; new trades (pool construction, RV and mobile repair, garage doors once a class is confirmed, junk removal if the city allows); optional monthly business plan with no placement advantage; arbitration review and Spanish legal documents; insurance once the business is fully working (D-426); trademark if Ask Hava grows beyond Havasu or another "Ask Hava" appears (D-425); the paid Spanish review, then Spanish conversations on (D-427).
 
 ---
 

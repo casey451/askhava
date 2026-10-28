@@ -9,6 +9,7 @@ Fails (exit 1) unless:
   "exclusive", "pre-vetted", "concierge", pest control, a personal name or
   "Hava" alone (WORD-021); spec phrases quoted to ban them are allowed;
 - business documents never frame the fee as a license or data access (TERMS-027);
+- homeowner documents never ask for a reply of OK or YES to agree (D-419);
 - any arbitration text sits under a heading marked OPTIONAL and OFF.
 
 Usage: python3 scripts/check_legal_docs.py [--root REPO_ROOT]
@@ -94,12 +95,8 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "The business you choose pays Ask Hava a set introduction fee ($25, $75 or $199, by "
             "quote size). You pay Ask Hava nothing.",
         ),
-        (
-            "PICK-016",
-            "Free for you. You hire the business directly, and Ask Hava isn't part of that "
-            "agreement. Ask Hava's liability to you is limited to $100, except for gross "
-            "negligence or intentional misconduct.",
-        ),
+        ("PICK-016", "By picking, you agree to the Terms"),
+        ("TERMS-004", "Limit of liability"),
         ("TERMS-001", "A.R.S. 44-7007"),
         ("TERMS-003", "Ask Hava is not an emergency service"),
         NO_EMERGENCY_RELIANCE,
@@ -211,15 +208,16 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
     "sms-terms.md": (
         HONEST,
         (
-            "CON-004",
-            "Reply OK to agree to the Terms (askhava.com/terms) and to get automated texts about "
-            "your request.",
+            "CON-005",
+            "Texting Ask Hava, or starting a chat on askhava.com, is your OK to get automated "
+            "texts about your own request.",
         ),
+        ("PICK-016", "By picking, you agree to the Terms"),
         ("CON-003", "Free for you; the business you choose pays Ask Hava a set fee of $25 to $199, by quote size."),
         (
             "CON-031",
-            "Ask Hava: Got your message. Ask Hava LLC is a local quote service in Lake Havasu "
-            "City, not a contractor.",
+            "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you "
+            "hire the business you pick directly.",
         ),
         (
             "CON-009",
@@ -232,7 +230,8 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "apply. Reply HELP for help, STOP to opt out.",
         ),
         ("CON-018", "This number is text-only. If anyone is in danger, call 911."),
-        ("CON-002", "Msg frequency varies by request"),
+        ("CON-002", "Msg frequency varies"),
+        ("CON-002", "Automated texts about your request"),
         ("CON-002", "Msg & data rates may apply"),
         USUALLY,
         NO_PHONE,
@@ -293,6 +292,14 @@ BUSINESS_BANNED: tuple[tuple[re.Pattern[str], str], ...] = tuple(
         r"\bsale of information\b",
     )
 )
+HOMEOWNER_DOCUMENTS = frozenset({"homeowner-terms.md", "sms-terms.md", "privacy-policy.md"})
+# D-419: texting in is the opt-in; no homeowner document asks for a reply of OK or YES to agree.
+HOMEOWNER_BANNED: tuple[tuple[re.Pattern[str], str], ...] = (
+    (
+        re.compile(r"\b(?:reply|replying|replies|responda)\s+(?:OK|YES|S[IÍ])\b", re.IGNORECASE),
+        "asks for a reply of OK or YES to agree (D-419)",
+    ),
+)
 ARBITRATION = re.compile(r"arbitrat", re.IGNORECASE)
 HEADING = re.compile(r"^#{1,6} ")
 
@@ -344,7 +351,11 @@ def check_phrases(name: str, body: str, specs: dict[str, str]) -> tuple[list[str
 
 
 def check_banned(name: str, text: str) -> list[str]:
-    patterns = BANNED + (BUSINESS_BANNED if name in BUSINESS_DOCUMENTS else ())
+    patterns = (
+        BANNED
+        + (BUSINESS_BANNED if name in BUSINESS_DOCUMENTS else ())
+        + (HOMEOWNER_BANNED if name in HOMEOWNER_DOCUMENTS else ())
+    )
     return [
         f"{name}: {label}: {match.group(0)!r}"
         for pat, label in patterns

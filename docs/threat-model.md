@@ -88,7 +88,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 
 | ID | Threat | Mitigations | ASVS | Left over |
 |---|---|---|---|---|
-| RP1 | A homeowner denies agreeing to texts | Exact reply, time and consent-prompt version stored; 5-year retention (CON-005, CON-022) | V16.2 | — |
+| RP1 | A homeowner denies agreeing to texts | The first inbound message's ID, time, channel and the consent-text version stored; 5-year retention (CON-005, CON-022, D-419) | V16.2 | — |
 | RP2 | A business disputes a charge | Card authorization version and time (FEE-015); review step before Confirm (PICK-021); call log with answer type and length (CALL-008); dispute evidence from the audit log (FEE-027) and the per-charge evidence record: the Confirm page as shown, the press time and IP, the Stripe IDs and the release event (FEE-042, D-365) | V16.2 | Bank decides disputes |
 | RP3 | Disagreement over who did an owner action | Every owner action audit-logged (SEC-006); audit log append-only and off-database (OPS-010) | V16.2, V16.3 | — |
 
@@ -123,7 +123,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | ID | Threat | Boundary | Mitigations | ASVS | Left over |
 |---|---|---|---|---|---|
 | D1 | Request floods and fake sign-ups | TB1 | Rate limits per phone, IP and business, 5 requests per phone per hour, 50 sign-ups a day; a burst of 100 is blocked and alerted (SEC-014, SEC-015) | V2.4 | — |
-| D2 | SMS pumping: web chat or sign-up forms used to make Ask Hava text or call costly numbers | TB1, TB3 | A number typed on the web gets only the consent text until it replies OK (CON-025); rate limits per IP and per number; texts and calls only to US and Canadian area codes (D-100); Verify sends rate-limited with cooldown (PICK-013) | V2.4 | Cost of the consent text itself |
+| D2 | SMS pumping: web chat or sign-up forms used to make Ask Hava text or call costly numbers | TB1, TB3 | A number typed on the web gets only a Verify code until that code is typed into the chat (CON-025, D-419); rate limits per IP and per number; texts and calls only to US and Canadian area codes (D-100); Verify sends rate-limited with cooldown (PICK-013) | V2.4 | Cost of the Verify code itself |
 | D3 | Webhook floods | TB2 | Signature check first, cheap 403 (SEC-016) | V4.1 | Host-level limits |
 | D4 | The texting number is suspended after complaints | TB9 | Consent first on every path (CON-001); opt-outs honored at once and checked against the FCC revocation order before Gate C (CON-008, CON-032, D-298); content screening (CARD-010); no second number to dodge a suspension; web-and-email mode, which can run the whole service with no texts (TXT-021, TXT-022, TXT-034, D-297); business notices never use the homeowner number (TXT-035, TXT-037, D-303) | V2.3 | R12 |
 | D5 | A vendor outage stalls jobs | TB3 | Retries with the same keys; email fallback; Stripe unreachable 4 h releases the pick; safe mode (TXT-014, FEE-018, OPS-001) | V16.5 | — |

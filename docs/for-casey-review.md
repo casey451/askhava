@@ -8,7 +8,7 @@ You've decided not to hire a lawyer, a CPA or an insurance broker for now, to re
 
 - **Every "ask a lawyer", "TCPA attorney", "CPA" or "trademark attorney" item** now reads "AI legal-research memo + your decision". The four memos are finished and are in `/home/claude/hhq/outputs/legal/` (Memo 1 contractor status and consumer law; Memo 2 messaging, privacy and data; Memo 3 business setup, tax and trademark; Memo 4, an attack review of the other three, which wins where they disagree). Older items below still say "(in progress)"; read that as "finished". They are research, not legal advice, and no lawyer checked them.
 - **Fix round 12 (D-371 to D-388) put the memos' must-fix items into the spec.** What's left for you is in the fix round 12 section at the end of this file.
-- **Insurance stays a recommended purchase.** It's cover for when something goes wrong, not advice. Memo 3 and Memo 4 lean to a tech E&O policy with cyber, bound before the first introduction.
+- **Insurance stays a recommended purchase.** It's cover for when something goes wrong, not advice. Memo 3 and Memo 4 lean to a tech E&O policy with cyber, bound before the first introduction. *(Oct 28: you chose to handle insurance after the business is fully working, D-426.)*
 - **Government filings and registrations stay your actions:** the LLC, the Lake Havasu City business license, a TPT license if you choose that path, a trademark filing if you want one, and the Twilio and Stripe accounts.
 - **Nothing in the spec got looser.** The homeowner safety voice call stays off: its switch still needs a recorded attorney approval (CALL-019), and now also Memo 2's six conditions built and tested first (CALL-022). If you want it on under your own recorded decision instead, ask for that as a spec change.
 
@@ -16,32 +16,27 @@ You've decided not to hire a lawyer, a CPA or an insurance broker for now, to re
 
 This comes before everything else in this file. Texting registration is the one step that can't be undone: if Twilio refuses the campaign as "lead generation" (error 30951), it can't be resubmitted. So ask first, in writing. Nothing has been sent; you send it. (D-305, D-322)
 
-- **Sign as "Casey Solomon, Ask Hava (LLC being formed)"** until the LLC exists. Once it's formed, use "Casey Solomon, Ask Hava LLC".
+- **Sign as "Ask Hava (LLC being formed)"**, with no personal name (WORD-021). Once the LLC exists, sign "Ask Hava LLC".
 - **Send the Twilio question** as a Twilio Support ticket. Save the case number and the written answer, and file the answer in the owner portal when it's built.
 - **Send the Telnyx question only if Twilio's answer is unclear.**
 - **What happens with each answer:**
-  - Homeowner texts "yes": register the homeowner campaign.
-  - Business texts "no", or no clear answer: nothing changes. Businesses get everything by email. (Corrected in fix round 11: there are no business calls, D-344, D-359.)
-  - Business texts "yes": you may later switch business texting on, on its own campaign and its own number. Each business then chooses email, text or both.
+  - "Yes": register the homeowner campaign, with the homeowner's first text as the opt-in (D-419).
+  - "No", or a wording change asked for: change the wording they name, log it, then register; until then the service can run in web-and-email mode (TXT-021).
+  - Businesses are email-only, so the question no longer asks about business texts; business texting stays off (TXT-035). (Shortened Oct 28, D-424.)
 
 ### To Twilio (send as a Support ticket before registering)
 
-> **Subject:** Eligibility question before A2P 10DLC registration – local quote service
+The same text is saved at `/home/claude/hhq/outputs/send_drafts/Twilio_question.md`.
+
+> **Subject:** Eligibility check before A2P 10DLC registration – customer care texts
 >
-> Hello. Before I register, I'd like a written answer on whether my use case is eligible. I don't want to submit a campaign that gets rejected and can't be resubmitted.
+> Ask Hava (askhava.com) is a local quote-request service in Lake Havasu City, AZ. A homeowner texts us first to ask for quotes on a home job; our first reply includes our name, msg frequency, rates, HELP/STOP and Terms/Privacy links. We only text that homeowner about their own request (confirmations, "your first quote is in," their pick confirmation). We send no marketing texts and never text businesses; businesses get job requests by email only. When the homeowner picks a business, that one business receives the homeowner's first name and address so it can do the job. The homeowner's phone number is never shared, and no consent or data is sold or transferred.
 >
-> **How it works:** Ask Hava (askhava.com; the LLC is being formed) is a local service in Lake Havasu City, Arizona. A homeowner texts our number, or starts on our website, to ask for quotes on a home job, and replies OK to our consent message (frequency, rates, HELP, STOP, Terms and Privacy links). We send an anonymous description of the job (town, job type, details; no name, phone number, email or address) to every local business that signed up with us and opted in to receive job requests. Businesses send their prices to us. We show all of them to the homeowner, unranked, on a private page, and the homeowner picks one. The picked business pays us a fixed introduction fee ($25, $75 or $199 by job size), and only then do we give that one business the homeowner's first name and address. The business calls the homeowner through a masked number using Programmable Voice. The homeowner's phone number is never given to any business, businesses never text homeowners, and no consent or phone number is shared, sold or transferred. Homeowners pay nothing. We send no marketing texts. Businesses get job requests and picks by email and on our website. We never call businesses, and we send them no texts unless you tell us that's allowed; then each business would choose email, text or both.
+> Questions:
+> 1) Is this eligible as a Customer Care (or conversational) campaign with the homeowner's inbound text as the opt-in?
+> 2) Will the privacy-policy sentence "Your first name and address go only to the one business you choose" cause a rejection under errors 30871 or 30951? If so, what wording would you accept?
 >
-> **Questions:**
-> 1. Are texts between Ask Hava and the homeowner about their own request (confirmations, "your first quote is in," the pick confirmation) eligible as Customer Care?
-> 2. Are job-alert texts to businesses that signed up and opted in (anonymous job details, "reply with your price") eligible? If so, should they be a separate campaign on a separate number?
-> 3. Are texts telling a picked business it was picked and showing the fee eligible? We plan never to text the homeowner's name or address; those appear only on our website.
-> 4. If question 2 or 3 is "no," is question 1 eligible on its own while businesses are notified by email?
-> 5. Will our privacy policy sentence "Your first name and address go only to the one business you choose" be treated as "sharing consumer information" under errors 30871 or 30951?
-> 6. Do masked voice calls and Twilio Verify codes need anything beyond Trust Hub and SHAKEN/STIR?
->
-> Please reply in writing, question by question, and tell me any changes that would make a "no" into a "yes." Thank you.
-> Casey Solomon, Ask Hava (LLC being formed)
+> Ask Hava (LLC being formed)
 
 ### To Telnyx (send only if Twilio's answer is unclear)
 
@@ -49,16 +44,14 @@ This comes before everything else in this file. Texting registration is the one 
 >
 > Hello. I'm considering Telnyx for SMS and voice. Your 10DLC error-code page lists 708, "Lead Gen/Affiliate Marketing Prohibited." Before I open a brand, I'd like to know whether my use case would be treated that way.
 >
-> *[Paste the same "How it works" paragraph as in the Twilio question, with "a masked number on your Voice API" in place of "a masked number using Programmable Voice".]*
+> *[Paste the same body as in the Twilio question, from "Ask Hava (askhava.com)" to "sold or transferred."]*
 >
 > **Questions:**
-> 1. Would texts between us and the homeowner about their own request pass vetting as Customer Care?
-> 2. Would opted-in job alerts to businesses pass, and as which use case?
-> 3. If only question 1 passes, can we run it alone while businesses are notified by email?
-> 4. If a campaign is rejected with 708, can it be appealed or corrected?
+> 1. Would texts between us and the homeowner about their own request, with the homeowner's inbound text as the opt-in, pass vetting as Customer Care (or conversational)?
+> 2. If a campaign is rejected with 708, can it be appealed or corrected?
 >
 > A short written answer is fine. Thank you.
-> Casey Solomon, Ask Hava (LLC being formed)
+> Ask Hava (LLC being formed)
 
 ## From K2 (the spec), October 27, 2026
 
@@ -83,7 +76,7 @@ This comes before everything else in this file. Texting registration is the one 
 - Licenses are checked against the ROC's daily lists plus a live lookup at each pick; a failed lookup never changes a verified status. (D-017)
 - Natural "please stop texting me" counts as an opt-out; the STOP reply says "To use Ask Hava again, text START." (D-006, D-007)
 - In an emergency, the safety text goes before the consent text. (D-008)
-- Consent replies OK, Yes, Sure and Sí are all accepted. (D-021)
+- Consent replies OK, Yes, Sure and Sí are all accepted. (D-021) *(Replaced Oct 28, D-419: texting in is the opt-in; no reply OK is asked for.)*
 - No weekly card limit for businesses; they control volume with their job types, towns and pause. (D-028)
 - Spec format: one testable sentence per requirement with its source line, checked by `scripts/trace_spec.py`; written in one session. (D-001, D-002)
 - Smaller wording and naming items: D-018, D-020, D-022, D-023, D-024.
@@ -141,8 +134,8 @@ Claude re-read the spec, the category list, the changes file, the build brief an
 - Quote timing: each business gets 24 hours from when its own card actually went out. A business that qualifies later still gets the card. Quotes stop once the picked business taps Confirm (D-042, D-043).
 - No job waits forever: a failed pick's quote is withdrawn and the 3-day clock restarts. A connected job with no answer closes 7 days after the day-14 check-in (D-045, D-046).
 - Emergencies no longer close a request early (D-055).
-- Web chat shows the consent text first. A phone number typed there gets no texts beyond the consent text until that phone replies OK. The consent text and web form say users must be 18 or older (D-051, D-052).
-- Language: the first consent text goes in Spanish when the first message reads as Spanish. AYUDA works like HELP. Businesses can pick Spanish texts. Every text the app writes starts "Ask Hava:", and Twilio's code texts carry the name "Ask Hava" (D-063 to D-066). Native-speaker review of the Spanish texts is a Gate C checklist item (D-067).
+- Web chat shows the consent text first. A phone number typed there gets no texts beyond the consent text until that phone replies OK. The consent text and web form say users must be 18 or older (D-051, D-052). *(Replaced Oct 28, D-419: starting the chat is the opt-in, and a typed number gets only a code until the code is typed into the chat.)*
+- Language: the first consent text goes in Spanish when the first message reads as Spanish. AYUDA works like HELP. Businesses can pick Spanish texts. Every text the app writes starts "Ask Hava:", and Twilio's code texts carry the name "Ask Hava" (D-063 to D-066). Native-speaker review of the Spanish texts is a Gate C checklist item (D-067). *(Changed Oct 28, D-427: Spanish conversations start switched off; only the Spanish safety texts stay on, checked by two-AI back-translation before launch; a paid review comes before Spanish is switched on.)*
 - "2 YES" with several open jobs asks which job first. A text pick defaults to a masked call (D-068).
 - Money details: near-tier-line flags (3 of the last 10 quotes within 5% under $500 or $1,500), PROBLEM replies flagged to you, cards only (no bank debits), and a card saved at the first paid Confirm for businesses with no free win (D-070, D-071, D-073, D-089).
 - Operations: which alerts count as High for safe mode, High alerts can text you at night, and a fixed masked-number pool that the app never adds to by itself (D-075 to D-077).
@@ -167,7 +160,7 @@ Claude drew up how the app is split into parts, wrote the security threat model,
 3. **Texts and calls go only to US and Canadian numbers.** Fraudsters type in numbers from some Caribbean area codes (for example Jamaica's 876) to run up texting bills. Those, and every non-North American number, are refused and told to use email. Canadian numbers stay because many visitors use them. Texting Canadian numbers also brings in Canada's anti-spam law, so it goes on the attorney's review list. (D-100)
 4. **Security standard gaps we accept.** The security checklist (OWASP ASVS 5.0.0) prefers more than a texted code for sign-in. Homeowners still sign in and pick with a texted code, as the plan says. Businesses on a device they've used before sign in with just the emailed link. Keys are kept in Railway's settings rather than a separate key safe. All three are listed as known risks. (D-099)
 5. **Your second factor:** you can use passkeys, an authenticator app (TOTP) or both. You need at least two in total, plus recovery codes kept offline. Having one of each survives losing your phone. (D-098)
-6. **A request that never gets an OK** to the consent text closes on its own after 72 hours, with no reminder and no closing text, because nothing but the consent text may go to a number that hasn't agreed. Once someone has said OK, they get the 24-hour reminder and the "Text us any time to restart" message as usual. (D-095)
+6. **A request that never gets an OK** to the consent text closes on its own after 72 hours, with no reminder and no closing text, because nothing but the consent text may go to a number that hasn't agreed. Once someone has said OK, they get the 24-hour reminder and the "Text us any time to restart" message as usual. (D-095) *(Replaced Oct 28, D-419: consent is recorded with the first text, so every request gets the reminder and the closing text.)*
 
 **Routine (how the app is built)**
 
@@ -214,7 +207,7 @@ You said "Fix it all" on the round-2 simulation findings. Every fix is in the sp
 1. **Clean business sign-ups now go live on their own (replaces D-060).** Before, every business waited for your approval. Now a business whose identity code is done and whose license or city-list check passes, with nothing flagged, is switched on automatically, and you see a list of who went live. Anything odd (a name that doesn't match the record, the mailed-letter path, a fraud signal) still waits for you, and your approval alone still never switches anyone on. You can pause any business at any time. Why: in the simulation, approvals were most of your weekly time, and in a crowded launch half the businesses waited more than 18 days. If you'd rather keep approving every one by hand, say so and it goes back. (D-145)
 2. **Safe mode no longer stops texts (changes D-075's effect and the brief's wording).** When you're away and a serious alert isn't acknowledged for 24 hours, the app now stops only charging cards and handing out homeowner details. Texts keep going, so safety texts, STOP confirmations and quotes are never held. (D-133)
 3. **Backup contact for safe mode: your decision, still open.** The spec still says there is no backup person. Nobody has been named, and Claude won't name one. The working answer: a texting-delivery alert that clears up by itself (the next 50 texts go through fine) is acknowledged automatically and listed for you, so it can't start safe mode while you're away. Every other serious alert still waits for you. If you want someone to be able to acknowledge alerts while you're gone, tell us who and what they may do. (D-134)
-4. **More replies count as "yes" to the first text (changes D-021), and people who answer something else get the first text once more (changes D-095).** "okay", "yes please", "Y", "yep" and Spanish "si" (without the accent) now count. Any other answer gets the consent text once more, and someone who never answers gets it one last time at 24 hours. Before, they heard nothing, ever. (D-127)
+4. **More replies count as "yes" to the first text (changes D-021), and people who answer something else get the first text once more (changes D-095).** "okay", "yes please", "Y", "yep" and Spanish "si" (without the accent) now count. Any other answer gets the consent text once more, and someone who never answers gets it one last time at 24 hours. Before, they heard nothing, ever. (D-127) *(Replaced Oct 28, D-419: texting in is the opt-in; no reply OK is asked for.)*
 5. **A bare "CANCEL" from someone with an open request now pauses that request (refines D-005).** It still stops all texts, as the law requires, and it still doesn't close the job. But no business can confirm, be charged or get the address until the homeowner picks or closes on their quote page or by email, and they're told the request is still open. (D-129)
 6. **Short answered calls now count as talking (changes v9.3's 45-second rule).** A business whose call was answered by a person, even briefly, no longer gets the automatic "couldn't reach the homeowner" refund. In the simulation about 6 in 10 of those refunds went to businesses that had actually spoken to the homeowner. (D-141)
 7. **Losing businesses hear sooner (refines D-044).** When the chosen business pays, the others get "The homeowner picked another quote." right away, and "This job is no longer active." still goes when the job ends. The winning business no longer gets that second text. (D-150)
@@ -538,7 +531,7 @@ Its answer: Twilio could be a problem for **texts to businesses**, and switching
 
 **To decide, ask or do (the spec already works without each one)**
 
-1. **Send the Twilio question** at the top of this file. Send the Telnyx one only if Twilio's answer is unclear. Sign as "Casey Solomon, Ask Hava (LLC being formed)". This reverses the earlier "don't ask Twilio first" choice (D-088). (D-305)
+1. **Send the Twilio question** at the top of this file. Send the Telnyx one only if Twilio's answer is unclear. Sign as "Casey Solomon, Ask Hava (LLC being formed)" *(now "Ask Hava (LLC being formed)", no personal name, D-424)*. This reverses the earlier "don't ask Twilio first" choice (D-088). (D-305)
 2. **Email setup at the account checkpoint.** Set up the askhava.com email records (SPF, DKIM, DMARC) with the email provider (Resend), so business emails don't land in spam. (D-318, D-322)
 3. **No longer needed:** this asked whether the sign-up checkbox covered recorded pick calls. There are no business calls now (D-344), and legal questions go to the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision. (D-312, D-322, D-367)
 4. **Later, your call:**
@@ -817,7 +810,7 @@ You said at 08:01: "Ask Hava is not a contractor. All we are doing is taking the
 **The statement, everywhere (D-356)**
 
 - **Site, help page, homeowner terms, privacy policy, quote page:** "Ask Hava is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly."
-- **First text (inside the consent text):** "Ask Hava LLC is a local quote service in Lake Havasu City, not a contractor. We pass your request to local businesses, and you hire the one you choose directly."
+- **First text (inside the consent text):** "Ask Hava LLC is a local quote service in Lake Havasu City, not a contractor. We pass your request to local businesses, and you hire the one you choose directly." *(Shortened Oct 28, D-419: "Ask Hava is not a contractor; you hire the business you pick directly.")*
 - **Every job card, the business page, sign-up and business terms:** "Ask Hava is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; Ask Hava doesn't direct, schedule, supervise or pay for the work."
 - **The pick review step:** "You hire the business directly. Ask Hava isn't part of your agreement with it."
 
@@ -886,11 +879,11 @@ Your words, 10:14: "Go ahead and fix everything that needs to be fixed. Just don
 
 **What changed, in short**
 
-1. **One consent text, one HELP reply, one help page (D-371).** The first text keeps "not a contractor" and now says "the business you choose pays Ask Hava a set fee of $25 to $199, by quote size" (not "a small fee") and "Reply OK to agree to the Terms (askhava.com/terms) and to get automated texts about your request." Every reply-time promise says "usually". The help page no longer says "a real person reviews anything flagged", and the site no longer says "Safety texts go out at any hour"; both now say to call 911 and not to rely on Ask Hava in an emergency. The English first text is 5 text segments; the Spanish one is 13 (accents force the costlier encoding). Budget for it.
+1. **One consent text, one HELP reply, one help page (D-371).** The first text keeps "not a contractor" and now says "the business you choose pays Ask Hava a set fee of $25 to $199, by quote size" (not "a small fee") and "Reply OK to agree to the Terms (askhava.com/terms) and to get automated texts about your request." Every reply-time promise says "usually". The help page no longer says "a real person reviews anything flagged", and the site no longer says "Safety texts go out at any hour"; both now say to call 911 and not to rely on Ask Hava in an emergency. The English first text is 5 text segments; the Spanish one is 13 (accents force the costlier encoding). Budget for it. *(Replaced Oct 28, D-419: the first text no longer asks for OK or carries the fee line; it is 2 segments in each language.)*
 2. **Opt-outs, ready for the FCC rule of November 25, 2026 (D-372).** A "stop" by text, by email, on the help form, with the portal's texts-off switch, or one you record from a call or conversation all go on one stop list at once. The STOP confirmation is a bare confirmation. Twilio's setting that treats "YES" as re-subscribe gets switched off (you do that when you set up Twilio; the checklist says so).
 3. **AI quote summaries are off at launch (D-373).** Homeowners see only the business's own words. The AI is described one way everywhere, and the privacy policy says "No AI reads your messages today" until the zero-retention agreement is signed. Business quote text is scrubbed before any AI call.
 4. **Ask Hava never texts or calls a business to recruit it (D-374).** Arizona's do-not-call law covers texts. Recruit by posts, the website, email and in person. Recruiting emails carry the LLC's postal address and a way to stop them.
-5. **Homeowner terms (D-375):** liability limited to $100, not $0, with exceptions for gross negligence and intentional misconduct, and no release of injury claims. "Reply OK" and the "By choosing" step are electronic signatures under Arizona's electronic-transactions law. The terms line sits right beside the choose button with a three-line summary.
+5. **Homeowner terms (D-375):** liability limited to $100, not $0, with exceptions for gross negligence and intentional misconduct, and no release of injury claims. "Reply OK" and the "By choosing" step are electronic signatures under Arizona's electronic-transactions law. The terms line sits right beside the choose button with a three-line summary. *(Replaced Oct 28, D-420 and D-421: picking is the only acceptance, and only "By picking, you agree to the Terms" sits beside the Pick button; the $100 cap stays in the terms under "Limit of liability".)*
 6. **Pest control is off** until the Arizona Department of Agriculture answers in writing; **home inspections for a sale, purchase or refinance are declined**; **no warranties of any kind (D-376).**
 7. **One honest description everywhere (D-377):** "a quote-request service; the business the homeowner chooses pays Ask Hava a set introduction fee." "Connect you with" and "referral network" now fail the build's wording check.
 8. **The fee is never called a "license" or "data access" (D-378).** It pays for the introduction service. This matters for the sales-tax question.
@@ -901,7 +894,7 @@ Your words, 10:14: "Go ahead and fix everything that needs to be fixed. Just don
 
 **Your decisions (the spec works without each one; nothing was sent, filed or bought) (D-388)**
 
-1. **Arbitration and class-action waiver for homeowners.** It would shield the one risk insurance usually excludes (texting lawsuits), but "Reply OK" as a contract is untested and mass arbitration can cost more than it saves. **Memo 4's lean:** if you add it, a short, separate disputes line at the pick step, small claims allowed, Ask Hava pays the filing fees, plus a batching clause for mass filings. The draft homeowner terms (next update) will carry it as an optional section, switched off.
+1. **Arbitration and class-action waiver for homeowners.** It would shield the one risk insurance usually excludes (texting lawsuits), but "Reply OK" as a contract is untested (since Oct 28 there is no reply OK; the Terms are accepted at the pick, D-420) and mass arbitration can cost more than it saves. **Memo 4's lean:** if you add it, a short, separate disputes line at the pick step, small claims allowed, Ask Hava pays the filing fees, plus a batching clause for mass filings. The draft homeowner terms (next update) will carry it as an optional section, switched off.
 2. **Regulator letters** to the contractor board (ROC), the Department of Agriculture (pest control) and the Department of Revenue (ADOR). **Lean:** yes to the ADOR ruling; the others only if you want certainty. Pest control stays off until the Department of Agriculture answers, so that letter is what would turn it on.
 3. **Sales tax (TPT):** Path A, a free private ruling request to ADOR plus setting aside 7.6% of each fee until it answers, or Path B, a $17 license and filing returns. **Memo 4: do one of them before the first fee, not neither.** Memo 3 leans to Path A.
 4. **Trademark timing and wording:** file "ASK HAVA" in Class 35 now as intent-to-use ($500) or right after launch ($350). **Lean:** after launch unless launch is far off. Pick an ID Manual description without "referral" or "matching" if an accurate one exists (D-377); if none fits, accept that risk knowingly.
@@ -926,7 +919,7 @@ Your words, 10:14: "Go ahead and fix everything that needs to be fixed. Just don
 
 **Worth a second look**
 
-1. **The consent text is long:** 5 segments in English, 13 in Spanish. Every part is there for a legal reason (D-371). If cost matters later, the first thing to drop would be "Msg frequency varies by request" only if carriers stop requiring it; don't drop anything now.
+1. **The consent text is long:** 5 segments in English, 13 in Spanish. *(Resolved Oct 28, D-419: 2 segments each.)* Every part is there for a legal reason (D-371). If cost matters later, the first thing to drop would be "Msg frequency varies by request" only if carriers stop requiring it; don't drop anything now.
 2. **"Usually replies within 2 days"** is softer than before. That's deliberate: a promise you can't always keep is the main consumer-fraud risk the memos found. The away setting still changes it automatically.
 3. **Home inspections** now take only general condition checks. Most inspection requests are for a purchase, so this category will be small. Switching it off entirely is the other option; say so if you'd rather.
 4. **Reminders every business hour** mean up to 3 reminder emails per pick. The sim said businesses missed picks because reminders were too few and too quiet; if real businesses find this too much, it's one setting.
@@ -976,7 +969,7 @@ Your words, 10:53: "compose all of the fixes we need, and then put together a li
 6. **The Twilio question** no longer mentions a pick call (D-391). **The Stripe question** uses the one honest description, says details go out only after payment, and asks about auto-confirm (D-408). Both are above in this file.
 7. **The pitch file** (outside the repo) was fixed: "Text Ask Hava", no "bidding wars", no phone help line, email-only picks, a pest answer and "How will I know I've been picked?" (D-405).
 
-**Defaults pending your OK (each is one setting):** pilot trades (B2); pest control for Department licensees only (B3); sale and refinance inspections with no fee (B4); AI on scrubbed text once the provider's terms are recorded (B5); backup choice, auto-confirm after Stripe's yes and the push app (B6); $25 site visits, never above $75 (B7); fees unchanged (B8); no arbitration (B9); no owner name online plus record links (B12); keep PICK-026 (B14); safety call off (B15); short consent texts (B16). (D-414)
+**Defaults pending your OK (each is one setting):** pilot trades (B2); pest control for Department licensees only (B3); sale and refinance inspections with no fee (B4); AI on scrubbed text once the provider's terms are recorded (B5); backup choice, auto-confirm after Stripe's yes and the push app (B6); $25 site visits, never above $75 (B7); fees unchanged (B8); no arbitration (B9); no owner name online plus record links (B12); keep PICK-026 (B14); safety call off (B15); short consent texts (B16). (D-414) *(B16 replaced Oct 28 by the 2-segment first reply with no reply OK, D-419.)*
 
 **Still open:** Gate P (B1), sales tax path (B10), trademark timing (B11), insurance (B13), Spanish review (B17). Recommended answers are in `docs/PREBUILD.md` section 4.
 
@@ -992,3 +985,16 @@ Your words, 10:53: "compose all of the fixes we need, and then put together a li
 > Casey, Ask Hava (LLC being formed)
 
 **Desk research results (D-404):** no ROC class names garage or overhead doors, so garage doors stays off; the city's solid-waste chapter (8.04) couldn't be read online, so junk removal stays off until the city clerk answers whether a private business may haul junk for pay.
+
+## Consent by texting in ("their reaching out is their consent"), October 28, 2026
+
+You said: "I think if they text us, that's implied that they want to talk to us... So I think their reaching out is their consent." Done in one pull request, decisions D-419 to D-428. Nothing was simulated.
+
+1. **No "Reply OK" step anymore (D-419).** A homeowner's first text, or starting a web chat, is the opt-in for texts about their own request. Our first reply answers and moves straight on, with the disclosures carriers need: "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy" (2 text segments). The emergency check still runs first on every message. The "Here's what we'll send" summary now says it goes out in 2 hours on its own, so nothing waits for a reply there either.
+2. **The Terms are accepted when the homeowner picks (D-420).** Next to the Pick button: "By picking, you agree to the Terms", with a link. We log the time, the terms version and the request number.
+3. **The $100 cap isn't shown on the pick page (D-421).** It stays in the Terms, section 10, under "Limit of liability".
+4. **One question after the request goes out (D-422):** "How should we send quote updates? 1) Text 2) Email 3) Both." Text if they don't answer. Email asks for the address once and never shares it with businesses. Every update links to the private quote page.
+5. **Stopping texts is unchanged (D-423):** the first reply already says STOP; one stop list for text, email and the page.
+6. **Twilio question shortened (D-424):** it's at the top of this file and in `send_drafts/Twilio_question.md`. Signed "Ask Hava (LLC being formed)".
+7. **Your answers today:** trademark skipped for now (D-425); insurance after the business is fully working (D-426); Spanish: launch in English, with the Spanish safety texts on and checked by ChatGPT and Grok translating them back, and full Spanish after a paid review of about $100 (D-427). Sales tax (B10) stays open.
+

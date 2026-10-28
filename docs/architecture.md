@@ -140,7 +140,7 @@ Quotes ready, No quotes yet, Connected ──> Closed     Any non-final status �
 
 | Status | Waiting for | Timeout | Then | Requirement |
 |---|---|---|---|---|
-| Intake | Consent, answers, the "I'm safe" reply after an emergency | With consent recorded: reminder at 24 h, close at 72 h. With consent still pending: the consent text once more at 24 h as the reminder and no closing text (only the consent text may go to that number, CON-025, CON-027); close silently at 72 h, and a returning web-chat visitor just sees the request closed | Closed early, reason "no reply"; the text "Text us any time to restart" only when consent was recorded (D-095, D-127) | INT-019, INT-005, CON-025, CON-027 |
+| Intake | Answers, the "I'm safe" reply after an emergency (consent is recorded with the first text, so nothing waits for it, D-419) | Reminder at 24 h, close at 72 h; a returning web-chat visitor sees the request closed | Closed early, reason "no reply", with the INT-019 closing text (D-095, D-419) | INT-019, INT-005, CON-025, CON-027 |
 | Open | The first quote | 6 p.m. Arizona time the next day | No quotes yet, with the "no quotes yet" text | JOB-009, JOB-010 |
 | No quotes yet | A quote | 5 days | Closed | JOB-011 |
 | Quotes ready | A pick | 3 days, restarted on every entry; at once if no choosable quote is left and every job card's 24-hour quote window has ended (D-140) | Closed | JOB-012, JOB-025 |

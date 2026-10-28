@@ -71,7 +71,7 @@ def test_every_draft_starts_with_the_note() -> None:
         ),
         (
             "sms-terms.md",
-            "Version 0.2 (draft, fix round 13) · October 28, 2026",
+            "Version 0.3 (draft, consent by texting in) · October 28, 2026",
             "Version draft",
             "second line must be",
         ),
@@ -128,6 +128,30 @@ def test_every_draft_starts_with_the_note() -> None:
             "## 13. Law and courts",
             "## 13. Law and courts\n\nThe fee is a license fee for data access to homeowners.",
             "fee framed as a license or data access (TERMS-027)",
+        ),
+        (
+            "sms-terms.md",
+            "Ask Hava: Got it. Next, a few quick questions.",
+            "Ask Hava: Got your message.",
+            "missing CON-031 wording",
+        ),
+        (
+            "sms-terms.md",
+            "You don't need to reply to agree.",
+            "Reply OK to agree to the Terms.",
+            "asks for a reply of OK or YES to agree (D-419)",
+        ),
+        (
+            "homeowner-terms.md",
+            "next to the Pick button the page says",
+            "reply YES to our first text; next to the Pick button the page says",
+            "asks for a reply of OK or YES to agree (D-419)",
+        ),
+        (
+            "homeowner-terms.md",
+            '"By picking, you agree to the Terms", with a link to them.',
+            "a link to them.",
+            "missing PICK-016 wording",
         ),
         (
             "homeowner-terms.md",

@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.2 (draft, fix round 13) · October 28, 2026 · Not yet in effect
+Version 0.3 (draft, consent by texting in) · October 28, 2026 · Not yet in effect
 
 # Ask Hava Privacy Policy
 
@@ -47,7 +47,7 @@ The business you pick may use your details only for your job and follow-up about
 
 ## 5. Text messages
 
-You choose to text us, and we text you only about your own request. Message frequency varies by request. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time.
+You choose to text us: your first text (or starting a chat on askhava.com) is your OK to get automated texts about your own request, and we text you only about that request. We keep the time of that first message and the version of our first reply as proof. After your request goes out, we ask once whether you want quote updates by text, email or both; if you give an email for updates, we use it only for your request and never share it with businesses unless you choose email contact when you pick. Every update email has an unsubscribe link. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time.
 
 You can also opt out by emailing help@askhava.com, replying to any Ask Hava email, using the help form on askhava.com, or switching texts off on your quote page. Every opt-out goes on one list at once and stops all texts and automated calls from Ask Hava to that number. To use Ask Hava by text again, text START.
 
