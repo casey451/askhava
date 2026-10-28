@@ -120,6 +120,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | E3 | AI output treated as instructions | TB4 | No tools; only fixed fields read; never writes texts, moves money or releases details (AI-006, TXT-004) | V2.3 | — |
 | E4 | Template or deserialization injection | TB1 | Texts only from fixed templates by ID (TXT-004); no pickle or YAML `load` (only `safe_load`, D-036) | V1.5 | — |
 | E5 | A build agent uses live keys or the live project | TB8 | Deny rules; no hosting key for Claude; live auto-deploy off; startup check (`BUILD_BRIEF.md:68`, `BUILD_BRIEF.md:300`–`BUILD_BRIEF.md:306`; OPS-022) | V13.3 | — |
+| E6 | A business team member with only "Cards and quotes" confirms a pick, links a phone or changes billing, and so charges the owner's card (D-191) | TB1, TB9 | Roles checked on every portal route and on texted CONFIRM: a Confirm only from the owner or a "Confirm and billing" phone, otherwise the Confirm link (PICK-033); only the owner or a "Confirm and billing" member links phones (CALL-012); adding or removing a member is logged and emailed to the owner, and sign-in is per person with removal ending sessions (BIZ-023, SEC-004); an optional monthly fee limit (FEE-041) | V8.2, V8.3 | A member the owner trusted with "Confirm and billing" can still confirm picks the owner didn't want |
 
 ## 5. ASVS 5.0.0 coverage at section level
 

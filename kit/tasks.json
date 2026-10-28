@@ -1169,7 +1169,9 @@
       "tests": [
         "TD-LIC-01"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-202"
+      ],
       "cites": [],
       "budget": {
         "files": 8,
@@ -1470,7 +1472,11 @@
       ],
       "decisions": [
         "D-063",
-        "D-064"
+        "D-064",
+        "D-174",
+        "D-191",
+        "D-193",
+        "D-198"
       ],
       "cites": [],
       "budget": {
@@ -1965,7 +1971,9 @@
         "TD-LIC-06",
         "TD-LIC-12"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-177"
+      ],
       "cites": [],
       "budget": {
         "files": 7,
@@ -2031,7 +2039,8 @@
         "D-035",
         "D-081",
         "D-154",
-        "D-157"
+        "D-157",
+        "D-186"
       ],
       "cites": [],
       "budget": {
@@ -2095,7 +2104,8 @@
       "decisions": [
         "D-017",
         "D-056",
-        "D-112"
+        "D-112",
+        "D-199"
       ],
       "cites": [],
       "budget": {
@@ -2136,24 +2146,32 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/licensing.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/businesses.md",
+        "docs/spec/wording.md"
       ],
       "requirements": [
+        "BIZ-022",
         "LIC-026",
         "LIC-032",
-        "LIC-034"
+        "LIC-034",
+        "LIC-037",
+        "LIC-038",
+        "WORD-016"
       ],
       "tests": [
-        "TD-LIC-11"
+        "TD-LIC-11",
+        "TD-LIC-14"
       ],
       "decisions": [
         "D-057",
-        "D-061"
+        "D-061",
+        "D-190"
       ],
       "cites": [],
       "budget": {
         "files": 2,
-        "lines": 200,
+        "lines": 400,
         "context_pct": 9
       },
       "checks": [
@@ -2423,7 +2441,8 @@
       "decisions": [
         "D-028",
         "D-085",
-        "D-112"
+        "D-112",
+        "D-191"
       ],
       "cites": [],
       "budget": {
@@ -2675,18 +2694,23 @@
         "CARD-010",
         "CARD-011",
         "CARD-012",
+        "CARD-019",
         "PRIV-006"
       ],
       "tests": [
         "TD-CARD-01",
         "TD-CARD-02",
-        "TD-CARD-03"
+        "TD-CARD-03",
+        "TD-CARD-07"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-188",
+        "D-202"
+      ],
       "cites": [],
       "budget": {
         "files": 4,
-        "lines": 550,
+        "lines": 650,
         "context_pct": 13
       },
       "checks": [
@@ -2735,7 +2759,8 @@
         "PICK-004",
         "PICK-005",
         "PICK-006",
-        "PICK-007"
+        "PICK-007",
+        "PICK-039"
       ],
       "tests": [
         "TD-PICK-01",
@@ -2745,7 +2770,8 @@
       "decisions": [
         "D-042",
         "D-043",
-        "D-149"
+        "D-149",
+        "D-185"
       ],
       "cites": [],
       "budget": {
@@ -3484,18 +3510,22 @@
         "FEE-004",
         "FEE-008",
         "FEE-034",
+        "FEE-039",
+        "FEE-040",
         "REC-001",
         "REC-002",
         "REC-003",
         "REC-004",
         "REC-005",
         "REC-006",
-        "REC-010"
+        "REC-010",
+        "REC-011"
       ],
       "tests": [
         "TD-FEE-01",
         "TD-FEE-02",
-        "TD-FEE-03"
+        "TD-FEE-03",
+        "TD-FEE-21"
       ],
       "decisions": [
         "D-009",
@@ -3503,12 +3533,14 @@
         "D-033",
         "D-034",
         "D-037",
-        "D-159"
+        "D-159",
+        "D-196",
+        "D-197"
       ],
       "cites": [],
       "budget": {
         "files": 7,
-        "lines": 550,
+        "lines": 650,
         "context_pct": 13
       },
       "checks": [
@@ -3562,7 +3594,9 @@
       ],
       "decisions": [
         "D-073",
-        "D-089"
+        "D-089",
+        "D-195",
+        "D-196"
       ],
       "cites": [],
       "budget": {
@@ -3682,7 +3716,8 @@
         "D-019",
         "D-069",
         "D-151",
-        "D-152"
+        "D-152",
+        "D-195"
       ],
       "cites": [],
       "budget": {
@@ -3735,20 +3770,23 @@
         "FEE-019",
         "FEE-020",
         "FEE-037",
-        "FEE-038"
+        "FEE-038",
+        "FEE-041"
       ],
       "tests": [
         "TD-FEE-11",
-        "TD-FEE-20"
+        "TD-FEE-20",
+        "TD-FEE-21"
       ],
       "decisions": [
         "D-135",
-        "D-153"
+        "D-153",
+        "D-204"
       ],
       "cites": [],
       "budget": {
         "files": 5,
-        "lines": 550,
+        "lines": 650,
         "context_pct": 12
       },
       "checks": [
@@ -3794,20 +3832,25 @@
         "PICK-020",
         "PICK-033",
         "PICK-034",
-        "PICK-035"
+        "PICK-035",
+        "PICK-037"
       ],
       "tests": [
         "TD-PICK-09",
-        "TD-PICK-15"
+        "TD-PICK-15",
+        "TD-PICK-16"
       ],
       "decisions": [
         "D-056",
-        "D-148"
+        "D-148",
+        "D-191",
+        "D-192",
+        "D-196"
       ],
       "cites": [],
       "budget": {
         "files": 3,
-        "lines": 450,
+        "lines": 600,
         "context_pct": 11
       },
       "checks": [
@@ -3892,7 +3935,8 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/fees.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/messaging.md"
       ],
       "requirements": [
         "FEE-022",
@@ -3900,11 +3944,13 @@
         "FEE-024",
         "FEE-025",
         "FEE-035",
-        "JOB-027"
+        "JOB-027",
+        "TXT-026"
       ],
       "tests": [
         "TD-FEE-13",
-        "TD-JOB-07"
+        "TD-JOB-07",
+        "TD-TXT-10"
       ],
       "decisions": [
         "D-047",
@@ -3912,12 +3958,13 @@
         "D-049",
         "D-141",
         "D-142",
-        "D-143"
+        "D-143",
+        "D-174"
       ],
       "cites": [],
       "budget": {
         "files": 3,
-        "lines": 500,
+        "lines": 600,
         "context_pct": 12
       },
       "checks": [
@@ -4142,7 +4189,8 @@
         "TD-PICK-10"
       ],
       "decisions": [
-        "D-074"
+        "D-074",
+        "D-201"
       ],
       "cites": [],
       "budget": {
@@ -4188,19 +4236,22 @@
       "requirements": [
         "PICK-025",
         "PICK-026",
-        "PICK-027"
+        "PICK-027",
+        "PICK-038"
       ],
       "tests": [
-        "TD-PICK-11"
+        "TD-PICK-11",
+        "TD-PICK-17"
       ],
       "decisions": [
         "D-044",
-        "D-150"
+        "D-150",
+        "D-193"
       ],
       "cites": [],
       "budget": {
         "files": 2,
-        "lines": 300,
+        "lines": 450,
         "context_pct": 10
       },
       "checks": [
@@ -4687,7 +4738,8 @@
         "TD-CALL-05"
       ],
       "decisions": [
-        "D-078"
+        "D-078",
+        "D-191"
       ],
       "cites": [],
       "budget": {
@@ -4734,16 +4786,20 @@
         "CALL-013",
         "CALL-014",
         "CALL-015",
-        "CALL-016"
+        "CALL-016",
+        "CALL-019"
       ],
       "tests": [
-        "TD-CALL-06"
+        "TD-CALL-06",
+        "TD-TXT-09"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-206"
+      ],
       "cites": [],
       "budget": {
         "files": 2,
-        "lines": 300,
+        "lines": 400,
         "context_pct": 10
       },
       "checks": [
@@ -4793,22 +4849,36 @@
         "BIZ-016",
         "BIZ-019",
         "BIZ-020",
-        "BIZ-021"
+        "BIZ-021",
+        "BIZ-024",
+        "BIZ-026",
+        "BIZ-027",
+        "BIZ-030",
+        "BIZ-031"
       ],
       "tests": [
         "TD-BIZ-01",
-        "TD-BIZ-05"
+        "TD-BIZ-05",
+        "TD-BIZ-07"
       ],
       "decisions": [
         "D-059",
         "D-060",
         "D-144",
-        "D-145"
+        "D-145",
+        "D-173",
+        "D-175",
+        "D-176",
+        "D-178",
+        "D-179",
+        "D-187",
+        "D-204",
+        "D-205"
       ],
       "cites": [],
       "budget": {
         "files": 6,
-        "lines": 550,
+        "lines": 800,
         "context_pct": 12
       },
       "checks": [
@@ -4849,19 +4919,23 @@
       ],
       "requirements": [
         "BIZ-017",
+        "BIZ-028",
         "CON-019",
         "CON-020"
       ],
       "tests": [
-        "TD-CON-08"
+        "TD-CON-08",
+        "TD-BIZ-08"
       ],
       "decisions": [
-        "D-062"
+        "D-062",
+        "D-191",
+        "D-198"
       ],
       "cites": [],
       "budget": {
         "files": 2,
-        "lines": 300,
+        "lines": 500,
         "context_pct": 11
       },
       "checks": [
@@ -4901,18 +4975,21 @@
       ],
       "requirements": [
         "BIZ-011",
-        "BIZ-012"
+        "BIZ-012",
+        "BIZ-029"
       ],
       "tests": [
-        "TD-BIZ-03"
+        "TD-BIZ-03",
+        "TD-BIZ-09"
       ],
       "decisions": [
-        "D-016"
+        "D-016",
+        "D-200"
       ],
       "cites": [],
       "budget": {
         "files": 4,
-        "lines": 300,
+        "lines": 400,
         "context_pct": 10
       },
       "checks": [
@@ -4951,9 +5028,11 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/security.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/businesses.md"
       ],
       "requirements": [
+        "BIZ-023",
         "SEC-004",
         "SEC-005",
         "SEC-006",
@@ -4961,15 +5040,18 @@
         "SEC-019"
       ],
       "tests": [
-        "TD-SEC-01"
+        "TD-SEC-01",
+        "TD-BIZ-06"
       ],
       "decisions": [
-        "D-014"
+        "D-014",
+        "D-179",
+        "D-191"
       ],
       "cites": [],
       "budget": {
         "files": 5,
-        "lines": 450,
+        "lines": 650,
         "context_pct": 11
       },
       "checks": [
@@ -5014,16 +5096,20 @@
       ],
       "requirements": [
         "BIZ-013",
-        "BIZ-015"
+        "BIZ-015",
+        "BIZ-025"
       ],
       "tests": [
-        "TD-BIZ-04"
+        "TD-BIZ-04",
+        "TD-PICK-17"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-193"
+      ],
       "cites": [],
       "budget": {
         "files": 4,
-        "lines": 600,
+        "lines": 700,
         "context_pct": 13
       },
       "checks": [
@@ -5607,7 +5693,8 @@
         "TD-TXT-09"
       ],
       "decisions": [
-        "D-144"
+        "D-144",
+        "D-206"
       ],
       "cites": [],
       "budget": {
@@ -5947,6 +6034,9 @@
         "WEB-012",
         "WEB-014",
         "WEB-015",
+        "WEB-019",
+        "WEB-020",
+        "WEB-021",
         "WORD-002",
         "WORD-005",
         "WORD-006",
@@ -5957,16 +6047,22 @@
       ],
       "tests": [
         "TD-WEB-01",
-        "TD-WORD-02"
+        "TD-WORD-02",
+        "TD-WEB-03"
       ],
       "decisions": [
         "D-018",
-        "D-041"
+        "D-041",
+        "D-175",
+        "D-180",
+        "D-182",
+        "D-183",
+        "D-195"
       ],
       "cites": [],
       "budget": {
         "files": 8,
-        "lines": 700,
+        "lines": 800,
         "context_pct": 15
       },
       "checks": [
@@ -6066,24 +6162,29 @@
         "TERMS-010",
         "TERMS-012",
         "WEB-010",
+        "WEB-018",
         "WORD-001",
         "WORD-003",
         "WORD-004",
         "WORD-010",
         "WORD-011",
         "WORD-012",
-        "WORD-015"
+        "WORD-015",
+        "WORD-017"
       ],
       "tests": [
-        "TD-WORD-01"
+        "TD-WORD-01",
+        "TD-WEB-03"
       ],
       "decisions": [
-        "D-029"
+        "D-029",
+        "D-172",
+        "D-184"
       ],
       "cites": [],
       "budget": {
         "files": 1,
-        "lines": 300,
+        "lines": 400,
         "context_pct": 12
       },
       "checks": [
@@ -6136,23 +6237,28 @@
         "OPS-006",
         "OPS-023",
         "OPS-024",
-        "OPS-025"
+        "OPS-025",
+        "OPS-026",
+        "OPS-027"
       ],
       "tests": [
         "TD-OPS-01",
-        "TD-OPS-06"
+        "TD-OPS-06",
+        "TD-OPS-07"
       ],
       "decisions": [
         "D-075",
         "D-076",
         "D-133",
         "D-134",
-        "D-163"
+        "D-163",
+        "D-189",
+        "D-207"
       ],
       "cites": [],
       "budget": {
         "files": 7,
-        "lines": 550,
+        "lines": 700,
         "context_pct": 12
       },
       "checks": [
@@ -6479,19 +6585,24 @@
         "TERMS-014",
         "TERMS-015",
         "TERMS-016",
-        "TERMS-018"
+        "TERMS-018",
+        "TERMS-021",
+        "TERMS-022"
       ],
       "tests": [
-        "TD-TERMS-01"
+        "TD-TERMS-01",
+        "TD-WEB-03"
       ],
       "decisions": [
         "D-047",
-        "D-100"
+        "D-100",
+        "D-203",
+        "D-204"
       ],
       "cites": [],
       "budget": {
         "files": 3,
-        "lines": 500,
+        "lines": 650,
         "context_pct": 12
       },
       "checks": [
@@ -6665,7 +6776,9 @@
       "tests": [
         "TD-FEE-19"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-196"
+      ],
       "cites": [],
       "budget": {
         "files": 2,

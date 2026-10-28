@@ -206,3 +206,65 @@ The runner tried itself out on three harmless practice tasks before any real bui
 - Stripe's test server can't run inside a session (no Docker there), so it runs only in GitHub's checks; sessions use the build's own fake Stripe. (D-167)
 - Browser tests can run inside a session; the browsers are already installed. (D-168)
 - The runner ran the rehearsal itself, without a separate task prompt. Two practice tasks skipped the second-reviewer step (each was a 6-line note), the failing one wasn't retried (it fails on purpose, and the retry path is already tested offline), and two practice tasks were open at once (safe, because the failing one could never merge). The pickup after the pretend usage limit was done by sessions that ignored the lock, so the runner's own pickup is proven only by offline tests. This report had one round of Opus review. (D-166)
+
+## From the business-side fix plan ("Make all the changes you recommend"), October 27, 2026
+
+You approved every recommendation in the business-side fix plan. All 16 quick fixes (section 3A) and all 20 yes/no answers (section 3B) are now in the spec, with a test design and task for each. Nothing is built, and Gate P still holds. The plan numbered its decisions from D-166, but the rehearsal had already used D-166 to D-171, so these are D-172 to D-207. The frictions came from 29 AI-simulated businesses, not real people.
+
+**Open items for you**
+
+1. **Have a lawyer check the safety voice call (B19).** During a texting suspension, a homeowner with no email whose own message matched a danger word gets one automated call from the Ask Hava number that reads the safety text. It rests on the homeowner's own just-sent request, not on the narrow "emergency purposes" exemption. That reading is a research-based judgment, not legal advice. Until a lawyer has looked at it, treat it as unconfirmed. Your critical alert still fires either way. (D-206)
+2. **Fix the pitch and flyers by hand before any flyer goes out (A1, A13).** The prototype and the go-to-market pitch live outside this repository, so only the spec could be changed. The spec now stops the build from copying the errors (WEB-018, WORD-017). By hand, change these: ongoing services count as 4 months; remove the "What a lead can cost elsewhere" table, or keep only IRS, SEC or FTC figures with the source on the page; remove the pest row; use "Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens."; remove "Skip tenant requests" and the identity "Email me" choice; replace "no bidding wars" with "You quote once. No bidding rounds, no paid placement."; add "Every card says how many businesses got it." and the five objection answers from friction report section 8.2 that match your answers. (D-172, D-184)
+3. **Recruit about 2 to 4 businesses per trade** until a trade averages about 1 confirmed pick per business per month. Open small trades later, or with 1 or 2 businesses. Put this pace in the go-to-market plan, section 3.3. There is still no cap, and a business that finds Ask Hava on its own can still join. If a trade ever has 7 or more businesses and its typical job gets 5 or more quotes two months in a row, the owner portal flags it, and a 5-quote limit comes back to you as a decision. (D-189)
+4. **Start the founding interest list yourself (A10).** Note each business, its trade, how it would like to be reached and its OK to be contacted once at launch. Then sign each one up in person during launch week. Nobody can sign up before Gate C, and the list must never be built from the ROC or city lists. (D-181)
+5. **An attorney review of the business data page is optional but worth paying for (B16).** Every line on it must be exactly true. It covers what's kept and for how long, who sees it, no call recordings, never asking about workers, police or others getting data only when a law requires it (such as a subpoena or warrant), and that you don't use Ask Hava data in any other job. (D-203)
+6. **Whether to mention police work (C8).** The "Who runs Ask Hava" block leaves it out until the interviews answer this. (D-183)
+7. **Checked at build time:** whether the city license list has a date field. If it doesn't, no-license cards say "City business license on file" with no year. (D-190)
+
+**Pending validation: needs real contractor interviews (section 3C, not applied)**
+
+None of these blocks the spec. Each touches a number that is now a setting, or a wording choice, so interview answers change numbers, not code. The "Q" numbers refer to the interview script in friction report section 10. Interview rules: research, not selling; ask about past behavior; no recording without permission; notes by business type only in any sheet near an AI tool; never use the ROC or city lists to choose whom to interview.
+
+- **C1. How stale are ROC and city-list contacts, and does the ROC's online update fix them?** Could reopen the in-person check (B7), and must be answered before the first sign-up. Q14, plus new: "If the code went to an old number, would you update your ROC record online?"
+- **C2. Reaction to "Sent to __ businesses": what number makes them skip, and what feels fair by trade?** Sets the pacing target and the revisit trigger (B1, B2). Q6, Q5. Must be in before launch.
+- **C3. Will they sign up on the spot with you during launch week?** This is the funnel's biggest assumption (A10). Q15. Must be in before launch.
+- **C4. Does "licensed since" matter, and what would they write in "About us"?** (B3) Q8.
+- **C5. Who reads the pick text, and is 2 business hours workable with every phone notified?** Could reopen B4 or B5. Q4, plus new: "If the pick text went to you and your office at once, could one of you confirm within 2 hours?" Must be in before launch.
+- **C6. What is a new recurring client worth, and is $75 acceptable for an ongoing service?** Could reopen B9. Q12.
+- **C7. What Spanish-first owners need in Spanish, and what they want promised about data.** (A9, B16) Q18.
+- **C8. Is your being a police officer a plus, a worry or nothing?** (A12, B16 wording) New: "The person running this is a local police officer. Does that matter to you, either way?"
+- **C9. Would BUSY <days> keep them signed up through the busy season?** (B11) New: "When you're booked out, what do you do about new requests today?"
+- **C10. Minutes per quote, and how many unanswered quotes before they stop.** (B1, B2 pacing; B6) Q7, Q9. Must be in before launch.
+- **C11. Would the loss text ("4 quoted; the picked quote was lower") make them quote again, or quit?** (B6) Q9; show the loss text on paper.
+- **C12. Movers and others who price by the hour: what quote format works?** (post-launch item L4) New, movers only: "How do you price a local move in writing?"
+- **C13. $25 locked for a year against a possible later $39: does the lock matter?** (B10) Q11.
+
+**Worth a second look**
+
+1. **Every job card now says "Sent to N businesses."** The business portal also shows how many got the job and how many quoted so far. There is still no cap. (D-188, D-189)
+2. **Losing businesses learn a little more.** When 3 or more businesses quoted, the "picked another quote" text adds how many quoted and whether the picked quote was lower than, about the same as (within 10%) or higher than theirs. It never gives amounts or names. A "Your numbers" panel shows each business its own month. (D-193)
+3. **Team members.** An owner can add people with "Cards and quotes" and/or "Confirm and billing". The pick text goes to the owner and every "Confirm and billing" phone and email, with one reminder after 60 minutes. A texted CONFIRM counts only from those phones. Each person signs in separately, and each team phone gives its own texting consent and has its own STOP. (D-191)
+4. **The Confirm window stays 2 business hours,** now as a setting. If late answers stay above 5% after the plan's validation run, it moves to 3 hours for non-emergency jobs. (D-192)
+5. **Ongoing services are capped at a $75 fee.** A weekly cleaning that used to cost $199 is now $75; a $150-a-month pool account stays $75. The worked examples changed to match: the $400-a-month turnover cleaning (W20) is now $75, and a new $160-weekly cleaning (W33) shows the cap. Businesses accept a new card-authorization version before their next charge. (D-196)
+6. **The fee stays $25 / $75 / $199, with no move to $39.** Businesses that join in the first 90 days after launch keep their join-date amounts for 12 months. Revisit $39 after 6 months of real data. (D-197)
+7. **The free first win also counts from when a trade opens.** A business qualifies if it joins within 90 days after one of its trades is switched on. That includes a waitlisted business that joined earlier. (D-195)
+8. **A failed license lookup now waits 72 hours, not 24, before a pause.** The business is warned at 24 hours and can't Confirm while its status is unknown. A pause that clears itself needs no review from you. (D-199)
+9. **No in-person ID check (B7: no), and no sharing of the homeowner's number (B14: no).** Instead, sign-up shows the masked record contact first and calls landlines by voice first. "That number is old" walks the business through updating its ROC or city record and resumes on its own. The homeowner's details text adds "Tip: on your first call, ask which number to text." (D-178, D-194, D-201)
+10. **You are named as the contact for charge questions and sign-up reviews,** with a 1-business-day reply target. An "away until <date>" setting tells businesses when you'll answer, and it changes no timer. Businesses can set a monthly fee limit. There is still no backup person. (D-204, D-207)
+
+**Routine**
+
+- Sign-up starts with the trade list marked "Open now" or "Coming later". Coming-later trades join the waitlist and are told "Your join date is kept." (D-175, D-176)
+- A no-license business not yet on the city list waits as pending and activates on its own when the list shows it. (D-177)
+- Anyone can fill in the sign-up form, and the owner just reads them the code. (D-179)
+- A plain-words "How you're charged" box appears on sign-up and on the business page. It says "It's an introduction fee for a homeowner who chose you." and "A new fee never applies until you accept it." The fee still stands once the business has talked to the homeowner. (D-173, D-205)
+- Businesses get call reminders 24 and 48 hours after a release when they haven't called, so nobody loses a refund without warning. (D-174)
+- Spanish business page, sign-up and terms summary, marked for native-speaker review. (D-180)
+- A sample job card for each open trade (never pest), and a "Who runs Ask Hava" block that uses the LLC mailing address, never your home. (D-182, D-183)
+- The quote form shows the trip-fee tier before a business submits. The handyman certification box sits next to the price. (D-185, D-186)
+- An honest done screen: "You're one of <n> businesses in <trade> so far." (D-187)
+- Quote cards show "ROC license since <year>" and a screened 140-character "About us" line. There are no ratings or hire counts. (D-190)
+- Intake answers, such as tank type or window count, show as fields on job cards. (D-202)
+- PAUSE, RESUME and BUSY <days> text keywords. STOP from a team phone stops only that phone. (D-198)
+- Businesses see each complaint, with no homeowner details, and have 5 days to reply. (D-200)
+- A business data page, in English and Spanish. (D-203)
