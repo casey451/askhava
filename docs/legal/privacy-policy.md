@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.1 (draft) · October 28, 2026 · Not yet in effect
+Version 0.2 (draft, fix round 13) · October 28, 2026 · Not yet in effect
 
 # Ask Hava Privacy Policy
 
@@ -57,7 +57,7 @@ Ask Hava never sells or rents lists of people, phone numbers or texting consent.
 
 ## 6. Automated tools and AI
 
-*(Use the first paragraph while no AI is in use. Switch to the second, with the change dated, only on the day the zero-retention agreement is signed and AI goes live.)*
+*(Use the first paragraph while no AI is in use. Switch to the second, with the change dated, only on the day AI goes live. Before a zero-retention agreement is signed, replace its second sentence with "The AI provider doesn't use that text to train its AI and deletes it within <days> days.", using the provider's recorded terms (AI-008, AI-018).)*
 
 **Now:** No AI reads your messages today. Our texts are automated and come from fixed templates.
 

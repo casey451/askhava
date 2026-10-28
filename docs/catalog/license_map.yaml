@@ -1,0 +1,298 @@
+# Ask Hava license map: which license classes receive which job types (LIC-043, D-392).
+#
+# Checked by scripts/check_catalog.py. Category ids and job types refer to
+# docs/catalog/categories.yaml; "all" means every job type of that category, and
+# "also" adds job types the category lists under refused (licensed-only work).
+# Routing reads only this map: a class receives a job type only where it is listed here,
+# directly or through a class named in "includes". A row under "unclear" is never inherited
+# until a logged decision confirms it. A business never receives a job type its license
+# doesn't cover, whatever it ticks (CARD-001).
+#
+# ROC subclassifications (R-37R, R-39R) are read from the subclassification named on the
+# state record (LIC-035). Commercial-only classes receive no home job types (LIC-044).
+# Project limits from A.A.C. R4-9-103 are enforced on quotes (LIC-045).
+
+version: 1
+as_of: "2026-10-28"
+reviewed_by: "Claude, fix round 13 (D-392), from the sources below; Casey reviews at the end (BUILD_BRIEF.md:536)"
+
+sources:
+  - id: roc_list
+    title: "Arizona Registrar of Contractors, License Classification Requirements (class list)"
+    url: "https://www.azroc.gov/sites/default/files/2023-11/License%20Classification%20Requirements_6.8.20_0.pdf"
+    checked: "2026-10-28"
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103, Residential Contractor License Classifications and Scopes of Work (last amended effective November 5, 2017)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-28"
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104, Dual Contractor License Classifications and Scopes of Work"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-28"
+  - id: changes_file
+    title: "Changes file, license rule per category and the K2b class mapping"
+    url: "sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:36"
+    checked: "2026-10-28"
+
+rules:
+  - "A class receives a job type only where this map lists it, directly or through a class it includes."
+  - "A dual CR- class includes the residential class R4-9-104 pairs it with; KB-1 and KB-2 include B; KA-5 and KA-6 include B-5 and B-6."
+  - "B and B-3 receive general repair and remodel job types only; R4-9-103 leaves electrical, plumbing, air conditioning, boiler, pool, spa and well work to other licensed contractors."
+  - "An unclear row is never inherited until a logged decision confirms it."
+  - "Commercial-only classes receive no home job types."
+  - "Other state agencies and the city business-license list are mapped the same way."
+
+# LIC-044: these classes cover no home job types. "C-" means every C- specialty commercial class.
+commercial_only: [A, A-4, A-5, A-7, A-9, A-11, A-12, A-14, A-15, A-16, A-17, A-19, B-1, B-2, C-]
+
+classes:
+
+  # ---- Residential specialty classes (R4-9-103) ----
+
+  - class: R-37
+    name: "Plumbing, Including Solar"
+    source: aac_r4_9_103
+    job_types:
+      plumbing_repair: {all: true, also: [gas line work, water heater replacement]}
+  - class: R-37R Plumbing
+    name: "Plumbing (R-37R subclassification)"
+    source: aac_r4_9_103
+    job_types:
+      plumbing_repair: {all: true, also: [water heater replacement]}
+  - class: R-37R Sewers, Drains and Pipe Laying
+    name: "Sewers, Drains and Pipe Laying (R-37R subclassification, closed to new applications)"
+    source: aac_r4_9_103
+    job_types:
+      plumbing_repair: {only: [drain clearing]}
+  - class: R-37R Gas Piping
+    name: "Gas Piping (R-37R subclassification, closed to new applications)"
+    source: aac_r4_9_103
+    job_types:
+      plumbing_repair: {only: [gas line work]}
+  - class: R-37R Swimming Pool Plumbing and Equipment
+    name: "Swimming Pool Plumbing and Equipment (R-37R subclassification, closed to new applications)"
+    source: aac_r4_9_103
+    job_types:
+      pool_repair: {only: [pump repair, filter repair, pool leak, equipment replacement]}
+  - class: R-39
+    name: "Air Conditioning and Refrigeration, Including Solar"
+    source: aac_r4_9_103
+    job_types:
+      hvac_repair: {all: true}
+      hvac_replacement: {all: true}
+  - class: R-39R Air Conditioning and Refrigeration
+    name: "Air Conditioning and Refrigeration (R-39R subclassification)"
+    source: aac_r4_9_103
+    job_types:
+      hvac_repair: {only: [AC not cooling, thermostat, duct repair]}
+      hvac_replacement: {all: true}
+  - class: R-39R Warm Air Heating, Evaporative Cooling and Ventilating
+    name: "Warm Air Heating, Evaporative Cooling and Ventilating (R-39R subclassification, closed to new applications)"
+    source: aac_r4_9_103
+    job_types:
+      hvac_repair: {only: [furnace repair, evaporative (swamp) cooler repair, duct repair]}
+  - class: R-39R Evaporative Cooling and Ventilators
+    name: "Evaporative Cooling and Ventilators (R-39R subclassification, closed to new applications)"
+    source: aac_r4_9_103
+    job_types:
+      hvac_repair: {only: [evaporative (swamp) cooler repair]}
+  - class: R-39R Temperature Control Systems
+    name: "Temperature Control Systems (R-39R subclassification, closed to new applications)"
+    source: aac_r4_9_103
+    job_types:
+      hvac_repair: {only: [thermostat]}
+  - class: R-11
+    name: "Electrical"
+    source: aac_r4_9_103
+    job_types:
+      electrical: {all: true}
+  - class: R-6
+    name: "Swimming Pool Service and Repair"
+    source: aac_r4_9_103
+    job_types:
+      pool_repair: {all: true}
+  - class: R-42
+    name: "Roofing"
+    source: aac_r4_9_103
+    job_types:
+      roof_repair: {all: true}
+  - class: R-34
+    name: "Painting and Wall Covering"
+    source: aac_r4_9_103
+    job_types:
+      painting: {all: true}
+      epoxy_floors: {all: true}
+  - class: R-8
+    name: "Floor Covering"
+    source: aac_r4_9_103
+    job_types:
+      epoxy_floors: {all: true}
+  - class: R-63
+    name: "Appliances"
+    source: aac_r4_9_103
+    job_types:
+      appliance_repair: {all: true}
+  - class: R-65
+    name: "Glazing"
+    source: changes_file
+    job_types:
+      solar_screens: {all: true}
+  - class: R-67
+    name: "Low Voltage Communication Systems"
+    source: aac_r4_9_103
+    job_types:
+      security_cameras: {all: true}
+      alarm_systems: {all: true}
+  - class: R-54
+    name: "Water Conditioning Equipment"
+    source: changes_file
+    job_types:
+      water_treatment: {all: true}
+  - class: R-45
+    name: "Sheet Metal"
+    source: aac_r4_9_103
+    job_types:
+      gutters: {all: true}
+      hvac_repair: {only: [duct repair]}
+  - class: R-40
+    name: "Insulation"
+    source: aac_r4_9_103
+    job_types:
+      insulation: {all: true}
+  - class: R-21
+    name: "Hardscaping and Irrigation Systems"
+    source: aac_r4_9_103
+    job_types:
+      pavers_hardscape: {all: true}
+  - class: R-7
+    name: "Carpentry"
+    source: aac_r4_9_103
+    job_types:
+      handyman: {only: [door repair, shelves]}
+  - class: R-10
+    name: "Drywall"
+    source: aac_r4_9_103
+    job_types:
+      handyman: {only: [drywall patch]}
+  - class: R-14
+    name: "Fencing"
+    source: aac_r4_9_103
+    job_types:
+      handyman: {only: [fence repair]}
+  - class: R-60
+    name: "Finish Carpentry"
+    source: aac_r4_9_103
+    job_types:
+      handyman: {only: [shelves]}
+  - class: R-61
+    name: "Carpentry, Remodeling and Repairs"
+    source: aac_r4_9_103
+    project_limit: "50000.00"
+    job_types:
+      handyman: {all: true}
+  - class: R-62
+    name: "Minor Home Improvements"
+    source: aac_r4_9_103
+    project_limit: "5000.00"
+    no_structural: true
+    job_types:
+      handyman: {all: true}
+
+  # ---- Residential general classes (R4-9-103) ----
+
+  - class: B
+    name: "General Residential Contractor"
+    source: aac_r4_9_103
+    job_types:
+      handyman: {all: true}
+      painting: {all: true}
+      roof_repair: {all: true}
+      insulation: {all: true}
+      gutters: {all: true}
+      epoxy_floors: {all: true}
+      pavers_hardscape: {only: [paver patio, walkway]}
+  - class: B-3
+    name: "General Remodeling and Repair Contractor"
+    source: aac_r4_9_103
+    job_types:
+      handyman: {all: true}
+      painting: {all: true}
+      roof_repair: {all: true}
+      insulation: {all: true}
+      gutters: {all: true}
+      epoxy_floors: {all: true}
+      pavers_hardscape: {only: [paver patio, walkway]}
+  - class: B-5
+    name: "General Swimming Pool Contractor"
+    source: aac_r4_9_103
+    job_types:
+      pool_repair: {all: true}
+  - class: B-6
+    name: "General Swimming Pool Contractor, Including Solar"
+    source: aac_r4_9_103
+    job_types:
+      pool_repair: {all: true, also: [gas pool heater]}
+
+  # ---- Dual classes (R4-9-104): commercial plus the residential class named ----
+
+  - {class: CR-6, name: "Swimming Pool Service and Repair (dual)", source: aac_r4_9_104, includes: [R-6]}
+  - {class: CR-7, name: "Carpentry (dual)", source: aac_r4_9_104, includes: [R-7]}
+  - {class: CR-8, name: "Floor Covering (dual)", source: aac_r4_9_104, includes: [R-8]}
+  - {class: CR-10, name: "Drywall (dual)", source: aac_r4_9_104, includes: [R-10]}
+  - {class: CR-11, name: "Electrical (dual)", source: aac_r4_9_104, includes: [R-11]}
+  - {class: CR-14, name: "Fencing (dual)", source: aac_r4_9_104, includes: [R-14]}
+  - {class: CR-21, name: "Hardscaping and Irrigation Systems (dual)", source: aac_r4_9_104, includes: [R-21]}
+  - {class: CR-34, name: "Painting and Wall Covering (dual)", source: aac_r4_9_104, includes: [R-34]}
+  - {class: CR-37, name: "Plumbing (dual)", source: aac_r4_9_104, includes: [R-37R Plumbing]}
+  - {class: CR-39, name: "Air Conditioning and Refrigeration (dual)", source: aac_r4_9_104, includes: [R-39R Air Conditioning and Refrigeration]}
+  - {class: CR-40, name: "Insulation (dual)", source: aac_r4_9_104, includes: [R-40]}
+  - {class: CR-42, name: "Roofing (dual)", source: aac_r4_9_104, includes: [R-42]}
+  - {class: CR-45, name: "Sheet Metal (dual)", source: aac_r4_9_104, includes: [R-45]}
+  - {class: CR-54, name: "Water Conditioning Equipment (dual)", source: aac_r4_9_104, includes: [R-54]}
+  - {class: CR-58, name: "Comfort Heating, Ventilating, Evaporative Cooling (dual)", source: aac_r4_9_104, includes: ["R-39R Warm Air Heating, Evaporative Cooling and Ventilating"]}
+  - {class: CR-60, name: "Finish Carpentry (dual)", source: aac_r4_9_104, includes: [R-60]}
+  - {class: CR-61, name: "Carpentry, Remodeling and Repairs (dual)", source: aac_r4_9_104, includes: [R-61]}
+  - {class: CR-63, name: "Appliances (dual)", source: aac_r4_9_104, includes: [R-63]}
+  - {class: CR-65, name: "Glazing (dual)", source: aac_r4_9_104, includes: [R-65]}
+  - {class: CR-67, name: "Low Voltage Communication Systems (dual)", source: aac_r4_9_104, includes: [R-67]}
+  - {class: CR-77, name: "Plumbing, Including Solar (dual)", source: aac_r4_9_104, includes: [R-37]}
+  - {class: CR-79, name: "Air Conditioning and Refrigeration, Including Solar (dual)", source: aac_r4_9_104, includes: [R-39]}
+  - {class: CR-80, name: "Sewers, Drains and Pipe Laying (dual)", source: aac_r4_9_104, includes: ["R-37R Sewers, Drains and Pipe Laying"]}
+  - {class: KB-1, name: "Dual Building Contractor", source: aac_r4_9_104, includes: [B]}
+  - {class: KB-2, name: "Dual Residential and Small Commercial", source: aac_r4_9_104, includes: [B]}
+  - {class: KA-5, name: "Dual Swimming Pool Contractor", source: aac_r4_9_104, includes: [B-5]}
+  - {class: KA-6, name: "Dual Swimming Pool Contractor, Including Solar", source: aac_r4_9_104, includes: [B-6]}
+
+# ---- Other state agencies and the city list (LIC-011 to LIC-016) ----
+
+agencies:
+  - license: "AZ Department of Agriculture pest-management business license"
+    job_types:
+      pest_control: {only: [general pest service, scorpions]}
+    record_category_needed:
+      termites: "the wood-destroying organism category on the Department record"
+      pre-emergent weed control: "the weed control category on the Department record"
+  - license: "Board of Technical Registration certified home inspector"
+    job_types:
+      home_inspection: {all: true}
+  - license: "Board of Technical Registration alarm business certificate, with an R-67 or CR-67 ROC class"
+    job_types:
+      alarm_systems: {all: true}
+  - license: "ADEQ septage-hauler vehicle license"
+    job_types:
+      septic_pumping: {all: true}
+  - license: "Lake Havasu City business license list (no-license categories)"
+    no_license_categories: true
+
+# ---- Not inherited until a logged decision confirms them ----
+
+unclear:
+  - {class: R-37R Plumbing, category: plumbing_repair, job_type: gas line work, why: "R4-9-103 lists a separate R-37R Gas Piping subclassification"}
+  - {class: R-39R Air Conditioning and Refrigeration, category: hvac_repair, job_type: furnace repair, why: "the subclassification names cooling and refrigeration only"}
+  - {class: R-6, category: pool_repair, job_type: gas pool heater, why: "R4-9-103 excludes gas lines from R-6"}
+  - {class: B-5, category: pool_repair, job_type: gas pool heater, why: "B-5 names pools and spas but not heating devices"}
+  - {class: B, category: pavers_hardscape, job_type: irrigation install, why: "irrigation piping may be plumbing work"}
+  - {class: B, category: solar_screens, job_type: window film, why: "the B scope text does not name glazing"}
+  - {class: R-37, category: water_treatment, job_type: softener install, why: "R-54 is the class the changes file names"}
+  - {class: B-10, category: pool_repair, job_type: equipment replacement, why: "B-10 covers pre-manufactured spas and hot tubs only"}
+  - {class: garage doors, category: garage_doors, job_type: door replacement, why: "no R4-9-103 class names garage or overhead doors; the category stays off (D-404)"}
