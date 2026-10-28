@@ -1484,7 +1484,8 @@
         "D-174",
         "D-191",
         "D-193",
-        "D-198"
+        "D-198",
+        "D-311"
       ],
       "cites": [],
       "budget": {
@@ -1557,7 +1558,9 @@
         "D-158",
         "D-164",
         "D-270",
-        "D-271"
+        "D-271",
+        "D-308",
+        "D-314"
       ],
       "cites": [],
       "budget": {
@@ -2845,7 +2848,8 @@
         "D-234",
         "D-245",
         "D-283",
-        "D-295"
+        "D-295",
+        "D-309"
       ],
       "cites": [],
       "budget": {
@@ -3331,7 +3335,8 @@
         "D-068",
         "D-147",
         "D-290",
-        "D-291"
+        "D-291",
+        "D-310"
       ],
       "cites": [],
       "budget": {
@@ -3410,7 +3415,8 @@
         "D-291",
         "D-293",
         "D-294",
-        "D-295"
+        "D-295",
+        "D-310"
       ],
       "cites": [],
       "budget": {
@@ -3893,7 +3899,8 @@
         "D-135",
         "D-153",
         "D-204",
-        "D-270"
+        "D-270",
+        "D-308"
       ],
       "cites": [],
       "budget": {
@@ -3972,7 +3979,9 @@
         "D-270",
         "D-284",
         "D-285",
-        "D-286"
+        "D-286",
+        "D-309",
+        "D-310"
       ],
       "cites": [],
       "budget": {
@@ -4097,7 +4106,8 @@
         "D-270",
         "D-286",
         "D-288",
-        "D-293"
+        "D-293",
+        "D-308"
       ],
       "cites": [],
       "budget": {
@@ -4334,7 +4344,8 @@
       ],
       "decisions": [
         "D-074",
-        "D-201"
+        "D-201",
+        "D-306"
       ],
       "cites": [],
       "budget": {
@@ -4392,7 +4403,8 @@
         "D-150",
         "D-193",
         "D-291",
-        "D-294"
+        "D-294",
+        "D-308"
       ],
       "cites": [],
       "budget": {
@@ -4897,7 +4909,8 @@
         "D-260",
         "D-288",
         "D-295",
-        "D-296"
+        "D-296",
+        "D-311"
       ],
       "cites": [],
       "budget": {
@@ -4953,7 +4966,8 @@
       ],
       "decisions": [
         "D-206",
-        "D-275"
+        "D-275",
+        "D-310"
       ],
       "cites": [],
       "budget": {
@@ -5019,7 +5033,8 @@
         "TD-BIZ-01",
         "TD-BIZ-05",
         "TD-BIZ-07",
-        "TD-BIZ-10"
+        "TD-BIZ-10",
+        "TD-BIZ-17"
       ],
       "decisions": [
         "D-059",
@@ -5040,7 +5055,10 @@
         "D-256",
         "D-261",
         "D-281",
-        "D-288"
+        "D-288",
+        "D-308",
+        "D-312",
+        "D-313"
       ],
       "cites": [],
       "budget": {
@@ -5105,7 +5123,10 @@
         "D-228",
         "D-235",
         "D-266",
-        "D-287"
+        "D-287",
+        "D-309",
+        "D-311",
+        "D-312"
       ],
       "cites": [],
       "budget": {
@@ -5172,7 +5193,8 @@
         "D-280",
         "D-281",
         "D-287",
-        "D-288"
+        "D-288",
+        "D-311"
       ],
       "cites": [],
       "budget": {
@@ -5225,16 +5247,20 @@
         "SEC-005",
         "SEC-006",
         "SEC-008",
-        "SEC-019"
+        "SEC-019",
+        "TXT-038"
       ],
       "tests": [
         "TD-SEC-01",
-        "TD-BIZ-06"
+        "TD-BIZ-06",
+        "TD-TXT-19"
       ],
       "decisions": [
         "D-014",
         "D-179",
-        "D-191"
+        "D-191",
+        "D-313",
+        "D-318"
       ],
       "cites": [],
       "budget": {
@@ -5356,7 +5382,8 @@
         "TD-SEC-01"
       ],
       "decisions": [
-        "D-098"
+        "D-098",
+        "D-313"
       ],
       "cites": [],
       "budget": {
@@ -5462,7 +5489,9 @@
       "tests": [
         "TD-SEC-01"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-313"
+      ],
       "cites": [],
       "budget": {
         "files": 1,
@@ -5779,7 +5808,9 @@
       "tests": [
         "TD-TXT-05"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-308"
+      ],
       "cites": [],
       "budget": {
         "files": 5,
@@ -5896,7 +5927,9 @@
         "D-211",
         "D-274",
         "D-275",
-        "D-297"
+        "D-297",
+        "D-303",
+        "D-315"
       ],
       "cites": [],
       "budget": {
@@ -6036,7 +6069,9 @@
       "module": null,
       "deps": [
         "T098",
-        "T089"
+        "T089",
+        "T147",
+        "T148"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -6077,6 +6112,188 @@
       "prompt": "kit/prompts/T099.md"
     },
     {
+      "id": "T147",
+      "slug": "business-notices-email",
+      "title": "messaging and businesses: business notices by chosen channel (email by default, text or both only when business texting is on), channel preference, verified business email and email deliverability",
+      "goal": "messaging and businesses: business notices by chosen channel (email by default, text or both only when business texting is on), channel preference, verified business email and email deliverability",
+      "type": "build",
+      "phase": 1,
+      "stage": "4",
+      "module": "messaging",
+      "deps": [
+        "T094",
+        "T084",
+        "T082"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "privacy",
+        "security",
+        "compliance"
+      ],
+      "owns": [
+        "app/messaging/business_notices.py",
+        "app/businesses/channel_preference.py",
+        "app/businesses/email_verification.py",
+        "migrations/versions/t147_business_notices.py",
+        "tests/integration/test_business_notices.py",
+        "tests/integration/test_email_verification.py",
+        "tests/security/test_notice_addresses.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/threat-model.md",
+        "docs/spec/businesses.md",
+        "docs/spec/messaging.md",
+        "docs/test-design.md",
+        "docs/spec/job-cards.md",
+        "docs/spec/quiet-hours.md",
+        "docs/spec/security.md",
+        "docs/spec/consent.md",
+        "docs/spec/website.md"
+      ],
+      "requirements": [
+        "TXT-035",
+        "TXT-036",
+        "TXT-037",
+        "TXT-014",
+        "BIZ-019",
+        "BIZ-036",
+        "BIZ-037",
+        "BIZ-040",
+        "BIZ-041",
+        "CARD-020",
+        "QH-005",
+        "CON-020",
+        "SEC-024",
+        "SEC-025",
+        "WEB-024"
+      ],
+      "tests": [
+        "TD-TXT-17",
+        "TD-TXT-18",
+        "TD-BIZ-13",
+        "TD-BIZ-14",
+        "TD-SEC-07",
+        "TD-WEB-05"
+      ],
+      "decisions": [
+        "D-303",
+        "D-306",
+        "D-307",
+        "D-308",
+        "D-312",
+        "D-318",
+        "D-320"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 7,
+        "lines": 800,
+        "context_pct": 17
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T147-business-notices-email",
+      "prompt": "kit/prompts/T147.md"
+    },
+    {
+      "id": "T148",
+      "slug": "business-actions-pick-call",
+      "title": "portals and picks: secure email links to a portal page for every former text keyword, signed Hold links, and the automated pick call",
+      "goal": "portals and picks: secure email links to a portal page for every former text keyword, signed Hold links, and the automated pick call",
+      "type": "build",
+      "phase": 1,
+      "stage": "4",
+      "module": "picks",
+      "deps": [
+        "T147",
+        "T063",
+        "T080",
+        "T079",
+        "T083",
+        "T085"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "money",
+        "privacy",
+        "security",
+        "compliance"
+      ],
+      "owns": [
+        "app/portals/business_actions.py",
+        "app/portals/templates/business_actions.html",
+        "app/portals/action_links.py",
+        "app/picks/pick_call.py",
+        "tests/integration/test_business_actions.py",
+        "tests/integration/test_pick_call.py",
+        "tests/security/test_action_links.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/threat-model.md",
+        "docs/spec/businesses.md",
+        "docs/spec/messaging.md",
+        "docs/test-design.md",
+        "docs/spec/quotes-pick.md",
+        "docs/spec/calls.md",
+        "docs/spec/quiet-hours.md",
+        "docs/spec/security.md",
+        "docs/spec/accessibility.md"
+      ],
+      "requirements": [
+        "BIZ-038",
+        "BIZ-039",
+        "PICK-019",
+        "PICK-033",
+        "PICK-037",
+        "PICK-043",
+        "PICK-044",
+        "BIZ-028",
+        "BIZ-032",
+        "BIZ-033",
+        "BIZ-034",
+        "CALL-011",
+        "SEC-025",
+        "A11Y-023",
+        "A11Y-024"
+      ],
+      "tests": [
+        "TD-BIZ-15",
+        "TD-PICK-25",
+        "TD-BIZ-16"
+      ],
+      "decisions": [
+        "D-309",
+        "D-310",
+        "D-311",
+        "D-317",
+        "D-318",
+        "D-320"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 7,
+        "lines": 800,
+        "context_pct": 17
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T148-business-actions-pick-call",
+      "prompt": "kit/prompts/T148.md"
+    },
+    {
       "id": "T100",
       "slug": "cleanup-stage4",
       "title": "Stage 4 cleanup: dead code, duplicates, docs up to date",
@@ -6109,7 +6326,9 @@
         "T096",
         "T097",
         "T098",
-        "T099"
+        "T099",
+        "T147",
+        "T148"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -6285,7 +6504,9 @@
         "D-289",
         "D-295",
         "D-297",
-        "D-300"
+        "D-300",
+        "D-307",
+        "D-316"
       ],
       "cites": [],
       "budget": {
@@ -6411,7 +6632,8 @@
         "D-172",
         "D-184",
         "D-245",
-        "D-300"
+        "D-300",
+        "D-316"
       ],
       "cites": [],
       "budget": {
@@ -6478,14 +6700,16 @@
         "OPS-031",
         "OPS-032",
         "OPS-033",
-        "OPS-034"
+        "OPS-034",
+        "OPS-035"
       ],
       "tests": [
         "TD-OPS-01",
         "TD-OPS-06",
         "TD-OPS-07",
         "TD-OPS-08",
-        "TD-OPS-09"
+        "TD-OPS-09",
+        "TD-OPS-10"
       ],
       "decisions": [
         "D-075",
@@ -6508,7 +6732,9 @@
         "D-280",
         "D-282",
         "D-284",
-        "D-289"
+        "D-289",
+        "D-314",
+        "D-319"
       ],
       "cites": [],
       "budget": {
@@ -6557,7 +6783,9 @@
       "tests": [
         "TD-OPS-02"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-319"
+      ],
       "cites": [],
       "budget": {
         "files": 2,
@@ -6664,12 +6892,14 @@
         "FEE-026",
         "LIC-002",
         "OPS-003",
-        "SEC-006"
+        "SEC-006",
+        "OPS-035"
       ],
       "tests": [],
       "decisions": [
         "D-072",
-        "D-074"
+        "D-074",
+        "D-314"
       ],
       "cites": [],
       "budget": {
@@ -6857,7 +7087,10 @@
         "D-203",
         "D-204",
         "D-215",
-        "D-287"
+        "D-287",
+        "D-304",
+        "D-305",
+        "D-316"
       ],
       "cites": [],
       "budget": {
@@ -6931,7 +7164,9 @@
       "decisions": [
         "D-079",
         "D-214",
-        "D-299"
+        "D-299",
+        "D-304",
+        "D-305"
       ],
       "cites": [],
       "budget": {
@@ -6985,13 +7220,19 @@
         "TERMS-013",
         "TERMS-014",
         "TERMS-015",
-        "TERMS-018"
+        "TERMS-018",
+        "CON-033"
       ],
       "tests": [
-        "TD-TERMS-01"
+        "TD-TERMS-01",
+        "TD-CON-16",
+        "TD-TERMS-02"
       ],
       "decisions": [
-        "D-088"
+        "D-088",
+        "D-304",
+        "D-305",
+        "D-315"
       ],
       "cites": [],
       "budget": {
@@ -7096,7 +7337,9 @@
         "A11Y-022"
       ],
       "tests": [],
-      "decisions": [],
+      "decisions": [
+        "D-317"
+      ],
       "cites": [],
       "budget": {
         "files": 4,
@@ -7452,7 +7695,9 @@
       "decisions": [
         "D-067",
         "D-094",
-        "D-100"
+        "D-100",
+        "D-305",
+        "D-322"
       ],
       "cites": [
         "BUILD_BRIEF.md:180",
@@ -7496,7 +7741,9 @@
       "reads": [],
       "requirements": [],
       "tests": [],
-      "decisions": [],
+      "decisions": [
+        "D-314"
+      ],
       "cites": [
         "BUILD_BRIEF.md:525",
         "BUILD_BRIEF.md:527"
@@ -8022,7 +8269,8 @@
       ],
       "decisions": [
         "D-145",
-        "D-281"
+        "D-281",
+        "D-318"
       ],
       "cites": [
         "BUILD_BRIEF.md:191"

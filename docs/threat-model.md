@@ -25,6 +25,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | A9 | **Audit log** and off-database records | Evidence, replay after restore (OPS-010, OPS-011) | `ops.audit_log`; object storage (D-094) |
 | A10 | **Availability**: texting channel, web app, worker timers, database | Every waiting state depends on timers (JOB-003, JOB-006) | Railway; Twilio |
 | A11 | **Build pipeline**: repository, CI checks, runner state, dependencies | A poisoned build ships to live | GitHub; `claude/kit-state`; `uv.lock` |
+| A12 | **Business and owner email channel**: verified notice addresses, channel preferences, business emails and their signed action links, Casey's alert address (BIZ-036, BIZ-040, OPS-035, D-307, D-309) | A changed or spoofed address diverts picks and the release email; a forwarded link acts for a business; the release email carries a first name and address | `businesses`, `messaging` and `portals` schemas; the email provider (SEC-024, SEC-025) |
 
 ## 3. Actors and trust boundaries
 
@@ -42,6 +43,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | TB8 | Build environment ↔ secrets and live systems | Cloud sessions, GitHub Actions, deny rules (`BUILD_BRIEF.md:300`–`BUILD_BRIEF.md:306`) |
 | TB9 | Phone network ↔ Twilio | Caller ID and SMS sender spoofing, SIM swap |
 | TB10 | Module ↔ module inside the app | Vault plaintext readers (D-093); money only through `payments` |
+| TB11 | App → email provider → business and owner inboxes, and replies coming back | Cards, picks, release and account notices, alert emails, signed action links; replies are untrusted |
 
 ## 4. Threats and mitigations
 
@@ -57,6 +59,9 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | S6 | Business portal takeover through the business's email | TB1 | Single-use 15-minute link to the address on file plus an SMS code on a new device (SEC-004); the portal can't release contact details without a confirmed pick (BIZ-014) | V6.3, V6.6 | R2 |
 | S7 | Caller-ID spoofing of a linked business phone on a masked line | TB9 | Masked lines exist only for connected jobs; readback of first name and street only to linked phones of a paid pick (CALL-005, D-026); lines close at 30 days or earlier (CALL-009) | V6.6 | R4 |
 | S8 | SIM swap of a homeowner's phone | TB9 | The attacker can pick a quote, but details go to the business, not the attacker (PICK-022, PICK-023) | V6.6 | Low |
+| S9 | A phishing email pretending to be Ask Hava tells a business it was picked and asks for a card or a code | TB11 | Business emails come from the askhava.com sending subdomain with SPF, DKIM and DMARC at p=reject, never ask for card details or codes and link only to askhava.com; Confirm happens only on the portal's review step after sign-in (SEC-025, PICK-033, D-318) | V6.3, V12.1 | Lookalike domains |
+| S10 | An attacker changes a business's notice email to their own to receive picks and the release email | TB1 | Address and channel changes only from a signed-in owner session, the new address verified before it gets anything, the old address told, every change audit-logged (SEC-024, BIZ-040) | V6.3, V8.2 | Equals a business session takeover (S6) |
+| S11 | A forged email reply ("CONFIRM 1042", "HOLD") acts for a business | TB11 | An email reply never performs any action; it gets only the automatic reply and, with question or charge words, goes to Casey (BIZ-038, BIZ-032) | V2.3 | — |
 
 ### Tampering
 
@@ -73,6 +78,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | T9 | A malicious photo (wrong type, decompression bomb, hidden metadata) | TB1 | Type and size from the file bytes; re-encoded with EXIF and GPS removed; stored privately; short-lived signed links (PRIV-013, PRIV-014); a pixel-count limit before decoding; pillow pinned to a release with no known vulnerabilities (D-096) | V5.2, V5.3, V5.4 | New image-parser vulnerabilities (pip-audit on every PR) |
 | T10 | A poisoned dependency or base image | TB8 | Committed lock file with hashes; pip-audit and bandit on every PR; Dependabot; base image pinned by digest (SEC-021); 14-day pinning delay (D-096) | V15.2 | R10 |
 | T11 | A build agent changes tests, workflows or protected paths to get green | TB8 | Protected paths only in harness tasks with an Opus review; runner path check; tests changed only through a logged spec change; tree-hash check on merge (`BUILD_BRIEF.md:69`, `BUILD_BRIEF.md:70`, `BUILD_BRIEF.md:248`, `BUILD_BRIEF.md:263`) | V15.1 | — |
+| T12 | A forwarded or replayed action link from a business email | TB11 | Links are single-purpose, signed, bound to one person and one object, used once and expire; only Hold works without a session, and it can add 2 hours once; Confirm, pauses, links and approvals need a signed-in session (BIZ-038, SEC-025, D-309) | V7.2, V8.3 | A forwarded Hold adds 2 hours once |
 
 ### Repudiation
 
@@ -99,6 +105,8 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | I11 | Readback on the masked line tells a stranger a name and street | TB9 | Readback only to linked phones of a paid pick, never to unlinked callers (CALL-005, D-026) | V8.3 | R4 |
 | I12 | Verbose errors show internals | TB1 | Generic error pages; details only in Sentry (scrubbed) | V16.5, V13.4 | — |
 | I13 | A stored lockbox or gate code, or an on-site contact, leaks to someone other than the picked business (D-212) | TB10 | No lock or gate code field is ever stored (the homeowner tells the business on the call); an on-site contact's name and number live in the vault and leave only with the paid release; on-site contacts are never texted (PICK-025, PRIV-005, CON-021) | V8.3 | A homeowner may still type a code into a free reply; it stays in the vault and is purged on the normal schedule |
+| I14 | Homeowner details sent to a business by text | TB9 | No business text ever carries a homeowner's name, address, email, on-site contact or photo link, whatever the business chose (TXT-036); the release goes only to the portal and email (PICK-024) | V14.2 | — |
+| I15 | The release email (first name and job address) sits in a forwarded or compromised business mailbox | TB11 | Sent only to the owner and "Confirm and billing" members' verified addresses after a paid or free pick (PICK-022, PICK-024, BIZ-040); never the phone number (PICK-023); the business terms limit use to the job (TERMS-024) | V14.2 | R15 |
 
 ### Denial of service
 
@@ -107,11 +115,12 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | D1 | Request floods and fake sign-ups | TB1 | Rate limits per phone, IP and business, 5 requests per phone per hour, 50 sign-ups a day; a burst of 100 is blocked and alerted (SEC-014, SEC-015) | V2.4 | — |
 | D2 | SMS pumping: web chat or sign-up forms used to make Ask Hava text or call costly numbers | TB1, TB3 | A number typed on the web gets only the consent text until it replies OK (CON-025); rate limits per IP and per number; texts and calls only to US and Canadian area codes (D-100); Verify sends rate-limited with cooldown (PICK-013) | V2.4 | Cost of the consent text itself |
 | D3 | Webhook floods | TB2 | Signature check first, cheap 403 (SEC-016) | V4.1 | Host-level limits |
-| D4 | The texting number is suspended after complaints | TB9 | Consent first on every path (CON-001); opt-outs honored at once and checked against the FCC revocation order before Gate C (CON-008, CON-032, D-298); content screening (CARD-010); no second number to dodge a suspension; web-and-email mode, which can run the whole service with no texts (TXT-021, TXT-022, TXT-034, D-297) | V2.3 | R12 |
+| D4 | The texting number is suspended after complaints | TB9 | Consent first on every path (CON-001); opt-outs honored at once and checked against the FCC revocation order before Gate C (CON-008, CON-032, D-298); content screening (CARD-010); no second number to dodge a suspension; web-and-email mode, which can run the whole service with no texts (TXT-021, TXT-022, TXT-034, D-297); business notices never use the homeowner number (TXT-035, TXT-037, D-303) | V2.3 | R12 |
 | D5 | A vendor outage stalls jobs | TB3 | Retries with the same keys; email fallback; Stripe unreachable 4 h releases the pick; safe mode (TXT-014, FEE-018, OPS-001) | V16.5 | — |
 | D6 | A worker dies holding a task | TB5 | Leases expire and another worker takes the task; timers live in the database (JOB-006; architecture section 5) | V15.4 | — |
 | D7 | Database loss | TB5 | Point-in-time recovery; nightly export; replay with derived IDs that sends nothing twice (OPS-012 to OPS-019) | V14.2 | Restore drill proves it in Phase 2 (OPS-014) |
 | D8 | The masked-call product is a beta with no service level and fails or is withdrawn mid-job | TB9 | Masked calls are built on standard programmable voice (incoming-call webhook, dial out with the pool number), never Twilio Proxy (CALL-021, D-296); a line that can't connect still leaves the who's-calling and missed-call texts, the quote page and email (TXT-027, TXT-030, TXT-034) | V14.2 | Carrier outages stay outside Ask Hava's control |
+| D9 | Business emails bounce, land in spam or the email provider is down, hiding a pick | TB11 | Each pick also places a pick call (BIZ-039); bounces mark the address unverified with a banner and a digest line (BIZ-040); email failure rates alert in the portal (OPS-004); SPF, DKIM and DMARC alignment (SEC-025) | V16.5 | — |
 
 ### Elevation of privilege
 
@@ -139,7 +148,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | V9 Self-contained Tokens | Not used: sessions are server-side records, quote-page tokens are random values checked against the database |
 | V10 OAuth and OIDC | Not used |
 | V11 Cryptography | AES-GCM vault, argon2id passwords, HMAC derived IDs and blind index, `secrets` module for tokens (PRIV-002, SEC-005, CARD-017) |
-| V12 Secure Communication | HTTPS only with HSTS (SEC-012); vendors over TLS |
+| V12 Secure Communication | HTTPS only with HSTS (SEC-012); vendors over TLS; email authentication (SEC-025) |
 | V13 Configuration | SEC-001, SEC-002, SEC-003; deviation R11 |
 | V14 Data Protection | PRIV-001 to PRIV-020; retention (D-013, D-079) |
 | V15 Secure Coding and Architecture | `docs/architecture.md`; T6, T7, T10 |
@@ -164,3 +173,5 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | R12 | Carrier filtering or suspension despite correct consent | Outside Ask Hava's control | Web-and-email mode; no second number (TXT-022) |
 | R13 | Photos and contacts persist in backups after deletion until the backups age out (point-in-time window plus the 30-day export) | Backups are immutable by design | Backups encrypted (PRIV-018); stated in the privacy policy by the terms task |
 | R14 | One owner, no backup person: an attack during Casey's absence goes unanswered | Changes file decision (OPS-002) | Safe mode after 24 hours (OPS-001) |
+| R15 | A business keeps or forwards the release email | Email can't be recalled | Business terms (TERMS-024); only the first name and address, never the phone (PICK-023) |
+| R16 | The later business app with push (BIZ-041) adds push subscriptions, a VAPID key, a service worker and lock-screen exposure | Not built at launch | The spec change that adds it adds its threat rows here; BIZ-041 already sets its rules |
