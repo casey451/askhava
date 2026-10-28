@@ -18,7 +18,21 @@
 #   recurring         fee basis is 4 months of the monthly price (REC-002).
 #   one_time_job_types  in a recurring category, the job types that are one-time jobs:
 #                     quoted with no period and priced at face value, no 4-month rule.
-#   trip_fee_tier     the set introduction fee in dollars for a trip-fee-plus-estimate quote (FEE-004).
+#   trip_fee_tier     the set introduction fee in dollars for a site-visit-needed (trip fee plus
+#                     estimate) quote: $25 by default, never above $75 (FEE-004, D-399, default
+#                     pending Casey).
+#   launch_open       true: "Open now" at Gate C and takes homeowner requests once it has 2 or more
+#                     active businesses; false: "Coming later", waitlist sign-ups only (LIC-046, D-396,
+#                     default pending Casey). A launch-open category must be enabled.
+#   fee_free_job_types  job types whose pick charges no introduction fee (FEE-045, D-403).
+#   licensed_only_decision  pest control only: the decision that switched it on for Department
+#                     licensees only (LIC-012, D-402).
+#
+# license.classes lists the narrowest residential classes for reading. Which classes (dual CR-,
+# general B and KB, subclassifications) receive which job types is decided only by
+# docs/catalog/license_map.yaml (LIC-043, D-392). The question set for each category is in
+# docs/catalog/question_bank.yaml (LIC-040, D-394); intake_questions below are the short
+# fallback prompts kept from K2b.
 #   after_hours_emergency  the category takes after-hours emergency requests.
 #   refused / routed_to    job types this category never takes, and where they go instead.
 #   review            who confirmed the row and what an attorney may still look at.
@@ -45,6 +59,7 @@ categories:
     name: Plumbing repair
     group: home systems/repair
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-37]}
     handyman_allowed: true
     construction_type: true
@@ -63,27 +78,29 @@ categories:
     name: Heating and cooling repair
     group: home systems/repair
     enabled: true
+    launch_open: true
     license: {kind: roc, classes: [R-39, R-39R]}
     handyman_allowed: false
     construction_type: true
     recurring: false
     trip_fee_tier: 25
     after_hours_emergency: true
-    job_types: [AC not cooling, thermostat, duct repair, furnace repair]
+    job_types: [AC not cooling, thermostat, duct repair, furnace repair, evaporative (swamp) cooler repair]
     refused: []
     intake_questions: ["Is it heating or cooling?", "How old is the system?"]
-    keywords: [ac, air conditioner, hvac, cooling, furnace, thermostat]
+    keywords: [ac, air conditioner, hvac, cooling, furnace, thermostat, swamp cooler, evaporative cooler]
     review: "Class per changes file :38. Confirmed K2b."
 
   - id: hvac_replacement
     name: Heating and cooling replacement
     group: home systems/repair
     enabled: true
+    launch_open: true
     license: {kind: roc, classes: [R-39, R-39R]}
     handyman_allowed: false
     construction_type: true
     recurring: false
-    trip_fee_tier: 199
+    trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [full system replacement, condenser replacement]
     refused: []
@@ -95,6 +112,7 @@ categories:
     name: Electrical
     group: home systems/repair
     enabled: true
+    launch_open: true
     license: {kind: roc, classes: [R-11]}
     handyman_allowed: false
     construction_type: true
@@ -111,6 +129,7 @@ categories:
     name: Pool and spa repair
     group: pool/spa/water
     enabled: true
+    launch_open: true
     license: {kind: roc, classes: [R-6, B-6]}
     handyman_allowed: true
     construction_type: true
@@ -128,6 +147,7 @@ categories:
     name: Handyman
     group: home systems/repair
     enabled: true
+    launch_open: true
     license: {kind: none}
     handyman_allowed: true
     construction_type: true
@@ -148,6 +168,7 @@ categories:
     name: Weekly pool cleaning
     group: pool/spa/water
     enabled: true
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -166,6 +187,7 @@ categories:
     name: Yard and landscape maintenance
     group: yard/outdoor
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -184,6 +206,7 @@ categories:
     name: House cleaning
     group: cleaning/property care
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -200,8 +223,9 @@ categories:
   - id: pest_control
     name: Pest control
     group: home systems/repair
-    enabled: false
-    off_reason: "Off until the AZ Department of Agriculture answers in writing (LIC-012, D-376)"
+    enabled: true
+    launch_open: true
+    licensed_only_decision: D-402
     advertised: false
     license: {kind: state_agency, agency: AZ Department of Agriculture (pest management)}
     handyman_allowed: false
@@ -214,12 +238,13 @@ categories:
     refused: []
     intake_questions: ["What pests are you seeing?", "One-time or ongoing service?"]
     keywords: [pest, bugs, scorpion, termite, pre-emergent, weed control]
-    review: "Off at launch until the AZ Department of Agriculture answers in writing (LIC-012, D-376); never advertised (changes file 7.1 item 3). License number shown once on (LIC-012)."
+    review: "On for Department pest-management licensees only, default pending Casey (LIC-012, D-402); never advertised on its own (changes file 7.1 item 3, WEB-010); license number on every quote card; termite and pre-emergent job types need the matching category on the record (LIC-043). Switched off again if the Department answers that a license is needed."
 
   - id: dog_waste_pickup
     name: Dog waste pickup
     group: pets
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -236,6 +261,7 @@ categories:
     name: Trash-can cleaning
     group: cleaning/property care
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -252,6 +278,7 @@ categories:
     name: Vacation-rental turnover cleaning
     group: cleaning/property care
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -269,6 +296,7 @@ categories:
     name: Junk removal
     group: moving/hauling
     enabled: false
+    launch_open: false
     off_reason: "Off at launch until Lake Havasu City Code ch. 8.04 is read (changes file 7.1 item 13)."
     license: {kind: none}
     handyman_allowed: false
@@ -283,25 +311,27 @@ categories:
     review: "Off (LIC-005). Switch on is a logged settings change after the city-code check."
 
   - id: car_detailing
-    name: Car detailing
+    name: Car, truck and RV detailing
     group: vehicle
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
     recurring: false
     trip_fee_tier: 25
     after_hours_emergency: false
-    job_types: [interior detail, exterior detail, full detail]
+    job_types: [interior detail, exterior detail, full detail, RV detailing]
     refused: []
     intake_questions: ["What kind of vehicle?", "Where is it parked?"]
-    keywords: [car detail, auto detail, vehicle cleaning]
+    keywords: [car detail, auto detail, vehicle cleaning, rv detail, motorhome wash]
     review: "Non-construction: no $1,000 limit (LIC-020). Confirmed K2b."
 
   - id: boat_detailing
     name: Boat detailing
     group: boat/lake
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -318,23 +348,25 @@ categories:
     name: Boat repair
     group: boat/lake
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
     recurring: false
-    trip_fee_tier: 75
+    trip_fee_tier: 25
     after_hours_emergency: false
-    job_types: [engine repair, outboard service, trailer repair]
+    job_types: [engine repair, outboard service, trailer repair, canvas and upholstery repair]
     refused:
       - {job: "dock, boat lift or seawall work", routed_to: "licensed only (ROC)", reason: "construction on real property, not vessel work"}
     intake_questions: ["What kind of boat and engine?", "What is going wrong?"]
-    keywords: [boat repair, outboard, marine mechanic, boat engine]
+    keywords: [boat repair, outboard, marine mechanic, boat engine, boat canvas, boat upholstery, bimini]
     review: "Vessel work, not construction on real property; no ROC license. Attorney may confirm."
 
   - id: window_cleaning
     name: Window cleaning
     group: cleaning/property care
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -351,6 +383,7 @@ categories:
     name: Pressure washing
     group: cleaning/property care
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -368,11 +401,12 @@ categories:
     name: Solar screens and window film
     group: interior/remodel
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-65]}
     handyman_allowed: false
     construction_type: true
     recurring: false
-    trip_fee_tier: 75
+    trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [solar screens, window film]
     refused: []
@@ -384,11 +418,12 @@ categories:
     name: Roof repair
     group: home systems/repair
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-42]}
     handyman_allowed: false
     construction_type: true
     recurring: false
-    trip_fee_tier: 75
+    trip_fee_tier: 25
     after_hours_emergency: true
     job_types: [leak repair, tile replacement, re-roof]
     refused: []
@@ -400,11 +435,12 @@ categories:
     name: Painting
     group: interior/remodel
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-34]}
     handyman_allowed: false
     construction_type: true
     recurring: false
-    trip_fee_tier: 75
+    trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [interior painting, exterior painting, cabinet painting]
     refused: []
@@ -416,11 +452,12 @@ categories:
     name: Local moving (within Arizona)
     group: moving/hauling
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
     recurring: false
-    trip_fee_tier: 75
+    trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [in-town move, loading help, in-state move]
     refused:
@@ -433,6 +470,7 @@ categories:
     name: Freestanding appliance repair
     group: home systems/repair
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-63]}
     handyman_allowed: true
     construction_type: true
@@ -451,6 +489,7 @@ categories:
     name: Garage doors
     group: home systems/repair
     enabled: false
+    launch_open: false
     off_reason: "Off at launch (changes file 7.1 item 4)."
     license: {kind: roc, classes: []}
     handyman_allowed: false
@@ -470,6 +509,7 @@ categories:
     name: Dryer-vent cleaning
     group: cleaning/property care
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -487,6 +527,7 @@ categories:
     name: Holiday lights (plug-in)
     group: events/tech
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -504,11 +545,12 @@ categories:
     name: Estate cleanout
     group: moving/hauling
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
     recurring: false
-    trip_fee_tier: 75
+    trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [whole-house cleanout, sorting for donation]
     refused: []
@@ -520,6 +562,7 @@ categories:
     name: Donation pickup
     group: moving/hauling
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -536,6 +579,7 @@ categories:
     name: Septic pumping
     group: home systems/repair
     enabled: true
+    launch_open: false
     license: {kind: state_agency, agency: ADEQ septage-hauler vehicle license}
     handyman_allowed: false
     construction_type: false
@@ -552,6 +596,7 @@ categories:
     name: Alarm systems
     group: events/tech
     enabled: true
+    launch_open: false
     license: {kind: roc_and_state_agency, classes: [R-67], agency: Board of Technical Registration (alarm business certificate)}
     handyman_allowed: false
     construction_type: true
@@ -568,6 +613,7 @@ categories:
     name: Security cameras
     group: events/tech
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-67]}
     handyman_allowed: true
     construction_type: true
@@ -584,25 +630,25 @@ categories:
     name: Home inspection
     group: home systems/repair
     enabled: true
+    launch_open: false
     license: {kind: state_agency, agency: Board of Technical Registration (certified home inspector)}
     handyman_allowed: false
     construction_type: false
     recurring: false
     trip_fee_tier: 25
     after_hours_emergency: false
-    job_types: [home condition inspection (no sale or refinance)]
-    refused:
-      - {job: "buyer inspection", routed_to: "none", reason: "inspection tied to a home sale is a RESPA settlement service (LIC-015, D-376)"}
-      - {job: "pre-listing inspection", routed_to: "none", reason: "inspection tied to a home sale is a RESPA settlement service (LIC-015, D-376)"}
-      - {job: "refinance inspection", routed_to: "none", reason: "inspection tied to a refinance is a RESPA settlement service (LIC-015, D-376)"}
+    job_types: [home condition inspection (no sale or refinance), buyer inspection, pre-listing inspection, refinance inspection, termite report for a sale or loan]
+    fee_free_job_types: [buyer inspection, pre-listing inspection, refinance inspection, termite report for a sale or loan]
+    refused: []
     intake_questions: ["About how many square feet?", "Is this inspection for a home sale, purchase or refinance?"]
     keywords: [home inspection, inspector]
-    review: "Changes file :204 (LIC-015). Sale, purchase and refinance inspections declined (D-376). Confirmed K2b."
+    review: "Changes file :204 (LIC-015). Sale, purchase and refinance inspections and termite reports for a sale or loan are taken with no introduction fee, so no RESPA section 8 fee is accepted (FEE-045, D-403, default pending Casey). Confirmed K2b."
 
   - id: home_watch
     name: Home watch
     group: cleaning/property care
     enabled: true
+    launch_open: false
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -623,6 +669,7 @@ categories:
     name: Water softeners, RO and misting
     group: pool/spa/water
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-54]}
     handyman_allowed: false
     construction_type: true
@@ -639,6 +686,7 @@ categories:
     name: Gutters
     group: home systems/repair
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-45]}
     handyman_allowed: false
     construction_type: true
@@ -655,11 +703,12 @@ categories:
     name: Insulation
     group: interior/remodel
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-40]}
     handyman_allowed: false
     construction_type: true
     recurring: false
-    trip_fee_tier: 75
+    trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [attic insulation, blown-in insulation]
     refused: []
@@ -671,11 +720,12 @@ categories:
     name: Pavers, hardscape and irrigation
     group: yard/outdoor
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-21]}
     handyman_allowed: false
     construction_type: true
     recurring: false
-    trip_fee_tier: 75
+    trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [paver patio, walkway, irrigation install]
     refused: []
@@ -687,11 +737,12 @@ categories:
     name: Epoxy floors
     group: interior/remodel
     enabled: true
+    launch_open: false
     license: {kind: roc, classes: [R-8, R-34]}
     handyman_allowed: false
     construction_type: true
     recurring: false
-    trip_fee_tier: 75
+    trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [garage floor epoxy]
     refused: []

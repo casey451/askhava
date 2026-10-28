@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.1 (draft) · October 28, 2026 · Internal document
+Version 0.2 (draft, fix round 13) · October 28, 2026 · Internal document
 
 # Ask Hava Written Information Security Program
 
@@ -32,7 +32,7 @@ Each review lists the main risks and checks each control below still works. The 
 3. **Encryption:** vault fields encrypted (PRIV-002); backups encrypted (PRIV-018); HTTPS with HSTS (SEC-012).
 4. **Secrets:** no key in code, logs, fixtures or plain environment variables; secret scanning fails the build (SEC-001); separate test and live projects (SEC-003).
 5. **Logging:** request IDs only, never phone numbers (PRIV-016); error monitoring without personal data (PRIV-017); an append-only audit log copied off the database as it happens (OPS-010).
-6. **AI:** only scrubbed text, through a zero-retention API, and no AI call on live data until that agreement is signed (AI-001 to AI-008).
+6. **AI:** only scrubbed text, never photos; no AI call on live data until either the zero-retention agreement is signed or the owner switches on "AI on scrubbed text" after recording the provider's current API terms, with the privacy policy updated the same day (AI-001 to AI-008, D-412).
 7. **Retention and deletion:** contact details purged 180 days after a job closes, photos at 30 days (PRIV-007, PRIV-009).
 8. **Testing:** security tests on every change (SEC-019, SEC-020); dependency and static scans (SEC-021); a vulnerability scan before launch (SEC-023).
 9. **Backups and recovery:** nightly encrypted export with a monthly test restore (OPS-013).
@@ -47,7 +47,7 @@ Each review lists the main risks and checks each control below still works. The 
 | Railway | Hosting and database | Same |
 | Sentry | Error monitoring | Same |
 | Lob | Identity letters | Same |
-| Anthropic | AI reading (only once switched on) | Same, plus the zero-retention agreement |
+| Anthropic | AI reading (only once switched on) | Same, plus the zero-retention agreement or the recorded API terms (AI-008) |
 
 Each provider gets only what it needs. A new provider is added to this list before it receives any data.
 

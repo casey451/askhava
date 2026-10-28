@@ -30,7 +30,7 @@ This comes before everything else in this file. Texting registration is the one 
 >
 > Hello. Before I register, I'd like a written answer on whether my use case is eligible. I don't want to submit a campaign that gets rejected and can't be resubmitted.
 >
-> **How it works:** Ask Hava (askhava.com; the LLC is being formed) is a local service in Lake Havasu City, Arizona. A homeowner texts our number, or starts on our website, to ask for quotes on a home job, and replies OK to our consent message (frequency, rates, HELP, STOP, Terms and Privacy links). We send an anonymous description of the job (town, job type, details; no name, phone number, email or address) to every local business that signed up with us and opted in to receive job requests. Businesses send their prices to us. We show all of them to the homeowner, unranked, on a private page, and the homeowner picks one. The picked business pays us a fixed introduction fee ($25, $75 or $199 by job size), and only then do we give that one business the homeowner's first name and address. The business calls the homeowner through a masked number using Programmable Voice. The homeowner's phone number is never given to any business, businesses never text homeowners, and no consent or phone number is shared, sold or transferred. Homeowners pay nothing. We send no marketing texts. At launch, businesses get job requests and picks by email, plus an automated phone call when they are picked; we send no texts to businesses unless you tell us that is allowed, and then each business would choose email, text or both.
+> **How it works:** Ask Hava (askhava.com; the LLC is being formed) is a local service in Lake Havasu City, Arizona. A homeowner texts our number, or starts on our website, to ask for quotes on a home job, and replies OK to our consent message (frequency, rates, HELP, STOP, Terms and Privacy links). We send an anonymous description of the job (town, job type, details; no name, phone number, email or address) to every local business that signed up with us and opted in to receive job requests. Businesses send their prices to us. We show all of them to the homeowner, unranked, on a private page, and the homeowner picks one. The picked business pays us a fixed introduction fee ($25, $75 or $199 by job size), and only then do we give that one business the homeowner's first name and address. The business calls the homeowner through a masked number using Programmable Voice. The homeowner's phone number is never given to any business, businesses never text homeowners, and no consent or phone number is shared, sold or transferred. Homeowners pay nothing. We send no marketing texts. Businesses get job requests and picks by email and on our website. We never call businesses, and we send them no texts unless you tell us that's allowed; then each business would choose email, text or both.
 >
 > **Questions:**
 > 1. Are texts between Ask Hava and the homeowner about their own request (confirmations, "your first quote is in," the pick confirmation) eligible as Customer Care?
@@ -831,9 +831,9 @@ Spanish versions are drafts for a native speaker to check.
    >
    > Hello Stripe Support,
    >
-   > Ask Hava LLC (being formed in Arizona) is a local quote service in Lake Havasu City, Arizona. We'd like to confirm our model is eligible for Stripe before we accept payments.
+   > Ask Hava LLC (being formed in Arizona), Lake Havasu City, Arizona. Business description: "Quote-request service for homeowners. The business the homeowner chooses pays a set introduction fee." We'd like to confirm our model is eligible for Stripe before we accept payments.
    >
-   > Homeowners send us a repair or service request by text or web chat, free. We pass the request, without their contact details, to independent local businesses by email. Businesses that want the job send us their own quote, and we show the homeowner every quote unchanged, in the order received, with no ranking. The homeowner picks one business. That business then opens a secure page that shows the job number and our fee, and presses "Confirm and pay". Only then do we charge our own fixed introduction fee: $25 for jobs under $500, $75 for $500 to $1,500, or $199 over $1,500 (ongoing services count four months, capped at $75). The charge happens on that page with the business present; a business may optionally save its card for next time, and we never charge a saved card in the background. After the payment succeeds, we give that business the homeowner's first name and job address.
+   > Homeowners send us a repair or service request by text or web chat, free. We pass the request, without their contact details, to independent local businesses by email. Businesses that want the job send us their own quote, and we show the homeowner every quote unchanged, in the order received, with no ranking. The homeowner picks one business. That business then opens a secure page that shows the job number and our fee, and presses "Confirm and pay". Only then do we charge our own fixed introduction fee: $25 for jobs under $500, $75 for $500 to $1,500, or $199 over $1,500 (ongoing services count four months, capped at $75). The charge happens on that page with the business present; a business may optionally save its card for next time, and we never charge a saved card in the background. Only after the payment succeeds do we give that one business the homeowner's first name and job address; never the homeowner's phone number.
    >
    > We are not a contractor. We don't perform, schedule, supervise, price or guarantee any work. The homeowner and the business make their own agreement, and the homeowner pays the business directly. We never collect money from homeowners or pay businesses.
    >
@@ -842,6 +842,7 @@ Spanish versions are drafts for a native speaker to check.
    > 1. Is this fixed-fee introduction model eligible for Stripe, or does it need a restricted-business review or extra approval?
    > 2. Is it fine to use Stripe Elements with PaymentIntents confirmed on-session from that page, with an optional saved card (SetupIntent or setup for future use) that is only ever charged when the business presses the button again?
    > 3. Which business description, merchant category, documents or terms should we provide before going live?
+   > 4. Optional for businesses: may a business tick "Auto-confirm and pay if picked" on one quote, with a separate saved-card authorization naming that quote's fee, so we charge that fee off-session the moment the homeowner picks it? If the charge fails or needs authentication, the business confirms on-session as usual. What mandate wording and setup (for example a SetupIntent with usage off_session) do you require?
    >
    > Thank you,
    > Ask Hava LLC
@@ -960,3 +961,34 @@ A new check (`scripts/check_legal_docs.py`) fails the build if a draft's key pro
 3. Decide arbitration: turn the optional section on (a spec change to TERMS-002) or delete it.
 4. Spanish versions come after the English is settled, then native-speaker review.
 5. Publishing waits for your go.
+
+## From fix round 13 ("compose all of the fixes we need"), October 28, 2026
+
+Your words, 10:53: "compose all of the fixes we need, and then put together a list of where we're at and what we need to do before we start building." No simulation, persona pass or rehearsal was run. **The one to-do list is now `docs/PREBUILD.md`** (D-416); this section only lists what changed and what's yours.
+
+**What changed, in short (D-391 to D-415)**
+
+1. **License matching (D-392):** a license map covers dual (CR-), general (B, B-3, KB-1, KB-2), R-61 and R-62, pool (B-5, B-6, KA-5, KA-6) and subclassification licenses, from the ROC's own class rules. Commercial-only licenses are told why they get no home jobs.
+2. **Business setup (D-393):** the checklist arrives pre-ticked from the license; the owner unticks what he doesn't do and answers towns, largest job, recurring work and after-hours.
+3. **Expert intake (D-394, D-395):** 3 to 6 questions per trade (boats, RVs, pools and vacation homes included), a "Here's what we'll send" check before cards go out, and a monthly accuracy report.
+4. **Pilot cut (D-396):** only the launch-open trades take requests, each once it has 2 businesses; a pilot scorecard page.
+5. **Honest counts (D-397), short consent texts (D-398), quote types and $25 site visits (D-399), backup choice (D-400), auto-confirm after Stripe says yes and the push web app (D-401), voice guide (D-406), request and job numbering (D-407), money set-aside (D-410), safety numbers checked by the build (D-411), caller ID steps (D-413).**
+6. **The Twilio question** no longer mentions a pick call (D-391). **The Stripe question** uses the one honest description, says details go out only after payment, and asks about auto-confirm (D-408). Both are above in this file.
+7. **The pitch file** (outside the repo) was fixed: "Text Ask Hava", no "bidding wars", no phone help line, email-only picks, a pest answer and "How will I know I've been picked?" (D-405).
+
+**Defaults pending your OK (each is one setting):** pilot trades (B2); pest control for Department licensees only (B3); sale and refinance inspections with no fee (B4); AI on scrubbed text once the provider's terms are recorded (B5); backup choice, auto-confirm after Stripe's yes and the push app (B6); $25 site visits, never above $75 (B7); fees unchanged (B8); no arbitration (B9); no owner name online plus record links (B12); keep PICK-026 (B14); safety call off (B15); short consent texts (B16). (D-414)
+
+**Still open:** Gate P (B1), sales tax path (B10), trademark timing (B11), insurance (B13), Spanish review (B17). Recommended answers are in `docs/PREBUILD.md` section 4.
+
+**Send this to the Arizona Department of Agriculture if pest control stays on (D-402).** Nothing has been sent.
+
+> **Subject:** Question about a quote-request service and pest-management licensing
+>
+> Hello. I'm starting Ask Hava, a quote-request service in Lake Havasu City. A homeowner asks for quotes; we pass the request, without contact details, to businesses that hold a current Department pest-management business license; the businesses send their own quotes; the homeowner picks one and hires that business directly. The business the homeowner chooses pays Ask Hava a set introduction fee. Ask Hava applies no pesticide, inspects nothing, writes no estimates, and runs no pest-control advertising; the license number of each business is shown with its quote.
+>
+> Does relaying licensed businesses' quotes this way require Ask Hava to hold a pest-management business license under A.R.S. 3-3615? If it does, we will stop taking pest-control requests.
+>
+> Thank you,
+> Casey, Ask Hava (LLC being formed)
+
+**Desk research results (D-404):** no ROC class names garage or overhead doors, so garage doors stays off; the city's solid-waste chapter (8.04) couldn't be read online, so junk removal stays off until the city clerk answers whether a private business may haul junk for pay.

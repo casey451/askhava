@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.1 (draft) · October 28, 2026 · Not yet in effect
+Version 0.2 (draft, fix round 13) · October 28, 2026 · Not yet in effect
 
 # Ask Hava Business Terms
 
@@ -40,7 +40,9 @@ Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedu
 ## 5. The introduction fee
 
 - **$25** when the fee basis is under $500.00; **$75** from $500.00 up to and including $1,500.00; **$199** over $1,500.00.
-- The fee basis is your quote's amount; for a range, its midpoint; for a trip-fee-plus-estimate quote, the set tier for that category.
+- The fee basis is your quote's amount; for a range, its midpoint; for an hourly rate, the midpoint of the rate times your estimated hours. A site-visit-needed quote (a trip fee plus an estimate on site, or an hourly rate with no estimate) pays the set tier for that category, which is $25 and never more than $75.
+- A one-time setup charge in an ongoing-service quote is shown to the homeowner as you wrote it and is never part of the fee basis.
+- **No introduction fee** for a home inspection, or a termite report, for a home sale, purchase or refinance. The Confirm page says "No introduction fee for this job."
 - **Ongoing services:** a price with a period (weekly, monthly and so on) counts as 4 months of that price, and the fee is never more than $75.
 - The fee is set from the chosen quote when the homeowner chooses, charged when you confirm, and never changed by the final bill.
 - **Tax included.** No tax is ever added on top.
@@ -57,7 +59,11 @@ By pressing "Confirm and pay" (and, if you tick "Save this card for next time", 
 
 > I authorize Ask Hava LLC to save this card with Stripe for introduction fees. I'm charged only when I press Confirm and pay for a homeowner's choice of my quote, and the fee is shown before I press it: $25, $75 or $199 by job size, ongoing services counted at 4 months and capped at $75. First win free if I join in the first 90 days or within 90 days after my trade opens. Refunds per the Terms. I can remove this card at any time.
 
-Ask Hava never charges a card without your press of "Confirm and pay", and never retries a charge on its own. If a card fails or needs bank approval, the Confirm page shows it at once and you can try again or use another card for 1 business hour (60 minutes on an emergency job).
+Ask Hava never charges a card without your press of "Confirm and pay", and never retries a charge on its own. The one exception is optional and yours to choose: once Ask Hava offers it, you may tick "Auto-confirm and pay if picked" on a quote, which accepts this authorization for that quote only:
+
+> I authorize Ask Hava LLC to charge my saved card $<fee> for this quote's introduction if the homeowner picks it, without another tap. I can untick this until the homeowner picks.
+
+If that charge fails or your bank asks for approval, the pick goes to the normal Confirm page and window. If a card fails or needs bank approval, the Confirm page shows it at once and you can try again or use another card for 1 business hour (60 minutes on an emergency job).
 
 ## 7. Refunds
 

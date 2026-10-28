@@ -8,7 +8,12 @@
 #
 # Money is written as quoted strings so no amount is ever read as a float.
 #
-# quote.type      fixed | range | trip_fee (trip fee plus estimate: the category's set tier)
+# quote.type      fixed | range | trip_fee (site visit needed: trip fee plus estimate, the
+#                 category's set tier, $25 by default and never above $75, FEE-004) |
+#                 hourly (rate plus hours_low and hours_high, read as a range, FEE-043; with no
+#                 hours it is a site-visit-needed quote)
+# quote.setup     a one-time setup charge in a recurring quote: never in the fee basis (FEE-044)
+# job_type        a job type listed in the category's fee_free_job_types pays no fee (FEE-045)
 # quote.period    recurring only: weekly | every_two_weeks | monthly | quarterly | yearly.
 #                 A quote with no period is a one-time job at face value, even in a
 #                 recurring category; it must then name one of the category's
@@ -19,7 +24,7 @@
 #                 in a no-license category; never to non-construction work (LIC-019, LIC-020)
 # situation       new_customer | repeat_customer (always $0, FEE-013) |
 #                 free_first_win ($0 charged, tier fee recorded as waived, FEE-012)
-# expected        outcome (charged | refused), fee_basis (null for trip fee or refused),
+# expected        outcome (charged | refused | fee_free), fee_basis (null for trip fee or refused),
 #                 fee (dollars charged), waived (dollars waived by a free first win)
 
 fee_rules:
@@ -218,12 +223,12 @@ examples:
     expected: {outcome: charged, fee_basis: null, fee: 25, waived: 0}
 
   - id: W22
-    description: Outboard diagnosis, $150 trip fee plus estimate
+    description: Outboard diagnosis, $150 site visit plus estimate, pays the $25 default tier (D-399)
     category: boat_repair
     business: qualified
     situation: new_customer
     quote: {type: trip_fee, amount: "150.00"}
-    expected: {outcome: charged, fee_basis: null, fee: 75, waived: 0}
+    expected: {outcome: charged, fee_basis: null, fee: 25, waived: 0}
 
   # ---- Repeat customer and free first win (FEE-010 to FEE-013) ----
 
@@ -323,3 +328,62 @@ examples:
     situation: new_customer
     quote: {type: fixed, amount: "160.00", period: weekly}
     expected: {outcome: charged, fee_basis: "2773.33", fee: 75, waived: 0}
+
+  # ---- Fix round 13: quote types and fee-free job types (D-399, D-403) ----
+
+  - id: W34
+    description: Range crossing both $500 and $1,500 uses its midpoint, $1,550.00
+    category: roof_repair
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "400.00", high: "2700.00"}
+    expected: {outcome: charged, fee_basis: "1550.00", fee: 199, waived: 0}
+
+  - id: W35
+    description: Hourly quote, $95 an hour for 3 to 5 hours, is the range $285 to $475
+    category: handyman
+    business: qualified
+    situation: new_customer
+    quote: {type: hourly, rate: "95.00", hours_low: "3", hours_high: "5"}
+    expected: {outcome: charged, fee_basis: "380.00", fee: 25, waived: 0}
+
+  - id: W36
+    description: Hourly quote with no estimated hours is a site-visit-needed quote
+    category: electrical
+    business: qualified
+    situation: new_customer
+    quote: {type: hourly, rate: "120.00"}
+    expected: {outcome: charged, fee_basis: null, fee: 25, waived: 0}
+
+  - id: W37
+    description: Weekly pool service at $40 plus a $150 setup charge; the setup is not in the basis
+    category: pool_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: fixed, amount: "40.00", period: weekly, setup: "150.00"}
+    expected: {outcome: charged, fee_basis: "693.33", fee: 75, waived: 0}
+
+  - id: W38
+    description: Heating and cooling replacement site visit pays $25, not $199 (D-399)
+    category: hvac_replacement
+    business: qualified
+    situation: new_customer
+    quote: {type: trip_fee, amount: "0.00"}
+    expected: {outcome: charged, fee_basis: null, fee: 25, waived: 0}
+
+  - id: W39
+    description: Buyer's home inspection is a fee-free job type (D-403)
+    category: home_inspection
+    job_type: buyer inspection
+    business: qualified
+    situation: new_customer
+    quote: {type: fixed, amount: "450.00"}
+    expected: {outcome: fee_free, fee_basis: "450.00", fee: 0, waived: 0}
+
+  - id: W40
+    description: Hourly handyman quote whose top reaches $1,000 is refused (LIC-019)
+    category: handyman
+    business: qualified
+    situation: new_customer
+    quote: {type: hourly, rate: "100.00", hours_low: "6", hours_high: "10"}
+    expected: {outcome: refused, fee_basis: null, fee: 0, waived: 0}

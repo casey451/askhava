@@ -1,0 +1,234 @@
+# Ask Hava master plan: where we are and what happens before the build
+
+**For:** Casey · **Date:** October 28, 2026 · **Status:** the plan is finished; the build is on hold at Gate P. Nothing is built and nothing is live.
+
+This is the only to-do list. The same file is in the repository as `docs/PREBUILD.md`. Rule 9 at the end says how it stays that way.
+
+---
+
+## 1. Where we are
+
+**Decided and written down**
+- What Ask Hava is: a quote relay. A homeowner asks once; local businesses quote in their own words; the homeowner sees every quote, unranked, and picks one; the picked business pays a fixed introduction fee ($25, $75 or $199 by job size). Ask Hava does no work and promotes no business.
+- The plan: 609 numbered requirements in 20 spec files, 416 logged decisions, 161 build tasks with their prompts, 8 legal drafts, a license map, a question bank for 37 trades, 40 worked fee examples. Every repo check passes.
+- One rule for every trade: if a license is needed, only licensed businesses get its jobs; if not, any legitimate business with a city license can.
+- No calls to businesses, ever. Businesses get everything by email and on the website.
+
+**Built:** nothing. No app code exists. No account is open. Nothing has been sent to Twilio, Stripe or any agency.
+
+**Verified vs assumed**
+
+| Verified (checked against a source or by a test) | Assumed (only the real world can answer) |
+|---|---|
+| Fee math, the 4-month rule and every worked example (repo tests) | Whether Twilio approves homeowner texting |
+| ROC class scopes (A.A.C. R4-9-103, R4-9-104, the ROC class list, checked Oct 28) | Whether Stripe accepts the model, and charges without the business present (auto-confirm) |
+| Statute text for pest control (A.R.S. 3-3601, 3-3615) and RESPA (12 C.F.R. 1024.14) | Whether real businesses quote anonymous job cards and catch picks by email |
+| Consent texts: GSM-7, 4 segments each (counted) | The real fee mix, and whether $25 site visits help |
+| The build runner: kit steps K0 to K9 ran, one practice task passed, one failed on purpose, one resumed | Whether a merge starts the next runner session (one task an hour assumed) |
+| Every simulation number is marked [sim] and came from AI stand-ins | Whether homeowners trust a text-only, unnamed service |
+
+---
+
+## 2. What changed in fix round 13
+
+One pull request on GitHub (see the link in chat). Decisions D-391 to D-416. No simulations were run.
+
+**From the deep dive's 19 fixes (all applied)**
+
+| # | Fix | Where |
+|---|---|---|
+| A1 | Twilio question: "we never call businesses" (the stale "automated phone call" line removed) | for-casey-review |
+| A2 | License map: dual (CR-), general (B, B-3, KB-1, KB-2), R-61, R-62, pool (B-5, B-6, KA-5, KA-6), subclassifications, and other agencies; unclear rows never inherited | `docs/catalog/license_map.yaml`, LIC-043, LIC-035 |
+| A3 | Business setup: checklist pre-ticked from the license, untick, largest job, recurring yes/no, after-hours; checkboxes or one question a screen; re-checked when the license changes | BIZ-049, BIZ-050, INT-032 split |
+| A4 | Expert intake: 3 to 6 questions per trade in English and Spanish, incl. boats, RVs, pools and vacation homes; routing with confidence; "Here's what we'll send" summary step; golden test requests; monthly accuracy report | `docs/catalog/question_bank.yaml`, INT-039 to INT-042, OPS-040 |
+| A5 | Pilot cut: `launch_open` per trade; a trade opens at 2+ businesses; pilot scorecard page | LIC-046, OPS-039 |
+| A6 | Honest count: N = emails the provider accepted; bounces drop out; "Not every business answers." | TXT-032, CARD-019 |
+| A7 | Short consent texts: English 558 characters, Spanish 532, both 4 segments | CON-031, SMS terms |
+| A8 | Quote types: fixed, range, site visit needed, recurring; hourly needs estimated hours; setup charges never in the fee; site-visit fee $25, never above $75 | FEE-004, FEE-043, FEE-044, W34 to W40 |
+| A9 | Homeowner backup choice at the pick | PICK-047 |
+| A10 | Pest control on for Department licensees only; sale and refinance inspections fee-free | LIC-012, LIC-015, FEE-045 |
+| A11 | Desk research: no ROC class names garage doors; junk-removal city code not readable online. Both stay off | D-404 |
+| A12 | Pitch file fixed ("Text Ask Hava", no bidding wars, no phone help line, email-only picks, pest answer) | `outputs/gtm/` (outside the repo) |
+| A13 | Voice guide as a wording rule, with 10 rewritten texts | `docs/voice.md`, WORD-024 |
+| A14 | Homeowners see "request <n>", businesses "job <n>" | WORD-025 |
+| A15 | Stripe question rewritten, with an auto-confirm question added | for-casey-review |
+| A16 | "Who runs Ask Hava": LLC record link and city license number once they exist | WEB-021 |
+| A17 | Money view: 7.6% sales-tax set-aside line and manual expenses | FEE-046 |
+| A18 | Auto-confirm and pay if picked (only after Stripe's written yes); push web app built as an optional channel | PICK-048, BIZ-041 |
+| A19 | Safety numbers verified by the build itself, re-checked every 90 days; not your task | INT-036, task T159 |
+
+**Other open fixes found and applied (6):** masked-call caller ID steps against "Spam Likely" (CALL-024); R-37R and R-39R read by the subclassification on the state record (LIC-035); commercial-only licenses told why they get no jobs (LIC-044); R-61 and R-62 project limits (LIC-045); a swamp-cooler job type; the legal drafts updated to match (business terms, privacy policy, SMS terms, security program).
+
+**Skipped, and why**
+- Shortening the HELP reply (voice rewrite 6): carriers need its contact details, and the legal check uses its reply-time sentence.
+- Cutting build tasks for the pilot (team members, monthly fee limit, live license lookup, full restore replay): that changes scope, so it's your call (section 4, item 6).
+- The persona file's facts (quiet hours, "Text Hava", refunds, calls): stale; only its speaking style was used.
+- Status-report fixes 1 to 13: already merged in fix round 12 and the legal drafts.
+
+---
+
+## 3. Before-build checklist
+
+Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done, to do, or waiting (on an outside answer).
+
+| # | Item | Owner | Status | Done means |
+|---|---|---|---|---|
+| 1 | Fix round 13 merged | Claude | done when the PR merges | PR merged with Ci, Twin and Ally green |
+| 2 | Read section 4 and confirm or change the defaults | Casey | to do | You reply in chat "defaults OK" or name the ones to change |
+| 3 | Pause the build runner while the build is held (section 6) | Casey | to do | "Ask Hava build runner" shows Paused; the old "(hourly)" one is deleted |
+| 4 | Approve or skip the paper rehearsal (section 6) | Casey | to do | You say "run the rehearsal" or "skip it" |
+| 5 | Paper rehearsal run and reported | Claude | waiting on item 4 | Report says every gate opens in order and no task deadlocks |
+| 6 | Open a free Twilio account; send the Twilio question | Casey | to do | Case number saved |
+| 7 | Twilio's written answer | outside | waiting on item 6 | Answer saved; doesn't block the build |
+| 8 | Open a Stripe account (test mode only); send the Stripe question | Casey | to do | Ticket sent |
+| 9 | Stripe's written answer | outside | waiting on item 8 | Answer saved; auto-confirm stays hidden until it says yes |
+| 10 | Send the Department of Agriculture letter (if pest stays on) | Casey | to do | Letter sent; draft is in for-casey-review |
+| 11 | Optional: add the routine's merge trigger (section 6) | Casey | to do | The routine shows "Pull request closed, merged into main" |
+| 12 | Optional: allow the safety-number websites in the build environment (section 5) | Casey | to do | Domains listed in the environment's network settings |
+| 13 | Save dated screenshots of today's askhava.com | Casey | to do | Screenshots in your files |
+| 14 | Gate P: reply `approved to build` on GitHub issue #24 | Casey | to do | Reply posted; then resume the runner (item 3) |
+| 15 | Build Phase 1 (stages 1 to 5) | automatic | waiting on item 14 | Account checkpoint issue appears |
+
+Not needed before the build, but before the pilot: talk to 5 to 10 businesses and 5 to 10 homeowners (scripts are written); line up 2 to 4 businesses per pilot trade by email or in person, never by text or call; find a Spanish reviewer.
+
+---
+
+## 4. Your open decisions
+
+**Defaults already in the plan (pending your OK).** Each is one setting; changing one is a logged settings change.
+
+| # | Default in the plan | Recommended |
+|---|---|---|
+| B2 | Pilot trades: heating and cooling, electrical, handyman, pool repair, weekly pool cleaning, pest control | Keep |
+| B3 | Pest control on for Department licensees only; letter sent the same week | Keep |
+| B4 | Home inspections on; no fee for sale, purchase or refinance ones | Keep |
+| B5 | AI may read scrubbed text before a zero-retention agreement, once the provider's terms are recorded and the privacy policy says so; launch works without AI | Keep |
+| B6 | Backup choice on; auto-confirm only after Stripe says yes; push web app built as an optional channel | Keep |
+| B7 | Site-visit quotes pay $25, never more than $75 | Keep |
+| B8 | Fees stay $25 / $75 / $199 for the pilot | Keep |
+| B9 | No arbitration for homeowners in the pilot | Keep |
+| B12 | No owner name online; LLC record link and city license number added once they exist | Keep |
+| B14 | Losing businesses told whether the picked quote was lower, about the same or higher | Keep |
+| B15 | Safety voice call off | Keep |
+| B16 | Short 4-segment consent texts | Keep |
+
+**Still open (5)**
+
+| # | Decision | Recommended answer |
+|---|---|---|
+| B1 | Gate P | Approve once fix round 13 is merged and you've read this file. |
+| B10 | Sales tax path | Ask ADOR for a ruling and set aside 7.6% before the first fee. |
+| B11 | Trademark | File "ASK HAVA" in Class 35 right after launch ($350). |
+| B13 | Insurance | Get a tech E&O plus cyber quote; bind before the first paid introduction. |
+| B17 | Spanish | One paid native-speaker review before Spanish goes live. |
+
+**Your scope call (optional, item 6 of section 2):** keep all 161 tasks (recommended: the build is automatic, and cutting changes the plan again), or postpone team members, the monthly fee limit, the live license lookup and the full restore replay.
+
+---
+
+## 5. Accounts to set up, in order
+
+Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an email. The build asks for keys only at the account checkpoint, in a GitHub issue titled "Your turn: set up accounts", with exact clicks.
+
+**Where keys go** (`BUILD_BRIEF.md` section 2):
+- **Build sessions:** secrets in the claude.ai cloud environment `ask-hava-build`, each locked to its vendor's host.
+- **The running test app:** variables in the Railway **test** project.
+- **GitHub Actions:** one secret only, `CLAUDE_CODE_OAUTH_TOKEN`, for the optional backup runner.
+- **Live keys:** only you, only at Gate C, only in the Railway **live** project.
+
+| When | Account | Key goes to | Why then |
+|---|---|---|---|
+| Now | Twilio (free) | No key yet | To send the eligibility question |
+| Now | Stripe (test mode, don't activate) | No key yet | To send the support question |
+| Now (optional) | Backup runner token (`claude setup-token`, at a computer) | GitHub Actions secret `CLAUDE_CODE_OAUTH_TOKEN` | Only if the scheduled runner fails twice |
+| Now (optional) | Build environment network list: add uesaz.com, lhcaz.gov, epcor.com, hhdwid.com, 211arizona.org | claude.ai environment settings | Lets the build verify safety numbers itself (T159); otherwise unverified entries are left out of texts |
+| Account checkpoint (end of Phase 1) | Railway test project | Railway test variables (app keys) | Test site |
+| Account checkpoint | Stripe test keys | Environment secret locked to api.stripe.com; Railway test variable | Stripe sandbox (T132) |
+| Account checkpoint | Twilio test credentials ("Username and password" secret type) | Environment secret locked to api.twilio.com; Railway test variable | Twilio sandbox (T129, T131) |
+| Account checkpoint | Resend | Environment secret locked to api.resend.com; Railway test variable | Email sandbox (T133) |
+| Account checkpoint | Lob (test key) | Environment secret locked to api.lob.com; Railway test variable | Identity letters (T133) |
+| Account checkpoint | Sentry | Railway test variable (DSN) | Error monitoring |
+| Account checkpoint | UptimeRobot | No key; you add the test site's /healthz | Uptime alerts |
+| Account checkpoint | Claude Console workspace (separate from your Claude plan) | Environment secret locked to api.anthropic.com; Railway test variable | Real-AI test on fake data (T137); its API terms are recorded for B5 |
+| Account checkpoint | Storage bucket (chosen then, D-094) | Railway test variable | Audit stream and backups |
+| After the build plan is complete | LLC, EIN, city license, TPT path, insurance, Google Workspace, DNS (SPF, DKIM, DMARC) | Not keys | Section 8 |
+| Gate C | Twilio brand and campaign registration, Stripe activation, live keys | Railway live project only, by you | Going live |
+
+---
+
+## 6. Build automation
+
+**How it runs.** One scheduled task wakes a fresh Claude session every hour. Each session does one cycle: read state and your GitHub replies, finish the last task if its pull request merged green, then claim one task, build it with a worker on the task's model, review it, and push. GitHub checks (Ci, Twin, Ally) and auto-merge do the rest. State lives on the `claude/kit-state` branch; progress is in `STATUS.md` there.
+
+**Where it stops for you (and only there)**
+
+| Stop | What you do |
+|---|---|
+| Gate P (now) | Reply `approved to build` on issue #24 |
+| A GitHub setting the build can't change | Follow the taps in the issue |
+| Account checkpoint (end of Phase 1) | Create the test accounts, add keys where the issue says, reply `accounts done` |
+| Stage 0.5 (the askhava.com page) | Reply `go`, whenever you want the page |
+| Real texts to your phone (only if Twilio test credentials don't work) | Reply `yes` or `no` |
+| "Finished: ready for your review" | Read the handover pack |
+| Gate B | Your own click-through and screen-reader check |
+| Gate C and the first live charge | Live keys and "go live", then the first-charge go |
+
+**Risks found, and what handles them**
+
+| Risk | Handling |
+|---|---|
+| Two runners firing at once | "Ask Hava build runner (hourly)" (7 past) is already paused (since 17:55 UTC today). Delete it. Keep "Ask Hava build runner" (50 past, fresh Sonnet sessions). |
+| Usage spent while held | The kept runner fires 24 times a day and exits in about 25 seconds at Gate P. Small, but nothing to gain. **Pause it now; resume it right after you reply on issue #24** (or tap Run now). |
+| Slow chain (one task an hour) | 154 tasks to build means about 6 to 7 days at best. Adding the merge trigger in the routine's settings lets the next task start right after a merge. |
+| Runner loses races to the notify and inbox workflows writing to `claude/kit-state` | A lost race exits and retries next cycle; noted for K8; costs a cycle, not work |
+| A task fails | One retry, then Opus; after 3 tries it's BLOCKED, only its dependents wait, and it goes on the end-of-build list |
+| Usage limit | The task waits for the reset; never pay per use |
+| Phase 2 sandbox calls blocked by the deny rules (noted at K0) | The sandbox tasks use the vendor SDKs; if one blocks, it's listed at the end, not asked mid-build |
+| Safety-number verification can't reach city or utility sites | Unverified numbers are left out of texts; never a stop (item 12 in section 3 avoids it) |
+| Stale lines in `BUILD_BRIEF.md` (Part 2 lists "Arizona TPT license" and "zero retention"; Appendix A says 7 past, the live routine runs at 50 past) | Logged; the decisions (D-412, D-414) win; fix in a docs task, no stop |
+
+**Proposed rehearsal (waiting for your OK; nothing has been run)**
+- **What:** a paper rehearsal. Claude runs the build's own runner code (`runner/cycle.py`) against the real task list with fake GitHub and fake workers, every task passing, then once with one task failing on purpose.
+- **What it proves:** every gate opens in the right order (Gate P, account checkpoint, Stage 0.5, real texts, Finished, Gate B, Gate C, first charge); no task waits on something that never finishes; a blocked task holds only its dependents; the number of cycles to the end.
+- **How long and how much usage:** one session, about 30 to 45 minutes, no worker sessions, a small share of one usage window.
+- **Go means:** it reaches "Finished" with only the stops in the table above, no deadlock, and the failing task blocks only its dependents. Anything else becomes a fix before Gate P.
+- **Then:** the first two real tasks after Gate P (T001 and T002) act as the live check: both merge green, and the next cycle starts on its own. They're real work, so nothing is wasted.
+
+---
+
+## 7. Pilot plan and stop/go scorecard
+
+**Shape:** the 6 launch-open trades, 8 to 12 businesses, 8 to 12 weeks, at least 60 started requests. A trade opens to homeowners only at 2 or more active businesses. Recruit in person, by email and by posts only. The owner portal's scorecard page shows these each week (OPS-039).
+
+| Measure | Go | Stop or rethink |
+|---|---|---|
+| Requests with 1 or more quotes within 24 hours | 70% or more | under 50% after 4 weeks |
+| Median time to first quote | 4 hours or less | over 12 hours |
+| Picks per request with quotes | 40% or more | under 25% |
+| Picks confirmed (not lapsed) | 85% or more | under 75% |
+| Average fee per paid introduction | $50 or more | under $35 |
+| Free share of introductions | 30% or less after month 2 | over 50% |
+| Refunds / bank disputes | 10% / 1% or less | over 20% / 2% |
+| Businesses paying again within 60 days | 50% or more | under 30% |
+| Your minutes per paid introduction | 20 or less | over 45 |
+| Homeowner complaints | 1 per 20 jobs or fewer | more than 1 per 10 |
+
+The scorecard decides nothing on its own. You decide stop or go at week 8 from real numbers.
+
+---
+
+## 8. Later
+
+**After the build plan is complete (company setup):** confirm with the Arizona Corporation Commission that an agent or mailbox address can replace a home address; form the LLC with a Maricopa or Pima County statutory agent; free EIN; city business license and home-occupation form; ADOR ruling request and set-aside account; SPF, DKIM and DMARC on askhava.com; bind insurance; Twilio registration (after the answer and the LLC); Stripe activation; Gate C; Resend paid plan at the first 70% alert; trademark filing.
+
+**After the pilot:** fee review with the real mix; business texting (if Twilio says yes); photos on job cards (after AI screening and zero retention); support bot (past about 15 help requests a week); owner finance assistant; "call and leave a message", then AI voice intake; new trades (pool construction, RV and mobile repair, garage doors once a class is confirmed, junk removal if the city allows); optional monthly business plan with no placement advantage; arbitration review and Spanish legal documents.
+
+---
+
+## 9. How we avoid going in circles
+
+1. **This file is the only to-do list.** Older lists (status report section 7, the deep dive's section 7, earlier review notes) are history.
+2. **Every change updates this file** in the same pull request, with the decision number.
+3. **A closed item stays closed** unless new evidence is named here: a written answer, a real number from the pilot, or a law or vendor rule that changed.
+4. **No new research round, simulation or rehearsal starts without your OK**, and each one says up front what answer would change a decision.
+5. **When unsure, the build decides and logs** (BUILD_BRIEF section 16); it never waits except at the stops in section 6.

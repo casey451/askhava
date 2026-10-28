@@ -468,7 +468,8 @@
         "T004",
         "T005",
         "T006",
-        "T007"
+        "T007",
+        "T154"
       ],
       "model": "claude-sonnet-5-5",
       "effort": "medium",
@@ -1423,10 +1424,12 @@
         "AI-014"
       ],
       "tests": [
-        "TD-AI-04"
+        "TD-AI-04",
+        "TD-AI-07"
       ],
       "decisions": [
-        "D-080"
+        "D-080",
+        "D-412"
       ],
       "cites": [],
       "budget": {
@@ -2022,11 +2025,14 @@
       "tests": [
         "TD-LIC-06",
         "TD-LIC-12",
-        "TD-LIC-17"
+        "TD-LIC-17",
+        "TD-LIC-22"
       ],
       "decisions": [
         "D-177",
-        "D-376"
+        "D-376",
+        "D-402",
+        "D-403"
       ],
       "cites": [],
       "budget": {
@@ -2325,7 +2331,8 @@
         "D-356",
         "D-366",
         "D-371",
-        "D-384"
+        "D-384",
+        "D-398"
       ],
       "cites": [],
       "budget": {
@@ -2483,7 +2490,8 @@
         "TD-INT-02",
         "TD-INT-11",
         "TD-INT-14",
-        "TD-INT-20"
+        "TD-INT-20",
+        "TD-INT-25"
       ],
       "decisions": [
         "D-138",
@@ -2495,7 +2503,8 @@
         "D-238",
         "D-242",
         "D-246",
-        "D-385"
+        "D-385",
+        "D-393"
       ],
       "cites": [],
       "budget": {
@@ -2896,7 +2905,8 @@
         "PICK-007",
         "PICK-039",
         "PICK-040",
-        "PICK-041"
+        "PICK-041",
+        "FEE-043"
       ],
       "tests": [
         "TD-PICK-01",
@@ -2917,7 +2927,8 @@
         "D-283",
         "D-295",
         "D-309",
-        "D-373"
+        "D-373",
+        "D-399"
       ],
       "cites": [],
       "budget": {
@@ -2980,7 +2991,8 @@
         "TD-TXT-11",
         "TD-TXT-14",
         "TD-TXT-20",
-        "TD-TXT-21"
+        "TD-TXT-21",
+        "TD-TXT-22"
       ],
       "decisions": [
         "D-012",
@@ -2999,7 +3011,9 @@
         "D-324",
         "D-340",
         "D-358",
-        "D-368"
+        "D-368",
+        "D-397",
+        "D-406"
       ],
       "cites": [],
       "budget": {
@@ -3640,7 +3654,9 @@
         "T053",
         "T054",
         "T055",
-        "T056"
+        "T056",
+        "T153",
+        "T156"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -3726,13 +3742,18 @@
         "REC-005",
         "REC-006",
         "REC-010",
-        "REC-011"
+        "REC-011",
+        "FEE-043",
+        "FEE-044",
+        "FEE-045"
       ],
       "tests": [
         "TD-FEE-01",
         "TD-FEE-02",
         "TD-FEE-03",
-        "TD-FEE-21"
+        "TD-FEE-21",
+        "TD-FEE-27",
+        "TD-FEE-28"
       ],
       "decisions": [
         "D-009",
@@ -3744,7 +3765,9 @@
         "D-196",
         "D-197",
         "D-288",
-        "D-357"
+        "D-357",
+        "D-399",
+        "D-403"
       ],
       "cites": [],
       "budget": {
@@ -4519,7 +4542,8 @@
       ],
       "tests": [
         "TD-PICK-11",
-        "TD-PICK-17"
+        "TD-PICK-17",
+        "TD-PICK-33"
       ],
       "decisions": [
         "D-044",
@@ -4527,7 +4551,8 @@
         "D-193",
         "D-291",
         "D-294",
-        "D-308"
+        "D-308",
+        "D-406"
       ],
       "cites": [],
       "budget": {
@@ -6875,7 +6900,9 @@
         "T147",
         "T148",
         "T149",
-        "T150"
+        "T150",
+        "T155",
+        "T157"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -7067,7 +7094,8 @@
         "D-356",
         "D-366",
         "D-371",
-        "D-384"
+        "D-384",
+        "D-409"
       ],
       "cites": [],
       "budget": {
@@ -8524,7 +8552,10 @@
         "T123",
         "T124",
         "T125",
-        "T151"
+        "T151",
+        "T158",
+        "T160",
+        "T161"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -9309,7 +9340,8 @@
       "stage": "6",
       "module": null,
       "deps": [
-        "T140"
+        "T140",
+        "T159"
       ],
       "model": "claude-sonnet-5-5",
       "effort": "medium",
@@ -9559,6 +9591,556 @@
         "waits_on_owner": true,
         "resume": "Casey's go for the first live charge"
       }
+    },
+    {
+      "id": "T153",
+      "slug": "licensing-class-map",
+      "title": "licensing: load docs/catalog/license_map.yaml and decide which license classes and subclassifications receive which job types (inheritance through dual and general classes, unclear rows never inherited), the commercial-only sign-up stop and the R-61 and R-62 project limits",
+      "goal": "licensing: load docs/catalog/license_map.yaml and decide which license classes and subclassifications receive which job types (inheritance through dual and general classes, unclear rows never inherited), the commercial-only sign-up stop and the R-61 and R-62 project limits",
+      "type": "build",
+      "phase": 1,
+      "stage": "2",
+      "module": "licensing",
+      "deps": [
+        "T034",
+        "T021"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "licensing",
+        "compliance"
+      ],
+      "owns": [
+        "app/licensing/class_map.py",
+        "tests/unit/licensing/test_class_map.py",
+        "tests/unit/licensing/test_class_limits.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/licensing.md",
+        "docs/catalog/license_map.yaml",
+        "docs/catalog/categories.yaml"
+      ],
+      "requirements": [
+        "LIC-043",
+        "LIC-044",
+        "LIC-045",
+        "LIC-035",
+        "LIC-046"
+      ],
+      "tests": [
+        "TD-LIC-19",
+        "TD-LIC-20",
+        "TD-LIC-21",
+        "TD-LIC-23"
+      ],
+      "decisions": [
+        "D-392",
+        "D-396"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 3,
+        "lines": 600,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T153-licensing-class-map",
+      "prompt": "kit/prompts/T153.md"
+    },
+    {
+      "id": "T154",
+      "slug": "intake-golden-sets",
+      "title": "catalog: write docs/catalog/intake_golden.yaml, about 20 fake sample requests per launch-open trade with the expected trade, job type and questions, and a test that loads it, before any routing code",
+      "goal": "catalog: write docs/catalog/intake_golden.yaml, about 20 fake sample requests per launch-open trade with the expected trade, job type and questions, and a test that loads it, before any routing code",
+      "type": "build",
+      "phase": 1,
+      "stage": "1",
+      "module": "catalog",
+      "deps": [
+        "T003"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "licensing"
+      ],
+      "owns": [
+        "docs/catalog/intake_golden.yaml",
+        "tests/test_intake_golden.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/intake.md",
+        "docs/catalog/categories.yaml",
+        "docs/catalog/question_bank.yaml"
+      ],
+      "requirements": [
+        "INT-040"
+      ],
+      "tests": [],
+      "decisions": [
+        "D-395"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 2,
+        "lines": 500,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T154-intake-golden-sets",
+      "prompt": "kit/prompts/T154.md"
+    },
+    {
+      "id": "T155",
+      "slug": "businesses-capability-setup",
+      "title": "businesses: sign-up capability setup pre-ticked from the license map (untick, no-license extras, towns, largest job, recurring, after-hours), as checkboxes or a guided one-question flow, and re-applying the map when a daily license list changes a class",
+      "goal": "businesses: sign-up capability setup pre-ticked from the license map (untick, no-license extras, towns, largest job, recurring, after-hours), as checkboxes or a guided one-question flow, and re-applying the map when a daily license list changes a class",
+      "type": "build",
+      "phase": 1,
+      "stage": "4",
+      "module": "businesses",
+      "deps": [
+        "T081",
+        "T153"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "licensing",
+        "accessibility",
+        "security"
+      ],
+      "owns": [
+        "app/businesses/capability.py",
+        "app/portals/templates/capability_setup.html",
+        "tests/integration/test_capability_setup.py",
+        "tests/integration/test_license_change_reapply.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/businesses.md",
+        "docs/spec/licensing.md",
+        "docs/spec/accessibility.md",
+        "docs/catalog/license_map.yaml"
+      ],
+      "requirements": [
+        "BIZ-049",
+        "BIZ-050",
+        "BIZ-004",
+        "CARD-001"
+      ],
+      "tests": [
+        "TD-BIZ-29",
+        "TD-BIZ-30"
+      ],
+      "decisions": [
+        "D-393"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 4,
+        "lines": 700,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T155-businesses-capability-setup",
+      "prompt": "kit/prompts/T155.md"
+    },
+    {
+      "id": "T156",
+      "slug": "intake-question-bank",
+      "title": "intake: ask the question bank's set one question at a time, routing confidence with the trade and job-type questions and \"Job type not certain\", the summary-and-confirm text, and the trade safety prompts",
+      "goal": "intake: ask the question bank's set one question at a time, routing confidence with the trade and job-type questions and \"Job type not certain\", the summary-and-confirm text, and the trade safety prompts",
+      "type": "build",
+      "phase": 1,
+      "stage": "2",
+      "module": "intake",
+      "deps": [
+        "T042",
+        "T154"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "compliance"
+      ],
+      "owns": [
+        "app/intake/question_bank.py",
+        "app/intake/routing_confidence.py",
+        "app/intake/summary_step.py",
+        "tests/unit/intake/test_question_bank.py",
+        "tests/integration/test_routing_confidence.py",
+        "tests/integration/test_summary_step.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/intake.md",
+        "docs/spec/ai.md",
+        "docs/spec/job-cards.md",
+        "docs/catalog/question_bank.yaml",
+        "docs/catalog/intake_golden.yaml"
+      ],
+      "requirements": [
+        "INT-039",
+        "INT-040",
+        "INT-041",
+        "INT-042",
+        "CARD-007"
+      ],
+      "tests": [
+        "TD-INT-21",
+        "TD-INT-22",
+        "TD-INT-23",
+        "TD-INT-24"
+      ],
+      "decisions": [
+        "D-394",
+        "D-395"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 6,
+        "lines": 800,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T156-intake-question-bank",
+      "prompt": "kit/prompts/T156.md"
+    },
+    {
+      "id": "T157",
+      "slug": "picks-backup-autoconfirm",
+      "title": "picks and payments: the homeowner's backup choice at the pick, and the business's optional auto-confirm-and-pay box, shown only while Stripe's written answer is filed, with one off-session charge and a fallback to the normal Confirm step",
+      "goal": "picks and payments: the homeowner's backup choice at the pick, and the business's optional auto-confirm-and-pay box, shown only while Stripe's written answer is filed, with one off-session charge and a fallback to the normal Confirm step",
+      "type": "build",
+      "phase": 1,
+      "stage": "4",
+      "module": "picks",
+      "deps": [
+        "T148",
+        "T062"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "money",
+        "security",
+        "privacy"
+      ],
+      "owns": [
+        "app/picks/backup_choice.py",
+        "app/picks/auto_confirm.py",
+        "tests/integration/test_backup_choice.py",
+        "tests/integration/test_auto_confirm.py",
+        "tests/property/test_no_other_off_session_charge.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/quotes-pick.md",
+        "docs/spec/fees.md",
+        "docs/threat-model.md"
+      ],
+      "requirements": [
+        "PICK-047",
+        "PICK-048",
+        "FEE-014",
+        "PICK-046"
+      ],
+      "tests": [
+        "TD-PICK-32",
+        "TD-FEE-30"
+      ],
+      "decisions": [
+        "D-400",
+        "D-401"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 5,
+        "lines": 750,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T157-picks-backup-autoconfirm",
+      "prompt": "kit/prompts/T157.md"
+    },
+    {
+      "id": "T158",
+      "slug": "owner-scorecard-money",
+      "title": "ops and payments: the owner's pilot scorecard page with go and stop lines, the monthly intake accuracy report, the money view's sales-tax set-aside and manual expenses, and the masked-call answered share",
+      "goal": "ops and payments: the owner's pilot scorecard page with go and stop lines, the monthly intake accuracy report, the money view's sales-tax set-aside and manual expenses, and the masked-call answered share",
+      "type": "build",
+      "phase": 1,
+      "stage": "5",
+      "module": "ops",
+      "deps": [
+        "T106",
+        "T067"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "money",
+        "accessibility",
+        "security"
+      ],
+      "owns": [
+        "app/ops/scorecard.py",
+        "app/ops/intake_report.py",
+        "app/payments/money_view.py",
+        "app/portals/templates/scorecard.html",
+        "tests/integration/test_scorecard.py",
+        "tests/integration/test_intake_report.py",
+        "tests/unit/payments/test_money_view.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/ops-recovery.md",
+        "docs/spec/fees.md",
+        "docs/spec/calls.md"
+      ],
+      "requirements": [
+        "OPS-039",
+        "OPS-040",
+        "FEE-046",
+        "CALL-024"
+      ],
+      "tests": [
+        "TD-OPS-15",
+        "TD-OPS-16",
+        "TD-FEE-29",
+        "TD-CALL-10"
+      ],
+      "decisions": [
+        "D-395",
+        "D-396",
+        "D-410",
+        "D-413"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 7,
+        "lines": 800,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T158-owner-scorecard-money",
+      "prompt": "kit/prompts/T158.md"
+    },
+    {
+      "id": "T159",
+      "slug": "safety-contacts-verify",
+      "title": "launch checklist: fetch each safety contact's official source page, confirm the number and hours, record the verified date or remove the entry and list it for Casey, so the Gate C check passes with no owner task",
+      "goal": "launch checklist: fetch each safety contact's official source page, confirm the number and hours, record the verified date or remove the entry and list it for Casey, so the Gate C check passes with no owner task",
+      "type": "build",
+      "phase": 2,
+      "stage": "6",
+      "module": "intake",
+      "deps": [
+        "T140"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "compliance"
+      ],
+      "owns": [
+        "docs/launch/safety_contacts_verification.md",
+        "tests/docs/test_safety_contacts_fresh.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/intake.md",
+        "app/messaging/safety_contacts.toml"
+      ],
+      "requirements": [
+        "INT-036"
+      ],
+      "tests": [
+        "TD-OPS-17"
+      ],
+      "decisions": [
+        "D-411"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 2,
+        "lines": 300,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T159-safety-contacts-verify",
+      "prompt": "kit/prompts/T159.md"
+    },
+    {
+      "id": "T160",
+      "slug": "business-push-app",
+      "title": "portals: the optional installable business web app with push job alerts (manifest, same-origin service worker registered only after Turn on job alerts, allowlisted push services, VAPID key as a secret, no homeowner details), email kept as the fallback",
+      "goal": "portals: the optional installable business web app with push job alerts (manifest, same-origin service worker registered only after Turn on job alerts, allowlisted push services, VAPID key as a secret, no homeowner details), email kept as the fallback",
+      "type": "build",
+      "phase": 1,
+      "stage": "5",
+      "module": "portals",
+      "deps": [
+        "T149",
+        "T100"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "security",
+        "privacy",
+        "accessibility"
+      ],
+      "owns": [
+        "app/portals/push.py",
+        "app/portals/static/manifest.webmanifest",
+        "app/portals/static/sw.js",
+        "app/portals/templates/job_alerts.html",
+        "tests/integration/test_push_alerts.py",
+        "tests/security/test_push_subscriptions.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/businesses.md",
+        "docs/spec/security.md",
+        "docs/spec/accessibility.md",
+        "docs/threat-model.md"
+      ],
+      "requirements": [
+        "BIZ-041"
+      ],
+      "tests": [
+        "TD-BIZ-31"
+      ],
+      "decisions": [
+        "D-401"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 6,
+        "lines": 700,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T160-business-push-app",
+      "prompt": "kit/prompts/T160.md"
+    },
+    {
+      "id": "T161",
+      "slug": "wording-voice-scan",
+      "title": "wording: the WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience, and the CON-031 consent texts and \"Who runs Ask Hava\" record links checked against the spec",
+      "goal": "wording: the WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience, and the CON-031 consent texts and \"Who runs Ask Hava\" record links checked against the spec",
+      "type": "build",
+      "phase": 1,
+      "stage": "5",
+      "module": "site",
+      "deps": [
+        "T104",
+        "T102"
+      ],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "compliance"
+      ],
+      "owns": [
+        "tests/docs/test_voice_rules.py",
+        "tests/docs/test_request_job_numbering.py",
+        "tests/docs/test_consent_segments.py",
+        "tests/docs/test_who_runs_links.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/wording.md",
+        "docs/spec/consent.md",
+        "docs/spec/website.md",
+        "docs/voice.md"
+      ],
+      "requirements": [
+        "WORD-024",
+        "WORD-025",
+        "CON-031",
+        "WEB-021"
+      ],
+      "tests": [
+        "TD-WORD-08",
+        "TD-WORD-09",
+        "TD-CON-23",
+        "TD-WEB-10"
+      ],
+      "decisions": [
+        "D-398",
+        "D-406",
+        "D-407",
+        "D-409"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 4,
+        "lines": 500,
+        "context_pct": 12
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T161-wording-voice-scan",
+      "prompt": "kit/prompts/T161.md"
     }
   ]
 }

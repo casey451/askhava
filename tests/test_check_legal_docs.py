@@ -71,7 +71,7 @@ def test_every_draft_starts_with_the_note() -> None:
         ),
         (
             "sms-terms.md",
-            "Version 0.1 (draft) · October 28, 2026",
+            "Version 0.2 (draft, fix round 13) · October 28, 2026",
             "Version draft",
             "second line must be",
         ),

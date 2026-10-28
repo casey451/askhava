@@ -49,7 +49,7 @@ Short rules loaded into every session. The full rules live elsewhere; read them,
 
 ## Product rules most likely to be broken (details in docs/constitution.md)
 
-- AI sees only scrubbed text through the zero-retention API, returns schema-validated fields, has no tools, adds no claims. Stand-in AI during the build (`BUILD_BRIEF.md:343`–`BUILD_BRIEF.md:344`; `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:262`).
+- AI sees only scrubbed text through the Claude API (zero retention once signed; before that only under AI-008's switch, D-412), returns schema-validated fields, has no tools, adds no claims. Stand-in AI during the build (`BUILD_BRIEF.md:343`–`BUILD_BRIEF.md:344`; `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:262`).
 - No homeowner contact detail leaves the vault except on a confirmed, paid pick; the homeowner's phone is never shared (`BUILD_BRIEF.md:151`; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:225`).
 - Texting: full consent text first on every path; a text that is only an opt-out word (English or Spanish, incl. "cancel") opts out of all texts; "cancel" alone never closes a job; quiet hours 8 a.m.–8 p.m. in the stricter of Arizona and area-code time; every text kind has a Spanish template (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:113`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:158`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:159`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:184`; `BUILD_BRIEF.md:416`).
 - Wording: "introduction fee by job size," never "commission"; never "vetted," "best" or rankings; "Ask Hava is not a contractor and does not perform, bid on or supervise work" (`BUILD_BRIEF.md:453`–`BUILD_BRIEF.md:455`).
