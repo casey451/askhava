@@ -251,7 +251,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
    - duplicated logic;
    - dead code and TODOs;
    - secrets or PII;
-   - accessibility regressions.
+   - accessibility regressions; and AI smell (WORD-027, WORD-028, D-452): for any change to words a homeowner or business reads, a second reviewer subagent sees only the finished copy, reads it aloud as the person receiving it would, and flags anything machine-written, using `docs/voice.md`; `scripts/check_ai_smell.py` must also pass.
 
    Findings go back to the worker subagent once.
 5. **Hand in:** push the branch. The push comes from Claude's GitHub identity, so workflows run. The `auto-pr` workflow (triggered `on: push` for `claude/task/**`, `permissions: contents: write, pull-requests: write`) opens a PR and enables squash auto-merge.

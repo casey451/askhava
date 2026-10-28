@@ -246,7 +246,7 @@ Full list in `BUILD_BRIEF.md:384`–`BUILD_BRIEF.md:427`; target also in `source
 10. The stack is decided; don't reopen it. (`BUILD_BRIEF.md:101`)
 11. No module reaches into another's tables. (`BUILD_BRIEF.md:126`)
 12. Every job status moves only along defined arrows; any other move is refused and logged; every waiting state has a timeout. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:155`; `BUILD_BRIEF.md:136`)
-13. Fresh-eyes review on every task checks for spec drift, duplicated logic, dead code and TODOs, secrets or PII, and accessibility regressions. (`BUILD_BRIEF.md:249`–`BUILD_BRIEF.md:254`)
+13. Fresh-eyes review on every task checks for spec drift, duplicated logic, dead code and TODOs, secrets or PII, accessibility regressions, and AI smell: `scripts/check_ai_smell.py` must pass, and any customer copy gets a cold read aloud by a reviewer that sees only the copy (WORD-027, WORD-028, D-452). (`BUILD_BRIEF.md:249`–`BUILD_BRIEF.md:254`)
 
 ## 13. Legal holds: never build without a new legal review (fix round 12)
 

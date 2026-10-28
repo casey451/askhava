@@ -10150,7 +10150,9 @@
         "tests/docs/test_voice_rules.py",
         "tests/docs/test_request_job_numbering.py",
         "tests/docs/test_consent_segments.py",
-        "tests/docs/test_who_runs_links.py"
+        "tests/docs/test_who_runs_links.py",
+        "tests/docs/test_ai_smell_app.py",
+        "docs/ai_smell.yaml"
       ],
       "reads": [
         "docs/architecture.md",
@@ -10158,32 +10160,37 @@
         "docs/spec/wording.md",
         "docs/spec/consent.md",
         "docs/spec/website.md",
-        "docs/voice.md"
+        "docs/voice.md",
+        "scripts/check_ai_smell.py"
       ],
       "requirements": [
         "WORD-024",
         "WORD-025",
         "CON-031",
         "WEB-021",
-        "CON-004"
+        "CON-004",
+        "WORD-027",
+        "WORD-028"
       ],
       "tests": [
         "TD-WORD-08",
         "TD-WORD-09",
         "TD-CON-23",
         "TD-WEB-10",
-        "TD-CON-24"
+        "TD-CON-24",
+        "TD-WORD-11"
       ],
       "decisions": [
         "D-398",
         "D-406",
         "D-407",
         "D-409",
-        "D-419"
+        "D-419",
+        "D-452"
       ],
       "cites": [],
       "budget": {
-        "files": 4,
+        "files": 6,
         "lines": 500,
         "context_pct": 12
       },
