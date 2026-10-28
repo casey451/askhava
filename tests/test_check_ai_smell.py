@@ -87,6 +87,19 @@ def test_markup_inside_style_is_not_read_as_copy(tmp_path: Path) -> None:
     assert plant(root, "app/site/templates/home.html", page) == []
 
 
+def test_template_tags_and_script_code_are_not_copy(tmp_path: Path) -> None:
+    root = fake_repo(tmp_path)
+    page = "{% if !paid %}<p>Get local quotes by text.</p>{% endif %}{{ name|e }}\n"
+    assert plant(root, "app/site/templates/home.html", page) == []
+    assert plant(root, "app/site/static/site.ts", "if (x !== null && !done) { show(\"Sending\"); }\n") == []
+
+
+def test_script_strings_are_scanned(tmp_path: Path) -> None:
+    root = fake_repo(tmp_path)
+    hits = plant(root, "app/site/static/site.ts", 'const msg = "A seamless way to compare";\n')
+    assert "word 'seamless'" in {hit.rule for hit in hits}
+
+
 def test_plain_copy_passes(tmp_path: Path) -> None:
     root = fake_repo(tmp_path)
     text = "Ask Hava: Request 1042 is out to 4 plumbing businesses. We'll text you when the first quote comes in.\n"

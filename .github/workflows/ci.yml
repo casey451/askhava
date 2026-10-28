@@ -68,6 +68,8 @@ jobs:
             rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
             cargo fmt --all --check
             cargo clippy --workspace --all-targets --locked -- -D warnings
+            # Built alone, no test crate turns on a `testing` feature, so only each crate's api is public.
+            cargo build -p server --locked
             cargo test --workspace --locked
           else
             echo "rust checks skipped: no Cargo workspace yet"

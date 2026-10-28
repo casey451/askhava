@@ -58,7 +58,10 @@ app/
     src/lib.rs       `automod::dir!("src")` declares every file, so a task adds a file without editing lib.rs;
                      re-exports `api` as the crate's public surface; under the crate's `testing` feature the same
                      macro declares every module `pub`, so the test crates reach `rules` and the rest, and no
-                     production crate may enable `testing` (the architecture test checks it, SEC-029)
+                     production crate may enable `testing` (the architecture test checks it, SEC-029). Cargo turns a
+                     feature on for the whole build, so a workspace build makes internals visible everywhere;
+                     `Ci` therefore also builds `-p server` alone, where only `api` is public, and that build is
+                     the one that enforces the boundary
     src/api.rs       the module's public functions and types; everything else is `pub(crate)`
     src/models.rs    row types and SQLx queries, all in the module's own Postgres schema
     src/rules.rs     pure decision logic (no I/O), the main target of unit and property tests
