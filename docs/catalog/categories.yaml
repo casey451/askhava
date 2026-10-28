@@ -197,7 +197,7 @@ categories:
     job_types: [mowing, trimming, yard cleanup, gravel raking]
     one_time_job_types: [yard cleanup]
     refused:
-      - {job: "pre-emergent or advertised weed control", routed_to: "pest_control", reason: "AZ Dept of Agriculture licensees only; pest control is off at launch (LIC-012, D-376)"}
+      - {job: "pre-emergent or advertised weed control", routed_to: "pest_control", reason: "businesses attesting to an AZ Dept of Agriculture license only (LIC-012, LIC-047, D-417)"}
     intake_questions: ["How often would you like service?", "About how big is the yard?"]
     keywords: [yard, landscaping, mowing, trimming, gardener]
     review: "Gardener exemption, A.R.S. 32-1121(A)(16) (changes file :47). Confirmed K2b."
@@ -238,7 +238,7 @@ categories:
     refused: []
     intake_questions: ["What pests are you seeing?", "One-time or ongoing service?"]
     keywords: [pest, bugs, scorpion, termite, pre-emergent, weed control]
-    review: "On for Department pest-management licensees only, default pending Casey (LIC-012, D-402); never advertised on its own (changes file 7.1 item 3, WEB-010); license number on every quote card; termite and pre-emergent job types need the matching category on the record (LIC-043). Switched off again if the Department answers that a license is needed."
+    review: "On for businesses that attest to a Department pest-management license (LIC-012, LIC-047, D-417); never advertised on its own (changes file 7.1 item 3, WEB-010); self-reported license number and a not-independently-verified line on every quote card; termite and pre-emergent job types need the attested matching category (LIC-043). No letter to the Department."
 
   - id: dog_waste_pickup
     name: Dog waste pickup

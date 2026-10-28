@@ -267,6 +267,7 @@ classes:
 
 agencies:
   - license: "AZ Department of Agriculture pest-management business license"
+    verification: self_attested  # D-417, LIC-047: not checked by Ask Hava; card says so
     job_types:
       pest_control: {only: [general pest service, scorpions]}
     record_category_needed:
