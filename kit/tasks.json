@@ -51,7 +51,7 @@
       "id": "T001",
       "slug": "sources-authority-fix",
       "title": "docs/sources.md: replace 'stop and ask Casey' with the decide-and-log rule",
-      "goal": "K3 follow-up 2: docs/sources.md:29 states the BUILD_BRIEF \u00a716 rule (decide, log, don't stop).",
+      "goal": "K3 follow-up 2: docs/sources.md:29 states the BUILD_BRIEF §16 rule (decide, log, don't stop).",
       "type": "docs",
       "phase": 1,
       "stage": "1",
@@ -368,7 +368,9 @@
         "D-295",
         "D-337",
         "D-348",
-        "D-349"
+        "D-349",
+        "D-357",
+        "D-366"
       ],
       "cites": [],
       "budget": {
@@ -433,7 +435,8 @@
       "tests": [],
       "decisions": [
         "D-107",
-        "D-110"
+        "D-110",
+        "D-357"
       ],
       "cites": [],
       "budget": {
@@ -1890,7 +1893,8 @@
         "D-270",
         "D-285",
         "D-295",
-        "D-345"
+        "D-345",
+        "D-365"
       ],
       "cites": [],
       "budget": {
@@ -2300,7 +2304,9 @@
         "D-295",
         "D-298",
         "D-337",
-        "D-349"
+        "D-349",
+        "D-356",
+        "D-366"
       ],
       "cites": [],
       "budget": {
@@ -2362,7 +2368,8 @@
         "INT-031",
         "INT-033",
         "INT-034",
-        "INT-035"
+        "INT-035",
+        "INT-037"
       ],
       "tests": [
         "TD-INT-01",
@@ -2392,7 +2399,12 @@
         "D-326",
         "D-350",
         "D-353",
-        "D-346"
+        "D-346",
+        "D-361",
+        "D-368",
+        "D-359",
+        "D-362",
+        "D-364"
       ],
       "cites": [],
       "budget": {
@@ -2532,7 +2544,8 @@
         "D-191",
         "D-323",
         "D-344",
-        "D-346"
+        "D-346",
+        "D-362"
       ],
       "cites": [],
       "budget": {
@@ -2918,7 +2931,8 @@
         "docs/architecture.md",
         "docs/spec/messaging.md",
         "docs/spec/quotes-pick.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/wording.md"
       ],
       "requirements": [
         "TXT-016",
@@ -2927,13 +2941,17 @@
         "TXT-027",
         "TXT-031",
         "TXT-032",
-        "TXT-033"
+        "TXT-033",
+        "WORD-011",
+        "PICK-002",
+        "PICK-003"
       ],
       "tests": [
         "TD-TXT-06",
         "TD-TXT-11",
         "TD-TXT-14",
-        "TD-TXT-20"
+        "TD-TXT-20",
+        "TD-TXT-21"
       ],
       "decisions": [
         "D-012",
@@ -2950,7 +2968,9 @@
         "D-338",
         "D-339",
         "D-324",
-        "D-340"
+        "D-340",
+        "D-358",
+        "D-368"
       ],
       "cites": [],
       "budget": {
@@ -3367,7 +3387,8 @@
         "D-147",
         "D-290",
         "D-291",
-        "D-310"
+        "D-310",
+        "D-366"
       ],
       "cites": [],
       "budget": {
@@ -3428,12 +3449,15 @@
         "PICK-017",
         "PICK-018",
         "PICK-021",
-        "PICK-042"
+        "PICK-042",
+        "PICK-045",
+        "PICK-019"
       ],
       "tests": [
         "TD-PICK-08",
         "TD-PICK-19",
-        "TD-PICK-24"
+        "TD-PICK-24",
+        "TD-PICK-28"
       ],
       "decisions": [
         "D-212",
@@ -3447,7 +3471,11 @@
         "D-293",
         "D-294",
         "D-295",
-        "D-310"
+        "D-310",
+        "D-363",
+        "D-368",
+        "D-356",
+        "D-365"
       ],
       "cites": [],
       "budget": {
@@ -3682,7 +3710,8 @@
         "D-159",
         "D-196",
         "D-197",
-        "D-288"
+        "D-288",
+        "D-357"
       ],
       "cites": [],
       "budget": {
@@ -3743,7 +3772,8 @@
         "D-073",
         "D-089",
         "D-195",
-        "D-196"
+        "D-196",
+        "D-365"
       ],
       "cites": [],
       "budget": {
@@ -3803,7 +3833,8 @@
       "decisions": [
         "D-071",
         "D-072",
-        "D-277"
+        "D-277",
+        "D-357"
       ],
       "cites": [],
       "budget": {
@@ -3909,7 +3940,9 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/fees.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/quotes-pick.md",
+        "docs/spec/lifecycle.md"
       ],
       "requirements": [
         "FEE-016",
@@ -3919,19 +3952,29 @@
         "FEE-020",
         "FEE-037",
         "FEE-038",
-        "FEE-041"
+        "FEE-041",
+        "FEE-014",
+        "FEE-015",
+        "FEE-036",
+        "PICK-021",
+        "PICK-022",
+        "PICK-033",
+        "JOB-014"
       ],
       "tests": [
         "TD-FEE-11",
         "TD-FEE-20",
-        "TD-FEE-21"
+        "TD-FEE-21",
+        "TD-FEE-25"
       ],
       "decisions": [
         "D-135",
         "D-153",
         "D-204",
         "D-270",
-        "D-308"
+        "D-308",
+        "D-365",
+        "D-368"
       ],
       "cites": [],
       "budget": {
@@ -4017,7 +4060,9 @@
         "D-327",
         "D-345",
         "D-344",
-        "D-346"
+        "D-346",
+        "D-365",
+        "D-359"
       ],
       "cites": [],
       "budget": {
@@ -4193,13 +4238,19 @@
       ],
       "requirements": [
         "FEE-026",
-        "FEE-027"
+        "FEE-027",
+        "FEE-042",
+        "FEE-031"
       ],
       "tests": [
         "TD-FEE-14",
-        "TD-FEE-15"
+        "TD-FEE-15",
+        "TD-FEE-26"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-365",
+        "D-368"
+      ],
       "cites": [],
       "budget": {
         "files": 6,
@@ -4318,7 +4369,8 @@
         "D-229",
         "D-261",
         "D-264",
-        "D-265"
+        "D-265",
+        "D-365"
       ],
       "cites": [],
       "budget": {
@@ -4382,7 +4434,8 @@
       "decisions": [
         "D-074",
         "D-201",
-        "D-306"
+        "D-306",
+        "D-365"
       ],
       "cites": [],
       "budget": {
@@ -4772,7 +4825,8 @@
       "decisions": [
         "D-077",
         "D-160",
-        "D-296"
+        "D-296",
+        "D-366"
       ],
       "cites": [],
       "budget": {
@@ -5004,7 +5058,9 @@
       "decisions": [
         "D-206",
         "D-275",
-        "D-310"
+        "D-310",
+        "D-366",
+        "D-359"
       ],
       "cites": [],
       "budget": {
@@ -5097,7 +5153,10 @@
         "D-312",
         "D-313",
         "D-344",
-        "D-349"
+        "D-349",
+        "D-366",
+        "D-356",
+        "D-357"
       ],
       "cites": [],
       "budget": {
@@ -5173,7 +5232,8 @@
         "D-344",
         "D-351",
         "D-348",
-        "D-349"
+        "D-349",
+        "D-359"
       ],
       "cites": [],
       "budget": {
@@ -5308,7 +5368,8 @@
         "D-191",
         "D-313",
         "D-318",
-        "D-333"
+        "D-333",
+        "D-366"
       ],
       "cites": [],
       "budget": {
@@ -5433,7 +5494,8 @@
       "decisions": [
         "D-098",
         "D-313",
-        "D-333"
+        "D-333",
+        "D-366"
       ],
       "cites": [],
       "budget": {
@@ -5541,7 +5603,8 @@
       ],
       "decisions": [
         "D-313",
-        "D-333"
+        "D-333",
+        "D-366"
       ],
       "cites": [],
       "budget": {
@@ -5981,7 +6044,8 @@
         "D-297",
         "D-303",
         "D-315",
-        "D-344"
+        "D-344",
+        "D-366"
       ],
       "cites": [],
       "budget": {
@@ -6247,7 +6311,8 @@
         "D-328",
         "D-344",
         "D-346",
-        "D-351"
+        "D-351",
+        "D-356"
       ],
       "cites": [],
       "budget": {
@@ -6357,7 +6422,11 @@
         "D-351",
         "D-353",
         "D-348",
-        "D-349"
+        "D-349",
+        "D-359",
+        "D-366",
+        "D-365",
+        "D-363"
       ],
       "cites": [],
       "budget": {
@@ -6449,7 +6518,9 @@
         "D-346",
         "D-352",
         "D-344",
-        "D-345"
+        "D-345",
+        "D-362",
+        "D-359"
       ],
       "cites": [],
       "budget": {
@@ -6518,12 +6589,25 @@
         "BIZ-046",
         "SEC-026",
         "SEC-027",
-        "BIZ-039"
+        "BIZ-039",
+        "BIZ-007",
+        "BIZ-042",
+        "BIZ-002",
+        "BIZ-026",
+        "SEC-004",
+        "SEC-008",
+        "PICK-013",
+        "TXT-038",
+        "CALL-014",
+        "CALL-015",
+        "INT-033"
       ],
       "tests": [
         "TD-CARD-09",
         "TD-BIZ-22",
-        "TD-SEC-08"
+        "TD-SEC-08",
+        "TD-BIZ-24",
+        "TD-BIZ-25"
       ],
       "decisions": [
         "D-323",
@@ -6534,7 +6618,11 @@
         "D-344",
         "D-346",
         "D-351",
-        "D-353"
+        "D-353",
+        "D-362",
+        "D-366",
+        "D-368",
+        "D-359"
       ],
       "cites": [],
       "budget": {
@@ -6607,7 +6695,8 @@
       "decisions": [
         "D-348",
         "D-349",
-        "D-353"
+        "D-353",
+        "D-359"
       ],
       "cites": [],
       "budget": {
@@ -6626,8 +6715,8 @@
     {
       "id": "T152",
       "slug": "safety-contacts",
-      "title": "intake and messaging: the version-controlled local safety contacts file (UniSource, city water, 211) with source URLs, verified and review-by dates, its loader that drops unverified or stale entries, and the Gate C launch check, plus the PII scan's exact-match allowance for this file's public numbers only",
-      "goal": "intake and messaging: the version-controlled local safety contacts file (UniSource, city water, 211) with source URLs, verified and review-by dates, its loader that drops unverified or stale entries, and the Gate C launch check, plus the PII scan's exact-match allowance for this file's public numbers only",
+      "title": "intake and messaging: the version-controlled local safety contacts file (UniSource, the water providers, 211) with source URLs, verified and review-by dates, its loader that drops unverified or stale entries, and the Gate C launch check, plus the PII scan's exact-match allowance for this file's public numbers only",
+      "goal": "intake and messaging: the version-controlled local safety contacts file (UniSource, the water providers, 211) with source URLs, verified and review-by dates, its loader that drops unverified or stale entries, and the Gate C launch check, plus the PII scan's exact-match allowance for this file's public numbers only",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -6656,14 +6745,22 @@
         "docs/test-design.md"
       ],
       "requirements": [
-        "INT-036"
+        "INT-036",
+        "INT-034",
+        "INT-031",
+        "INT-035",
+        "INT-004"
       ],
       "tests": [
-        "TD-INT-17"
+        "TD-INT-17",
+        "TD-INT-18"
       ],
       "decisions": [
         "D-350",
-        "D-353"
+        "D-353",
+        "D-361",
+        "D-364",
+        "D-368"
       ],
       "cites": [],
       "budget": {
@@ -6898,7 +6995,9 @@
         "D-337",
         "D-348",
         "D-349",
-        "D-352"
+        "D-352",
+        "D-356",
+        "D-366"
       ],
       "cites": [],
       "budget": {
@@ -6997,7 +7096,11 @@
         "docs/spec/terms.md",
         "docs/spec/website.md",
         "docs/spec/wording.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/consent.md",
+        "docs/spec/job-cards.md",
+        "docs/spec/quotes-pick.md",
+        "docs/spec/businesses.md"
       ],
       "requirements": [
         "TERMS-010",
@@ -7015,13 +7118,23 @@
         "WORD-019",
         "WORD-020",
         "WORD-021",
-        "WEB-025"
+        "WEB-025",
+        "WORD-002",
+        "WORD-022",
+        "CON-031",
+        "CARD-020",
+        "PICK-017",
+        "WEB-015",
+        "TERMS-004",
+        "BIZ-030"
       ],
       "tests": [
         "TD-WORD-01",
         "TD-WEB-03",
         "TD-WORD-04",
-        "TD-WEB-06"
+        "TD-WEB-06",
+        "TD-WORD-05",
+        "TD-WORD-06"
       ],
       "decisions": [
         "D-029",
@@ -7032,7 +7145,15 @@
         "D-316",
         "D-349",
         "D-352",
-        "D-353"
+        "D-353",
+        "D-356",
+        "D-359",
+        "D-360",
+        "D-368",
+        "D-358",
+        "D-366",
+        "D-363",
+        "D-357"
       ],
       "cites": [],
       "budget": {
@@ -7463,7 +7584,9 @@
       ],
       "reads": [
         "docs/spec/terms.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/fees.md",
+        "docs/spec/businesses.md"
       ],
       "requirements": [
         "TERMS-001",
@@ -7482,11 +7605,16 @@
         "TERMS-018",
         "TERMS-021",
         "TERMS-022",
-        "TERMS-024"
+        "TERMS-024",
+        "TERMS-026",
+        "FEE-002",
+        "FEE-006",
+        "BIZ-030"
       ],
       "tests": [
         "TD-TERMS-01",
-        "TD-WEB-03"
+        "TD-WEB-03",
+        "TD-TERMS-03"
       ],
       "decisions": [
         "D-047",
@@ -7500,7 +7628,10 @@
         "D-316",
         "D-344",
         "D-349",
-        "D-348"
+        "D-348",
+        "D-356",
+        "D-357",
+        "D-368"
       ],
       "cites": [],
       "budget": {
@@ -7577,7 +7708,8 @@
         "D-299",
         "D-304",
         "D-305",
-        "D-349"
+        "D-349",
+        "D-356"
       ],
       "cites": [],
       "budget": {
@@ -7643,7 +7775,8 @@
         "D-088",
         "D-304",
         "D-305",
-        "D-315"
+        "D-315",
+        "D-356"
       ],
       "cites": [],
       "budget": {
@@ -8619,7 +8752,9 @@
         "TD-FEE-16",
         "TD-SEC-03"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-365"
+      ],
       "cites": [
         "BUILD_BRIEF.md:191"
       ],
@@ -8683,7 +8818,8 @@
         "D-145",
         "D-281",
         "D-318",
-        "D-344"
+        "D-344",
+        "D-366"
       ],
       "cites": [
         "BUILD_BRIEF.md:191"

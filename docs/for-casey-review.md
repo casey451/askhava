@@ -2,6 +2,15 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## How legal, tax and insurance items are handled now (October 28, 2026)
+
+You've decided not to hire a lawyer, a CPA or an insurance broker for now, to rely on AI research instead, and to accept that risk yourself. So, throughout this file (D-367):
+
+- **Every "ask a lawyer", "TCPA attorney", "CPA" or "trademark attorney" item** now reads "AI legal-research memo (in progress) + your decision". The memos are being written in `/home/claude/hhq/outputs/legal/` (contractor status and consumer law; messaging, privacy and data; business setup, tax and trademark). They are research, not legal advice.
+- **Insurance stays a recommended purchase.** It's cover for when something goes wrong, not advice. Get the quotes in the fix round 8 list (general liability, tech E&O, maybe cyber).
+- **Government filings and registrations stay your actions:** the LLC, the Lake Havasu City business license, a TPT license if it turns out to be needed, a trademark filing if you want one, and the Twilio and Stripe accounts.
+- **Nothing in the spec got looser.** The homeowner safety voice call stays off: its switch still needs a recorded attorney approval (CALL-019). If, after reading the memo, you want it on anyway, ask for that as a spec change.
+
 ## Your first item: ask Twilio in writing before registering (October 28, 2026)
 
 This comes before everything else in this file. Texting registration is the one step that can't be undone: if Twilio refuses the campaign as "lead generation" (error 30951), it can't be resubmitted. So ask first, in writing. Nothing has been sent; you send it. (D-305, D-322)
@@ -11,7 +20,7 @@ This comes before everything else in this file. Texting registration is the one 
 - **Send the Telnyx question only if Twilio's answer is unclear.**
 - **What happens with each answer:**
   - Homeowner texts "yes": register the homeowner campaign.
-  - Business texts "no", or no clear answer: nothing changes. Businesses get everything by email, plus a phone call when they're picked.
+  - Business texts "no", or no clear answer: nothing changes. Businesses get everything by email. (Corrected in fix round 11: there are no business calls, D-344, D-359.)
   - Business texts "yes": you may later switch business texting on, on its own campaign and its own number. Each business then chooses email, text or both.
 
 ### To Twilio (send as a Support ticket before registering)
@@ -261,11 +270,11 @@ You approved every recommendation in the business-side fix plan. All 16 quick fi
 
 **Open items for you**
 
-1. **Have a lawyer check the safety voice call (B19).** During a texting suspension, a homeowner with no email whose own message matched a danger word gets one automated call from the Ask Hava number that reads the safety text. It rests on the homeowner's own just-sent request, not on the narrow "emergency purposes" exemption. That reading is a research-based judgment, not legal advice. Until a lawyer has looked at it, treat it as unconfirmed. Your critical alert still fires either way. (D-206)
+1. **The safety voice call (B19): now the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision (D-367).** During a texting suspension, a homeowner with no email whose own message matched a danger word gets one automated call from the Ask Hava number that reads the safety text. It rests on the homeowner's own just-sent request, not on the narrow "emergency purposes" exemption. That reading is a research-based judgment, not legal advice. Treat it as unconfirmed; the call stays off (CALL-019) unless you later ask for a spec change after reading the memo. Your critical alert still fires either way. (D-206)
 2. **Fix the pitch and flyers by hand before any flyer goes out (A1, A13).** The prototype and the go-to-market pitch live outside this repository, so only the spec could be changed. The spec now stops the build from copying the errors (WEB-018, WORD-017). By hand, change these: ongoing services count as 4 months; remove the "What a lead can cost elsewhere" table, or keep only IRS, SEC or FTC figures with the source on the page; remove the pest row; use "Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens."; remove "Skip tenant requests" and the identity "Email me" choice; replace "no bidding wars" with "You quote once. No bidding rounds, no paid placement."; add "Every card says how many businesses got it." and the five objection answers from friction report section 8.2 that match your answers. (D-172, D-184)
 3. **Recruit about 2 to 4 businesses per trade** until a trade averages about 1 confirmed pick per business per month. Open small trades later, or with 1 or 2 businesses. Put this pace in the go-to-market plan, section 3.3. There is still no cap, and a business that finds Ask Hava on its own can still join. If a trade ever has 7 or more businesses and its typical job gets 5 or more quotes two months in a row, the owner portal flags it, and a 5-quote limit comes back to you as a decision. (D-189)
 4. **Start the founding interest list yourself (A10).** Note each business, its trade, how it would like to be reached and its OK to be contacted once at launch. Then sign each one up in person during launch week. Nobody can sign up before Gate C, and the list must never be built from the ROC or city lists. (D-181)
-5. **An attorney review of the business data page is optional but worth paying for (B16).** Every line on it must be exactly true. It covers what's kept and for how long, who sees it, no call recordings, never asking about workers, police or others getting data only when a law requires it (such as a subpoena or warrant), and that you don't use Ask Hava data in any other job. (D-203)
+5. **The business data page (B16): now the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision (D-367).** Every line on it must be exactly true. It covers what's kept and for how long, who sees it, no call recordings, never asking about workers, police or others getting data only when a law requires it (such as a subpoena or warrant), and that you don't use Ask Hava data in any other job. (D-203)
 6. **Whether to mention police work (C8).** The "Who runs Ask Hava" block leaves it out until the interviews answer this. (D-183)
 7. **Checked at build time:** whether the city license list has a date field. If it doesn't, no-license cards say "City business license on file" with no year. (D-190)
 
@@ -328,7 +337,7 @@ You asked for research and the most ideal changes before the simulations run aga
 3. **A maintainer on retainer** for the license-list reader and updates. The cost is unknown. **Without it:** while a list fails, a live lookup runs for each business, so statuses stay current, and you get an alert at 12 hours. (D-230)
 4. **5 more masked numbers** (10 to 15), at a few dollars a month. **Without them:** numbers are shared with PIN routing in busy weeks. (D-231)
 5. **Register the masked numbers** with the Free Caller Registry and the carriers' portals, and optionally buy branded caller ID (paid). The aim is to stop the first business call showing as "Spam Likely". The registry appears to be free, but it's an account you'd create yourself. Test it first: call 5 to 10 friends on different carriers and ask what their screen showed.
-6. **A lawyer's check (optional).** It would cover the safety voice call, which now also goes when an email is on file (D-206, D-210), and whether a safety call to a number that replied STOP could ever be allowed (it is not done now). It would also cover the heat text (D-208) and the tenant text (D-216). The wording is generic information either way.
+6. **Now the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision (D-367).** It covers the safety voice call, which now also goes when an email is on file (D-206, D-210), and whether a safety call to a number that replied STOP could ever be allowed (it is not done now). It would also cover the heat text (D-208) and the tenant text (D-216). The wording is generic information either way.
 7. **Your department's outside-employment rules.** The plan assumes no Ask Hava work on duty beyond a 1 to 3 minute acknowledgement at a break.
 8. **Before launch week:** ask each founding-list business to look up its own ROC or city record on its own phone and fix the phone and email. Never use the lists to do this for them.
 
@@ -415,22 +424,22 @@ You asked to fix everything the round-7 simulations and the ChatGPT and Grok res
 **To decide, ask or buy (the spec already works without each one)**
 
 1. **Ask Twilio in writing whether Ask Hava's flow is allowed.** (Now drafted at the top of this file; see "Your first item", D-305.) Describe it exactly: anonymous job cards go to several opted-in businesses, quotes are shown unranked, the homeowner picks, and the picked business pays a fixed introduction fee before it gets the first name and address. Save the case number and their answer. The research's biggest risk is that this gets classed as "third-party lead generation". (D-302)
-2. **A TCPA attorney's written opinion.** The automatic safety voice call is now **off** until you record that lawyer's written approval in the portal. Until then, every emergency message during a texting outage pushes to your phone. Other questions for the lawyer:
+2. **TCPA questions: now the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision (D-367).** The automatic safety voice call stays **off**: its switch still needs a recorded attorney approval, and since you're not hiring one now, it stays off unless you ask for a spec change. Every emergency message during a texting outage pushes to your phone. Questions for the memo:
    - Does STOP also cancel calls?
    - What does the FCC opt-out rule reported to start **Nov 25, 2026** mean for Ask Hava (as reported by research; verify the date)?
    - Can you call after a texting suspension?
    - Is keeping a scrambled (hashed) phone number enough proof of texting permission?
    (D-275, D-298)
-3. **A CPA or ADOR on sales tax (TPT).** The introduction fee may not be taxable at all, so don't get a TPT license just in case. Send them the exact question in the research (Part 4 §3). If they say it isn't taxable, the receipt line "Tax included." (D-225) should change; tell Claude and it will. (D-302)
+3. **Sales tax (TPT): now the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision (D-367).** The introduction fee may not be taxable at all, so don't get a TPT license just in case. You can still send ADOR (the state, not a paid adviser) the exact question in the research (Part 4 §3); a TPT license, if needed, is your filing. If they say it isn't taxable, the receipt line "Tax included." (D-225) should change; tell Claude and it will. (D-302)
 4. **Stripe's written OK** for the introduction-fee flow and merchant category, before the first charge. (D-302)
-5. **Insurance quotes.** Get general liability and tech E&O quotes, and maybe cyber. The research estimates about **$1,300 to $5,450 a year** in total; that's a planning range, not a quote. Tell the insurer the whole model (AI intake, quotes from several businesses, masked calls, addresses, the safety texts), and ask in writing what is excluded. (D-302)
+5. **Insurance quotes (still recommended; insurance is cover, not legal advice, D-367).** Get general liability and tech E&O quotes, and maybe cyber. The research estimates about **$1,300 to $5,450 a year** in total; that's a planning range, not a quote. Tell the insurer the whole model (AI intake, quotes from several businesses, masked calls, addresses, the safety texts), and ask in writing what is excluded. (D-302)
 6. **Setting up the LLC.**
    - A statutory agent hides only the agent's address. Member or manager addresses may still be public, so check what address you can lawfully use before filing.
    - An agent in Maricopa or Pima County avoids the Mohave newspaper notice (three publications within 60 days).
    (D-302)
 7. **City business license.** $196 new and $140 renewal on the 2026 schedule. The file is still labeled "proposed", so verify with the city. File the home-occupation form too. (D-302)
 8. **FinCEN beneficial-ownership (BOI) report.** Not required for a US-formed LLC under the Aug 2026 rule; verify before you skip it. (D-302)
-9. **The trademark attorney.** Bring Grok's list.
+9. **Trademark: now the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision (D-367).** Bring Grok's list to the memo; filing a trademark, if you choose to, is your own filing.
    - Several local businesses use "Hava" (Hava Plumber LLC, Hava Handy Services LLC, Hava Pool LLC, Hava Landscape LLC and others). Homeowners could think Ask Hava is one of them, or the reverse. Ask how much that local confusion matters.
    - Also ask about the HAVA (diet app), HAVAWORKS (pending marketplace filing) and ASKAVA records.
    - Always write "Ask Hava" as one phrase.
@@ -530,7 +539,7 @@ Its answer: Twilio could be a problem for **texts to businesses**, and switching
 
 1. **Send the Twilio question** at the top of this file. Send the Telnyx one only if Twilio's answer is unclear. Sign as "Casey Solomon, Ask Hava (LLC being formed)". This reverses the earlier "don't ask Twilio first" choice (D-088). (D-305)
 2. **Email setup at the account checkpoint.** Set up the askhava.com email records (SPF, DKIM, DMARC) with the email provider (Resend), so business emails don't land in spam. (D-318, D-322)
-3. **Ask the TCPA attorney one more thing:** does the business sign-up checkbox cover the recorded pick calls? It already asks for consent to automated calls, and the new wording names each channel. (D-312, D-322)
+3. **No longer needed:** this asked whether the sign-up checkbox covered recorded pick calls. There are no business calls now (D-344), and legal questions go to the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision. (D-312, D-322, D-367)
 4. **Later, your call:**
    - whether to ask for business texting at all;
    - whether to build the app.
@@ -593,7 +602,7 @@ You asked to fix everything the round-9 simulations found and to do whatever res
 
 **To decide, ask or buy (the spec already works without each one)**
 
-1. **Widen the TCPA attorney question.** Business automated calls never needed a lawyer switch, and they still don't. The safety voice call to homeowners is the only call behind one. So the new calls go on the same footing as the pick call, and the question already on your list (D-322) now covers all of them:
+1. **Superseded by fix round 10 (no business calls, D-344) and round 11 (the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision, D-367).** Kept for the record: business automated calls never needed a lawyer switch. The safety voice call to homeowners is the only call behind one. So the new calls go on the same footing as the pick call, and the question already on your list (D-322) now covers all of them:
    - recorded pick calls;
    - the new **emergency-job calls**, including at night to businesses that ticked after-hours. These have their own optional, unticked box that says "Not required to join.";
    - the **test call** at activation;
@@ -709,8 +718,8 @@ You said at 07:20: "No calls to businesses. We need to set up a help function th
 
 **To decide, ask or buy (the spec already works without each one)**
 
-1. **The TCPA attorney question is smaller now.** Ask Hava never phones a business, so the questions about pick calls, emergency-job calls, test calls and account calls are gone. Two questions are left:
-   - the homeowner safety voice call (still off until the lawyer approves in writing);
+1. **The TCPA question is smaller now, and goes to the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision (D-367).** Ask Hava never phones a business, so the questions about pick calls, emergency-job calls, test calls and account calls are gone. Two questions are left:
+   - the homeowner safety voice call (stays off; its switch needs a recorded attorney approval);
    - whether you may phone a homeowner yourself during a texting outage.
 
    (D-344, D-355)
@@ -727,7 +736,7 @@ You said at 07:20: "No calls to businesses. We need to set up a help function th
 5. **Set your phone to notify on the alert address.** HELP notifications use the same alert email as your other alerts. They never break Do Not Disturb. (D-348)
 6. **The email provider's free plan.** Resend's free plan allows 100 emails a day and 3,000 a month. You get a portal alert at 80% of either. Upgrading costs money, so it's your call when it comes. (D-351)
 7. **The pitch file** (`/home/claude/hhq/outputs/gtm/Ask_Hava_GoToMarket_Plan_REVIEWED.md`) says "we call you when a homeowner picks you". Use the business page's line instead: "Job requests and picks come by email. We don't text or call businesses." (D-355)
-8. **The trademark attorney.** Add Hav-A-Handyman LLC and Hava-Guy Handyman to the list of local "Hava" names. (D-352, D-355)
+8. **Trademark (now the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision, D-367).** Add Hav-A-Handyman LLC and Hava-Guy Handyman to the list of local "Hava" names. (D-352, D-355)
 9. **Two ideas from the Grok report. Your call; neither is adopted.**
    - **A "call and leave a message" way for homeowners to start a request.** It would help people who don't text, but someone has to listen to the messages, and that's your time. Today a call to the number gets a recorded "we work by text" greeting.
    - **Keeping an askhava.com/seniors page.** A plain page for older homeowners: how it works, "we never ask for your card", "you only get texts about your own request". It would be marketing-free, but it's one more page to keep current.
@@ -799,3 +808,72 @@ You said at 07:20: "No calls to businesses. We need to set up a help function th
 
 - Businesses: is 4 business hours to confirm by email fair? Did the test emergency email make your phone buzz?
 - Homeowners: does "replies within 2 days" feel trustworthy? Is the lapse text with the other quotes clear?
+
+## From fix round 11 ("Ask Hava is not a contractor"), October 28, 2026
+
+You said at 08:01: "Ask Hava is not a contractor. All we are doing is taking the quotes from contractors and relaying that information to the customers. We are not subcontracting them..." The plan is `/home/claude/hhq/outputs/sim_v10/Fix_Round_11_Plan.md`, and the changes are in the spec as D-356 to D-370. Nothing is built, nothing was bought, sent or signed, and Gate P and build_hold are unchanged.
+
+**The statement, everywhere (D-356)**
+
+- **Site, help page, homeowner terms, privacy policy, quote page:** "Ask Hava is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly."
+- **First text (inside the consent text):** "Ask Hava LLC is a local quote service in Lake Havasu City, not a contractor. We pass your request to local businesses, and you hire the one you choose directly."
+- **Every job card, the business page, sign-up and business terms:** "Ask Hava is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; Ask Hava doesn't direct, schedule, supervise or pay for the work."
+- **The pick review step:** "You hire the business directly. Ask Hava isn't part of your agreement with it."
+
+Spanish versions are drafts for a native speaker to check.
+
+**To decide, ask or send (the spec already works without each one)**
+
+1. **Send Stripe this question before you take real payments.** Nothing has been sent. Payments now work one way only: the business presses "Confirm and pay" on its pick page, and Stripe charges the card right then, with the business there. Saving a card is optional. Ask Hava never charges a card in the background. Homeowner details go out only after the payment succeeds. (D-365)
+
+   > **Subject:** Prelaunch eligibility review: fixed introduction fee paid by local businesses
+   >
+   > Hello Stripe Support,
+   >
+   > Ask Hava LLC (being formed in Arizona) is a local quote service in Lake Havasu City, Arizona. We'd like to confirm our model is eligible for Stripe before we accept payments.
+   >
+   > Homeowners send us a repair or service request by text or web chat, free. We pass the request, without their contact details, to independent local businesses by email. Businesses that want the job send us their own quote, and we show the homeowner every quote unchanged, in the order received, with no ranking. The homeowner picks one business. That business then opens a secure page that shows the job number and our fee, and presses "Confirm and pay". Only then do we charge our own fixed introduction fee: $25 for jobs under $500, $75 for $500 to $1,500, or $199 over $1,500 (ongoing services count four months, capped at $75). The charge happens on that page with the business present; a business may optionally save its card for next time, and we never charge a saved card in the background. After the payment succeeds, we give that business the homeowner's first name and job address.
+   >
+   > We are not a contractor. We don't perform, schedule, supervise, price or guarantee any work. The homeowner and the business make their own agreement, and the homeowner pays the business directly. We never collect money from homeowners or pay businesses.
+   >
+   > Could you confirm:
+   >
+   > 1. Is this fixed-fee introduction model eligible for Stripe, or does it need a restricted-business review or extra approval?
+   > 2. Is it fine to use Stripe Elements with PaymentIntents confirmed on-session from that page, with an optional saved card (SetupIntent or setup for future use) that is only ever charged when the business presses the button again?
+   > 3. Which business description, merchant category, documents or terms should we provide before going live?
+   >
+   > Thank you,
+   > Ask Hava LLC
+
+2. **Verify the water numbers before launch.** The burst-pipe text now lists the providers, "it's on your water bill": Lake Havasu City (and its after-hours number), EPCOR (24 hours) and Havasu Heights (after hours). It also says to use your own shutoff only if you know where it is and can reach it safely, not to use the water company's meter as a shutoff (Havasu Heights asks this), and to call 911 if anyone is in danger. Each number is marked "verify before launch", and the texts leave it out until you confirm it. The digits are in the plan, section 7, not in the repository: as in round 10, the privacy scanner rejects real phone numbers, and the build task that adds the file adds an exact allowance for those numbers only. Check UniSource and 211 (from round 10) at the same time. (D-364)
+3. **Your name on the LLC record.** The site, texts and emails never name you; where trust needs it they say "Ask Hava LLC, a Lake Havasu City business". But Arizona LLC filings list members or managers by name (A.R.S. 29-3201), so the state record can show your name. Decide the filing setup (statutory agent, mailing address, member or manager) knowing that. The research's Part 3 has the details. (D-366)
+4. **"No calls of any kind" to businesses.** Done: Ask Hava never calls a business, not even to read a code. A business whose record phone is a landline gets its code by email or a mailed letter. Sign-in and Confirm codes go by text, or by email to someone with no phone that gets texts. One thing stays, unless you say otherwise: **the masked calls between a homeowner and the business they chose.** Those are the two people calling each other on a masked number, not Ask Hava calling, and the refund for an unreachable homeowner counts those call attempts. (D-366)
+5. **Homeowners can ask for their code by phone.** A homeowner gets a voice call reading the code only if they tap "Call me with the code instead" on the screen. (D-366)
+6. **The 4-business-hour Confirm window on urgent jobs.** A pick at 8:10 p.m. waits until the next morning. The homeowner is now told the end time before picking, and on an urgent job they're offered "Switch to emergency (60-minute confirm)" when a business takes night emergencies. A shorter window for businesses on urgent jobs is your call (the business simulation should weigh in). (D-363, D-370)
+7. **Native-speaker review** of the new Spanish statements, with the other Spanish templates. (D-356)
+8. **The pitch file** (`/home/claude/hhq/outputs/gtm/Ask_Hava_GoToMarket_Plan_REVIEWED.md`, outside the repository, not changed) fails the new phrase list in two places. Suggested fixes:
+   - H14: "Already used a business through Ask Hava? ... Repeat work never goes through us." → "Already hired a business you chose on Ask Hava? Next time, call them directly."
+   - The yard-sign card: "Quotes through Ask Hava" → "Chosen on Ask Hava".
+
+   Also fix round 10's line ("we call you when a homeowner picks you"). (D-359, D-360)
+
+**Worth a second look**
+
+1. **Business terms say it plainly (D-357).** "Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedules, supervises, inspects, warrants or pays for your work, never sets or changes your prices, and never negotiates for you or the homeowner. There is no subcontract, employment, agency, partnership or joint venture between you and Ask Hava. ... The introduction fee pays only for the introduction service: a fixed amount by job size ($25, $75 or $199), never a percentage or share of the job's price, and it doesn't depend on whether the work is done, finished or paid for."
+2. **Quotes are shown exactly as the business wrote them (D-358).** The texts used to say "per month" for every ongoing service, which turned a weekly price into Ask Hava's own monthly number. Now they show "$40 per visit, weekly" as the business said it. The monthly number is only used to work out the fee.
+3. **Words that are gone (D-359):** "You were picked" (now "A homeowner chose your quote"), "Booked until" (now "Busy until"), "connected through Ask Hava", "takes after-hours calls" (it's email; now "gets emergency requests at night"). The help answer about cost now says "The business you pick pays Ask Hava a fixed introduction fee. You pay the business directly for the work."
+4. **The build now enforces it (D-360).** One list of banned phrases ("our pros", "our network", "your contractor", "we'll send a plumber", "book", "hire through us", "through Ask Hava", "service provider", "we found you", "assigned", "subcontract", "guaranteed", "our price", and Spanish ones). The spec check, the category check and the app's wording scan all fail on any of them.
+5. **Safety text fixes (D-361).**
+   - Gas: "If you smell gas or hear gas hissing, leave now" (it said "hear a leak", which told people with a burst pipe to leave).
+   - A smoke detector that chirps once a minute gets "usually needs a new battery", with the 911 line only if it's sounding a loud alarm. "Beeping" alone gets asked "chirp or loud alarm?".
+   - Propane points to "your propane supplier", not UniSource.
+   - The heat text leaves out 211 when 211 is closed (7 p.m. to 9 a.m.).
+
+   Add these to the fire and gas desk check.
+6. **Night emergency emails must be tested with Do Not Disturb or Sleep on (D-362).** The test asks "Did your phone alert you with Do Not Disturb or Sleep on?", lasts 90 days, then asks again. A business that misses 2 night emergency cards in a row stops being counted for night emergencies until it re-tests.
+
+**Routine**
+
+- Payments: one "Confirm and pay" button, no background charges, no automatic retries, details released once after the payment succeeds, Stripe's receipt plus ours, and an evidence record for each charge. (D-365)
+- The test for each change is listed in D-368; the build tasks that own them are updated and their prompts regenerated.
+- The professional-services stance is at the top of this file. (D-367)

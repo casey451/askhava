@@ -336,3 +336,27 @@ def test_review_fixes_are_enforced(
 def test_missing_files_fail(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     assert check_catalog.main(["--root", str(tmp_path)]) == 1
     assert "missing docs/catalog/categories.yaml" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "Our pros fix leaks",
+        "We'll send a plumber",
+        "Book a repair",
+        "Hire through Ask Hava",
+        "Job assigned",
+        "Ask Hava service provider",
+        "nuestros profesionales",
+    ],
+)
+def test_not_a_contractor_wording_fails(tmp_path: Path, phrase: str) -> None:
+    """WORD-022 (D-360): the catalog check uses the shared not-a-contractor list."""
+    errors = errors_after(
+        tmp_path,
+        "categories.yaml",
+        '"What is leaking or not working?"',
+        f'"What is leaking or not working? {phrase}"',
+    )
+    expected = "implies Ask Hava is a contractor (WORD-022)"
+    assert any(expected in e for e in errors), errors
