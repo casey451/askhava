@@ -1033,3 +1033,12 @@ That is roughly 15 to 20 minutes per paid introduction, inside the 20-minute go 
 ## The look: dark plaster and brass (D-451, October 28)
 
 You picked the darker plaster and brass homepage. It is now written down in `docs/design/DESIGN_SPEC.md`, so every page the build makes looks the same: dark plaster walls for headlines and menus, cream paper for quotes and forms, one brushed-brass button per step. Four mock-ups in `docs/design/mockups/` show the home page on a phone and a computer, her quote page and the pick step. Every color pair was measured for readability (all pass WCAG AA). Nothing for you to do; if you later get real close-up photos of plaster and brass (with permission), they can replace the generated textures.
+
+## No AI smell (D-452, October 28)
+
+You noticed the mock-up wording sounded like AI. The build now checks for that three ways:
+- **A list** of words and habits that give AI away (`docs/ai_smell.yaml`): "seamless," "elevate," "peace of mind," "seasoned pro," "side by side," slogans in threes, "not just X but Y," dashes, exclamation marks, emoji, and design habits like color gradients and sticker-style badges.
+- **An automatic scan** (`scripts/check_ai_smell.py`) that runs on every change. Any hit fails the build, and the fix is always a rewrite.
+- **A cold read.** For every task that writes words people see, a second AI reads only the finished words aloud, as the homeowner or business owner would, and flags anything that doesn't sound like a local person talking to a neighbour.
+
+The home page mock-ups were rewritten that way. "Text us the job. Local businesses quote. You pick." is now "Get local quotes by text." The paragraph under it now says what actually happens.

@@ -42,3 +42,27 @@ The "after" column is the spec text. Spanish follows once the English is settled
 | Another quote picked (PICK-026) | "The homeowner picked another quote for job 1042. ..." | "Job 1042 went to another business this time. 4 businesses quoted; the picked quote was lower than yours. No action needed. Thanks for quoting." |
 
 The HELP reply (CON-018) is unchanged: carriers need its contact details, and the legal-document check uses its reply-time sentence.
+
+## AI smell (WORD-027, WORD-028, D-452)
+
+AI smell is anything that makes a reader think "a machine wrote this." It costs trust, and trust is the product. Two checks catch it during the build: `scripts/check_ai_smell.py` fails on the words and patterns in `docs/ai_smell.yaml`, and a cold reader reads every new line aloud before hand-in.
+
+**The standard:** would a local person say it out loud to a neighbour? If not, rewrite it.
+
+**What gives it away:**
+- Brochure words: seamless, elevate, effortless, tailored, curated, peace of mind, hassle-free, journey, solution.
+- Polish instead of facts: "We ask what a seasoned pro would ask." Say what happens: "We'll ask a few questions."
+- Slogans in threes: "Text us the job. Local businesses quote. You pick." Write one plain sentence.
+- Set-ups: "Not just X, but Y." "It's not X, it's Y." "The best part:" "Here's the thing." Just say it.
+- Em dashes, exclamation marks, emoji, rhetorical openers ("Need a plumber?").
+- Everything the same length and rhythm. Real people mix short and long sentences.
+- Saying the same reassurance twice on one screen.
+
+**How the cold read works:** the reviewer sees only the finished words (not the task, not the reasoning) and reads them as the homeowner or business owner would. For each line it asks: does this sound like a person? Is anything here a claim we can't back up? Is there a plainer way to say it? Flagged lines are rewritten. When a word or pattern would have caught the line, it is logged in `docs/decisions.md` and added to `docs/ai_smell.yaml`, so the scan catches it next time.
+
+| Before (AI smell) | After |
+|---|---|
+| "Text us the job. Local businesses quote. You pick." | "Get local quotes by text." |
+| "We ask what a seasoned pro would ask, then send your request to local businesses that do the work. Their quotes line up side by side, and you pick one." | "Text us what needs fixing. We'll ask a few questions, send it to local businesses that do that kind of work, and text you when their quotes come in. Then you look them over and pick one." |
+| "Their quotes come in one format, so they line up." | "Each quote lists the same details, so they're easy to compare." |
+| "More trades are coming. Text us any job and we'll tell you right away if we cover it." | "We're adding more. Text us any job and we'll tell you if we cover it." |
