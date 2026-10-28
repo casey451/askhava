@@ -127,7 +127,7 @@ Gate items and other pre-launch requirements:
 
 **Fees.** A fixed, published **introduction fee by job size**, never a percentage, never called a commission; charged at confirmation, not adjusted to the final bill; fallback is a flat-fee-per-job-type switch. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:238`; `BUILD_BRIEF.md:455`)
 
-**Terms.** Homeowners must be 18 or older; no arbitration clause and no class waiver; two-step acceptance ("Reply OK" plus "By choosing, you agree to the Terms"). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:213`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:244`) Business terms state refund triggers exactly as coded (a test checks they match), non-discrimination, and the card authorization. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:212`; `BUILD_BRIEF.md:465`)
+**Terms.** Homeowners must be 18 or older; no arbitration clause and no class waiver; acceptance at the pick only ("By picking, you agree to the Terms"), logged with time, terms version and request ID; texting in is the opt-in to texts, and no reply OK is asked for (Casey's decision D-419 and D-420 replace the source's "Reply OK" step). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:213`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:244`) Business terms state refund triggers exactly as coded (a test checks they match), non-discrimination, and the card authorization. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:212`; `BUILD_BRIEF.md:465`)
 
 **Copy and claims** (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:188`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:197`; `BUILD_BRIEF.md:451`–`BUILD_BRIEF.md:455`):
 - "Ask Hava is not a contractor and does not perform, bid on or supervise work."

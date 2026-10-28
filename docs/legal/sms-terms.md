@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.2 (draft, fix round 13) · October 28, 2026 · Not yet in effect
+Version 0.3 (draft, consent by texting in) · October 28, 2026 · Not yet in effect
 
 # Ask Hava SMS Terms
 
@@ -11,15 +11,19 @@ Ask Hava is a quote-request service; the business the homeowner chooses pays Ask
 
 ## 2. How you agree
 
-Your first message gets our consent text:
+Texting Ask Hava, or starting a chat on askhava.com, is your OK to get automated texts about your own request. You don't need to reply to agree. Our first reply says:
 
-> Ask Hava: Got your message. Ask Hava LLC is a local quote service in Lake Havasu City, not a contractor. We pass your request to local businesses, and you hire the one you choose directly. Free for you; the business you choose pays Ask Hava a set fee of $25 to $199, by quote size. Our texts are automated. Msg frequency varies by request. Msg & data rates may apply. You must be 18 or older. Reply OK to agree to the Terms (askhava.com/terms) and to get automated texts about your request. Privacy: askhava.com/privacy. Reply STOP to opt out, HELP for help.
+> Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy
 
-In Spanish (draft for native-speaker review):
+In Spanish (draft for native-speaker review; sent only once Spanish conversations are switched on):
 
-> Ask Hava: Recibimos su mensaje. Ask Hava LLC es un servicio local de presupuestos, no es contratista. Enviamos su pedido a negocios locales; usted contrata directo al que elija. Gratis para usted; el negocio elegido paga a Ask Hava $25 a $199 por presupuesto. Textos automatizados; la cantidad depende del pedido. Pueden aplicar cargos de mensajes y datos. Mayores de 18. Responda OK para aceptar los Términos (askhava.com/terms) y recibir textos sobre su pedido. Privacidad: askhava.com/privacy. PARAR para salir, AYUDA para ayuda.
+> Ask Hava: Recibido. Ahora, unas preguntas. Ask Hava no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: askhava.com/terms Privacidad: askhava.com/privacy
 
-Replying OK (or yes, sure and similar) agrees to the Terms and to get automated texts about your request. We keep the time, your exact reply and the version of the consent text you saw. If your message mentions danger words, we send an automatic safety reminder first. Don't rely on Ask Hava in an emergency: call 911.
+The next question about your job follows right away. We keep the time of your first message, the channel and the version of the first reply you got. If your message mentions danger words, we send an automatic safety reminder first. Don't rely on Ask Hava in an emergency: call 911.
+
+You accept the Ask Hava Homeowner Terms only when you pick a quote, next to the line "By picking, you agree to the Terms". Free for you; the business you choose pays Ask Hava a set fee of $25 to $199, by quote size.
+
+After your request goes out, we ask once how you want quote updates: by text, by email, or both. Text is the default. Every update links to your private quote page.
 
 You must be 18 or older. Consent is not a condition of buying anything; Ask Hava is free for you, and you can also use askhava.com and email instead of texts.
 

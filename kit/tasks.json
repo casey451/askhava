@@ -1448,8 +1448,8 @@
     {
       "id": "T026",
       "slug": "messaging-templates",
-      "title": "messaging: English and Spanish template registry and template scans",
-      "goal": "messaging: English and Spanish template registry and template scans",
+      "title": "messaging: English and Spanish template registry, the Spanish conversations setting and template scans",
+      "goal": "messaging: English and Spanish template registry, the Spanish conversations setting and template scans",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -1489,11 +1489,13 @@
         "TXT-007",
         "TXT-008",
         "TXT-010",
-        "WORD-008"
+        "WORD-008",
+        "TXT-039"
       ],
       "tests": [
         "TD-TXT-01",
-        "TD-TXT-02"
+        "TD-TXT-02",
+        "TD-TXT-24"
       ],
       "decisions": [
         "D-063",
@@ -1503,7 +1505,8 @@
         "D-193",
         "D-198",
         "D-311",
-        "D-344"
+        "D-344",
+        "D-427"
       ],
       "cites": [],
       "budget": {
@@ -2254,8 +2257,8 @@
     {
       "id": "T038",
       "slug": "intake-consent",
-      "title": "intake: consent first on every path, accepted replies, records",
-      "goal": "intake: consent first on every path, accepted replies, records",
+      "title": "intake: consent by the first text on every path, the first reply, records",
+      "goal": "intake: consent by the first text on every path, the first reply, records",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -2333,7 +2336,9 @@
         "D-366",
         "D-371",
         "D-384",
-        "D-398"
+        "D-398",
+        "D-419",
+        "D-420"
       ],
       "cites": [],
       "budget": {
@@ -2948,8 +2953,8 @@
     {
       "id": "T047",
       "slug": "quotes-homeowner-texts",
-      "title": "quotes: first-quote text, update texts at most every 3 hours, email offer",
-      "goal": "quotes: first-quote text, update texts at most every 3 hours, email offer",
+      "title": "quotes: first-quote text, update texts at most every 3 hours",
+      "goal": "quotes: first-quote text, update texts at most every 3 hours",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -2978,7 +2983,6 @@
       "requirements": [
         "TXT-016",
         "TXT-017",
-        "TXT-018",
         "TXT-027",
         "TXT-031",
         "TXT-032",
@@ -3014,7 +3018,8 @@
         "D-358",
         "D-368",
         "D-397",
-        "D-406"
+        "D-406",
+        "D-420"
       ],
       "cites": [],
       "budget": {
@@ -3523,7 +3528,9 @@
         "D-368",
         "D-356",
         "D-365",
-        "D-375"
+        "D-375",
+        "D-420",
+        "D-421"
       ],
       "cites": [],
       "budget": {
@@ -6511,7 +6518,8 @@
         "D-359",
         "D-366",
         "D-365",
-        "D-363"
+        "D-363",
+        "D-420"
       ],
       "cites": [],
       "budget": {
@@ -7115,8 +7123,8 @@
     {
       "id": "T103",
       "slug": "site-web-chat",
-      "title": "site: web chat with the consent text first, number typed there gets consent first",
-      "goal": "site: web chat with the consent text first, number typed there gets consent first",
+      "title": "site: web chat with the consent text first, starting the chat is the opt-in, a typed number verified by code first",
+      "goal": "site: web chat with the consent text first, starting the chat is the opt-in, a typed number verified by code first",
       "type": "build",
       "phase": 1,
       "stage": "5",
@@ -7153,7 +7161,8 @@
       ],
       "decisions": [
         "D-051",
-        "D-132"
+        "D-132",
+        "D-419"
       ],
       "cites": [],
       "budget": {
@@ -7741,7 +7750,11 @@
         "D-368",
         "D-375",
         "D-378",
-        "D-389"
+        "D-389",
+        "D-419",
+        "D-420",
+        "D-421",
+        "D-427"
       ],
       "cites": [],
       "budget": {
@@ -7828,7 +7841,11 @@
         "D-356",
         "D-373",
         "D-377",
-        "D-378"
+        "D-378",
+        "D-419",
+        "D-420",
+        "D-421",
+        "D-427"
       ],
       "cites": [],
       "budget": {
@@ -7895,7 +7912,8 @@
         "D-304",
         "D-305",
         "D-315",
-        "D-356"
+        "D-356",
+        "D-419"
       ],
       "cites": [],
       "budget": {
@@ -9771,8 +9789,8 @@
     {
       "id": "T156",
       "slug": "intake-question-bank",
-      "title": "intake: ask the question bank's set one question at a time, routing confidence with the trade and job-type questions and \"Job type not certain\", the summary-and-confirm text, and the trade safety prompts",
-      "goal": "intake: ask the question bank's set one question at a time, routing confidence with the trade and job-type questions and \"Job type not certain\", the summary-and-confirm text, and the trade safety prompts",
+      "title": "intake: ask the question bank's set one question at a time, routing confidence with the trade and job-type questions and \"Job type not certain\", the summary text, the text-email-or-both updates question, and the trade safety prompts",
+      "goal": "intake: ask the question bank's set one question at a time, routing confidence with the trade and job-type questions and \"Job type not certain\", the summary text, the text-email-or-both updates question, and the trade safety prompts",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -9802,24 +9820,29 @@
         "docs/spec/ai.md",
         "docs/spec/job-cards.md",
         "docs/catalog/question_bank.yaml",
-        "docs/catalog/intake_golden.yaml"
+        "docs/catalog/intake_golden.yaml",
+        "docs/spec/messaging.md"
       ],
       "requirements": [
         "INT-039",
         "INT-040",
         "INT-041",
         "INT-042",
-        "CARD-007"
+        "CARD-007",
+        "TXT-018"
       ],
       "tests": [
         "TD-INT-21",
         "TD-INT-22",
         "TD-INT-23",
-        "TD-INT-24"
+        "TD-INT-24",
+        "TD-TXT-23"
       ],
       "decisions": [
         "D-394",
-        "D-395"
+        "D-395",
+        "D-419",
+        "D-422"
       ],
       "cites": [],
       "budget": {
@@ -9882,7 +9905,8 @@
       ],
       "decisions": [
         "D-400",
-        "D-401"
+        "D-401",
+        "D-420"
       ],
       "cites": [],
       "budget": {
@@ -10115,19 +10139,22 @@
         "WORD-024",
         "WORD-025",
         "CON-031",
-        "WEB-021"
+        "WEB-021",
+        "CON-004"
       ],
       "tests": [
         "TD-WORD-08",
         "TD-WORD-09",
         "TD-CON-23",
-        "TD-WEB-10"
+        "TD-WEB-10",
+        "TD-CON-24"
       ],
       "decisions": [
         "D-398",
         "D-406",
         "D-407",
-        "D-409"
+        "D-409",
+        "D-419"
       ],
       "cites": [],
       "budget": {

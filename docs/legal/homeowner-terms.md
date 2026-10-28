@@ -1,11 +1,9 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.1 (draft) · October 28, 2026 · Not yet in effect
+Version 0.2 (draft, consent by texting in) · October 28, 2026 · Not yet in effect
 
 # Ask Hava Homeowner Terms
 
 These terms are between you and Ask Hava LLC, a Lake Havasu City business ("Ask Hava", "we", "us"). They cover your use of Ask Hava by text, on askhava.com and on your quote page.
-
-**The short version (shown beside the choose button):** Free for you. You hire the business directly, and Ask Hava isn't part of that agreement. Ask Hava's liability to you is limited to $100, except for gross negligence or intentional misconduct.
 
 ## 1. What Ask Hava is
 
@@ -54,11 +52,11 @@ Ask Hava is not an emergency service and does not watch messages around the cloc
 
 ## 7. Texts and emails
 
-Our texts are automated. When you reply OK to our first text, you agree to these terms and to get automated texts about your request. Message frequency varies by request. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time. You can also opt out by emailing help@askhava.com, using the help form, or switching texts off on your quote page. The details are in the Ask Hava SMS Terms.
+Our texts are automated. When you text Ask Hava or start a chat on askhava.com, you agree to get automated texts about your own request; you don't need to reply to agree. After your request goes out, we ask once whether you want quote updates by text, email or both; text is the default, and every update links to your private quote page. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time. You can also opt out by emailing help@askhava.com, using the help form, or switching texts off on your quote page. The details are in the Ask Hava SMS Terms.
 
 ## 8. Electronic signatures
 
-Replying OK to our first text, and choosing a quote after the "By choosing, you agree to the Terms" line, are electronic signatures with the same effect as signing on paper, under the Arizona Electronic Transactions Act (A.R.S. 44-7007) and the federal E-SIGN Act. We keep a record of the terms version you accepted and when.
+You accept these terms when you pick a quote: next to the Pick button the page says "By picking, you agree to the Terms", with a link to them. Picking a quote after that line is an electronic signature with the same effect as signing on paper, under the Arizona Electronic Transactions Act (A.R.S. 44-7007) and the federal E-SIGN Act. We keep a record of the terms version you accepted, when, and for which request.
 
 ## 9. No warranties
 
@@ -66,7 +64,7 @@ Ask Hava gives no warranty of any kind. The service is provided as it is. We don
 
 ## 10. Limit of liability
 
-To the extent the law allows, Ask Hava's total liability to you for any claim about the service is limited to $100. This limit does not apply to gross negligence, intentional misconduct, or anything the law does not allow us to limit.
+**Limit of liability.** To the extent the law allows, Ask Hava's total liability to you for any claim about the service is limited to $100. This limit does not apply to gross negligence, intentional misconduct, or anything the law does not allow us to limit.
 
 Nothing in these terms releases or waives any claim for personal injury.
 
