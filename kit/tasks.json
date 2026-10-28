@@ -7659,7 +7659,8 @@
         "docs/spec/terms.md",
         "docs/test-design.md",
         "docs/spec/fees.md",
-        "docs/spec/businesses.md"
+        "docs/spec/businesses.md",
+        "docs/legal/README.md"
       ],
       "requirements": [
         "TERMS-001",
@@ -7683,13 +7684,15 @@
         "FEE-002",
         "FEE-006",
         "BIZ-030",
-        "TERMS-027"
+        "TERMS-027",
+        "TERMS-028"
       ],
       "tests": [
         "TD-TERMS-01",
         "TD-WEB-03",
         "TD-TERMS-03",
-        "TD-TERMS-05"
+        "TD-TERMS-05",
+        "TD-TERMS-06"
       ],
       "decisions": [
         "D-047",
@@ -7708,7 +7711,8 @@
         "D-357",
         "D-368",
         "D-375",
-        "D-378"
+        "D-378",
+        "D-389"
       ],
       "cites": [],
       "budget": {

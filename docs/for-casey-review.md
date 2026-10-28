@@ -940,3 +940,23 @@ Your words, 10:14: "Go ahead and fix everything that needs to be fixed. Just don
 
 - Whether the "send a sample pick" test with Do Not Disturb on actually makes picks reach businesses at the counter or on a job.
 - Whether homeowners read "a set fee of $25 to $199, by quote size" as reassuring or off-putting.
+
+## Legal document drafts, October 28, 2026
+
+Status report item 13: the documents are drafted, in `docs/legal/` (D-389). Each starts with "Draft prepared with AI research; not reviewed by a lawyer." None is published.
+
+- **Homeowner terms** (`homeowner-terms.md`): what Ask Hava is, how it works, your agreement is with the business, what we check, not an emergency service, electronic signatures, no warranties, the $100 limit, Arizona law and Mohave County courts with small claims. The arbitration section is there but marked **OPTIONAL and OFF**, with Memo 4's safeguards, for your decision.
+- **Business terms** (`business-terms.md`): independence and the fixed introduction fee (TERMS-026), joining, quotes, picks and Confirm, the fee schedule, the card authorization for the one-step Confirm and pay, every refund rule as coded, the homeowner's details as part of the introduction (never a "license" or "data access"), no passing the job or details to another business, non-discrimination, indemnity, complaints and pauses.
+- **Privacy policy** (`privacy-policy.md`): who sees what and when (a table), the AI wording for now and for later, retention, opt-outs by every channel, breach notice by email or text, no sale of lists, phone numbers or texting consent.
+- **SMS terms** (`sms-terms.md`), **business email notice terms** (`business-email-notices.md`) and the **accessibility statement** (`accessibility-statement.md`).
+- **Written information security program** and **incident response plan** (internal; the "GLBA-light" paperwork Memo 2 recommends).
+
+A new check (`scripts/check_legal_docs.py`) fails the build if a draft's key promises stop matching the spec word for word, or if any banned wording appears.
+
+**For you (D-390)**
+
+1. Read the eight drafts.
+2. Fill in the bracketed items: the LLC mailing address (P.O. box or registered agent), the effective date, and the business data retention days.
+3. Decide arbitration: turn the optional section on (a spec change to TERMS-002) or delete it.
+4. Spanish versions come after the English is settled, then native-speaker review.
+5. Publishing waits for your go.
