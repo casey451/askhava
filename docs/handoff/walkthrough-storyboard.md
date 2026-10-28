@@ -424,7 +424,9 @@
 
 ### Slide 28: After confirming
 
-**Release email [paraphrase; two lines exact]:**
+**Release email [exact]:** "Ask Hava: Job 4821 is confirmed. Sign in to see the homeowner's details." No name or address in the email (D-454).
+
+**Release view in the portal, after sign-in [paraphrase; two lines exact]:**
 > Job 4821 is confirmed. Homeowner: Maria, 100 Sample St, Lake Havasu City. Contact: call through (928) 555-0100. Window: any time 8 a.m. to 8 p.m. Arizona time. "Call only inside the homeowner's window." "Tip: on your first call, ask which number to text."
 
 - Never the homeowner's real phone number. Never by text.

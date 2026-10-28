@@ -1053,3 +1053,15 @@ You chose Rust for the whole server, with the server building the pages. What ch
 - **Checked here:** a trial Rust project with the chosen versions built cleanly. It blocked a planted script on a page, refused to compile a faked payment proof, and applied a database update added later even when it carried a lower number.
 
 Every build task's files were re-pointed to the Rust layout, and three new tasks were added (169 in total): the fake services answering over the network, the Rust test folders, and the automatic checks for Rust and the browser tests. An independent reviewer checked the whole change, and every problem it found was fixed. Nothing for you to do.
+
+## Customer details encrypted end to end (D-454, October 28)
+
+You asked for customer details to be encrypted on the way to the business and everywhere we keep them. Most of that was already in the plan: every name, phone number, email and address sits in a locked vault, encrypted field by field; every read is logged; backups are encrypted; business sign-in is per person with a code on a new device. What changed:
+- **No details in email any more.** The business you're picked by gets "Job 1042 is confirmed. Sign in to see the homeowner's details." The name and address appear only after they sign in to their Ask Hava account. Email isn't encrypted end to end and gets forwarded, so the details stay off it.
+- **Photos encrypted before they're stored.** The storage bucket only ever holds scrambled photos, and the app hands each one out itself, behind a short-lived link.
+- **Pages with details aren't saved** by phones or browsers, and carry no outside scripts. No web address, email, text or alert ever carries a homeowner's details.
+- **The privacy policy says it plainly:** texts and ordinary email aren't encrypted end to end, so share sensitive details on askhava.com.
+
+At the account checkpoint you'll confirm two things: the host encrypts the database and its backups (Render says so; Railway needs a written yes), and the Claude account has zero data retention switched on. An outside key service (AWS or Google, about $1 a month for the key) is an option to decide there, together with Railway or Render. It isn't needed to launch.
+
+One thing this can't do: a deleted job's details stay inside encrypted backups until those backups expire. The privacy policy already allows for that. Nothing for you to do now.
