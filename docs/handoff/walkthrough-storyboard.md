@@ -24,7 +24,7 @@
 - A homeowner texts once. Local businesses quote in their own words. The homeowner sees every quote, unranked, and picks one.
 - The picked business pays $25, $75 or $199 by job size. Homeowners pay nothing.
 - **The standard statement [exact]:** "Ask Hava is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly."
-- Pilot: 6 trades (heating and cooling, electrical, handyman, pool and spa repair, weekly pool cleaning, pest control), 8–12 businesses, 8–12 weeks.
+- Pilot: every enabled service category open (D-459), marketing pushing one or two seasonal trades at a time, after a 4 to 6 week hand-run test (D-455).
 
 **Speaker notes:** One-sentence description is WORD-023 (D-377). Statement is WORD-002 (D-356). Fees FEE-001, FEE-009. Pilot trades LIC-046 and `docs/catalog/categories.yaml` `launch_open: true` (confirmed D-418). Pilot shape is PREBUILD section 7. No calls to businesses ever (BIZ-039). Plumbing is NOT a pilot trade, so burst pipes and water-heater jobs get a safety text where needed and then "not covered yet" (INT-017).
 
@@ -114,11 +114,11 @@
 ### Slide 8: "Here's what we'll send"
 
 **Screen [exact template, example values]:**
-> **Ask Hava:** Ask Hava: Here's what we'll send for request 4821: heating and cooling, Central AC with an outside unit, Not cooling, 10 to 15 years. It goes out in 2 hours. Reply EDIT to change it, or SEND to send it now.
+> **Ask Hava:** Ask Hava: Here's what we'll send for request 4821: heating and cooling, Central AC with an outside unit, Not cooling, 10 to 15 years. It goes out in 30 minutes. Reply EDIT to change it, or SEND to send it now.
 > **Maria:** SEND
 
 - EDIT asks which answer to change, then shows a new summary. SEND, OK or YES sends at once.
-- No reply in 2 hours: it goes out as summarized. Nothing waits on her.
+- No reply in 30 minutes: it goes out as summarized. Nothing waits on her (D-460).
 - Skipped on an emergency job (speed first).
 - **Note:** the summary shows the trade and up to 3 answers. Businesses actually get more (her own words, timing, all card answers, the heat flag). See gap G3.
 
@@ -128,12 +128,8 @@
 
 **Screen (1:53 p.m.):**
 > **Ask Hava [exact template]:** Ask Hava: Your request went to 4 local businesses that take heating and cooling jobs. Not every business answers. Quotes are open until 1:53 p.m. Wednesday, Arizona time. We'll text you when the first one comes in. You can choose as soon as the first quote arrives. If it can't wait, it's fine to call a company you know too. Businesses get requests by email, so the first quote can take a few hours.
-> **Ask Hava [exact]:** Ask Hava: How should we send quote updates? 1) Text 2) Email 3) Both. Every update links to your private quote page.
-> **Maria:** 3
-> **Ask Hava [exact]:** Ask Hava: What email should we use? We never share it with businesses.
-> **Maria:** maria@example.com
 
-- No answer means text. Asked once, never again.
+- No question about how to get updates: they come by text. Her quote page offers "Get updates by email instead" and "Get updates by text and email"; choosing one asks "What email should we use? We never share it with businesses." (D-460).
 - With email only, safety texts, codes and direct replies still come by text.
 - Each update email has an unsubscribe link. A bounced address switches her back to text.
 - "4" counts only businesses whose email was accepted. Each business has 24 hours from its own card to quote.

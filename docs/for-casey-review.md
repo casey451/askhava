@@ -1065,3 +1065,18 @@ You asked for customer details to be encrypted on the way to the business and ev
 At the account checkpoint you'll confirm two things: the host encrypts the database and its backups (Render says so; Railway needs a written yes), and the Claude account has zero data retention switched on. An outside key service (AWS or Google, about $1 a month for the key) is an option to decide there, together with Railway or Render. It isn't needed to launch.
 
 One thing this can't do: a deleted job's details stay inside encrypted backups until those backups expire. The privacy policy already allows for that. Nothing for you to do now.
+
+## Fix round 15: the Hormozi, Martell and Koerner review (D-455 to D-467, October 28)
+
+You said "do what you recommend". What changed:
+- **Prove it by hand first.** Before you reply `approved to build`, run the 4 to 6 week hand-run test in `docs/pilot/hand-run-test.md`: two free web forms, one inbox, one sheet, no fees, no texts. It answers whether homeowners send jobs, whether businesses quote by email, and whether a picked business says the introduction was worth the fee. The build stays held at Gate P until then.
+- **All service businesses open,** as you asked. Posts push one or two trades that fit the season, so those get several quotes a job.
+- **Recruiting is mostly self-serve:** your own hand-written Facebook group posts, each saying you run Ask Hava, plus a few visits. Still no texts or calls to businesses.
+- **The scorecard counts what matters for the goal:** requests a week, where people came from, paid introductions against 15, 50 and 115 a month, what's left from each fee, where intake loses people, and your recruiting minutes. About 50 paid introductions a month is the $20,000 a year pace in Havasu; $50,000 needs Bullhead City and Kingman too.
+- **Faster and shorter for homeowners:** the town is asked right after the coverage line, the card goes out after 30 minutes instead of 2 hours, the "text, email or both" question is gone, and one text says when all the quotes are in.
+- **Better first days for businesses:** open jobs on the welcome screen, the sample pick test at their first real card, a reason asked when they leave.
+- **Fees:** amounts stay $25, $75 and $199 for now; the test asks whether $25 or $35 would have been worth it. Early joiners are locked for 6 months instead of 12. Ask Hava may refund any charge at its own choice.
+- **Proof:** homeowners can tick a box to let their words show on askhava.com; the home page shows real numbers once 20 requests have gone out.
+- **Cut:** the AI receptionist plan and the Ruby answering service. Fixed costs stay near $150 a month or less.
+
+Held for one re-plan pass after the test, so the plan changes once on real numbers: the scope cut (team members, the monthly fee limit, the live license lookup, the full restore replay, the switched-off features) and the fee level. Your before-build list is `docs/PREBUILD.md` section 3.

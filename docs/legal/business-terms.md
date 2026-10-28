@@ -11,7 +11,7 @@ Ask Hava is not a contractor. It passes along this request and the homeowner's c
 
 Ask Hava is a quote-request service; the business the homeowner chooses pays Ask Hava a set introduction fee.
 
-Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedules, supervises, inspects, warrants or pays for your work, never sets or changes your prices, and never negotiates for you or the homeowner. There is no subcontract, employment, agency, partnership or joint venture between you and Ask Hava. You and the homeowner make your own agreement, and Ask Hava is not part of it. The introduction fee pays only for the introduction service: a fixed amount by job size ($25, $75 or $199), never a percentage or share of the job's price, and it doesn't depend on whether the work is done, finished or paid for. The only refunds are the ones these terms list.
+Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedules, supervises, inspects, warrants or pays for your work, never sets or changes your prices, and never negotiates for you or the homeowner. There is no subcontract, employment, agency, partnership or joint venture between you and Ask Hava. You and the homeowner make your own agreement, and Ask Hava is not part of it. The introduction fee pays only for the introduction service: a fixed amount by job size ($25, $75 or $199), never a percentage or share of the job's price, and it doesn't depend on whether the work is done, finished or paid for. The refunds are the ones these terms list, and Ask Hava may also refund any charge at its own choice. No refund is owed because the work wasn't done or paid for.
 
 ## 2. Joining
 
@@ -52,7 +52,7 @@ Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedu
 - **Tax included.** No tax is ever added on top.
 - Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens. One free first win per business.
 - Repeat picks from the same homeowner are free for 180 days after the job closes.
-- **Price lock:** a business that joined in the first 90 days after launch pays no more than the fee amounts in effect on its join date for 12 months. After that, fees follow the published schedule, and a change needs your OK first. A new fee never applies until you accept it.
+- **Price lock:** a business that joined in the first 90 days after launch pays no more than the fee amounts in effect on its join date for 6 months. After that, fees follow the published schedule, and a change needs your OK first. A new fee never applies until you accept it.
 - **Monthly fee limit:** you may set one. A Confirm that would go over it is not charged, and that pick ends.
 
 ## 6. Card and charge authorization

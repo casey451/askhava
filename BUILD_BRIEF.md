@@ -524,7 +524,7 @@ All configuration comes from environment variables validated at startup. The app
 
 - `docs/owner-guide.md`: a plain-English guide to how everything works and the daily and weekly checks.
 - `docs/runbook.md`: outages, safe mode, refunds, disputes, complaints, STOP issues, the restore procedure and the incident and breach steps.
-- How to change prices, add or switch off a category, and turn web-and-email mode on or off.
+- How to change prices, add or switch off a category, and turn web-and-email mode on or off; and `docs/changing-the-live-service.md`, one page on how a fix reaches the live Rust service with no programmer (a Claude Code session on the repository, its pull request and plain summary, Ci, Twin and Ally green, merge, then Deploy on the host), noting that a Claude plan is a standing cost for this (D-467).
 - Restore drill results; the final audit report; test results; the accessibility conformance notes and statement.
 - `docs/account-checklist.md`, with Gate C's live-key checklist.
 
