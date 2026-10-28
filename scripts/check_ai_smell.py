@@ -29,7 +29,7 @@ ROW = re.compile(r"^- \*\*([A-Z0-9]+-\d+)\*\* (.*)$")
 QUOTED = re.compile(r"\"([^\"\n]{3,})\"|“([^”\n]{3,})”")
 TAG = re.compile(r"<[^>]+>")
 BLOCK = re.compile(r"<(style|script)\b.*?</\1>", re.S | re.I)
-APP_GLOBS = ("app/**/templates/**/*", "app/**/*.txt", "app/**/messages/*.yaml", "app/**/*.css")
+APP_GLOBS = ("app/**/templates/**/*", "app/**/*.txt", "app/**/messages/*.yaml", "app/**/*.css", "app/**/*.ts")
 MARKUP = (".html", ".css", ".j2", ".jinja")
 
 

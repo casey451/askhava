@@ -99,14 +99,43 @@ SENSITIVE_PREFIXES = {
     "app/recovery/": "recovery",
 }
 FORBIDDEN = ("sources/",)
+# Crate manifests are shared: a module or test crate gains a path dependency when a later task needs it (D-453).
+CRATE_MODULES = (
+    "core",
+    "ops",
+    "adapters",
+    "catalog",
+    "privacy",
+    "ai",
+    "messaging",
+    "payments",
+    "licensing",
+    "businesses",
+    "jobs",
+    "calls",
+    "quotes",
+    "picks",
+    "intake",
+    "recovery",
+    "portals",
+    "site",
+    "server",
+)
+TEST_CRATES = ("unit", "property", "integration", "security", "recovery", "fixtures")
 ALLOWED_SHARED = frozenset(
     {
         "docs/architecture.md",
         "docs/decisions.md",
         "docs/for-casey-review.md",
         "app/server/src/main.rs",
+        "Cargo.toml",
         "Cargo.lock",
+        ".sqlx/",
+        "package.json",
+        "package-lock.json",
     }
+    | {f"app/{m}/Cargo.toml" for m in CRATE_MODULES}
+    | {f"tests/{layer}/Cargo.toml" for layer in TEST_CRATES}
 )
 JOURNEYS = ("J1", "J2", "J3", "J4")
 GATE_KINDS = (

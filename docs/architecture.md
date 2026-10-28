@@ -41,33 +41,46 @@ Both binaries are built from one Cargo workspace into one Docker image (`BUILD_B
 ```
 Cargo.toml           the workspace: members "app/*" and the Rust test-layer crates; every approved crate and its exact
                      version under [workspace.dependencies]; lints (unsafe_code forbid, clippy) under [workspace.lints]
-Cargo.lock           committed; the only file every task may change besides the shared docs (D-453)
+Cargo.lock           committed
+.sqlx/               offline query data from `cargo sqlx prepare --workspace`, committed; `Ci` builds with SQLX_OFFLINE
 rust-toolchain.toml  the pinned Rust release (section 11)
+clippy.toml          too-many-lines-threshold = 50, excessive-nesting-threshold
 deny.toml            cargo-deny policy: license allow-list, crates.io only, banned crates (SEC-021)
 app/
   server/            composition root (a crate that depends on every module)
     src/main.rs      builds the Axum router, registers routes and task handlers (the shared composition file)
     src/bin/worker.rs        worker entry point
-    src/bin/rules_bridge.rs  JSON-in, JSON-out door to the rules for the twin (T074); test builds only
+    src/bin/rules_bridge.rs  JSON-in, JSON-out door to the rules for the twin (T074); behind the server crate's
+                     `rules-bridge` feature (`required-features`), never in the production image
   core/              shared kernel (section 5); not a business module
   <module>/          one crate per module in section 3
     Cargo.toml       depends only on the lower crates section 4 allows (the compiler refuses anything else)
     src/lib.rs       `automod::dir!("src")` declares every file, so a task adds a file without editing lib.rs;
-                     re-exports `api` as the crate's public surface
+                     re-exports `api` as the crate's public surface; under the crate's `testing` feature the same
+                     macro declares every module `pub`, so the test crates reach `rules` and the rest, and no
+                     production crate may enable `testing` (the architecture test checks it, SEC-029)
     src/api.rs       the module's public functions and types; everything else is `pub(crate)`
     src/models.rs    row types and SQLx queries, all in the module's own Postgres schema
     src/rules.rs     pure decision logic (no I/O), the main target of unit and property tests
     src/service.rs   orchestration: transactions, calls to lower crates' api, audit rows
     src/handlers.rs  task handlers registered in main.rs (timers and events)
     src/routes.rs    HTTP routes, only in crates that own a web surface (portals, site, webhooks)
-    templates/       Askama templates (checked when the crate compiles)
-    static/          CSS, fonts, images and `.ts` sources compiled by `tsc --strict` to plain JS
+    templates/       Askama templates (checked when the crate compiles); all customer-facing words live in
+                     templates and message files, never in `.rs` string literals, so the AI-smell scan sees them.
+                     The `.vcf` contact card is not Askama: one function escapes each field per RFC 6350
+                     (backslash, comma, semicolon, newline) before it is written
+    static/          CSS, fonts, images and `.ts` sources; `npm run build` (tsc) writes the `.js` beside each
+                     source in the Docker build stage (T169); the generated `.js` is not committed
 migrations/          SQL files `0NNN_<slug>.sql`, NNN the task number, forward-only, each tested; SQLx applies
-                     any not yet applied in number order, including a lower number added later (checked, D-453)
+                     any not yet applied in number order, including a lower number added later (checked, D-453).
+                     On a fresh database the files run in number order, not task order; that is safe only
+                     because no migration refers to another module's schema (section 4, rule 3)
 stand_ins/           Python fakes of Twilio, Stripe, Resend, Lob and the AI, served over HTTP by `stand_ins/server.py`
                      at the vendors' URL shapes, so the Rust adapters use the same client code everywhere (SEC-032)
-tests/               Rust layers unit, property, integration, security, recovery: one test crate each, files in
-                     tests/<layer>/tests/; Playwright in TypeScript for e2e and a11y; pytest for docs and contract
+tests/               Rust layers unit, property, integration, security, recovery: one test crate each (T168, and
+                     integration in T009), files in tests/<layer>/tests/, compile-fail cases with their expected
+                     `.stderr` in tests/security/ui/; `tests/fixtures` (T010) is the fake-data crate; Playwright in
+                     TypeScript for e2e and a11y; pytest for docs and contract
 twin/                the twin (Python) and its hard-failing gate, calling the Rust rules through rules_bridge
 ```
 
@@ -119,7 +132,7 @@ Twelve v9.3 record types map onto these tables (`sources/01_spec/Havasu_Home_Quo
 2. **Events go up, calls go down.** When a lower module must tell a higher one something (Stripe says a charge succeeded; an inbound text arrives; a license lapses; an alert is raised), it enqueues a `core.task` with an event kind and IDs only, never personal details. `app/server/src/main.rs` registers which module's handler runs for each kind. No module imports a higher one.
 3. **Tables.** Every query and migration names its own module's schema. The architecture test (T009, SEC-029) reads every crate's `Cargo.toml` and every migration and fails on a dependency not allowed by the layer table, any cross-schema foreign key, and any query that names another module's schema; SQLx checks each query against the schema when it compiles.
 4. **Money** moves only through `payments` (FEE-032). **Vault plaintext** comes only from `privacy::api` and only to the readers in section 8. **Release needs proof:** the function that reads contact fields for a release takes a `ReleaseProof`, a type with private fields that only `payments` creates, from a signature-checked Stripe event for a succeeded charge or from a fee decision of no fee due; code anywhere else cannot build one, and a compile-fail test proves it (SEC-030).
-5. **Statuses are enums.** Job, pick, quote, charge and consent statuses are Rust enums; every `match` on them names every status (clippy `wildcard_enum_match_arm` is denied), so a new status does not build until every place handles it (SEC-031).
+5. **Statuses are enums.** Job, pick, quote, charge and consent statuses are Rust enums; every `match` on them names every status: the modules that act on statuses deny clippy `wildcard_enum_match_arm` (not the whole workspace, since `Option` and foreign non-exhaustive enums need a wildcard arm), and a source scan fails on `_ =>`, `matches!` or `if let` on a status enum outside its own helpers, so a new status does not build until every place handles it (SEC-031).
 6. **Invariants** (`BUILD_BRIEF.md:148`–`BUILD_BRIEF.md:152`): every outside action carries an idempotency key derived from what it identifies (SEC-018); every state change writes an audit row through `ops.api.audit()` in the same transaction (JOB-005); no homeowner contact detail leaves the vault except on a confirmed, paid pick (PRIV-005); the ledger always reconciles to Stripe (FEE-029, FEE-030).
 
 ## 5. Shared kernel (`core`)
@@ -273,7 +286,7 @@ Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_s
 | secrecy / zeroize | 0.10.3 / 1.9.1 | Apache-2.0 OR MIT | Secrets kept out of `Debug` and zeroed on drop |
 | uuid | 1.28.0 (2026-10-10) | Apache-2.0 OR MIT | Row IDs; 1.29.0 is past the cutoff |
 | jiff (`tzdb-bundle-always`) | 0.2.38 (2026-10-06) | Unlicense OR MIT | Arizona time and area-code time zones for quiet hours, with the zone data built in |
-| image (`jpeg`, `png`, `webp`) | 0.25.10 (2026-03-10) | MIT OR Apache-2.0 | Photo re-encoding with metadata removed (PRIV-014) |
+| image (`jpeg`, `png`, `webp`) | 0.25.10 (2026-03-10) | MIT OR Apache-2.0 | Photo re-encoding with metadata removed (PRIV-014). It cannot decode HEIC, which TD-PRIV-08 needs: T090 picks a HEIC decoder under the new-library rule (logged with its license and audit result) |
 | tracing / tracing-subscriber (`json`, `env-filter`) | 0.1.44 / 0.3.23 | MIT | Structured logs with redaction |
 | sentry (`rustls`, `reqwest`, `tracing`, `panic`, `backtrace`) | 0.49.3 (2026-09-21) | MIT | Error reports with PII off |
 | thiserror / base64 / automod | 2.0.21 / 0.23.1 / 1.0.17 | MIT OR Apache-2.0 | Error types; encoding; per-crate file declarations |
@@ -303,7 +316,7 @@ No Web Push crate is pinned: the installable business app with push is a later, 
 ## 12. Keeping this file true
 
 - A new module, table, cross-module call, status, timeout, adapter or pinned version changes this file in the same PR, with a `docs/decisions.md` entry when it is a choice (`BUILD_BRIEF.md:489`).
-- **Build order and file ownership** live in `kit/tasks.json` (K6): each build task names the module and the files it owns (`app/<module>/src/…`, its own `migrations/0NNN_<slug>.sql`, its own test files), and `python3 scripts/validate_tasks.py` fails if two tasks that can run in either order own the same file, or if a non-`harness` task owns a protected path (D-111, D-118). `app/server/src/main.rs`, `Cargo.lock`, this file, `docs/decisions.md` and `docs/for-casey-review.md` are the only shared files (D-453). The first task of each module creates its crate's `Cargo.toml` and `src/lib.rs` with every dependency the layer table allows; a later task that needs another approved crate logs it, and the stage's cleanup task adds it. Stage 2 builds layers 0 to 7 far enough for job cards, the quote page and the pick (including the license imports and business records that matching reads); later stages add to each module's own files in dependency order (D-112).
+- **Build order and file ownership** live in `kit/tasks.json` (K6): each build task names the module and the files it owns (`app/<module>/src/…`, its own `migrations/0NNN_<slug>.sql`, its own test files), and `python3 scripts/validate_tasks.py` fails if two tasks that can run in either order own the same file, or if a non-`harness` task owns a protected path (D-111, D-118). The shared files are this file, `docs/decisions.md`, `docs/for-casey-review.md`, `app/server/src/main.rs`, the workspace `Cargo.toml`, `Cargo.lock`, `.sqlx/`, `package.json`, `package-lock.json` and every crate's `Cargo.toml` (D-453): a crate can only list a path dependency once that crate exists, so the task that first needs `picks` to call `payments`, or the server or a test crate to use a new module, adds that line. A new outside crate still needs its decision entry and must be in the workspace table. The first task of each module creates its crate's `Cargo.toml` and `src/lib.rs`. Stage 2 builds layers 0 to 7 far enough for job cards, the quote page and the pick (including the license imports and business records that matching reads); later stages add to each module's own files in dependency order (D-112).
 - A new library needs a decisions entry with purpose, license and a cargo-audit (or npm audit) result, and must pass cargo-deny (`BUILD_BRIEF.md:122`).
 - The threat model (`docs/threat-model.md`) changes with any new trust boundary or asset.
 - The not-a-contractor phrase list (WORD-022) lives in one place, `NOT_A_CONTRACTOR` in `scripts/trace_spec.py`; the spec check, the catalog check (`scripts/check_catalog.py`) and the app's wording scan (T104) all read it (D-360). It also holds the WORD-023 banned descriptions ("connect you with", "referral network/service", D-377).

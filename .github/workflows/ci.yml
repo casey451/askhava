@@ -11,7 +11,22 @@ jobs:
   ci:
     name: "Ci"
     runs-on: ubuntu-latest
+    # Postgres for the Rust integration tests (D-453); T169 pins the image by digest.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
       GITLEAKS_VERSION: "8.28.0"
       GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
     steps:
@@ -50,7 +65,7 @@ jobs:
       - name: Rust format, lint and tests (once the workspace exists, D-453)
         run: |
           if [ -f Cargo.toml ]; then
-            rustup show active-toolchain
+            rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
             cargo fmt --all --check
             cargo clippy --workspace --all-targets --locked -- -D warnings
             cargo test --workspace --locked
@@ -73,6 +88,7 @@ jobs:
           if [ -f package-lock.json ]; then
             npm ci --ignore-scripts
             npx tsc --noEmit
+            if [ -f eslint.config.js ]; then npx eslint .; fi
             npm audit --audit-level=low
           else
             echo "npm checks skipped: no package-lock.json yet"

@@ -24,7 +24,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | A8 | **Routing and fee integrity**: license rules, eligibility, fee tiers, the 4-month rule, wording | Legal exposure (licensing law, consumer claims) and money | `catalog`, `licensing`, `quotes`, `payments` |
 | A9 | **Audit log** and off-database records | Evidence, replay after restore (OPS-010, OPS-011) | `ops.audit_log`; object storage (D-094) |
 | A10 | **Availability**: texting channel, web app, worker timers, database | Every waiting state depends on timers (JOB-003, JOB-006) | Railway; Twilio |
-| A11 | **Build pipeline**: repository, CI checks, runner state, dependencies | A poisoned build ships to live | GitHub; `claude/kit-state`; `uv.lock` |
+| A11 | **Build pipeline**: repository, CI checks, runner state, dependencies | A poisoned build ships to live | GitHub; `claude/kit-state`; `Cargo.lock` and `package-lock.json` |
 | A12 | **Business and owner email channel**: verified notice addresses, channel preferences, business emails and their signed action links, Casey's alert address (BIZ-036, BIZ-040, OPS-035, D-307, D-309) | A changed or spoofed address diverts picks and the release email; a forwarded link acts for a business; the release email carries a first name and address | `businesses`, `messaging` and `portals` schemas; the email provider (SEC-024, SEC-025) |
 
 ## 3. Actors and trust boundaries
@@ -69,7 +69,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 
 | ID | Threat | Boundary | Mitigations | ASVS | Left over |
 |---|---|---|---|---|---|
-| T1 | SQL injection | TB1, TB2 | SQLx bound parameters only, queries checked against the schema at compile time; every input parsed by serde into a typed struct (SEC-010); no string-built SQL (a clippy-and-grep check in `Ci`, SEC-021) | V1.2, V2.2 | — |
+| T1 | SQL injection | TB1, TB2 | SQLx bound parameters only, queries checked against the schema at compile time; every input parsed by serde into a typed struct (SEC-010); no string-built SQL (the architecture test fails on a `sqlx::query` whose SQL is not a literal, SEC-029) | V1.2, V2.2 | — |
 | T2 | Stored or reflected XSS through homeowner or business text | TB1 | Askama autoescape always on; user text never passed through the `safe` filter (SEC-011); CSP with no inline script, nonces where needed (SEC-012); no third-party scripts (SEC-013) | V1.2, V3.2, V3.4 | — |
 | T3 | Cross-site request forgery on Confirm, pick, refund or switch actions | TB1 | CSRF token on every form; `SameSite=Lax`; cookies `__Host-` prefixed (SEC-009, D-099); review step before money or agreement actions (PICK-017, PICK-021) | V3.3, V3.5 | — |
 | T4 | Prompt injection in homeowner or business text changes routing, fees, wording or claims | TB4 | The AI gets only scrubbed text, has no tools, returns only schema fields; nothing it returns is executed (AI-005, AI-006); keyword rules give a second opinion and gas words override (AI-011, AI-012); fees come from the quote amount by code (FEE-005); the original wording is always shown and a summary adding a claim is rejected (PICK-003, PICK-004); tests prove routing, fees and disclosures don't change (AI-007) | V2.3 | R6 |

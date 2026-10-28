@@ -24,7 +24,7 @@ Files you read (do not change):
 
 ${reads}
 
-Shared paths any task may edit: `docs/architecture.md`, `docs/decisions.md`, `docs/for-casey-review.md`, `app/server/src/main.rs`, `Cargo.lock`.
+Shared paths any task may edit: `docs/architecture.md`, `docs/decisions.md`, `docs/for-casey-review.md`, `app/server/src/main.rs`, the workspace `Cargo.toml` and `Cargo.lock`, every crate's `Cargo.toml` (to add an allowed path dependency or the `testing` feature), `.sqlx/` (offline query data from `cargo sqlx prepare --workspace`), `package.json` and `package-lock.json`.
 
 Size budget: at most ${budget_files} files, ${budget_lines} changed lines, ${budget_context}% of the context window. Keep the pull request small.
 
