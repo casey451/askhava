@@ -99,25 +99,25 @@ Not needed before the build, but before the pilot: talk to 5 to 10 businesses an
 
 | # | Default in the plan | Recommended |
 |---|---|---|
-| B2 | Pilot trades: heating and cooling, electrical, handyman, pool repair, weekly pool cleaning, pest control | Keep |
+| B2 | Pilot trades: heating and cooling, electrical, handyman, pool repair, weekly pool cleaning, pest control | Confirmed by Casey Oct 28 (D-418) |
 | B3 | Pest control on for businesses that attest to a Department license; cards say it isn't independently verified; no letter | Decided by Casey Oct 28 (D-417) |
-| B4 | Home inspections on; no fee for sale, purchase or refinance ones | Keep |
-| B5 | AI may read scrubbed text before a zero-retention agreement, once the provider's terms are recorded and the privacy policy says so; launch works without AI | Keep |
-| B6 | Backup choice on; auto-confirm only after Stripe says yes; push web app built as an optional channel | Keep |
-| B7 | Site-visit quotes pay $25, never more than $75 | Keep |
-| B8 | Fees stay $25 / $75 / $199 for the pilot | Keep |
-| B9 | No arbitration for homeowners in the pilot | Keep |
-| B12 | No owner name online; LLC record link and city license number added once they exist | Keep |
-| B14 | Losing businesses told whether the picked quote was lower, about the same or higher | Keep |
-| B15 | Safety voice call off | Keep |
-| B16 | Short 4-segment consent texts | Keep |
+| B4 | Home inspections on; no fee for sale, purchase or refinance ones | Confirmed by Casey Oct 28 (D-418) |
+| B5 | AI may read scrubbed text before a zero-retention agreement, once the provider's terms are recorded and the privacy policy says so; launch works without AI | Confirmed by Casey Oct 28 (D-418) |
+| B6 | Backup choice on; auto-confirm only after Stripe says yes; push web app built as an optional channel | Confirmed by Casey Oct 28 (D-418) |
+| B7 | Site-visit quotes pay $25, never more than $75 | Confirmed by Casey Oct 28 (D-418) |
+| B8 | Fees stay $25 / $75 / $199 for the pilot | Confirmed by Casey Oct 28 (D-418) |
+| B9 | No arbitration for homeowners in the pilot | Confirmed by Casey Oct 28 (D-418) |
+| B12 | No owner name online; LLC record link and city license number added once they exist | Confirmed by Casey Oct 28 (D-418) |
+| B14 | Losing businesses told whether the picked quote was lower, about the same or higher | Confirmed by Casey Oct 28 (D-418) |
+| B15 | Safety voice call off | Confirmed by Casey Oct 28 (D-418) |
+| B16 | Short 4-segment consent texts | Confirmed by Casey Oct 28 (D-418) |
 
 **Still open (5)**
 
 | # | Decision | Recommended answer |
 |---|---|---|
+| B10 | Sales tax path | Open: ChatGPT researching the tax code (prompt `outputs/ai_prompts/ChatGPT_prompt_sales_tax.md`); no ADOR letter planned. |
 | B1 | Gate P | Approve once fix round 13 is merged and you've read this file. |
-| B10 | Sales tax path | Ask ADOR for a ruling and set aside 7.6% before the first fee. |
 | B11 | Trademark | File "ASK HAVA" in Class 35 right after launch ($350). |
 | B13 | Insurance | Get a tech E&O plus cyber quote; bind before the first paid introduction. |
 | B17 | Spanish | One paid native-speaker review before Spanish goes live. |
