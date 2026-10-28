@@ -6,10 +6,11 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 You've decided not to hire a lawyer, a CPA or an insurance broker for now, to rely on AI research instead, and to accept that risk yourself. So, throughout this file (D-367):
 
-- **Every "ask a lawyer", "TCPA attorney", "CPA" or "trademark attorney" item** now reads "AI legal-research memo (in progress) + your decision". The memos are being written in `/home/claude/hhq/outputs/legal/` (contractor status and consumer law; messaging, privacy and data; business setup, tax and trademark). They are research, not legal advice.
-- **Insurance stays a recommended purchase.** It's cover for when something goes wrong, not advice. Get the quotes in the fix round 8 list (general liability, tech E&O, maybe cyber).
-- **Government filings and registrations stay your actions:** the LLC, the Lake Havasu City business license, a TPT license if it turns out to be needed, a trademark filing if you want one, and the Twilio and Stripe accounts.
-- **Nothing in the spec got looser.** The homeowner safety voice call stays off: its switch still needs a recorded attorney approval (CALL-019). If, after reading the memo, you want it on anyway, ask for that as a spec change.
+- **Every "ask a lawyer", "TCPA attorney", "CPA" or "trademark attorney" item** now reads "AI legal-research memo + your decision". The four memos are finished and are in `/home/claude/hhq/outputs/legal/` (Memo 1 contractor status and consumer law; Memo 2 messaging, privacy and data; Memo 3 business setup, tax and trademark; Memo 4, an attack review of the other three, which wins where they disagree). Older items below still say "(in progress)"; read that as "finished". They are research, not legal advice, and no lawyer checked them.
+- **Fix round 12 (D-371 to D-388) put the memos' must-fix items into the spec.** What's left for you is in the fix round 12 section at the end of this file.
+- **Insurance stays a recommended purchase.** It's cover for when something goes wrong, not advice. Memo 3 and Memo 4 lean to a tech E&O policy with cyber, bound before the first introduction.
+- **Government filings and registrations stay your actions:** the LLC, the Lake Havasu City business license, a TPT license if you choose that path, a trademark filing if you want one, and the Twilio and Stripe accounts.
+- **Nothing in the spec got looser.** The homeowner safety voice call stays off: its switch still needs a recorded attorney approval (CALL-019), and now also Memo 2's six conditions built and tested first (CALL-022). If you want it on under your own recorded decision instead, ask for that as a spec change.
 
 ## Your first item: ask Twilio in writing before registering (October 28, 2026)
 
@@ -877,3 +878,65 @@ Spanish versions are drafts for a native speaker to check.
 - Payments: one "Confirm and pay" button, no background charges, no automatic retries, details released once after the payment succeeds, Stripe's receipt plus ours, and an evidence record for each charge. (D-365)
 - The test for each change is listed in D-368; the build tasks that own them are updated and their prompts regenerated.
 - The professional-services stance is at the top of this file. (D-367)
+
+## From fix round 12 ("Go ahead and fix everything that needs to be fixed"), October 28, 2026
+
+Your words, 10:14: "Go ahead and fix everything that needs to be fixed. Just don't run any simulations right now." No simulation was run. This round put the legal memos' must-fix items into the plan (status report section 5A and Memo 4's "Must change before launch" list). For your own decisions (section 5B), only the cautious defaults went in; everything else is listed below with the memos' leans. The plan is `/home/claude/hhq/outputs/legal/Fix_Round_12_Plan.md`. Decisions D-371 to D-388.
+
+**What changed, in short**
+
+1. **One consent text, one HELP reply, one help page (D-371).** The first text keeps "not a contractor" and now says "the business you choose pays Ask Hava a set fee of $25 to $199, by quote size" (not "a small fee") and "Reply OK to agree to the Terms (askhava.com/terms) and to get automated texts about your request." Every reply-time promise says "usually". The help page no longer says "a real person reviews anything flagged", and the site no longer says "Safety texts go out at any hour"; both now say to call 911 and not to rely on Ask Hava in an emergency. The English first text is 5 text segments; the Spanish one is 13 (accents force the costlier encoding). Budget for it.
+2. **Opt-outs, ready for the FCC rule of November 25, 2026 (D-372).** A "stop" by text, by email, on the help form, with the portal's texts-off switch, or one you record from a call or conversation all go on one stop list at once. The STOP confirmation is a bare confirmation. Twilio's setting that treats "YES" as re-subscribe gets switched off (you do that when you set up Twilio; the checklist says so).
+3. **AI quote summaries are off at launch (D-373).** Homeowners see only the business's own words. The AI is described one way everywhere, and the privacy policy says "No AI reads your messages today" until the zero-retention agreement is signed. Business quote text is scrubbed before any AI call.
+4. **Ask Hava never texts or calls a business to recruit it (D-374).** Arizona's do-not-call law covers texts. Recruit by posts, the website, email and in person. Recruiting emails carry the LLC's postal address and a way to stop them.
+5. **Homeowner terms (D-375):** liability limited to $100, not $0, with exceptions for gross negligence and intentional misconduct, and no release of injury claims. "Reply OK" and the "By choosing" step are electronic signatures under Arizona's electronic-transactions law. The terms line sits right beside the choose button with a three-line summary.
+6. **Pest control is off** until the Arizona Department of Agriculture answers in writing; **home inspections for a sale, purchase or refinance are declined**; **no warranties of any kind (D-376).**
+7. **One honest description everywhere (D-377):** "a quote-request service; the business the homeowner chooses pays Ask Hava a set introduction fee." "Connect you with" and "referral network" now fail the build's wording check.
+8. **The fee is never called a "license" or "data access" (D-378).** It pays for the introduction service. This matters for the sales-tax question.
+9. **Accessibility page:** text, email or the help form, no phone promise (D-379).
+10. **Stronger pick nudges, still no calls (D-380):** a "send a sample pick" test for everyone who can confirm, with Do Not Disturb or Sleep on; a reminder every business hour with the Hold link in each; up to two open-cards emails a day, with a waiting pick first in the subject.
+11. **Email limit (D-381):** you get a phone alert at 70% of the free plan's 100-a-day limit; above 90%, only the non-urgent emails wait until the next day; no email is ever dropped.
+12. **Smaller fixes:** Arizona towns only unless reviewed (D-382); photo location data stripped at upload (D-383); under-18 messages stopped politely (D-385); every email has the LLC postal address and a "Manage email notices" link (D-385); the gas card field now reads "Homeowner says gas company checked" (D-385).
+
+**Your decisions (the spec works without each one; nothing was sent, filed or bought) (D-388)**
+
+1. **Arbitration and class-action waiver for homeowners.** It would shield the one risk insurance usually excludes (texting lawsuits), but "Reply OK" as a contract is untested and mass arbitration can cost more than it saves. **Memo 4's lean:** if you add it, a short, separate disputes line at the pick step, small claims allowed, Ask Hava pays the filing fees, plus a batching clause for mass filings. The draft homeowner terms (next update) will carry it as an optional section, switched off.
+2. **Regulator letters** to the contractor board (ROC), the Department of Agriculture (pest control) and the Department of Revenue (ADOR). **Lean:** yes to the ADOR ruling; the others only if you want certainty. Pest control stays off until the Department of Agriculture answers, so that letter is what would turn it on.
+3. **Sales tax (TPT):** Path A, a free private ruling request to ADOR plus setting aside 7.6% of each fee until it answers, or Path B, a $17 license and filing returns. **Memo 4: do one of them before the first fee, not neither.** Memo 3 leans to Path A.
+4. **Trademark timing and wording:** file "ASK HAVA" in Class 35 now as intent-to-use ($500) or right after launch ($350). **Lean:** after launch unless launch is far off. Pick an ID Manual description without "referral" or "matching" if an accurate one exists (D-377); if none fits, accept that risk knowingly.
+5. **Pilot trades. Lean:** HVAC, electrical, licensed handyman, then pool when it's warm.
+6. **Insurance. Lean:** get at least a quote for tech E&O with cyber, bound before the first introduction; describe the texting and the AI accurately on the application (a wrong answer can void the policy). Assume texting lawsuits are not covered.
+7. **Which outside-employment law covers your job.** Memo 3 assumed an Arizona public employer; Memo 4 says confirm that first, then get written approval either way.
+8. **PICK-026** (telling losing businesses whether the picked quote was lower, about the same or higher): keep as is or drop. Memo 1: never expand it.
+9. **The safety voice call's gate:** keep the attorney approval, or replace it with Memo 2's six conditions plus your own recorded decision. It stays off either way until you ask.
+10. **Email plan upgrade:** buy the paid plan (Resend Pro, about $20 a month when researched; check the price) when the 70% alert starts arriving, before about month 7.
+11. **Optional:** a "call and leave a message" option for homeowners who don't text; keeping the askhava.com seniors page.
+
+**Fix the pitch by hand (D-386).** The pitch isn't in this repository: `/home/claude/hhq/outputs/gtm/Ask_Hava_GoToMarket_Plan_REVIEWED.md`. Exact replacements:
+
+- **Line 159 (the walk-in):** replace "No monthly fee, no bidding wars, nobody can pay to rank higher." with "No monthly fee. You quote once. No bidding rounds, no paid placement." Replace "Your first win is free if you join in the first 90 days after launch. Can I leave this card and check back next week?" with "Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens. Can I add you to the founding list so we can sign you up together in launch week?" Optionally add, before the fee sentence: "Ask Hava is a quote-request service; the business the homeowner chooses pays Ask Hava a set introduction fee."
+- **Line 194 (the card):** replace "- No bidding wars. No paid rankings." with "- You quote once. No bidding rounds, no paid placement." Add a line: "- The homeowner sees every quote and picks one business: you."
+- **Line 195:** replace "- First win free in the first 90 days after launch." with "- Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens."
+- **Line 218 (pest):** keep "Not at launch." and replace the rest with "Ask Hava doesn't take pest control requests until the state Department of Agriculture confirms how its rules apply." (This replaces the round-11 suggestion, which assumed pest operators could sign up; they can't while pest control is off.)
+- **Line 312 (H6):** replace "No paid rankings, no bidding wars." with "No paid rankings, no bidding rounds."
+- **Line 391 (B2):** replace "No bidding wars. No paid rankings." with "You quote once. No bidding rounds, no paid placement."
+- **Never in any post, card or conversation:** "connect you with", "referral", "leads", "vetted", "best", "#1", "top-rated", "exclusive", "concierge", or anything about pest control. And never text or call a business to recruit it (D-374).
+- The other round-11 items (the 4-month line "capped at $75" on lines 129, 177 and 398; the free-win line on lines 180, 234, 235, 416 and 559) still apply.
+
+**Worth a second look**
+
+1. **The consent text is long:** 5 segments in English, 13 in Spanish. Every part is there for a legal reason (D-371). If cost matters later, the first thing to drop would be "Msg frequency varies by request" only if carriers stop requiring it; don't drop anything now.
+2. **"Usually replies within 2 days"** is softer than before. That's deliberate: a promise you can't always keep is the main consumer-fraud risk the memos found. The away setting still changes it automatically.
+3. **Home inspections** now take only general condition checks. Most inspection requests are for a purchase, so this category will be small. Switching it off entirely is the other option; say so if you'd rather.
+4. **Reminders every business hour** mean up to 3 reminder emails per pick. The sim said businesses missed picks because reminders were too few and too quiet; if real businesses find this too much, it's one setting.
+
+**Routine**
+
+- The FCC rule's text and date were checked by the memos against the Federal Register (91 FR 67214, effective November 25, 2026), and that check is now recorded in CON-032 (D-372).
+- The phone steps for Do Not Disturb and Sleep (iPhone VIP alerts, Gmail label notifications) are checked on real phones in T1 before they're written into the app (D-380).
+- New wording checks: "connect you with" and "referral network/service" fail the spec and catalog checks; the catalog check fails if pest control is switched on without a logged written answer, if home inspections take a sale-related job, or if any category mentions a warranty (D-376, D-377).
+
+**New things to test with real people**
+
+- Whether the "send a sample pick" test with Do Not Disturb on actually makes picks reach businesses at the counter or on a job.
+- Whether homeowners read "a set fee of $25 to $199, by quote size" as reassuring or off-putting.

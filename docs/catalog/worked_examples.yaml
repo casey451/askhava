@@ -160,8 +160,8 @@ examples:
     expected: {outcome: charged, fee_basis: "1213.33", fee: 75, waived: 0}
 
   - id: W15
-    description: Quarterly pest service at $125
-    category: pest_control
+    description: Quarterly bin washing at $125 (moved from pest control, off at launch, D-376)
+    category: trash_can_cleaning
     business: qualified
     situation: new_customer
     quote: {type: fixed, amount: "125.00", period: quarterly}

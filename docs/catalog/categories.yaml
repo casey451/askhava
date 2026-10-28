@@ -24,7 +24,7 @@
 #   review            who confirmed the row and what an attorney may still look at.
 
 version: 1
-as_of: "2026-10-27"
+as_of: "2026-10-28"
 reviewed_by: "Claude (K2b self-check); Casey reviews at the end (BUILD_BRIEF.md:536)"
 
 not_offered_at_launch:
@@ -175,7 +175,7 @@ categories:
     job_types: [mowing, trimming, yard cleanup, gravel raking]
     one_time_job_types: [yard cleanup]
     refused:
-      - {job: "pre-emergent or advertised weed control", routed_to: "pest_control", reason: "AZ Dept of Agriculture licensees only (LIC-012)"}
+      - {job: "pre-emergent or advertised weed control", routed_to: "pest_control", reason: "AZ Dept of Agriculture licensees only; pest control is off at launch (LIC-012, D-376)"}
     intake_questions: ["How often would you like service?", "About how big is the yard?"]
     keywords: [yard, landscaping, mowing, trimming, gardener]
     review: "Gardener exemption, A.R.S. 32-1121(A)(16) (changes file :47). Confirmed K2b."
@@ -200,7 +200,8 @@ categories:
   - id: pest_control
     name: Pest control
     group: home systems/repair
-    enabled: true
+    enabled: false
+    off_reason: "Off until the AZ Department of Agriculture answers in writing (LIC-012, D-376)"
     advertised: false
     license: {kind: state_agency, agency: AZ Department of Agriculture (pest management)}
     handyman_allowed: false
@@ -213,7 +214,7 @@ categories:
     refused: []
     intake_questions: ["What pests are you seeing?", "One-time or ongoing service?"]
     keywords: [pest, bugs, scorpion, termite, pre-emergent, weed control]
-    review: "Available but never advertised (changes file 7.1 item 3). License number shown (LIC-012). Confirmed K2b."
+    review: "Off at launch until the AZ Department of Agriculture answers in writing (LIC-012, D-376); never advertised (changes file 7.1 item 3). License number shown once on (LIC-012)."
 
   - id: dog_waste_pickup
     name: Dog waste pickup
@@ -589,11 +590,14 @@ categories:
     recurring: false
     trip_fee_tier: 25
     after_hours_emergency: false
-    job_types: [buyer inspection, pre-listing inspection]
-    refused: []
-    intake_questions: ["About how many square feet?", "Buying or selling?"]
+    job_types: [home condition inspection (no sale or refinance)]
+    refused:
+      - {job: "buyer inspection", routed_to: "none", reason: "inspection tied to a home sale is a RESPA settlement service (LIC-015, D-376)"}
+      - {job: "pre-listing inspection", routed_to: "none", reason: "inspection tied to a home sale is a RESPA settlement service (LIC-015, D-376)"}
+      - {job: "refinance inspection", routed_to: "none", reason: "inspection tied to a refinance is a RESPA settlement service (LIC-015, D-376)"}
+    intake_questions: ["About how many square feet?", "Is this inspection for a home sale, purchase or refinance?"]
     keywords: [home inspection, inspector]
-    review: "Changes file :204 (LIC-015). Confirmed K2b."
+    review: "Changes file :204 (LIC-015). Sale, purchase and refinance inspections declined (D-376). Confirmed K2b."
 
   - id: home_watch
     name: Home watch

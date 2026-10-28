@@ -360,3 +360,46 @@ def test_not_a_contractor_wording_fails(tmp_path: Path, phrase: str) -> None:
     )
     expected = "implies Ask Hava is a contractor (WORD-022)"
     assert any(expected in e for e in errors), errors
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "expected"),
+    [
+        (
+            "    enabled: false\n    off_reason: \"Off until the AZ Department of Agriculture",
+            "    enabled: true\n    off_reason: \"Off until the AZ Department of Agriculture",
+            "pest_control: must stay off",
+        ),
+        (
+            "    job_types: [home condition inspection (no sale or refinance)]",
+            "    job_types: [home condition inspection (no sale or refinance), buyer inspection]",
+            "home_inspection: takes a sale-related inspection",
+        ),
+        (
+            '      - {job: "refinance inspection", routed_to: "none",',
+            '      - {job: "roof inspection", routed_to: "none",',
+            "home_inspection: must refuse buyer, pre-listing and refinance",
+        ),
+        (
+            "    job_types: [weekly yard pickup]",
+            "    job_types: [weekly yard pickup, home warranty]",
+            "warranty or protection plan (LIC-042)",
+        ),
+    ],
+)
+def test_legal_holds_are_enforced(tmp_path: Path, old: str, new: str, expected: str) -> None:
+    """LIC-012, LIC-015, LIC-042 (D-376): pest off, no sale inspections, no warranties."""
+    errors = errors_after(tmp_path, "categories.yaml", old, new)
+    assert any(expected in e for e in errors), errors
+
+
+def test_pest_may_open_only_with_a_logged_answer(tmp_path: Path) -> None:
+    """LIC-012 (D-376): pest control can be switched on only with the written answer logged."""
+    errors = errors_after(
+        tmp_path,
+        "categories.yaml",
+        "    enabled: false\n    off_reason: \"Off until the AZ Department of Agriculture",
+        "    enabled: true\n    agriculture_answer_decision: D-999\n"
+        "    off_reason: \"Off until the AZ Department of Agriculture",
+    )
+    assert not any("pest_control: must stay off" in e for e in errors), errors

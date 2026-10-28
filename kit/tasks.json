@@ -1176,15 +1176,18 @@
         "LIC-004",
         "LIC-005",
         "LIC-040",
-        "LIC-041"
+        "LIC-041",
+        "LIC-042"
       ],
       "tests": [
         "TD-LIC-01",
-        "TD-LIC-16"
+        "TD-LIC-16",
+        "TD-LIC-18"
       ],
       "decisions": [
         "D-202",
-        "D-257"
+        "D-257",
+        "D-376"
       ],
       "cites": [],
       "budget": {
@@ -1301,11 +1304,13 @@
         "INT-012"
       ],
       "tests": [
-        "TD-AI-01"
+        "TD-AI-01",
+        "TD-AI-05"
       ],
       "decisions": [
         "D-093",
-        "D-146"
+        "D-146",
+        "D-373"
       ],
       "cites": [],
       "budget": {
@@ -1363,9 +1368,12 @@
         "AI-015"
       ],
       "tests": [
-        "TD-AI-02"
+        "TD-AI-02",
+        "TD-AI-06"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-373"
+      ],
       "cites": [],
       "budget": {
         "files": 8,
@@ -1687,12 +1695,14 @@
         "CON-016",
         "CON-017",
         "CON-030",
-        "CON-032"
+        "CON-032",
+        "CON-035"
       ],
       "tests": [
         "TD-CON-04",
         "TD-CON-05",
-        "TD-CON-13"
+        "TD-CON-13",
+        "TD-CON-20"
       ],
       "decisions": [
         "D-005",
@@ -1701,7 +1711,8 @@
         "D-053",
         "D-130",
         "D-131",
-        "D-298"
+        "D-298",
+        "D-372"
       ],
       "cites": [],
       "budget": {
@@ -1748,7 +1759,9 @@
         "CON-018"
       ],
       "tests": [
-        "TD-CON-07"
+        "TD-CON-07",
+        "TD-CON-19",
+        "TD-CON-18"
       ],
       "decisions": [
         "D-022",
@@ -1759,7 +1772,9 @@
         "D-295",
         "D-337",
         "D-348",
-        "D-349"
+        "D-349",
+        "D-371",
+        "D-384"
       ],
       "cites": [],
       "budget": {
@@ -2006,10 +2021,12 @@
       ],
       "tests": [
         "TD-LIC-06",
-        "TD-LIC-12"
+        "TD-LIC-12",
+        "TD-LIC-17"
       ],
       "decisions": [
-        "D-177"
+        "D-177",
+        "D-376"
       ],
       "cites": [],
       "budget": {
@@ -2306,7 +2323,9 @@
         "D-337",
         "D-349",
         "D-356",
-        "D-366"
+        "D-366",
+        "D-371",
+        "D-384"
       ],
       "cites": [],
       "budget": {
@@ -2457,12 +2476,14 @@
         "INT-027",
         "INT-028",
         "INT-032",
-        "TXT-028"
+        "TXT-028",
+        "INT-038"
       ],
       "tests": [
         "TD-INT-02",
         "TD-INT-11",
-        "TD-INT-14"
+        "TD-INT-14",
+        "TD-INT-20"
       ],
       "decisions": [
         "D-138",
@@ -2473,7 +2494,8 @@
         "D-226",
         "D-238",
         "D-242",
-        "D-246"
+        "D-246",
+        "D-385"
       ],
       "cites": [],
       "budget": {
@@ -2669,11 +2691,13 @@
       ],
       "tests": [
         "TD-INT-07",
-        "TD-LIC-07"
+        "TD-LIC-07",
+        "TD-INT-19"
       ],
       "decisions": [
         "D-082",
-        "D-086"
+        "D-086",
+        "D-382"
       ],
       "cites": [],
       "budget": {
@@ -2805,14 +2829,17 @@
         "TD-CARD-02",
         "TD-CARD-03",
         "TD-CARD-07",
-        "TD-CARD-08"
+        "TD-CARD-08",
+        "TD-CARD-11"
       ],
       "decisions": [
         "D-188",
         "D-202",
         "D-276",
         "D-292",
-        "D-326"
+        "D-326",
+        "D-382",
+        "D-385"
       ],
       "cites": [],
       "budget": {
@@ -2876,7 +2903,8 @@
         "TD-PICK-02",
         "TD-PICK-03",
         "TD-PICK-18",
-        "TD-PICK-22"
+        "TD-PICK-22",
+        "TD-PICK-29"
       ],
       "decisions": [
         "D-042",
@@ -2888,7 +2916,8 @@
         "D-245",
         "D-283",
         "D-295",
-        "D-309"
+        "D-309",
+        "D-373"
       ],
       "cites": [],
       "budget": {
@@ -3134,11 +3163,13 @@
       ],
       "tests": [
         "TD-CON-06",
-        "TD-CON-12"
+        "TD-CON-12",
+        "TD-CON-21"
       ],
       "decisions": [
         "D-005",
-        "D-129"
+        "D-129",
+        "D-372"
       ],
       "cites": [],
       "budget": {
@@ -3457,7 +3488,8 @@
         "TD-PICK-08",
         "TD-PICK-19",
         "TD-PICK-24",
-        "TD-PICK-28"
+        "TD-PICK-28",
+        "TD-PICK-30"
       ],
       "decisions": [
         "D-212",
@@ -3475,7 +3507,8 @@
         "D-363",
         "D-368",
         "D-356",
-        "D-365"
+        "D-365",
+        "D-375"
       ],
       "cites": [],
       "budget": {
@@ -5049,18 +5082,23 @@
         "CALL-014",
         "CALL-015",
         "CALL-016",
-        "CALL-019"
+        "CALL-019",
+        "CALL-022",
+        "CALL-023"
       ],
       "tests": [
         "TD-CALL-06",
-        "TD-TXT-09"
+        "TD-TXT-09",
+        "TD-CALL-09"
       ],
       "decisions": [
         "D-206",
         "D-275",
         "D-310",
         "D-366",
-        "D-359"
+        "D-359",
+        "D-384",
+        "D-385"
       ],
       "cites": [],
       "budget": {
@@ -5127,7 +5165,8 @@
         "TD-BIZ-05",
         "TD-BIZ-07",
         "TD-BIZ-10",
-        "TD-BIZ-17"
+        "TD-BIZ-17",
+        "TD-BIZ-27"
       ],
       "decisions": [
         "D-059",
@@ -5156,7 +5195,9 @@
         "D-349",
         "D-366",
         "D-356",
-        "D-357"
+        "D-357",
+        "D-376",
+        "D-380"
       ],
       "cites": [],
       "budget": {
@@ -5199,19 +5240,23 @@
         "docs/spec/businesses.md",
         "docs/spec/consent.md",
         "docs/spec/messaging.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/security.md"
       ],
       "requirements": [
         "BIZ-017",
         "BIZ-028",
         "CON-019",
         "CON-020",
-        "BIZ-032"
+        "BIZ-032",
+        "BIZ-048",
+        "SEC-028"
       ],
       "tests": [
         "TD-CON-08",
         "TD-BIZ-08",
-        "TD-TXT-13"
+        "TD-TXT-13",
+        "TD-BIZ-26"
       ],
       "decisions": [
         "D-062",
@@ -5233,7 +5278,9 @@
         "D-351",
         "D-348",
         "D-349",
-        "D-359"
+        "D-359",
+        "D-374",
+        "D-385"
       ],
       "cites": [],
       "budget": {
@@ -5425,13 +5472,15 @@
       ],
       "tests": [
         "TD-BIZ-04",
-        "TD-PICK-17"
+        "TD-PICK-17",
+        "TD-BIZ-28"
       ],
       "decisions": [
         "D-193",
         "D-284",
         "D-286",
-        "D-331"
+        "D-331",
+        "D-380"
       ],
       "cites": [],
       "budget": {
@@ -5707,9 +5756,12 @@
         "PRIV-015"
       ],
       "tests": [
-        "TD-PRIV-04"
+        "TD-PRIV-04",
+        "TD-PRIV-08"
       ],
-      "decisions": [],
+      "decisions": [
+        "D-383"
+      ],
       "cites": [],
       "budget": {
         "files": 5,
@@ -5913,17 +5965,21 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/messaging.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/ops-recovery.md"
       ],
       "requirements": [
         "TXT-014",
-        "TXT-015"
+        "TXT-015",
+        "OPS-038"
       ],
       "tests": [
-        "TD-TXT-05"
+        "TD-TXT-05",
+        "TD-OPS-14"
       ],
       "decisions": [
-        "D-308"
+        "D-308",
+        "D-381"
       ],
       "cites": [],
       "budget": {
@@ -5972,10 +6028,12 @@
         "PICK-030"
       ],
       "tests": [
-        "TD-PICK-13"
+        "TD-PICK-13",
+        "TD-PICK-31"
       ],
       "decisions": [
-        "D-050"
+        "D-050",
+        "D-380"
       ],
       "cites": [],
       "budget": {
@@ -6312,7 +6370,8 @@
         "D-344",
         "D-346",
         "D-351",
-        "D-356"
+        "D-356",
+        "D-381"
       ],
       "cites": [],
       "budget": {
@@ -6690,13 +6749,16 @@
       "tests": [
         "TD-CON-17",
         "TD-OPS-11",
-        "TD-BIZ-23"
+        "TD-BIZ-23",
+        "TD-CON-22"
       ],
       "decisions": [
         "D-348",
         "D-349",
         "D-353",
-        "D-359"
+        "D-359",
+        "D-371",
+        "D-384"
       ],
       "cites": [],
       "budget": {
@@ -6885,10 +6947,15 @@
         "A11Y-003",
         "A11Y-004",
         "A11Y-017",
-        "WEB-001"
+        "WEB-001",
+        "WEB-026"
       ],
-      "tests": [],
-      "decisions": [],
+      "tests": [
+        "TD-WEB-09"
+      ],
+      "decisions": [
+        "D-384"
+      ],
       "cites": [],
       "budget": {
         "files": 6,
@@ -6969,7 +7036,8 @@
         "TD-WORD-02",
         "TD-WEB-03",
         "TD-WEB-04",
-        "TD-WORD-03"
+        "TD-WORD-03",
+        "TD-WEB-07"
       ],
       "decisions": [
         "D-018",
@@ -6997,7 +7065,9 @@
         "D-349",
         "D-352",
         "D-356",
-        "D-366"
+        "D-366",
+        "D-371",
+        "D-384"
       ],
       "cites": [],
       "budget": {
@@ -7153,7 +7223,8 @@
         "D-358",
         "D-366",
         "D-363",
-        "D-357"
+        "D-357",
+        "D-377"
       ],
       "cites": [],
       "budget": {
@@ -7305,13 +7376,15 @@
         "OPS-009"
       ],
       "tests": [
-        "TD-OPS-02"
+        "TD-OPS-02",
+        "TD-OPS-13"
       ],
       "decisions": [
         "D-319",
         "D-331",
         "D-344",
-        "D-347"
+        "D-347",
+        "D-381"
       ],
       "cites": [],
       "budget": {
@@ -7609,12 +7682,14 @@
         "TERMS-026",
         "FEE-002",
         "FEE-006",
-        "BIZ-030"
+        "BIZ-030",
+        "TERMS-027"
       ],
       "tests": [
         "TD-TERMS-01",
         "TD-WEB-03",
-        "TD-TERMS-03"
+        "TD-TERMS-03",
+        "TD-TERMS-05"
       ],
       "decisions": [
         "D-047",
@@ -7631,7 +7706,9 @@
         "D-348",
         "D-356",
         "D-357",
-        "D-368"
+        "D-368",
+        "D-375",
+        "D-378"
       ],
       "cites": [],
       "budget": {
@@ -7675,7 +7752,8 @@
         "docs/spec/terms.md",
         "docs/spec/wording.md",
         "docs/spec/privacy.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/spec/ai.md"
       ],
       "requirements": [
         "TERMS-002",
@@ -7695,12 +7773,17 @@
         "TERMS-020",
         "WORD-018",
         "TERMS-023",
-        "TERMS-025"
+        "TERMS-025",
+        "AI-018",
+        "WORD-023",
+        "TERMS-027"
       ],
       "tests": [
         "TD-TERMS-01",
         "TD-PRIV-06",
-        "TD-PRIV-07"
+        "TD-PRIV-07",
+        "TD-TERMS-04",
+        "TD-WORD-07"
       ],
       "decisions": [
         "D-079",
@@ -7709,7 +7792,10 @@
         "D-304",
         "D-305",
         "D-349",
-        "D-356"
+        "D-356",
+        "D-373",
+        "D-377",
+        "D-378"
       ],
       "cites": [],
       "budget": {
@@ -7880,9 +7966,12 @@
         "A11Y-020",
         "A11Y-022"
       ],
-      "tests": [],
+      "tests": [
+        "TD-WEB-08"
+      ],
       "decisions": [
-        "D-317"
+        "D-317",
+        "D-379"
       ],
       "cites": [],
       "budget": {

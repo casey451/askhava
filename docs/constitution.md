@@ -161,7 +161,7 @@ Gate items and other pre-launch requirements:
 
 **Consent**
 - The full consent text is the first message to any new number, on every path; the only exceptions are the safety text (D-008), the business sign-up reply (D-132) and the bare-HELP reply (D-131). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:113`; `BUILD_BRIEF.md:445`)
-- The first text also says the business you pick pays a small fee. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:81`)
+- The first text also says the business you pick pays a small fee. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:81`) Since fix round 12 the wording is "a set fee of $25 to $199, by quote size", never "small fee" (CON-003, D-371, `docs/decisions.md:501`).
 - Emergencies: the safety text goes **before** the consent text. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:86`) A plain keyword list runs before the AI at intake, on every message. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:290`)
 - Only people who contacted us or signed up are texted; never tenants or on-site contacts. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:258`)
 - Business consent by sign-up checkbox (E-SIGN) with version and timestamp. (`BUILD_BRIEF.md:448`)
@@ -247,3 +247,20 @@ Full list in `BUILD_BRIEF.md:384`–`BUILD_BRIEF.md:427`; target also in `source
 11. No module reaches into another's tables. (`BUILD_BRIEF.md:126`)
 12. Every job status moves only along defined arrows; any other move is refused and logged; every waiting state has a timeout. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:155`; `BUILD_BRIEF.md:136`)
 13. Fresh-eyes review on every task checks for spec drift, duplicated logic, dead code and TODOs, secrets or PII, and accessibility regressions. (`BUILD_BRIEF.md:249`–`BUILD_BRIEF.md:254`)
+
+## 13. Legal holds: never build without a new legal review (fix round 12)
+
+From the AI legal-research memos (Memo 1 Part V.B and R-14, Memo 4 Part F), adopted in fix round 12 (`docs/decisions.md:499`). Changing any of these needs a new logged decision citing a fresh legal review.
+
+1. No payment handling for the work: no escrow, deposits, invoices or Ask Hava-branded receipts for the work.
+2. No guarantee, protection, warranty, home warranty or service contract; no paying for or arranging redo work (LIC-042, D-376, `docs/decisions.md:506`).
+3. No choosing for the homeowner: no auto-assign, ranking, "recommended" label, or sorting by price or score.
+4. No price advice: no estimates, re-bid or "beat this price" requests, and no showing one business another's amount (PICK-026 stays coarse, or goes).
+5. No scheduling of work, multi-trade bundling or materials selection.
+6. No percentage fees and no fee tied to the final bill.
+7. No requests from outside sources without disclosure; no buying or selling of request data.
+8. No inspection tied to a home sale, purchase or refinance (LIC-015, RESPA section 8, D-376).
+9. No pest-control intake until the Arizona Department of Agriculture answers in writing (LIC-012, D-376).
+10. No recruiting texts or calls to businesses (BIZ-048, A.R.S. 44-1282 and 44-1272, D-374, `docs/decisions.md:504`).
+11. No town outside Arizona (INT-022, D-382, `docs/decisions.md:512`).
+12. No AI-written text shown to homeowners or businesses unless Casey turns on AI quote summaries with the label and the policy line (PICK-003, D-373, `docs/decisions.md:503`).
