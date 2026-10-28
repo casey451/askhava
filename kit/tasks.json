@@ -3664,7 +3664,8 @@
         "T055",
         "T056",
         "T153",
-        "T156"
+        "T156",
+        "T163"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -6811,8 +6812,8 @@
     {
       "id": "T152",
       "slug": "safety-contacts",
-      "title": "intake and messaging: the version-controlled local safety contacts file (UniSource, the water providers, 211) with source URLs, verified and review-by dates, its loader that drops unverified or stale entries, and the Gate C launch check, plus the PII scan's exact-match allowance for this file's public numbers only",
-      "goal": "intake and messaging: the version-controlled local safety contacts file (UniSource, the water providers, 211) with source URLs, verified and review-by dates, its loader that drops unverified or stale entries, and the Gate C launch check, plus the PII scan's exact-match allowance for this file's public numbers only",
+      "title": "intake and messaging: the one INT-004 911 text in English and Spanish, and a template scan that fails on any phone number other than 911 (the safety contacts file is withdrawn, D-436)",
+      "goal": "intake and messaging: the one INT-004 911 text in English and Spanish, and a template scan that fails on any phone number other than 911 (the safety contacts file is withdrawn, D-436)",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -6824,16 +6825,12 @@
       "effort": "high",
       "reviewer_model": "claude-opus-5-5",
       "review_areas": [
-        "compliance",
-        "security",
-        "privacy"
+        "compliance"
       ],
       "owns": [
-        "app/messaging/safety_contacts.toml",
-        "app/intake/safety_contacts.py",
-        "scripts/pii_scan.py",
-        "tests/unit/intake/test_safety_contacts.py",
-        "tests/docs/test_safety_contacts_launch_check.py"
+        "app/intake/safety_text.py",
+        "tests/unit/intake/test_safety_text.py",
+        "tests/docs/test_no_phone_numbers_in_templates.py"
       ],
       "reads": [
         "docs/architecture.md",
@@ -6856,13 +6853,14 @@
         "D-353",
         "D-361",
         "D-364",
-        "D-368"
+        "D-368",
+        "D-436"
       ],
       "cites": [],
       "budget": {
-        "files": 5,
-        "lines": 400,
-        "context_pct": 9
+        "files": 3,
+        "lines": 300,
+        "context_pct": 8
       },
       "checks": [
         "Ci",
@@ -6911,7 +6909,10 @@
         "T149",
         "T150",
         "T155",
-        "T157"
+        "T157",
+        "T162",
+        "T164",
+        "T165"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -9789,8 +9790,8 @@
     {
       "id": "T156",
       "slug": "intake-question-bank",
-      "title": "intake: ask the question bank's set one question at a time, routing confidence with the trade and job-type questions and \"Job type not certain\", the summary text, the text-email-or-both updates question, and the trade safety prompts",
-      "goal": "intake: ask the question bank's set one question at a time, routing confidence with the trade and job-type questions and \"Job type not certain\", the summary text, the text-email-or-both updates question, and the trade safety prompts",
+      "title": "intake: ask the question bank's set one question at a time (AI-reworded within AI-019 when the switch is on), routing confidence with the trade and job-type questions and \"Job type not certain\", the homeowner's card approval step, and the text-email-or-both updates question with the one-tap email confirm",
+      "goal": "intake: ask the question bank's set one question at a time (AI-reworded within AI-019 when the switch is on), routing confidence with the trade and job-type questions and \"Job type not certain\", the homeowner's card approval step, and the text-email-or-both updates question with the one-tap email confirm",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -9842,7 +9843,11 @@
         "D-394",
         "D-395",
         "D-419",
-        "D-422"
+        "D-422",
+        "D-430",
+        "D-431",
+        "D-434",
+        "D-446"
       ],
       "cites": [],
       "budget": {
@@ -9994,8 +9999,8 @@
     {
       "id": "T159",
       "slug": "safety-contacts-verify",
-      "title": "launch checklist: fetch each safety contact's official source page, confirm the number and hours, record the verified date or remove the entry and list it for Casey, so the Gate C check passes with no owner task",
-      "goal": "launch checklist: fetch each safety contact's official source page, confirm the number and hours, record the verified date or remove the entry and list it for Casey, so the Gate C check passes with no owner task",
+      "title": "launch checklist: confirm no template or page names a phone number other than 911 and that the Gate C list has no safety-number step (D-436)",
+      "goal": "launch checklist: confirm no template or page names a phone number other than 911 and that the Gate C list has no safety-number step (D-436)",
       "type": "build",
       "phase": 2,
       "stage": "6",
@@ -10010,14 +10015,13 @@
         "compliance"
       ],
       "owns": [
-        "docs/launch/safety_contacts_verification.md",
-        "tests/docs/test_safety_contacts_fresh.py"
+        "docs/launch/no_safety_numbers_check.md",
+        "tests/docs/test_no_safety_number_step.py"
       ],
       "reads": [
         "docs/architecture.md",
         "docs/test-design.md",
-        "docs/spec/intake.md",
-        "app/messaging/safety_contacts.toml"
+        "docs/spec/intake.md"
       ],
       "requirements": [
         "INT-036"
@@ -10026,7 +10030,8 @@
         "TD-OPS-17"
       ],
       "decisions": [
-        "D-411"
+        "D-411",
+        "D-436"
       ],
       "cites": [],
       "budget": {
@@ -10169,6 +10174,282 @@
       ],
       "branch": "claude/task/T161-wording-voice-scan",
       "prompt": "kit/prompts/T161.md"
+    },
+    {
+      "id": "T162",
+      "slug": "intake-photos-design",
+      "title": "intake: the one intake order for the five paths, photo asks with on-server checks and the homeowner's preview, inspiration pictures and the labeled concept image for design categories, and the Spanish \"we continue in English\" line",
+      "goal": "intake: the one intake order for the five paths, photo asks with on-server checks and the homeowner's preview, inspiration pictures and the labeled concept image for design categories, and the Spanish \"we continue in English\" line",
+      "type": "build",
+      "phase": 1,
+      "stage": "4",
+      "module": "intake",
+      "deps": [
+        "T156",
+        "T091"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "compliance",
+        "privacy"
+      ],
+      "owns": [
+        "app/intake/order.py",
+        "app/intake/photos.py",
+        "app/intake/design.py",
+        "tests/integration/test_intake_order.py",
+        "tests/integration/test_intake_photos.py",
+        "tests/integration/test_design_intake.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/intake.md",
+        "docs/spec/privacy.md",
+        "docs/spec/messaging.md",
+        "docs/catalog/question_bank.yaml",
+        "docs/catalog/categories.yaml"
+      ],
+      "requirements": [
+        "INT-043",
+        "INT-044",
+        "INT-045",
+        "INT-046",
+        "TXT-041"
+      ],
+      "tests": [
+        "TD-INT-26",
+        "TD-INT-27",
+        "TD-INT-28"
+      ],
+      "decisions": [
+        "D-432",
+        "D-433",
+        "D-446"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 6,
+        "lines": 800,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T162-intake-photos-design",
+      "prompt": "kit/prompts/T162.md"
+    },
+    {
+      "id": "T163",
+      "slug": "ai-written-card",
+      "title": "ai and quotes: the AI-019 limits on AI-written questions, cards and project files with code checks and fallbacks, the business job page, and the short homeowner update texts that link to the portal",
+      "goal": "ai and quotes: the AI-019 limits on AI-written questions, cards and project files with code checks and fallbacks, the business job page, and the short homeowner update texts that link to the portal",
+      "type": "build",
+      "phase": 1,
+      "stage": "2",
+      "module": "ai",
+      "deps": [
+        "T156",
+        "T025",
+        "T045"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "compliance",
+        "privacy"
+      ],
+      "owns": [
+        "app/ai/writer.py",
+        "app/ai/output_checks.py",
+        "app/quotes/job_page.py",
+        "app/quotes/update_texts.py",
+        "tests/property/test_ai_output_limits.py",
+        "tests/integration/test_job_page.py",
+        "tests/unit/quotes/test_update_texts.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/ai.md",
+        "docs/spec/job-cards.md",
+        "docs/spec/messaging.md",
+        "docs/catalog/trade_kb/ABOUT.md"
+      ],
+      "requirements": [
+        "AI-019",
+        "CARD-023",
+        "TXT-040"
+      ],
+      "tests": [
+        "TD-AI-08",
+        "TD-CARD-12",
+        "TD-TXT-25"
+      ],
+      "decisions": [
+        "D-430",
+        "D-434",
+        "D-438"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 7,
+        "lines": 800,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T163-ai-written-card",
+      "prompt": "kit/prompts/T163.md"
+    },
+    {
+      "id": "T164",
+      "slug": "quotes-uniform-notes",
+      "title": "quotes and picks: one quote format per category, screened notes, edit or withdraw before a pick, the homeowner's share box at the pick, the \"Can't take it\" link, and the introduction-fee wording scan",
+      "goal": "quotes and picks: one quote format per category, screened notes, edit or withdraw before a pick, the homeowner's share box at the pick, the \"Can't take it\" link, and the introduction-fee wording scan",
+      "type": "build",
+      "phase": 1,
+      "stage": "4",
+      "module": "quotes",
+      "deps": [
+        "T157",
+        "T063",
+        "T046"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "compliance",
+        "privacy",
+        "money"
+      ],
+      "owns": [
+        "app/quotes/formats.py",
+        "app/quotes/notes.py",
+        "app/quotes/edit_withdraw.py",
+        "app/picks/share_consent.py",
+        "app/picks/cant_take.py",
+        "tests/integration/test_quote_formats.py",
+        "tests/integration/test_quote_notes.py",
+        "tests/integration/test_share_and_cant_take.py",
+        "tests/docs/test_introduction_fee_wording.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/quotes-pick.md",
+        "docs/spec/fees.md",
+        "docs/spec/wording.md",
+        "docs/catalog/categories.yaml"
+      ],
+      "requirements": [
+        "PICK-049",
+        "PICK-050",
+        "PICK-051",
+        "PICK-052",
+        "PICK-053",
+        "WORD-026"
+      ],
+      "tests": [
+        "TD-PICK-34",
+        "TD-PICK-35",
+        "TD-WORD-10"
+      ],
+      "decisions": [
+        "D-441",
+        "D-442",
+        "D-443",
+        "D-444",
+        "D-446"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 9,
+        "lines": 800,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T164-quotes-uniform-notes",
+      "prompt": "kit/prompts/T164.md"
+    },
+    {
+      "id": "T165",
+      "slug": "businesses-links-leaving",
+      "title": "businesses and ops: Google and Yelp links and license numbers at sign-up and on quotes, leaving Ask Hava, pest identity by the city list plus attestation, and the owner's not-covered email",
+      "goal": "businesses and ops: Google and Yelp links and license numbers at sign-up and on quotes, leaving Ask Hava, pest identity by the city list plus attestation, and the owner's not-covered email",
+      "type": "build",
+      "phase": 1,
+      "stage": "4",
+      "module": "businesses",
+      "deps": [
+        "T155",
+        "T081"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "compliance",
+        "money"
+      ],
+      "owns": [
+        "app/businesses/links.py",
+        "app/businesses/leaving.py",
+        "app/businesses/pest_identity.py",
+        "app/ops/coverage_email.py",
+        "tests/integration/test_business_links.py",
+        "tests/integration/test_business_leaving.py",
+        "tests/integration/test_pest_identity.py",
+        "tests/integration/test_coverage_email.py"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/businesses.md",
+        "docs/spec/licensing.md",
+        "docs/spec/ops-recovery.md"
+      ],
+      "requirements": [
+        "BIZ-051",
+        "BIZ-052",
+        "LIC-048",
+        "OPS-041"
+      ],
+      "tests": [
+        "TD-BIZ-32",
+        "TD-OPS-18"
+      ],
+      "decisions": [
+        "D-435",
+        "D-439",
+        "D-446"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 8,
+        "lines": 800,
+        "context_pct": 14
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T165-businesses-links-leaving",
+      "prompt": "kit/prompts/T165.md"
     }
   ]
 }

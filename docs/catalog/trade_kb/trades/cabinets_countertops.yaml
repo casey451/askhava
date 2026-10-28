@@ -1,0 +1,411 @@
+# Ask Hava trade knowledge file: cabinets_countertops
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: cabinets_countertops
+display_name: Cabinets & Countertops
+summary: Cabinet install, repair and refacing; countertop install and repair in granite, quartz (engineered stone),
+  laminate, solid surface and tile. ROC R-60 Finish Carpentry lists cabinets and countertops; R-48 covers tile tops.
+  Disconnecting and reconnecting sinks, faucets and disposals is plumbing work, and any gas cooktop reconnection
+  is never handyman work. Cutting engineered stone makes silica dust (OSHA/NIOSH hazard alert), so shops fabricate
+  off site and do minimal cutting in the home [judgment].
+job_types:
+- id: cabinet_install
+  label: New cabinets install
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: cabinet_repair
+  label: Cabinet door, hinge, drawer or box repair
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: refacing
+  label: Cabinet refacing or refinishing
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: countertop_install
+  label: Countertop replace/install
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: countertop_repair
+  label: Chip, crack or seam repair; resealing stone
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: backsplash
+  label: Backsplash tile
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: vanity
+  label: Bathroom vanity swap
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+triggers_en:
+- phrase: new cabinets
+  job_type: cabinet_install
+- phrase: install cabinets
+  job_type: cabinet_install
+- phrase: kitchen remodel
+  job_type: cabinet_install
+- phrase: cabinet door falling
+  job_type: cabinet_repair
+- phrase: hinge broke
+  job_type: cabinet_repair
+- phrase: drawer off track
+  job_type: cabinet_repair
+- phrase: soft close
+  job_type: cabinet_repair
+- phrase: reface
+  job_type: refacing
+- phrase: refinish cabinets
+  job_type: refacing
+- phrase: new doors on cabinets
+  job_type: refacing
+- phrase: granite
+  job_type: countertop_install
+- phrase: quartz
+  job_type: countertop_install
+- phrase: new countertops
+  job_type: countertop_install
+- phrase: replace counters
+  job_type: countertop_install
+- phrase: laminate counter
+  job_type: countertop_install
+- phrase: chipped granite
+  job_type: countertop_repair
+- phrase: counter crack
+  job_type: countertop_repair
+- phrase: seam
+  job_type: countertop_repair
+- phrase: reseal granite
+  job_type: countertop_repair
+- phrase: backsplash
+  job_type: backsplash
+- phrase: vanity
+  job_type: vanity
+- phrase: bathroom cabinet
+  job_type: vanity
+triggers_es:
+- phrase: gabinetes
+  job_type: cabinet_install
+- phrase: alacenas
+  job_type: cabinet_install
+- phrase: cocina nueva
+  job_type: cabinet_install
+- phrase: puerta del gabinete
+  job_type: cabinet_repair
+- phrase: bisagra
+  job_type: cabinet_repair
+- phrase: cajón
+  job_type: cabinet_repair
+- phrase: cubierta
+  job_type: countertop_install
+- phrase: granito
+  job_type: countertop_install
+- phrase: cuarzo
+  job_type: countertop_install
+- phrase: encimera
+  job_type: countertop_install
+- phrase: barra de cocina
+  job_type: countertop_install
+- phrase: granito despostillado
+  job_type: countertop_repair
+- phrase: cubierta rota
+  job_type: countertop_repair
+- phrase: tocador
+  job_type: vanity
+- phrase: mueble de baño
+  job_type: vanity
+questions:
+- id: q1_scope
+  text: What do you need?
+  options:
+  - Fix a door/drawer
+  - New countertops only
+  - New cabinets only
+  - Cabinets and counters
+  - Refinish or reface
+  - Bathroom vanity
+  ask_if: always
+  changes_price: 'yes'
+  why: Repair, counters only, or full cabinets are very different jobs.
+- id: q2_size
+  text: How big is the area?
+  options:
+  - Small (bath or bar)
+  - Average kitchen
+  - Large kitchen or island
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Linear feet of cabinets and counters drive the quote.
+- id: q3_material
+  text: What countertop material?
+  options:
+  - Granite or natural stone
+  - Quartz
+  - Laminate
+  - Butcher block
+  - Not sure
+  ask_if: scope includes countertops
+  changes_price: 'yes'
+  why: Stone, quartz and laminate differ in cost and fabrication.
+- id: q4_sink_cooktop
+  text: Does the sink or a cooktop sit in the counter?
+  options:
+  - Sink only
+  - Sink and electric cooktop
+  - Sink and gas cooktop
+  - Neither
+  - Not sure
+  ask_if: scope includes countertops
+  changes_price: 'yes'
+  why: Cutouts and plumbing or gas reconnections add work and licensing needs.
+- id: q5_removal
+  text: Remove and haul away old ones?
+  options:
+  - 'Yes'
+  - No, already removed
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Tear-out and haul-away add labor and dump fees.
+- id: q6_layout_change
+  text: Is the layout changing?
+  options:
+  - No, same spots
+  - Moving the sink or appliances
+  - Adding an island
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Moving a sink or appliance needs a permit and other trades.
+quote_without_visit_needs:
+- Counter length or kitchen size
+- Material
+- Sink and cooktop type
+- Photos of current layout
+- Removal needs
+site_visit_usually_needed:
+- Countertop templating (stone is measured on site before cutting)
+- New cabinets (measure, wall/floor level)
+- Layout changes
+photos_to_request:
+- id: p1
+  ask: Wide shot of the whole kitchen/bath
+  for_job_types:
+  - all
+- id: p2
+  ask: Each run of counter
+  for_job_types:
+  - all
+- id: p3
+  ask: Under the sink
+  for_job_types:
+  - all
+- id: p4
+  ask: Close-up of damage
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Tape measure along counter runs
+  - Show the stove/cooktop connection type if visible
+photo_red_flags:
+- flag: Water damage or mold under the sink (leak first)
+  safety_step_ref: null
+- flag: Swollen particleboard
+  safety_step_ref: null
+- flag: Gas flex line behind cooktop (gas reconnection = licensed only)
+  safety_step_ref: es_cabinets_countertops_2
+- flag: Cabinet pulling off the wall [judgment]
+  safety_step_ref: null
+emergency_signals:
+- id: es_cabinets_countertops_1
+  signal: Upper cabinet pulling away from wall
+  emergency: depends
+  note: 'Urgent, not life-safety: card goes out marked time-sensitive. [judgment]'
+  intake_note:
+  - Empty it and keep people away from below it [judgment].
+  safety_step: No official step on file for this signal. If anyone is hurt or in danger, call 911. [judgment]
+  source: '[judgment]'
+  then_route_to: cabinets_countertops
+- id: es_cabinets_countertops_2
+  signal: Gas smell after a cooktop was moved
+  emergency: 'yes'
+  safety_step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call
+    911 and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+  then_route_to: none
+  note: 'Routing: none (leave, call 911 and UES)'
+- id: es_cabinets_countertops_3
+  signal: Cosmetic chip or loose hinge
+  emergency: 'no'
+  safety_step: No special safety step; normal job card.
+  source: none
+  then_route_to: cabinets_countertops
+safety_step:
+- when: Gas smell
+  step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call 911
+    and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+- when: Engineered stone cutting
+  step: Silica dust from cutting engineered stone can cause serious lung disease; wet methods and dust controls
+    are required for workers.
+  source: '[T-osha_silica]'
+intake_notes_judgment:
+- 'Upper cabinet pulling off the wall: Empty it and keep people away from below it [judgment].'
+license_classes:
+- job_type:
+  - cabinet_install
+  - cabinet_repair
+  - refacing
+  - countertop_install
+  - countertop_repair
+  - vanity
+  classes:
+  - R-60
+  - CR-60
+  - B
+  - B-3
+  - R-61
+  citation: A.A.C. R4-9-103 [S2] R-60; R4-9-104 [S3] CR-60
+  other_agency: none
+  notes: ROC R-60 Finish Carpentry (cabinets, countertops, case sash, trim) or CR-60, or B/B-3/R-61.
+- job_type:
+  - backsplash
+  - countertop_install
+  classes:
+  - R-48
+  citation: A.A.C. R4-9-103 [S2] R-48
+  other_agency: none
+  notes: 'Tile tops and backsplashes: ROC R-48 Tile.'
+- job_type:
+  - countertop_install
+  - vanity
+  classes:
+  - R-37
+  citation: A.A.C. R4-9-103 [S2] R-37; A.R.S. 32-1121(D)(2) [S4]
+  other_agency: none
+  notes: 'Sink, faucet, disposal disconnect/reconnect: ROC R-37 Plumbing. Gas cooktop reconnection: licensed only
+    (fuel gas excluded from handyman exemption).'
+- job_type:
+  - countertop_install
+  classes:
+  - none
+  citation: LHC Building Permits page [S17]
+  other_agency: none
+  notes: Moving sinks or adding fixtures needs an LHC permit.
+handyman_ok:
+  allowed_examples:
+  - Hinges, drawer slides, hardware, a door or two (LHC lists cabinets among minor non-structural repairs)
+  not_allowed_examples:
+  - Gas cooktop reconnection
+  - Full kitchens or stone tops over $1,000
+  - Relocating a sink
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+local_notes:
+- 'LHC: minor non-structural repairs including cabinets need no permit; relocated or added fixtures do. Source:
+  [S17].'
+- Hard water in Havasu leaves mineral stains on stone near faucets [judgment].
+- Stone shops are often in Havasu, Kingman or Bullhead City; templating to install often takes 1-3 weeks [judgment].
+sample_card: 'REQ-0244 | Cabinets/Countertops | Lake Havasu City, central
+
+  Replace laminate counters with quartz, average kitchen, sink and electric cooktop in counter, same layout. Remove
+  old tops.
+
+  4 photos.
+
+  '
+test_messages:
+- id: cabinets_countertops_t01
+  message: cabinet door fell off
+  trade: cabinets_countertops
+  job_type: cabinet_repair
+  emergency: 'no'
+  first_question_id: q1_scope
+  ideal_first_question: What do you need?
+  note: ''
+- id: cabinets_countertops_t02
+  message: granite quote for kitchen and island
+  trade: cabinets_countertops
+  job_type: countertop_install
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How big is the area?
+  note: ''
+- id: cabinets_countertops_t03
+  message: cotización de cubierta de cuarzo para la cocina
+  trade: cabinets_countertops
+  job_type: countertop_install
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How big is the area?
+  note: ''
+- id: cabinets_countertops_t04
+  message: new counters and move the gas stove to the island
+  trade: cabinets_countertops
+  job_type: countertop_install
+  emergency: 'no'
+  first_question_id: q6_layout_change
+  ideal_first_question: Is the layout changing?
+  note: ''
+- id: cabinets_countertops_t05
+  message: under sink cabinet floor is rotted and wet
+  trade: plumbing
+  job_type: leak_slow
+  emergency: 'no'
+  first_question_id: q1_problem
+  ideal_first_question: What do you need?
+  note: ''
+- id: cabinets_countertops_t06
+  message: reface cabinets white shaker doors
+  trade: cabinets_countertops
+  job_type: refacing
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How big is the area?
+  note: ''
+- id: cabinets_countertops_t07
+  message: chip on granite edge by dishwasher
+  trade: cabinets_countertops
+  job_type: countertop_repair
+  emergency: 'no'
+  first_question_id: q1_scope
+  ideal_first_question: What do you need?
+  note: ''
+- id: cabinets_countertops_t08
+  message: swap bathroom vanity 36 inch, I bought it
+  trade: cabinets_countertops
+  job_type: vanity
+  emergency: 'no'
+  first_question_id: q5_removal
+  ideal_first_question: Remove and haul away old ones?
+  note: ''
+- id: cabinets_countertops_t09
+  message: kitchen remodel whole thing
+  trade: cabinets_countertops
+  job_type: cabinet_install
+  emergency: 'no'
+  first_question_id: q1_scope
+  ideal_first_question: What do you need?
+  note: ''
+- id: cabinets_countertops_t10
+  message: smell gas after the counter guys left
+  trade: cabinets_countertops
+  job_type: countertop_install
+  emergency: 'yes'
+  first_question_id: q4_sink_cooktop
+  ideal_first_question: Does the sink or a cooktop sit in the counter?
+  note: ''
+sources:
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] A.A.C. R4-9-104 Dual license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'
+- '[S17] Lake Havasu City, Building Permits (permit / no-permit lists) https://www.lhcaz.gov/229/Building-Permits'
+- '[T-osha_silica] OSHA/NIOSH Hazard Alert OSHA3768: silica exposure from engineered stone countertops https://www.osha.gov/sites/default/files/publications/OSHA3768.pdf'
+- '[S23][S22] UniSource Energy Services (UES), Natural Gas Safety Tips (leak signs and steps); 24/7 emergency [number removed, see source]
+  per UES Contact https://www.uesaz.com/news/natural-gas-safety-tips/'

@@ -1,0 +1,722 @@
+# Ask Hava trade knowledge file: plumbing
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: plumbing
+display_name: Plumbing (leaks, drains, fixtures, pipes)
+summary: 'Water supply and drain work inside the property line: leaks, burst pipes, slab leaks, clogs, sewer backups,
+  toilets, faucets, shower valves, pressure, outdoor spigots, re-pipes and adding fixtures. Lake Havasu City water
+  is very hard (about 19 grains per gallon) so scale on fixtures and valves is common, and many homes from the 1970s-90s
+  may have older pipe types worth noting from photos [LHC-CCR][judgment]. Ask Hava sorts active water (urgent) from
+  slow problems, learns where the issue shows up, how many fixtures are affected and what pipe is visible, then writes
+  a card. It never says what failed or what to do. Water heaters, softeners/RO and gas piping have their own files.
+  Licensed work is ROC R-37 / R-37R Plumbing / CR-37 / CR-77; drains and sewer lines also CR-80 [S2][S3].'
+job_types:
+- id: leak_active
+  label: Water spraying or running now (burst pipe, broken supply line)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: leak_slow
+  label: Slow drip or leak under a sink, behind a toilet, at a valve
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: slab_leak
+  label: Possible leak under the floor or in a wall (warm floor spot, sound of running water, high bill)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: clogged_drain
+  label: One drain slow or clogged (sink, tub, shower, toilet)
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: main_line_backup
+  label: Several drains backing up, sewage coming up, yard cleanout overflowing
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: toilet_issue
+  label: Toilet running, rocking, leaking at base, replace toilet
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: fixture_replace
+  label: Replace a faucet, sink, shower head or valve trim in the same spot
+  site_visit_usually_needed: 'no'
+  handyman_ok: limited
+- id: fixture_add_move
+  label: Add or move a fixture (new sink, bathroom remodel, laundry move)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: repipe
+  label: Re-pipe the house (polybutylene, galvanized, many leaks)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: water_pressure
+  label: Low or very high water pressure, pressure regulator, banging pipes
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: outdoor_spigot_line
+  label: Hose bib, yard water line, line from meter to house
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: garbage_disposal
+  label: Disposal jammed, leaking or replace
+  site_visit_usually_needed: 'no'
+  handyman_ok: limited
+- id: high_water_bill
+  label: Water bill suddenly high, meter spinning with everything off
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: pipe burst
+  job_type: leak_active
+- phrase: burst pipe
+  job_type: leak_active
+- phrase: water spraying
+  job_type: leak_active
+- phrase: water everywhere
+  job_type: leak_active
+- phrase: flooding kitchen
+  job_type: leak_active
+- phrase: supply line broke
+  job_type: leak_active
+- phrase: water gushing under sink
+  job_type: leak_active
+- phrase: pipe busted
+  job_type: leak_active
+- phrase: watter leak
+  job_type: leak_active
+- phrase: leak under sink
+  job_type: leak_slow
+- phrase: drip under sink
+  job_type: leak_slow
+- phrase: leaky faucet
+  job_type: leak_slow
+- phrase: faucet drips
+  job_type: leak_slow
+- phrase: shut off valve leaking
+  job_type: leak_slow
+- phrase: angle stop leaking
+  job_type: leak_slow
+- phrase: slab leak
+  job_type: slab_leak
+- phrase: warm spot on floor
+  job_type: slab_leak
+- phrase: hear water running in wall
+  job_type: slab_leak
+- phrase: wet carpet no reason
+  job_type: slab_leak
+- phrase: leak under foundation
+  job_type: slab_leak
+- phrase: clogged drain
+  job_type: clogged_drain
+- phrase: sink clogged
+  job_type: clogged_drain
+- phrase: tub draining slow
+  job_type: clogged_drain
+- phrase: shower wont drain
+  job_type: clogged_drain
+- phrase: toilet clogged
+  job_type: clogged_drain
+- phrase: clogd
+  job_type: clogged_drain
+- phrase: drain snake
+  job_type: clogged_drain
+- phrase: sewer backup
+  job_type: main_line_backup
+- phrase: sewage coming up
+  job_type: main_line_backup
+- phrase: all drains backing up
+  job_type: main_line_backup
+- phrase: toilet gurgles when washer drains
+  job_type: main_line_backup
+- phrase: cleanout overflowing
+  job_type: main_line_backup
+- phrase: poop water in tub
+  job_type: main_line_backup
+- phrase: main line clog
+  job_type: main_line_backup
+- phrase: toilet running
+  job_type: toilet_issue
+- phrase: toilet keeps running
+  job_type: toilet_issue
+- phrase: toilet rocking
+  job_type: toilet_issue
+- phrase: toilet leaking at base
+  job_type: toilet_issue
+- phrase: new toilet
+  job_type: toilet_issue
+- phrase: toliet
+  job_type: toilet_issue
+- phrase: replace faucet
+  job_type: fixture_replace
+- phrase: new kitchen faucet
+  job_type: fixture_replace
+- phrase: install faucet
+  job_type: fixture_replace
+- phrase: shower head
+  job_type: fixture_replace
+- phrase: shower valve cartridge
+  job_type: fixture_replace
+- phrase: add a sink
+  job_type: fixture_add_move
+- phrase: move laundry
+  job_type: fixture_add_move
+- phrase: bathroom remodel plumbing
+  job_type: fixture_add_move
+- phrase: add bathroom
+  job_type: fixture_add_move
+- phrase: ice maker line
+  job_type: fixture_add_move
+- phrase: repipe
+  job_type: repipe
+- phrase: re-pipe house
+  job_type: repipe
+- phrase: polybutylene
+  job_type: repipe
+- phrase: poly b pipe
+  job_type: repipe
+- phrase: gray plastic pipes
+  job_type: repipe
+- phrase: galvanized pipes
+  job_type: repipe
+- phrase: kitec
+  job_type: repipe
+- phrase: low water pressure
+  job_type: water_pressure
+- phrase: no pressure
+  job_type: water_pressure
+- phrase: pipes banging
+  job_type: water_pressure
+- phrase: water hammer
+  job_type: water_pressure
+- phrase: pressure regulator
+  job_type: water_pressure
+- phrase: prv valve
+  job_type: water_pressure
+- phrase: hose bib leaking
+  job_type: outdoor_spigot_line
+- phrase: outside faucet
+  job_type: outdoor_spigot_line
+- phrase: spigot broke
+  job_type: outdoor_spigot_line
+- phrase: yard line leak
+  job_type: outdoor_spigot_line
+- phrase: water line from meter
+  job_type: outdoor_spigot_line
+- phrase: garbage disposal
+  job_type: garbage_disposal
+- phrase: disposal jammed
+  job_type: garbage_disposal
+- phrase: disposer humming
+  job_type: garbage_disposal
+- phrase: garbage disposel
+  job_type: garbage_disposal
+- phrase: water bill high
+  job_type: high_water_bill
+- phrase: huge water bill
+  job_type: high_water_bill
+- phrase: meter spinning
+  job_type: high_water_bill
+- phrase: plumber
+  job_type: leak_slow
+- phrase: plummer
+  job_type: leak_slow
+- phrase: plumer
+  job_type: leak_slow
+triggers_es:
+- phrase: se reventó un tubo
+  job_type: leak_active
+- phrase: se rompió la tubería
+  job_type: leak_active
+- phrase: hay agua por todos lados
+  job_type: leak_active
+- phrase: fuga de agua
+  job_type: leak_slow
+- phrase: gotea la llave
+  job_type: leak_slow
+- phrase: gotea el fregadero
+  job_type: leak_slow
+- phrase: fuga debajo del piso
+  job_type: slab_leak
+- phrase: se oye agua en la pared
+  job_type: slab_leak
+- phrase: el drenaje está tapado
+  job_type: clogged_drain
+- phrase: se tapó el baño
+  job_type: clogged_drain
+- phrase: el lavabo no drena
+  job_type: clogged_drain
+- phrase: se regresa el drenaje
+  job_type: main_line_backup
+- phrase: aguas negras
+  job_type: main_line_backup
+- phrase: sale agua sucia del piso
+  job_type: main_line_backup
+- phrase: el inodoro no deja de correr
+  job_type: toilet_issue
+- phrase: cambiar el inodoro
+  job_type: toilet_issue
+- phrase: cambiar la llave de la cocina
+  job_type: fixture_replace
+- phrase: poner un lavabo nuevo
+  job_type: fixture_add_move
+- phrase: cambiar toda la tubería
+  job_type: repipe
+- phrase: poca presión de agua
+  job_type: water_pressure
+- phrase: la llave de afuera gotea
+  job_type: outdoor_spigot_line
+- phrase: el triturador no sirve
+  job_type: garbage_disposal
+- phrase: el recibo del agua salió alto
+  job_type: high_water_bill
+- phrase: plomero
+  job_type: leak_slow
+- phrase: plomería
+  job_type: leak_slow
+questions:
+- id: q1_problem
+  text: What is going on?
+  options:
+  - Water spraying or running now
+  - Slow leak or drip
+  - Drain clogged or slow
+  - Sewage or many drains backing up
+  - Install or replace something
+  - Low pressure or high bill
+  ask_if: always
+  changes_price: 'yes'
+  why: Active water and sewage are urgent and priced as emergency calls; installs are quoted differently. [judgment]
+- id: q2_where
+  text: Where is the problem?
+  options:
+  - Under a sink
+  - Toilet
+  - Tub or shower
+  - Inside a wall, ceiling or floor
+  - Outside or in the yard
+  - Whole house
+  ask_if: always
+  changes_price: 'yes'
+  why: Hidden locations (wall, slab) need finding first and may need drywall or concrete work. [judgment]
+- id: q3_how_many
+  text: How many drains or fixtures are affected?
+  options:
+  - Just one
+  - Two or three
+  - All of them
+  - Not sure
+  ask_if: q1_problem in ['Drain clogged or slow', 'Sewage or many drains backing up', 'Low pressure or high bill']
+  changes_price: 'yes'
+  why: One fixture vs the main line is a big price and equipment difference (camera, jetter). [judgment]
+- id: q4_pipe
+  text: What do the pipes look like where you can see them?
+  options:
+  - Copper (orange-brown metal)
+  - Gray or blue plastic
+  - White, red or blue plastic (PEX)
+  - Orange or blue with brass fittings
+  - Gray metal (galvanized)
+  - Not sure
+  ask_if: q1_problem in ['Water spraying or running now', 'Slow leak or drip'] or job_type == repipe
+  changes_price: 'yes'
+  why: Pipe type shapes repair method and re-pipe quotes. Ask Hava only records what is seen. [judgment]
+- id: q5_home
+  text: What kind of home is it?
+  options:
+  - Single-family on a slab
+  - Raised floor / crawlspace
+  - Manufactured home
+  - Condo or townhome
+  - Not sure
+  ask_if: q2_where in ['Inside a wall, ceiling or floor', 'Whole house'] or job_type in [slab_leak, repipe]
+  changes_price: 'yes'
+  why: Slab vs crawlspace changes access; manufactured homes have their own alteration rules (A.R.S. 41-4047). HOA
+    condos may share lines. [ARS-4047][judgment]
+- id: q6_shutoff
+  text: Is the water turned off right now?
+  options:
+  - Yes, at the main
+  - Yes, at a valve under the sink or toilet
+  - No, I can't find the shut-off
+  - No, it isn't needed
+  ask_if: q1_problem == 'Water spraying or running now'
+  changes_price: 'no'
+  why: Helps the business decide how fast to come. [judgment]
+quote_without_visit_needs:
+- Like-for-like fixture swaps when the homeowner supplies or names the fixture and sends photos of the old one and
+  the shut-off valves [judgment]
+- Toilet replacement with photo of the toilet and floor around it [judgment]
+- 'Single drain clog: which fixture, how long, any past clogs [judgment]'
+- 'Re-pipe ballpark: square footage, number of bathrooms, stories, slab or crawlspace, pipe type photo [judgment]'
+site_visit_usually_needed:
+- Hidden leaks, slab leaks, high water bills (leak detection) [judgment]
+- Main line or sewer backups (camera inspection) [judgment]
+- Adding or moving fixtures (permit required in LHC) [S17]
+- Re-pipes (permit required in LHC) [S17]
+photos_to_request:
+- id: p1_leak_spot
+  ask: A photo of where the water is coming from, if you can see it.
+  for_job_types:
+  - leak_active
+  - leak_slow
+  - toilet_issue
+  - outdoor_spigot_line
+- id: p2_under_sink
+  ask: A photo under the sink with the cabinet doors open, showing the pipes and valves.
+  for_job_types:
+  - leak_slow
+  - fixture_replace
+  - garbage_disposal
+  - clogged_drain
+- id: p3_pipe_material
+  ask: A photo of any pipe you can see (under sinks, at the water heater, or where it enters the house), close enough
+    to read any printing on it.
+  for_job_types:
+  - repipe
+  - leak_active
+  - leak_slow
+  - water_pressure
+- id: p4_damage
+  ask: 'A photo of any water damage: stains, wet floor, bubbling paint.'
+  for_job_types:
+  - slab_leak
+  - leak_active
+  - main_line_backup
+- id: p5_cleanout
+  ask: If outside, a photo of the sewer cleanout cap in the yard (a round cap on a pipe near the house).
+  for_job_types:
+  - main_line_backup
+- id: p6_meter
+  ask: If you have checked it, a photo of the water meter face with all water turned off.
+  for_job_types:
+  - high_water_bill
+  - slab_leak
+- id: p7_fixture
+  ask: A photo of the fixture you want replaced, and of the new one if you already bought it.
+  for_job_types:
+  - fixture_replace
+  - toilet_issue
+  - fixture_add_move
+photo_cues:
+- photo_id: p3_pipe_material
+  look_for:
+  - 'Polybutylene: flexible gray (sometimes blue or black) plastic, often stamped ''PB2110'', common in homes built
+    about 1978-1995, often with copper or plastic crimp rings [judgment]'
+  - 'Kitec / PEX-AL-PEX: orange (hot) and blue (cold) pipe with brass fittings, about 1995-2007 [judgment]'
+  - 'PEX: white, red or blue, printed ''PEX''; crimp or expansion fittings [judgment]'
+  - 'Copper: green crust at joints; blue-green stains [judgment]'
+  - 'Galvanized steel: gray threaded pipe, rust at threads (older homes) [judgment]'
+  - 'CPVC: cream/tan rigid plastic, glued joints [judgment]'
+  - 'Drain pipes: black ABS, white PVC, or cast iron (older homes) [judgment]'
+  neutral_wording_example: Visible supply pipe under the sink is gray flexible plastic with copper crimp rings.
+- photo_id: p2_under_sink
+  look_for:
+  - 'Angle stop valves: crusted, corroded, leaking [judgment]'
+  - Braided vs plastic supply lines [judgment]
+  - Water stains, swollen cabinet floor [judgment]
+  - White mineral scale from hard water [LHC-CCR][judgment]
+  - Disposal brand and electrical cord vs hard-wired [judgment]
+  neutral_wording_example: White mineral crust on both shut-off valves; cabinet floor looks swollen.
+- photo_id: p4_damage
+  look_for:
+  - Area and spread of stains; mold-like spots; buckled flooring [judgment]
+  neutral_wording_example: Carpet wet in a 3 by 4 foot area along the hallway wall.
+- photo_id: p5_cleanout
+  look_for:
+  - Cap missing or overflowing; roots; cap location helps the business plan [judgment]
+  neutral_wording_example: Yard cleanout cap is off and water is standing in the pipe.
+- photo_id: p6_meter
+  look_for:
+  - Leak indicator (small triangle or dial) moving with all water off suggests water use somewhere (UA Water Wise
+    meter test) [UA-WW]
+  neutral_wording_example: Meter leak indicator appears to be turning with all fixtures off.
+- photo_id: p1_leak_spot
+  look_for:
+  - Pinhole spray, failed supply line, cracked fitting, toilet base water [judgment]
+  neutral_wording_example: Water dripping from the nut where the supply line meets the faucet.
+- photo_id: p7_fixture
+  look_for:
+  - Brand, finish, number of holes in sink, wall vs deck mount [judgment]
+  neutral_wording_example: Single-handle kitchen faucet, three-hole sink, homeowner has new faucet in box.
+photo_red_flags:
+- flag: Water on the floor near outlets, cords or the electrical panel
+  safety_step_ref: es_water_electric
+- flag: Sewage water standing in the home
+  safety_step_ref: es_sewage
+- flag: Ceiling sagging or bulging with water
+  safety_step_ref: es_active_leak
+- flag: Gas pipe (black iron or yellow flex) visible near the leak with a smell of gas
+  safety_step_ref: es_gas
+emergency_signals:
+- id: es_active_leak
+  signal: Water spraying, running or coming through a ceiling right now
+  emergency: 'yes'
+  safety_step: If water is spraying or running and you can reach your main water shut-off safely, turn it off (UA
+    Cooperative Extension advises every household to know where its main valve is for emergencies). If water is
+    near outlets, cords or the electrical panel, do not walk into it; turn power off at the main breaker only if
+    you can reach it from a dry place, and keep it off until an electrician checks it.
+  source: '[UA-WW][S31]'
+  then_route_to: plumbing
+- id: es_water_electric
+  signal: Water near outlets, cords, appliances or the panel
+  emergency: 'yes'
+  safety_step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power
+    at the main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep
+    power off until an electrician checks it.
+  source: '[S31]'
+  then_route_to: plumbing
+- id: es_sewage
+  signal: Sewage coming up into tubs, showers or floors
+  emergency: 'yes'
+  safety_step: Stay out of sewage water as much as you can. Keep children and pets away. Wear rubber boots and gloves
+    if you must go in. Wash hands with soap and clean water after any contact.
+  source: '[CDC-FLOODWATER]'
+  then_route_to: plumbing
+- id: es_gas
+  signal: Smell of gas or rotten eggs
+  emergency: 'yes'
+  safety_step: Leave the home or area right away. Do not use a phone, light switch or anything that can make a spark
+    inside. Do not smoke or light a match. If you are outside, do not start a car. Do not try to find the leak.
+    From a safe place, call 911 and the UniSource 24-hour line, [number removed, see source]. Do not go back until UniSource or
+    the fire department says it is safe. Only UniSource may turn gas service back on.
+  source: '[UNS-GAS][S22][S25]'
+  then_route_to: gas_lines
+- id: es_street_side
+  signal: Water bubbling up in the street, sidewalk or at the meter box
+  emergency: depends
+  safety_step: Not a safety step; routing only. Lake Havasu City says the owner's water line begins where it connects
+    to the city-owned meter. If the water is at the meter or in the street, the homeowner can contact Lake Havasu
+    City (or EPCOR if that is their provider). If it is on the home side of the meter, card it as plumbing.
+  source: '[S19][judgment]'
+  then_route_to: plumbing
+safety_step:
+- when: Water spraying, running or coming through a ceiling right now
+  step: If water is spraying or running and you can reach your main water shut-off safely, turn it off (UA Cooperative
+    Extension advises every household to know where its main valve is for emergencies). If water is near outlets,
+    cords or the electrical panel, do not walk into it; turn power off at the main breaker only if you can reach
+    it from a dry place, and keep it off until an electrician checks it.
+  source: '[UA-WW][S31]'
+- when: Water near outlets, cords, appliances or the panel
+  step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power at the
+    main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep power
+    off until an electrician checks it.
+  source: '[S31]'
+- when: Sewage coming up into tubs, showers or floors
+  step: Stay out of sewage water as much as you can. Keep children and pets away. Wear rubber boots and gloves if
+    you must go in. Wash hands with soap and clean water after any contact.
+  source: '[CDC-FLOODWATER]'
+- when: Smell of gas or rotten eggs
+  step: Leave the home or area right away. Do not use a phone, light switch or anything that can make a spark inside.
+    Do not smoke or light a match. If you are outside, do not start a car. Do not try to find the leak. From a safe
+    place, call 911 and the UniSource 24-hour line, [number removed, see source]. Do not go back until UniSource or the fire department
+    says it is safe. Only UniSource may turn gas service back on.
+  source: '[UNS-GAS][S22][S25]'
+license_classes:
+- job_type:
+  - leak_slow
+  classes:
+  - R-37 Plumbing, Including Solar
+  - R-37R Plumbing
+  - CR-37 dual (C-37 + R-37R Plumbing)
+  - CR-77 dual (C-77 + R-37)
+  citation: 'A.A.C. R4-9-103 (R-37: water and gas piping, sewage treatment systems, fixtures, vents and devices);
+    R4-9-104 (CR-37, CR-77)'
+  other_agency: null
+  notes: Same classes for leak_active, slab_leak, toilet_issue, fixture_replace, fixture_add_move, repipe, water_pressure,
+    outdoor_spigot_line, garbage_disposal, high_water_bill. C-37 alone is commercial [S1].
+- job_type:
+  - main_line_backup
+  classes:
+  - R-37
+  - R-37R Plumbing
+  - R-37R Sewers, Drains and Pipe Laying (legacy)
+  - CR-37
+  - CR-80 dual (A-12 + R-37R Sewers, Drains and Pipe Laying)
+  citation: R4-9-103; R4-9-104 (CR-80); R4-9-102 (A-12)
+  other_agency: Lake Havasu City Wastewater [number removed, see source]) owns only the sewer main in the street; the owner's sewer
+    lateral runs from the home to that main [S20]
+  notes: Septic tanks route to the septic trade (R-41/CR-41; note the CR-41 text in the Cornell copy refers to welding,
+    a source typo) [S3].
+- job_type:
+  - fixture_add_move
+  classes:
+  - R-37
+  - R-37R Plumbing
+  - CR-37
+  - CR-77
+  citation: R4-9-103; R4-9-104
+  other_agency: null
+  notes: General contractors (B, B-3) and R-61/R-62 must subcontract plumbing [S2]. Adding or moving fixtures needs
+    an LHC permit [S17].
+- job_type:
+  - repipe
+  classes:
+  - R-37
+  - R-37R Plumbing
+  - CR-37
+  - CR-77
+  citation: R4-9-103; R4-9-104
+  other_agency: 'Manufactured homes: alterations only by a licensed or certified person (A.R.S. 41-4047(5)) [ARS-4047]'
+  notes: Water system re-pipes need an LHC permit [S17].
+handyman_ok:
+  allowed_examples:
+  - Replace a faucet, shower head, toilet flapper or fill valve in the same spot, under $1,000 total; LHC lists
+    replacing existing plumbing fixtures as no-permit [S17][S4]
+  - Snake a single sink or tub drain, under $1,000 [judgment]
+  - Replace a plug-in garbage disposal like-for-like, under $1,000 [judgment]
+  not_allowed_examples:
+  - Add or move any fixture, or re-pipe (LHC permit required) [S17]
+  - Any work on gas piping or gas appliances [S4 (D)(2)]
+  - Slab leak repair or main line work over $1,000 [S4]
+  - Breaking a big job into small invoices [S4 (A)(14)(b)]
+  rule_reminder: 'A person without an ROC license may take a job only if ALL are true: total price (labor + materials
+    + everything) is under $1,000; the work is casual, minor or inconsequential; no local building permit is required;
+    it is not part of a larger job or split up to stay under $1,000; and any ad says ''not a licensed contractor''.
+    The exemption never covers work that connects to natural gas, propane or other fuel gas, or fire-safety work
+    such as hardwired/interconnected smoke alarms. Source: A.R.S. 32-1121(A)(14) and (D) [S4]. In Lake Havasu City,
+    check the city permit list: a needed permit removes the exemption [S17].'
+local_notes:
+- 'City water: hardness about 19 gpg (range 18-20) and TDS about 753 ppm (above the EPA 500 ppm secondary guideline),
+  so scale builds on aerators, cartridges, valves and toilet parts [LHC-CCR].'
+- Some areas outside city limits are on EPCOR water (reported 6-8 gpg) or private wells; ask the general area only
+  [EPCOR-LH].
+- Many homes sit on slabs over rocky or caliche soil; hidden leaks may show as warm floor spots or high bills [judgment].
+- Vacant snowbird and short-term rental homes may find leaks only on return; a business can quote leak checks or
+  water-off service while away [judgment].
+- 'Meter test from UA Water Wise: turn off all water use, read the smallest dial, check again in 15-30 minutes;
+  movement means water is flowing somewhere [UA-WW].'
+- 'Digging for yard lines: call Arizona 811 at least two working days before digging [AZ811].'
+- 'LHC permits: required for added or relocated fixtures and re-pipes; not required to replace existing fixtures
+  [S17].'
+- 'Who owns which pipe (city areas): the owner''s water line starts at the city-owned water meter, and the owner''s
+  sewer line runs all the way to the city sewer main in the street. So most backups between the house and the street
+  are on the owner''s line [S19][S20].'
+- 'Neutral routing wording: ''If it looks like the issue is at the city water meter or the sewer main in the street,
+  you can call Lake Havasu City Wastewater at [number removed, see source]. For your side of the line, we can send a request to
+  local plumbers.'' [S20]'
+- Lake Havasu City requires pressure regulators and says water pressure entering a home should be below 60 PSI.
+  Use this to ask about a regulator on banging-pipe or repeat-leak requests, never to diagnose [S19].
+- Rare hard freezes in winter can split exposed outdoor pipes and hose bibs [judgment].
+sample_card: 'REQ-0163 | Plumbing | Lake Havasu City, central
+
+  Kitchen sink supply line leaking; water shut off at the valve under the sink.
+
+  Pipes look like gray plastic (photo). Single-story slab home. Wants visit within a day.'
+test_messages:
+- id: plumbing_t01
+  message: WATER EVERYWHERE pipe under kitchen sink blew
+  trade: plumbing
+  job_type: leak_active
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: Can you safely reach a shut-off valve under the sink or the main shut-off, and is water
+    near any outlets?
+  note: Give shut-off/electrical step first.
+- id: plumbing_t02
+  message: toilet keeps running all night lol
+  trade: plumbing
+  job_type: toilet_issue
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is it one toilet, and is any water leaking onto the floor?
+  note: ''
+- id: plumbing_t03
+  message: se tapó el baño y sale agua sucia en la regadera
+  trade: plumbing
+  job_type: main_line_backup
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: ¿Está saliendo agua sucia en más de un lugar, como la tina, la regadera o el piso?
+  note: Spanish; sewage = CDC step.
+- id: plumbing_t04
+  message: water bill was $280 this month normally like 60
+  trade: plumbing
+  job_type: high_water_bill
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Have you seen any wet spots, warm floor spots, or a toilet that keeps running?
+  note: Never guess the cause.
+- id: plumbing_t05
+  message: my house has that gray poly pipe, want quote to repipe 3bd 2ba
+  trade: plumbing
+  job_type: repipe
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is the home on a slab, a raised floor, or a manufactured home?
+  note: ''
+- id: plumbing_t06
+  message: need a new faucet put in i bought it already
+  trade: plumbing
+  job_type: fixture_replace
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is it a kitchen or bathroom faucet, and can you send a photo of the old one and under the
+    sink?
+  note: ''
+- id: plumbing_t07
+  message: no hot water and theres water on the garage floor by the tank
+  trade: water_heater
+  job_type: tank_leak
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Is the water near any outlets or cords, and is the tank gas or electric?
+  note: Wrong trade; route water_heater.
+- id: plumbing_t08
+  message: water bubbling up from the sidewalk by my meter
+  trade: plumbing
+  job_type: outdoor_spigot_line
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Is the water coming up in your yard on the house side of the meter, or at the meter box
+    or street?
+  note: Owner line starts at the city meter [S19]; at the meter or street, give the city contact instead of a card.
+- id: plumbing_t09
+  message: REQ-0164 shower drain slow + kitchen sink gurgles
+  trade: plumbing
+  job_type: main_line_backup
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Do other drains, like toilets or the washer, also back up or gurgle?
+  note: Mixed symptoms can mean one line or the main; ask, do not judge.
+- id: plumbing_t10
+  message: hello? need help with house stuff
+  trade: plumbing
+  job_type: leak_slow
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: 'Happy to help. What is going on at the home: a leak, a clog, something to install, or something
+    else?'
+  note: Vague; default trade is a placeholder until answered.
+sources:
+- '[S1] (foundation/sources_foundation.md) A.A.C. R4-9-102 Commercial contracting classifications (Cornell LII copy,
+  amended through 23 A.A.R. 2525, eff. 11/5/2017): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102'
+- '[S2] (foundation/sources_foundation.md) A.A.C. R4-9-103 Residential contracting classifications (Cornell LII
+  copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] (foundation/sources_foundation.md) A.A.C. R4-9-104 Dual licensing classifications (Cornell LII copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] (foundation/sources_foundation.md) A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman
+  exemption and (D) fire-safety and fuel-gas carve-outs): https://www.azleg.gov/ars/32/01121.htm'
+- '[ARS-4047] (trade-only source) A.R.S. 41-4047 Unlawful acts (manufactured homes; item 5: alterations only by
+  a licensed or certified person): https://www.azleg.gov/ars/41/04047.htm'
+- '[S17] (foundation/sources_foundation.md) Lake Havasu City Building Division, permit-required and no-permit lists
+  (2024 I-codes, 2023 NEC): https://www.lhcaz.gov/development-permitting/building'
+- '[S19] (foundation/sources_foundation.md) Lake Havasu City Water Division (owner''s water lateral begins at the
+  city-owned meter; pressure regulators required; pressure entering a home should be below 60 PSI): https://www.lhcaz.gov/288/Water'
+- '[S20] (foundation/sources_foundation.md) Lake Havasu City Wastewater Division (owner''s sewer lateral runs to
+  the city sewer main in the street; [number removed, see source]): https://www.lhcaz.gov/289/Wastewater'
+- '[S22] (foundation/sources_foundation.md) UniSource Energy Services contact page (gas emergency: call 911 and
+  [number removed, see source]; outages [number removed, see source]; LHC electric office [number removed, see source]; LHC gas office [number removed, see source]): https://www.uesaz.com/contact/'
+- '[S25] (foundation/sources_foundation.md) UniSource During a Storm or Service Outage (downed lines; only UniSource
+  field employees may turn gas service back on; do not relight pilots after a shutoff): https://www.uesaz.com/outage-preparation/'
+- '[LHC-CCR] (trade-only source) Lake Havasu City 2025 Annual Drinking Water Quality Report, system AZ0408022 (hardness
+  avg 19 gpg, range 18-20; TDS avg 753 ppm), lhcaz.gov'
+- '[EPCOR-LH] (trade-only source) EPCOR Water Arizona, Lake Havasu system water quality (hardness 6-8 gpg; EPCOR
+  scale >10.5 gpg = very hard), epcor.com'
+- '[UA-WW] (trade-only source) University of Arizona Cooperative Extension, Water Wise: swamp cooler maintenance,
+  cool rules, softeners, RO, leaks: https://waterwise.arizona.edu/ways-save-water/water-saving-tips/swamp-cooler-maintenance'
+- '[S31] (foundation/sources_foundation.md) CDC, Protect yourself from electrical hazards after a disaster / Reentering
+  your flooded home (turn off main only if you can reach it from a dry place; never stand in water to switch power):
+  https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-from-electrical-hazards.html'
+- '[CDC-FLOODWATER] (trade-only source) CDC Safety Guidelines: Floodwater (avoid contact with floodwater/sewage;
+  keep children and pets away; wash hands): https://www.cdc.gov/floods/safety/floodwater-after-a-disaster-or-emergency-safety.html'
+- '[UNS-GAS] (trade-only source) UniSource Energy Services, Natural Gas Safety and Safety Alert insert: https://www.uesaz.com/gas-safety/
+  and https://docs.uesaz.com/wp-content/uploads/Gas-Safety-Insert-Oct-2026.pdf'
+- '[AZ811] (trade-only source) Arizona 811 call-before-you-dig (call 811 or arizona811.com at least two working
+  days before digging): https://www.arizona811.com'

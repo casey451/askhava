@@ -1,0 +1,517 @@
+# Ask Hava trade knowledge file: boat_dock
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: boat_dock
+display_name: Boat & dock services
+summary: 'Boats and docks on and around Lake Havasu: boat engine and outboard/sterndrive repair, winterizing and
+  tune-ups, trailer work, detailing and oxidation removal, upholstery, decontamination questions, boat lift repair,
+  and dock repair or building. Dock work over the lake is regulated by several agencies (U.S. Army Corps of Engineers,
+  BLM and/or Bureau of Reclamation for shoreline land, and Lake Havasu City for docks in its code), and most docks
+  and lifts are at marinas with their own rules [judgment]. Ask Hava never says which permit a job needs; it gathers
+  facts and sends a card.'
+job_types:
+- id: engine_repair
+  label: Engine, outboard, sterndrive or jet ski repair / won't start
+  site_visit_usually_needed: 'yes'
+- id: service_tuneup
+  label: Service, tune-up, impeller, oil, winterize / de-winterize
+- id: detailing
+  label: Detailing, wash, wax, oxidation removal, upholstery
+- id: trailer
+  label: Boat trailer lights, bearings, tires, brakes
+- id: electrical_marine
+  label: Boat electrical, batteries, stereo
+- id: boat_lift
+  label: Boat lift or PWC lift repair or install
+  site_visit_usually_needed: 'yes'
+- id: dock_repair
+  label: Dock repair (decking, flotation, gangway, cleats)
+  site_visit_usually_needed: 'yes'
+- id: dock_new
+  label: New dock or dock expansion
+  site_visit_usually_needed: 'yes'
+- id: dock_electrical
+  label: Dock power, lights, shore power outlets
+  site_visit_usually_needed: 'yes'
+- id: mobile_service
+  label: Mobile service at home or marina
+triggers_en:
+- phrase: boat
+  job_type: null
+- phrase: pontoon
+  job_type: null
+- phrase: wakeboard boat
+  job_type: null
+- phrase: jet ski
+  job_type: null
+- phrase: PWC
+  job_type: null
+- phrase: sea doo
+  job_type: null
+- phrase: waverunner
+  job_type: null
+- phrase: outboard
+  job_type: engine_repair
+- phrase: Mercury
+  job_type: null
+- phrase: Yamaha
+  job_type: null
+- phrase: MerCruiser
+  job_type: engine_repair
+- phrase: Volvo Penta
+  job_type: engine_repair
+- phrase: sterndrive
+  job_type: engine_repair
+- phrase: impeller
+  job_type: service_tuneup
+- phrase: won't start
+  job_type: engine_repair
+- phrase: overheating
+  job_type: engine_repair
+- phrase: winterize
+  job_type: service_tuneup
+- phrase: detail
+  job_type: detailing
+- phrase: oxidation
+  job_type: detailing
+- phrase: wax
+  job_type: detailing
+- phrase: upholstery
+  job_type: detailing
+- phrase: trailer
+  job_type: trailer
+- phrase: bearings
+  job_type: trailer
+- phrase: boat lift
+  job_type: boat_lift
+- phrase: PWC lift
+  job_type: boat_lift
+- phrase: dock
+  job_type: dock_repair
+- phrase: floating dock
+  job_type: dock_repair
+- phrase: gangway
+  job_type: dock_repair
+- phrase: slip
+  job_type: dock_repair
+- phrase: shore power
+  job_type: dock_electrical
+- phrase: quagga
+  job_type: null
+- phrase: decon
+  job_type: null
+triggers_es:
+- phrase: lancha
+  job_type: null
+- phrase: bote
+  job_type: null
+- phrase: barco
+  job_type: null
+- phrase: moto acuática
+  job_type: null
+- phrase: jet ski
+  job_type: null
+- phrase: motor fuera de borda
+  job_type: engine_repair
+- phrase: no arranca
+  job_type: engine_repair
+- phrase: se calienta el motor
+  job_type: engine_repair
+- phrase: detallado
+  job_type: null
+- phrase: encerar
+  job_type: detailing
+- phrase: tapicería
+  job_type: detailing
+- phrase: remolque
+  job_type: trailer
+- phrase: tráiler de la lancha
+  job_type: trailer
+- phrase: muelle
+  job_type: dock_repair
+- phrase: elevador de lancha
+  job_type: boat_lift
+- phrase: luz del muelle
+  job_type: dock_electrical
+questions:
+- id: boat_or_dock
+  text: Is this for a boat or a dock / lift?
+  options:
+  - Boat or jet ski
+  - Boat trailer
+  - Dock
+  - Boat lift
+  - Dock power or lights
+  ask_if: always
+  changes_price: 'yes'
+- id: boat_job
+  text: What does the boat need?
+  options:
+  - Won't start / runs bad
+  - Service or tune-up
+  - Winterize
+  - Detailing / wax
+  - Electrical
+  - Upholstery
+  - Other
+  ask_if: boat_or_dock == Boat or jet ski
+  changes_price: 'yes'
+- id: engine_type
+  text: What kind of engine?
+  options:
+  - Outboard
+  - Inboard / sterndrive (I/O)
+  - Jet drive / PWC
+  - Not sure
+  ask_if: boat_or_dock == Boat or jet ski and boat_job != Detailing / wax
+  changes_price: 'yes'
+- id: boat_length
+  text: How long is the boat?
+  options:
+  - Under 20 ft
+  - 20-26 ft
+  - Over 26 ft
+  - Jet ski / PWC
+  ask_if: boat_or_dock == Boat or jet ski
+  changes_price: 'yes'
+- id: location
+  text: Where is it?
+  options:
+  - At my home (trailer or private dock)
+  - At a marina
+  - At a storage lot
+  - HOA or community dock
+  - Other
+  ask_if: always
+  changes_price: 'yes'
+- id: dock_job
+  text: What is the dock work?
+  options:
+  - Repair boards or floats
+  - Add on / make bigger
+  - New dock
+  - Lift repair
+  - Power or lights
+  ask_if: boat_or_dock in [Dock, Boat lift, Dock power or lights]
+  changes_price: 'yes'
+quote_without_visit_needs:
+- Make, model, year and engine (from a photo of the engine label or HIN plate)
+- Boat length
+- Where it is (home, marina, storage)
+- 'For detailing: photos of hull and interior'
+- 'For docks: photos and rough size, and marina or HOA name if it applies'
+site_visit_usually_needed:
+- engine_repair (usually needs to be tested)
+- dock_new
+- dock_repair
+- boat_lift
+- dock_electrical
+photos_to_request:
+- id: p1
+  ask: Engine label / serial plate
+  for_job_types:
+  - all
+- id: p2
+  ask: Whole boat side view
+  for_job_types:
+  - all
+- id: p3
+  ask: Hull oxidation or damage close up
+  for_job_types:
+  - all
+- id: p4
+  ask: Dock or lift from shore and close up
+  for_job_types:
+  - all
+- id: p5
+  ask: Dock power pedestal or outlets
+  for_job_types:
+  - all
+- id: p6
+  ask: Trailer tires, lights and hubs
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Chalky faded gelcoat (oxidation)
+  - Mussel shells or crust on hull, lower unit or lift (possible quagga) [judgment]
+  - Rusted or bent lift cables and cradles
+  - Broken or sinking dock floats
+  - Non-marine extension cords to the boat
+photo_red_flags:
+- flag: Extension cords or damaged shore power cords in or near water
+  safety_step_ref: null
+- flag: Fuel in bilge or fuel smell
+  safety_step_ref: es_gas_smell_in_bilge
+- flag: Dock tilted or sinking
+  safety_step_ref: null
+- flag: Cracked lift cables holding a boat
+  safety_step_ref: null
+emergency_signals:
+- id: es_anyone_feels_a_tingle_or_shock
+  signal: Anyone feels a tingle or shock in the water near a dock or boat
+  emergency: 'yes'
+  safety_step: Never swim near docks or marinas with power. If you feel a tingle, move away from the power source
+    and get out without using a metal ladder. Do not jump in to help; turn off shore power and call 911. Docks and
+    boats should get yearly checks by a qualified marine electrician.
+  source: NFPA, Electric Shock Drowning - https://www.nfpa.org/education-and-research/electrical/electric-shock-drowning
+    ; CPSC, Don't Swim with Shocks (electrical safety in and around pools, hot tubs and spas) - https://www.cpsc.gov/Safety-Education/Safety-Guides/Sports-Fitness-and-Recreation/Pools-and-Spas
+  then_route_to: boat_dock
+- id: es_gas_smell_in_bilge
+  signal: Gas smell in bilge
+  emergency: 'yes'
+  safety_step: Do not start the engine. Open hatches, sniff the bilge, and run the bilge blower at least 4 minutes
+    before starting. If you still smell fuel, do not start it.
+  source: U.S. Coast Guard Boating Safety Circular 83 (bilge blower before starting) - https://uscgboating.org/library/boating-safety-circulars/BSC83.pdf
+    ; 33 CFR 183.610 Powered ventilation system (blower warning label) - https://www.law.cornell.edu/cfr/text/33/183.610
+  then_route_to: boat_dock
+- id: es_boat_sinking_at_dock
+  signal: Boat sinking at dock
+  emergency: 'yes'
+  safety_step: Use the matching step in foundation/part1_all_reasons.md section 3 (call 911 if anyone is hurt or
+    in danger).
+  source: foundation/part1_all_reasons.md [no trade-specific official step in this file]
+  then_route_to: boat_dock
+- id: es_someone_dizzy_or_sick_on_the_b
+  signal: Someone dizzy or sick on the boat (carbon monoxide)
+  emergency: 'yes'
+  safety_step: Move the person to fresh air and call 911. CO has no smell.
+  source: CDC, Carbon Monoxide Poisoning basics - https://www.cdc.gov/carbon-monoxide/
+  then_route_to: boat_dock
+- id: es_fire_on_the_boat_or_dock
+  signal: Fire on the boat or dock
+  emergency: 'yes'
+  safety_step: Use the matching step in foundation/part1_all_reasons.md section 3 (call 911 if anyone is hurt or
+    in danger).
+  source: foundation/part1_all_reasons.md [no trade-specific official step in this file]
+  then_route_to: boat_dock
+safety_step:
+- when: Tingle or shock near a dock (electric shock drowning)
+  step: Never swim near docks or marinas with power. If you feel a tingle, move away from the power source and get
+    out without using a metal ladder. Do not jump in to help; turn off shore power and call 911. Docks and boats
+    should get yearly checks by a qualified marine electrician.
+  source: NFPA, Electric Shock Drowning - https://www.nfpa.org/education-and-research/electrical/electric-shock-drowning
+    ; CPSC, Don't Swim with Shocks (electrical safety in and around pools, hot tubs and spas) - https://www.cpsc.gov/Safety-Education/Safety-Guides/Sports-Fitness-and-Recreation/Pools-and-Spas
+- when: Gas smell or after fueling
+  step: Do not start the engine. Open hatches, sniff the bilge, and run the bilge blower at least 4 minutes before
+    starting. If you still smell fuel, do not start it.
+  source: U.S. Coast Guard Boating Safety Circular 83 (bilge blower before starting) - https://uscgboating.org/library/boating-safety-circulars/BSC83.pdf
+    ; 33 CFR 183.610 Powered ventilation system (blower warning label) - https://www.law.cornell.edu/cfr/text/33/183.610
+- when: Carbon monoxide signs on a boat
+  step: Move the person to fresh air and call 911. CO has no smell.
+  source: CDC, Carbon Monoxide Poisoning basics - https://www.cdc.gov/carbon-monoxide/
+- when: Moving a boat off Lake Havasu
+  step: 'Clean, drain and dry: pull the plug and drain bilge, live wells, ballast and lower unit. Boats in the lake
+    6 or more days in a row must be decontaminated before moving.'
+  source: Arizona Game and Fish Department, Aquatic Invasive Species (quagga mussels; clean, drain, dry; decontamination)
+    - https://www.azgfd.com/fishing-2/aquatic-invasive-species/
+license_classes:
+- job_type:
+  - engine_repair
+  - service_tuneup
+  - detailing
+  - trailer
+  - electrical_marine
+  - mobile_service
+  work: Boat engine repair, detailing, upholstery, trailers
+  classes:
+  - 'No ROC license: boats are not structures, so contractor licensing does not apply [judgment]. A city business
+    license may apply [judgment / open question].'
+  citation: A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener
+    (A)(16), fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - dock_electrical
+  work: Dock electrical and shore power pedestals
+  classes:
+  - R-11 Electrical / CR-11 / C-11; marine wiring follows NEC Article 555
+  citation: A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+    ; NFPA, Electric Shock Drowning - https://www.nfpa.org/education-and-research/electrical/electric-shock-drowning;
+    A.A.C. R4-9-104 [S3] (CR- dual classes); A.A.C. R4-9-102 [S1] (commercial classes)
+  other_agency: null
+  notes: ''
+- job_type:
+  - dock_repair
+  - dock_new
+  - boat_lift
+  work: Dock and lift structures, pilings, steel or aluminum frames
+  classes:
+  - 'Unclear class [open question]: possibly A general engineering / A-7 Piers and Foundations / A-11 Steel and
+    Aluminum Erection (commercial) or R-17 Structural Steel and Aluminum / R-56 Welding (residential) [judgment].'
+  citation: A.A.C. R4-9-102 Commercial contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102
+    ; A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+  other_agency: null
+  notes: ''
+- job_type:
+  - dock_repair
+  - dock_new
+  - boat_lift
+  work: Federal permit for any structure in or over navigable water
+  classes:
+  - U.S. Army Corps of Engineers Section 10 (Rivers and Harbors Act) authorization
+  citation: U.S. Army Corps of Engineers, Los Angeles District Regulatory Program (Section 10 Rivers and Harbors
+    Act, 33 U.S.C. 403) - https://www.spl.usace.army.mil/Missions/Regulatory/
+  other_agency: null
+  notes: ''
+- job_type:
+  - dock_new
+  - dock_repair
+  work: City dock standards
+  classes:
+  - 'Lake Havasu City Code 12.08.100 (Commercial Dock Standards; rules for private residential docks not confirmed
+    [open question]): plans sealed by a civil engineer, proof of Army Corps permit, city permit, flotation, handrail
+    and NEC electrical rules'
+  citation: Lake Havasu City Code 12.08.100 Commercial Dock Standards (American Legal code library) - https://codelibrary.amlegal.com/codes/lakehavasucity/latest/overview
+  other_agency: null
+  notes: ''
+- job_type:
+  - dock_new
+  work: Shoreline land
+  classes:
+  - BLM Lake Havasu Field Office manages much of the shoreline; city zoning says land below 455 ft elevation is
+    under Reclamation and/or BLM
+  citation: BLM Lake Havasu Field Office [number removed, see source]) and 2009 Federal Register supplementary rules for the Lake
+    Havasu shoreline - https://www.blm.gov/office/lake-havasu-field-office
+  other_agency: null
+  notes: ''
+- job_type:
+  - service_tuneup
+  - detailing
+  work: Quagga mussel decontamination before moving a boat
+  classes:
+  - AZ Game and Fish decontamination is by AZGFD or its authorized agents
+  citation: Arizona Game and Fish Department, Aquatic Invasive Species (quagga mussels; clean, drain, dry; decontamination)
+    - https://www.azgfd.com/fishing-2/aquatic-invasive-species/
+  other_agency: null
+  notes: ''
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: 'Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit,
+    is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)),
+    and ads say ''not a licensed contractor''. Source: A.R.S. 32-1121(A)(14), (C), (D) [S4]; foundation/az_license_master.md
+    section 4.'
+  note: 'Boat repair and detailing: no ROC license is needed [judgment]. Docks: no. Dock work over the lake needs
+    federal (Army Corps) and city approvals, and dock electrical is licensed electrical work.'
+local_notes:
+- 'Who regulates dock work on Lake Havasu: U.S. Army Corps of Engineers (Section 10 for any structure in or over
+  the water); Bureau of Land Management Lake Havasu Field Office and/or Bureau of Reclamation for shoreline land;
+  Lake Havasu City Development Services for docks under city code 12.08.100; marina or concession rules on top of
+  that. Ask Hava does not tell homeowners which permit they need. Sources: U.S. Army Corps of Engineers, Los Angeles
+  District Regulatory Program (Section 10 Rivers and Harbors Act, 33 U.S.C. 403) - https://www.spl.usace.army.mil/Missions/Regulatory/
+  ; BLM Lake Havasu Field Office [number removed, see source]) and 2009 Federal Register supplementary rules for the Lake Havasu
+  shoreline - https://www.blm.gov/office/lake-havasu-field-office ; Lake Havasu City Code 12.08.100 Commercial Dock
+  Standards (American Legal code library) - https://codelibrary.amlegal.com/codes/lakehavasucity/latest/overview'
+- 'Lake Havasu has quagga mussels; AZGFD rules on clean, drain, dry and decontamination apply when boats leave.
+  Drying times: about 18 days Nov-Apr or 7 days May-Oct. Source: Arizona Game and Fish Department, Aquatic Invasive
+  Species (quagga mussels; clean, drain, dry; decontamination) - https://www.azgfd.com/fishing-2/aquatic-invasive-species/'
+- 'Bridgewater Channel has its own dock rules in city code [judgment: from code summary].'
+- Many boats are serviced on trailers at home or at storage lots; mobile service is common [judgment].
+- Summer sun and hard water spots cause gelcoat oxidation and water spots [judgment].
+sample_card: 'REQ-0711 | Boat service
+
+  Lake Havasu City, central area
+
+  22 ft wakeboard boat, inboard, on trailer at home. Wants de-winterize and service.
+
+  Engine label photo attached.'
+test_messages:
+- id: boat_dock_t01
+  message: boat won't start, mercruiser, on trailer in driveway
+  trade: boat_dock
+  job_type: engine_repair
+  emergency: 'no'
+  first_question_id: boat_length
+  ideal_first_question: How long is the boat?
+  note: ''
+- id: boat_dock_t02
+  message: need my pontoon detailed and waxed
+  trade: boat_dock
+  job_type: detailing
+  emergency: 'no'
+  first_question_id: boat_length
+  ideal_first_question: How long is the boat?
+  note: ''
+- id: boat_dock_t03
+  message: boat
+  trade: boat_dock
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: boat_or_dock
+  ideal_first_question: Is this for a boat or a dock / lift?
+  note: job_type unknown = too vague; the first question picks the job type.
+- id: boat_dock_t04
+  message: La lancha se calienta y sale vapor
+  trade: boat_dock
+  job_type: engine_repair
+  emergency: 'no'
+  first_question_id: engine_type
+  ideal_first_question: What kind of engine?
+  note: ''
+- id: boat_dock_t05
+  message: my dock floats are sinking on one side, marina slip
+  trade: boat_dock
+  job_type: dock_repair
+  emergency: 'no'
+  first_question_id: dock_job
+  ideal_first_question: What is the dock work?
+  note: ''
+- id: boat_dock_t06
+  message: want to build a dock behind my house on the lake
+  trade: boat_dock
+  job_type: dock_new
+  emergency: 'no'
+  first_question_id: location
+  ideal_first_question: Where is it?
+  note: ''
+- id: boat_dock_t07
+  message: felt a buzz in the water by our dock, kids are swimming
+  trade: boat_dock
+  job_type: dock_electrical
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: '[safety_step_first] Give the matching safety step first; ask intake questions only after
+    everyone is safe.'
+  note: ''
+- id: boat_dock_t08
+  message: golf cart and boat both need batteries
+  trade: boat_dock
+  job_type: electrical_marine
+  emergency: 'no'
+  first_question_id: boat_length
+  ideal_first_question: How long is the boat?
+  note: ''
+- id: boat_dock_t09
+  message: trailer lights dont work and bearing is squeaking
+  trade: boat_dock
+  job_type: trailer
+  emergency: 'no'
+  first_question_id: location
+  ideal_first_question: Where is it?
+  note: ''
+- id: boat_dock_t10
+  message: Necesito que alguien encere mi lancha y limpie la tapicería
+  trade: boat_dock
+  job_type: detailing
+  emergency: 'no'
+  first_question_id: boat_length
+  ideal_first_question: How long is the boat?
+  note: ''
+sources:
+- U.S. Army Corps of Engineers, Los Angeles District Regulatory Program (Section 10 Rivers and Harbors Act, 33 U.S.C.
+  403) - https://www.spl.usace.army.mil/Missions/Regulatory/
+- Lake Havasu City Code 12.08.100 Commercial Dock Standards (American Legal code library) - https://codelibrary.amlegal.com/codes/lakehavasucity/latest/overview
+- BLM Lake Havasu Field Office [number removed, see source]) and 2009 Federal Register supplementary rules for the Lake Havasu
+  shoreline - https://www.blm.gov/office/lake-havasu-field-office
+- Arizona Game and Fish Department, Aquatic Invasive Species (quagga mussels; clean, drain, dry; decontamination)
+  - https://www.azgfd.com/fishing-2/aquatic-invasive-species/
+- NFPA, Electric Shock Drowning - https://www.nfpa.org/education-and-research/electrical/electric-shock-drowning
+- U.S. Coast Guard Boating Safety Circular 83 (bilge blower before starting) - https://uscgboating.org/library/boating-safety-circulars/BSC83.pdf
+- 33 CFR 183.610 Powered ventilation system (blower warning label) - https://www.law.cornell.edu/cfr/text/33/183.610
+- CDC, Carbon Monoxide Poisoning basics - https://www.cdc.gov/carbon-monoxide/
+- A.A.C. R4-9-102 Commercial contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102
+- A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+- A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+  fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm

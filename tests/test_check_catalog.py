@@ -359,8 +359,8 @@ def test_not_a_contractor_wording_fails(tmp_path: Path, phrase: str) -> None:
     errors = errors_after(
         tmp_path,
         "categories.yaml",
-        '"What is leaking or not working?"',
-        f'"What is leaking or not working? {phrase}"',
+        'review: "R-8 or R-34 per changes file :209. Confirmed K2b."',
+        f'review: "R-8 or R-34 per changes file :209. Confirmed K2b. {phrase}"',
     )
     expected = "implies Ask Hava is a contractor (WORD-022)"
     assert any(expected in e for e in errors), errors
@@ -479,10 +479,28 @@ def test_pest_may_be_off_with_no_decision(tmp_path: Path) -> None:
             "options_en and options_es must match",
         ),
         (
+            "categories.yaml",
+            "quote_format: diagnostic_visit",
+            "quote_format: bundle",
+            "quote_format must be one of",
+        ),
+        (
+            "categories.yaml",
+            "quote_format: monthly",
+            "quote_format: range",
+            "quote_format monthly exactly when recurring",
+        ),
+        (
             "question_bank.yaml",
-            '"Ask Hava: Keep people and pets away',
-            '"Keep people and pets away',
-            "must start 'Ask Hava:'",
+            "kb_trade: flooring",
+            "kb_trade: not_a_trade",
+            "kb_trade not_a_trade has no file",
+        ),
+        (
+            "question_bank.yaml",
+            "kb_trade: flooring\n    photos: [p1, p2, p3]",
+            "kb_trade: flooring\n    photos: [p1, p2, p9]",
+            "photo p9 not in flooring",
         ),
         (
             "question_bank.yaml",
@@ -492,11 +510,12 @@ def test_pest_may_be_off_with_no_decision(tmp_path: Path) -> None:
         ),
         (
             "question_bank.yaml",
-            "  epoxy_floors:\n    version: 1\n    confirmed_by: []\n    questions:\n",
-            "  epoxy_floors:\n    version: 1\n    confirmed_by: []\n    questions:\n"
+            "kb_trade: flooring\n    photos: [p1, p2, p3]\n    questions:\n",
+            "kb_trade: flooring\n    photos: [p1, p2, p3]\n    questions:\n"
             "      - {id: a, en: x, es: y}\n      - {id: b, en: x, es: y}\n"
-            "      - {id: c, en: x, es: y}\n      - {id: d, en: x, es: y}\n",
-            "7 questions, need 3 to 6",
+            "      - {id: c, en: x, es: y}\n      - {id: d, en: x, es: y}\n"
+            "      - {id: e, en: x, es: y}\n      - {id: f, en: x, es: y}\n",
+            "9 questions, need 3 to 8",
         ),
         (
             "question_bank.yaml",
@@ -531,7 +550,7 @@ def test_round_13_quote_types() -> None:
         cats["handyman"],
     )
     assert (hourly.fee_basis, hourly.fee) == (check_catalog.Fraction(380), 25)
-    no_hours = check_catalog.compute({**base, "quote": {"type": "hourly", "rate": "95.00"}}, cats["hvac_replacement"])
+    no_hours = check_catalog.compute({**base, "quote": {"type": "hourly", "rate": "95.00"}}, cats["hvac_repair"])
     assert (no_hours.fee_basis, no_hours.fee) == (None, 25)
     setup = check_catalog.compute(
         {**base, "quote": {"type": "fixed", "amount": "40.00", "period": "weekly", "setup": "900.00"}},

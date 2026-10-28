@@ -1,0 +1,414 @@
+# Ask Hava trade knowledge file: tree_trimming
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: tree_trimming
+display_name: Tree & palm trimming
+summary: 'Tree and palm work: palm trimming (frond and seed-pod removal, ''skinning'' trunks), mesquite and palo
+  verde pruning and thinning, tree removal, stump grinding, storm cleanup after monsoon winds, and hauling. Work
+  near overhead power lines is not sent to businesses: Ask Hava points the homeowner to UniSource Energy Services
+  first. Ask Hava never judges if a tree is safe or sick.'
+job_types:
+- id: palm_trim
+  label: Palm trimming (fronds, seed pods, skinning)
+- id: tree_prune
+  label: Prune or thin mesquite, palo verde, ironwood, other tree
+- id: tree_removal
+  label: Remove a tree or palm
+  site_visit_usually_needed: 'yes'
+- id: stump
+  label: Stump grinding or removal
+- id: storm_damage
+  label: Tree or big limb down after wind/monsoon
+  site_visit_usually_needed: 'yes'
+- id: haul
+  label: Haul away branches/fronds
+- id: near_power_lines
+  label: Tree touching or near power lines (route to utility)
+triggers_en:
+- phrase: palm
+  job_type: palm_trim
+- phrase: palm tree
+  job_type: palm_trim
+- phrase: fan palm
+  job_type: palm_trim
+- phrase: date palm
+  job_type: palm_trim
+- phrase: queen palm
+  job_type: palm_trim
+- phrase: fronds
+  job_type: palm_trim
+- phrase: seed pods
+  job_type: palm_trim
+- phrase: skinning
+  job_type: palm_trim
+- phrase: mesquite
+  job_type: null
+- phrase: palo verde
+  job_type: null
+- phrase: ironwood
+  job_type: null
+- phrase: eucalyptus
+  job_type: null
+- phrase: pine
+  job_type: null
+- phrase: tree trim
+  job_type: tree_prune
+- phrase: prune
+  job_type: tree_prune
+- phrase: cut down tree
+  job_type: tree_removal
+- phrase: remove tree
+  job_type: tree_removal
+- phrase: stump
+  job_type: stump
+- phrase: grinding
+  job_type: stump
+- phrase: limb fell
+  job_type: storm_damage
+- phrase: tree fell
+  job_type: storm_damage
+- phrase: blew over
+  job_type: storm_damage
+- phrase: monsoon
+  job_type: storm_damage
+- phrase: branches on roof
+  job_type: storm_damage
+- phrase: tree on power line
+  job_type: near_power_lines
+- phrase: arborist
+  job_type: null
+triggers_es:
+- phrase: palmera
+  job_type: palm_trim
+- phrase: podar palmera
+  job_type: palm_trim
+- phrase: cortar palmas
+  job_type: palm_trim
+- phrase: mezquite
+  job_type: null
+- phrase: palo verde
+  job_type: null
+- phrase: podar árbol
+  job_type: tree_prune
+- phrase: cortar árbol
+  job_type: tree_removal
+- phrase: tumbar árbol
+  job_type: tree_removal
+- phrase: tocón
+  job_type: stump
+- phrase: ramas
+  job_type: tree_prune
+- phrase: se cayó el árbol
+  job_type: storm_damage
+- phrase: árbol en los cables
+  job_type: near_power_lines
+- phrase: cables de luz
+  job_type: near_power_lines
+questions:
+- id: power_lines
+  text: Is the tree within about 15 feet of a power line?
+  options:
+  - Yes, touching or very close
+  - Maybe / not sure
+  - 'No'
+  ask_if: always
+  changes_price: 'no'
+- id: tree_type
+  text: What kind of tree?
+  options:
+  - Palm
+  - Mesquite
+  - Palo verde
+  - Other / not sure
+  ask_if: power_lines != Yes, touching or very close
+  changes_price: 'yes'
+- id: work_kind
+  text: What do you want done?
+  options:
+  - Trim
+  - Remove
+  - Remove plus stump
+  - Stump only
+  - Clean up fallen tree
+  ask_if: power_lines != Yes, touching or very close
+  changes_price: 'yes'
+- id: height
+  text: About how tall is it?
+  options:
+  - Under 15 ft (one story)
+  - 15-30 ft (two story)
+  - Over 30 ft
+  - Not sure
+  ask_if: power_lines != Yes, touching or very close
+  changes_price: 'yes'
+- id: count
+  text: How many trees or palms?
+  options:
+  - '1'
+  - 2-3
+  - 4-6
+  - More than 6
+  ask_if: power_lines != Yes, touching or very close
+  changes_price: 'yes'
+- id: access
+  text: Can a truck or lift get near it?
+  options:
+  - Yes, open access
+  - Only through a side gate
+  - Back yard, no gate access
+  - Over a pool, roof or wall
+  ask_if: work_kind != Stump only
+  changes_price: 'yes'
+quote_without_visit_needs:
+- Full-height photo of each tree with the house for scale
+- Count of palms/trees
+- Access path photo (gate width)
+- What is under the tree (pool, roof, wall, yard)
+- Whether debris should be hauled away
+site_visit_usually_needed:
+- tree_removal (large)
+- storm_damage
+- trees over structures
+photos_to_request:
+- id: p1
+  ask: Whole tree from far enough to see the top
+  for_job_types:
+  - all
+- id: p2
+  ask: Where it is near the house, pool or wall
+  for_job_types:
+  - all
+- id: p3
+  ask: Overhead wires near the tree
+  for_job_types:
+  - all
+- id: p4
+  ask: Gate or access path
+  for_job_types:
+  - all
+- id: p5
+  ask: Any split, crack or leaning base
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Height vs roof line
+  - 'Dead skirt of fronds on fan palms [judgment: fire and pest habitat]'
+  - Lean, cracked trunk or lifted soil
+  - 'Bees flying in and out of palm skirt or tree cavity [judgment: Africanized bees often nest there]'
+photo_red_flags:
+- flag: Branches touching or near overhead wires
+  safety_step_ref: es_tree_or_limb_on_a_power_line
+- flag: Tree on a house or car
+  safety_step_ref: null
+- flag: Bees swarming in the tree
+  safety_step_ref: es_bee_swarm_in_tree_attacking
+- flag: Downed wire under the tree
+  safety_step_ref: es_downed_power_line
+emergency_signals:
+- id: es_tree_or_limb_on_a_power_line
+  signal: Tree or limb on a power line
+  emergency: 'yes'
+  safety_step: Do not trim it or let anyone trim it. Call UniSource Customer Care at [number removed, see source]; they can schedule
+    a free temporary disconnect so work is safe. Keep trees 15 feet from overhead lines.
+  source: UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source])
+    - https://www.uesaz.com/vegetation-management/
+  then_route_to: tree_trimming
+- id: es_downed_power_line
+  signal: Downed power line
+  emergency: 'yes'
+  safety_step: Stay far away from the line and anything touching it, and call 911.
+  source: UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source])
+    - https://www.uesaz.com/vegetation-management/
+  then_route_to: tree_trimming
+- id: es_tree_fell_on_house_with_people
+  signal: Tree fell on house with people inside or damage
+  emergency: 'yes'
+  safety_step: Leave them alone and keep others away. If attacked, run to a car or building and cover your face.
+    Do not jump into a pool. Call 911 for a serious attack.
+  source: USDA ARS Carl Hayden Bee Research Center, Bee Safety - https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/docs/bee-safety/bee-safety/
+  then_route_to: tree_trimming
+- id: es_bee_swarm_in_tree_attacking
+  signal: Bee swarm in tree attacking
+  emergency: 'yes'
+  safety_step: Use the matching step in foundation/part1_all_reasons.md section 3 (call 911 if anyone is hurt or
+    in danger).
+  source: foundation/part1_all_reasons.md [no trade-specific official step in this file]
+  then_route_to: tree_trimming
+safety_step:
+- when: Tree touching or near power lines
+  step: Do not trim it or let anyone trim it. Call UniSource Customer Care at [number removed, see source]; they can schedule a
+    free temporary disconnect so work is safe. Keep trees 15 feet from overhead lines.
+  source: UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source])
+    - https://www.uesaz.com/vegetation-management/
+- when: Downed power line
+  step: Stay far away from the line and anything touching it, and call 911.
+  source: UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source])
+    - https://www.uesaz.com/vegetation-management/
+- when: Bees in the tree
+  step: Leave them alone and keep others away. If attacked, run to a car or building and cover your face. Do not
+    jump into a pool. Call 911 for a serious attack.
+  source: USDA ARS Carl Hayden Bee Research Center, Bee Safety - https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/docs/bee-safety/bee-safety/
+- when: Chainsaw or loud tools near bees
+  step: Check for bee colonies before using loud tools; noise and vibration can set them off.
+  source: USDA ARS Carl Hayden Bee Research Center, Bee Safety - https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/docs/bee-safety/bee-safety/
+license_classes:
+- job_type:
+  - palm_trim
+  - tree_prune
+  - storm_damage
+  work: Tree and palm trimming and maintenance
+  classes:
+  - 'No ROC license needed for gardener tree maintenance: A.R.S. 32-1121(A)(16).'
+  citation: A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener
+    (A)(16), fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - tree_removal
+  - stump
+  - haul
+  work: Tree removal and stump grinding
+  classes:
+  - No ROC class found that is specific to tree removal [judgment / open question]. ISA arborist certification is
+    voluntary, not a state license [judgment].
+  citation: A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener
+    (A)(16), fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm ; A.A.C. R4-9-103 Residential contractor
+    license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+  other_agency: null
+  notes: ''
+- job_type:
+  - tree_prune
+  work: Spraying for tree pests or diseases
+  classes:
+  - AZ Dept of Agriculture pest management license, Category 3 Ornamental and Turf
+  citation: A.A.C. R3-8-102 Pest management certification category scopes - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-102
+    ; A.R.S. 3-3615 Pest management business license; financial security; termite and WDIIR bonds - https://www.azleg.gov/ars/3/03615.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - near_power_lines
+  work: Utility line clearance
+  classes:
+  - Handled by UniSource and its contractor; not sent to businesses
+  citation: UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source])
+    - https://www.uesaz.com/vegetation-management/
+  other_agency: null
+  notes: ''
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: 'Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit,
+    is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)),
+    and ads say ''not a licensed contractor''. Source: A.R.S. 32-1121(A)(14), (C), (D) [S4]; foundation/az_license_master.md
+    section 4.'
+  note: Yes for trimming (gardener exemption, A.R.S. 32-1121(A)(16)). Never for work near power lines; that goes
+    to UniSource.
+local_notes:
+- 'UniSource Energy Services is the electric utility in Lake Havasu City; it clears around distribution lines on
+  a cycle (about every 3 years), and homeowners are responsible for keeping trees away from the service drop to
+  the house. Source: UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect,
+  [number removed, see source]) - https://www.uesaz.com/vegetation-management/'
+- Monsoon winds often break palo verde and mesquite limbs [judgment].
+- Palm skirts can hide bees, pigeons, rats and scorpions [judgment].
+- Green waste rules and dump fees were not checked [open question].
+sample_card: 'REQ-0425 | Palm trimming
+
+  Lake Havasu City, Havasu Foothills area
+
+  4 fan palms about 30 ft, back yard, side gate access. Trim fronds and seed pods, haul away.
+
+  No power lines nearby per homeowner.'
+test_messages:
+- id: tree_trimming_t01
+  message: need 3 palms trimmed, tall ones
+  trade: tree_trimming
+  job_type: palm_trim
+  emergency: 'no'
+  first_question_id: power_lines
+  ideal_first_question: Is the tree within about 15 feet of a power line?
+  note: ''
+- id: tree_trimming_t02
+  message: Mesquite branch broke in the storm and is hanging on the wire to the house
+  trade: tree_trimming
+  job_type: near_power_lines
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: '[safety_step_first] Give the matching safety step first; ask intake questions only after
+    everyone is safe.'
+  note: ''
+- id: tree_trimming_t03
+  message: tree
+  trade: tree_trimming
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: power_lines
+  ideal_first_question: Is the tree within about 15 feet of a power line?
+  note: job_type unknown = too vague; the first question picks the job type.
+- id: tree_trimming_t04
+  message: Quiero cortar dos palmeras y quitar el tocón
+  trade: tree_trimming
+  job_type: tree_removal
+  emergency: 'no'
+  first_question_id: power_lines
+  ideal_first_question: Is the tree within about 15 feet of a power line?
+  note: ''
+- id: tree_trimming_t05
+  message: palo verde is huge over the pool want it thinned
+  trade: tree_trimming
+  job_type: tree_prune
+  emergency: 'no'
+  first_question_id: power_lines
+  ideal_first_question: Is the tree within about 15 feet of a power line?
+  note: ''
+- id: tree_trimming_t06
+  message: bees going in and out of my palm tree like crazy
+  trade: pest_control
+  job_type: bees_wasps
+  emergency: 'no'
+  first_question_id: pest_type
+  ideal_first_question: What pest is it?
+  note: ''
+- id: tree_trimming_t07
+  message: stump grind only plz
+  trade: tree_trimming
+  job_type: stump
+  emergency: 'no'
+  first_question_id: power_lines
+  ideal_first_question: Is the tree within about 15 feet of a power line?
+  note: ''
+- id: tree_trimming_t08
+  message: trim trees and fix sprinklers
+  trade: tree_trimming
+  job_type: tree_prune
+  emergency: 'no'
+  first_question_id: power_lines
+  ideal_first_question: Is the tree within about 15 feet of a power line?
+  note: ''
+- id: tree_trimming_t09
+  message: el árbol se cayó encima de la barda
+  trade: tree_trimming
+  job_type: storm_damage
+  emergency: 'no'
+  first_question_id: power_lines
+  ideal_first_question: Is the tree within about 15 feet of a power line?
+  note: ''
+- id: tree_trimming_t10
+  message: how much to cut down a eucalyptus
+  trade: tree_trimming
+  job_type: tree_removal
+  emergency: 'no'
+  first_question_id: power_lines
+  ideal_first_question: Is the tree within about 15 feet of a power line?
+  note: ''
+sources:
+- UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source]) -
+  https://www.uesaz.com/vegetation-management/
+- A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+  fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+- A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+- A.A.C. R3-8-102 Pest management certification category scopes - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-102
+- A.R.S. 3-3615 Pest management business license; financial security; termite and WDIIR bonds - https://www.azleg.gov/ars/3/03615.htm
+- USDA ARS Carl Hayden Bee Research Center, Bee Safety - https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/docs/bee-safety/bee-safety/
+- National Weather Service, Heat Safety - https://www.weather.gov/safety/heat

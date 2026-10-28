@@ -169,7 +169,7 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "phone number, email and street address removed, to local businesses that do that kind "
             "of work. Only after you pick a business, and it confirms and pays its introduction "
             "fee, does Ask Hava give that one business your first name and the job address, plus "
-            "the on-site contact and email if you chose to share them.",
+            "your email if you chose to share it.",
         ),
         NO_PHONE,
         TWILIO_LINE,
@@ -177,17 +177,16 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         ("WORD-007", "Your number is never shared"),
         (
             "AI-018",
-            "No AI reads your messages today. Our texts are automated and come from fixed "
-            "templates.",
+            "Our texts are automated and come from templates, and no AI reads your messages "
+            "right now.",
         ),
         (
             "AI-018",
-            "To sort your request (for example, plumbing or electrical, urgent or not), an AI "
-            "service from Anthropic reads your job description after our software removes names, "
-            "phone numbers, emails and street numbers. Under our zero-retention agreement the AI "
-            "provider doesn't keep that text or train on it. The AI doesn't write the texts or "
-            "emails we send you, never sees your contact details and never makes decisions about "
-            "money or who gets your details.",
+            "To sort your request and help word our questions, an AI service from Anthropic reads "
+            "your job description after our software removes names, phone numbers, emails and "
+            "street numbers. It also writes your job card, which you see before it goes out. The "
+            "AI never sees your contact details, never gives prices or diagnoses, and never makes "
+            "decisions about money or who gets your details.",
         ),
         (
             "AI-018",

@@ -1,0 +1,472 @@
+# Ask Hava trade knowledge file: landscaping_irrigation
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: landscaping_irrigation
+display_name: Landscaping & irrigation
+summary: 'Desert landscaping and watering systems: drip irrigation repair and installs, sprinkler and valve repair,
+  controllers/timers, backflow devices, decorative rock and decomposed granite, desert plant installs, low-voltage
+  landscape lighting, and yard cleanups. Havasu soil often has caliche (a hard, cement-like layer) that makes digging
+  slow [judgment]. Ask Hava gathers the job size and photos; it never designs the yard or prices the work.'
+job_types:
+- id: drip_repair
+  label: Drip line leak, broken emitters, plants not getting water
+- id: sprinkler_valve
+  label: Sprinkler head, valve or zone not working, stuck on
+- id: controller
+  label: Timer / controller replace or set up (incl. smart controller)
+- id: new_system
+  label: New drip or sprinkler system
+  site_visit_usually_needed: 'yes'
+- id: rock_gravel
+  label: Decorative rock, granite or gravel delivery and spread
+  site_visit_usually_needed: 'yes'
+- id: plant_install
+  label: Desert plants, cactus, trees planted
+- id: cleanup
+  label: Yard cleanup, weed pulling, debris haul
+- id: maintenance
+  label: Regular yard maintenance
+- id: lighting
+  label: Low-voltage landscape lighting
+- id: turf
+  label: Grass or artificial turf
+  site_visit_usually_needed: 'yes'
+triggers_en:
+- phrase: drip
+  job_type: drip_repair
+- phrase: drip line
+  job_type: drip_repair
+- phrase: emitter
+  job_type: drip_repair
+- phrase: irrigation
+  job_type: null
+- phrase: sprinkler
+  job_type: sprinkler_valve
+- phrase: valve
+  job_type: sprinkler_valve
+- phrase: zone
+  job_type: sprinkler_valve
+- phrase: timer
+  job_type: controller
+- phrase: controller
+  job_type: controller
+- phrase: Rain Bird
+  job_type: controller
+- phrase: Hunter
+  job_type: controller
+- phrase: Orbit
+  job_type: controller
+- phrase: backflow
+  job_type: sprinkler_valve
+- phrase: rock
+  job_type: rock_gravel
+- phrase: gravel
+  job_type: rock_gravel
+- phrase: granite
+  job_type: rock_gravel
+- phrase: DG
+  job_type: rock_gravel
+- phrase: decomposed granite
+  job_type: rock_gravel
+- phrase: landscaping
+  job_type: null
+- phrase: yard
+  job_type: null
+- phrase: weeds
+  job_type: cleanup
+- phrase: cleanup
+  job_type: cleanup
+- phrase: cactus
+  job_type: plant_install
+- phrase: agave
+  job_type: plant_install
+- phrase: desert plants
+  job_type: plant_install
+- phrase: fake grass
+  job_type: turf
+- phrase: turf
+  job_type: turf
+- phrase: lights in yard
+  job_type: lighting
+- phrase: water bill high
+  job_type: drip_repair
+- phrase: puddle in yard
+  job_type: drip_repair
+- phrase: caliche
+  job_type: rock_gravel
+triggers_es:
+- phrase: riego
+  job_type: null
+- phrase: riego por goteo
+  job_type: drip_repair
+- phrase: goteros
+  job_type: drip_repair
+- phrase: aspersores
+  job_type: sprinkler_valve
+- phrase: válvula
+  job_type: sprinkler_valve
+- phrase: timer del riego
+  job_type: controller
+- phrase: jardín
+  job_type: null
+- phrase: jardinero
+  job_type: maintenance
+- phrase: piedra
+  job_type: rock_gravel
+- phrase: grava
+  job_type: rock_gravel
+- phrase: granito
+  job_type: rock_gravel
+- phrase: yarda
+  job_type: null
+- phrase: limpiar la yarda
+  job_type: cleanup
+- phrase: hierba mala
+  job_type: cleanup
+- phrase: maleza
+  job_type: cleanup
+- phrase: plantas
+  job_type: plant_install
+- phrase: cactus
+  job_type: plant_install
+- phrase: pasto artificial
+  job_type: turf
+- phrase: fuga de agua en la yarda
+  job_type: drip_repair
+questions:
+- id: job_kind
+  text: What kind of yard job is it?
+  options:
+  - Fix watering system
+  - New watering system
+  - Rock or gravel
+  - Plants or trees planted
+  - Cleanup / weeds
+  - Regular maintenance
+  - Yard lights
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+- id: area_size
+  text: About how big is the area?
+  options:
+  - Small (one bed or strip)
+  - Front yard
+  - Back yard
+  - Front and back
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+- id: system_type
+  text: What type of watering system?
+  options:
+  - Drip
+  - Sprinklers
+  - Both
+  - Bubblers
+  - Not sure
+  ask_if: job_kind in [Fix watering system, New watering system]
+  changes_price: 'yes'
+- id: symptom
+  text: What is happening?
+  options:
+  - Leak or puddle
+  - Zone won't turn on
+  - Zone won't shut off
+  - Plants dying
+  - Timer is dead
+  - Water bill went up
+  ask_if: job_kind == Fix watering system
+  changes_price: 'yes'
+- id: rock_scope
+  text: What do you need for the rock?
+  options:
+  - New rock over bare dirt
+  - Top off existing rock
+  - Remove old rock and replace
+  - Not sure
+  ask_if: job_kind == Rock or gravel
+  changes_price: 'yes'
+- id: weed_control
+  text: Do you also want weed control spraying, like pre-emergent?
+  options:
+  - 'Yes'
+  - 'No'
+  - Not sure
+  ask_if: job_kind in [Cleanup / weeds, Rock or gravel, Regular maintenance]
+  changes_price: 'yes'
+quote_without_visit_needs:
+- Photos of the whole area
+- Rough size (length x width or 'front yard')
+- Photo of the timer/controller
+- Photo of valves (often in a green box or above ground manifold)
+- 'For rock: color/size wanted if known'
+site_visit_usually_needed:
+- new_system
+- rock_gravel (large area)
+- turf
+photos_to_request:
+- id: p1
+  ask: Whole area from a corner
+  for_job_types:
+  - all
+- id: p2
+  ask: Controller/timer with panel open
+  for_job_types:
+  - all
+- id: p3
+  ask: Valve box or manifold
+  for_job_types:
+  - all
+- id: p4
+  ask: Leak or wet spot
+  for_job_types:
+  - all
+- id: p5
+  ask: Backflow device if present
+  for_job_types:
+  - all
+- id: p6
+  ask: Existing rock close up next to a shoe for size
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Wet spot or water bubbling up
+  - Cracked or brown PVC above ground (sun damage) [judgment]
+  - Pressure regulator and filter at drip valve
+  - Brand of controller (Rain Bird, Hunter, Orbit)
+  - Slope or wash near the area
+photo_red_flags:
+- flag: Water near the house foundation
+  safety_step_ref: null
+- flag: Digging near utility markings or meters
+  safety_step_ref: null
+- flag: Overhead power lines over a tree to be planted
+  safety_step_ref: null
+- flag: Sinkhole or washout after storm
+  safety_step_ref: null
+emergency_signals:
+- id: es_water_main_or_line_gushing_and
+  signal: Water main or line gushing and can't be shut off
+  emergency: 'yes'
+  safety_step: Use the matching step in foundation/part1_all_reasons.md section 3 (call 911 if anyone is hurt or
+    in danger).
+  source: foundation/part1_all_reasons.md [no trade-specific official step in this file]
+  then_route_to: landscaping_irrigation
+- id: es_water_flowing_toward_or_into_t
+  signal: Water flowing toward or into the house
+  emergency: 'yes'
+  safety_step: Use the matching step in foundation/part1_all_reasons.md section 3 (call 911 if anyone is hurt or
+    in danger).
+  source: foundation/part1_all_reasons.md [no trade-specific official step in this file]
+  then_route_to: landscaping_irrigation
+- id: es_someone_hit_a_buried_electric_
+  signal: Someone hit a buried electric or gas line while digging
+  emergency: 'yes'
+  safety_step: Leave the area right away and call 911 and the utility from a safe place.
+  source: Arizona 811 (call 811 or 1-800-STAKE-IT at least two working days before digging) - https://www.arizona811.com/
+    ; UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source])
+    - https://www.uesaz.com/vegetation-management/
+  then_route_to: landscaping_irrigation
+- id: es_smell_of_gas_while_digging
+  signal: Smell of gas while digging
+  emergency: 'yes'
+  safety_step: Leave the area right away and call 911 and the utility from a safe place.
+  source: Arizona 811 (call 811 or 1-800-STAKE-IT at least two working days before digging) - https://www.arizona811.com/
+    ; UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source])
+    - https://www.uesaz.com/vegetation-management/
+  then_route_to: landscaping_irrigation
+safety_step:
+- when: Planning to dig
+  step: Call 811 (1-800-STAKE-IT) at least two working days before digging so buried lines are marked. It is the
+    law.
+  source: Arizona 811 (call 811 or 1-800-STAKE-IT at least two working days before digging) - https://www.arizona811.com/
+- when: Hit a gas or power line
+  step: Leave the area right away and call 911 and the utility from a safe place.
+  source: Arizona 811 (call 811 or 1-800-STAKE-IT at least two working days before digging) - https://www.arizona811.com/
+    ; UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source])
+    - https://www.uesaz.com/vegetation-management/
+- when: Working outside in summer
+  step: Heat can be deadly. Drink water, rest in shade, and know the signs of heat illness.
+  source: National Weather Service, Heat Safety - https://www.weather.gov/safety/heat
+- when: Weed spray chemicals
+  step: Follow the product label, which is the law. Keep kids and pets off treated areas until the label says it
+    is safe. [judgment on wording]
+  source: Arizona Department of Agriculture, Pest Management Division - https://agriculture.az.gov/pestspest-control
+license_classes:
+- job_type:
+  - maintenance
+  - cleanup
+  - plant_install
+  work: Lawn, garden, shrub and tree maintenance (gardener work)
+  classes:
+  - 'No ROC license needed: A.R.S. 32-1121(A)(16)'
+  citation: A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener
+    (A)(16), fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - drip_repair
+  - sprinkler_valve
+  - controller
+  - new_system
+  - rock_gravel
+  - lighting
+  - turf
+  work: Irrigation systems, hardscape, rock, low-voltage lighting, water features not attached to pools
+  classes:
+  - R-21 Hardscaping and Irrigation Systems; CR-21 (dual); C-21 (commercial)
+  citation: A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+    ; A.A.C. R4-9-104 Dual contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104;
+    A.A.C. R4-9-102 [S1] (commercial classes)
+  other_agency: null
+  notes: R-21 includes irrigation wiring 120V or less, potable connections, backflow devices and trenching; misting
+    up to 1000 PSI; low-voltage landscape lighting.
+- job_type:
+  - cleanup
+  - maintenance
+  work: Weed control with pre-emergent or sterilant herbicides
+  classes:
+  - Arizona Department of Agriculture pest management business license and certified applicator (Category 3 Ornamental
+    and Turf). Landscapers doing maintenance are exempt only for limited herbicide use; the exemption never covers
+    preemergents or sterilants, 'restricted use' or 'danger' labels, advertising weed control, more than 5 gallons
+    mixed, crews of 2+, or schools.
+  citation: A.R.S. 3-3613 Landscaper herbicide exemption and its limits (preemergents and sterilants excluded) -
+    https://www.azleg.gov/ars/3/03613.htm ; A.A.C. R3-8-102 Pest management certification category scopes - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-102
+    ; A.R.S. 3-3615 Pest management business license; financial security; termite and WDIIR bonds - https://www.azleg.gov/ars/3/03615.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - drip_repair
+  work: Plumbing beyond irrigation (main water line, house plumbing)
+  classes:
+  - R-37 Plumbing
+  citation: A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+  other_agency: null
+  notes: ''
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: 'Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit,
+    is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)),
+    and ads say ''not a licensed contractor''. Source: A.R.S. 32-1121(A)(14), (C), (D) [S4]; foundation/az_license_master.md
+    section 4.'
+  note: 'Often. Yard maintenance is exempt as gardener work (A.R.S. 32-1121(A)(16)). For irrigation repair or rock
+    jobs: A.R.S. 32-1121(A)(14): a person may do ''casual or minor'' work without an ROC license only if the whole
+    job (labor, materials, everything) is under $1,000, no building permit is needed, it is not part of a larger
+    job or split up to get under the limit, and their ads say ''not a licensed contractor''. Per 32-1121(D) the
+    exemption never covers work that connects to natural gas, propane or other fuel gas, or hardwired/interconnected
+    fire-safety devices. Lake Havasu City''s permit list decides whether a permit is needed (https://www.lhcaz.gov/development-permitting/building).
+    Pre-emergent weed spraying is never covered by the landscaper herbicide exemption (A.R.S. 3-3613).'
+local_notes:
+- Caliche (hard calcium carbonate layer) is common in desert soils and slows trenching and planting [judgment].
+- Hard water (about 19 grains per gallon) can clog drip emitters and leave white crust [judgment based on Lake Havasu
+  City annual drinking water quality report (total hardness about 19 grains per gallon, range 18-20) - https://www.lhcaz.gov/DocumentCenter/View/3233].
+- Summer monsoon storms can wash out rock and bury drip lines [judgment].
+- Watering rules or rebates from Lake Havasu City were not checked [open question].
+sample_card: 'REQ-0318 | Irrigation repair
+
+  Lake Havasu City, central area
+
+  Drip zone in back yard won''t shut off; water pooling by wall. Rain Bird controller.
+
+  Photos: valve manifold, wet area.'
+test_messages:
+- id: landscaping_irrigation_t01
+  message: drip system leaking everywhere and my plants are dying
+  trade: landscaping_irrigation
+  job_type: drip_repair
+  emergency: 'no'
+  first_question_id: area_size
+  ideal_first_question: About how big is the area?
+  note: ''
+- id: landscaping_irrigation_t02
+  message: need rock
+  trade: landscaping_irrigation
+  job_type: rock_gravel
+  emergency: 'no'
+  first_question_id: area_size
+  ideal_first_question: About how big is the area?
+  note: ''
+- id: landscaping_irrigation_t03
+  message: Necesito un jardinero para limpiar la yarda y quitar la maleza
+  trade: landscaping_irrigation
+  job_type: cleanup
+  emergency: 'no'
+  first_question_id: area_size
+  ideal_first_question: About how big is the area?
+  note: ''
+- id: landscaping_irrigation_t04
+  message: sprinkler zone 3 wont turn off water running down the street
+  trade: landscaping_irrigation
+  job_type: sprinkler_valve
+  emergency: 'yes'
+  first_question_id: symptom
+  ideal_first_question: What is happening?
+  note: ''
+- id: landscaping_irrigation_t05
+  message: yard
+  trade: landscaping_irrigation
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: job_kind
+  ideal_first_question: What kind of yard job is it?
+  note: job_type unknown = too vague; the first question picks the job type.
+- id: landscaping_irrigation_t06
+  message: want new desert landscaping front yard rock + drip + some agaves
+  trade: landscaping_irrigation
+  job_type: new_system
+  emergency: 'no'
+  first_question_id: area_size
+  ideal_first_question: About how big is the area?
+  note: ''
+- id: landscaping_irrigation_t07
+  message: cut down my palm tree and redo drip
+  trade: tree_trimming
+  job_type: palm_trim
+  emergency: 'no'
+  first_question_id: tree_type
+  ideal_first_question: What kind of tree?
+  note: ''
+- id: landscaping_irrigation_t08
+  message: spray pre emergent before monsoon please
+  trade: pest_control
+  job_type: weed_control
+  emergency: 'no'
+  first_question_id: pest_type
+  ideal_first_question: What pest is it?
+  note: ''
+- id: landscaping_irrigation_t09
+  message: water bill doubled, something leaking in yard?
+  trade: landscaping_irrigation
+  job_type: drip_repair
+  emergency: 'no'
+  first_question_id: system_type
+  ideal_first_question: What type of watering system?
+  note: ''
+- id: landscaping_irrigation_t10
+  message: el timer del riego no prende, quiero uno nuevo
+  trade: landscaping_irrigation
+  job_type: controller
+  emergency: 'no'
+  first_question_id: area_size
+  ideal_first_question: About how big is the area?
+  note: ''
+sources:
+- A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+  fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+- A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+- A.A.C. R4-9-104 Dual contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104
+- A.A.C. R4-9-102 Commercial contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102
+- A.R.S. 3-3613 Landscaper herbicide exemption and its limits (preemergents and sterilants excluded) - https://www.azleg.gov/ars/3/03613.htm
+- A.A.C. R3-8-102 Pest management certification category scopes - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-102
+- A.R.S. 3-3615 Pest management business license; financial security; termite and WDIIR bonds - https://www.azleg.gov/ars/3/03615.htm
+- Arizona 811 (call 811 or 1-800-STAKE-IT at least two working days before digging) - https://www.arizona811.com/
+- National Weather Service, Heat Safety - https://www.weather.gov/safety/heat
+- Lake Havasu City annual drinking water quality report (total hardness about 19 grains per gallon, range 18-20)
+  - https://www.lhcaz.gov/DocumentCenter/View/3233
+- UniSource Energy Services, Vegetation Management (15 ft clearance, free temporary disconnect, [number removed, see source]) -
+  https://www.uesaz.com/vegetation-management/
+- Arizona Department of Agriculture, Pest Management Division - https://agriculture.az.gov/pestspest-control

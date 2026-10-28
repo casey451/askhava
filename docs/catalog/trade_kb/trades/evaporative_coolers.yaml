@@ -1,0 +1,566 @@
+# Ask Hava trade knowledge file: evaporative_coolers
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: evaporative_coolers
+display_name: Swamp coolers (evaporative coolers)
+summary: 'Evaporative or ''swamp'' coolers on roofs, side walls, windows and patios: spring start-up, pad changes,
+  pumps, motors, belts, float valves, leaks, fall shut-down and replacement. They work well in dry heat but lose
+  cooling when monsoon humidity rises, and Lake Havasu City''s very hard water (about 19 grains per gallon) builds
+  scale fast on pads and pans [LHC-CCR][judgment]. Ask Hava learns where the cooler sits, what it is doing, its
+  size and age, and whether the owner wants service, a seasonal visit or a new unit, then writes the card. It never
+  says what is broken or what to buy. Licensed work is ROC R-39 (includes evaporative cooling) or the dual CR-39/CR-58/CR-79;
+  small seasonal tasks may fit the handyman exemption [S2][S3][S4].'
+job_types:
+- id: cooler_not_cooling
+  label: Cooler runs but air is not cool or is humid
+  site_visit_usually_needed: 'yes'
+  handyman_ok: limited
+- id: cooler_not_running
+  label: Cooler motor or pump will not run
+  site_visit_usually_needed: 'yes'
+  handyman_ok: limited
+- id: cooler_leak
+  label: Water leaking from cooler, roof, duct or ceiling
+  site_visit_usually_needed: 'yes'
+  handyman_ok: limited
+- id: cooler_startup
+  label: 'Spring start-up: pads, water line, belt, pump check'
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: cooler_winterize
+  label: 'Fall shut-down: drain, disconnect water, cover'
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: cooler_pads
+  label: Replace pads only
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: cooler_smell
+  label: Musty, fishy or rotten smell from cooler air
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: cooler_overflow
+  label: Water running nonstop, float stuck, overflow
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: cooler_replacement
+  label: Replace the cooler (same spot)
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: cooler_new_install
+  label: Add a new cooler or move it (new duct, roof cut, new location)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: cooler_remove_convert
+  label: Remove cooler and seal the roof, or switch to refrigerated AC
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: swamp cooler
+  job_type: cooler_not_cooling
+- phrase: swamp cooler not cooling
+  job_type: cooler_not_cooling
+- phrase: swamp coolr
+  job_type: cooler_not_cooling
+- phrase: swamper
+  job_type: cooler_not_cooling
+- phrase: evap cooler
+  job_type: cooler_not_cooling
+- phrase: evaporative cooler
+  job_type: cooler_not_cooling
+- phrase: cooler blowing warm
+  job_type: cooler_not_cooling
+- phrase: cooler feels humid
+  job_type: cooler_not_cooling
+- phrase: cooler not working
+  job_type: cooler_not_running
+- phrase: cooler motor dead
+  job_type: cooler_not_running
+- phrase: cooler pump not pumping
+  job_type: cooler_not_running
+- phrase: pads dry
+  job_type: cooler_not_running
+- phrase: cooler belt broke
+  job_type: cooler_not_running
+- phrase: cooler humming
+  job_type: cooler_not_running
+- phrase: cooler leaking
+  job_type: cooler_leak
+- phrase: water from cooler vent
+  job_type: cooler_leak
+- phrase: cooler dripping on roof
+  job_type: cooler_leak
+- phrase: ceiling wet by cooler duct
+  job_type: cooler_leak
+- phrase: rusted cooler pan
+  job_type: cooler_leak
+- phrase: start up swamp cooler
+  job_type: cooler_startup
+- phrase: turn on cooler for summer
+  job_type: cooler_startup
+- phrase: cooler start up service
+  job_type: cooler_startup
+- phrase: hook up cooler water
+  job_type: cooler_startup
+- phrase: winterize cooler
+  job_type: cooler_winterize
+- phrase: shut down cooler
+  job_type: cooler_winterize
+- phrase: cover the cooler
+  job_type: cooler_winterize
+- phrase: winterise swamp cooler
+  job_type: cooler_winterize
+- phrase: new cooler pads
+  job_type: cooler_pads
+- phrase: change pads
+  job_type: cooler_pads
+- phrase: aspen pads
+  job_type: cooler_pads
+- phrase: pads crusty
+  job_type: cooler_pads
+- phrase: cooler smells
+  job_type: cooler_smell
+- phrase: swamp cooler smells fishy
+  job_type: cooler_smell
+- phrase: musty air from cooler
+  job_type: cooler_smell
+- phrase: cooler overflowing
+  job_type: cooler_overflow
+- phrase: float valve stuck
+  job_type: cooler_overflow
+- phrase: water running off roof from cooler
+  job_type: cooler_overflow
+- phrase: replace swamp cooler
+  job_type: cooler_replacement
+- phrase: new swamp cooler
+  job_type: cooler_replacement
+- phrase: cooler rusted out
+  job_type: cooler_replacement
+- phrase: add cooler to garage
+  job_type: cooler_new_install
+- phrase: install evap cooler shop
+  job_type: cooler_new_install
+- phrase: window cooler install
+  job_type: cooler_new_install
+- phrase: remove swamp cooler
+  job_type: cooler_remove_convert
+- phrase: take cooler off roof
+  job_type: cooler_remove_convert
+- phrase: convert cooler to ac
+  job_type: cooler_remove_convert
+triggers_es:
+- phrase: el cooler no enfría
+  job_type: cooler_not_cooling
+- phrase: el enfriador no enfría
+  job_type: cooler_not_cooling
+- phrase: el cooler echa aire caliente
+  job_type: cooler_not_cooling
+- phrase: cooler de agua
+  job_type: cooler_not_cooling
+- phrase: enfriador evaporativo
+  job_type: cooler_not_cooling
+- phrase: el cooler no prende
+  job_type: cooler_not_running
+- phrase: la bomba del cooler no sirve
+  job_type: cooler_not_running
+- phrase: el motor del cooler no jala
+  job_type: cooler_not_running
+- phrase: el cooler gotea
+  job_type: cooler_leak
+- phrase: sale agua del cooler
+  job_type: cooler_leak
+- phrase: prender el cooler para el verano
+  job_type: cooler_startup
+- phrase: arrancar el cooler
+  job_type: cooler_startup
+- phrase: cerrar el cooler para el invierno
+  job_type: cooler_winterize
+- phrase: tapar el cooler
+  job_type: cooler_winterize
+- phrase: cambiar los pads
+  job_type: cooler_pads
+- phrase: cambiar las almohadillas del cooler
+  job_type: cooler_pads
+- phrase: el cooler huele feo
+  job_type: cooler_smell
+- phrase: el cooler se desborda
+  job_type: cooler_overflow
+- phrase: cooler nuevo
+  job_type: cooler_replacement
+- phrase: quitar el cooler del techo
+  job_type: cooler_remove_convert
+questions:
+- id: q1_location
+  text: Where is your cooler?
+  options:
+  - On the roof
+  - On the ground by a wall
+  - In a window
+  - Portable / on a patio
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Roof units need ladder or roof access and take longer; portable units may fit appliance repair instead. [judgment]
+- id: q2_scope
+  text: What do you need?
+  options:
+  - Fix a problem
+  - Spring start-up
+  - Fall shut-down
+  - New pads only
+  - Replace or remove the cooler
+  ask_if: always
+  changes_price: 'yes'
+  why: Seasonal service vs repair vs replacement is the largest price split. [judgment]
+- id: q3_symptom
+  text: What is it doing?
+  options:
+  - Runs but air is not cool
+  - Nothing runs
+  - Fan runs, pads stay dry
+  - Leaking or overflowing
+  - Bad smell
+  - Noise or shaking
+  ask_if: q2_scope == 'Fix a problem'
+  changes_price: 'yes'
+  why: Tells a business whether to bring a pump, motor, belt, float or pan parts. Ask Hava does not say which part.
+    [judgment]
+- id: q4_size_age
+  text: How big and how old is the cooler?
+  options:
+  - Small (one room)
+  - Medium (part of house)
+  - Large (whole house)
+  - Not sure (I can send a label photo)
+  ask_if: q2_scope in ['Fix a problem', 'Replace or remove the cooler']
+  changes_price: 'yes'
+  why: CFM rating and age help quote parts or a same-size unit. [judgment]
+- id: q5_remove_plan
+  text: If replacing, what do you want?
+  options:
+  - Same type, same spot
+  - Different spot or new duct
+  - Remove it and patch the roof
+  - Switch to refrigerated AC
+  - Not sure yet
+  ask_if: q2_scope == 'Replace or remove the cooler'
+  changes_price: 'yes'
+  why: Moving, new duct or a roof patch adds trades (roofing) and may need a permit; switching to AC reroutes to
+    hvac. [S17][judgment]
+- id: q6_water_line
+  text: Is the water line to the cooler hooked up right now?
+  options:
+  - Yes, hooked up
+  - No, turned off for winter
+  - There is no water line
+  - Not sure
+  ask_if: q2_scope in ['Spring start-up', 'Fix a problem']
+  changes_price: 'no'
+  why: Helps the business plan the visit; does not change price much. [judgment]
+quote_without_visit_needs:
+- Spring start-up, fall shut-down and pad changes are often flat-rate by cooler size and location [judgment]
+- Label photo (brand, model, CFM, pad size) and a photo of the whole cooler [judgment]
+- Roof type and height (one story flat, pitched, two story) [judgment]
+- 'Pad type: aspen fiber vs rigid media (rigid media is thicker, sold by size) [judgment]'
+site_visit_usually_needed:
+- Leaks into the house or ceiling (source may be pan, duct or roof jack) [judgment]
+- New installs, moves, or removal with roof patch [judgment]
+- Not cooling with unknown cause [judgment]
+photos_to_request:
+- id: p1_whole_cooler
+  ask: A photo of the whole cooler. A photo from the ground is fine; please do not climb the roof just for a picture.
+  for_job_types:
+  - cooler_not_cooling
+  - cooler_not_running
+  - cooler_leak
+  - cooler_replacement
+  - cooler_remove_convert
+  - cooler_startup
+- id: p2_label
+  ask: If you can reach it safely, a photo of the cooler's label (brand, model, size).
+  for_job_types:
+  - cooler_replacement
+  - cooler_not_running
+  - cooler_pads
+- id: p3_inside_pan
+  ask: 'Only if a side panel is already off: a photo of the pads and pan inside. Please do not open the cooler or
+    climb up just for this.'
+  for_job_types:
+  - cooler_smell
+  - cooler_leak
+  - cooler_pads
+- id: p4_ceiling_vent
+  ask: A photo of the ceiling vent or wet spot inside.
+  for_job_types:
+  - cooler_leak
+  - cooler_smell
+- id: p5_thermostat_switch
+  ask: A photo of the wall switch or thermostat that runs the cooler.
+  for_job_types:
+  - cooler_not_running
+photo_cues:
+- photo_id: p1_whole_cooler
+  look_for:
+  - Down-draft (roof, air goes down into duct) vs side-draft (ground/wall) [judgment]
+  - Rust holes, white mineral crust, water stains on roof or wall [judgment]
+  - Cover still on (not started up) [judgment]
+  - Roof jack / duct sealed or cracked [judgment]
+  - 'Water line: copper or plastic tubing, valve, any leak [judgment]'
+  neutral_wording_example: Roof down-draft cooler, white crust along the bottom, rust on one corner panel.
+- photo_id: p2_label
+  look_for:
+  - Brand (e.g. Champion/Essick, Phoenix Manufacturing, Breezair, Mastercool, Portacool) and model; CFM rating;
+    motor HP; pad size [judgment]
+  neutral_wording_example: Label reads 4,500 CFM, 1/2 HP motor; brand Champion.
+- photo_id: p3_inside_pan
+  look_for:
+  - Scale thickness on pads and pan; standing water color; algae; float arm position; bleed-off tube present [UA-WW][judgment]
+  neutral_wording_example: Pads look hard and white with mineral buildup; green water in pan.
+- photo_id: p4_ceiling_vent
+  look_for:
+  - Stain size, drip, sagging drywall, closeness to lights [judgment]
+  neutral_wording_example: Brown ring around the ceiling vent, about a foot wide.
+- photo_id: p5_thermostat_switch
+  look_for:
+  - Two-speed switch, pump switch, thermostat type [judgment]
+  neutral_wording_example: Wall switch with HI, LO and PUMP settings.
+photo_red_flags:
+- flag: Melted or burnt wiring, scorch marks on the motor or switch
+  safety_step_ref: es_burning
+- flag: Sagging wet ceiling near a light or outlet
+  safety_step_ref: es_water_electric
+emergency_signals:
+- id: es_heat_vulnerable
+  signal: Cooler out in extreme heat with an older adult, infant, or someone with a medical need at home
+  emergency: 'yes'
+  safety_step: With no AC in extreme heat, CDC advises going to an air-conditioned place (a friend's home, a public
+    building or a cooling center) for part of the day, drinking water, and checking on older adults often. NWS warns
+    that fans alone do not prevent heat illness when it is very hot. If anyone shows signs of heat stroke, call
+    911.
+  source: '[CDC-HEAT][S27]'
+  then_route_to: evaporative_coolers
+- id: es_heat_symptoms
+  signal: Someone is confused, fainting or very hot to the touch
+  emergency: 'yes'
+  safety_step: 'Signs of heat stroke (confusion, fainting, hot red skin, very high body temperature): call 911 now.
+    Move the person to a cooler place, cool them with cool wet cloths or a cool bath, and do not give fluids to
+    someone who is not fully alert.'
+  source: '[S27]'
+  then_route_to: evaporative_coolers
+- id: es_burning
+  signal: Burning smell or smoke from the cooler motor, switch or vent
+  emergency: 'yes'
+  safety_step: 'NFPA says to call a qualified electrician for a burning or rubbery smell, sparks, warm or discolored
+    outlets or switches, flickering lights, or breakers that trip often. Stop using the outlet, switch or appliance
+    involved. If there is smoke or fire, get out and call 911. If there is smoke, flames or sparks that will not
+    stop: get everyone out, stay out, and call 911 from outside.'
+  source: '[S29][NFPA-ESCAPE]'
+  then_route_to: evaporative_coolers
+- id: es_water_electric
+  signal: Cooler water leaking onto lights, outlets or wiring
+  emergency: 'yes'
+  safety_step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power
+    at the main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep
+    power off until an electrician checks it.
+  source: '[S31]'
+  then_route_to: evaporative_coolers
+safety_step:
+- when: Cooler out in extreme heat with an older adult, infant, or someone with a medical need at home
+  step: With no AC in extreme heat, CDC advises going to an air-conditioned place (a friend's home, a public building
+    or a cooling center) for part of the day, drinking water, and checking on older adults often. NWS warns that
+    fans alone do not prevent heat illness when it is very hot. If anyone shows signs of heat stroke, call 911.
+  source: '[CDC-HEAT][S27]'
+- when: Someone is confused, fainting or very hot to the touch
+  step: 'Signs of heat stroke (confusion, fainting, hot red skin, very high body temperature): call 911 now. Move
+    the person to a cooler place, cool them with cool wet cloths or a cool bath, and do not give fluids to someone
+    who is not fully alert.'
+  source: '[S27]'
+- when: Burning smell or smoke from the cooler motor, switch or vent
+  step: 'NFPA says to call a qualified electrician for a burning or rubbery smell, sparks, warm or discolored outlets
+    or switches, flickering lights, or breakers that trip often. Stop using the outlet, switch or appliance involved.
+    If there is smoke or fire, get out and call 911. If there is smoke, flames or sparks that will not stop: get
+    everyone out, stay out, and call 911 from outside.'
+  source: '[S29][NFPA-ESCAPE]'
+- when: Cooler water leaking onto lights, outlets or wiring
+  step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power at the
+    main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep power
+    off until an electrician checks it.
+  source: '[S31]'
+license_classes:
+- job_type:
+  - cooler_not_cooling
+  classes:
+  - R-39 Air Conditioning and Refrigeration, Including Solar (scope includes evaporative cooling)
+  - R-39R Evaporative Cooling and Ventilators (legacy; no new licenses)
+  - R-39R Warm Air Heating, Evaporative Cooling and Ventilating (legacy)
+  - CR-39
+  - CR-58 dual (C-58 Comfort Heating, Ventilating, Evaporative Cooling + R-39R Warm Air Heating, Evaporative Cooling
+    and Ventilating)
+  - CR-79
+  citation: A.A.C. R4-9-103 (R-39, R-39R); R4-9-104 (CR-39, CR-58, CR-79); R4-9-102 (C-58 commercial only)
+  other_agency: null
+  notes: Same classes for all cooler job types when over the handyman limit or permitted. No refrigerant, so EPA
+    608 does not apply [judgment].
+- job_type:
+  - cooler_remove_convert
+  classes:
+  - R-39 / CR-39 for the cooler and duct
+  - R-42 Roofing for the roof patch
+  - R-45 Sheet Metal for duct changes
+  citation: R4-9-103; A.A.C. R4-9-104 [S3] (CR- dual classes)
+  other_agency: null
+  notes: Converting to refrigerated AC reroutes to hvac. Replacing roof sheathing needs an LHC permit; replacing
+    roof covering does not [S17].
+- job_type:
+  - cooler_new_install
+  classes:
+  - R-39
+  - CR-39
+  - CR-58
+  citation: R4-9-103; R4-9-104
+  other_agency: null
+  notes: New circuit allowed under R-39; new cut in roof may need roofing and permit [S2][S17][judgment].
+handyman_ok:
+  allowed_examples:
+  - Spring start-up or fall shut-down, total under $1,000, no permit [S4][judgment]
+  - Pad replacement, belt replacement, float valve adjustment, pan cleaning, under $1,000 [S4][judgment]
+  - Plug-in pump swap like-for-like, under $1,000 [judgment]
+  not_allowed_examples:
+  - New cooler install or a move that needs a roof cut, new duct or new circuit (permit and/or over $1,000) [S17][S4]
+  - Hard-wired motor or new wiring when it needs a permit [S17]
+  - Full replacement over $1,000 [S4]
+  rule_reminder: 'A person without an ROC license may take a job only if ALL are true: total price (labor + materials
+    + everything) is under $1,000; the work is casual, minor or inconsequential; no local building permit is required;
+    it is not part of a larger job or split up to stay under $1,000; and any ad says ''not a licensed contractor''.
+    The exemption never covers work that connects to natural gas, propane or other fuel gas, or fire-safety work
+    such as hardwired/interconnected smoke alarms. Source: A.R.S. 32-1121(A)(14) and (D) [S4]. In Lake Havasu City,
+    check the city permit list: a needed permit removes the exemption [S17].'
+local_notes:
+- City water averages about 19 grains per gallon hardness (range 18-20) and TDS about 753 ppm, so pads and pans
+  scale quickly; bleed-off settings matter [LHC-CCR][UA-WW].
+- Some homes outside city limits are on EPCOR water, reported at 6-8 gpg; ask the area, not the address [EPCOR-LH].
+- 'UA Water Wise: a cooler can use 50-200 gallons a day; waiting until about 85 F to turn it on cuts water use;
+  cooler drain-off water is high in minerals and can harm plants [UA-WW].'
+- Coolers lose cooling power when monsoon humidity rises (about July-September); many homes have both a cooler and
+  refrigerated AC [judgment].
+- 'Seasonal rush: start-ups in spring (March-May) and shut-downs in fall (October-November); snowbird owners often
+  want both handled while away [judgment].'
+- UA Water Wise fall steps include draining and cleaning the pan, disconnecting and draining the water line, and
+  covering the cooler; a business can quote this [UA-WW].
+- Roof coolers on older homes may sit on aging roof jacks; leaks into ceilings are a common complaint [judgment].
+sample_card: 'REQ-0157 | Swamp cooler | Lake Havasu City, south side
+
+  Roof down-draft cooler, spring start-up plus new pads. About 4,500 CFM (label photo).
+
+  One-story home, cover still on. Flexible on timing.'
+test_messages:
+- id: evaporative_coolers_t01
+  message: need my swamper started up
+  trade: evaporative_coolers
+  job_type: cooler_startup
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is the cooler on the roof, on the ground by a wall, or in a window?
+  note: ''
+- id: evaporative_coolers_t02
+  message: cooler is running but house still 88 and it feels sticky
+  trade: evaporative_coolers
+  job_type: cooler_not_cooling
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Is anyone at home who is older, very young, or has a medical need for cool air?
+  note: Humid monsoon days reduce cooler output; do not explain cause, just collect info.
+- id: evaporative_coolers_t03
+  message: water dripping out of the vent in the hallway ceiling from cooler
+  trade: evaporative_coolers
+  job_type: cooler_leak
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Is the water near any lights, outlets or wiring?
+  note: ''
+- id: evaporative_coolers_t04
+  message: el cooler no prende y hace mucho calor
+  trade: evaporative_coolers
+  job_type: cooler_not_running
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: ¿Hay alguien en casa mayor de edad, un bebé o alguien enfermo?
+  note: Spanish; screen heat risk.
+- id: evaporative_coolers_t05
+  message: REQ-0158 winterize cooler + cover, im in minnesota till april
+  trade: evaporative_coolers
+  job_type: cooler_winterize
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is the cooler on the roof or on the ground, and can someone local let a tech through the
+    gate if needed?
+  note: Absentee owner. Do not collect gate or lockbox codes.
+- id: evaporative_coolers_t06
+  message: pads are all crusty white. how often should i change
+  trade: evaporative_coolers
+  job_type: cooler_pads
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Would you like a business to quote new pads? Do you know if they are the thin aspen kind
+    or thick block kind?
+  note: Do not give maintenance advice; offer the quote.
+- id: evaporative_coolers_t07
+  message: want to get rid of the swamp cooler and get real ac
+  trade: hvac
+  job_type: ac_replacement
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: What size is the home, and do you already have ducts for central air?
+  note: 'Mixed: route hvac for AC; card evaporative_coolers removal + roofing patch.'
+- id: evaporative_coolers_t08
+  message: cooler motor smells like burning
+  trade: evaporative_coolers
+  job_type: cooler_not_running
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: Please turn the cooler off at its switch. Do you see any smoke?
+  note: NFPA step; if smoke, get out and call 911.
+- id: evaporative_coolers_t09
+  message: swamp coolr overflowing water all down the roof
+  trade: evaporative_coolers
+  job_type: cooler_overflow
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is the water staying on the roof, or is any coming inside?
+  note: ''
+- id: evaporative_coolers_t10
+  message: my portable cooler on the patio stopped blowing
+  trade: evaporative_coolers
+  job_type: cooler_not_running
+  emergency: 'no'
+  first_question_id: q1_location
+  ideal_first_question: What brand is it, and does the fan run at all?
+  note: Portable plug-in cooler. appliance_repair has no portable-cooler job type, so this routes to evaporative_coolers
+    / cooler_not_running; card should say "portable plug-in unit" [judgment].
+sources:
+- '[S1] (foundation/sources_foundation.md) A.A.C. R4-9-102 Commercial contracting classifications (Cornell LII copy,
+  amended through 23 A.A.R. 2525, eff. 11/5/2017): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102'
+- '[S2] (foundation/sources_foundation.md) A.A.C. R4-9-103 Residential contracting classifications (Cornell LII
+  copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] (foundation/sources_foundation.md) A.A.C. R4-9-104 Dual licensing classifications (Cornell LII copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] (foundation/sources_foundation.md) A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman
+  exemption and (D) fire-safety and fuel-gas carve-outs): https://www.azleg.gov/ars/32/01121.htm'
+- '[S17] (foundation/sources_foundation.md) Lake Havasu City Building Division, permit-required and no-permit lists
+  (2024 I-codes, 2023 NEC): https://www.lhcaz.gov/development-permitting/building'
+- '[LHC-CCR] (trade-only source) Lake Havasu City 2025 Annual Drinking Water Quality Report, system AZ0408022 (hardness
+  avg 19 gpg, range 18-20; TDS avg 753 ppm), lhcaz.gov'
+- '[EPCOR-LH] (trade-only source) EPCOR Water Arizona, Lake Havasu system water quality (hardness 6-8 gpg; EPCOR
+  scale >10.5 gpg = very hard), epcor.com'
+- '[UA-WW] (trade-only source) University of Arizona Cooperative Extension, Water Wise: swamp cooler maintenance,
+  cool rules, softeners, RO, leaks: https://waterwise.arizona.edu/ways-save-water/water-saving-tips/swamp-cooler-maintenance'
+- '[CDC-HEAT] (trade-only source) CDC Heat and Health: heat and older adults; staying safe without air conditioning:
+  https://www.cdc.gov/heat-health/'
+- '[S27] (foundation/sources_foundation.md) National Weather Service, Heat illness (heat stroke = call 911; move
+  to cooler place; cool cloths): https://www.weather.gov/safety/heat-illness'
+- '[S29] (foundation/sources_foundation.md) NFPA, Electrical safety in the home (call a qualified electrician for
+  frequent tripping, warm/discolored outlets, burning smell, flicker, sparks; test AFCI/GFCI monthly): https://www.nfpa.org/education-and-research/home-fire-safety/electrical'
+- '[NFPA-ESCAPE] (trade-only source) NFPA, Home fire escape planning (get out, stay out, call 911 from outside):
+  https://www.nfpa.org/education-and-research/home-fire-safety/escape-planning'
+- '[S31] (foundation/sources_foundation.md) CDC, Protect yourself from electrical hazards after a disaster / Reentering
+  your flooded home (turn off main only if you can reach it from a dry place; never stand in water to switch power):
+  https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-from-electrical-hazards.html'

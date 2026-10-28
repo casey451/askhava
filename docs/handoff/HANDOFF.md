@@ -1,5 +1,7 @@
 # Ask Hava handoff: start here (October 28, 2026)
 
+> **Status, October 28, 2026:** sections 5 and 6 and steps 2 and 3 of section 8 are done in fix round 14 (D-429 to D-449); see `docs/PREBUILD.md` section 2. The ChatGPT sales-tax answer is in `docs/for-casey-review.md`; the Grok knowledge base is in `docs/catalog/trade_kb/`.
+
 This file is for a **new chat** picking up Ask Hava. Read all of it before doing anything. It tells you where the plan stands, the rules Casey has set, the product changes he just asked for, and what to do next.
 
 ---

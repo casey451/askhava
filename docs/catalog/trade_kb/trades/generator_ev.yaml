@@ -1,0 +1,505 @@
+# Ask Hava trade knowledge file: generator_ev
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: generator_ev
+display_name: Generators and EV chargers
+summary: Standby (whole-home) generators, transfer switches and inlets for portable generators, generator service,
+  and home EV chargers (Level 2 circuits and charger installs). This is electrical work (R-11/CR-11); a natural
+  gas or propane feed to a standby generator is gas piping work (R-37) and is never handyman work [S2][S4]. Ask
+  Hava learns which device, fuel, panel photos and distance, then writes a card. It never sizes a generator or charger,
+  never says a panel can handle a load, and never says whether a permit is needed beyond what the city lists.
+job_types:
+- id: standby_generator
+  label: New standby (whole-home) generator
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: transfer_switch
+  label: Transfer switch or inlet for a portable generator
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: generator_service
+  label: Generator won't start, service or repair
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: ev_charger
+  label: Install an EV charger or 240V outlet for an EV
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: ev_charger_repair
+  label: EV charger not working or tripping
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: battery_backup
+  label: Home battery backup (no solar)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: whole house generator
+  job_type: standby_generator
+- phrase: generac
+  job_type: standby_generator
+- phrase: standby generator
+  job_type: standby_generator
+- phrase: backup generator install
+  job_type: standby_generator
+- phrase: genrator
+  job_type: standby_generator
+- phrase: generater
+  job_type: standby_generator
+- phrase: kohler generator
+  job_type: standby_generator
+- phrase: transfer switch
+  job_type: transfer_switch
+- phrase: generator hookup
+  job_type: transfer_switch
+- phrase: generator plug for house
+  job_type: transfer_switch
+- phrase: interlock kit
+  job_type: transfer_switch
+- phrase: hook up my portable generator
+  job_type: transfer_switch
+- phrase: generator wont start
+  job_type: generator_service
+- phrase: generator service
+  job_type: generator_service
+- phrase: generator maintenance
+  job_type: generator_service
+- phrase: generator beeping
+  job_type: generator_service
+- phrase: generator red light
+  job_type: generator_service
+- phrase: ev charger
+  job_type: ev_charger
+- phrase: tesla charger install
+  job_type: ev_charger
+- phrase: wall connector
+  job_type: ev_charger
+- phrase: 240 outlet for car
+  job_type: ev_charger
+- phrase: nema 14-50
+  job_type: ev_charger
+- phrase: level 2 charger
+  job_type: ev_charger
+- phrase: charger for my electric car
+  job_type: ev_charger
+- phrase: e v charger
+  job_type: ev_charger
+- phrase: car charger in garage
+  job_type: ev_charger
+- phrase: golf cart charger outlet
+  job_type: ev_charger
+- phrase: ev charger not working
+  job_type: ev_charger_repair
+- phrase: charger keeps tripping breaker
+  job_type: ev_charger_repair
+- phrase: car wont charge at home
+  job_type: ev_charger_repair
+- phrase: battery backup no solar
+  job_type: battery_backup
+- phrase: home battery
+  job_type: battery_backup
+triggers_es:
+- phrase: generador para toda la casa
+  job_type: standby_generator
+- phrase: instalar generador
+  job_type: standby_generator
+- phrase: interruptor de transferencia
+  job_type: transfer_switch
+- phrase: conectar generador a la casa
+  job_type: transfer_switch
+- phrase: el generador no prende
+  job_type: generator_service
+- phrase: cargador para carro eléctrico
+  job_type: ev_charger
+- phrase: cargador para carro electrico
+  job_type: ev_charger
+- phrase: enchufe de 240 para el carro
+  job_type: ev_charger
+- phrase: el cargador no funciona
+  job_type: ev_charger_repair
+- phrase: batería de respaldo
+  job_type: battery_backup
+questions:
+- id: q1_job
+  text: What do you need?
+  options:
+  - New whole-home generator
+  - Hook up a portable generator
+  - Fix or service a generator
+  - New EV charger or outlet
+  - Fix an EV charger
+  - Battery backup
+  ask_if: always
+  changes_price: 'yes'
+  why: Each is a different kind of job. [judgment]
+- id: q2_fuel
+  text: What fuel would the generator use?
+  options:
+  - Natural gas (UniSource)
+  - Propane tank
+  - Gasoline or diesel (portable)
+  - Not sure
+  ask_if: q1_job in ['New whole-home generator', 'Fix or service a generator']
+  changes_price: 'yes'
+  why: A gas or propane feed adds gas piping by a licensed plumber or gas contractor. [S2][judgment]
+- id: q3_distance
+  text: About how far is the panel from where the generator or charger would go?
+  options:
+  - Same wall or very close
+  - Under 25 feet
+  - 25-50 feet
+  - More than 50 feet or a detached spot
+  - Not sure
+  ask_if: q1_job in ['New whole-home generator', 'Hook up a portable generator', 'New EV charger or outlet', 'Battery
+    backup']
+  changes_price: 'yes'
+  why: Wire runs are a big part of the price. [judgment]
+- id: q4_panel
+  text: Can you send a photo of your main electrical panel with the door open?
+  options:
+  - Sent a photo
+  - Can't get to it
+  - Not sure where it is
+  ask_if: q1_job != 'Fix or service a generator'
+  changes_price: 'yes'
+  why: Panel size and open spaces shape the job; a business decides if the panel can take the load. [judgment]
+- id: q5_charger
+  text: Do you already have the charger?
+  options:
+  - Yes, I have it
+  - I want a 240V outlet only
+  - I need the charger too
+  - Not sure
+  ask_if: q1_job == 'New EV charger or outlet'
+  changes_price: 'yes'
+  why: Hardwired chargers and outlets are priced differently. [EPA-EV][judgment]
+quote_without_visit_needs:
+- EV charger or outlet close to the panel with clear panel photos [judgment]
+- Generator inlet/interlock with panel photo and location [judgment]
+site_visit_usually_needed:
+- Standby generators (pad, gas line, clearances, permits) [S17][judgment]
+- Long runs, trenching or detached garages (Arizona 811 before digging) [S24][AZ811]
+- Generator repairs [judgment]
+- Battery backup [judgment]
+photos_to_request:
+- id: p1_panel
+  ask: A photo of the main electrical panel with the door open, and the label inside the door if you can read it.
+  for_job_types:
+  - standby_generator
+  - transfer_switch
+  - ev_charger
+  - battery_backup
+  - ev_charger_repair
+- id: p2_spot
+  ask: A photo of where the generator or charger would go, showing the panel or meter if you can.
+  for_job_types:
+  - standby_generator
+  - transfer_switch
+  - ev_charger
+  - battery_backup
+- id: p3_gen
+  ask: A photo of the generator's label and its control screen or lights.
+  for_job_types:
+  - generator_service
+  - transfer_switch
+- id: p4_meter
+  ask: A photo of the gas meter or propane tank from a safe distance.
+  for_job_types:
+  - standby_generator
+- id: p5_charger
+  ask: A photo of the charger, its lights and its label.
+  for_job_types:
+  - ev_charger_repair
+photo_cues:
+- photo_id: p1_panel
+  look_for:
+  - Main breaker amps; open breaker spaces; brand; existing 240V breakers [judgment]
+  - FPE Stab-Lok or Zinsco names (note only; route to electrical) [judgment]
+  neutral_wording_example: 200 amp main; about 4 open spaces; panel in garage.
+- photo_id: p2_spot
+  look_for:
+  - Distance to panel; side yard clearance; windows and doors near a generator spot [CPSC-GEN][judgment]
+  neutral_wording_example: Garage wall next to panel; about 10 feet to parking spot.
+- photo_id: p3_gen
+  look_for:
+  - Brand, kW size, fuel type, fault message; record only [judgment]
+  neutral_wording_example: Generac 22 kW; screen shows a fault code.
+- photo_id: p4_meter
+  look_for:
+  - Natural gas meter vs propane tank; tank size label [judgment]
+  neutral_wording_example: UniSource gas meter on east side; about 30 feet to the proposed pad.
+- photo_id: p5_charger
+  look_for:
+  - Charger brand; light color; melted or scorched plug [ESFI-EV]
+  neutral_wording_example: Tesla wall connector; red light; plug looks clean.
+photo_red_flags:
+- flag: Generator running inside a garage, shed or near open windows
+  safety_step_ref: es_gen_co
+- flag: Generator cord plugged into a wall outlet (dryer or regular outlet) to power the house
+  safety_step_ref: es_backfeed
+- flag: Melted, scorched or smoking charger, plug or cord
+  safety_step_ref: es_ev
+emergency_signals:
+- id: es_gen_co
+  signal: Generator running indoors or in a garage, or people feel sick, dizzy or weak; CO alarm sounding
+  emergency: 'yes'
+  safety_step: 'CPSC: never run a generator inside a home, garage, crawlspace or shed, even with doors or windows
+    open or fans running. Run it only outside, far from windows, doors and vents, with the exhaust pointed away
+    from buildings. If anyone feels sick, dizzy or weak while a generator is running, get to fresh air right away
+    and call 911. If a CO alarm is sounding, do not look for the cause. Get everyone outside to fresh air right
+    away. Call 911 or the fire department from outside. Count heads. Do not go back in until responders say it is
+    safe. Do not use the fuel-burning appliance again until it has been checked.'
+  source: '[CPSC-GEN][S26][S31]'
+  then_route_to: generator_ev
+- id: es_backfeed
+  signal: Generator plugged into a house outlet to power the home (backfeeding)
+  emergency: 'yes'
+  safety_step: 'CPSC: never power house wiring by plugging a generator into a wall outlet (backfeeding). It can
+    electrocute utility workers and neighbors. If one is plugged in this way now, it is safest to shut off the generator
+    from outside without touching wet parts. CDC also says connecting a generator to home wiring without a transfer
+    switch is dangerous and illegal.'
+  source: '[CPSC-GEN][S31]'
+  then_route_to: generator_ev
+- id: es_gen_fire
+  signal: Generator fire, fuel leak or fuel spill on a hot engine
+  emergency: 'yes'
+  safety_step: 'CPSC: turn the generator off and let it cool before refueling; gasoline spilled on hot parts can
+    catch fire. Store fuel outside living areas in labeled safety cans, not near a gas water heater. If there is
+    fire, get away and call 911.'
+  source: '[CPSC-GEN][NFPA-ESCAPE]'
+  then_route_to: generator_ev
+- id: es_gas_smell
+  signal: Gas or propane smell at a standby generator
+  emergency: 'yes'
+  safety_step: Leave the home or area right away. Do not use a phone, light switch or anything that can make a spark
+    inside. Do not smoke or light a match. If you are outside, do not start a car. Do not try to find the leak.
+    From a safe place, call 911 and the UniSource 24-hour line, [number removed, see source]. Do not go back until UniSource or
+    the fire department says it is safe. Only UniSource may turn gas service back on.
+  source: '[UNS-GAS][S22][S25]'
+  then_route_to: gas_lines
+- id: es_ev
+  signal: EV charger, plug or cord melted, sparking, smoking or very hot
+  emergency: 'yes'
+  safety_step: 'ESFI: never use a damaged charger or cable. Stop charging and do not touch a charger, plug or cord
+    that is melted, sparking, smoking or very hot. If there is smoke or fire at the charger or vehicle, get everyone
+    out, stay out, and call 911 from outside.'
+  source: '[ESFI-EV][NFPA-ESCAPE]'
+  then_route_to: generator_ev
+- id: es_outage
+  signal: Whole home has no power (deciding about a generator)
+  emergency: depends
+  safety_step: 'Call UniSource at [number removed, see source] to report the outage. CPSC: never run a generator inside a home,
+    garage, crawlspace or shed, even with doors or windows open or fans running. Run it only outside, far from windows,
+    doors and vents, with the exhaust pointed away from buildings. If anyone feels sick, dizzy or weak while a generator
+    is running, get to fresh air right away and call 911.'
+  source: '[S25][CPSC-GEN]'
+  then_route_to: electrical
+safety_step:
+- when: Generator running indoors or in a garage, or people feel sick, dizzy or weak; CO alarm sounding
+  step: 'CPSC: never run a generator inside a home, garage, crawlspace or shed, even with doors or windows open
+    or fans running. Run it only outside, far from windows, doors and vents, with the exhaust pointed away from
+    buildings. If anyone feels sick, dizzy or weak while a generator is running, get to fresh air right away and
+    call 911. If a CO alarm is sounding, do not look for the cause. Get everyone outside to fresh air right away.
+    Call 911 or the fire department from outside. Count heads. Do not go back in until responders say it is safe.
+    Do not use the fuel-burning appliance again until it has been checked.'
+  source: '[CPSC-GEN][S26][S31]'
+- when: Generator plugged into a house outlet to power the home (backfeeding)
+  step: 'CPSC: never power house wiring by plugging a generator into a wall outlet (backfeeding). It can electrocute
+    utility workers and neighbors. If one is plugged in this way now, it is safest to shut off the generator from
+    outside without touching wet parts. CDC also says connecting a generator to home wiring without a transfer switch
+    is dangerous and illegal.'
+  source: '[CPSC-GEN][S31]'
+- when: Generator fire, fuel leak or fuel spill on a hot engine
+  step: 'CPSC: turn the generator off and let it cool before refueling; gasoline spilled on hot parts can catch
+    fire. Store fuel outside living areas in labeled safety cans, not near a gas water heater. If there is fire,
+    get away and call 911.'
+  source: '[CPSC-GEN][NFPA-ESCAPE]'
+- when: Gas or propane smell at a standby generator
+  step: Leave the home or area right away. Do not use a phone, light switch or anything that can make a spark inside.
+    Do not smoke or light a match. If you are outside, do not start a car. Do not try to find the leak. From a safe
+    place, call 911 and the UniSource 24-hour line, [number removed, see source]. Do not go back until UniSource or the fire department
+    says it is safe. Only UniSource may turn gas service back on.
+  source: '[UNS-GAS][S22][S25]'
+- when: EV charger, plug or cord melted, sparking, smoking or very hot
+  step: 'ESFI: never use a damaged charger or cable. Stop charging and do not touch a charger, plug or cord that
+    is melted, sparking, smoking or very hot. If there is smoke or fire at the charger or vehicle, get everyone
+    out, stay out, and call 911 from outside.'
+  source: '[ESFI-EV][NFPA-ESCAPE]'
+license_classes:
+- job_type:
+  - standby_generator
+  classes:
+  - R-11 Electrical / CR-11 (electrical, transfer switch)
+  - R-37 Plumbing, Including Solar / CR-77 (natural gas or propane piping to the unit)
+  citation: R4-9-103 (R-11 'install and repair residential electrical systems'; R-37 includes gas piping) [S2];
+    R4-9-104 (CR-11, CR-77) [S3]
+  other_agency: UniSource for gas meter size or service; LHC permit [S17][judgment]
+  notes: The R-11 + R-37 pairing for standby generators is [judgment] (foundation). Gas or propane connections are
+    never handyman work [S4]. Many generator dealers hold both or subcontract [judgment].
+- job_type:
+  - transfer_switch
+  classes:
+  - R-11 Electrical
+  - CR-11 Electrical
+  citation: R4-9-103; R4-9-104 [S2][S3]
+  other_agency: null
+  notes: Interlock kits and inlets change panel wiring [judgment].
+- job_type:
+  - generator_service
+  classes:
+  - R-11 / CR-11 for electrical repair
+  - 'Engine tune-up only: may be no ROC class if not part of a structure [judgment]'
+  citation: R4-9-103 [S2]; A.A.C. R4-9-104 [S3] (CR- dual classes)
+  other_agency: null
+  notes: '[judgment]: portable generator engine repair is small-engine work, not contracting; route to appliance_repair
+    if no dealer.'
+- job_type:
+  - ev_charger
+  classes:
+  - R-11 Electrical
+  - CR-11 Electrical
+  citation: R4-9-103; R4-9-104 [S2][S3]
+  other_agency: LHC permit likely for a new circuit [S17][judgment]
+  notes: 'ESFI: chargers should be installed by a qualified electrician [ESFI-EV]. Same classes for ev_charger_repair
+    and battery_backup.'
+handyman_ok:
+  allowed_examples:
+  - Plugging in a plug-in charger to an existing outlet needs no contractor [judgment]
+  not_allowed_examples:
+  - Any new 240V circuit, charger hardwire or transfer switch (permit) [S17][judgment]
+  - Any gas or propane hookup to a generator [S4]
+  - Any job $1,000 or more [S4]
+  rule_reminder: 'A person without an ROC license may take a job only if ALL are true: total price (labor + materials
+    + everything) is under $1,000; the work is casual, minor or inconsequential; no local building permit is required;
+    it is not part of a larger job or split up to stay under $1,000; and any ad says ''not a licensed contractor''.
+    The exemption never covers work that connects to natural gas, propane or other fuel gas, or fire-safety work
+    such as hardwired/interconnected smoke alarms. Source: A.R.S. 32-1121(A)(14) and (D) [S4]. In Lake Havasu City,
+    check the city permit list: a needed permit removes the exemption [S17].'
+local_notes:
+- Summer outages in extreme heat raise generator interest; Ask Hava gives heat safety steps first if someone is
+  without AC [S27][judgment].
+- Standby generators run on natural gas (UniSource) in town; outlying areas often use propane [judgment].
+- Golf carts are common in Havasu; outlet requests for cart charging route here (circuit) or to golf_cart (cart
+  repair) [judgment].
+- 'Digging for a buried line: Arizona 811, 1-800-STAKE-IT, at least two working days before digging; state law requires
+  it [S24][AZ811].'
+- UniSource Energy Services is the electric and gas utility in Lake Havasu City; 24/7 line [number removed, see source] [S22].
+- EPA explains Level 1 (standard outlet) vs Level 2 (240V) charging [EPA-EV]. Ask Hava never says which a vehicle
+  needs.
+sample_card: 'REQ-0214 | EV charger | Lake Havasu City, north
+
+  Install a Level 2 charger in garage; owner has the charger.
+
+  Panel photo: 200 amp, same wall, about 15 ft run.'
+test_messages:
+- id: generator_ev_t01
+  message: need a plug for my tesla in the garage
+  trade: generator_ev
+  job_type: ev_charger
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Do you already have the charger, or do you want a 240V outlet only?
+  note: ''
+- id: generator_ev_t02
+  message: whole house generator quote, have gas
+  trade: generator_ev
+  job_type: standby_generator
+  emergency: 'no'
+  first_question_id: q4_panel
+  ideal_first_question: Can you send a photo of your main electrical panel with the door open?
+  note: ''
+- id: generator_ev_t03
+  message: running my generator in the garage with door open is that ok
+  trade: generator_ev
+  job_type: transfer_switch
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: (Give CO step first.) Is the generator off and outside now?
+  note: Emergency; never okay per CPSC.
+- id: generator_ev_t04
+  message: plugged generator into dryer outlet to run house
+  trade: generator_ev
+  job_type: transfer_switch
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: (Give backfeed step first.) Would you like quotes for a safe hookup like a transfer switch
+    or inlet?
+  note: Emergency.
+- id: generator_ev_t05
+  message: generac wont start red light
+  trade: generator_ev
+  job_type: generator_service
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Can you send a photo of the generator's screen and label?
+  note: ''
+- id: generator_ev_t06
+  message: cargador para carro electrico en la cochera
+  trade: generator_ev
+  job_type: ev_charger
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: ¿Ya tiene el cargador o solo quiere un enchufe de 240?
+  note: Spanish.
+- id: generator_ev_t07
+  message: smell gas by the generator
+  trade: gas_lines
+  job_type: gas_leak
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: (Give gas step first.) Are you away from the area now?
+  note: 'Wrong trade: gas emergency.'
+- id: generator_ev_t08
+  message: ev charger keeps tripping breaker and plug looks melted
+  trade: generator_ev
+  job_type: ev_charger_repair
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: (Give EV damage step first.) Have you stopped using the charger?
+  note: Emergency.
+- id: generator_ev_t09
+  message: power out whole street what do i do
+  trade: electrical
+  job_type: whole_home_out
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Have you reported the outage to UniSource at [number removed, see source]?
+  note: 'Wrong trade: outage.'
+- id: generator_ev_t10
+  message: need outlet for golf cart charger and a new panel
+  trade: electrical
+  job_type: panel_upgrade
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Can you send a photo of your main electrical panel with the door open?
+  note: Mixed; second card generator_ev/ev_charger.
+sources:
+- '[S2] (foundation/sources_foundation.md) A.A.C. R4-9-103 Residential contracting classifications (Cornell LII
+  copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] (foundation/sources_foundation.md) A.A.C. R4-9-104 Dual licensing classifications (Cornell LII copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] (foundation/sources_foundation.md) A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman
+  exemption and (D) fire-safety and fuel-gas carve-outs): https://www.azleg.gov/ars/32/01121.htm'
+- '[S17] (foundation/sources_foundation.md) Lake Havasu City Building Division, permit-required and no-permit lists
+  (2024 I-codes, 2023 NEC): https://www.lhcaz.gov/development-permitting/building'
+- '[S22] (foundation/sources_foundation.md) UniSource Energy Services contact page (gas emergency: call 911 and
+  [number removed, see source]; outages [number removed, see source]; LHC electric office [number removed, see source]; LHC gas office [number removed, see source]): https://www.uesaz.com/contact/'
+- '[S24] (foundation/sources_foundation.md) UniSource Electrical Safety Tips (15 ft from overhead lines, downed
+  lines, Arizona 811): https://www.uesaz.com/electric-safety/'
+- '[S25] (foundation/sources_foundation.md) UniSource During a Storm or Service Outage (downed lines; only UniSource
+  field employees may turn gas service back on; do not relight pilots after a shutoff): https://www.uesaz.com/outage-preparation/'
+- '[UNS-GAS] (trade-only source) UniSource Energy Services, Natural Gas Safety and Safety Alert insert: https://www.uesaz.com/gas-safety/
+  and https://docs.uesaz.com/wp-content/uploads/Gas-Safety-Insert-Oct-2026.pdf'
+- '[CPSC-GEN] (trade-only source) CPSC Safety Alert: Portable Generator Hazards, Pub. 5123: https://www.cpsc.gov/s3fs-public/5123_SafetyAlert_PortableGenerators_102021.pdf'
+- '[S26] (foundation/sources_foundation.md) CPSC Carbon Monoxide Questions and Answers: https://www.cpsc.gov/Safety-Education/Safety-Education-Centers/Carbon-Monoxide-Information-Center/Carbon-Monoxide-Questions-and-Answers'
+- '[S31] (foundation/sources_foundation.md) CDC, Protect yourself from electrical hazards after a disaster / Reentering
+  your flooded home (turn off main only if you can reach it from a dry place; never stand in water to switch power):
+  https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-from-electrical-hazards.html'
+- '[NFPA-ESCAPE] (trade-only source) NFPA, Home fire escape planning (get out, stay out, call 911 from outside):
+  https://www.nfpa.org/education-and-research/home-fire-safety/escape-planning'
+- '[ESFI-EV] (trade-only source) Electrical Safety Foundation International (industry association), Electric Vehicle
+  Charging Safety: https://www.esfi.org/electric-vehicle-charging-safety/'
+- '[EPA-EV] (trade-only source) US EPA, Getting started with home EV charging: https://www.epa.gov/greenvehicles/getting-started-home-ev-charging'
+- '[AZ811] (trade-only source) Arizona 811 call-before-you-dig (call 811 or arizona811.com at least two working
+  days before digging): https://www.arizona811.com'
+- '[S27] (foundation/sources_foundation.md) National Weather Service, Heat illness (heat stroke = call 911; move
+  to cooler place; cool cloths): https://www.weather.gov/safety/heat-illness'

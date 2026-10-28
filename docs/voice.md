@@ -2,6 +2,10 @@
 
 How Ask Hava's texts and emails sound (WORD-024, D-406). This is a style guide only. Every rule in `docs/spec/` wins over style: no hype, no pressure, no ranking, no banned words (WORD-003, WORD-019 to WORD-023), and every text starts "Ask Hava:" (WORD-008). Nobody is named, quoted or imitated in any customer copy.
 
+## The register
+
+A sharp, experienced receptionist (D-447): warm, brief, sure of the next step, never salesy. She already knows what a plumber will ask, so she asks it once, plainly, and moves on. She never guesses what's wrong, never prices anything and never sounds like a form.
+
 ## The rules
 
 1. **Short sentences. One idea each.** Aim for 15 words or fewer.
@@ -13,7 +17,7 @@ How Ask Hava's texts and emails sound (WORD-024, D-406). This is a style guide o
 7. **Calm, never urgent.** Deadlines are plain facts ("Quotes are open until 4 p.m. Thursday, Arizona time."). Never "hurry", "don't miss out", "act now", "limited time" or "last chance" (or "apúrese", "no se lo pierda"). The WORD-003 scan checks this list.
 8. **Two registers.** Homeowners: gentle and plain. Business owners: shorter, direct, with numbers (fee, time left, job size).
 9. **Numbers only when true.** Counts come from the system, never from estimates (CARD-019).
-10. **Safety texts are exempt.** Their fixed wording stays exactly as specified (INT-004, INT-031, INT-034, INT-037, INT-042).
+10. **The 911 text is exempt.** Its fixed wording stays exactly as specified (INT-004, INT-037). There is no other safety, heat or health text (D-436).
 11. **Homeowners see "request <n>"; businesses see "job <n>"** (WORD-025).
 
 ## Before and after
@@ -22,11 +26,14 @@ The "after" column is the spec text. Spanish follows once the English is settled
 
 | Message | Before | After |
 |---|---|---|
-| Cards sent (TXT-032) | "Ask Hava: Sent to 4 local businesses. They have until 4 p.m. Thu to quote. We'll text you when the first one is in." | "Ask Hava: Your request went to 4 local businesses that take plumbing jobs. Not every business answers. Quotes are open until 4 p.m. Thursday, Arizona time. We'll text you when the first one comes in." |
-| No quotes yet (JOB-010) | "...some small or unusual jobs get no quotes... 1) Keep waiting 2) Add details 3) Close" | "Ask Hava: No quotes yet for request 1042. Small or unusual jobs can take longer. A few more details often help a business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close." |
-| Pick lapsed (PICK-046) | "Ask Hava: <Business> didn't confirm in time. Your other quotes: ..." | "Ask Hava: <Business> didn't confirm in time. Businesses get picks by email and sometimes miss the window. You still have other quotes: ..." |
-| Backup choice used (PICK-047) | (new) | "Ask Hava: <Business> didn't confirm in time, so your backup choice, <Business 2>, has your pick now. They have until <time> to confirm." |
-| Pick made (PICK-045) | "Ask Hava: <Business> gets your pick by email and has until <time> to confirm. ..." | "Ask Hava: Done. <Business> has your pick by email and has until <time> to confirm. Businesses check email at different times. Nothing else to do for now. You can still choose another quote before then." |
+| Coverage (INT-017) | (none) | "Ask Hava: Got it. We'll send this to the 5 pool cleaning businesses on Ask Hava." |
+| Not covered (INT-017) | "...isn't a category we cover..." | "Ask Hava: We don't cover tree trimming jobs yet. We've noted your request so we can add businesses. Text us any time." |
+| Cards sent (TXT-032) | "Ask Hava: Your request went to 4 local businesses that take plumbing jobs. ... Quotes are open until 4 p.m. Thursday, Arizona time. ..." | "Ask Hava: Request 1042 is out to 4 plumbing businesses. Not every business answers. We'll text you when the first quote comes in." |
+| First quote (TXT-016) | "...site visit needed, $89 trip fee, earliest visit today, evening. More may come..." | "Ask Hava: Your first quote for request 1042 is in, and more may come. Free for you. The business you pick pays Ask Hava a set introduction fee. Can't open links? Reply LIST to get your quotes by text. See them here: <link> Terms (18+): askhava.com/terms" |
+| No quotes yet (JOB-010) | "...Small or unusual jobs can take longer. A few more details often help..." | "Ask Hava: No quotes yet for request 1042. A few more details or a photo often help a business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close." |
+| Pick lapsed (PICK-046) | "Ask Hava: <Business> didn't confirm in time. Businesses get picks by email and sometimes miss the window. ..." | "Ask Hava: <Business> couldn't take it this time. You still have other quotes: ..." |
+| Backup choice used (PICK-047) | "...didn't confirm in time, so your backup choice... They have until <time> to confirm." | "Ask Hava: <Business> couldn't take it, so your backup, <Business 2>, has your pick now. We'll text you when they accept." |
+| Pick made (PICK-045) | "Ask Hava: Done. <Business> has your pick by email and has until <time> to confirm. ..." | "Ask Hava: Done. <Business> has your pick. We'll text you when they accept. You can still pick another quote on your page." |
 | Intake closed (INT-019) | "...Text us any time to restart" | "Ask Hava: We closed request 1042 because we didn't hear back. No problem. Text us any time and we'll start again." |
 | Pick email body (PICK-037) | Subject only | "A homeowner picked your quote for job 1042 (AC repair, Lake Havasu City). One step left: tap Confirm and pay $75 by 2:15 p.m. Then you get their first name and address." |
 | Last reminder (PICK-037) | "Ask Hava: Last reminder: confirm job <n> by <time>, or the homeowner may choose another quote." | "Ask Hava: Last reminder: job 1042 has 1 hour to confirm. After 2:15 p.m. the homeowner can choose another quote." |

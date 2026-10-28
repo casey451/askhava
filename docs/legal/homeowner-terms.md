@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.2 (draft, consent by texting in) · October 28, 2026 · Not yet in effect
+Version 0.3 (draft, packaged jobs) · October 28, 2026 · Not yet in effect
 
 # Ask Hava Homeowner Terms
 
@@ -19,7 +19,7 @@ We don't recommend, rank or rate any business, and we don't price, schedule, sup
 
 - You must be 18 or older.
 - Ask Hava is for jobs at homes in the Arizona towns we list on askhava.com, starting with Lake Havasu City.
-- You may ask for quotes for your own home or, as a tenant, for the home you rent. If you give us someone else's contact details, such as an on-site contact, make sure they're OK with it.
+- You may ask for quotes for a home you live in or look after. If you give us someone else's contact details, make sure they're OK with it.
 
 ## 3. How it works
 
@@ -27,8 +27,8 @@ We don't recommend, rank or rate any business, and we don't price, schedule, sup
 2. **We send a description of the job,** without your name, phone number, email or street address, to local businesses that do that kind of work and have signed up.
 3. **Businesses quote in their own words.** Your quote page shows every eligible quote, numbered in the order received; the number is arrival order, not a ranking. We never change a quote's amount or words. A quote is "eligible" when it follows our rules: no contact details in it, the business still holds any license the job needs, a handyman quote stays under Arizona's handyman limit, and it arrived inside the quote window.
 4. **You choose one quote,** or none. Choosing is free, and you don't have to choose.
-5. **The business confirms and pays its introduction fee.** Only then does Ask Hava give that one business your first name and the job address, plus the on-site contact and email if you chose to share them.
-6. **The business contacts you** through a masked Ask Hava number, inside the call window you chose. Ask Hava never gives your number to any business. If a business asks for it on the call, that's your choice.
+5. **The business confirms and pays its introduction fee.** Only then does Ask Hava give that one business your first name and the job address, as you asked when you picked, plus your email if you chose to share it.
+6. **The business contacts you** through a masked Ask Hava number, between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job), and you two set the time. Ask Hava doesn't schedule anything. Ask Hava never gives your number to any business. If a business asks for it on the call, that's your choice.
 7. If the business doesn't confirm in time, or it falls through, you can choose another quote.
 
 ## 4. Your agreement is with the business
@@ -43,7 +43,7 @@ You and the business make your own agreement; Ask Hava is not part of it and doe
 ## 5. What we check, and what we don't
 
 - **Licensed trades:** we check the business's license status on the state's records each day and show the date we last checked, for example "ROC #<number> showed Active on the ROC website when we checked on <date>. Check it yourself."
-- **We don't check** workmanship, background, references, reviews or insurance. Insurance shown on a quote is what the business told us ("Insurance (business-reported)").
+- **We don't check** workmanship, background, references, reviews or insurance. Google and Yelp links on a quote are links the business gave us; we don't rate or rank anyone. Insurance shown on a quote is what the business told us ("Insurance (business-reported)").
 - Check any business yourself before you hire it. For licensed contractors, the Arizona Registrar of Contractors takes complaints at askhava.com/help/roc-complaint. Handymen are not licensed by the Registrar.
 
 ## 6. Not an emergency service

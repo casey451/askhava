@@ -1,0 +1,442 @@
+# Ask Hava trade knowledge file: painting
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: painting
+display_name: Painting
+summary: Interior and exterior painting, stucco and block wall painting, cabinet painting, staining, epoxy garage
+  floors and wall covering. ROC R-34 Painting and Wall Covering covers paint, wallpaper, texture and liquid floor/wall
+  coatings. LHC needs no permit for paint. In homes built before 1978, sanding or scraping may disturb lead paint,
+  and EPA RRP rules apply to paid work. Desert sun breaks down exterior paint and caulk fast, especially on south
+  and west walls [judgment].
+job_types:
+- id: interior_rooms
+  label: Interior walls/ceilings
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: exterior_stucco
+  label: Exterior stucco/siding/trim
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: block_wall
+  label: Block fence or garden walls
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: cabinets_paint
+  label: Cabinet painting/refinishing
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: garage_floor_epoxy
+  label: Garage floor epoxy or coating
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: deck_stain
+  label: Wood stain/seal (doors, beams, pergola)
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: touch_up
+  label: Touch-ups, move-out or rental refresh
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: wallpaper
+  label: Wallpaper install or removal
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: popcorn_ceiling
+  label: 'Popcorn ceiling removal or paint (route: possible asbestos)'
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: paint
+  job_type: interior_rooms
+- phrase: repaint
+  job_type: interior_rooms
+- phrase: painter
+  job_type: interior_rooms
+- phrase: paint the house
+  job_type: interior_rooms
+- phrase: paint bedroom
+  job_type: interior_rooms
+- phrase: exterior paint
+  job_type: exterior_stucco
+- phrase: stucco paint
+  job_type: exterior_stucco
+- phrase: paint outside
+  job_type: exterior_stucco
+- phrase: trim paint
+  job_type: exterior_stucco
+- phrase: fascia peeling
+  job_type: exterior_stucco
+- phrase: block wall
+  job_type: block_wall
+- phrase: fence wall paint
+  job_type: block_wall
+- phrase: paint cabinets
+  job_type: cabinets_paint
+- phrase: refinish cabinets
+  job_type: cabinets_paint
+- phrase: epoxy
+  job_type: garage_floor_epoxy
+- phrase: garage floor coating
+  job_type: garage_floor_epoxy
+- phrase: flake floor
+  job_type: garage_floor_epoxy
+- phrase: stain
+  job_type: deck_stain
+- phrase: seal beams
+  job_type: deck_stain
+- phrase: front door refinish
+  job_type: deck_stain
+- phrase: pergola stain
+  job_type: deck_stain
+- phrase: touch up
+  job_type: touch_up
+- phrase: move out paint
+  job_type: touch_up
+- phrase: airbnb refresh
+  job_type: touch_up
+- phrase: rental turn paint
+  job_type: touch_up
+- phrase: wallpaper
+  job_type: wallpaper
+- phrase: remove wallpaper
+  job_type: wallpaper
+- phrase: popcorn ceiling
+  job_type: popcorn_ceiling
+- phrase: cottage cheese ceiling
+  job_type: popcorn_ceiling
+- phrase: acoustic ceiling
+  job_type: popcorn_ceiling
+triggers_es:
+- phrase: pintar
+  job_type: interior_rooms
+- phrase: pintor
+  job_type: interior_rooms
+- phrase: pintura
+  job_type: interior_rooms
+- phrase: pintar la casa
+  job_type: interior_rooms
+- phrase: pintar cuarto
+  job_type: interior_rooms
+- phrase: pintar por fuera
+  job_type: exterior_stucco
+- phrase: pintar el estuco
+  job_type: exterior_stucco
+- phrase: pintura exterior
+  job_type: exterior_stucco
+- phrase: barda
+  job_type: block_wall
+- phrase: pintar la barda
+  job_type: block_wall
+- phrase: pintar gabinetes
+  job_type: cabinets_paint
+- phrase: pintar alacenas
+  job_type: cabinets_paint
+- phrase: epóxico
+  job_type: garage_floor_epoxy
+- phrase: piso de cochera
+  job_type: garage_floor_epoxy
+- phrase: techo de palomitas
+  job_type: popcorn_ceiling
+- phrase: techo popcorn
+  job_type: popcorn_ceiling
+questions:
+- id: q1_where
+  text: What needs paint?
+  options:
+  - Inside rooms
+  - Outside of house
+  - Block walls
+  - Cabinets
+  - Garage floor
+  - Several of these
+  ask_if: always
+  changes_price: 'yes'
+  why: Interior, exterior and cabinets are priced very differently.
+- id: q2_size
+  text: How much?
+  options:
+  - 1 room or small area
+  - 2-4 rooms
+  - Whole inside
+  - Whole outside
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Wall area is the main driver of paint and labor.
+- id: q3_prep
+  text: What shape are the surfaces in?
+  options:
+  - Good, just a color change
+  - Some peeling or cracks
+  - A lot of peeling or bare spots
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Stucco cracks, peeling and patching add prep time.
+- id: q4_ceilings
+  text: Ceilings too?
+  options:
+  - 'No'
+  - Yes, flat ceilings
+  - Yes, textured or popcorn
+  - Vaulted or very tall
+  - Not sure
+  ask_if: where includes Inside rooms
+  changes_price: 'yes'
+  why: Ceilings and trim add time and paint.
+- id: q5_home_age
+  text: About when was the home built?
+  options:
+  - 1978 or later
+  - Before 1978
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Pre-1978 homes need EPA lead-safe work practices when paint is disturbed.
+- id: q6_paint_supplied
+  text: Do you have the paint picked out?
+  options:
+  - Yes, I'll buy it
+  - Yes, painter buys it
+  - Need help choosing colors
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Who buys paint changes the quote total.
+quote_without_visit_needs:
+- Room count or wall sq ft
+- Photos of each area
+- Surface condition
+- Ceiling height
+- Home age (pre-1978 or not)
+site_visit_usually_needed:
+- Whole exterior repaints
+- Heavy peeling or stucco cracks
+- Cabinet refinishing
+- Pre-1978 homes with peeling paint
+photos_to_request:
+- id: p1
+  ask: Each room or wall side, wide shot
+  for_job_types:
+  - all
+- id: p2
+  ask: Close-up of worst peeling or cracks
+  for_job_types:
+  - all
+- id: p3
+  ask: Ceiling texture
+  for_job_types:
+  - all
+- id: p4
+  ask: Garage floor surface for coatings
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Daylight photos show peeling and fading most clearly
+  - Include a door or person-height object for scale
+  - Show the trim and eaves for exterior jobs
+photo_red_flags:
+- flag: Peeling or chalking paint in a pre-1978 home (lead)
+  safety_step_ref: null
+- flag: Popcorn ceiling to be removed or scraped (asbestos)
+  safety_step_ref: null
+- flag: Water stains or bubbling paint (leak first)
+  safety_step_ref: null
+- flag: Mold spots
+  safety_step_ref: null
+- flag: Large stucco cracks or bulges [judgment]
+  safety_step_ref: null
+emergency_signals:
+- id: es_painting_1
+  signal: Paint project itself is rarely an emergency
+  emergency: 'no'
+  safety_step: No special safety step; normal job card.
+  source: none
+  then_route_to: painting
+- id: es_painting_2
+  signal: Someone feels sick from fumes or a child ate paint chips
+  emergency: 'yes'
+  safety_step: Call Poison Control at [number removed, see source], or 911 if they are not breathing or are unconscious.
+  source: '[T-poison]'
+  then_route_to: none
+  note: 'Routing: none (Poison Control / 911 first)'
+safety_step:
+- when: Home built before 1978 and paint will be sanded, scraped or cut
+  step: Assume lead paint may be present. Keep kids and pregnant people away from the work area. Paid work disturbing
+    more than 6 sq ft per room inside or 20 sq ft outside (or any window replacement) must be done by an EPA RRP-certified
+    firm using lead-safe practices.
+  source: '[T-epa_rrp]'
+- when: Popcorn/acoustic ceiling, old vinyl tile or old drywall texture to be disturbed
+  step: Leave it alone if intact. Do not sand, scrape, drill or cut it. Have it tested or handled by an accredited
+    asbestos professional before remodeling.
+  source: '[T-epa_asb]'
+- when: Child swallowed paint chips or someone breathed fumes and feels sick
+  step: Call Poison Control at [number removed, see source], or 911 if they are not breathing or are unconscious.
+  source: '[T-poison]'
+- when: Leftover paint disposal
+  step: Do not take paint to the LHC landfill; use the city's household hazardous waste events.
+  source: '[T-lhc_hhw]'
+license_classes:
+- job_type:
+  - interior_rooms
+  - exterior_stucco
+  - block_wall
+  - cabinets_paint
+  - deck_stain
+  - touch_up
+  - wallpaper
+  - garage_floor_epoxy
+  classes:
+  - R-34
+  - CR-34
+  - B
+  - B-3
+  citation: A.A.C. R4-9-103 [S2] R-34; R4-9-104 [S3] CR-34
+  other_agency: none
+  notes: ROC R-34 Painting and Wall Covering (paint, wallpaper, texture, liquid floor and wall coatings), CR-34
+    dual, or B/B-3.
+- job_type:
+  - garage_floor_epoxy
+  classes:
+  - R-8
+  citation: A.A.C. R4-9-103 [S2] R-8
+  other_agency: none
+  notes: Concrete coatings also fall under R-8 Floor Covering.
+- job_type:
+  - popcorn_ceiling
+  classes:
+  - R-34
+  - R-10
+  citation: EPA asbestos guidance; A.A.C. R4-9-103 [S2] R-10, R-34
+  other_agency: none
+  notes: 'Painting over intact popcorn: R-34. Removing it: test first; if asbestos, use an accredited asbestos professional.
+    Re-texture: R-10 or R-34.'
+- job_type:
+  - interior_rooms
+  - exterior_stucco
+  - touch_up
+  classes:
+  - none
+  citation: 40 CFR 745 Subpart E (EPA RRP)
+  other_agency: none
+  notes: 'Pre-1978 homes: separate federal requirement, EPA RRP firm certification, on top of any ROC license.'
+handyman_ok:
+  allowed_examples:
+  - 'Touch-ups, one small room, a door or a short stretch of fence under $1,000 total (LHC: paint needs no permit)'
+  not_allowed_examples:
+  - Whole-house or exterior repaints over $1,000
+  - Pre-1978 paint disturbance without EPA RRP certification (federal rule applies regardless of state exemption)
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+local_notes:
+- 'LHC: painting needs no building permit. Source: [S17].'
+- Elastomeric paint is common on Havasu stucco; heat limits apply on most paint labels (check label surface temperature
+  limits) [judgment].
+- Monsoon dust and wind affect exterior paint days [judgment].
+- Vacation rental refreshes between seasons are common [judgment].
+- 'Leftover paint goes to LHC household hazardous waste events, not the landfill. Source: [T-lhc_hhw].'
+sample_card: 'REQ-0203 | Painting | Lake Havasu City, central
+
+  Interior repaint, 3 bedrooms and hallway, 8 ft flat ceilings not included. Walls in good shape, color change only.
+
+  Home built after 1978. Painter to supply paint. 5 photos.
+
+  '
+test_messages:
+- id: painting_t01
+  message: need house painted
+  trade: painting
+  job_type: interior_rooms
+  emergency: 'no'
+  first_question_id: q1_where
+  ideal_first_question: What needs paint?
+  note: ''
+- id: painting_t02
+  message: outside stucco is peeling bad on the west side, house is from 1972
+  trade: painting
+  job_type: exterior_stucco
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How much?
+  note: ''
+- id: painting_t03
+  message: want the popcorn ceilings scraped off and painted
+  trade: painting
+  job_type: popcorn_ceiling
+  emergency: 'no'
+  first_question_id: q5_home_age
+  ideal_first_question: About when was the home built?
+  note: ''
+- id: painting_t04
+  message: quiero pintar 2 cuartos y la sala
+  trade: painting
+  job_type: interior_rooms
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How much?
+  note: ''
+- id: painting_t05
+  message: garage floor epoxy with flakes 3 car
+  trade: painting
+  job_type: garage_floor_epoxy
+  emergency: 'no'
+  first_question_id: q3_prep
+  ideal_first_question: What shape are the surfaces in?
+  note: ''
+- id: painting_t06
+  message: paint is bubbling on bathroom ceiling and wet
+  trade: plumbing
+  job_type: leak_slow
+  emergency: 'no'
+  first_question_id: q1_problem
+  ideal_first_question: What shape are the surfaces in?
+  note: ''
+- id: painting_t07
+  message: kitchen cabinets painted white, also new handles
+  trade: painting
+  job_type: cabinets_paint
+  emergency: 'no'
+  first_question_id: q3_prep
+  ideal_first_question: What shape are the surfaces in?
+  note: ''
+- id: painting_t08
+  message: my toddler was chewing paint chips from the window sill old house
+  trade: painting
+  job_type: touch_up
+  emergency: 'yes'
+  first_question_id: q5_home_age
+  ideal_first_question: About when was the home built?
+  note: ''
+- id: painting_t09
+  message: repaint the block wall around the yard
+  trade: painting
+  job_type: block_wall
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How much?
+  note: ''
+- id: painting_t10
+  message: rental turnover need touch up paint and patch nail holes before next guests
+  trade: painting
+  job_type: touch_up
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How much?
+  note: ''
+sources:
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] A.A.C. R4-9-104 Dual license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'
+- '[S17] Lake Havasu City, Building Permits (permit / no-permit lists) https://www.lhcaz.gov/229/Building-Permits'
+- '[T-epa_rrp] EPA Lead Renovation, Repair and Painting (RRP) Program; 40 CFR 745 Subpart E https://www.epa.gov/lead/renovation-repair-and-painting-program-contractors'
+- '[T-epa_lead_home] EPA, Protect Your Family from Sources of Lead (pre-1978 homes) https://www.epa.gov/lead/protect-your-family-sources-lead'
+- '[T-epa_asb] EPA, Protect Your Family from Exposures to Asbestos https://www.epa.gov/asbestos/protect-your-family-exposures-asbestos'
+- '[T-cpsc_asb] CPSC, Asbestos in the Home https://www.cpsc.gov/safety-education/safety-guides/home/asbestos-home'
+- '[T-poison] Poison Control (HRSA/America''s Poison Centers) [number removed, see source] https://www.poison.org/'
+- '[T-lhc_hhw] Lake Havasu City, Household Hazardous Waste https://www.lhcaz.gov/232/Hazardous-Waste'

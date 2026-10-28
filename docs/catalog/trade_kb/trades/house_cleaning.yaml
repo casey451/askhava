@@ -1,0 +1,425 @@
+# Ask Hava trade knowledge file: house_cleaning
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: house_cleaning
+display_name: House Cleaning
+summary: 'Regular and one-time home cleaning: weekly/biweekly upkeep, deep cleans, move-in/move-out, post-construction
+  dust, and short-term-rental (vacation rental) turnovers between guests. No state license applies to cleaning.
+  Many Havasu homes are seasonal or vacation rentals, so turnover cleaning on fixed check-out/check-in windows is
+  a big part of the local work [judgment]. Sewage, mold growth and hoarding-level cleanups belong to restoration
+  or specialty services, not routine cleaning.'
+job_types:
+- id: recurring
+  label: Weekly / biweekly / monthly cleaning
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: deep_clean
+  label: One-time deep clean
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: move_out
+  label: Move-in / move-out clean
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: str_turnover
+  label: Vacation rental (short-term rental) turnover
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: post_construction
+  label: After-remodel dust and debris clean
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: specialty_route
+  label: Sewage, mold, hoarding or biohazard (route to restoration)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: house cleaner
+  job_type: recurring
+- phrase: maid
+  job_type: recurring
+- phrase: cleaning lady
+  job_type: recurring
+- phrase: clean my house
+  job_type: recurring
+- phrase: biweekly cleaning
+  job_type: recurring
+- phrase: weekly clean
+  job_type: recurring
+- phrase: deep clean
+  job_type: deep_clean
+- phrase: spring cleaning
+  job_type: deep_clean
+- phrase: top to bottom
+  job_type: deep_clean
+- phrase: baseboards and fans
+  job_type: deep_clean
+- phrase: move out clean
+  job_type: move_out
+- phrase: move-out cleaning
+  job_type: move_out
+- phrase: get my deposit back
+  job_type: move_out
+- phrase: empty house clean
+  job_type: move_out
+- phrase: airbnb turnover
+  job_type: str_turnover
+- phrase: vrbo clean
+  job_type: str_turnover
+- phrase: turnover
+  job_type: str_turnover
+- phrase: vacation rental cleaning
+  job_type: str_turnover
+- phrase: str clean
+  job_type: str_turnover
+- phrase: between guests
+  job_type: str_turnover
+- phrase: checkout clean
+  job_type: str_turnover
+- phrase: construction dust
+  job_type: post_construction
+- phrase: after remodel
+  job_type: post_construction
+- phrase: drywall dust everywhere
+  job_type: post_construction
+- phrase: sewage
+  job_type: specialty_route
+- phrase: toilet overflowed everywhere
+  job_type: specialty_route
+- phrase: hoarder
+  job_type: specialty_route
+- phrase: mold everywhere
+  job_type: specialty_route
+- phrase: biohazard
+  job_type: specialty_route
+triggers_es:
+- phrase: limpieza de casa
+  job_type: recurring
+- phrase: muchacha de limpieza
+  job_type: recurring
+- phrase: limpiar mi casa
+  job_type: recurring
+- phrase: limpieza cada semana
+  job_type: recurring
+- phrase: limpieza profunda
+  job_type: deep_clean
+- phrase: limpieza a fondo
+  job_type: deep_clean
+- phrase: limpieza de mudanza
+  job_type: move_out
+- phrase: limpiar al salir
+  job_type: move_out
+- phrase: limpieza de airbnb
+  job_type: str_turnover
+- phrase: renta vacacional
+  job_type: str_turnover
+- phrase: entre huéspedes
+  job_type: str_turnover
+- phrase: aguas negras
+  job_type: specialty_route
+- phrase: moho
+  job_type: specialty_route
+questions:
+- id: q1_type
+  text: What kind of cleaning?
+  options:
+  - Regular (weekly or every 2 weeks)
+  - One-time deep clean
+  - Move-in or move-out
+  - Vacation rental turnover
+  - After a remodel
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Recurring, deep and move-out cleans take very different time.
+- id: q2_size
+  text: How big is the home?
+  options:
+  - 1-2 bedrooms
+  - 3 bedrooms
+  - 4+ bedrooms
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Home size drives time and crew size.
+- id: q3_baths
+  text: How many bathrooms?
+  options:
+  - '1'
+  - '2'
+  - 3+
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Bathrooms are the slowest rooms to clean. [judgment]
+- id: q4_condition
+  text: How long since the last full clean?
+  options:
+  - Under a month
+  - 1-6 months
+  - Over 6 months
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Long gaps between cleans add hours.
+- id: q5_extras
+  text: Any extras?
+  options:
+  - Inside oven/fridge
+  - Inside windows
+  - Laundry or bed linens
+  - Patio/garage
+  - None
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Ovens, fridges, windows and linens add time.
+- id: q6_str_window
+  text: 'For rentals: how much time between check-out and check-in?'
+  options:
+  - Under 4 hours
+  - 4-6 hours
+  - Same day, flexible
+  - Not sure
+  ask_if: type = Vacation rental turnover
+  changes_price: 'no'
+  why: Tight turnover windows need a bigger crew on a set schedule. [judgment]
+quote_without_visit_needs:
+- Bedrooms and baths
+- Approx square feet
+- Type of clean
+- Extras
+- Pets
+- 'For rentals: turnover window and linen plan'
+site_visit_usually_needed:
+- Heavy-condition homes
+- Post-construction cleans on large remodels
+- Some businesses walk a vacation rental once before taking it on [judgment]
+photos_to_request:
+- id: p1
+  ask: Kitchen
+  for_job_types:
+  - all
+- id: p2
+  ask: Main bathroom
+  for_job_types:
+  - all
+- id: p3
+  ask: Main living area
+  for_job_types:
+  - all
+- id: p4
+  ask: Any problem area
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Clutter level on counters and floors
+  - Hard-water buildup on glass and fixtures
+  - Pet hair
+photo_red_flags:
+- flag: Visible mold growth on walls or ceilings (route to restoration)
+  safety_step_ref: null
+- flag: Sewage or standing dirty water
+  safety_step_ref: es_house_cleaning_3
+- flag: Needles or sharps
+  safety_step_ref: null
+- flag: Rodent droppings in large amounts [judgment]
+  safety_step_ref: null
+emergency_signals:
+- id: es_house_cleaning_1
+  signal: Someone feels sick after mixing cleaners or breathing fumes
+  emergency: 'yes'
+  safety_step: Call Poison Control at [number removed, see source]. If the person is not breathing, has a seizure or is hard to
+    wake, call 911. Never mix bleach with ammonia or any other cleanser. Use bleach in a room with fresh air.
+  source: '[T-poison] [T-cdc_bleach]'
+  then_route_to: none
+  note: 'Routing: none (Poison Control / 911 first)'
+- id: es_house_cleaning_2
+  signal: Gas smell while cleaning
+  emergency: 'yes'
+  safety_step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call
+    911 and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+  then_route_to: none
+  note: 'Routing: none (leave, call 911 and UES)'
+- id: es_house_cleaning_3
+  signal: Sewage backup on floors
+  emergency: depends
+  note: 'Urgent, not life-safety: card goes out marked time-sensitive. [judgment]'
+  safety_step: Wear rubber boots, rubber gloves and goggles during cleanup. Keep children and pets out of the area.
+    Throw out items that can't be cleaned and dried.
+  source: '[S51]'
+  then_route_to: plumbing
+- id: es_house_cleaning_4
+  signal: Guests arriving today and unit not cleaned
+  emergency: depends
+  note: 'Urgent, not life-safety: card goes out marked time-sensitive. [judgment]'
+  safety_step: No official step on file for this signal. If anyone is hurt or in danger, call 911. [judgment]
+  source: '[judgment]'
+  then_route_to: house_cleaning
+- id: es_house_cleaning_5
+  signal: Routine cleaning request
+  emergency: 'no'
+  safety_step: No special safety step; normal job card.
+  source: none
+  then_route_to: house_cleaning
+safety_step:
+- when: Mixing cleaners
+  step: Never mix bleach with ammonia or any other cleanser. Use bleach in a room with fresh air.
+  source: '[T-cdc_bleach]'
+- when: Someone swallowed or breathed a cleaning product and feels sick
+  step: Call Poison Control at [number removed, see source]. If the person is not breathing, has a seizure or is hard to wake,
+    call 911.
+  source: '[T-poison]'
+- when: Gas smell
+  step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call 911
+    and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+- when: Sewage or floodwater on floors
+  step: Wear rubber boots, rubber gloves and goggles during cleanup. Keep children and pets out of the area. Throw
+    out items that can't be cleaned and dried.
+  source: '[S51]'
+license_classes:
+- job_type:
+  - recurring
+  - deep_clean
+  - move_out
+  - str_turnover
+  - post_construction
+  classes:
+  - none
+  citation: foundation az_license_master §5 [judgment]
+  other_agency: LHC business or tax licensing may apply [judgment; not researched]
+  notes: No state license is needed for this cleaning work [judgment, per foundation az_license_master §5]. It is
+    not construction under ROC rules.
+- job_type:
+  - specialty_route
+  classes:
+  - none
+  citation: '[T-iicrc_s500] [industry, not law]'
+  other_agency: none
+  notes: Sewage and water-damage cleanup is restoration work (IICRC S500 industry standard calls sewage Category
+    3). Mold remediation and biohazard are specialty services. No ROC class is tied to cleanup itself [judgment].
+handyman_ok:
+  allowed_examples:
+  - All routine cleaning (not construction, so the exemption is not needed)
+  not_allowed_examples:
+  - Fixing things found during cleaning that need a license (leaks, wiring, gas)
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+  note: Cleaning is not contracting; handyman_ok is shown as yes because no ROC license is involved [judgment].
+local_notes:
+- 'Lake Havasu City requires a vacation rental permit for each short-term rental (under 30 days) and a 24/7 Emergency
+  Point of Contact; the owner must post a city notice inside the front and backyard doors. Source: [T-lhc_vr].'
+- 'LHC trash rule for rentals: trash stays in proper containers and out of public view until no more than 12 hours
+  before pickup, so turnover crews often handle bins [judgment]. Source: [T-lhc_vr].'
+- Havasu's hard water leaves heavy spots on shower glass and fixtures [judgment].
+- Summer and holiday weekends are the busiest turnover times; many crews book rentals on standing schedules [judgment].
+- 'Dried latex paint can go in regular trash; other household hazards go to the twice-yearly HHW collection days.
+  Source: [T-lhc_hhw].'
+sample_card: 'REQ-0311 | House cleaning | Lake Havasu City, south side
+
+  Vacation rental turnover, 3 bed / 2 bath, about 5 hours between check-out and check-in, linens washed on site.
+
+  Recurring after each stay. 4 photos.
+
+  '
+test_messages:
+- id: house_cleaning_t01
+  message: need a cleaner
+  trade: house_cleaning
+  job_type: recurring
+  emergency: 'no'
+  first_question_id: q1_type
+  ideal_first_question: What kind of cleaning?
+  note: ''
+- id: house_cleaning_t02
+  message: airbnb turnover sat 10-3 3br 2ba need someone reliable
+  trade: house_cleaning
+  job_type: str_turnover
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How big is the home?
+  note: ''
+- id: house_cleaning_t03
+  message: limpieza profunda para casa de 4 recámaras
+  trade: house_cleaning
+  job_type: deep_clean
+  emergency: 'no'
+  first_question_id: q3_baths
+  ideal_first_question: How many bathrooms?
+  note: ''
+- id: house_cleaning_t04
+  message: moving out end of month need it spotless for deposit
+  trade: house_cleaning
+  job_type: move_out
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How big is the home?
+  note: ''
+- id: house_cleaning_t05
+  message: mixed bleach and toilet cleaner now my throat burns
+  trade: house_cleaning
+  job_type: deep_clean
+  emergency: 'yes'
+  first_question_id: q1_type
+  ideal_first_question: What kind of cleaning?
+  note: ''
+- id: house_cleaning_t06
+  message: toilet backed up and sewage all over bathroom floor need cleaned
+  trade: plumbing
+  job_type: main_line_backup
+  emergency: depends
+  first_question_id: q1_problem
+  ideal_first_question: What kind of cleaning?
+  note: ''
+- id: house_cleaning_t07
+  message: cleaning plus can you fix the leaky faucet
+  trade: house_cleaning
+  job_type: recurring
+  emergency: 'no'
+  first_question_id: q1_type
+  ideal_first_question: What kind of cleaning?
+  note: ''
+- id: house_cleaning_t08
+  message: drywall dust everywhere after the remodel
+  trade: house_cleaning
+  job_type: post_construction
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How big is the home?
+  note: ''
+- id: house_cleaning_t09
+  message: guests check in in 3 hours and my cleaner no showed
+  trade: house_cleaning
+  job_type: str_turnover
+  emergency: 'no'
+  first_question_id: q2_size
+  ideal_first_question: How big is the home?
+  note: ''
+- id: house_cleaning_t10
+  message: clean windows inside and the oven too, small condo
+  trade: house_cleaning
+  job_type: deep_clean
+  emergency: 'no'
+  first_question_id: q5_extras
+  ideal_first_question: Any extras?
+  note: ''
+sources:
+- '[T-cdc_bleach] CDC, Cleaning and disinfecting with bleach (never mix with ammonia or other cleaners) https://www.cdc.gov/hygiene/about/cleaning-and-disinfecting-with-bleach.html'
+- '[T-poison] Poison Control (HRSA/America''s Poison Centers) [number removed, see source] https://www.poison.org/'
+- '[S23][S22] UniSource Energy Services (UES), Natural Gas Safety Tips (leak signs and steps); 24/7 emergency [number removed, see source]
+  per UES Contact https://www.uesaz.com/news/natural-gas-safety-tips/'
+- '[S22] UES Contact (24/7 emergency line [number removed, see source]) https://www.uesaz.com/contact/'
+- '[S51] CDC, Guidelines for Cleaning Safely After a Disaster (protective gear, sewage) https://www.cdc.gov/natural-disasters/safety/'
+- '[T-iicrc_s500] IICRC S500 water damage restoration standard (industry; Category 3 = grossly contaminated, e.g.
+  sewage) https://iicrc.org/s500/'
+- '[T-lhc_vr] Lake Havasu City, Vacation Rentals (City Code Ch. 5.20) https://www.lhcaz.gov/vacation-rentals'
+- '[T-lhc_hhw] Lake Havasu City, Household Hazardous Waste https://www.lhcaz.gov/232/Hazardous-Waste'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'

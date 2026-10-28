@@ -1,0 +1,415 @@
+# Ask Hava trade knowledge file: junk_removal
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: junk_removal
+display_name: Junk Removal
+summary: Hauling away furniture, appliances, yard waste, construction debris, estate and garage cleanouts, and small
+  demolition such as sheds or hot tubs. No state license is needed to haul. Demolition of structures is ROC R-57
+  Wrecking; disconnecting a hot tub or appliance from power, water or gas is licensed work. Fridges, freezers and
+  AC units need refrigerant recovered before disposal under EPA Section 608. The Lake Havasu City landfill charges
+  by weight, cash only; paint must be dried, and other household hazards go to collection days.
+job_types:
+- id: furniture_items
+  label: Furniture and household items
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: appliances
+  label: Appliances (fridge, washer, AC)
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: cleanout
+  label: Garage, estate or rental cleanout
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: yard_debris
+  label: Yard waste, palm fronds, branches
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: construction_debris
+  label: Construction or remodel debris
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: demo_small
+  label: Shed, hot tub, deck or playset tear-down
+  site_visit_usually_needed: 'yes'
+  handyman_ok: limited
+- id: hazmat_route
+  label: Chemicals, paint, propane, asbestos (special handling)
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+triggers_en:
+- phrase: junk removal
+  job_type: furniture_items
+- phrase: haul away
+  job_type: furniture_items
+- phrase: get rid of couch
+  job_type: furniture_items
+- phrase: take my old mattress
+  job_type: furniture_items
+- phrase: dump run
+  job_type: furniture_items
+- phrase: old fridge
+  job_type: appliances
+- phrase: haul washer
+  job_type: appliances
+- phrase: get rid of freezer
+  job_type: appliances
+- phrase: old ac unit
+  job_type: appliances
+- phrase: garage cleanout
+  job_type: cleanout
+- phrase: estate cleanout
+  job_type: cleanout
+- phrase: hoarder house
+  job_type: cleanout
+- phrase: tenant left junk
+  job_type: cleanout
+- phrase: palm fronds
+  job_type: yard_debris
+- phrase: yard waste
+  job_type: yard_debris
+- phrase: branches
+  job_type: yard_debris
+- phrase: construction debris
+  job_type: construction_debris
+- phrase: old drywall
+  job_type: construction_debris
+- phrase: tile debris
+  job_type: construction_debris
+- phrase: remodel trash
+  job_type: construction_debris
+- phrase: tear down shed
+  job_type: demo_small
+- phrase: remove hot tub
+  job_type: demo_small
+- phrase: remove playset
+  job_type: demo_small
+- phrase: demo deck
+  job_type: demo_small
+- phrase: old paint
+  job_type: hazmat_route
+- phrase: propane tanks
+  job_type: hazmat_route
+- phrase: chemicals
+  job_type: hazmat_route
+- phrase: pool chemicals
+  job_type: hazmat_route
+triggers_es:
+- phrase: llevar basura
+  job_type: furniture_items
+- phrase: tirar muebles
+  job_type: furniture_items
+- phrase: sacar cosas viejas
+  job_type: furniture_items
+- phrase: refrigerador viejo
+  job_type: appliances
+- phrase: lavadora vieja
+  job_type: appliances
+- phrase: limpiar cochera
+  job_type: cleanout
+- phrase: vaciar casa
+  job_type: cleanout
+- phrase: ramas
+  job_type: yard_debris
+- phrase: palmas
+  job_type: yard_debris
+- phrase: quitar jacuzzi
+  job_type: demo_small
+- phrase: tumbar bodega
+  job_type: demo_small
+questions:
+- id: q1_volume
+  text: How much stuff?
+  options:
+  - A few items
+  - Pickup-truck load
+  - Half a trailer
+  - Full garage or house
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Most haulers price by how much of the truck you fill.
+- id: q2_type
+  text: What kind of items?
+  options:
+  - Furniture
+  - Appliances
+  - Yard waste
+  - Construction debris
+  - Mixed
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Heavy debris and appliances weigh more, and the landfill charges by weight.
+- id: q3_demo
+  text: Does anything need to be taken apart or torn down?
+  options:
+  - 'No'
+  - Yes, furniture or playset
+  - Yes, shed or deck
+  - Yes, hot tub
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Tear-down adds labor; structure demolition and disconnects may need licenses.
+- id: q4_hazards
+  text: Any paint, chemicals, propane or fridges/AC units?
+  options:
+  - 'Yes'
+  - 'No'
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Hazards need special handling or separate drop-off.
+- id: q5_access
+  text: Where is it?
+  options:
+  - Curb or driveway
+  - Garage
+  - Inside the house
+  - Backyard
+  - Upstairs
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Carrying from inside or upstairs adds time.
+quote_without_visit_needs:
+- Photos of all items
+- Rough volume
+- Where items are
+- Hazards
+site_visit_usually_needed:
+- Whole-house cleanouts
+- Shed or hot tub removal
+- Hoarding situations [judgment]
+photos_to_request:
+- id: p1
+  ask: Wide shot of the pile or room
+  for_job_types:
+  - all
+- id: p2
+  ask: Any appliances
+  for_job_types:
+  - all
+- id: p3
+  ask: Any hot tub or shed with its connections
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Pile size against a person or car
+  - Hot tub power and gas/water hookups
+  - Labels on containers
+photo_red_flags:
+- flag: Hot tub still wired (needs licensed disconnect)
+  safety_step_ref: null
+- flag: Gas line to an appliance or fire pit
+  safety_step_ref: es_junk_removal_1
+- flag: Old pipe insulation, floor tile or siding that may contain asbestos
+  safety_step_ref: null
+- flag: Propane tanks or fuel cans
+  safety_step_ref: null
+- flag: Needles or sharps
+  safety_step_ref: null
+emergency_signals:
+- id: es_junk_removal_1
+  signal: Gas smell while moving an appliance
+  emergency: 'yes'
+  safety_step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call
+    911 and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+  then_route_to: none
+  note: 'Routing: none (leave, call 911 and UES)'
+- id: es_junk_removal_2
+  signal: Someone hurt lifting in the heat
+  emergency: 'yes'
+  safety_step: 'Heat stroke (confusion, hot skin, passing out) is an emergency: call 911 and move the person to
+    a cooler place. For heat exhaustion, move to a cool place, loosen clothes, sip water.'
+  source: '[S27]'
+  then_route_to: none
+  note: 'Routing: none (911 first)'
+- id: es_junk_removal_3
+  signal: Routine haul
+  emergency: 'no'
+  safety_step: No special safety step; normal job card.
+  source: none
+  then_route_to: junk_removal
+safety_step:
+- when: Gas smell
+  step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call 911
+    and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+- when: Fridge, freezer or AC unit disposal
+  step: Refrigerant must be recovered by a certified technician or the disposal site before the unit is scrapped.
+  source: '[T-epa_608]'
+- when: Leftover paint
+  step: Let latex paint dry out (open lid or use hardener) and then put it in regular trash. Spray paint can be
+    sprayed onto cardboard and trashed.
+  source: '[T-lhc_hhw]'
+- when: Old materials that may contain asbestos
+  step: Leave it alone if intact. Do not sand, scrape, drill or cut it. Have it tested or handled by an accredited
+    asbestos professional.
+  source: '[T-epa_asb]'
+- when: Worker or homeowner shows heat illness
+  step: 'Heat stroke (confusion, hot skin, passing out) is an emergency: call 911 and move the person to a cooler
+    place. For heat exhaustion, move to a cool place, loosen clothes, sip water.'
+  source: '[S27]'
+license_classes:
+- job_type:
+  - furniture_items
+  - appliances
+  - cleanout
+  - yard_debris
+  - construction_debris
+  classes:
+  - none
+  citation: foundation az_license_master §5 [judgment]
+  other_agency: none
+  notes: No state license is needed to haul junk [judgment, foundation §5].
+- job_type:
+  - demo_small
+  classes:
+  - R-57
+  - R-11
+  - R-37
+  citation: A.A.C. R4-9-103 [S2] R-57, R-11, R-37; A.R.S. 32-1121(D)(2) [S4]
+  other_agency: none
+  notes: 'Demolishing a structure: ROC R-57 Wrecking. Hot tub electrical disconnect: R-11. Gas disconnect: licensed
+    only (R-37).'
+- job_type:
+  - appliances
+  classes:
+  - none
+  citation: '[T-epa_608]; [S38]'
+  other_agency: US EPA Section 608 [S38]
+  notes: 'Refrigerant recovery: EPA Section 608 certified technician.'
+- job_type:
+  - hazmat_route
+  classes:
+  - none
+  citation: '[T-epa_asb]; [T-lhc_hhw]'
+  other_agency: none
+  notes: 'Asbestos abatement: accredited asbestos professional. Household hazards: LHC collection days or drop-off
+    sites.'
+handyman_ok:
+  allowed_examples:
+  - Hauling (not construction)
+  - Taking apart furniture or a playset
+  not_allowed_examples:
+  - Gas disconnects
+  - Wired hot tub disconnects
+  - Demolishing a shed or deck over $1,000 or needing a permit
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+local_notes:
+- 'The Lake Havasu City landfill charges by weight, cash only, and takes e-waste such as computers and printers.
+  Source: [T-lhc_hhw].'
+- 'Republic Services (the city hauler) offers residents of single-family homes in city limits up to six scheduled
+  bulk curbside pickups a year, 4 items each. Source: [T-lhc_hhw].'
+- 'Household hazardous waste is collected on two collection days a year; local stores take batteries and bulbs.
+  Source: [T-lhc_hhw].'
+- Palm fronds are heavy and spiky; many haulers price them separately [judgment].
+sample_card: 'REQ-0356 | Junk removal | Lake Havasu City, central
+
+  Garage cleanout, about a half trailer: old couch, chest freezer, boxes, 3 paint cans.
+
+  Freezer needs refrigerant handling. 2 photos.
+
+  '
+test_messages:
+- id: junk_removal_t01
+  message: junk
+  trade: junk_removal
+  job_type: furniture_items
+  emergency: 'no'
+  first_question_id: q1_volume
+  ideal_first_question: How much stuff?
+  note: ''
+- id: junk_removal_t02
+  message: need old couch and mattress gone today
+  trade: junk_removal
+  job_type: furniture_items
+  emergency: 'no'
+  first_question_id: q5_access
+  ideal_first_question: Where is it?
+  note: ''
+- id: junk_removal_t03
+  message: sacar cosas viejas de la cochera, refrigerador y muebles
+  trade: junk_removal
+  job_type: cleanout
+  emergency: 'no'
+  first_question_id: q1_volume
+  ideal_first_question: How much stuff?
+  note: ''
+- id: junk_removal_t04
+  message: take out the old hot tub in the backyard
+  trade: junk_removal
+  job_type: demo_small
+  emergency: 'no'
+  first_question_id: q3_demo
+  ideal_first_question: Does anything need to be taken apart or torn down?
+  note: ''
+- id: junk_removal_t05
+  message: tear down the old metal shed
+  trade: junk_removal
+  job_type: demo_small
+  emergency: 'no'
+  first_question_id: q3_demo
+  ideal_first_question: Does anything need to be taken apart or torn down?
+  note: ''
+- id: junk_removal_t06
+  message: dad passed need the whole house cleared
+  trade: junk_removal
+  job_type: cleanout
+  emergency: 'no'
+  first_question_id: q1_volume
+  ideal_first_question: How much stuff?
+  note: ''
+- id: junk_removal_t07
+  message: bunch of old paint and pool chemicals in garage
+  trade: junk_removal
+  job_type: hazmat_route
+  emergency: 'no'
+  first_question_id: q4_hazards
+  ideal_first_question: Any paint, chemicals, propane or fridges/AC units?
+  note: ''
+- id: junk_removal_t08
+  message: palm tree trimming and haul fronds
+  trade: tree_trimming
+  job_type: palm_trim
+  emergency: 'no'
+  first_question_id: power_lines
+  ideal_first_question: How much stuff?
+  note: ''
+- id: junk_removal_t09
+  message: old ac unit on the ground need it hauled
+  trade: junk_removal
+  job_type: appliances
+  emergency: 'no'
+  first_question_id: q4_hazards
+  ideal_first_question: Any paint, chemicals, propane or fridges/AC units?
+  note: ''
+- id: junk_removal_t10
+  message: pulled fridge out smells like gas behind it
+  trade: junk_removal
+  job_type: appliances
+  emergency: 'yes'
+  first_question_id: q2_type
+  ideal_first_question: What kind of items?
+  note: ''
+sources:
+- '[S23][S22] UniSource Energy Services (UES), Natural Gas Safety Tips (leak signs and steps); 24/7 emergency [number removed, see source]
+  per UES Contact https://www.uesaz.com/news/natural-gas-safety-tips/'
+- '[S22] UES Contact (24/7 emergency line [number removed, see source]) https://www.uesaz.com/contact/'
+- '[T-epa_608] EPA Section 608, refrigerant rules; safe disposal of small appliances https://www.epa.gov/section608/stationary-refrigeration-safe-disposal-requirements'
+- '[S38] US EPA, Section 608 Technician Certification (40 CFR 82 Subpart F) https://www.epa.gov/section608/stationary-refrigeration-and-air-conditioning-technician-certification'
+- '[T-lhc_hhw] Lake Havasu City, Household Hazardous Waste https://www.lhcaz.gov/232/Hazardous-Waste'
+- '[T-epa_asb] EPA, Protect Your Family from Exposures to Asbestos https://www.epa.gov/asbestos/protect-your-family-exposures-asbestos'
+- '[S27] National Weather Service, Heat Illness (citing CDC) https://www.weather.gov/safety/heat-illness'
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'

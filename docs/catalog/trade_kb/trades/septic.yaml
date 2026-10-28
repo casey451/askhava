@@ -1,0 +1,427 @@
+# Ask Hava trade knowledge file: septic
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: septic
+display_name: Septic pumping & service
+summary: 'Septic tank pumping and related work: routine pumping, emergency pump-outs for backups, locating and digging
+  up lids, riser installs, transfer-of-ownership inspections for home sales, baffle/filter cleaning, and septic
+  repairs or new systems. Most of Lake Havasu City moved to city sewer under the Wastewater System Expansion Program
+  (completed around 2011), but some homes and many nearby county areas still use septic [judgment: share not confirmed].
+  Pumping trucks are licensed by ADEQ; repairs and installs need ROC licenses and county permits. Ask Hava never
+  says if a system is failing.'
+job_types:
+- id: routine_pump
+  label: Routine septic pumping
+- id: backup_emergency
+  label: Sewage backup / slow drains / alarm (urgent pump-out)
+- id: home_sale_inspection
+  label: Transfer-of-ownership inspection for selling or buying
+  site_visit_usually_needed: 'yes'
+- id: locate_risers
+  label: Find tank, dig up lids, add risers
+  site_visit_usually_needed: 'yes'
+- id: repair
+  label: Repair (baffle, lid, pipe, pump, leach field)
+  site_visit_usually_needed: 'yes'
+- id: new_system
+  label: New or replacement septic system / leach field
+  site_visit_usually_needed: 'yes'
+- id: sewer_hookup
+  label: Abandon septic and connect to city sewer
+triggers_en:
+- phrase: septic
+  job_type: null
+- phrase: septic tank
+  job_type: null
+- phrase: pump septic
+  job_type: routine_pump
+- phrase: pumping
+  job_type: routine_pump
+- phrase: honey wagon
+  job_type: routine_pump
+- phrase: sewage
+  job_type: null
+- phrase: backup
+  job_type: backup_emergency
+- phrase: toilet backing up
+  job_type: backup_emergency
+- phrase: sewer smell
+  job_type: null
+- phrase: slow drains
+  job_type: null
+- phrase: gurgling
+  job_type: null
+- phrase: wet spot over tank
+  job_type: repair
+- phrase: leach field
+  job_type: repair
+- phrase: drain field
+  job_type: repair
+- phrase: baffle
+  job_type: repair
+- phrase: risers
+  job_type: locate_risers
+- phrase: septic lid
+  job_type: locate_risers
+- phrase: septic inspection
+  job_type: home_sale_inspection
+- phrase: transfer inspection
+  job_type: home_sale_inspection
+- phrase: selling house septic
+  job_type: home_sale_inspection
+- phrase: aerobic
+  job_type: repair
+- phrase: alarm on septic
+  job_type: repair
+- phrase: hook up to sewer
+  job_type: sewer_hookup
+- phrase: cesspool
+  job_type: null
+triggers_es:
+- phrase: fosa séptica
+  job_type: null
+- phrase: pozo séptico
+  job_type: null
+- phrase: tanque séptico
+  job_type: null
+- phrase: vaciar la fosa
+  job_type: routine_pump
+- phrase: bombear el séptico
+  job_type: routine_pump
+- phrase: aguas negras
+  job_type: backup_emergency
+- phrase: se regresa el agua
+  job_type: backup_emergency
+- phrase: huele a drenaje
+  job_type: null
+- phrase: el baño no baja
+  job_type: backup_emergency
+- phrase: inspección del séptico
+  job_type: home_sale_inspection
+- phrase: vender la casa
+  job_type: home_sale_inspection
+- phrase: conectar al drenaje de la ciudad
+  job_type: sewer_hookup
+questions:
+- id: need
+  text: What do you need?
+  options:
+  - Routine pumping
+  - Backup or sewage smell now
+  - Inspection for home sale
+  - Find tank / add risers
+  - Repair
+  - New system
+  - Switch to city sewer
+  ask_if: always
+  changes_price: 'yes'
+- id: sewage_inside
+  text: Is sewage coming up inside the house?
+  options:
+  - 'Yes'
+  - No, slow drains only
+  - Sewage or wet spot in yard
+  ask_if: need == Backup or sewage smell now
+  changes_price: 'yes'
+- id: tank_size
+  text: Do you know the tank size or number of bedrooms?
+  options:
+  - 1-2 bedrooms
+  - 3 bedrooms
+  - 4+ bedrooms
+  - Tank size known (type it)
+  - Not sure
+  ask_if: need in [Routine pumping, Backup or sewage smell now, Inspection for home sale]
+  changes_price: 'yes'
+- id: lids_exposed
+  text: Are the tank lids easy to get to?
+  options:
+  - Yes, risers at ground level
+  - Buried, I know where
+  - Buried, not sure where
+  - Not sure
+  ask_if: need in [Routine pumping, Backup or sewage smell now, Inspection for home sale, Find tank / add risers]
+  changes_price: 'yes'
+- id: last_pumped
+  text: When was it last pumped?
+  options:
+  - Under 3 years
+  - 3-5 years
+  - Over 5 years
+  - Never / don't know
+  ask_if: need in [Routine pumping, Inspection for home sale]
+  changes_price: 'no'
+- id: in_city
+  text: Is the home inside Lake Havasu City limits or in the county?
+  options:
+  - Inside city
+  - County (Desert Hills or other)
+  - Not sure
+  ask_if: always
+  changes_price: 'no'
+quote_without_visit_needs:
+- Tank size or bedroom count
+- Whether lids are exposed
+- How far the truck must park from the tank (hose length)
+- Any county records or past pumping receipts
+- 'For inspections: whether the home is being sold or bought'
+site_visit_usually_needed:
+- repair
+- new_system
+- home_sale_inspection
+- locate_risers
+photos_to_request:
+- id: p1
+  ask: Tank lids or riser area
+  for_job_types:
+  - all
+- id: p2
+  ask: Yard area over tank or leach field
+  for_job_types:
+  - all
+- id: p3
+  ask: Path from street to tank
+  for_job_types:
+  - all
+- id: p4
+  ask: Wet spot or overflow if any
+  for_job_types:
+  - all
+- id: p5
+  ask: Alarm panel if aerobic
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Green, spongy grass or wet ground over the leach field (EPA lists this as a warning sign)
+  - Lid type and condition
+  - Driveway or wall between truck and tank
+  - Aerobic system alarm light
+photo_red_flags:
+- flag: Cracked, broken or missing tank lid (fall hazard)
+  safety_step_ref: null
+- flag: Sewage pooling in yard
+  safety_step_ref: es_sewage_backing_up_into_the_hou
+- flag: Sewage inside the home
+  safety_step_ref: es_sewage_backing_up_into_the_hou
+- flag: Sinking ground over tank
+  safety_step_ref: null
+emergency_signals:
+- id: es_sewage_backing_up_into_the_hou
+  signal: Sewage backing up into the house
+  emergency: 'yes'
+  safety_step: Stop using water in the house, keep people away from the sewage, and call a licensed septic business.
+  source: EPA SepticSmart homeowner brochure - https://www.epa.gov/sites/default/files/2015-06/documents/septicsmart_short_rack_brochure_english-print-ready.pdf
+    ; EPA SepticSmart, Resolving Septic System Malfunctions - https://www.epa.gov/septic/resolving-septic-system-malfunctions
+  then_route_to: septic
+- id: es_broken_or_open_septic_lid_wher
+  signal: Broken or open septic lid where kids or pets can fall in
+  emergency: 'yes'
+  safety_step: Keep kids and pets away and cover the opening with something strong until it is fixed. [judgment
+    on wording]
+  source: EPA SepticSmart homeowner brochure - https://www.epa.gov/sites/default/files/2015-06/documents/septicsmart_short_rack_brochure_english-print-ready.pdf
+  then_route_to: septic
+- id: es_someone_went_into_or_fell_into
+  signal: Someone went into or fell into a tank
+  emergency: 'yes'
+  safety_step: Never go into a septic tank. Gases inside can kill in minutes, even rescuers. Call 911.
+  source: CDC/NIOSH, A Guide to Safety in Confined Spaces - https://stacks.cdc.gov/view/cdc/5830
+  then_route_to: septic
+- id: es_strong_sewer_gas_smell_inside
+  signal: Strong sewer gas smell inside
+  emergency: 'yes'
+  safety_step: Use the matching step in foundation/part1_all_reasons.md section 3 (call 911 if anyone is hurt or
+    in danger).
+  source: foundation/part1_all_reasons.md [no trade-specific official step in this file]
+  then_route_to: septic
+safety_step:
+- when: Anyone thinking of going into a tank, or someone fell in
+  step: Never go into a septic tank. Gases inside can kill in minutes, even rescuers. Call 911.
+  source: CDC/NIOSH, A Guide to Safety in Confined Spaces - https://stacks.cdc.gov/view/cdc/5830
+- when: Open or broken lid
+  step: Keep kids and pets away and cover the opening with something strong until it is fixed. [judgment on wording]
+  source: EPA SepticSmart homeowner brochure - https://www.epa.gov/sites/default/files/2015-06/documents/septicsmart_short_rack_brochure_english-print-ready.pdf
+- when: Sewage backing up
+  step: Stop using water in the house, keep people away from the sewage, and call a licensed septic business.
+  source: EPA SepticSmart homeowner brochure - https://www.epa.gov/sites/default/files/2015-06/documents/septicsmart_short_rack_brochure_english-print-ready.pdf
+    ; EPA SepticSmart, Resolving Septic System Malfunctions - https://www.epa.gov/septic/resolving-septic-system-malfunctions
+license_classes:
+- job_type:
+  - routine_pump
+  - backup_emergency
+  work: Septic pumping and hauling
+  classes:
+  - ADEQ septage hauler license for each pumping truck (750 gallons or more), renewed yearly, plus a county permit
+  citation: A.A.C. R18-13-1103 ADEQ septage hauler vehicle license (750 gallons or more; county permit also required)
+    - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-13-1103
+  other_agency: null
+  notes: ''
+- job_type:
+  - home_sale_inspection
+  work: Transfer-of-ownership inspection
+  classes:
+  - Qualified inspector, done within 6 months before the home transfers; buyer files a Notice of Transfer
+  citation: A.A.C. R18-9-A316 Transfer of ownership inspection of onsite wastewater facility - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-A316
+  other_agency: null
+  notes: ''
+- job_type:
+  - repair
+  - new_system
+  - locate_risers
+  work: Septic install, repair, leach lines
+  classes:
+  - R-41 Septic Tanks and Systems; CR-41; C-41; A-12 Sewers, Drains and Pipe Laying; R-37 Plumbing (includes sewage
+    treatment systems)
+  citation: A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+    ; A.A.C. R4-9-104 Dual contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104
+    ; A.A.C. R4-9-102 Commercial contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102
+  other_agency: null
+  notes: The CR-41 scope text in the copy read repeats the welding wording (copy error); treat CR-41 as dual C-41/R-41
+    septic [judgment]; see az_license_master.md.
+- job_type:
+  - new_system
+  - repair
+  work: Permits for new or changed systems
+  classes:
+  - Mohave County Development Services, Environmental Quality, under ADEQ delegation
+  citation: Mohave County Development Services, Environmental Quality (septic permits under ADEQ delegation, [number removed, see source])
+    - https://www.mohave.gov/departments/development-services/
+  other_agency: null
+  notes: ''
+- job_type:
+  - sewer_hookup
+  work: Sewer connection and septic abandonment in the city
+  classes:
+  - R-37 Plumbing or CR-80 / A-12 for sewer lines; city permit likely [judgment / open question]
+  citation: A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+    ; A.A.C. R4-9-104 Dual contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104;
+    A.A.C. R4-9-102 [S1] (commercial classes)
+  other_agency: null
+  notes: ''
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: 'Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit,
+    is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)),
+    and ads say ''not a licensed contractor''. Source: A.R.S. 32-1121(A)(14), (C), (D) [S4]; foundation/az_license_master.md
+    section 4.'
+  note: No. Pumping needs an ADEQ-licensed truck. Repairs and installs need an ROC license and county permit, so
+    the handyman exemption (A.R.S. 32-1121(A)(14)) does not apply when a permit is required.
+local_notes:
+- 'Lake Havasu City''s Wastewater System Expansion Program converted most of the city (about 85%) to sewer and removed
+  over 20,000 septic systems. Sources: Water Education Foundation, Lake Havasu City water supply and wastewater
+  (Wastewater System Expansion Program) - https://www.watereducation.org/sites/main/files/file-attachments/wlsonlake_havasu_city_water_supply_and_wastewater_treatment.pdf
+  ; Lake Havasu City 2022 Wastewater Master Plan - https://www.lhcaz.gov/DocumentCenter/View/1587/Lake-Havasu-City-Wastewater-Master-Plan-2022-PDF'
+- Remaining septic is mostly in some city areas and county areas such as Desert Hills [judgment / open question].
+- 'Mohave County runs septic permits under ADEQ delegation [number removed, see source]). Source: Mohave County Development Services,
+  Environmental Quality (septic permits under ADEQ delegation, [number removed, see source]) - https://www.mohave.gov/departments/development-services/'
+- 'Cesspools are not allowed in Arizona. Source: A.A.C. R18-9-A309 General requirements (cesspools prohibited) -
+  https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-A309'
+- Caliche can make finding and digging up tanks slow [judgment].
+sample_card: 'REQ-1027 | Septic pumping
+
+  Mohave County, Desert Hills area
+
+  3-bedroom home, last pumped over 5 years ago. Lids buried, location known.
+
+  Routine pumping.'
+test_messages:
+- id: septic_t01
+  message: need septic pumped
+  trade: septic
+  job_type: routine_pump
+  emergency: 'no'
+  first_question_id: tank_size
+  ideal_first_question: Do you know the tank size or number of bedrooms?
+  note: ''
+- id: septic_t02
+  message: toilet backing up and its coming up in the shower, we're on septic
+  trade: septic
+  job_type: backup_emergency
+  emergency: 'yes'
+  first_question_id: sewage_inside
+  ideal_first_question: Is sewage coming up inside the house?
+  note: ''
+- id: septic_t03
+  message: selling house need the septic inspection thing
+  trade: septic
+  job_type: home_sale_inspection
+  emergency: 'no'
+  first_question_id: tank_size
+  ideal_first_question: Do you know the tank size or number of bedrooms?
+  note: ''
+- id: septic_t04
+  message: Necesito vaciar la fosa séptica, no sé dónde está la tapa
+  trade: septic
+  job_type: locate_risers
+  emergency: 'no'
+  first_question_id: lids_exposed
+  ideal_first_question: Are the tank lids easy to get to?
+  note: ''
+- id: septic_t05
+  message: septic
+  trade: septic
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: need
+  ideal_first_question: What do you need?
+  note: job_type unknown = too vague; the first question picks the job type.
+- id: septic_t06
+  message: wet smelly spot in back yard over the drain field
+  trade: septic
+  job_type: repair
+  emergency: 'no'
+  first_question_id: in_city
+  ideal_first_question: Is the home inside Lake Havasu City limits or in the county?
+  note: ''
+- id: septic_t07
+  message: kitchen sink slow, city sewer
+  trade: plumbing
+  job_type: clogged_drain
+  emergency: 'no'
+  first_question_id: q1_problem
+  ideal_first_question: What is going on?
+  note: ''
+- id: septic_t08
+  message: want to get off septic and hook to city sewer
+  trade: septic
+  job_type: sewer_hookup
+  emergency: 'no'
+  first_question_id: in_city
+  ideal_first_question: Is the home inside Lake Havasu City limits or in the county?
+  note: ''
+- id: septic_t09
+  message: septic lid cracked and my dog almost fell in
+  trade: septic
+  job_type: repair
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: '[safety_step_first] Give the matching safety step first; ask intake questions only after
+    everyone is safe.'
+  note: ''
+- id: septic_t10
+  message: huele a drenaje en toda la casa
+  trade: septic
+  job_type: backup_emergency
+  emergency: 'yes'
+  first_question_id: sewage_inside
+  ideal_first_question: Is sewage coming up inside the house?
+  note: ''
+sources:
+- A.A.C. R18-13-1103 ADEQ septage hauler vehicle license (750 gallons or more; county permit also required) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-13-1103
+- A.A.C. R18-9-A316 Transfer of ownership inspection of onsite wastewater facility - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-A316
+- A.A.C. R18-9-A309 General requirements (cesspools prohibited) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-A309
+- Mohave County Development Services, Environmental Quality (septic permits under ADEQ delegation, [number removed, see source])
+  - https://www.mohave.gov/departments/development-services/
+- A.A.C. R4-9-102 Commercial contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102
+- A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+- A.A.C. R4-9-104 Dual contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104
+- A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+  fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+- EPA SepticSmart, Resolving Septic System Malfunctions - https://www.epa.gov/septic/resolving-septic-system-malfunctions
+- EPA SepticSmart homeowner brochure - https://www.epa.gov/sites/default/files/2015-06/documents/septicsmart_short_rack_brochure_english-print-ready.pdf
+- CDC/NIOSH, A Guide to Safety in Confined Spaces - https://stacks.cdc.gov/view/cdc/5830
+- Water Education Foundation, Lake Havasu City water supply and wastewater (Wastewater System Expansion Program)
+  - https://www.watereducation.org/sites/main/files/file-attachments/wlsonlake_havasu_city_water_supply_and_wastewater_treatment.pdf
+- Lake Havasu City 2022 Wastewater Master Plan - https://www.lhcaz.gov/DocumentCenter/View/1587/Lake-Havasu-City-Wastewater-Master-Plan-2022-PDF

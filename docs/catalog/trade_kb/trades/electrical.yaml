@@ -1,0 +1,655 @@
+# Ask Hava trade knowledge file: electrical
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: electrical
+display_name: Electrical (panels, outlets, wiring, lighting)
+summary: 'Home electrical work on the owner''s side of the meter: outlets, switches, GFCI/AFCI, lights and fans,
+  breakers tripping, partial power loss, panel upgrades and change-outs, sub-panels, new circuits (AC, spa, shop,
+  EV), rewires, smoke alarms (hardwired) and outdoor lighting. UniSource Energy Services owns the meter and the
+  line to the house; Ask Hava routes outages and downed lines to UniSource and 911 [S24][S25]. Ask Hava learns what
+  is happening, how much of the home is affected, the panel brand from a photo and the home''s age, then writes
+  a card. It never says what failed, that a panel is unsafe, or that work is needed. Licensed work is ROC R-11 Electrical
+  / CR-11 [S2][S3]. Panel change-outs, electrical updates and rewires need an LHC permit [S17]. Hardwired or interconnected
+  smoke alarms are never handyman work (A.R.S. 32-1121(D)(1)) [S4].'
+job_types:
+- id: burning_sparks
+  label: Burning smell, sparks, smoke, hot or melted outlet or panel
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: partial_power
+  label: Part of the home has no power; breaker won't reset
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: breaker_tripping
+  label: Breaker or GFCI keeps tripping
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: outlet_switch
+  label: Outlet or switch dead, loose, replace, add USB or GFCI
+  site_visit_usually_needed: 'no'
+  handyman_ok: limited
+- id: lighting_fan
+  label: Light fixture or ceiling fan install or replace
+  site_visit_usually_needed: 'no'
+  handyman_ok: limited
+- id: flicker_dim
+  label: Lights flicker or dim when something turns on
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: panel_upgrade
+  label: Panel upgrade, change-out, sub-panel, more amps
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: new_circuit
+  label: New circuit or outlet (AC, spa, shop, kitchen, EV)
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: rewire
+  label: Rewire home, aluminum wiring, old wiring
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: smoke_alarm
+  label: Smoke or CO alarms (hardwired, chirping, replace)
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'no'
+- id: outdoor_lighting
+  label: Outdoor or security lights, landscape lighting
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: whole_home_out
+  label: Whole home has no power
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: burning smell outlet
+  job_type: burning_sparks
+- phrase: outlet sparking
+  job_type: burning_sparks
+- phrase: sparks from outlet
+  job_type: burning_sparks
+- phrase: panel smells burning
+  job_type: burning_sparks
+- phrase: outlet melted
+  job_type: burning_sparks
+- phrase: outlet hot
+  job_type: burning_sparks
+- phrase: smoke from switch
+  job_type: burning_sparks
+- phrase: buzzing panel
+  job_type: burning_sparks
+- phrase: half the house no power
+  job_type: partial_power
+- phrase: some outlets dead
+  job_type: partial_power
+- phrase: power out in kitchen
+  job_type: partial_power
+- phrase: breaker wont reset
+  job_type: partial_power
+- phrase: lost power to bedroom
+  job_type: partial_power
+- phrase: breaker keeps tripping
+  job_type: breaker_tripping
+- phrase: breaker trips
+  job_type: breaker_tripping
+- phrase: gfci keeps tripping
+  job_type: breaker_tripping
+- phrase: gfi wont reset
+  job_type: breaker_tripping
+- phrase: breaker keeps poping
+  job_type: breaker_tripping
+- phrase: breker
+  job_type: breaker_tripping
+- phrase: outlet not working
+  job_type: outlet_switch
+- phrase: dead outlet
+  job_type: outlet_switch
+- phrase: replace outlets
+  job_type: outlet_switch
+- phrase: light switch broken
+  job_type: outlet_switch
+- phrase: add usb outlet
+  job_type: outlet_switch
+- phrase: outlet loose
+  job_type: outlet_switch
+- phrase: plugs not working
+  job_type: outlet_switch
+- phrase: install ceiling fan
+  job_type: lighting_fan
+- phrase: replace light fixture
+  job_type: lighting_fan
+- phrase: hang chandelier
+  job_type: lighting_fan
+- phrase: ceiling fan wobble
+  job_type: lighting_fan
+- phrase: can lights
+  job_type: lighting_fan
+- phrase: recessed lights
+  job_type: lighting_fan
+- phrase: celing fan
+  job_type: lighting_fan
+- phrase: lights flicker
+  job_type: flicker_dim
+- phrase: lights dim when ac turns on
+  job_type: flicker_dim
+- phrase: lights flickering
+  job_type: flicker_dim
+- phrase: lights blinking
+  job_type: flicker_dim
+- phrase: panel upgrade
+  job_type: panel_upgrade
+- phrase: 200 amp
+  job_type: panel_upgrade
+- phrase: replace breaker box
+  job_type: panel_upgrade
+- phrase: federal pacific
+  job_type: panel_upgrade
+- phrase: zinsco
+  job_type: panel_upgrade
+- phrase: fpe panel
+  job_type: panel_upgrade
+- phrase: stab-lok
+  job_type: panel_upgrade
+- phrase: sub panel
+  job_type: panel_upgrade
+- phrase: electrical box upgrade
+  job_type: panel_upgrade
+- phrase: new circuit
+  job_type: new_circuit
+- phrase: 220 outlet
+  job_type: new_circuit
+- phrase: 240v outlet
+  job_type: new_circuit
+- phrase: dedicated circuit
+  job_type: new_circuit
+- phrase: wire hot tub
+  job_type: new_circuit
+- phrase: outlet in garage for welder
+  job_type: new_circuit
+- phrase: run power to shed
+  job_type: new_circuit
+- phrase: rewire house
+  job_type: rewire
+- phrase: aluminum wiring
+  job_type: rewire
+- phrase: old wiring
+  job_type: rewire
+- phrase: knob and tube
+  job_type: rewire
+- phrase: no ground outlets
+  job_type: rewire
+- phrase: two prong outlets
+  job_type: rewire
+- phrase: smoke detector chirping
+  job_type: smoke_alarm
+- phrase: hardwired smoke detectors
+  job_type: smoke_alarm
+- phrase: replace smoke alarms
+  job_type: smoke_alarm
+- phrase: smoke alarm beeping
+  job_type: smoke_alarm
+- phrase: co detector
+  job_type: smoke_alarm
+- phrase: outdoor lights
+  job_type: outdoor_lighting
+- phrase: motion light
+  job_type: outdoor_lighting
+- phrase: security light
+  job_type: outdoor_lighting
+- phrase: landscape lighting
+  job_type: outdoor_lighting
+- phrase: porch light
+  job_type: outdoor_lighting
+- phrase: power out whole house
+  job_type: whole_home_out
+- phrase: no power at all
+  job_type: whole_home_out
+- phrase: whole house dark
+  job_type: whole_home_out
+- phrase: electrician
+  job_type: outlet_switch
+- phrase: electrition
+  job_type: outlet_switch
+- phrase: elecrician
+  job_type: outlet_switch
+triggers_es:
+- phrase: huele a quemado el enchufe
+  job_type: burning_sparks
+- phrase: salen chispas del contacto
+  job_type: burning_sparks
+- phrase: el panel huele a quemado
+  job_type: burning_sparks
+- phrase: se fue la luz en media casa
+  job_type: partial_power
+- phrase: no hay luz en un cuarto
+  job_type: partial_power
+- phrase: se bota el breaker
+  job_type: breaker_tripping
+- phrase: se baja la pastilla
+  job_type: breaker_tripping
+- phrase: el contacto no sirve
+  job_type: outlet_switch
+- phrase: cambiar enchufes
+  job_type: outlet_switch
+- phrase: instalar abanico de techo
+  job_type: lighting_fan
+- phrase: poner una lámpara
+  job_type: lighting_fan
+- phrase: las luces parpadean
+  job_type: flicker_dim
+- phrase: cambiar el panel eléctrico
+  job_type: panel_upgrade
+- phrase: más amperaje
+  job_type: panel_upgrade
+- phrase: circuito nuevo
+  job_type: new_circuit
+- phrase: contacto de 220
+  job_type: new_circuit
+- phrase: cableado de aluminio
+  job_type: rewire
+- phrase: el detector de humo suena
+  job_type: smoke_alarm
+- phrase: luces de afuera
+  job_type: outdoor_lighting
+- phrase: no hay luz en toda la casa
+  job_type: whole_home_out
+- phrase: electricista
+  job_type: outlet_switch
+questions:
+- id: q1_problem
+  text: What is going on?
+  options:
+  - Burning smell, sparks or hot outlet
+  - No power in part of the home
+  - Breaker keeps tripping
+  - Install or replace something
+  - Panel or bigger upgrade
+  - Lights flicker
+  ask_if: always
+  changes_price: 'yes'
+  why: Hazards come first; installs and upgrades are quoted very differently. [judgment]
+- id: q2_scope
+  text: How much is involved?
+  options:
+  - One outlet, switch or light
+  - A few in one room
+  - A whole room or circuit
+  - Whole home
+  - Not sure
+  ask_if: q1_problem != 'Burning smell, sparks or hot outlet'
+  changes_price: 'yes'
+  why: Count of devices or circuits drives labor. [judgment]
+- id: q3_panel
+  text: Can you send a photo of your electrical panel with the door open and the label inside the door?
+  options:
+  - Sent a photo
+  - Can't get to it
+  - Not sure where it is
+  ask_if: q1_problem in ['No power in part of the home', 'Breaker keeps tripping', 'Panel or bigger upgrade', 'Lights
+    flicker'] or job_type in [new_circuit, rewire, panel_upgrade]
+  changes_price: 'yes'
+  why: Brand, amps and open spaces shape panel and circuit quotes. [judgment]
+- id: q4_age
+  text: About when was the home built?
+  options:
+  - Before 1975
+  - 1975-1995
+  - 1996-2010
+  - After 2010
+  - Manufactured home
+  - Not sure
+  ask_if: job_type in [rewire, panel_upgrade, flicker_dim, partial_power]
+  changes_price: 'yes'
+  why: Older wiring types and manufactured-home rules affect the work. [ARS-4047][judgment]
+- id: q5_access
+  text: Where is the work?
+  options:
+  - Inside, single story
+  - Inside, high ceiling or 2-story
+  - Garage
+  - Outside or in the yard
+  - Attic
+  ask_if: q1_problem == 'Install or replace something' or job_type in [new_circuit, outdoor_lighting]
+  changes_price: 'yes'
+  why: Ladders, attic runs and trenching change labor. [judgment]
+quote_without_visit_needs:
+- Like-for-like device swaps with a count and photos [judgment]
+- Ceiling fan or fixture install with ceiling height, existing box photo and whether the fan is supplied [judgment]
+- Smoke alarm replacement count and photo of the existing alarm [judgment]
+site_visit_usually_needed:
+- Tripping, partial power, flicker, burning smell (troubleshooting) [judgment]
+- Panel upgrades and service changes (UniSource coordination, permit) [S17][judgment]
+- Rewires and aluminum wiring repair [CPSC-ALWIRE][judgment]
+- New circuits with long runs or trenching [judgment]
+photos_to_request:
+- id: p1_panel
+  ask: A photo of your breaker panel with the door open, plus one of the label on the inside of the door. Do not
+    remove any covers.
+  for_job_types:
+  - partial_power
+  - breaker_tripping
+  - panel_upgrade
+  - new_circuit
+  - rewire
+  - flicker_dim
+- id: p2_device
+  ask: A photo of the outlet, switch or light. If it is hot, smoking or sparking, do not go near it; skip the photo.
+  for_job_types:
+  - outlet_switch
+  - lighting_fan
+  - burning_sparks
+  - outdoor_lighting
+- id: p3_location
+  ask: A photo of where you want the new outlet, light or circuit, and the path to the panel if you know it.
+  for_job_types:
+  - new_circuit
+  - lighting_fan
+  - outdoor_lighting
+- id: p4_meter
+  ask: A photo of the meter and panel on the outside wall, from a step back.
+  for_job_types:
+  - panel_upgrade
+  - whole_home_out
+- id: p5_alarm
+  ask: A photo of one smoke alarm, front and back if it comes down easily.
+  for_job_types:
+  - smoke_alarm
+photo_cues:
+- photo_id: p1_panel
+  look_for:
+  - 'Brand on label: Federal Pacific Electric (FPE) with ''Stab-Lok'' breakers (often red-tipped handles); CPSC
+    closed its 1983 investigation, saying test data did not establish a serious risk, but some breakers did not
+    meet UL tests. Record the brand only [CPSC-FPE]'
+  - Zinsco or Sylvania-Zinsco (colorful breaker handles, thin breakers) [judgment]
+  - Main breaker size (100, 125, 150, 200 amps) on the main handle [judgment]
+  - Open breaker spaces or tandem breakers [judgment]
+  - Scorch marks, melted plastic, rust or water stains (do not open the dead front) [judgment]
+  - 'Aluminum branch wiring: dull silver wire or ''AL'' marks; CPSC lists warm faceplates, flicker and burning smell
+    as warning signs [CPSC-ALWIRE]'
+  - Fuses instead of breakers [judgment]
+  neutral_wording_example: Panel label reads Federal Pacific Electric, 100 amp main; two open spaces; no scorch
+    marks visible.
+- photo_id: p2_device
+  look_for:
+  - Discoloration, melting, cracked faceplate; two-prong outlets; GFCI test buttons [judgment]
+  neutral_wording_example: Outlet faceplate shows brown discoloration around the left slot.
+- photo_id: p4_meter
+  look_for:
+  - Overhead vs underground service; meter/main combo; panel location [judgment]
+  neutral_wording_example: Meter and panel combo on the side wall; underground service.
+- photo_id: p5_alarm
+  look_for:
+  - Wires on the back = hardwired; date on back; ionization vs photoelectric label [judgment]
+  - NFPA says replace smoke alarms when they are 10 years old [S28]
+  neutral_wording_example: Hardwired smoke alarm; back label dated 2012.
+- photo_id: p3_location
+  look_for:
+  - Distance to panel; wall type; outdoor run [judgment]
+  neutral_wording_example: Wants a 240V outlet on the far garage wall about 30 ft from the panel.
+photo_red_flags:
+- flag: Scorch marks, melted plastic or smoke at an outlet, switch or panel
+  safety_step_ref: es_burning
+- flag: Water inside or dripping on the panel
+  safety_step_ref: es_water
+- flag: Panel cover removed with bare wires exposed
+  safety_step_ref: es_burning
+- flag: Power line down or sagging in the yard
+  safety_step_ref: es_downed
+emergency_signals:
+- id: es_burning
+  signal: Burning smell, sparks, smoke, buzzing or a hot outlet, switch or panel
+  emergency: 'yes'
+  safety_step: 'NFPA says to call a qualified electrician for a burning or rubbery smell, sparks, warm or discolored
+    outlets or switches, flickering lights, or breakers that trip often. Stop using the outlet, switch or appliance
+    involved. If there is smoke or fire, get out and call 911. If there is smoke, flames or sparks that will not
+    stop: get everyone out, stay out, and call 911 from outside.'
+  source: '[S29][NFPA-ESCAPE]'
+  then_route_to: electrical
+- id: es_shock
+  signal: Someone was shocked or there is a fire at the panel
+  emergency: 'yes'
+  safety_step: 'If there is smoke, flames or sparks that will not stop: get everyone out, stay out, and call 911
+    from outside. UniSource says most panels have a main switch; use it to cut all power in case of fire or shock,
+    and if there is no main switch, turn off all breakers. Do this only if you can reach the panel safely and are
+    not standing in water. Do not tamper with the electric meter.'
+  source: '[NFPA-ESCAPE][S24]'
+  then_route_to: electrical
+- id: es_downed
+  signal: Power line down, sagging or sparking outside
+  emergency: 'yes'
+  safety_step: Stay far away from any downed or sagging power line and anything it touches. Assume it is live. Call
+    911 and the UniSource 24/7 line, [number removed, see source]. Never try to move tree limbs or debris touching a line. If
+    a line falls on a vehicle you are in, stay inside until help arrives.
+  source: '[S24][S25]'
+  then_route_to: none
+- id: es_water
+  signal: Water near or in the panel, outlets or cords
+  emergency: 'yes'
+  safety_step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power
+    at the main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep
+    power off until an electrician checks it.
+  source: '[S31]'
+  then_route_to: electrical
+- id: es_outage
+  signal: Whole home or whole street has no power
+  emergency: depends
+  safety_step: Report outages to the UniSource 24/7 line, [number removed, see source]. UniSource says to turn off electronics
+    that were on, leave one light on to show when power is back, and keep fridge and freezer doors closed. If an
+    outage puts someone at risk in the heat, see heat steps.
+  source: '[S25]'
+  then_route_to: none
+- id: es_smoke_alarm
+  signal: Smoke alarm sounding with smoke or fire
+  emergency: 'yes'
+  safety_step: 'If there is smoke, flames or sparks that will not stop: get everyone out, stay out, and call 911
+    from outside.'
+  source: '[NFPA-ESCAPE]'
+  then_route_to: none
+safety_step:
+- when: Burning smell, sparks, smoke, buzzing or a hot outlet, switch or panel
+  step: 'NFPA says to call a qualified electrician for a burning or rubbery smell, sparks, warm or discolored outlets
+    or switches, flickering lights, or breakers that trip often. Stop using the outlet, switch or appliance involved.
+    If there is smoke or fire, get out and call 911. If there is smoke, flames or sparks that will not stop: get
+    everyone out, stay out, and call 911 from outside.'
+  source: '[S29][NFPA-ESCAPE]'
+- when: Someone was shocked or there is a fire at the panel
+  step: 'If there is smoke, flames or sparks that will not stop: get everyone out, stay out, and call 911 from outside.
+    UniSource says most panels have a main switch; use it to cut all power in case of fire or shock, and if there
+    is no main switch, turn off all breakers. Do this only if you can reach the panel safely and are not standing
+    in water. Do not tamper with the electric meter.'
+  source: '[NFPA-ESCAPE][S24]'
+- when: Power line down, sagging or sparking outside
+  step: Stay far away from any downed or sagging power line and anything it touches. Assume it is live. Call 911
+    and the UniSource 24/7 line, [number removed, see source]. Never try to move tree limbs or debris touching a line. If a line
+    falls on a vehicle you are in, stay inside until help arrives.
+  source: '[S24][S25]'
+- when: Water near or in the panel, outlets or cords
+  step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power at the
+    main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep power
+    off until an electrician checks it.
+  source: '[S31]'
+- when: Smoke alarm sounding with smoke or fire
+  step: 'If there is smoke, flames or sparks that will not stop: get everyone out, stay out, and call 911 from outside.'
+  source: '[NFPA-ESCAPE]'
+license_classes:
+- job_type:
+  - outlet_switch
+  classes:
+  - R-11 Electrical
+  - CR-11 Electrical (dual)
+  citation: 'A.A.C. R4-9-103 (R-11: install and repair residential electrical systems); R4-9-104 (CR-11)'
+  other_agency: UniSource owns and services the meter and service line; do not tamper with the meter [S24]
+  notes: Same classes for all job types. C-11 is commercial only [S1]. General contractors (B, B-3) must subcontract
+    electrical [S2]. R-39 may add a circuit for AC equipment to an existing panel but not a new panel or sub-panel
+    [S2].
+- job_type:
+  - panel_upgrade
+  classes:
+  - R-11
+  - CR-11
+  citation: R4-9-103; R4-9-104
+  other_agency: UniSource for service disconnect/reconnect and any service size change [S22][judgment]
+  notes: Panel change-outs need an LHC permit [S17].
+- job_type:
+  - smoke_alarm
+  classes:
+  - R-11
+  - CR-11
+  - R-16 Fire Protection Systems (low-voltage signaling only; other electrical wiring must be subcontracted per
+    R4-9-103)
+  citation: R4-9-103; A.R.S. 32-1121(D)(1); A.A.C. R4-9-104 [S3] (CR- dual classes)
+  other_agency: null
+  notes: Hardwired or interconnected smoke alarms are never under the handyman exemption [S4]. Battery-only alarm
+    swaps are not contracting work under ROC rules [judgment].
+- job_type:
+  - rewire
+  classes:
+  - R-11
+  - CR-11
+  citation: R4-9-103; R4-9-104
+  other_agency: 'Manufactured homes: alterations only by a licensed or certified person (A.R.S. 41-4047(5)) [ARS-4047]'
+  notes: Rewires need an LHC permit [S17].
+handyman_ok:
+  allowed_examples:
+  - Replace a few outlets or switches like-for-like, under $1,000, no permit [S4][judgment]
+  - Swap a light fixture or ceiling fan on an existing fan-rated box, under $1,000 [judgment]
+  - Plug-in items do not count toward the $1,000 total if unaltered [S4]
+  not_allowed_examples:
+  - 'Hardwired or interconnected smoke alarms: excluded by 32-1121(D)(1) [S4]'
+  - Panel change-outs, rewires and electrical updates (LHC permit) [S17]
+  - New circuits [S17][judgment]
+  - Any job $1,000 or more [S4]
+  rule_reminder: 'A person without an ROC license may take a job only if ALL are true: total price (labor + materials
+    + everything) is under $1,000; the work is casual, minor or inconsequential; no local building permit is required;
+    it is not part of a larger job or split up to stay under $1,000; and any ad says ''not a licensed contractor''.
+    The exemption never covers work that connects to natural gas, propane or other fuel gas, or fire-safety work
+    such as hardwired/interconnected smoke alarms. Source: A.R.S. 32-1121(A)(14) and (D) [S4]. In Lake Havasu City,
+    check the city permit list: a needed permit removes the exemption [S17].'
+local_notes:
+- UniSource Energy Services is the electric utility in Lake Havasu City; 24/7 outage and emergency line [number removed, see source];
+  local electric office [number removed, see source] [S22].
+- 'UniSource: keep tools and bodies at least 15 ft from overhead lines, including when servicing a roof swamp cooler;
+  owners keep foliage 15 ft from service lines and can ask UniSource to turn power off at no cost [S24].'
+- 'UniSource''s wiring checklist: breakers trip often, appliances don''t heat fully, TV picture shrinks when appliances
+  run, or extension cords used for lack of outlets: have the home inspected by a qualified technician [S24].'
+- LHC uses the 2023 NEC; panel change-outs, rewires and electrical updates need a permit [S17].
+- Summer AC loads are high; flicker or trip requests spike in hot months [judgment].
+- Many Havasu homes from the 1960s-70s and many manufactured homes may have older panels or aluminum branch wiring;
+  record only what photos show [CPSC-ALWIRE][judgment].
+- Monsoon storms can cause outages and surges; outages route to UniSource, not a card [S25][judgment].
+- 'NFPA: test AFCI/GFCI devices monthly; call a qualified electrician for frequent trips, warm outlets, burning
+  smells, flicker or sparks [S29].'
+sample_card: 'REQ-0193 | Electrical | Lake Havasu City, east
+
+  Breaker for kitchen counter outlets trips several times a day. Single-story, built about 1985.
+
+  Panel photo: label reads Zinsco, 125 amp. No scorch marks seen.'
+test_messages:
+- id: electrical_t01
+  message: outlet in bedroom smells like burning plastic
+  trade: electrical
+  job_type: burning_sparks
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: (Give safety step first.) Is there any smoke or flame right now?
+  note: Emergency.
+- id: electrical_t02
+  message: half my house has no power but the other half does
+  trade: electrical
+  job_type: partial_power
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Have you checked the breaker panel, and did any breaker trip and not reset?
+  note: Never diagnose.
+- id: electrical_t03
+  message: want to put in 2 ceiling fans, already bought
+  trade: electrical
+  job_type: lighting_fan
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Are there lights or fans in those spots now, and how high are the ceilings?
+  note: ''
+- id: electrical_t04
+  message: house has federal pacific panel, inspector said replace, need quotes
+  trade: electrical
+  job_type: panel_upgrade
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Can you send a photo of the panel with the door open and the label inside the door?
+  note: Do not repeat 'replace' as Ask Hava's view.
+- id: electrical_t05
+  message: se bota el breaker cuando prendo el microondas
+  trade: electrical
+  job_type: breaker_tripping
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: ¿Pasa con un solo breaker, y está el microondas en la cocina?
+  note: Spanish.
+- id: electrical_t06
+  message: power line down in my backyard after storm
+  trade: electrical
+  job_type: whole_home_out
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: (Give downed-line step first.) Are you and everyone else away from the line?
+  note: Route to 911/UniSource; no card until safe.
+- id: electrical_t07
+  message: need a plug for a tesla in garage
+  trade: generator_ev
+  job_type: ev_charger
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is it a wall charger or a 240V outlet, and how far is the garage from the panel?
+  note: 'Wrong trade: route generator_ev.'
+- id: electrical_t08
+  message: smoke detectors chirping all over and they're wired
+  trade: electrical
+  job_type: smoke_alarm
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: How many alarms are there, and can you send a photo of one?
+  note: Never handyman (32-1121(D)(1)).
+- id: electrical_t09
+  message: lights flicker when the ac kicks on and the ac is also making a weird noise
+  trade: electrical
+  job_type: flicker_dim
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Do all the lights flicker, or only some, and when did it start?
+  note: Mixed; offer a second card for hvac.
+- id: electrical_t10
+  message: REQ-0194 electric stuff
+  trade: electrical
+  job_type: outlet_switch
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: 'What is going on: something not working, something to install, or a burning smell or sparks?'
+  note: Vague.
+sources:
+- '[S1] (foundation/sources_foundation.md) A.A.C. R4-9-102 Commercial contracting classifications (Cornell LII copy,
+  amended through 23 A.A.R. 2525, eff. 11/5/2017): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102'
+- '[S2] (foundation/sources_foundation.md) A.A.C. R4-9-103 Residential contracting classifications (Cornell LII
+  copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] (foundation/sources_foundation.md) A.A.C. R4-9-104 Dual licensing classifications (Cornell LII copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] (foundation/sources_foundation.md) A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman
+  exemption and (D) fire-safety and fuel-gas carve-outs): https://www.azleg.gov/ars/32/01121.htm'
+- '[ARS-4047] (trade-only source) A.R.S. 41-4047 Unlawful acts (manufactured homes; item 5: alterations only by
+  a licensed or certified person): https://www.azleg.gov/ars/41/04047.htm'
+- '[S17] (foundation/sources_foundation.md) Lake Havasu City Building Division, permit-required and no-permit lists
+  (2024 I-codes, 2023 NEC): https://www.lhcaz.gov/development-permitting/building'
+- '[S24] (foundation/sources_foundation.md) UniSource Electrical Safety Tips (15 ft from overhead lines, downed
+  lines, Arizona 811): https://www.uesaz.com/electric-safety/'
+- '[S25] (foundation/sources_foundation.md) UniSource During a Storm or Service Outage (downed lines; only UniSource
+  field employees may turn gas service back on; do not relight pilots after a shutoff): https://www.uesaz.com/outage-preparation/'
+- '[S22] (foundation/sources_foundation.md) UniSource Energy Services contact page (gas emergency: call 911 and
+  [number removed, see source]; outages [number removed, see source]; LHC electric office [number removed, see source]; LHC gas office [number removed, see source]): https://www.uesaz.com/contact/'
+- '[CPSC-FPE] (trade-only source) CPSC news release (1983): Commission Closes Investigation of FPE Circuit Breakers
+  and Provides Safety Information for Consumers: https://www.cpsc.gov/Newsroom/News-Releases/1983/Commission-Closes-Investigation-Of-FPE-Circuit-Breakers-And-Provides-Safety-Information-For-Consumers'
+- '[CPSC-ALWIRE] (trade-only source) CPSC Pub. 516 Repairing Aluminum Wiring: https://www.cpsc.gov/s3fs-public/516.pdf'
+- '[S29] (foundation/sources_foundation.md) NFPA, Electrical safety in the home (call a qualified electrician for
+  frequent tripping, warm/discolored outlets, burning smell, flicker, sparks; test AFCI/GFCI monthly): https://www.nfpa.org/education-and-research/home-fire-safety/electrical'
+- '[NFPA-ESCAPE] (trade-only source) NFPA, Home fire escape planning (get out, stay out, call 911 from outside):
+  https://www.nfpa.org/education-and-research/home-fire-safety/escape-planning'
+- '[S31] (foundation/sources_foundation.md) CDC, Protect yourself from electrical hazards after a disaster / Reentering
+  your flooded home (turn off main only if you can reach it from a dry place; never stand in water to switch power):
+  https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-from-electrical-hazards.html'
+- '[S28] (foundation/sources_foundation.md) NFPA, Smoke Alarms (test monthly; replace when 10 years old): https://www.nfpa.org/education-and-research/home-fire-safety/smoke-alarms'

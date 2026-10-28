@@ -1,0 +1,832 @@
+# Ask Hava trade knowledge file: hvac
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: hvac
+display_name: Heating & cooling (AC, heat pumps, mini-splits, rooftop units)
+summary: 'Central AC, heat pumps, gas or electric furnaces, rooftop package units and ductless mini-splits. In Lake
+  Havasu City this is the most time-sensitive trade: summer highs often pass 115 F, and a home with no cooling can
+  become dangerous for older adults, babies, people with medical needs and pets [judgment]. Ask Hava''s job is to
+  learn the system type, what it is doing, its age (from the data plate photo), the refrigerant on the label and
+  the roof or yard access, then write a card a business can quote from. Ask Hava never says what is wrong, what
+  it costs, or whether to repair or replace. Swamp coolers have their own file (evaporative_coolers). Licensed work
+  is ROC R-39 / CR-39 / CR-79 (residential) and refrigerant handling needs EPA Section 608 certification [S2][S3][S38].'
+job_types:
+- id: ac_not_cooling
+  label: AC running but blowing warm or not keeping up
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: ac_not_turning_on
+  label: AC or heat will not turn on at all
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: ac_leaking_water
+  label: Water leaking from indoor unit, drain line or ceiling below unit
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: ac_noise_smell
+  label: Odd noise, smell or ice on the lines
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: heat_not_working
+  label: Heat not working (furnace, gas pack or heat pump in heat mode)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: ac_replacement
+  label: Replace the whole system or the outdoor/rooftop unit
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: package_unit_replacement
+  label: Replace a rooftop package unit (may need a crane and curb adapter)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: heat_pump_issue
+  label: Heat pump problem (no heat, stuck in defrost, frosting up)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: mini_split_install
+  label: Install a new ductless mini-split (garage, casita, add-on room)
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: mini_split_repair
+  label: Mini-split not cooling, blinking lights or error code
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: ac_maintenance
+  label: Seasonal tune-up, coil cleaning, check-up before summer
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: thermostat_issue
+  label: Thermostat blank, not responding, or new smart thermostat
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: ductwork_airflow
+  label: Weak airflow, hot rooms, duct leaks, dusty vents, new ducts
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: ac blowing warm
+  job_type: ac_not_cooling
+- phrase: ac blowing hot air
+  job_type: ac_not_cooling
+- phrase: a/c not workin
+  job_type: ac_not_cooling
+- phrase: air not cold
+  job_type: ac_not_cooling
+- phrase: ac cant keep up
+  job_type: ac_not_cooling
+- phrase: house is 90 inside
+  job_type: ac_not_cooling
+- phrase: ac runs all day
+  job_type: ac_not_cooling
+- phrase: need freon
+  job_type: ac_not_cooling
+- phrase: needs recharge
+  job_type: ac_not_cooling
+- phrase: aircon broke
+  job_type: ac_not_cooling
+- phrase: ac not cooling
+  job_type: ac_not_cooling
+- phrase: a.c. warm
+  job_type: ac_not_cooling
+- phrase: ac wont turn on
+  job_type: ac_not_turning_on
+- phrase: ac dead
+  job_type: ac_not_turning_on
+- phrase: unit humming wont start
+  job_type: ac_not_turning_on
+- phrase: fan outside not spinning
+  job_type: ac_not_cooling
+- phrase: nothing happens when i turn on ac
+  job_type: ac_not_turning_on
+- phrase: breaker for ac keeps tripping
+  job_type: ac_not_turning_on
+- phrase: water dripping from ac
+  job_type: ac_leaking_water
+- phrase: ac leaking
+  job_type: ac_leaking_water
+- phrase: drain line clogged
+  job_type: ac_leaking_water
+- phrase: water stain under air handler
+  job_type: ac_leaking_water
+- phrase: ceiling wet under ac
+  job_type: ac_leaking_water
+- phrase: condensate pan full
+  job_type: ac_leaking_water
+- phrase: ac making noise
+  job_type: ac_noise_smell
+- phrase: loud banging from ac
+  job_type: ac_noise_smell
+- phrase: ac squealing
+  job_type: ac_noise_smell
+- phrase: ice on ac pipe
+  job_type: ac_noise_smell
+- phrase: frozen coil
+  job_type: ac_noise_smell
+- phrase: ac smells musty
+  job_type: ac_noise_smell
+- phrase: burning smell from vents
+  job_type: ac_noise_smell
+- phrase: heater not working
+  job_type: heat_not_working
+- phrase: no heat
+  job_type: heat_not_working
+- phrase: furnace wont light
+  job_type: heat_not_working
+- phrase: heat blowing cold
+  job_type: heat_not_working
+- phrase: pilot light out furnace
+  job_type: heat_not_working
+- phrase: gas pack no heat
+  job_type: heat_not_working
+- phrase: new ac unit
+  job_type: ac_replacement
+- phrase: replace ac
+  job_type: ac_replacement
+- phrase: ac is old need new
+  job_type: ac_replacement
+- phrase: quote for new hvac
+  job_type: ac_replacement
+- phrase: r22 unit replace
+  job_type: ac_replacement
+- phrase: change out condenser
+  job_type: ac_replacement
+- phrase: upgrade to heat pump
+  job_type: ac_replacement
+- phrase: rooftop unit
+  job_type: package_unit_replacement
+- phrase: roof top ac replacement
+  job_type: package_unit_replacement
+- phrase: package unit
+  job_type: package_unit_replacement
+- phrase: gas pack replace
+  job_type: package_unit_replacement
+- phrase: crane for ac
+  job_type: package_unit_replacement
+- phrase: heat pump not heating
+  job_type: heat_pump_issue
+- phrase: heat pump iced up
+  job_type: heat_pump_issue
+- phrase: heat pump steaming
+  job_type: heat_pump_issue
+- phrase: emergency heat light on
+  job_type: heat_pump_issue
+- phrase: mini split install
+  job_type: mini_split_install
+- phrase: ductless for garage
+  job_type: mini_split_install
+- phrase: minisplit
+  job_type: mini_split_install
+- phrase: wall unit ac for casita
+  job_type: mini_split_install
+- phrase: mini split blinking
+  job_type: mini_split_repair
+- phrase: ductless not cooling
+  job_type: mini_split_repair
+- phrase: mini split error code
+  job_type: mini_split_repair
+- phrase: mitsubishi blinking
+  job_type: mini_split_repair
+- phrase: ac tune up
+  job_type: ac_maintenance
+- phrase: ac service before summer
+  job_type: ac_maintenance
+- phrase: clean ac coils
+  job_type: ac_maintenance
+- phrase: hvac maintenance
+  job_type: ac_maintenance
+- phrase: ac checkup
+  job_type: ac_maintenance
+- phrase: thermostat blank
+  job_type: thermostat_issue
+- phrase: thermostat not working
+  job_type: thermostat_issue
+- phrase: install nest
+  job_type: thermostat_issue
+- phrase: thermastat
+  job_type: thermostat_issue
+- phrase: ecobee wiring
+  job_type: thermostat_issue
+- phrase: weak airflow
+  job_type: ductwork_airflow
+- phrase: one room always hot
+  job_type: ductwork_airflow
+- phrase: ducts leaking
+  job_type: ductwork_airflow
+- phrase: duct cleaning
+  job_type: ductwork_airflow
+- phrase: vents barely blowing
+  job_type: ductwork_airflow
+- phrase: hvac
+  job_type: ac_not_cooling
+- phrase: hvak
+  job_type: ac_not_cooling
+- phrase: air conditoner
+  job_type: ac_not_cooling
+- phrase: air condishoner
+  job_type: ac_not_cooling
+triggers_es:
+- phrase: el aire no enfría
+  job_type: ac_not_cooling
+- phrase: el aire no enfria
+  job_type: ac_not_cooling
+- phrase: el clima no enfría
+  job_type: ac_not_cooling
+- phrase: el aire echa aire caliente
+  job_type: ac_not_cooling
+- phrase: la refrigeración no sirve
+  job_type: ac_not_cooling
+- phrase: le falta gas al aire
+  job_type: ac_not_cooling
+- phrase: el aire no prende
+  job_type: ac_not_turning_on
+- phrase: el aire no enciende
+  job_type: ac_not_turning_on
+- phrase: el clima no prende
+  job_type: ac_not_turning_on
+- phrase: el aire gotea
+  job_type: ac_leaking_water
+- phrase: sale agua del aire
+  job_type: ac_leaking_water
+- phrase: el aire hace ruido
+  job_type: ac_noise_smell
+- phrase: se congeló el tubo del aire
+  job_type: ac_noise_smell
+- phrase: huele a quemado el aire
+  job_type: ac_noise_smell
+- phrase: la calefacción no funciona
+  job_type: heat_not_working
+- phrase: no hay calefacción
+  job_type: heat_not_working
+- phrase: el calentón no prende
+  job_type: heat_not_working
+- phrase: quiero cambiar el aire
+  job_type: ac_replacement
+- phrase: unidad nueva de aire
+  job_type: ac_replacement
+- phrase: cotización aire acondicionado nuevo
+  job_type: ac_replacement
+- phrase: unidad del techo
+  job_type: package_unit_replacement
+- phrase: aire del techo
+  job_type: package_unit_replacement
+- phrase: bomba de calor no calienta
+  job_type: heat_pump_issue
+- phrase: instalar minisplit
+  job_type: mini_split_install
+- phrase: instalar mini split
+  job_type: mini_split_install
+- phrase: minisplit no enfría
+  job_type: mini_split_repair
+- phrase: el minisplit parpadea
+  job_type: mini_split_repair
+- phrase: mantenimiento del aire
+  job_type: ac_maintenance
+- phrase: limpieza del aire
+  job_type: ac_maintenance
+- phrase: el termostato no funciona
+  job_type: thermostat_issue
+- phrase: termostato apagado
+  job_type: thermostat_issue
+- phrase: poco aire en los ductos
+  job_type: ductwork_airflow
+- phrase: un cuarto muy caliente
+  job_type: ductwork_airflow
+questions:
+- id: q1_system_type
+  text: What kind of system cools your home?
+  options:
+  - Big unit on the roof
+  - Unit on the ground outside
+  - Wall unit inside (mini-split)
+  - Swamp cooler (water cooler)
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: System type sets parts, access (roof vs ground), crane needs and which business type fits. Swamp cooler answer
+    reroutes to evaporative_coolers. [judgment]
+- id: q2_scope
+  text: Do you want it fixed, or a quote to replace it?
+  options:
+  - Fix what I have
+  - Quote to replace
+  - Both, I want options
+  - Just a tune-up
+  - Not sure
+  ask_if: job_type not in [ac_maintenance, thermostat_issue]
+  changes_price: 'yes'
+  why: Repair vs replace is the biggest price split. Ask Hava does not suggest either; businesses quote in their
+    own words. [judgment]
+- id: q3_symptom
+  text: What is it doing right now?
+  options:
+  - Runs but air is warm
+  - Will not turn on
+  - Outside fan not spinning
+  - Ice on pipes or unit
+  - Water leaking
+  - Loud noise or bad smell
+  ask_if: q2_scope in ['Fix what I have', 'Both, I want options', 'Not sure']
+  changes_price: 'yes'
+  why: Symptom tells a business what parts and tools to bring. Ask Hava records it; it does not explain the cause.
+    [judgment]
+- id: q4_age
+  text: About how old is the unit?
+  options:
+  - Under 5 years
+  - 5-10 years
+  - 10-15 years
+  - Over 15 years
+  - Not sure (I can send a label photo)
+  ask_if: always
+  changes_price: 'yes'
+  why: Age and refrigerant (often R-22 on older units) shape repair vs replace quotes. The data plate photo is better
+    than a guess. [EPA-R22][judgment]
+- id: q5_home_size
+  text: About how big is the home or space it cools?
+  options:
+  - Under 1,200 sq ft
+  - 1,200-2,000 sq ft
+  - 2,000-3,000 sq ft
+  - Over 3,000 sq ft
+  - One room / garage / casita
+  - Not sure
+  ask_if: q2_scope in ['Quote to replace', 'Both, I want options'] or job_type == mini_split_install
+  changes_price: 'yes'
+  why: Size hints at tonnage; a business still confirms with its own load calculation. [judgment]
+- id: q6_access
+  text: Where can a tech reach the unit?
+  options:
+  - Flat roof, one story
+  - Sloped roof or two story
+  - Ground, easy side yard
+  - Ground, behind a locked gate or wall
+  - Attic or closet inside
+  - Not sure
+  ask_if: q1_system_type != 'Swamp cooler (water cooler)'
+  changes_price: 'yes'
+  why: Roof pitch, height and gate access change labor, crane and safety gear. Do not collect gate codes. [judgment]
+quote_without_visit_needs:
+- Clear photo of the outdoor or rooftop unit data plate (brand, model, serial, refrigerant, electrical ratings)
+  [judgment]
+- Photo of the indoor unit / air handler or furnace label for split systems [judgment]
+- Home square footage, number of stories, roof type (flat vs pitched) [judgment]
+- Replace-like-for-like vs change size or location (location/size/weight/ampacity change triggers an LHC permit)
+  [S17]
+- 'For mini-split installs: room size, where the indoor head and outdoor unit would go, distance between them, panel
+  photo with open breaker spaces [judgment]'
+- 'For maintenance: number of systems and type; many businesses quote tune-ups at a flat rate without a visit [judgment]'
+site_visit_usually_needed:
+- No cooling or no heat with unknown cause (businesses usually quote a service call, not a repair) [judgment]
+- Rooftop package unit replacement (crane, curb adapter, roof condition) [judgment]
+- Any job that changes tonnage, location or electrical capacity (permit, load calculation) [S17][judgment]
+- Ductwork redesign, hot rooms, airflow complaints [judgment]
+- Refrigerant leaks (leak search needed; EPA asks owners to have leaks repaired rather than repeatedly topped off)
+  [EPA-R22]
+photos_to_request:
+- id: p1_data_plate
+  ask: A close, straight-on photo of the metal or sticker label on the outside or rooftop unit. Please make sure
+    the numbers are readable.
+  for_job_types:
+  - ac_not_cooling
+  - ac_not_turning_on
+  - ac_replacement
+  - package_unit_replacement
+  - heat_pump_issue
+  - ac_maintenance
+  - mini_split_repair
+- id: p2_whole_unit
+  ask: A photo of the whole outdoor or rooftop unit from a few steps back.
+  for_job_types:
+  - ac_not_cooling
+  - ac_noise_smell
+  - ac_replacement
+  - package_unit_replacement
+  - heat_pump_issue
+- id: p3_indoor_unit
+  ask: A photo of the indoor unit (closet, attic or garage), including its label if you can reach it safely.
+  for_job_types:
+  - ac_leaking_water
+  - ac_replacement
+  - heat_not_working
+  - ductwork_airflow
+- id: p4_thermostat
+  ask: A photo of the thermostat screen, and if it is off the wall, the wires behind it.
+  for_job_types:
+  - thermostat_issue
+  - ac_not_turning_on
+- id: p5_leak_area
+  ask: A photo of where the water is (drip pan, drain pipe outside, or ceiling spot).
+  for_job_types:
+  - ac_leaking_water
+- id: p6_minisplit_spot
+  ask: A photo of the wall where you want the indoor unit and of the outside spot for the outdoor unit.
+  for_job_types:
+  - mini_split_install
+- id: p7_error_code
+  ask: A photo of any blinking lights or error code on the unit or remote.
+  for_job_types:
+  - mini_split_repair
+  - heat_pump_issue
+  - ac_not_turning_on
+- id: p8_panel
+  ask: A photo of the electrical panel with the door open (no need to touch anything inside).
+  for_job_types:
+  - mini_split_install
+  - ac_replacement
+photo_cues:
+- photo_id: p1_data_plate
+  look_for:
+  - Brand, model and serial number; many plates also print a manufacture date (MFG DATE) - use that first [judgment]
+  - 'Refrigerant line: R-22 (HCFC-22; new production/import ended Jan 1, 2020; existing units can still be serviced
+    with recovered or stockpiled supply) [EPA-R22]'
+  - R-410A (HFC, GWP about 2,088) - common 2010-2024; pre-2025-made split components may still be installed under
+    the 2026 EPA rule [EPA-TT]
+  - R-454B or R-32 (A2L, lower GWP) - new units built from 2025 for the 700-GWP limit; not a drop-in for R-410A
+    [EPA-TT][judgment]
+  - 'Tonnage hint in model number: digits like 024/030/036/042/048/060 usually mean 2/2.5/3/3.5/4/5 tons (12,000
+    BTU per ton) [judgment]'
+  - 'Electrical ratings: MCA and MOP (max fuse/breaker) amps [judgment]'
+  - 'Age decode by brand when no printed date (industry tables, verify): Carrier/Bryant/Payne serial 4 digits =
+    week then year (3216... = week 32 of 2016) [INACHI-AGE]; Trane/American Standard since about 2010 serial begins
+    with year then week (1834... = 2018) [judgment]; Goodman/Amana serial begins year then month (1507... = July
+    2015) [judgment]; Lennox serial characters 3-4 = year (5815... = 2015) [judgment]; Rheem/Ruud letter then week+year
+    (W0316... = week 03 of 2016) [judgment]; York/Coleman and most mini-split brands vary - use the printed date
+    [judgment]'
+  - Decoded date is the build date, not the install date; units can sit in a warehouse for months [judgment]
+  neutral_wording_example: 'Data plate: Goodman, model starts GSX13036, refrigerant R-22 shown, serial suggests
+    about 2009 build.'
+- photo_id: p2_whole_unit
+  look_for:
+  - Rooftop package vs split condenser vs heat pump (reversing-valve units often say 'heat pump' on the label) [judgment]
+  - Fins bent, matted or packed with dust/cottonwood [judgment]
+  - Rust at base, missing panels, line-set insulation missing or sun-rotted [judgment]
+  - Disconnect box present and closed [judgment]
+  - Gas line to a rooftop gas pack (yellow-tagged or black pipe) [judgment]
+  neutral_wording_example: Rooftop package unit on a flat roof; side panel missing; fins look dusty.
+- photo_id: p3_indoor_unit
+  look_for:
+  - Furnace vs air handler; gas line and flue pipe present? [judgment]
+  - Water in drip pan, rust, stains on platform [judgment]
+  - Filter size printed on edge [judgment]
+  - Flue pipe disconnected or rusted (route as safety signal) [judgment]
+  neutral_wording_example: Air handler in hall closet; standing water visible in the pan; filter appears dark.
+- photo_id: p4_thermostat
+  look_for:
+  - Brand/model; blank screen; wire count and letters (R, C, Y, G, W, O/B) [judgment]
+  - No C (common) wire may matter for smart thermostats [judgment]
+  neutral_wording_example: Thermostat screen blank; five wires labeled R, Y, G, W, C.
+- photo_id: p5_leak_area
+  look_for:
+  - Ceiling stain size, sagging drywall [judgment]
+  - Secondary drain or float switch present [judgment]
+  - Drain line outlet outside, algae [judgment]
+  neutral_wording_example: Brown ceiling stain about two feet wide below the attic air handler.
+- photo_id: p6_minisplit_spot
+  look_for:
+  - Wall type (block, stucco, frame), distance to outdoor spot, line-set path [judgment]
+  - Mounting surface for the outdoor unit [judgment]
+  neutral_wording_example: Garage back wall, block; outdoor spot on gravel about 10 feet away.
+- photo_id: p7_error_code
+  look_for:
+  - Code shown and brand (codes differ by brand) [judgment]
+  neutral_wording_example: Indoor head shows blinking green light, 5 blinks.
+- photo_id: p8_panel
+  look_for:
+  - Open breaker spaces; panel brand (Federal Pacific Stab-Lok or Zinsco flag for electrical trade) [judgment]
+  - Main breaker size [judgment]
+  neutral_wording_example: Panel label reads 125A; two open spaces at bottom.
+photo_red_flags:
+- flag: Scorch marks, melted wires or smoke at the disconnect, unit or panel
+  safety_step_ref: es_burning_smoke
+- flag: Flue pipe on a gas furnace or gas pack disconnected, rusted through or sooty
+  safety_step_ref: es_co
+- flag: Sagging, wet ceiling under an attic unit near lights or outlets
+  safety_step_ref: es_water_electric
+- flag: Gas pipe broken or bent at a rooftop gas pack or furnace
+  safety_step_ref: es_gas
+emergency_signals:
+- id: es_heat_symptoms
+  signal: No cooling and someone is confused, faint, has hot red skin or very high body temperature
+  emergency: 'yes'
+  safety_step: 'Signs of heat stroke (confusion, fainting, hot red skin, very high body temperature): call 911 now.
+    Move the person to a cooler place, cool them with cool wet cloths or a cool bath, and do not give fluids to
+    someone who is not fully alert.'
+  source: '[S27]'
+  then_route_to: hvac
+- id: es_heat_vulnerable
+  signal: No cooling in extreme heat with an older adult, infant, pregnant person, someone with a medical condition,
+    or pets at home
+  emergency: 'yes'
+  safety_step: With no AC in extreme heat, CDC advises going to an air-conditioned place (a friend's home, a public
+    building or a cooling center) for part of the day, drinking water, and checking on older adults often. NWS warns
+    that fans alone do not prevent heat illness when it is very hot. If anyone shows signs of heat stroke, call
+    911.
+  source: '[CDC-HEAT][S27]'
+  then_route_to: hvac
+- id: es_gas
+  signal: Gas or rotten-egg smell near a furnace, gas pack or gas line; hissing sound
+  emergency: 'yes'
+  safety_step: Leave the home or area right away. Do not use a phone, light switch or anything that can make a spark
+    inside. Do not smoke or light a match. If you are outside, do not start a car. Do not try to find the leak.
+    From a safe place, call 911 and the UniSource 24-hour line, [number removed, see source]. Do not go back until UniSource or
+    the fire department says it is safe. Only UniSource may turn gas service back on.
+  source: '[UNS-GAS][S22][S25]'
+  then_route_to: gas_lines
+- id: es_co
+  signal: CO alarm sounding, or people feel sick, dizzy or headachy when the heat runs
+  emergency: 'yes'
+  safety_step: If a CO alarm is sounding, do not look for the cause. Get everyone outside to fresh air right away.
+    Call 911 or the fire department from outside. Count heads. Do not go back in until responders say it is safe.
+    Do not use the fuel-burning appliance again until it has been checked.
+  source: '[S26]'
+  then_route_to: hvac
+- id: es_burning_smoke
+  signal: Burning smell, smoke or sparks from the unit, vents, disconnect or panel
+  emergency: 'yes'
+  safety_step: 'NFPA says to call a qualified electrician for a burning or rubbery smell, sparks, warm or discolored
+    outlets or switches, flickering lights, or breakers that trip often. Stop using the outlet, switch or appliance
+    involved. If there is smoke or fire, get out and call 911. If there is smoke, flames or sparks that will not
+    stop: get everyone out, stay out, and call 911 from outside.'
+  source: '[S29][NFPA-ESCAPE]'
+  then_route_to: electrical
+- id: es_water_electric
+  signal: Water from the AC reaching outlets, lights or the panel
+  emergency: 'yes'
+  safety_step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power
+    at the main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep
+    power off until an electrician checks it.
+  source: '[S31]'
+  then_route_to: hvac
+safety_step:
+- when: No cooling and someone is confused, faint, has hot red skin or very high body temperature
+  step: 'Signs of heat stroke (confusion, fainting, hot red skin, very high body temperature): call 911 now. Move
+    the person to a cooler place, cool them with cool wet cloths or a cool bath, and do not give fluids to someone
+    who is not fully alert.'
+  source: '[S27]'
+- when: No cooling in extreme heat with an older adult, infant, pregnant person, someone with a medical condition,
+    or pets at home
+  step: With no AC in extreme heat, CDC advises going to an air-conditioned place (a friend's home, a public building
+    or a cooling center) for part of the day, drinking water, and checking on older adults often. NWS warns that
+    fans alone do not prevent heat illness when it is very hot. If anyone shows signs of heat stroke, call 911.
+  source: '[CDC-HEAT][S27]'
+- when: Gas or rotten-egg smell near a furnace, gas pack or gas line; hissing sound
+  step: Leave the home or area right away. Do not use a phone, light switch or anything that can make a spark inside.
+    Do not smoke or light a match. If you are outside, do not start a car. Do not try to find the leak. From a safe
+    place, call 911 and the UniSource 24-hour line, [number removed, see source]. Do not go back until UniSource or the fire department
+    says it is safe. Only UniSource may turn gas service back on.
+  source: '[UNS-GAS][S22][S25]'
+- when: CO alarm sounding, or people feel sick, dizzy or headachy when the heat runs
+  step: If a CO alarm is sounding, do not look for the cause. Get everyone outside to fresh air right away. Call
+    911 or the fire department from outside. Count heads. Do not go back in until responders say it is safe. Do
+    not use the fuel-burning appliance again until it has been checked.
+  source: '[S26]'
+- when: Burning smell, smoke or sparks from the unit, vents, disconnect or panel
+  step: 'NFPA says to call a qualified electrician for a burning or rubbery smell, sparks, warm or discolored outlets
+    or switches, flickering lights, or breakers that trip often. Stop using the outlet, switch or appliance involved.
+    If there is smoke or fire, get out and call 911. If there is smoke, flames or sparks that will not stop: get
+    everyone out, stay out, and call 911 from outside.'
+  source: '[S29][NFPA-ESCAPE]'
+- when: Water from the AC reaching outlets, lights or the panel
+  step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power at the
+    main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep power
+    off until an electrician checks it.
+  source: '[S31]'
+license_classes:
+- job_type:
+  - ac_not_cooling
+  classes:
+  - R-39 Air Conditioning and Refrigeration, Including Solar
+  - R-39R Air Conditioning and Refrigeration
+  - CR-39 dual (C-39 + R-39R)
+  - CR-79 dual (C-79 + R-39)
+  citation: 'A.A.C. R4-9-103 (R-39 scope: comfort AC incl. refrigeration, evaporative cooling, ventilating and heating);
+    R4-9-104 (CR-39, CR-79)'
+  other_agency: 'Refrigerant work: technician needs EPA Section 608 certification (federal) [S38]'
+  notes: Same classes apply to ac_not_turning_on, ac_noise_smell, ac_leaking_water, heat_pump_issue, mini_split_repair,
+    ac_maintenance, heat_not_working. C-39 alone is commercial only [S1].
+- job_type:
+  - ac_replacement
+  classes:
+  - R-39
+  - R-39R Air Conditioning and Refrigeration
+  - CR-39
+  - CR-79
+  citation: R4-9-103; R4-9-104
+  other_agency: EPA Section 608 for refrigerant recovery [S38]
+  notes: R-39 may add a new circuit to an existing panel or sub-panel but may NOT install a new service panel or
+    sub-panel; that goes to R-11/CR-11 [S2]. Like-for-like replacement needs no LHC permit; a change in unit weight,
+    capacity, location or ampacity does [S17].
+- job_type:
+  - package_unit_replacement
+  classes:
+  - R-39
+  - CR-39
+  - CR-79
+  citation: R4-9-103; R4-9-104
+  other_agency: null
+  notes: 'Gas connection on a gas pack: R-39 scope includes heating; separate gas piping work is R-37 / C-37 / CR-37
+    [S2][S1]. R-42 Roofing may lift HVAC units for roofing work but ducting changes must be subcontracted [S2].'
+- job_type:
+  - mini_split_install
+  classes:
+  - R-39
+  - R-39R Air Conditioning and Refrigeration
+  - CR-39
+  - CR-79
+  citation: R4-9-103; R4-9-104
+  other_agency: EPA Section 608 [S38]
+  notes: New dedicated circuit allowed under R-39; new sub-panel needs R-11 [S2]. Mini-split in a detached structure
+    under 200 sq ft still needs an LHC permit for electrical/mechanical [S17].
+- job_type:
+  - ductwork_airflow
+  classes:
+  - R-39
+  - R-45 Sheet Metal
+  - CR-39
+  - CR-45
+  citation: R4-9-103 (R-45 ductwork and metal flues); R4-9-104
+  other_agency: null
+  notes: Duct cleaning alone has no specific ROC class listed in R4-9-103; confirm with ROC [judgment].
+- job_type:
+  - thermostat_issue
+  classes:
+  - R-39
+  - R-39R Temperature Control Systems (legacy, no new licenses)
+  - CR-39
+  citation: R4-9-103; A.A.C. R4-9-104 [S3] (CR- dual classes)
+  other_agency: null
+  notes: Simple like-for-like low-voltage thermostat swap under $1,000 with no permit may fit the handyman exemption
+    [S4][judgment].
+- job_type:
+  - heat_not_working
+  classes:
+  - R-39
+  - CR-39
+  - CR-58 dual (C-58 + R-39R Warm Air Heating, Evaporative Cooling and Ventilating)
+  - CR-79
+  citation: R4-9-103; R4-9-104
+  other_agency: null
+  notes: Gas furnace or gas pack work involves fuel gas, so the handyman exemption never applies [S4 (D)(2)].
+handyman_ok:
+  allowed_examples:
+  - Change an air filter (homeowner task; no license question) [judgment]
+  - Swap a battery-powered or like-for-like low-voltage thermostat, total under $1,000, no permit [S4][judgment]
+  - Clear debris around an outdoor unit, replace sun-rotted line-set foam insulation without opening the refrigerant
+    circuit, under $1,000 [judgment]
+  not_allowed_examples:
+  - 'Any refrigerant work: adding, recovering or charging (also federal EPA 608 certification) [S38]'
+  - Any gas furnace, gas pack or gas heater repair or hookup, at any price [S4 (D)(2)]
+  - Unit replacement or mini-split install (over $1,000 and/or permit) [S4][S17]
+  - Adding a circuit or changing ampacity (permit) [S17]
+  - Splitting a replacement into small invoices to stay under $1,000 [S4 (A)(14)(b)]
+  rule_reminder: 'A person without an ROC license may take a job only if ALL are true: total price (labor + materials
+    + everything) is under $1,000; the work is casual, minor or inconsequential; no local building permit is required;
+    it is not part of a larger job or split up to stay under $1,000; and any ad says ''not a licensed contractor''.
+    The exemption never covers work that connects to natural gas, propane or other fuel gas, or fire-safety work
+    such as hardwired/interconnected smoke alarms. Source: A.R.S. 32-1121(A)(14) and (D) [S4]. In Lake Havasu City,
+    check the city permit list: a needed permit removes the exemption [S17].'
+local_notes:
+- 'Photos: ask people not to climb on a roof just to take a picture; a ground photo or none is fine [judgment].'
+- Summer highs regularly top 110-115 F; no-cooling requests peak June-September and businesses get busy, so expect
+  slower scheduling on hot weekends [judgment].
+- Many homes have rooftop package units (cooling plus gas or electric heat in one box); replacement often needs
+  a crane and a curb adapter if the new unit footprint differs [judgment].
+- Dust storms during monsoon (roughly July-September) can pack condenser coils and clog filters; power flickers
+  can trip units [judgment].
+- Older homes may still run R-22 units; R-22 is no longer made or imported, so repair quotes can vary widely [EPA-R22][judgment].
+- Like-for-like AC replacement needs no LHC permit; changes in weight, capacity, location or ampacity do [S17].
+- 'Snowbird and vacation homes: owners may report from out of town; ask if someone local can let a tech in, but
+  never collect lockbox or gate codes [judgment].'
+- 'Manufactured homes: alterations need a licensed or certified person under A.R.S. 41-4047(5); ask the home type
+  so businesses know [ARS-4047].'
+- Heat calls are most common in late afternoon when the house has been heating up all day; mornings are more efficient
+  for roof work in summer [judgment].
+- 'Utility: UniSource Energy Services supplies electricity and natural gas in Lake Havasu City [S22].'
+sample_card: 'REQ-0142 | Heating & cooling | Lake Havasu City, north side
+
+  Rooftop package unit, runs but blows warm since last night. Label photo: R-410A, about 2012 build.
+
+  Flat roof, one story. Older adult at home. Wants soonest visit.'
+test_messages:
+- id: hvac_t01
+  message: somethings wrong w my ac its like 92 in here
+  trade: hvac
+  job_type: ac_not_cooling
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Is anyone at home who is older, very young, or has a medical need for cool air?
+  note: Heat screen first; emergency=yes if vulnerable person or heat-illness signs.
+- id: hvac_t02
+  message: REQ-0142 ac on roof making loud grinding then stopped. need someone today
+  trade: hvac
+  job_type: ac_noise_smell
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: 'What kind of system is it: the big unit on the roof, a ground unit, or a wall unit?'
+  note: Already says roof; confirm system type and ask for data plate photo.
+- id: hvac_t03
+  message: el aire no enfria y mi mama tiene 80 años
+  trade: hvac
+  job_type: ac_not_cooling
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: ¿Su mamá se siente confundida, mareada o muy caliente al tacto?
+  note: Spanish; elderly resident in heat = priority. Give NWS/CDC steps if symptoms.
+- id: hvac_t04
+  message: how much for new ac 1800 sqft
+  trade: hvac
+  job_type: ac_replacement
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: 'What kind of system do you have now: roof unit, ground unit, or not sure?'
+  note: Never give a price; explain businesses send quotes.
+- id: hvac_t05
+  message: water coming out of ceiling by the air thing in hallway
+  trade: hvac
+  job_type: ac_leaking_water
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Is the water near any lights, outlets or the electrical panel?
+  note: Emergency if water reaches electrical.
+- id: hvac_t06
+  message: my swamp cooler is leaking on the roof
+  trade: evaporative_coolers
+  job_type: cooler_leak
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is the water leaking onto the roof only, or coming inside the house?
+  note: Wrong trade for hvac; route to evaporative_coolers.
+- id: hvac_t07
+  message: heater smells like gas when it kicks on
+  trade: gas_lines
+  job_type: gas_leak
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: Please leave the house now and call 911 and UniSource at [number removed, see source] from outside. Are
+    you outside?
+  note: Gas smell = stop intake; safety step first, then card to hvac/gas_lines.
+- id: hvac_t08
+  message: want a mini split in my garage + also my breaker panel is old zinsco is that ok
+  trade: hvac
+  job_type: mini_split_install
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: How big is the garage, and is it a one-car, two-car or three-car garage?
+  note: 'Mixed: card hvac for mini-split and note the panel brand; offer a separate electrical card. Do not judge
+    the panel.'
+- id: hvac_t09
+  message: ac tune up b4 summer, 2 units
+  trade: hvac
+  job_type: ac_maintenance
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Are both units on the roof, on the ground, or one of each?
+  note: ''
+- id: hvac_t10
+  message: thermastat screen went blank and nothing runs
+  trade: hvac
+  job_type: thermostat_issue
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Did the screen go blank after a storm or power flicker, and is the AC breaker on? (Just
+    look, no need to touch inside the panel.)
+  note: Emergency only if no cooling with vulnerable occupant in heat.
+sources:
+- '[S1] (foundation/sources_foundation.md) A.A.C. R4-9-102 Commercial contracting classifications (Cornell LII copy,
+  amended through 23 A.A.R. 2525, eff. 11/5/2017): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102'
+- '[S2] (foundation/sources_foundation.md) A.A.C. R4-9-103 Residential contracting classifications (Cornell LII
+  copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] (foundation/sources_foundation.md) A.A.C. R4-9-104 Dual licensing classifications (Cornell LII copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] (foundation/sources_foundation.md) A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman
+  exemption and (D) fire-safety and fuel-gas carve-outs): https://www.azleg.gov/ars/32/01121.htm'
+- '[ARS-4047] (trade-only source) A.R.S. 41-4047 Unlawful acts (manufactured homes; item 5: alterations only by
+  a licensed or certified person): https://www.azleg.gov/ars/41/04047.htm'
+- '[S17] (foundation/sources_foundation.md) Lake Havasu City Building Division, permit-required and no-permit lists
+  (2024 I-codes, 2023 NEC): https://www.lhcaz.gov/development-permitting/building'
+- '[EPA-R22] (trade-only source) US EPA, Homeowners and Consumers FAQ on the HCFC-22 (R-22) phaseout (no new production/import
+  since Jan 1, 2020; existing systems may still be serviced): https://www.epa.gov/ods-phaseout/homeowners-and-consumers-frequently-asked-questions'
+- '[EPA-TT] (trade-only source) US EPA Technology Transitions rule (700 GWP limit for new residential/light-commercial
+  AC and heat pumps manufactured from Jan 1, 2025) and the 2026 final rule FR Doc. 2026-10387 (eff. July 27, 2026)
+  removing the Jan 1, 2026 installation deadline for pre-2025 split-system components: https://www.epa.gov/climate-hfcs-reduction/technology-transitions'
+- '[S38] (foundation/sources_foundation.md) US EPA Section 608 technician certification (required to buy/handle
+  refrigerant in stationary AC): https://www.epa.gov/section608'
+- '[S27] (foundation/sources_foundation.md) National Weather Service, Heat illness (heat stroke = call 911; move
+  to cooler place; cool cloths): https://www.weather.gov/safety/heat-illness'
+- '[CDC-HEAT] (trade-only source) CDC Heat and Health: heat and older adults; staying safe without air conditioning:
+  https://www.cdc.gov/heat-health/'
+- '[UNS-GAS] (trade-only source) UniSource Energy Services, Natural Gas Safety and Safety Alert insert: https://www.uesaz.com/gas-safety/
+  and https://docs.uesaz.com/wp-content/uploads/Gas-Safety-Insert-Oct-2026.pdf'
+- '[S22] (foundation/sources_foundation.md) UniSource Energy Services contact page (gas emergency: call 911 and
+  [number removed, see source]; outages [number removed, see source]; LHC electric office [number removed, see source]; LHC gas office [number removed, see source]): https://www.uesaz.com/contact/'
+- '[S26] (foundation/sources_foundation.md) CPSC Carbon Monoxide Questions and Answers: https://www.cpsc.gov/Safety-Education/Safety-Education-Centers/Carbon-Monoxide-Information-Center/Carbon-Monoxide-Questions-and-Answers'
+- '[S29] (foundation/sources_foundation.md) NFPA, Electrical safety in the home (call a qualified electrician for
+  frequent tripping, warm/discolored outlets, burning smell, flicker, sparks; test AFCI/GFCI monthly): https://www.nfpa.org/education-and-research/home-fire-safety/electrical'
+- '[NFPA-ESCAPE] (trade-only source) NFPA, Home fire escape planning (get out, stay out, call 911 from outside):
+  https://www.nfpa.org/education-and-research/home-fire-safety/escape-planning'
+- '[S31] (foundation/sources_foundation.md) CDC, Protect yourself from electrical hazards after a disaster / Reentering
+  your flooded home (turn off main only if you can reach it from a dry place; never stand in water to switch power):
+  https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-from-electrical-hazards.html'
+- '[INACHI-AGE] (trade-only source) InterNACHI / Inspectapedia HVAC age-decoding tables (industry; e.g. Carrier/Bryant
+  WWYY) - secondary, verify on unit label'
+- '[S25] (foundation/sources_foundation.md) UniSource During a Storm or Service Outage (downed lines; only UniSource
+  field employees may turn gas service back on; do not relight pilots after a shutoff): https://www.uesaz.com/outage-preparation/'
