@@ -196,6 +196,8 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | After the build plan is complete | LLC, EIN, city license, TPT path, insurance, Google Workspace, DNS (SPF, DKIM, DMARC) | Not keys | Section 8 |
 | Gate C | Twilio brand and campaign registration, Stripe activation, live keys | Railway live project only, by you | Going live |
 
+**Two encryption checks at the account checkpoint (D-454):** the host you pick encrypts the database, its volumes and its backups at rest (Render documents this; confirm it for Railway in writing), and the Claude Console workspace has zero data retention in force before the AI switch goes on. Decide there too whether to add an outside key service (AWS or Google Cloud KMS); it is optional, about $1 a month for the key, and cleanest on Render Pro.
+
 ---
 
 ## 6. Build automation

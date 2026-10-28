@@ -91,7 +91,7 @@ You can see and change your details (properties, language, texts on or off) on y
 
 ## 10. How we protect it
 
-We encrypt contact details field by field, limit which parts of our software can read them, log every access, keep backups encrypted, and use multi-factor sign-in for our own accounts. Card numbers are held by Stripe, not by Ask Hava. No system is perfect. If your information is exposed in a way that could harm you, we'll tell you by email or text.
+We encrypt contact details field by field and photos before they are stored, limit which parts of our software can read them, log every access, keep backups encrypted, and use multi-factor sign-in for our own accounts. The business you pick sees your first name and the job address only after it signs in to its Ask Hava account; we never put them in an email or a text. Our website uses an encrypted connection. Ordinary text messages and email are not end-to-end encrypted, and your mobile carrier, our texting provider or your email provider may keep copies, so please share sensitive details on askhava.com rather than by text. Card numbers are held by Stripe, not by Ask Hava. No system is perfect. If your information is exposed in a way that could harm you, we'll tell you by email or text.
 
 ## 11. Other people's details
 

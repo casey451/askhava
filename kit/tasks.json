@@ -3313,14 +3313,16 @@
         "SEC-009",
         "SEC-011",
         "SEC-012",
-        "SEC-013"
+        "SEC-013",
+        "SEC-034"
       ],
       "tests": [
         "TD-SEC-04"
       ],
       "decisions": [
         "D-099",
-        "D-453"
+        "D-453",
+        "D-454"
       ],
       "cites": [],
       "budget": {
@@ -4589,7 +4591,8 @@
         "D-201",
         "D-306",
         "D-365",
-        "D-453"
+        "D-453",
+        "D-454"
       ],
       "cites": [],
       "budget": {
@@ -5883,14 +5886,16 @@
       "requirements": [
         "PRIV-013",
         "PRIV-014",
-        "PRIV-015"
+        "PRIV-015",
+        "PRIV-023"
       ],
       "tests": [
         "TD-PRIV-04",
         "TD-PRIV-08"
       ],
       "decisions": [
-        "D-383"
+        "D-383",
+        "D-454"
       ],
       "cites": [],
       "budget": {

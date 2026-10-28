@@ -19,7 +19,7 @@ Job requests and picks come by email. We don't text or call businesses. If Ask H
 | Open-cards email | Each person who gets cards, at up to two times a day they choose | Only when the business has cards not yet quoted, or a pick waiting |
 | Pick notice | The owner and every "Confirm and billing" member | When a homeowner chooses your quote |
 | Confirm reminders | The same people | Every business hour until you confirm or the window ends, each with the Hold link |
-| Release | The owner and every "Confirm and billing" member | After you confirm and pay |
+| Release (job confirmed; the homeowner's details are only in your signed-in portal, never in the email) | The owner and every "Confirm and billing" member | After you confirm and pay |
 | Receipts, refunds and charge answers | The owner and every "Confirm and billing" member | With each charge or refund |
 | Account notices | The owner | Sign-up, license, pause, complaint and terms changes |
 | Monthly missed-cards email | The owner | On the 1st, only when the business got at least 3 cards last month and half or more ended without a quote |
