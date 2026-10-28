@@ -980,7 +980,7 @@ Your words, 10:53: "compose all of the fixes we need, and then put together a li
 
 **Still open:** Gate P (B1), sales tax path (B10), trademark timing (B11), insurance (B13), Spanish review (B17). Recommended answers are in `docs/PREBUILD.md` section 4.
 
-**Send this to the Arizona Department of Agriculture if pest control stays on (D-402).** Nothing has been sent.
+**Dropped (D-417): no letter goes to the Department of Agriculture.** Pest businesses attest to their license at sign-up and cards say it isn't independently verified. The old draft is kept below for reference only.
 
 > **Subject:** Question about a quote-request service and pest-management licensing
 >

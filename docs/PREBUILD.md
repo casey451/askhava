@@ -82,7 +82,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | 7 | Twilio's written answer | outside | waiting on item 6 | Answer saved; doesn't block the build |
 | 8 | Open a Stripe account (test mode only); send the Stripe question | Casey | to do | Ticket sent |
 | 9 | Stripe's written answer | outside | waiting on item 8 | Answer saved; auto-confirm stays hidden until it says yes |
-| 10 | Send the Department of Agriculture letter (if pest stays on) | Casey | to do | Letter sent; draft is in for-casey-review |
+| 10 | ~~Department of Agriculture letter~~ | — | dropped | Casey Oct 28: no letter; pest businesses attest to their license instead (D-417) |
 | 11 | Optional: add the routine's merge trigger (section 6) | Casey | to do | The routine shows "Pull request closed, merged into main" |
 | 12 | Optional: allow the safety-number websites in the build environment (section 5) | Casey | to do | Domains listed in the environment's network settings |
 | 13 | Save dated screenshots of today's askhava.com | Casey | to do | Screenshots in your files |
@@ -100,7 +100,7 @@ Not needed before the build, but before the pilot: talk to 5 to 10 businesses an
 | # | Default in the plan | Recommended |
 |---|---|---|
 | B2 | Pilot trades: heating and cooling, electrical, handyman, pool repair, weekly pool cleaning, pest control | Keep |
-| B3 | Pest control on for Department licensees only; letter sent the same week | Keep |
+| B3 | Pest control on for businesses that attest to a Department license; cards say it isn't independently verified; no letter | Decided by Casey Oct 28 (D-417) |
 | B4 | Home inspections on; no fee for sale, purchase or refinance ones | Keep |
 | B5 | AI may read scrubbed text before a zero-retention agreement, once the provider's terms are recorded and the privacy policy says so; launch works without AI | Keep |
 | B6 | Backup choice on; auto-confirm only after Stripe says yes; push web app built as an optional channel | Keep |
