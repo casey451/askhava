@@ -702,3 +702,100 @@ You asked to fix everything the round-9 simulations found and to do whatever res
 - **Homeowners:**
   - "Twice a week" versus "within 4 days": which feels more trustworthy?
   - At 10 p.m., what would you do after the "no quote yet" text?
+
+## From fix round 10 ("No calls to businesses" and the HELP notification), October 28, 2026
+
+You said at 07:20: "No calls to businesses. We need to set up a help function that sends me a notification so I can fix it. No name attached." The plan is `/home/claude/hhq/outputs/sim_v10/Fix_Round_10_Plan.md`, and the changes are in the spec as D-344 to D-355. Two research reports from today (ChatGPT and Grok, round 2) fed the safety and email parts. Nothing is built, nothing was bought, sent or signed, and Gate P and build_hold are unchanged. Business texting stays off until Twilio says yes in writing.
+
+**To decide, ask or buy (the spec already works without each one)**
+
+1. **The TCPA attorney question is smaller now.** Ask Hava never phones a business, so the questions about pick calls, emergency-job calls, test calls and account calls are gone. Two questions are left:
+   - the homeowner safety voice call (still off until the lawyer approves in writing);
+   - whether you may phone a homeowner yourself during a texting outage.
+
+   (D-344, D-355)
+2. **Branded caller ID is withdrawn.** There are no business calls left to brand. (D-355)
+3. **Verify the safety phone numbers before launch.** They now live in one file with their sources:
+   - UniSource's 24-hour gas and electric emergency number. It's marked "verify before launch", and the texts leave it out until you confirm it.
+   - Lake Havasu City's water and sewer number and its after-hours dispatch number. The texts use them only as "if you're on city water", because not every Havasu address is on city water.
+
+   The numbers themselves are in the plan, section 2.5. They stay out of the repository for now because the privacy scanner rejects any real phone number; the build task that adds the file also adds an exact allowance for those numbers only.
+   - 211 Arizona, live help 9 a.m. to 7 p.m. Its funding was reported through early 2027 (KJZZ, July 14, 2026), so re-check it by January 15, 2027.
+
+   Also ask the city how it wants homeowners told to shut off their own main valve, and where the city's side of the pipe ends. (D-350, D-355)
+4. **Can you keep "within 2 days"?** HELP messages now reach your phone right away, so the promise changed from "twice a week" to "The Ask Hava owner gets HELP messages right away and replies within 2 days, or within 24 hours if your job is urgent." If 2 days is too tight, change the setting back to 4 and the text follows. (D-348)
+5. **Set your phone to notify on the alert address.** HELP notifications use the same alert email as your other alerts. They never break Do Not Disturb. (D-348)
+6. **The email provider's free plan.** Resend's free plan allows 100 emails a day and 3,000 a month. You get a portal alert at 80% of either. Upgrading costs money, so it's your call when it comes. (D-351)
+7. **The pitch file** (`/home/claude/hhq/outputs/gtm/Ask_Hava_GoToMarket_Plan_REVIEWED.md`) says "we call you when a homeowner picks you". Use the business page's line instead: "Job requests and picks come by email. We don't text or call businesses." (D-355)
+8. **The trademark attorney.** Add Hav-A-Handyman LLC and Hava-Guy Handyman to the list of local "Hava" names. (D-352, D-355)
+9. **Two ideas from the Grok report. Your call; neither is adopted.**
+   - **A "call and leave a message" way for homeowners to start a request.** It would help people who don't text, but someone has to listen to the messages, and that's your time. Today a call to the number gets a recorded "we work by text" greeting.
+   - **Keeping an askhava.com/seniors page.** A plain page for older homeowners: how it works, "we never ask for your card", "you only get texts about your own request". It would be marketing-free, but it's one more page to keep current.
+
+   (D-354, D-355)
+
+**Worth a second look**
+
+1. **No calls to businesses, anywhere.** These are all gone:
+   - the pick call and its "press 2 for 2 more hours";
+   - the emergency-job call;
+   - the test call at sign-up;
+   - the call when a business's emails stop working.
+
+   The sign-up checkbox now says "Ask Hava never places recorded or automated calls to you." What stays:
+   - calls between a homeowner and the business they picked, through the masked number (person to person);
+   - a code read out by phone, but only when the person taps "Call me with the code" on the screen;
+   - the alert call to your own phone.
+
+   The contact card stays only as "Ask Hava homeowner calls", listing the masked numbers, so a business recognizes a homeowner calling back. (D-344)
+2. **Confirm now works by email alone.**
+   - A business has **4 business hours** to confirm a pick (was 2, because the call is gone).
+   - It gets a reminder after 1 hour and a "Last reminder" 1 hour before the end, at its main and backup addresses.
+   - The daily "still open" email also lists picks waiting to be confirmed.
+   - "Hold for 2 more hours" (by the email link) and "Away" are unchanged.
+   - The homeowner is told the real end time: "<Business> gets your pick by email and has until 2 p.m. to confirm. You can still choose another quote before then."
+   - If the pick runs out, the homeowner gets the other quotes in one text and can reply "2 YES" to pick again at once.
+
+   (D-345)
+3. **Emergencies without calls.**
+   - Emergency cards and picks have an "EMERGENCY" subject line.
+   - At night they go only to people who turned on "Emergency emails at any hour".
+   - A business counts as "takes after-hours calls" only after someone who can confirm sends themselves a test emergency email and answers "Yes, my phone alerted me".
+   - The homeowner is told the request goes "by email marked EMERGENCY".
+   - The 60-minute window, the "no quote yet" text and the 911 lines stay.
+
+   (D-346)
+4. **HELP reaches you.**
+   - After HELP, four common questions get an automatic answer first: where are my quotes, how do I close this, does it cost anything, and is this a person.
+   - Anything else sends you one notification right away, with the job, its status and a link to a page where you can fix things or reply.
+   - More messages within an hour join the same notification.
+   - After 10 notifications in a day, the rest wait for your 9 a.m. or 3 p.m. summary.
+   - Businesses get a "Get help" form on every portal page, and "Ask about a charge" now notifies you the same way.
+
+   (D-348)
+5. **No name attached.** Every text, email and page now says "the Ask Hava owner", never your name:
+   - the "Who runs Ask Hava" block is "Ask Hava is run by its local owner, who lives in Havasu", with no name or photo;
+   - the help page asks "Is Ask Hava a person?" (never "Hava" alone);
+   - a wording check fails the build if a personal name or a bare "Hava" shows up.
+
+   (D-349, D-352)
+6. **Safety texts use the local numbers and official wording.**
+   - Gas, CO and electrical lines follow UniSource and CPSC wording.
+   - The heat text says a fan alone isn't enough above 90°F inside, and brings back 211 with its hours. It never names a cooling center or says one is open.
+   - The water text asks about your shutoff only "if you know where it is and can reach it safely".
+
+   Add these to the fire and gas desk check. (D-350)
+
+**Routine**
+
+- Emails come from "Ask Hava" <jobs@notify.askhava.com>, with replies going to the monitored help address. The email setup starts DMARC at "report only" and tightens it before the first real business email. Open and click tracking is off. No logo certificate and no dedicated IP. (D-351)
+- Opening any emailed link, for homeowners too, never does anything by itself. Pressing the button twice acts once. (D-351)
+- The last sign-up step asks businesses to "reply OK, star this email and add us to your contacts", with pictures for each mail app. Gmail only alerts for its Primary tab. (D-352)
+- From day one, the app records how long it takes from card email sent, to the business first opening its own link, to its quote. You'll see weekly medians on the health page. No tracking pixels are used. (D-347)
+- The FAQ says "Ask Hava isn't connected to any business with "Hava" in its name." Spanish copy never says "leads". (D-352)
+- Two new build tasks: T151 (HELP notifications) and T152 (the safety contacts file). T148 and T150 are retitled because the calls are gone. (D-353)
+
+**New things to test with real people**
+
+- Businesses: is 4 business hours to confirm by email fair? Did the test emergency email make your phone buzz?
+- Homeowners: does "replies within 2 days" feel trustworthy? Is the lapse text with the other quotes clear?
