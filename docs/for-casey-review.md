@@ -2,6 +2,54 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Your first item: ask Twilio in writing before registering (October 28, 2026)
+
+This comes before everything else in this file. Texting registration is the one step that can't be undone: if Twilio refuses the campaign as "lead generation" (error 30951), it can't be resubmitted. So ask first, in writing. Nothing has been sent; you send it. (D-305, D-322)
+
+- **Sign as "Casey Solomon, Ask Hava (LLC being formed)"** until the LLC exists. Once it's formed, use "Casey Solomon, Ask Hava LLC".
+- **Send the Twilio question** as a Twilio Support ticket. Save the case number and the written answer, and file the answer in the owner portal when it's built.
+- **Send the Telnyx question only if Twilio's answer is unclear.**
+- **What happens with each answer:**
+  - Homeowner texts "yes": register the homeowner campaign.
+  - Business texts "no", or no clear answer: nothing changes. Businesses get everything by email, plus a phone call when they're picked.
+  - Business texts "yes": you may later switch business texting on, on its own campaign and its own number. Each business then chooses email, text or both.
+
+### To Twilio (send as a Support ticket before registering)
+
+> **Subject:** Eligibility question before A2P 10DLC registration – local quote service
+>
+> Hello. Before I register, I'd like a written answer on whether my use case is eligible. I don't want to submit a campaign that gets rejected and can't be resubmitted.
+>
+> **How it works:** Ask Hava (askhava.com; the LLC is being formed) is a local service in Lake Havasu City, Arizona. A homeowner texts our number, or starts on our website, to ask for quotes on a home job, and replies OK to our consent message (frequency, rates, HELP, STOP, Terms and Privacy links). We send an anonymous description of the job (town, job type, details; no name, phone number, email or address) to every local business that signed up with us and opted in to receive job requests. Businesses send their prices to us. We show all of them to the homeowner, unranked, on a private page, and the homeowner picks one. The picked business pays us a fixed introduction fee ($25, $75 or $199 by job size), and only then do we give that one business the homeowner's first name and address. The business calls the homeowner through a masked number using Programmable Voice. The homeowner's phone number is never given to any business, businesses never text homeowners, and no consent or phone number is shared, sold or transferred. Homeowners pay nothing. We send no marketing texts. At launch, businesses get job requests and picks by email, plus an automated phone call when they are picked; we send no texts to businesses unless you tell us that is allowed, and then each business would choose email, text or both.
+>
+> **Questions:**
+> 1. Are texts between Ask Hava and the homeowner about their own request (confirmations, "your first quote is in," the pick confirmation) eligible as Customer Care?
+> 2. Are job-alert texts to businesses that signed up and opted in (anonymous job details, "reply with your price") eligible? If so, should they be a separate campaign on a separate number?
+> 3. Are texts telling a picked business it was picked and showing the fee eligible? We plan never to text the homeowner's name or address; those appear only on our website.
+> 4. If question 2 or 3 is "no," is question 1 eligible on its own while businesses are notified by email?
+> 5. Will our privacy policy sentence "Your first name and address go only to the one business you choose" be treated as "sharing consumer information" under errors 30871 or 30951?
+> 6. Do masked voice calls and Twilio Verify codes need anything beyond Trust Hub and SHAKEN/STIR?
+>
+> Please reply in writing, question by question, and tell me any changes that would make a "no" into a "yes." Thank you.
+> Casey Solomon, Ask Hava (LLC being formed)
+
+### To Telnyx (send only if Twilio's answer is unclear)
+
+> **Subject:** Pre-registration question: is this 10DLC use case eligible? (code 708)
+>
+> Hello. I'm considering Telnyx for SMS and voice. Your 10DLC error-code page lists 708, "Lead Gen/Affiliate Marketing Prohibited." Before I open a brand, I'd like to know whether my use case would be treated that way.
+>
+> *[Paste the same "How it works" paragraph as in the Twilio question, with "a masked number on your Voice API" in place of "a masked number using Programmable Voice".]*
+>
+> **Questions:**
+> 1. Would texts between us and the homeowner about their own request pass vetting as Customer Care?
+> 2. Would opted-in job alerts to businesses pass, and as which use case?
+> 3. If only question 1 passes, can we run it alone while businesses are notified by email?
+> 4. If a campaign is rejected with 708, can it be appealed or corrected?
+>
+> A short written answer is fine. Thank you.
+> Casey Solomon, Ask Hava (LLC being formed)
+
 ## From K2 (the spec), October 27, 2026
 
 **Worth a second look**
@@ -366,7 +414,7 @@ You asked to fix everything the round-7 simulations and the ChatGPT and Grok res
 
 **To decide, ask or buy (the spec already works without each one)**
 
-1. **Ask Twilio in writing whether Ask Hava's flow is allowed.** Describe it exactly: anonymous job cards go to several opted-in businesses, quotes are shown unranked, the homeowner picks, and the picked business pays a fixed introduction fee before it gets the first name and address. Save the case number and their answer. The research's biggest risk is that this gets classed as "third-party lead generation". (D-302)
+1. **Ask Twilio in writing whether Ask Hava's flow is allowed.** (Now drafted at the top of this file; see "Your first item", D-305.) Describe it exactly: anonymous job cards go to several opted-in businesses, quotes are shown unranked, the homeowner picks, and the picked business pays a fixed introduction fee before it gets the first name and address. Save the case number and their answer. The research's biggest risk is that this gets classed as "third-party lead generation". (D-302)
 2. **A TCPA attorney's written opinion.** The automatic safety voice call is now **off** until you record that lawyer's written approval in the portal. Until then, every emergency message during a texting outage pushes to your phone. Other questions for the lawyer:
    - Does STOP also cancel calls?
    - What does the FCC opt-out rule reported to start **Nov 25, 2026** mean for Ask Hava (as reported by research; verify the date)?
@@ -461,3 +509,80 @@ You asked to fix everything the round-7 simulations and the ChatGPT and Grok res
 - **Businesses:**
   - Would they use "Away until"?
   - Is a one-tap "Same as last time" safe for their trade, or do the answers change job to job (interview C22)?
+
+## From the messaging review ("If Twilio is going to be a problem look for other options"), October 28, 2026
+
+You asked to fix everything needed and to look at other options if Twilio could be a problem. Then you added: "we also want email as an option. I'd like the business to choose email, text or both, but if text isn't possible we can do email and then later maybe an app." The research is `/home/claude/hhq/outputs/messaging_options/Messaging_Risk_and_Options.md`.
+
+Its answer: Twilio could be a problem for **texts to businesses**, and switching providers doesn't help, because every US provider goes through the same registry and carrier review. The spec now uses its **Option A, "split by audience"**, with your email change, as D-303 to D-322. Nothing is built, nothing was sent or signed up for, and Gate P and build_hold are unchanged.
+
+**What changes, in short**
+
+- **Homeowners:** no change. They text Ask Hava exactly as before.
+- **Businesses get email at launch.** Job cards, picks and reminders come by email. Each email has secure links to the right page on askhava.com. (D-307, D-308)
+- **The pick call.** When a homeowner picks a business, Ask Hava also **calls its phone** with a recorded message. That way the 2-hour Confirm window still works for someone on a ladder. (D-310)
+- **Email, text or both.** Each business picks one at sign-up and can change it later. Text and "both" appear only after you switch business texting on, and you can switch it on only after Twilio says yes in writing. It then runs on a separate campaign and number. Until then, everyone gets email. (D-303, D-307)
+- **The app comes later, if at all.** An installable business app with phone notifications is written down as an optional later phase. It isn't built for launch and blocks nothing. If it's added, "app" becomes a fourth choice next to email and text. (D-307)
+- **No homeowner name or address is ever texted to anyone.** The picked business sees them only on askhava.com and in email. (D-306)
+- **The campaign wording is fixed.** It used to say businesses send no messages on the campaign, while the spec texted them from the same number. Now it's true, and it adds "Businesses get no texts on this number; they are notified by email." (D-304)
+
+**To decide, ask or do (the spec already works without each one)**
+
+1. **Send the Twilio question** at the top of this file. Send the Telnyx one only if Twilio's answer is unclear. Sign as "Casey Solomon, Ask Hava (LLC being formed)". This reverses the earlier "don't ask Twilio first" choice (D-088). (D-305)
+2. **Email setup at the account checkpoint.** Set up the askhava.com email records (SPF, DKIM, DMARC) with the email provider (Resend), so business emails don't land in spam. (D-318, D-322)
+3. **Ask the TCPA attorney one more thing:** does the business sign-up checkbox cover the recorded pick calls? It already asks for consent to automated calls, and the new wording names each channel. (D-312, D-322)
+4. **Later, your call:**
+   - whether to ask for business texting at all;
+   - whether to build the app.
+
+   Email plus the pick call covers everything without either. (D-322)
+
+**Worth a second look**
+
+1. **Every old text command now has an email link** to a page on askhava.com:
+   - Quote and Confirm;
+   - Hold for 2 more hours;
+   - Away until;
+   - Pause and Resume, and Booked for a number of days;
+   - Link this phone, and Approve a phone;
+   - Ask about a charge.
+
+   The same team roles apply, and Confirm still needs the business to be signed in. The Hold link works once, for that pick only. Replying to an email never does anything, because email senders can be faked. A reply is read as a question, like an unclear text. (D-309)
+2. **The pick call** says: "This is Ask Hava LLC. You were picked for job 1042. Check your email or askhava.com to confirm by 2 p.m. Press 1 to hear this again. Press 2 for 2 more hours."
+   - It goes to the owner's phone, and to "Confirm and billing" team phones that turn it on.
+   - A second call goes with the 60-minute reminder.
+   - It never names the homeowner, the address or the fee.
+   - Quiet hours apply, except for emergency jobs as before.
+
+   (D-310)
+3. **The 2-hour Confirm window** now counts from when the pick notice goes out (email, call and any text together), not from when a text was delivered. (D-310)
+4. **Verified email.** A business must confirm its email address before it's activated. If its emails bounce, the portal shows a warning and you see it in the weekly digest. The pick calls keep going. (D-312)
+5. **Your own alerts** used to be texts. Now they come by email to an alert address that the owner guide sets to notify you on your phone. A critical safety alert also calls your phone from the Ask Hava number. The owner guide tells you to let that number through Do Not Disturb, so safety alerts still break through. (D-314)
+6. **STOP from a business phone** now stops texts and pick calls to that phone. The business stays active on email, and the owner is emailed how to turn calls back on. (D-311)
+7. **If Twilio refuses the homeowner campaign,** the fallback is a toll-free number for homeowner texts only, with your go. It's never used to get around a suspension. Until then, the site runs in web-and-email mode. (D-315)
+
+**Routine**
+
+- Codes (pick, identity, sign-in) go only through Twilio Verify, which needs no campaign. (D-313)
+- "Affiliate" (outside the required privacy sentence) and "partner" are now banned words too. By default, the business page says "Job requests come by email, and we call you when a homeowner picks you. We don't text businesses." (D-316)
+- Accessibility covers the email links, the pages they open and the pick call. Your Gate B VoiceOver script adds confirming from a pick email. (D-317)
+- New security rules for business emails and address changes, plus new rows in the threat model. (D-318)
+- New alerts in your portal (never pushed to your phone) if business emails bounce or pick calls fail. (D-319)
+- Two new build tasks (T147 and T148) build the email notices and the links and pick call. (D-320)
+- Not adopted now:
+  - the app at launch;
+  - switching providers;
+  - a short code;
+  - RCS;
+  - WhatsApp;
+  - Apple Messages;
+  - a native app.
+
+  (D-321)
+
+**New things to test with real people**
+
+- **Businesses:**
+  - Is email fast enough for job cards, or do they miss them during the workday?
+  - Do they notice the pick call, and is "press 2 for more time" clear?
+  - Would they pay attention to texts more than email, if business texting is approved later?
