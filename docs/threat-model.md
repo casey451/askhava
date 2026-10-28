@@ -107,10 +107,11 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | D1 | Request floods and fake sign-ups | TB1 | Rate limits per phone, IP and business, 5 requests per phone per hour, 50 sign-ups a day; a burst of 100 is blocked and alerted (SEC-014, SEC-015) | V2.4 | — |
 | D2 | SMS pumping: web chat or sign-up forms used to make Ask Hava text or call costly numbers | TB1, TB3 | A number typed on the web gets only the consent text until it replies OK (CON-025); rate limits per IP and per number; texts and calls only to US and Canadian area codes (D-100); Verify sends rate-limited with cooldown (PICK-013) | V2.4 | Cost of the consent text itself |
 | D3 | Webhook floods | TB2 | Signature check first, cheap 403 (SEC-016) | V4.1 | Host-level limits |
-| D4 | The texting number is suspended after complaints | TB9 | Consent first on every path (CON-001); opt-outs honored at once (CON-008); content screening (CARD-010); no second number to dodge a suspension; web-and-email mode (TXT-021, TXT-022) | V2.3 | R12 |
+| D4 | The texting number is suspended after complaints | TB9 | Consent first on every path (CON-001); opt-outs honored at once and checked against the FCC revocation order before Gate C (CON-008, CON-032, D-298); content screening (CARD-010); no second number to dodge a suspension; web-and-email mode, which can run the whole service with no texts (TXT-021, TXT-022, TXT-034, D-297) | V2.3 | R12 |
 | D5 | A vendor outage stalls jobs | TB3 | Retries with the same keys; email fallback; Stripe unreachable 4 h releases the pick; safe mode (TXT-014, FEE-018, OPS-001) | V16.5 | — |
 | D6 | A worker dies holding a task | TB5 | Leases expire and another worker takes the task; timers live in the database (JOB-006; architecture section 5) | V15.4 | — |
 | D7 | Database loss | TB5 | Point-in-time recovery; nightly export; replay with derived IDs that sends nothing twice (OPS-012 to OPS-019) | V14.2 | Restore drill proves it in Phase 2 (OPS-014) |
+| D8 | The masked-call product is a beta with no service level and fails or is withdrawn mid-job | TB9 | Masked calls are built on standard programmable voice (incoming-call webhook, dial out with the pool number), never Twilio Proxy (CALL-021, D-296); a line that can't connect still leaves the who's-calling and missed-call texts, the quote page and email (TXT-027, TXT-030, TXT-034) | V14.2 | Carrier outages stay outside Ask Hava's control |
 
 ### Elevation of privilege
 

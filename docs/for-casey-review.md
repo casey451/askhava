@@ -359,3 +359,105 @@ You asked for research and the most ideal changes before the simulations run aga
   - Would they use HOLD?
   - Do they want the owner alert?
   - Is 4 days for a sign-up review acceptable?
+
+## From fix round 8 ("Ok fix everything we need to"), October 28, 2026
+
+You asked to fix everything the round-7 simulations and the ChatGPT and Grok research found. The plan is `/home/claude/hhq/outputs/sim_v8/Fix_Round_8_Plan.md`, and its changes are in the spec as D-270 to D-302. Nothing is built, and Gate P and build_hold are unchanged. The order used was: safety, your time, businesses, homeowners, then legal fit from the research. The texting channel itself (which messages go by text, the Twilio campaign wording) is left for the separate messaging review. The frictions came from AI-simulated people, not real ones. Nothing here spends money or signs anything.
+
+**To decide, ask or buy (the spec already works without each one)**
+
+1. **Ask Twilio in writing whether Ask Hava's flow is allowed.** Describe it exactly: anonymous job cards go to several opted-in businesses, quotes are shown unranked, the homeowner picks, and the picked business pays a fixed introduction fee before it gets the first name and address. Save the case number and their answer. The research's biggest risk is that this gets classed as "third-party lead generation". (D-302)
+2. **A TCPA attorney's written opinion.** The automatic safety voice call is now **off** until you record that lawyer's written approval in the portal. Until then, every emergency message during a texting outage pushes to your phone. Other questions for the lawyer:
+   - Does STOP also cancel calls?
+   - What does the FCC opt-out rule reported to start **Nov 25, 2026** mean for Ask Hava (as reported by research; verify the date)?
+   - Can you call after a texting suspension?
+   - Is keeping a scrambled (hashed) phone number enough proof of texting permission?
+   (D-275, D-298)
+3. **A CPA or ADOR on sales tax (TPT).** The introduction fee may not be taxable at all, so don't get a TPT license just in case. Send them the exact question in the research (Part 4 §3). If they say it isn't taxable, the receipt line "Tax included." (D-225) should change; tell Claude and it will. (D-302)
+4. **Stripe's written OK** for the introduction-fee flow and merchant category, before the first charge. (D-302)
+5. **Insurance quotes.** Get general liability and tech E&O quotes, and maybe cyber. The research estimates about **$1,300 to $5,450 a year** in total; that's a planning range, not a quote. Tell the insurer the whole model (AI intake, quotes from several businesses, masked calls, addresses, the safety texts), and ask in writing what is excluded. (D-302)
+6. **Setting up the LLC.**
+   - A statutory agent hides only the agent's address. Member or manager addresses may still be public, so check what address you can lawfully use before filing.
+   - An agent in Maricopa or Pima County avoids the Mohave newspaper notice (three publications within 60 days).
+   (D-302)
+7. **City business license.** $196 new and $140 renewal on the 2026 schedule. The file is still labeled "proposed", so verify with the city. File the home-occupation form too. (D-302)
+8. **FinCEN beneficial-ownership (BOI) report.** Not required for a US-formed LLC under the Aug 2026 rule; verify before you skip it. (D-302)
+9. **The trademark attorney.** Bring Grok's list.
+   - Several local businesses use "Hava" (Hava Plumber LLC, Hava Handy Services LLC, Hava Pool LLC, Hava Landscape LLC and others). Homeowners could think Ask Hava is one of them, or the reverse. Ask how much that local confusion matters.
+   - Also ask about the HAVA (diet app), HAVAWORKS (pending marketplace filing) and ASKAVA records.
+   - Always write "Ask Hava" as one phrase.
+   (D-302)
+10. **Pilot trades (your call).** Grok's research suggests starting with HVAC, electrical and a licensed handyman, then adding pool when it's warm. The spec's launch list hasn't changed; decide it yourself. (D-301)
+11. **A fire-safety desk check** of the new carbon-monoxide, electrical and water lines, alongside the heat text. (D-272, D-273)
+12. **PROBLEM reports (your call).** Should a PROBLEM report count as a complaint and go to the business for a reply? It would mean more of your time and affect the 3-in-90 pause. (D-301)
+13. **Founding list.** Contact each business twice: a "check your ROC phone and email" reminder about 2 weeks before launch, then the launch notice. Get their OK for both when they join the list.
+
+**Worth a second look**
+
+1. **Night emergencies.** After a homeowner picks "emergency" at night:
+   - The call window defaults to "Now".
+   - The business has 60 clock minutes to confirm, at any hour.
+   - Missed-call texts go at any hour.
+   - Before the choice, the homeowner is told how many businesses in that trade take after-hours calls. If none do, they're told so plainly, with "call 911" if anyone feels unwell.
+   (D-270, D-271)
+2. **Carbon monoxide.** On any CO alarm or symptoms, the text now says to get outside to fresh air and call 911 from outside, because CO has no smell. Gas texts add "Don't flip switches or light anything." Electrical and water problems get their own short lines. (D-272, D-273)
+3. **Your phone.** At most two daytime pushes, at 9 a.m. and 3 p.m., and only when something is open:
+   - urgent call-backs;
+   - urgent HELP messages;
+   - safety-word complaints;
+   - "texting restored";
+   - a license list still failing after a day.
+
+   They never break Do Not Disturb. Safe mode now starts only from alerts that actually reached your phone. The portal keeps your two windows no more than 4 days apart. (D-277, D-278, D-279)
+4. **Complaints** need your decision only when a business has 2 in 90 days, or when a safety word appears. Letter-path sign-ups are no longer flagged once the letter's code is entered. (D-280, D-281)
+5. **The HELP promise is now exact:** "A person reads HELP messages within 4 days, or within 24 hours if your job is urgent." The HELP reply gives the help email and page, and never the texting number as a phone line. (D-289)
+6. **"Away until".** A business can set itself away for up to 4 business hours, so a non-emergency pick waits for it. The pick text now names HOLD. (D-284, D-285)
+7. **Refund rules before paying.** Before Confirm, the business now sees the homeowner's call window and the refund rule. A missed-call text that was attempted counts, even if the carrier failed to deliver it. (D-286)
+8. **Web-and-email mode** can now run the whole service with no texts at all. A launch setting can start it that way, and every main journey has a test that sends zero texts. (D-297)
+9. **Masked calls** use standard programmable voice, never Twilio Proxy (a beta with no service guarantee). (D-296)
+
+**Routine**
+
+- Quote facts:
+  - pre-filled from the business's last answers, with a one-tap "Same as last time";
+  - earliest visit now includes the time of day;
+  - a new "price may change after seeing the job" fact;
+  - a free-estimate definition.
+  (D-283)
+- Homeowner texts:
+  - LIST is mentioned in the first-quote text and the HELP reply;
+  - "2 SÍ" works;
+  - a text pick asks for the call window;
+  - "How soon?" has "By a certain day";
+  - times show the homeowner's own time zone;
+  - TIMES changes the call window;
+  - FIRST lets the on-site person be called first;
+  - the check-in text is shorter.
+  (D-290 to D-295)
+- Businesses:
+  - charge questions get the charge details in the reply;
+  - About-us lines can't say "find us on Google";
+  - a staff-linked phone needs the owner's YES;
+  - the waitlist says "no priority";
+  - a per-job call log.
+  (D-287, D-288)
+- Privacy policy:
+  - says exactly what goes on a job card (no name, phone, email or street);
+  - says the picked business gets the first name and address only after it confirms and pays.
+  (D-299)
+- Banned words:
+  - "lead", "leads", "pre-vetted" and "exclusive" are now banned, alongside "vetted" and "concierge";
+  - the only exclusivity line allowed is "Only the business you pick gets your contact info.";
+  - Grok's suggested "home-help concierge" and "pre-vetted, exclusive intros" pitch lines can't be used.
+  (D-300)
+- Not adopted: see plan section 3 (D-301).
+
+**New things to test with real people**
+
+- **Homeowners:**
+  - At 10 p.m., what do they expect after choosing "emergency"?
+  - Do they notice and use LIST?
+  - Is the shorter check-in text clear to people over 70?
+- **Businesses:**
+  - Would they use "Away until"?
+  - Is a one-tap "Same as last time" safe for their trade, or do the answers change job to job (interview C22)?
