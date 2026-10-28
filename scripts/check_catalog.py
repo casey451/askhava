@@ -5,7 +5,8 @@ FEE-013, FEE-039, REC-002 to REC-005, LIC-019, LIC-020, D-009, D-010, D-033, D-1
 mismatch. The rules are written here as constants, independent of the YAML, and the
 YAML's own fee_rules block must match them. Also checks the category list's shape,
 the categories that must be off or absent at launch, and that neither file contains a
-superseded value or banned wording. Prints one line per example; exits 1 on any error.
+superseded value or banned wording (including the WORD-022 not-a-contractor list).
+Prints one line per example; exits 1 on any error.
 
 Usage: python3 scripts/check_catalog.py [--root REPO_ROOT]
 """
@@ -23,7 +24,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml  # type: ignore[import-untyped]  # reason: PyYAML ships no stubs; only safe_load is used
-from trace_spec import SUPERSEDED
+from trace_spec import NOT_A_CONTRACTOR, SUPERSEDED
 
 CATEGORIES_FILE = Path("docs/catalog/categories.yaml")
 EXAMPLES_FILE = Path("docs/catalog/worked_examples.yaml")
@@ -106,6 +107,7 @@ BANNED: tuple[tuple[re.Pattern[str], str], ...] = (
         re.compile(r"\bleads?\b(?![- ](?:paint|pipes?|based)\b)", re.IGNORECASE),
         "banned wording",
     ),
+    *NOT_A_CONTRACTOR,  # WORD-022, D-360
 )
 
 

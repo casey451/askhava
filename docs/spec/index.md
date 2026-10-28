@@ -35,7 +35,7 @@ It prints counts per file, per cited source, and in total.
 | [consent.md](consent.md) | `CON` | Consent, opt-out, HELP, business consent |
 | [quiet-hours.md](quiet-hours.md) | `QH` | Quiet hours |
 | [messaging.md](messaging.md) | `TXT` | Text templates, Spanish, links, retries, outbox |
-| [job-cards.md](job-cards.md) | `CARD` | Matching and job-card content |
+| [job-cards.md](job-cards.md) | `CARD` | Who receives a job card, and job-card content |
 | [quotes-pick.md](quotes-pick.md) | `PICK` | Quotes, quote page, pick, confirm, release |
 | [lifecycle.md](lifecycle.md) | `JOB` | Job statuses, timers, closing |
 | [fees.md](fees.md) | `FEE` | Fees, charges, refunds, ledger |
