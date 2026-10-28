@@ -268,3 +268,94 @@ None of these blocks the spec. Each touches a number that is now a setting, or a
 - PAUSE, RESUME and BUSY <days> text keywords. STOP from a team phone stops only that phone. (D-198)
 - Businesses see each complaint, with no homeowner details, and have 5 days to reply. (D-200)
 - A business data page, in English and Spanish. (D-203)
+
+## From the three-angle fix plan ("do whatever research you need"), October 28, 2026
+
+You asked for research and the most ideal changes before the simulations run again. The business, homeowner and owner reports are now one plan, `/home/claude/hhq/outputs/sim_v7/Three_Angle_Fix_Plan.md`, and its changes are in the spec as D-208 to D-269. Nothing is built, and Gate P and build_hold are unchanged. The order used was: safety and legal fit first, then your time, then homeowners, then businesses, then profit. The frictions came from AI-simulated people, not real ones. Nothing in this round spends money, adds a vendor or signs an agreement. Those items are listed below for you to decide.
+
+**To buy, sign or decide (the spec already works without each one)**
+
+1. **An answering service for call-backs (recommended).** Example: Ruby, at about $250 a month for 50 minutes or $395 for 100 minutes. Those are published prices, reported by a competitor in August 2026, so check them first. It would save about 7 to 16 minutes a week, and almost all the work during a texting suspension. The trade-off: it becomes a data processor that sees homeowner phone numbers, so it needs a privacy-policy line and a confidentiality agreement. **Without it:** you make call-backs within 4 days, or within 24 hours for a job marked urgent or emergency. (D-226)
+2. **Sign the zero-retention AI agreement.** This is the one change most simulated businesses asked for, because it lets photos go on job cards after screening. **Without it:** cards have no photos (CARD-013).
+3. **A maintainer on retainer** for the license-list reader and updates. The cost is unknown. **Without it:** while a list fails, a live lookup runs for each business, so statuses stay current, and you get an alert at 12 hours. (D-230)
+4. **5 more masked numbers** (10 to 15), at a few dollars a month. **Without them:** numbers are shared with PIN routing in busy weeks. (D-231)
+5. **Register the masked numbers** with the Free Caller Registry and the carriers' portals, and optionally buy branded caller ID (paid). The aim is to stop the first business call showing as "Spam Likely". The registry appears to be free, but it's an account you'd create yourself. Test it first: call 5 to 10 friends on different carriers and ask what their screen showed.
+6. **A lawyer's check (optional).** It would cover the safety voice call, which now also goes when an email is on file (D-206, D-210), and whether a safety call to a number that replied STOP could ever be allowed (it is not done now). It would also cover the heat text (D-208) and the tenant text (D-216). The wording is generic information either way.
+7. **Your department's outside-employment rules.** The plan assumes no Ask Hava work on duty beyond a 1 to 3 minute acknowledgement at a break.
+8. **Before launch week:** ask each founding-list business to look up its own ROC or city record on its own phone and fix the phone and email. Never use the lists to do this for them.
+
+**Fix the pitch by hand (D-268).** The pitch file isn't in this repository: `/home/claude/hhq/outputs/gtm/Ask_Hava_GoToMarket_Plan_REVIEWED.md`.
+- **"No bidding wars"** is still on lines 159, 194, 312 and 391. Use "You quote once. No bidding rounds, no paid placement."
+- **Line 159** ends "Can I leave this card and check back next week?" Ask instead to add them to the founding list and sign them up together in launch week.
+- **The ongoing-services line** on lines 129, 177 and 398 needs "capped at $75".
+- **The free-win line** on lines 159, 180, 195, 234, 235, 416 and 559 should read "Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens."
+- **The pest answer** on lines 218 and 223 says "not at launch". The spec lets licensed pest operators join as a neutral item in the sign-up list, and pest control is never advertised. Say "Licensed pest operators can sign up; Ask Hava doesn't advertise pest control."
+- **Worth adding:** "The homeowner sees every quote and picks one business: you."
+
+**Worth a second look**
+
+1. **Your week.** You work in one 30-minute window plus a 10-minute mid-week check. Your phone only buzzes for four things:
+   - a safety alert where the automatic call reached no one;
+   - the app still down 15 minutes after its automatic restart;
+   - a Twilio suspension;
+   - a money mismatch that is still there the next night.
+
+   Everything else comes in a weekly digest email. The owner simulation puts this at about 20 minutes a week with an answering service, and about 25 to 35 without one [sim]. (D-218, D-219)
+2. **Sign-up reviews and charge questions now have a 4-day target**, not 1 business day, counted in calendar days. Fewer sign-ups get flagged now, because a city-list match on the trade name or owner name counts, and the waitlist flag is gone. Businesses get status updates at their own email and phone. (D-223, D-253, D-255, D-256)
+3. **Heat.** Every request asks "How soon do you need this?" A broken AC or cooler in the heat gets a heat-safety text at any hour, then the emergency path. That text says to call 911 for confusion, weakness or fainting, and to get somewhere with AC. It never points to 211, which lost its live operators in August 2026. (D-208)
+4. **HOLD.** On a non-emergency job, the owner or a "Confirm and billing" phone can reply HOLD once to add 2 business hours. The homeowner is told when they'll hear, and can still choose another quote. (D-252)
+5. **Quote facts.** Every quote now states the same short list:
+   - whether the trip fee counts toward the repair;
+   - whether parts are included;
+   - whether a permit is included;
+   - the earliest visit;
+   - whether they speak Spanish on the phone or on site.
+
+   The business name shows on each quote, with the same "check it yourself" line on every card. Homeowners can't send free-text questions; this replaces that idea. (D-233, D-234)
+6. **Call windows and missed calls.** The homeowner picks a call window. Only call attempts inside it count toward the "couldn't reach them" refund. After the first missed call, the homeowner gets a text with the number to call back. (D-235, D-236)
+7. **Complaints** come to you once, after the business's 5-day reply window, unless they mention a safety word. A PROBLEM reply tells the homeowner a person reads it within 7 days. (D-222)
+8. **The owner is told** whenever a team member confirms a pick or links a phone. Only the owner and "Confirm and billing" phones can PAUSE, BUSY or HOLD. Removing a member unlinks their phones. (D-258, D-259, D-260)
+9. **No "hired no one" credit yet.** Instead, a trade is flagged for your monthly look if more than 30% of its connected jobs end with "didn't hire" for 2 months running. (D-251)
+
+**Routine**
+
+- Gas texts say to call the gas company before getting quotes. (D-209)
+- Every pick asks who will let the business in. Ask Hava never stores lock codes. (D-212)
+- The "who's calling" text adds "get changes in writing, don't pay in full up front." (D-213)
+- Privacy:
+  - plainer privacy lines and a homeowner data page;
+  - the business terms limit the homeowner's details to that job;
+  - the business data page adds notice of legal demands and retention in days. (D-214, D-215, D-217)
+- Tenants get a "your landlord may be responsible" note. (D-216)
+- Fewer alerts and checks:
+  - alerts acknowledge themselves when they clear;
+  - the spot check is monthly;
+  - receipts link a "Why was I charged?" page;
+  - dispute evidence is filed for you 2 days before it's due;
+  - unreadable business texts get an automatic reply. (D-220, D-221, D-225, D-228, D-229)
+- Calls to the Ask Hava number get a short recorded greeting, with no voicemail and nothing forwarded to you. (D-227)
+- Homeowner texts:
+  - a plainer first text that says texts are automated and HELP reaches a person;
+  - more agreement words accepted;
+  - LIST sends the quotes by text;
+  - expectation texts ("Sent to 6 businesses…");
+  - check-in replies LATER, ONGOING and OTHER. (D-237, D-239, D-240, D-241)
+- Uncovered jobs are refused right after consent, and a "What we cover now" page lists what's covered. (D-242)
+- Businesses:
+  - the fee shows on the quote form for every quote;
+  - "Several businesses quoted" replaces the count in small trades;
+  - waitlisted businesses get a notice when their trade opens, and their price lock starts then;
+  - "Your numbers" adds picked → finished;
+  - a 3-line fee summary sits on top of the box. (D-248, D-250, D-261, D-262, D-263)
+- Not adopted: see plan section 3 (D-269).
+
+**New things to test with real people**
+
+- **Homeowners:**
+  - Do the quote facts answer what they'd want to ask?
+  - Do they answer the first call after a "who's calling" text?
+  - Would LIST help someone who doesn't open links?
+- **Businesses:**
+  - Would they use HOLD?
+  - Do they want the owner alert?
+  - Is 4 days for a sign-up review acceptable?

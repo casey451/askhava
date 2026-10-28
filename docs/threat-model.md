@@ -98,6 +98,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | I10 | Test and live data or keys mixed | TB7 | Separate projects, keys, databases, numbers and webhooks; the app refuses to start on a mismatched key (SEC-002, SEC-003); fake data only outside live (PRIV-019) | V13.1 | — |
 | I11 | Readback on the masked line tells a stranger a name and street | TB9 | Readback only to linked phones of a paid pick, never to unlinked callers (CALL-005, D-026) | V8.3 | R4 |
 | I12 | Verbose errors show internals | TB1 | Generic error pages; details only in Sentry (scrubbed) | V16.5, V13.4 | — |
+| I13 | A stored lockbox or gate code, or an on-site contact, leaks to someone other than the picked business (D-212) | TB10 | No lock or gate code field is ever stored (the homeowner tells the business on the call); an on-site contact's name and number live in the vault and leave only with the paid release; on-site contacts are never texted (PICK-025, PRIV-005, CON-021) | V8.3 | A homeowner may still type a code into a free reply; it stays in the vault and is purged on the normal schedule |
 
 ### Denial of service
 
