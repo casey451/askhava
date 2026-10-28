@@ -3237,7 +3237,8 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/security.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "SEC-009",
@@ -3295,7 +3296,8 @@
         "docs/architecture.md",
         "docs/spec/quotes-pick.md",
         "docs/spec/wording.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "PICK-008",
@@ -3486,7 +3488,8 @@
         "docs/architecture.md",
         "docs/spec/accessibility.md",
         "docs/spec/quotes-pick.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "A11Y-010",
@@ -5427,7 +5430,8 @@
         "docs/architecture.md",
         "docs/spec/security.md",
         "docs/test-design.md",
-        "docs/spec/businesses.md"
+        "docs/spec/businesses.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "BIZ-023",
@@ -5496,7 +5500,8 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/businesses.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "BIZ-013",
@@ -5558,7 +5563,8 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/security.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "SEC-004",
@@ -5621,7 +5627,8 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/privacy.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "PRIV-012",
@@ -6000,7 +6007,8 @@
         "docs/architecture.md",
         "docs/spec/messaging.md",
         "docs/test-design.md",
-        "docs/spec/ops-recovery.md"
+        "docs/spec/ops-recovery.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "TXT-014",
@@ -6466,7 +6474,8 @@
         "docs/spec/calls.md",
         "docs/spec/quiet-hours.md",
         "docs/spec/security.md",
-        "docs/spec/accessibility.md"
+        "docs/spec/accessibility.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "BIZ-038",
@@ -6774,7 +6783,8 @@
         "docs/spec/website.md",
         "docs/spec/wording.md",
         "docs/spec/quiet-hours.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "CON-034",
@@ -6978,7 +6988,8 @@
         "docs/architecture.md",
         "docs/spec/accessibility.md",
         "docs/spec/website.md",
-        "sources/03_business_and_design/"
+        "sources/03_business_and_design/",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "A11Y-003",
@@ -7039,7 +7050,8 @@
         "docs/architecture.md",
         "docs/spec/website.md",
         "docs/spec/wording.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "WEB-001",
@@ -7149,7 +7161,8 @@
         "docs/architecture.md",
         "docs/spec/consent.md",
         "docs/spec/intake.md",
-        "docs/test-design.md"
+        "docs/test-design.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "CON-025",
@@ -7524,7 +7537,8 @@
         "docs/spec/fees.md",
         "docs/spec/licensing.md",
         "docs/spec/ops-recovery.md",
-        "docs/spec/security.md"
+        "docs/spec/security.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "FEE-007",
@@ -8011,7 +8025,8 @@
       ],
       "reads": [
         "docs/architecture.md",
-        "docs/spec/accessibility.md"
+        "docs/spec/accessibility.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "A11Y-019",
@@ -8575,7 +8590,8 @@
         "T151",
         "T158",
         "T160",
-        "T161"
+        "T161",
+        "T166"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -9417,7 +9433,8 @@
         "T138",
         "T139",
         "T140",
-        "T141"
+        "T141",
+        "T166"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -9758,7 +9775,8 @@
         "docs/spec/businesses.md",
         "docs/spec/licensing.md",
         "docs/spec/accessibility.md",
-        "docs/catalog/license_map.yaml"
+        "docs/catalog/license_map.yaml",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "BIZ-049",
@@ -9962,7 +9980,8 @@
         "docs/test-design.md",
         "docs/spec/ops-recovery.md",
         "docs/spec/fees.md",
-        "docs/spec/calls.md"
+        "docs/spec/calls.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "OPS-039",
@@ -10082,7 +10101,8 @@
         "docs/spec/businesses.md",
         "docs/spec/security.md",
         "docs/spec/accessibility.md",
-        "docs/threat-model.md"
+        "docs/threat-model.md",
+        "docs/design/DESIGN_SPEC.md"
       ],
       "requirements": [
         "BIZ-041"
@@ -10450,6 +10470,66 @@
       ],
       "branch": "claude/task/T165-businesses-links-leaving",
       "prompt": "kit/prompts/T165.md"
+    },
+    {
+      "id": "T166",
+      "slug": "site-design-assets",
+      "title": "site: the plaster and brass design assets (self-hosted fonts, textures) and the design-token contrast test",
+      "goal": "site: the plaster and brass design assets (self-hosted fonts, textures) and the design-token contrast test",
+      "type": "build",
+      "phase": 1,
+      "stage": "5",
+      "module": "site",
+      "deps": [
+        "T101"
+      ],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-sonnet-5-5",
+      "review_areas": [
+        "accessibility"
+      ],
+      "owns": [
+        "app/site/static/fonts/cormorant-garamond-latin-400-italic.woff2",
+        "app/site/static/fonts/cormorant-garamond-latin-400-normal.woff2",
+        "app/site/static/fonts/cormorant-garamond-latin-500-normal.woff2",
+        "app/site/static/fonts/dm-sans-latin-400-normal.woff2",
+        "app/site/static/fonts/dm-sans-latin-500-normal.woff2",
+        "app/site/static/fonts/dm-sans-latin-700-normal.woff2",
+        "app/site/static/textures/plaster@2x.jpg",
+        "app/site/static/textures/brass-bar@2x.jpg",
+        "app/site/static/textures/brass-plate@2x.jpg",
+        "app/site/static/textures/paper@2x.jpg",
+        "tests/a11y/test_design_tokens.py"
+      ],
+      "reads": [
+        "docs/design/DESIGN_SPEC.md",
+        "docs/spec/website.md",
+        "docs/spec/accessibility.md",
+        "docs/test-design.md"
+      ],
+      "requirements": [
+        "WEB-027"
+      ],
+      "tests": [
+        "TD-WEB-11"
+      ],
+      "decisions": [
+        "D-451"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 11,
+        "lines": 300,
+        "context_pct": 10
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T166-site-design-assets",
+      "prompt": "kit/prompts/T166.md"
     }
   ]
 }

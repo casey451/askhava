@@ -1029,3 +1029,7 @@ These are assumptions to check in the pilot, not measurements. At 60 requests ov
 That is roughly 15 to 20 minutes per paid introduction, inside the 20-minute go line but close to it in the first weeks, when sign-ups are heaviest. The HELP promises (2 days, 24 hours if urgent) stay as they are.
 
 **Still yours, unchanged:** Gate P, the Twilio question (updated: it now mentions AI-worded questions, photos by MMS and "agrees to share"), the Stripe question, and the pilot steps in `docs/PREBUILD.md`.
+
+## The look: dark plaster and brass (D-451, October 28)
+
+You picked the darker plaster and brass homepage. It is now written down in `docs/design/DESIGN_SPEC.md`, so every page the build makes looks the same: dark plaster walls for headlines and menus, cream paper for quotes and forms, one brushed-brass button per step. Four mock-ups in `docs/design/mockups/` show the home page on a phone and a computer, her quote page and the pick step. Every color pair was measured for readability (all pass WCAG AA). Nothing for you to do; if you later get real close-up photos of plaster and brass (with permission), they can replace the generated textures.
