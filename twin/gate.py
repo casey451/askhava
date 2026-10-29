@@ -30,12 +30,13 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 DECISIONS = HERE.parent / "docs" / "decisions.md"
+GATE_SEEDS = 5  # pinned entries exist only for seeds 1-5 (section 6.1)
 MATCHING = ("job_card_outside_license", "qualified_business_left_out")
 NEGATIVE_CONTROL = ("normal", 1, MATCHING)  # a v9.1 scenario: its matching checks must fire (section 5)
 CAUSES = frozenset({"C1", "C2a", "C2b", "C2c", "C2d", "C2e", "C3", "R-TRIAGE"})
 PINNED_KEYS = frozenset({"id", "scenario", "seed", "check", "ref", "cause", "decision", "until"})
 CLASS_KEYS = frozenset({"id", "checks", "evidence", "decision", "max_per_seed"})
-# Frozen: the 56 checks of sources/01_spec/hhq_twin/README.md. Removing or renaming one exits 2.
+# Frozen: the 57 checks of sources/01_spec/hhq_twin/README.md (its table; it says 56). Removing or renaming one exits 2.
 REQUIRED_CHECKS = frozenset(
     [
         "call_after_homeowner_closed",
@@ -59,6 +60,7 @@ REQUIRED_CHECKS = frozenset(
         "first_text_missing_disclosures",
         "fraudulent_contractor_activated",
         "free_first_win_reused",
+        "handyman_over_1000",
         "help_not_answered",
         "identifying_photo_in_job_card",
         "identifying_text_in_job_card",
@@ -96,7 +98,7 @@ REQUIRED_CHECKS = frozenset(
         "unreached_homeowner_no_refund",
     ]
 )
-DECLARED = re.compile(r"""(?:\bbad|violations_inline\.append)\(\(?["']([a-z_]+)["']""")
+DECLARED = re.compile(r"""(?:\bbad|violations_inline\.append)\(\(?["']([a-z0-9_]+)["']""")
 
 
 class GateError(Exception):
@@ -128,8 +130,9 @@ def _check_entry(entry: object, keys: frozenset[str], known: dict[str, set[str]]
 
 
 def _check_pinned(entry: dict, known: dict[str, set[str]]) -> None:
-    if entry["scenario"] not in known["scenarios"] or not isinstance(entry["seed"], int):
-        raise GateError(f"{entry['id']}: unknown scenario or seed")
+    seed = entry["seed"]
+    if entry["scenario"] not in known["scenarios"] or type(seed) is not int or not 1 <= seed <= GATE_SEEDS:
+        raise GateError(f"{entry['id']}: unknown scenario or seed outside 1-{GATE_SEEDS}")
     if entry["cause"] not in CAUSES or not isinstance(entry["ref"], str):
         raise GateError(f"{entry['id']}: unknown cause {entry['cause']!r} or bad ref")
 
@@ -270,7 +273,7 @@ def setup(args: argparse.Namespace) -> tuple[list[str], dict]:
     if set(names) - set(all_fixed):
         raise GateError(f"not gate scenarios (only *_fixed): {sorted(set(names) - set(all_fixed))}")
     known = {
-        "decisions": decision_ids(Path(args.decisions)),
+        "decisions": decision_ids(DECISIONS),
         "checks": declared_checks(HERE),
         "scenarios": set(all_fixed),
     }
@@ -280,10 +283,9 @@ def setup(args: argparse.Namespace) -> tuple[list[str], dict]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Twin gate (D-107)")
-    parser.add_argument("--seeds", type=int, default=5)
+    parser.add_argument("--seeds", type=int, default=GATE_SEEDS)
     parser.add_argument("--no-pinned", action="store_true", help="ignore pinned waivers (stage 1 done check)")
     parser.add_argument("--scenarios", default="", help="comma-separated subset of the gate scenarios")
-    parser.add_argument("--decisions", default=str(DECISIONS))
     parser.add_argument("--report", default=str(Path(tempfile.gettempdir()) / "twin-report.json"))
     args = parser.parse_args(argv)
     try:

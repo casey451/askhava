@@ -128,6 +128,9 @@ def test_negative_control_that_reports_nothing_exits_1() -> None:
         ({"check": "no_such_check"}, "unknown check key"),
         ({"cause": "C9"}, "unknown cause"),
         ({"extra": 1}, "malformed"),
+        ({"seed": 0}, "seed outside 1-5"),
+        ({"seed": 6}, "seed outside 1-5"),
+        ({"seed": True}, "seed outside 1-5"),
     ],
 )
 def test_bad_pinned_entry_is_a_waiver_error(change: dict, message: str) -> None:
@@ -155,14 +158,24 @@ def test_committed_waiver_file_is_valid_and_names_known_causes() -> None:
     assert data["pinned"] and all(e["until"] == "T007" for e in data["pinned"])
 
 
+def test_decision_missing_from_the_log_next_to_the_twin_exits_2(tmp_path: Path) -> None:
+    twin_dir = copy_twin(tmp_path)
+    log = tmp_path / "docs" / "decisions.md"
+    log.write_text(log.read_text().replace("- **D-102**", "- D-102"))
+    out = run_gate(twin_dir)
+    assert out.returncode == 2 and "D-102" in out.stdout
+
+
 def test_twin_declares_every_required_check() -> None:
     assert gate.REQUIRED_CHECKS <= gate.declared_checks(TWIN)
-    assert len(gate.REQUIRED_CHECKS) == 56
+    assert len(gate.REQUIRED_CHECKS) == 57
 
 
 def copy_twin(tmp_path: Path) -> Path:
     dest = tmp_path / "twin"
     shutil.copytree(TWIN, dest, ignore=shutil.ignore_patterns("__pycache__", "results"))
+    (tmp_path / "docs").mkdir()
+    shutil.copy(ROOT / "docs" / "decisions.md", tmp_path / "docs" / "decisions.md")  # the gate reads ../docs only
     return dest
 
 
@@ -173,8 +186,6 @@ def run_gate(twin_dir: Path, *args: str, seed: str | None = "0") -> subprocess.C
     cmd = [
         sys.executable,
         str(twin_dir / "gate.py"),
-        "--decisions",
-        str(ROOT / "docs" / "decisions.md"),
         "--report",
         str(twin_dir.parent / "report.json"),
         *args,
