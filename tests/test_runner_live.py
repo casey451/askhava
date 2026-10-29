@@ -478,3 +478,20 @@ def test_check_run_reads_use_the_job_token(monkeypatch: pytest.MonkeyPatch) -> N
     assert env is not None and env["GH_TOKEN"] == "fake-job-token"
     assert github_env._env_for(["gh", "api", "repos/o/r/pulls"]) is None
     assert github_env._env_for(["git", "push"]) is None
+
+
+def test_task_branch_push_uses_the_push_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-509: with RUNNER_PUSH_TOKEN set, a push to the explicit GitHub URL gets a credential helper
+    that reads the token from the environment; nothing else changes, and the token is never in argv."""
+    from runner import github_env
+
+    push = ["git", "push", "--porcelain", "https://github.com/o/r.git", "abc:refs/heads/claude/task/T1-x"]
+    monkeypatch.delenv("RUNNER_PUSH_TOKEN", raising=False)
+    assert github_env._env_for(push) is None
+    monkeypatch.setenv("RUNNER_PUSH_TOKEN", "fake-push-token")
+    env = github_env._env_for(push)
+    assert env is not None and env["GIT_CONFIG_COUNT"] == "3"
+    assert env["GIT_CONFIG_VALUE_0"] == "" and env["GIT_CONFIG_VALUE_1"] == ""
+    assert "RUNNER_PUSH_TOKEN" in env["GIT_CONFIG_VALUE_2"] and "fake-push-token" not in env["GIT_CONFIG_VALUE_2"]
+    assert github_env._env_for(["git", "push", "--porcelain", "origin", "abc:refs/heads/claude/kit-state"]) is None
+    assert github_env._env_for(["git", "fetch", "https://github.com/o/r.git"]) is None
