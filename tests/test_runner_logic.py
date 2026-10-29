@@ -369,3 +369,16 @@ def test_gate_phrase_must_be_a_whole_word() -> None:
     yes = {"id": "T130", "type": "gate", "gate": {"resume": "answer 'yes'"}}
     assert not outbox.clears(yes, "yesterday I saw it")
     assert outbox.clears(yes, "yes")
+
+
+def test_record_inbox_matches_a_lowercase_outbox_id(tmp_path: Path) -> None:
+    """The hand-fixed `gate-p` outbox id (October 27) must still clear Gate P (D-497)."""
+    from runner import cycle
+
+    class Cfg:
+        graph = [task("T001"), task("K9")]
+
+    s = outbox.hold_for_gate_p(st.new_state(), tmp_path)
+    out = cycle._record_inbox(s, Cfg(), [("24-1.md", "gate-p", "approved to build")], NOW)
+    assert st.status(out, "GATE-P") == st.DONE and out["build_hold"] is None
+    assert out["inbox_processed"] == ["24-1.md"] and out["owner_answers"][-1]["outbox_id"] == "gate-p"
