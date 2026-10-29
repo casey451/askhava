@@ -5,15 +5,17 @@
 # NOTES FOR REVIEW
 # - kb job type str_turnover (vacation rental turnover) is left out: it belongs to category
 #   turnover_cleaning, which shares this kb file. The misdiagnosis check below routes it there.
-# - kb job type post_construction (after-remodel dust) is left out: house_cleaning has no
-#   matching job type and the task limits this file to regular, deep and move-out. Remodel dust
-#   is caught by the "Dust from a remodel" option of fu_problem_area and goes out as a deep
-#   cleaning card. Casey may want an "after-remodel clean" job type later.
-# - kb job type specialty_route (sewage, mold, hoarding, biohazard) is left out: no enabled
-#   category does restoration or mold work. Sewage that is still backing up routes to
-#   plumbing_repair; piles of stored items to estate_cleanout; mold has no home yet.
-# - No new_job_type was needed: recurring, deep_clean and move_out cover all three category
-#   job types.
+# - kb job type post_construction (after-remodel dust) is kept under bank job type
+#   "deep cleaning", the only one-time category job type that fits. Casey may want a separate
+#   "after-remodel clean" job type later so businesses can opt in or out of it.
+# - kb job type specialty_route (heavy-condition home, mold spots, droppings, sewage residue)
+#   is kept under "deep cleaning" so the card goes out with the real condition stated, not as a
+#   plain deep clean. No enabled category does restoration or mold remediation. Sewage still
+#   backing up goes to plumbing_repair first, droppings with live animals to pest_control, a
+#   home full of stored items to estate_cleanout (misdiagnosis checks below). Open question: a
+#   firm quote cannot carry a visit fee, so a cleaner who must walk a heavy home first can only
+#   say so in the quote notes.
+# - No new_job_type was needed: the kb ids cover all three category job types.
 schema: 1
 category: house_cleaning
 question_set: house_cleaning
