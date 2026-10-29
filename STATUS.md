@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-29T17:12:24Z by runner 24d55aa487e4 (actions).
+Updated 2026-10-29T17:42:57Z by runner d0a9f69ae21b (actions).
 
 **Requirements verified:** 0 of 725 (0.0%) · partial 0 · unstarted 725
 **Tasks merged (throughput only):** 0 of 221
@@ -46,7 +46,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 13 of 15 done
 
 ## Running
-- FIX-MAIN (lease until 2026-10-29T20:12:18Z)
+- nothing
 
 ## Needs attention
 - MAIN IS RED: smoke; only FIX-MAIN runs
