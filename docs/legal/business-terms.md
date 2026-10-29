@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.3 (draft, packaged jobs) · October 28, 2026 · Not yet in effect
+Version 0.4 (draft, D-492 clauses) · October 29, 2026 · Not yet in effect
 
 # Ask Hava Business Terms
 
@@ -25,6 +25,7 @@ Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedu
 ## 3. Job requests and quotes
 
 - Job requests come by email (and by text only if Ask Hava offers business texting and you choose it). Ask Hava never places recorded or automated calls to you. The Ask Hava Business Email Notice Terms explain the emails.
+- Ask Hava never buys, imports, rents or resells requests from another site or list. Every job card comes from a homeowner who contacted Ask Hava directly by text or web chat.
 - Each job card is anonymous: no homeowner name, phone, email or street address. Every card says how many businesses got it.
 - You quote once. No bidding rounds, no paid placement.
 - You may quote for 24 hours after your card is sent. A quote must not contain a phone number, a link, an email address or "call me" wording; such a quote bounces back to you.
@@ -106,7 +107,7 @@ You alone are responsible for:
 ## 10. Indemnity and liability
 
 - **Indemnity.** You will defend and indemnify Ask Hava against third-party claims arising from your work, your quotes and statements, your license status, your handling of homeowner details, or your breach of these terms. This does not apply to the extent a claim results from Ask Hava's sole negligence.
-- **No warranties.** Ask Hava gives no warranty of any kind about the service, the number of job requests, or any homeowner.
+- **No warranties.** Ask Hava gives no warranty of any kind about the service, the number of job requests, or any homeowner. Ask Hava doesn't promise any number of job cards, quotes, picks or jobs.
 - **Limit of liability.** To the extent the law allows, Ask Hava's total liability to you is limited to the introduction fees you paid in the 12 months before the claim. This limit does not apply to gross negligence, intentional misconduct, or anything the law does not allow us to limit.
 
 ## 11. Complaints, pauses and leaving
@@ -116,16 +117,26 @@ You alone are responsible for:
 - A lapsed license or bond pauses you on that date. While a state lookup fails, you stay as you were for up to 72 hours but can't confirm a pick while your status is unknown.
 - You can pause job cards, set "Busy for <n> days" or leave at any time in the portal. Leaving withdraws your open quotes, ends any waiting pick (the homeowner's backup choice applies), removes your saved cards and ends every sign-in; we keep billing records for 7 years.
 
+**When Ask Hava may end your account.** Ask Hava may end your business's account for a false certification or statement, misuse of homeowner details, discrimination, unpaid charges, or a confirmed breach of the handyman certification. We email you the reason. When an account ends, these still apply: fees you owe, the limits on using homeowner details (section 8) and the indemnity (section 10).
+
 ## 12. Electronic records
 
 You agree to receive these terms, receipts and notices electronically, and your clicks in the portal (accepting these terms, "Confirm and pay") are electronic signatures under the Arizona Electronic Transactions Act (A.R.S. 44-7007) and the federal E-SIGN Act. We keep a record of each version you accepted and when, and of each charge.
 
 ## 13. Law and courts
 
-Arizona law governs these terms. Any court case goes to the courts in Mohave County, Arizona. Either of us may use small claims court.
+Arizona law governs these terms. Before going to court, write to us at help@askhava.com and give us 30 days to try to fix it. Any court case goes to the courts in Mohave County, Arizona. Either of us may use small claims court at any time.
 
 ## 14. Changes and contact
 
-We'll email you any change with its effective date before it applies. A fee change never applies until you accept it.
+We'll email you any change at least 14 days before it applies, with its effective date. A fee change never applies until you accept it.
 
 Ask Hava LLC, [mailing address: P.O. box or registered agent, never a home address], Lake Havasu City, Arizona. Email help@askhava.com. The Ask Hava owner has a full-time day job; help and charge questions are usually answered within 2 days.
+
+## 15. General
+
+- If any part of these terms can't be enforced, the rest still applies.
+- These terms, the Ask Hava Privacy Policy and the Ask Hava Business Email Notice Terms are the whole agreement between your business and Ask Hava about the service.
+- If we don't enforce a part of these terms right away, we can still enforce it later.
+- Ask Hava may transfer these terms to a business that takes over the service, and will tell you first. Your business may not transfer them without Ask Hava's written OK.
+- We send notices to the email address on your account. Send yours to help@askhava.com.

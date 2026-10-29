@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.2 (draft, fix round 13) · October 28, 2026 · Internal document
+Version 0.3 (draft, D-492) · October 29, 2026 · Internal document
 
 # Ask Hava Written Information Security Program
 
@@ -49,6 +49,8 @@ Ask Hava closely matches the rule's "finder" example (16 C.F.R. 314.2(h)(2)(xiii
 | Hand-run test: Gmail | Requests, quotes, business emails | Owner only | Same | Two-step sign-in; no forwarding; AI features off |
 | Stripe | Business payments; card data held by Stripe | Owner sees payment details, not card numbers | Financial-record schedule | Two-step sign-in |
 | Live service: database and contact vault | As in the privacy policy | The app's vault readers only (architecture section 8) | As in the privacy policy | Field encryption; audit log |
+| Railway's 30-day log store | The app's JSON log lines: request IDs, route templates, status codes; never a phone number, name, address, email, token or code (PRIV-016) | Owner only, in the host dashboard | 30 days (the host's retention) | Logs written without contact details; host account with a hardware-key second factor |
+| Backblaze B2 backup bucket | The nightly encrypted export, the off-database stream and app-encrypted photos | No one reads it in the app: the app's key can write but not read or delete (PRIV-029) | Export 30 days; stream and photos as in the privacy policy | App-side encryption; write-only, prefix-scoped key; object lock |
 
 ## 5. Vendors
 
@@ -57,7 +59,8 @@ Ask Hava closely matches the rule's "finder" example (16 C.F.R. 314.2(h)(2)(xiii
 | Twilio | Texts, masked calls, codes | Yearly: security page or SOC 2 report; data-processing terms |
 | Resend | Email | Same |
 | Stripe | Payments | Same |
-| Railway | Hosting and database | Same |
+| Railway | Hosting, database and 30-day logs | Same |
+| Backblaze | Encrypted backup and file storage (B2) | Same |
 | Sentry | Error monitoring | Same |
 | Lob | Identity letters | Same |
 | Anthropic | AI reading (only once switched on) | Same, plus the zero-retention agreement or the recorded API terms (AI-008) |

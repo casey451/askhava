@@ -22,5 +22,12 @@
     "five_hour": 5,
     "week": 168
   },
-  "quota_cmd_default": "python3 scripts/quota_probe.py"
+  "quota_cmd_default": "python3 scripts/quota_probe.py",
+  "actions_minutes": {
+    "note": "GitHub Actions quota read by Claude from Casey's billing page in his browser on October 29, 2026 (D-494): GitHub Pro includes 3,000 Linux minutes a month on a private repository, reset on the 1st; October's use to the 29th was about 430 minutes (gross $3.44 at $0.008 a minute, billed $0). The runner keeps the month's projected use under the included figure less headroom; with the Rust Ci at the 15-minute warm ceiling plus Twin, Ally and Governance (about 2 minutes together) and a push and a pull-request run per task, a cycle costs at most about 35 minutes, so the month allows about 80 cycles at the ceiling and more as Ci's cache warms.",
+    "included_per_month": 3000,
+    "used_october_2026": 430,
+    "per_cycle_ceiling": 35,
+    "headroom": 0.1
+  }
 }

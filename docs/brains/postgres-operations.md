@@ -29,7 +29,7 @@ Marks: **[inferred]** = reasoned practice no fetched source states in these word
 
 **P3. Two roles; the app role never owns anything.** Roles are created outside migrations by the host or a bootstrap script (D-481). The migration role owns every schema and table; the app role (`askhava_app`) used by `web` and `worker` gets only `USAGE` and table privileges. Why: "The right to modify or destroy an object is inherent in being the object's owner, and cannot be granted or revoked in itself" (PostgreSQL privileges docs), so an app role that owned a table could always rewrite it. Serves D-092, threat T6, SEC-029.
 
-**P4. Grants live in migrations, idempotent, with default privileges per schema.** `ALTER DEFAULT PRIVILEGES` sets privileges "applied to objects created in the future. (It does not affect privileges assigned to already-existing objects.)", and only for objects created by the target role: "new object permissions are only affected by the default privileges of the current role, and are not inherited" (docs). So: run migrations *as* the migration role (not via membership), use `FOR ROLE askhava_migrator IN SCHEMA <module>`, and also `GRANT` explicitly on tables that already exist. Serves D-481, D-092.
+**P4. Grants live in migrations, idempotent, with default privileges per schema.** `ALTER DEFAULT PRIVILEGES` sets privileges "applied to objects created in the future. (It does not affect privileges assigned to already-existing objects.)", and only for objects created by the target role: "new object permissions are only affected by the default privileges of the current role, and are not inherited" (docs). So: run migrations *as* the migration role (not via membership) and write `ALTER DEFAULT PRIVILEGES IN SCHEMA <module>` with no `FOR ROLE` clause (the trial of D-491 showed `FOR ROLE` and `AUTHORIZATION` fail unless the running role can `SET ROLE` to the target; without the clause the default applies to the role that runs the migration, which is the migrator everywhere: `askhava_migrator` on Railway, `askhava_ci` locally and in `Ci`), and also `GRANT` explicitly on tables that already exist. Serves D-481, D-092.
 
 **P5. Append-only is a missing privilege, tested as the app role.** Append-only tables (`ops.audit_log`, `payments.ledger_entry`, `payments.charge_evidence`, the consent and opt-out event tables) get `SELECT, INSERT` only. `TRUNCATE` is its own privilege, separate from `DELETE` (docs), so never grant it to the app role. Default privileges grant `UPDATE, DELETE` broadly, so the creating migration must `REVOKE UPDATE, DELETE ON <table> FROM askhava_app` right after `CREATE TABLE` [inferred from P4]. Tests `SET ROLE askhava_app` and expect the `UPDATE` to fail (D-481). The off-database audit stream is the second copy (OPS-010, OPS-011). Serves D-092, OPS-010, FEE-029.
 
@@ -56,11 +56,11 @@ Marks: **[inferred]** = reasoned practice no fetched source states in these word
 ## 3. Shapes to copy
 
 ```sql
--- migrations/0012_core_task.sql
+-- migrations/0012_core_task.sql   (a `-- no-transaction` directive, when needed, must be line 1; this owner line is then line 2)
 -- core (T012): task queue and timers. JOB-006, Arch 5. Grants follow P4/P5.
-CREATE SCHEMA IF NOT EXISTS core AUTHORIZATION askhava_migrator;
+CREATE SCHEMA IF NOT EXISTS core;
 GRANT USAGE ON SCHEMA core TO askhava_app;
-ALTER DEFAULT PRIVILEGES FOR ROLE askhava_migrator IN SCHEMA core
+ALTER DEFAULT PRIVILEGES IN SCHEMA core
   GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO askhava_app;
 CREATE TABLE core.task ( /* id uuid, kind, payload jsonb, run_at timestamptz, ... */ );
 CREATE INDEX task_due ON core.task (run_at) WHERE done_at IS NULL;

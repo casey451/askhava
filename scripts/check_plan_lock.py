@@ -38,6 +38,9 @@ LOCKED_FILES = (
     "kit/tasks.json",
     "kit/prompts/TEMPLATE.md",
     "kit/sources.sha256",
+    # kit/layers.json, kit/allowed_crates.txt and kit/superseded_decisions.json join this list in the plan
+    # change after D-491 lands: the Governance check runs main's copy of this script against the branch, so
+    # a lock that names a file main's list does not know fails until main knows it (D-491).
 )
 LOCKED_GLOBS = ("docs/spec/*.md", "scripts/*.py", "scripts/*.sh", "docs/catalog/*.yaml")
 
@@ -114,6 +117,8 @@ def differences(root: Path) -> list[str]:
         if key not in locked:
             out.append(f"{key}: not in the lock (new locked file)")
         elif key not in current:
+            if (root / key.split("#")[0]).is_file() and "#" not in key:
+                continue  # a file locked by a newer list than this script's: stricter, never a failure (D-491)
             out.append(f"{key}: in the lock but missing from the tree")
         elif current[key] != locked[key]:
             out.append(f"{key}: changed")

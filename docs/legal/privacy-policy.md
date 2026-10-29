@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.4 (draft, packaged jobs) · October 28, 2026 · Not yet in effect
+Version 0.5 (draft, D-492 changes) · October 29, 2026 · Not yet in effect
 
 # Ask Hava Privacy Policy
 
@@ -27,11 +27,15 @@ To run your request: send a description of the job to local businesses, show you
 
 ## 4. Who sees what, and when
 
-When you send a request, Ask Hava sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. If you send photos, those businesses also see them, with location data removed and any faces, house numbers, license plates or readable text blurred. Only after you pick a business, and it confirms (and pays its introduction fee, when one is due), does Ask Hava give that one business your first name and the job address, plus your email if you chose to share it and your photos at full size, with location data removed. Ask Hava never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.
+### When you pick a business
+
+When you send a request, Ask Hava sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. If you send photos, those businesses also see them, with location data removed; we ask you to send only photos that show no person or house number, and once our AI photo screening is on, any faces, house numbers, license plates or readable text are blurred as well. Only after you pick a business, and it confirms (and pays its introduction fee, when one is due), does Ask Hava give that one business your first name and the job address, plus your email if you chose to share it and your photos at full size, with location data removed. Ask Hava never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.
+
+### Who sees what at each step
 
 | Who | What they see | When |
 |---|---|---|
-| Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions; any photos you sent, with location data removed and faces, house numbers, license plates or readable text blurred | When the request goes out |
+| Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions; any photos you sent, with location data removed (faces, house numbers, license plates and readable text blurred once AI photo screening is on) | When the request goes out |
 | Anyone on askhava.com | Your feedback, with your first name and town, only if you ticked the box allowing it | After your job is done |
 | The one business you pick | Your first name and the job address, plus your email if you chose to share it, and your photos at full size with location data removed | Only after you pick it, ask us to share them, and it confirms (and pays its introduction fee, when one is due) |
 | Businesses that get your job card | The job card you saw, your answers and the photos you kept, with no name, phone, email or street address | When the card goes out |
@@ -43,7 +47,7 @@ Your number is never shared. Your first name and address go only to the business
 
 The business you pick may use your details only for your job and follow-up about it. Our business terms forbid marketing lists and resale.
 
-**Vendors** (under contract, only to run Ask Hava): texting and calls (Twilio), email (Resend), payments (Stripe), hosting (Railway), error monitoring (Sentry), letters for business identity checks (Lob), and, only once it is switched on, automated text reading (Anthropic; see section 6).
+**Vendors** (under contract, only to run Ask Hava): texting and calls (Twilio), email (Resend), payments (Stripe), hosting and its 30-day logs (Railway), encrypted backup storage (Backblaze B2), error monitoring (Sentry), letters for business identity checks (Lob), website delivery and security (Cloudflare), and, only once it is switched on, automated text reading (Anthropic; see section 6).
 
 **Legal demands.** We'll tell you about a legal demand for your data unless the law forbids it.
 
@@ -53,17 +57,19 @@ You choose to text us: your first text, or giving us your mobile number in the c
 
 You can also opt out by emailing help@askhava.com, replying to any Ask Hava email, using the help form on askhava.com, or switching texts off on your quote page. Every opt-out goes on one list at once and stops all texts and automated calls from Ask Hava to that number. To use Ask Hava by text again, text START.
 
+Your phone number and your texting permission are never shared with any business or third party, and your texts are never used for marketing.
+
 No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with any third parties.
 
 Ask Hava never sells or rents lists of people, phone numbers or texting consent.
 
 ## 6. Automated tools and AI
 
-*(Use the first paragraph while AI is switched off. Switch to the second, with the change dated, only on the day AI is switched on. Add the zero-retention sentence once that agreement is signed; before then use "The AI provider doesn't use that text to train its AI and deletes it within <days> days.", using the provider's recorded terms (AI-008, AI-018).)*
+*(Use the first paragraph while AI is switched off. Switch to the second, with the change dated, only on the day AI is switched on. Add the zero-retention sentence once that agreement is signed; before then use "The AI provider doesn't use that text to train its AI and deletes it within <days> days, unless its safety systems flag it, when it may keep it up to <flag period>.", using the provider's recorded terms (AI-008, AI-018).)*
 
 **While AI is off:** Our texts are automated. When it's switched on, an AI service helps word our questions and write your job card from your request, after our software removes names, phone numbers, emails and street numbers. You see the card before it goes.
 
-**While AI is on:** To sort your request and help word our questions, an AI service from Anthropic reads your job description after our software removes names, phone numbers, emails and street numbers. It also writes your job card, which you see before it goes out. The AI never sees your contact details, never gives prices or diagnoses, and never makes decisions about money or who gets your details. Under our zero-retention agreement the AI provider doesn't keep that text or train on it.
+**While AI is on:** To sort your request and help word our questions, an AI service from Anthropic reads your job description after our software removes names, phone numbers, emails and street numbers. It also writes your job card, which you see before it goes out. The AI never sees your contact details, never gives prices or diagnoses, and never makes decisions about money or who gets your details. Under our zero-retention agreement the AI provider doesn't keep that text or train on it, except text its safety systems flag, which it may keep up to <flag period>.
 
 *(Add only while AI photo reading is on, after the zero-retention agreement:)* If you send photos, the AI also looks at them to describe what they show on your job card.
 
@@ -84,11 +90,13 @@ Photos are optional; a request goes out the same way without them. When you send
 - **Job descriptions** with contact details removed: 3 years.
 - **Your phone number, locked (encrypted), with your texting permission and opt-out records:** 5 years after our last message to that number, only as proof of your texting choices.
 - **Payment, ledger and tax records, and our audit log:** 7 years.
+- **Records of which terms you accepted, and each version of the terms:** 7 years after the last pick or charge made under them, with no contact details.
+- **Website request logs** (request IDs, pages and status codes, no contact details): 30 days, in our own logs and our host's.
 - **Business records, team phones and call logs:** [days, set before launch and shown on the business data page].
 
 ## 9. Your choices
 
-You can see and change your details (properties, language, texts on or off) on your homeowner page, and ask us to delete your data there or by emailing help@askhava.com. When we delete, we keep only what the law or proof of your texting choices requires, without your other details. We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.
+You can see and change your details (properties, language, texts on or off) on your homeowner page. You can also get a copy there: "Download my data" gives you a file of your requests, quotes, messages and the texting-permission records we still hold. You can ask us to delete your data there or by emailing help@askhava.com. Before we act on a delete or copy request sent by email or the help form, we text a code to the number on file and you type it back, so no one else can ask in your name. We answer each request within 30 days. When we delete, we keep only what the law or proof of your texting choices requires, without your other details. We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.
 
 ## 10. How we protect it
 

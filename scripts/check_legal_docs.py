@@ -74,6 +74,7 @@ USUALLY = (
     "within 24 hours if your job is urgent.",
 )
 NO_CALLS = ("CON-019", "Ask Hava never places recorded or automated calls to you.")
+SEVERABILITY = ("TERMS-035", "If any part of these terms can't be enforced, the rest still applies.")  # (D-492)
 
 REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
     "homeowner-terms.md": (
@@ -107,6 +108,7 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         ),
         ("LIC-026", "showed Active on the ROC website when we checked on <date>. Check it yourself."),
         USUALLY,
+        SEVERABILITY,  # (D-492)
     ),
     "business-terms.md": (
         HONEST,
@@ -161,6 +163,8 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "days or within 90 days after your trade opens.",
         ),
         NO_CALLS,
+        SEVERABILITY,  # (D-492)
+        ("TERMS-036", "Ask Hava doesn't promise any number of job cards, quotes, picks or jobs."),  # (D-492)
     ),
     "privacy-policy.md": (
         HONEST,
@@ -170,7 +174,9 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "When you send a request, Ask Hava sends a description of the job, with your name, "
             "phone number, email and street address removed, to local businesses that do that kind "
             "of work. If you send photos, those businesses also see them, with location data "
-            "removed and any faces, house numbers, license plates or readable text blurred. Only "
+            "removed; we ask you to send only photos that show no person or house number, and once "
+            "our AI photo screening is on, any faces, house numbers, license plates or readable text "
+            "are blurred as well. Only "
             "after you pick a business, and it confirms (and pays its introduction fee, when one "
             "is due), does Ask Hava give that one business your first name and the job address, "
             "plus your email if you chose to share it and your photos at full size, with location "
@@ -209,6 +215,7 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "We'll tell you about any legal demand for your business's data unless the law "
             "forbids it.",
         ),
+        ("PRIV-031", "Download my data"),  # (D-492)
     ),
     "sms-terms.md": (
         HONEST,
@@ -263,14 +270,19 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "go to another business.",
         ),
         ("BIZ-045", "Delivered means your mail server accepted it; it may still be in Spam."),
+        ("BIZ-048", "says in its first line that it is an advertisement for Ask Hava"),  # (D-492)
     ),
     "accessibility-statement.md": (
         ("A11Y-020", "If you use a relay service, you can reach us by text or email."),
         ("A11Y-001", "WCAG 2.2"),
     ),
-    "information-security-program.md": (("PRIV-002", "AES-GCM"),),
+    "information-security-program.md": (
+        ("PRIV-002", "AES-GCM"),
+        ("PRIV-016", "Railway's 30-day log store"),  # (D-492)
+    ),
     "incident-response-plan.md": (
         ("OPS-021", "pausing texting and charging and preserving the logs"),
+        ("OPS-020", "never by text alone"),  # (D-492)
     ),
 }
 BANNED: tuple[tuple[re.Pattern[str], str], ...] = (

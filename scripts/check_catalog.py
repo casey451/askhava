@@ -12,6 +12,7 @@ Prints one line per example; exits 1 on any error.
 
 Usage: python3 scripts/check_catalog.py [--root REPO_ROOT]
 """
+# LIC-041: the job-type `kind` field (repair, replace, install) and its check arrive with T233 (D-493).
 
 from __future__ import annotations
 

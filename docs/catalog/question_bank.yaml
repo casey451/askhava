@@ -1,4 +1,4 @@
-# Ask Hava intake question bank (LIC-040, INT-039, INT-042, D-394). Fake data only.
+# Ask Hava intake question bank (LIC-040, INT-039, D-394). Fake data only.
 #
 # Checked by scripts/check_catalog.py. One versioned set per category that can be switched on:
 # 3 to 8 questions in the order that most improves a business's ability to quote. Every
@@ -421,6 +421,3 @@ sets:
       - {id: size, card_field: true, size_band: true, en: "What size garage or area?", es: "¿De qué tamaño es la cochera o el área?", options_en: [1-car, 2-car, 3-car or larger], options_es: [1 carro, 2 carros, 3 carros o más], band_floor: ["0", "1500.00", "1500.00"]}
       - {id: cracks, card_field: true, en: "Any cracks or old coating to remove?", es: "¿Hay grietas o pintura vieja que quitar?", options_en: [Cracks, Old coating, Both, Neither], options_es: [Grietas, Pintura vieja, Ambos, Ninguno]}
       - {id: finish, card_field: true, en: "What finish?", es: "¿Qué acabado?", options_en: [Solid color, Flakes, Metallic, Open to ideas], options_es: [Color sólido, Hojuelas, Metálico, Abierto a ideas]}
-
-# INT-042: trade safety prompts, sent at once on a match, never holding the request. The
-# INT-002 keyword safety check still runs first on every message.

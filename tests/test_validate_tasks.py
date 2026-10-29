@@ -128,6 +128,7 @@ def valid_tasks() -> list[dict[str, Any]]:
             review_areas=["harness", "security"],
             owns=[
                 "stand_ins/fake/",
+                "app/adapters/Cargo.toml",
                 "app/adapters/src/twilio_sms.rs",
                 ".github/workflows/twin.yml",
                 ".github/workflows/a11y.yml",
@@ -702,3 +703,53 @@ def test_v9_migrations_rise_in_serial_order(tmp_path: Path) -> None:
     assert_error(errors_for(tmp_path, tasks), "migration migrations/0040_fake_late.sql is numbered at or below 0050 (T010)")
     task(tasks, "T001")["owns"][2] = "migrations/0060_fake_late.sql"
     assert not [e for e in errors_for(tmp_path, tasks) if "migration" in e]
+
+
+def test_v11_a_rows_case_needs_a_builder_that_runs_first_or_shares_the_row(tmp_path: Path) -> None:
+    """A task listing a row whose covered requirement is owned only by later tasks that do not list the row fails (D-491)."""
+    tasks = valid_tasks()
+    early = make_task(
+        "T010",
+        "fake-early",
+        owns=["app/fake/early.rs", "tests/unit/fake/test_early.py"],
+        budget={"files": 2, "lines": 100, "context_pct": 5},
+        requirements=["TST-001"],
+        tests=["TD-TST-01"],
+        reads=["docs/spec/area.md"],
+    )
+    task(tasks, "T001")["deps"] = ["T010"]
+    task(tasks, "T001")["requirements"] = ["TST-002"]
+    task(tasks, "T001")["tests"] = ["J1", "J2", "J3", "J4"]
+    tasks.insert(0, early)
+    root = write_repo(tmp_path, tasks)
+    errors = list(vt.run(root).errors)
+    assert_error(errors, "TD-TST-01 covers TST-002, owned only by ['T001'], which run after this task and do not list the row")
+    task(tasks, "T001")["tests"] = ["TD-TST-01", "J1", "J2", "J3", "J4"]
+    root = write_repo(tmp_path, tasks)
+    assert not [e for e in vt.run(root).errors if "V11" in e]
+
+
+def test_v12_a_file_under_a_crate_needs_the_manifest_first(tmp_path: Path) -> None:
+    """A task owning `app/<crate>/<file>` before the crate's `Cargo.toml` owner runs fails (D-493)."""
+    tasks = valid_tasks()
+    early = make_task(
+        "T010",
+        "fake-early",
+        owns=["app/adapters/data/schema.json", "tests/unit/fake/test_schema.py"],
+        budget={"files": 2, "lines": 100, "context_pct": 5},
+        model=OPUS,
+        reviewer_model=OPUS,
+        review_areas=["security"],
+        requirements=["TST-001"],
+        tests=["TD-TST-01"],
+        reads=["docs/spec/area.md"],
+    )
+    task(tasks, "T001")["deps"] = ["T010"]
+    tasks.insert(0, early)
+    root = write_repo(tmp_path, tasks)
+    errors = list(vt.run(root).errors)
+    assert_error(errors, "owns app/adapters/data/schema.json before ['T004'] create app/adapters/Cargo.toml")
+    early["deps"] = ["T004"]
+    task(tasks, "T001")["deps"] = []
+    root = write_repo(tmp_path, tasks)
+    assert not [e for e in vt.run(root).errors if "V12" in e]

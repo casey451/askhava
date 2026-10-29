@@ -1,6 +1,6 @@
 # Brains: the expertise behind the build
 
-**Adopted:** October 29, 2026 (D-487). **Locked** (`kit/plan.lock`): a change needs a decision entry. **Never above the spec:** a brain explains and sharpens; when a brain and `docs/spec/` or `docs/architecture.md` disagree, build the spec and report the disagreement.
+**Adopted:** October 29, 2026 (D-487; three brains added the same day, D-491). **Locked** (`kit/plan.lock`): a change needs a decision entry. **Never above the spec:** a brain explains and sharpens; when a brain and `docs/spec/` or `docs/architecture.md` disagree, build the spec and report the disagreement.
 
 Ask Hava is built and maintained entirely by AI sessions that start with no memory. Each brain is the sourced knowledge a careful specialist would bring to one part of the work: who the recognized authorities are, the rules they set, why each rule exists, and how it maps to Ask Hava's numbered requirements. Every principle carries a URL to a primary or authoritative source; anything that could not be sourced is marked `[inferred]`.
 
@@ -14,13 +14,16 @@ Ask Hava is built and maintained entirely by AI sessions that start with no memo
 | [email-deliverability.md](email-deliverability.md) | `messaging` email, `adapters` email, inbound email, the DNS records | SEC-025, SEC-028, BIZ-040, PRIV-026, TXT-034 |
 | [contractor-lead-experience.md](contractor-lead-experience.md) | `businesses`, the quote form, the loss notice, fee wording, the hand-run test | BIZ-*, FEE-031, PICK-026, OPS-039 |
 | [operator.md](operator.md) | Any business decision or plan change | D-455 to D-467, `docs/PREBUILD.md` |
+| [ai-intake.md](ai-intake.md) | The `ai` adapter and stand-in, the intake conversation, the scrubber, AI quote summaries and note screening (N-tags) | AI-*, INT-039 to INT-041, PRIV-014, PRIV-026, PICK-003, PICK-052, CARD-013 |
+| [legal-terms-privacy.md](legal-terms-privacy.md) | Drafting or testing the terms, the privacy policy, the SMS terms, consent records, the incident plan (L-tags; not legal advice) | TERMS-*, PRIV-*, WORD-*, CON-005, CON-007, CON-021, OPS-020 |
+| [deploy-operations.md](deploy-operations.md) | The Dockerfile, the Railway projects, DNS and Cloudflare, backups and the restore drill, alerts, the health page, Gate C (O-tags) | OPS-*, SEC-001 to SEC-012, SEC-021, SEC-028, SEC-040, SEC-045, SEC-049 |
 
 ## How a session uses a brain
 
 1. Your task prompt lists the brains for your module under "Files you read". Read the sections for your task, not the whole file.
 2. When a design choice rests on a principle, cite its tag (for example `R7`, `S12`, `P4`) in the pull request text and, for a rule the code applies, in the `///` comment beside the requirement ID (`docs/code-docs.md`).
 3. Run the brain's review checklist before hand-in. The fresh-eyes reviewer runs it too.
-4. A gap or conflict a brain names is a **proposal**, not a rule: a task may not add it. Proposals adopted into the spec carry a decision number; the rest wait for a plan change. The adopted set from the first edition is D-490.
+4. A gap or conflict a brain names is a **proposal**, not a rule: a task may not add it. Proposals adopted into the spec carry a decision number; the rest wait for a plan change. The adopted set from the first edition is D-490; the second edition's corrections the build depends on are D-492 (22 new requirements, 29 rewrites); the rest of the three new brains' proposals wait for the re-plan after the hand-run test, each listed in D-492 with its reason.
 5. A brain is corrected by a plan change with a decision entry, like any locked file. Add the date to "Last verified" when you re-check its sources.
 
 ## What is not here
