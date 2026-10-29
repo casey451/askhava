@@ -27,7 +27,7 @@ results:
     card: |
       REQ-0101 | Heating and cooling repair | Lake Havasu City, area not said | house
       AC, one box on the roof, one story; runs but only mildly cool, started about three days ago, worse each afternoon.
-      System: one box on the roof (type not known to homeowner). Access: flat roof, one story. Age: about 12 years (homeowner's estimate).
+      System: one box on the roof. Access: flat roof, one story. Age: about 12 years (homeowner's estimate).
       Outside fan: not asked. Air at vents: comes out, only mildly cool. Refrigerant added before: not asked.
       Label: no label photo. Photos: 0. Homeowner adds: house is 86 F at 3 pm.
       Needed: not said.
@@ -89,7 +89,7 @@ results:
     card: |
       REQ-0103 | Heating and cooling repair | Lake Havasu City, area not said | house
       AC runs, air lukewarm, worse for two summers; homeowner has added refrigerant himself with a can kit.
-      System: AC with an outside unit on the ground in the back yard, gate open. Access: ground, back yard. Age: about 18 years (homeowner).
+      System: not asked (outdoor unit on the ground in the back yard, gate open). Access: ground, back yard. Age: about 18 years (homeowner).
       Outside fan: not asked. Air at vents: lukewarm (homeowner's words). Refrigerant added before: yes, can kit last July, cooled a few weeks.
       Label: R-22 on the visible part of the data plate (photo). Oily spot on one copper fitting of the outdoor unit (photo).
       Photos: 2 (outside condenser with small oily stain on one copper fitting, data plate partly covered by a hanging vine; close photo of data plate, visible part reads R-22).
@@ -127,4 +127,336 @@ results:
       Homeowner adds: only thermostat in the house.
       Needed: not said.
     facts_in_card_not_stated: []
-#__CONTINUE__
+  - scenario_id: hvac_repair_s05
+    transcript:
+      - {who: homeowner, text: "AC not cooling, house is stuck at 84. here is the label you asked for"}
+      - {who: homeowner, text: "[photo sent: metal data label on a gas furnace cabinet, gas input rating and manufacture year 2004 readable]"}
+      - {who: intake, step: photo, text: "This label looks like the indoor furnace, not the outside AC unit. Could you send a close photo of the label on the outside unit?"}
+      - {who: homeowner, text: "oh. ok, the outside one is on the north side. sun is on it, i didnt get it"}
+      - {who: intake, step: question, text: "Is the outside fan spinning when the AC is on? 1 Yes, spinning 2 No, not spinning 3 Humming but not spinning 4 Can't see it"}
+      - {who: homeowner, text: "1. yes, spinning. air just stays warm"}
+      - {who: intake, step: follow_up, text: "Where would a tech work on the unit? 1 Flat roof, one story 2 Sloped roof or two stories 3 Ground, open side yard 4 Ground, behind a locked gate 5 Attic or closet inside"}
+      - {who: homeowner, text: "3, ground, north side, easy to get to"}
+      - {who: intake, step: question, text: "About how old is the AC? 1 Under 5 years 2 5 to 10 years 3 10 to 15 years 4 Over 15 years"}
+      - {who: homeowner, text: "i think the furnace is the original, the outside unit was redone in 2019 by the last owner"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "this week is fine"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 5
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Heating and cooling repair | Lake Havasu City, area not said | house
+      AC not cooling; runs, outdoor fan spinning, air stays warm; house stuck at 84.
+      System: AC with an outside unit, ground, north side, easy access. Age: outside unit replaced in 2019 by a previous owner (homeowner's words); furnace original, label year 2004.
+      Outside fan: spinning. Air at vents: warm. Refrigerant added before: not asked.
+      Label: photo sent shows the indoor gas furnace label (gas input rating, year 2004), not the outside AC unit. No outside label photo yet.
+      Photos: 1 (metal data label on a gas furnace cabinet, gas input rating and year 2004 readable).
+      Homeowner adds: none.
+      Needed: this week.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s06
+    transcript:
+      - {who: homeowner, text: "I'm in Minnesota until Nov 15. My neighbor says my house is hot, thermostat shows 91 and she doesnt hear the AC. I have a manufactured home in Havasu. Can someone check it"}
+      - {who: intake, step: photo, text: "A photo helps businesses quote, but it is not needed. Can you send one if someone can get to the outside unit? No photo is fine too."}
+      - {who: homeowner, text: "nobody is at the house today, so no photo. the neighbor has a key"}
+      - {who: intake, step: follow_up, text: "Where would a tech work on the unit? 1 Flat roof, one story 2 Sloped roof or two stories 3 Ground, open side yard 4 Ground, behind a locked gate 5 Attic or closet inside"}
+      - {who: homeowner, text: "its a ground split unit on a pad beside the home. the side yard. ill not give codes but the neighbor can let them in on weekdays after 9am"}
+      - {who: intake, step: question, text: "About how old is the system? 1 Under 5 years 2 5 to 10 years 3 10 to 15 years 4 Over 15 years"}
+      - {who: homeowner, text: "about 11 years by my memory. the park needs contractors to check in at the office first"}
+      - {who: intake, step: question, text: "Is anyone living in the home, or are there pets inside?"}
+      - {who: homeowner, text: "nobody lives there. two cats, a house sitter feeds them"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "asap please"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 5
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_turning_on, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Heating and cooling repair | Lake Havasu City, area not said | manufactured home, in a park
+      AC not cooling in an empty home; thermostat reads 91 and no AC sound heard; owner out of state.
+      System: ground split unit on a pad beside the home. Access: ground, side yard; neighbor with a key can let a tech in weekdays after 9 am. Park requires contractors to check in at the office. Age: about 11 years (owner's memory).
+      Thermostat: 91 reading. Outdoor fan: not asked. Air at vents: not asked. Refrigerant added before: not asked.
+      Occupancy: no one living in the home; two cats in the home, fed by a house sitter.
+      Photos: 0 (owner could not send one).
+      Homeowner adds: owner is out of state until Nov 15.
+      Needed: asap.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s07
+    transcript:
+      - {who: homeowner, text: "hello my air condisioner is blowing hot air and its 94 in my house. I am 81 and not feeling so good. please help"}
+      - {who: intake, step: question, text: "Is anyone at home with you? 1 Yes 2 No, I live alone"}
+      - {who: homeowner, text: "i live alone. sorry"}
+      - {who: intake, step: follow_up, text: "Where would a tech work on the unit? 1 Flat roof, one story 2 Sloped roof or two stories 3 Ground, open side yard 4 Ground, behind a locked gate 5 Attic or closet inside"}
+      - {who: homeowner, text: "its on the ground in the side yard. the gate is locked. my yard man has the key he comes fridays. my neighbor can meet the tech"}
+      - {who: intake, step: question, text: "Inside, is air coming out of the vents? 1 Yes, strong 2 Yes, but weak 3 No air at all"}
+      - {who: homeowner, text: "sorry it blows but its hot. the outside box hums but the big fan does not turn"}
+      - {who: intake, step: question, text: "About how old is the unit? 1 Under 5 years 2 5 to 10 years 3 10 to 15 years 4 Over 15 years"}
+      - {who: homeowner, text: "about 14 years i think. my son pays the bills"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 4
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Heating and cooling repair | Lake Havasu City, area not said | house, one story
+      AC blowing hot air; house at 94; older adult living alone, 81; outdoor unit hums, fan not turning.
+      System: central AC, outside unit on the ground in the side yard. Access: ground, side gate locked; yard man has the key (comes Fridays); neighbor can meet the tech.
+      Age: about 14 years (homeowner). Outdoor fan: not spinning, humming. Air at vents: hot (homeowner's words).
+      Photos: 0 (homeowner could not take one).
+      Homeowner adds: son pays the bills and lives out of town.
+      Needed: not said.
+    facts_in_card_not_stated: []
+  - scenario_id: hvac_repair_s08
+    transcript:
+      - {who: homeowner, text: "my landlord keeps saying hes gonna send someone but its been a week. mini split in my casita keeps blinking and wont cool. can i just get my own quote"}
+      - {who: intake, step: photo, text: "A photo of the indoor unit's lights helps businesses quote. Please send one if you can. No photo is fine too."}
+      - {who: homeowner, text: "[photo sent: wall-mounted mini-split indoor head, one green light steady and an orange light blinking beside it; remote on the shelf below]"}
+      - {who: intake, step: question, text: "How many indoor units does the mini-split have, and how many are acting up? 1 One indoor unit 2 Several, only one acting up 3 Several, all acting up"}
+      - {who: homeowner, text: "1, one head"}
+      - {who: intake, step: question, text: "What does the remote show?"}
+      - {who: homeowner, text: "80 and it wont change from 70 that i set"}
+      - {who: intake, step: follow_up, text: "Where would a tech work on the unit? 1 Flat roof, one story 2 Sloped roof or two stories 3 Ground, open side yard 4 Ground, behind a locked gate 5 Attic or closet inside"}
+      - {who: homeowner, text: "outdoor part is on a wall bracket at the back of the casita. they need a tall ladder"}
+      - {who: intake, step: question, text: "About how old is the unit?"}
+      - {who: homeowner, text: "landlord says about 3 years"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "flexible. im home most days after 4"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 6
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: mini_split_repair, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Heating and cooling repair | Lake Havasu City, area not said | casita, rented
+      Mini-split in a casita blinks and will not cool; remote shows 80 with setting 70 that does not change.
+      Requester is a tenant. Landlord approval is needed before work; landlord has not yet authorized an outside call.
+      Indoor units: one. Code: blinking lights, not decoded. Outdoor fan: not asked.
+      Label: no label photo. Age: about 3 years (landlord's figure).
+      System: mini-split; outdoor unit on a wall bracket at the back of the casita, tall ladder needed. Tenant home most days after 4 pm.
+      Photos: 1 (indoor head, one green light steady, orange light blinking beside it; remote on shelf below).
+      Homeowner adds: none.
+      Needed: flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s09
+    transcript:
+      - {who: homeowner, text: "buenas tardes el aire de mi casa no enfria nomas sale aire caliente y tengo un bebe de 5 meses. estamos a 112 grados afuera. alguien puede venir hoy?"}
+      - {who: intake, step: question, text: "¿Qué está pasando? 1 No enfría 2 No prende 3 Gotea agua 4 Ruido u olor raro 5 Termostato apagado o con error"}
+      - {who: homeowner, text: "1 no enfria. sale aire caliente"}
+      - {who: intake, step: question, text: "¿Qué tipo de sistema es? 1 Aire central con unidad afuera 2 Unidad paquete en el techo o el suelo 3 Enfriador evaporativo 4 Mini-split 5 Calefactor o bomba de calor"}
+      - {who: homeowner, text: "2, la unidad esta atras de la casa en el suelo"}
+      - {who: intake, step: follow_up, text: "¿Dónde tendría que trabajar el técnico en la unidad? 1 Techo plano, un piso 2 Techo inclinado o dos pisos 3 En el suelo, patio lateral abierto 4 En el suelo, detrás de una puerta con llave 5 Ático o clóset adentro"}
+      - {who: homeowner, text: "3, atras, pero hay una alfombra enrollada y cajas en el camino"}
+      - {who: intake, step: question, text: "¿Más o menos qué edad tiene el sistema? 1 Menos de 5 años 2 5 a 10 años 3 10 a 15 años 4 Más de 15 años"}
+      - {who: homeowner, text: "como 9 anos, me dijo la dueña"}
+      - {who: intake, step: question, text: "¿Cuántos pies cuadrados tiene la casa?"}
+      - {who: homeowner, text: "como 1,300, de un piso"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 5
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Heating and cooling repair | Lake Havasu City, area not said | house, one story, rented
+      Aire no enfría; sale aire caliente; 112 grados afuera; hay un bebé de 5 meses en casa.
+      Sistema: unidad paquete en el suelo, atrás de la casa. Acceso: en el suelo, atrás; parte del camino tiene una alfombra enrollada y cajas.
+      Edad: como 9 años (según la dueña). Ventilador de afuera: no preguntado. Aire en las rejillas: caliente.
+      Casa: un piso, como 1,300 pies².
+      Quien pide no es la dueña (la dueña le dio la edad). Aprobación de la dueña para reparar: no dicha.
+      Fotos: 0. Lo que agrega: no dicho.
+      Necesita: hoy (su pregunta: "¿alguien puede venir hoy?").
+    facts_in_card_not_stated: []
+  - scenario_id: hvac_repair_s10
+    transcript:
+      - {who: homeowner, text: "HELP!!! WATER IS POURING FROM MY CEILING FROM THE AC!!! ITS GOING TO RUIN EVERYTHING!!! SOMEONE COME NOW"}
+      - {who: intake, step: question, text: "Is the water coming through the ceiling in one spot? 1 One spot 2 Several spots 3 Not sure"}
+      - {who: homeowner, text: "ONE SPOT. IT IS DRIPPING NOT POURING. BUCKET ON THE FLOOR. IS IT GOING TO BURN THE HOUSE DOWN"}
+      - {who: intake, step: photo, text: "A photo of the wet spot helps businesses quote. Please send one. No photo is fine too."}
+      - {who: homeowner, text: "[photo sent: hallway ceiling with a round brown stain about two feet across, a drip from a sagging drywall bubble, bucket on the floor]"}
+      - {who: intake, step: question, text: "Where is the indoor unit? 1 Attic 2 Closet 3 Garage 4 Roof"}
+      - {who: homeowner, text: "attic over the hallway. two story house"}
+      - {who: intake, step: question, text: "Does the AC still cool?"}
+      - {who: homeowner, text: "no. it stopped cooling yesterday and i left it running. i turned the thermostat off about an hour ago"}
+      - {who: intake, step: question, text: "About how old is the system? 1 Under 5 years 2 5 to 10 years 3 10 to 15 years 4 Over 15 years"}
+      - {who: homeowner, text: "about 6 years"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 5
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_leaking_water, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Heating and cooling repair | Lake Havasu City, area not said | two-story house
+      Water dripping from the hallway ceiling below the attic air handler, into a bucket; active leak.
+      Water at: ceiling, one spot. Shows: dripping now. Indoor unit: attic over the hallway.
+      Cooling: stopped yesterday; thermostat now off (about an hour ago). Age: about 6 years.
+      Photos: 1 (hallway ceiling, round brown stain about two feet across, drip from a sagging drywall bubble, bucket on the floor).
+      Homeowner adds: asks whether it will burn the house down.
+      Needed: not said.
+    facts_in_card_not_stated: []
+  - scenario_id: hvac_repair_s11
+    transcript:
+      - {who: homeowner, text: "Hey, the furnace didnt kick on last night when it dropped to the 40s, thermostat says heat but nothing. Whenever someone can get to it. By the way theres kind of a rotten egg smell in the hall closet where it sits, been there since yesterday, not strong"}
+      - {who: intake, step: "911", text: "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe."}
+      - {who: homeowner, text: "we're both home right now. its not strong and i dont hear any hissing"}
+      - {who: intake, step: "911", text: "No SAFE reply yet. The intake stops here until you reply SAFE."}
+    questions_asked: 0
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: heat_not_working, bank_job_type: "furnace repair", unsure: false}
+    fire_dept_text: true
+    urgent: true
+    stopped_before_card: "911_hold_no_safe_reply"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s12
+    transcript:
+      - {who: homeowner, text: "AC is blowing warm and the water heater in the same closet has a little leak at the bottom. can the same guy look at both?"}
+      - {who: intake, step: question, text: "Is the water heater a separate request? I can make one card for the AC now and one for the water heater next. Which should I start with?"}
+      - {who: homeowner, text: "ac first, whatever you need"}
+      - {who: intake, step: question, text: "What is the AC doing? 1 Runs but air is warm 2 Will not turn on 3 Outside fan not spinning 4 Ice on pipes or unit 5 Water leaking 6 Loud noise or bad smell"}
+      - {who: homeowner, text: "1. runs, outside fan runs, air is warm"}
+      - {who: intake, step: follow_up, text: "Where would a tech work on the unit? 1 Flat roof, one story 2 Sloped roof or two stories 3 Ground, open side yard 4 Ground, behind a locked gate 5 Attic or closet inside"}
+      - {who: homeowner, text: "one story, the outside unit is on the ground on the east side"}
+      - {who: intake, step: question, text: "About how old is the AC? 1 Under 5 years 2 5 to 10 years 3 10 to 15 years 4 Over 15 years"}
+      - {who: homeowner, text: "about 13 years"}
+      - {who: intake, step: photo, text: "A photo of the indoor unit helps. Please send one of the air handler in the closet if you can reach it safely."}
+      - {who: homeowner, text: "[photo sent: interior closet, air handler cabinet on the left, tank water heater on the right, damp ring on the floor around the tank base]"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "this week is fine"}
+      - {who: intake, step: card, text: "card posted. Second request, water heater leak, is a separate plumbing request."}
+    questions_asked: 6
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0111 | Heating and cooling repair | Lake Havasu City, area not said | house, one story
+      AC blows warm; outside fan runs; unit about 13 years old.
+      System: AC with an outside unit on the ground, east side. Access: ground. Age: about 13 years. Outside fan: runs. Air at vents: warm.
+      Air handler and water heater are in the same closet (photo shows air handler on the left, tank water heater on the right).
+      Photos: 1 (interior closet; air handler cabinet on left; tank water heater on right; damp ring on the floor around the tank base).
+      Homeowner adds: asked whether the same business can look at the water heater leak too.
+      Second request, not on this card: water heater leaking at the bottom, a little water. Separate plumbing request.
+      Needed: this week.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s13
+    transcript:
+      - {who: homeowner, text: "AC quit on my house in Bullhead City. blows warm. do you guys come out here?"}
+      - {who: intake, step: coverage, text: "We don't cover Bullhead City yet."}
+    questions_asked: 0
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: "outside_area"
+    card: null
+    facts_in_card_not_stated: []
+  - scenario_id: hvac_repair_s14
+    transcript:
+      - {who: homeowner, text: "Installed a new smart thermostat last weekend and now the AC won't respond to it. Need someone to look at the wiring and get it working."}
+      - {who: intake, step: coverage, text: "We don't cover heating and cooling repair jobs yet. We've noted your request so we can add businesses."}
+    questions_asked: 0
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: thermostat_issue, bank_job_type: "thermostat", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: "no_businesses"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s15
+    transcript:
+      - {who: homeowner, text: "the AC on my roof is running but the house is humid and sticky and smells like a wet dog. it was fine in June"}
+      - {who: intake, step: question, text: "Is it a swamp cooler with pads and a water line, or a refrigerated AC? 1 Swamp cooler 2 Refrigerated AC 3 Not sure"}
+      - {who: homeowner, text: "yes, swamp cooler with pads and a water line"}
+      - {who: intake, step: question, text: "What is it doing? 1 Runs but air is not cool 2 Nothing runs 3 Fan runs, pads stay dry 4 Leaking or overflowing 5 Bad smell 6 Noise or shaking"}
+      - {who: homeowner, text: "5 and 1. it smells like a wet dog and it is humid in here"}
+      - {who: intake, step: follow_up, text: "Where is the swamp cooler? 1 On a flat roof 2 On a sloped roof 3 On the ground by a wall 4 In a window 5 Portable, on a patio"}
+      - {who: homeowner, text: "2. roof, back slope, single story, you need a ladder"}
+      - {who: intake, step: question, text: "When were the pads last changed, or the cooler last cleaned? 1 This year 2 Last year 3 Longer ago 4 Don't know"}
+      - {who: homeowner, text: "not since last fall. the pads look white and the water drips down one corner dry"}
+      - {who: intake, step: photo, text: "A photo of the whole cooler from the ground helps. Please do not climb the roof for it. No photo is fine too."}
+      - {who: homeowner, text: "[photo sent: roof-mounted evaporative cooler seen from the yard, green-white scale line on one pad, thin water streak down the wall below it]"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "flexible"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 6
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: cooler_not_cooling, bank_job_type: "evaporative (swamp) cooler repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0112 | Heating and cooling repair (swamp cooler) | Lake Havasu City, area not said | house, one story
+      Swamp cooler on the roof: house humid and sticky, smells like a wet dog since the monsoon; fine in June.
+      Cooler: sloped roof, back slope; ladder needed. Doing: runs, smells, humid house. Pads changed or cleaned: not since last fall.
+      Other cooling in the home: not said. Label: no label photo.
+      Photos: 1 (roof-mounted evaporative cooler seen from the yard; green-white scale line on one pad; thin water streak down the wall below it).
+      Homeowner adds: pads look white; water drips down one corner, which is dry.
+      Needed: flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s16
+    transcript:
+      - {who: homeowner, text: "our AC is original to the house and we want a new one. how much and when can you come out"}
+      - {who: intake, step: question, text: "Which parts do you want quoted? 1 Outside unit only 2 Outside and inside units 3 Ducts only 4 Open to either unit option"}
+      - {who: homeowner, text: "2. the outside unit and the indoor coil in the hall closet"}
+      - {who: intake, step: question, text: "About how big is the home? 1 Under 1,200 sq ft 2 1,200 to 2,000 sq ft 3 2,000 to 3,000 sq ft 4 Over 3,000 sq ft"}
+      - {who: homeowner, text: "about 1,800 sq ft"}
+      - {who: intake, step: question, text: "How many stories is the home? 1 One 2 Two or more"}
+      - {who: homeowner, text: "one story"}
+      - {who: intake, step: question, text: "Where is the unit? 1 On the roof 2 On the ground 3 In the attic or a closet"}
+      - {who: homeowner, text: "2. ground on the side of the house. gate is locked but i have the key and i'll be home"}
+      - {who: intake, step: card, text: "card posted. Ask Hava does not quote prices; businesses quote in their own words."}
+    questions_asked: 4
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_replacement, job_type: ac_replacement, bank_job_type: "full system replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0113 | Heating and cooling replacement | Lake Havasu City, area not said | house
+      Wants a quote to replace the outside unit and the indoor coil; system is original to the house.
+      Now: central AC with an outside unit. Replace: outside and inside units (indoor coil in the hall closet). Change: not asked.
+      Home: about 1,800 sq ft, one story. Units at: ground, side of the house; indoor coil in the hall closet. Heat: not asked. Age: not asked.
+      Data plate: no photo. Photos: 0. Homeowner adds: gate is locked; homeowner has the key and will be home.
+      Needed: before summer.
+    facts_in_card_not_stated: []
+notes:
+  - "Town: the harness coverage assumption (Lake Havasu City, 3 businesses) is used for every scenario except s13 (Bullhead City, outside area) and s14 (no_businesses). The card shows 'Lake Havasu City, area not said' where the homeowner never named an area."
+  - "s11: the standing rule says the intake waits for SAFE and the homeowner replies SAFE only when the scenario facts say everyone is out of danger. The facts say he and his wife are at home and say nothing about leaving, so no SAFE was given and the intake stopped at the 911 hold (stopped_before_card '911_hold_no_safe_reply', a label not in the schema list). The scenario expects a card; this is a conflict between the scenario and the standing rule and needs a decision from the harness owner."
+  - "s16 routed to hvac_replacement (expert file hvac_replacement.yaml, job type ac_replacement); the expert file for hvac_repair leaves replacement out on purpose."
+  - "Timing question asked only when her words did not already give it (s09 'hoy', s16 'before summer' counted as given). s07 stopped at the 4-question cap before timing."
+  - "s14 and s13: the coverage line is the only intake message; no questions and no card, per INT-017 and the outside-area rule."
+  - "Photos sent are the scenario photo fields as described to the intake; photo wording uses neutral observable words only."

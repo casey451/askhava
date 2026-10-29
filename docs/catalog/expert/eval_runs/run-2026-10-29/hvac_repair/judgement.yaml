@@ -20,6 +20,7 @@ scenarios:
     A: baseline_human
     B: playbook
     C: baseline_none
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -70,11 +71,31 @@ scenarios:
         owner: 'One box on a flat roof, runs, only a little cool, 12 years: rooftop diagnostic fee, yes.'
         estimator: Everything I need for a visit price is here, including the symptom and the 3-day history.
         field_tech: Card does not say no hatch, ladder only; I bring the ladder anyway on a flat-roof one-story.
+    D:
+      quotable: 2
+      missing_facts:
+      - 'one box on the roof (package unit): she said ''the big box thing. not sure'' and the card records ''System: not sure''; no one-box-or-two follow-up'
+      - started about three days ago and worse each afternoon (never asked; the first playbook run got it from the open question v2 dropped)
+      - no roof hatch; ladder needed on the side of the house
+      wasted_questions:
+      - photo ask for the rooftop unit label after she said the unit is on a flat roof (she cannot see it from the ground)
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - card header says 'house'; the homeowner never said what kind of home it is
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Runs but not cold, flat roof, one story, about 12 years, this week: rooftop diagnostic fee, yes.'
+        estimator: 'The first question closed the run-or-dead gap, but ''not cold'' still does not say weak or warm, the start date is gone and 12 years is cut to a band. Six questions for a homeowner who tires after five.'
+        field_tech: Flat roof is on the card, so I bring the ladder; I would not know it is a package unit until I am up there.
 - scenario_id: hvac_repair_s02
   labels:
     A: baseline_none
     B: baseline_human
     C: playbook
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -125,11 +146,31 @@ scenarios:
         owner: 'Iced line at the outdoor unit, not cooling, 9 years: diagnostic fee, yes.'
         estimator: 'No filter or return question, which is the first thing I ask on an iced line. ''Outside fan: not spinning'' is misleading: it was off at the thermostat.'
         field_tech: I might show up with a fan motor for nothing; I do not know where the air handler is.
+    D:
+      quotable: 2
+      missing_facts:
+      - filter not changed in about 14 months
+      - one return grille on a 2-story house
+      - indoor air handler location (ground-floor garage closet)
+      - 'unit already shut off at the thermostat this morning: the card says ''Running now: not asked'''
+      wasted_questions:
+      - photo ask for the indoor unit and its label after he placed it in the attic; it pointed him at the attic and he could not go
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Iced line at the outdoor unit, drip at the pad, 9 years, not cooling: diagnostic fee, yes.'
+        estimator: 'The card writes the ice where it is, not ''compressor frozen'', and the misleading fan line is gone. But filter, returns and whether it is running now are still never asked; ''Filter: not asked'' on an iced line is the first thing I would call about. Three of five questions were photo asks.'
+        field_tech: I do not know where the air handler is or whether the coil is still a block of ice when I get there.
 - scenario_id: hvac_repair_s03
   labels:
     A: playbook
     B: baseline_human
     C: baseline_none
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -175,11 +216,29 @@ scenarios:
         owner: 'R-22, 18 years, oily fitting, can kit: I know this call and roughly what it costs. Diagnostic/leak-search fee.'
         estimator: All the facts I want. Six questions to a homeowner who pushes back is one over.
         field_tech: 'Back yard, gate open, can kit noted: no surprises.'
+    D:
+      quotable: 2
+      missing_facts:
+      - data plate reads R-22 (card says 'refrigerant not readable'); still never asked
+      - 'worse over two summers: the card says only ''Not cooling; air is warm'''
+      wasted_questions: []
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - card header says 'house'; the homeowner never said what kind of home it is
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Over 15 years, can-kit top-off last July, oily fitting, back yard: leak-search visit fee, yes. The cash and no-license ask stayed off the card.'
+        estimator: 'The recharge follow-up got the can kit, which is good. R-22 on a unit this age is still the fact that decides repair vs recharge cost, and it was not asked. Six questions to a homeowner who pushes back, one over.'
+        field_tech: Can kit and oily fitting are on the card, so I bring an identifier and a leak detector.
 - scenario_id: hvac_repair_s04
   labels:
     A: baseline_none
     B: playbook
     C: baseline_human
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -230,11 +289,33 @@ scenarios:
         owner: Every fact I need; diagnostic fee.
         estimator: Nothing missing. The stain question was the key one.
         field_tech: 'Attic via second-floor closet, water history: I bring the wet vac.'
+    D:
+      quotable: 1
+      missing_facts:
+      - she already put in fresh batteries and the screen stays blank (the photo shows batteries on the floor; the card does not say new ones were tried)
+      - outdoor unit silent, no hum
+      - air handler in the attic, reached through the second-floor hall closet; two-story house
+      - water dripped from the attic hatch area two days ago
+      - about 7 years old (card says 'Age: not asked')
+      wasted_questions:
+      - error code question after her opening said the screen went completely blank
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - card header says 'house'; the homeowner never said what kind of home it is
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: 'AC dead, blank thermostat and a new ceiling spot: I would call before I send anyone.'
+        estimator: 'The breaker line is now asked instead of invented, and the stain is on the card. But system, age, access and the outdoor-unit sound are all ''not asked'' and the new batteries are missing, so I still cannot tell a thermostat swap from an attic leak call.'
+        field_tech: An attic through a second-floor closet with water in it, and nothing on the card says so; no drop cloths or wet vac on the truck.
 - scenario_id: hvac_repair_s05
   labels:
     A: baseline_human
     B: baseline_none
     C: playbook
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -281,11 +362,29 @@ scenarios:
         owner: 'Fan spins, blower runs, warm air, easy ground unit: diagnostic fee, yes.'
         estimator: Good that the furnace label is called out, but I would have asked whether the outdoor unit was replaced; AC age is blank.
         field_tech: I find out about the 2019-on-2004 mismatch on site.
+    D:
+      quotable: 2
+      missing_facts:
+      - outdoor unit on the ground on the north side, easy access (card says 'Access: not asked')
+      wasted_questions:
+      - system type question after he said AC and sent the outdoor unit label
+      - age question after the outdoor label showed 2019; the card then says 'Age: not sure' next to the 2019 label
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Fan spins, blower runs, weak warm air, a 2019 outdoor label on a 2004 furnace: diagnostic fee, yes.'
+        estimator: 'Caught the furnace label and got the outdoor label, so the mixed system shows from the two dates. Two questions repeat what the label already answered, and six is one over.'
+        field_tech: I can read the mismatch from the card; access is blank, so I do not know roof or ground before I go.
 - scenario_id: hvac_repair_s06
   labels:
     A: playbook
     B: baseline_none
     C: baseline_human
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -334,11 +433,35 @@ scenarios:
         owner: Complete and marked urgent; visit fee.
         estimator: Asked last service date too. Nothing missing.
         field_tech: Park check-in and cats noted.
+    D:
+      quotable: 1
+      missing_facts:
+      - neighbor has a key and can let a tech in weekdays after 9 am
+      - park requires contractors to check in at the office (55+ park)
+      - two cats in the home; no one living there
+      - about 11 years old
+      - not checked since he left in April
+      wasted_questions:
+      - '''What is happening?'' after his opening said the house is hot and the AC is not heard running'
+      - error code question to an owner in Minnesota with nobody at the house
+      - breaker question to the same absent owner
+      - photo ask to an owner who is out of state with nobody at the house
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Empty manufactured home at 91, owner in Minnesota, nothing on how to get in: I have to call before I can schedule anyone.'
+        estimator: 'Four of six questions could not be answered from Minnesota, and the one that mattered, who can let a tech in, was never asked. Needed: today is now on the card.'
+        field_tech: I would show up at a 55+ park with no check-in and a locked house with cats inside.
 - scenario_id: hvac_repair_s07
   labels:
     A: baseline_none
     B: baseline_human
     C: playbook
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -383,11 +506,29 @@ scenarios:
         owner: '94 inside, 81, hum with fan not turning, gate locked with neighbor to meet: urgent visit, I know the likely parts.'
         estimator: Complete. Five questions where four was the limit; the photo offer was the extra one.
         field_tech: Gate and neighbor on the card; I bring capacitors and a fan motor.
+    D:
+      quotable: 2
+      missing_facts:
+      - a neighbor can meet the technician
+      - no cooling since last night
+      wasted_questions:
+      - system type question to a homeowner who does not know what she has; the access question placed the unit anyway
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: 'House at 94, 81 years old, hum with the fan not turning, today: urgent visit fee from the card. The locked gate with no one named to meet me is a scheduling problem the neighbor line would have solved.'
+        estimator: 'Six questions where four was the limit, to a homeowner who apologizes on every reply. No health advice and no 911 text, which is right.'
+        field_tech: 'The locked gate is on the card but not that a neighbor can meet me; I bring capacitors and a fan motor.'
 - scenario_id: hvac_repair_s08
   labels:
     A: baseline_human
     B: playbook
     C: baseline_none
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -432,11 +573,29 @@ scenarios:
         owner: Everything, including the lease rule; visit fee pending approval.
         estimator: Blink count and remote behaviour recorded without decoding.
         field_tech: No surprises.
+    D:
+      quotable: 1
+      missing_facts:
+      - landlord has not approved an outside call; the lease says the landlord must approve repairs over a small amount
+      - 'blink pattern (one green, two orange pulses, then off): card gives only ''green blinking, orange blinking'' from the photo'
+      - tenant is home most days after 4 pm
+      wasted_questions: []
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: 'A tenant is asking and the card says only that the landlord has not sent anyone: I do not know if I am allowed to work on it, so I call first.'
+        estimator: 'Dropping the open question lost the landlord approval, the tall ladder and the after-4 window, which the first playbook run got in one reply. Still no blink count.'
+        field_tech: The bracket on the back wall tells me to bring a ladder; I do not know when the tenant is home.
 - scenario_id: hvac_repair_s09
   labels:
     A: playbook
     B: baseline_human
     C: baseline_none
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -481,11 +640,31 @@ scenarios:
         owner: 'Complete, Needed: today. Not marked urgent.'
         estimator: Complete; five questions.
         field_tech: Path noted.
+    D:
+      quotable: 2
+      missing_facts:
+      - 'package unit on the ground behind the house: the card says ''Sistema: no sé'''
+      - renter; the owner, out of town, approves repairs by text
+      - path to the unit partly blocked by a rolled-up carpet and boxes
+      wasted_questions:
+      - '''¿Cuándo lo necesita?'' after her opening asked for someone today'
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - '''Edad: 9 años según la dueña'': she said ''el dueño''; the card changes who told her'
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Ground unit behind the house, fan spins, warm air, 9 years, baby, today: urgent visit fee, yes. I would not know she rents.'
+        estimator: 'Five questions where four was the limit, one of them asking when after she said today. Owner approval was never asked, so the card reads like an owner request.'
+        field_tech: The boxes in the path are not on the card; I find them when I walk back there.
 - scenario_id: hvac_repair_s10
   labels:
     A: baseline_none
     B: playbook
     C: baseline_human
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -530,11 +709,33 @@ scenarios:
         owner: Complete, urgent.
         estimator: Complete; six questions, two over the limit for a panicked caller.
         field_tech: 'No surprises. (It gave a drywall-puncture tip and a 911 line: advice, not a fire-list flag.)'
+    D:
+      quotable: 2
+      missing_facts:
+      - AC stopped cooling yesterday and ran a day before the leak; thermostat turned off about an hour ago
+      - no sparks, smoke or burning smell, nearby light still works (never asked; the card is silent)
+      - two-story house
+      - about 6 years old
+      wasted_questions:
+      - '''When do you need this?'' after his opening said someone come now'
+      - photo ask for the indoor unit and its label after he said it is in the attic
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - card header says 'house'; the homeowner never said what kind of home it is
+      questions_asked: 4
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Active drip from an AC in the attic, two-foot stain, sagging drywall, today: urgent leak visit, yes.'
+        estimator: 'The first playbook run''s open question got the sequence, the two stories and the no-sparks line in one reply; v2 spent those questions on timing and a second photo. ''Shows, Cooling, Age: not asked'' is half the card.'
+        field_tech: 'I do not know it is a two-story attic until I am in the driveway. No 911 text and no breaker advice, which is right.'
 - scenario_id: hvac_repair_s11
   labels:
     A: baseline_human
     B: baseline_none
     C: playbook
+    D: playbook_v2
   scores:
     A:
       quotable: 2
