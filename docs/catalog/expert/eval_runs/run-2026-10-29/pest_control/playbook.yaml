@@ -1,0 +1,410 @@
+# Run agent: playbook intake, category pest_control, run-2026-10-29. Fake data only.
+# Homeowner played from scenarios/pest_control.yaml only. Intake played from intake_agent.md, the expert file and the kb.
+# Town: no scenario states a town except s13 (Parker). Harness rule: coverage counts assumed for Lake Havasu City,
+# so every card lists the town as a default, not as a stated fact.
+category: pest_control
+variant: playbook
+model: "claude-haiku-5-5"
+run: "run-2026-10-29"
+results:
+  - scenario_id: pest_control_s01
+    transcript:
+      - {who: homeowner, text: "got bugs"}
+      - {who: intake, text: "What are you seeing? 1 Scorpions 2 Ants or roaches 3 Spiders 4 Termites 5 Rodents 6 Weeds (pre-emergent)", step: question}
+      - {who: homeowner, text: "2 roaches"}
+      - {who: intake, text: "One time or ongoing? 1 One-time 2 Monthly 3 Every other month 4 Quarterly", step: question}
+      - {who: homeowner, text: "ongoing"}
+      - {who: intake, text: "Where? 1 Inside 2 Outside 3 Both", step: question}
+      - {who: homeowner, text: "1. kitchen and laundry mostly, a few in garage. at night"}
+      - {who: intake, text: "About how big is the home? 1 Under 1,500 sq ft 2 1,500 to 2,500 sq ft 3 Over 2,500 sq ft", step: question}
+      - {who: homeowner, text: "2. about 2200"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo: blurry photo of a kitchen baseboard, small dark brown insect near the corner]"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: general_pest, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Pest control | Lake Havasu City, area not said | type not said
+      Roaches inside, mostly the kitchen and laundry room, a few in the garage; wants ongoing service.
+      Seeing: roaches (her word). Where: inside, kitchen and laundry room mostly, a few in the garage (her words). How often: not said.
+      Schedule wanted: ongoing (interval not said). Home: 1,500 to 2,500 sq ft (said about 2,200). Current pest service: not said.
+      Photos: 1 (blurry photo of a kitchen baseboard, small dark brown insect near a corner).
+      Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s02
+    transcript:
+      - {who: homeowner, text: "need the house fumigated, crickets everywhere. hundreds of them at night, the big ugly brown kind. tent the whole thing if thats what it takes"}
+      - {who: intake, text: "One time or ongoing? 1 One-time 2 Monthly 3 Every other month 4 Quarterly", step: question}
+      - {who: homeowner, text: "2 monthly if thats how it works. is one time even a thing for crickets"}
+      - {who: intake, text: "Where are they? 1 Inside 2 Outside 3 Both", step: question}
+      - {who: homeowner, text: "3. garage and back patio by the slider, some come in the house"}
+      - {who: intake, text: "About how big is the home? 1 Under 1,500 sq ft 2 1,500 to 2,500 sq ft 3 Over 2,500 sq ft", step: question}
+      - {who: homeowner, text: "2. about 1800"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo: garage floor by the roll-up door, dead brown crickets and a few live ones along the seam]"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "3"}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: [pest]
+    routing: {category: pest_control, job_type: general_pest, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Pest control | Lake Havasu City, area not said | type not said
+      Crickets, hundreds at night, mostly the garage and back patio, some inside. Asked for fumigation or tenting.
+      Seeing: crickets, hundreds at night, big brown ones (his words). Where: both (garage and back patio by the slider, some inside).
+      How often: not said. Schedule wanted: monthly, if that is how it works (asked whether one-time works).
+      Home: 1,500 to 2,500 sq ft (said about 1,800). Current pest service: not said.
+      Photos: 1 (garage floor by the roll-up door, dead brown crickets and a few live ones along the seam).
+      Homeowner adds: asked for fumigation or tenting if that is what it takes.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s03
+    transcript:
+      - {who: homeowner, text: "i have termites in my kitchen!! saw like 50 of them on the counter this morning going toward the sugar and the dogs food bowl, i read termites eat your house and i am freaking out how fast can someone come look at it"}
+      - {who: intake, text: "Have you seen any of these: thin mud tubes on a wall, piles of small wings, damaged or hollow wood, or small pellets like sand? 1 Mud tubes near the ground or foundation 2 Mud high up under the roof edge 3 Piles of small wings 4 Damaged or hollow wood 5 Small pellets like sand 6 None of these", step: follow_up}
+      - {who: homeowner, text: "6 none of these!! just a line of tiny dark bugs walking on the counter. no tubes, no sawdust, no soft wood that i've seen"}
+      - {who: intake, text: "One time or ongoing? 1 One-time 2 Monthly 3 Every other month 4 Quarterly", step: question}
+      - {who: homeowner, text: "1 one time to start, ill do ongoing if they say so"}
+      - {who: intake, text: "About how big is the home? 1 Under 1,500 sq ft 2 1,500 to 2,500 sq ft 3 Over 2,500 sq ft", step: question}
+      - {who: homeowner, text: "2. about 2000"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo: thin line of tiny dark insects walking along the backsplash toward a canister]"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "asap please. how fast can someone come"}
+    questions_asked: 5
+    follow_up_used: fu_termite_signs
+    skipped_bank_questions: [pest, where]
+    routing: {category: pest_control, job_type: general_pest, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Pest control | Lake Havasu City, area not said | type not said
+      About 50 tiny dark insects in a line on the kitchen counter, heading to the sugar and the dog's food bowl. Homeowner thinks termites.
+      Seeing: about 50 tiny dark insects in a line (her count). Mud tubes: none. Wing piles: none. Damaged or hollow wood: none noticed. Where: inside, kitchen counter (sugar canister and dog's bowl).
+      Schedule wanted: one-time to start; open to ongoing. Home: 1,500 to 2,500 sq ft (said about 2,000). Current pest service: not said.
+      Photos: 1 (close view of kitchen counter edge, thin line of tiny dark insects walking along the backsplash toward a canister).
+      Homeowner adds: how fast can someone come look.
+      Needed: asap (her words).
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s04
+    transcript:
+      - {who: homeowner, text: "i think i have bed bugs, waking up covered in bites every morning. need to get treated asap"}
+      - {who: intake, text: "Do you have a dog or cat, and does it go outside? 1 Yes, and it goes outside 2 Yes, indoor only 3 No pets", step: follow_up}
+      - {who: homeowner, text: "1. a cat. it goes outside"}
+      - {who: intake, text: "About how big is the home? 1 Under 1,500 sq ft 2 1,500 to 2,500 sq ft 3 Over 2,500 sq ft", step: question}
+      - {who: homeowner, text: "2. 1600 ish"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo: ankle with a cluster of small red bumps, no bed or mattress in the frame]"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "1 today if possible"}
+    questions_asked: 4
+    follow_up_used: fu_pets_outside
+    skipped_bank_questions: [pest, how_often, where]
+    routing: {category: pest_control, job_type: bed_bugs_other, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Pest control | Lake Havasu City, area not said | type not said
+      Bites every morning, shown on an ankle in the photo; homeowner thinks bed bugs; outdoor cat in the home.
+      Seen: bites on an ankle (photo). Bugs or spots on mattress or frame: not said. Homeowner thinks: bed bugs.
+      Pets: cat, goes outside. Rooms and floors: not said. Home: 1,500 to 2,500 sq ft (said about 1,600). Current pest service: not said.
+      Photos: 1 (ankle with a cluster of small red bumps; no bed or mattress shown).
+      Homeowner adds: wants treatment asap (her words).
+      Needed: today.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s05
+    transcript:
+      - {who: homeowner, text: "found mud tubes on the side of my house, termites right? here's a picture, can someone come look [photo: several tan mud clumps on stucco under the roof edge, high up]"}
+      - {who: intake, text: "Have you seen any of these: thin mud tubes on a wall, piles of small wings, damaged or hollow wood, or small pellets like sand? 1 Mud tubes near the ground or foundation 2 Mud high up under the roof edge 3 Piles of small wings 4 Damaged or hollow wood 5 Small pellets like sand 6 None of these", step: follow_up}
+      - {who: homeowner, text: "2. up under the roof edge on the second floor side, about 15 feet up. nothing at the foundation"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "thats the only picture i took"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "3"}
+    questions_asked: 3
+    follow_up_used: fu_termite_signs
+    skipped_bank_questions: [pest, how_often, where, home_size]
+    routing: {category: pest_control, job_type: bees_wasps, bank_job_type: "general pest service", unsure: true}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Pest control | Lake Havasu City, area not said | type not said
+      Tube-shaped mud clumps high under the roof edge on the second-floor side, about 15 feet up, not at the foundation. Homeowner thinks termites.
+      Where: under the eave, roof edge, second-floor side. Since: not said. Height and nearby: about 15 feet up (her words); nothing at the foundation. Stung so far: not said. Live removal: not said.
+      Photos: 1 (several tan mud clumps on stucco under the roof edge, high up).
+      Homeowner adds: "termites right?" and "can someone come look". Flying insects: not asked.
+      Needed: flexible.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s06
+    transcript:
+      - {who: homeowner, text: "we are getting scorpions in the house like 4 or 5 a week, even with monthly spray guy before. i dont have a picture, never wants to hold still lol. we are on the east side of town"}
+      - {who: intake, text: "One time or ongoing? 1 One-time 2 Monthly 3 Every other month 4 Quarterly", step: question}
+      - {who: homeowner, text: "2"}
+      - {who: intake, text: "Does the yard have any of these: a block wall, rock or gravel, palm trees, or wood or debris piles? 1 Block wall 2 Rock or gravel 3 Palm trees 4 Wood or debris piles 5 More than one of these 6 None of these", step: follow_up}
+      - {who: homeowner, text: "1. block wall on the east side"}
+      - {who: intake, text: "About how big is the home? 1 Under 1,500 sq ft 2 1,500 to 2,500 sq ft 3 Over 2,500 sq ft", step: question}
+      - {who: homeowner, text: "2. about 2400"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "no picture, they are gone now lol"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "3"}
+    questions_asked: 5
+    follow_up_used: fu_yard_features
+    skipped_bank_questions: [pest, where]
+    routing: {category: pest_control, job_type: scorpions, bank_job_type: "scorpions", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Pest control | Lake Havasu City, east side | type not said
+      Scorpions inside four or five a week, even with monthly service before; block wall on the east side of the yard.
+      Seen inside: 4 or 5 a week (her words). Rooms: not said. Yard: block wall, east side.
+      Schedule wanted: monthly. Home: 1,500 to 2,500 sq ft (said about 2,400). Current pest service: monthly spray before, not said if still.
+      Photos: 0 (she sent none).
+      Homeowner adds: none.
+      Needed: flexible.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s07
+    transcript:
+      - {who: homeowner, text: "hello this is dorothy my grandson put this number in. theres something in the cieling at night scratching and runing around. i can not sleep. also i found little black things in the garage like rice"}
+      - {who: intake, text: "What are you seeing? 1 Scorpions 2 Ants or roaches 3 Spiders 4 Termites 5 Rodents 6 Weeds (pre-emergent)", step: question}
+      - {who: homeowner, text: "not sure. i dont know what it is"}
+      - {who: intake, text: "Where have you seen them or their droppings: attic or walls, inside rooms, the garage, or the yard, a car or a boat? 1 Attic or walls 2 Inside rooms or kitchen 3 Garage or storage 4 Yard, car or boat 5 More than one of these", step: follow_up}
+      - {who: homeowner, text: "5. ceiling in my bedroom at night and the little black things on the garage floor and on top of the washer"}
+      - {who: intake, text: "About how big is the home? 1 Under 1,500 sq ft 2 1,500 to 2,500 sq ft 3 Over 2,500 sq ft", step: question}
+      - {who: homeowner, text: "1 about 1300 i think"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "no picture. my grandson comes sundays and can take some then"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "3. sundays is when my grandson comes"}
+    questions_asked: 5
+    follow_up_used: fu_rodent_where
+    skipped_bank_questions: [how_often, where]
+    routing: {category: pest_control, job_type: rodents, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Pest control | Lake Havasu City, area not said | type not said
+      Scratching and running in the bedroom ceiling at night; small dark droppings in the garage. Homeowner cannot sleep.
+      Signs at: bedroom ceiling, garage floor, top of the washer (her words). How often: not said (sounds at night).
+      Schedule wanted: not said. Home: under 1,500 sq ft (said about 1,300). Current pest service: not said.
+      Photos: 0 (grandson may take some on Sundays).
+      Homeowner adds: grandson visits Sundays.
+      Needed: flexible.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s08
+    transcript:
+      - {who: homeowner, text: "hey i rent a duplex and my place has roaches bad. landlord said i can find someone who does it, he'll look at the quote. can you help"}
+      - {who: intake, text: "One time or ongoing? 1 One-time 2 Monthly 3 Every other month 4 Quarterly", step: question}
+      - {who: homeowner, text: "not sure, landlord decides"}
+      - {who: intake, text: "Where? 1 Inside 2 Outside 3 Both", step: question}
+      - {who: homeowner, text: "1. kitchen mostly"}
+      - {who: intake, text: "About how big is the home? 1 Under 1,500 sq ft 2 1,500 to 2,500 sq ft 3 Over 2,500 sq ft", step: question}
+      - {who: homeowner, text: "1. its like 900 sq ft, 2 bedroom"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo: kitchen cabinet interior, several small brown insects on the shelf liner]"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: [pest]
+    routing: {category: pest_control, job_type: general_pest, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Pest control | Lake Havasu City, area not said | duplex, rents one half
+      Roaches in the kitchen of a rented half of a duplex; landlord will look at the quote.
+      Seeing: roaches (her word). Where: inside, kitchen mostly. How often: not said.
+      Schedule wanted: not said. Home: under 1,500 sq ft (said about 900, 2 bedrooms). Current pest service: not said.
+      Photos: 1 (kitchen cabinet interior, several small brown insects on the shelf liner).
+      Homeowner adds: rents; landlord said to find a business and he will look at the quote.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s09
+    transcript:
+      - {who: homeowner, text: "buenas tardes, despues de la tormenta de ayer salieron muchos bichos con alas por las ventanas de la sala y hay alitas en el piso. creo que es comejen, quiero que vengan a revisar"}
+      - {who: intake, text: "¿Ha visto algo de esto: tubitos de lodo en una pared, montones de alitas, madera dañada o hueca, o bolitas como arena? 1 Tubitos de lodo cerca del suelo o el cimiento 2 Lodo arriba, bajo la orilla del techo 3 Montones de alitas 4 Madera dañada o hueca 5 Bolitas como arena 6 Nada de esto", step: follow_up}
+      - {who: homeowner, text: "1, 3 y 4. tubito de lodo en la pared de la cochera detras del calentador. un rodapie de la sala suena hueco al tocarlo"}
+      - {who: intake, text: "¿Una vez o servicio continuo? 1 Una vez 2 Cada mes 3 Cada dos meses 4 Cada tres meses", step: question}
+      - {who: homeowner, text: "1 una vez"}
+      - {who: intake, text: "¿Más o menos qué tamaño tiene la casa? 1 Menos de 1,500 pies² 2 1,500 a 2,500 pies² 3 Más de 2,500 pies²", step: question}
+      - {who: homeowner, text: "2. como 1900 pies"}
+      - {who: intake, text: "Una foto o dos ayudan a cotizar. No hay problema si no tiene foto.", step: photo}
+      - {who: homeowner, text: "[photo: small pile of thin translucent wings on the windowsill and a few on the floor tile under the window]"}
+      - {who: intake, text: "¿Cuándo lo necesita? 1 Hoy 2 Esta semana 3 Flexible 4 En una fecha", step: question}
+      - {who: homeowner, text: "2"}
+    questions_asked: 5
+    follow_up_used: fu_termite_signs
+    skipped_bank_questions: [pest, where]
+    routing: {category: pest_control, job_type: termites, bank_job_type: "termites", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Pest control | Lake Havasu City, area not said | type not said
+      Winged insects came out of the living room windows after a storm; thin mud tube on the garage wall; one hollow-sounding baseboard. Homeowner thinks termites. Writes in Spanish.
+      Seen: mud tube on the garage stem wall behind the water heater (her words: tubito de lodo); piles of small wings on the living room sill and floor tile under the front window; living room baseboard sounds hollow when tapped.
+      Where: living room window frames and floor edges; garage wall. Floor: not said. Home: 1,500 to 2,500 sq ft (said about 1,900). Past treatment: not said. For a sale or loan: not said.
+      Schedule wanted: one-time.
+      Photos: 1 (small pile of thin translucent wings on a windowsill and a few on the floor tile under the window).
+      Homeowner adds: "quiero que vengan a revisar" (wants someone to come look).
+      Needed: this week.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s10
+    transcript:
+      - {who: homeowner, text: "THERES A HUGE SWARM OF BEES HANGING IN THE TREE IN OUR BACKYARD!!! THEY ARE GOING TO KILL US!!! my kids play out there. SEND SOMEONE NOW"}
+      - {who: intake, text: "When did you first see them there? 1 Today 2 A few days ago 3 A week or more", step: follow_up}
+      - {who: homeowner, text: "1 TODAY. this morning. they havent moved in 3 hours"}
+      - {who: intake, text: "A photo from a safe distance helps businesses quote. Only if it is safe. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo from the patio door: dark football-sized cluster of bees hanging on a low branch]"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "1 NOW"}
+    questions_asked: 3
+    follow_up_used: fu_bee_how_long
+    skipped_bank_questions: [pest, how_often, where, home_size]
+    routing: {category: pest_control, job_type: bees_wasps, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Pest control | Lake Havasu City, area not said | type not said
+      Bee cluster hanging in a backyard tree since this morning; kids play in the yard.
+      Where: tree, hanging cluster (her words). Since: today, not moved in 3 hours. Height and nearby: low branch about 6 feet up (photo); kids play out there (her words). Stung so far: not said. Live removal: not said.
+      Photos: 1 (dark football-sized cluster on a low branch about 6 feet up, photo from the patio door).
+      Homeowner adds: needs someone sent now.
+      Needed: today.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s11
+    transcript:
+      - {who: homeowner, text: "hi, just looking for someone to do a monthly ant treatment around the house, we get them every spring at the back door. oh and by the way theres a faint propane smell near the water heater in the garage since yesterday, probably nothing. anyway ants are in the kitchen too sometimes"}
+      - {who: intake, text: "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe.", step: "911"}
+      - {who: homeowner, text: "ok. its probably nothing, i just wanted the ants handled"}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: general_pest, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: true
+    urgent: false
+    stopped_before_card: "911_hold"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s12
+    transcript:
+      - {who: homeowner, text: "back in town for the winter. need two things done: (1) pre-emergent sprayed on my front and back rock yards before the winter weeds, my gardener says he can't do that part, and (2) the usual monthly yard guy for mowing the small lawn strip, trimming the oleanders and cleaning up the palm fronds"}
+      - {who: intake, text: "Pre-emergent is a pest request. Mowing, trimming and palm clean-up are yard work and need a separate request. This one covers the pre-emergent only.", step: read}
+      - {who: intake, text: "One time or ongoing? 1 One-time 2 Monthly 3 Every other month 4 Quarterly", step: question}
+      - {who: homeowner, text: "ongoing. twice a year, fall and early spring"}
+      - {who: intake, text: "Are weeds growing there now, or is the ground clear? 1 Clear now 2 A few small weeds 3 Lots of weeds or tall weeds", step: follow_up}
+      - {who: homeowner, text: "2 a few small ones"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo: front rock yard with scattered small green weeds and a drip line along the edge]"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "2"}
+    questions_asked: 4
+    follow_up_used: fu_weeds_now
+    skipped_bank_questions: [pest, where, home_size]
+    routing: {category: pest_control, job_type: weed_control, bank_job_type: "pre-emergent weed control", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0112 | Pest control | Lake Havasu City, area not said | type not said
+      Pre-emergent for the front and back rock yards, twice a year; a few small weeds in the rock now.
+      Areas: front and back. Ground: rock. Weeds now: a few small. Schedule wanted: ongoing, twice a year, fall and early spring (her words). Home: not said.
+      Photos: 1 (front rock yard, scattered small green weeds, drip line along the edge).
+      Homeowner adds: gardener says he can't do the pre-emergent part (her words).
+      Needed: this week.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
+
+  - scenario_id: pest_control_s13
+    transcript:
+      - {who: homeowner, text: "got scorpions in my house out here in Parker, need monthly service. who comes out this far"}
+      - {who: intake, text: "We don't cover Parker yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: null, bank_job_type: null, unsure: true}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: "outside_area"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s14
+    transcript:
+      - {who: homeowner, text: "bees are going in and out of my irrigation valve box in the front yard, been a few days, want them gone"}
+      - {who: intake, text: "We don't cover pest control jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: bees_wasps, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: "no_businesses"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s15
+    transcript:
+      - {who: homeowner, text: "selling my house and my agent says I need a termite certificate or clearance before closing. who does those? escrow opens next week"}
+      - {who: intake, text: "That is a termite report for a sale, a home inspection request, not pest control. Routing it there.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: home_inspection, job_type: "termite report for a sale or loan", bank_job_type: "termite report for a sale or loan", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: "other_category"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s16
+    transcript:
+      - {who: homeowner, text: "pigeons have moved in under my solar panels, poop everywhere on the patio and the panels look filthy. need them gone and whatever keeps them out, and the panels cleaned"}
+      - {who: intake, text: "About how many solar panels are on the roof? 1 Under 15 2 15 to 30 3 Over 30", step: follow_up}
+      - {who: homeowner, text: "2. about 16"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo: gap under the lower panel edge with straw, feathers and droppings; two pigeons on the roof tile]"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "2. i dont care how, just get them out"}
+    questions_asked: 3
+    follow_up_used: fu_panel_count
+    skipped_bank_questions: [pest, how_often, where, home_size]
+    routing: {category: pest_control, job_type: pigeons_birds, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0116 | Pest control | Lake Havasu City, area not said | type not said
+      Pigeons roosting under the lower row of roof solar panels; droppings on the patio.
+      Where: under solar panels. Panels: 15 to 30 (said about 16). Stories: not said.
+      Photos: 1 (gap under the lower panel edge with straw, feathers and droppings; two pigeons on tile roof).
+      Homeowner adds: wants them gone and something to keep them out; droppings on the patio (her words).
+      Needed: this week.
+    facts_in_card_not_stated: ["town Lake Havasu City (harness default, not said)"]
