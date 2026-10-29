@@ -413,3 +413,12 @@ def test_owner_paths_read_from_codeowners(tmp_path: Path) -> None:
     f.write_text("# comment\n/.github/   @someone\n\n/runner/ @someone\n/BUILD_BRIEF.md @someone\n", encoding="utf-8")
     assert entry.owner_paths(f) == (".github/", "runner/", "BUILD_BRIEF.md")
     assert entry.owner_paths(tmp_path / "missing") == ()
+
+
+def test_owner_review_setting(tmp_path: Path) -> None:
+    from runner import __main__ as entry
+
+    f = tmp_path / "runner.json"
+    assert entry.owner_review(f) is True
+    f.write_text('{"owner_review": false}', encoding="utf-8")
+    assert entry.owner_review(f) is False
