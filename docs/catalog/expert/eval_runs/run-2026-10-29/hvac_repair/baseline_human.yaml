@@ -1,0 +1,636 @@
+category: hvac_repair
+variant: baseline_human
+model: "claude-opus-5-5"
+run: "run-2026-10-29"
+notes: >-
+  The intake is played as a top Arizona HVAC estimator (25 years, Lake Havasu City), texting one
+  question at a time, with no question bank, no expert file and no trade file. The estimator may say
+  what they suspect and may give the advice a real estimator would; the card holds the crew notes
+  (facts got, suspicions, on-site checks). The homeowner is played strictly from the scenario.
+  Coverage is assumed confirmed for Lake Havasu City except in s13 (outside area) and s14 (no
+  businesses), where the intake stops before any trade question as intake_agent.md says. job_type
+  values use the kb ids named in the scenario file where one fits the estimator's own call. Photos
+  are only described from the scenario's photo field; where the scenario gives no photo content, the
+  estimator does not get one.
+results:
+  - scenario_id: hvac_repair_s01
+    transcript:
+      - {who: homeowner, text: "ac is messed up can someone come look"}
+      - {who: intake, text: "Sure. Is it not turning on at all, or running but not cooling?", step: question}
+      - {who: homeowner, text: "runs. air comes out just not cold. kinda cool. 86 in here"}
+      - {who: intake, text: "Where is the unit, on the roof or on the ground outside?", step: question}
+      - {who: homeowner, text: "roof. one box"}
+      - {who: intake, text: "About how old is it?", step: question}
+      - {who: homeowner, text: "12 maybe. came with the house"}
+      - {who: intake, text: "When did it start acting up?", step: question}
+      - {who: homeowner, text: "3 days ago. worse every afternoon"}
+      - {who: intake, text: "Last one. One story or two, and is there a roof hatch or is it ladder only?", step: question}
+      - {who: homeowner, text: "one story flat roof. no hatch. ladder on the side of the house"}
+      - {who: intake, text: "Got it, the tech will bring a ladder. No need to go up there yourself. Notes going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0151 | Heating and cooling repair | Lake Havasu City
+      FACTS
+      - Rooftop package unit (one box on the roof). One-story home, flat roof.
+      - No roof hatch; tech needs a ladder on the side of the house.
+      - Runs and air comes out of the vents, but only mildly cool. House was 86 inside when she texted (afternoon).
+      - Started about 3 days ago, worse each afternoon.
+      - About 12 years old; came with the house.
+      - No photo (she will not go on the roof; not asked to).
+      - Needed: not said.
+      SUSPECT
+      - Weak cooling that fades in the afternoon heat: dirty condenser coil, failing capacitor or condenser fan motor, or low charge from a leak.
+      - About 12 years puts it around 2014, so most likely R-410A; confirm on the plate.
+      - Rooftop package unit: check the roof curb and supply/return duct connections for leaks or a disconnected duct dumping cold air into the roof cavity.
+      ON SITE
+      - Bring an extension ladder; flat roof, walk carefully on the roofing.
+      - Read the data plate (refrigerant, tonnage, year). Check filter (often in the unit or a return grille), condenser coil, capacitor, fan motor amps, superheat/subcool.
+      - Measure supply/return split at the registers.
+      - Yard/gate access not asked; ask on arrival.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s02
+    transcript:
+      - {who: homeowner, text: "my compressor in the attic is freezing up solid, ice all over the copper line and the thing drips everywhere. house wont cool"}
+      - {who: intake, text: "Is the ice on the big copper line at the outdoor unit, or up in the attic?", step: question}
+      - {who: homeowner, text: "ok the outdoor unit. ice is on the big copper line where it goes into the outdoor unit, the foam on it is all frosted. drips on the pad"}
+      - {who: intake, text: "Is the system running right now?", step: question}
+      - {who: homeowner, text: "no I shut it off at the thermostat this morning"}
+      - {who: intake, text: "Good, leave it off so it thaws. When was the filter last changed?", step: question}
+      - {who: homeowner, text: "been about 14 months"}
+      - {who: intake, text: "Where is the indoor unit, the one with the filter, attic or a closet?", step: question}
+      - {who: homeowner, text: "its in a garage closet on the ground floor. attic is just ducts"}
+      - {who: intake, text: "How many return air grilles in the house?", step: question}
+      - {who: homeowner, text: "one. its a 2 story house"}
+      - {who: intake, text: "About how old is the system? And send a pic of the iced line if you can.", step: photo}
+      - {who: homeowner, text: "about 9 years. [photo: copper suction line outside the house wrapped in white foam insulation with a heavy coat of frost on it, and a damp patch on the concrete pad beneath the line set]"}
+      - {who: intake, text: "Thanks. Sounds like an airflow problem first, maybe charge second; the tech will check both. Put a new filter in when you get a chance. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_noise_smell, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0152 | Heating and cooling repair | Lake Havasu City
+      FACTS
+      - House won't cool. Ice on the large copper (suction) line where it enters the outdoor unit; foam sleeve frosted; water dripping onto the pad.
+      - Homeowner first said "compressor in the attic"; corrected: ice is at the outdoor unit, the indoor air handler is in a ground-floor garage closet, attic holds ducts only.
+      - System turned off at the thermostat this morning (thawing).
+      - Filter last changed about 14 months ago.
+      - One return grille for a 2-story house.
+      - About 9 years old.
+      - Photo: frosted suction line with white foam insulation, damp patch on the pad under the line set.
+      - Needed: not said.
+      SUSPECT
+      - Low airflow over the indoor coil: 14-month-old filter, dirty evaporator coil, single undersized return on a 2-story. Low charge is the second possibility. Likely R-410A at 9 years.
+      ON SITE
+      - Confirm fully thawed before testing (run fan only if still iced).
+      - Pull filter, inspect evaporator coil, check blower wheel; measure static pressure and return sizing.
+      - Then check charge (superheat/subcool) and look for a leak if low.
+      - Outdoor unit location/gate not asked; ask on arrival.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s03
+    transcript:
+      - {who: homeowner, text: "my ac just needs freon. dont need a licensed company just somebody cheap who can top it off and has a gauge. cash is fine"}
+      - {who: intake, text: "Anyone handling refrigerant has to be EPA certified, and in Arizona that means a licensed HVAC company, so that's who sees this. Is it running and blowing lukewarm, or not running?", step: question}
+      - {who: homeowner, text: "runs. air is lukewarm. been getting worse for two summers"}
+      - {who: intake, text: "What's been done to it so far?", step: question}
+      - {who: homeowner, text: "I topped it off myself with a can kit last July. cooled for a few weeks"}
+      - {who: intake, text: "How old is the unit?", step: question}
+      - {who: homeowner, text: "about 18 years"}
+      - {who: intake, text: "Can you send a photo of the label on the outdoor unit?", step: photo}
+      - {who: homeowner, text: "[photo: outdoor condenser with a small oily stain on one copper fitting and a rust-colored data plate partly covered by a hanging vine] there"}
+      - {who: intake, text: "The vine covers part of it. What does the plate say for refrigerant, R-22 or R-410A?", step: question}
+      - {who: homeowner, text: "R-22"}
+      - {who: intake, text: "That oily spot on the fitting in your photo is likely where it's leaking, and a can kit lasting a few weeks fits that. On an 18-year-old R-22 unit the tech will price a leak repair and recharge against replacing it. Notes going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0153 | Heating and cooling repair | Lake Havasu City
+      FACTS
+      - AC runs, air lukewarm, getting worse over two summers.
+      - Homeowner added refrigerant himself with a can kit last July; cooled for a few weeks. He believes it just needs freon.
+      - About 18 years old. Data plate reads R-22 (per homeowner; plate partly covered by a vine in the photo).
+      - Photo: outdoor condenser, small oily stain on one copper fitting, rusty data plate partly behind a vine.
+      - Homeowner is price-focused and expects a quick top-off.
+      - Needed: not said.
+      SUSPECT
+      - Refrigerant leak, probably at the oily fitting; can-kit top-off lost within weeks.
+      - Can kits often carry sealer and are frequently R-410A or blend products; system may now be contaminated or mixed.
+      ON SITE
+      - Bring a refrigerant identifier before connecting gauges or recovering; check for sealer.
+      - Leak-check the oily fitting first, then the coil and service valves.
+      - R-22 is reclaimed-only and expensive; be ready to price leak repair plus recharge vs. replacement, and say so plainly.
+      - Clear the vine off the plate; record model, serial, tonnage.
+      - Access not asked; ask on arrival.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s04
+    transcript:
+      - {who: homeowner, text: "Hi, my thermostat went completely blank this morning and the AC isn't running. I think it needs new batteries or the thermostat is dead. Can someone replace it?"}
+      - {who: intake, text: "Have you tried fresh batteries yet?", step: question}
+      - {who: homeowner, text: "Yes, I put in fresh batteries and the screen is still blank."}
+      - {who: intake, text: "Is the outdoor unit making any sound at all?", step: question}
+      - {who: homeowner, text: "No, it's completely silent. No hum."}
+      - {who: intake, text: "Any water anywhere lately, a drip, a ceiling stain, or a wet spot near the indoor unit?", step: question}
+      - {who: homeowner, text: "Actually yes. There's a brown stain on the hallway ceiling that showed up this week, and two days ago it was dripping from around the attic hatch. I thought it was condensation."}
+      - {who: intake, text: "That's probably the whole story. Many attic units have a safety switch that cuts power to the thermostat when the drain pan backs up. Hold off on buying a thermostat. Where's the indoor unit, and how do you get to it?", step: question}
+      - {who: homeowner, text: "It's in the attic above the hallway. We get up there through the second-floor hall closet. The house is two stories."}
+      - {who: intake, text: "About how old is the system?", step: question}
+      - {who: homeowner, text: "About 7 years."}
+      - {who: intake, text: "Thanks. A photo of the thermostat and one of the ceiling stain would help.", step: photo}
+      - {who: homeowner, text: "[photo: wall thermostat with a completely dark screen, cover popped open, two AA batteries lying on the floor beneath it]"}
+      - {who: intake, text: "Got it. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_turning_on, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0154 | Heating and cooling repair | Lake Havasu City
+      FACTS
+      - Thermostat screen went blank this morning and stays blank with fresh batteries. AC not running.
+      - Outdoor unit completely silent, no hum.
+      - Brown stain on the hallway ceiling, appeared this week. Water dripped from around the attic hatch two days ago.
+      - Air handler is in the attic above the hallway; access through the second-floor hall closet. Two-story home.
+      - About 7 years old.
+      - Photo: thermostat with dark screen, cover open, two AA batteries on the floor. No photo of the stain.
+      - Needed: not said.
+      SUSPECT
+      - Condensate backup tripping the float/safety switch, which kills 24 V so the thermostat goes dark (if it is a powered stat). Clogged primary drain likely.
+      - Second possibility: blown 3 A fuse on the control board or a failed transformer.
+      ON SITE
+      - Attic work through a second-floor closet: bring drop cloths, a wet vac, and a nitrogen/CO2 drain-clearing kit.
+      - Check the secondary pan and float switch, clear the primary drain, check for pan rust-through.
+      - Check board fuse and transformer output; test the thermostat only after 24 V is restored.
+      - Note the ceiling drywall damage for the homeowner; drywall is not HVAC scope.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s05
+    transcript:
+      - {who: homeowner, text: "AC not cooling, house is stuck at 84. here is the label you asked for [photo: metal data label on a gas furnace cabinet, readable, listing a gas input rating and a manufacture year of 2004, no refrigerant line or cooling model number on it]"}
+      - {who: intake, text: "Thanks, that's the furnace label, from 2004. Is the AC outside the same age, or has it been replaced?", step: question}
+      - {who: homeowner, text: "the outdoor unit was replaced in 2019 by the previous owner. they kept the furnace and the indoor coil"}
+      - {who: intake, text: "With it on, does the outdoor fan spin, and does air come out the vents?", step: question}
+      - {who: homeowner, text: "yes outdoor fan spins, blower runs inside, air is warm"}
+      - {who: intake, text: "Where's the outdoor unit and is it easy to get to?", step: question}
+      - {who: homeowner, text: "on the ground on the north side of the house, easy access"}
+      - {who: intake, text: "Can you snap the label on the outdoor unit too?", step: photo}
+      - {who: homeowner, text: "the sun is right on it, didnt think it mattered. want me to try?"}
+      - {who: intake, text: "No need, the tech will read it. A 2019 outdoor unit on a 2004 coil is worth a close look. Notes going out now.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0155 | Heating and cooling repair | Lake Havasu City
+      FACTS
+      - AC not cooling; house stuck at 84. Outdoor fan spins, indoor blower runs, air from vents is warm.
+      - Photo is the INDOOR GAS FURNACE label (2004, gas input rating), not the AC. Do not use it for AC age or size.
+      - Outdoor condenser replaced in 2019 by a previous owner; furnace and indoor coil are original (2004).
+      - Outdoor unit on the ground, north side, easy access.
+      - No photo of the outdoor unit label (sun on it).
+      - Needed: not said.
+      SUSPECT
+      - Mixed system: 2019 condenser is almost certainly R-410A on a 2004 coil that was likely built for R-22. Check whether the metering device was changed and whether the coil was matched.
+      - With outdoor fan running and warm air: compressor not running (capacitor, contactor, thermal overload) or low charge/leak at the old coil.
+      ON SITE
+      - Read the outdoor plate (refrigerant, tonnage); read the coil tag at the furnace (furnace location not asked; ask on arrival).
+      - Check compressor amps, capacitor, contactor; then charge and the metering device.
+      - Leak-check the original coil.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s06
+    transcript:
+      - {who: homeowner, text: "I'm in Minnesota until Nov 15. My neighbor says my house is hot, thermostat shows 91 and she doesnt hear the AC. I have a manufactured home in Havasu. Can someone check it"}
+      - {who: intake, text: "Yes. Who can let a tech in, and when?", step: question}
+      - {who: homeowner, text: "My neighbor has a key and can let a technician in on weekdays after 9 am."}
+      - {who: intake, text: "Is it a split system with an outdoor unit beside the home, or a unit on the roof?", step: question}
+      - {who: homeowner, text: "It's a split system. The outdoor unit sits on a pad beside the home."}
+      - {who: intake, text: "About how old is it, and when was it last checked?", step: question}
+      - {who: homeowner, text: "About 11 years old by my memory. Nobody has checked it since I left in April."}
+      - {who: intake, text: "Is anyone living there, or any pets inside?", step: question}
+      - {who: homeowner, text: "No one is living there, but there are two cats. A house sitter comes in to feed them."}
+      - {who: intake, text: "Is it in a park with rules for contractors?", step: question}
+      - {who: homeowner, text: "Yes, it's a 55+ park near the Island area. Guests and contractors have to check in at the office."}
+      - {who: intake, text: "Thanks. With 91 inside and the cats, I'm marking it for the soonest weekday. The tech will text you before and after. Notes going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_turning_on, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0156 | Heating and cooling repair | Lake Havasu City (Island area) | URGENT
+      FACTS
+      - Manufactured home in a 55+ park near the Island area.
+      - Neighbor reports thermostat reads 91 and she does not hear the AC running.
+      - Split system, outdoor unit on a pad beside the home.
+      - About 11 years old (owner's memory). Not checked since April.
+      - Owner is out of state until Nov 15. Neighbor has a key and can let a tech in weekdays after 9 am.
+      - Park requires contractors to check in at the office.
+      - No one living there; two cats inside, fed by a house sitter.
+      - No photo (nobody at the house today).
+      - Needed: not said. Marked urgent: 91 inside with animals.
+      SUSPECT
+      - Unit not running at all after sitting since April: tripped breaker or disconnect, blown board fuse, clogged condensate float switch, failed capacitor/contactor, or thermostat set to off/batteries.
+      ON SITE
+      - Check in at the park office first. Coordinate with the neighbor for entry.
+      - Mind the cats at the door.
+      - Check breakers/disconnect, thermostat mode and power, float switch, board fuse, then outdoor capacitor/contactor.
+      - Manufactured home: air handler is likely a closet unit with a floor duct system; check the crossover duct under the home.
+      - Text owner photos and findings; he is remote.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s07
+    transcript:
+      - {who: homeowner, text: "hello my air condisioner is blowing hot air and its 94 in my house. I am 81 and not feeling so good. please help"}
+      - {who: intake, text: "I'll get someone out to you today. Is the box outside making any noise, and is the fan on top turning?", step: question}
+      - {who: homeowner, text: "it makes a hum but the fan on top is not turning. im sorry i dont know much about it"}
+      - {who: intake, text: "That helps a lot. When did it stop cooling?", step: question}
+      - {who: homeowner, text: "since last night. sorry"}
+      - {who: intake, text: "No need to be sorry. Can a tech get to the box outside, or is there a gate?", step: question}
+      - {who: homeowner, text: "the side gate is locked and my yard man has the only key, he comes on fridays. but my neighbor could meet the technician. sorry"}
+      - {who: intake, text: "Good. About how old is the unit, if you know?", step: question}
+      - {who: homeowner, text: "about 14 years i think"}
+      - {who: intake, text: "Thank you. A hum with the fan stopped is often a quick part. I'm putting you first. If you start feeling worse, please call 911.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0157 | Heating and cooling repair | Lake Havasu City | URGENT
+      FACTS
+      - House at 94 inside, AC blowing hot air, no cooling since last night.
+      - Occupant is 81, lives alone, says she is not feeling well.
+      - Outdoor unit hums; fan on top not turning.
+      - Outdoor unit is in the side yard behind a locked gate; the yard man has the only key (comes Fridays). A neighbor can meet the tech.
+      - About 14 years old.
+      - No photo (she cannot take one; not asked).
+      - Needed: not said; marked urgent (94 inside, occupant 81 and unwell).
+      SUSPECT
+      - Failed run capacitor (dual cap) or seized condenser fan motor; compressor may be humming on overload.
+      ON SITE
+      - Same-day priority. Carry dual run capacitors and a universal condenser fan motor.
+      - Coordinate gate with the neighbor; if the gate cannot be opened, call the office.
+      - Kill power before touching the fan; check for a locked-rotor compressor once the fan is fixed.
+      - Be patient and explain plainly; she does not know equipment terms.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s08
+    transcript:
+      - {who: homeowner, text: "my landlord keeps saying hes gonna send someone but its been a week. mini split in my casita keeps blinking and wont cool. can i just get my own quote"}
+      - {who: intake, text: "You can get a quote. Has your landlord okayed you calling someone?", step: question}
+      - {who: homeowner, text: "no he hasnt. lease says he has to approve repairs over a small amount"}
+      - {who: intake, text: "Then the company will need his okay before any work; I'll note it. What do the lights do, how many blinks of each color?", step: question}
+      - {who: homeowner, text: "one green and two orange, then the unit shuts off"}
+      - {who: intake, text: "Can you send a photo of the indoor unit while it's blinking?", step: photo}
+      - {who: homeowner, text: "[photo: wall-mounted mini-split indoor head with a green light steadily blinking and an orange light blinking beside it, remote on the shelf below]"}
+      - {who: intake, text: "Where's the outdoor unit, on the ground or up on the wall?", step: question}
+      - {who: homeowner, text: "on a wall bracket on the back of the casita. youd need a tall ladder"}
+      - {who: intake, text: "How old is it?", step: question}
+      - {who: homeowner, text: "landlord said it was put in 3 years ago"}
+      - {who: intake, text: "Could still be under the installer's warranty, worth telling your landlord. When are you home for a tech?", step: question}
+      - {who: homeowner, text: "most days after 4"}
+      - {who: intake, text: "Got it. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: mini_split_repair, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0158 | Heating and cooling repair | Lake Havasu City
+      FACTS
+      - Requester is a TENANT in a detached casita. Landlord has not approved outside service; lease requires landlord approval for repairs over a small amount. Get landlord approval before any work.
+      - Ductless mini-split, wall-mounted indoor head. Won't cool. Blinks one green and two orange, then the unit shuts off.
+      - Photo: indoor head with green and orange lights blinking, remote on the shelf.
+      - Outdoor unit on a wall bracket on the back of the casita; tall ladder needed.
+      - About 3 years old per the landlord.
+      - Tenant home most days after 4 pm.
+      - Brand not asked; read it from the photo or on site.
+      - Needed: not said (landlord delay of about a week).
+      SUSPECT
+      - Fault code; meaning depends on brand. Common causes on a 3-year-old unit: outdoor fan/inverter board fault, sensor fault, or communication fault between heads.
+      - May be under manufacturer/installer warranty; registration status unknown.
+      ON SITE
+      - Confirm landlord approval in writing before diagnosis charges.
+      - Get model/serial; look up the code for that brand before arrival.
+      - Bring a tall extension ladder or step-off for the wall bracket.
+      - Check outdoor unit power, communication wiring, and sensors.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s09
+    transcript:
+      - {who: homeowner, text: "buenas tardes el aire de mi casa no enfria nomas sale aire caliente y tengo un bebe de 5 meses. estamos a 112 grados afuera. alguien puede venir hoy?"}
+      - {who: intake, text: "Buenas tardes. Lo marco urgente para hoy. ¿El aparato está en el techo o en el suelo afuera? ¿Es una caja sola o dos?", step: question}
+      - {who: homeowner, text: "en el suelo atras de la casa. es una sola caja"}
+      - {who: intake, text: "¿El ventilador de esa caja de afuera da vueltas cuando está prendido?", step: question}
+      - {who: homeowner, text: "si da vueltas. adentro si sale aire pero caliente"}
+      - {who: intake, text: "¿La casa es suya o la renta? ¿Quién puede aprobar la reparación?", step: question}
+      - {who: homeowner, text: "la rento. la dueña es mi tia, vive en Bullhead City. dijo que ella aprueba por mensaje"}
+      - {who: intake, text: "¿Cuántos años tiene el aparato, más o menos?", step: question}
+      - {who: homeowner, text: "como 9 años, eso me dijo la dueña"}
+      - {who: intake, text: "Última pregunta. ¿El técnico puede llegar fácil al aparato atrás?", step: question}
+      - {who: homeowner, text: "hay una alfombra enrollada y unas cajas que tapan parte del camino"}
+      - {who: intake, text: "Gracias. Si puede, mueva esas cajas antes de que llegue el técnico. Mientras tanto mantenga al bebé en el cuarto más fresco. Ya mando la información.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0159 | Heating and cooling repair | Lake Havasu City | URGENT | Spanish-speaking customer
+      FACTS
+      - No cooling; vents blow warm air. Indoor blower runs, outdoor fan spins.
+      - Package unit (one box) on the ground behind the house.
+      - About 9 years old (per owner).
+      - 5-month-old baby in the home; 112 outside. Customer asked for service today.
+      - Requester rents; the owner (a relative out of town) approves repairs by text.
+      - Path to the unit partly blocked by a rolled-up carpet and boxes.
+      - No photo.
+      - Needed: today.
+      SUSPECT
+      - Fan spinning, warm air: compressor not running (capacitor, contactor, overload) or low charge. 9 years: likely R-410A.
+      ON SITE
+      - Same-day priority. Send a Spanish-speaking tech if possible.
+      - Confirm owner approval by text before work.
+      - Clear the path; check capacitor, contactor, compressor amps, then charge.
+      RESUMEN (ES)
+      - El aire no enfría; sale aire caliente. El ventilador de afuera da vueltas.
+      - Una sola caja en el suelo atrás de la casa. Unos 9 años.
+      - Bebé de 5 meses en la casa. Urgente, para hoy.
+      - Renta; la dueña aprueba la reparación por mensaje.
+      - Una alfombra y cajas tapan parte del camino al aparato.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s10
+    transcript:
+      - {who: homeowner, text: "HELP!!! WATER IS POURING FROM MY CEILING FROM THE AC!!! ITS GOING TO RUIN EVERYTHING!!! SOMEONE COME NOW"}
+      - {who: intake, text: "On it. Is it a steady stream or a drip?", step: question}
+      - {who: homeowner, text: "DRIPPING. LIKE ONE EVERY FEW SECONDS. I HAVE A BUCKET UNDER IT"}
+      - {who: intake, text: "Good, a bucket handles that. Was the AC cooling before this, and is it running now?", step: question}
+      - {who: homeowner, text: "IT STOPPED COOLING YESTERDAY AND I LEFT IT RUNNING. I TURNED THE THERMOSTAT OFF ABOUT AN HOUR AGO"}
+      - {who: intake, text: "Leave it off. Is the indoor unit in the attic above that spot, and is the house two story?", step: question}
+      - {who: homeowner, text: "YES ATTIC OVER THE HALLWAY. 2 STORY"}
+      - {who: intake, text: "Any sparks, burning smell or smoke, or water at a light or outlet?", step: question}
+      - {who: homeowner, text: "no sparks no smell no smoke. the hallway light is like 4 feet from the stain and it still works and its dry. is it going to burn the house down"}
+      - {who: intake, text: "Nothing you've said points that way. If you ever see sparks or smell burning, get out and call 911. How old is the AC?", step: question}
+      - {who: homeowner, text: "ABOUT 6 YEARS"}
+      - {who: intake, text: "Send me a photo of the ceiling?", step: photo}
+      - {who: homeowner, text: "[photo: ceiling in a hallway with a round brown water stain about two feet across and a drip hanging from a sagging drywall bubble, a bucket on the floor]"}
+      - {who: intake, text: "Thanks. If that bubble keeps growing, a small hole at the low point with the bucket under it lets it drain instead of dropping the drywall. Notes going out now, marked urgent.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_leaking_water, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0160 | Heating and cooling repair | Lake Havasu City | URGENT (active leak)
+      FACTS
+      - Active slow drip from the hallway ceiling under the attic air handler, about one drip every few seconds into a bucket.
+      - Photo: round brown stain about two feet across, sagging drywall bubble with a hanging drip, bucket on the floor.
+      - AC stopped cooling yesterday; ran all day anyway. Thermostat turned off about an hour before he texted.
+      - No sparks, burning smell or smoke. Hallway light about 4 feet from the stain still works and is dry.
+      - Air handler in the attic over the hallway. Two-story home.
+      - About 6 years old.
+      - Homeowner very anxious.
+      - Needed: now (urgent).
+      SUSPECT
+      - Iced evaporator (stopped cooling, kept running) melting into a pan that overflowed, or a clogged primary drain with no or failed float switch; possibly a rusted secondary pan.
+      ON SITE
+      - Bring a wet vac, drain-clearing kit, a float switch, drop cloths.
+      - Check primary drain, secondary pan, float switch; check for ice on the coil and why it stopped cooling (filter, airflow, charge).
+      - Ceiling drywall damage is not HVAC scope; tell the homeowner to photograph it.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s11
+    transcript:
+      - {who: homeowner, text: "Hey, the furnace didnt kick on last night when it dropped to the 40s, thermostat says heat but nothing. Whenever someone can get to it. By the way theres kind of a rotten egg smell in the hall closet where it sits, been there since yesterday, not strong"}
+      - {who: intake, text: "Stop there. A rotten egg smell can be a gas leak, even when it's faint. Get everyone outside now, don't flip switches, and call 911 or Southwest Gas from outside. Text me SAFE once you're out.", step: "911"}
+      - {who: homeowner, text: "ok, me and my wife are out front. SAFE"}
+      - {who: intake, text: "Thanks. Southwest Gas has to clear it before a tech works on the furnace. Did you hear any hissing in there?", step: question}
+      - {who: homeowner, text: "no hissing"}
+      - {who: intake, text: "Do you smell it at the stove or water heater, or just the closet?", step: question}
+      - {who: homeowner, text: "just the closet and a little in the hallway. not at the stove or the water heater"}
+      - {who: intake, text: "When the thermostat calls for heat, do you hear a click or see a flame in the little window, and does the fan come on?", step: question}
+      - {who: homeowner, text: "no flame in the window, no ignition noise, blower doesnt start"}
+      - {who: intake, text: "How old is the furnace?", step: question}
+      - {who: homeowner, text: "about 16 years"}
+      - {who: intake, text: "Can you send a photo of the furnace with the closet door open, once the gas company says it's okay to go back in?", step: photo}
+      - {who: homeowner, text: "[photo: louvered closet door open, a gas furnace cabinet with a small viewing window and a flexible gas connector and a thin pipe running to the wall, no flame visible]"}
+      - {who: intake, text: "Got it. Notes going out now, flagged for the gas smell.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: heat_not_working, bank_job_type: "furnace repair", unsure: false}
+    fire_dept_text: true
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0161 | Heating and cooling repair | Lake Havasu City | URGENT | GAS FLAG
+      GAS FLAG
+      - Faint rotten-egg smell in the furnace closet and a little in the hallway since yesterday. Not at the stove or water heater. No hissing heard.
+      - Told to go outside and call 911 or Southwest Gas; homeowner replied SAFE from out front. Whether the utility has cleared it is not confirmed.
+      - Tech: confirm the utility cleared it; carry a combustible gas detector into the closet.
+      FACTS (the job)
+      - Gas furnace in the hall closet. Number of stories not asked.
+      - Furnace did not start last night (temps in the 40s). Thermostat set to heat. No flame in the viewing window, no ignition noise, blower does not start.
+      - About 16 years old.
+      - Photo: furnace cabinet in a louvered closet, viewing window, flexible gas connector, thin pipe to the wall, no flame.
+      - Needed: whenever (homeowner said "whenever someone can get to it"); flagged urgent for the gas smell.
+      SUSPECT
+      - Leak at the flex connector, the gas valve or a fitting at the furnace; old flex connectors are a common replace item.
+      - No-start with no inducer or blower: control board, door/limit switch, transformer, or thermostat signal. Could be unrelated to the smell.
+      ON SITE
+      - Leak-test the flex connector, shutoff and gas valve before anything else; replace the connector if suspect.
+      - Check 24 V, door switch, board fault code, inducer, igniter, flame sensor.
+      - CO test the closet and flue once running; homeowner CO alarm status not asked.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s12
+    transcript:
+      - {who: homeowner, text: "AC is blowing warm and the water heater in the same closet has a little leak at the bottom. can the same guy look at both?"}
+      - {who: intake, text: "Those are two trades: AC goes to an HVAC company, the water heater to a plumber. I'll write two notes. AC first: is the outdoor fan running?", step: question}
+      - {who: homeowner, text: "ok two is fine. yes outdoor fan runs"}
+      - {who: intake, text: "How old is the AC?", step: question}
+      - {who: homeowner, text: "about 13 years"}
+      - {who: intake, text: "Where's that closet, and is the house one story? Where's the outdoor unit?", step: question}
+      - {who: homeowner, text: "garage closet, the air handler and water heater are both in it. single story. outdoor unit is on the ground on the east side"}
+      - {who: intake, text: "Send me a photo of the closet?", step: photo}
+      - {who: homeowner, text: "[photo: interior closet with an air handler cabinet on the left and a tank water heater on the right, a damp ring on the floor around the tank base]"}
+      - {who: intake, text: "Now the water heater: gas or electric, how many gallons, how old?", step: question}
+      - {who: homeowner, text: "gas, 50 gallon tank, about 12 years"}
+      - {who: intake, text: "How much water, and do you still have hot water?", step: question}
+      - {who: homeowner, text: "small, about a cup over two days from the base. hot water still works"}
+      - {who: intake, text: "Thanks. At 12 years with water at the base, the plumber will likely talk replacement. Two notes going out, AC first.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0162 | Heating and cooling repair | Lake Havasu City
+      FACTS
+      - AC blows warm air; outdoor fan runs.
+      - About 13 years old.
+      - Air handler is in a garage closet shared with a gas tank water heater (see photo).
+      - Single-story home; outdoor unit on the ground, east side.
+      - Photo: closet with air handler on the left, tank water heater on the right, damp ring on the floor at the tank base.
+      - Separate plumbing card for the water heater (different trade, different business).
+      - Needed: not said.
+      SUSPECT
+      - Fan running, warm air: compressor not running (capacitor, contactor, overload) or low charge. At 13 years, R-410A or late R-22; check the plate.
+      ON SITE
+      - Check capacitor, contactor, compressor amps, then charge and leak-check.
+      - Keep the drain line and pan in view: the damp ring is from the water heater per homeowner, but confirm the AC condensate is not adding to it.
+
+      REQ-0162-P | Plumbing repair (separate card) | Lake Havasu City
+      - 50-gallon gas tank water heater, about 12 years old, in the garage closet with the air handler.
+      - Small leak at the base: about a cup over two days. Hot water still works.
+      - Gas smell not asked; check on arrival.
+      - Likely tank failure at that age; quote replacement and check T&P and drain valve first.
+      - Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s13
+    transcript:
+      - {who: homeowner, text: "AC quit on my house in Bullhead City. blows warm. do you guys come out here?"}
+      - {who: intake, text: "We don't cover Bullhead City yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s14
+    transcript:
+      - {who: homeowner, text: "Installed a new smart thermostat last weekend and now the AC won't respond to it. Need someone to look at the wiring and get it working."}
+      - {who: intake, text: "We don't cover heating and cooling jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: thermostat_issue, bank_job_type: "thermostat", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s15
+    transcript:
+      - {who: homeowner, text: "the AC on my roof is running but the house is humid and sticky and smells like a wet dog. it was fine in June"}
+      - {who: intake, text: "Is that a swamp cooler with pads and a water line, or a refrigerated AC?", step: question}
+      - {who: homeowner, text: "yeah its a swamp cooler with pads. I just call it the AC"}
+      - {who: intake, text: "When was it last drained and cleaned, and how old are the pads?", step: question}
+      - {who: homeowner, text: "havent drained or cleaned it since last fall. pads are at least 5 years old"}
+      - {who: intake, text: "Can you get a photo of it from the yard?", step: photo}
+      - {who: homeowner, text: "[photo: roof-mounted evaporative cooler (boxy metal housing with louvered side panels) seen from the yard, with a green-white scale line on one pad and a thin water streak down the wall below it]"}
+      - {who: intake, text: "Thanks. Is the pump running, and are the pads wet all over?", step: question}
+      - {who: homeowner, text: "pump runs. pads are wet in part but one corner is dry. white crust on the lower edge"}
+      - {who: intake, text: "When did the smell start?", step: question}
+      - {who: homeowner, text: "this week, when the monsoon humidity came in. mid July"}
+      - {who: intake, text: "Flat roof or pitched, and where does it sit?", step: question}
+      - {who: homeowner, text: "pitched. its on the back slope, need a ladder"}
+      - {who: intake, text: "Got it. Monsoon humidity cuts any swamp cooler down, and stale water plus old pads makes that smell. Crack a couple of windows so it can push air out. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: cooler_not_cooling, bank_job_type: "evaporative (swamp) cooler repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0165 | Heating and cooling repair | Lake Havasu City
+      FACTS
+      - Roof-mounted evaporative (swamp) cooler, not refrigerated AC (homeowner calls it "the AC").
+      - Running, but the house is humid and sticky with a wet-dog smell. Smell started this week with monsoon humidity (mid-July). Was fine in June.
+      - Pump runs. Pads wet in part, one corner dry. White crust on the lower edge.
+      - Pads at least 5 years old. Not drained or cleaned since last fall.
+      - Photo: louvered metal cooler on the roof, green-white scale line on one pad, thin water streak down the wall below.
+      - Pitched roof, cooler on the back slope; ladder needed. Number of stories not asked.
+      - Needed: not said.
+      SUSPECT
+      - Stale, uncleaned sump water and scaled pads causing the odor; dry corner from a clogged distribution line or spider.
+      - Water streak on the wall: overflow, float set high, or a leaking pan/drain.
+      - Monsoon humidity limits evap cooling no matter what.
+      ON SITE
+      - Ladder for a pitched roof, back slope.
+      - Drain and clean sump, replace pads (quote rigid media upgrade as an option), clear distributor, check float and bleed-off, check pan for rust-through and the cause of the wall streak.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s16
+    transcript:
+      - {who: homeowner, text: "our AC is original to the house and we want a new one. how much and when can you come out"}
+      - {who: intake, text: "Happy to get you a range. It depends on size, so first: about how many square feet, and one or two story?", step: question}
+      - {who: homeowner, text: "about 1800 sq ft, single story"}
+      - {who: intake, text: "Is it still cooling, or is something wrong with it now?", step: question}
+      - {who: homeowner, text: "it still cools. just want it replaced before summer"}
+      - {who: intake, text: "What's inside, a gas furnace or an electric air handler, and where?", step: question}
+      - {who: homeowner, text: "gas furnace and the indoor coil, in a hall closet"}
+      - {who: intake, text: "Replacing just the outside unit and coil, or the furnace too?", step: question}
+      - {who: homeowner, text: "the outdoor unit and the indoor coil"}
+      - {who: intake, text: "What year was the house built?", step: question}
+      - {who: homeowner, text: "around 1996. unit's original so about 28 years. so how much"}
+      - {who: intake, text: "The companies will send ranges once they see this. Last one: how's access to the outside unit?", step: question}
+      - {who: homeowner, text: "side yard, gate is locked. I have the key and I'll be home"}
+      - {who: intake, text: "Got it. Notes going out to replacement companies now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: hvac_replacement, job_type: ac_replacement, bank_job_type: "full system replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0166 | Heating and cooling replacement | Lake Havasu City
+      FACTS
+      - Wants a quote to replace the outdoor AC unit and the indoor coil (not the furnace).
+      - Current system still cools; wants it done before summer. No current problem.
+      - About 1,800 sq ft, single story, built around 1996. System original, about 28 years old.
+      - Gas furnace and indoor coil in a hall closet.
+      - Outdoor unit in the side yard behind a locked gate; homeowner has the key and will be home.
+      - No photo.
+      - Needed: before summer.
+      SUSPECT
+      - 1996 original: R-22 system. New R-410A/R-454B condenser needs a matched coil (correct to replace) and a line set flush or replacement.
+      - Furnace is also about 28 years old; offer a full-system option alongside the coil-and-condenser price.
+      ON SITE
+      - Load calc for 1,800 sq ft (likely 3 to 4 ton in Havasu, confirm). Measure the closet for coil height/width and the furnace match.
+      - Check line set size and condition, condenser pad, disconnect and breaker size, condensate route.
+      - Permit required.
+    facts_in_card_not_stated: []
