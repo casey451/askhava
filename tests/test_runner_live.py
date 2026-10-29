@@ -464,3 +464,17 @@ def test_fix_main_handoff_carries_its_goal_as_the_prompt() -> None:
     assert entry._prompt_for(fix, "FIX-MAIN") == fix["goal"]
     assert entry._prompt_for({"goal": "x"}, "T002") == "kit/prompts/T002.md"
     assert entry._prompt_for({}, "T999") == "kit/prompts/T999.md"
+
+
+def test_check_run_reads_use_the_job_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-502: only check-run reads swap in RUNNER_CHECKS_TOKEN, and only when it is set."""
+    from runner import github_env
+
+    path = ["gh", "api", "-H", "Accept: application/vnd.github+json", "repos/o/r/commits/abc/check-runs?per_page=100"]
+    monkeypatch.delenv("RUNNER_CHECKS_TOKEN", raising=False)
+    assert github_env._env_for(path) is None
+    monkeypatch.setenv("RUNNER_CHECKS_TOKEN", "fake-job-token")
+    env = github_env._env_for(path)
+    assert env is not None and env["GH_TOKEN"] == "fake-job-token"
+    assert github_env._env_for(["gh", "api", "repos/o/r/pulls"]) is None
+    assert github_env._env_for(["git", "push"]) is None
