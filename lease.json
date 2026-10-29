@@ -2,7 +2,7 @@
  "lease": {
   "task": "FIX-MAIN",
   "session": "actions-40918823497",
-  "expires": "2026-10-29T20:12:18Z"
+  "expires": "2026-10-29T17:00:00Z"
  },
  "seq": 4,
  "runner_sha": "24d55aa487e4f7e9363946b1db51ca3768892e1d",
