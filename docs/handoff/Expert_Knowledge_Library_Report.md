@@ -12,7 +12,7 @@ You asked for the AIs that talk to homeowners and businesses to know more than t
 
 **A test harness that can be re-run.** 565 adversarial intake scenarios (vague openers, wrong self-diagnoses, hidden conditions, two-trade requests, Spanish, out-of-area, no businesses, 911 signs), written by agents who never saw the expert files. Run prompts for the plan's intake and for comparison intakes. A blind three-person trade panel that scores every card without knowing which intake wrote it, and a compliance judge with twelve codes (no cause, no price, no advice, no re-asked questions, the exact 911 text, nothing on the card she did not say). A script that recomputes every number from the per-scenario scores so the judge's own summary is never trusted.
 
-**Checks and docs.** `scripts/check_expert.py` (schema, cross-references to the catalog and trade files, banned words, AI smell, cause words, dollar figures, safety advice) runs in the test suite; the whole suite passes (383 tests). `README.md`, `schema.yaml`, `PROMPT_ASSEMBLY.md` (which slice of which file goes into which AI call, with a size budget), `improvement_loop.md` (how live signals become logged changes), `PROGRESS.md` (resume point).
+**Checks and docs.** `scripts/check_expert.py` (schema, cross-references to the catalog and trade files, banned words, AI smell, cause words, dollar figures, safety advice) runs in the test suite; the whole suite passes (384 tests). `README.md`, `schema.yaml`, `PROMPT_ASSEMBLY.md` (which slice of which file goes into which AI call, with a size budget), `improvement_loop.md` (how live signals become logged changes), `PROGRESS.md` (resume point).
 
 ## 2. What the tests showed
 
@@ -63,7 +63,7 @@ Nothing yet. The expert files follow the catalog as it stands; where the catalog
 ## 5. Housekeeping
 
 - Two sub-agents created stray scheduled reminders during the runs (one fired once with the text "placeholder" into this session; one named "unused" fires once on October 29 at 04:44 UTC). Both are harmless and do nothing; deleting them was refused by a safety check, so they will show in your scheduled tasks until they expire or you remove them. Run prompts now say "use only file tools".
-- The branch has 72 commits, all with the required trailers. It was not pushed (read-only repo access in this session; the repo rules forbid pushing to main; you chose a zip). To bring it in: `git bundle verify expert-layer.bundle && git fetch expert-layer.bundle claude/expert-layer:claude/expert-layer`, then open a pull request from that branch. The CI checks will run gitleaks, the PII scanner, the AI-smell check and the test suite on it; all pass locally.
+- The branch has 74 commits on top of main, all with the required trailers, rebased onto main as of fix round 17 (D-478). It was not pushed (read-only repo access in this session; the repo rules forbid pushing to main; you chose a zip). To bring it in: `git bundle verify claude-expert-layer.bundle && git fetch claude-expert-layer.bundle claude/expert-layer:claude/expert-layer` (HOW_TO_APPLY.md in the zip has the steps), then open a pull request from that branch. The CI checks will run gitleaks, the PII scanner, the AI-smell check and the test suite on it; all pass locally (384 tests).
 - Protected paths (`.github/`, `.claude/`, `runner/`, `stand_ins/`, `sources/`) were not touched. `docs/catalog/question_bank.yaml` was edited only to add `kb_trade` and `photos` to the eight sets that had none; `scripts/check_catalog.py` still reports no errors.
 
 ## 6. Where everything is
