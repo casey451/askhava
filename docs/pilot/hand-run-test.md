@@ -1,6 +1,6 @@
 # Hand-run test: prove it by hand before the build (D-455, D-468)
 
-**For:** Casey. **When:** now, before you reply `approved to build` at Gate P. **How long:** 6 weeks (8 if the paid weeks start late). **Cost:** $0 for weeks 1 to 3; from week 4, the LLC filing and Stripe's card fees on real introduction fees. **Your time:** about 6 to 8 hours a week at first, which should fall as setup and recruiting settle.
+**For:** Casey. **When:** now, before you reply `approved to build` at Gate P. **How long:** 6 weeks (8 if the paid weeks start late). **Cost:** about $300 to $450 before week 4: the Lake Havasu City business license ($196 new, $140 a year to renew), the LLC filing ($50, or $85 expedited) and a Maricopa or Pima County statutory agent (about $50 to $150 a year), plus a mailbox if the agent's address can't go in email footers; then Stripe's card fees on real introduction fees (section 9). **Your time:** about 6 to 8 hours a week at first, which should fall as setup and recruiting settle.
 
 The build is held at Gate P until this test answers four questions with real people:
 1. **Demand:** will homeowners who don't know you send a job to an unnamed local service?
@@ -104,7 +104,7 @@ Write these into the sheet's first tab before the first post, and don't change t
 - **B, questions:** "Thanks. To get you useful quotes, a few quick questions: 1) ... 2) ... 3) ... Photos help too, if you have them. Reply to this email."
 - **C, card to the homeowner:** "Here's request <n> as businesses will see it. Your name and contact details aren't on it. Reply if anything's wrong; otherwise it goes out in 30 minutes. <card>"
 - **D, card to businesses:** subject "Ask Hava job <n>: <trade>, <job type>, Lake Havasu City". Body: the card, then "Reply to this email with your price, when you could do it and a short note. Sent to <N> businesses. <Free during the test. / If you're picked, the introduction fee is $<fee>, paid before you get the details.> Ask Hava is not a contractor; the homeowner hires you directly." Then this footer, word for word: "You're getting this job card because <business> signed up for Ask Hava job cards. Ask Hava LLC, <postal address>. To stop getting them, reply STOP or UNSUBSCRIBE, or email <help email>." Honor a stop at once.
-- **E, quotes:** "Your quotes for request <n> (<k> of <N> businesses quoted so far). In the order they came in: [business, license number, price, when, note, Google link, Yelp link] ... Reply with the one you pick, and say yes to sharing your first name, the job address and your email with that business. We never share your phone number. Ask Hava is not a contractor; you hire the business you pick directly."
+- **E, quotes:** "Your quotes for request <n> (<k> of <N> businesses quoted so far). In the order they came in: [business, license number, price, when, note, Google link, Yelp link] ... For a handyman with no contractor license, in place of the license number: "Not a licensed contractor. Only for jobs under $1,000 total with no permit." (LIC-024, A.R.S. 32-1121(A)(14)). Reply with the one you pick, and say yes to sharing your first name, the job address and your email with that business. We never share your phone number. Ask Hava is not a contractor; you hire the business you pick directly."
 - **F, introduction (free weeks):** "You were picked for job <n>. Homeowner: <first name>, <address>. Email: <her email>. Please get in touch within 24 hours. One question: if this weren't free, would this introduction have been worth $<fee> to you?"
 - **G, not picked:** "Job <n> is no longer open. The homeowner picked another quote; it was <lower / about the same / higher> than yours. Thanks for quoting."
 - **H, day 3:** "Did <business> get in touch about request <n>? Reply DONE, NO or PROBLEM."
@@ -164,10 +164,10 @@ Target: **in each pushed trade, 4 or more businesses signed up and 3 or more tha
 
 The paid weeks need these in place by the end of week 3. If they aren't ready, run the paid weeks late (weeks 6 to 8). Don't mark payment as proven without them.
 
-1. **Ask Hava LLC and its EIN** (`docs/PREBUILD.md` section 8). The EIN is free.
-2. **A live Stripe account** for the LLC, with payment links for $25, $75 and $199.
+1. **Ask Hava LLC and its EIN** (`docs/PREBUILD.md` section 8). The filing is $50 at the Arizona Corporation Commission ($85 expedited). Use a statutory agent in Maricopa or Pima County: then the Commission publishes the notice itself, and no Mohave County newspaper notice is needed. The EIN is free. Check the fees on the Commission's site when you file.
+2. **A live Stripe account** for the LLC, with payment links for $25, $75 and $199. Open it, and send the Stripe question, in week 0 or 1, so a refusal shows up before week 4, not at the first paid pick.
 3. **Set aside 8.6% of every fee** for sales tax until the tax question is settled (D-444, D-470). The fee is probably not taxable, but no ruling settles it.
-4. **The Lake Havasu City business license**, and the home-occupation form if you run it from home. It's separate from any sales-tax license. Get it before the first post if you can, and before week 4 at the latest.
+4. **The Lake Havasu City business license**, and the home-occupation form if you run it from home. Apply on the city's online business-license portal (linked from the city's Business License page); it's $196 new and $140 a year to renew (fee schedule effective Feb 1, 2026). It's separate from any sales-tax license. Get it before the first post if you can, and before week 4 at the latest. The home-occupation rules also bar putting your home address in any ad.
 5. **The paid-pilot terms accepted** by every business that will get paid-week cards (section 4, step 7).
 6. **A postal address** for the job-card footer: the LLC's agent or a mailbox, never your home address.
 
