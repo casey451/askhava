@@ -535,19 +535,22 @@ def _work(cfg: Config, env: Env, claimed: State, task: dict[str, Any], now: date
     lane = st.lane_of(claimed, tid) or st.LANE_ONE
 
     def heartbeat() -> None:
-        """Renew when due, on the fresh state (update_state). It never raises: a renewal that fails in
-        any way (LeaseError, None after every try, any other error) marks the lease lost, and the
-        attempt then ends as lost_race with nothing pushed (D-515)."""
+        """Renew when due, on the fresh state (update_state). It never raises. Only a fresh read showing
+        this session no longer holds the task's lane lease (LeaseError: gone, expired or another
+        session's) marks the lease lost, and the attempt then ends as lost_race with nothing pushed.
+        A transient failure (None after every try, or any other error) changes nothing: update_state
+        put its heads back, so the next beat simply tries again (D-515)."""
         moment = cfg.clock()
         if current["lost"] or not st.renewal_due(current["state"], moment):
             return
         try:
             renewed = env.update_state(lambda fresh: st.renew(fresh, tid, cfg.session, moment, lane))
-        except Exception:  # noqa: BLE001  # reason: a heartbeat must never crash the worker loop (D-515)
-            renewed = None
-        if renewed is None:
+        except st.LeaseError:
             current["lost"] = True
-        else:
+            return
+        except Exception:  # noqa: BLE001  # reason: a heartbeat must never crash the worker loop (D-515)
+            return
+        if renewed is not None:
             current["state"] = renewed
 
     res = env.run_worker(task, model, str(entry.get("last_failure", "")), heartbeat)

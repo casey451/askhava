@@ -941,16 +941,50 @@ def test_drill_a_heartbeat_never_raises_when_the_state_cannot_be_read(tmp_path: 
     env = FakeEnv()
     clock = {"now": NOW}
 
+    real = env.update_state
+
     def unreadable(transform: Callable[[st.State], st.State | None]) -> st.State | None:
         raise RuntimeError("kit/state.json not found on claude/kit-state")
 
     def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
         env.update_state = unreadable  # type: ignore[method-assign]  # reason: a fetch that fails
         clock["now"] = NOW + timedelta(minutes=31)
-        heartbeat()
-        return good(task, model)
+        heartbeat()  # must not raise, and must not count as a lost lease
+        env.update_state = real  # type: ignore[method-assign]  # reason: the fetch works again
+        return reviewed(task, model, head="good0001")
 
     env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
     cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
-    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
-    assert env.store["lease"]["session"] == "s1" and env.branch_pushes == []
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    assert env.branch_pushes == [("claude/task/T001-x", "good0001")]
+
+
+def test_drill_one_transient_renewal_failure_then_a_good_beat_submits_normally(tmp_path: Path) -> None:
+    """D-515: a fetch blip must never cost the attempt or a three-hour lease hold; the next beat renews."""
+    env = FakeEnv()
+    clock = {"now": NOW}
+    real = env.update_state
+    blips = {"left": 1}
+
+    def flaky(transform: Callable[[st.State], st.State | None]) -> st.State | None:
+        if blips["left"]:
+            blips["left"] -= 1
+            return None  # what GitHubEnv.update_state returns after every try failed to read or push
+        return real(transform)
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        clock["now"] = NOW + timedelta(minutes=31)
+        heartbeat()
+        assert env.store["lease"]["expires"] == "2026-11-01T15:00:00Z"  # not renewed yet, not lost either
+        clock["now"] = NOW + timedelta(minutes=32)
+        heartbeat()
+        assert env.store["lease"]["expires"] == "2026-11-01T15:32:00Z"
+        return reviewed(task, model, head="good0001")
+
+    env.update_state = flaky  # type: ignore[method-assign]  # reason: one renewal that fails transiently
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.MERGE_PENDING and t1["reviewed_sha"] == "good0001" and env.store["lease"] is None
+    assert env.branch_pushes == [("claude/task/T001-x", "good0001")]
