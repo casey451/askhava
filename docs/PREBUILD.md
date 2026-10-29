@@ -33,6 +33,10 @@ This is the only to-do list. The same file is in the repository as `docs/PREBUIL
 
 ---
 
+## 1a. What changed in fix round 16 (October 28, ChatGPT's stress test)
+
+One decision, D-468. ChatGPT showed the hand-run test couldn't prove the fee, because "it would be worth it" isn't paying. Now: weeks 1 to 3 are helped and free; weeks 4 to 6 are hands off, and picked businesses in the pushed trades pay the real fee before getting the details. Requests are marked Seeded, Partner or Organic, and only Organic ones count as demand. The scorecard judges 2-or-more-quote choice, slow tails, active (quoting) businesses, real payments and your minutes per request. Results are labeled as a winter test. The LLC, EIN and Stripe now start with the test (item 8a). Gate P needs real payments.
+
 ## 2. What changed in fix round 15 (October 28, the Hormozi, Martell and Koerner review)
 
 One pull request. Decisions D-455 to D-467. Source: the review doc "Ask Hava: Hormozi, Martell & Koerner Plan Review" of commit `6285ec6`, then your answer: "So do what you recommend and identify what needs to be done before the build starts". Your trade call: "We need to run all service buisnesses".
@@ -145,19 +149,20 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | 5 | Open a Stripe account (test mode only); send the Stripe question | Casey | to do | Ticket sent |
 | 6 | Stripe's written answer | outside | waiting on item 5 | Answer saved; auto-confirm stays hidden until it says yes |
 | 7 | Save dated screenshots of today's askhava.com | Casey | to do | Screenshots in your files |
-| 8 | Hand-run test setup: test inbox, request form, sign-up form, sheet, tracking links (`docs/pilot/hand-run-test.md` section 3) | Casey | to do | Both forms submit into the sheet; one test request and one test sign-up arrive |
+| 8 | Hand-run test setup: the rules tab, test inbox, request form, sign-up form, sheet, tracking links (`docs/pilot/hand-run-test.md` sections 3 and 4) | Casey | to do | The rules tab is filled in; both forms submit into the sheet; one test request and one test sign-up arrive |
+| 8a | Start the LLC and EIN, then a live Stripe account with $25, $75 and $199 payment links, and an 8.6% set-aside (playbook section 9) | Casey | to do | Payment links work by the end of week 3 of the test |
 | 9 | Find the Havasu Facebook groups (about an hour, logged in on your phone): community, recommendations, buy and sell, trades and business-owner groups; note member counts and posting rules; message each admin | Casey | to do | A list of 8 or more groups, with each admin's answer |
-| 10 | Line up the first requests: 10 to 20 real jobs from people you know, and 3 to 5 property managers, rental hosts or realtors | Casey | to do | Names on your list (not in the repo) |
-| 11 | Run the hand-run test for 4 to 6 weeks: 3 to 5 posts a week, cards and quotes by email, the weekly scorecard every Sunday | Casey | to do | Six weekly rows in the sheet |
+| 10 | Line up practice requests from people you know (counted as Seeded, not as demand) and 3 to 5 property managers, rental hosts or realtors (Partner) | Casey | to do | Names on your list (not in the repo) |
+| 11 | Run the hand-run test for 6 weeks: weeks 1 to 3 helped and free, weeks 4 to 6 hands off and paid in the pushed trades; the weekly scorecard every Sunday | Casey | to do | Six weekly rows in the sheet, with nudges logged |
 | 12 | The first 5 to 10 business conversations, with the C1 to C13 questions (playbook section 9) | Casey | to do | Answers noted |
 | 13 | Test decision: go, change the plan first, or stop (playbook section 8) | Casey | waiting on item 11 | You tell Claude which, with the scorecard |
-| 14 | Re-plan pass: apply what the test showed, the held scope cut, and the fees from the "worth the fee" answers | Claude | waiting on item 13 | One PR merged green |
+| 14 | Re-plan pass: apply what the test showed, the held scope cut, and the fees from the paid weeks | Claude | waiting on item 13 | One PR merged green |
 | 15 | Optional: approve or skip the paper rehearsal (section 6) | Casey | to do | You say "run the rehearsal" or "skip it" |
 | 16 | Optional: add the routine's merge trigger (section 6) | Casey | to do | The routine shows "Pull request closed, merged into main" |
-| 17 | Gate P: reply `approved to build` on GitHub issue #24, then resume the runner | Casey | waiting on items 13 and 14 | Reply posted |
+| 17 | Gate P: reply `approved to build` on GitHub issue #24, only if the scorecard says go including real payments; then resume the runner | Casey | waiting on items 13 and 14 | Reply posted |
 | 18 | Build Phase 1 (stages 1 to 5) | automatic | waiting on item 17 | Account checkpoint issue appears |
 
-**Started by the test, not needed for Gate P:** company setup (section 8) begins once the test hits its quote line (70% of requests with a quote within 24 hours), so the LLC, EIN, Twilio registration and Stripe are ready by Gate C. Before Spanish is switched on, the two-AI back-translation check of the Spanish safety texts (D-427), and a paid review (about $100).
+**Company setup now starts with the test (D-468):** the LLC, EIN and a live Stripe account are needed for the paid weeks (item 8a). The rest of section 8 (city license, DNS, Twilio registration) follows before Gate C. Before Spanish is switched on, the two-AI back-translation check of the Spanish safety texts (D-427), and a paid review (about $100).
 
 **Done or dropped:** fix round 13 and 14 merged; your section 4 defaults answered ("do what you recommend", D-455 to D-467); Department of Agriculture letter dropped (D-417); safety-number websites dropped (D-436).
 
@@ -196,7 +201,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 
 | # | Question | Answer applied |
 |---|---|---|
-| R1 | Hand-run test before `approved to build`? | Yes, 4 to 6 weeks (D-455) |
+| R1 | Hand-run test before `approved to build`? | Yes, 6 weeks, the last 3 paid in the pushed trades (D-455, D-468) |
 | R2 | Post from your profile or the Ask Hava Page? | Your own profile, saying "I run Ask Hava", and the Page where a group allows Pages (D-456) |
 | R3 | Which trades get the marketing push? | One or two that fit the launch month (playbook section 6); all trades stay open (D-459) |
 | R4 | Visits only, or file the seller registration to allow calls? | Visits only for now; calls need A.R.S. 44-1272 and a new decision (D-374, D-456) |
@@ -232,7 +237,7 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | Account checkpoint | Claude Console workspace (separate from your Claude plan) | Environment secret locked to api.anthropic.com; Railway test variable | Real-AI test on fake data (T137); its API terms are recorded for B5 |
 | Account checkpoint (optional) | Concept-image provider (chosen then) | Environment secret locked to its host; Railway test variable | Concept images for design jobs (INT-046); its terms recorded; switch stays off without it |
 | Account checkpoint | Storage bucket (chosen then, D-094) | Railway test variable | Audit stream and backups |
-| When the hand-run test hits its quote line (D-467) | LLC, EIN, city license, TPT path, Google Workspace, DNS (SPF, DKIM, DMARC); insurance later (D-426) | Not keys | Section 8 |
+| At the start of the hand-run test (D-468) | LLC, EIN, live Stripe for the paid weeks; then city license, TPT path, Google Workspace, DNS (SPF, DKIM, DMARC); insurance later (D-426) | Not keys | Section 8 |
 | Gate C | Twilio brand and campaign registration, Stripe activation, live keys | Railway live project only, by you | Going live |
 
 **Two encryption checks at the account checkpoint (D-454):** the host you pick encrypts the database, its volumes and its backups at rest (Render documents this; confirm it for Railway in writing), and the Claude Console workspace has zero data retention in force before the AI switch goes on. Decide there too whether to add an outside key service (AWS or Google Cloud KMS); it is optional, about $1 a month for the key, and cleanest on Render Pro.
@@ -289,6 +294,8 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | Measure | Go | Stop or rethink |
 |---|---|---|
 | Requests with 1 or more quotes within 24 hours | 70% or more | under 50% after 4 weeks |
+| Routable requests with 2 or more quotes within 24 hours | 60% or more | under 30% |
+| 75th-percentile time to first quote | 12 hours or less | over 24 hours |
 | Median time to first quote | 4 hours or less | over 12 hours |
 | Picks per request with quotes | 40% or more | under 25% |
 | Picks confirmed (not lapsed) | 85% or more | under 75% |
@@ -310,7 +317,7 @@ The scorecard decides nothing on its own. You decide stop or go at week 8 from r
 
 ## 8. Later
 
-**When the hand-run test hits its quote line (company setup, D-467):** confirm with the Arizona Corporation Commission that an agent or mailbox address can replace a home address; form the LLC with a Maricopa or Pima County statutory agent; free EIN; city business license and home-occupation form; ADOR private taxpayer ruling request (retail, rental, prime contracting, marketplace, city licensing-for-use and city advertising; D-444) and an 8.6% set-aside account; SPF, DKIM and DMARC on askhava.com; Twilio registration (after the answer and the LLC); Stripe activation; Gate C; Resend paid plan at the first 70% alert.
+**At the start of the hand-run test (company setup, D-468; the LLC, EIN and Stripe first, for the paid weeks):** confirm with the Arizona Corporation Commission that an agent or mailbox address can replace a home address; form the LLC with a Maricopa or Pima County statutory agent; free EIN; city business license and home-occupation form; ADOR private taxpayer ruling request (retail, rental, prime contracting, marketplace, city licensing-for-use and city advertising; D-444) and an 8.6% set-aside account; SPF, DKIM and DMARC on askhava.com; Twilio registration (after the answer and the LLC); Stripe activation; Gate C; Resend paid plan at the first 70% alert.
 
 **Running-cost rule:** fixed monthly costs stay near $150 or less, not counting the Claude plan; the Ruby answering service is declined (D-467).
 
