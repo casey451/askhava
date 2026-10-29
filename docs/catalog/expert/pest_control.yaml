@@ -623,6 +623,196 @@ job_types:
       Needed: <timing answer>.
     never_say: ["Those are roof rat droppings.", "Don't sweep up the droppings.", "Set snap traps along the wall.", "Rodent service is about fifty a month.", "They're getting in through the vents."]
 
+  - id: bees_wasps
+    label: "Bees (swarm or hive), wasps, hornets"
+    bank_job_type: "general pest service"
+    recurring: false
+    homeowner_phrasings: ["bee swarm in the tree", "bees in my wall", "bees in the water meter box", "wasp nest under the eave", "abejas en la pared", "panal"]
+    must_know:
+      - fact: "Where the bees or wasps are, and whether they hang in a ball or go in and out of an opening"
+        bank_question: null
+        follow_up: fu_bee_where
+        photo: p3
+        why_it_moves_price: "A hanging swarm is a short visit; a colony inside a wall or roof can mean opening it up and removing comb. [judgment]"
+        skip_if: "Her words or the photo show the place and which kind"
+      - fact: "How long they have been there"
+        bank_question: null
+        follow_up: fu_bee_how_long
+        photo: null
+        why_it_moves_price: "A swarm often moves on within days; one that stays has started building. [judgment]"
+        skip_if: "She said when it started"
+      - fact: "How high up, and how close to doors, walkways, the pool or play areas"
+        bank_question: null
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Height means a ladder or lift; nearness to people sets how soon the business comes. [judgment]"
+        skip_if: "Photo shows it"
+      - fact: "Whether live removal is wanted"
+        bank_question: null
+        follow_up: fu_live_removal
+        photo: null
+        why_it_moves_price: "Live removal and relocation is a different visit from treatment. [judgment]"
+        skip_if: "She said which she wants"
+    allowed_follow_ups:
+      - id: fu_bee_where
+        ask_when: "Bee or wasp request that does not say where or what they are doing"
+        text_en: "Where are they: hanging in a ball on a tree or bush, going in and out of a wall or roof, in a meter, valve or pool box, or a nest under the eave?"
+        text_es: "¿Dónde están: colgando en bola en un árbol o arbusto, entrando y saliendo de una pared o el techo, en una caja de medidor, válvula o alberca, o un nido bajo el alero?"
+        options_en: ["Hanging in a ball on a tree or bush", "Going in and out of a wall or roof", "In a meter, valve or pool box", "In the ground, rocks or a palm", "Nest under the eave or patio cover"]
+        options_es: ["Colgando en bola en un árbol o arbusto", "Entrando y saliendo de una pared o el techo", "En una caja de medidor, válvula o alberca", "En el suelo, las piedras o una palmera", "Nido bajo el alero o el techo del patio"]
+        card_field: true
+        why: "Same split as the kb's bee_location question; each answer is a different visit."
+      - id: fu_bee_how_long
+        ask_when: "Bee request and she did not say when they showed up"
+        text_en: "When did you first see them there?"
+        text_es: "¿Cuándo los vio ahí por primera vez?"
+        options_en: ["Today", "A few days ago", "A week or more"]
+        options_es: ["Hoy", "Hace unos días", "Hace una semana o más"]
+        card_field: true
+        why: "Bees swarm in spring and fall and rest while traveling; a cluster that stays has started a hive."
+      - id: fu_live_removal
+        ask_when: "Honey bee request and she did not say live removal or treatment"
+        text_en: "Do you want the bees removed alive if possible, or just gone?"
+        text_es: "¿Quiere que se lleven las abejas vivas si se puede, o solo que se vayan?"
+        options_en: ["Removed alive if possible", "Just gone", "Either"]
+        options_es: ["Que se las lleven vivas si se puede", "Solo que se vayan", "Cualquiera"]
+        card_field: true
+        why: "The kb lists live removal as a must-know for bee quotes; some businesses only treat. [judgment]"
+    photos_priority: [p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Bees going in and out near a door, walkway, pool or play area", "Someone was stung today", "A swarm landed on the house or a car"]
+      regular: "Wasp nest under an eave, or bees far from where people walk"
+    scope_line_en: "Bees going in and out of the front yard irrigation valve box for four days, about 12 feet from the walkway; nobody stung."
+    scope_line_es: "Abejas entrando y saliendo de la caja de válvulas del riego en el patio de enfrente desde hace cuatro días, a unos 12 pies de la banqueta; nadie picado."
+    quote_format: monthly
+    business_fills: ["price, with a period stated as the format requires, or a one-time price noted for review", "live removal or treatment", "whether comb removal or sealing is included", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: where they are, hanging or going in, how long>
+      Where: <tree or bush / wall or roof / meter, valve or pool box / ground or palm / under eave>. Since: <today / a few days / a week or more>.
+      Height and nearby: <her words or neutral photo line>. Stung so far: <no / yes / not said>. Live removal: <wanted / just gone / either>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those are killer bees.", "Stay inside and keep the kids away.", "A swarm will leave on its own.", "Spray them with soapy water.", "Bee removal runs a couple hundred."]
+
+  - id: pigeons_birds
+    label: "Pigeons or birds (under solar panels, roof, patio)"
+    bank_job_type: "general pest service"
+    recurring: false
+    homeowner_phrasings: ["pigeons under my solar panels", "birds nesting on the roof", "pigeon mess on the patio", "palomas en el techo"]
+    must_know:
+      - fact: "Where they roost or nest: under solar panels, roof or eaves, patio cover"
+        bank_question: null
+        follow_up: fu_bird_where
+        photo: p4
+        why_it_moves_price: "Panel screening is priced by the number of panels and the edge length; spikes or netting on a patio is another job. [judgment]"
+        skip_if: "Her words or the photo show the place"
+      - fact: "How many solar panels, if under panels"
+        bank_question: null
+        follow_up: fu_panel_count
+        photo: p4
+        why_it_moves_price: "Edge length around the array sets material and time. [judgment]"
+        skip_if: "Not under panels, or the photo shows the array"
+      - fact: "One story or two"
+        bank_question: null
+        follow_up: null
+        photo: p4
+        why_it_moves_price: "Roof height changes the ladder and safety setup. [judgment]"
+        skip_if: "She said, or the photo shows it"
+    allowed_follow_ups:
+      - id: fu_bird_where
+        ask_when: "Bird request and she did not say where they roost"
+        text_en: "Where are the birds roosting or nesting: under solar panels, on the roof or eaves, or on a patio cover?"
+        text_es: "¿Dónde se paran o anidan los pájaros: debajo de los paneles solares, en el techo o los aleros, o en el techo del patio?"
+        options_en: ["Under solar panels", "Roof or eaves", "Patio cover", "More than one of these"]
+        options_es: ["Debajo de los paneles solares", "Techo o aleros", "Techo del patio", "Más de una de estas"]
+        card_field: true
+        why: "Each place takes a different material and method. [judgment]"
+      - id: fu_panel_count
+        ask_when: "Birds under solar panels and no photo of the array"
+        text_en: "About how many solar panels are on the roof?"
+        text_es: "¿Más o menos cuántos paneles solares hay en el techo?"
+        options_en: ["Under 15", "15 to 30", "Over 30"]
+        options_es: ["Menos de 15", "15 a 30", "Más de 30"]
+        card_field: true
+        why: "Panel count is the first number in a panel screening quote. [judgment]"
+    photos_priority: [p4]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All bird requests"
+    scope_line_en: "Pigeons nesting under the roof solar panels, about 20 panels on a one-story tile roof."
+    scope_line_es: "Palomas anidando debajo de los paneles solares del techo, unos 20 paneles en un techo de teja de un piso."
+    quote_format: monthly
+    business_fills: ["price, with a period stated as the format requires, or a one-time price noted for review", "what is included (cleanout, screening, spikes or netting)", "earliest day"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: where the birds are, size of the area>
+      Where: <under solar panels / roof or eaves / patio cover>. Panels: <under 15 / 15 to 30 / over 30 / n/a>. Stories: <one / two / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The droppings are a health risk.", "Screening will void your solar warranty.", "Panel screening is about ten dollars a foot.", "Just put up a fake owl."]
+
+  - id: bed_bugs_other
+    label: "Bed bugs, fleas, other"
+    bank_job_type: "general pest service"
+    recurring: false
+    homeowner_phrasings: ["I think I have bed bugs", "waking up with bites", "fleas in the carpet", "chinches en la cama", "pulgas"]
+    must_know:
+      - fact: "What she has seen: bugs, spots or shed skins on the bed, bites, or bugs in carpet or on a pet"
+        bank_question: null
+        follow_up: fu_bite_signs
+        photo: p1
+        why_it_moves_price: "Bed bug work is room by room with several visits; flea work treats carpet and the yard with the pet treated by its owner. [judgment]"
+        skip_if: "Photo shows a bug or the bed"
+      - fact: "Pets, and whether they go outside"
+        bank_question: null
+        follow_up: fu_pets_outside
+        photo: null
+        why_it_moves_price: "An outdoor pet changes what the business brings and whether the yard is part of the job. [judgment]"
+        skip_if: "She said no pets"
+      - fact: "How many rooms, and carpet or hard floors"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Rooms treated set the price for both kinds of job. [judgment]"
+        skip_if: "She named the rooms"
+    allowed_follow_ups:
+      - id: fu_bite_signs
+        ask_when: "She reports bites or says bed bugs or fleas and sent no photo of a bug"
+        text_en: "Which of these have you seen: small bugs or dark spots on the mattress, bites only on ankles and legs, or bugs jumping in carpet or on a pet?"
+        text_es: "¿Cuál de estas cosas ha visto: bichitos o manchas oscuras en el colchón, piquetes solo en tobillos y piernas, o bichos que brincan en la alfombra o en una mascota?"
+        options_en: ["Bugs or dark spots on the mattress", "Bites only on ankles and legs", "Bugs jumping in carpet or on a pet", "Bites, nothing else seen"]
+        options_es: ["Bichitos o manchas oscuras en el colchón", "Piquetes solo en tobillos y piernas", "Bichos que brincan en la alfombra o en una mascota", "Piquetes, no he visto nada más"]
+        card_field: true
+        why: "These are the facts a pest business uses to decide what to bring, recorded without naming the bug. [judgment]"
+      - id: fu_pets_outside
+        ask_when: "Bites or bugs indoors and she did not mention pets"
+        text_en: "Do you have a dog or cat, and does it go outside?"
+        text_es: "¿Tiene perro o gato, y sale afuera?"
+        options_en: ["Yes, and it goes outside", "Yes, indoor only", "No pets"]
+        options_es: ["Sí, y sale afuera", "Sí, solo adentro", "No tengo mascotas"]
+        card_field: true
+        why: "An outdoor pet is the fact that separates a flea job from a bed bug job for the business, without Ask Hava saying which. [judgment]"
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All bed bug, flea and other requests"
+    scope_line_en: "Homeowner reports bites each morning, ankles and lower legs only; nothing seen on the mattress; outdoor cat; about 1,600 sq ft."
+    scope_line_es: "La dueña reporta piquetes cada mañana, solo en tobillos y piernas; no ha visto nada en el colchón; gato que sale afuera; unos 1,600 pies²."
+    quote_format: monthly
+    business_fills: ["price, with a period stated as the format requires, or a one-time price noted for review", "number of visits included", "what the homeowner must do before the visit", "earliest day"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what she reports, where, in her words>
+      Seen: <bugs or spots on mattress / bites on ankles and legs / jumping bugs in carpet or on pet / bites only>. Homeowner thinks: <her words>.
+      Pets: <outdoor / indoor only / none>. Rooms and floors: <her words>. Home: <size band>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those are flea bites.", "That's bed bugs.", "Wash all the bedding on hot.", "Bed bug treatment runs about a thousand.", "Get the cat a flea collar."]
+
 business_side:
   how_they_get_customers: ["Google Maps listing and reviews", "Google Local Services Ads and search ads", "Door-to-door summer sales crews [judgment]", "Repeat customers and neighbor word of mouth", "Realtor and title referrals for termite reports [judgment]", "Local Facebook groups, truck signage and yard signs [judgment]"]
   customer_acquisition_benchmarks:
