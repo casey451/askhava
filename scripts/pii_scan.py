@@ -14,7 +14,7 @@ Fake data only (BUILD_BRIEF.md:66; D-109). Flags, outside sources/:
            device fields (make, model, serial, lens, owner); read with the
            standard library so Ci needs no imaging library
 The twin's own generator literals (a fake over-sharer's address, two fixed record
-phones) pass only by exact value in twin/twin.py, never by path (D-109, D-514).
+phones) pass only by exact value in twin/twin.py, never by path (D-109, D-516).
 A file that could not be scanned (over the size limit) fails the run unless it
 is on SKIP_ALLOWED with a reason (D-485).
 Findings print as path:line:rule with the match redacted. Exit 1 on any finding.
@@ -99,7 +99,7 @@ MAX_IMAGE_BYTES = 64_000_000
 # Files too large to scan pass only when listed here with a reason (D-485). Empty today.
 SKIP_ALLOWED: dict[str, str] = {}
 
-# The twin's generator literals (D-109, D-514): exact values allowed in one file each, never the twin/ path.
+# The twin's generator literals (D-109, D-516): exact values allowed in one file each, never the twin/ path.
 # Split so this file does not match itself.
 TWIN_GENERATOR_LITERALS: dict[str, tuple[str, ...]] = {
     "twin/twin.py": ("412 Palo Verde " + "Dr", "+1928" + "0000000", "+1928" + "5550000"),
