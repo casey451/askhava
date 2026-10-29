@@ -315,13 +315,17 @@ def _red_main_step(cfg: Config, env: Env, state: State, now: datetime) -> tuple[
 
 def _record_inbox(state: State, cfg: Config, items: list[tuple[str, str, str]], now: datetime) -> State:
     gates = {t["id"]: t for t in cfg.graph if t.get("type") == "gate"}
-    for file_id, outbox_id, text in items:
+    for file_id, raw_id, text in items:
+        # Outbox ids are task ids, but a hand-written outbox file may carry the lowercase form
+        # (`gate-p` on October 27): the first live cycle recorded Casey's answer and cleared
+        # nothing because of the case (D-497). Match the id the way GitHub shows it.
+        outbox_id = raw_id.strip().upper()
         if outbox_id == outbox.GATE_P:
             state = outbox.apply_gate_p_answer(state, text)
         elif outbox_id in gates and st.status(state, outbox_id) == st.WAITING_FOR_OWNER:
             state = outbox.apply_owner_answer(state, gates[outbox_id], text, now)
         state = dict(state, inbox_processed=[*state.get("inbox_processed", []), file_id])
-        note = {"file": file_id, "outbox_id": outbox_id, "note": text[:200]}
+        note = {"file": file_id, "outbox_id": raw_id, "note": text[:200]}
         state["owner_answers"] = [*state.get("owner_answers", []), note]
     return state
 
