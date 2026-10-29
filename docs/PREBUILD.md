@@ -1,6 +1,6 @@
 # Ask Hava master plan: where we are and what happens before the build
 
-**For:** Casey · **Date:** October 28, 2026 · **Status:** the plan is finished; the build is on hold at Gate P until the hand-run test (`docs/pilot/hand-run-test.md`) has run. Nothing is built and nothing is live.
+**For:** Casey · **Date:** October 28, 2026 · **Status:** the plan is finished and READY (D-495, October 29, 2026); the build starts on Casey's `approved to build` reply at Gate P. The hand-run test is no longer a gate: Casey chose to build first and find the customers with the built product. Nothing is built and nothing is live.
 
 This is the only to-do list. The same file is in the repository as `docs/PREBUILD.md`. Rule 9 at the end says how it stays that way.
 
@@ -147,29 +147,29 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | # | Item | Owner | Status | Done means |
 |---|---|---|---|---|
 | 1 | Fix round 15 merged | Claude | done when the PR merges | PR merged with Ci, Twin and Ally green |
-| 2 | Pause the build runner while the build is held (section 6) | Casey | to do | "Ask Hava build runner" shows Paused; the old "(hourly)" one is deleted |
-| 2a | Audit decisions E-1 to E-5 (`docs/for-casey-review.md`, top) | Casey | to do | Each answered in a GitHub issue or chat; decisions logged |
-| 2b | Ruleset taps (E-2): `Governance` required, Actions source, up-to-date branches, `claude/kit-state` ruleset | Casey | to do | Ruleset JSON shows them |
+| 2 | Pause the build runner while the build is held (section 6) | Casey | done (both scheduled tasks paused; the Actions runner is primary, D-495) | "Ask Hava build runner" shows Paused; the old "(hourly)" one is deleted |
+| 2a | Audit decisions E-1 to E-5 (`docs/for-casey-review.md`, top) | Casey | done 2026-10-28 (D-483, "you make them based on best practices") | Each answered in a GitHub issue or chat; decisions logged |
+| 2b | Ruleset taps (E-2): `Governance` required, Actions source, up-to-date branches, `claude/kit-state` ruleset | Claude, in Casey's browser | done 2026-10-29 (D-494) | Ruleset JSON shows them |
 | 2c | D-485 to D-490: the plan cleanup, the live runner with pacing, the expertise files, the Rust skeleton trial, the build-loop optimizations and the adopted brain proposals (`docs/audit/process-review-2026-10-29.md`) | Claude | done when the build-optimization PR merges | Merged green; `docs/build-readiness.md` section 4 items 6, 7, 7a and 7b done |
-| 2e | `claude setup-token` into the `CLAUDE_CODE_OAUTH_TOKEN` secret, then one rehearsal cycle under the Actions runner; the plan's real usage limits written into `kit/pacing.json` from that run | Casey (token), then Claude | to do | A cycle runs from code under the Actions runner; `kit/pacing.json` budgets are no longer placeholders |
-| 2d | Re-issue `docs/build-readiness.md` as READY | Claude | waiting on 2a to 2c and 14 | Every Critical and High risk in `docs/risk-register.md` closed or accepted |
+| 2e | `claude setup-token` into the `CLAUDE_CODE_OAUTH_TOKEN` secret, then one rehearsal cycle under the Actions runner; the plan's real usage limits written into `kit/pacing.json` from that run | Casey (token), then Claude | token done 2026-10-29; the first build cycle is the rehearsal (D-495) | A cycle runs from code under the Actions runner; `kit/pacing.json` budgets are no longer placeholders |
+| 2d | Re-issue `docs/build-readiness.md` as READY | Claude | done 2026-10-29 (D-495) | Every Critical and High risk in `docs/risk-register.md` closed or accepted |
 | 3 | Open a free Twilio account; send the short Twilio question (`docs/for-casey-review.md` top, D-424) | Casey | to do | Case number saved |
 | 4 | Twilio's written answer | outside | waiting on item 3 | Answer saved; doesn't block the build |
 | 5 | Open a Stripe account (test mode only); send the Stripe question | Casey | to do | Ticket sent |
 | 6 | Stripe's written answer | outside | waiting on item 5 | Answer saved; auto-confirm stays hidden until it says yes |
 | 7 | Save dated screenshots of today's askhava.com | Casey | to do | Screenshots in your files |
-| 8 | Hand-run test setup: the rules tab, test inbox, request form, sign-up form, sheet, tracking links (`docs/pilot/hand-run-test.md` sections 3 and 4) | Casey | to do | The rules tab is filled in; both forms submit into the sheet; one test request and one test sign-up arrive |
-| 8b | Dry run with fake businesses and homeowners: six scenarios, Stripe test mode, then reset (`docs/pilot/dry-run.md`, D-469) | Casey | to do | All six scenarios pass their checks; the tracker is cleared and set for week 1 |
-| 8a | Start the LLC and EIN, then a live Stripe account with $25, $75 and $199 payment links, an 8.6% set-aside, the Lake Havasu City business license (and home-occupation form), a postal address for email footers, the published pilot privacy notice and the paid-pilot terms form (playbook sections 4 and 9, D-470) | Casey | to do | All in place by the end of week 3; every paid-week business has accepted the terms |
-| 9 | Find the Havasu Facebook groups (about an hour, logged in on your phone): community, recommendations, buy and sell, trades and business-owner groups; note member counts and posting rules; message each admin | Casey | to do | A list of 8 or more groups, with each admin's answer |
-| 10 | Line up practice requests from people you know (counted as Seeded, not as demand) and 3 to 5 property managers, rental hosts or realtors (Partner) | Casey | to do | Names on your list (not in the repo) |
-| 11 | Run the hand-run test for 6 weeks: weeks 1 to 3 helped and free, weeks 4 to 6 hands off and paid in the pushed trades; the weekly scorecard every Sunday | Casey | to do | Six weekly rows in the sheet, with nudges logged |
-| 12 | The first 5 to 10 business conversations, with the C1 to C13 questions (playbook section 9) | Casey | to do | Answers noted |
-| 13 | Test decision: go, change the plan first, or stop (playbook section 8) | Casey | waiting on item 11 | You tell Claude which, with the scorecard |
-| 14 | Re-plan pass: apply what the test showed, the held scope cut, and the fees from the paid weeks | Claude | waiting on item 13 | One PR merged green |
+| 8 | Hand-run test setup: the rules tab, test inbox, request form, sign-up form, sheet, tracking links (`docs/pilot/hand-run-test.md` sections 3 and 4) | Casey | dropped (D-495) | The rules tab is filled in; both forms submit into the sheet; one test request and one test sign-up arrive |
+| 8b | Dry run with fake businesses and homeowners: six scenarios, Stripe test mode, then reset (`docs/pilot/dry-run.md`, D-469) | Casey | dropped (D-495) | All six scenarios pass their checks; the tracker is cleared and set for week 1 |
+| 8a | Start the LLC and EIN, then a live Stripe account with $25, $75 and $199 payment links, an 8.6% set-aside, the Lake Havasu City business license (and home-occupation form), a postal address for email footers, the published pilot privacy notice and the paid-pilot terms form (playbook sections 4 and 9, D-470) | Casey | dropped (D-495) | All in place by the end of week 3; every paid-week business has accepted the terms |
+| 9 | Find the Havasu Facebook groups (about an hour, logged in on your phone): community, recommendations, buy and sell, trades and business-owner groups; note member counts and posting rules; message each admin | Casey | dropped (D-495) | A list of 8 or more groups, with each admin's answer |
+| 10 | Line up practice requests from people you know (counted as Seeded, not as demand) and 3 to 5 property managers, rental hosts or realtors (Partner) | Casey | dropped (D-495) | Names on your list (not in the repo) |
+| 11 | Run the hand-run test for 6 weeks: weeks 1 to 3 helped and free, weeks 4 to 6 hands off and paid in the pushed trades; the weekly scorecard every Sunday | Casey | dropped (D-495) | Six weekly rows in the sheet, with nudges logged |
+| 12 | The first 5 to 10 business conversations, with the C1 to C13 questions (playbook section 9) | Casey | dropped (D-495) | Answers noted |
+| 13 | Test decision: go, change the plan first, or stop (playbook section 8) | Casey | dropped (D-495) | You tell Claude which, with the scorecard |
+| 14 | Re-plan pass: apply what the test showed, the held scope cut, and the fees from the paid weeks | Claude | dropped (D-495) | One PR merged green |
 | 15 | Paper rehearsal of the build runner (section 6) | Claude | done Oct 28 (D-472) | Reached "Finished" with only the expected stops; a failing task blocked only its dependents; three ordering fixes applied |
 | 16 | Optional: add the routine's merge trigger (section 6) | Casey | to do | The routine shows "Pull request closed, merged into main" |
-| 17 | Gate P: reply `approved to build` on GitHub issue #24, only if the scorecard says go including real payments and `docs/build-readiness.md` says READY; then resume the runner | Casey | waiting on items 2d, 13 and 14 | Reply posted |
+| 17 | Gate P: reply `approved to build` on GitHub issue #24 (`docs/build-readiness.md` says READY, D-495); turn `backup_runner` on in `kit/state.json` on `claude/kit-state` | Casey | to do | Reply posted; the Actions runner's first cycle runs |
 | 18 | Build Phase 1 (stages 1 to 5) | automatic | waiting on item 17 | Account checkpoint issue appears |
 
 **Company setup now starts with the test (D-468):** the LLC, EIN and a live Stripe account are needed for the paid weeks (item 8a). The rest of section 8 (city license, DNS, Twilio registration) follows before Gate C. Before Spanish is switched on, the two-AI back-translation check of the Spanish safety texts (D-427), and a paid review (about $100).
