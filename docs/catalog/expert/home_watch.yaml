@@ -688,7 +688,7 @@ business_side:
   their_words: ["home watch", "house check", "visit report", "walk-through", "checklist", "open-up", "close-up", "flush and run", "snowbird", "part-year", "vacant", "unoccupied", "key holder", "vendor pass", "storm check", "call-out", "insured and bonded", "NHWA accredited"]
   signup_objections:
     - objection: "Why pay a fee for a home watch client?"
-      answer: "You pay once, only when the homeowner picks your quote. A monthly account counts as 4 months of its price: under $125 a month the fee is $25, and $125 to $375 a month it is $75. A one-time storm check under $500 is $25. If that owner picks you again through Ask Hava, there is no fee."
+      answer: "You pay once, only when the homeowner picks your quote. A monthly account counts as 4 months of its price: under $125 a month the fee is $25, $125 to $375 a month it is $75, and over that it is $199. A one-time storm check under $500 is $25. If that owner picks you again through Ask Hava, there is no fee."
     - objection: "Most of my clients come from referrals. Why do I need this?"
       answer: "You may not. It costs nothing to be listed and nothing per month, so a card you don't want costs you nothing. You quote only the ones that fit your route."
     - objection: "Storm checks are one-offs. I want regular clients."

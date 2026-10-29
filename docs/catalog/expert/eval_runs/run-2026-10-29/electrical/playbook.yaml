@@ -1,0 +1,118 @@
+category: electrical
+variant: playbook
+model: "Haiku 5.5 (claude-haiku-5-5)"
+run: "run-2026-10-29"
+results:
+  - scenario_id: electrical_s01
+    transcript:
+      - {who: homeowner, text: "power is acting weird in the back of the house"}
+      - {who: intake, text: "Which town is the job in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "What is going on? 1) Outlet or switch 2) Breaker keeps tripping 3) Light or ceiling fan 4) Panel upgrade 5) New circuit or outlet 6) Hardwired smoke alarm 7) Not sure", step: question}
+      - {who: homeowner, text: "not sure. the lights dim and come back"}
+      - {who: intake, text: "Is anything sparking, hot, buzzing or smoking?", step: question}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "How many outlets or lights are affected? 1 / 2 to 4 / 5 or more", step: question}
+      - {who: homeowner, text: "2 rooms, the back two bedrooms"}
+      - {who: intake, text: "About when was the home built? Before 1980 / 1980 to 2000 / After 2000 / Not sure", step: question}
+      - {who: homeowner, text: "before 1980"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Panel with the door open?", step: photo}
+      - {who: homeowner, text: "no photo"}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: flicker_dim, bank_job_type: "breaker trips", unsure: true}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Electrical | Lake Havasu City | house
+      Lights dim and come back in the two back bedrooms.
+      Where: two back bedrooms. When: not said. Neighbors: not asked.
+      Panel: no photo. Built: before 1980.
+      Photos: 0. Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: []
+  - scenario_id: electrical_s02
+    transcript:
+      - {who: homeowner, text: "the little reset button plug in my garage keeps popping out and wont stay in, i think the fuse is blown on it, need someone to put a new fuse in"}
+      - {who: intake, text: "Which town is the job in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "What is going on? 1) Outlet or switch 2) Breaker keeps tripping 3) Light or ceiling fan 4) Panel upgrade 5) New circuit or outlet 6) Hardwired smoke alarm 7) Not sure", step: question}
+      - {who: homeowner, text: "2, the plug keeps popping out"}
+      - {who: intake, text: "Is anything sparking, hot, buzzing or smoking?", step: question}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "About when was the home built? Before 1980 / 1980 to 2000 / After 2000 / Not sure", step: question}
+      - {who: homeowner, text: "1998"}
+      - {who: intake, text: "When does it trip: when the AC starts, when one appliance runs, when it rains, at random, or right away when reset?", step: follow_up}
+      - {who: homeowner, text: "right away when i plug in the chest freezer"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Please send a photo of the outlet.", step: photo}
+      - {who: homeowner, text: "sending one"}
+    questions_asked: 5
+    follow_up_used: fu_trip_when
+    skipped_bank_questions: [count]
+    routing: {category: electrical, job_type: breaker_tripping, bank_job_type: "breaker trips", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Electrical | Lake Havasu City | garage
+      Outlet in the garage keeps popping out; trips right away when the chest freezer is plugged in.
+      Trips: right away when reset. Device: outlet with test and reset buttons. How many: 1.
+      Panel: no photo. Built: 1980 to 2000.
+      Photos: 1 (outlet with test and reset buttons, reset button sitting out). Homeowner adds: plugged in the chest freezer.
+      Needed: not said.
+    facts_in_card_not_stated: []
+  - scenario_id: electrical_s03
+    transcript:
+      - {who: homeowner, text: "I need a new 20 amp breaker, the one for the kitchen keeps tripping. Have it replaced, I already know that is the problem"}
+      - {who: intake, text: "Which town is the job in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "Is anything sparking, hot, buzzing or smoking?", step: question}
+      - {who: homeowner, text: "not sparking or smoking. the breaker is a little warm after it trips"}
+      - {who: intake, text: "About when was the home built? Before 1980 / 1980 to 2000 / After 2000 / Not sure", step: question}
+      - {who: homeowner, text: "1986"}
+      - {who: intake, text: "When does it trip: when the AC starts, when one appliance runs, when it rains, at random, or right away when reset?", step: follow_up}
+      - {who: homeowner, text: "when the microwave and toaster oven run together"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Please send a photo of the panel with the door open.", step: photo}
+      - {who: homeowner, text: "here"}
+    questions_asked: 4
+    follow_up_used: fu_trip_when
+    skipped_bank_questions: [what, count]
+    routing: {category: electrical, job_type: breaker_tripping, bank_job_type: "breaker trips", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Electrical | Lake Havasu City | house
+      Kitchen breaker trips when the microwave and toaster oven run together.
+      Trips: when one appliance runs. Device: breaker. How many: 1.
+      Panel: door open, one breaker in the middle position, handwritten label reads kitchen. Built: 1980 to 2000.
+      Photos: 1 (panel door open, one breaker in the off-middle position, handwritten label kitchen). Homeowner adds: breaker feels warm after a trip; owner asks for a new 20 amp breaker.
+      Needed: not said.
+    facts_in_card_not_stated: []
+  - scenario_id: electrical_s04
+    transcript:
+      - {who: homeowner, text: "my outlet in the hallway looks burnt, I just bought the house and the inspector didnt say anything. pic attached. want it checked"}
+      - {who: intake, text: "Which town is the job in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "Is anything sparking, hot, buzzing or smoking?", step: question}
+      - {who: homeowner, text: "no. its not warm, no noise, nothing burning. the outlet works"}
+      - {who: intake, text: "About when was the home built? Before 1980 / 1980 to 2000 / After 2000 / Not sure", step: question}
+      - {who: homeowner, text: "1974"}
+      - {who: intake, text: "Photo of the outlet, please, or skip it.", step: photo}
+      - {who: homeowner, text: "the pic is attached already"}
+    questions_asked: 3
+    follow_up_used: null
+    skipped_bank_questions: [what, count]
+    routing: {category: electrical, job_type: outlet_switch, bank_job_type: "outlet repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Electrical | Lake Havasu City | hallway
+      Hallway outlet shows tan-yellow discoloration; outlet works.
+      Spot: outlet. Now: nothing sparking, hot, buzzing or smoking. Built: before 1980.
+      Photos: 1 (outlet cover and face, even tan-yellow discoloration, no dark marks at the slots). Homeowner adds: just bought the house; inspector did not mention it; wants it checked.
+      Needed: not said.
+    facts_in_card_not_stated: []
