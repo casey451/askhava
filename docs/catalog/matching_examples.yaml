@@ -1,0 +1,92 @@
+# Matching worked examples (D-110): who receives a job card, written before any routing code
+# and apart from both the app and the twin, so the two cannot share one licensing mistake (F07).
+# Rows M01 to M16 are docs/test-design.md section 7.2; `table` keeps that table's job name and
+# `candidates` uses the catalog's job-type names (categories.yaml, refused jobs included).
+# Rules: CARD-001, LIC-012, LIC-013, LIC-014, LIC-016, LIC-017, LIC-021, LIC-022, LIC-035.
+# CARD-002 (neighbouring towns, same rules) and CARD-003 (no cap) are TD-LIC-02's property
+# tests, not rows here. Checked by scripts/check_catalog.py; the app's matching tests
+# (TD-LIC-02) and the Twin gate's license table are checked against it.
+#
+# Every business is active and verified. Fields:
+#   job:      category, candidates (the job types still possible), town, table (7.2's name)
+#   business: roc (ROC class rows of license_map.yaml), agencies (agency `license` names of
+#             license_map.yaml), handyman, city_list (on the city business-license list),
+#             ticked (job types it ticked at sign-up), towns (towns it serves)
+#   expected: outcome (card, no_card or refused_at_intake), rules (requirement IDs),
+#             map_covers (whether the business's ROC classes and agency licenses cover every
+#             candidate as license_map.yaml says; null when it holds none), condition (a limit
+#             the card carries, required on a handyman card)
+# All names and towns are fake or public place names; no homeowner data.
+
+version: 1
+examples:
+  - id: M01
+    job: {category: hvac_repair, candidates: [AC not cooling], town: Lake Havasu City, table: AC repair}
+    business: {roc: [R-39], agencies: [], handyman: false, city_list: false, ticked: [AC not cooling], towns: [Lake Havasu City]}
+    expected: {outcome: card, rules: [CARD-001], map_covers: true}
+  - id: M02
+    job: {category: hvac_repair, candidates: [furnace repair], town: Lake Havasu City, table: furnace repair}
+    business:
+      roc: [R-39R Air Conditioning and Refrigeration]
+      agencies: []
+      handyman: false
+      city_list: false
+      ticked: [AC not cooling, thermostat, duct repair, furnace repair, evaporative (swamp) cooler repair]
+      towns: [Lake Havasu City]
+    expected: {outcome: no_card, rules: [LIC-035], map_covers: false}
+  - id: M03
+    job: {category: plumbing_repair, candidates: [drain clearing], town: Lake Havasu City, table: drain clearing}
+    business: {roc: ["R-37R Sewers, Drains and Pipe Laying"], agencies: [], handyman: false, city_list: false, ticked: [drain clearing], towns: [Lake Havasu City]}
+    expected: {outcome: card, rules: [CARD-001, LIC-035], map_covers: true}
+  - id: M04
+    job: {category: plumbing_repair, candidates: [water heater replacement], town: Lake Havasu City, table: water heater replacement}
+    business: {roc: [], agencies: [], handyman: true, city_list: true, ticked: [water heater replacement], towns: [Lake Havasu City]}
+    expected: {outcome: no_card, rules: [LIC-022], map_covers: null}
+  - id: M05
+    job: {category: plumbing_repair, candidates: [faucet replacement], town: Lake Havasu City, table: faucet repair}
+    business: {roc: [], agencies: [], handyman: true, city_list: true, ticked: [faucet replacement], towns: [Lake Havasu City]}
+    expected: {outcome: card, rules: [CARD-001, LIC-019], map_covers: null, condition: quote must be under $1,000}
+  - id: M06
+    job: {category: appliance_repair, candidates: ["gas appliance repair (gas dryer, range or oven)"], town: Lake Havasu City, table: gas dryer}
+    business: {roc: [], agencies: [], handyman: true, city_list: true, ticked: ["gas appliance repair (gas dryer, range or oven)"], towns: [Lake Havasu City]}
+    expected: {outcome: no_card, rules: [LIC-021], map_covers: null}
+  - id: M07
+    job: {category: electrical, candidates: [outlet repair], town: Lake Havasu City, table: outlet repair}
+    business: {roc: [], agencies: [], handyman: true, city_list: true, ticked: [outlet repair], towns: [Lake Havasu City]}
+    expected: {outcome: no_card, rules: [LIC-001], map_covers: null}
+  - id: M08
+    job: {category: pool_repair, candidates: [pump repair], town: Lake Havasu City, table: pump repair}
+    business: {roc: [R-6], agencies: [], handyman: false, city_list: false, ticked: [pump repair], towns: [Lake Havasu City]}
+    expected: {outcome: card, rules: [CARD-001], map_covers: true}
+  - id: M09
+    job: {category: security_cameras, candidates: [camera install], town: Lake Havasu City, table: camera install}
+    business: {roc: [], agencies: [], handyman: true, city_list: true, ticked: [camera install], towns: [Lake Havasu City]}
+    expected: {outcome: card, rules: [LIC-014], map_covers: null, condition: "under $1,000 with no permit"}
+  - id: M10
+    job: {category: alarm_systems, candidates: [alarm install], town: Lake Havasu City, table: install}
+    business: {roc: [R-67], agencies: [], handyman: false, city_list: false, ticked: [alarm install], towns: [Lake Havasu City]}
+    expected: {outcome: no_card, rules: [LIC-013], map_covers: true}
+  - id: M11
+    job: {category: pest_control, candidates: [termites], town: Lake Havasu City, table: termites}
+    business: {roc: [R-11], agencies: [], handyman: false, city_list: false, ticked: [termites], towns: [Lake Havasu City]}
+    expected: {outcome: no_card, rules: [LIC-012], map_covers: false}
+  - id: M12
+    job: {category: septic_pumping, candidates: [tank pumping], town: Lake Havasu City, table: septic pumping}
+    business: {roc: [], agencies: [ADEQ septage-hauler vehicle license], handyman: false, city_list: false, ticked: [tank pumping], towns: [Lake Havasu City]}
+    expected: {outcome: card, rules: [LIC-016], map_covers: true}
+  - id: M13
+    job: {category: local_moving, candidates: [in-state move], town: Lake Havasu City, table: Lake Havasu City to Phoenix}
+    business: {roc: [], agencies: [], handyman: false, city_list: true, ticked: [in-town move, in-state move], towns: [Lake Havasu City]}
+    expected: {outcome: card, rules: [CARD-001, LIC-017], map_covers: null}
+  - id: M14
+    job: {category: local_moving, candidates: [move leaving Arizona], town: Lake Havasu City, table: Lake Havasu City to Las Vegas}
+    business: {roc: [], agencies: [], handyman: false, city_list: true, ticked: [in-town move, in-state move], towns: [Lake Havasu City]}
+    expected: {outcome: refused_at_intake, rules: [LIC-017], map_covers: null}
+  - id: M15
+    job: {category: hvac_repair, candidates: [AC not cooling, furnace repair], town: Lake Havasu City, table: "{AC repair, furnace repair}"}
+    business: {roc: [R-39R Air Conditioning and Refrigeration], agencies: [], handyman: false, city_list: false, ticked: [AC not cooling], towns: [Lake Havasu City]}
+    expected: {outcome: no_card, rules: [CARD-001, LIC-035], map_covers: false}
+  - id: M16
+    job: {category: hvac_repair, candidates: [AC not cooling], town: Lake Havasu City, table: AC repair}
+    business: {roc: [R-39], agencies: [], handyman: false, city_list: false, ticked: [AC not cooling], towns: [Kingman]}
+    expected: {outcome: no_card, rules: [CARD-001], map_covers: true}
