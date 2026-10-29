@@ -159,6 +159,11 @@ trade_brief:
       one_question: fu_empty
       if_other_route_to: {category: estate_cleanout, job_type: "whole-house cleanout"}
       source: null
+    - sounds_like: "deep cleaning (\"it got kind of backed up\", \"hasn't been cleaned in years\")"
+      might_be: "specialty_route, a heavy-condition home where items must be moved or hauled first"
+      one_question: fu_floor_visible
+      if_other_route_to: {category: house_cleaning, job_type: "deep cleaning"}
+      source: null
     - sounds_like: "deep cleaning (sewage on the bathroom floor)"
       might_be: "main_line_backup, plumbing work first"
       one_question: fu_problem_area
@@ -442,6 +447,139 @@ job_types:
       Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
       Needed: <timing answer>.
     never_say: ["This will get your deposit back.", "Your landlord can't charge you for cleaning.", "Move-outs run about two fifty.", "Leave the power on or they can't clean.", "Carpet cleaning is included."]
+
+  - id: post_construction
+    label: "After-remodel dust and debris clean"
+    bank_job_type: "deep cleaning"
+    recurring: false
+    homeowner_phrasings: ["construction dust", "drywall dust everywhere", "cleaning after the remodel", "just put in new floors and there is dust on everything", "polvo de la obra"]
+    must_know:
+      - fact: "Where the dust reached: surfaces only, or also vents, fans and inside cabinets"
+        bank_question: null
+        follow_up: fu_dust_where
+        photo: p3
+        why_it_moves_price: "Dust inside cabinets, vents and fan blades means every surface is wiped more than once, often twice the hours of a normal deep clean. [judgment]"
+        skip_if: "Homeowner already said where the dust is"
+      - fact: "Anything left from the work besides dust: paint drips, tape, stickers, haze on new floors"
+        bank_question: null
+        follow_up: fu_work_left
+        photo: p4
+        why_it_moves_price: "Scraping paint, peeling labels and floor haze are slow detail work some cleaners price apart or do not take. [judgment]"
+        skip_if: "Photo shows the surfaces and she described them"
+      - fact: "Bedrooms and bathrooms"
+        bank_question: bathrooms
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sets the base time across the home. [judgment]"
+        skip_if: "Answered (bedrooms is asked separately)"
+      - fact: "Whether the home is empty and the work is finished"
+        bank_question: null
+        follow_up: fu_empty
+        photo: null
+        why_it_moves_price: "Cleaning an empty, finished home is one pass; furniture in place or trades still working means a second visit. [judgment]"
+        skip_if: "Homeowner said the contractor is done and nobody lives there yet"
+    allowed_follow_ups:
+      - id: fu_dust_where
+        ask_when: "After-remodel clean and the homeowner has not said where the dust reached"
+        text_en: "Where is the dust: on surfaces only, or also in the vents, ceiling fans and inside cabinets?"
+        text_es: "¿Dónde está el polvo: solo en las superficies, o también en las rejillas, los ventiladores de techo y adentro de los gabinetes?"
+        options_en: ["Surfaces only", "Also vents and fans", "Also inside cabinets", "All of these"]
+        options_es: ["Solo en las superficies", "También rejillas y ventiladores", "También adentro de los gabinetes", "Todo esto"]
+        card_field: true
+        why: "How far the dust reached is the main price driver in an after-remodel clean. [judgment]"
+      - id: fu_work_left
+        ask_when: "After-remodel clean and the homeowner has not said what else the work left behind"
+        text_en: "Is anything left from the work besides dust, like paint drips, tape or stickers, or a haze on new floors?"
+        text_es: "¿Quedó algo de la obra además del polvo, como gotas de pintura, cinta o etiquetas, o una capa opaca en el piso nuevo?"
+        options_en: ["Paint drips or spots", "Tape or stickers", "Haze on new floors or tile", "Nothing besides dust", "More than one of these"]
+        options_es: ["Gotas o manchas de pintura", "Cinta o etiquetas", "Capa opaca en el piso o azulejo nuevo", "Nada además del polvo", "Más de una de estas"]
+        card_field: true
+        why: "Each is detail work a cleaner prices or declines on its own; the card records what she sees, never a cause. [judgment]"
+      - fu_empty
+      - fu_utilities
+    photos_priority: [p3, p4, p1]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell in the home"]
+      urgent_capable_triggers: ["Furniture delivery or move-in within 2 days"]
+      regular: "Work finished, move-in a week or more away"
+    scope_line_en: "After-remodel clean of an empty 4 bed, 3 bath house; new tile floors last week; dust on all surfaces and in vents and fans."
+    scope_line_es: "Limpieza después de la remodelación de una casa vacía de 4 recámaras y 3 baños; pisos de azulejo nuevos la semana pasada; polvo en todas las superficies y en rejillas y ventiladores."
+    quote_format: firm
+    business_fills: ["price for the whole clean", "what the clean includes (vents, fans, inside cabinets, paint drips)", "what is not included", "earliest day"]
+    card_template: |
+      REQ-<id> | House cleaning | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: after-remodel clean, what work was done, size>
+      Size: <bedrooms> bed / <bathrooms> bath. Dust: <surfaces only / vents and fans / inside cabinets / all>. Left from the work: <paint drips / tape or stickers / haze on new floors / nothing else>.
+      On cleaning day: <empty / some furniture / furnished>. Power and water: <both on / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That haze is grout residue.", "Your contractor should have cleaned that.", "Vinegar will take the haze off.", "After-remodel cleans run double a deep clean.", "Change your AC filter first."]
+
+  - id: specialty_route
+    label: "Heavy-condition home: stacked belongings, mold spots, droppings, sewage residue"
+    bank_job_type: "deep cleaning"
+    recurring: false
+    homeowner_phrasings: ["it got kind of backed up", "hasn't been cleaned in years", "hoarder house", "black mold everywhere", "mouse droppings all over", "moho"]
+    must_know:
+      - fact: "How much of the floor shows in the main rooms"
+        bank_question: null
+        follow_up: fu_floor_visible
+        photo: p3
+        why_it_moves_price: "A home with only paths open needs items moved or removed before any cleaning, which can be days of work or a cleanout job. [judgment]"
+        skip_if: "Living-area photo shows the floors"
+      - fact: "What is there besides dirt and dust: stored items, dark spots, droppings, sewage or dirty water"
+        bank_question: null
+        follow_up: fu_problem_area
+        photo: p4
+        why_it_moves_price: "Each changes the gear, the crew and whether a cleaner takes it at all; sewage still backing up and live animals go to other trades first. [judgment]"
+        skip_if: "Her words and photos already say"
+      - fact: "Bedrooms and bathrooms"
+        bank_question: bathrooms
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sets the base time once the home is cleared. [judgment]"
+        skip_if: "Answered (bedrooms is asked separately)"
+      - fact: "Whether items have to be removed or sorted first"
+        bank_question: null
+        follow_up: fu_items_out
+        photo: null
+        why_it_moves_price: "Hauling and sorting is a cleanout, priced by volume, not by rooms. [judgment]"
+        skip_if: "Floor answer is most of it"
+    allowed_follow_ups:
+      - id: fu_floor_visible
+        ask_when: "Homeowner's words suggest a home in much heavier shape than usual (backed up, years, piled up, embarrassed) and no living-area photo"
+        text_en: "In the main rooms, about how much of the floor can you see?"
+        text_es: "En los cuartos principales, ¿más o menos cuánto del piso se ve?"
+        options_en: ["Most of it", "About half", "Only paths", "Hardly any"]
+        options_es: ["Casi todo", "Como la mitad", "Solo pasillos", "Casi nada"]
+        card_field: true
+        why: "A plain, non-judging question that tells a cleaner whether this is a heavy clean or a cleanout first. [judgment]"
+      - fu_problem_area
+      - id: fu_items_out
+        ask_when: "Floor answer is about half, only paths or hardly any"
+        text_en: "Do items need to be hauled away or sorted before the cleaning?"
+        text_es: "¿Hay que sacar o separar cosas antes de la limpieza?"
+        options_en: ["Yes, hauled away", "Yes, sorted to keep or donate", "Both", "No, just cleaned around"]
+        options_es: ["Sí, sacarlas", "Sí, separar para guardar o donar", "Las dos", "No, solo limpiar alrededor"]
+        card_field: true
+        why: "Hauling or sorting is cleanout work in another category; cleaning around items stays here. [judgment]"
+    photos_priority: [p3, p4, p1]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell in the home"]
+      urgent_capable_triggers: ["Sewage or dirty water still on the floor"]
+      regular: "Heavy-condition clean with no water on the floor"
+    scope_line_en: "One-time heavy clean of a 3 bed, 2 bath house; floor shows only along paths; droppings in several rooms; items to be hauled away first."
+    scope_line_es: "Limpieza fuerte de una sola vez de una casa de 3 recámaras y 2 baños; el piso se ve solo en pasillos; excremento en varios cuartos; hay que sacar cosas primero."
+    quote_format: firm
+    business_fills: ["price for the whole job, or what you need to see before a firm price", "what the price includes and leaves out", "crew size", "earliest day"]
+    card_template: |
+      REQ-<id> | House cleaning | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: heavy-condition one-time clean, size, the main condition in her words>
+      Size: <bedrooms> bed / <bathrooms> bath. Floor showing: <most / about half / only paths / hardly any>. Besides dirt: <stored items / dark spots / droppings / sewage or dirty water / as she described>.
+      Items first: <haul away / sort / both / clean around / not said>. Who will be there: <homeowner / family member with a key / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's black mold.", "This is a hoarding situation.", "Wear a mask before you go in.", "That needs a biohazard team.", "It will cost thousands to clear out."]
 
 business_side:
   how_they_get_customers: ["Word of mouth and repeat customers", "Google Maps listing and reviews", "Google Local Services Ads", "Local Facebook groups and Nextdoor [judgment]", "Thumbtack and Angi", "Realtors and property managers for move-outs [judgment]"]

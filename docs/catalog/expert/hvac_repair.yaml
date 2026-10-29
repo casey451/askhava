@@ -1,0 +1,1092 @@
+# Ask Hava expert layer: hvac_repair (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set hvac_repair and trade_kb/trades/hvac.yaml (evaporative_coolers.yaml consulted for the
+# swamp cooler job types). Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - Left out (belong to hvac_replacement): ac_replacement, package_unit_replacement.
+# - Left out: mini_split_install. A new install is not repair, and hvac_replacement's job types (full system
+#   replacement, condenser replacement) do not name it either. Suggest adding "mini-split install" to
+#   hvac_replacement, or deciding it routes as "full system replacement".
+# - Left out from evaporative_coolers.yaml: cooler_replacement, cooler_new_install, cooler_remove_convert.
+#   Neither HVAC category has a job type for replacing, adding or removing a swamp cooler.
+# - new_job_type: swamp_cooler_repair and swamp_cooler_service. The hvac kb file has no swamp cooler job type;
+#   both route as "evaporative (swamp) cooler repair". Labels and must-knows draw on evaporative_coolers.yaml.
+# - ac_not_turning_on, ac_leaking_water, ac_noise_smell, mini_split_repair and ac_maintenance map to
+#   "AC not cooling" because the category has no closer job type. Effect: R-39R Air Conditioning and
+#   Refrigeration holders see them (license_map.yaml), which fits the work.
+# - heat_pump_issue maps to "furnace repair" (it is a heating complaint). License_map marks R-39R Air
+#   Conditioning and Refrigeration as unclear for furnace repair, so those holders will not see heat pump
+#   cards even though a heat pump is a refrigeration system. Consider mapping it to "AC not cooling" instead.
+# - ac_maintenance is quoted as diagnostic_visit because the category requires it; many shops quote tune-ups
+#   flat. A job_type_formats entry would be needed to change that.
+# - Not verified this pass: the 2024 IMC secondary condensate protection wording (307.2.3) and a Lake Havasu
+#   cost-per-customer figure for HVAC. Neither is stated as fact below.
+schema: 1
+category: hvac_repair
+question_set: hvac_repair
+kb_trade: hvac
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-39 scope: comfort AC incl. refrigeration, evaporative cooling, ventilating and heating; may add a circuit to an existing panel, excludes a new service panel or sub-panel; R-39R subclasses; R-45 Sheet Metal incl. duct work)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed ((A)(14) handyman exemption; (D)(2) never covers work connecting to natural gas, propane or other fuel gas)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_41_4047
+    title: "A.R.S. 41-4047 Unlawful acts (item 5: alterations to manufactured homes only by a licensed or certified person)"
+    url: "https://www.azleg.gov/ars/41/04047.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_34_204
+    title: "A.A.C. R4-34-204 Manufactured housing installer classes (I-10C installs HVAC and evaporative coolers and may repair coolers; no refrigerant service, adding or reclaiming)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-34-204"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits (no permit to repair or replace an existing AC without increasing weight, capacity, location or ampacity; 2024 I-codes adopted)"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 grains per gallon, TDS about 753 ppm)"
+    url: "https://www.lhcaz.gov/288/Water"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_r22
+    title: "US EPA Homeowners and Consumers FAQ on the HCFC-22 (R-22) phaseout (no new R-22 made or imported since Jan 1, 2020; existing systems may still be serviced; ask technicians to find and repair leaks rather than top off)"
+    url: "https://www.epa.gov/ods-phaseout/homeowners-and-consumers-frequently-asked-questions"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (Arizona monsoon officially June 15 to September 30)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: climate_normals
+    title: "U.S. Climate Data, Lake Havasu City 1991-2020 normals (average highs June 105 F, July 109 F, August 108 F; average lows December 43 F, January 44 F)"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: doe_evap
+    title: "US DOE Energy Saver, Evaporative Coolers (only suitable for low humidity; replace pads at least twice a season; drain and clean to remove mineral buildup)"
+    url: "https://www.energy.gov/energysaver/evaporative-coolers"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ua_extension
+    title: "University of Arizona Cooperative Extension, Water Wise water-saving tips (a cooler may use 50 to 200 gallons a day; bleed-off; replace pads with heavy mineral deposits; winter drain and cover)"
+    url: "https://extension.arizona.edu/programs/cochise-county-water-wise/water-saving-tips"
+    checked: "2026-10-29"
+    kind: other
+  - id: tofu_hvac_leads
+    title: "Tofu (marketing vendor): how HVAC contractors get leads, 2026 (lead-buying sites $20 to $100+ per lead; shared leads sold to 3 to 4 contractors; Google LSA about $51 per lead)"
+    url: "https://web.tofu.com/blog/how-to-get-hvac-leads"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: iconic_hvac_leads
+    title: "Iconic (marketing vendor): HVAC lead brokers (shared leads $15 to $50 sold to 3 to 8 competitors; exclusive $45 to $300; acquisition cost $75 to $250, citing 2026 WebFX and BullsEye benchmarks)"
+    url: "https://iconic.co/blog/hvac-lead-brokers/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: webtonic_hvac_ads
+    title: "WebTonic (marketing vendor): HVAC Google Ads statistics 2026 (blended CPL $104, non-branded $149; LSA cost per unique lead $55.27 in Jan 2026, 44% book rate)"
+    url: "https://www.webtonic.io/blog/hvac-google-ads-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Cooling or heat out right now in peak heat (same-day or after-hours call) versus a scheduled visit"
+      why: "Average highs run 105 to 109 F from June to August, so no-cooling calls stack up and same-day or evening visits carry a higher rate; the timing answer and her words settle it. [judgment on rates]"
+      source: climate_normals
+    - driver: "System type and where it sits: rooftop package unit, ground condenser with an attic or closet air handler, mini-split, or swamp cooler"
+      why: "Roof work means a ladder and time in the sun; attic air handlers in summer are slow, hot work; package and split systems use different parts. [judgment]"
+      source: null
+    - driver: "Refrigerant on the data plate (R-22 versus R-410A versus newer refrigerants)"
+      why: "No new R-22 has been made or imported since 2020, so R-22 repairs depend on recovered supply and quotes swing; EPA asks owners to have leaks found and fixed rather than topped off."
+      source: epa_r22
+    - driver: "Age of the system, read from the plate date rather than a guess"
+      why: "Past about 15 years, parts are harder to find and many businesses quote a repair alongside a replacement option. [judgment]"
+      source: null
+    - driver: "Symptom class: unit dead or fan not spinning, runs but warm, water leak, noise, or airflow"
+      why: "Each class sends a different tech with different truck stock: start parts, leak-search gear, drain tools or duct work. [judgment]"
+      source: null
+    - driver: "Heat source: gas furnace or roof gas pack versus heat strips or a heat pump"
+      why: "Gas heat adds combustion and venting checks, and work connecting to fuel gas is never handyman work in Arizona at any price."
+      source: ars_32_1121
+    - driver: "Access: two-story or sloped roof, locked side gate, attic hatch in a closet"
+      why: "Access sets labor time and whether a second person or extra ladder comes. [judgment]"
+      source: null
+    - driver: "Manufactured home"
+      why: "Ducts run under the floor, closet units are tight, and alterations may be done only by a licensed or certified person."
+      source: ars_41_4047
+  hidden_conditions:
+    - condition: "A refrigerant leak behind a 'just needs a recharge' request"
+      how_a_pro_spots_it: "Homeowner says it was topped off last summer or this year; ice on the lines; runs nonstop and never catches up"
+      question_or_photo: fu_recharged_before
+      source: epa_r22
+    - condition: "An R-22 system, where refrigerant comes only from recovered or stockpiled supply"
+      how_a_pro_spots_it: "Refrigerant line on the data plate reads R-22; plate date before about 2010"
+      question_or_photo: p1_data_plate
+      source: epa_r22
+    - condition: "A drain backup at an attic or closet unit with water already in the ceiling, wall or subfloor"
+      how_a_pro_spots_it: "Ceiling stain photo; water in the pan; a blank thermostat or dead system next to a wet pan"
+      question_or_photo: p5_leak_area
+      source: null
+    - condition: "Condenser coil packed with dust or debris after storm season, or sun-rotted line insulation"
+      how_a_pro_spots_it: "Matted or dusty fins and bare copper lines in the whole-unit photo"
+      question_or_photo: p2_whole_unit
+      source: null
+    - condition: "A tripping breaker that traces to the panel or wiring, or a circuit change that needs a new panel or sub-panel, which R-39 does not cover"
+      how_a_pro_spots_it: "Other breakers trip too; panel photo shows the panel label and no open spaces"
+      question_or_photo: fu_breaker
+      source: aac_r4_9_103
+    - condition: "Rusted, sooty or disconnected flue pipe on a gas furnace or gas pack"
+      how_a_pro_spots_it: "Indoor unit photo shows the flue at the top of the furnace"
+      question_or_photo: p3_indoor_unit
+      source: null
+    - condition: "Crushed, torn or disconnected ducts in a hot attic or in the belly of a manufactured home"
+      how_a_pro_spots_it: "One or two rooms warm while the rest cool; ducts under the floor; animal signs"
+      question_or_photo: fu_duct_what
+      source: null
+    - condition: "Scale-crusted pads and pan, or a pan rusted through, behind a swamp cooler that is 'not cooling' or 'leaking'"
+      how_a_pro_spots_it: "White crust and rust spots in the whole-cooler photo; city water near 19 grains per gallon hardness"
+      question_or_photo: p2_whole_unit
+      source: lhc_ccr
+  misdiagnosis_checks:
+    - sounds_like: "AC not cooling"
+      might_be: "swamp_cooler_repair"
+      one_question: system_type
+      if_other_route_to: {category: hvac_repair, job_type: "evaporative (swamp) cooler repair"}
+      source: null
+    - sounds_like: "thermostat (screen blank, nothing runs)"
+      might_be: "ac_leaking_water"
+      one_question: fu_water_at_unit
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "ac_not_turning_on (breaker trips)"
+      might_be: "electrical fault outside the HVAC system, a different category"
+      one_question: fu_breaker
+      if_other_route_to: {category: electrical, job_type: "breaker trips"}
+      source: null
+    - sounds_like: "ac_leaking_water (ceiling stain under a rooftop unit)"
+      might_be: "roof leak, a different category"
+      one_question: fu_leak_when
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "ac_leaking_water (water on the closet floor)"
+      might_be: "plumbing leak or water heater in the same closet"
+      one_question: fu_leak_when
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "duct repair (weak air)"
+      might_be: "ac_not_cooling (weak air at every vent)"
+      one_question: fu_duct_what
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "evaporative (swamp) cooler repair (ceiling stain by the cooler vent)"
+      might_be: "roof leak at the cooler roof jack, a different category"
+      one_question: fu_leak_when
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: null
+  photo_reading:
+    - photo_id: p1_data_plate
+      reads: ["Brand, model and serial", "Printed manufacture date", "Refrigerant line (R-22, R-410A or newer)", "Tonnage digits in the model number", "MCA and max breaker amps", "On a cooler label: CFM and motor size"]
+      neutral_wording: "Data plate readable; refrigerant shown as R-22; plate date 2009."
+    - photo_id: p2_whole_unit
+      reads: ["Package unit, split condenser, heat pump or swamp cooler", "Matted or dusty fins", "Rust at the base, missing panels", "Bare or sun-rotted line insulation", "Disconnect box present", "Gas line to a rooftop gas pack", "On a cooler: white crust, rust, cover still on"]
+      neutral_wording: "Rooftop package unit on a flat roof; one side panel missing; fins look dusty."
+    - photo_id: p3_indoor_unit
+      reads: ["Furnace or air handler", "Gas line and flue present", "Water in the pan, rust or stains on the platform", "Filter size and condition"]
+      neutral_wording: "Air handler in a hall closet; standing water in the pan; filter looks dark."
+    - photo_id: p4_thermostat
+      reads: ["Screen blank or showing a message", "Brand and model", "Wire count and letters (R, C, Y, G, W, O/B)", "Cooler wall switch settings"]
+      neutral_wording: "Thermostat screen blank; five wires behind it labeled R, Y, G, W and C."
+    - photo_id: p5_leak_area
+      reads: ["Ceiling stain size, sagging drywall", "Secondary drain or float switch present", "Outside drain line outlet"]
+      neutral_wording: "Brown ceiling stain about two feet wide below the attic access."
+    - photo_id: p7_error_code
+      reads: ["Code or blink count", "Brand of the unit or remote"]
+      neutral_wording: "Indoor mini-split unit shows a green light blinking five times."
+    - photo_id: p8_panel
+      reads: ["Panel label and main breaker size", "Open breaker spaces"]
+      neutral_wording: "Panel label reads 125 amps; two open spaces at the bottom."
+  local_factors:
+    - fact: "Average highs are about 105 F in June, 109 F in July and 108 F in August"
+      effect: "No-cooling requests peak in summer and businesses run same-day and evening calls; scheduling slows on the hottest weekends [judgment]"
+      source: climate_normals
+    - fact: "The Arizona monsoon officially runs June 15 to September 30"
+      effect: "Dust storms load coils and filters and power flickers stop units, so a run of 'won't turn on after the storm' requests follows each storm [judgment]"
+      source: nws_monsoon
+    - fact: "Evaporative coolers suit low humidity only and add humidity to the home"
+      effect: "Cooler 'not cooling' requests rise on humid monsoon days; many homes have both a cooler and refrigerated AC, so the card says which one is out [judgment]"
+      source: doe_evap
+    - fact: "City water hardness averages about 19 grains per gallon"
+      effect: "Cooler pads and pans scale fast, so pros ask about pad type and expect crusted pans"
+      source: lhc_ccr
+    - fact: "A cooler may use 50 to 200 gallons a day; pads with heavy mineral deposits should be replaced, and winter shut-down means draining, disconnecting the water line and covering"
+      effect: "Start-up, pad and shut-down visits are their own seasonal jobs, often flat-rate by size and location [judgment]"
+      source: ua_extension
+    - fact: "Repairing or replacing an existing AC without increasing weight, capacity, location or ampacity needs no city permit"
+      effect: "Repair cards do not carry permit time; a change in size or location moves the job toward replacement work"
+      source: lhc_permits
+    - fact: "Manufactured-home installers licensed I-10C may install HVAC and coolers and repair coolers, but may not do refrigerant work"
+      effect: "The card says 'manufactured home' so licensed businesses can see the home type"
+      source: aac_r4_34_204
+    - fact: "Seasonal residents leave the AC set high in summer or off, and second homes sit empty for months"
+      effect: "Failures are found on return or by a neighbor; the card says if someone local can open the gate, and never carries a lockbox or gate code [judgment]"
+      source: null
+  seasonality:
+    busy: "May to September for cooling (peak June to August), March to May for swamp cooler start-ups, and the first cold nights in November and December for heat [judgment on demand]"
+    slow: "January to early March and mid-October to early November, between seasons [judgment]"
+    source: climate_normals
+
+job_types:
+  - id: ac_not_cooling
+    label: "AC running but blowing warm or not keeping up"
+    bank_job_type: "AC not cooling"
+    recurring: false
+    homeowner_phrasings: ["ac blowing warm", "house is 90 inside", "ac runs all day", "needs freon", "air not cold"]
+    must_know:
+      - fact: "System type and where a tech works on it (roof, ground, attic or closet)"
+        bank_question: system_type
+        follow_up: fu_unit_access
+        photo: p2_whole_unit
+        why_it_moves_price: "Roof and attic work take longer than a ground unit, and package and split systems carry different parts. [judgment]"
+        skip_if: "Whole-unit photo sent and the homeowner named the system"
+      - fact: "Whether the fan on the outside unit spins"
+        bank_question: null
+        follow_up: fu_outdoor_fan
+        photo: null
+        why_it_moves_price: "A stopped or humming fan sends a tech with start parts; a spinning fan with warm air means a longer refrigerant or airflow visit. [judgment]"
+        skip_if: "Homeowner said what the outside unit does, or the unit is on a roof she can't see"
+      - fact: "Refrigerant and age from the data plate"
+        bank_question: age
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "R-22 systems run on recovered supply only, so quotes swing; age frames repair against replacement [src:epa_r22]."
+        skip_if: "Plate photo sent"
+      - fact: "Whether refrigerant has been added before"
+        bank_question: null
+        follow_up: fu_recharged_before
+        photo: null
+        why_it_moves_price: "Past top-offs mean the business plans for a leak search, which EPA asks for instead of topping off [src:epa_r22]."
+        skip_if: "Homeowner already mentioned a recharge"
+      - fact: "Whether air comes out of the vents, and how strong"
+        bank_question: null
+        follow_up: fu_air_from_vents
+        photo: null
+        why_it_moves_price: "Weak or no air points the visit at the indoor side (blower, frozen coil, filter) rather than the outside unit. [judgment]"
+        skip_if: "Homeowner described the airflow"
+    allowed_follow_ups:
+      - id: fu_outdoor_fan
+        ask_when: "Central AC, heat pump or package unit runs but blows warm, and the homeowner did not say what the outside unit does"
+        text_en: "When the AC is on, is the big fan on top of the outside unit spinning?"
+        text_es: "Cuando el aire está prendido, ¿gira el ventilador grande de arriba de la unidad de afuera?"
+        options_en: ["Yes, spinning", "No, not spinning", "Humming but not spinning", "Can't see it (on the roof)"]
+        options_es: ["Sí, gira", "No, no gira", "Zumba pero no gira", "No lo puedo ver (está en el techo)"]
+        card_field: true
+        why: "The fan answer tells the business which parts and which tech to send. [judgment]"
+      - id: fu_air_from_vents
+        ask_when: "Homeowner says the house is warm and did not describe the air at the vents"
+        text_en: "Inside, is air coming out of the vents?"
+        text_es: "Adentro, ¿sale aire por las rejillas?"
+        options_en: ["Yes, strong", "Yes, but weak", "No air at all"]
+        options_es: ["Sí, fuerte", "Sí, pero poco", "Nada de aire"]
+        card_field: true
+        why: "Separates an indoor airflow visit from an outdoor unit visit without naming a part. [judgment]"
+      - id: fu_recharged_before
+        ask_when: "Homeowner says it needs freon or a recharge, or the system runs nonstop"
+        text_en: "Has anyone added refrigerant (freon) to this system before?"
+        text_es: "¿Alguien le ha puesto refrigerante (gas o freón) a este sistema antes?"
+        options_en: ["Yes, this year", "Yes, in past years", "No", "Don't know"]
+        options_es: ["Sí, este año", "Sí, en años pasados", "No", "No sé"]
+        card_field: true
+        why: "Repeat top-offs tell the business to plan a leak search; EPA asks that leaks be found and fixed rather than topped off [src:epa_r22]."
+      - id: fu_unit_access
+        ask_when: "No photo or words show where the unit sits"
+        text_en: "Where would a tech work on the unit?"
+        text_es: "¿Dónde tendría que trabajar el técnico en la unidad?"
+        options_en: ["Flat roof, one story", "Sloped roof or two stories", "Ground, open side yard", "Ground, behind a locked gate", "Attic or closet inside"]
+        options_es: ["Techo plano, un piso", "Techo inclinado o dos pisos", "En el suelo, patio lateral abierto", "En el suelo, detrás de una puerta con llave", "Ático o clóset adentro"]
+        card_field: true
+        why: "Access sets labor time and gear; never collect a gate code. [judgment]"
+    photos_priority: [p1_data_plate, p2_whole_unit, p3_indoor_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["No cooling and the homeowner reports the inside temperature over 90 F", "Homeowner says an older adult, a baby or someone with a medical need is at home"]
+      regular: "Cooling, but not keeping up on the hottest afternoons"
+    scope_line_en: "Rooftop package unit runs but blows warm since last night; outside fan not spinning; flat roof, one story."
+    scope_line_es: "La unidad paquete del techo funciona pero echa aire caliente desde anoche; el ventilador de afuera no gira; techo plano, un piso."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: system, what it does, since when>
+      System: <central split / package unit / heat pump>. Access: <flat roof / sloped or two story / ground / locked gate / attic or closet>. Age: <answer or plate date>.
+      Outside fan: <spinning / not spinning / humming / can't see>. Air at vents: <strong / weak / none>. Refrigerant added before: <answer>.
+      Label: <refrigerant and date as read from the photo> or <no label photo>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It probably just needs freon.", "Sounds like the capacitor.", "Your unit is low on refrigerant.", "A recharge runs a few hundred dollars.", "At that age you should replace it.", "Hose off the coils and try again."]
+
+  - id: ac_not_turning_on
+    label: "AC will not turn on at all (route a heat-only complaint as heat_not_working)"
+    bank_job_type: "AC not cooling"
+    recurring: false
+    homeowner_phrasings: ["ac wont turn on", "ac dead", "nothing happens when i turn on ac", "unit humming wont start", "breaker for ac keeps tripping"]
+    must_know:
+      - fact: "What the thermostat screen shows"
+        bank_question: null
+        follow_up: fu_thermostat_screen
+        photo: p4_thermostat
+        why_it_moves_price: "A blank screen points the visit at power to the indoor unit; a normal screen with nothing running points outside. [judgment]"
+        skip_if: "Thermostat photo sent"
+      - fact: "Whether the AC breaker has tripped, once or every start, and whether other breakers trip"
+        bank_question: null
+        follow_up: fu_breaker
+        photo: p8_panel
+        why_it_moves_price: "A breaker that trips each start means an electrical check at the unit; other circuits tripping is an electrician's job. [judgment]"
+        skip_if: "Homeowner already said"
+      - fact: "Any error code or blinking light"
+        bank_question: error_code
+        follow_up: null
+        photo: p7_error_code
+        why_it_moves_price: "A code narrows the parts the tech brings. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether water sits in the pan at the indoor unit"
+        bank_question: null
+        follow_up: fu_water_at_unit
+        photo: p3_indoor_unit
+        why_it_moves_price: "Many systems shut off when the drain backs up, which makes it a drain visit. [judgment]"
+        skip_if: "Unit is a rooftop package or the homeowner can't see it"
+    allowed_follow_ups:
+      - id: fu_thermostat_screen
+        ask_when: "System dead or thermostat mentioned, and no thermostat photo"
+        text_en: "What does the thermostat screen show right now?"
+        text_es: "¿Qué muestra ahora la pantalla del termostato?"
+        options_en: ["Normal, but nothing runs", "Blank", "A message or error"]
+        options_es: ["Normal, pero nada funciona", "Nada, está en blanco", "Un mensaje o error"]
+        card_field: true
+        why: "Splits a power or control visit from an outdoor unit visit. [judgment]"
+      - id: fu_breaker
+        ask_when: "Nothing runs at all, or the homeowner mentions a breaker"
+        text_en: "Has the breaker for the AC tripped?"
+        text_es: "¿Se botó el breaker del aire?"
+        options_en: ["No, it is on", "It tripped once", "It trips each time the AC starts", "Other breakers trip too", "Haven't looked"]
+        options_es: ["No, está prendido", "Se botó una vez", "Se bota cada vez que arranca el aire", "Otros breakers también se botan", "No he revisado"]
+        card_field: true
+        why: "Other circuits tripping routes to electrical; a trip at each start stays HVAC. [judgment]"
+      - id: fu_water_at_unit
+        ask_when: "Thermostat blank or system dead, and the indoor unit is in a closet, attic or garage"
+        text_en: "Is there any water in the pan or on the floor around the indoor unit?"
+        text_es: "¿Hay agua en la charola o en el piso alrededor de la unidad de adentro?"
+        options_en: ["Yes", "No", "Can't see the unit"]
+        options_es: ["Sí", "No", "No puedo ver la unidad"]
+        card_field: true
+        why: "A dead system next to a wet pan is a drain call, not a thermostat call. [judgment]"
+      - fu_unit_access
+    photos_priority: [p4_thermostat, p7_error_code, p1_data_plate]
+    urgency:
+      fire_dept_triggers: ["Burning smell, smoke or sparks at the unit, disconnect or panel"]
+      urgent_capable_triggers: ["No cooling and the homeowner reports the inside temperature over 90 F", "Homeowner says an older adult, a baby or someone with a medical need is at home"]
+      regular: "Unit off in mild weather"
+    scope_line_en: "Central AC will not turn on since a storm this afternoon; thermostat screen is on; AC breaker has not tripped."
+    scope_line_es: "El aire central no prende desde una tormenta esta tarde; la pantalla del termostato está prendida; el breaker del aire no se ha botado."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <kind of place>
+      <one scope line: system, nothing runs, since when, after a storm or not>
+      Thermostat: <normal / blank / message>. Breaker: <on / tripped once / trips each start / others trip too / not checked>. Code: <as read or none>.
+      Water at indoor unit: <yes / no / can't see>. System: <type>. Access: <answer>. Age: <answer or plate date>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Reset the breaker and try again.", "It's the contactor.", "Your thermostat batteries are dead.", "Check the float switch in the attic."]
+
+  - id: ac_leaking_water
+    label: "Water leaking from the indoor unit, drain line or a ceiling below the unit"
+    bank_job_type: "AC not cooling"
+    recurring: false
+    homeowner_phrasings: ["water dripping from ac", "ceiling wet under ac", "condensate pan full", "water stain under air handler", "el aire gotea"]
+    must_know:
+      - fact: "Where the water shows"
+        bank_question: null
+        follow_up: fu_water_where
+        photo: p5_leak_area
+        why_it_moves_price: "A wet pan is a drain visit; a ceiling stain adds drywall damage the business wants to see. [judgment]"
+        skip_if: "Leak photo shows it"
+      - fact: "Where the indoor unit sits (attic, closet, garage, roof)"
+        bank_question: system_type
+        follow_up: fu_unit_access
+        photo: p3_indoor_unit
+        why_it_moves_price: "An attic unit over a ceiling is slower to reach and can do more damage. [judgment]"
+        skip_if: "Indoor unit photo sent"
+      - fact: "Whether the water shows when the system runs or after rain"
+        bank_question: null
+        follow_up: fu_leak_when
+        photo: null
+        why_it_moves_price: "Water after rain under a rooftop unit points at the roof, a different trade. [judgment]"
+        skip_if: "Indoor closet unit with water in the pan"
+      - fact: "Whether it still cools"
+        bank_question: symptom
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Leaking and not cooling together can mean a longer visit than a drain alone. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_water_where
+        ask_when: "Homeowner reports water but not where it shows"
+        text_en: "Where do you see the water?"
+        text_es: "¿Dónde ve el agua?"
+        options_en: ["In the pan or on the floor by the indoor unit", "A stain or drip on a ceiling", "Dripping outside from a pipe", "Coming out of a vent"]
+        options_es: ["En la charola o en el piso junto a la unidad de adentro", "Una mancha o goteo en el techo", "Goteando afuera de un tubo", "Saliendo por una rejilla"]
+        card_field: true
+        why: "Each answer is a different visit and a different amount of damage. [judgment]"
+      - id: fu_leak_when
+        ask_when: "Water shows on a ceiling or wall under a rooftop unit or cooler vent, or on a closet floor that also holds a water heater"
+        text_en: "Does the water show up when the system runs, or after it rains?"
+        text_es: "¿El agua aparece cuando el sistema está prendido, o después de que llueve?"
+        options_en: ["When it runs", "After it rains", "Both or not sure", "Neither, it stays wet all the time"]
+        options_es: ["Cuando está prendido", "Después de que llueve", "Las dos o no sé", "Ninguna, siempre está mojado"]
+        card_field: true
+        why: "Rain points at the roof; water that stays with the system off points at plumbing. [judgment]"
+      - fu_unit_access
+    photos_priority: [p5_leak_area, p3_indoor_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water coming through a ceiling", "Water reaching lights, outlets or the panel"]
+      regular: "Water in the pan or a small drip outside"
+    scope_line_en: "Water dripping from the hall ceiling below the attic air handler when the AC runs; still cooling."
+    scope_line_es: "Gotea agua del techo del pasillo debajo de la unidad del ático cuando el aire está prendido; sigue enfriando."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <kind of place>
+      <one scope line: where the water shows, which unit, still cooling or not>
+      Water at: <pan or floor / ceiling / outside pipe / vent>. Shows: <when it runs / after rain / both / all the time>. Indoor unit: <attic / closet / garage / roof>.
+      Cooling: <yes / no>. Age: <answer or plate date>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your drain line is clogged.", "Pour vinegar down the drain line.", "That's a cheap fix.", "Turn the AC off so the ceiling doesn't fall."]
+
+  - id: ac_noise_smell
+    label: "Odd noise, smell, or ice on the lines or unit"
+    bank_job_type: "AC not cooling"
+    recurring: false
+    homeowner_phrasings: ["loud banging from ac", "ac squealing", "ice on ac pipe", "frozen coil", "ac smells musty"]
+    must_know:
+      - fact: "What kind of sound, and from which unit"
+        bank_question: details
+        follow_up: fu_noise_kind
+        photo: p2_whole_unit
+        why_it_moves_price: "Grinding outside and squealing inside send different parts and different techs. [judgment]"
+        skip_if: "Homeowner described the sound"
+      - fact: "What kind of smell"
+        bank_question: smell_kind
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Gas or burning goes to the 911 text by code; a musty smell is a cleaning or drain visit. [judgment]"
+        skip_if: "No smell mentioned"
+      - fact: "Ice or frost on the lines or indoor unit"
+        bank_question: null
+        follow_up: fu_ice_on_lines
+        photo: p3_indoor_unit
+        why_it_moves_price: "Ice means the system has to thaw before testing, which lengthens the visit. [judgment]"
+        skip_if: "No ice mentioned and the complaint is a sound"
+      - fact: "Whether the outside fan still spins"
+        bank_question: null
+        follow_up: fu_outdoor_fan
+        photo: null
+        why_it_moves_price: "A noise followed by a stopped fan is a motor or blade visit. [judgment]"
+        skip_if: "Sound is inside only"
+    allowed_follow_ups:
+      - id: fu_noise_kind
+        ask_when: "Homeowner mentions a noise without describing it"
+        text_en: "Which sound is closest?"
+        text_es: "¿Qué sonido se parece más?"
+        options_en: ["Grinding or screeching", "Banging or clanking", "Buzzing or humming", "Squealing", "Rattling or vibrating", "Clicking, then nothing"]
+        options_es: ["Raspa o rechina", "Golpes", "Zumbido", "Chillido", "Traqueteo o vibración", "Hace clic y luego nada"]
+        card_field: true
+        why: "A tech pictures the part from the sound; the card carries the sound only. [judgment]"
+      - id: fu_ice_on_lines
+        ask_when: "Homeowner mentions ice, frost or a frozen unit without saying where"
+        text_en: "Do you see ice or frost on the copper pipes or on the unit?"
+        text_es: "¿Ve hielo o escarcha en los tubos de cobre o en la unidad?"
+        options_en: ["Yes, on the pipes", "Yes, on the indoor unit", "No", "Haven't looked"]
+        options_es: ["Sí, en los tubos", "Sí, en la unidad de adentro", "No", "No he revisado"]
+        card_field: true
+        why: "Ice adds thaw time to the visit. [judgment]"
+      - fu_outdoor_fan
+    photos_priority: [p2_whole_unit, p3_indoor_unit, p1_data_plate]
+    urgency:
+      fire_dept_triggers: ["Gas or rotten-egg smell", "Burning smell or smoke from the unit or vents"]
+      urgent_capable_triggers: ["Unit stopped after the noise and the homeowner reports the inside temperature over 90 F"]
+      regular: "Noise or musty smell, still cooling"
+    scope_line_en: "Outside unit made a loud grinding sound, then stopped; ground unit in the side yard; vents still blow some cool air."
+    scope_line_es: "La unidad de afuera hizo un ruido fuerte de raspado y luego se paró; unidad en el suelo del patio lateral; las rejillas todavía echan algo de aire fresco."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <kind of place>
+      <one scope line: the sound or smell, which unit, running or stopped>
+      Sound: <answer>. Smell: <musty / other / none>. Ice: <pipes / indoor unit / none / not checked>. Outside fan: <answer>.
+      System: <type>. Access: <answer>. Age: <answer or plate date>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's the fan motor bearing.", "A musty smell means mold.", "Ice means it's low on freon.", "Shut it off before it burns up."]
+
+  - id: mini_split_repair
+    label: "Mini-split not cooling, blinking lights or an error code"
+    bank_job_type: "AC not cooling"
+    recurring: false
+    homeowner_phrasings: ["mini split blinking", "ductless not cooling", "mini split error code", "el minisplit parpadea"]
+    must_know:
+      - fact: "How many indoor units, and how many act up"
+        bank_question: null
+        follow_up: fu_minisplit_heads
+        photo: null
+        why_it_moves_price: "One head of several points at that head; all heads point at the outdoor unit. [judgment]"
+        skip_if: "Homeowner said it is a single-room unit"
+      - fact: "The code or blink count"
+        bank_question: error_code
+        follow_up: null
+        photo: p7_error_code
+        why_it_moves_price: "Codes differ by brand; the business may already know which board or sensor to bring. [judgment]"
+        skip_if: "Code photo sent"
+      - fact: "Brand and age from the label"
+        bank_question: age
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "Some brands are serviced only by dealers who stock their parts. [judgment]"
+        skip_if: "Label photo sent"
+      - fact: "Whether the outdoor fan spins"
+        bank_question: null
+        follow_up: fu_outdoor_fan
+        photo: null
+        why_it_moves_price: "Separates an outdoor unit visit from an indoor head visit. [judgment]"
+        skip_if: "Code photo sent"
+    allowed_follow_ups:
+      - id: fu_minisplit_heads
+        ask_when: "Mini-split with more than one room, or the homeowner did not say how many indoor units"
+        text_en: "How many indoor units does the mini-split have, and how many are acting up?"
+        text_es: "¿Cuántas unidades interiores tiene el mini-split, y cuántas están fallando?"
+        options_en: ["One indoor unit", "Several, only one acting up", "Several, all acting up"]
+        options_es: ["Una unidad interior", "Varias, solo una falla", "Varias, todas fallan"]
+        card_field: true
+        why: "Tells the business whether to start at one head or at the outdoor unit. [judgment]"
+      - fu_outdoor_fan
+    photos_priority: [p7_error_code, p1_data_plate]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Only cooling in the home and the homeowner reports the inside temperature over 90 F"]
+      regular: "Garage, casita or a second system"
+    scope_line_en: "Garage mini-split blinks a green light five times and blows room-temperature air; one indoor unit."
+    scope_line_es: "El mini-split de la cochera parpadea una luz verde cinco veces y echa aire a temperatura ambiente; una unidad interior."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <kind of place>
+      <one scope line: which room, what it does, code if any>
+      Indoor units: <one / several, one acting up / several, all>. Code: <as read or none>. Outdoor fan: <answer>.
+      Label: <brand and date as read from the photo> or <no label photo>. Age: <answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That blink code means a sensor failed.", "Mini-splits are cheap to replace.", "Clean the filters and it will work.", "Any HVAC company can fix that brand."]
+
+  - id: ac_maintenance
+    label: "Seasonal tune-up, coil cleaning, check-up before summer"
+    bank_job_type: "AC not cooling"
+    recurring: false
+    homeowner_phrasings: ["ac tune up", "ac service before summer", "clean ac coils", "hvac maintenance", "mantenimiento del aire"]
+    must_know:
+      - fact: "How many systems, and where each sits"
+        bank_question: system_type
+        follow_up: fu_maint_count
+        photo: p2_whole_unit
+        why_it_moves_price: "Tune-ups are priced per system, with roof units taking longer. [judgment]"
+        skip_if: "Homeowner gave the count and location"
+      - fact: "Age and refrigerant from the plate"
+        bank_question: age
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "Older and R-22 systems get more checks and a longer write-up. [judgment]"
+        skip_if: "Plate photo sent"
+      - fact: "When it was last serviced"
+        bank_question: null
+        follow_up: fu_maint_last
+        photo: null
+        why_it_moves_price: "Years without service mean dirtier coils and a longer cleaning. [judgment]"
+        skip_if: "Homeowner said"
+    allowed_follow_ups:
+      - id: fu_maint_count
+        ask_when: "Tune-up request with no count or location"
+        text_en: "How many systems would you like checked, and where are they?"
+        text_es: "¿Cuántos sistemas quiere que revisen, y dónde están?"
+        options_en: ["One, on the roof", "One, on the ground", "Two or more", "One plus a swamp cooler"]
+        options_es: ["Uno, en el techo", "Uno, en el suelo", "Dos o más", "Uno más un enfriador evaporativo"]
+        card_field: true
+        why: "Count and location are the two numbers a tune-up quote starts from. [judgment]"
+      - id: fu_maint_last
+        ask_when: "Tune-up request and no service history given"
+        text_en: "When was the system last serviced?"
+        text_es: "¿Cuándo le dieron servicio al sistema por última vez?"
+        options_en: ["Within the last year", "1 to 3 years ago", "Longer ago or never", "Don't know"]
+        options_es: ["En el último año", "Hace 1 a 3 años", "Hace más tiempo o nunca", "No sé"]
+        card_field: true
+        why: "Sets how much cleaning time to plan. [judgment]"
+      - fu_unit_access
+    photos_priority: [p1_data_plate, p2_whole_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All tune-up requests"
+    scope_line_en: "Pre-summer tune-up for one rooftop package unit, 10 to 15 years old; last serviced more than three years ago."
+    scope_line_es: "Mantenimiento antes del verano para una unidad paquete en el techo, de 10 a 15 años; último servicio hace más de tres años."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (checklist, coil cleaning or not)", "earliest day"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <kind of place>
+      <one scope line: tune-up, how many systems, where>
+      Systems: <count and location>. Last service: <answer>. Age: <answer or plate date>. Label: <refrigerant as read> or <no label photo>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A tune-up will stop it from breaking down.", "Tune-ups usually run under a hundred.", "You should get a maintenance plan.", "Your system needs a coil cleaning."]
+
+  - id: heat_not_working
+    label: "Heat not working (gas furnace, gas pack on the roof, electric furnace or heat strips)"
+    bank_job_type: "furnace repair"
+    recurring: false
+    homeowner_phrasings: ["heater not working", "no heat", "furnace wont light", "heat blowing cold", "gas pack no heat"]
+    must_know:
+      - fact: "How the home is heated"
+        bank_question: system_type
+        follow_up: fu_heat_fuel
+        photo: p3_indoor_unit
+        why_it_moves_price: "Gas heat brings venting and combustion checks and is never handyman work; heat strips are an electrical visit at the air handler [src:ars_32_1121]."
+        skip_if: "Homeowner named the heat type"
+      - fact: "What happens when the heat is on"
+        bank_question: symptom
+        follow_up: fu_heat_blows
+        photo: null
+        why_it_moves_price: "No air, cold air and short cycling are three different visits. [judgment]"
+        skip_if: "Homeowner described it"
+      - fact: "Age from the plate"
+        bank_question: age
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "Older furnaces raise parts and repair-or-replace questions. [judgment]"
+        skip_if: "Plate photo sent"
+      - fact: "Where the unit sits"
+        bank_question: null
+        follow_up: fu_unit_access
+        photo: null
+        why_it_moves_price: "A roof gas pack and a closet furnace are different access. [judgment]"
+        skip_if: "Answered or photo shows it"
+    allowed_follow_ups:
+      - id: fu_heat_fuel
+        ask_when: "Heat complaint and the homeowner did not say what kind of heat"
+        text_en: "How is the home heated?"
+        text_es: "¿Con qué se calienta la casa?"
+        options_en: ["Gas furnace inside", "Gas unit on the roof (gas pack)", "Electric furnace or heat strips", "Heat pump", "Not sure"]
+        options_es: ["Calefactor de gas adentro", "Unidad de gas en el techo", "Calefactor eléctrico o resistencias", "Bomba de calor", "No sé"]
+        card_field: true
+        why: "Heat type sets the parts, the license and whether gas work is involved [src:ars_32_1121]."
+      - id: fu_heat_blows
+        ask_when: "Heat complaint without a description of the air"
+        text_en: "When the heat is on, what happens?"
+        text_es: "Cuando prende la calefacción, ¿qué pasa?"
+        options_en: ["Fan blows, but the air is cold", "Air is only a little warm", "No air at all", "Starts, then shuts off"]
+        options_es: ["Sopla, pero el aire sale frío", "El aire sale apenas tibio", "No sale aire", "Arranca y luego se apaga"]
+        card_field: true
+        why: "Each answer points the tech at a different part of the system without naming one. [judgment]"
+      - fu_unit_access
+    photos_priority: [p3_indoor_unit, p1_data_plate, p4_thermostat]
+    urgency:
+      fire_dept_triggers: ["Gas or rotten-egg smell at the furnace or gas pack", "CO alarm sounding", "Smoke or burning smell when the heat runs"]
+      urgent_capable_triggers: ["No heat and the homeowner reports the inside temperature under 60 F", "Homeowner says an older adult, a baby or someone with a medical need is at home"]
+      regular: "No heat on a mild day"
+    scope_line_en: "Gas furnace in the hall closet blows cold air since this morning; about 15 years old."
+    scope_line_es: "El calefactor de gas del clóset del pasillo echa aire frío desde esta mañana; tiene unos 15 años."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <kind of place>
+      <one scope line: heat type, what it does, since when>
+      Heat: <gas furnace / gas pack / heat strips / heat pump / not sure>. When on: <cold air / lukewarm / no air / starts then stops>.
+      Unit: <closet / attic / garage / roof>. Age: <answer or plate date>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Relight the pilot.", "It's the igniter.", "Your heat exchanger is cracked.", "Gas furnace repairs cost about two hundred."]
+
+  - id: heat_pump_issue
+    label: "Heat pump problem (no heat, frosting up, stuck in defrost, emergency heat light)"
+    bank_job_type: "furnace repair"
+    recurring: false
+    homeowner_phrasings: ["heat pump not heating", "heat pump iced up", "heat pump steaming", "emergency heat light on"]
+    must_know:
+      - fact: "What the outside unit looks like in heat mode"
+        bank_question: null
+        follow_up: fu_heat_pump_outside
+        photo: p2_whole_unit
+        why_it_moves_price: "A unit covered in ice and one that will not run are different visits. [judgment]"
+        skip_if: "Whole-unit photo sent"
+      - fact: "Whether the thermostat shows emergency or aux heat"
+        bank_question: null
+        follow_up: fu_aux_heat
+        photo: p4_thermostat
+        why_it_moves_price: "Tells the business the backup heat is carrying the house. [judgment]"
+        skip_if: "Thermostat photo sent"
+      - fact: "What the air feels like"
+        bank_question: null
+        follow_up: fu_heat_blows
+        photo: null
+        why_it_moves_price: "Lukewarm and no air point the tech at different parts. [judgment]"
+        skip_if: "Homeowner described it"
+      - fact: "Code, brand and age"
+        bank_question: error_code
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "Defrost controls and parts differ by brand and age. [judgment]"
+        skip_if: "Plate photo sent"
+    allowed_follow_ups:
+      - id: fu_heat_pump_outside
+        ask_when: "Heat pump heating complaint and no whole-unit photo"
+        text_en: "In heat mode, what does the outside unit look like?"
+        text_es: "En modo calefacción, ¿cómo se ve la unidad de afuera?"
+        options_en: ["Covered in frost or ice", "Steams now and then", "Not running", "Looks normal"]
+        options_es: ["Cubierta de escarcha o hielo", "Echa vapor de vez en cuando", "No funciona", "Se ve normal"]
+        card_field: true
+        why: "The business reads the answer; Ask Hava records it without saying what is normal. [judgment]"
+      - id: fu_aux_heat
+        ask_when: "Heat pump complaint and no thermostat photo"
+        text_en: "Does the thermostat show emergency heat or aux heat?"
+        text_es: "¿El termostato muestra calor de emergencia o calor auxiliar?"
+        options_en: ["Yes", "No", "Not sure"]
+        options_es: ["Sí", "No", "No sé"]
+        card_field: true
+        why: "Shows whether backup heat is on, which the tech asks first. [judgment]"
+      - fu_heat_blows
+    photos_priority: [p2_whole_unit, p7_error_code, p1_data_plate]
+    urgency:
+      fire_dept_triggers: ["Burning smell or smoke from the unit or vents"]
+      urgent_capable_triggers: ["No heat and the homeowner reports the inside temperature under 60 F"]
+      regular: "Heat pump short of heat, backup heat running"
+    scope_line_en: "Heat pump blows lukewarm air in heat mode; outside unit covered in frost; thermostat shows aux heat."
+    scope_line_es: "La bomba de calor echa aire tibio en modo calefacción; la unidad de afuera está cubierta de escarcha; el termostato muestra calor auxiliar."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <kind of place>
+      <one scope line: heat pump, what it does, outside unit, thermostat>
+      Outside unit: <frost or ice / steams now and then / not running / looks normal>. Aux or emergency heat: <yes / no / not sure>. Air: <answer>.
+      Code: <as read or none>. Age: <answer or plate date>. Access: <answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Steam from the outside unit is normal defrost.", "Your reversing valve is stuck.", "Switch it to emergency heat until someone comes.", "Heat pumps don't work well here."]
+
+  - id: thermostat_issue
+    label: "Thermostat blank, not responding, or a new or smart thermostat to install"
+    bank_job_type: "thermostat"
+    recurring: false
+    homeowner_phrasings: ["thermostat blank", "thermostat not working", "install nest", "ecobee wiring", "thermastat"]
+    must_know:
+      - fact: "Repair the current thermostat or install a new one, and who supplies it"
+        bank_question: null
+        follow_up: fu_thermo_what
+        photo: null
+        why_it_moves_price: "A labor-only install with the unit on site is a short visit; a dead thermostat needs testing first. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Wire count behind the old thermostat"
+        bank_question: null
+        follow_up: fu_thermo_wires
+        photo: p4_thermostat
+        why_it_moves_price: "Smart thermostats often need a common wire; adding one means running wire to the indoor unit. [judgment]"
+        skip_if: "Thermostat photo shows the wires, or it is not an install"
+      - fact: "Whether water sits at the indoor unit when the screen is blank"
+        bank_question: null
+        follow_up: fu_water_at_unit
+        photo: p3_indoor_unit
+        why_it_moves_price: "A blank screen with a wet pan is a drain visit, not a thermostat job. [judgment]"
+        skip_if: "It is an install of a new thermostat"
+      - fact: "System type (heat pumps use an extra control wire)"
+        bank_question: system_type
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Heat pump and gas-heat wiring differ, which sets install time. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_thermo_what
+        ask_when: "Thermostat mentioned without saying repair or new install"
+        text_en: "Is this about the thermostat you have now, or putting in a new one?"
+        text_es: "¿Es sobre el termostato que tiene ahora, o para poner uno nuevo?"
+        options_en: ["Current one is blank or not responding", "Put in a new one I already have", "Put in a new one the business supplies", "Not sure"]
+        options_es: ["El actual está en blanco o no responde", "Poner uno nuevo que ya tengo", "Poner uno nuevo que traiga el negocio", "No sé"]
+        card_field: true
+        why: "Repair, labor-only install and supplied install are three different quotes. [judgment]"
+      - id: fu_thermo_wires
+        ask_when: "New or smart thermostat install and no photo of the wires"
+        text_en: "If you have seen behind the old thermostat, how many wires are there?"
+        text_es: "Si ya vio detrás del termostato viejo, ¿cuántos cables hay?"
+        options_en: ["2", "3 or 4", "5 or more", "Haven't seen them"]
+        options_es: ["2", "3 o 4", "5 o más", "No los he visto"]
+        card_field: true
+        why: "Wire count tells the business whether a new wire run comes with the install. [judgment]"
+      - fu_thermostat_screen
+      - fu_water_at_unit
+    photos_priority: [p4_thermostat, p3_indoor_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Thermostat blank, no cooling, and the homeowner reports the inside temperature over 90 F"]
+      regular: "Install of a new thermostat, or a dead thermostat in mild weather"
+    scope_line_en: "Install a smart thermostat the homeowner already has; old one has five wires; central AC with gas heat."
+    scope_line_es: "Instalar un termostato inteligente que ya tiene el dueño; el viejo tiene cinco cables; aire central con calefacción de gas."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers (install or test)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <kind of place>
+      <one scope line: repair or install, thermostat on site or not>
+      Job: <current one blank / install, homeowner has it / install, business supplies>. Wires: <count or not seen>. Screen: <normal / blank / message>.
+      Water at indoor unit: <yes / no / not asked>. System: <type>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Change the batteries first.", "You need a C-wire.", "Any handyman can swap a thermostat.", "Smart thermostats install in ten minutes."]
+
+  - id: ductwork_airflow
+    label: "Weak airflow, hot rooms, duct leaks, dusty vents, duct damage"
+    bank_job_type: "duct repair"
+    recurring: false
+    homeowner_phrasings: ["weak airflow", "one room always hot", "ducts leaking", "vents barely blowing", "duct cleaning"]
+    must_know:
+      - fact: "What the homeowner notices: some rooms, every vent, dust, or visible damage"
+        bank_question: null
+        follow_up: fu_duct_what
+        photo: null
+        why_it_moves_price: "A room or two is a duct visit; weak air everywhere may be the air handler, a different visit. [judgment]"
+        skip_if: "Homeowner described it"
+      - fact: "Where the ducts run"
+        bank_question: null
+        follow_up: fu_duct_location
+        photo: null
+        why_it_moves_price: "Attic work in summer and crawling under a manufactured home take more hours than a reachable run. [judgment]"
+        skip_if: "Answered"
+      - fact: "Indoor unit and filter"
+        bank_question: system_type
+        follow_up: null
+        photo: p3_indoor_unit
+        why_it_moves_price: "The business checks the unit and filter before blaming the ducts. [judgment]"
+        skip_if: "Photo sent"
+    allowed_follow_ups:
+      - id: fu_duct_what
+        ask_when: "Airflow or duct complaint without detail"
+        text_en: "What are you noticing?"
+        text_es: "¿Qué está notando?"
+        options_en: ["One or two rooms warmer than the rest", "Weak air at every vent", "Dust or debris from the vents", "Duct damage or animal signs", "Ducts cleaned"]
+        options_es: ["Uno o dos cuartos más calientes que los demás", "Poco aire en todas las rejillas", "Polvo o basura de las rejillas", "Ducto dañado o señales de animales", "Limpieza de ductos"]
+        card_field: true
+        why: "Weak air at every vent routes as AC not cooling; the rest stay duct work. [judgment]"
+      - id: fu_duct_location
+        ask_when: "Duct job and the home type or duct location is not known"
+        text_en: "Where do the ducts run?"
+        text_es: "¿Por dónde van los ductos?"
+        options_en: ["In the attic", "Under the floor (manufactured home)", "On the roof", "Not sure"]
+        options_es: ["En el ático", "Debajo del piso (casa manufacturada)", "En el techo", "No sé"]
+        card_field: true
+        why: "Duct location sets access and hours. [judgment]"
+    photos_priority: [p3_indoor_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All duct and airflow requests"
+    scope_line_en: "Two back bedrooms stay warmer than the rest of the house; ducts in the attic; one-story home."
+    scope_line_es: "Dos recámaras de atrás se quedan más calientes que el resto de la casa; ductos en el ático; casa de un piso."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (inspection, airflow check)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair | <town>, <general area> | <kind of place>
+      <one scope line: what she notices, which rooms>
+      Noticed: <some rooms / every vent / dust / damage or animals / cleaning>. Ducts: <attic / under floor / roof / not sure>.
+      System: <type>. Age: <answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your ducts are leaking.", "You need bigger ducts.", "Close the vents in the other rooms.", "Duct cleaning helps with allergies."]
+
+  - id: swamp_cooler_repair
+    new_job_type: true
+    label: "Swamp cooler not cooling, not running, leaking, overflowing, smelling or noisy"
+    bank_job_type: "evaporative (swamp) cooler repair"
+    recurring: false
+    homeowner_phrasings: ["swamp cooler not cooling", "swamper", "cooler pump not pumping", "cooler leaking", "cooler overflowing", "el cooler no enfría"]
+    must_know:
+      - fact: "Where the cooler sits"
+        bank_question: system_type
+        follow_up: fu_cooler_where
+        photo: p2_whole_unit
+        why_it_moves_price: "Roof coolers need ladder and roof time; window and ground units are faster. [judgment]"
+        skip_if: "Whole-cooler photo sent"
+      - fact: "What the cooler is doing"
+        bank_question: symptom
+        follow_up: fu_cooler_doing
+        photo: null
+        why_it_moves_price: "Dry pads, a dead motor, a leak and a smell each send different parts. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "For a leak: when it shows and whether water comes inside"
+        bank_question: null
+        follow_up: fu_leak_when
+        photo: p5_leak_area
+        why_it_moves_price: "Water after rain at the cooler vent can be the roof jack, a roofing job. [judgment]"
+        skip_if: "Not a leak"
+      - fact: "Size and age from the label"
+        bank_question: age
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "Motor, pump and pad parts are sized by the cooler. [judgment]"
+        skip_if: "Label photo sent"
+    allowed_follow_ups:
+      - id: fu_cooler_where
+        ask_when: "Swamp cooler request and the location is not known"
+        text_en: "Where is the swamp cooler?"
+        text_es: "¿Dónde está el enfriador evaporativo?"
+        options_en: ["On the roof", "On the ground by a wall", "In a window", "Portable, on a patio"]
+        options_es: ["En el techo", "En el suelo junto a una pared", "En una ventana", "Portátil, en el patio"]
+        card_field: true
+        why: "Location sets access and which businesses service it. [judgment]"
+      - id: fu_cooler_doing
+        ask_when: "Swamp cooler problem without saying what it does"
+        text_en: "What is the cooler doing?"
+        text_es: "¿Qué está haciendo el enfriador?"
+        options_en: ["Runs, but the air is not cool", "Nothing runs", "Fan runs, pads stay dry", "Leaking or overflowing", "Bad smell", "Noise or shaking"]
+        options_es: ["Funciona, pero el aire no sale fresco", "No funciona nada", "El ventilador gira, los pads siguen secos", "Gotea o se desborda", "Mal olor", "Ruido o vibración"]
+        card_field: true
+        why: "Each answer tells the business which parts to bring. [judgment]"
+      - fu_leak_when
+    photos_priority: [p2_whole_unit, p5_leak_area, p1_data_plate]
+    urgency:
+      fire_dept_triggers: ["Burning smell or smoke from the cooler motor or switch"]
+      urgent_capable_triggers: ["Cooler is the only cooling and the homeowner reports the inside temperature over 90 F", "Water coming through a ceiling"]
+      regular: "Home also has refrigerated AC, or the leak stays on the roof"
+    scope_line_en: "Roof swamp cooler fan runs but the pads stay dry; it is the only cooling in the home; one story."
+    scope_line_es: "El ventilador del enfriador del techo funciona pero los pads siguen secos; es el único enfriamiento de la casa; un piso."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair (swamp cooler) | <town>, <general area> | <kind of place>
+      <one scope line: where the cooler sits, what it does>
+      Cooler: <roof / ground / window / portable>. Doing: <answer>. Leak shows: <when it runs / after rain / all the time / n/a>.
+      Other cooling in the home: <refrigerated AC / none / not said>. Label: <size and date as read> or <no label photo>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the pump.", "Swamp coolers don't work when it's humid.", "Clean the float and it'll stop overflowing.", "Coolers are cheap to replace."]
+
+  - id: swamp_cooler_service
+    new_job_type: true
+    label: "Swamp cooler spring start-up, fall shut-down, or new pads"
+    bank_job_type: "evaporative (swamp) cooler repair"
+    recurring: false
+    homeowner_phrasings: ["start up swamp cooler", "winterize cooler", "new cooler pads", "pads crusty", "arrancar el cooler"]
+    must_know:
+      - fact: "Which service: start-up, start-up with pads, pads only, or shut-down"
+        bank_question: null
+        follow_up: fu_cooler_service
+        photo: null
+        why_it_moves_price: "Each is a flat-rate visit by size and location at many shops. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Where the cooler sits"
+        bank_question: null
+        follow_up: fu_cooler_where
+        photo: p2_whole_unit
+        why_it_moves_price: "Roof units take longer than ground or window units. [judgment]"
+        skip_if: "Whole-cooler photo sent"
+      - fact: "Pad type and cooler size"
+        bank_question: null
+        follow_up: fu_pad_type
+        photo: p1_data_plate
+        why_it_moves_price: "Thin fiber pads and thick block pads differ a lot in parts cost; the label gives the size. [judgment]"
+        skip_if: "Shut-down only, or label photo sent"
+    allowed_follow_ups:
+      - id: fu_cooler_service
+        ask_when: "Seasonal cooler request without saying which service"
+        text_en: "What would you like done?"
+        text_es: "¿Qué le gustaría que hicieran?"
+        options_en: ["Spring start-up", "Spring start-up and new pads", "New pads only", "Fall shut-down"]
+        options_es: ["Arranque de primavera", "Arranque y pads nuevos", "Solo pads nuevos", "Cierre de otoño"]
+        card_field: true
+        why: "The four answers are four different flat-rate visits. [judgment]"
+      - fu_cooler_where
+      - id: fu_pad_type
+        ask_when: "Pads are part of the job and no label or inside photo was sent"
+        text_en: "Do you know which pads it uses: thin fiber pads or thick block pads?"
+        text_es: "¿Sabe qué pads usa: pads delgados de fibra o bloques gruesos?"
+        options_en: ["Thin fiber pads", "Thick block pads", "Not sure"]
+        options_es: ["Pads delgados de fibra", "Bloques gruesos", "No sé"]
+        card_field: true
+        why: "Pad type sets the parts cost on the quote. [judgment]"
+    photos_priority: [p2_whole_unit, p1_data_plate]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All seasonal service requests"
+    scope_line_en: "Spring start-up and new pads for a roof down-draft cooler; one-story home; cover still on."
+    scope_line_es: "Arranque de primavera y pads nuevos para un enfriador de techo; casa de un piso; todavía tiene la cubierta puesta."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (start-up, pads, shut-down)", "earliest day"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair (swamp cooler) | <town>, <general area> | <kind of place>
+      <one scope line: which service, where the cooler sits>
+      Service: <start-up / start-up and pads / pads only / shut-down>. Cooler: <roof / ground / window / portable>. Pads: <thin fiber / thick block / not sure>.
+      Label: <size as read> or <no label photo>. Someone local for access: <yes / no / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Pads should be changed every year.", "Start-ups are about a hundred dollars.", "You can do that yourself.", "Hard water is ruining your pads."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Repeat customers and maintenance agreements", "Google Local Services Ads and search ads", "Home-service lead marketplaces", "Builder, property manager and home warranty work [judgment]", "Truck signage and local Facebook groups [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Lead-buying sites such as Angi, HomeAdvisor and Thumbtack (HVAC)"
+      figure: "About $20 to $100 or more per lead, higher for installs than tune-ups; a shared lead goes to 3 or 4 contractors at once (marketing-vendor estimate)"
+      source: tofu_hvac_leads
+      unverified: false
+    - channel: "Shared versus exclusive leads, all channels (HVAC)"
+      figure: "Shared about $15 to $50, sold to 3 to 8 competitors; exclusive about $45 to $300; about $75 to $250 to win one customer (marketing-vendor summary of 2026 benchmarks)"
+      source: iconic_hvac_leads
+      unverified: false
+    - channel: "Google Local Services Ads (HVAC)"
+      figure: "About $55 per unique lead in January 2026, with about 44% of leads booked (marketing-vendor figures)"
+      source: webtonic_hvac_ads
+      unverified: false
+    - channel: "Google search ads (HVAC)"
+      figure: "About $104 per lead blended; non-branded search about $149 per lead (marketing-vendor figures, 2026)"
+      source: webtonic_hvac_ads
+      unverified: false
+    - channel: "Lake Havasu City HVAC businesses specifically"
+      figure: "No local figures found; a small market has fewer bidders, so costs may run below national marketing-vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a call that three or four other companies also bought", "'Needs a recharge' price shoppers who never book", "Monthly fees whether or not jobs come", "Homeowners who want a phone price for a system nobody has seen", "Calls from outside their service area", "Being ranked or reviewed by the lead site itself"]
+  what_makes_a_lead_worth_paying_for: ["Data plate photo with refrigerant and date before the first call", "System type and roof or ground access stated", "Whether anyone vulnerable is home and how hot it is inside, so they can sort the day", "Pay only on the pick, nothing monthly", "The homeowner already picked them, so no phone bidding war"]
+  their_words: ["service call", "diagnostic fee", "trip charge", "condenser", "air handler", "package unit", "gas pack", "capacitor", "contactor", "line set", "condensate line", "float switch", "tonnage", "R-22", "410A", "heat strips", "C-wire", "static pressure", "pads", "float valve", "bleed-off", "start-up", "maintenance agreement"]
+  signup_objections:
+    - objection: "Why pay an introduction fee when Google sends me calls?"
+      answer: "You pay only when the homeowner picks your quote. Nothing to join, nothing per month. The fee is set by job size: $25, $75 or $199."
+    - objection: "In July I'm booked out for days. Why would I want more calls?"
+      answer: "You pick your job types and can change them any time. Skip any card you can't fit; skipping costs nothing. If you quote, give your real earliest day."
+    - objection: "I can't price AC without putting gauges on it."
+      answer: "You don't have to. Quote your service-call fee and say what it covers. Cards carry the system type, what it is doing, roof or ground access, and the data plate photo when the homeowner can send one."
+    - objection: "Shared-lead sites sell the same call to four companies."
+      answer: "Every business that takes this job type sees the card, and the homeowner sees each quote in the order it came in. You pay only if she picks yours, so you never pay just to compete."
+    - objection: "How do I know these are real homeowners and not price shoppers?"
+      answer: "Each request comes from a texted phone number we check, with a town, answers to the questions an HVAC tech asks, and photos when she has them. Names and addresses go only to the business she picks."
+    - objection: "Will you rank me against other HVAC companies?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license numbers and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "Do I get furnace and swamp cooler jobs I don't do?"
+      answer: "Only if you choose those job types, and only when your license class covers the job. You get cards for the job types you picked and nothing else."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Will the homeowner think my visit fee is the whole repair price?"
+      answer: "Your quote is in your own words. Say what the visit fee covers and whether it comes off the repair."
+  quote_tips_for_card: ["Say what the service-call fee covers and whether it comes off the repair", "Give your earliest arrival, and say if you run evening calls in summer", "Say whether you work on R-22 systems, gas heat or swamp coolers", "If you need another photo, such as the data plate or the indoor unit, say which"]
