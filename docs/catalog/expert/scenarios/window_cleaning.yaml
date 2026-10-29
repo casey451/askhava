@@ -1,0 +1,433 @@
+category: window_cleaning
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Catalog gap noted by the writer: categories.yaml has no enabled glass-repair / window-replacement
+# category (kb trade windows_doors is only reached through the solar_screens category, R-65 glazing).
+# Scenarios that route a broken pane or failed seal use expected.category solar_screens with the
+# windows_doors job type id glass_repair. If a glazing category is added, update those two scenarios.
+scenarios:
+  - id: window_cleaning_s01
+    kind: vague
+    persona: "retired man, 60s, texts one or two words at a time, hates typing"
+    opening_message: "windows"
+    photo: "none at first; if asked, a single-story stucco house front with two large picture windows and a sprinkler head close to the base of the wall"
+    hidden_facts:
+      - "single story house, stucco, east side of Lake Havasu City"
+      - "about 26 windows counting the two big picture windows"
+      - "wants inside and outside"
+      - "back windows and the sliding door have white spots where the sprinklers hit"
+      - "does not want screens done"
+      - "two of the windows are the old non-opening kind with no screen"
+    homeowner_behavior: "answers one short fragment per reply; never volunteers; says 'idk like 25' to count; gets short after 4 questions and asks if it is done"
+    traps:
+      - "hidden: white spots on the back glass, only mentioned if asked about spots or if the back photo is requested"
+      - "hidden: picture windows are large, which a cleaner counts differently from a normal pane"
+    expected:
+      category: window_cleaning
+      job_type: regular_wash
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 25 windows", "1 story", "inside and outside", "white spots on back windows and slider", "2 large picture windows"]
+      must_not_be_on_card: ["any price", "any cause for the spots", "hard-water diagnosis stated as fact"]
+      max_questions: 5
+      notes: "One-word opener. Question set is count, stories, service, plus photos. Spots must still surface from the spots question or the close-up photo ask, not be guessed."
+
+  - id: window_cleaning_s02
+    kind: misleading_photo
+    persona: "late 40s, busy, texts in full sentences with a few typos, wants it done before relatives visit"
+    opening_message: "need the outside of my windows done, house is about 2400 sq ft. sending pic of the front"
+    photo: "front of a house with a garage and a covered entry; roofline is concrete tile; only a few windows are visible on the front, upper windows are mostly hidden behind a mature palm tree and the garage roof"
+    hidden_facts:
+      - "house is two stories; the front photo makes it look like mostly one story"
+      - "about 32 windows total, 14 of them upstairs"
+      - "roof is concrete tile, the homeowner says the roofer told them never to walk on it"
+      - "back of the house has no room for a ladder: pool, a 3 ft wide side yard and a locked iron gate"
+      - "a tall stairwell window on the back is well over 12 feet up"
+      - "overhead power line runs along the back property line, about 10 feet from the upstairs windows"
+      - "wants outside only, inside is fine"
+    homeowner_behavior: "answers what is asked in a full sentence; does not mention the back or the roof until asked about stories or the back photo; thinks the photo says it all"
+    traps:
+      - "hidden: second story is invisible in the photo, so window count and stories must be asked, not read from the picture"
+      - "hidden: tile roof plus pool plus narrow side yard means ladder or roof access to the back is limited; a cleaner needs to know before quoting"
+      - "hidden: overhead line near back upper windows, only surfaces from the back photo or an access question"
+      - "hidden: stairwell window over 12 ft"
+    expected:
+      category: window_cleaning
+      job_type: high_windows
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 stories", "about 32 windows", "outside only", "tile roof", "no ladder access to back, pool and narrow side yard", "locked side gate", "one stairwell window over 12 ft", "power line near back of house"]
+      must_not_be_on_card: ["any price", "safety advice about the power line", "recommendation of a method", "1 story"]
+      max_questions: 6
+      notes: "The photo is honest but incomplete. The AI has to trust the stories answer over the picture and ask for the back. Power line mention is a photo cue only, not a 911 item (a standing line is not downed)."
+
+  - id: window_cleaning_s03
+    kind: wrong_self_diagnosis
+    persona: "homeowner, 50s, handy, has been scrubbing for weeks, a bit irritated"
+    opening_message: "my windows on the back are so dirty it wont come off, ive scrubbed with vinegar and a razor. just need somebody with a better pressure washer to blast the dirt off"
+    photo: "close-up of a sliding glass door with a hazy white film in arcs across the lower half of the glass; a sprinkler head visible in the grass at the base of the wall"
+    hidden_facts:
+      - "about 12 windows and sliders on the back, house is single story"
+      - "the white film is in a fan shape on the lower half of the glass only"
+      - "sprinklers on this side hit the glass every morning and have for about 6 years"
+      - "front windows are fine, just dusty"
+      - "wants outside only"
+      - "has razor-scraped some panes and thinks he may have scratched one"
+      - "not asking for screens"
+    homeowner_behavior: "insists it is dirt; will answer the spots question with 'no, just dirty' at first; admits the sprinklers hit the glass only if asked what is near the windows or when the close-up is requested"
+    traps:
+      - "wrong diagnosis: homeowner calls it baked-on dirt and asks for a pressure washer; the card must describe what he sees (white haze on lower glass, did not come off with scrubbing) and not name a cause or a method"
+      - "hidden: sprinklers aimed at the glass for years, which a cleaner needs for a spot-removal quote or a test spot first"
+      - "hidden: razor use may have scratched a pane, a cleaner would want to know before touching the glass"
+    expected:
+      category: window_cleaning
+      job_type: hard_water
+      bank_job_type: "hard-water removal"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["white haze on lower part of back glass", "scrubbing with vinegar and razor did not remove it", "sprinklers hit the glass for about 6 years", "about 12 windows and sliders, back only", "1 story", "outside only", "razor used on glass, may be scratched"]
+      must_not_be_on_card: ["etching", "mineral", "permanent", "will come off", "pressure washer requested as the method", "any price", "dirt as the stated cause"]
+      max_questions: 5
+      notes: "Homeowner is sure it is dirt and asks for a method. The AI must not agree or correct him; it records the observation and gets the close-up photo. Strong estimators will want a test spot first, so a site visit may be needed."
+
+  - id: window_cleaning_s04
+    kind: two_trades
+    persona: "mid 30s, texts fast, lowercase, no punctuation"
+    opening_message: "need all my windows washed and theres one broken pane in the guest room from a rock the mower threw. can whoever comes fix that too"
+    photo: "guest room window with a crack running corner to corner in the lower pane and a small chip hole where the rock hit; cardboard taped on the inside of one other window"
+    hidden_facts:
+      - "single story, about 20 windows, inside and outside"
+      - "the broken pane is one lower sash of a double-hung vinyl window, the glass is cracked but still in the frame"
+      - "house is about 12 years old"
+      - "the window is a dual-pane unit"
+      - "no solar screens, regular bug screens on most windows"
+      - "the cracked window is taped, nothing has fallen out"
+      - "does not need screens cleaned"
+    homeowner_behavior: "answers briefly; assumes one person does everything; will say 'whatever works' if asked how they want the glass handled"
+    traps:
+      - "two trades: window washing is this category; the broken pane is glass work (R-65 glazing) and should be a separate request routed to the windows and doors trade"
+      - "hidden: dual-pane unit, so the glass is a sealed unit, which changes the repair quote a lot, only said if asked about the window type or age"
+      - "AI must not promise one business will do both"
+    expected:
+      category: window_cleaning
+      job_type: regular_wash
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 20 windows", "1 story", "inside and outside", "one cracked pane in guest room noted as separate glass repair request"]
+      must_not_be_on_card: ["any price", "promise that the cleaner will fix the glass", "repair method", "cause of the crack beyond what the homeowner said"]
+      max_questions: 6
+      notes: "First card is the window wash. The broken pane routes to the glass repair job (kb windows_doors, glass_repair, ROC R-65 glazing). No glass repair category is enabled in categories.yaml, so the AI should tell the homeowner it is a separate request rather than fold it into the wash card. Second request would carry: cracked lower pane, double-hung vinyl, dual-pane, about 12 years old, taped."
+
+  - id: window_cleaning_s05
+    kind: wrong_terminology
+    persona: "late 50s, practical, says 'sun shades' and 'bug screens' interchangeably"
+    opening_message: "got sun shades on the whole west side of the house that need to come off and get cleaned, they are gross from the dust storms. also the track things the windows slide on"
+    photo: "west-facing window with a dark mesh frame mounted on the outside, heavy brown dust on the mesh and a dirty aluminum sliding track with gravel-like debris"
+    hidden_facts:
+      - "these are solar screens in aluminum frames, 14 of them on the west and south sides"
+      - "four are on second-story windows reached from a flat patio roof"
+      - "three of the frames are bent and one screen has a tear about a hand long"
+      - "frames are held on by screws, not clips"
+      - "the windows themselves are not asked to be washed, only screens and tracks, but the glass behind them has not been cleaned in years"
+      - "house is two stories"
+      - "tracks are on the sliding windows and one patio slider"
+    homeowner_behavior: "says 'shades' and 'tracks'; gives count only when asked how many; mentions the tear only if asked whether any are damaged"
+    traps:
+      - "wrong terminology: sun shades means solar screens; card should use the homeowner's words and the right job"
+      - "hidden: four screens are on upper windows, a cleaner needs to know how they are reached"
+      - "hidden: bent frames and a tear, a screen repair is a different job and may become a separate quote"
+      - "hidden: screws mean tools and time to remove and reinstall, which changes the quote"
+    expected:
+      category: window_cleaning
+      job_type: screens_tracks
+      bank_job_type: "screens"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["14 solar screens to remove, wash and put back", "frames held with screws", "4 are on second-story windows", "window tracks to be cleaned", "2 stories", "3 frames bent and 1 screen torn"]
+      must_not_be_on_card: ["any price", "replacement recommendation", "repair method"]
+      max_questions: 5
+      notes: "Terminology is off but the job is clear. Real work is in the hidden counts: how many, how fastened, which are upstairs, and what is damaged. Tear and bent frames are a possible repair add-on, not a reason to change category."
+
+  - id: window_cleaning_s06
+    kind: no_photo
+    persona: "out-of-town owner, 40s, lives in the Phoenix area, formal and efficient, texts from a laptop"
+    opening_message: "I own a vacation rental on the lake side in Havasu and I would like quarterly window cleaning, inside and out. I am not there much so I cannot send photos right now."
+    photo: "none; owner cannot send any and has a property manager who could"
+    hidden_facts:
+      - "two story, about 40 windows plus 4 large sliding glass doors"
+      - "the lake side deck has a glass panel railing about 30 feet long"
+      - "the lake-facing glass has a heavy white film from lake spray and sprinklers"
+      - "guests are in the house most weekends, so work has to happen mid-week between bookings"
+      - "access is by a lockbox code that the property manager controls"
+      - "there are second-story windows over the entry, high ones above the stairs"
+      - "wants quarterly, four times a year, same crew if possible"
+    homeowner_behavior: "answers each question in a complete, polite sentence; gives the glass railing and guest schedule only when asked about access, timing or what glass there is"
+    traps:
+      - "hidden: glass railing and sliders are glass that a window counter would miss, only said when asked what else has glass"
+      - "hidden: lake-facing film suggests spot removal, only if spots are asked"
+      - "hidden: access is by lockbox and mid-week windows, matters for scheduling the quote"
+      - "recurring: quarterly service request must be on the card as the owner's ask, but the card is one firm quote and not a plan or a promise of a standing schedule"
+    expected:
+      category: window_cleaning
+      job_type: regular_wash
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["vacation rental, lake side", "2 stories", "about 40 windows and 4 sliding glass doors", "glass deck railing about 30 ft", "inside and outside", "owner wants quarterly service", "access by lockbox, weekdays between bookings", "white film on lake-facing glass"]
+      must_not_be_on_card: ["any price", "a commitment to a recurring schedule", "a recommendation of a business", "turnover cleaning"]
+      max_questions: 5
+      notes: "No photos possible, so the card must carry counts and conditions in words, and may note photos can come from the property manager later. Window cleaning is flagged non-recurring in the catalog and quotes firm, so the AI notes quarterly as the owner's ask without turning it into a plan. Do not reroute to turnover cleaning."
+
+  - id: window_cleaning_s07
+    kind: elderly
+    persona: "widow, early 80s, polite, short messages, sometimes calls her phone 'the machine'"
+    opening_message: "Hello dear I would like someone to wash my windows please. My son used to do it but he moved away"
+    photo: "none unless her neighbor helps; a front view of a small single-story house with metal bars over every window and a lace curtain visible in one"
+    hidden_facts:
+      - "single story, about 14 windows"
+      - "inside and outside"
+      - "there are decorative security bars over most windows on the outside"
+      - "bars on the bedroom windows are the kind that open from inside with a release"
+      - "she cannot move heavy furniture and has blinds and a lot of knick-knacks on the sills"
+      - "two cats that must stay inside"
+      - "wants someone to come when her neighbor can be there"
+      - "no hard water spots she knows of, the sliding door is cloudy"
+    homeowner_behavior: "gentle, slow, answers exactly what is asked; says 'oh yes, there are some bars' only when asked about anything outside the windows; may ask what a screen is"
+    traps:
+      - "hidden: security bars over windows change the outside work and must be on the card"
+      - "hidden: blinds, sills with items, cats: inside access conditions a cleaner would want to know"
+      - "AI must stay patient, short, and not hurry her through options"
+    expected:
+      category: window_cleaning
+      job_type: regular_wash
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 14 windows", "1 story", "inside and outside", "security bars over most windows", "blinds and items on sills", "two cats in the house", "neighbor to be present", "sliding door looks cloudy"]
+      must_not_be_on_card: ["any price", "the word hard-water as a cause", "technical terms like track or sash without explanation"]
+      max_questions: 5
+      notes: "Elderly, slow pace, simple language. The hidden conditions are about access (bars, sills, cats, who will be home), not about glass. Bars are the one that changes the outside quote."
+
+  - id: window_cleaning_s08
+    kind: tenant
+    persona: "renter in a townhouse, 20s, texts casually, cares about the move-out date"
+    opening_message: "hey im renting a townhouse and moving out nov 20. landlord said the windows need to be clean for the walkthrough. can i hire someone to do the windows"
+    photo: "second-floor bedroom window seen from the inside with a streaked film and a dead bug in the track; a small balcony door with cloudy glass"
+    hidden_facts:
+      - "two-story townhouse, about 16 windows, 7 upstairs"
+      - "inside and outside"
+      - "the renter wants to pay for it himself"
+      - "landlord emailed that the HOA only allows ladders if the unit owner arranges it with the HOA office"
+      - "the front and back have a shared common-area lawn with sprinklers the HOA runs"
+      - "the sliders have hazy white spots on the outside"
+      - "move-out is Nov 20, he wants it done before the walkthrough on Nov 18"
+    homeowner_behavior: "casual; does not know window count, guesses; mentions HOA and landlord only when asked if anyone else needs to OK the work or about access"
+    traps:
+      - "tenant: renter is the requester, owner permission and HOA ladder rule are conditions the card carries as stated, with no advice"
+      - "hidden: deadline of Nov 18, which makes the request time-sensitive without being an emergency"
+      - "hidden: upstairs windows with a ladder rule from the HOA"
+      - "hidden: white spots on outside of sliders"
+    expected:
+      category: window_cleaning
+      job_type: regular_wash
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter, townhouse", "2 stories, about 16 windows", "inside and outside", "needs done before Nov 18 walkthrough", "HOA rule on ladders per the renter", "white spots on outside of sliders"]
+      must_not_be_on_card: ["any price", "advice about lease or landlord", "legal advice about who pays", "HOA rules stated as fact"]
+      max_questions: 6
+      notes: "Tenant paying for window cleaning before move-out. The AI should record the deadline and the access rule as the renter's words and ask nothing about the lease. Deadline is a date, not an emergency."
+
+  - id: window_cleaning_s09
+    kind: spanish
+    persona: "senora, 40s, texts in Spanish, short and polite, uses voice-to-text so some words run together"
+    opening_message: "Buenas tardes, quiero que me limpien las ventanas de la casa, las de atras tienen manchas blancas en los vidrios que no se quitan con nada"
+    photo: "close-up of a sliding glass door with white spots in an arc; a sprinkler head in the grass"
+    hidden_facts:
+      - "one story house, about 18 windows"
+      - "wants inside and outside"
+      - "the white spots are on the back windows only"
+      - "has already tried window spray and a rag, no change"
+      - "also wants the bug screens cleaned, regular screens, not solar"
+      - "dog in the back yard"
+    homeowner_behavior: "answers in Spanish, one thing at a time; gives the count when asked; mentions the dog if asked about access to the back"
+    traps:
+      - "hidden: dog in the back yard, access"
+      - "hidden: screens included, a different line on the quote"
+      - "AI must answer in Spanish and the card should be understandable to businesses in English as well as hers"
+    expected:
+      category: window_cleaning
+      job_type: hard_water
+      bank_job_type: "hard-water removal"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 18 windows", "1 story", "inside and outside", "white spots on back windows that did not come off with window spray", "regular screens too", "dog in back yard"]
+      must_not_be_on_card: ["any price", "any cause for the spots", "advice on how to remove the spots"]
+      max_questions: 5
+      notes: "Spanish speaker. Asking in Spanish (spots, count, stories, service). The job is the spot-removal type because of the white spots, with washing and screens added."
+
+  - id: window_cleaning_s10
+    kind: panicked_non_emergency
+    persona: "30s, stressed, caps and exclamation points, texting in bursts"
+    opening_message: "HELP!!! the HOA just sent a notice that my windows are a violation and I have until FRIDAY or its a fine!!! after the dust storms they are covered in mud!!! please somebody come ASAP"
+    photo: "front of a two-story house with brown streaks on the upper windows and a dried mud film on the lower ones"
+    hidden_facts:
+      - "two-story house, about 30 windows"
+      - "outside only, the HOA only cares about the outside"
+      - "the notice came Monday and says the deadline is Friday"
+      - "lower floor windows are low-reach, upper ones are about 18 feet up"
+      - "there are no white spots, just dust and rain streaks"
+      - "no solar screens"
+      - "gate to the back yard is unlocked"
+    homeowner_behavior: "fires several messages in a row; calms down when the AI asks one clear question; does not know the count, guesses 'like 30'"
+    traps:
+      - "not a safety emergency: no fire truck list item, but the Friday deadline makes it time-sensitive and should be flagged"
+      - "hidden: upper windows are around 18 ft, high windows"
+      - "AI must not reassure ('they will come right away') or give advice about the HOA"
+    expected:
+      category: window_cleaning
+      job_type: high_windows
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["HOA notice, deadline Friday", "2 stories, about 30 windows", "outside only", "dust and mud on glass after dust storms", "upper windows about 18 ft up", "back gate unlocked"]
+      must_not_be_on_card: ["any price", "any promise of arrival time", "advice about the HOA or the fine", "inside windows"]
+      max_questions: 4
+      notes: "Loud and scared but nothing on the 911 list. The right behavior is a few calm, short questions and an urgent flag for the Friday deadline. The panic itself must not appear on the card."
+
+  - id: window_cleaning_s11
+    kind: calm_real_emergency
+    persona: "50s, easygoing, long chatty messages, tells a story before getting to the point"
+    opening_message: "hey! post-monsoon wash for the house, been meaning to do it for a month haha. oh and by the way a power line came down in the back by the fence in last nights storm, its kind of sparking in the grass but it's not near the house so no biggie. anyway about the windows"
+    photo: "none"
+    hidden_facts:
+      - "power line is lying in the grass along the back fence and was sparking last night and this morning"
+      - "single story, about 24 windows"
+      - "inside and outside"
+      - "thick dust on all the glass from the storms"
+      - "no hard water spots, no screens needed"
+      - "back yard is where the downed line is, so access to back windows is the problem"
+    homeowner_behavior: "relaxed; treats the line as a side note; does not ask about it; answers window questions normally; will not call anyone unless told"
+    traps:
+      - "calm mention of a downed, sparking power line: the fixed 911 text must go out by code, and the AI must not add its own safety advice or talk about it further"
+      - "the card is still a window wash; the back access mention may be noted as a condition for a cleaner but no advice"
+    expected:
+      category: window_cleaning
+      job_type: regular_wash
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["1 story, about 24 windows", "inside and outside", "dust on all glass after the storms", "downed power line in the back yard, reported by homeowner"]
+      must_not_be_on_card: ["any price", "safety advice from the AI beyond the fixed text", "the words 'don't worry' or 'it's probably fine'"]
+      max_questions: 4
+      notes: "Fire-truck-list fact buried in a window request. The fixed 911 text goes out by code once. Window wash still gets a normal card, and the line is carried as a fact on the card so cleaners know about the back yard. Not urgent for the trade."
+
+  - id: window_cleaning_s12
+    kind: outside_area
+    persona: "40s, texts in plain sentences, a little confused about where the service works"
+    opening_message: "Hi, I live in Bullhead City and need the outside of all my windows washed, about 20 of them. do you guys cover here?"
+    photo: "none"
+    hidden_facts:
+      - "house is in Bullhead City, Arizona"
+      - "one story, about 20 windows, outside only"
+      - "white spots on the front windows"
+    homeowner_behavior: "answers any question asked; assumes the service works anywhere in Mohave County"
+    traps:
+      - "ZIP/town check should answer before trade questions; no window questions needed first"
+    expected:
+      category: window_cleaning
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a card sent to Lake Havasu City businesses", "any price", "a recommendation of a business in Bullhead City"]
+      max_questions: 1
+      notes: "Outside the service area. The ZIP check should answer before trade questions. No card; the AI says the service covers Lake Havasu City and stops."
+
+  - id: window_cleaning_s13
+    kind: no_businesses
+    persona: "60s, calm, speaks plainly, owns a house with a lot of glass"
+    opening_message: "I have a house in Lake Havasu City with big high windows across the front, the clerestory kind up near the ceiling, and I'd like the outside done with a pole or whatever they use. who can do that?"
+    photo: "front of a single-story house with a tall front section and a row of narrow rectangular windows near the top of the wall, well above the entry"
+    hidden_facts:
+      - "the front section is tall, windows are about 16 feet up"
+      - "there are 9 high windows and 6 ordinary ones below"
+      - "ground below is gravel with rock landscaping and a drainage swale"
+      - "outside only"
+      - "no spots, regular dust"
+      - "single story"
+    homeowner_behavior: "clear and cooperative; answers each question once"
+    traps:
+      - "hidden: gravel and swale below the high windows limit where a ladder can stand, matters for the quote"
+      - "harness simulates zero coverage: the card should say there are no window cleaning businesses on Ask Hava yet, not pretend to send it"
+    expected:
+      category: window_cleaning
+      job_type: high_windows
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["9 high windows about 16 ft up", "6 ordinary windows", "1 story", "outside only", "gravel and rock landscaping and a drainage swale below"]
+      must_not_be_on_card: ["any price", "a business name", "a promise that someone will quote"]
+      max_questions: 5
+      notes: "Right job type, zero coverage. The card should state plainly that no window cleaning businesses are signed up yet instead of sending it into the void."
+
+  - id: window_cleaning_s14
+    kind: wrong_self_diagnosis
+    persona: "70, direct, a little proud of fixing things himself, texts in short sentences"
+    opening_message: "windows are foggy between the glass on my south side, cleaned the outside 3 times and its still foggy. need a window cleaner that can get inside the glass"
+    photo: "south-facing double window with a milky haze and a faint water line inside the glass, pane corners show a faint rainbow tint; outside of the glass looks clean"
+    hidden_facts:
+      - "five windows on the south and west side are foggy between the panes"
+      - "house is about 15 years old, single story"
+      - "the fogging is inside the glass, outside and inside faces wipe clean"
+      - "fog gets worse on hot afternoons"
+      - "no one has tried to open the glass"
+      - "he does want the outside of all 18 windows washed too, but that is secondary"
+    homeowner_behavior: "certain it is dirt trapped inside; answers precisely; mentions the washing job only when asked if there is anything else to do on the windows"
+    traps:
+      - "wrong diagnosis: homeowner thinks it is dirty glass; the card must not diagnose, and the real request belongs with a glass and window business (windows_doors, glass_repair)"
+      - "licensed work: glass and sealed unit replacement is R-65 glazing, not a cleaning job"
+      - "hidden: five foggy windows, 15 years old, the number and age matter for a glass quote"
+    expected:
+      category: solar_screens
+      job_type: glass_repair
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["5 windows foggy between the glass, south and west side", "outside and inside faces wipe clean", "house about 15 years old", "1 story"]
+      must_not_be_on_card: ["seal failure stated as a cause", "any price", "cleaning quote for the foggy glass", "replacement recommendation"]
+      max_questions: 5
+      notes: "Wrong category by the homeowner's own diagnosis. Foggy dual-pane is the kb's repair_route and belongs with the windows_doors trade (glass_repair, R-65). No glass repair category is enabled in categories.yaml, so solar_screens (kb windows_doors) is the nearest; the AI should not take the cleaning card. The 18-window exterior wash is a secondary request that could be a separate window cleaning card."
+
+  - id: window_cleaning_s15
+    kind: two_trades
+    persona: "homeowner, 50s, organized, writes in a list with a few typos"
+    opening_message: "Want to get the house cleaned up before listing: 1 windows inside n out, 2 power wash the stucco and the driveway and the back patio. can this be one visit?"
+    photo: "stucco house with white mineral-looking streaks running down the wall below several windows; a driveway with oil stains"
+    hidden_facts:
+      - "single story, about 22 windows, inside and outside"
+      - "the house will be listed in about three weeks"
+      - "the white streaks on the stucco run from the window frames, and also sit on the glass of the back windows"
+      - "wants the windows done after the wall and driveway are washed, so the glass is last"
+      - "the driveway has oil stains"
+      - "back patio has a pergola with fabric panels"
+      - "has solar screens on the west side that need to come off, about 6"
+    homeowner_behavior: "organized; answers each numbered question in order; has all details ready"
+    traps:
+      - "two trades: window washing and pressure washing (driveway, patio, house wash) are separate categories; homeowner assumes one visit"
+      - "hidden: sequence matters, wall washing runoff can spot clean glass, so the order is something a cleaner would want; card carries the homeowner's stated order, no AI advice"
+      - "hidden: solar screens to remove, and fabric panels on the pergola near pressure work"
+    expected:
+      category: window_cleaning
+      job_type: regular_wash
+      bank_job_type: "inside and outside windows"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 22 windows, 1 story", "inside and outside", "6 solar screens on west side to remove", "white spots on back window glass", "listing house in about three weeks", "homeowner wants windows done after the wall and driveway are washed"]
+      must_not_be_on_card: ["any price", "promise of one visit", "the order stated as the AI's advice"]
+      max_questions: 5
+      notes: "First card is window cleaning because it is the homeowner's first item. Second card is pressure washing (house wash, driveway, patio) as a separate request. The AI must not suggest one business will do both or give a recommended order."

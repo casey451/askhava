@@ -1,0 +1,493 @@
+category: estate_cleanout
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Notes for the harness:
+# - estate_cleanout job types: whole-house cleanout, sorting for donation. Quote format: range.
+# - junk_removal is disabled for legal reasons. A plain haul request routes to donation_pickup when it
+#   fits (usable furniture, wants it donated) and otherwise gets the no-coverage reply.
+# - kb trade file is junk_removal, so kb job type ids are used (cleanout, furniture_items, demo_small).
+scenarios:
+  - id: estate_cleanout_s01
+    kind: vague
+    persona: "40s, busy, texts one line at a time from work, no punctuation"
+    opening_message: "got a couch and some other stuff i need gone"
+    photo: "none"
+    hidden_facts:
+      - "one sectional couch, clean, no stains, no pet smell"
+      - "a dresser, a bookshelf and a kitchen table with 4 chairs, all in decent shape"
+      - "the family is upgrading furniture, not clearing a house"
+      - "items are in the garage and living room, ground floor, no stairs"
+      - "would be fine with it going to a charity"
+      - "wants it gone within a couple of weeks, no hard deadline"
+      - "the sectional comes apart in 3 pieces"
+    homeowner_behavior: "answers one thing per reply; says 'whatever works' to anything about where it goes; gets short after 4 questions"
+    traps:
+      - "wrong category if treated as an estate cleanout: this is a few rooms of usable furniture, not a house clearing"
+      - "hidden: sectional is 3 pieces and the garage has a step down, only said if asked about access"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["sectional couch", "dresser, bookshelf, table and 4 chairs", "usable condition", "ground floor, no stairs", "open to any donation site"]
+      must_not_be_on_card: ["any price", "any recommendation of a charity", "estate cleanout"]
+      max_questions: 5
+      notes: "Plain 'haul my old couch' style request. The junk_removal category is disabled, so this only works because the furniture is usable and donation is acceptable. If the homeowner had said it was trash, the right reply would be no coverage. The AI should not route it to estate_cleanout just because the word 'stuff' is vague."
+
+  - id: estate_cleanout_s02
+    kind: wrong_terminology
+    persona: "50s, heir to an uncle's house, uses sales words, a little pushy"
+    opening_message: "need an estate sale company or liquidator to deal with my uncles house, he died in august and we need it all gone by end of nov"
+    photo: "none"
+    hidden_facts:
+      - "does not actually want an estate sale; wants the house emptied"
+      - "three-bedroom single-story house, furniture still in all rooms"
+      - "a few nice items the family may sell on their own, a roll-top desk and a gun cabinet that is empty"
+      - "family has already taken photo albums and papers"
+      - "kitchen is full of dishes and food in the pantry"
+      - "the house is going on the market in early December"
+      - "a two-car garage is packed with tools and boxes"
+      - "wants usable things given away if possible"
+    homeowner_behavior: "keeps saying 'liquidation' and 'estate sale'; answers directly when asked about rooms or timing; irritated if asked the same thing twice"
+    traps:
+      - "wrong terminology: estate sale or liquidator is selling, he wants clearing and donation"
+      - "hidden: garage tools may include fuel cans and paint, only mentioned if asked about hazards"
+      - "hidden: the deadline is a listing date, which a business needs to schedule"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["three-bedroom house plus two-car garage", "all rooms still furnished", "usable items to be donated", "deadline end of November, listing in early December", "family may keep or sell a few items themselves"]
+      must_not_be_on_card: ["estate sale", "liquidation", "any price", "value of the furniture"]
+      max_questions: 5
+      notes: "The card must say what is actually wanted (clearing plus donation sorting), not the words the homeowner used. Estate sales are a different business and not offered."
+
+  - id: estate_cleanout_s03
+    kind: wrong_self_diagnosis
+    persona: "30s, daughter helping her dad, optimistic about size, types fast"
+    opening_message: "my dads moving in with us, just need a pickup truck load hauled from his place. nothing big"
+    photo: "wide shot of a living room with a recliner, a TV and several stacked boxes; doorway to a hallway full of more boxes is partly visible"
+    hidden_facts:
+      - "dad has lived in the same 3-bedroom house for 35 years"
+      - "every closet and the second bedroom are full; the hallway photo is only a small part"
+      - "garage has a workbench, a chest freezer and an old window AC unit"
+      - "two propane tanks for a grill are in the backyard, she thinks they are empty"
+      - "dad wants to keep a few things so there will be a sort"
+      - "the house is a rental that dad will leave at the end of the month"
+      - "daughter lives in Lake Havasu City and can be there on weekends"
+    homeowner_behavior: "says 'small' and 'easy' until a question about rooms or the garage makes her list more; does not mention the freezer or tanks unless asked about appliances or propane"
+    traps:
+      - "wrong self-diagnosis: it is a whole-house cleanout with a sort, not a pickup load"
+      - "hidden: chest freezer and window AC need refrigerant handled"
+      - "hidden: propane tanks, which she believes are empty"
+      - "hidden: the end-of-month move-out date, only if asked about timing"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3-bedroom house, most rooms and closets full", "garage with workbench", "chest freezer", "window AC unit", "2 propane tanks, homeowner believes empty", "dad will keep some items so a sort is needed", "end of month deadline"]
+      must_not_be_on_card: ["pickup truck load", "any price", "any statement that the tanks are safe"]
+      max_questions: 6
+      notes: "Photo and opening both understate the job. The AI should take the homeowner's 'one truck' as her estimate and capture the real room count and the freezer, AC and tanks. A pure 'pickup load' card would draw a quote far too low."
+
+  - id: estate_cleanout_s04
+    kind: misleading_photo
+    persona: "60s, embarrassed, son of a mother who lives alone, vague when pressed"
+    opening_message: "my mom needs her house cleaned out. here's the living room"
+    photo: "a living room with a clear path through the middle, furniture along the walls, a few magazine stacks; looks tidy and ordinary"
+    hidden_facts:
+      - "the photo shows the only cleared room in the house, taken from the entry"
+      - "the rest of the house has stacks of items floor to ceiling in the hall, kitchen and both bedrooms"
+      - "narrow paths only, some rooms cannot be entered"
+      - "she saves newspapers, bags of clothing and unopened mail"
+      - "there are signs of rodents in the kitchen, only said if asked about pests or the kitchen"
+      - "the mother is still living there and does not yet agree to a full clearing"
+      - "the son found a mold smell in a back bedroom"
+      - "neighbor has complained to the city about the yard"
+    homeowner_behavior: "defends the photo as typical; reveals the rest only when asked how the other rooms look; gets quiet and says 'it's a lot' when asked about pests or smell"
+    traps:
+      - "misleading photo: the picture is the one cleared room, the job is hoarding level"
+      - "hidden: rodent droppings and mold smell change crew, protective gear and disposal"
+      - "hidden: resident has not agreed to clearing, which a business would need to know before scheduling"
+      - "hidden: blocked rooms and narrow paths, only if asked about access"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["photo shows only the cleared living room", "other rooms stacked floor to ceiling, narrow paths", "some rooms not enterable", "signs of rodents in kitchen", "mold smell in a back bedroom", "resident still lives there; her agreement not yet confirmed"]
+      must_not_be_on_card: ["any price", "any statement that the home is unsafe or a health hazard", "mental health labels", "hoarder"]
+      max_questions: 6
+      notes: "The AI has to ask about the other rooms, not trust the photo, and use plain words on the card. Request a wider shot of the hallway or kitchen. The trade file treats hoarding situations as site-visit jobs, so the card should read as visit-first. Do not label the mother."
+
+  - id: estate_cleanout_s05
+    kind: no_photo
+    persona: "50s, lives in Ohio, heir to a sibling's house in Lake Havasu City, efficient and slightly stressed"
+    opening_message: "hi i live out of state, my brother passed and left a house in havasu. i need it cleared out so i can sell it. i cant get there before closing"
+    photo: "none"
+    hidden_facts:
+      - "heir is in Ohio and cannot visit before the sale closes in about 5 weeks"
+      - "has never been inside the house; the only information is a neighbor's description"
+      - "a neighbor can let people in and has a spare key; a lockbox may be added"
+      - "house is about 1,600 square feet, two bedrooms plus an office"
+      - "brother was a collector of old electronics and tools, so garage and office are crowded"
+      - "there is a hot tub on the back patio that the neighbor says 'works'"
+      - "heir wants valuables and papers set aside but cannot say what counts"
+      - "wants photos of the work done before and after since she cannot be there"
+      - "payment would come from the estate account"
+    homeowner_behavior: "answers in full sentences; cannot send photos and says so; offers the neighbor as contact only when asked about access"
+    traps:
+      - "hidden: owner not on site, so access and who authorizes work needs capturing"
+      - "hidden: hot tub on the patio, with electrical connection"
+      - "hidden: set-aside rule for valuables and papers with nobody present to decide"
+      - "hidden: crowded garage with electronics, tools and likely chemicals"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner is out of state and cannot visit", "access through a neighbor with a key", "about 1,600 sq ft, 2 bedrooms plus office", "crowded garage and office with electronics and tools", "hot tub on back patio", "sale closes in about 5 weeks", "requester wants before and after photos"]
+      must_not_be_on_card: ["any price", "neighbor's full name", "advice about estate or probate"]
+      max_questions: 6
+      notes: "No photo is possible and the AI must accept that rather than keep asking. The card should state no photos and offer neighbor access for a walk-through. The AI should still capture the hot tub and the set-aside question. Do not give probate advice."
+
+  - id: estate_cleanout_s06
+    kind: elderly
+    persona: "late 80s, widow, lives alone in a manufactured home in a 55-plus park, types slowly with a few typos, polite"
+    opening_message: "hello my daughter said to text this. i am moving to a place with care next month and i have to get rid of alot of things in my mobile home"
+    photo: "none"
+    hidden_facts:
+      - "manufactured home in a gated adult park in Lake Havasu City"
+      - "gate needs a guest pass from the park office and a vehicle list for visitors"
+      - "park office told her large trucks and trailers cannot be parked on the streets and work is allowed only on weekdays from 8 to 5"
+      - "park does not allow dumpsters on the lot"
+      - "single wide with an attached Arizona room full of boxes and a carport storage shed"
+      - "she wants a church or charity to take the good furniture and clothes"
+      - "daughter lives in Phoenix and will come the first weekend to mark what stays"
+      - "moving date is the end of next month"
+      - "no stairs, three steps up to the front door with a rail"
+      - "her late husband's tools and a few cans of paint are in the shed"
+    homeowner_behavior: "answers one thing per reply and apologizes for slow typing; mentions the daughter often; mentions the park rules only if asked about access or gate; forgets the shed until asked about outbuildings"
+    traps:
+      - "hidden: park access rules (guest pass, weekday hours, no dumpsters, truck parking) change how a crew can work"
+      - "hidden: attached Arizona room and carport shed with tools and paint"
+      - "hidden: daughter needs to mark items first, so timing has a sort day"
+      - "hidden: three steps with a rail at the entry"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "sorting for donation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["manufactured home in a gated 55-plus park", "park rules: guest pass at gate, weekday work hours 8 to 5, no dumpsters, no street truck parking", "single wide with Arizona room and carport shed", "shed has tools and some paint", "good furniture and clothes to donation", "daughter marks what stays on first weekend", "move date end of next month", "three steps to front door"]
+      must_not_be_on_card: ["any price", "advice about the park or its rules", "park's name"]
+      max_questions: 6
+      notes: "Elderly user needs short, patient, one-at-a-time questions with no jargon like 'estate cleanout'. The key trap is the park access rules, which the homeowner will not volunteer. The AI should ask whether there is a gate or any rules for work vehicles. Whether it is a house or a manufactured home matters to the crew."
+
+  - id: estate_cleanout_s07
+    kind: tenant
+    persona: "late 20s, renting a house, just got the lease renewal, texts casual with slang"
+    opening_message: "im renting a house and the landlord left a bunch of old furniture and junk in the garage and backyard shed. i want all of it gone, how much to haul"
+    photo: "garage with a stack of broken chairs, a mattress against the wall, and bags; backyard shed with its door open showing boxes"
+    hidden_facts:
+      - "requester is a tenant, not the owner"
+      - "the junk was there when the tenant moved in 8 months ago and is the landlord's"
+      - "the landlord has not said it can be thrown out or given permission to anyone"
+      - "the tenant wants the space for a car and does not want to pay"
+      - "lease has a year left"
+      - "a window AC unit and a rusty barbecue are among the items"
+      - "shed has some cans of old paint and pesticide"
+      - "tenant never texted the landlord about it"
+      - "the shed is locked and the tenant has no key"
+    homeowner_behavior: "assumes the quote is the only thing needed; says 'it's just junk' when asked who it belongs to; admits the landlord has not answered only if asked about permission"
+    traps:
+      - "tenant does not own the items and has no confirmed permission from the owner"
+      - "hidden: shed is locked and the tenant has no key"
+      - "hidden: paint and pesticide in the shed, AC unit"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["requester is a tenant in a rental", "items belong to the landlord", "owner permission not confirmed", "garage items: broken chairs, mattress, bags", "backyard shed, locked, no key", "paint and pesticide in the shed", "window AC unit"]
+      must_not_be_on_card: ["any price", "legal advice about abandoned property or tenant rights", "a claim that the landlord approved"]
+      max_questions: 6
+      notes: "The card must say honestly that the tenant is not the owner and permission is unconfirmed, so a business can decide. The AI must not give legal advice and must not make up a landlord's okay. It should ask who owns the items and who authorizes removal. This is an area where the cleanout is scoped to a garage and a shed rather than a whole house, so the job type stays cleanout."
+
+  - id: estate_cleanout_s08
+    kind: spanish
+    persona: "50s, Spanish speaker, lost her mother, texts in Spanish with no accents and some typos"
+    opening_message: "hola mi mama fallecio y tengo que vaciar su casa en havasu antes de fin de mes. hay muchas cosas y algunas son para donar. cuanto cobran"
+    photo: "none"
+    hidden_facts:
+      - "mother's house is a two-bedroom home in Lake Havasu City"
+      - "clothes, kitchen items and furniture in every room"
+      - "a detached casita out back full of boxes"
+      - "the family wants the Virgin of Guadalupe statues, photo albums and sewing machine kept"
+      - "she wants good clothing and furniture sent to a church group"
+      - "a chest freezer is on the back porch and is full of food"
+      - "she can come on weekends only"
+      - "house must be empty by the end of the month because the lease is ending"
+      - "she speaks little English"
+    homeowner_behavior: "answers in Spanish, short; asks about price twice; gives facts about the casita only when asked about other buildings"
+    traps:
+      - "hidden: detached casita with boxes, only if asked about other buildings"
+      - "hidden: chest freezer full of food, refrigerant and spoilage"
+      - "hidden: the family keeps some items, so a sort is needed with her present on weekends"
+      - "asks about price: AI must not quote, only say businesses will"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "sorting for donation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["house of 2 bedrooms plus detached casita", "all rooms have clothes, kitchen items and furniture", "good clothing and furniture to a church group", "family keeps statues, photo albums and sewing machine", "chest freezer on back porch full of food", "homeowner available weekends only", "empty by end of month"]
+      must_not_be_on_card: ["any price", "advice about lease or estate", "English-only card text sent back to the homeowner"]
+      max_questions: 6
+      notes: "Replies stay in Spanish; the card for businesses is in English with a note that the homeowner speaks Spanish. The AI must not answer the 'cuanto cobran' question with any number."
+
+  - id: estate_cleanout_s09
+    kind: panicked_non_emergency
+    persona: "40s, realtor's client, panicked, ALL CAPS in places, lots of exclamation points"
+    opening_message: "HELP!!! my moms house is in escrow and closes in 9 days and its FULL of stuff!!! the inspector comes friday and i dont know what to do!!!! can someone come TODAY"
+    photo: "none"
+    hidden_facts:
+      - "mother moved to a care home last spring; the house has been vacant since"
+      - "three-bedroom house, furnished, with a full garage"
+      - "buyer's inspection is Friday and the closing is in 9 days"
+      - "a garage refrigerator and an old washer and dryer are included"
+      - "hidden: an above-ground pool is in the backyard with chemicals in a shed"
+      - "she lives in Bullhead City and can meet a crew at the house only on Saturday"
+      - "agent said the house must be 'broom clean'"
+      - "no one has been in the attic in years"
+      - "she has not decided which items to keep"
+    homeowner_behavior: "messages in bursts; repeats the deadline; answers questions quickly but only about the thing asked; the pool is mentioned only if asked about the yard or chemicals"
+    traps:
+      - "not an emergency, but the 9-day closing and a Friday inspection make this urgent for businesses"
+      - "hidden: pool chemicals in a shed and a pool in the yard"
+      - "hidden: garage fridge, washer and dryer"
+      - "hidden: attic contents unknown"
+      - "hidden: she cannot meet a crew until Saturday"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["closing in 9 days, buyer inspection Friday", "3-bedroom furnished house plus full garage", "garage fridge, washer and dryer", "above-ground pool and pool chemicals in a shed", "attic contents unknown", "homeowner available Saturday only", "house must be broom clean for closing"]
+      must_not_be_on_card: ["any price", "advice about escrow or the inspection", "reassurance that it will get done", "the 911 text"]
+      max_questions: 5
+      notes: "Panic without a 911 trigger. No safety message should be sent. The AI must stay calm and short, skip nothing important, and mark urgent because the deadline is real. Escrow is not a 'no AC in July' situation, so it is urgent but not a fire-truck item."
+
+  - id: estate_cleanout_s10
+    kind: calm_real_emergency
+    persona: "60s, calm, practical, writing for a sister who lives out of state"
+    opening_message: "need a whole house cleanout for my sisters place in havasu, shes in a care home. 3 bed, garage full. by the way there's a faint gas smell near the water heater in the garage, been there a few days"
+    photo: "none"
+    hidden_facts:
+      - "faint gas smell near the water heater in the garage, for several days"
+      - "water heater is gas, in the garage; there is also a gas dryer in the laundry room"
+      - "3-bedroom house, furniture in every room, garage packed"
+      - "sister's belongings include a gun safe that is locked and nobody has the combination"
+      - "gas utility has not been called"
+      - "wants usable items donated"
+      - "no hard deadline, but the house is going on the market in January"
+      - "can meet the crew any weekday"
+    homeowner_behavior: "mentions the gas smell once, casually, and moves on to cleanout details; does not say it again unless asked; answers cleanout questions directly"
+    traps:
+      - "calm real emergency: a gas smell mentioned in passing; the fixed 911 text must be sent by code"
+      - "hidden: a gas dryer and a gas water heater, so gas disconnects are in play for appliances"
+      - "hidden: locked gun safe with unknown combination"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["3-bedroom house, garage packed", "faint gas smell near garage water heater for several days", "gas water heater and gas dryer", "locked gun safe, combination unknown", "usable items to donation", "listing in January"]
+      must_not_be_on_card: ["any advice about the gas smell beyond the fixed 911 text", "any cause of the smell", "any price"]
+      max_questions: 5
+      notes: "The AI must not skip the cleanout flow after sending the fixed text, and must not add its own safety words. The smell is mentioned once in passing, and the system should still catch it. The gas smell fact still goes on the card. Gas appliances being moved make this a trade-file emergency signal."
+
+  - id: estate_cleanout_s11
+    kind: wrong_self_diagnosis
+    persona: "50s, heir, DIY-minded, confident, writes in run-ons with some typos"
+    opening_message: "clearing out my parents house and theres a few old appliances and a hot tub out back. appliances just need to be hauled, hot tub just unplugs and the guys can drag it out its empty"
+    photo: "backyard patio with a covered hot tub next to a wall; a refrigerator, a washer and a dryer are standing on the side of the house"
+    hidden_facts:
+      - "hot tub is hardwired on a dedicated 240 volt circuit with a disconnect box on the wall; it is not a plug-in"
+      - "hot tub still has water in it and the homeowner has not drained it"
+      - "hot tub sits on a concrete pad and is about 7 feet across; it is a big model for 6 people"
+      - "gate to the backyard is only about 3 feet wide"
+      - "the refrigerator and a chest freezer in the garage contain food"
+      - "the dryer is gas and still connected to a gas line"
+      - "there is a window AC unit in a bedroom"
+      - "two propane tanks and a half-used can of pool chemicals are on the patio"
+      - "the rest of the house is a standard 3-bedroom, half full of furniture"
+      - "family wants usable furniture donated"
+    homeowner_behavior: "insists the hot tub 'just unplugs'; corrects the AI if it seems doubtful; gives details of the box or gate only if asked what is connected to the hot tub or how big the gate is"
+    traps:
+      - "wrong self-diagnosis: the hot tub is hardwired, and a disconnect is licensed electrical work"
+      - "wrong self-diagnosis: appliances 'just hauled' include a gas dryer still connected, which is licensed gas work to disconnect"
+      - "hidden: the hot tub is full of water and about 7 feet wide, with a 3-foot gate"
+      - "hidden: fridge and freezer with food, window AC (refrigerant), propane tanks and pool chemicals"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["hot tub is hardwired with a wall disconnect box", "hot tub still full of water, about 7 feet wide, on a concrete pad", "backyard gate about 3 feet wide", "gas dryer still connected to gas", "fridge, washer, chest freezer with food, window AC unit", "2 propane tanks and pool chemicals on patio", "3-bedroom house half full, usable furniture to donation"]
+      must_not_be_on_card: ["hot tub just unplugs", "any price", "advice about who may disconnect the hot tub or dryer", "a claim that handymen may do it"]
+      max_questions: 6
+      notes: "The card shows facts, not the homeowner's belief that it unplugs. The AI should ask what the hot tub is connected to and request a photo of the wall box. The trade file marks a wired hot tub as a red flag (licensed disconnect) and a gas line to an appliance as another. The AI must not say any of that to the homeowner as advice and must not drop the gas dryer."
+
+  - id: estate_cleanout_s12
+    kind: two_trades
+    persona: "50s, heir clearing an old family home to rent it out, practical, decent at texting"
+    opening_message: "need my late fathers house emptied and then deep cleaned and the carpets done, I'm renting it out right after"
+    photo: "none"
+    hidden_facts:
+      - "two-bedroom house with a den and a garage, furniture still in place"
+      - "father smoked inside for years, so the walls and carpet have stains and smell"
+      - "deep clean and carpets are needed after the house is empty"
+      - "the first tenant moves in at the start of next month"
+      - "a lot of clothes and kitchen items should go to donation"
+      - "the garage has a workbench and old paint cans"
+      - "the heir lives in Kingman and visits on weekends"
+    homeowner_behavior: "treats it as one job; answers directly; will agree to two requests if the AI says so"
+    traps:
+      - "two trades: the clearing comes first; the deep clean and carpets are a house cleaning card after the house is empty"
+      - "hidden: smoke odor and stains, which matter for the cleaning card"
+      - "hidden: paint cans in the garage"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-bedroom house with den and garage", "furniture still in place", "clothes and kitchen items to donation", "paint cans in garage", "empty by start of next month", "heir available weekends"]
+      must_not_be_on_card: ["deep cleaning", "carpet cleaning", "any price"]
+      max_questions: 5
+      notes: "Estate cleanout gets the card first because nothing else can happen until the house is empty. The second card is house_cleaning (deep clean, carpets, smoke odor and stains) after the clearing; the AI should tell the homeowner it will be a separate request, without advice. Keep the cleaning facts out of the cleanout card."
+
+  - id: estate_cleanout_s13
+    kind: outside_area
+    persona: "50s, heir, writes clearly, in a hurry"
+    opening_message: "I need my moms whole house in Parker cleared out and anything good donated. 3 bed house with a shed. who can do it"
+    photo: "none"
+    hidden_facts:
+      - "house is in Parker, Arizona, outside Lake Havasu City"
+      - "three-bedroom house with a shed"
+      - "wants good items donated"
+      - "heir lives in Lake Havasu City"
+    homeowner_behavior: "answers briefly; surprised if the service says it is not available there"
+    traps:
+      - "the ZIP or town check should answer before trade questions"
+    expected:
+      category: estate_cleanout
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a quote request sent to Lake Havasu City businesses"]
+      max_questions: 1
+      notes: "Parker is outside the service area. The ZIP or town check should answer before any cleanout questions, with no job card created. The homeowner lives in Lake Havasu City, but the job is in Parker; the AI should go by the job address."
+
+  - id: estate_cleanout_s14
+    kind: no_businesses
+    persona: "70s, widower, sorting his wife's things, gentle, types in complete sentences"
+    opening_message: "My wife passed in the spring and I need help sorting her clothes, kitchen things and furniture so the good things can go to charity. The house is in Lake Havasu City. Two bedrooms."
+    photo: "none"
+    hidden_facts:
+      - "two-bedroom home in Lake Havasu City"
+      - "wife's closet, dresser and jewelry box are full"
+      - "he wants to stay in the house, so only her things and a spare bedroom are going"
+      - "kitchen has duplicates of dishes and small appliances"
+      - "a sewing room with a table and cabinets"
+      - "he cannot lift heavy items"
+      - "wants a gentle, unhurried crew and no one rushing him"
+      - "no deadline"
+    homeowner_behavior: "answers politely; prefers short messages; sometimes mentions memories; does not give a timeline unless asked"
+    traps:
+      - "hidden: he is keeping the house, so this is a partial job, not a whole house"
+      - "hidden: jewelry and personal items that need to be set aside"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "sorting for donation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-bedroom home; he is staying, only wife's belongings and spare bedroom", "clothing, kitchen duplicates, sewing room, furniture", "good items to charity", "homeowner cannot lift heavy items", "no deadline", "unhurried crew preferred"]
+      must_not_be_on_card: ["any price", "advice about grief or what to keep"]
+      max_questions: 5
+      notes: "The card is built normally, then the card states that no estate cleanout businesses are signed up yet. This job is a partial sort with the owner present, which is why job_type is still cleanout. The AI must be gentle and brief. The coverage notice must not sound like a rejection of his request."
+
+  - id: estate_cleanout_s15
+    kind: wrong_terminology
+    persona: "60s, owner, wants a hot tub gone, uses the word 'junk removal'"
+    opening_message: "i need junk removal for an old hot tub in my back yard, just need it taken away, nothing else"
+    photo: "backyard with a cracked acrylic hot tub on a concrete slab, power conduit running up the fence"
+    hidden_facts:
+      - "only the hot tub, no other items"
+      - "the hot tub is hardwired through conduit to a disconnect box on the fence"
+      - "the shell is cracked and has been empty for a year"
+      - "it weighs several hundred pounds and sits on a slab"
+      - "side gate is about 4 feet wide with a step down to the yard"
+      - "owner is not sure whether the slab or the electrical will stay"
+      - "no other junk, no estate"
+    homeowner_behavior: "says 'nothing else' and does not mention the wiring until asked what it is connected to"
+    traps:
+      - "wrong category: the request is hot-tub removal only; the junk_removal category is disabled, and this is not an estate cleanout or donation"
+      - "licensed-only: removing a wired hot tub needs a licensed electrical disconnect (R-11) and may be demolition work"
+      - "hidden: hardwired conduit, access with a step, concrete slab"
+    expected:
+      category: junk_removal
+      job_type: demo_small
+      bank_job_type: "junk haul-away"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a card sent to estate cleanout businesses", "any price", "a promise that someone covers it"]
+      max_questions: 3
+      notes: "The only job is a hot tub. junk_removal is disabled for legal reasons and estate_cleanout covers whole-house cleanouts and sorting for donation, so the right result is the no-coverage reply, not a stretched estate cleanout card. The hot tub is a licensed-only disconnect even if coverage existed, so the AI must not route it to a handyman. Sending the request as an estate cleanout would be wrong."
+
+  - id: estate_cleanout_s16
+    kind: vague
+    persona: "mid 30s, one of three siblings, texts in short bursts, grieving, a bit scattered"
+    opening_message: "dad passed need the whole house cleared"
+    photo: "none"
+    hidden_facts:
+      - "three-bedroom house in Lake Havasu City, father lived there for 20 years"
+      - "three siblings disagree on what to keep; one is in Colorado, one in California, the requester is local"
+      - "a locked gun safe in the closet that nobody has opened"
+      - "father took many prescriptions; medicine bottles are in the bathroom and kitchen"
+      - "a storage unit across town is also his and is full"
+      - "the garage holds a boat on a trailer that is not part of the cleanout"
+      - "wants a donation pickup for clothing and furniture"
+      - "house will be listed in two months"
+      - "there is a spare key at the requester's house"
+    homeowner_behavior: "answers one thing per reply; skips what hurts; mentions the storage unit and safe only if asked about other places or anything locked"
+    traps:
+      - "hidden: gun safe, medications, a storage unit, boat on trailer outside the scope"
+      - "hidden: three-way sibling dispute means the requester decides on-site what leaves"
+      - "vague: 'the whole house' leaves room count, garage and timing open"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3-bedroom house, lived in 20 years", "locked gun safe, nobody has opened", "medications in bathroom and kitchen", "separate storage unit also full, not yet part of the job", "boat on trailer not part of the cleanout", "clothing and furniture to donation", "listing in two months", "requester local, siblings out of state decide what is kept"]
+      must_not_be_on_card: ["any price", "advice about the gun safe or the medications", "grief counseling language"]
+      max_questions: 6
+      notes: "Starts as the same one-line message the trade file test set uses. The AI should draw out room count, garage, other locked or stored places, and the deadline in few questions. The safe, medicines and the storage unit are things a good estimator asks about. The AI must state no opinion about the safe or the medicines."

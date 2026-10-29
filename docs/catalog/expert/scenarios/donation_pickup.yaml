@@ -1,0 +1,459 @@
+category: donation_pickup
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Notes for the reader: kb_trade is junk_removal. The junk_removal category itself is disabled (legal), so a pure
+# haul-to-the-dump request gets the no-coverage reply, not a card. Whole-house cleanouts route to estate_cleanout.
+scenarios:
+  - id: donation_pickup_s01
+    kind: vague
+    persona: "30s, works nights, texts in fragments, assumes the bot will figure it out"
+    opening_message: "got a couch i want gone. donation. when can someone come"
+    photo: "none"
+    hidden_facts:
+      - "it is a sleeper sofa, the fold-out kind with a metal frame, queen size"
+      - "it is in a second-floor condo, bedroom hallway, no elevator"
+      - "the stairs have a tight turn halfway down with a landing"
+      - "two small end tables go with it"
+      - "condo is in the north part of Lake Havasu City"
+      - "he is home most afternoons and asleep until noon"
+    homeowner_behavior: "answers one thing per reply; never says the word sleeper or second floor unless a question about the item type or stairs calls for it; gets short after 4 questions"
+    traps:
+      - "hidden: sleeper sofa is far heavier than a regular couch, only said if asked what kind or how big"
+      - "hidden: second floor with a turn in the stairs, only said if asked about stairs or where the item sits"
+      - "hidden: two end tables, only said if asked whether there is anything else"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["sleeper sofa, queen fold-out", "second floor, no elevator", "tight turn in the stairs", "2 end tables", "afternoons are best"]
+      must_not_be_on_card: ["any price", "any charity name", "any promise that a charity will take it", "any advice on moving it"]
+      max_questions: 5
+      notes: "One line, 'couch'. The sleeper frame and the second-floor stairs with a turn are the whole quote and the homeowner thinks of neither. A card that says 'couch, curb' is wrong."
+
+  - id: donation_pickup_s02
+    kind: wrong_terminology
+    persona: "50s, practical, does not care where it ends up, just wants it off the property"
+    opening_message: "got a dresser and a recliner, can you get someone to haul them off. donate or dump whichever, i dont care"
+    photo: "none"
+    hidden_facts:
+      - "solid wood six-drawer dresser in good shape, one drawer sticks"
+      - "recliner is torn on one arm and has cat scratches, a spring is loose"
+      - "both are in the garage on the ground floor, one step up from the driveway"
+      - "he would take a donation receipt if it is free, but will not pay extra for it"
+      - "he wants it gone within two weeks"
+    homeowner_behavior: "casual, answers what is asked, repeats 'whichever' if asked where it should go; does not describe condition unless asked about it"
+    traps:
+      - "routing choice: 'donate or dump, whichever' is a choice for the businesses, not for the AI; the card should say the owner is fine with donation or disposal and not pick one for him"
+      - "hidden: recliner is damaged and a charity may refuse it; only said if asked about condition"
+      - "dump-only haul-away is not covered, so the card must stay a donation pickup request with condition stated honestly"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["dresser, good condition", "recliner, torn arm, cat scratches, loose spring", "owner fine with donation or disposal", "garage, one step", "within two weeks"]
+      must_not_be_on_card: ["any price", "any claim that a charity will take both", "any advice on what to do with the recliner", "any recommendation of a dump or hauler"]
+      max_questions: 4
+      notes: "He says haul. The where-should-it-go question has an open answer and the AI must pass 'whichever' through rather than choose. The recliner condition is the tell for whether this is donation or trash; ask condition once, then write it on the card as stated."
+
+  - id: donation_pickup_s03
+    kind: wrong_self_diagnosis
+    persona: "late 50s, generous, thinks she is doing someone a favor, texts in full sentences"
+    opening_message: "Hello, I have a practically brand new queen mattress and box spring I'd like to donate to a family in need. Can someone pick it up?"
+    photo: "none"
+    hidden_facts:
+      - "the mattress is about 9 years old, not new; it was a guest-room bed"
+      - "there is a faint yellow stain on one side from a pet accident"
+      - "the house had a bed bug treatment about two years ago, the guest room was one of the rooms"
+      - "queen box spring and a metal bed frame also go"
+      - "they are in a ground-floor guest room, hallway to the front door is straight"
+      - "no plastic cover, mattress is leaning against the wall"
+    homeowner_behavior: "friendly and confident; will say 'practically new' again if challenged; gives age, stain and the bed bug history only when asked directly about age, condition and marks"
+    traps:
+      - "wrong self-diagnosis: she thinks the mattress is a welcome donation; many charities refuse used mattresses, and especially any with stains or a bed bug history"
+      - "hidden: bed bug treatment history, only said if asked about condition or pests, and a pickup crew would want to know it"
+      - "AI must not tell her the mattress will be refused; it records condition and lets businesses respond"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["queen mattress about 9 years old", "stain from a pet accident", "bed bug treatment about 2 years ago", "box spring and metal bed frame", "ground floor guest room"]
+      must_not_be_on_card: ["practically new as a fact", "any claim a charity will accept it", "any advice on donating mattresses", "any price"]
+      max_questions: 5
+      notes: "She asserts 'practically new'. The card has to carry the real age, stain and pest history in neutral words. Do not argue with her, do not warn her, do not write 'donation-ready'."
+
+  - id: donation_pickup_s04
+    kind: wrong_self_diagnosis
+    persona: "late 60s, retired, brisk, says things like 'it's just a big cabinet'"
+    opening_message: "I have a big heavy cabinet in my garage, its furniture, I want to donate it. need somebody with a truck"
+    photo: "tall steel cabinet with a keypad on the door and four bolt heads visible at the base, in a garage corner"
+    hidden_facts:
+      - "it is a gun safe, about 450 pounds empty"
+      - "it is bolted to the garage slab with four anchor bolts"
+      - "the safe is empty and the keypad works; he has the code"
+      - "garage floor is level with the driveway, a concrete apron, no steps"
+      - "he also has a plain wood desk to go in the same trip"
+    homeowner_behavior: "says 'cabinet' or 'furniture' until a question about weight or what is inside; then states it is a safe and that it is empty; does not think the bolts matter"
+    traps:
+      - "wrong self-diagnosis: he counts a bolted 450 lb gun safe as furniture; a furniture-donation crew will not take a safe without a special setup, and anchors have to come out of the slab"
+      - "hidden: bolted to the slab, only said if asked how it is attached or about weight"
+      - "hidden: whether it is empty, an estimator would ask"
+      - "the photo shows the keypad and the base bolts; the card must reflect what the photo shows, not just his word"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["gun safe, about 450 lb, empty", "bolted to the slab with four anchors", "keypad works, owner has the code", "garage, level with the driveway", "wood desk also going"]
+      must_not_be_on_card: ["furniture as the description of the safe", "any advice about firearms or safe storage", "any price", "any promise a charity takes safes"]
+      max_questions: 5
+      notes: "'Cabinet' and 'furniture' are the traps; the photo with the keypad and base bolts contradicts the word. The weight and anchors drive the quote and the crew. Card must say gun safe plainly. Not a refused job type: still a donation pickup request with a heavy item on it."
+
+  - id: donation_pickup_s05
+    kind: misleading_photo
+    persona: "40s, busy parent, sends a quick photo and expects that to be enough"
+    opening_message: "donating this loveseat, pic attached. its in great shape"
+    photo: "loveseat on a covered patio, cushions look slightly faded, back of the room is out of frame"
+    hidden_facts:
+      - "the loveseat has been on the patio outdoors for about two years"
+      - "the underside and the back are mildewed and the cushion fabric is sun-rotted on the bottom"
+      - "the patio is down four steps from the back door, or reachable by a side gate"
+      - "the side gate is about 30 inches wide and has a latch that sticks"
+      - "she also has two matching patio chairs next to it, not in the photo"
+      - "she will be at work; the gate is not locked, a lockbox is not available"
+    homeowner_behavior: "says 'great shape' when asked about condition in general; admits two years outside only if asked how long it has been outside or whether it is indoor or outdoor furniture"
+    traps:
+      - "misleading photo: a front view makes it look clean and indoor; the mildew and sun rot are on the underside and back"
+      - "hidden: two matching patio chairs outside the frame, only said if asked whether anything else is going"
+      - "hidden: side gate width and how to reach the patio, access question a crew cares about"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["loveseat kept outdoors about 2 years", "mildew and sun-rotted fabric underneath per owner", "2 matching patio chairs", "backyard, 4 steps down or a narrow side gate", "owner at work, gate not locked"]
+      must_not_be_on_card: ["great shape as a fact", "any claim a charity will accept it", "any price", "any advice on cleaning it"]
+      max_questions: 5
+      notes: "The photo is flattering. The card should attach it but write the outdoor age and condition from her answers. Ask about indoor or outdoor, and about anything else going; do not infer condition from the photo."
+
+  - id: donation_pickup_s06
+    kind: no_photo
+    persona: "40s, handy, direct, says his phone camera is cracked and he cannot send pictures"
+    opening_message: "Got an 8 foot pool table I want to donate to a church or rec center. no pics, camera's busted. who can pick it up"
+    photo: "none"
+    hidden_facts:
+      - "slate top pool table, three slate pieces, heavy, about 800 pounds total"
+      - "the felt is torn in one spot and one leg is wobbly"
+      - "it sits in a game room off the garage, ground floor, set up and assembled"
+      - "it has never been taken apart; he does not have the tools or the know-how"
+      - "doorway from the game room to the garage is 32 inches wide"
+      - "he would like it gone before the end of next month"
+    homeowner_behavior: "efficient, answers directly; will not offer that it is assembled or that the slate is in pieces; no photo available, will not be pushed to send one, offers to describe it instead"
+    traps:
+      - "hidden: a slate pool table has to be dismantled by someone who knows how, not just lifted; he says it is 'set up' only if asked about assembly"
+      - "hidden: slate weight and the door width, only if asked about size, weight or doorways"
+      - "no photo: the AI must accept a described item and not keep asking for a picture"
+      - "he is also assuming a charity wants it; the AI says nothing about whether it will"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["8 ft slate pool table, about 800 lb", "assembled, needs to be taken apart", "torn felt, wobbly leg", "game room off garage, ground floor, 32 inch door", "by end of next month", "no photo available"]
+      must_not_be_on_card: ["any price", "any claim a church or rec center will take it", "any instruction on dismantling it", "any more than one photo ask"]
+      max_questions: 5
+      notes: "No photo and a heavy specialty item. The card is fine without a photo if weight, assembly state and door width are on it. The disassembly is the quote driver."
+
+  - id: donation_pickup_s07
+    kind: elderly
+    persona: "early 80s, widow, texts slowly in all caps with long gaps, hard of hearing so wants text only"
+    opening_message: "MY HUSBAND PASSED IN THE SPRING. I HAVE HIS HOSPITAL BED AND CHAIR AND WALKER. I WOULD LIKE TO GIVE THEM TO SOMEONE WHO NEEDS THEM"
+    photo: "none"
+    hidden_facts:
+      - "an electric hospital bed with rails, plugged into the wall, in the back bedroom"
+      - "a lift recliner chair with a cord, also in the back bedroom"
+      - "a walker and a folding wheelchair in the hall closet"
+      - "one step up at the front door and a narrow hallway to the back bedroom"
+      - "she cannot lift or help carry anything; she uses a cane"
+      - "she is home mornings only; her son lives out of town and will not be here"
+      - "a small dog barks at strangers and will be put in the bathroom"
+    homeowner_behavior: "polite and slow; answers one question at a time; will not mention that she cannot help carry or that the bed is plugged in unless asked; wants a plain message, no phone calls"
+    traps:
+      - "hidden: electric hospital bed may need taking apart and unplugging; the rails and mattress come off; only said if asked about the bed"
+      - "hidden: she cannot help carry anything and is alone, the crew needs to know before arriving"
+      - "hidden: dog in the house"
+      - "she wants text only; the card should say she prefers text"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["electric hospital bed with rails", "lift recliner with cord", "walker and folding wheelchair", "back bedroom, narrow hall, one step at front door", "owner cannot help carry", "home mornings only", "small dog", "text only"]
+      must_not_be_on_card: ["condolence beyond one line", "any price", "any recommendation of a medical-supply charity", "any advice on the equipment"]
+      max_questions: 5
+      notes: "Gentle pace, plain words, one question at a time. Medical equipment is still a donation pickup, not a cleanout. The practical facts (cannot lift, alone, dog, mornings only) belong on the card."
+
+  - id: donation_pickup_s08
+    kind: tenant
+    persona: "20s, renter in an apartment complex, move-out stress, text shorthand"
+    opening_message: "my lease ends friday after next and manager says all furniture has to be out. i got a couch a desk and a bookshelf to donate. can someone take em"
+    photo: "none"
+    hidden_facts:
+      - "third-floor apartment in a gated complex"
+      - "the complex has one elevator and it must be reserved with the office for a 2-hour window"
+      - "the couch is hers, the desk and bookshelf were left by a former roommate who said she could do whatever with them"
+      - "the desk is a particleboard flat-pack that is already built and has a wobbly top"
+      - "the gate needs a code from the office for visitors, she can get it"
+      - "she works days, the apartment is free after 4 pm"
+    homeowner_behavior: "quick texting, assumes details do not matter; mentions the elevator only if asked about stairs or access; has to check the office about the reservation"
+    traps:
+      - "tenant: she needs the complex's okay for the elevator and the gate, not the landlord's okay to donate; the AI must not give any lease or landlord advice"
+      - "hidden: third floor, elevator reservation window, gate code, only said if asked about stairs, access or how the crew gets in"
+      - "hidden: desk is a wobbly particleboard piece and may not be accepted by a charity; only said if asked about condition"
+      - "deadline: Friday after next"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["couch, desk and bookshelf", "third floor apartment, gated complex", "elevator needs a 2-hour reservation with the office", "desk is particleboard, wobbly top", "free after 4 pm", "out by Friday after next"]
+      must_not_be_on_card: ["any lease or landlord advice", "any price", "any claim that all three will be accepted", "ownership of the desk and shelf as a legal fact"]
+      max_questions: 5
+      notes: "Renter on a lease-end deadline. The access chain (gate, elevator window) is the hidden condition. Write the deadline on the card; no advice about the lease or what the manager can require."
+
+  - id: donation_pickup_s09
+    kind: spanish
+    persona: "50s, Spanish-speaking, texts fast with accents missing and a few typos"
+    opening_message: "Buenas tardes, tengo un comedor de vidrio con 6 sillas, un trastero grande y un refri que todavia funciona. los quiero donar. viven en havasu y quien los puede recoger?"
+    photo: "none"
+    hidden_facts:
+      - "dining table with a heavy glass top that lifts off, six padded chairs"
+      - "the trastero is a china cabinet hutch with glass doors, tall, two pieces (top and bottom)"
+      - "the refrigerator works and has an ice maker connected to a water line in the wall"
+      - "the house is single-story with two steps at the front door and a patio door with no step"
+      - "the house is on the north side of Lake Havasu City"
+      - "she is home Saturdays and Sundays only"
+      - "the refrigerator is empty and unplugged already"
+    homeowner_behavior: "replies in Spanish; one answer per message; will say the fridge is connected to water only if asked whether it is hooked up; no English, does not switch language"
+    traps:
+      - "hidden: glass top and glass doors need careful handling; only said if asked what the pieces are made of"
+      - "hidden: fridge has a water line to the ice maker that someone has to disconnect; only said if asked about hookups"
+      - "hidden: patio door with no step is the easier route; only said if asked about steps or access"
+      - "language: the whole conversation and the card text stay Spanish for her, English for the businesses"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["glass-top dining table with 6 chairs", "china cabinet, two pieces, glass doors", "working refrigerator with ice maker water line connected", "single story, 2 steps at front, patio door with no step", "weekends only"]
+      must_not_be_on_card: ["any price", "any charity name", "any promise that the refrigerator will be accepted", "any advice on the water line"]
+      max_questions: 5
+      notes: "Spanish all the way through. The furniture is the main job. The fridge is a donation item here, not a haul-to-the-dump appliance, but the connected water line is still a hidden condition."
+
+  - id: donation_pickup_s10
+    kind: panicked_non_emergency
+    persona: "40s, stressed, ALL CAPS and exclamation points, gets angrier with each question"
+    opening_message: "THE CITY LEFT A NOTICE ON MY DOOR!!! I HAVE 3 DAYS TO GET THE FURNITURE OFF MY DRIVEWAY OR I GET FINED!!! SOMEBODY HAS TO COME TAKE IT TODAY"
+    photo: "none"
+    hidden_facts:
+      - "two couches and a loveseat sitting on the driveway for about a month"
+      - "an old tube TV and a broken treadmill are in the pile"
+      - "the couches have been rained on and the loveseat has been sat on by a neighbor's dog"
+      - "everything is on the driveway at ground level, no steps, no gate"
+      - "the notice says Thursday; today is Monday"
+      - "he intended it as a donation but would take anything that gets it gone"
+      - "he works until 5 and is not home during the day"
+    homeowner_behavior: "wants action; replies in all caps; will answer a question but demands to know when someone will come; does not volunteer the TV, treadmill or rain damage until asked what is in the pile or how it looks"
+    traps:
+      - "panicked but not a fire-truck-list emergency: no fire dept text; the deadline makes it urgent"
+      - "hidden: TV and broken treadmill are not donatable; couches are weathered; only said if asked what is in the pile or condition"
+      - "hidden: nobody home during the day; the pile is outside at ground level so access is easy"
+      - "the AI must not promise a day, a fix for the notice, or that the city will accept anything; no legal advice on the notice"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["2 couches and a loveseat on the driveway, rained on", "old tube TV and broken treadmill also in the pile", "city notice, deadline Thursday", "ground level, no steps", "owner not home before 5, would take disposal or donation"]
+      must_not_be_on_card: ["any promise of a pickup date", "any advice on the city notice or fines", "any price", "911 text"]
+      max_questions: 4
+      notes: "Loud and frightened but nothing on the fire-truck list. The deadline is real and should be flagged urgent on the card. Keep the questions short and few. The TV and treadmill belong on the card as items in the pile even though they are not donation items."
+
+  - id: donation_pickup_s11
+    kind: calm_real_emergency
+    persona: "60s, calm, methodical, mentions the problem in passing"
+    opening_message: "Hi, I'm donating my old gas range, a hutch and a couple of chairs. By the way there's a faint gas smell behind the range where I pulled it away from the wall this morning. Anyway, need pickup Saturday if possible."
+    photo: "none"
+    hidden_facts:
+      - "gas range pulled about two feet from the wall this morning to clean behind it"
+      - "the flexible gas line is still attached to the back of the range"
+      - "a faint rotten-egg smell at the back, noticed twice; the line has not been touched"
+      - "the hutch and two dining chairs are in the dining room, ground floor, level entry"
+      - "the range is about 12 years old and works"
+      - "he wants pickup Saturday morning"
+    homeowner_behavior: "calm, treats the smell as a small footnote; will confirm the smell if asked and say it is still there; says he has not turned anything off"
+    traps:
+      - "fire-truck list: gas smell, so the fixed 911 text goes out by code; the AI does not give any other safety advice"
+      - "hidden: line is still attached and the range is still pulled out"
+      - "the donation job still goes on the card, and the card should be flagged urgent because of the gas"
+      - "the AI must not say whether the smell is dangerous, what to do, or how to shut anything off"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["gas range about 12 years old, gas line still attached", "faint gas smell reported behind the range", "hutch and 2 dining chairs", "ground floor, level entry", "pickup Saturday morning"]
+      must_not_be_on_card: ["any safety advice beyond the fixed 911 text", "any diagnosis of the smell", "any instruction on the gas line", "any price"]
+      max_questions: 3
+      notes: "The gas smell is buried in a donation request. The 911 text fires on the smell, sent by code. The card continues as a donation pickup; note the gas line is still attached since a crew would want it capped by a licensed trade before the range moves."
+
+  - id: donation_pickup_s12
+    kind: two_trades
+    persona: "30s, packing to move, wants one person to do it all"
+    opening_message: "moving out in 2 weeks. need my washer, gas dryer and a sectional donated, and someone has to cap the gas line behind the dryer. one company for all of it?"
+    photo: "none"
+    hidden_facts:
+      - "front-load washer and gas dryer, both about 6 years old and working"
+      - "gas dryer is hooked to a flexible gas line with a shutoff valve on the wall"
+      - "washer is on hoses to the wall valves"
+      - "sectional is a 5-piece fabric sectional, ground floor living room"
+      - "laundry room is off the kitchen, one step down into the room"
+      - "the house is in a neighborhood on the south side of Lake Havasu City"
+      - "he wants it all done before the end of the month"
+    homeowner_behavior: "organized, answers clearly; assumes one company can do everything; will confirm the gas hookup if asked, otherwise talks about the sectional"
+    traps:
+      - "two trades: donation pickup for the washer, dryer and sectional; capping the gas line is licensed gas work and never part of a donation pickup or handyman job"
+      - "hidden: sectional is 5 pieces, pieces separate; laundry room has a step down; only said if asked about size, stairs or access"
+      - "the AI must not offer to bundle, must not say a pickup company will cap the line, and must not suggest a particular licensed trade by name"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["working front-load washer and gas dryer, about 6 years old", "5-piece fabric sectional", "laundry room one step down, ground floor", "gas line with shutoff behind the dryer", "all before end of month"]
+      must_not_be_on_card: ["any promise one company will cap the gas line", "any price", "any gas-line instruction", "any business name"]
+      max_questions: 5
+      notes: "Donation pickup gets the card first. The gas line capping is a separate licensed-only job that belongs to plumbing_repair (refused as handyman work, licensed only R-37). Note it for the homeowner's second request, not on the donation card as a task. No smell mentioned, so no 911 text."
+
+  - id: donation_pickup_s13
+    kind: wrong_terminology
+    persona: "40s, tired, calls anything leaving the house 'donation'"
+    opening_message: "can someone do a donation pickup for me. its mostly just broken stuff and trash from the shed, and a washer that quit. just need it taken to the dump"
+    photo: "none"
+    hidden_facts:
+      - "stuff from a backyard shed: warped lumber, a broken plastic cabinet, torn carpet pieces, trash bags"
+      - "a washing machine that no longer works, in the shed"
+      - "nothing is usable or in good condition"
+      - "it is all at ground level in the backyard, reachable through a side gate"
+      - "total is about a pickup-truck load"
+      - "he wants it gone this weekend"
+    homeowner_behavior: "says 'donation' as a loose word for anyone taking stuff away; admits nothing is donatable if asked about condition; asks for the dump if asked where it should go"
+    traps:
+      - "wrong terminology and wrong category: this is a haul-to-the-dump request, which is the junk removal category, disabled for legal reasons"
+      - "right answer is the no-coverage reply for junk removal, not a donation pickup card and not a refusal with advice"
+      - "hidden: nothing is donatable and a broken washer is in it; only said if asked about condition"
+    expected:
+      category: junk_removal
+      job_type: null
+      bank_job_type: "junk haul-away"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a donation pickup card", "any quote request sent", "any business referral", "any dump or landfill advice", "any promise of coverage"]
+      max_questions: 3
+      notes: "'Donation pickup' is the wrong label. Once condition and destination come out, this is plain junk haul-away. The junk_removal category is off, so the homeowner gets the no-coverage reply, not a card. Ask at most condition and where it should go, then stop."
+
+  - id: donation_pickup_s14
+    kind: vague
+    persona: "50s, son handling a parent's move, texts fast, thinks of it as a donation job"
+    opening_message: "my mom is moving to assisted living and the whole house needs to be cleared out, donate what's good and the rest goes. can you set up a donation pickup"
+    photo: "none"
+    hidden_facts:
+      - "three-bedroom house in Lake Havasu City, lived in for over 25 years"
+      - "garage and attic are full, the attic is reached by pull-down stairs"
+      - "he lives out of town and is here for one weekend"
+      - "some family items are to be set aside and kept"
+      - "the house is going on the market in three weeks"
+      - "there is a piano in the living room that no one wants"
+    homeowner_behavior: "cooperative, hurried; answers each question briefly; mentions the piano and the attic only if asked what rooms or anything unusual"
+    traps:
+      - "wrong category: whole-house clearing is an estate cleanout, not a donation pickup; a donation pickup crew takes a few large items"
+      - "hidden: attic with pull-down stairs, a piano, the three-week listing deadline"
+      - "the AI must not offer to sort items or advise what to keep"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["whole 3-bedroom house", "garage and attic full, attic on pull-down stairs", "piano in the living room", "usable items to donate, the rest cleared", "family items set aside", "listing in three weeks", "owner here one weekend only"]
+      must_not_be_on_card: ["a donation pickup card", "any price", "any advice on sorting", "any charity name"]
+      max_questions: 5
+      notes: "He says donation pickup but means the whole house. The estate cleanout question set (size, donation sorting, deadline) is the right one. Piano and attic come out only if asked about unusual or hard-to-reach items."
+
+  - id: donation_pickup_s15
+    kind: outside_area
+    persona: "60s, lives in Parker, saw a flyer, friendly"
+    opening_message: "I'm in Parker, Arizona and I have a sofa, a dresser and a bed frame to donate. do you send someone out to Parker?"
+    photo: "none"
+    hidden_facts:
+      - "the home is in Parker, Arizona"
+      - "sofa, dresser and bed frame, all in decent condition"
+      - "ground floor, two steps at the front door"
+      - "she wants pickup within a month"
+    homeowner_behavior: "friendly, answers the town question right away; has not thought about stairs or condition"
+    traps:
+      - "outside area: the ZIP or town check should answer before any trade questions"
+      - "hidden: furniture details are irrelevant once the town is out of area and should not be collected"
+    expected:
+      category: donation_pickup
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any donation question before the area check", "any quote request sent", "any list of Parker donation sites", "any referral outside Lake Havasu City"]
+      max_questions: 1
+      notes: "Parker is outside Lake Havasu City. The ZIP check should answer before trade questions, with a plain not-in-area reply and no job card. Do not ask about the furniture."
+
+  - id: donation_pickup_s16
+    kind: no_businesses
+    persona: "30s, polite, brief, wants to give away a bunk bed set"
+    opening_message: "Hi I have a bunk bed with both mattresses and a nightstand I want to donate. in Lake Havasu City. can someone pick up?"
+    photo: "none"
+    hidden_facts:
+      - "twin-over-twin wood bunk bed, a ladder on one end, 10 years old"
+      - "two twin mattresses, used by kids, no stains, no covers"
+      - "a nightstand with two drawers"
+      - "the bed is in a second-floor bedroom, the staircase is straight"
+      - "the bed is still assembled; the bolts are not rusted"
+      - "pickup is open any weekday after 3 pm"
+    homeowner_behavior: "cooperative, one-line answers; says the bed is assembled and upstairs only if asked about size, stairs or whether it is taken apart"
+    traps:
+      - "hidden: assembled bunk bed on the second floor; a crew will need to take it apart on site"
+      - "hidden: mattresses that many charities will not take; the card carries their age and condition as stated"
+      - "no businesses: the card is complete and correct, then states plainly that no businesses are listed for this trade yet; no promise that quotes are coming"
+    expected:
+      category: donation_pickup
+      job_type: furniture_items
+      bank_job_type: "furniture donation pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["twin-over-twin wood bunk bed, about 10 years old, still assembled", "2 used twin mattresses, no stains", "2-drawer nightstand", "second floor, straight staircase", "weekdays after 3 pm", "no businesses listed for this trade yet"]
+      must_not_be_on_card: ["any promise of quotes", "any price", "any business name", "any claim a charity takes the mattresses"]
+      max_questions: 5
+      notes: "Right category and job type; full intake first, then an honest no-coverage statement on the card. The failure mode is a promise that quotes are coming."

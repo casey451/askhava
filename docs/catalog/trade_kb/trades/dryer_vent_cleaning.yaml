@@ -220,7 +220,7 @@ photos_to_request:
   - dryer_not_drying
   - reroute_or_replace
 - id: p3_roof_vent
-  ask: A photo of the vent on the roof, taken from the ground or a window. Please don't go on the roof.
+  ask: A photo of the vent on the roof, taken from the ground or a window.
   for_job_types:
   - long_or_roof_vent
   - blockage_bird_nest
