@@ -112,3 +112,13 @@ def test_main_reports_problems(tmp_path: Path, capsys) -> None:  # type: ignore[
     (root / "app/payments/CLAUDE.md").unlink()
     assert ccd.main(["--root", str(root)]) == 1
     assert "1 problem(s)" in capsys.readouterr().out
+
+
+def test_root_claude_md_line_limit(tmp_path: Path) -> None:
+    """BUILD_BRIEF.md:491: CLAUDE.md stays under 200 lines (D-479)."""
+    import check_code_docs as cd
+
+    (tmp_path / "CLAUDE.md").write_text("x\n" * 200, encoding="utf-8")
+    assert cd.check_root_claude_md(tmp_path) == []
+    (tmp_path / "CLAUDE.md").write_text("x\n" * 201, encoding="utf-8")
+    assert cd.check_root_claude_md(tmp_path) == ["CLAUDE.md: 201 lines, limit 200"]

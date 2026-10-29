@@ -1,0 +1,18 @@
+# Code owners (D-483): a pull request that touches any of these paths needs Casey's review before
+# it can merge, once the protect-main ruleset requires code-owner review. Ordinary build-task pull
+# requests touch none of them and merge on their own.
+/BUILD_BRIEF.md          @casey451
+/CLAUDE.md               @casey451
+/docs/constitution.md    @casey451
+/docs/sources.md         @casey451
+/docs/spec/              @casey451
+/docs/test-design.md     @casey451
+/docs/threat-model.md    @casey451
+/docs/code-docs.md       @casey451
+/docs/governance.md      @casey451
+/docs/catalog/           @casey451
+/kit/                    @casey451
+/scripts/                @casey451
+/.github/                @casey451
+/.claude/                @casey451
+/runner/                 @casey451

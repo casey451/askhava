@@ -209,12 +209,12 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 - the runner does **one task per session, one session at a time**. There's no parallel building, so there are no state races or merge conflicts;
 - parallelism exists only inside a session, as read-only review subagents.
 
-**What starts a runner session:**
-1. **Primary:** the scheduled task's **GitHub trigger** on `pull_request.closed` where the PR is merged into `main`. Each merge starts the next task.
-2. **Safety net:** the same task's **hourly schedule**. If a runner finds a live lease or nothing eligible, it exits in under a minute.
-3. **Backup:** `.github/workflows/backup-runner.yml` runs hourly through the Claude Code GitHub Action with `CLAUDE_CODE_OAUTH_TOKEN` (subscription, not pay-per-use).
-   - **When it runs:** it exits at once unless `kit/state.json` has `"backup_runner": "on"`. The runner sets that flag (and sends an outbox message saying so) only if the scheduled task fails to start twice in K9 or later.
-   - **Pushes:** it leaves `github_token` unset, so it pushes as the Claude GitHub App, and its pushes start workflows normally.
+**What starts a runner session (D-483 swapped the first and third roles so the build acts under its own GitHub identity):**
+1. **Primary:** `.github/workflows/backup-runner.yml` runs hourly through the Claude Code GitHub Action with `CLAUDE_CODE_OAUTH_TOKEN` (subscription, not pay-per-use). It leaves `github_token` unset, so it pushes and comments as the Claude GitHub App, never as Casey; that is what makes the owner-only inbox filter and the code-owner review real. T174 sets `"backup_runner": "on"` in `kit/state.json` once the secret exists and the rehearsal has run under it.
+2. **Safety net:** the scheduled task's **hourly schedule** (and its GitHub trigger on `pull_request.closed`, merged into `main`, where it exists). If a runner finds a live lease or nothing eligible, it exits in under a minute. Until T174 flips the flag, this is the only runner, as before.
+3. Both run the same `runner/` code (T174); which one started a cycle is recorded in `kit/state.json`.
+   - **Pushes** from the Actions runner start workflows normally, because they come from the App and not from `GITHUB_TOKEN`.
+   - **Both** write `runner_sha` and the starter's name into every state commit (T174).
 
 **State and lease:**
 - `kit/state.json`, STATUS.md and PROGRESS.md live on the `claude/kit-state` branch;

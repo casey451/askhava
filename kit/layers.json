@@ -1,0 +1,135 @@
+{
+ "schema": 1,
+ "note": "The dependency layer table of docs/architecture.md section 4 in machine-readable form (D-479). T009's architecture test reads this file, not the document, so the oracle cannot move with the prose. Changes only in a harness task or a plan change with a decision entry.",
+ "layers": [
+  [
+   "core"
+  ],
+  [
+   "ops",
+   "adapters"
+  ],
+  [
+   "catalog",
+   "privacy"
+  ],
+  [
+   "ai",
+   "messaging",
+   "payments",
+   "licensing"
+  ],
+  [
+   "businesses",
+   "jobs"
+  ],
+  [
+   "calls",
+   "quotes"
+  ],
+  [
+   "picks"
+  ],
+  [
+   "intake"
+  ],
+  [
+   "recovery",
+   "portals",
+   "site"
+  ]
+ ],
+ "calls": {
+  "ops": [],
+  "adapters": [],
+  "catalog": [
+   "ops"
+  ],
+  "privacy": [
+   "ops"
+  ],
+  "ai": [
+   "adapters",
+   "privacy",
+   "ops"
+  ],
+  "messaging": [
+   "adapters",
+   "privacy",
+   "catalog",
+   "ops"
+  ],
+  "payments": [
+   "adapters",
+   "catalog",
+   "ops"
+  ],
+  "licensing": [
+   "adapters",
+   "catalog",
+   "ops"
+  ],
+  "businesses": [
+   "licensing",
+   "payments",
+   "messaging",
+   "catalog",
+   "adapters",
+   "ops"
+  ],
+  "jobs": [
+   "messaging",
+   "catalog",
+   "ops"
+  ],
+  "calls": [
+   "businesses",
+   "privacy",
+   "messaging",
+   "adapters",
+   "ops"
+  ],
+  "quotes": [
+   "jobs",
+   "businesses",
+   "licensing",
+   "catalog",
+   "ai",
+   "privacy",
+   "messaging",
+   "ops"
+  ],
+  "picks": [
+   "quotes",
+   "jobs",
+   "payments",
+   "calls",
+   "businesses",
+   "licensing",
+   "privacy",
+   "messaging",
+   "adapters",
+   "ops"
+  ],
+  "intake": [
+   "picks",
+   "quotes",
+   "jobs",
+   "businesses",
+   "ai",
+   "privacy",
+   "catalog",
+   "messaging",
+   "ops"
+  ],
+  "recovery": "layers 0-7",
+  "portals": "layers 0-7",
+  "site": [
+   "intake",
+   "catalog"
+  ]
+ },
+ "always_allowed": [
+  "core"
+ ]
+}

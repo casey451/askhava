@@ -340,3 +340,21 @@ def test_real_shape_gate_p_holds_t_tasks_but_not_kit_tasks() -> None:
     assert s["build_hold"] and st.eligible(s, NOW) == ["K9"]
     done = st.with_task(s, "K9", status=st.DONE)
     assert st.eligible(done, NOW) == []
+
+
+def test_negated_or_long_answers_never_clear_a_gate() -> None:
+    """D-479: a go is a short, unnegated reply; a negation or an essay keeps the gate closed."""
+    live = {"id": "T145", "type": "gate", "gate": {"resume": "Casey says 'go live'"}}
+    for text in ("don't go live yet", "do NOT go live", "wait, go live next week", "no go live"):
+        assert not outbox.clears(live, text), text
+    assert outbox.clears(live, "Go live!")
+    page = {"id": "T128", "type": "gate", "gate": {"resume": "reply go"}}
+    assert not outbox.clears(page, "don't go yet")
+    assert outbox.clears(page, "go")
+    s = st.new_state()
+    s = outbox.apply_gate_p_answer(s, "I have NOT approved to build yet")
+    assert st.status(s, outbox.GATE_P) != st.DONE
+    s = outbox.apply_gate_p_answer(s, "Approved to build.")
+    assert st.status(s, outbox.GATE_P) == st.DONE
+    long_reply = "approved to build " + "word " * 12
+    assert st.status(outbox.apply_gate_p_answer(st.new_state(), long_reply), outbox.GATE_P) != st.DONE

@@ -50,7 +50,20 @@
       "Bash(wget *verify.twilio.com*)",
       "Bash(wget *api.resend.com*)",
       "Bash(wget *api.lob.com*)",
-      "Bash(wget *api.anthropic.com*)"
+      "Bash(wget *api.anthropic.com*)",
+      "Bash(gh issue comment*)",
+      "Bash(gh issue close*)",
+      "Bash(gh issue create*)",
+      "Bash(gh api *issues/*/comments*)",
+      "Bash(*api.github.com/repos/*/issues/*/comments*)",
+      "Bash(gh pr merge*)",
+      "Bash(gh pr review*)",
+      "Bash(gh api *statuses/*)",
+      "Bash(gh api *check-runs*)",
+      "Bash(*api.github.com/repos/*/statuses/*)",
+      "Bash(*api.github.com/repos/*/check-runs*)",
+      "Bash(gh api *rulesets*)",
+      "Bash(gh api *git/refs/heads/claude/kit-state*)"
     ]
   }
 }

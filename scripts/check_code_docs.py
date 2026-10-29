@@ -120,8 +120,28 @@ def check_trace(root: Path) -> list[str]:
     return problems
 
 
+ROOT_CLAUDE_MD_MAX_LINES = 200  # BUILD_BRIEF.md:491
+
+
+def check_root_claude_md(root: Path) -> list[str]:
+    """The session rules file stays short enough to be read every session (BUILD_BRIEF.md:491, D-479)."""
+    path = root / "CLAUDE.md"
+    if not path.is_file():
+        return []  # a fixture tree; the real repository always has one
+    count = len(path.read_text(encoding="utf-8").splitlines())
+    if count > ROOT_CLAUDE_MD_MAX_LINES:
+        return [f"CLAUDE.md: {count} lines, limit {ROOT_CLAUDE_MD_MAX_LINES}"]
+    return []
+
+
 def run(root: Path) -> list[str]:
-    return check_crates(root) + check_headers(root) + check_references(root, spec_ids(root)) + check_trace(root)
+    return (
+        check_root_claude_md(root)
+        + check_crates(root)
+        + check_headers(root)
+        + check_references(root, spec_ids(root))
+        + check_trace(root)
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

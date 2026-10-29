@@ -33,6 +33,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 200
 
       - name: Sources unchanged (fingerprint)
         run: |
@@ -53,6 +54,14 @@ jobs:
         run: |
           python3 scripts/pii_scan.py
 
+      - name: Plan lock and change rules (docs/governance.md)
+        env:
+          HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          git fetch --no-tags --depth=200 origin main
+          python3 scripts/check_plan_lock.py
+          python3 scripts/check_pr_change.py --base origin/main --branch "$HEAD_BRANCH"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -62,12 +71,28 @@ jobs:
           python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
           python3 -m pytest tests -q -p no:cacheprovider
 
+      - name: A check that exists on main cannot be skipped by deleting its inputs (D-479)
+        run: |
+          for f in Cargo.toml Cargo.lock package-lock.json rust-toolchain.toml deny.toml tests/coverage_floor.json; do
+            if git cat-file -e "origin/main:$f" 2>/dev/null; then
+              test -f "$f" || { echo "$f exists on main but not here: a required check would be skipped"; exit 1; }
+            fi
+          done
+
+      - name: Rust source rules (no allow without reason, no wildcard status arms, no TODO or dbg)
+        run: |
+          python3 scripts/check_rust_rules.py
+
+      - name: Approved crates only (kit/allowed_crates.txt, D-479)
+        run: |
+          python3 scripts/check_crates.py
+
       - name: Rust format, lint and tests (once the workspace exists, D-453)
         run: |
           if [ -f Cargo.toml ]; then
             rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
             cargo fmt --all --check
-            cargo clippy --workspace --all-targets --locked -- -D warnings
+            cargo clippy --workspace --all-targets --locked -- -D warnings -F clippy::allow_attributes_without_reason
             # Built alone, no test crate turns on a `testing` feature, so only each crate's api is public.
             cargo build -p server --locked
             cargo test --workspace --locked

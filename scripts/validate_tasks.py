@@ -75,6 +75,8 @@ PROTECTED = (
     "scripts/validate_tasks.py",
     "scripts/trace_spec.py",
     "tests/test_validate_tasks.py",
+    "kit/layers.json",  # the machine-readable layer table (D-479)
+    "kit/allowed_crates.txt",  # the approved-crate list (D-479)
 )
 # Paths K7 to K9 create; a task may read them before any task in this file makes them.
 KIT_OUTPUTS = (
@@ -121,7 +123,7 @@ CRATE_MODULES = (
     "site",
     "server",
 )
-TEST_CRATES = ("unit", "property", "integration", "security", "recovery", "fixtures")
+TEST_CRATES = ("integration", "security", "recovery", "fixtures")  # unit and property tests are in-crate (D-481)
 ALLOWED_SHARED = frozenset(
     {
         "docs/architecture.md",
@@ -133,9 +135,11 @@ ALLOWED_SHARED = frozenset(
         ".sqlx/",
         "package.json",
         "package-lock.json",
+        "kit/plan.lock",  # the blueprint fingerprint, rewritten by any PR that changes a locked file (D-479)
     }
     | {f"app/{m}/Cargo.toml" for m in CRATE_MODULES}
     | {f"app/{m}/CLAUDE.md" for m in CRATE_MODULES}  # crate docs any task updates (D-473)
+    | {f"app/{m}/src/tests/mod.rs" for m in CRATE_MODULES}  # in-crate test module list, one `mod` line per task (D-481)
     | {f"tests/{layer}/Cargo.toml" for layer in TEST_CRATES}
 )
 JOURNEYS = ("J1", "J2", "J3", "J4")
@@ -299,10 +303,18 @@ def check_models(task: Task) -> list[str]:
             f"{where(task)}: money, privacy, security, recovery and harness tasks"
             " need an Opus reviewer"
         )
-    if areas & OPUS_REVIEW_AREAS and task["model"] != OPUS:
+    # The Opus *model* is required for money, privacy, security and recovery application code
+    # (owned paths under the sensitive prefixes); docs, harness, audit and test-only work in those
+    # areas needs the Opus *reviewer* above, and Sonnet may write it (D-483 narrows BUILD_BRIEF.md:498).
+    owns_app_code = any(o.startswith(("app/", "migrations/")) for o in task["owns"])
+    writes_sensitive_code = task["type"] == "build" and owns_app_code and bool(
+        derived_areas(task) or areas & {"money", "privacy", "recovery"}
+    )
+    if writes_sensitive_code and task["model"] != OPUS:
         errors.append(
-            f"{where(task)}: money, privacy, security and recovery work runs on Opus"
-            " (BUILD_BRIEF.md:498)"
+            f"{where(task)}: money, privacy, security and recovery application code"
+            " runs on Opus (BUILD_BRIEF.md:498); test-only, docs and harness work in those areas may"
+            " run on Sonnet with an Opus reviewer (D-483)"
         )
     if task["effort"] == "high" and task["model"] != OPUS:
         errors.append(f"{where(task)}: high effort is only for Opus tasks")
@@ -521,8 +533,10 @@ def td_entries(root: Path) -> list[str]:
     return [m.group("id") for line in lines if (m := TD_ROW.match(line))]
 
 
-def check_coverage(graph: Graph, req_ids: set[str], td_ids: set[str]) -> list[str]:
-    """Every requirement, TD entry and journey has a task; tasks name only known IDs."""
+def check_coverage(
+    graph: Graph, req_ids: set[str], td_ids: set[str], withdrawn: set[str] = frozenset()
+) -> list[str]:
+    """Every live requirement, TD entry and journey has a task; tasks name only known, live IDs."""
     errors: list[str] = []
     covered_reqs: set[str] = set()
     covered_tests: set[str] = set()
@@ -532,7 +546,12 @@ def check_coverage(graph: Graph, req_ids: set[str], td_ids: set[str]) -> list[st
         errors += [
             f"{where(task)}: unknown requirement {r}"
             for r in task["requirements"]
-            if r not in req_ids
+            if r not in req_ids and r not in withdrawn
+        ]
+        errors += [
+            f"{where(task)}: withdrawn requirement {r} (drop it from the task, D-479)"
+            for r in task["requirements"]
+            if r in withdrawn
         ]
         errors += [
             f"{where(task)}: unknown test entry {t}"
@@ -708,12 +727,13 @@ def run(root: Path, tasks_path: Path | None = None) -> Report:
     if graph_errors:
         return Report(tasks, 0, 0, graph_errors)
     spec = trace_spec.run(root)
-    req_ids = {r.req_id for r in spec.requirements}
+    withdrawn = {r.req_id for r in spec.requirements if r.text.startswith("Withdrawn")}
+    req_ids = {r.req_id for r in spec.requirements} - withdrawn
     td_ids = set(td_entries(root))
     errors += [f"spec: {e}" for e in spec.errors]
     errors += [e for t in tasks for e in check_path_rules(t)]
     errors += check_ownership(graph) + check_reads(root, graph)
-    errors += check_coverage(graph, req_ids, td_ids) + check_references(root, graph)
+    errors += check_coverage(graph, req_ids, td_ids, withdrawn) + check_references(root, graph)
     errors += check_gate_order(graph) + check_stage_order(graph)
     return Report(tasks, len(req_ids), len(td_ids), errors)
 

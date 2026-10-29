@@ -47,12 +47,29 @@ def resume_phrase(gate: dict[str, Any]) -> str:
     return quoted.group(1).lower() if quoted else ""
 
 
+NEGATIONS = ("not", "don't", "dont", "do not", "never", "no", "isn't", "wait", "yet", "hold", "stop", "cancel")
+MAX_ANSWER_WORDS = 12  # a go is a short reply; anything longer is read as discussion, never as the go
+
+
+def _plain(text: str) -> str:
+    return " ".join(re.sub(r"[^a-z0-9' ]+", " ", text.lower()).split())
+
+
 def clears(gate: dict[str, Any], text: str) -> bool:
+    """True only for a short, unnegated reply carrying the gate's phrase (D-479).
+
+    "Accounts DONE, thanks" clears the account checkpoint; "I have NOT approved to build yet"
+    and "don't go live yet" clear nothing: a negation anywhere in the reply, or a reply longer
+    than MAX_ANSWER_WORDS, keeps the gate closed and the answer is only recorded.
+    """
+    plain = _plain(text)
+    words = plain.split()
+    if len(words) > MAX_ANSWER_WORDS or any(re.search(rf"\b{re.escape(n)}\b", plain) for n in NEGATIONS):
+        return False
     phrase = resume_phrase(gate)
-    lower = text.lower()
     if phrase:
-        return phrase in lower
-    return any(re.search(rf"\b{w}\b", lower) for w in DEFAULT_WORDS)
+        return _plain(phrase) in plain
+    return any(w in words for w in DEFAULT_WORDS)
 
 
 def apply_owner_answer(state: State, gate: dict[str, Any], text: str, now: datetime) -> State:
@@ -74,7 +91,7 @@ def hold_for_gate_p(state: State, outbox_dir: Path) -> State:
 
 def apply_gate_p_answer(state: State, text: str) -> State:
     out = with_task(state, GATE_P, answer=text)
-    if GATE_P_PHRASE in text.lower():
+    if clears({"gate": {"resume": f"'{GATE_P_PHRASE}'"}}, text):
         out = with_task(out, GATE_P, status="DONE")
         out["build_hold"] = None
     return out

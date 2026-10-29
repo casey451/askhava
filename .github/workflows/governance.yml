@@ -1,0 +1,56 @@
+# Required check "Governance" (docs/governance.md, D-479). Runs from main's copy of this
+# workflow and main's copy of the scripts, never from the branch under test, so a pull
+# request cannot edit the rules it is checked against (workflow_run always uses the
+# default branch's workflow file). The check attaches to the triggering run's head SHA.
+name: governance
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+permissions:
+  contents: read
+  checks: write
+jobs:
+  governance:
+    name: Governance
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.head_branch != 'claude/kit-state'
+    env:
+      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+      HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
+    steps:
+      - name: Check out main (the rules)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+          path: rules
+
+      - name: Refuse heads from forks
+        run: |
+          test "$HEAD_REPO" = "$GITHUB_REPOSITORY" || { echo "head from another repository"; exit 1; }
+
+      - name: Fetch the head under test into a worktree
+        run: |
+          cd rules
+          git fetch --no-tags origin "$HEAD_SHA"
+          git worktree add ../head "$HEAD_SHA"
+
+      - name: Run main's rules against the head
+        run: |
+          cd head
+          python3 ../rules/scripts/check_plan_lock.py --root .
+          python3 ../rules/scripts/check_pr_change.py --root . --base origin/main --branch "$HEAD_BRANCH"
+
+      - name: Publish the result on the head commit
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ job.status }}
+        run: |
+          conclusion=$([ "$RESULT" = "success" ] && echo success || echo failure)
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/check-runs" \
+            -f name=Governance -f head_sha="$HEAD_SHA" -f status=completed -f conclusion="$conclusion" \
+            -f "output[title]=Governance" -f "output[summary]=main's plan lock and change rules run against $HEAD_SHA: $conclusion"

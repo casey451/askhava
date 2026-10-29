@@ -5,7 +5,7 @@ on:
     - cron: "17 9 * * *"
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
@@ -13,3 +13,45 @@ jobs:
     uses: ./.github/workflows/twin.yml
   a11y:
     uses: ./.github/workflows/a11y.yml
+  record:
+    # Writes kit/nightly.json to claude/kit-state so the runner and scripts/progress.py can
+    # see whether the last full run on main was green, and on which commit (docs/governance.md).
+    name: record
+    needs: [ci, twin, a11y]
+    if: always()
+    runs-on: ubuntu-latest
+    concurrency:
+      group: kit-state-writer
+      cancel-in-progress: false
+    env:
+      CI_RESULT: ${{ needs.ci.result }}
+      TWIN_RESULT: ${{ needs.twin.result }}
+      A11Y_RESULT: ${{ needs.a11y.result }}
+      TESTED_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/kit-state
+      - name: Record the result
+        run: |
+          python3 - <<'PY'
+          import json, os, datetime
+          results = {k: os.environ[v] for k, v in (("ci", "CI_RESULT"), ("twin", "TWIN_RESULT"), ("a11y", "A11Y_RESULT"))}
+          conclusion = "success" if all(r == "success" for r in results.values()) else "failure"
+          stamp = {"schema": 1, "conclusion": conclusion, "results": results,
+                   "ran_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                   "sha": os.environ["TESTED_SHA"]}
+          os.makedirs("kit", exist_ok=True)
+          json.dump(stamp, open("kit/nightly.json", "w"), indent=1)
+          print(stamp)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kit/nightly.json
+          git diff --cached --quiet && exit 0
+          git commit -m "nightly-main: $CI_RESULT/$TWIN_RESULT/$A11Y_RESULT on ${TESTED_SHA:0:7}"
+          for i in 1 2 3 4 5; do
+            git push origin HEAD:claude/kit-state && exit 0
+            git fetch origin claude/kit-state && git rebase origin/claude/kit-state
+          done
+          exit 1

@@ -24,7 +24,7 @@ Files you read (do not change):
 
 ${reads}
 
-Shared paths any task may edit: `docs/architecture.md`, `docs/decisions.md`, `docs/for-casey-review.md`, `app/server/src/main.rs`, the workspace `Cargo.toml` and `Cargo.lock`, every crate's `Cargo.toml` (to add an allowed path dependency or the `testing` feature), every crate's `CLAUDE.md` (its module guide, `docs/code-docs.md`), `.sqlx/` (offline query data from `cargo sqlx prepare --workspace`), `package.json` and `package-lock.json`.
+Shared paths any task may edit: `docs/architecture.md`, `docs/decisions.md`, `docs/for-casey-review.md`, `app/server/src/main.rs`, the workspace `Cargo.toml` and `Cargo.lock`, every crate's `Cargo.toml` (to add an allowed path dependency or the `testing` feature), every crate's `CLAUDE.md` (its module guide, `docs/code-docs.md`), `.sqlx/` (offline query data from `cargo sqlx prepare --workspace`), `package.json`, `package-lock.json` and `kit/plan.lock` (rewrite it with `python3 scripts/check_plan_lock.py --write` only when your task owns a locked file and changes it, together with a `docs/decisions.md` entry; `docs/governance.md`).
 
 Size budget: at most ${budget_files} files, ${budget_lines} changed lines, ${budget_context}% of the context window. Keep the pull request small.
 
@@ -51,7 +51,7 @@ ${cites}
 - Fake data only in code, tests, fixtures, logs and screenshots. No real names, phones, addresses or photos.
 - Never paste, print, log, commit or store secrets or keys.
 - Never weaken a test to make it pass. A wrong test changes only through a spec change logged in `docs/decisions.md`.
-- Protected paths (`.github/`, `.claude/`, `runner/`, `stand_ins/`, `sources/`, `twin/`, tests you do not own) change only in a `harness` task. This task is type `${type}`.
+- Protected paths (`.github/`, `.claude/`, `runner/`, `stand_ins/`, `sources/`, `twin/`, tests you do not own) change only in a `harness` task. This task is type `${type}`. The locked blueprint (`docs/governance.md` section 1: the brief, the constitution, the spec, the test design, the task graph, the scripts and sections 3 to 6 of `docs/architecture.md`) is never changed to make a task pass; if it is wrong, say so in your report.
 - No sign-ups, purchases, outreach, publishing, live messages, live charges or production deploys. Never use live keys, live phone numbers or the live Railway project.
 - No TODOs, commented-out code or unused code. Functions under 50 lines.
 - Wording: call the fee "introduction fee by job size" every time. Use no ranking or endorsement wording; `docs/constitution.md` lists the banned words. Fees are $$25 / $$75 / $$199; the recurring rule is 4 months; the brand is Ask Hava.

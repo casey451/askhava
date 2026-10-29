@@ -14,10 +14,13 @@ permissions:
 jobs:
   inbox:
     name: inbox
+    # D-479: a comment posted through a GitHub App (a Claude session acting under the owner's
+    # installation) is never read as Casey's answer; only a comment he types himself counts.
     if: >-
       contains(github.event.issue.labels.*.name, 'owner') &&
       github.event.sender.login == github.repository_owner &&
-      (github.event_name == 'issues' || github.event.issue.pull_request == null)
+      (github.event_name == 'issues' || github.event.issue.pull_request == null) &&
+      (github.event_name == 'issues' || github.event.comment.performed_via_github_app == null)
     runs-on: ubuntu-latest
     env:
       EVENT_NAME: ${{ github.event_name }}

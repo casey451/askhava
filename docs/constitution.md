@@ -86,7 +86,7 @@ The full table is `docs/sources.md:38`–`docs/sources.md:53`. The ones most lik
 | 6 | **Gate C** | After the business accounts; Casey enters live keys and says "go live"; real-phone rehearsal on his phone | `BUILD_BRIEF.md:203`, `BUILD_BRIEF.md:551` |
 | 7 | **First live charge** | Needs Casey's go, even after Gate C. No real charge before Gate C | `BUILD_BRIEF.md:203`; `sources/02_build_plan/Build_Plan.md:244` |
 
-- **Gate A is removed**; on K9's pass the runner goes straight to build tasks. (`BUILD_BRIEF.md:538`)
+- **Gate A is removed and replaced by Gate P**: no build task is claimed until Casey has replied `approved to build` after the hand-run test and the re-plan pass, and `docs/build-readiness.md` says READY (`BUILD_BRIEF.md:538`, D-455, D-479). It is stop 0 of the table above.
 - **Finished:** when Phase 2 is done (all of §1 except Gate B and Gate C), one outbox message "Finished: ready for your review" links the handover pack, `docs/for-casey-review.md` and the Gate B script. (`BUILD_BRIEF.md:553`)
 - **Live deploys:** the live service has auto-deploy off and Casey presses Deploy at Gate C. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:305`)
 - **First real AI key use** is from the Railway test project in Phase 2, never earlier. (`BUILD_BRIEF.md:194`; stand-in AI during the build, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:262`)
@@ -182,14 +182,14 @@ Gate items and other pre-launch requirements:
 **Quiet hours**
 - No non-urgent texts outside 8 a.m.–8 p.m. in the **stricter** of Arizona time and the recipient's area-code zone (urgent safety texts excepted). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:184`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:121`; `BUILD_BRIEF.md:446`) The v9.3 9 p.m. start is superseded.
 - Other night exceptions from v9.3 still apply where the changes file is silent: STOP and HELP replies, pick codes, and direct replies within 15 minutes of the person's own text. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:264`) Retries follow the same rules. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:200`)
-- Texts held overnight are dropped if the job closed. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:212`)
+- Texts held overnight are dropped if the job closed, except the text that announces the close itself, sent at the next allowed window (QH-007, D-461). (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:212`)
 
 **Registration and content**
 - Register the Twilio campaign only when the full site is live; never use "leads," "lead generation," "referral network," "marketplace of providers" or "connect you with"; sample messages are real Ask Hava texts. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:173`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:175`)
 - Never a second number to get around a suspension; fallback is the status banner, web chat and email (web-and-email mode behind a switch). (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:267`; `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:75`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:177`)
 - Links inside texts stay on askhava.com; never a public link shortener. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:29`; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:263`)
 - Homeowner job descriptions are screened for carrier-restricted content before going on a card. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:185`)
-- Identity voice call opens "This is Ask Hava LLC" and gives a callback number. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:182`)
+- No voice call is ever placed to a business (BIZ-046): identity codes go by text to a record phone that gets texts, by email to the record address or by letter; the source line's identity voice call is superseded (D-344, D-366). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:182`)
 - Every text kind has a Spanish template. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:88`; `BUILD_BRIEF.md:416`)
 - Plain words, no meaning carried only by emoji, full links. (`BUILD_BRIEF.md:415`)
 
@@ -200,7 +200,7 @@ Full list in `BUILD_BRIEF.md:293`–`BUILD_BRIEF.md:382`. The non-negotiables:
 - gitleaks and the PII scanner run on every PR; any hit fails the build. (`BUILD_BRIEF.md:298`)
 - Test and live are separate Railway projects with separate keys, data, webhooks and numbers; live auto-deploy off. (`BUILD_BRIEF.md:299`) The app refuses to start if a live key appears in a test environment, or the reverse. (`BUILD_BRIEF.md:521`)
 - Homeowner quote page: unguessable 128-bit token, no contact details, pick only with a Twilio Verify code (6 digits, 10 minutes, 5 tries then cooldown); tokens die 30 days after close. (`BUILD_BRIEF.md:309`–`BUILD_BRIEF.md:314`)
-- Business portal: single-use 15-minute email link plus SMS code on a new device. Owner portal: argon2id plus passkey or TOTP, no email-only recovery. (`BUILD_BRIEF.md:315`–`BUILD_BRIEF.md:317`)
+- Business portal: single-use 15-minute email link plus a code on a new device, by SMS or, for a person with no phone that gets texts, by email (SEC-004). Owner portal: argon2id plus passkey or TOTP, no email-only recovery. (`BUILD_BRIEF.md:315`–`BUILD_BRIEF.md:317`)
 - Cookies `Secure`, `HttpOnly`, `SameSite=Lax`; CSRF on every form. (`BUILD_BRIEF.md:318`)
 - Every input parsed by serde into a typed struct; Askama autoescape always on; strict headers (CSP without inline script, HSTS, `frame-ancestors 'none'`, etc.); no trackers; self-hosted fonts; rate limits. (`BUILD_BRIEF.md:321`–`BUILD_BRIEF.md:331`)
 - Webhooks: signature-verified (Stripe 5-minute tolerance), idempotent by event ID, unverified calls get 403 and are logged. (`BUILD_BRIEF.md:332`–`BUILD_BRIEF.md:335`)
@@ -233,7 +233,7 @@ Full list in `BUILD_BRIEF.md:384`–`BUILD_BRIEF.md:427`; target also in `source
 - Review step with "Go back" before the homeowner's pick and the business's confirm-to-pay (3.3.4). (`BUILD_BRIEF.md:406`)
 - Deaf and hard-of-hearing contact choice at the pick (masked call works with 711 relay, or email); no phone number ever shared. (`BUILD_BRIEF.md:407`–`BUILD_BRIEF.md:410`)
 - Consistent help (3.2.6); `aria-live` polite for new quotes; `role="status"`/`role="alert"` used appropriately. (`BUILD_BRIEF.md:400`, `BUILD_BRIEF.md:411`–`BUILD_BRIEF.md:412`)
-- Emails: real text, plain-text version, meaningful link text. Accessibility statement with a contact answered within 2 business days. (`BUILD_BRIEF.md:419`–`BUILD_BRIEF.md:421`)
+- Emails: real text, plain-text version, meaningful link text. Accessibility statement with a contact usually answered within 2 days (A11Y-020). (`BUILD_BRIEF.md:419`–`BUILD_BRIEF.md:421`)
 - axe-core on every page and state at 320, 768 and 1280px; any violation fails `Ally`; keyboard-only Playwright journeys; Stripe's frame and VoiceOver checked by hand at Gate B. (`BUILD_BRIEF.md:424`–`BUILD_BRIEF.md:427`)
 
 ## 12. Quality rules (no AI-made mess)

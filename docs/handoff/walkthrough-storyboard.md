@@ -1,5 +1,8 @@
 # Ask Hava: how the finished business works (storyboard)
 
+> **Superseded in part (D-482).** This storyboard predates fix rounds 14 to 16: the heat text (INT-031), the own-or-rent question, the who-lets-in and lockbox questions, the call window, the landlord line (CARD-011) and the 7.6% set-aside are gone (D-436, D-437, D-440, D-444: 8.6%). The spec in `docs/spec/` wins.
+
+
 **Purpose:** one shared picture of the finished service, from three seats (homeowner, business, owner), before anything is built. Content only; slides are built from this.
 
 **Source:** `casey451/askhava`, main at commit `823c40c` (PR #37, "consent by texting in, terms at the pick, updates question", D-419 to D-428, merged Oct 28, 2026 18:55 UTC). Requirement IDs in the speaker notes point to `docs/spec/*.md`.

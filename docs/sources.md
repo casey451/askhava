@@ -26,7 +26,7 @@ When two inputs disagree, the higher number wins.
 1. **Decision layer.**
    - `BUILD_BRIEF.md` decides **how** the build is done.
    - `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md` decides **what** is built. Where it and any other source disagree, it wins (its "How to read this file").
-   - If `BUILD_BRIEF.md` and the changes file conflict with each other: **stop and ask Casey** (outbox message), do not choose.
+   - If `BUILD_BRIEF.md` and the changes file conflict with each other: the changes file wins on **what** is built and the brief on **how**; decide, log both lines and the choice in `docs/decisions.md`, and keep going (`BUILD_BRIEF.md:539`, D-038; the rule tightened in `docs/governance.md` section 4, D-479).
 2. **Base spec:** `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md`, except where the changes file overrides it.
 3. **Tests:** the digital twin `sources/01_spec/hhq_twin/` and its review tests (`review_tests.py`). The twin is stale on brand, trades and fees (see below) until it is updated in build Stage 1.
 4. **Everything else:** the website prototype, business and design documents, reviews, the legal record, and history (`sources/03_business_and_design/`, `04_reviews/`, `05_history/`, `06_briefs_sent_to_other_ais/`, `07_legal/`, `02_build_plan/`). `02_build_plan/Kit_Plan_Before_Coding.md` states the same order: changes file, then v9.3, then tests, then the prototype and history.

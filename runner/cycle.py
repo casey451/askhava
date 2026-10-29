@@ -123,7 +123,14 @@ def _resolve_merge(state: State, env: Env) -> tuple[State, str]:
             out = st.with_task(state, tid, status=st.BLOCKED, reason="; ".join(problems))
             out["main_red"] = True
             return out, "not_done"
-        return st.with_task(state, tid, status=st.DONE), "done"
+        done = st.with_task(
+            state,
+            tid,
+            status=st.DONE,
+            merged_sha=pr.get("merged_sha", ""),
+            merged_at=pr.get("merged_at", ""),  # read by scripts/progress.py (D-479)
+        )
+        return done, "done"
     return state, ""
 
 

@@ -39,7 +39,7 @@ step "Sources unchanged"
 sha256sum -c --quiet kit/sources.sha256
 
 step "Plan and wording checks"
-for check in trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs pii_scan; do
+for check in trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs pii_scan check_plan_lock check_rust_rules check_crates; do
   python3 "scripts/${check}.py" >/dev/null || { echo "FAILED: scripts/${check}.py"; python3 "scripts/${check}.py" | tail -20; exit 1; }
   echo "ok  ${check}"
 done
@@ -53,8 +53,15 @@ if [ -f Cargo.toml ]; then
   step "Rust format, lint and tests"
   toolchain="$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)"
   rustup toolchain install "${toolchain}" --profile minimal -c clippy -c rustfmt >/dev/null 2>&1
+  export SQLX_OFFLINE=true  # compile against the committed .sqlx/ data, as Ci does (D-481)
   cargo fmt --all --check
-  cargo clippy --workspace --all-targets --locked -- -D warnings
+  cargo clippy --workspace --all-targets --locked -- -D warnings -F clippy::allow_attributes_without_reason
+  # Built alone, only each crate's api is public: the one build that enforces the layer boundary (D-481).
+  cargo build -p server --locked
+  if command -v sqlx >/dev/null 2>&1 && [ -n "${DATABASE_URL:-}" ]; then
+    sqlx migrate run
+    cargo sqlx prepare --workspace -- --all-targets --all-features --check
+  fi
   cargo test --workspace --locked
   if [ "${FULL}" = "--full" ]; then
     step "Rust dependency audit"

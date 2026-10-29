@@ -301,9 +301,20 @@ def test_sensitive_areas_need_an_opus_reviewer(tmp_path: Path, area: str) -> Non
     task(tasks, "T001")["review_areas"] = [area]
     errors = errors_for(tmp_path, tasks)
     assert_error(errors, "need an Opus reviewer")
-    assert_error(errors, "runs on Opus (BUILD_BRIEF.md:498)")
+    if area != "security":  # security alone forces the Opus model only through sensitive owned paths (D-483)
+        assert_error(errors, "runs on Opus (BUILD_BRIEF.md:498)")
     task(tasks, "T001").update(reviewer_model=OPUS, model=OPUS)
     assert errors_for(tmp_path, tasks) == []
+
+
+def test_test_only_work_in_a_sensitive_area_may_run_on_sonnet(tmp_path: Path) -> None:
+    """D-483: a task that owns only test files needs the Opus reviewer, not the Opus model."""
+    tasks = valid_tasks()
+    t = task(tasks, "T001")
+    t.update(review_areas=["privacy"], reviewer_model=OPUS, model="claude-sonnet-5-5", effort="medium")
+    t["owns"] = [o for o in t["owns"] if not o.startswith(("app/", "migrations/"))] or ["tests/e2e/x.spec.ts"]
+    errors = errors_for(tmp_path, tasks)
+    assert not [e for e in errors if "runs on Opus" in e]
 
 
 def test_harness_tasks_need_an_opus_reviewer(tmp_path: Path) -> None:
