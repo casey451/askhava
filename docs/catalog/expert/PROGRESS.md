@@ -15,6 +15,7 @@ A fresh session resumes from this file. Run `python3 scripts/check_expert.py` fi
 - eval_runs/run-2026-10-29/: playbook, baseline_none, baseline_human and judgement for 9 categories (plumbing_repair, hvac_repair, electrical, house_cleaning, landscape_maintenance, pool_cleaning, pool_repair, pest_control, roof_repair); playbook_v2 for 4 (plumbing, house_cleaning, electrical, hvac_repair); playbook_v3 for 3 (plumbing, electrical, hvac_repair)
 - TEST-RESULTS.md, DECISIONS-NEEDED.md, PROPOSED-RULE-CHANGES.md, UNVERIFIED.md
 - docs/handoff/Expert_Knowledge_Library_Report.md
+- Wired into the build (D-480): requirement AI-020 in docs/spec/ai.md, test entry TD-AI-09, build task T172 (catalog loads, checks and slices the expert files), T154/T156/T163 read the library and T156/T163 depend on T172
 
 ## Not done
 - Runs and judgments for the other 28 categories (about 20 sub-agent runs per category at three variants plus a judge; roughly one hour of wall time per batch of six categories)

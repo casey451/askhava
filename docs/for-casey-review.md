@@ -1147,3 +1147,9 @@ The test harness ran nine trades through the plan's intake and two comparison in
 Three facts that could change routing or fees before launch: the handyman dollar limit may now be $3,500 (HB 2120), alarm businesses may need no ROC license (the license map requires one), and termite reports for a sale can only be signed by a pest-licensed business (the catalog routes them to home inspectors). All in `docs/catalog/expert/UNVERIFIED.md`.
 
 Full report: `docs/handoff/Expert_Knowledge_Library_Report.md`.
+
+## The expert library is now in the build (D-480, October 28)
+
+You asked for the expert library to be part of the build-out. It is now a requirement (AI-020), a test entry (TD-AI-09) and a build task (T172): the app loads all 37 expert files when it starts, refuses to start if one points at a category or job type that doesn't exist, and hands the intake AI only the slice for the job in front of it. The AI's one follow-up question now comes from the expert file's list for that job, and the app, not the AI, supplies the wording. The intake and card tasks (T156, T163) wait for T172 and read the library; the golden-set task (T154) uses the 565 test scenarios as raw material.
+
+What did not change: the fixed question set, one follow-up, the set's photos. Letting the AI choose its own questions is still your decision (item 6 in `docs/catalog/expert/DECISIONS-NEEDED.md`). Spanish follow-ups wait for the Spanish review; until then a Spanish request gets the fixed questions with no follow-up.

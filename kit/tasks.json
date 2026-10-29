@@ -1327,6 +1327,70 @@
       "prompt": "kit/prompts/T021.md"
     },
     {
+      "id": "T172",
+      "slug": "catalog-expert-library",
+      "title": "catalog: load, check and slice the expert library (docs/catalog/expert/) into the AI Ask and Write inputs, with follow-ups taken by id and never_say checks",
+      "goal": "catalog: load, check and slice the expert library (docs/catalog/expert/) into the AI Ask and Write inputs, with follow-ups taken by id and never_say checks",
+      "type": "build",
+      "phase": 1,
+      "stage": "2",
+      "module": "catalog",
+      "deps": [
+        "T021"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "compliance"
+      ],
+      "owns": [
+        "app/catalog/src/lib.rs",
+        "app/catalog/src/expert.rs",
+        "app/catalog/src/expert_slices.rs",
+        "tests/unit/tests/catalog_expert.rs",
+        "tests/property/tests/expert_follow_ups.rs"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "docs/spec/ai.md",
+        "docs/catalog/expert/README.md",
+        "docs/catalog/expert/schema.yaml",
+        "docs/catalog/expert/PROMPT_ASSEMBLY.md",
+        "docs/catalog/expert/plumbing_repair.yaml",
+        "docs/catalog/question_bank.yaml",
+        "docs/catalog/categories.yaml",
+        "docs/catalog/trade_kb/ABOUT.md",
+        "scripts/check_expert.py"
+      ],
+      "requirements": [
+        "AI-020"
+      ],
+      "tests": [
+        "TD-AI-09"
+      ],
+      "decisions": [
+        "D-479",
+        "D-480",
+        "D-430",
+        "D-431"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 5,
+        "lines": 700,
+        "context_pct": 16
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T172-catalog-expert-library",
+      "prompt": "kit/prompts/T172.md"
+    },
+    {
       "id": "T022",
       "slug": "privacy-vault",
       "title": "privacy: encrypted contact vault, blind index, audited plaintext reads",
@@ -10029,14 +10093,16 @@
         "docs/test-design.md",
         "docs/spec/intake.md",
         "docs/catalog/categories.yaml",
-        "docs/catalog/question_bank.yaml"
+        "docs/catalog/question_bank.yaml",
+        "docs/catalog/expert/scenarios/"
       ],
       "requirements": [
         "INT-040"
       ],
       "tests": [],
       "decisions": [
-        "D-395"
+        "D-395",
+        "D-480"
       ],
       "cites": [],
       "budget": {
@@ -10126,7 +10192,8 @@
       "module": "intake",
       "deps": [
         "T042",
-        "T154"
+        "T154",
+        "T172"
       ],
       "model": "claude-opus-5-5",
       "effort": "high",
@@ -10150,7 +10217,9 @@
         "docs/spec/job-cards.md",
         "docs/catalog/question_bank.yaml",
         "docs/catalog/intake_golden.yaml",
-        "docs/spec/messaging.md"
+        "docs/spec/messaging.md",
+        "docs/catalog/expert/PROMPT_ASSEMBLY.md",
+        "docs/catalog/expert/README.md"
       ],
       "requirements": [
         "INT-039",
@@ -10176,7 +10245,8 @@
         "D-431",
         "D-434",
         "D-446",
-        "D-460"
+        "D-460",
+        "D-480"
       ],
       "cites": [],
       "budget": {
@@ -10599,7 +10669,8 @@
       "deps": [
         "T156",
         "T025",
-        "T045"
+        "T045",
+        "T172"
       ],
       "model": "claude-opus-5-5",
       "effort": "high",
@@ -10623,7 +10694,9 @@
         "docs/spec/ai.md",
         "docs/spec/job-cards.md",
         "docs/spec/messaging.md",
-        "docs/catalog/trade_kb/ABOUT.md"
+        "docs/catalog/trade_kb/ABOUT.md",
+        "docs/catalog/expert/PROMPT_ASSEMBLY.md",
+        "docs/catalog/expert/schema.yaml"
       ],
       "requirements": [
         "AI-019",
@@ -10638,7 +10711,8 @@
       "decisions": [
         "D-430",
         "D-434",
-        "D-438"
+        "D-438",
+        "D-480"
       ],
       "cites": [],
       "budget": {

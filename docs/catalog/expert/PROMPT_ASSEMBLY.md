@@ -1,6 +1,6 @@
 # Prompt assembly: what the intake AI is given, per request
 
-For T024 (`app/ai`), T156 (`app/intake`) and T163 (`app/ai/src/writer.rs`). This is a proposal for how the versioned AI instructions (AI-015) are built from the catalog; it changes no requirement. The AI is Claude Haiku with no tools (AI-001, AI-006). It sees scrubbed text only (AI-002 to AI-004) and returns schema-validated fields (AI-005, AI-010). Everything it knows about a trade arrives in the prompt below.
+For T024 (`app/ai`), T156 (`app/intake`) and T163 (`app/ai/src/writer.rs`). AI-020 (D-480) makes this the assembly the build follows: T172 (`app/catalog`) loads, checks and slices the expert files, T156 and T163 use the slices. Where this file and a requirement differ, the requirement wins; section 6's `photos_priority` line is a proposal (PROPOSED-RULE-CHANGES item 4) and is not built. The AI is Claude Haiku with no tools (AI-001, AI-006). It sees scrubbed text only (AI-002 to AI-004) and returns schema-validated fields (AI-005, AI-010). Everything it knows about a trade arrives in the prompt below.
 
 ## 1. The three AI jobs and what each loads
 
@@ -42,6 +42,8 @@ So no call needs more than about 3,000 words of context. A whole trade file (up 
 
 The Ask job is given the job type's `allowed_follow_ups` with their `ask_when` lines. The rule in the prompt: "Pick a follow-up only if its ask_when fits what she said and no bank question in this set covers the same fact. Pick the one whose must_know fact ranks highest. If none fits, ask no follow-up." The returned field is the follow-up's id; code looks up the text and options, so the AI cannot invent a question. The AI may return a reworded text for it, which passes the AI-019 checks like any other AI text.
 
+Spanish: a follow-up's `text_es` and `options_es` are used only once the TXT-003 review of that expert file is recorded; until then a Spanish request gets no follow-up (AI-020).
+
 ## 5. Fallback with AI off
 
 With the AI-008 switch off, intake asks the fixed bank questions and photo asks only, and skips a question only on a plain keyword rule (INT-039). The expert file still serves routing tests, the card template (filled by code from card-field answers, CARD-007), and the business-side answers.
@@ -51,4 +53,4 @@ With the AI-008 switch off, intake asks the fixed bank questions and photo asks 
 - `urgency.urgent_capable_triggers`: a keyword list code may use to set the "urgent" flag for the after-hours path (BIZ-007), never a safety judgment.
 - `urgency.fire_dept_triggers`: test fixtures for the INT-004 keyword list; the list itself lives in code and the catalog.
 - `business_side.signup_objections`: the sign-up help page and the AI-drafted HELP replies, if OPS-036 is ever switched on.
-- `photos_priority`: the order of the question set's photo asks for that job type (INT-044 "in usefulness order").
+- `photos_priority`: proposed only (PROPOSED-RULE-CHANGES item 4); until Casey accepts it the photo asks are the question set's `photos` (INT-044).

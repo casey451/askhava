@@ -45,7 +45,9 @@ So: the expert files make a large difference only when the intake is allowed to 
 
 ## 3. What this changes in the plan
 
-Nothing yet. The expert files follow the catalog as it stands; where the catalog has no fit, the file uses the nearest job type and the better fit is written down:
+**In the build (D-480, after your "Do whatever needs to be done for it to be in the build file"):** requirement AI-020 makes the expert files the "expert brief" AI-019 already refers to; test entry TD-AI-09 tests it; new build task T172 loads and checks all 37 files when the app starts and slices them for each AI call; the intake and card tasks (T156, T163) depend on it and the golden-set task (T154) uses the scenarios. The fixed question set, the one follow-up and the photo asks are unchanged.
+
+**Everything else:** nothing yet. The expert files follow the catalog as it stands; where the catalog has no fit, the file uses the nearest job type and the better fit is written down:
 
 - `docs/catalog/expert/PROPOSED-RULE-CHANGES.md`: seven intake-rule changes (the guided intake above; per-job-type bank questions if the script stays; photos follow the expert file; keep stated numbers on the card; routed requests still produce a card; blanks say "not asked"), about 60 catalog job types that homeowners ask for and the catalog lacks, about 40 question-bank additions the judges found a pro always asks, and eleven license-map rows for you and counsel.
 - `docs/catalog/expert/UNVERIFIED.md`: 34 facts that could not be read in a primary source, three of them launch-blocking (the handyman dollar limit, which HB 2120 may have raised to $3,500; alarm businesses, which the statute exempts from the ROC while the license map requires it; termite reports for a sale, which only a pest-licensed business may sign while the catalog routes them to home inspectors).
