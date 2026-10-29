@@ -10444,7 +10444,7 @@
       "id": "T161",
       "slug": "wording-voice-scan",
       "title": "wording: the WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience, and the CON-031 consent texts and \"Who runs Ask Hava\" record links checked against the spec",
-      "goal": "wording: the WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience, and the CON-031 consent texts and \"Who runs Ask Hava\" record links checked against the spec",
+      "goal": "wording: the WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience, and the CON-031 consent texts and \"Who runs Ask Hava\" record links checked against the spec It also wires the copy panel (WORD-029, D-474): `scripts/check_copy.py` covers every customer template, and the template test checks each page's blocks against `docs/copy/site-copy.md`.",
       "type": "build",
       "phase": 1,
       "stage": "5",
@@ -10474,7 +10474,8 @@
         "docs/spec/consent.md",
         "docs/spec/website.md",
         "docs/voice.md",
-        "scripts/check_ai_smell.py"
+        "scripts/check_ai_smell.py",
+        "docs/copy/copy-panel.md"
       ],
       "requirements": [
         "WORD-024",
@@ -10483,7 +10484,8 @@
         "WEB-021",
         "CON-004",
         "WORD-027",
-        "WORD-028"
+        "WORD-028",
+        "WORD-029"
       ],
       "tests": [
         "TD-WORD-08",
@@ -10499,7 +10501,8 @@
         "D-407",
         "D-409",
         "D-419",
-        "D-452"
+        "D-452",
+        "D-474"
       ],
       "cites": [],
       "budget": {
