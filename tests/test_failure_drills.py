@@ -68,7 +68,7 @@ class FakeEnv:
         return True
 
     def update_state(self, transform: Callable[[st.State], st.State | None]) -> st.State | None:
-        """GitHubEnv.update_state over the fake store: read fresh, transform, push; five tries (D-514)."""
+        """GitHubEnv.update_state over the fake store: read fresh, transform, push; five tries (D-515)."""
         for _ in range(5):
             fresh = self.read_state()
             new = transform(copy.deepcopy(fresh))
@@ -814,7 +814,7 @@ def test_drill_a_rejected_branch_push_blocks_the_task_and_frees_the_lease(tmp_pa
     assert st.eligible(env.store, NOW) == ["T002"]
 
 
-# ---- D-514 drills: safe writes (update_state) for renew and the final lease release
+# ---- D-515 drills: safe writes (update_state) for renew and the final lease release
 
 
 def _rival_records_inbox(env: FakeEnv, tmp_path: Path, at: datetime) -> None:

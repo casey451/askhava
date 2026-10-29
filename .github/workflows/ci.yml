@@ -120,6 +120,22 @@ jobs:
         run: |
           python3 scripts/check_crates.py
 
+      - name: Rust build cache (D-514)
+        # Registry, git deps, installed tools and target/ keyed on the toolchain and Cargo.lock. Cargo's own
+        # fingerprints decide what rebuilds, so a cache can only save time, never change a result; a
+        # changed lockfile or toolchain starts a fresh key.
+        if: steps.changes.outputs.rust == 'true' && hashFiles('Cargo.lock') != ''
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            ~/.cargo/bin
+            target
+          key: rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          restore-keys: rust-${{ runner.os }}-
+
       - name: Rust format, lint and tests (once the workspace exists, D-453)
         if: steps.changes.outputs.rust == 'true'
         run: |
@@ -138,7 +154,9 @@ jobs:
         if: steps.changes.outputs.rust == 'true'
         run: |
           if [ -f Cargo.lock ]; then
-            cargo install --locked cargo-audit@0.22.2 cargo-deny@0.20.2
+            # Installed once into the cached ~/.cargo/bin; reinstalled only when a version changes (D-514).
+            cargo audit --version 2>/dev/null | grep -q '0.22.2' || cargo install --locked cargo-audit@0.22.2
+            cargo deny --version 2>/dev/null | grep -q '0.20.2' || cargo install --locked cargo-deny@0.20.2
             cargo audit
             cargo deny check licenses bans sources advisories
           else

@@ -47,7 +47,7 @@ class Env(Protocol):
     update_state(transform) reads the state fresh, applies transform (State -> State, or None to
     give up) and pushes the result, reading and applying again up to 5 times when the push loses a
     race; it returns the state it pushed (the fresh state when transform changed nothing) or None.
-    The transform re-checks its own preconditions on the fresh state each time (D-514).
+    The transform re-checks its own preconditions on the fresh state each time (D-515).
     """
 
     def read_state(self) -> State: ...
@@ -107,7 +107,7 @@ class Config:
     pacer: Callable[[State, dict[str, Any], datetime], tuple[str, str | None, State]] | None = None  # scripts/pacing.py
     on_usage: Callable[[State, dict[str, Any], datetime], State] | None = None  # usage windows (scripts/pacing.py)
     owner_paths: tuple[str, ...] = ()  # .github/CODEOWNERS entries: a PR touching one waits for Casey (D-511)
-    lanes: int = 1  # kit/runner.json "lanes"; only lane "1" is ever claimed until a later stage (D-514)
+    lanes: int = 1  # kit/runner.json "lanes"; only lane "1" is ever claimed until a later stage (D-515)
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -407,7 +407,7 @@ def _record_inbox(state: State, cfg: Config, items: list[tuple[str, str, str]], 
 def _adopt_orphan_pr(before: State, after: State, env: Env) -> State:
     """A worker that died after opening a PR but before MERGE_PENDING: look at the PR, don't redo the work.
 
-    Every lane's lease is looked at (D-514); with one lane that is the single lease, as before."""
+    Every lane's lease is looked at (D-515); with one lane that is the single lease, as before."""
     for lease in st.leases_of(before).values():
         if not lease or st.status(before, lease["task"]) != st.IN_PROGRESS:
             continue
@@ -609,7 +609,7 @@ def finish(
 
 
 def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Callable[[State], State | None]:
-    """The transform for finish's last write, the lease release (update_state, D-514).
+    """The transform for finish's last write, the lease release (update_state, D-515).
 
     On an unchanged state it is `final` itself. When another writer moved the state meanwhile (an
     inbox record, a graph sync), it applies only what finish changed (the keys and task entries that

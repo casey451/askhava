@@ -1,4 +1,4 @@
-"""Stage A of the two-lane runner (D-514): the lane map, its mirror of `lease`, the lane-aware lease
+"""Stage A of the two-lane runner (D-515): the lane map, its mirror of `lease`, the lane-aware lease
 primitives, scripts/check_state.py's lane checks and auto_merge_reason over both lease formats.
 Only lane "1" is ever claimed by the cycle in this stage; lanes > 1 appear here at primitive level.
 Fake data only.
@@ -28,7 +28,7 @@ def two_tasks() -> st.State:
 
 
 def lane_map() -> st.State:
-    """A state in the D-514 shape: `leases` present, every lane free."""
+    """A state in the D-515 shape: `leases` present, every lane free."""
     return st.with_leases_map(two_tasks())
 
 

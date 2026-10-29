@@ -5,7 +5,7 @@ cycle stops and reports. The schema is a small subset of JSON Schema (type, enum
 properties, items, additionalProperties as a schema, pattern, minLength) checked here with the
 standard library only. Unknown keys are allowed, because the runner keeps every key it does not
 know (D-121). On top of the schema: task IDs are unique and a lease names a task in the list; with
-the lane map `leases` (D-514), each lane lease names a task, no task holds two lanes, at most `lanes`
+the lane map `leases` (D-515), each lane lease names a task, no task holds two lanes, at most `lanes`
 live leases sit outside the "fix" lane, and `lease` mirrors lane "1".
 
 Usage: python3 scripts/check_state.py [--state PATH] [--schema PATH]
@@ -90,7 +90,7 @@ def _expires(lease: dict[str, Any]) -> datetime:
 
 
 def _lane_checks(state: dict[str, Any], lanes: int, now: datetime) -> list[str]:
-    """The lane map (D-514): each lease names a real task, no task holds two lanes, at most `lanes`
+    """The lane map (D-515): each lease names a real task, no task holds two lanes, at most `lanes`
     live leases outside the "fix" lane, and `lease` equal to lane "1" without its "lane" field."""
     leases = state.get("leases")
     if not isinstance(leases, dict):
@@ -112,7 +112,7 @@ def _lane_checks(state: dict[str, Any], lanes: int, now: datetime) -> list[str]:
 def check(state: Any, schema: dict[str, Any] | None = None, lanes: int | None = None, now: datetime | None = None) -> list[str]:
     """Every problem with a kit/state.json value (schema plus cross checks).
 
-    `lanes` is the lane count (kit/runner.json, D-514); when not given, the state's own `lanes`, else 1.
+    `lanes` is the lane count (kit/runner.json, D-515); when not given, the state's own `lanes`, else 1.
     `now` decides which leases are live (default: the current UTC time)."""
     schema = schema or json.loads(SCHEMA.read_text(encoding="utf-8"))
     problems = validate(state, schema)

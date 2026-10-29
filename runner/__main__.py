@@ -138,7 +138,7 @@ def owner_review(settings: Path) -> bool:
 
 
 def lanes(settings: Path) -> int:
-    """How many tasks may be in flight at once (D-514): kit/runner.json "lanes", 1 when unset or not a
+    """How many tasks may be in flight at once (D-515): kit/runner.json "lanes", 1 when unset or not a
     whole number of at least 1. Only lane "1" is claimed until a later stage uses more."""
     if not settings.is_file():
         return 1
@@ -161,7 +161,7 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
 
 
 def renew(cfg: cycle.Config, env: GitHubEnv) -> str:
-    """Renew this session's lease on the fresh state (update_state, D-514): the lane it holds, lane "1"
+    """Renew this session's lease on the fresh state (update_state, D-515): the lane it holds, lane "1"
     when it holds none (which st.renew then refuses)."""
     state = env.read_state()
     held = st.leases_of(state)

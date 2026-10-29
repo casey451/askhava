@@ -4,10 +4,10 @@ The state is a dict as kept on claude/kit-state:
     {"schema": 1, "lease": {"task", "session", "expires"} | None, "build_hold": str | None,
      "leases": {"1": {"task", "session", "expires", "lane"} | None, "2": ..., "fix": ...},
      "tasks": [{"id", "deps", "status", "attempts", ...}, ...], ...other keys kept as they are}
-Lanes (D-514): `leases` holds one lease per lane ("1", "2", ... and "fix", reserved for FIX-MAIN).
+Lanes (D-515): `leases` holds one lease per lane ("1", "2", ... and "fix", reserved for FIX-MAIN).
 Lane "1" is also kept in the old top-level `lease` key, without its "lane" field, so every reader
 that knows only `lease` keeps working; `lease` is what lane "1" reads, and every writer goes
-through `with_lease`, which keeps the two in step. A state without `leases` (written before D-514)
+through `with_lease`, which keeps the two in step. A state without `leases` (written before D-515)
 reads as lane "1" holding `lease`, and stays in that old shape while only lane "1" is written.
 The lane count is `lanes` in kit/runner.json (1 for now: one task in flight, BUILD_BRIEF.md:222).
 Times are UTC ISO strings ending in "Z". Every function returns a new state; nothing mutates
@@ -49,7 +49,7 @@ class LeaseError(Exception):
 
 
 def new_state() -> State:
-    """An empty state in the pre-D-514 shape; `leases` is added by the first write that needs it."""
+    """An empty state in the pre-D-515 shape; `leases` is added by the first write that needs it."""
     return {"schema": 1, "lease": None, "build_hold": None, "tasks": []}
 
 
@@ -102,8 +102,8 @@ def sync_graph(state: State, graph: list[Task]) -> State:
     return out
 
 
-LANE_ONE = "1"  # the lane mirrored by the top-level `lease` key (D-514)
-FIX_LANE = "fix"  # reserved for FIX-MAIN; never counted against `lanes` (D-514)
+LANE_ONE = "1"  # the lane mirrored by the top-level `lease` key (D-515)
+FIX_LANE = "fix"  # reserved for FIX-MAIN; never counted against `lanes` (D-515)
 
 
 def lane_ok(lane: str) -> bool:
@@ -114,7 +114,7 @@ def lane_ok(lane: str) -> bool:
 def leases_of(state: State) -> dict[str, Task | None]:
     """Every lane's lease as {lane: {task, session, expires, lane} | None}; lane "1" always first.
 
-    Lane "1" is read from `lease`, so a state written before D-514 (no `leases`) loads as lane "1"
+    Lane "1" is read from `lease`, so a state written before D-515 (no `leases`) loads as lane "1"
     holding its lease, and a stray `leases["1"]` can never disagree with what old readers see.
     """
     lease = state.get("lease")

@@ -146,11 +146,11 @@ LEASE_KEYS = ("task", "session", "expires")
 
 
 def lane_lease(lease: dict[str, Any] | None, lane: str) -> dict[str, Any] | None:
-    """The lease that decides for a lane, from either format auto-pr may pass (D-514).
+    """The lease that decides for a lane, from either format auto-pr may pass (D-515).
 
     `lease` is a single lease (the old `lease` of lease.json, which is lane "1") or the `leases`
     map {lane: lease | None}. A single lease is taken as it is, whatever the lane, so a caller that
-    still passes the old shape decides exactly as before D-514.
+    still passes the old shape decides exactly as before D-515.
     """
     if not lease:
         return None
@@ -167,7 +167,7 @@ def auto_merge_reason(state: dict[str, Any], branch: str, head_sha: str, lease: 
     kit/state.json before it pushes a task branch. Auto-merge needs both to name this branch's
     task and this exact head, the task still in flight, and no other task holding the task's lane
     lease: the lane named in `review_lease` (lane "1" when it names none), read from `lease`, which
-    is either a single lease or the lane map (lane_lease, D-514).
+    is either a single lease or the lane map (lane_lease, D-515).
     """
     tid = task_id_from_branch(branch)
     if not tid:

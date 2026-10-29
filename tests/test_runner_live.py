@@ -497,11 +497,11 @@ def test_task_branch_push_uses_the_push_token(monkeypatch: pytest.MonkeyPatch) -
     assert github_env._env_for(["git", "fetch", "https://github.com/o/r.git"]) is None
 
 
-# ---- D-514: the lane map in lease.json, and update_state over real git
+# ---- D-515: the lane map in lease.json, and update_state over real git
 
 
 def push_lease_file(repo: dict[str, Path], text: str) -> None:
-    """Write lease.json on claude/lease the way a runner from before D-514 would."""
+    """Write lease.json on claude/lease the way a runner from before D-515 would."""
     seed = repo["seed"]
     git(seed, "fetch", "-q", "origin", "claude/lease")
     git(seed, "checkout", "-q", "-B", "lease-edit", "FETCH_HEAD")

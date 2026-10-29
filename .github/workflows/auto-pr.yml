@@ -3,7 +3,7 @@
 # identity, so the merge starts workflows (pull_request.closed starts backup-runner). The decision is
 # runner/verify.py auto_merge_reason, read from main (never from the pushed branch), over the task's
 # reviewed_sha and review lease in kit/state.json on claude/kit-state and the lease on claude/lease
-# (the lane map `leases` when lease.json has one, else the single `lease`; verify accepts both, D-514).
+# (the lane map `leases` when lease.json has one, else the single `lease`; verify accepts both, D-515).
 # The branch ruleset still enforces the required checks (Ci, Twin, Ally).
 name: auto-pr
 on:

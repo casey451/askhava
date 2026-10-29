@@ -131,6 +131,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Rust build cache (D-514)
+        # The smoke and the worker's own cargo runs reuse the build; Cargo's fingerprints decide what rebuilds.
+        if: hashFiles('Cargo.lock') != ''
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            ~/.cargo/bin
+            target
+          key: rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          restore-keys: rust-${{ runner.os }}-
       - name: Smoke-test prerequisites (what Ci installs for itself)
         run: |
           python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
