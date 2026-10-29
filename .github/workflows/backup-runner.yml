@@ -61,7 +61,7 @@ jobs:
             exit 0
           fi
           echo "run=true" >> "$GITHUB_OUTPUT"
-      - name: A task's checks finished - wait briefly for its auto-merge (D-500)
+      - name: A task's checks finished - wait for its auto-merge (D-500)
         if: github.event_name == 'workflow_run' && steps.check.outputs.run == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -70,16 +70,16 @@ jobs:
         run: |
           set -u
           # A failed check goes straight to the runner (it records the failure and retries the task).
-          # A green one is merged by auto-merge within seconds; give it up to five minutes, then run
+          # A green one is merged by auto-merge once Governance follows; give it up to fifteen minutes, then run
           # anyway (the runner reports merge_pending and the next event picks it up).
           if [ "$CONCLUSION" != "success" ]; then echo "checks ${CONCLUSION}: run now"; exit 0; fi
-          for _ in $(seq 1 20); do
+          for _ in $(seq 1 60); do
             state="$(gh api "repos/${GITHUB_REPOSITORY}/pulls?head=${GITHUB_REPOSITORY_OWNER}:${BRANCH}&state=all&per_page=1" \
               --jq '.[0] | if .merged_at then "merged" else .state end' 2>/dev/null || echo unknown)"
             [ "$state" = "open" ] || { echo "PR ${state}: run now"; exit 0; }
             sleep 15
           done
-          echo "PR still open after five minutes: run anyway"
+          echo "PR still open after fifteen minutes: run anyway"
   backup:
     name: backup
     needs: gate
