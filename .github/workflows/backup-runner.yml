@@ -148,6 +148,9 @@ jobs:
           RUNNER_CHECKS_TOKEN: ${{ github.token }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # The session's own turns in the job log (private repository; secrets stay masked), so a session
+          # that stops early can be diagnosed (D-503).
+          show_full_output: true
           claude_args: --model claude-sonnet-5-5 --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
           prompt: |
             You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now. The runner code (runner/) does the cycle; you do only the task it hands you (D-486).
@@ -156,6 +159,7 @@ jobs:
             1. Run `python3 -m runner` (RUNNER_STARTER=actions is already set). It prints a result line and a JSON line.
             2. If the result is anything but `handed_off`, stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
             3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models. Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists (when `prompt` is not a file path, as for FIX-MAIN, it is the prompt text itself: follow it, revert first); commit to the local branch; do not push it.
+            3a. Run every subagent in the foreground (run_in_background: false) and wait for it to finish. Never end your turn while a subagent is running: this job ends when you stop, and anything still running is killed with it (D-503).
             4. Run the fresh-eyes reviewer subagent on the reviewer model over the diff and the task's spec files; findings go back to the worker once.
             5. Run `python3 -m runner --after --worker-agent <worker agent id> --reviewer-agent <reviewer agent id>` (add `--outcome tests_failed --log "<summary>"` if the work failed, `--outcome usage_limit` at a usage limit).
             6. While the task runs longer than 30 minutes, run `python3 -m runner --renew` every 30 minutes.
@@ -163,6 +167,22 @@ jobs:
             8. Report the runner's output lines and stop.
 
             Never break section 2. Never claim a test passed unless you ran it here.
+      - name: Hand in for a session that stopped without handing in (D-503)
+        if: always()
+        id: safety
+        env:
+          RUNNER_STARTER: actions
+          GH_TOKEN: ${{ github.token }}
+          RUNNER_CHECKS_TOKEN: ${{ github.token }}
+        run: |
+          set -u
+          # A session that claimed a task but ended without `--after` would hold the lease for three hours.
+          # `--after` finishes only a task this run's session still holds; otherwise it answers
+          # not_lease_holder and changes nothing.
+          [ -f .git/runner_handoff.json ] || { echo "no handoff in this run"; exit 0; }
+          out="$(python3 -m runner --after --outcome tests_failed --log "session ended without handing in" 2>&1 || true)"
+          echo "$out"
+          case "$out" in *not_lease_holder*|*" is "*) echo "released=no" >> "$GITHUB_OUTPUT";; *) echo "released=yes" >> "$GITHUB_OUTPUT";; esac
       - name: Start the next cycle at once when this one cleared the way (D-500)
         if: always()
         env:
@@ -186,4 +206,6 @@ jobs:
           print("yes" if go else "no")
           ' 2>/dev/null || echo no)"
           echo "chain: ${again}"
+          # A safety hand-in (D-503) frees the lease for the task's retry; the runner's retry ladder bounds it.
+          if [ "${{ steps.safety.outputs.released }}" = "yes" ]; then again=yes; fi
           if [ "$again" = "yes" ]; then gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY"; fi
