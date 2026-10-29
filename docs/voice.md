@@ -66,3 +66,7 @@ AI smell is anything that makes a reader think "a machine wrote this." It costs 
 | "We ask what a seasoned pro would ask, then send your request to local businesses that do the work. Their quotes line up side by side, and you pick one." | "Text us what needs fixing. We'll ask a few questions, send it to local businesses that do that kind of work, and text you when their quotes come in. Then you look them over and pick one." |
 | "Their quotes come in one format, so they line up." | "Each quote lists the same details, so they're easy to compare." |
 | "More trades are coming. Text us any job and we'll tell you right away if we cover it." | "We're adding more. Text us any job and we'll tell you if we cover it." |
+
+## Good copy, not only clean copy (WORD-029, D-474)
+
+Clean copy can still be weak. `docs/copy/copy-panel.md` is the second check: eight writers' methods in a ten-test scorecard (can you picture it, can it be checked, could a competitor say it, does it use the customer's own words, and so on), run by a reviewer that sees only the finished copy. `scripts/check_copy.py` measures sentence length and reading grade. The approved site wording lives in `docs/copy/site-copy.md`, and real customers' phrases in `docs/copy/voice-of-customer.md`.
