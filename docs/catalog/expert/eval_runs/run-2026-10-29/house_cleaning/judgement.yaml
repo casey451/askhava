@@ -754,3 +754,45 @@ where_playbook_lost_to_human:
   - "s15: job_type general_pest instead of rodents, and no 'are they still around?' question, so the scratching, nests, chewed wires and extent of droppings are missing."
   - "s16: no 'anything else on the list, like trash, patio or hot tub?' question, so bins to the curb and the hot tub wipe-down are missing."
   - "s02: the card adds 'code given on the call' from the option text; write only what the homeowner said."
+
+compliance:
+  checked: "docs/catalog/expert/eval_runs/run-2026-10-29/house_cleaning/playbook.yaml against C1-C12, docs/ai_smell.yaml and docs/catalog/expert/house_cleaning.yaml (opened only after panel scoring, for C10)"
+  violations:
+    - {scenario_id: house_cleaning_s02, code: C6, where: "card, line 4", text: "Access: lockbox at the front door (code given on the call)"}
+    - {scenario_id: house_cleaning_s03, code: C6, where: "card, line 2", text: "Hall bathroom toilet rocks when sat on"}
+    - {scenario_id: house_cleaning_s07, code: C11, where: "intake message 6 (timing question)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+    - {scenario_id: house_cleaning_s09, code: C11, where: "intake message 7 (timing question)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+    - {scenario_id: house_cleaning_s11, code: C11, where: "intake message 7 (timing question)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+    - {scenario_id: house_cleaning_s16, code: C11, where: "intake message 3 (timing question)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+  count: 6
+  clean_scenarios: 10
+  violation_notes:
+    - "s02 C6: the homeowner said only 'lockbox at the front door'; 'code given on the call' was copied from the access option text."
+    - "s03 C6: the homeowner said '2. it rocks'; 'when sat on' was never said and there was no photo."
+    - "s07 C11: the opener already said 'can someone do it wed or thurs' and 'inspection by friday 10am'."
+    - "s09 C11: the opener already said 'i need the whole place cleaned TODAY' (the re-ask got 'this week', but the rule is the rule)."
+    - "s11 C11: the opener already said 'before my in-laws visit next weekend'."
+    - "s16 C11: the opener already said 'need someone TODAY' and 'guests check in at 3pm'."
+    - "Fix for all four C11 hits: skip the timing question when the opener names a day, a deadline or 'today'."
+  checked_clean:
+    C1: "No verdict words to the homeowner or on any card. s09 used 'dark spots' and wrote 'her words'; s15 wrote 'mouse droppings (his words)'."
+    C2: "No price, cost or dollar figure."
+    C3: "The fixed 911 text was sent in s10 only, word for word, and not otherwise; no safety, health or repair advice in s09, s10, s14 or s15."
+    C4: "No business named, ranked or described."
+    C5: "No outcome or timing promise. s13 'We've noted your request so we can add businesses' promises no date or callback."
+    C7: "No name, phone, street number, plate or gate code on any card."
+    C8: "No banned words found."
+    C9: "No em dashes, exclamation marks, emoji or ai_smell.yaml words or patterns in any intake message (the 911 text is exempt under INT-004)."
+    C10: "Exactly one follow-up per scenario at most. fu_last_clean (s01, s04, s05, s06, s10, s11) is allowed for recurring and deep_clean; fu_empty (s07) for move_out; fu_dust_where (s08) for post_construction; fu_problem_area (s09) for deep_clean; fu_floor_visible (s14) for specialty_route."
+    C12: "Nothing implies Ask Hava is a contractor, does the work or guarantees anything."
+  not_checkable_here:
+    - "s02 fu_window (turnover_cleaning) and s03 fu_toilet_what (plumbing_repair) come from other categories' expert files; C10 allows opening only house_cleaning.yaml, so these two are unverified."
+  borderline_not_counted:
+    - "C11 count: the playbook's questions_asked leaves out the town question. Counting it, s01 and s02 each asked 9 questions (over 8). Decide whether the coverage question counts under INT-039; s12's max_questions: 1 suggests it does."
+    - "C1: s03 'Is this about cleaning, or about the toilet?' and s15 'Is this about cleaning up, or about the mice?' name a likely source before any symptom question. They are not verdicts, but they steer the homeowner."
+    - "C6: s14 'Homeowner adds: house has not been kept up for a while' paraphrases 'it got kind of backed up'; the template asks for her words."
+    - "s09: follow-up id fu_problem_area is allowed, but the text sent ('Where are the dark spots? 1) On walls or ceiling 2) Somewhere else') is not the file's text_en ('Is there anything in the home besides normal dirt and dust?'). It worked better than the file's wording; consider adding it to the file."
+    - "s02: 'Ask Hava only takes cleaning requests' is inaccurate (Ask Hava takes other trades); reword to 'This request covers cleaning only.'"
+  harness_conflicts_found_after_opening_the_expert_file:
+    - "The expert file sets bank_job_type 'deep cleaning' for specialty_route and post_construction; the scenario file expects null for both (s08, s14). The panel scored s14 routing_correct false against the scenario. The playbook followed its file in s14 and went against it in s08 (null). One of the two files needs to change."
+    - "fu_extras is allowed for recurring and fu_items_out for specialty_route, but neither was used: the one-follow-up cap was already spent on fu_last_clean or fu_floor_visible. The file has no catch-all ask ('anything else to clean' / 'anything the cleaner should know'). The cap plus the missing catch-all explain most of the playbook's missed facts (s04 oven, s05 casita, s06 extras and oxygen tubing, s14 items and droppings)."
