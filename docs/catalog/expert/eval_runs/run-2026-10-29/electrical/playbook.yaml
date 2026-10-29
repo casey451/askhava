@@ -116,3 +116,125 @@ results:
       Photos: 1 (outlet cover and face, even tan-yellow discoloration, no dark marks at the slots). Homeowner adds: just bought the house; inspector did not mention it; wants it checked.
       Needed: not said.
     facts_in_card_not_stated: []
+  - scenario_id: electrical_s05
+    transcript:
+      - {who: homeowner, text: "want to add a 240 outlet in my garage for a welder and a couple regular outlets. no pics im at work til 6, just need a ballpark"}
+      - {who: intake, text: "Which town is the job in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city, north side"}
+      - {who: intake, text: "Is anything sparking, hot, buzzing or smoking?", step: question}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "How many items? 1 / 2 to 4 / 5 or more", step: question}
+      - {who: homeowner, text: "3"}
+      - {who: intake, text: "About when was the home built? Before 1980 / 1980 to 2000 / After 2000 / Not sure", step: question}
+      - {who: homeowner, text: "1992"}
+      - {who: intake, text: "About how far is the spot from the electrical panel? Same wall or right next to it / Same floor, across the house / Upstairs or through the attic / Detached garage, shed or yard", step: follow_up}
+      - {who: homeowner, text: "panel is on the other side of the house"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Please send a photo of the panel with the door open.", step: photo}
+      - {who: homeowner, text: "not now, im at work. i can send after 6"}
+    questions_asked: 5
+    follow_up_used: fu_run_distance
+    skipped_bank_questions: [what]
+    routing: {category: electrical, job_type: new_circuit, bank_job_type: "new circuit", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Electrical | Lake Havasu City | north side
+      New 240-volt outlet and two regular outlets in the attached garage, for a welder.
+      For: garage. Distance: across the house. EV: n/a.
+      Panel: no photo yet; homeowner will send after 6 p.m. Built: 1980 to 2000.
+      Photos: 0. Homeowner adds: welder; panel is on the other side of the house.
+      Needed: not said.
+    facts_in_card_not_stated: []
+  - scenario_id: electrical_s06
+    transcript:
+      - {who: homeowner, text: "Hello. My smoke alarms in the hall and bedroom keep beeping at night. My late husband put in new batteries and it did not stop. I cannot get up on a ladder."}
+      - {who: intake, text: "Which town is the job in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City."}
+      - {who: intake, text: "Is anything sparking, hot, buzzing or smoking?", step: question}
+      - {who: homeowner, text: "No. There is no smoke and no fire. It is a short chirp."}
+      - {who: intake, text: "How many items? 1 / 2 to 4 / 5 or more", step: question}
+      - {who: homeowner, text: "I think six."}
+      - {who: intake, text: "About when was the home built? Before 1980 / 1980 to 2000 / After 2000 / Not sure", step: question}
+      - {who: homeowner, text: "I am not sure."}
+      - {who: intake, text: "Is it a short chirp every so often, a loud alarm that keeps going, or do you want to replace or add alarms?", step: follow_up}
+      - {who: homeowner, text: "A short chirp about once a minute. They are all linked, one chirps and all of them chirp."}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Please send a photo of one alarm.", step: photo}
+      - {who: homeowner, text: "I cannot reach them to take a picture, sorry."}
+    questions_asked: 5
+    follow_up_used: fu_alarm_sound
+    skipped_bank_questions: [what]
+    routing: {category: electrical, job_type: smoke_alarm, bank_job_type: "hardwired smoke alarm", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Electrical | Lake Havasu City | house
+      Smoke alarms in the hall and bedroom chirp at night; no smoke or fire.
+      Sound: short chirp about once a minute, all alarms chirp together. How many: 5 or more. Type: linked. Date on back: not given.
+      Alarms: either. Photos: 0 (owner cannot reach them).
+      Built: not sure. Homeowner adds: new batteries did not stop the chirping; owner cannot use a ladder.
+      Needed: not said.
+    facts_in_card_not_stated: []
+  - scenario_id: electrical_s07
+    transcript:
+      - {who: homeowner, text: "hey so the outlets in my bedroom and bathroom stopped working yesterday. i rent the place, landlord said to find an electrician and send him the bill. can u do that"}
+      - {who: intake, text: "Which town is the job in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city, its a duplex on the south side"}
+      - {who: intake, text: "What is going on? 1) Outlet or switch 2) Breaker keeps tripping 3) Light or ceiling fan 4) Panel upgrade 5) New circuit or outlet 6) Hardwired smoke alarm 7) Not sure", step: question}
+      - {who: homeowner, text: "7, not sure. the outlets just dont work"}
+      - {who: intake, text: "Is anything sparking, hot, buzzing or smoking?", step: question}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "How many items? 1 / 2 to 4 / 5 or more", step: question}
+      - {who: homeowner, text: "2 to 4, the outlets in two rooms"}
+      - {who: intake, text: "About when was the home built? Before 1980 / 1980 to 2000 / After 2000 / Not sure", step: question}
+      - {who: homeowner, text: "early 70s I think"}
+      - {who: intake, text: "What is out: outlets or lights in one area, about half the house, or big items like the AC, dryer or range?", step: follow_up}
+      - {who: homeowner, text: "outlets in the bedroom and bathroom. the lights in those rooms work"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Please send a photo of the panel with the door open.", step: photo}
+      - {who: homeowner, text: "i cant, the panel is in a closet and the neighbor has the key. i rent so i dont have it"}
+    questions_asked: 6
+    follow_up_used: fu_what_is_out
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: partial_power, bank_job_type: "outlet repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Electrical | Lake Havasu City | south side, duplex
+      Outlets in the bedroom and bathroom stopped working yesterday; lights in those rooms work.
+      Out: outlets or lights in one area. Neighbors: not asked. Won't reset: not asked.
+      Panel: no photo (panel is in a closet; owner rents). Built: before 1980.
+      Photos: 0. Homeowner adds: rents the place; landlord is out of state and texted that the tenant may hire someone and the landlord will pay.
+      Needed: not said.
+    facts_in_card_not_stated: []
+  - scenario_id: electrical_s08
+    transcript:
+      - {who: homeowner, text: "buenas, se me fue la luz en la cocina y el breaker no se queda arriba, lo subo y se baja otra vez. necesito alguien urgente porque tengo el refri ahi"}
+      - {who: intake, text: "¿En qué ciudad está el trabajo?", step: coverage}
+      - {who: homeowner, text: "lake havasu city, lado norte"}
+      - {who: intake, text: "¿De qué se trata? 1) Enchufe o apagador 2) El breaker se bota 3) Lámpara o ventilador de techo 4) Cambio de panel 5) Circuito o enchufe nuevo 6) Alarma de humo cableada 7) No sé", step: question}
+      - {who: homeowner, text: "2"}
+      - {who: intake, text: "¿Algo echa chispas, está caliente, zumba o echa humo? 1) Sí 2) No 3) No sé", step: question}
+      - {who: homeowner, text: "no, nada huele a quemado ni chispea"}
+      - {who: intake, text: "¿Más o menos cuándo se construyó la casa? 1) Antes de 1980 2) 1980 a 2000 3) Después de 2000 4) No sé", step: question}
+      - {who: homeowner, text: "1976, es casa manufacturada"}
+      - {who: intake, text: "¿Qué no funciona: enchufes o luces en un área, como la mitad de la casa, o aparatos grandes como el aire, la secadora o la estufa?", step: follow_up}
+      - {who: homeowner, text: "solo la cocina, enchufes y luces"}
+      - {who: intake, text: "Una foto ayuda a los negocios a cotizar. No hay problema si no manda foto. ¿Puede mandar una foto del panel con la puerta abierta?", step: photo}
+      - {who: homeowner, text: "aquí va la foto"}
+    questions_asked: 5
+    follow_up_used: fu_what_is_out
+    skipped_bank_questions: [count]
+    routing: {category: electrical, job_type: partial_power, bank_job_type: "breaker trips", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Electrical | Lake Havasu City | north side | manufactured home
+      Kitchen outlets and lights have no power; the breaker drops again when turned on.
+      Out: outlets or lights in one area. Neighbors: not asked. Won't reset: breaker (owner's words).
+      Panel: photo, door open; breaker labeled kitchen in handwriting. Built: before 1980.
+      Photos: 1. Homeowner adds: refrigerator is plugged into a kitchen outlet; husband can be there after 5 p.m.; owner writes in Spanish.
+      Needed: not said.
+    facts_in_card_not_stated: []
