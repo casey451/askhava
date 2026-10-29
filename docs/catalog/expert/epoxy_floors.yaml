@@ -202,7 +202,7 @@ trade_brief:
       neutral_wording: "One step up to the house door; a short concrete wall runs along the base of the side walls."
     - photo_id: p3
       reads: ["Crack width and whether one side sits higher (shoe for scale)", "Old coating lifting in curls or sheets", "White powder at a wall base", "Bubbles or soft, sticky spots in a fresh coat", "Chips at control joints"]
-      neutral_wording: "Hairline crack from the big door to the middle; gray coating lifting in curled pieces along both tire paths."
+      neutral_wording: "Hairline crack runs halfway into the garage starting at the big door; gray coating lifting in curled pieces along both tire paths."
     - photo_id: p4
       reads: ["A coating or paint layer over the concrete and how thick it is", "Shine of a clear sealer at the edge", "Bare concrete under a broken bubble"]
       neutral_wording: "Edge at the house door shows a thin gray layer over bare concrete."
