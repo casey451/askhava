@@ -380,8 +380,13 @@ def test_merge_main_keeps_runner_files_and_makes_a_two_parent_merge(repo: dict[s
     (seed / "README.md").write_text("fake repo v2\n")
     git(seed, "commit", "-qam", "main moves")
     git(seed, "push", "-q", "origin", "main")
-    assert env.merge_main() == "merged" and origin_file(repo, "claude/kit-state", "README.md") == "fake repo v2"
+    env.write_cycle_log({"result": "idle", "log": []})
+    (seed / "README.md").write_text("fake repo v3\n")
+    git(seed, "commit", "-qam", "main moves again")
+    git(seed, "push", "-q", "origin", "main")
+    assert env.merge_main() == "merged" and origin_file(repo, "claude/kit-state", "README.md") == "fake repo v3"
     assert origin_file(repo, "claude/kit-state", "PROGRESS.md") == "# Progress"
+    assert json.loads(origin_file(repo, "claude/kit-state", "kit/runner_log.jsonl"))["result"] == "idle"  # D-499
 
 
 class AutoMergeRunner(FakeRunner):

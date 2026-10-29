@@ -59,7 +59,7 @@ NIGHTLY_FILE = "kit/nightly.json"
 RUNNER_LOG = "kit/runner_log.jsonl"  # one JSON line per cycle, the last 200 kept (D-499)
 ANSWERS_FILE = "kit/owner_answers.jsonl"
 PUSH_RETRIES = 3
-RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
+RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
 HEARTBEAT_SECONDS = 60
 ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
 
