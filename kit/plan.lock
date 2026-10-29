@@ -47,7 +47,7 @@
   "scripts/check_crates.py": "1b662769ec433cece11928bb71db428d75e09a8876fb0121ad9235c590384d43",
   "scripts/check_legal_docs.py": "1d5d90241cc1712499eb0607c410dfd424329f754fe31106ec6f0ef79ee00b06",
   "scripts/check_plan_lock.py": "407e8614adc31780cd7b03ae910a5b4f51c12840e13e79bac418f9844dc3c1c4",
-  "scripts/check_pr_change.py": "eb2740a82cfbc10dc6dd1a131586e6f2cd932fee09dd05f9515d2ef0eda42026",
+  "scripts/check_pr_change.py": "1c8f48b19afd4fe94685933732762ed3c2668780146ca1de75b4b5f7b9463f46",
   "scripts/check_rust_rules.py": "b9028efc308d7dbcbd8bf713f305ecc0a6969d6fdd7808f532543ad78ae62ef8",
   "scripts/gen_prompts.py": "0a1162f81e4b8ebd2281c20c70ed501c9eabf02e6f4ec3ac9f5239e69d39204d",
   "scripts/pii_scan.py": "8ace40e2bee6341ff4454b568e98fe300656f1a226bc4a9a7e451dd0240d29e8",

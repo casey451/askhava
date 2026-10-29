@@ -167,7 +167,7 @@ def plan_change_trailer_check(
     found = re.findall(r"^Plan-Change: (D-\d{3})\s*$", message, re.M)
     if not found:
         return [f"plan change touching {touched[0]} needs a 'Plan-Change: D-###' trailer on one of its commits"]
-    m = re.match(r"(D-\d{3})", found[-1])
+    m = re.match(r"(D-\d{3})", found[0])  # the newest commit's trailer governs
     if not any(m.group(1) in line for line in decisions_added):
         return [f"Plan-Change trailer names {m.group(1)}, which is not a new entry in docs/decisions.md"]
     return []
