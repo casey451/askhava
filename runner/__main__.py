@@ -124,8 +124,24 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
         return stage_exit.passed_stages(kit["tasks"], state, env.read_nightly(), {}, stage_exit.git_is_ancestor(ROOT))
 
     cfg = cycle.Config(kit["tasks"], kit["models"], kit["protected_paths"], kit["shared_paths"], outbox_dir,
-                       session_id(args, starter), now_utc, gate, pacing.make_pacer(kit["tasks"], ROOT), pacing.usage_recorder(ROOT))
+                       session_id(args, starter), now_utc, gate, pacing.make_pacer(kit["tasks"], ROOT), pacing.usage_recorder(ROOT),
+                       owner_paths(ROOT / ".github" / "CODEOWNERS") if owner_review(ROOT / "kit" / "runner.json") else ())
     return cfg, env
+
+
+def owner_review(settings: Path) -> bool:
+    """False once Casey turned code-owner review off on the ruleset (D-512); true when unset."""
+    if not settings.is_file():
+        return True
+    return bool(json.loads(settings.read_text(encoding="utf-8")).get("owner_review", True))
+
+
+def owner_paths(codeowners: Path) -> tuple[str, ...]:
+    """The paths in CODEOWNERS, without the leading "/" (D-511); none when the file is missing."""
+    if not codeowners.is_file():
+        return ()
+    lines = codeowners.read_text(encoding="utf-8").splitlines()
+    return tuple(line.split()[0].lstrip("/") for line in lines if line.strip() and not line.lstrip().startswith("#"))
 
 
 def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
