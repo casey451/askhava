@@ -615,7 +615,14 @@
    "slug": "twin-gate-into-repo",
    "type": "harness",
    "stage": "1",
-   "attempt_started_at": "2026-10-29T19:49:35Z"
+   "attempt_started_at": "2026-10-29T19:49:35Z",
+   "reviewed_sha": "eec59646bf001a429a59fe728ca1e7a045764b02",
+   "review_lease": {
+    "task": "T172",
+    "session": "actions-40943306432",
+    "expires": "2026-10-29T23:17:34Z"
+   },
+   "branch": "claude/task/T172-twin-gate-into-repo"
   },
   {
    "id": "T005",
@@ -3663,7 +3670,7 @@
    }
   }
  },
- "updated_at": "2026-10-29T20:17:34Z",
+ "updated_at": "2026-10-29T20:23:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -3761,7 +3768,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3df6359df503657aa8d63798713926f7e076b8f5",
+ "runner_sha": "eec59646bf001a429a59fe728ca1e7a045764b02",
  "starter": "actions",
  "smoke_runs": [
   {
