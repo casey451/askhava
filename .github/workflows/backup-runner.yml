@@ -1,8 +1,11 @@
 # The Actions runner (primary since D-483): runs `python3 -m runner` (D-486) through the Claude Code
 # GitHub Action (subscription token, not pay-per-use) with RUNNER_STARTER=actions, so every state
 # commit names this starter. Off unless kit/state.json on claude/kit-state has "backup_runner": "on"
-# AND the secret CLAUDE_CODE_OAUTH_TOKEN is set. Starts hourly, by hand, and on every PR merged into
-# main, so the next task starts at once instead of at the next hourly tick (BUILD_BRIEF.md:213).
+# AND the secret CLAUDE_CODE_OAUTH_TOKEN is set. Starts the moment `ci` finishes on a task branch (the
+# gate then waits for the task's auto-merge, which lands once Governance follows), on every
+# PR merged into main by a person, by hand, and hourly as a safety net; a cycle that clears a red main
+# or a false red starts the next one at once (D-500). So the next task starts within minutes of the
+# last one finishing, never on a fixed clock (BUILD_BRIEF.md:213).
 # The concurrency group keeps two starts from overlapping; the lease on claude/lease is the real lock.
 name: backup-runner
 on:
@@ -11,18 +14,23 @@ on:
   workflow_dispatch:
   pull_request:
     types: [closed]
+  workflow_run:
+    # `ci`, not `governance`: governance is itself started by workflow_run, so its own head_branch
+    # is main and could never name the task (D-500 review).
+    workflows: [ci]
+    types: [completed]
 permissions:
   contents: read
-concurrency:
-  group: backup-runner
-  cancel-in-progress: false
 jobs:
   gate:
     name: gate
-    if: github.event_name != 'pull_request' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
+    if: >-
+      (github.event_name != 'pull_request' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'))
+      && (github.event_name != 'workflow_run' || startsWith(github.event.workflow_run.head_branch, 'claude/task/'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: read
     outputs:
       run: ${{ steps.check.outputs.run }}
     steps:
@@ -53,9 +61,33 @@ jobs:
             exit 0
           fi
           echo "run=true" >> "$GITHUB_OUTPUT"
+      - name: A task's checks finished - wait for its auto-merge (D-500)
+        if: github.event_name == 'workflow_run' && steps.check.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          set -u
+          # A failed check goes straight to the runner (it records the failure and retries the task).
+          # A green one is merged by auto-merge once Governance follows; give it up to fifteen minutes, then run
+          # anyway (the runner reports merge_pending and the next event picks it up).
+          if [ "$CONCLUSION" != "success" ]; then echo "checks ${CONCLUSION}: run now"; exit 0; fi
+          for _ in $(seq 1 60); do
+            state="$(gh api "repos/${GITHUB_REPOSITORY}/pulls?head=${GITHUB_REPOSITORY_OWNER}:${BRANCH}&state=all&per_page=1" \
+              --jq '.[0] | if .merged_at then "merged" else .state end' 2>/dev/null || echo unknown)"
+            [ "$state" = "open" ] || { echo "PR ${state}: run now"; exit 0; }
+            sleep 15
+          done
+          echo "PR still open after fifteen minutes: run anyway"
   backup:
     name: backup
     needs: gate
+    # On the job, not the workflow: a gate waiting for a merge must not hold up the group. One backup
+    # job runs at a time and at most one waits; the lease on claude/lease is the real lock.
+    concurrency:
+      group: backup-runner
+      cancel-in-progress: false
     if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     # The runner smokes main before every claim (scripts/smoke.sh) and the worker runs the same
@@ -82,6 +114,7 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
+      actions: write
     steps:
       # persist-credentials: false so pushes go out as the Claude GitHub App,
       # not as GITHUB_TOKEN.
@@ -90,6 +123,8 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: false
+      - name: Note when this job started (for the chaining step)
+        run: echo "JOB_START=$(date -u +%Y-%m-%dT%H:%M:%S)" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -122,3 +157,27 @@ jobs:
             8. Report the runner's output lines and stop.
 
             Never break section 2. Never claim a test passed unless you ran it here.
+      - name: Start the next cycle at once when this one cleared the way (D-500)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -u
+          # Chain only on a result that leaves work for the very next cycle: a cleared red, or a red
+          # main that this cycle has just turned into a queued FIX-MAIN. A red still waiting on the
+          # nightly, a lost race and every other result wait for an event or the hourly tick, so the
+          # chain can never spin without progress (D-500 review).
+          log="$(gh api "repos/${GITHUB_REPOSITORY}/contents/kit/runner_log.jsonl?ref=claude/kit-state" \
+            -H 'Accept: application/vnd.github.raw' 2>/dev/null || true)"
+          again="$(printf '%s' "$log" | python3 -c '
+          import json, os, sys
+          start = os.environ.get("JOB_START", "9999")
+          rows = [json.loads(l) for l in sys.stdin if l.strip()]
+          mine = [r for r in rows if str(r.get("at", "")) >= start]
+          def moved(r):
+              return bool((r.get("changed") or {}).get("tasks"))
+          go = any(r.get("result") in ("false_red_cleared", "main_cleared") or (r.get("result") == "main_red" and moved(r)) for r in mine)
+          print("yes" if go else "no")
+          ' 2>/dev/null || echo no)"
+          echo "chain: ${again}"
+          if [ "$again" = "yes" ]; then gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY"; fi
