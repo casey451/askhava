@@ -8,6 +8,9 @@ the categories that must be off or absent at launch, and that neither file conta
 superseded value or banned wording (including the WORD-022 not-a-contractor list).
 Also checks the license map (LIC-043, LIC-044, D-392) and the intake question bank
 (LIC-040, INT-042, D-394), and the launch flags (LIC-046, D-396).
+Checks each category's job types (LIC-001) against the license map's per-job-type scope:
+every job type of an enabled licensed category has a license that covers it (CARD-001), and
+a subclassification receives only job types within its scope (LIC-035, D-058, D-504).
 Prints one line per example; exits 1 on any error.
 
 Usage: python3 scripts/check_catalog.py [--root REPO_ROOT]
@@ -38,6 +41,7 @@ TRIP_FEE_TIERS = (25, 75)  # FEE-004, D-399: $25 by default, never above $75
 QUESTIONS_MIN, QUESTIONS_MAX = 3, 8  # LIC-040, D-394, D-431
 QUOTE_FORMATS = frozenset({"range", "monthly", "tiers", "firm", "diagnostic_visit"})  # PICK-053
 KB_TRADES_DIR = Path("docs/catalog/trade_kb/trades")  # D-431
+SUBCLASS = re.compile(r"^R-\d+R ")  # LIC-035: an R-37R or R-39R subclassification row
 MAX_PHOTOS = 3  # INT-044, D-432
 
 TIER_LOW_FROM = Fraction(500)  # FEE-001: $500.00 and up is $75
@@ -548,6 +552,104 @@ def check_license_classes(
     return errors, reached
 
 
+def granted_jobs(grant: dict[str, Any], cat: dict[str, Any]) -> list[str]:
+    """The job types one grant gives: the category's (all) or those listed (only), plus also."""
+    base = cat.get("job_types", []) if grant.get("all") else grant.get("only", [])
+    return [str(job) for job in [*base, *grant.get("also", [])]]
+
+
+def mapped_jobs(data: dict[str, Any], cats: dict[str, dict[str, Any]]) -> set[tuple[str, str]]:
+    """CARD-001, LIC-043: every (category, job type) a class or agency in the map covers."""
+    pairs: set[tuple[str, str]] = set()
+    for row in [*data.get("classes", []), *data.get("agencies", [])]:
+        for cat_id, grant in (row.get("job_types") or {}).items():
+            cat = cats.get(str(cat_id))
+            if cat is None:
+                continue
+            pairs |= {(str(cat_id), job) for job in granted_jobs(grant, cat)}
+            needed = row.get("record_category_needed") or {}
+            pairs |= {(str(cat_id), str(job)) for job in needed if str(job) in job_names(cat)}
+    return pairs
+
+
+def check_job_coverage(data: dict[str, Any], cats: dict[str, dict[str, Any]]) -> list[str]:
+    """CARD-001, LIC-001, LIC-043: each job type of an enabled licensed category has a license."""
+    pairs = mapped_jobs(data, cats)
+    errors: list[str] = []
+    for cat in cats.values():
+        if cat.get("enabled") is not True or cat["license"]["kind"] == "none":
+            continue
+        errors.extend(
+            f"license map: {cat['id']} job type {job!r} has no license scope (CARD-001, LIC-043)"
+            for job in cat.get("job_types", [])
+            if (str(cat["id"]), str(job)) not in pairs
+        )
+    return errors
+
+
+def check_scope_tags(data: dict[str, Any], cats: dict[str, dict[str, Any]]) -> list[str]:
+    """LIC-035 (D-504): every job type of a category a subclassification maps has a scope tag."""
+    tags = data.get("scope_tags") or {}
+    errors: list[str] = []
+    for entry in data.get("classes", []):
+        if SUBCLASS.match(str(entry.get("class"))):
+            errors.extend(
+                f"license map: category {cat_id} has no scope_tags (LIC-035)"
+                for cat_id in entry.get("job_types") or {}
+                if cat_id not in tags and cat_id in cats
+            )
+    for cat_id, jobs in tags.items():
+        cat = cats.get(str(cat_id))
+        if cat is None:
+            errors.append(f"license map: scope_tags names unknown category {cat_id!r}")
+            continue
+        listed = {str(job) for job in jobs or {}}
+        own = {str(j) for j in cat.get("job_types", [])}
+        own |= {str(r.get("job")) for r in cat.get("refused", [])}
+        errors.extend(
+            f"license map: {cat_id} job type {job!r} has no license scope in scope_tags (LIC-035)"
+            for job in sorted(own - listed)
+        )
+        errors.extend(
+            f"license map: scope_tags {cat_id} has no job type {job!r}"
+            for job in sorted(listed - job_names(cat))
+        )
+    return errors
+
+
+def check_subclass(
+    entry: dict[str, Any], tags: dict[str, Any], cats: dict[str, dict[str, Any]]
+) -> list[str]:
+    """LIC-035 (D-058, D-504): a subclassification receives only job types within its scope."""
+    cls = str(entry.get("class"))
+    scope = {str(s) for s in entry.get("scope") or []}
+    if not scope:
+        return [f"license map: subclassification {cls} has no scope (LIC-035)"]
+    errors: list[str] = []
+    for cat_id, grant in (entry.get("job_types") or {}).items():
+        cat = cats.get(str(cat_id))
+        if cat is None:
+            continue
+        for job in granted_jobs(grant, cat):
+            job_tags = {str(s) for s in (tags.get(str(cat_id)) or {}).get(job) or []}
+            if not job_tags & scope:
+                errors.append(
+                    f"license map: subclassification {cls} gets {cat_id} job type {job!r}, "
+                    f"outside its scope {sorted(scope)} (LIC-035)"
+                )
+    return errors
+
+
+def check_license_scope(data: dict[str, Any], cats: dict[str, dict[str, Any]]) -> list[str]:
+    """CARD-001, LIC-035 (D-058, D-504): per-job-type license scope, before any routing code."""
+    errors = check_job_coverage(data, cats) + check_scope_tags(data, cats)
+    tags = data.get("scope_tags") or {}
+    for entry in data.get("classes", []):
+        if SUBCLASS.match(str(entry.get("class"))):
+            errors.extend(check_subclass(entry, tags, cats))
+    return errors
+
+
 def check_license_map(data: dict[str, Any], cats: dict[str, dict[str, Any]]) -> list[str]:
     """LIC-043, LIC-044 (D-392): every licensed category reachable; no bad rows."""
     errors: list[str] = []
@@ -666,6 +768,7 @@ def run(root: Path) -> Report:
     report.lines.extend(examples.lines)
     lmap = load(root, LICENSE_MAP_FILE)
     report.errors.extend(check_license_map(lmap, cats))
+    report.errors.extend(check_license_scope(lmap, cats))
     bank = load(root, QUESTION_BANK_FILE)
     report.errors.extend(check_question_bank(bank, cats, root))
     report.lines.append(
