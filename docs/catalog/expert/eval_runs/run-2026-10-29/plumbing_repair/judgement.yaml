@@ -8,13 +8,23 @@
 # - The "Lake Havasu City" town on playbook and baseline_human cards is the harness coverage default
 #   (intake_agent.md step 1 tells the run agent to assume Lake Havasu City coverage). It is not counted
 #   in facts_not_stated for any variant. baseline_none asked the town.
+# Label D (playbook_v2), added in a second pass from playbook_v2.yaml and the scenario file, with the same panel and rules.
+# - D is always playbook_v2 (fixed by the task, not shuffled), so the blind is weaker for D than for A to C.
+# - v2 asks the town as its coverage step; the town on its cards is homeowner-stated and not counted.
+# - The v2 timing question is a counted question (the run file counts it). It is listed as wasted only where its answer was lost.
+# - A card that claims a photo the transcript never shows (the ask was declined and no photo came with the opening) is counted
+#   in facts_not_stated. The run file's own facts_in_card_not_stated lists are all empty and were not trusted.
+# - s04 stopped with stopped_before_card "routed_elsewhere" (to appliance_repair, the expected category) and no card. Per the task's
+#   routing rule it scores routing_correct true and quotable null. The panel prompt's own null rule names only outside_area and
+#   no_businesses, and the scenario expects an appliance card; under that reading s04 would be quotable 0. trap_caught is false:
+#   it routed on the word "washing machine" with no fact showing the wall drain works.
 category: plumbing_repair
 run: run-2026-10-29
 judge_model: "claude-opus-5-5"
 panel: [owner, estimator, field_tech]
 scenarios:
   - scenario_id: plumbing_repair_s01
-    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    labels: {A: baseline_none, B: baseline_human, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: 1
@@ -58,9 +68,23 @@ scenarios:
           owner: "I'd go out on a visit fee. Knowing the valve won't close and it's a manufactured home with a soft cabinet tells me what kind of visit this is."
           estimator: "The fixture menu took 'sink' but never asked kitchen or bath, or what is dripping. The scenario allowed 5 questions and this used 6, one of them a declined photo ask."
           field_tech: "Warned about the seized valve and the soft floor. I still don't know if I'm walking into a supply leak or a drain leak."
+      D:
+        quotable: 1
+        missing_facts: ["which sink (kitchen)", "what drips (cold-side shutoff valve)", "manufactured home", "soft, stained cabinet floor", "started about two weeks ago", "drip every few seconds (he said it; the card keeps only 'all the time')"]
+        wasted_questions: ["When do you need this? (he said 'whenever, just send it'; the card says 'Needed: not said')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes:
+          owner: "A drip under some sink with a stuck valve. I don't know which sink, what's dripping or what the home is. I'd call."
+          estimator: "The shutoff question caught the seized valve. Then it skipped the floor question though nothing he said answered it, and that question was the only way to the manufactured home and the soft cabinet. Worse than the first playbook run here."
+          field_tech: "I know I need the house main. I don't know I'm walking onto a soft cabinet floor in a manufactured home."
 
   - scenario_id: plumbing_repair_s02
-    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    labels: {A: playbook, B: baseline_human, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -104,9 +128,23 @@ scenarios:
           owner: "Flat rate from the card."
           estimator: "Asked about other drains first, which killed the 'sewer' wording. Then what she tried, then the disposal. That's what I'd ask."
           field_tech: "I know about the chemical and the disposal before I get there."
+      D:
+        quotable: 2
+        missing_facts: ["garbage disposal hums and does not clear", "dishwasher drains into the disposal", "concrete slab"]
+        wasted_questions: ["What is it about? (her opening already said the kitchen sink won't drain)", "Is the water shut off right now? (a clog, not a leak)", "under-sink photo ask (declined, 'its wet under there')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'Photos: 1 (kitchen sink full of gray water, dish rack beside it)': no photo came with the opening and the only photo ask was declined"]
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes:
+          owner: "Kitchen drain clearing on a visit fee. One drain, not the main, and the drain cleaner is on the card."
+          estimator: "The 'what have you tried' follow-up fixed the chemical miss. Still never asked about the disposal, and the floor question was skipped. Six questions against a max of 5, three of them wasted. The photo on the card was never sent."
+          field_tech: "I know about the chemical. I'd find the humming disposal myself."
 
   - scenario_id: plumbing_repair_s03
-    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    labels: {A: baseline_human, B: baseline_none, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -150,9 +188,23 @@ scenarios:
           owner: "Right job, drain backup and not toilet repair. Visit fee or a range from the cleanout."
           estimator: "The other-drains follow-up and the cleanout photo ask did the work. Shutoff and floor were spent where home age would have helped price roots and camera time."
           field_tech: "I know about the cleanout. I don't know the age of the line."
+      D:
+        quotable: 2
+        missing_facts: ["home built in the 1980s", "mature trees out front", "toilet flushes fine and does not leak"]
+        wasted_questions: ["Is the water shut off right now?", "water damage photo ask (he had just said nothing has come up)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes:
+          owner: "Drain backup, not toilet repair. Range from the yard cleanout. Same as the first run."
+          estimator: "Leading with the other-drains follow-up was right. Six questions against a max of 5, and it still never asked the age of the home, the yard or whether the toilet itself works."
+          field_tech: "Cleanout location is there. No age and no trees, so I don't know to bring the camera for roots."
 
   - scenario_id: plumbing_repair_s04
-    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    labels: {A: baseline_none, B: playbook, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -196,9 +248,23 @@ scenarios:
           owner: "Pump filter or pump. I can quote a service call plus the likely part."
           estimator: "Got the socks with one 'anything else' question. Says plainly that brand wasn't asked."
           field_tech: "Everything I need except the model for the pump."
+      D:
+        quotable: null
+        missing_facts: ["no card was written; none of the expected appliance card facts reached anyone: front-load washer, about 6 years old, display code OE, wall drain takes a bucket of water"]
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: routed_elsewhere
+        panel_notes:
+          owner: "Right trade. But he thinks his wall drain is clogged, and nothing was asked to show it isn't. An appliance tech gets nothing to quote from."
+          estimator: "Routed on the words 'washing machine' with zero questions. The bucket test, the OE code and the age are the whole case, and none were collected. Scored null and routing-correct only under the task's routed_elsewhere rule; under the panel's own rule this is a 0."
+          field_tech: "If the appliance side has to start over, the homeowner gets asked everything again, or I show up blind."
 
   - scenario_id: plumbing_repair_s05
-    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    labels: {A: baseline_human, B: playbook, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -242,9 +308,23 @@ scenarios:
           owner: "Visit fee. The shower timing tells me to look at the tub."
           estimator: "Timing, slab and vinyl are all on the card without naming a cause. That's how it should be done."
           field_tech: "Lifting vinyl near the tub is on the card, and the photo notes the tub edge in frame."
+      D:
+        quotable: 1
+        missing_facts: ["floor is wet only after showers", "toilet base dry when nobody has showered", "vinyl plank lifting near the tub", "concrete slab", "tub caulk gap visible in the photo (the card notes only the tub edge)", "toilet not worked on"]
+        wasted_questions: ["Is the water shut off right now?"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 2
+        stopped_before_card: null
+        panel_notes:
+          owner: "Still reads like a wax ring reset. I'd quote the wrong job."
+          estimator: "Two questions, shutoff and timing. It still never asked when the floor gets wet, and it had room for two follow-ups. The photo line now mentions the tub edge, but not the caulk gap."
+          field_tech: "I'd pull the toilet and find a dry flange. Same miss as the first run."
 
   - scenario_id: plumbing_repair_s06
-    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    labels: {A: playbook, B: baseline_none, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: 1
@@ -288,9 +368,23 @@ scenarios:
           owner: "Firm from the card."
           estimator: "Four questions and every one hit holes, plate, counter and valves. This is the bar."
           field_tech: "Plate and stops planned, and the main is to be confirmed. Good."
+      D:
+        quotable: 1
+        missing_facts: ["single-handle pull-down faucet", "sink has three holes", "granite countertop", "new faucet needs one hole or a plate that is not in the box", "old shutoff valves not turned in years"]
+        wasted_questions: ["fixture photo ask (he had said up front he can't send pics)", "Is the water shut off right now? (answered 'not leaking'; never got to the old valves)", "under-sink photo ask (second photo ask after he declined again)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'house' in the card header (he never said the kind of place)"]
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes:
+          owner: "Install a customer faucet, nothing else known. I'd call about the holes, the counter and the valves."
+          estimator: "Three of four questions wasted, two of them photo asks after he said twice he can't send photos. Still nothing on holes, countertop or faucet type, and it lost the old-valve fact the first run got. Worse than the first run."
+          field_tech: "Three-hole granite and a one-hole faucet with no plate. Second trip."
 
   - scenario_id: plumbing_repair_s07
-    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    labels: {A: baseline_none, B: baseline_human, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -334,9 +428,23 @@ scenarios:
           owner: "Leak find visit fee. Both sources are named. I'd still call to set a time she can do."
           estimator: "The follow-up checklist found both sources. Four of six questions were menus she couldn't answer, including a meter photo ask, which the elderly trap warns against. The scenario allowed 5."
           field_tech: "I don't know the house age, and I don't know she needs mornings."
+      D:
+        quotable: 2
+        missing_facts: ["high for about two months", "1970s single-story home"]
+        wasted_questions: ["Is the water shut off right now?", "water meter follow-up (she has not checked 'the water clock'; it changed nothing)", "water damage photo ask (she said she can't take pictures)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes:
+          owner: "Leak find on a visit fee, mornings, both sources, and the yard spot is by the meter box. I can book this."
+          estimator: "Better than the first run: the signs follow-up got both sources and the timing question got 'mornings only'. Six questions against a max of 5, three wasted, and it still says 'water meter', 'shut off' and 'concrete slab' to the elderly homeowner the scenario warns about."
+          field_tech: "Meter box patch and running toilet, mornings. I don't know the age of the house."
 
   - scenario_id: plumbing_repair_s08
-    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    labels: {A: baseline_human, B: baseline_none, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -380,9 +488,23 @@ scenarios:
           owner: "Drain clearing visit fee. I can price it, but I'd call to find out when anyone's home."
           estimator: "The other-drains follow-up got the slow sink. It never asked what he tried, the unit type or access, and two questions went to shutoff and floor."
           field_tech: "I'd plunge standing drain opener with no warning. And I'd show up at 10 a.m. to an empty unit."
+      D:
+        quotable: 2
+        missing_facts: ["drain opener poured in last night", "upstairs half of a duplex", "home evenings and weekends only", "standing since last night"]
+        wasted_questions: ["Is the water shut off right now?", "under-sink photo ask on a shower clog (declined)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'Photos: 1 (shower stall with about two inches of standing water over the drain)': no photo came with the opening and the only photo ask was declined"]
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes:
+          owner: "Two slow drains, renter, landlord approves. Visit fee. I'd still call to find out when anyone is home."
+          estimator: "The landlord line is now on the card. It had a second follow-up slot and the 'what have you tried' follow-up it used on s02, and didn't use it, so the drain opener is still missing. The photo on the card was never sent."
+          field_tech: "Still no warning about drain opener in the standing water. Still no access hours."
 
   - scenario_id: plumbing_repair_s09
-    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    labels: {A: playbook, B: baseline_human, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -426,9 +548,23 @@ scenarios:
           owner: "Same as the best card here."
           estimator: "Complete and in Spanish, but 6 questions against a max of 5."
           field_tech: "Drain pipe source, soft floor, manufactured home. Ready."
+      D:
+        quotable: 2
+        missing_facts: ["manufactured home", "water comes from the white plastic drain pipe, not the faucet (pipe is listed only as 'in sight')", "cabinet floor soft (the photo shows it swollen)", "started about a week ago"]
+        wasted_questions: ["pipe close-up photo ask (to read printing on a drain pipe; declined, she had already sent one)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 3
+        stopped_before_card: null
+        panel_notes:
+          owner: "Drain-side drip with a swollen cabinet floor, range from the card. I don't know it's a manufactured home, and that changes the floor repair."
+          estimator: "Spanish all the way, three questions, and the bucket rate and 'today' are on it. It skipped the floor question though she never answered it, so the manufactured home the first run caught is gone."
+          field_tech: "Photo shows the drain pipe and the swollen deck. I'd find out on site it's a manufactured home."
 
   - scenario_id: plumbing_repair_s10
-    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    labels: {A: baseline_none, B: playbook, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -472,9 +608,23 @@ scenarios:
           owner: "Same day, closet auger, pull if needed. Marked urgent."
           estimator: "Stopped water, other drains, plunge result, second bathroom. All the right questions. One over the max of 4."
           field_tech: "No surprises. Sanitize and auger."
+      D:
+        quotable: 2
+        missing_facts: ["water has stopped (she said 'it stopped coming up'; the card dropped it)", "plunged once, flushed once, then refilled", "hall bathroom", "kids home; a second bathroom is available", "concrete slab"]
+        wasted_questions: ["What is it about? (she had said TOILET in the opening)", "Is the water shut off right now? (to a panicked homeowner on a clog; the one useful answer was then dropped from the card)", "under-sink photo ask on a toilet overflow (declined)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'about 20 minutes ago' (she never gave a time)", "'Photos: 1 (bathroom floor ... plunger on the floor)': no photo came with the opening and the only photo ask was declined"]
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes:
+          owner: "Toilet clog, visit fee. Still marked not urgent with sewage on the floor, and the card doesn't say it stopped. I'd call."
+          estimator: "Five questions against a max of 4, to a scared homeowner, three wasted. It got 'it stopped' and then lost it, and invented a time. 'Tried: not said' with a second follow-up slot unused. No advice given, which is right."
+          field_tech: "I don't know if I'm walking into a flood or a plunged bowl."
 
   - scenario_id: plumbing_repair_s11
-    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    labels: {A: baseline_human, B: playbook, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -518,9 +668,23 @@ scenarios:
           owner: "Quotable stop replacement. Gas mention recorded."
           estimator: "Drip rate, age and slab are there, and the 911 text was sent."
           field_tech: "Gas mention is on the card as said."
+      D:
+        quotable: 2
+        missing_facts: ["home built in the 1990s, concrete slab", "gas water heater and furnace closet in the garage (card has only 'near the water heater')", "has not called the gas company"]
+        wasted_questions: ["Is the water shut off right now?", "pipe printing photo ask (declined; the valve photo was enough)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes:
+          owner: "Stop replacement on a visit fee. 911 text out first, sink card kept, gas mention on the card as she said it."
+          estimator: "The drip-timing follow-up now gets 'one drop a minute'. The floor question was skipped though she never answered it, so age and slab are missing. No diagnosis."
+          field_tech: "I'd want to know there's a furnace closet in that garage too."
 
   - scenario_id: plumbing_repair_s12
-    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    labels: {A: playbook, B: baseline_none, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: 1
@@ -564,9 +728,23 @@ scenarios:
           owner: "A range. Drain route through the slab is the scope, and it's called out."
           estimator: "Got the existing drain route, which nobody else did. Marked unsure on the job type, which is honest."
           field_tech: "No floor drain, so a pan or box. Flagged."
+      D:
+        quotable: 1
+        missing_facts: ["garage has no floor drain", "existing washer drain runs inside the hallway wall (he said it; the card dropped it)", "the 240-volt dryer outlet: no electrical card was written (only a 'homeowner adds' line)"]
+        wasted_questions: ["Is the water shut off right now?", "fixture photo ask (nothing to replace, same washer and dryer)"]
+        trap_caught: false
+        routing_correct: false
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes:
+          owner: "30 feet on a slab, by end of month. I still can't range it without knowing whether the garage has a drain and where the old drain ties in. I'd call."
+          estimator: "The template permit line is gone and the deadline is on. Bank job type is still 'leak repair', not the expected 'faucet replacement'. Six questions against a max of 5, two wasted, and no floor-drain question. It heard 'the pipe is inside the hallway wall' and left it off the card."
+          field_tech: "No floor drain is a surprise. Electrical has no card of its own."
 
   - scenario_id: plumbing_repair_s13
-    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    labels: {A: baseline_none, B: baseline_human, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: null
@@ -601,9 +779,20 @@ scenarios:
         questions_asked: 0
         stopped_before_card: outside_area
         panel_notes: {owner: "Stopped correctly for Parker.", estimator: "No trade question before coverage.", field_tech: "n/a"}
+      D:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: outside_area
+        panel_notes: {owner: "Stopped correctly for Parker.", estimator: "No trade question before coverage.", field_tech: "n/a"}
 
   - scenario_id: plumbing_repair_s14
-    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    labels: {A: baseline_human, B: playbook, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: null
@@ -638,9 +827,20 @@ scenarios:
         questions_asked: 0
         stopped_before_card: no_businesses
         panel_notes: {owner: "Correct no-businesses stop.", estimator: "Job type not recorded (no repipe label in categories.yaml).", field_tech: "n/a"}
+      D:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: no_businesses
+        panel_notes: {owner: "Correct no-businesses stop.", estimator: "Job type repipe recorded; the town was asked first as the coverage step.", field_tech: "n/a"}
 
   - scenario_id: plumbing_repair_s15
-    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    labels: {A: playbook, B: baseline_human, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 1
@@ -684,9 +884,23 @@ scenarios:
           owner: "Firm from the card."
           estimator: "Complete, but 7 questions against a max of 5."
           field_tech: "Gas 40 gallon, garage corner by the furnace closet. Ready."
+      D:
+        quotable: 1
+        missing_facts: ["40 gallon", "about 12 years old", "wet spot there about two days, puddle a few inches wide", "next to the furnace closet"]
+        wasted_questions: ["Where exactly is the water coming from? (he wants replacement either way; answered 'just replace it')", "under-sink photo ask for a garage water heater (declined)"]
+        trap_caught: false
+        routing_correct: false
+        fire_dept_correct: true
+        facts_not_stated: ["'no brand preference' (he never said it)"]
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes:
+          owner: "Gas, in the garage, still has hot water, licensed only. Without gallons or age I can't price a replacement. I'd call."
+          estimator: "The photo now gives the fuel, and the shutoff question happened to get 'still has hot water'. It still never asked for the label. Bank job type is now 'leak repair', not the expected 'water heater replacement', a regression from the first run. 'No brand preference' was never said."
+          field_tech: "I know to bring a gas tank. I don't know the size, and I don't know about the furnace closet next to it."
 
   - scenario_id: plumbing_repair_s16
-    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    labels: {A: baseline_none, B: playbook, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: 2
