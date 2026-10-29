@@ -1,0 +1,781 @@
+# Ask Hava expert layer: pressure_washing (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set pressure_washing and trade_kb/trades/pressure_washing.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - All 7 kb job types are kept. The category has only three job types, so four kb job types sit under the
+#   closest one:
+#     roof_wash -> "house wash" (same soft-wash gear and ladders). A roof wash is a different skill and some
+#       washers refuse roofs; suggest a "roof wash" category job type so businesses can opt in or out.
+#     fence_wall -> "house wash" (vertical masonry or wood, low pressure, same marks). "patio" would also work.
+#     dock_ramp -> "patio" (flat work with a surface cleaner). Suggest a "dock or ramp" job type; access by
+#       boat and lake-side wash water make it a different job.
+#     seal_paint_route -> refused name "sealing or painting". The catalog routes it to painting (R-34). Its
+#       quote_format is firm only because the checker reads the pressure_washing row; the card itself goes
+#       out under painting's format. Garage floor coatings route to epoxy_floors "garage floor epoxy"
+#       (R-8 or R-34); paver sealer, fence stain and wall paint route to painting "exterior painting".
+# - Bank gaps. The set asks only surface, size (car bands) and stains (oil or rust, yes or no). It has no
+#   surface material, stories, home size or water question, and the car-size bands mean little for a house
+#   or roof. The follow-ups below cover these one at a time, but the AI may ask only one. Suggest adding
+#   kb q3_home_size and q4_stories with ask_if on surface = House walls, and q6_material for flat work.
+# - Bank photos are [p1_whole_area, p2_worst_stain, p5_faucet]. House and roof jobs need p3_house_front and
+#   p4_roof (both in the kb); suggest adding them to the bank set for those surfaces.
+# - The kb sends solar panel washing to gutter_solar_cleaning, but no enabled category takes panel washing
+#   (gutters is install and repair only). Open question for the catalog. Boat washing goes to boat_detailing.
+# - Open question from the kb: whether a for-hire soft wash that uses a registered algaecide or mildewcide
+#   needs an AZ Department of Agriculture pest management business license (A.R.S. 3-3615, foundation S9).
+#   Not resolved here; nothing in this file tells a business it needs or does not need one.
+# - Roof coatings sold with a roof wash are R-42 work (A.A.C. R4-9-103). roof_repair has no coating job type,
+#   so the coating wish only goes on the card. Open question.
+schema: 1
+category: pressure_washing
+question_set: pressure_washing
+kb_trade: pressure_washing
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (S2): R-34 Painting and Wall Covering includes paint and liquid floor and wall coatings; R-8 Floor Covering includes concrete coatings; R-42 Roofing includes roof coatings on or above the roof deck; R-31 Masonry includes mortar wash and clean; no class names pressure washing"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104 Dual contractor license classifications (S3): CR-34 Painting and Wall Covering"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (total hardness about 19 grains per gallon, range 18 to 20)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_stormwater
+    title: "Lake Havasu City Public Works, Storm Water Management: storm drains, gutters and washes flow to Lake Havasu untreated; any discharge to the storm system that is not entirely stormwater is an illicit discharge"
+    url: "https://www.lhcaz.gov/public-works/storm-water-management"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: sd_powerwash
+    title: "City of San Diego, Storm Water BMPs for power washing (dry clean first, cover drain inlets, contain wash water, send it to soil or the sewer, avoid chemicals)"
+    url: "https://www.sandiego.gov/sites/default/files/storm-water-bmp-power-washing-update.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: arma_algae
+    title: "Asphalt Roofing Manufacturers Association, Algae Discoloration (do not use a power washer or brush on asphalt shingle roofs; high-pressure washing damages them)"
+    url: "https://www.asphaltroofing.org/algae-discoloration/"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: eagle_tile
+    title: "Eagle Roofing (concrete tile manufacturer), FAQ: power washing must not damage the tile surface; reseal recommended when tile is cleaned early; foot traffic breaks tiles and only roofing pros should walk tile roofs"
+    url: "https://eagleroofing.com/glossary"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: sto_stucco
+    title: "Sto Corp. (stucco manufacturer), Stucco Repair and Maintenance Guide: clean acrylic finishes at about 200 to 500 psi, never above 500 psi, nozzle several feet from the wall"
+    url: "https://www.stocorp.com/wp-content/content/Systems_TechService/reStore/Installation%20and%20Repair/IG_Stucco_Repair_and_Maintenance_Guide_EN.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: angelus_efflorescence
+    title: "Angelus Block (concrete block maker), Efflorescence and Concrete Masonry Walls: white salt deposits carried out by water; irrigation adds salts on site walls; deposits that return show water still entering the wall"
+    url: "https://angelusblock.com/resources/technical_articles/efflorescence-and-concrete-masonry-walls/"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: ues_safety
+    title: "UniSource Energy Services, Electrical Safety Tips (S24): keep tools, materials and your body at least 15 ft from overhead power lines; look for lines before climbing a ladder"
+    url: "https://www.uesaz.com/electric-safety/"
+    checked: "2026-10-29"
+    kind: other
+  - id: ues_outage
+    title: "UniSource Energy Services, During a Storm or Service Outage (S25): downed power lines"
+    url: "https://www.uesaz.com/outage-preparation/"
+    checked: "2026-10-29"
+    kind: other
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (Arizona monsoon officially June 15 to September 30)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: climate_normals
+    title: "U.S. Climate Data, Lake Havasu City 1991-2020 normals (average highs June 105 F, July 109 F, August 108 F, September 101 F; December 63 F, January 64 F; about 3.84 in of rain a year)"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_business_license
+    title: "Lake Havasu City Business License: businesses and individuals conducting business within city limits need a city business license; annual fee"
+    url: "https://www.lhcaz.gov/business-license"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: co_pw_marketing
+    title: "CO Consulting (marketing consultant), Pressure Washing Marketing: The Channels That Book Jobs in 2026 (US benchmark ranges: LSA $30-$65 per lead and $80-$250 per booked job; Google search ads $40-$100 and $120-$280; Angi, Thumbtack, HomeAdvisor $25-$85 and $100-$500; Facebook and Instagram $15-$50 and $40-$200; referral and Nextdoor under $25 per booked job; residential job about $200 to $500)"
+    url: "https://christopholivierconsulting.com/pressure-washing-marketing/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Which surfaces, and how many in one trip (driveway, patio, walls, roof, wall or dock)"
+      why: "Flat concrete is fast surface-cleaner work; walls are soft-washed; roofs need ladders and care. Several areas on one trip share the setup time. [judgment]"
+      source: null
+    - driver: "Size: car-size band for flat work, home size and stories for walls and roofs, length for a wall"
+      why: "Flat work is priced by area and houses by size and height; the size answer and the wide photo set the base price. [judgment]"
+      source: null
+    - driver: "Stain treatment: oil, rust or orange marks, white sprinkler marks, green or black growth"
+      why: "Each stain is its own product and dwell time on top of the wash; set-in oil and mineral marks may never fully lift. [judgment]"
+      source: null
+    - driver: "Surface material: bare concrete versus pavers, painted or coated decks, stucco, wood"
+      why: "Coated, painted and wood surfaces take low pressure and more time, and stucco makers set a pressure limit."
+      source: sto_stucco
+    - driver: "Height and access: second story, roof, gate width, overhead lines, a dock reached only by boat"
+      why: "Ladders, poles and staying clear of overhead lines add crew time. [judgment]"
+      source: ues_safety
+    - driver: "Water on site: a working outdoor faucet near the area"
+      why: "A vacant home with the water off means the business hauls its own water. [judgment]"
+      source: null
+    - driver: "Wash water control near a street gutter, storm drain, wash or the lake"
+      why: "City storm drains run to the lake untreated, so near a drain the business may need to block and recover wash water, which adds gear and time."
+      source: lhc_stormwater
+  hidden_conditions:
+    - condition: "A painted, sealed or coated surface (cool-deck style pool deck, painted garage floor, sealed pavers) that lifts or blotches under pressure"
+      how_a_pro_spots_it: "Sheen, color or texture in the wide photo; flaking edges in the stain close-up; the material answer"
+      question_or_photo: fu_flat_material
+      source: null
+    - condition: "Peeling or chalky paint, or cracked stucco, on walls that a wash will strip or push water behind"
+      how_a_pro_spots_it: "Flaking or bare patches in the house-front photo; the homeowner says the paint is old"
+      question_or_photo: fu_paint_peeling
+      source: sto_stucco
+    - condition: "White or orange sprinkler marks and white salt bloom that water alone will not remove, and that come back while sprinklers keep hitting the wall"
+      how_a_pro_spots_it: "Marks in a band at sprinkler height on block or stucco; heavy white crust low on a site wall"
+      question_or_photo: fu_wall_marks
+      source: angelus_efflorescence
+    - condition: "Old oil stains soaked deep into the concrete that will lighten but not vanish, so the homeowner expects more than a wash gives"
+      how_a_pro_spots_it: "Dark, wide stain with soft edges in the close-up, where a vehicle has parked for years"
+      question_or_photo: p2_worst_stain
+      source: null
+    - condition: "Loose pavers, washed-out joint sand or cracked and sunken slabs that a wash makes worse or more visible"
+      how_a_pro_spots_it: "Gaps between pavers, weeds in joints, raised edges in the wide photo"
+      question_or_photo: fu_surface_damage
+      source: null
+    - condition: "No usable water at the home (seasonal owner away, water shut off at the meter)"
+      how_a_pro_spots_it: "Homeowner is out of town; no hose at the faucet in the photo"
+      question_or_photo: fu_water_on
+      source: null
+    - condition: "Broken or slipped roof tiles, or more breakage from walking a tile roof"
+      how_a_pro_spots_it: "Gaps, cracked pieces or shifted rows in the roof photo"
+      question_or_photo: fu_roof_tiles
+      source: eagle_tile
+    - condition: "Overhead service line near the wall, eave or roof edge where the crew must work"
+      how_a_pro_spots_it: "Line from the pole to the house in the house-front photo"
+      question_or_photo: p3_house_front
+      source: ues_safety
+  misdiagnosis_checks:
+    - sounds_like: "patio (clean my pavers)"
+      might_be: "loose or sunken pavers that need resetting, a different category"
+      one_question: fu_surface_damage
+      if_other_route_to: {category: pavers_hardscape, job_type: "paver patio"}
+      source: null
+    - sounds_like: "driveway (clean and seal the garage floor)"
+      might_be: "seal_paint_route, a garage floor coating"
+      one_question: fu_seal_what
+      if_other_route_to: {category: epoxy_floors, job_type: "garage floor epoxy"}
+      source: aac_r4_9_103
+    - sounds_like: "patio (wash and seal the pavers)"
+      might_be: "seal_paint_route, sealer after the wash"
+      one_question: fu_seal_what
+      if_other_route_to: {category: painting, job_type: "exterior painting"}
+      source: aac_r4_9_103
+    - sounds_like: "house wash (walls look bad)"
+      might_be: "failing exterior paint that a wash would strip"
+      one_question: fu_paint_peeling
+      if_other_route_to: {category: painting, job_type: "exterior painting"}
+      source: null
+    - sounds_like: "house wash (roof wash with a few bad tiles)"
+      might_be: "broken roof tiles, a different category"
+      one_question: fu_roof_tiles
+      if_other_route_to: {category: roof_repair, job_type: "tile replacement"}
+      source: null
+    - sounds_like: "patio (wash the dock)"
+      might_be: "a boat wash, a different category"
+      one_question: fu_dock_what
+      if_other_route_to: {category: boat_detailing, job_type: "hull cleaning"}
+      source: null
+    - sounds_like: "patio (wash the dock, boards look rough)"
+      might_be: "dock repair, licensed-only work in another category"
+      one_question: fu_dock_boards
+      if_other_route_to: {category: boat_repair, job_type: "dock, boat lift or seawall work"}
+      source: null
+  photo_reading:
+    - photo_id: p1_whole_area
+      reads: ["Size in car spaces or wall length", "Plain concrete, pavers, coated deck or wood", "Pool, plants or open water next to the area", "Street gutter or storm drain at the low edge", "Gate width and how a trailer or hose gets in"]
+      neutral_wording: "Two-car driveway, plain concrete, street gutter at the bottom edge."
+    - photo_id: p2_worst_stain
+      reads: ["Stain color, size and edge (dark oil, orange rust, white mineral, green or black growth)", "Stain on bare concrete versus on paint or coating", "Flaking or lifting coating at the stain"]
+      neutral_wording: "Dark stain about 3 ft wide in the center of the garage floor."
+    - photo_id: p3_house_front
+      reads: ["Stories and eave height", "Stucco, block or siding", "Peeling or bare paint", "Overhead service line near the house", "Marks at sprinkler height"]
+      neutral_wording: "Single-story stucco home, tile roof, service line at the left corner, white marks low on the front wall."
+    - photo_id: p4_roof
+      reads: ["Tile, shingle, foam or metal", "Pitch and height", "Broken, slipped or missing pieces", "Dark streaks or growth"]
+      neutral_wording: "Concrete tile roof, low pitch, dark streaks on the north side, no gaps seen from the ground."
+    - photo_id: p5_faucet
+      reads: ["Faucet location and distance to the area", "Handle present", "Hose already attached"]
+      neutral_wording: "Hose faucet on the garage wall, about 20 ft from the driveway."
+  local_factors:
+    - fact: "City water hardness is about 19 grains per gallon (range 18 to 20)"
+      effect: "White and orange sprinkler marks on stucco, block and concrete are common requests and need a separate treatment step [judgment on the effect]"
+      source: lhc_ccr
+    - fact: "City storm drains, street gutters and washes carry water to Lake Havasu untreated, and the city treats any non-stormwater discharge to them as illicit"
+      effect: "Businesses ask where wash water goes; driveways that drain to the street gutter may need blocking and recovery"
+      source: lhc_stormwater
+    - fact: "Average summer highs run 105 to 109 F from June to August"
+      effect: "Crews start at dawn, and chemicals dry fast on hot walls, so summer house washes are booked early in the day [judgment on the effect]"
+      source: climate_normals
+    - fact: "Monsoon season runs June 15 to September 30"
+      effect: "Dust and mud on walls, patios and pool decks bring a run of after-storm wash requests [judgment on the effect]"
+      source: nws_monsoon
+    - fact: "Rain averages under 4 inches a year"
+      effect: "Dust and marks build up with little rain to rinse them, so many homes have never been washed [judgment on the effect]"
+      source: climate_normals
+    - fact: "Seasonal residents and vacant second homes often have the water off while the owner is away"
+      effect: "The water answer and the faucet photo let a business quote a job the owner cannot attend [judgment]"
+      source: null
+    - fact: "Manufactured homes often have metal or vinyl siding and skirting"
+      effect: "Siding takes a different method than stucco; the house-front photo shows it [judgment]"
+      source: null
+    - fact: "Cool-deck style coated pool decks are common around Havasu pools"
+      effect: "Coated decks take low pressure, and a wash may show where the coating has worn [judgment]"
+      source: null
+    - fact: "Some HOAs send notices for dirty walls, driveways or roofs"
+      effect: "An HOA notice or a sale date is a sign of a real job with a deadline [judgment]"
+      source: null
+    - fact: "Businesses working inside city limits need a Lake Havasu City business license"
+      effect: "A sign-up question washers raise; no state contractor class covers washing"
+      source: lhc_business_license
+  seasonality:
+    busy: "March to May (spring sales, seasonal residents leaving), after monsoon storms in July to September, and October to November before winter guests and holidays [judgment]"
+    slow: "December to January, and midday in June to August [judgment]"
+    source: null
+
+job_types:
+  - id: driveway_garage
+    label: "Driveway, garage floor or sidewalk"
+    bank_job_type: "driveway"
+    recurring: false
+    homeowner_phrasings: ["wash my driveway", "oil stain where the truck parks", "garage floor is gross", "rust stains on the concrete", "lavar la entrada de carros"]
+    must_know:
+      - fact: "Size of the area in car spaces"
+        bank_question: size
+        follow_up: null
+        photo: p1_whole_area
+        why_it_moves_price: "Flat work is priced by area; the size band and the wide photo set the base price. [judgment]"
+        skip_if: "Homeowner gave the size or the wide photo shows it"
+      - fact: "Which stains, and how old the oil is"
+        bank_question: stains
+        follow_up: fu_stain_which
+        photo: p2_worst_stain
+        why_it_moves_price: "Oil, rust and sprinkler marks each add a treatment step and product. [judgment]"
+        skip_if: "Close-up photo shows the marks"
+      - fact: "Bare concrete or painted, coated or sealed"
+        bank_question: null
+        follow_up: fu_flat_material
+        photo: p1_whole_area
+        why_it_moves_price: "A coating can lift under pressure, so the pro lowers pressure, slows down or declines. [judgment]"
+        skip_if: "Photo clearly shows bare concrete"
+      - fact: "Whether a working outdoor faucet is near"
+        bank_question: null
+        follow_up: fu_water_on
+        photo: p5_faucet
+        why_it_moves_price: "No water means hauling a tank. [judgment]"
+        skip_if: "Faucet photo sent and the homeowner lives there"
+    allowed_follow_ups:
+      - id: fu_stain_which
+        ask_when: "Homeowner answered yes to stains, or mentioned marks, without saying which kind"
+        text_en: "Which marks are there?"
+        text_es: "¿Qué tipo de manchas hay?"
+        options_en: ["Oil or grease", "Rust or orange marks", "White marks from sprinklers", "Tire marks", "Green or black growth", "Several kinds"]
+        options_es: ["Aceite o grasa", "Óxido o manchas anaranjadas", "Manchas blancas de los aspersores", "Marcas de llantas", "Algo verde o negro", "Varios tipos"]
+        card_field: true
+        why: "Each kind takes a different product and time; the bank only asks oil or rust, yes or no. [judgment]"
+      - id: fu_flat_material
+        ask_when: "Flat work or a dock and the photo does not show whether the surface is bare, coated or wood"
+        text_en: "What is the surface made of?"
+        text_es: "¿De qué es la superficie?"
+        options_en: ["Plain concrete", "Pavers or stone", "Painted or coated concrete", "Wood or composite boards"]
+        options_es: ["Concreto sin pintar", "Adoquín o piedra", "Concreto pintado o con recubrimiento", "Tablas de madera o compuesto"]
+        card_field: true
+        why: "The kb's q6_material, missing from the bank; coated and wood surfaces take low pressure and more time. [judgment]"
+      - id: fu_surface_damage
+        ask_when: "Driveway, patio or pavers and the homeowner did not mention cracks or loose pieces"
+        text_en: "Are there any cracks, loose pavers or sunken spots in the area?"
+        text_es: "¿Hay grietas, adoquines sueltos o partes hundidas en el área?"
+        options_en: ["No", "Small cracks only", "Loose or sunken pavers or slabs"]
+        options_es: ["No", "Solo grietas chicas", "Adoquines o losas sueltos o hundidos"]
+        card_field: true
+        why: "Loose or sunken pieces are repair work in another category, and washing can pull joint sand. [judgment]"
+      - id: fu_water_on
+        ask_when: "Homeowner is away, the home is a second home or rental, or no faucet photo was sent"
+        text_en: "Is there a working outdoor faucet the business can use?"
+        text_es: "¿Hay una llave de agua afuera que funcione y que el negocio pueda usar?"
+        options_en: ["Yes", "No, the water is off or the home is empty"]
+        options_es: ["Sí", "No, el agua está cerrada o la casa está sola"]
+        card_field: true
+        why: "The kb's q7_water; with no water on site the business brings its own. [judgment]"
+    photos_priority: [p1_whole_area, p2_worst_stain, p5_faucet]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["A sale closing, showing or move-out date within the week"]
+      regular: "Any driveway or garage floor wash"
+    scope_line_en: "Wash a 2-car plain concrete driveway and garage floor; oil stain where the truck parks."
+    scope_line_es: "Lavar una entrada de carros de concreto para 2 carros y el piso de la cochera; mancha de aceite donde se estaciona la camioneta."
+    quote_format: firm
+    business_fills: ["price for the wash", "what is included (stain treatment, areas)", "earliest day"]
+    card_template: |
+      REQ-<id> | Pressure washing | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: which areas, size, surface, worst mark>
+      Size: <1 car / 2 to 3 cars / larger>. Surface: <plain concrete / pavers / painted or coated>. Marks: <oil / rust / sprinkler / tire / growth / dirt only>.
+      Cracks or loose pieces: <none / small cracks / loose or sunken / not said>. Water on site: <faucet works / off or empty home / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That oil stain will come right out.", "You should seal it after.", "Driveways run about a hundred and fifty.", "Those orange marks are from your sprinklers.", "Just use a degreaser first."]
+
+  - id: patio_pool_deck
+    label: "Patio, pavers or pool deck"
+    bank_job_type: "patio"
+    recurring: false
+    homeowner_phrasings: ["clean my pavers", "pool deck is dirty", "cool deck looks gross", "back patio after the monsoon", "lavar alrededor de la alberca"]
+    must_know:
+      - fact: "Size of the area"
+        bank_question: size
+        follow_up: null
+        photo: p1_whole_area
+        why_it_moves_price: "Area sets the base price. [judgment]"
+        skip_if: "Wide photo shows it"
+      - fact: "Plain concrete, pavers, or a coated or painted deck"
+        bank_question: null
+        follow_up: fu_flat_material
+        photo: p1_whole_area
+        why_it_moves_price: "Coated pool decks and sealed pavers take low pressure; pavers may need joint sand after. [judgment]"
+        skip_if: "Photo clearly shows the surface"
+      - fact: "Loose or sunken pavers, or cracks"
+        bank_question: null
+        follow_up: fu_surface_damage
+        photo: p1_whole_area
+        why_it_moves_price: "Repair is another category; the business wants to know before it promises a clean look. [judgment]"
+        skip_if: "Homeowner said the surface is sound"
+      - fact: "Which marks: growth, sprinkler marks, rust, dirt"
+        bank_question: stains
+        follow_up: fu_stain_which
+        photo: p2_worst_stain
+        why_it_moves_price: "Mineral and rust marks need a separate treatment. [judgment]"
+        skip_if: "Close-up sent"
+    allowed_follow_ups:
+      - fu_flat_material
+      - fu_surface_damage
+      - fu_stain_which
+      - fu_water_on
+    photos_priority: [p1_whole_area, p2_worst_stain, p5_faucet]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["A sale closing, showing or party date within the week"]
+      regular: "Any patio or pool deck wash"
+    scope_line_en: "Wash a medium coated pool deck and back patio; dust and mud after a storm; pool next to the deck."
+    scope_line_es: "Lavar una terraza de alberca con recubrimiento, tamaño mediano, y el patio de atrás; polvo y lodo después de una tormenta; la alberca está junto a la terraza."
+    quote_format: firm
+    business_fills: ["price for the wash", "what is included (stain treatment, joint sand, areas)", "earliest day"]
+    card_template: |
+      REQ-<id> | Pressure washing | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: which areas, size, surface, what is on it>
+      Size: <1 car / 2 to 3 cars / larger>. Surface: <plain concrete / pavers / coated deck / wood>. Marks: <growth / sprinkler / rust / oil / dirt only>.
+      Next to: <pool / plants / neither, from photo>. Cracks or loose pavers: <none / small cracks / loose or sunken / not said>. Water on site: <faucet works / off / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Cool deck washes up like new.", "Your pavers need sealing after.", "Patios run about two hundred.", "Those pavers are fine to wash.", "Cover the pool before they come."]
+
+  - id: house_wash
+    label: "House exterior wash (soft wash of stucco, siding, eaves)"
+    bank_job_type: "house wash"
+    recurring: false
+    homeowner_phrasings: ["soft wash the house", "wash the stucco", "white sprinkler marks on the wall", "spider webs all over the eaves", "lavar la casa por fuera"]
+    must_know:
+      - fact: "Home size and stories"
+        bank_question: null
+        follow_up: fu_home_size_stories
+        photo: p3_house_front
+        why_it_moves_price: "House washes are priced by size and height; a second story adds ladders, poles and time. [judgment]"
+        skip_if: "Homeowner gave both, or the house-front photo shows stories and the size was given"
+      - fact: "What is on the walls: dust, sprinkler marks, growth, webs and droppings"
+        bank_question: stains
+        follow_up: fu_wall_marks
+        photo: p2_worst_stain
+        why_it_moves_price: "Mineral marks need an acid-type treatment, a separate priced step. [judgment]"
+        skip_if: "Close-up shows the marks"
+      - fact: "Whether paint is peeling or chalky"
+        bank_question: null
+        follow_up: fu_paint_peeling
+        photo: p3_house_front
+        why_it_moves_price: "Loose paint comes off in a wash; the business may decline or quote a gentler method. [judgment]"
+        skip_if: "Photo shows sound paint"
+      - fact: "Wall material and overhead lines"
+        bank_question: null
+        follow_up: null
+        photo: p3_house_front
+        why_it_moves_price: "Stucco makers cap washing pressure; overhead lines near the walls slow the crew."
+        skip_if: "Never asked; read off the photo"
+    allowed_follow_ups:
+      - id: fu_home_size_stories
+        ask_when: "House or roof wash and the homeowner did not give the size or stories"
+        text_en: "Is the home one story or two, and about how big?"
+        text_es: "¿La casa es de un piso o de dos, y más o menos de qué tamaño?"
+        options_en: ["One story, under 1,500 sq ft", "One story, 1,500 to 2,500 sq ft", "One story, over 2,500 sq ft", "Two stories or more"]
+        options_es: ["Un piso, menos de 1,500 pies²", "Un piso, de 1,500 a 2,500 pies²", "Un piso, más de 2,500 pies²", "Dos pisos o más"]
+        card_field: true
+        why: "The kb's q3_home_size and q4_stories, both missing from the bank; the first two numbers a house-wash estimator writes down. [judgment]"
+      - id: fu_wall_marks
+        ask_when: "House or wall wash and the homeowner did not say what is on the walls"
+        text_en: "What is on the walls?"
+        text_es: "¿Qué tienen las paredes?"
+        options_en: ["Dust and dirt", "White or orange marks from sprinklers", "Green or black growth", "Webs and droppings under the eaves", "Several of these"]
+        options_es: ["Polvo y tierra", "Manchas blancas o anaranjadas de los aspersores", "Algo verde o negro", "Telarañas y excremento bajo los aleros", "Varias de estas"]
+        card_field: true
+        why: "Sprinkler marks and salt bloom need a separate treatment and may come back; dust is a plain wash."
+      - id: fu_paint_peeling
+        ask_when: "House or wall wash and no photo shows the paint up close"
+        text_en: "Is any paint on the walls peeling, flaking or chalky to the touch?"
+        text_es: "¿La pintura de las paredes se está pelando, descarapelando o deja polvo al tocarla?"
+        options_en: ["No", "A few spots", "A lot of it", "Walls are not painted"]
+        options_es: ["No", "En algunas partes", "En mucha parte", "Las paredes no están pintadas"]
+        card_field: true
+        why: "Failing paint is painting work, and a wash will strip it. [judgment]"
+      - fu_water_on
+    photos_priority: [p3_house_front, p2_worst_stain, p1_whole_area]
+    urgency:
+      fire_dept_triggers: ["Power line down on the ground or across the yard"]
+      urgent_capable_triggers: ["HOA notice or sale date with a deadline"]
+      regular: "Any house wash"
+    scope_line_en: "Soft wash a one-story stucco home, about 1,800 sq ft; white sprinkler marks along the back wall."
+    scope_line_es: "Lavado suave de una casa de estuco de un piso, unos 1,800 pies²; manchas blancas de aspersores en la pared de atrás."
+    quote_format: firm
+    business_fills: ["price for the wash", "what is included (eaves, mark treatment, windows rinsed or not)", "earliest day"]
+    card_template: |
+      REQ-<id> | Pressure washing | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: house wash, stories, size, walls, main marks>
+      Stories and size: <answer>. Walls: <stucco / block / siding, from photo>. On the walls: <dust / sprinkler marks / growth / webs / several>.
+      Paint: <sound / a few spots peeling / a lot peeling / not painted / not said>. Overhead line near the house: <seen / not seen, from photo>. Water on site: <faucet works / off / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those white marks are hard water from your sprinklers.", "A soft wash won't hurt the paint.", "House washes are about four hundred.", "Turn your sprinklers so they miss the wall.", "That black stuff is mold."]
+
+  - id: roof_wash
+    label: "Roof wash (tile, shingle, foam or metal)"
+    bank_job_type: "house wash"
+    recurring: false
+    homeowner_phrasings: ["clean my roof", "tile roof has black streaks", "wash the roof before we sell", "lavar el techo"]
+    must_know:
+      - fact: "Roof type"
+        bank_question: null
+        follow_up: fu_roof_type
+        photo: p4_roof
+        why_it_moves_price: "Tile, shingle, foam and metal each take a different method, and the shingle trade group says no power washer on shingles."
+        skip_if: "Roof photo shows the type"
+      - fact: "Home size and stories"
+        bank_question: null
+        follow_up: fu_home_size_stories
+        photo: p3_house_front
+        why_it_moves_price: "Roof area and height set the price and the ladder work. [judgment]"
+        skip_if: "Given"
+      - fact: "Broken, slipped or missing tiles in sight"
+        bank_question: null
+        follow_up: fu_roof_tiles
+        photo: p4_roof
+        why_it_moves_price: "Tile repair is roofing work; the washer wants it on record before anyone walks the roof."
+        skip_if: "Not a tile roof"
+      - fact: "Wash only, or a coating or sealer after"
+        bank_question: null
+        follow_up: fu_roof_after
+        photo: null
+        why_it_moves_price: "A roof coating is R-42 roofing work, outside a wash quote."
+        skip_if: "Homeowner said wash only"
+    allowed_follow_ups:
+      - id: fu_roof_type
+        ask_when: "Roof wash and no roof photo shows the type"
+        text_en: "What kind of roof is it?"
+        text_es: "¿Qué tipo de techo es?"
+        options_en: ["Concrete or clay tile", "Shingle", "Flat or foam", "Metal"]
+        options_es: ["Teja de concreto o de barro", "Tejamanil", "Plano o de espuma", "Metal"]
+        card_field: true
+        why: "The method and whether the business takes it at all depend on the roof type."
+      - id: fu_roof_tiles
+        ask_when: "Tile roof wash and the homeowner did not say whether any tiles look damaged"
+        text_en: "From the ground, can you see any broken, slipped or missing tiles?"
+        text_es: "Desde el suelo, ¿se ven tejas rotas, movidas o que falten?"
+        options_en: ["No", "A few", "Many", "I can't see the roof"]
+        options_es: ["No", "Algunas", "Muchas", "No alcanzo a ver el techo"]
+        card_field: true
+        why: "Damaged tiles go on a separate roofing card, and walking a tile roof can break more."
+      - fu_home_size_stories
+      - id: fu_roof_after
+        ask_when: "Roof wash and the homeowner mentioned sealing, coating or making it last"
+        text_en: "Is this a wash only, or do you also want a coating or sealer put on the roof?"
+        text_es: "¿Es solo lavado, o también quiere que le pongan un recubrimiento o sellador al techo?"
+        options_en: ["Wash only", "Coating or sealer too"]
+        options_es: ["Solo lavado", "También recubrimiento o sellador"]
+        card_field: true
+        why: "Roof coatings are R-42 work; the card must say so the business knows what it is quoting."
+    photos_priority: [p4_roof, p3_house_front, p1_whole_area]
+    urgency:
+      fire_dept_triggers: ["Power line down on the ground or across the yard"]
+      urgent_capable_triggers: ["HOA notice or sale date with a deadline"]
+      regular: "Any roof wash"
+    scope_line_en: "Wash a one-story concrete tile roof, about 2,000 sq ft home; dark streaks on the north side; no broken tiles seen."
+    scope_line_es: "Lavar un techo de teja de concreto de un piso, casa de unos 2,000 pies²; rayas oscuras del lado norte; no se ven tejas rotas."
+    quote_format: firm
+    business_fills: ["price for the wash", "what is included (method, rinse of walls and yard)", "earliest day"]
+    card_template: |
+      REQ-<id> | Pressure washing | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: roof wash, roof type, size, what is on it>
+      Roof: <tile / shingle / flat or foam / metal>. Stories and size: <answer>. Tiles seen: <none damaged / a few / many / can't see>.
+      Wants: <wash only / coating or sealer too>. Overhead line near the roof edge: <seen / not seen, from photo>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Tile roofs are safe to walk on.", "Those streaks are algae.", "You should reseal it after.", "Roof washes run about five hundred.", "A few broken tiles is normal."]
+
+  - id: fence_wall
+    label: "Fence or block wall"
+    bank_job_type: "house wash"
+    recurring: false
+    homeowner_phrasings: ["white crust on the block wall", "wash my fence", "sprinkler stains on the back wall", "lavar la barda"]
+    must_know:
+      - fact: "Length of the wall or fence"
+        bank_question: null
+        follow_up: fu_wall_length
+        photo: p1_whole_area
+        why_it_moves_price: "Wall work is priced by length and height; the bank's car-size bands do not fit a wall. [judgment]"
+        skip_if: "Homeowner gave the length"
+      - fact: "One side or both"
+        bank_question: null
+        follow_up: fu_wall_sides
+        photo: null
+        why_it_moves_price: "Both sides doubles the work and the street or neighbor side needs access. [judgment]"
+        skip_if: "Homeowner said which side"
+      - fact: "What is on the wall: salt bloom, sprinkler marks, growth, dirt"
+        bank_question: stains
+        follow_up: fu_wall_marks
+        photo: p2_worst_stain
+        why_it_moves_price: "White salt bloom and mineral marks need a separate treatment and may return while water keeps reaching the wall."
+        skip_if: "Close-up shows it"
+      - fact: "Painted block with peeling paint, or bare block, or wood"
+        bank_question: null
+        follow_up: fu_paint_peeling
+        photo: p1_whole_area
+        why_it_moves_price: "Peeling paint lifts under a wash; wood takes low pressure. [judgment]"
+        skip_if: "Photo shows the finish"
+    allowed_follow_ups:
+      - id: fu_wall_length
+        ask_when: "Wall or fence wash and no length given"
+        text_en: "About how long is the wall or fence?"
+        text_es: "¿Más o menos qué tan larga es la barda o cerca?"
+        options_en: ["Under 50 feet", "50 to 150 feet", "Over 150 feet"]
+        options_es: ["Menos de 50 pies", "De 50 a 150 pies", "Más de 150 pies"]
+        card_field: true
+        why: "Length is the price unit for wall work. [judgment]"
+      - id: fu_wall_sides
+        ask_when: "Wall or fence wash and the homeowner did not say which side"
+        text_en: "Which side needs washing?"
+        text_es: "¿Qué lado hay que lavar?"
+        options_en: ["My yard side only", "Street or neighbor side only", "Both sides"]
+        options_es: ["Solo el lado de mi patio", "Solo el lado de la calle o del vecino", "Los dos lados"]
+        card_field: true
+        why: "Doubles the work and changes access. [judgment]"
+      - fu_wall_marks
+      - fu_paint_peeling
+    photos_priority: [p1_whole_area, p2_worst_stain, p5_faucet]
+    urgency:
+      fire_dept_triggers: ["Power line down on the ground or across the yard"]
+      urgent_capable_triggers: []
+      regular: "Any wall or fence wash"
+    scope_line_en: "Wash about 120 feet of bare block wall, yard side only; white crust low on the wall where sprinklers hit."
+    scope_line_es: "Lavar unos 120 pies de barda de block sin pintar, solo del lado del patio; costra blanca abajo donde pegan los aspersores."
+    quote_format: firm
+    business_fills: ["price for the wash", "what is included (mark treatment, sides)", "earliest day"]
+    card_template: |
+      REQ-<id> | Pressure washing | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: wall or fence, length, side, main marks>
+      Length: <under 50 ft / 50 to 150 ft / over 150 ft>. Side: <yard / street or neighbor / both>. Material: <bare block / painted block / stucco / wood, from photo>.
+      On the wall: <salt bloom / sprinkler marks / growth / dirt>. Paint: <sound / peeling / not painted / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That white crust means water is getting in the wall.", "It will come back unless you move the sprinklers.", "Block walls are cheap to wash.", "You'll want it painted after."]
+
+  - id: dock_ramp
+    label: "Private dock or boat ramp"
+    bank_job_type: "patio"
+    recurring: false
+    homeowner_phrasings: ["wash my dock", "boat ramp is slippery", "green slime on the ramp", "lavar el muelle"]
+    must_know:
+      - fact: "Dock or ramp only, or a boat too"
+        bank_question: surface
+        follow_up: fu_dock_what
+        photo: p1_whole_area
+        why_it_moves_price: "A boat wash is detailing work in another category. [judgment]"
+        skip_if: "Homeowner said dock or ramp only"
+      - fact: "How a crew reaches it"
+        bank_question: null
+        follow_up: fu_dock_access
+        photo: p1_whole_area
+        why_it_moves_price: "Access only by boat or down steep steps adds gear and time, and may mean a site look first. [judgment]"
+        skip_if: "Photo shows access from the yard"
+      - fact: "Soft, split or missing boards"
+        bank_question: null
+        follow_up: fu_dock_boards
+        photo: p2_worst_stain
+        why_it_moves_price: "Damaged boards are dock repair, licensed work in another category. [judgment]"
+        skip_if: "Concrete ramp only"
+      - fact: "Surface material: wood, composite, metal or concrete"
+        bank_question: null
+        follow_up: fu_flat_material
+        photo: p1_whole_area
+        why_it_moves_price: "Wood and composite take low pressure. [judgment]"
+        skip_if: "Photo shows it"
+    allowed_follow_ups:
+      - id: fu_dock_what
+        ask_when: "Dock or ramp request that mentions a boat, or does not say what is washed"
+        text_en: "Is this for the dock or ramp only, or for a boat too?"
+        text_es: "¿Es solo para el muelle o la rampa, o también para una lancha?"
+        options_en: ["Dock or ramp only", "Boat too"]
+        options_es: ["Solo el muelle o la rampa", "También la lancha"]
+        card_field: true
+        why: "A boat wash goes to boat detailing as its own request. [judgment]"
+      - id: fu_dock_access
+        ask_when: "Dock or ramp and the photo does not show how to reach it"
+        text_en: "Can a business reach the dock from your yard, or only by boat?"
+        text_es: "¿Se puede llegar al muelle desde su patio, o solo en lancha?"
+        options_en: ["From the yard", "From the yard, down steep steps", "Only by boat"]
+        options_es: ["Desde el patio", "Desde el patio, bajando escalones empinados", "Solo en lancha"]
+        card_field: true
+        why: "The kb lists docks hard to reach from land as a site-visit case. [judgment]"
+      - id: fu_dock_boards
+        ask_when: "Wood or composite dock and the homeowner did not mention board condition"
+        text_en: "Are any dock boards soft, split or missing?"
+        text_es: "¿Hay tablas del muelle blandas, partidas o que falten?"
+        options_en: ["No", "A few", "Many"]
+        options_es: ["No", "Algunas", "Muchas"]
+        card_field: true
+        why: "Board repair is dock work, sent to licensed businesses through another category. [judgment]"
+      - fu_flat_material
+    photos_priority: [p1_whole_area, p2_worst_stain]
+    urgency:
+      fire_dept_triggers: ["Power line down near the dock or across the yard"]
+      urgent_capable_triggers: ["A sale closing or showing date within the week"]
+      regular: "Any dock or ramp wash"
+    scope_line_en: "Wash a private wood dock and concrete boat ramp; green growth on the ramp; reached from the yard."
+    scope_line_es: "Lavar un muelle privado de madera y una rampa de concreto; algo verde en la rampa; se llega desde el patio."
+    quote_format: firm
+    business_fills: ["price for the wash", "what is included (dock, ramp, how wash water is handled)", "earliest day"]
+    card_template: |
+      REQ-<id> | Pressure washing | <town>, <general area> | <lakefront house / other>
+      <one scope line: dock, ramp or both, material, what is on it>
+      Washing: <dock / ramp / both>. Boat too: <no / yes, sent as a separate request>. Material: <wood / composite / metal / concrete>.
+      Reach: <from the yard / steep steps / only by boat>. Boards: <sound / a few soft or split / many / n/a>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Washing the dock with lake water is fine.", "Those boards need replacing.", "Dock washes are about three hundred.", "That green slime is algae, bleach will kill it."]
+
+  - id: seal_paint_route
+    label: "Sealing, staining or painting after a wash (route to painting)"
+    bank_job_type: "sealing or painting"
+    recurring: false
+    homeowner_phrasings: ["wash and seal my pavers", "seal the driveway", "stain the fence after", "paint the garage floor", "sellar adoquines"]
+    must_know:
+      - fact: "What is to be put on, and on what surface"
+        bank_question: surface
+        follow_up: fu_seal_what
+        photo: p1_whole_area
+        why_it_moves_price: "Sealer, floor coating, stain and paint go to different licensed businesses (R-34, or R-8 for concrete coatings)."
+        skip_if: "Homeowner named both the product and the surface"
+      - fact: "Whether a wash is wanted first as its own request"
+        bank_question: null
+        follow_up: fu_wash_too
+        photo: null
+        why_it_moves_price: "The wash is a pressure washing card; the coating is a separate card in another category. [judgment]"
+        skip_if: "Homeowner asked only for the coating"
+    allowed_follow_ups:
+      - id: fu_seal_what
+        ask_when: "Homeowner mentions sealing, staining, coating or painting with or after a wash"
+        text_en: "What do you want put on after the wash?"
+        text_es: "¿Qué quiere que le pongan después del lavado?"
+        options_en: ["Sealer on pavers or concrete", "Coating or paint on a garage floor", "Stain or paint on a fence or wall", "Paint on the house"]
+        options_es: ["Sellador en adoquín o concreto", "Recubrimiento o pintura en el piso de la cochera", "Tinte o pintura en una cerca o barda", "Pintura en la casa"]
+        card_field: true
+        why: "Garage floor coatings go to epoxy floors; the rest go to painting. Both are licensed work outside this category."
+      - id: fu_wash_too
+        ask_when: "Homeowner asked for both a wash and a coating in one message"
+        text_en: "Should we also send the wash as its own request to pressure washing businesses?"
+        text_es: "¿También mandamos el lavado como otra solicitud a negocios de lavado a presión?"
+        options_en: ["Yes, send both", "No, only the sealing or painting"]
+        options_es: ["Sí, las dos", "No, solo el sellado o la pintura"]
+        card_field: false
+        why: "Splits the request into the two cards the catalog requires. [judgment]"
+    photos_priority: [p1_whole_area, p2_worst_stain]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All sealing, staining and painting requests"
+    scope_line_en: "Seal a medium paver patio after it is washed; wash sent as its own pressure washing request."
+    scope_line_es: "Sellar un patio de adoquín mediano después del lavado; el lavado va como otra solicitud de lavado a presión."
+    quote_format: firm
+    business_fills: ["price for the sealing or painting", "what is included (prep, product, coats)", "earliest day"]
+    card_template: |
+      REQ-<id> | <Painting / Epoxy floors> | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what is to be put on, which surface, size>
+      Product wanted: <sealer / floor coating / stain / paint>. Surface: <pavers / concrete / garage floor / fence / wall / house>. Size: <answer>.
+      Wash first: <sent as its own pressure washing request / not wanted>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The washer can seal it while they're there.", "Pavers always need sealing after a wash.", "Sealing costs about a dollar a foot.", "Any handyman can paint a garage floor."]
+
+business_side:
+  how_they_get_customers: ["Google Business Profile and reviews", "Referrals, neighbors and Nextdoor", "Facebook community groups and ads", "Realtors and property managers before a sale or move-out [judgment]", "Door hangers and yard signs after a job [judgment]", "Angi, Thumbtack and HomeAdvisor"]
+  customer_acquisition_benchmarks:
+    - channel: "Google Local Services Ads (pressure washing, US)"
+      figure: "About $30 to $65 per lead and $80 to $250 per booked job (consultant benchmark range, not audited data)"
+      source: co_pw_marketing
+      unverified: false
+    - channel: "Google search ads (pressure washing, US)"
+      figure: "About $40 to $100 per lead and $120 to $280 per booked job (consultant benchmark range)"
+      source: co_pw_marketing
+      unverified: false
+    - channel: "Angi, Thumbtack and HomeAdvisor (pressure washing, US)"
+      figure: "About $25 to $85 per lead, 10 to 25 percent close, $100 to $500 per booked job (consultant benchmark range)"
+      source: co_pw_marketing
+      unverified: false
+    - channel: "Facebook and Instagram ads (pressure washing, US)"
+      figure: "About $15 to $50 per lead and $40 to $200 per booked job (consultant benchmark range)"
+      source: co_pw_marketing
+      unverified: false
+    - channel: "Referral and Nextdoor"
+      figure: "Under $25 per booked job (consultant benchmark range)"
+      source: co_pw_marketing
+      unverified: false
+    - channel: "Lake Havasu City pressure washers specifically"
+      figure: "No local figures found; a small market with many owner-operators may run below national figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead three other washers also bought", "Price shoppers who want a phone number for a driveway with no photo", "Leads from outside their area", "Monthly fees in the slow winter months", "Platforms that push a low starting price"]
+  what_makes_a_lead_worth_paying_for: ["A wide photo and a close-up of the worst stain", "Size, surface and stains stated, so a firm price is possible from the truck", "Water on site stated for empty second homes", "A real deadline (sale, HOA notice, move-out)", "Pay only when picked"]
+  their_words: ["surface cleaner", "soft wash", "SH (sodium hypochlorite)", "downstream", "X-jet", "GPM", "PSI", "hot water unit", "degreaser", "post-treat", "rust remover", "efflorescence", "water tank", "reclaim", "minimum charge", "flatwork"]
+  signup_objections:
+    - objection: "I get most of my work off Facebook and referrals for free. Why pay anything?"
+      answer: "Keep those. Here you pay only when a homeowner picks your quote, so a request you skip or lose costs nothing. There is nothing to join and nothing monthly."
+    - objection: "My jobs are small. Is the fee worth it?"
+      answer: "The fee is set by job size: $25, $75 or $199. You see the job card first and decide whether to quote."
+    - objection: "I can't price a house wash without seeing it."
+      answer: "Most cards carry a wide photo, a close-up of the worst mark, the size and the stories. Quote a firm price and say what it covers, or say which photo you need."
+    - objection: "Will you rank me against other washers?"
+      answer: "No. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "I don't do roofs or docks."
+      answer: "You pick the job types you take at sign-up and can change them any time. You get cards only for those."
+    - objection: "Do I need a contractor license for this?"
+      answer: "No contractor license class names washing. Sealing, staining and painting are licensed painting work, so those requests go to painting businesses, not here. A city business license applies inside Lake Havasu City."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a phone number we check, with a town, photos and answers to the questions a washer asks. The address goes only to the business the homeowner picks."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+  quote_tips_for_card: ["Say which areas and stain treatments the price includes", "Say plainly if a set-in stain may lighten but not lift all the way", "Say whether you bring your own water", "Give your earliest day and the time of day you start", "If you need another photo, say which"]
