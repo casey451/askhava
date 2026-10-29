@@ -154,7 +154,8 @@ jobs:
           # A task's PR is merged by the Claude App's auto-merge, so the merge and ci events that start
           # the next cycle carry the bot as actor; the action refuses bot-started runs unless named here.
           # The prompt is fixed in this file, never taken from the event (D-505).
-          allowed_bots: "claude"
+          # github-actions: the chaining step and the hourly tick dispatch with the job token (D-508).
+          allowed_bots: "claude,github-actions"
           claude_args: --model claude-sonnet-5-5 --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
           prompt: |
             You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now. The runner code (runner/) does the cycle; you do only the task it hands you (D-486).
