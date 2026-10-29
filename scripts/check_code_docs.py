@@ -59,7 +59,8 @@ def first_text_line(path: Path) -> str:
 
 def check_crate_doc(root: Path, crate: Path, architecture: str) -> list[str]:
     rel = crate.relative_to(root).as_posix()
-    problems = [] if rel in architecture else [f"{rel}: crate not named in docs/architecture.md"]
+    named = (rel, f"`{crate.name}`", f"  {crate.name}/")
+    problems = [] if any(n in architecture for n in named) else [f"{rel}: crate not named in docs/architecture.md"]
     doc = crate / "CLAUDE.md"
     if not doc.is_file():
         return problems + [f"{rel}/CLAUDE.md: missing (docs/code-docs.md section 2)"]
