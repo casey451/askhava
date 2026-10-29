@@ -7,7 +7,7 @@ from collections.abc import Iterable
 from typing import Any
 
 REQUIRED_CHECKS = ("Ci", "Twin", "Ally")
-NEVER_TOUCH = ("kit/state.json", "STATUS.md", "PROGRESS.md", "outbox/", "inbox/")
+NEVER_TOUCH = ("kit/state.json", "kit/nightly.json", "STATUS.md", "PROGRESS.md", "outbox/", "inbox/")
 
 
 def _matches(path: str, pattern: str) -> bool:

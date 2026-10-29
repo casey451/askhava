@@ -5,7 +5,8 @@ What a script can measure; the copy panel reviewer judges the rest. For each blo
 - the reading grade (Flesch-Kincaid) is 8 or lower for homeowners and 9 or lower for businesses,
   for blocks of 20 words or more;
 - no superlative or unprovable claim word (best, fastest, cheapest, #1, guaranteed ...).
-Blocks whose wording the spec fixes for legal or safety reasons are marked "fixed" and skipped.
+Blocks whose wording a requirement fixes verbatim (legal, safety or any spec-fixed sentence, WORD-029, D-482) are
+marked "fixed" and skipped.
 
 It reads:
 - docs/copy/site-copy.md: each "## <page> · <block> (homeowner|business[, fixed])" heading,

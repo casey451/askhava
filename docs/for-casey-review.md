@@ -1,6 +1,6 @@
 # For Casey's review
 
-These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
+These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock, the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
 ## How legal, tax and insurance items are handled now (October 28, 2026)
 
@@ -11,6 +11,18 @@ You've decided not to hire a lawyer, a CPA or an insurance broker for now, to re
 - **Insurance stays a recommended purchase.** It's cover for when something goes wrong, not advice. Memo 3 and Memo 4 lean to a tech E&O policy with cyber, bound before the first introduction. *(Oct 28: you chose to handle insurance after the business is fully working, D-426.)*
 - **Government filings and registrations stay your actions:** the LLC, the Lake Havasu City business license, a TPT license if you choose that path, a trademark filing if you want one, and the Twilio and Stripe accounts.
 - **Nothing in the spec got looser.** The homeowner safety voice call stays off: its switch still needs a recorded attorney approval (CALL-019), and now also Memo 2's six conditions built and tested first (CALL-022). If you want it on under your own recorded decision instead, ask for that as a spec change.
+
+## Pre-build engineering audit (October 28, 2026, D-479 to D-483): three things only your hands can do
+
+You asked for the decisions to be made on best practice rather than brought to you, so they were (D-483). The audit report is `docs/audit/prebuild-audit-2026-10-28.md`; the verdict is `docs/build-readiness.md` (**not ready to build yet**, on purpose). What is left is three settings only you can change, each sent as its own GitHub issue when the time comes:
+
+1. **Give the build its own identity.** Run `claude setup-token` at a computer and paste the token into the repository secret `CLAUDE_CODE_OAUTH_TOKEN` (never into chat). The build then pushes and comments as the Claude app instead of as you, so a comment that says "approved to build" is provably yours. In the `protect-main` ruleset, turn on "Require review from Code Owners": only pull requests that change the rules themselves will wait for your tap.
+2. **Four ruleset settings:** add `Governance` as a required check; set GitHub Actions as the source of all four checks; turn on "Require branches to be up to date"; add a ruleset on `claude/kit-state` that blocks deletion and force-pushes.
+3. **One number:** the GitHub Actions minutes your plan includes (repository Settings, Billing). Reply with it so the schedule is paced to fit.
+
+Decided for you: Sonnet writes by default and Opus writes the money, privacy, security and recovery code with Opus reviewing all of it; the live site only ever deploys a commit you name after an independent security review; at launch photos must be JPEG or PNG (phones send those by default), HELP notifications reach your inbox scrubbed, and a pick made by text never triggers an automatic charge.
+
+**What the audit changed without you:** governance rules and an operating manual for every session; a fingerprint of the plan that fails the build if any plan file changes without a logged decision; progress counted in verified requirements instead of finished tasks; 28 new security and privacy requirements with their tests and owning tasks; two new harness tasks (the twin gate, which the `Twin` check never actually ran; the end-to-end journeys in CI, which no workflow ran); coverage floors moved ahead of the vault and licensing code; owner replies like "don't go live yet" no longer open a gate; a risk register with an owner and a resolution test for every open risk.
 
 ## Your first item: ask Twilio in writing before registering (October 28, 2026)
 

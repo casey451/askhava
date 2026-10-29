@@ -1,0 +1,63 @@
+# Approved direct dependencies (docs/architecture.md section 11; D-453, D-479). One crate name per
+# line. A crate not listed here needs a docs/decisions.md entry with purpose, license and audit
+# result, and this file changes only in a harness task or a plan change. scripts/check_crates.py
+# compares every [workspace.dependencies] and per-crate [dependencies] name against this list.
+# Runtime
+axum
+axum-extra
+tokio
+tower
+tower-http
+askama
+serde
+serde_json
+serde-saphyr
+sqlx
+reqwest
+hmac
+sha1
+sha2
+aes-gcm
+argon2
+webauthn-rs
+totp-rs
+rand
+subtle
+secrecy
+zeroize
+uuid
+jiff
+jiff-sqlx
+askama_web
+image
+tracing
+tracing-subscriber
+sentry
+thiserror
+base64
+# Development and checks
+proptest
+trybuild
+# First-party crates (workspace path dependencies), named askhava-<module> (D-484)
+askhava-core
+askhava-ops
+askhava-adapters
+askhava-catalog
+askhava-privacy
+askhava-ai
+askhava-messaging
+askhava-payments
+askhava-licensing
+askhava-businesses
+askhava-jobs
+askhava-calls
+askhava-quotes
+askhava-picks
+askhava-intake
+askhava-recovery
+askhava-portals
+askhava-site
+askhava-server
+askhava-integration
+askhava-security
+askhava-fixtures

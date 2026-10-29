@@ -10,9 +10,9 @@ This is the only to-do list. The same file is in the repository as `docs/PREBUIL
 
 **Decided and written down**
 - What Ask Hava is: a quote relay that packages the job. A homeowner asks once and answers a few pro-level questions, with photos if easy; she approves the job card; local businesses quote in the same format per job type; she sees every quote, unranked, with license numbers and Google and Yelp links, and picks one; the picked business pays a fixed introduction fee ($25, $75 or $199 by job size). Ask Hava does no work and promotes no business.
-- The plan: 645 numbered requirements in 20 spec files, 467 logged decisions, 169 build tasks with their prompts, 8 legal drafts, a license map, a question bank for 37 trades linked to the Grok trade knowledge base, 40 worked fee examples. Every repo check passes.
+- The plan: 674 numbered requirements in 20 spec files (10 withdrawn), 482 logged decisions, 172 build tasks with their prompts, 8 legal drafts, a license map, a question bank for 37 trades linked to the Grok trade knowledge base, 40 worked fee examples. Every repo check passes.
 - One rule for every trade: if a license is needed, only licensed businesses get its jobs; if not, any legitimate business with a city license can. Every enabled service category is open (D-459).
-- Proof first (D-455): a 4 to 6 week hand-run test by email and web form, with no fees and no texts, comes before `approved to build`. Customer details are encrypted on the way to the business and wherever they're kept (D-454).
+- Proof first (D-455, D-468): a 6 week hand-run test by email and web form, with no texts; weeks 1 to 3 free and helped, weeks 4 to 6 hands off and paid in the pushed trades; it comes before `approved to build`. Customer details are encrypted on the way to the business and wherever they're kept (D-454).
 - No calls to businesses, ever. Businesses get everything by email and on the website.
 - The look: dark plaster and brass, chosen Oct 28 (D-451). `docs/design/DESIGN_SPEC.md` sets colors, fonts, textures and buttons; four mock-ups show the home page (phone and desktop), her quote page and the pick step. Every page the build makes follows it.
 - Built in Rust (D-453): the whole server is Rust, and the server builds the pages. The compiler, not just tests, stops three mistakes: an address released without a verified payment, a job status someone forgot to handle, and one part of the app reaching into another. Python stays only in the build tools, the fake vendor services and the twin.
@@ -32,6 +32,10 @@ This is the only to-do list. The same file is in the repository as `docs/PREBUIL
 | Every simulation number is marked [sim] and came from AI stand-ins | Whether homeowners trust a text-only, unnamed service |
 
 ---
+
+## 1b. What changed in the pre-build engineering audit (October 28, D-479 and D-480)
+
+One pull request. Report: `docs/audit/prebuild-audit-2026-10-28.md`. Verdict: `docs/build-readiness.md`, **not ready**, with the ordered list of what comes before the first build task (its section 4 is now part of this checklist as items 2a to 2d). New standing files: `docs/governance.md`, `docs/ai-operating-manual.md`, `docs/risk-register.md`. The plan is fingerprinted (`kit/plan.lock`); any change to a plan file without a logged decision fails the build. Progress is counted in verified requirements (`scripts/progress.py`). 28 security and privacy requirements were added with tests and owning tasks. Two harness tasks were added (T172 twin gate, T173 journeys in CI) and T001 was absorbed. Five decisions are yours: section 4, items E-1 to E-5.
 
 ## 1a. What changed in fix round 16 (October 28, ChatGPT's stress test)
 
@@ -85,7 +89,7 @@ One pull request. Decisions D-429 to D-449. Plan: `docs/handoff/rework-plan.md`.
 | Voice: a sharp, experienced receptionist | WORD-024, `docs/voice.md` (D-447) |
 | Tasks T162 to T165 added; T152 and T159 repurposed | `kit/tasks.json` (D-448) |
 
-## 2b. What changed in fix round 13
+## 2b. What changed in fix round 13 (history: rows A4 summary step, A17's 7.6% and A19's safety numbers were later superseded by D-434, D-444 and D-436)
 
 One pull request on GitHub (see the link in chat). Decisions D-391 to D-416. No simulations were run.
 
@@ -121,9 +125,9 @@ Casey: "their reaching out is their consent".
 
 | Change | Where |
 |---|---|
-| No "Reply OK" step: a homeowner's first text, or starting a web chat, is the opt-in; the first reply answers, moves on and carries the disclosures in 2 segments ("Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy"); the emergency check still runs first; the summary step goes out on its own after 2 hours | CON-002 to CON-006, CON-025 to CON-027, CON-031, INT-019, INT-025, INT-026, INT-041, TXT-034, WORD-002 (D-419) |
+| No "Reply OK" step: a homeowner's first text is the opt-in (for web chat, a mobile number plus its code, CON-005 and CON-025 as amended by D-470); the first reply answers, moves on and carries the disclosures in 2 segments ("Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy"); the emergency check still runs first; the card goes out on its own after 30 minutes (INT-041, D-460) | CON-002 to CON-006, CON-025 to CON-027, CON-031, INT-019, INT-025, INT-026, INT-041, TXT-034, WORD-002 (D-419) |
 | Terms accepted by picking: only "By picking, you agree to the Terms" (linked) beside the Pick button, logged with time, terms version and request number; the $100 cap stays in the Terms under "Limit of liability", not on the page | PICK-016, TERMS-001, TERMS-004, legal drafts (D-420, D-421) |
-| One question after the request goes out: updates by text, email or both, text by default, every update linking to the quote page | TXT-018 (D-422) |
+| Updates go by text by default, every update linking to the quote page; the "text, email or both" question was removed by D-460 | TXT-018 (D-422, D-460) |
 | Stopping texts unchanged; the first reply says STOP | D-423 |
 | Twilio question shortened to customer-care texts and two questions (item 6) | for-casey-review, `send_drafts/Twilio_question.md` (D-424) |
 | B11 trademark skipped for now, B13 insurance later, B17 Spanish English-first with safety texts on | Section 4; TXT-039, TXT-002, CON-026, TERMS-018, BIZ-018 (D-425 to D-427) |
@@ -144,6 +148,10 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 |---|---|---|---|---|
 | 1 | Fix round 15 merged | Claude | done when the PR merges | PR merged with Ci, Twin and Ally green |
 | 2 | Pause the build runner while the build is held (section 6) | Casey | to do | "Ask Hava build runner" shows Paused; the old "(hourly)" one is deleted |
+| 2a | Audit decisions E-1 to E-5 (`docs/for-casey-review.md`, top) | Casey | to do | Each answered in a GitHub issue or chat; decisions logged |
+| 2b | Ruleset taps (E-2): `Governance` required, Actions source, up-to-date branches, `claude/kit-state` ruleset | Casey | to do | Ruleset JSON shows them |
+| 2c | T174 (runner live entry point, red-`main` drill, stage exits) and P-1 (prompt text and budgets, task splits, validator checks) | Claude | to do | Both merged green; `docs/build-readiness.md` section 4 items 6 and 7 done |
+| 2d | Re-issue `docs/build-readiness.md` as READY | Claude | waiting on 2a to 2c and 14 | Every Critical and High risk in `docs/risk-register.md` closed or accepted |
 | 3 | Open a free Twilio account; send the short Twilio question (`docs/for-casey-review.md` top, D-424) | Casey | to do | Case number saved |
 | 4 | Twilio's written answer | outside | waiting on item 3 | Answer saved; doesn't block the build |
 | 5 | Open a Stripe account (test mode only); send the Stripe question | Casey | to do | Ticket sent |
@@ -160,7 +168,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | 14 | Re-plan pass: apply what the test showed, the held scope cut, and the fees from the paid weeks | Claude | waiting on item 13 | One PR merged green |
 | 15 | Paper rehearsal of the build runner (section 6) | Claude | done Oct 28 (D-472) | Reached "Finished" with only the expected stops; a failing task blocked only its dependents; three ordering fixes applied |
 | 16 | Optional: add the routine's merge trigger (section 6) | Casey | to do | The routine shows "Pull request closed, merged into main" |
-| 17 | Gate P: reply `approved to build` on GitHub issue #24, only if the scorecard says go including real payments; then resume the runner | Casey | waiting on items 13 and 14 | Reply posted |
+| 17 | Gate P: reply `approved to build` on GitHub issue #24, only if the scorecard says go including real payments and `docs/build-readiness.md` says READY; then resume the runner | Casey | waiting on items 2d, 13 and 14 | Reply posted |
 | 18 | Build Phase 1 (stages 1 to 5) | automatic | waiting on item 17 | Account checkpoint issue appears |
 
 **Company setup now starts with the test (D-468):** the LLC, EIN and a live Stripe account are needed for the paid weeks (item 8a). The rest of section 8 (city license, DNS, Twilio registration) follows before Gate C. Before Spanish is switched on, the two-AI back-translation check of the Spanish safety texts (D-427), and a paid review (about $100).
@@ -282,7 +290,7 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 - **What it proves:** every gate opens in the right order (Gate P, account checkpoint, Stage 0.5, real texts, Finished, Gate B, Gate C, first charge); no task waits on something that never finishes; a blocked task holds only its dependents; the number of cycles to the end.
 - **How long and how much usage:** one session, about 30 to 45 minutes, no worker sessions, a small share of one usage window.
 - **Go means:** it reaches "Finished" with only the stops in the table above, no deadlock, and the failing task blocks only its dependents. Anything else becomes a fix before Gate P.
-- **Then:** the first two real tasks after Gate P (T001 and T002) act as the live check: both merge green, and the next cycle starts on its own. They're real work, so nothing is wasted.
+- **Then:** the first two real tasks after Gate P (T002 and T003) act as the live check: both merge green, and the next cycle starts on its own. They're real work, so nothing is wasted.
 
 ---
 
