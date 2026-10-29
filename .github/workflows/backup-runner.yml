@@ -151,6 +151,10 @@ jobs:
           # The session's own turns in the job log (private repository; secrets stay masked), so a session
           # that stops early can be diagnosed (D-503).
           show_full_output: true
+          # A task's PR is merged by the Claude App's auto-merge, so the merge and ci events that start
+          # the next cycle carry the bot as actor; the action refuses bot-started runs unless named here.
+          # The prompt is fixed in this file, never taken from the event (D-505).
+          allowed_bots: "claude"
           claude_args: --model claude-sonnet-5-5 --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
           prompt: |
             You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now. The runner code (runner/) does the cycle; you do only the task it hands you (D-486).
