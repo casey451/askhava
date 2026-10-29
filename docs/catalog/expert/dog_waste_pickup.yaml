@@ -1,0 +1,636 @@
+# Ask Hava expert layer: dog_waste_pickup (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set dog_waste_pickup and trade_kb/trades/dog_waste_pickup.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - Mapping. The category has one job type, "weekly yard pickup", so all five kb job types map to it:
+#   weekly_pickup, one_time_cleanup, multi_dog_large_yard, commercial_hoa, turf_deodorize. No kb job type
+#   was left out and no new_job_type was needed.
+# - One-time cleanup has no one_time_job_types entry in categories.yaml, so one_time_cleanup is quoted
+#   monthly like the rest. A business can put the cleanup in the one-time setup charge (FEE-044), but a
+#   homeowner who wants ONE visit and no ongoing service leaves the monthly price with nothing to hold,
+#   and the fee basis (4 months of the recurring price) then has no number. The bank's how_often question
+#   already offers "Once". Suggest adding a "one-time yard cleanup" job type to the category, listed in
+#   one_time_job_types (quoted firm). Until then fu_after_cleanup puts the homeowner's answer on the card.
+# - The bank's how_often options are Once, Weekly, Twice a week. Every other week is a common scooping
+#   schedule [judgment] and is missing; the kb q1_service_kind has it. Suggest adding it.
+# - The bank set has no question for ground type, time since last pickup, or where the waste goes. All
+#   three move the price; they are follow-ups here (fu_ground, fu_last_cleaned, fu_disposal). With only one
+#   follow-up allowed per request, at least one of them is often lost. Suggest moving fu_last_cleaned
+#   into the bank set.
+# - With one category job type, a business cannot opt out of HOA common areas or turf deodorizing at
+#   sign-up. The signup answer below says so plainly (skip a card, pay nothing). Casey may want
+#   "common area pickup" as its own job type later.
+# - Indoor pet urine in carpet has no enabled category (no carpet cleaning). The misdiagnosis check routes
+#   it to house_cleaning "deep cleaning" as the closest fit. Open question for the catalog.
+# - Whether bagged dog waste may go in a Lake Havasu City trash cart was not confirmed: the city trash page
+#   says carts take residential household waste only and does not mention pet waste. Left to businesses.
+schema: 1
+category: dog_waste_pickup
+question_set: dog_waste_pickup
+kb_trade: dog_waste_pickup
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications [S2] (no class covers dog waste pickup; it is not construction work)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_3_3611
+    title: "A.R.S. 3-3611(A)(3) [S9]: pest-management licensing does not apply to persons using a nonrestricted, ready-to-use disinfectant, sanitizer or deodorizer"
+    url: "https://www.azleg.gov/ars/3/03611.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_title6
+    title: "Lake Havasu City Code Title 6, 6.20.010 (dogs in parks; custodian must promptly clean up feces) and 6.20.050 (waste removal; excessive piles, spread through a property, or seen or smelled from outside is a civil offense, fine up to $1,000 per violation)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/790"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_bizlic
+    title: "Lake Havasu City Business License: businesses and individuals doing business in city limits need a city business license; some also need a privilege tax license"
+    url: "https://www.lhcaz.gov/175/Business-License"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_trash
+    title: "Lake Havasu City Trash and Recycling: a contracted hauler collects; residential household waste only in carts; no commercial waste, dirt, rock, liquids or hazardous waste; extra trash bagged next to a full cart; pet waste not mentioned"
+    url: "https://www.lhcaz.gov/water-sewer-trash/trash-recycling"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (season officially June 15 to September 30)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: cdc_dogs
+    title: "CDC Healthy Pets, Dogs: dog poop should be picked up, even in your own yard, and especially where children may play"
+    url: "https://cdc.gov/healthy-pets/about/dogs.html"
+    checked: "2026-10-29"
+    kind: other
+  - id: epa_marc_petwaste
+    title: "Mid-America Regional Council pet waste fact sheet (EPA nonpoint source toolbox): in a USGS study of Kansas City area streams, pet waste was the source of about one quarter of the bacteria in samples; storm runoff carries it untreated"
+    url: "https://cfpub.epa.gov/npstbx/files/marc_petwaste.pdf"
+    checked: "2026-10-29"
+    kind: other
+  - id: msoc_scooping
+    title: "Making Sense of Cents (personal-finance blog), interview with a multi-state pet waste removal owner, March 2026: price set by number of dogs, yard size and visit frequency; average customer a little over $110 a month; Facebook groups, door hangers and free trial cleanups; a print ad over $5,000 brought zero calls; solo capacity 125 to 150 accounts; self-reported, with affiliate links"
+    url: "https://www.makingsenseofcents.com/2026/03/how-to-start-a-pet-waste-removal-business.html"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: leadcapture_thumbtack
+    title: "LeadCapture.io (lead-form software vendor): Thumbtack lead costs (pet services about $15 to $50 per lead; no source or method given)"
+    url: "https://leadcapture.io/blog/thumbtack-lead-cost/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: graphed_ads
+    title: "Graphed (marketing analytics vendor), Google Ads for Pet Waste Removal, Sept 2026 (cost per click several dollars for local service terms; no per-lead or per-customer figure published)"
+    url: "https://www.graphed.com/blog/google-ads-for-pet-waste-removal"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Number of dogs"
+      why: "More dogs means more waste every visit, and scooping services price by dogs, yard size and frequency; the bank's dogs question carries it."
+      source: msoc_scooping
+    - driver: "Visit frequency: weekly, twice a week, every other week, or once"
+      why: "The monthly price is visits times minutes per visit; every other week leaves twice the waste per visit, so it is not half the price. [judgment]"
+      source: null
+    - driver: "Buildup on the first visit (time since the yard was last picked up)"
+      why: "Weeks or months of buildup turn the first visit into an hours-long cleanup that businesses charge apart from the monthly rate, usually as a setup charge; the bank does not ask it, fu_last_cleaned does. [judgment]"
+      source: null
+    - driver: "Area the dogs use: dog run, side yard, back yard, front and back, or a whole lot"
+      why: "Walk time grows with area, and a quarter-acre lot with a desert edge takes a grid walk, not a quick pass; yard_size plus the overview photo carry it."
+      source: msoc_scooping
+    - driver: "Ground: rock or gravel, grass, artificial turf or dirt"
+      why: "Waste sinks between rocks and hides under shrubs and cactus, so gravel yards take longer than turf or grass; most Havasu yards are rock. [judgment]"
+      source: null
+    - driver: "Where the waste goes: bagged in the homeowner's cart or hauled away"
+      why: "Haul-away adds a dump stop and its cost; a full cart on pickup day forces haul-away anyway. [judgment]"
+      source: null
+    - driver: "Access and dogs on pickup day: locked gate, dogs loose in the yard, through-the-house only"
+      why: "A locked gate or a loose dog that will not be put away is a wasted trip; businesses price that risk or decline. [judgment]"
+      source: null
+    - driver: "Add-ons: turf or dog-run deodorizing, pet-station bag refills"
+      why: "Product and extra minutes each visit; deodorizing with a ready-to-use product needs no pest license, but spraying for fleas or ticks is pest work."
+      source: ars_3_3611
+  hidden_conditions:
+    - condition: "Far more buildup than the homeowner said (vacant second home, tenant move-out, owner away all summer)"
+      how_a_pro_spots_it: "Overview photo shows waste in many spots; heaviest-spot photo shows piles along a wall; homeowner mentions being away or a tenant leaving"
+      question_or_photo: fu_last_cleaned
+      source: null
+    - condition: "Waste hidden in gravel, under oleander, cactus, bougainvillea or junipers along the block wall"
+      how_a_pro_spots_it: "Overview photo shows dense shrubs and cactus beds dogs can get under"
+      question_or_photo: p1_yard_overview
+      source: null
+    - condition: "Dogs that will be loose in the yard on pickup day, or a dog that does not take strangers"
+      how_a_pro_spots_it: "Homeowner says the dogs live outside or no one is home on weekdays"
+      question_or_photo: fu_dogs_out
+      source: null
+    - condition: "No side gate, a locked gate, or a yard reached only through the house or garage"
+      how_a_pro_spots_it: "Gate photo shows no side access or a padlock; walls on both sides of the house"
+      question_or_photo: p2_gate_access
+      source: null
+    - condition: "Trash cart too full on pickup day, so waste must be hauled away"
+      how_a_pro_spots_it: "Homeowner picks bagged in the cart but has several dogs and a big first cleanup"
+      question_or_photo: fu_disposal
+      source: lhc_trash
+    - condition: "Turf smell that a spray on top will not reach (urine soaked into the infill and backing)"
+      how_a_pro_spots_it: "Turf photo shows dark patches in one corner; homeowner says the smell stays after hosing"
+      question_or_photo: p4_turf_area
+      source: null
+    - condition: "Waste that is not from her dogs (cats, wildlife, a neighbor's dog over the wall)"
+      how_a_pro_spots_it: "Large desert-edge lot; homeowner mentions coyotes, cats or droppings where her dogs cannot reach"
+      question_or_photo: fu_whose_waste
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "turf_deodorize (dog urine smell)"
+      might_be: "indoor pet urine in carpet or floors, which no enabled category covers (closest is house cleaning)"
+      one_question: fu_odor_where
+      if_other_route_to: {category: house_cleaning, job_type: "deep cleaning"}
+      source: null
+    - sounds_like: "one_time_cleanup (yard left a long time)"
+      might_be: "flea or tick spraying in the yard, pest_control"
+      one_question: fu_bugs_too
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: ars_3_3611
+    - sounds_like: "one_time_cleanup (tenant moved out)"
+      might_be: "yard debris, weeds or trash to haul as well, landscape_maintenance"
+      one_question: fu_other_items
+      if_other_route_to: {category: landscape_maintenance, job_type: "yard cleanup"}
+      source: null
+    - sounds_like: "turf_deodorize (bad smell in the yard)"
+      might_be: "sewage coming up at a yard cleanout or over a septic area, plumbing_repair main_line_backup or septic_pumping"
+      one_question: fu_ground_wet
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}
+      source: null
+    - sounds_like: "multi_dog_large_yard (droppings all over a big lot)"
+      might_be: "wildlife or rodent droppings, pest_control"
+      one_question: fu_whose_waste
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+  photo_reading:
+    - photo_id: p1_yard_overview
+      reads: ["Rough size of the area the dogs use", "Ground: rock, grass, turf, dirt or a mix", "Shrubs, cactus and beds dogs go under", "How much waste shows and how spread out"]
+      neutral_wording: "Medium back yard, gravel with a small turf patch along the patio; waste visible in several spots."
+    - photo_id: p2_gate_access
+      reads: ["Side gate or walkway, or no side access", "Latch or padlock", "Steps or slope on the way in", "Code pads or house numbers that must be cropped"]
+      neutral_wording: "Side gate with a latch and a gravel walkway into the back yard."
+    - photo_id: p3_heaviest_spot
+      reads: ["Depth of buildup in one area", "Ground under it", "Old dried waste versus fresh"]
+      neutral_wording: "Heavy buildup along the back block wall on gravel."
+    - photo_id: p4_turf_area
+      reads: ["Size of the turf or dog run", "Dark or stained patches", "Turf edges and drainage"]
+      neutral_wording: "Artificial turf dog run about the size of a small patio, darker patches in one corner."
+    - photo_id: p5_common_area
+      reads: ["Pet station with bag holder and can", "Size and ground of the area", "Fencing, signs, how many stations show"]
+      neutral_wording: "Pet station with a bag holder and can beside a gravel strip along the park road."
+  local_factors:
+    - fact: "Lake Havasu City Code 6.20.050 makes it a civil offense to let dog waste pile up, spread through a property, or be seen or smelled from outside it (fine up to $1,000 per violation)"
+      effect: "Some requests follow a neighbor, HOA or city notice and come with a date; the card states the date as a fact and Ask Hava gives no legal view"
+      source: lhc_title6
+    - fact: "City Code 6.20.010 requires dog owners to clean up after their dogs in city parks"
+      effect: "HOA, park-style and RV-park common areas keep pet stations, which is the common-area account a business quotes"
+      source: lhc_title6
+    - fact: "Monsoon season officially runs June 15 to September 30"
+      effect: "Storms wash waste into gravel and against walls and leave mud, so post-storm visits run long [judgment]"
+      source: nws_monsoon
+    - fact: "Summer heat from June to September"
+      effect: "Many scoopers work early mornings; odor and flies build fast, which raises twice-a-week requests [judgment]"
+      source: null
+    - fact: "Most yards are rock or gravel, with more artificial turf dog runs each year"
+      effect: "Rock slows pickup; turf brings deodorizing add-ons [judgment]"
+      source: null
+    - fact: "Seasonal residents and vacant second homes"
+      effect: "Requests for a cleanup before owners arrive in fall or after renters leave, and for pausing service while owners are away [judgment]"
+      source: null
+    - fact: "City trash carts take residential household waste only; pet waste is not addressed on the city page"
+      effect: "Businesses decide whether bags go in the homeowner's cart or are hauled away, and say so in the quote"
+      source: lhc_trash
+    - fact: "Businesses working inside city limits need a Lake Havasu City business license"
+      effect: "No state contractor license applies, so the city license is the only one a business may be asked about"
+      source: lhc_bizlic
+  seasonality:
+    busy: "October to April, when part-year residents are in town, plus fall arrival cleanups and spring move-out cleanups [judgment]"
+    slow: "June to August for new sign-ups, when many part-year homes sit empty; existing weekly accounts keep going [judgment]"
+    source: null
+
+job_types:
+  - id: weekly_pickup
+    label: "Ongoing pickup (weekly, twice a week or every other week)"
+    bank_job_type: "weekly yard pickup"
+    recurring: true
+    homeowner_phrasings: ["need someone to pick up dog poop every week", "pooper scooper service", "weekly poop scoop", "recoger popó de perro cada semana"]
+    must_know:
+      - fact: "Number of dogs"
+        bank_question: dogs
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Waste per visit scales with dogs, and many services quote per dog. [judgment]"
+        skip_if: "Homeowner gave the number"
+      - fact: "How often"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Visits per month set the monthly price. [judgment]"
+        skip_if: "Homeowner named the schedule"
+      - fact: "Area size and ground"
+        bank_question: yard_size
+        follow_up: fu_ground
+        photo: p1_yard_overview
+        why_it_moves_price: "A big gravel yard takes several times as long as a small turf run. [judgment]"
+        skip_if: "Overview photo shows the yard and ground"
+      - fact: "When the yard was last picked up"
+        bank_question: null
+        follow_up: fu_last_cleaned
+        photo: p3_heaviest_spot
+        why_it_moves_price: "Sets whether the first visit carries a cleanup charge on top of the monthly price. [judgment]"
+        skip_if: "Homeowner says a service just stopped or she picks up herself every week"
+      - fact: "Whether dogs will be out during the visit"
+        bank_question: null
+        follow_up: fu_dogs_out
+        photo: p2_gate_access
+        why_it_moves_price: "Loose dogs slow the visit or cost a wasted trip. [judgment]"
+        skip_if: "Homeowner already said the dogs stay inside"
+    allowed_follow_ups:
+      - id: fu_last_cleaned
+        ask_when: "Homeowner has not said when the yard was last picked up"
+        text_en: "About when was the yard last picked up?"
+        text_es: "¿Más o menos cuándo se recogió el patio por última vez?"
+        options_en: ["In the last week", "2 to 4 weeks ago", "1 to 3 months ago", "Longer than that"]
+        options_es: ["En la última semana", "Hace 2 a 4 semanas", "Hace 1 a 3 meses", "Hace más tiempo"]
+        card_field: true
+        why: "Buildup decides whether the first visit is a normal visit or a priced cleanup; the bank set lacks it. [judgment]"
+      - id: fu_ground
+        ask_when: "No overview photo and the homeowner has not said what the ground is"
+        text_en: "What is the ground like where the dogs go?"
+        text_es: "¿Cómo es el suelo donde van los perros?"
+        options_en: ["Rock or gravel", "Grass", "Artificial turf", "Dirt", "A mix"]
+        options_es: ["Piedra o grava", "Pasto", "Pasto artificial", "Tierra", "Una mezcla"]
+        card_field: true
+        why: "Gravel and shrub beds take longer than turf or grass. [judgment]"
+      - id: fu_disposal
+        ask_when: "Homeowner has not said where the waste should go"
+        text_en: "Where should the waste go?"
+        text_es: "¿Dónde se debe dejar el desecho?"
+        options_en: ["Bagged in my trash cart", "Hauled away by the business", "Either is fine"]
+        options_es: ["En bolsa en mi bote de basura", "Que se lo lleve el negocio", "Cualquiera"]
+        card_field: true
+        why: "Haul-away is priced differently from bagging in the homeowner's cart. [judgment]"
+      - id: fu_dogs_out
+        ask_when: "Homeowner has not said whether the dogs are in the yard on pickup day"
+        text_en: "On pickup day, will the dogs be inside or out in the yard?"
+        text_es: "El día que recogen, ¿los perros van a estar adentro o afuera en el patio?"
+        options_en: ["Inside or away", "Out in the yard", "It varies"]
+        options_es: ["Adentro o fuera de casa", "Afuera en el patio", "Depende del día"]
+        card_field: true
+        why: "Most scoopers will not work a yard with loose dogs they do not know; it sets the visit plan. [judgment]"
+    photos_priority: [p1_yard_overview, p2_gate_access, p4_turf_area]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All ongoing pickup requests"
+    scope_line_en: "Weekly dog waste pickup, 2 dogs, medium back yard, gravel with a small turf patch; last picked up about a month ago."
+    scope_line_es: "Recoger popó de perro cada semana, 2 perros, patio trasero mediano, grava con un poco de pasto artificial; se recogió hace un mes."
+    quote_format: monthly
+    business_fills: ["price per month", "visits per month and the day", "any first-visit cleanup, listed as a one-time setup charge", "bagged in the cart or hauled away", "earliest start date"]
+    card_template: |
+      REQ-<id> | Dog waste pickup | <town>, <general area> | <house / manufactured home / condo>
+      <one scope line: how often, dogs, area, ground, last pickup>
+      Dogs: <n>. How often: <weekly / twice a week / every other week>. Area: <small / medium / large>, <ground>.
+      Last picked up: <answer or not said>. Waste goes: <bagged in cart / hauled away / either>. Dogs on pickup day: <inside / out / varies / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Weekly is the better deal.", "Most scoopers charge about twenty a week.", "Keep the dogs inside on pickup day.", "That much waste can make your kids sick.", "You'll want a big cleanup first."]
+
+  - id: one_time_cleanup
+    label: "One-time cleanup of a built-up yard"
+    bank_job_type: "weekly yard pickup"
+    recurring: false
+    homeowner_phrasings: ["yard is covered in dog poop", "haven't picked up in months", "tenant left dog mess everywhere", "clean up the yard before we sell", "el patio está lleno de popó"]
+    must_know:
+      - fact: "How long since the last pickup"
+        bank_question: null
+        follow_up: fu_last_cleaned
+        photo: p3_heaviest_spot
+        why_it_moves_price: "Months of buildup is hours of work and more bags to haul; it is the biggest number in the quote. [judgment]"
+        skip_if: "Homeowner said how long, or the heaviest-spot photo shows it"
+      - fact: "Area size and ground"
+        bank_question: yard_size
+        follow_up: null
+        photo: p1_yard_overview
+        why_it_moves_price: "A whole gravel lot with shrub beds is a long first visit. [judgment]"
+        skip_if: "Overview photo sent"
+      - fact: "Whether pickup should continue after the cleanup"
+        bank_question: how_often
+        follow_up: fu_after_cleanup
+        photo: null
+        why_it_moves_price: "The quote format is monthly, so the business needs to know whether to quote a setup charge with ongoing service or the cleanup alone. [judgment]"
+        skip_if: "Homeowner already said one time only or named an ongoing schedule"
+      - fact: "Anything else to haul (trash, yard debris, furniture)"
+        bank_question: null
+        follow_up: fu_other_items
+        photo: p1_yard_overview
+        why_it_moves_price: "Other debris is a different job and changes who should quote. [judgment]"
+        skip_if: "Photo shows a clear yard apart from the waste"
+    allowed_follow_ups:
+      - fu_last_cleaned
+      - id: fu_after_cleanup
+        ask_when: "Homeowner wants a cleanup and has not said whether pickup should continue after it"
+        text_en: "After the first cleanup, should the business keep coming?"
+        text_es: "Después de la primera limpieza, ¿quiere que el negocio siga viniendo?"
+        options_en: ["One time only", "Weekly after that", "Twice a week after that", "Every other week after that"]
+        options_es: ["Solo una vez", "Cada semana después", "Dos veces por semana después", "Cada dos semanas después"]
+        card_field: true
+        why: "Decides whether the quote is a setup charge plus a monthly price or the cleanup alone; see NOTES FOR REVIEW. [judgment]"
+      - id: fu_other_items
+        ask_when: "Tenant move-out, home sale or a long-vacant home"
+        text_en: "Besides dog waste, is there trash, yard debris or old items to haul away too?"
+        text_es: "Además del popó, ¿hay basura, ramas u objetos viejos que también hay que llevarse?"
+        options_en: ["Just the dog waste", "Some yard debris too", "Trash or old items too"]
+        options_es: ["Solo el popó", "También ramas y hojas", "También basura u objetos viejos"]
+        card_field: true
+        why: "Debris and junk go to a yard cleanup or cleanout business, not a scooper. [judgment]"
+      - id: fu_bugs_too
+        ask_when: "Homeowner mentions fleas, ticks, flies or bugs in the yard"
+        text_en: "Is this pickup only, or do you also want the yard sprayed for fleas or bugs?"
+        text_es: "¿Es solo recoger, o también quiere que fumiguen el patio contra pulgas o insectos?"
+        options_en: ["Pickup only", "Spraying too"]
+        options_es: ["Solo recoger", "También fumigar"]
+        card_field: true
+        why: "Spraying for fleas or ticks is pest management, a licensed category; a ready-to-use deodorizer is not."
+    photos_priority: [p3_heaviest_spot, p1_yard_overview, p2_gate_access]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Homeowner has an HOA or city notice with a date", "Buyers, guests or a move-out inspection on a set date"]
+      regular: "Cleanup with no date"
+    scope_line_en: "One-time cleanup of a back yard not picked up in about 3 months, 2 dogs, gravel; tenant moved out."
+    scope_line_es: "Limpieza de una sola vez de un patio trasero sin recoger desde hace unos 3 meses, 2 perros, grava; el inquilino se mudó."
+    quote_format: monthly
+    business_fills: ["cleanup price, listed as a one-time setup charge", "price per month if pickup continues", "bagged in the cart or hauled away", "earliest date"]
+    card_template: |
+      REQ-<id> | Dog waste pickup | <town>, <general area> | <house / manufactured home / rental>
+      <one scope line: one-time cleanup, how long since last pickup, area, dogs>
+      Last picked up: <answer>. Area: <small / medium / large>, <ground>. Dogs: <n, or none now>.
+      After cleanup: <one time only / weekly / twice a week / every other week / not said>. Other items to haul: <none / yard debris / trash or old items>.
+      Date to have it done by: <date from a notice, sale or move-out, or none>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That will take a whole day.", "Cleanups like that run about two hundred.", "The HOA can't fine you for that.", "Wear gloves and a mask.", "That yard is a health hazard."]
+
+  - id: multi_dog_large_yard
+    label: "Three or more dogs, or a large yard or lot"
+    bank_job_type: "weekly yard pickup"
+    recurring: true
+    homeowner_phrasings: ["4 dogs on half an acre", "big lot with dogs", "lots of dogs", "tengo muchos perros"]
+    must_know:
+      - fact: "Number of dogs"
+        bank_question: dogs
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Past three dogs, waste per visit climbs fast and twice-a-week service is common. [judgment]"
+        skip_if: "Homeowner gave the number"
+      - fact: "Which areas the dogs use (back only, front and back, the whole lot)"
+        bank_question: yard_size
+        follow_up: fu_areas
+        photo: p1_yard_overview
+        why_it_moves_price: "A whole lot with a desert edge is a grid walk; a fenced back yard is not. [judgment]"
+        skip_if: "Homeowner described the areas"
+      - fact: "How often"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Visits per month set the monthly price. [judgment]"
+        skip_if: "Homeowner named the schedule"
+      - fact: "Dogs out during the visit"
+        bank_question: null
+        follow_up: fu_dogs_out
+        photo: p2_gate_access
+        why_it_moves_price: "A pack loose on a big lot is the most common reason a scooper declines a yard. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_areas
+        ask_when: "Large lot or several dogs and the homeowner has not said which areas the dogs use"
+        text_en: "Which areas do the dogs use?"
+        text_es: "¿Qué áreas usan los perros?"
+        options_en: ["Back yard only", "Front and back", "A fenced dog run only", "The whole lot"]
+        options_es: ["Solo el patio trasero", "Enfrente y atrás", "Solo un corral cercado", "Todo el terreno"]
+        card_field: true
+        why: "Area walked is the second biggest driver after dog count. [judgment]"
+      - fu_dogs_out
+      - fu_last_cleaned
+      - id: fu_whose_waste
+        ask_when: "Homeowner mentions droppings where her dogs do not go, or cats, coyotes or other animals"
+        text_en: "Is the waste all from your own dogs?"
+        text_es: "¿Todo el desecho es de sus propios perros?"
+        options_en: ["Yes, our dogs", "Some may be from cats or wild animals"]
+        options_es: ["Sí, de nuestros perros", "Puede que algo sea de gatos o animales silvestres"]
+        card_field: true
+        why: "Wildlife or rodent droppings are a pest-control request, not a scooping account. [judgment]"
+    photos_priority: [p1_yard_overview, p3_heaviest_spot, p2_gate_access]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All multi-dog and large-lot requests"
+    scope_line_en: "Twice-a-week pickup, 4 dogs, about half an acre, front and back, rock and dirt."
+    scope_line_es: "Recoger dos veces por semana, 4 perros, como medio acre, enfrente y atrás, piedra y tierra."
+    quote_format: monthly
+    business_fills: ["price per month", "visits per month and the day", "any first-visit cleanup, listed as a one-time setup charge", "bagged in the cart or hauled away", "earliest start date"]
+    card_template: |
+      REQ-<id> | Dog waste pickup | <town>, <general area> | <house / manufactured home / lot>
+      <one scope line: how often, dogs, lot size, areas, ground>
+      Dogs: <n>. How often: <weekly / twice a week / every other week>. Areas: <back only / front and back / dog run / whole lot>, <ground>.
+      Last picked up: <answer or not said>. Dogs on pickup day: <inside / out / varies / not said>. All from her dogs: <yes / some may be other animals / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Four dogs need twice a week.", "Big lots cost a lot more.", "Those are coyote droppings.", "Put the dogs away before they come."]
+
+  - id: commercial_hoa
+    label: "HOA, apartment or RV park common area and pet stations"
+    bank_job_type: "weekly yard pickup"
+    recurring: true
+    homeowner_phrasings: ["HOA needs the dog stations emptied", "pet waste stations", "common area dog poop", "RV park dog area", "estaciones de bolsas para perros"]
+    must_know:
+      - fact: "How many pet stations or dog areas"
+        bank_question: null
+        follow_up: fu_station_count
+        photo: p5_common_area
+        why_it_moves_price: "Stations and areas set the time on site and the bags used each visit. [judgment]"
+        skip_if: "Requester gave the count"
+      - fact: "What each visit covers: empty cans, refill bags, walk the area"
+        bank_question: null
+        follow_up: fu_station_tasks
+        photo: p5_common_area
+        why_it_moves_price: "Bag refills add product cost; walking the grounds adds the most time. [judgment]"
+        skip_if: "Requester listed the tasks"
+      - fact: "How often"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Visits per month set the monthly price. [judgment]"
+        skip_if: "Requester named the schedule"
+      - fact: "Kind of site"
+        bank_question: null
+        follow_up: fu_site_kind
+        photo: null
+        why_it_moves_price: "An apartment dog run, an HOA greenbelt and an RV park differ in size and in who signs off on the work. [judgment]"
+        skip_if: "Requester named the site kind"
+    allowed_follow_ups:
+      - id: fu_station_count
+        ask_when: "Common area request with no station count"
+        text_en: "How many pet stations or dog areas are there?"
+        text_es: "¿Cuántas estaciones para mascotas o áreas para perros hay?"
+        options_en: ["1 or 2", "3 to 5", "6 or more"]
+        options_es: ["1 o 2", "3 a 5", "6 o más"]
+        card_field: true
+        why: "Station count is the first number a common-area quote is built on. [judgment]"
+      - id: fu_station_tasks
+        ask_when: "Common area request that does not say what each visit covers"
+        text_en: "At each visit, what should be done?"
+        text_es: "En cada visita, ¿qué se debe hacer?"
+        options_en: ["Empty the cans only", "Empty cans and refill bags", "Cans, bags and pick up the grounds"]
+        options_es: ["Solo vaciar los botes", "Vaciar botes y poner bolsas", "Botes, bolsas y recoger el área"]
+        card_field: true
+        why: "Separates a station route from a full grounds pickup. [judgment]"
+      - id: fu_site_kind
+        ask_when: "Requester has not said what kind of property it is"
+        text_en: "What kind of property is it?"
+        text_es: "¿Qué tipo de propiedad es?"
+        options_en: ["HOA common area", "Apartment or condo complex", "RV park or mobile home park", "Other business"]
+        options_es: ["Área común de la asociación (HOA)", "Complejo de apartamentos o condominios", "Parque de casas rodantes o casas móviles", "Otro negocio"]
+        card_field: true
+        why: "Site kind tells the business who approves the account and how big it runs. [judgment]"
+      - fu_disposal
+    photos_priority: [p5_common_area]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All common-area requests"
+    scope_line_en: "HOA common area, 4 pet stations, empty cans and refill bags twice a week."
+    scope_line_es: "Área común de la asociación, 4 estaciones para mascotas, vaciar botes y poner bolsas dos veces por semana."
+    quote_format: monthly
+    business_fills: ["price per month", "visits per month and the days", "whether bags are included", "earliest start date"]
+    card_template: |
+      REQ-<id> | Dog waste pickup | <town>, <general area> | <HOA common area / apartment complex / RV or mobile home park>
+      <one scope line: site kind, stations, tasks, how often>
+      Stations or dog areas: <1 or 2 / 3 to 5 / 6 or more>. Each visit: <cans only / cans and bags / cans, bags and grounds>. How often: <answer>.
+      Waste goes: <site dumpster / hauled away / either / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Most HOAs go twice a week.", "Bags are about ten cents each.", "The city requires pet stations.", "You'll need a walk-through first."]
+
+  - id: turf_deodorize
+    label: "Deodorizing artificial turf or dog areas (add-on to pickup)"
+    bank_job_type: "weekly yard pickup"
+    recurring: true
+    homeowner_phrasings: ["turf smells like pee", "deodorize the fake grass", "dog urine smell in the yard", "olor a orina en el pasto artificial"]
+    must_know:
+      - fact: "Whether the smell is outside on the turf or inside the home"
+        bank_question: null
+        follow_up: fu_odor_where
+        photo: p4_turf_area
+        why_it_moves_price: "Indoor pet odor is a different trade; outdoor turf is a per-visit add-on. [judgment]"
+        skip_if: "Homeowner said turf or yard"
+      - fact: "Size of the turf or dog run"
+        bank_question: yard_size
+        follow_up: null
+        photo: p4_turf_area
+        why_it_moves_price: "Product and minutes scale with area. [judgment]"
+        skip_if: "Turf photo sent"
+      - fact: "Whether pickup comes with it"
+        bank_question: how_often
+        follow_up: fu_pickup_too
+        photo: null
+        why_it_moves_price: "Most scoopers sell deodorizing as an add-on to a pickup plan, not alone. [judgment]"
+        skip_if: "Homeowner asked for both"
+      - fact: "Number of dogs"
+        bank_question: dogs
+        follow_up: null
+        photo: null
+        why_it_moves_price: "More dogs, more urine load on the same turf. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_odor_where
+        ask_when: "Homeowner mentions a urine smell without saying where"
+        text_en: "Is the smell outside on the turf or yard, or inside the house?"
+        text_es: "¿El olor está afuera en el pasto o el patio, o adentro de la casa?"
+        options_en: ["Outside", "Inside the house", "Both"]
+        options_es: ["Afuera", "Adentro de la casa", "Las dos"]
+        card_field: true
+        why: "Indoor carpet or floor odor is not yard work and routes elsewhere. [judgment]"
+      - id: fu_pickup_too
+        ask_when: "Homeowner asks only about the smell"
+        text_en: "Do you want waste pickup too, or only the deodorizing?"
+        text_es: "¿Quiere que también recojan el popó, o solo quitar el olor?"
+        options_en: ["Pickup and deodorizing", "Deodorizing only"]
+        options_es: ["Recoger y quitar el olor", "Solo quitar el olor"]
+        card_field: true
+        why: "Deodorizing alone is a short visit some scoopers do not sell on its own. [judgment]"
+      - fu_bugs_too
+      - id: fu_ground_wet
+        ask_when: "Homeowner reports a bad smell in the yard that is not clearly dog urine"
+        text_en: "Where the smell is, is the ground dry, or is there a wet spot or standing water?"
+        text_es: "Donde está el olor, ¿el suelo está seco, o hay una parte mojada o agua estancada?"
+        options_en: ["Dry", "Wet or soggy spot", "Standing water"]
+        options_es: ["Seco", "Parte mojada o lodosa", "Agua estancada"]
+        card_field: true
+        why: "A wet spot with a sewage smell is a plumbing or septic request, not a deodorizing visit. [judgment]"
+    photos_priority: [p4_turf_area, p1_yard_overview]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All deodorizing requests"
+    scope_line_en: "Weekly pickup with turf deodorizing, 1 dog, small artificial turf dog run off the patio."
+    scope_line_es: "Recoger cada semana y quitar el olor del pasto artificial, 1 perro, corral chico de pasto artificial junto al patio."
+    quote_format: monthly
+    business_fills: ["price per month with deodorizing", "how often the turf is treated", "product used (ready-to-use deodorizer)", "earliest start date"]
+    card_template: |
+      REQ-<id> | Dog waste pickup | <town>, <general area> | <house / manufactured home / condo>
+      <one scope line: pickup and deodorizing or deodorizing only, dogs, turf size>
+      Smell: <outside / inside / both>. Pickup too: <yes / deodorizing only>. Dogs: <n>. Turf area: <small / medium / large>.
+      Ground where the smell is: <dry / wet spot / standing water / not asked>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The infill is soaked and has to be replaced.", "Enzyme spray will fix that.", "Rinse it with vinegar.", "That's a sewer smell."]
+
+business_side:
+  how_they_get_customers: ["Local Facebook groups and Nextdoor posts", "Door hangers in neighborhoods with many dogs", "Google Maps listing and reviews", "Word of mouth and vet or groomer referrals [judgment]", "Google and Meta ads", "Yard signs and truck magnets [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Thumbtack (pet services)"
+      figure: "About $15 to $50 per lead, from a lead-form software vendor's blog with no stated method; pet waste removal not listed on its own"
+      source: leadcapture_thumbtack
+      unverified: false
+    - channel: "Google search ads (pet waste removal)"
+      figure: "Several dollars per click for local service terms; no per-lead or per-customer figure published by the marketing vendor"
+      source: graphed_ads
+      unverified: false
+    - channel: "Print advertising (one operator's test)"
+      figure: "Over $5,000 for one print ad that brought zero calls; the same owner grows by Facebook groups, door hangers and free trial cleanups and reports an average customer at a little over $110 a month (self-reported)"
+      source: msoc_scooping
+      unverified: false
+    - channel: "Lake Havasu City scoopers specifically"
+      figure: "No local figures found; a small market with few scooping businesses and many part-year residents [judgment]"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a request that several other scoopers also got", "A per-request price that eats a month of a small account", "One-time cleanups that never become weekly customers", "Homeowners who understate the buildup or the number of dogs", "Monthly platform fees whether or not accounts come"]
+  what_makes_a_lead_worth_paying_for: ["Dogs, yard size, ground and how often stated up front", "Time since last pickup and a photo of the worst spot", "Gate and dogs-on-pickup-day stated", "A weekly account for one small fee, with repeat picks free", "Pay only when picked, nothing monthly"]
+  their_words: ["scoop", "scooping", "initial cleanup", "per dog", "weekly service", "twice weekly", "bi-weekly", "yard check", "deodorizer", "enzyme", "haul-away", "pet waste station", "bag refills", "gate code", "dogs-in policy"]
+  signup_objections:
+    - objection: "My accounts are small. Why pay a fee for one?"
+      answer: "You pay once, only when the homeowner picks your quote. For ongoing pickup the fee is set from 4 months of your monthly price and never goes over $75. If 4 months comes to under $500, the fee is $25. If that customer picks you again through Ask Hava, there is no fee."
+    - objection: "I can't price a yard I haven't seen."
+      answer: "Each card gives the number of dogs, yard size, how often, and most give the ground, the last pickup and photos of the yard and the worst spot. Quote your monthly price and put any first cleanup in the one-time setup charge. The setup charge is not counted in the fee."
+    - objection: "Customers cancel after a month."
+      answer: "The fee is one time, not monthly. If the homeowner cancels before you have spoken with them, the fee is refunded. After that the fee stands, because it pays for the introduction, not the account."
+    - objection: "I won't work a yard with loose dogs."
+      answer: "Most cards say whether the dogs are inside or out on pickup day. Gate codes are never on a card; the homeowner gives them on the call. If a card does not fit how you work, skip it and pay nothing."
+    - objection: "I don't do HOA common areas or turf deodorizing."
+      answer: "Dog waste pickup is one job type today, so you get every card in it. Quote the ones you want and skip the rest. A card you skip costs nothing."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town, photos and answers to the questions a scooper asks. Names and addresses go only to the business the homeowner picks."
+    - objection: "Will you rank me against other scoopers?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, review links and notes. Ask Hava never sorts, rates or scores a business."
+    - objection: "Is there a monthly fee or a contract?"
+      answer: "No. Nothing to join and nothing per month. You pay only on a pick."
+    - objection: "Do I need a license to sign up?"
+      answer: "No state contractor license covers dog waste pickup, so none is asked for. Lake Havasu City has its own business license rule for businesses working inside city limits. Spraying a yard for fleas or ticks is pest work and needs a state pest license."
+  quote_tips_for_card: ["Give a price per month and say how many visits and which day", "Put any first cleanup in the one-time setup charge", "Say whether bags go in the homeowner's cart or you haul them away", "Say your rule for dogs in the yard and gates on pickup day", "Say whether you disinfect tools and shoes between yards", "Give your earliest start date"]

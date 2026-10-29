@@ -1,0 +1,591 @@
+# Ask Hava expert layer: trash_can_cleaning (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set trash_can_cleaning and trade_kb/trades/trash_can_cleaning.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The category has one job type, "bin washing", so all five kb job types map to it. A business
+#   cannot opt into home carts but out of dumpsters or bin-pad washing. Casey may want
+#   "dumpster washing" and "bin pad wash" as their own job types later.
+# - A one-time wash has no one_time_job_types entry in categories.yaml, so quote_format stays
+#   monthly for every job type here, one_time_wash included. Under REC-010 a quote with no period
+#   is bounced back, so a business asked for a single wash has no clean way to quote it. Suggested
+#   fix: add "one-time bin wash" to job_types and one_time_job_types (quoted firm). Until then the
+#   card says "Plan: once" and the business writes its terms in the quote notes.
+# - The question set has only bins, how_often and pickup_day. Condition, curb access and dumpster
+#   size live in follow-ups here, and the AI may ask only one. Adding a condition question to the
+#   bank would free the follow-up for curb access, which most often decides whether a wash happens.
+# - extra_bins_commercial covers HOA and business dumpsters. Ask Hava is homeowner-facing; an HOA
+#   board or a business owner texting in may need a decision on whether those requests are taken.
+# - photo p4_bin_area (where the bins sit) is a kb photo but not in the question set's photos list
+#   (p1_bins_curb, p2_inside_bin, p3_dumpster). bin_area_wash leans on it; consider adding it to the set.
+# - No new_job_type was needed: the kb ids cover the one category job type.
+schema: 1
+category: trash_can_cleaning
+question_set: trash_can_cleaning
+kb_trade: trash_can_cleaning
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: lhc_trash
+    title: "Lake Havasu City Trash and Recycling: Republic Services collects; carts stay with the home and remain Republic's property; set out the night before, within 3 feet of the street with 4 feet of clearance; collection 5 am to 6 pm; no pickup on Thanksgiving, Christmas or New Year's Day, pickup moves one day later after them; extra carts for a monthly fee; online pickup-day map"
+    url: "https://www.lhcaz.gov/357/Trash-Recycling"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_routes
+    title: "Today's News-Herald (reprinted on aaronline.com): Republic Services splits the city into five zones, one per weekday, south side Monday to north side Friday; about 6,700 of 29,000 households changed day (article year not stated, about 2021)"
+    url: "https://www.aaronline.com/?p=44345"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_vacation_rentals
+    title: "Lake Havasu City Vacation Rentals (City Code ch. 5.20): trash in suitable containers and not within public view more than 12 hours before collection"
+    url: "https://www.lhcaz.gov/vacation-rentals"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_storm
+    title: "Lake Havasu City Storm Water Management (City Code ch. 8.28): illicit discharge is any discharge to the storm system not made entirely of stormwater; storm drains, gutters and washes flow untreated to the lake"
+    url: "https://www.lhcaz.gov/public-works/storm-water-management"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_business_license
+    title: "Lake Havasu City Business License: businesses conducting business within city limits need a city business license; annual fee"
+    url: "https://www.lhcaz.gov/business-license"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 grains per gallon, range 18 to 20)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Tucson, Monsoon Safety: the monsoon runs June 15 to September 30"
+    url: "https://www.weather.gov/twc/MonsoonSafety"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: s2_aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (no class covers bin washing)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: homeserve_bins
+    title: "HomeServe cost guide, trash can cleaning (Apr 2025): cost set by number and size of bins, method, frequency and condition; one-time cleans cost more per visit than plans; extra cans about $5 each per cleaning; cleaning set on pickup day; 200 F water; cracked bins may get worse"
+    url: "https://www.homeserve.com/blog/cost-guide/trash-can-cleaning-service"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: moneypantry_bins
+    title: "Money Pantry, trash can cleaning business (Mar 2026): HOA pilot blocks, door hangers after pickup, Nextdoor; plans about $30 to $40 a month for 2 bins, one-time about $90; route density drives profit (300 or more customers in a few neighborhoods); wash water must be collected and dumped at an approved site, not street drains"
+    url: "https://moneypantry.com/trash-can-cleaning-business/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: journal_news_bins
+    title: "Journal-News, garbage can cleaning business offers solution for smelly, rodent-attracting bins: cleans set on pickup day; monthly, quarterly or one-time plans; 200 degree water; waste water collected on the truck"
+    url: "https://www.journal-news.com/news/garbage-can-cleaning-business-offers-solution-for-smelly-rodent-attracting-bins/VHzEjJPDlWddGpstA20MYL"
+    checked: "2026-10-29"
+    kind: other
+  - id: hcp_thumbtack
+    title: "Housecall Pro (field-service software vendor): how Thumbtack works (pros report $10 to over $100 per lead by trade and market; customers contact several pros)"
+    url: "https://www.housecallpro.com/resources/what-is-thumbtack-how-it-works/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Plan: once, monthly or every three months"
+      why: "One-time cleans cost more per visit than plans, and spread-out plans can cost a little more per wash; the bank's how_often question settles it."
+      source: homeserve_bins
+    - driver: "Number of bins (trash, recycling and any extra carts)"
+      why: "Most washers price the first two carts as a set and add a small charge per extra cart per wash."
+      source: homeserve_bins
+    - driver: "Whether the home sits on a pickup day and area the washer already runs"
+      why: "Driving between far-apart stops is the main cost in this trade, so a home on an existing route day is cheaper to serve; the pickup day tells the washer the zone."
+      source: moneypantry_bins
+    - driver: "Condition on the first wash (normal use, strong smell, maggots, not washed in a long time)"
+      why: "A first wash on a neglected bin takes longer and more water than a plan wash; some washers add a first-wash charge. [judgment]"
+      source: null
+    - driver: "Home carts or dumpsters, and dumpster size"
+      why: "Dumpsters take far more water, time and tank space than a home cart and are priced on their own. [judgment]"
+      source: null
+    - driver: "Add-ons: the bin pad or enclosure, deodorizing between washes"
+      why: "A pad wash needs a surface cleaner and water capture on a larger area; deodorizing alone is a short stop. [judgment]"
+      source: null
+    - driver: "Whether the bins stay at the curb after pickup on wash day"
+      why: "Pickup runs 5 am to 6 pm, so the washer cannot promise a time; bins brought in early mean a missed stop or a rolled-out cart charge. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Bins are pulled back in before the washer arrives, or a vacation rental's bins must go out of view soon after pickup"
+      how_a_pro_spots_it: "The curb answer; a vacation rental or second home; rental trash may sit in public view no more than 12 hours before pickup"
+      question_or_photo: fu_curb_access
+      source: lhc_vacation_rentals
+    - condition: "Bags, food or liquid still stuck in the bottom after the truck empties it"
+      how_a_pro_spots_it: "Dark residue or a bag in the bottom of the inside-bin photo"
+      question_or_photo: p2_inside_bin
+      source: null
+    - condition: "Cracked cart body or broken lid that the wash may make worse"
+      how_a_pro_spots_it: "Cracks or a hanging lid in the curb photo; carts belong to Republic Services, so the washer will not repair or replace one"
+      question_or_photo: p1_bins_curb
+      source: homeserve_bins
+    - condition: "Heavy maggots or flies that need a longer first wash"
+      how_a_pro_spots_it: "The condition answer; visible larvae or flies in the inside-bin photo; summer heat"
+      question_or_photo: fu_condition
+      source: null
+    - condition: "More carts at the curb than the homeowner counted"
+      how_a_pro_spots_it: "Extra trash or recycling carts are rented from the hauler for a monthly fee; the curb photo shows the count"
+      question_or_photo: p1_bins_curb
+      source: lhc_trash
+    - condition: "A holiday week moves pickup a day later, so the wash day moves too"
+      how_a_pro_spots_it: "No pickup on Thanksgiving, Christmas or New Year's Day, and collection shifts one day after them"
+      question_or_photo: pickup_day
+      source: lhc_trash
+    - condition: "Dumpster inside a locked block enclosure with a gate, or no room to park the rig"
+      how_a_pro_spots_it: "Gate, lock and enclosure walls in the dumpster photo; the access answer"
+      question_or_photo: fu_dumpster_access
+      source: null
+    - condition: "Bin pad slopes to the street or a storm drain, so wash water must be fully caught"
+      how_a_pro_spots_it: "Pad near the curb or a drain in the bin-area photo; storm drains run untreated to the lake"
+      question_or_photo: p4_bin_area
+      source: lhc_storm
+  misdiagnosis_checks:
+    - sounds_like: "bin washing (flies everywhere)"
+      might_be: "a fly or pest problem around the yard or house, a different category"
+      one_question: fu_only_bins
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+    - sounds_like: "bin washing (rats or roaches getting into the cans)"
+      might_be: "rodents or roaches around the home, a different category"
+      one_question: fu_only_bins
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+    - sounds_like: "bin washing (the whole side yard stinks)"
+      might_be: "dog waste in the yard, a different category"
+      one_question: fu_only_bins
+      if_other_route_to: {category: dog_waste_pickup, job_type: "weekly yard pickup"}
+      source: null
+    - sounds_like: "bin_area_wash (wash where the cans sit)"
+      might_be: "a driveway or patio wash, a different category"
+      one_question: fu_pad_what
+      if_other_route_to: {category: pressure_washing, job_type: "driveway"}
+      source: null
+    - sounds_like: "bin washing for a second home while the owner is away"
+      might_be: "someone to roll the bins out and back in, which a house-check business may do"
+      one_question: fu_curb_access
+      if_other_route_to: {category: home_watch, job_type: "weekly house check"}
+      source: null
+    - sounds_like: "deodorize_only (just make it stop smelling)"
+      might_be: "one_time_wash, because there is stuck-on mess or maggots inside"
+      one_question: fu_smell_only
+      if_other_route_to: {category: trash_can_cleaning, job_type: "bin washing"}
+      source: null
+    - sounds_like: "recurring_wash (start a monthly plan)"
+      might_be: "a heavy first wash on bins not cleaned in a long time, priced apart from the plan"
+      one_question: fu_condition
+      if_other_route_to: {category: trash_can_cleaning, job_type: "bin washing"}
+      source: null
+  photo_reading:
+    - photo_id: p1_bins_curb
+      reads: ["Number of carts and lid colors (trash, recycling, extra)", "Cracked lids, missing wheels, split bodies", "Room for a truck or trailer to stop at the curb", "Gravel, slope or a mailbox crowding the carts"]
+      neutral_wording: "Photo shows 3 carts at the curb, one with a cracked lid."
+    - photo_id: p2_inside_bin
+      reads: ["Dark residue or liquid at the bottom", "Maggots or flies", "A bag or food stuck to the sides", "Whether the bin was emptied yet"]
+      neutral_wording: "Photo shows dark residue at the bottom of the cart and some flies."
+    - photo_id: p3_dumpster
+      reads: ["Size label on the dumpster", "Gate, lock or block enclosure walls", "Drain nearby", "Room to park beside it"]
+      neutral_wording: "Photo shows one dumpster inside a block enclosure with a metal gate."
+    - photo_id: p4_bin_area
+      reads: ["Surface (concrete, pavers, gravel)", "Stains on the pad or walls", "Size of the stained area", "Distance from the street and any drain"]
+      neutral_wording: "Photo shows a concrete pad beside the garage with dark stains."
+  local_factors:
+    - fact: "Republic Services collects trash in Lake Havasu City, and the carts stay with the home as Republic's property"
+      effect: "Washers clean carts but do not repair or swap them; cracked or missing carts go to the hauler"
+      source: lhc_trash
+    - fact: "Carts go out the night before, within 3 feet of the street with 4 feet of clearance, and collection runs 5 am to 6 pm"
+      effect: "Washers run behind the trucks on pickup day and cannot give an exact time, so the curb answer matters"
+      source: lhc_trash
+    - fact: "Republic splits the city into five zones, one per weekday, from the south side Monday to the north side Friday (routes may have changed since the report)"
+      effect: "The pickup day tells a washer the area, and route density sets price"
+      source: lhc_routes
+    - fact: "Residents can rent an extra trash or recycling cart for a monthly fee"
+      effect: "Three or more carts per home are common enough that washers ask for the count [judgment]"
+      source: lhc_trash
+    - fact: "Vacation rental trash may sit in public view no more than 12 hours before collection (City Code ch. 5.20)"
+      effect: "Rental bins may go back in soon after pickup, before a washer arrives; the card says who handles the bins"
+      source: lhc_vacation_rentals
+    - fact: "Storm drains, gutters and washes flow untreated to the lake, and any discharge that is not entirely stormwater is an illicit discharge (City Code ch. 8.28)"
+      effect: "Washers carry water capture on the rig; a pad wash near a drain takes more care"
+      source: lhc_storm
+    - fact: "Monsoon season runs June 15 to September 30"
+      effect: "Wind tips bins and blows dust and debris into them; heat speeds odor and flies [judgment]"
+      source: nws_monsoon
+    - fact: "City water is hard, about 19 grains per gallon"
+      effect: "Can leave white spots on dark carts if a washer does not rinse or dry them [judgment]"
+      source: lhc_ccr
+    - fact: "Businesses working inside city limits need a Lake Havasu City business license"
+      effect: "No state contractor license covers bin washing; washers may mention a city license, which Ask Hava does not check"
+      source: lhc_business_license
+    - fact: "No residential contractor license class covers washing bins, dumpsters or pads; it is not construction work"
+      effect: "Cards go to businesses with no ROC check; building or rebuilding a block enclosure is a different, licensed job [judgment]"
+      source: s2_aac_r4_9_103
+    - fact: "Many part-year residents and vacant second homes have no one to set bins out on wash day"
+      effect: "Washers ask who rolls the bins out, and some offer to do it [judgment]"
+      source: null
+  seasonality:
+    busy: "May to September, when heat brings smell, flies and maggots [judgment]"
+    slow: "December to February, when part-year residents fill homes but cold weather keeps bins mild [judgment]"
+    source: null
+
+job_types:
+  - id: recurring_wash
+    label: "Recurring bin washing (monthly or every three months)"
+    bank_job_type: "bin washing"
+    recurring: true
+    homeowner_phrasings: ["monthly bin wash", "clean my cans every month", "quarterly trash can cleaning", "bin service plan", "lavar los botes cada mes"]
+    must_know:
+      - fact: "How many bins"
+        bank_question: bins
+        follow_up: null
+        photo: p1_bins_curb
+        why_it_moves_price: "Plans are priced per cart, with extra carts added on. [judgment]"
+        skip_if: "Homeowner gave the count or the curb photo shows it"
+      - fact: "Monthly or every three months"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets the per-wash rate and how the business writes the monthly price. [judgment]"
+        skip_if: "Homeowner named the plan"
+      - fact: "Trash pickup day"
+        bank_question: pickup_day
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Tells the washer the route day and area; a home on an existing route is cheaper to serve. [judgment]"
+        skip_if: "Homeowner gave the day"
+      - fact: "Whether the bins stay at the curb after pickup"
+        bank_question: null
+        follow_up: fu_curb_access
+        photo: null
+        why_it_moves_price: "Bins brought in early mean a missed stop or a charge to roll them out. [judgment]"
+        skip_if: "Homeowner said the bins stay out all day"
+      - fact: "Condition now"
+        bank_question: null
+        follow_up: fu_condition
+        photo: p2_inside_bin
+        why_it_moves_price: "A neglected bin needs a longer first wash, often priced apart from the plan. [judgment]"
+        skip_if: "Homeowner described the smell or bugs, or the inside photo shows it"
+    allowed_follow_ups:
+      - id: fu_condition
+        ask_when: "Homeowner did not say how dirty the bins are and sent no inside photo"
+        text_en: "How are the bins right now?"
+        text_es: "¿Cómo están los botes ahorita?"
+        options_en: ["Normal use", "Strong smell", "Maggots or flies", "Not washed in a long time"]
+        options_es: ["Uso normal", "Huelen muy fuerte", "Gusanos o moscas", "No se lavan desde hace mucho"]
+        card_field: true
+        why: "The first wash on a neglected bin takes longer than a plan wash, and washers price it that way. [judgment]"
+      - id: fu_curb_access
+        ask_when: "Homeowner did not say whether the bins stay out on pickup day, or mentions a rental, second home or HOA"
+        text_en: "On pickup day, can the bins stay at the curb until evening?"
+        text_es: "El día que recogen la basura, ¿se pueden quedar los botes en la banqueta hasta la tarde?"
+        options_en: ["Yes, they stay out", "No, someone brings them in early", "No one is there that day"]
+        options_es: ["Sí, se quedan afuera", "No, alguien los mete temprano", "No hay nadie ese día"]
+        card_field: true
+        why: "Washers follow the trucks and cannot give a time, so this decides whether the wash happens. [judgment]"
+      - id: fu_only_bins
+        ask_when: "Homeowner mentions flies, bugs, rodents or a bad smell"
+        text_en: "Are the smell, flies or bugs only at the bins, or around the yard or house too?"
+        text_es: "¿El olor, las moscas o los bichos están solo en los botes, o también en el patio o la casa?"
+        options_en: ["Only at the bins", "Around the yard too", "In the house too", "Rats or mice near the bins"]
+        options_es: ["Solo en los botes", "También en el patio", "También en la casa", "Ratas o ratones cerca de los botes"]
+        card_field: true
+        why: "Bugs past the bins or rodents are a pest job, and a yard smell may be dog waste; both are other categories. [judgment]"
+    photos_priority: [p1_bins_curb, p2_inside_bin, p4_bin_area]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames from a bin"]
+      urgent_capable_triggers: []
+      regular: "Every plan request"
+    scope_line_en: "Monthly wash for 2 carts, trash and recycling; pickup day is Tuesday; bins stay at the curb."
+    scope_line_es: "Lavado cada mes para 2 botes, basura y reciclaje; recogen el martes; los botes se quedan en la banqueta."
+    quote_format: monthly
+    business_fills: ["price per month", "how often you wash (monthly or every three months)", "price per extra cart", "any first-wash charge", "first wash date"]
+    card_template: |
+      REQ-<id> | Trash-can cleaning | <town>, <general area> | <house / condo / manufactured home / vacation rental>
+      <one scope line: how many carts, which plan, pickup day>
+      Carts: <1 / 2 / 3 or more>. Plan: <monthly / every three months>. Pickup day: <day>. Condition: <normal / strong smell / maggots or flies / not washed in a long time / not said>.
+      At the curb after pickup: <stay out / brought in early / no one there / not said>. Photos: <n> (<neutral description>).
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Most washers charge about thirty a month.", "Monthly is the way to go in summer.", "Rinse them with bleach until someone comes.", "That smell means they haven't been washed in months.", "Republic will replace that cracked cart."]
+
+  - id: one_time_wash
+    label: "One-time bin washing"
+    bank_job_type: "bin washing"
+    recurring: false
+    homeowner_phrasings: ["trash can smells", "maggots in my bin", "garbage can stinks", "just once clean the cans", "el bote de basura huele mal"]
+    must_know:
+      - fact: "How many bins"
+        bank_question: bins
+        follow_up: null
+        photo: p1_bins_curb
+        why_it_moves_price: "A single wash is priced per cart. [judgment]"
+        skip_if: "Homeowner gave the count or the photo shows it"
+      - fact: "Condition now"
+        bank_question: null
+        follow_up: fu_condition
+        photo: p2_inside_bin
+        why_it_moves_price: "Most one-time requests come from a bad bin, and maggots or a long gap add time. [judgment]"
+        skip_if: "Homeowner already said maggots, flies or smell"
+      - fact: "Trash pickup day"
+        bank_question: pickup_day
+        follow_up: null
+        photo: null
+        why_it_moves_price: "The wash goes right after the truck, and the day decides whether it fits an existing route. [judgment]"
+        skip_if: "Homeowner gave the day"
+      - fact: "Whether the bins stay at the curb after pickup"
+        bank_question: null
+        follow_up: fu_curb_access
+        photo: null
+        why_it_moves_price: "Bins brought in early mean a missed stop. [judgment]"
+        skip_if: "Homeowner said they stay out"
+    allowed_follow_ups:
+      - fu_condition
+      - fu_only_bins
+      - fu_curb_access
+    photos_priority: [p2_inside_bin, p1_bins_curb]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames from a bin"]
+      urgent_capable_triggers: ["Maggots or flies now and pickup is this week"]
+      regular: "Smell or dirt, no rush stated"
+    scope_line_en: "One wash for 1 trash cart with maggots and a strong smell; pickup day is Thursday."
+    scope_line_es: "Un lavado para 1 bote de basura con gusanos y olor fuerte; recogen el jueves."
+    quote_format: monthly
+    business_fills: ["price for the wash, written as your plan terms", "whether you take a single wash with no plan", "price per extra cart", "first wash date"]
+    card_template: |
+      REQ-<id> | Trash-can cleaning | <town>, <general area> | <kind of place>
+      <one scope line: how many carts, one wash, condition>
+      Carts: <1 / 2 / 3 or more>. Plan: once. Pickup day: <day>. Condition: <normal / strong smell / maggots or flies / not washed in a long time>.
+      At the curb after pickup: <stay out / brought in early / no one there / not said>. Smell or bugs: <only at the bins / also in the yard or house / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Maggots mean the bin hasn't been cleaned in months.", "Pour boiling water in it.", "A one-time wash runs about ninety.", "Leave the lid open so it airs out.", "Sign up for monthly so it doesn't happen again."]
+
+  - id: extra_bins_commercial
+    label: "Extra bins, HOA or business dumpsters"
+    bank_job_type: "bin washing"
+    recurring: true
+    homeowner_phrasings: ["dumpster cleaning", "hoa dumpster wash", "4 bins", "commercial dumpster wash", "lavar el dumpster"]
+    must_know:
+      - fact: "How many dumpsters and what size, or how many home carts"
+        bank_question: bins
+        follow_up: fu_dumpster_size
+        photo: p3_dumpster
+        why_it_moves_price: "Dumpster size and count set water, time and tank space more than anything else. [judgment]"
+        skip_if: "Homeowner gave count and size, or the photo shows the size label"
+      - fact: "Gate, lock or enclosure, and room to park"
+        bank_question: null
+        follow_up: fu_dumpster_access
+        photo: p3_dumpster
+        why_it_moves_price: "A locked enclosure needs a key or code on wash day and may slow the stop. [judgment]"
+        skip_if: "Dumpster photo shows open access"
+      - fact: "Monthly or every three months"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets the per-wash rate. [judgment]"
+        skip_if: "Named"
+      - fact: "Pickup day"
+        bank_question: pickup_day
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Dumpsters are washed right after they are emptied. [judgment]"
+        skip_if: "Given"
+    allowed_follow_ups:
+      - id: fu_dumpster_size
+        ask_when: "Request names a dumpster, or more carts than a home usually has, with no size or count"
+        text_en: "What needs washing: home carts, one dumpster, or more than one dumpster?"
+        text_es: "¿Qué hay que lavar: botes de casa, un dumpster, o más de un dumpster?"
+        options_en: ["4 or more home carts", "One small dumpster (2 to 3 yards)", "One large dumpster (4 yards or more)", "More than one dumpster"]
+        options_es: ["4 o más botes de casa", "Un dumpster chico (2 a 3 yardas)", "Un dumpster grande (4 yardas o más)", "Más de un dumpster"]
+        card_field: true
+        why: "Count and size are the first numbers a dumpster washer writes down. [judgment]"
+      - id: fu_dumpster_access
+        ask_when: "Dumpster request with no photo of the enclosure"
+        text_en: "Is the dumpster behind a gate or inside an enclosure that is locked?"
+        text_es: "¿El dumpster está detrás de una reja o dentro de un cuarto con candado?"
+        options_en: ["Locked gate or enclosure", "Gate, not locked", "Out in the open"]
+        options_es: ["Reja o cuarto con candado", "Reja sin candado", "Al aire libre"]
+        card_field: true
+        why: "A locked enclosure means arranging a key or code before wash day. [judgment]"
+      - fu_condition
+    photos_priority: [p3_dumpster, p1_bins_curb]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames from a dumpster"]
+      urgent_capable_triggers: []
+      regular: "Every dumpster or extra-cart request"
+    scope_line_en: "Monthly wash for 2 large HOA dumpsters inside a locked block enclosure; pickup is Monday."
+    scope_line_es: "Lavado cada mes para 2 dumpsters grandes de la HOA dentro de un cuarto de block con candado; recogen el lunes."
+    quote_format: monthly
+    business_fills: ["price per month", "how often you wash", "price per dumpster or extra cart", "whether the enclosure is included", "first wash date"]
+    card_template: |
+      REQ-<id> | Trash-can cleaning | <town>, <general area> | <HOA common area / business / home>
+      <one scope line: what gets washed, how often>
+      Washing: <4 or more carts / one small dumpster / one large dumpster / more than one dumpster>. Plan: <monthly / every three months / once>. Pickup day: <day>.
+      Access: <locked gate or enclosure / gate not locked / open>. Condition: <normal / strong smell / maggots or flies / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Dumpsters usually run fifty a wash.", "Your HOA has to allow this first.", "Republic cleans their own dumpsters.", "Hose it out and spray it with degreaser."]
+
+  - id: deodorize_only
+    label: "Deodorize only (no full wash)"
+    bank_job_type: "bin washing"
+    recurring: false
+    homeowner_phrasings: ["deodorize trash can", "just make it not smell", "odor spray for bins", "quitar el olor del bote"]
+    must_know:
+      - fact: "Whether it is only smell or also mess or bugs inside"
+        bank_question: null
+        follow_up: fu_smell_only
+        photo: p2_inside_bin
+        why_it_moves_price: "Mess or maggots inside turn a short deodorize stop into a full wash. [judgment]"
+        skip_if: "Inside photo shows a clean bin"
+      - fact: "How many bins"
+        bank_question: bins
+        follow_up: null
+        photo: p1_bins_curb
+        why_it_moves_price: "Priced per cart. [judgment]"
+        skip_if: "Given"
+      - fact: "Pickup day and whether bins stay out"
+        bank_question: pickup_day
+        follow_up: fu_curb_access
+        photo: null
+        why_it_moves_price: "The stop happens after the truck, while the bin is empty. [judgment]"
+        skip_if: "Given"
+    allowed_follow_ups:
+      - id: fu_smell_only
+        ask_when: "Homeowner asks for deodorizing only"
+        text_en: "Is it mainly the smell, or is there also stuck-on mess or bugs inside the bin?"
+        text_es: "¿Es más que nada el olor, o también hay suciedad pegada o bichos dentro del bote?"
+        options_en: ["Mainly the smell", "Stuck-on mess too", "Maggots or flies too"]
+        options_es: ["Más que nada el olor", "También suciedad pegada", "También gusanos o moscas"]
+        card_field: true
+        why: "Separates a deodorize stop from a full wash without telling her which she needs. [judgment]"
+      - fu_curb_access
+      - fu_only_bins
+    photos_priority: [p2_inside_bin, p1_bins_curb]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Every deodorize request"
+    scope_line_en: "Deodorize 2 carts at a vacation rental after pickup, no full wash; mainly the smell; pickup is Friday."
+    scope_line_es: "Desodorizar 2 botes en una casa de renta vacacional después de la recolección, sin lavado completo; más que nada el olor; recogen el viernes."
+    quote_format: monthly
+    business_fills: ["price per month or per stop, with your schedule", "whether you do deodorize-only stops", "price per extra cart", "first date"]
+    card_template: |
+      REQ-<id> | Trash-can cleaning | <town>, <general area> | <kind of place>
+      <one scope line: deodorize only, how many carts>
+      Carts: <1 / 2 / 3 or more>. Inside: <mainly smell / stuck-on mess too / maggots or flies too>. Plan: <once / monthly / every three months>.
+      Pickup day: <day>. At the curb after pickup: <stay out / brought in early / no one there / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A spray won't fix that, you need a full wash.", "Baking soda in the bottom works fine.", "Deodorizing is cheap.", "The smell is from the heat."]
+
+  - id: bin_area_wash
+    label: "Bin pad or enclosure wash (add-on)"
+    bank_job_type: "bin washing"
+    recurring: false
+    homeowner_phrasings: ["wash where the trash cans sit", "bin pad stained", "trash enclosure cleaning", "the spot by the garage stinks"]
+    must_know:
+      - fact: "What the spot is: pad by the garage, side yard, block enclosure, or part of the driveway"
+        bank_question: null
+        follow_up: fu_pad_what
+        photo: p4_bin_area
+        why_it_moves_price: "A small pad is an add-on; a block enclosure takes walls too; a driveway is a separate wash. [judgment]"
+        skip_if: "Bin-area photo shows it"
+      - fact: "Whether the bins get washed the same day"
+        bank_question: null
+        follow_up: fu_pad_with_bins
+        photo: null
+        why_it_moves_price: "Most washers sell the pad as an add-on to a bin wash, priced lower with the bins. [judgment]"
+        skip_if: "Homeowner asked for both"
+      - fact: "How many bins, if bins are included"
+        bank_question: bins
+        follow_up: null
+        photo: p1_bins_curb
+        why_it_moves_price: "Per-cart price for the bin part. [judgment]"
+        skip_if: "Only the pad"
+      - fact: "Stains and how close the spot is to the street or a drain"
+        bank_question: null
+        follow_up: null
+        photo: p4_bin_area
+        why_it_moves_price: "Wash water has to be caught before it reaches a storm drain, which takes more setup near the curb. [judgment]"
+        skip_if: "No photo; the business asks on the call"
+    allowed_follow_ups:
+      - id: fu_pad_what
+        ask_when: "Homeowner wants the bin spot washed and sent no photo of it"
+        text_en: "Where do the bins sit between pickups?"
+        text_es: "¿Dónde se quedan los botes entre cada recolección?"
+        options_en: ["Concrete pad by the garage", "Side yard on gravel or pavers", "Block enclosure with walls", "Part of the driveway"]
+        options_es: ["Losa de concreto junto a la cochera", "Patio lateral con grava o adoquín", "Cuarto de block con paredes", "Parte de la entrada de autos"]
+        card_field: true
+        why: "A pad or enclosure is a bin-wash add-on; a whole driveway is a pressure-washing job. [judgment]"
+      - id: fu_pad_with_bins
+        ask_when: "Homeowner asks for the pad or enclosure and did not mention the bins"
+        text_en: "Do you want the bins washed the same day, or only the spot where they sit?"
+        text_es: "¿Quiere que laven los botes el mismo día, o solo el lugar donde se quedan?"
+        options_en: ["Bins and the spot", "Only the spot"]
+        options_es: ["Los botes y el lugar", "Solo el lugar"]
+        card_field: true
+        why: "Tells the washer whether this is an add-on or a stand-alone stop. [judgment]"
+    photos_priority: [p4_bin_area, p1_bins_curb]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Every pad or enclosure request"
+    scope_line_en: "Wash the concrete bin pad beside the garage with dark stains, plus 2 carts the same day; pickup is Wednesday."
+    scope_line_es: "Lavar la losa de concreto de los botes junto a la cochera con manchas oscuras, y 2 botes el mismo día; recogen el miércoles."
+    quote_format: monthly
+    business_fills: ["price for the pad or enclosure, with your schedule", "price for the bins if included", "first date"]
+    card_template: |
+      REQ-<id> | Trash-can cleaning | <town>, <general area> | <kind of place>
+      <one scope line: the spot, bins included or not>
+      Spot: <pad by garage / side yard gravel or pavers / block enclosure / part of driveway>. Bins too: <yes, n carts / no>.
+      Plan: <once / monthly / every three months>. Pickup day: <day>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those stains are permanent.", "Just hit it with a pressure washer.", "Pad washes run about forty.", "You'll want the whole driveway done while they're there."]
+
+business_side:
+  how_they_get_customers: ["Door hangers left on bins after pickup", "Nextdoor and local Facebook posts with before-and-after photos", "HOA pilot blocks of 10 to 20 homes washed free or at a discount", "A wrapped truck or trailer parked where people see it", "Neighbor referrals on the same street", "Upsells from driveway and patio washing"]
+  customer_acquisition_benchmarks:
+    - channel: "Thumbtack (all trades, cleaning included)"
+      figure: "Pros report about $10 to over $100 per lead depending on trade and market; customers contact several pros"
+      source: hcp_thumbtack
+      unverified: false
+    - channel: "HOA pilot block (bin washing)"
+      figure: "One startup guide suggests washing 10 to 20 homes in one HOA free or at a steep discount to open a route; it gives no cost-per-customer figure"
+      source: moneypantry_bins
+      unverified: false
+    - channel: "Route density (bin washing)"
+      figure: "The same guide says about 300 or more customers in a few neighborhoods is where margins work, so a new customer on an existing route is worth far more than one across town"
+      source: moneypantry_bins
+      unverified: false
+    - channel: "Lake Havasu City bin washers specifically"
+      figure: "No local figures found; most local washers appear to rely on door hangers and social posts [judgment]"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a request several other washers also got", "One-time washes that never turn into a plan", "Homes far off their route days", "Monthly fees whether or not customers come", "Bins pulled in before they arrive"]
+  what_makes_a_lead_worth_paying_for: ["Pickup day on the card, so they know the route", "Cart count and plan stated", "Whether the bins stay out after pickup", "A plan customer for one fee, usually the $25 tier", "Pay only when picked, nothing monthly"]
+  their_words: ["cart", "toter", "can", "bin", "route", "route day", "pickup day", "behind the truck", "plan", "monthly", "quarterly", "one-time", "first clean", "sanitize", "deodorize", "hot water", "reclaim", "wastewater", "rig", "trailer", "pad", "enclosure", "yard (dumpster size)"]
+  signup_objections:
+    - objection: "Why pay a fee for a $30 a month customer?"
+      answer: "A plan is counted at 4 months of the monthly price, so a typical home plan comes to the $25 fee, paid once. You pay only when the homeowner picks your quote. If that homeowner picks you again through Ask Hava, there is no fee."
+    - objection: "I don't want one-time washes."
+      answer: "Quote your plan price and say in your notes that you only take plans. The homeowner sees what you wrote and decides."
+    - objection: "Most of these will be off my route days."
+      answer: "Every card shows the pickup day and the general area, so you can quote only the ones that fit your routes and skip the rest. Skipping costs nothing."
+    - objection: "Do I need a license to sign up?"
+      answer: "No state contractor license covers bin washing, so none is asked for. Lake Havasu City has its own business license rule for businesses working inside city limits."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town, a pickup day and answers to the questions a washer asks. Names and addresses go only to the business the homeowner picks."
+    - objection: "What if they cancel after the first wash?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded. After that the fee stands. It is a fixed introduction fee by job size, $25, $75 or $199, not a share of the job."
+    - objection: "Is there a monthly fee or a contract?"
+      answer: "No. There is nothing to join and nothing per month. You pay only on a pick."
+    - objection: "Will you rank me against other washers?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, review links and notes. Ask Hava never sorts, rates or scores a business."
+    - objection: "I also wash dumpsters and pads. Can I get those?"
+      answer: "Yes. Bin washing is one job type here, so cards for home carts, dumpsters and bin pads all come to you once you choose it. Say in your quote what you do and don't take."
+  quote_tips_for_card: ["Give a price per month and say how often you wash", "Give the price per extra cart", "List any first-wash charge for a neglected bin as a one-time setup charge", "Say whether you need the bins left at the curb, or will roll them out", "Give your first wash date for that pickup day"]
