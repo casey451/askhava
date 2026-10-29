@@ -1,0 +1,570 @@
+# Ask Hava expert layer: window_cleaning (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set window_cleaning and trade_kb/trades/window_cleaning.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - kb job type repair_route (broken glass or torn screens) is left out. It is repair work
+#   (R-65 Glazing or R-7 per A.A.C. R4-9-103), not cleaning, and window_cleaning has no refused
+#   job for it. Torn, bent or missing screens route to solar_screens "solar screens" (that set
+#   already asks "Repair existing screens"). Broken or fogged dual-pane glass has no enabled
+#   category today (no windows_doors category; handyman has no glass job type), so those
+#   misdiagnosis checks carry an empty route. Casey may want a "glass repair" job type, likely
+#   under solar_screens since those businesses hold R-65.
+# - kb job type high_windows sits under "inside and outside windows"; it is a height add-on to the
+#   same wash, not a separate job a business opts into.
+# - Window tracks and sills ride with "screens" (kb screens_tracks).
+# - No new_job_type was needed: the kb ids cover all three category job types.
+# - Bank set: the service question is single choice, so "Inside and outside" and "Screens too"
+#   can't both be picked; the AI recovers screens from her words or fu_screen_type. The count
+#   options stop at "Over 20"; the kb file has 21 to 35 and 36+, which a pane-count quote needs.
+#   Both are logged catalog changes for Casey, not made here.
+# - "Clean windows and gutters" and solar panel washing (kb gutter_solar_cleaning) have no
+#   enabled cleaning category; gutters is install and repair (R-45) only.
+schema: 1
+category: window_cleaning
+question_set: window_cleaning
+kb_trade: window_cleaning
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: ars_32_1101
+    title: "A.R.S. 32-1101 Definitions (contractor: construct, alter, repair, add to, subtract from, improve, move, wreck or demolish; cleaning is not listed)"
+    url: "https://www.azleg.gov/ars/32/01101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-65 Glazing: glass, film, window treatments; R-7 Carpentry: windows)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ues_safety
+    title: "UniSource Energy Services, Electrical Safety Tips (keep materials, tools and all parts of the body at least 15 feet from overhead power lines; arrange with UES first to work closer) [S24]"
+    url: "https://www.uesaz.com/electric-safety/"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (total hardness 19 grains per gallon, range 18 to 20; TDS about 753 ppm, range 702 to 787)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (season officially June 15 to September 30)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ein_dust
+    title: "Arizona Emergency Information Network, Dust storms (more common in the early part of the monsoon)"
+    url: "https://ein.az.gov/hazards/dust-storms"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: gana_cleaning
+    title: "GANA Glass Informational Bulletin 01-0116, Proper Procedures for Cleaning Architectural Glass Products, with the IWCA (no routine blade scraping; new blade, one direction; never blades on coated glass; heat-treated glass needs greater care; avoid coated or tinted glass in direct sun; pure-water rinse at 20 ppm TDS or less, tap water not acceptable; unprotected glass after construction may need aggressive restoration)"
+    url: "https://www.iwca.org/wp-content/uploads/2018/05/Proper_Procedures_Cleaning_G.pdf"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: pilkington_ats126
+    title: "Pilkington North America Technical Bulletin ATS-126, Guidelines When Using Lawn Sprinklers (overspray leaves mineral deposits that bond to glass and are hard to remove; staining or etching only when thick deposits hold water against the glass; abrasive or strong acid cleaners can damage glass over time; harder on coated exterior glass)"
+    url: "https://www.pilkington.com/-/media/pilkington/site-content/usa/window-manufacturers/technical-bulletins/ats-126---guidelines-when-using-lawn-sprinklers.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: cardinal_ig12
+    title: "Cardinal IG Technical Service Bulletin IG12-01/26, Glass Cleaning Recommendations (metal blades should never be used on glass; no abrasive cleaners; check for exterior coatings first)"
+    url: "https://www.cardinalcorp.com/wp-content/uploads/2026/01/IG12_1-2026.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: phifer_suntex
+    title: "Phifer SunTex solar screen fabric cleaning sheet (gentle soap and water, rinse well; bleach only at 10 percent or less; spot-test cleaners)"
+    url: "https://www.trivantage.com/itemfiles/pdfs/cleaning/SunTex_Cleaning.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: wc_forum_leads
+    title: "WindowCleaner.com community thread, Lead sources: good, bad or ugly (owner reports: Angi rep quoted about $15 per lead that converts; each Angi lead went to 3 or 4 companies; door hangers about 1 job per 100)"
+    url: "https://community.windowcleaner.com/t/lead-sources-good-bad-or-ugly/55799"
+    checked: "2026-10-29"
+    kind: forum
+  - id: pipeline_window_marketing
+    title: "Pipeline (marketing vendor): window cleaning marketing (Google Ads clicks about $5 to $10; worked example $140 per lead and $280 per customer; an owner reports $80 to $120 per residential customer from Google Ads; door hangers convert 3 to 5 percent)"
+    url: "https://pipelineon.com/blog/window-cleaning-marketing/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: hcp_thumbtack
+    title: "Housecall Pro (field-service software vendor): how Thumbtack works (pros report $10 to over $100 per lead by trade and market; customers contact several pros)"
+    url: "https://www.housecallpro.com/resources/what-is-thumbtack-how-it-works/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "How many windows, and how many panes each (sliders, picture windows, small divided panes)"
+      why: "Window cleaners price by the window or the pane; a 22-window house with French panes can take twice the time of one without. [judgment]"
+      source: null
+    - driver: "Inside and outside, or outside only"
+      why: "Inside work means moving blinds and furniture and wiping sills; it roughly doubles the time on each window. [judgment]"
+      source: null
+    - driver: "Hard-water spots and how heavy they are"
+      why: "Mineral deposits bond to glass and are hard to remove, so spot removal is a slower, separate service from a wash."
+      source: pilkington_ats126
+    - driver: "Height: second story, tall entry or stairway glass, windows above a roof or patio cover"
+      why: "High glass needs taller ladders or a water-fed pole and more setup per window. [judgment]"
+      source: null
+    - driver: "Screens: how many, regular mesh or solar screens, and whether solar screens must come off"
+      why: "Solar screens are often screwed or clipped on, so removing, washing and refitting them adds time per window. [judgment]"
+      source: null
+    - driver: "Paint, stucco, tape or stickers on the glass from building or remodel work"
+      why: "Construction residue needs careful scraping or restoration work, which GANA treats as non-routine cleaning."
+      source: gana_cleaning
+    - driver: "Access: rock or slope under windows, cactus and shrubs, pool decks, locked side yards, dogs"
+      why: "Ladder setup and walking time change per window when the ground is uneven or blocked. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Hard-water deposits so thick and old they have held water on the glass and left marks that do not come off"
+      how_a_pro_spots_it: "Crust visible from across the yard in the close-up, sprinkler heads or misters aimed at the glass in the back photo"
+      question_or_photo: p3
+      source: pilkington_ats126
+    - condition: "Coated or low-E exterior glass that blades and some cleaners can harm"
+      how_a_pro_spots_it: "Newer replacement windows, a slight tint or reflection; low-E coatings are hard to see, so pros ask before scraping"
+      question_or_photo: p3
+      source: gana_cleaning
+    - condition: "Tempered glass in sliders and doors that scratches when scraped over specks fused in the surface"
+      how_a_pro_spots_it: "Sliding doors and large panes near the floor are tempered; a pro plans no blade on them"
+      question_or_photo: p2
+      source: gana_cleaning
+    - condition: "Haze or fog between the two panes of dual-pane glass that no cleaning reaches"
+      how_a_pro_spots_it: "Cloudy look that stays after a wipe on both sides; the homeowner says it looks dirty inside the glass"
+      question_or_photo: fu_spot_side
+      source: null
+    - condition: "Solar screens with brittle frames, rusted screws or bent clips that break on removal"
+      how_a_pro_spots_it: "Faded, sagging or torn screen fabric in the front or back photo; west and south faces get the most sun"
+      question_or_photo: fu_screen_type
+      source: null
+    - condition: "Overhead service line near a second-story window or roof edge, so a ladder or pole can't be set there"
+      how_a_pro_spots_it: "Wire from the pole to the house in the front or back photo; UES says keep tools and body 15 feet from overhead lines"
+      question_or_photo: p1
+      source: ues_safety
+    - condition: "Paint overspray, stucco or labels left from building work"
+      how_a_pro_spots_it: "Specks or film in the close-up, a new build or recent remodel in her words"
+      question_or_photo: fu_construction
+      source: gana_cleaning
+    - condition: "A cracked pane found on arrival"
+      how_a_pro_spots_it: "Line across the glass in a photo; the pro notes it before touching the glass"
+      question_or_photo: p3
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "inside and outside windows (glass stays cloudy after cleaning)"
+      might_be: "glass_repair (fog between dual panes, windows_doors kb); no enabled category takes it"
+      one_question: fu_spot_side
+      if_other_route_to: {}
+      source: null
+    - sounds_like: "hard-water removal (white haze that won't come off)"
+      might_be: "glass_repair (fog between dual panes, windows_doors kb); no enabled category takes it"
+      one_question: fu_spot_side
+      if_other_route_to: {}
+      source: null
+    - sounds_like: "screens (solar screens need cleaning)"
+      might_be: "screens in windows_doors kb (torn, bent, missing or new solar screens)"
+      one_question: fu_screen_need
+      if_other_route_to: {category: solar_screens, job_type: "solar screens"}
+      source: null
+    - sounds_like: "inside and outside windows (dust on the whole house after a storm)"
+      might_be: "pressure washing house wash (walls, eaves and glass)"
+      one_question: fu_walls_too
+      if_other_route_to: {category: pressure_washing, job_type: "house wash"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Window count on the front and stories", "Small divided panes or grids on the glass surface", "Solar screens and their color", "Overhead service line near windows", "Rock, cactus or slope under windows"]
+      neutral_wording: "Front of a single-story house, 8 windows in view, dark solar screens on 4, rock beds under the windows."
+    - photo_id: p2
+      reads: ["Back glass count, sliders and large lake-view panes", "Sprinkler heads or patio misters near glass", "Pool deck or patio cover under high windows", "Second-story or above-roof windows"]
+      neutral_wording: "Back of the house, two large sliding doors and 5 windows, a patio cover runs below two upper windows."
+    - photo_id: p3
+      reads: ["Spot level: light haze, raised spots, heavy crust", "Spots on the outside face or between panes", "Paint specks, labels or tape", "Cracks or chips", "Tint or reflective look on the glass"]
+      neutral_wording: "Close-up of a back window, white spots across the lower half of the outside glass."
+  local_factors:
+    - fact: "City water hardness is about 19 grains per gallon with TDS about 753 ppm"
+      effect: "Sprinkler and mister overspray leaves white mineral spots on glass, so many requests are hard-water jobs, and the card states spot level"
+      source: lhc_ccr
+    - fact: "Pure-water window washing calls for rinse water at 20 ppm TDS or less; tap water is not acceptable"
+      effect: "With city water near 753 ppm, water-fed pole businesses carry heavy filtering, which shows up in their price for high glass"
+      source: gana_cleaning
+    - fact: "Monsoon season runs June 15 to September 30, and dust storms come most often early in it"
+      effect: "Post-storm wash requests come in bursts in July and August; the card should say if the request follows a storm"
+      source: nws_monsoon
+    - fact: "Coated or tinted glass should not be cleaned in direct sun when the glass is hot"
+      effect: "Summer jobs run early in the morning, so earliest-day answers in July often say a morning slot [judgment]"
+      source: gana_cleaning
+    - fact: "Solar screens are common on west and south windows"
+      effect: "Many outside washes include screens that must come off and back on [judgment]"
+      source: null
+    - fact: "Seasonal residents and vacant second homes"
+      effect: "Many jobs are at empty homes before owners arrive in fall or before a sale; the card states whether someone will be home [judgment]"
+      source: null
+    - fact: "Hillside lots with lake views have tall back glass over rock slopes or pool decks"
+      effect: "Ladder placement and pole work set the time more than the count [judgment]"
+      source: null
+  seasonality:
+    busy: "October to April (seasonal residents arrive, spring cleaning before the heat) and after early-monsoon dust storms in July and August [judgment]"
+    slow: "June to early July midday heat, when work moves to early mornings [judgment]"
+    source: null
+
+job_types:
+  - id: regular_wash
+    label: "Window washing inside and outside, or outside only"
+    bank_job_type: "inside and outside windows"
+    recurring: false
+    homeowner_phrasings: ["window washing", "clean my windows", "window cleaner", "streaky windows", "post-monsoon wash", "limpiar ventanas"]
+    must_know:
+      - fact: "About how many windows"
+        bank_question: count
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Count is the base of a window cleaner's price. [judgment]"
+        skip_if: "Homeowner gave a count"
+      - fact: "Inside and outside, or outside only"
+        bank_question: service
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Inside work roughly doubles the time on each window. [judgment]"
+        skip_if: "Her words already say which"
+      - fact: "One story or two"
+        bank_question: stories
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Second-story glass means ladders or a pole and more setup. [judgment]"
+        skip_if: "Photos show the whole house or she said single story"
+      - fact: "Small panes or grids on the glass surface"
+        bank_question: null
+        follow_up: fu_divided_panes
+        photo: p1
+        why_it_moves_price: "Each small pane is cleaned on its own, so a French-pane window can take several times longer. [judgment]"
+        skip_if: "Front photo shows plain glass"
+      - fact: "Paint, stucco, tape or stickers from building work"
+        bank_question: null
+        follow_up: fu_construction
+        photo: p3
+        why_it_moves_price: "Construction residue is slow restoration work, not a wash."
+        skip_if: "No new build or remodel mentioned"
+    allowed_follow_ups:
+      - id: fu_divided_panes
+        ask_when: "Count is known but no front photo shows the glass, or she mentions French or grid windows"
+        text_en: "Do any windows have small panes or grids on the outside of the glass you can touch?"
+        text_es: "¿Alguna ventana tiene cuadritos o rejillas por fuera del vidrio que se puedan tocar?"
+        options_en: ["No, plain glass", "A few windows", "Most windows", "Grids are between the glass"]
+        options_es: ["No, vidrio liso", "Unas cuantas ventanas", "La mayoría", "Las rejillas están entre los vidrios"]
+        card_field: true
+        why: "Surface grids multiply the panes to clean; grids sealed between the glass do not. [judgment]"
+      - id: fu_construction
+        ask_when: "New build, recent remodel, new stucco or paint, or she mentions specks or stickers"
+        text_en: "Is there paint, stucco, tape or stickers on the glass from building or painting work?"
+        text_es: "¿Hay pintura, estuco, cinta o etiquetas en el vidrio por obra o pintura?"
+        options_en: ["Yes, on many windows", "Yes, on a few", "No"]
+        options_es: ["Sí, en muchas ventanas", "Sí, en unas cuantas", "No"]
+        card_field: true
+        why: "Construction residue needs careful removal that GANA treats as non-routine work, priced apart from a wash."
+      - id: fu_spot_side
+        ask_when: "She says the glass stays cloudy, foggy or dirty after cleaning, or the spots won't come off"
+        text_en: "Is the cloudy look on the outside of the glass, the inside, or between the two panes where nobody can reach?"
+        text_es: "¿Lo opaco está por fuera del vidrio, por dentro, o entre los dos vidrios donde no se alcanza?"
+        options_en: ["Outside", "Inside", "Between the panes", "Can't tell"]
+        options_es: ["Por fuera", "Por dentro", "Entre los vidrios", "No se distingue"]
+        card_field: true
+        why: "Haze between panes is glass work that no cleaning reaches, a different trade. [judgment]"
+      - id: fu_walls_too
+        ask_when: "She mentions dust or dirt on the house after a storm, or asks for the outside of the house"
+        text_en: "Is this just the glass, or should the walls and eaves be washed too?"
+        text_es: "¿Es solo el vidrio, o también hay que lavar las paredes y los aleros?"
+        options_en: ["Just the glass", "Walls and eaves too"]
+        options_es: ["Solo el vidrio", "También paredes y aleros"]
+        card_field: true
+        why: "Walls and eaves are a house wash, which pressure-washing businesses quote. [judgment]"
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: ["Downed power line near the house"]
+      urgent_capable_triggers: ["Needed for a move-in, sale closing or event within 3 days"]
+      regular: "Any routine wash"
+    scope_line_en: "Inside and outside wash, about 18 windows, single story, plain glass, no screens."
+    scope_line_es: "Lavado por dentro y por fuera, unas 18 ventanas, un piso, vidrio liso, sin mallas."
+    quote_format: firm
+    business_fills: ["price for the job as described", "what is included (inside, outside, sills, screens)", "earliest day"]
+    card_template: |
+      REQ-<id> | Window cleaning | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: inside and outside or outside only, about how many windows, stories>
+      Windows: <under 10 / 10 to 20 / over 20>. Stories: <1 / 2 or more>. Panes: <plain / some grids / most grids>.
+      Building residue: <many / a few / none>. Someone home: <yes / no, empty home / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's just dust, it'll wipe right off.", "Most cleaners charge by the pane, about five dollars each.", "Your seals are gone.", "You can do the inside yourself to save money."]
+
+  - id: high_windows
+    label: "High or two-story windows, tall entry or stairway glass, clerestory"
+    bank_job_type: "inside and outside windows"
+    recurring: false
+    homeowner_phrasings: ["high windows", "two story windows", "clerestory", "windows over the front door", "lake-view windows up top"]
+    must_know:
+      - fact: "How many stories"
+        bank_question: stories
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Two-story glass sets the ladder or pole gear for the whole job. [judgment]"
+        skip_if: "Answered"
+      - fact: "Where the highest glass is"
+        bank_question: null
+        follow_up: fu_high_glass
+        photo: p2
+        why_it_moves_price: "A window above a roof or patio cover means roof work; a tall entry window inside needs an indoor ladder. [judgment]"
+        skip_if: "Photos show every high window"
+      - fact: "What is under the high windows"
+        bank_question: null
+        follow_up: fu_ladder_ground
+        photo: p2
+        why_it_moves_price: "Rock slopes, pool decks and planters change ladder setup time per window. [judgment]"
+        skip_if: "Back photo shows the ground under the windows"
+      - fact: "Overhead power line near any high window"
+        bank_question: null
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "UES asks for 15 feet from overhead lines, so a window near a line may need other gear or be left out."
+        skip_if: "Photos show no line near the house"
+      - fact: "Inside high glass too, or outside only"
+        bank_question: service
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Tall inside glass over stairs or an entry is its own setup. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_high_glass
+        ask_when: "Two stories or high windows mentioned and photos don't show all of them"
+        text_en: "Where is the highest glass: second-story windows, a tall entry or stairway window, or windows above a roof or patio cover?"
+        text_es: "¿Dónde está el vidrio más alto: ventanas del segundo piso, una ventana alta en la entrada o escalera, o ventanas arriba de un techo o techito del patio?"
+        options_en: ["Second-story windows", "Tall entry or stairway window", "Above a roof or patio cover", "More than one of these"]
+        options_es: ["Ventanas del segundo piso", "Ventana alta en entrada o escalera", "Arriba de un techo o techito del patio", "Más de una de estas"]
+        card_field: true
+        why: "Each answer is different gear and setup to a window cleaner. [judgment]"
+      - id: fu_ladder_ground
+        ask_when: "High windows on a side the photos don't show"
+        text_en: "What is on the ground under the high windows?"
+        text_es: "¿Qué hay en el suelo debajo de las ventanas altas?"
+        options_en: ["Flat ground or concrete", "Rock or a slope", "Pool or pool deck", "Plants or cactus"]
+        options_es: ["Suelo plano o concreto", "Piedra o pendiente", "Alberca o el piso de la alberca", "Plantas o cactus"]
+        card_field: true
+        why: "Ladder footing sets setup time per window and whether a pole is used instead. [judgment]"
+      - fu_divided_panes
+    photos_priority: [p2, p1, p3]
+    urgency:
+      fire_dept_triggers: ["Downed power line near the house"]
+      urgent_capable_triggers: ["Needed for a move-in, sale closing or event within 3 days"]
+      regular: "Any routine high-glass wash"
+    scope_line_en: "Outside wash of a two-story house, about 24 windows, three upper windows sit above the patio cover."
+    scope_line_es: "Lavado por fuera de una casa de dos pisos, unas 24 ventanas, tres ventanas de arriba quedan sobre el techito del patio."
+    quote_format: firm
+    business_fills: ["price for the job as described", "what is included (which high glass, inside or outside)", "earliest day"]
+    card_template: |
+      REQ-<id> | Window cleaning | <town>, <general area> | <kind of place>
+      <one scope line: stories, about how many windows, where the high glass is>
+      Windows: <under 10 / 10 to 20 / over 20>. Stories: <1 / 2 or more>. Highest glass: <second story / entry or stairway / above a roof or cover>.
+      Ground under high windows: <flat / rock or slope / pool deck / plants>. Service: <inside and outside / outside only>.
+      Photos: <n> (<neutral description, including any overhead line in view>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Nobody can reach that window safely.", "You'll need a lift for that.", "High windows usually add fifty percent.", "Stay off the roof and let them do it."]
+
+  - id: hard_water
+    label: "Hard-water spot removal on windows, sliders or shower glass"
+    bank_job_type: "hard-water removal"
+    recurring: false
+    homeowner_phrasings: ["hard water spots", "sprinkler spots on windows", "white spots on glass", "water stains on windows", "spots on the slider", "manchas blancas"]
+    must_know:
+      - fact: "How heavy the spots are"
+        bank_question: null
+        follow_up: fu_spot_level
+        photo: p3
+        why_it_moves_price: "A light haze comes off in a wash; heavy crust is slow, careful work that may not come fully clean."
+        skip_if: "Close-up photo shows the spots clearly"
+      - fact: "Which glass and how many pieces"
+        bank_question: count
+        follow_up: fu_spot_where
+        photo: p2
+        why_it_moves_price: "Spot removal is priced per piece of glass, and sliders and shower doors are large. [judgment]"
+        skip_if: "Her words name the glass and the count"
+      - fact: "Whether sprinklers or misters still spray the glass"
+        bank_question: null
+        follow_up: fu_sprinkler_hits
+        photo: p2
+        why_it_moves_price: "Spots come back when overspray goes on, so some businesses quote a wash plan rather than a one-time job. [judgment]"
+        skip_if: "Back photo shows no sprinkler or mister near the glass"
+      - fact: "Spots on the outside, inside or between panes"
+        bank_question: null
+        follow_up: fu_spot_side
+        photo: p3
+        why_it_moves_price: "Between the panes is glass work, not cleaning. [judgment]"
+        skip_if: "Close-up shows spots on the outer face"
+    allowed_follow_ups:
+      - id: fu_spot_level
+        ask_when: "Spots mentioned and no close-up photo sent"
+        text_en: "How heavy are the white spots: a light haze, spots you can feel with a finger, or a thick crust you can see from across the yard?"
+        text_es: "¿Qué tan fuertes son las manchas blancas: una capa ligera, manchas que se sienten con el dedo, o una costra gruesa que se ve desde lejos?"
+        options_en: ["Light haze", "Spots you can feel", "Thick crust"]
+        options_es: ["Capa ligera", "Manchas que se sienten", "Costra gruesa"]
+        card_field: true
+        why: "Spot level sets the method and time, and whether the business quotes a test spot first. [judgment]"
+      - id: fu_spot_where
+        ask_when: "Spots mentioned but not which glass"
+        text_en: "Which glass has the spots?"
+        text_es: "¿Qué vidrios tienen las manchas?"
+        options_en: ["Windows by the sprinklers", "Sliding doors", "Shower glass", "Most of the windows", "More than one of these"]
+        options_es: ["Ventanas junto a los aspersores", "Puertas corredizas", "Vidrio de la regadera", "La mayoría de las ventanas", "Más de una de estas"]
+        card_field: true
+        why: "Different glass means different size and handling; slider and door glass is tempered and handled with more care."
+      - id: fu_sprinkler_hits
+        ask_when: "Outside glass has spots and no photo shows the sprinklers"
+        text_en: "Do sprinklers or patio misters still spray on that glass?"
+        text_es: "¿Los aspersores o nebulizadores del patio todavía mojan ese vidrio?"
+        options_en: ["Yes", "No, not anymore", "Some of it"]
+        options_es: ["Sí", "Ya no", "Una parte"]
+        card_field: true
+        why: "Ongoing overspray brings the deposits back; Pilkington's sprinkler bulletin is about keeping overspray off glass."
+      - fu_spot_side
+    photos_priority: [p3, p2, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Needed for a sale closing or listing photos within 3 days"]
+      regular: "All spot removal requests"
+    scope_line_en: "Hard-water spots on 6 back windows and 2 sliders, spots you can feel, sprinklers no longer hit the glass."
+    scope_line_es: "Manchas de agua dura en 6 ventanas de atrás y 2 puertas corredizas, manchas que se sienten, los aspersores ya no mojan el vidrio."
+    quote_format: firm
+    business_fills: ["price for the spot removal as described", "what happens if spots do not come off fully", "earliest day"]
+    card_template: |
+      REQ-<id> | Window cleaning | <town>, <general area> | <kind of place>
+      <one scope line: which glass, how many pieces, spot level>
+      Spots: <light haze / can feel / thick crust>. Glass: <windows by sprinklers / sliders / shower glass / most windows>. Side: <outside / inside / between panes / can't tell>.
+      Sprinklers or misters still hit it: <yes / no / some>. Stories: <1 / 2 or more>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That glass is etched for good.", "Vinegar takes that right off.", "Your sprinklers did that.", "Spot removal runs about twenty dollars a window.", "You should get a water softener."]
+
+  - id: screens_tracks
+    label: "Screens, solar screens, tracks and sills"
+    bank_job_type: "screens"
+    recurring: false
+    homeowner_phrasings: ["clean screens", "solar screens dirty", "window tracks", "sun screens filthy need taken off and washed", "mosquiteros", "pantallas solares"]
+    must_know:
+      - fact: "Regular mesh screens, solar screens, or both"
+        bank_question: service
+        follow_up: fu_screen_type
+        photo: p1
+        why_it_moves_price: "Solar screens often come off with screws or clips and back on, adding time on each window. [judgment]"
+        skip_if: "Her words or the photo show which"
+      - fact: "About how many screens"
+        bank_question: count
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Screens are priced each. [judgment]"
+        skip_if: "She gave a screen count"
+      - fact: "Wash only, or some torn, bent or missing"
+        bank_question: null
+        follow_up: fu_screen_need
+        photo: p1
+        why_it_moves_price: "Torn or bent screens are repair work for a screen business, not a wash. [judgment]"
+        skip_if: "She asked only for a wash and the photo shows whole screens"
+      - fact: "Tracks and sills too"
+        bank_question: null
+        follow_up: fu_tracks
+        photo: null
+        why_it_moves_price: "Desert dust packs window and slider tracks, which is slow detail work. [judgment]"
+        skip_if: "She already said"
+      - fact: "One story or two"
+        bank_question: stories
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Second-story screens come off from a ladder or from inside. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_screen_type
+        ask_when: "Screens mentioned and the kind is not clear from her words or a photo"
+        text_en: "What kind of screens: regular bug screens, solar screens that block sun, or both?"
+        text_es: "¿Qué tipo de mallas: mosquiteros normales, mallas solares que tapan el sol, o las dos?"
+        options_en: ["Regular bug screens", "Solar screens", "Both"]
+        options_es: ["Mosquiteros normales", "Mallas solares", "Las dos"]
+        card_field: true
+        why: "Solar screens take longer to remove, wash and refit. [judgment]"
+      - id: fu_screen_need
+        ask_when: "Screens mentioned with any sign of damage, or she says they need fixing"
+        text_en: "Do the screens just need washing, or are any torn, bent or missing?"
+        text_es: "¿Las mallas solo necesitan lavarse, o hay algunas rotas, dobladas o que faltan?"
+        options_en: ["Just washing", "Some torn or bent", "Some missing", "Want new screens"]
+        options_es: ["Solo lavarlas", "Algunas rotas o dobladas", "Faltan algunas", "Quiero mallas nuevas"]
+        card_field: true
+        why: "Repair and new screens go to solar screen businesses; a wash stays here. [judgment]"
+      - id: fu_tracks
+        ask_when: "Screens or windows mentioned and tracks not said"
+        text_en: "Should the window and slider tracks and sills be cleaned too?"
+        text_es: "¿También hay que limpiar los rieles y repisas de las ventanas y puertas corredizas?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Tracks are a separate line on most window quotes. [judgment]"
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All screen and track requests"
+    scope_line_en: "Remove, wash and refit 12 solar screens and clean the tracks, single story, windows washed outside too."
+    scope_line_es: "Quitar, lavar y volver a poner 12 mallas solares y limpiar los rieles, un piso, también lavar las ventanas por fuera."
+    quote_format: firm
+    business_fills: ["price for the screens as described", "whether glass and tracks are included", "earliest day"]
+    card_template: |
+      REQ-<id> | Window cleaning | <town>, <general area> | <kind of place>
+      <one scope line: kind of screens, about how many, tracks or not>
+      Screens: <regular / solar / both>. About how many: <count or band>. Condition: <wash only / some torn or bent / some missing>.
+      Tracks and sills: <yes / no>. Glass too: <inside and outside / outside only / no>. Stories: <1 / 2 or more>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Hose them off and they'll be fine.", "Those screens are shot.", "Solar screens cost a lot to replace.", "Use bleach on them."]
+
+business_side:
+  how_they_get_customers: ["Google Business Profile and reviews", "Repeat customers and neighbors who see the truck", "Door hangers and postcards near finished jobs", "Google search ads", "Home-service lead marketplaces", "Property managers and realtors for move-outs and listings [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google search ads (window cleaning)"
+      figure: "Clicks about $5 to $10; a vendor's worked example gives about $140 per lead and $280 per customer (illustration, not a measured average)"
+      source: pipeline_window_marketing
+      unverified: false
+    - channel: "Google search ads, owner report (residential window cleaning)"
+      figure: "One owner reports $80 to $120 to win each residential customer (anecdote quoted by a marketing vendor)"
+      source: pipeline_window_marketing
+      unverified: true
+    - channel: "Angi (window cleaning)"
+      figure: "One owner was quoted about $15 per lead that converts by an Angi rep; another reports each lead went to 3 or 4 companies (forum posts, secondhand)"
+      source: wc_forum_leads
+      unverified: true
+    - channel: "Thumbtack (all trades)"
+      figure: "Pros report $10 to over $100 per lead depending on trade, job size and market; no window-cleaning figure found"
+      source: hcp_thumbtack
+      unverified: false
+    - channel: "Door hangers"
+      figure: "About 3 to 5 percent convert to booked jobs (vendor); one owner reports about 1 job per 100 hung (forum)"
+      source: pipeline_window_marketing
+      unverified: false
+    - channel: "Lake Havasu City window cleaners specifically"
+      figure: "No local figures found"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Same lead sold to 3 or 4 companies", "Calls that go to voicemail and emails nobody answers", "Customers who pick on price alone", "Paying a deposit or monthly fee before any job comes", "Counts that turn out wrong on arrival"]
+  what_makes_a_lead_worth_paying_for: ["Window count, stories, inside or outside and screens stated", "Front, back and close-up photos", "Spot level and which glass for hard-water jobs", "Pay only when picked, nothing monthly", "Town, timing and whether someone will be home"]
+  their_words: ["per pane", "per window", "inside and out", "squeegee", "strip washer", "water-fed pole", "pure water", "DI resin", "hard-water stain removal", "screens and tracks", "sills", "French panes", "construction clean", "solar screens", "first clean"]
+  signup_objections:
+    - objection: "Why pay a fee when I can knock on doors?"
+      answer: "You pay only when a homeowner picks your quote. There is nothing to join and nothing monthly. The fee is set by job size: $25 for a job under $500, $75 for $500 to $1,500, $199 over $1,500."
+    - objection: "I can't quote windows without counting them myself."
+      answer: "Each card has the window count band, stories, inside or outside, screens and spot level, with photos of the front, back and a close-up. Say in your quote what count your price assumes and how you handle a different count on arrival."
+    - objection: "Hard-water jobs scare me. What if the spots don't come off?"
+      answer: "The card says how heavy the spots are, which glass, whether sprinklers still hit it, and has a close-up photo. Say in your quote what the price covers and what happens if some spots stay."
+    - objection: "Will you rank me against other window cleaners?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "I don't do two-story or screens."
+      answer: "You choose the job types you want at sign-up and change them any time. You get cards only for those."
+    - objection: "Do I need a contractor license to sign up?"
+      answer: "No state contractor license covers window cleaning. You get cleaning cards only, never glass or screen repair."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "What if I quote and don't get picked?"
+      answer: "Then you pay nothing. The fee is charged only when a homeowner picks your quote and you confirm."
+  quote_tips_for_card: ["Say what the price includes: inside, outside, screens, tracks, sills", "State the window or pane count your price assumes", "For hard-water work, say what happens if some spots stay", "Give your earliest day, and say if summer work is early morning"]

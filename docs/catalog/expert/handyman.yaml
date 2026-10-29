@@ -871,7 +871,7 @@ job_types:
       fire_dept_triggers: ["Burning smell or smoke at the dryer", "Gas smell or hiss near the dryer"]
       urgent_capable_triggers: []
       regular: "Planned reroute or duct replacement"
-    scope_line_en: "Reroute the dryer vent from the laundry closet to the side wall; electric dryer; current duct is crushed behind the dryer."
+    scope_line_en: "Reroute the laundry closet dryer vent so it exits the side wall; electric dryer; current duct is crushed behind the dryer."
     scope_line_es: "Cambiar la ruta del ducto de la secadora del clóset de lavado a la pared de lado; secadora eléctrica; el ducto actual está aplastado detrás."
     quote_format: range
     business_fills: ["low and high price, labor and duct", "what is included (wall cap, cleaning the old run)", "earliest day"]
