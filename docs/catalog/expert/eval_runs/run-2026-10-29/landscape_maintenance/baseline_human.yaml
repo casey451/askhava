@@ -1,0 +1,651 @@
+category: landscape_maintenance
+variant: baseline_human
+model: "claude-opus-5-5"
+run: "run-2026-10-29"
+notes: >-
+  The intake is played as the best yard-maintenance and landscaping estimator in Arizona (25 years,
+  knows Lake Havasu City rock yards, Bermuda lawns, palms, drip systems and monsoon season), texting
+  one question at a time, with no question bank, no expert file and no trade file. The estimator may
+  say what they suspect and may give the advice a real estimator would; the card holds the crew notes
+  (facts got, suspicions, on-site checks). The homeowner is played strictly from the scenario: hidden
+  facts only when a question calls for them, traps never volunteered. Coverage is assumed confirmed
+  for Lake Havasu City (3 businesses) except in s12 (outside area) and s13 (no businesses), where the
+  intake stops before any trade question as intake_agent.md says. job_type values use the kb ids that
+  appear in the scenario file (maintenance, cleanup, weed_control, leak_active). questions_asked counts
+  every question and photo ask sent; the SAFE request in s10 and the coverage lines are not counted.
+results:
+  - scenario_id: landscape_maintenance_s01
+    transcript:
+      - {who: homeowner, text: "need yard guy"}
+      - {who: intake, text: "Can do. What do you need: mowing, trimming bushes and trees, weeding, a one-time cleanup, or regular upkeep?", step: question}
+      - {who: homeowner, text: "trimming"}
+      - {who: intake, text: "One time, or regular? Weekly, every two weeks, monthly?", step: question}
+      - {who: homeowner, text: "monthly. keep it from getting out of hand"}
+      - {who: intake, text: "Front, back or both? And is it grass or rock?", step: question}
+      - {who: homeowner, text: "back only. front is HOA. decomposed granite, no grass"}
+      - {who: intake, text: "Send me a pic from the back patio?", step: photo}
+      - {who: homeowner, text: "[photo: back patio view of gravel ground, a few dead-looking shrubs and tufts of tall dry weeds along the block wall]"}
+      - {who: intake, text: "Got it. Roughly how many shrubs and trees, and do you want the trimmings hauled off?", step: question}
+      - {who: homeowner, text: "dozen bushes. 2 small trees. no haul, green bin gets picked up weekly"}
+      - {who: intake, text: "Last one. How does the crew get in back, side gate size, and any dogs?", step: question}
+      - {who: homeowner, text: "narrow walk gate. dog is inside during the day. thats it"}
+      - {who: intake, text: "Good. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "trimming", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Yard maintenance | Lake Havasu City
+      FACTS
+      - Monthly service, backyard only (front is handled by the HOA).
+      - Backyard is decomposed granite, no grass. No mowing.
+      - About a dozen shrubs and two small trees to trim.
+      - No haul-away: owner has a green waste bin picked up weekly.
+      - Access: narrow walk gate on the side, no truck or trailer access. Hand tools and handhelds only.
+      - Small dog, kept inside during the day.
+      - Photo: gravel ground, a few dead-looking shrubs, tufts of tall dry weeds along the block wall.
+      - Needed: not said.
+      SUSPECT
+      - Dead-looking shrubs: drip emitters plugged or a zone not running, or heat stress. Some may need removal rather than trimming.
+      - Weeds along the wall will need pulling each visit; owner did not ask for weeding, confirm whether it is in scope.
+      ON SITE
+      - Check the drip lines at the dead shrubs and ask the owner whether to pull or replace them (separate quote).
+      - Confirm weed pulling along the wall on the monthly visit.
+      - Size the first visit as a catch-up if it has gone a while; monthly after that.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s02
+    transcript:
+      - {who: homeowner, text: "Hi, my front yard is totally overgrown, I need someone to come mow it asap. grass is up to my knees. we just bought the house a few weeks ago"}
+      - {who: intake, text: "Congrats on the house. Can you send a photo of the front yard?", step: photo}
+      - {who: homeowner, text: "[photo: front yard of dry tan stalks about knee high growing through decorative gravel, no green turf visible, a dead agave at the edge, a few wind-blown plastic bags caught in the weeds]"}
+      - {who: intake, text: "Thanks. From the photo that looks like weeds growing up through rock, not a lawn, so it's a pull-and-haul cleanup rather than mowing. Is there any actual grass under there?", step: question}
+      - {who: homeowner, text: "Oh, I didn't know that! No, I guess there's no lawn, the front is rock. The weeds came up after the summer storms."}
+      - {who: intake, text: "That's common here after monsoon. Front only, and roughly how big is it?", step: question}
+      - {who: homeowner, text: "Just the front. It's about the size of a two-car driveway plus a planting strip."}
+      - {who: intake, text: "Do you want everything hauled away, weeds, the dead agave and the trash?", step: question}
+      - {who: homeowner, text: "Yes please, haul it all away, the weeds and the dead agave too."}
+      - {who: intake, text: "One-time cleanup, or are you thinking regular service after?", step: question}
+      - {who: homeowner, text: "One time for now. Then I'll decide about regular service later."}
+      - {who: intake, text: "Anything in the gravel the crew should watch for, old drip lines, sprinkler heads, rocks?", step: question}
+      - {who: homeowner, text: "There are a few old irrigation drip lines just lying loose on top of the gravel."}
+      - {who: intake, text: "Good to know. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: cleanup, bank_job_type: "yard cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Yard maintenance | Lake Havasu City
+      FACTS
+      - One-time cleanup, front yard only. Owner may ask about regular service later.
+      - No lawn: the front is rock with knee-high dry weeds (owner first called it grass and asked for mowing).
+      - Size: about a two-car driveway plus a planting strip.
+      - Haul away all weeds, the dead agave and wind-blown trash.
+      - Old drip lines lying loose on top of the gravel.
+      - New owners (bought a few weeks ago).
+      - Photo: knee-high dry tan stalks through decorative gravel, no green turf, dead agave at the edge, plastic bags caught in the weeds.
+      - Needed: owner said asap.
+      SUSPECT
+      - Weeds came up after monsoon on a yard that has gone unmaintained; roots will be dry and mostly pull clean, but expect heavy seed.
+      - Loose drip lines are likely abandoned; they will wrap a string trimmer.
+      SKIP
+      - Do not bring a mower. Pull and rake, string trimmer only where stalks are thick.
+      ON SITE
+      - Pull or tie off the loose drip lines before trimming; ask owner whether to remove them.
+      - Agave removal: wear gloves and eye protection, spines and sap.
+      - Rake gravel back level after pulling; check whether gravel needs a top-up (separate quote).
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s03
+    transcript:
+      - {who: homeowner, text: "my gravel keeps washing out along the side yard, I need somebody to rake it back and put down more rock. been doing this every few weeks"}
+      - {who: intake, text: "Send me a pic of the washed-out spot?", step: photo}
+      - {who: homeowner, text: "[photo: side yard strip of tan gravel with a bare trench-like dip about a foot wide, dark wet soil showing in the dip, a black plastic tube with a clamp-on fitting partly exposed at one end]"}
+      - {who: intake, text: "Is that dip damp even on days it hasn't rained?", step: question}
+      - {who: homeowner, text: "yeah it's damp even when it hasn't rained. it's the monsoon though"}
+      - {who: intake, text: "Does the dip run along that black drip tubing?", step: question}
+      - {who: homeowner, text: "it runs along the tubing, yeah. still think it's runoff"}
+      - {who: intake, text: "Has your water bill gone up lately?", step: question}
+      - {who: homeowner, text: "been higher the last two months"}
+      - {who: intake, text: "Honest read: wet soil on dry days along the drip line, plus a higher bill, looks like a drip leak to me, and raking alone will wash out again. We can still rake it. How long is the washed-out stretch, and does the yard slope?", step: question}
+      - {who: homeowner, text: "about 30 feet. slight slope toward the side gate. I've been doing this a long time, it's the monsoon"}
+      - {who: intake, text: "Fair enough. Rake only, or should we bring rock? And has anyone touched the drip or the timer?", step: question}
+      - {who: homeowner, text: "rake it back. I'll buy rock myself later if I need it. haven't touched the drip or the timer"}
+      - {who: intake, text: "Got it. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "gravel raking", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Yard maintenance | Lake Havasu City
+      FACTS
+      - Gravel raking only, side yard, about 30 feet affected. Owner will buy rock himself later if needed.
+      - Has been washing out every few weeks; owner believes it is monsoon runoff.
+      - Dip is damp even on days it has not rained.
+      - Dip runs along the line of the black drip tubing.
+      - Water bill higher for the last two months.
+      - Yard slopes slightly toward the side gate.
+      - Owner has not touched the drip system or the timer.
+      - Photo: bare dip about a foot wide in tan gravel, dark wet soil in the dip, black tube with a clamp-on fitting partly exposed at one end.
+      - Needed: not said.
+      SUSPECT
+      - Drip leak at or near the exposed clamp fitting (blown fitting or split tube), washing fines out along the slope. Rain is not the main cause.
+      - Raking without fixing the leak will wash out again and the crew will get blamed.
+      ON SITE
+      - Before raking, run the drip zone and look for the wet spot or bubbling at the fitting. Photograph it for the owner.
+      - If it is a leak: tell the owner, recommend a drip repair (simple fitting swap, or an irrigation company if it is the lateral or valve). Get his OK before raking.
+      - Rake the gravel back over the 30 ft; do not bury the exposed tube until it is checked.
+      - Owner is sure it is monsoon; show him, do not argue.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s04
+    transcript:
+      - {who: homeowner, text: "looking for a gardener for every two weeks. pic attached shows the yard, nothing crazy. trim hedges and keep the grass cut"}
+      - {who: homeowner, text: "[photo: tidy small patch of green turf and a trimmed hedge by a front walkway, house wall visible, no side gates or back area in frame]"}
+      - {who: intake, text: "Thanks. Is that the whole property, or is there a back yard too?", step: question}
+      - {who: homeowner, text: "That's the front courtyard. The lot is about a third of an acre, most of it is behind the house."}
+      - {who: intake, text: "What's in the back: grass, how much, and is it flat or sloped?", step: question}
+      - {who: homeowner, text: "About 3,000 square feet of Bermuda grass, it's overgrown. It's on a steep slope down toward a wash."}
+      - {who: intake, text: "How much hedge, and how tall?", step: question}
+      - {who: homeowner, text: "About 120 feet along the back fence, about 8 feet tall."}
+      - {who: intake, text: "Roughly how big is the front grass, and do you want clippings hauled away?", step: question}
+      - {who: homeowner, text: "The front is about 300 square feet. Yes, haul the clippings away."}
+      - {who: intake, text: "Can you send a photo of the back slope and the hedge?", step: photo}
+      - {who: homeowner, text: "That's the only photo I have right now."}
+      - {who: intake, text: "No problem. Notes going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Yard maintenance | Lake Havasu City
+      FACTS
+      - Every two weeks: mow and trim hedges. Haul away clippings.
+      - Large lot, about a third of an acre, most of it behind the house. The photo shows only the front courtyard.
+      - Front courtyard: about 300 sq ft of turf and a trimmed hedge by the walkway.
+      - Back: about 3,000 sq ft of overgrown Bermuda on a steep slope down toward a wash.
+      - Back hedge: about 120 ft along the back fence, about 8 ft tall.
+      - No photo of the back available.
+      - Needed: not said.
+      SUSPECT
+      - First visit is a heavy catch-up cut on overgrown Bermuda, then regular every-two-weeks after.
+      - 8 ft hedges need a pole hedge trimmer or ladder; 120 ft of it is the biggest labor line.
+      - Clipping volume will be high: haul-away is a real cost line.
+      ON SITE
+      - Walk the back slope before quoting the mower: steep slope to a wash may need a string trimmer or walk-behind across the slope, not a rider.
+      - Check gate width to the back and where the trailer can park.
+      - Check footing on the wash side for hedge work from a ladder.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s05
+    transcript:
+      - {who: homeowner, text: "I need regular mowing service every week for the grass in my backyard. I can't send photos, my camera is broken, sorry"}
+      - {who: intake, text: "No problem, we can work without photos. Roughly how big is the back lawn, and do you know what kind of grass?", step: question}
+      - {who: homeowner, text: "About 1,200 square feet. It's Bermuda."}
+      - {who: intake, text: "How does the crew get in back, and are there any pets back there?", step: question}
+      - {who: homeowner, text: "The back gate has a padlock. I work nights and I'm asleep until about 2 pm on weekdays. And a medium-size dog lives in the backyard during the day, sorry, should have said."}
+      - {who: intake, text: "Good to know. Are there pop-up sprinkler heads in the lawn?", step: question}
+      - {who: homeowner, text: "Yes, there are pop-up heads all over the lawn."}
+      - {who: intake, text: "Want the clippings hauled off, or left for you?", step: question}
+      - {who: homeowner, text: "No haul-away needed. I'll bag them into the green bin."}
+      - {who: intake, text: "Last one. Front too, or back only? And weekly year-round?", step: question}
+      - {who: homeowner, text: "The front is gravel, no work there. Weekly through the growing season. Not sure about winter."}
+      - {who: intake, text: "Got it. Notes going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Yard maintenance | Lake Havasu City
+      FACTS
+      - Weekly mowing, backyard only, through the growing season. Winter: owner not sure.
+      - Back lawn about 1,200 sq ft of Bermuda.
+      - Front yard is gravel, no work there.
+      - No haul-away: owner will bag clippings into his green bin.
+      - Pop-up sprinkler heads all over the lawn.
+      - Access: back gate is padlocked. Medium-size dog in the backyard during the day.
+      - Owner works nights, asleep until about 2 pm on weekdays.
+      - No photos available (phone camera broken).
+      - Needed: not said.
+      SUSPECT
+      - Access and the dog are the scheduling problem, not the mowing.
+      - Winter: Bermuda goes dormant here unless overseeded; likely every-two-weeks or pause in winter.
+      ON SITE
+      - Set an afternoon slot after 2 pm, or agree how the gate gets unlocked and the dog put away. Text before arriving.
+      - Flag and walk the sprinkler heads before the first cut; keep mower height so heads are not clipped.
+      - Ask about overseeding and winter schedule on the first visit.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s06
+    transcript:
+      - {who: homeowner, text: "Hello dear. I need a man to cut back my bushes in front of the house and take away the clippings. my husband always did it. thank you"}
+      - {who: intake, text: "Happy to help. Could you send a photo of the bushes?", step: photo}
+      - {who: homeowner, text: "[photo: front of a house with three large overgrown oleanders and a thick hedge of green shrubs right up against the front window and walkway]"}
+      - {who: intake, text: "Thank you. Those big ones look like oleanders. About how tall are they?", step: question}
+      - {who: homeowner, text: "yes three big oleanders. about 9 feet tall i think"}
+      - {who: intake, text: "And about how long is the hedge by the window?", step: question}
+      - {who: homeowner, text: "about 25 feet long"}
+      - {who: intake, text: "Is this a one-time trim, or would you like someone to come regularly?", step: question}
+      - {who: homeowner, text: "One time please. once a year is all i can afford"}
+      - {who: intake, text: "That's fine. Is there anything the crew should watch for around the plants?", step: question}
+      - {who: homeowner, text: "oh yes. bees or wasps have been flying in and out of the hedge near the front window lately"}
+      - {who: intake, text: "Thank you for telling me. When the crew arrives, what's the best way to let you know?", step: question}
+      - {who: homeowner, text: "please text first. i walk with a walker and i cant get to the door quickly. the front walk is narrow"}
+      - {who: intake, text: "We'll text first. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "trimming", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Yard maintenance | Lake Havasu City
+      FACTS
+      - One-time trim, front of the house. Not recurring (once a year is what she can afford).
+      - Three large oleanders, about 9 ft tall, and a hedge about 25 ft long against the front window and walkway.
+      - Haul away all clippings.
+      - Bees or wasps flying in and out of the hedge near the front window lately.
+      - Owner walks with a walker; front walkway is narrow. Text before arriving, she cannot get to the door quickly.
+      - Photo: three large overgrown oleanders, thick green hedge right against the front window and walkway.
+      - Needed: not said.
+      SUSPECT
+      - Likely a nest inside the hedge by the window. May be honeybees (common in hedges here) or paper wasps.
+      - Cost-sensitive elderly owner: quote a clear one-time price, no service plan pitch.
+      ON SITE
+      - Check the hedge for the nest before cutting. If there is a nest, do not trim that section; recommend a bee removal or pest company (separate trade).
+      - Oleander is toxic: gloves and long sleeves, bag it, no chipping into mulch for her beds, never burn it.
+      - Keep the walkway clear the whole time she may use it; tarps, not debris on the walk.
+      - Clear the window and walkway back far enough to last a year.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s07
+    transcript:
+      - {who: homeowner, text: "hi my landlord says the yard has to be cleaned up or he can send me a violation from the city, idk what they need me to do, theres weeds and a dead bush and stuff"}
+      - {who: intake, text: "We can sort that out. Send me a photo of the yard?", step: photo}
+      - {who: homeowner, text: "[photo: rental house backyard with gravel, a dead shrub, a pile of tree trimmings along the fence, dry weeds, and a broken plastic lawn chair]"}
+      - {who: intake, text: "Thanks. Is there a deadline on the city notice?", step: question}
+      - {who: homeowner, text: "um yes the city sent a notice, 10 days, theres 6 days left"}
+      - {who: intake, text: "Okay, that's doable. That pile of branches along the fence, how big is it, roughly? A pickup load or more?", step: question}
+      - {who: homeowner, text: "idk maybe like 4 cubic yards? the landlord left it from when he trimmed stuff before"}
+      - {who: intake, text: "Do you want everything hauled off, the pile, the dead bush, the weeds, the chair? Anything else?", step: question}
+      - {who: homeowner, text: "yes everything has to go. the broken chair and a few trash bags too"}
+      - {who: intake, text: "Are you renting? Does the landlord need to OK the work?", step: question}
+      - {who: homeowner, text: "yeah i rent. he said hes fine with anyone working in the yard, he doesnt live nearby. am i even allowed to hire someone?"}
+      - {who: intake, text: "If he's OK'd it, yes. Who's paying for this, you or him?", step: question}
+      - {who: homeowner, text: "me but i cant afford a big job"}
+      - {who: intake, text: "Understood. That pile is his old trimmings, so it may be worth asking him to cover that part. Will anyone be home, or can the crew get in back?", step: question}
+      - {who: homeowner, text: "i work days. the side gate is unlocked"}
+      - {who: intake, text: "Got it. Notes going out now, flagged for the 6-day deadline.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: cleanup, bank_job_type: "yard cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Yard maintenance | Lake Havasu City
+      FACTS
+      - One-time backyard cleanup to clear a city notice. Deadline: 6 days left (10-day notice).
+      - Remove dry weeds on gravel, one dead shrub, a pile of tree trimmings along the fence (about 4 cubic yards, left from the landlord's earlier trimming), a broken plastic lawn chair and a few trash bags.
+      - Haul away everything.
+      - Requester is the tenant. Landlord has said anyone can work in the yard; he does not live nearby.
+      - Tenant is paying; tight budget.
+      - Access: tenant works days, not home; side gate is unlocked.
+      - Photo: gravel backyard, dead shrub, pile of tree trimmings along the fence, dry weeds, broken plastic lawn chair.
+      - Needed: within 6 days (city deadline).
+      SUSPECT
+      - The 4-yard trimmings pile is most of the cost (dump load). Tenant may be able to get the landlord to pay for that part.
+      - Dead shrub: pull with root ball if small, otherwise cut flush.
+      ON SITE
+      - Schedule inside the deadline; send the tenant before-and-after photos she can show the landlord and the city.
+      - Confirm the pile size on arrival; quote the haul as a line item.
+      - No trees or sprinklers in scope.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s08
+    transcript:
+      - {who: homeowner, text: "buenas tardes, necesito alguien que corte el pasto y pode los arbustos cada dos semanas, es en el patio de atras y de adelante. tengo fotos"}
+      - {who: intake, text: "Buenas tardes. Mándeme las fotos, por favor.", step: photo}
+      - {who: homeowner, text: "[foto: pasto del patio de atrás, como dos tercios verde, varios setos altos en la barda de atrás, un par de bugambilias con espinas subiendo por la cerca del lado, y una manguera enrollada sobre el pasto]"}
+      - {who: intake, text: "Gracias. ¿Qué tan grande es el pasto de atrás, más o menos? ¿Y qué hay adelante?", step: question}
+      - {who: homeowner, text: "atras como 2,500 pies cuadrados de pasto. adelante es grava chiquita con dos arbustos"}
+      - {who: intake, text: "¿Qué tan altos están los setos de la barda de atrás?", step: question}
+      - {who: homeowner, text: "como 7 pies"}
+      - {who: intake, text: "La bugambilia, ¿ya se pasó a la cerca del vecino?", step: question}
+      - {who: homeowner, text: "si, ya se paso para el lado del vecino. tiene muchas espinas"}
+      - {who: intake, text: "¿Hay alberca o algo junto al pasto que debamos cuidar?", step: question}
+      - {who: homeowner, text: "si hay alberca, el pasto llega hasta la orilla"}
+      - {who: intake, text: "¿Nos llevamos lo que se corte, o usa el bote verde? ¿Y tiene perros?", step: question}
+      - {who: homeowner, text: "que se lleven todo. tengo un perrito pero se queda adentro cuando trabajan"}
+      - {who: intake, text: "Perfecto. Ya mando los datos.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Mantenimiento de jardín / Yard maintenance | Lake Havasu City
+      DATOS (en palabras del cliente)
+      - Cada dos semanas: cortar el pasto y podar arbustos, patio de atrás y de adelante.
+      - Atrás: como 2,500 pies cuadrados de pasto. Adelante: grava, chico, con dos arbustos.
+      - Setos de como 7 pies en la barda de atrás.
+      - Bugambilia con espinas pasada a la cerca del vecino.
+      - Hay alberca; el pasto llega hasta la orilla.
+      - Llevarse todo lo que se corte.
+      - Perrito; se queda adentro cuando trabajan.
+      - Necesita: no dijo.
+      FACTS (English, for the crew)
+      - Every two weeks: mow and trim, front and back. Haul away clippings.
+      - Back lawn about 2,500 sq ft; front is small gravel with two shrubs.
+      - Hedges along the back wall about 7 ft tall.
+      - Thorny bougainvillea climbing the side fence and grown over onto the neighbor's side.
+      - Pool in the back; lawn runs right up to the pool edge.
+      - Small dog, kept inside during work.
+      - Photo: back lawn about two thirds green, tall hedges along the back wall, bougainvillea on the side fence, garden hose coiled on the grass.
+      - Owner texts in Spanish; reply in Spanish.
+      SUSPECT
+      - Brown third of the lawn: irrigation coverage gap or a head out. Not in scope; mention to owner.
+      ON SITE
+      - Blow discharge away from the pool; bag or side-discharge away from the water. Skim anything that lands in it.
+      - Bougainvillea over the neighbor's fence: get owner's OK on how far to cut on the neighbor side; thorn gloves, haul it all.
+      - 7 ft hedges need a pole trimmer or short ladder.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s09
+    transcript:
+      - {who: homeowner, text: "HELP my house goes on the market saturday and the yard is a DISASTER!!! need it cleaned up TODAY or tomorrow at the latest!!! i will pay extra!!!"}
+      - {who: intake, text: "We can work with that. When are the listing photos?", step: question}
+      - {who: homeowner, text: "SATURDAY MORNING!! thats 3 days!!"}
+      - {who: intake, text: "Okay. Send me a pic of the worst part?", step: photo}
+      - {who: homeowner, text: "[photo: front and side yard with gravel, patches of tall dry weeds, a pile of dead palm fronds and old wooden pallets against a side fence, two overflowing trash cans]"}
+      - {who: intake, text: "One-time cleanup, front and side? Roughly how big?", step: question}
+      - {who: homeowner, text: "yes one time. front and side about 1500 sq ft. backyard is fine doesnt need anything"}
+      - {who: intake, text: "How much is in that pile? Fronds, pallets, anything else to haul?", step: question}
+      - {who: homeowner, text: "fronds maybe 6 cubic yards, 4 wooden pallets, and bags of trash. ALL of it has to go"}
+      - {who: intake, text: "Last one. Will anyone be there to let the crew in?", step: question}
+      - {who: homeowner, text: "no one home. lockbox on the side gate, ill give the code later"}
+      - {who: intake, text: "Got it. Saturday morning is the deadline on the notes. Going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: cleanup, bank_job_type: "yard cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Yard maintenance | Lake Havasu City
+      FACTS
+      - One-time cleanup before a home listing. Front and side yard only, about 1,500 sq ft. Backyard not included.
+      - Gravel with patches of tall dry weeds to pull.
+      - Haul away: pile of dead palm fronds about 6 cubic yards, 4 wooden pallets, bags of trash.
+      - Deadline: listing photos Saturday morning, 3 days out. Owner asked for today or tomorrow.
+      - Nobody home; lockbox on the side gate, code to be given later.
+      - Photo: front and side gravel yard, patches of tall dry weeds, pile of dead palm fronds and old wooden pallets against a side fence, two overflowing trash cans.
+      - Needed: before Saturday morning.
+      SUSPECT
+      - Haul volume is the job: 6 yards of fronds plus pallets is a full trailer or more, close to junk-removal volume. Fronds are heavy and spiky.
+      - Overflowing trash cans may not be in scope; confirm.
+      ON SITE
+      - Get the lockbox code before dispatch.
+      - Finish by Friday so the gravel can be raked smooth and blown off for photos.
+      - Confirm with owner whether the overflowing cans go too.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s10
+    transcript:
+      - {who: homeowner, text: "Looking for monthly yard service, trim the bushes and weed the gravel. Oh by the way there's been a faint rotten egg smell by the gas meter on the side of the house the last day or two, bushes are right around it so maybe that's why you can smell it"}
+      - {who: intake, text: "Before the yard: a rotten egg smell at the meter can be a gas leak, even faint. Stay away from the meter, no lighters or power tools near it, and call 911 or the gas company from away from it. Text me SAFE when you've done that.", step: "911"}
+      - {who: homeowner, text: "It's only outside, never smelled it inside. Haven't called anyone yet. SAFE, I'm fine."}
+      - {who: intake, text: "Okay. Please do call the gas company today; our crew won't trim around the meter until it's been checked. For the yard, front and side, or back too? Roughly how big?", step: question}
+      - {who: homeowner, text: "Front and side, about 2,000 sq ft together."}
+      - {who: intake, text: "How tall and thick are the bushes around the meter?", step: question}
+      - {who: homeowner, text: "Thick, about 5 feet tall."}
+      - {who: intake, text: "Haul away the trimmings, or do you have a green bin?", step: question}
+      - {who: homeowner, text: "No haul-away needed."}
+      - {who: intake, text: "Send a pic of the side yard?", step: photo}
+      - {who: homeowner, text: "[photo: side of a house with a gas meter and regulator surrounded by overgrown bushes, gravel ground, a few weeds]"}
+      - {who: intake, text: "Got it. Notes going out now, with the meter flagged.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "trimming", unsure: false}
+    fire_dept_text: true
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Yard maintenance | Lake Havasu City
+      FACTS
+      - Monthly service: trim bushes and weed the gravel, front and side, about 2,000 sq ft together.
+      - Bushes around the gas meter are thick, about 5 ft tall.
+      - No haul-away needed.
+      - Owner reports a faint rotten-egg smell by the gas meter for a day or two, outdoors only, not inside. He had not called anyone yet; told to call the gas company.
+      - Photo: gas meter and regulator surrounded by overgrown bushes, gravel ground, a few weeds.
+      - Needed: not said.
+      SUSPECT
+      - Gas smell at the meter is likely a leak at the regulator or meter fittings, not the bushes. Gas company's job, not ours.
+      ON SITE
+      - Do not trim, run gas equipment or power tools around the meter until the owner confirms the gas company has checked it. Do the rest of the yard first.
+      - Once cleared: cut the bushes back to leave a clear 3 ft around the meter for meter readers and safety.
+      - Weed the gravel by hand or hoe; no spraying in scope.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s11
+    transcript:
+      - {who: homeowner, text: "I need a regular gardener to mow and edge and trim once a month, and while theyre at it zone 3 of my sprinklers doesnt come on anymore so half my front lawn is turning brown, can the same guy fix that? also the timer is a Rain Bird if that matters"}
+      - {who: intake, text: "We'll start with the monthly service. How big are the lawns, front and back?", step: question}
+      - {who: homeowner, text: "The front is about 800 square feet and there's a small back lawn too. I've had the same lawn forever."}
+      - {who: intake, text: "Haul away clippings, or do you have a green bin?", step: question}
+      - {who: homeowner, text: "No haul away needed, I use the green bin. So can the same guy do the sprinkler?"}
+      - {who: intake, text: "Straight answer: a valve or wiring repair is licensed irrigation work, and most gardeners can't take it on. I'll write zone 3 up as a separate request for an irrigation tech. How long has zone 3 been off?", step: question}
+      - {who: homeowner, text: "About two weeks. And my HOA wants the lawn green by next month, so that's the worry."}
+      - {who: intake, text: "Can you send a photo of the brown patch and the controller?", step: photo}
+      - {who: homeowner, text: "[photo: front lawn with a brown half-moon patch, a Rain Bird controller on the garage wall with the screen showing zone 3, and a green valve box lid in the lawn]"}
+      - {who: intake, text: "Thanks. Anything about that green valve box we should know? Lid, critters?", step: question}
+      - {who: homeowner, text: "The lid is loose. One time there was a wasp nest inside it."}
+      - {who: intake, text: "How old is the controller?", step: question}
+      - {who: homeowner, text: "About 10 years."}
+      - {who: intake, text: "Got it. Two sets of notes going out: monthly yard service, and the zone 3 repair separately.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0111 | Yard maintenance | Lake Havasu City
+      FACTS
+      - Monthly mowing, edging and trimming.
+      - Front lawn about 800 sq ft plus a small back lawn.
+      - No haul-away: owner uses her green bin.
+      - HOA wants the lawn green by next month.
+      - Front lawn has a brown half-moon patch from a sprinkler zone that is not running (separate request below; not gardener scope).
+      - Photo: brown half-moon patch on the front lawn, Rain Bird controller on the garage wall, green valve box lid in the lawn.
+      - Needed: not said (HOA green-lawn date next month).
+      ON SITE
+      - Valve box lid in the front lawn is loose and once had a wasp nest; check before mowing over it.
+      - Mow high on the brown patch until the zone is fixed.
+
+      SEPARATE REQUEST (irrigation repair, R-21; not for the gardener)
+      - Zone 3 on a Rain Bird controller, about 10 years old, has not come on for about two weeks; half the front lawn is browning.
+      - Owner has not said whether the controller shows the zone running.
+      - Valve box: loose lid, wasp nest inside once.
+      - HOA wants the lawn green by next month.
+      SUSPECT (irrigation)
+      - Bad solenoid or a broken or corroded common/station wire at the valve, or a dead station on the old controller. Manual-run the zone and meter the station output.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s12
+    transcript:
+      - {who: homeowner, text: "Looking for someone to mow my acre every other week, out in Parker. do you folks come out this way?"}
+      - {who: intake, text: "We don't cover Parker yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s13
+    transcript:
+      - {who: homeowner, text: "I want monthly yard maintenance in Lake Havasu City. Mowing and trimming, front and back, about a quarter acre, and I'd like the clippings hauled off."}
+      - {who: intake, text: "We don't cover yard maintenance jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s14
+    transcript:
+      - {who: homeowner, text: "I need my gravel yard sprayed for weeds before winter. last year my gardener did it but he quit. pre-emergent, front and back. he used the sprayer"}
+      - {who: intake, text: "Good timing for it. One thing up front: pre-emergent has to be applied by a company licensed with the Arizona Department of Agriculture, so I'll send this to licensed weed-control companies, not a gardener. How big is the area, front and back, all gravel?", step: question}
+      - {who: homeowner, text: "Front and back, all decomposed granite, about 4,000 square feet total."}
+      - {who: intake, text: "One application before winter, or are you wanting a season program?", step: question}
+      - {who: homeowner, text: "One time before winter, maybe again in spring. I want it to stop weeds all season."}
+      - {who: intake, text: "Fall pre-emergent cuts down the winter weeds a lot, but nobody can promise none; expect some spot pulling. Anything in the area to keep spray away from, pets, a vegetable garden, plants you care about?", step: question}
+      - {who: homeowner, text: "Two dogs, and a small vegetable bed along the back wall."}
+      - {who: intake, text: "Send me a photo of the front?", step: photo}
+      - {who: homeowner, text: "[photo: front yard of tan decomposed granite with sparse weeds along the edges, no lawn, a few cacti, drip tubing visible near the cacti]"}
+      - {who: intake, text: "Thanks. Did your old gardener do anything else you still need?", step: question}
+      - {who: homeowner, text: "He mowed and trimmed the hedges too. I'd like that kept going, but separately."}
+      - {who: intake, text: "Got it. Notes for the weed control going out now. I'll set up the mowing and hedges as a separate yard request.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: weed_control, bank_job_type: "pre-emergent weed control", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0114 | Pest control (weed control, AZ Dept of Agriculture licensed applicator) | Lake Havasu City
+      FACTS
+      - Pre-emergent weed control on decomposed granite, front and back, about 4,000 sq ft total.
+      - One application before winter, maybe again in spring.
+      - Owner wants it to stop weeds all season (told: it reduces weeds, no guarantee).
+      - Two dogs. Small vegetable bed along the back wall.
+      - Last year's application was done by his former gardener with a sprayer.
+      - Photo: tan decomposed granite front yard, sparse weeds along the edges, no lawn, a few cacti, drip tubing near the cacti.
+      - Needed: before winter.
+      SUSPECT
+      - Sparse existing weeds: a post-emergent spot treat may be needed along with the pre-emergent.
+      ON SITE
+      - Buffer the vegetable bed; product choice must allow use near edibles or skip that strip.
+      - Dogs kept off until dry per label.
+      - Avoid drift onto cacti and the drip emitters.
+      - Expectation: no all-season guarantee.
+
+      SEPARATE REQUEST (yard maintenance, to be opened after this one)
+      - Owner wants his regular mowing and hedge trimming kept going, separately. Scope, size and frequency not yet asked.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s15
+    transcript:
+      - {who: homeowner, text: "WATER IS EVERYWHERE!! my sprinkler pipe or whatever it is is gushing in the front and its flooding all the gravel!! its running toward the garage!! i turned off the timer and it didnt stop"}
+      - {who: homeowner, text: "[photo: front yard gravel flooded with muddy water about two inches deep, a visible fountain of water spraying up from a bare spot between two plants, water running along the gravel toward a garage door apron]"}
+      - {who: homeowner, text: "help"}
+      - {who: intake, text: "That's a pressure line, not a gardener job. I'm getting you a plumber. Is it still running, and do you know where your water shutoff is?", step: question}
+      - {who: homeowner, text: "yes still running!! i dont know where the shutoff is"}
+      - {who: intake, text: "Look for the water meter box near the street; there's usually a shutoff valve in it or on the pipe where it enters the house. If you can't find it, the city water department can shut it at the meter. Is water getting into the garage, and is the yard washing out?", step: question}
+      - {who: homeowner, text: "its at the garage door but not inside yet. like 20 min now. the gravel is washing away in a channel"}
+      - {who: intake, text: "How far from the garage is it coming up? Has anyone dug there lately?", step: question}
+      - {who: homeowner, text: "about 10 feet from the garage. no one has dug here"}
+      - {who: intake, text: "Is it spraying out of the ground like a real pipe, or from one of the little black drip tubes?", step: question}
+      - {who: homeowner, text: "its spraying up out of the ground, its a real pipe not the little drip tube"}
+      - {who: intake, text: "Got it. Sending to plumbers now as urgent.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: leak_active, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0115 | Plumbing repair (urgent) | Lake Havasu City
+      FACTS
+      - Water spraying up out of the ground in the front yard gravel from a pressurized pipe (owner: a real pipe, not drip tube), about 10 ft from the garage.
+      - Turning off the irrigation timer did not stop it.
+      - Cannot shut off: owner does not know where the main shutoff is (told to check the meter box at the street).
+      - Running about 20 minutes; water has reached the garage door apron, not inside yet.
+      - Gravel washing out in a channel.
+      - No one has dug there recently.
+      - Photo: front gravel flooded about two inches deep with muddy water, fountain spraying up from a bare spot between two plants, water running toward the garage door apron.
+      - Needed: now.
+      SUSPECT
+      - Timer off and still flowing means it is upstream of the zone valves: the irrigation mainline (often PVC) between the house supply or backflow and the valves, or the house supply itself. Likely a split or blown PVC fitting.
+      ON SITE
+      - Shut off at the meter or the irrigation isolation valve first; bring a meter key.
+      - Locate the backflow preventer and valve manifold, dig at the fountain, repair the line.
+      - Gravel and drainage re-set after repair is a yard job (refer).
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s16
+    transcript:
+      - {who: homeowner, text: "need my palms skinned and haircut b4 monsoon wind takes em out. 3 of em front. whos does that"}
+      - {who: intake, text: "We can find you a palm crew. Send a pic of the palms?", step: photo}
+      - {who: homeowner, text: "[photo: three tall fan palms in a front yard with a heavy skirt of dead brown fronds hanging down the trunks, one palm's fronds close to a utility wire running to the house]"}
+      - {who: intake, text: "How tall are they, roughly?", step: question}
+      - {who: homeowner, text: "like 25 30 ft"}
+      - {who: intake, text: "Is anything near or touching the trees, wires, the roof?", step: question}
+      - {who: homeowner, text: "one is close to the wire to the house, like arm's length. dead stuff hangs over the roof edge on some"}
+      - {who: intake, text: "That wire matters. Nobody unqualified should cut within 10 feet of it; that palm may need a line-clearance crew or the power company to drop the line first. Want the dead fronds and seed pods all off and hauled away, one time?", step: question}
+      - {who: homeowner, text: "yeah one time. dead fronds and seed pods off, haul it all"}
+      - {who: intake, text: "What's under them, rock, lawn, anything parked there?", step: question}
+      - {who: homeowner, text: "gravel. car parked under them most of the time. can the same guy do my weekly mowing too"}
+      - {who: intake, text: "Is there grass somewhere? The front looks like gravel.", step: question}
+      - {who: homeowner, text: "no lawn actually"}
+      - {who: intake, text: "Then no mowing needed. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "trimming", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0116 | Yard maintenance (palm trimming; needs a palm/tree crew) | Lake Havasu City
+      FACTS
+      - One-time palm trim: three fan palms in the front yard, about 25 to 30 ft tall.
+      - Remove dead fronds (full skirt, 'skinned') and seed pods; haul everything away.
+      - Dead frond skirts hang low; some have grown in over the roof edge.
+      - One palm's crown is about arm's length from the overhead wire to the house.
+      - Front is gravel; a car is parked under the palms most of the time.
+      - No lawn; no mowing.
+      - Wants it done before monsoon wind.
+      - Photo: three tall fan palms with heavy skirts of dead brown fronds down the trunks, one palm's fronds close to a utility wire running to the house.
+      - Needed: before monsoon.
+      SUSPECT
+      - 25 to 30 ft fan palms with full skirts: climber with spikes-free gear or a lift; skinning the full skirt is a heavy haul (fronds are bulky).
+      - Palm by the service drop is within 10 ft of an energized line: not a job for an unqualified crew.
+      ON SITE
+      - Do not work the palm near the wire until the power company has dropped or sleeved the service line, or send a line-clearance qualified crew. Quote that palm separately.
+      - Owner must move the car before work starts.
+      - Protect the roof edge where fronds lie on it; check for rat nests in the skirts.
+      - Check lift access over gravel; plan the drop zone away from the car and the wire.
+    facts_in_card_not_stated: []
