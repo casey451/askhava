@@ -522,7 +522,14 @@
    "slug": "spec-intake-decisions",
    "type": "docs",
    "stage": "1",
-   "attempt_started_at": "2026-10-29T19:34:45Z"
+   "attempt_started_at": "2026-10-29T19:34:45Z",
+   "reviewed_sha": "73082eaa58e524ba9be60f2c508479fb1117ffc7",
+   "review_lease": {
+    "task": "T004",
+    "session": "actions-40940569215",
+    "expires": "2026-10-29T22:34:45Z"
+   },
+   "branch": "claude/task/T004-spec-intake-decisions"
   },
   {
    "id": "T172",
@@ -3572,7 +3579,7 @@
    }
   }
  },
- "updated_at": "2026-10-29T19:36:23Z",
+ "updated_at": "2026-10-29T19:44:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -3670,7 +3677,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7161be09784cdeb93fc6730264240ccdaee02646",
+ "runner_sha": "73082eaa58e524ba9be60f2c508479fb1117ffc7",
  "starter": "actions",
  "smoke_runs": [
   {
