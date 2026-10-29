@@ -76,7 +76,7 @@ jobs:
           RUNNER_STARTER: actions
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-             claude_args: --model claude-sonnet-5-5 --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
+          claude_args: --model claude-sonnet-5-5 --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
           prompt: |
             You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now. The runner code (runner/) does the cycle; you do only the task it hands you (D-486).
 
