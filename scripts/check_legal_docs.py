@@ -125,8 +125,9 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "the homeowner make your own agreement, and Ask Hava is not part of it. The "
             "introduction fee pays only for the introduction service: a fixed amount by job size "
             "($25, $75 or $199), never a percentage or share of the job's price, and it doesn't "
-            "depend on whether the work is done, finished or paid for. The only refunds are the "
-            "ones these terms list.",
+            "depend on whether the work is done, finished or paid for. The refunds are the ones "
+            "these terms list, and Ask Hava may also refund any charge at its own choice. No "
+            "refund is owed because the work wasn't done or paid for.",
         ),
         (
             "TERMS-024",

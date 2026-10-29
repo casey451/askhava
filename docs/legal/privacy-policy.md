@@ -32,6 +32,7 @@ When you send a request, Ask Hava sends a description of the job, with your name
 | Who | What they see | When |
 |---|---|---|
 | Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions | When the request goes out |
+| Anyone on askhava.com | Your feedback, with your first name and town, only if you ticked the box allowing it | After your job is done |
 | The one business you pick | Your first name and the job address, plus your email if you chose to share it | Only after you pick it, ask us to share them, and it confirms and pays its introduction fee |
 | Businesses that get your job card | The job card you saw, your answers and the photos you kept, with no name, phone, email or street address | When the card goes out |
 | No business, ever | Your phone number | Never. Calls go through a masked Ask Hava number |
@@ -48,7 +49,7 @@ The business you pick may use your details only for your job and follow-up about
 
 ## 5. Text messages
 
-You choose to text us: your first text (or starting a chat on askhava.com) is your OK to get automated texts about your own request, and we text you only about that request. We keep the time of that first message and the version of our first reply as proof. After your request goes out, we ask once whether you want quote updates by text, email or both; if you give an email for updates, we use it only for your request and never share it with businesses unless you choose email contact when you pick. Every update email has an unsubscribe link. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time.
+You choose to text us: your first text (or starting a chat on askhava.com) is your OK to get automated texts about your own request, and we text you only about that request. We keep the time of that first message and the version of our first reply as proof. Quote updates come by text unless you switch to email, or both, on your quote page; if you give an email for updates, we use it only for your request and never share it with businesses unless you choose email contact when you pick. Every update email has an unsubscribe link. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time.
 
 You can also opt out by emailing help@askhava.com, replying to any Ask Hava email, using the help form on askhava.com, or switching texts off on your quote page. Every opt-out goes on one list at once and stops all texts and automated calls from Ask Hava to that number. To use Ask Hava by text again, text START.
 

@@ -11,7 +11,7 @@ Ask Hava is not a contractor. It passes along this request and the homeowner's c
 
 Ask Hava is a quote-request service; the business the homeowner chooses pays Ask Hava a set introduction fee.
 
-Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedules, supervises, inspects, warrants or pays for your work, never sets or changes your prices, and never negotiates for you or the homeowner. There is no subcontract, employment, agency, partnership or joint venture between you and Ask Hava. You and the homeowner make your own agreement, and Ask Hava is not part of it. The introduction fee pays only for the introduction service: a fixed amount by job size ($25, $75 or $199), never a percentage or share of the job's price, and it doesn't depend on whether the work is done, finished or paid for. The only refunds are the ones these terms list.
+Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedules, supervises, inspects, warrants or pays for your work, never sets or changes your prices, and never negotiates for you or the homeowner. There is no subcontract, employment, agency, partnership or joint venture between you and Ask Hava. You and the homeowner make your own agreement, and Ask Hava is not part of it. The introduction fee pays only for the introduction service: a fixed amount by job size ($25, $75 or $199), never a percentage or share of the job's price, and it doesn't depend on whether the work is done, finished or paid for. The refunds are the ones these terms list, and Ask Hava may also refund any charge at its own choice. No refund is owed because the work wasn't done or paid for.
 
 ## 2. Joining
 
@@ -52,7 +52,7 @@ Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedu
 - **Tax included.** No tax is ever added on top.
 - Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens. One free first win per business.
 - Repeat picks from the same homeowner are free for 180 days after the job closes.
-- **Price lock:** a business that joined in the first 90 days after launch pays no more than the fee amounts in effect on its join date for 12 months. After that, fees follow the published schedule, and a change needs your OK first. A new fee never applies until you accept it.
+- **Price lock:** a business that joined in the first 90 days after launch pays no more than the fee amounts in effect on its join date for 6 months. After that, fees follow the published schedule, and a change needs your OK first. A new fee never applies until you accept it.
 - **Monthly fee limit:** you may set one. A Confirm that would go over it is not charged, and that pick ends.
 
 ## 6. Card and charge authorization
@@ -73,7 +73,7 @@ If that charge fails or your bank asks for approval, the pick goes to the normal
 
 Refund if you can't reach them: 2 call attempts at least 3 hours apart, inside their window, within 72 hours. They can be on different days.
 
-In full, these are the only refunds, and each happens automatically, once, to the card that paid:
+These are the automatic refunds, and each happens once, to the card that paid (Ask Hava may also refund any charge at its own choice, section 1):
 
 1. **Couldn't reach the homeowner.** Decided at 96 hours after the release, when all of these are true: you made 2 call attempts at least 3 hours apart, within 72 hours, inside the window (8 a.m. to 8 p.m. Arizona time, any hour on an emergency job); no call in either direction was answered by a person; Ask Hava sent or attempted the missed-call text to the homeowner (a delivery failure never counts against you); the homeowner has not replied DONE or PROBLEM; and, when the homeowner chose email, the homeowner did not reply YES to the 72-hour "Did <business> email you and agree a time?" question. The decision email says which condition was or wasn't met.
 2. **Homeowner cancelled first.** The homeowner cancels before you have talked to them (any call in either direction answered by a person counts as talking).

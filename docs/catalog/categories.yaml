@@ -21,7 +21,7 @@
 #   trip_fee_tier     the set introduction fee in dollars for a diagnostic-visit (visit fee plus
 #                     estimate) quote, used only when quote_format is diagnostic_visit: $25 by
 #                     default, never above $75 (FEE-004, D-399, D-418, D-441).
-#   launch_open       true: "Open now" at Gate C and takes homeowner requests once it has 2 or more
+#   launch_open       true (every enabled category, D-459): "Open now" at Gate C and takes homeowner requests once it has 2 or more
 #                     active businesses; false: "Coming later", waitlist sign-ups only (LIC-046, D-396,
 #                     D-418). A launch-open category must be enabled.
 #   fee_free_job_types  job types whose pick charges no introduction fee (FEE-045, D-403).
@@ -67,7 +67,7 @@ categories:
     name: Plumbing repair
     group: home systems/repair
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-37]}
     handyman_allowed: true
     construction_type: true
@@ -197,7 +197,7 @@ categories:
     name: Yard and landscape maintenance
     group: yard/outdoor
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -216,7 +216,7 @@ categories:
     name: House cleaning
     group: cleaning/property care
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -254,7 +254,7 @@ categories:
     name: Dog waste pickup
     group: pets
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -271,7 +271,7 @@ categories:
     name: Trash-can cleaning
     group: cleaning/property care
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -288,7 +288,7 @@ categories:
     name: Vacation-rental turnover cleaning
     group: cleaning/property care
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -324,7 +324,7 @@ categories:
     name: Car, truck and RV detailing
     group: vehicle
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -341,7 +341,7 @@ categories:
     name: Boat detailing
     group: boat/lake
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -358,7 +358,7 @@ categories:
     name: Boat repair
     group: boat/lake
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -377,7 +377,7 @@ categories:
     name: Window cleaning
     group: cleaning/property care
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -394,7 +394,7 @@ categories:
     name: Pressure washing
     group: cleaning/property care
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -412,7 +412,7 @@ categories:
     name: Solar screens and window film
     group: interior/remodel
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-65]}
     handyman_allowed: false
     construction_type: true
@@ -429,7 +429,7 @@ categories:
     name: Roof repair
     group: home systems/repair
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-42]}
     handyman_allowed: false
     construction_type: true
@@ -446,7 +446,7 @@ categories:
     name: Painting
     group: interior/remodel
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-34]}
     handyman_allowed: false
     construction_type: true
@@ -464,7 +464,7 @@ categories:
     name: Local moving (within Arizona)
     group: moving/hauling
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -482,7 +482,7 @@ categories:
     name: Freestanding appliance repair
     group: home systems/repair
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-63]}
     handyman_allowed: true
     construction_type: true
@@ -522,7 +522,7 @@ categories:
     name: Dryer-vent cleaning
     group: cleaning/property care
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -540,7 +540,7 @@ categories:
     name: Holiday lights (plug-in)
     group: events/tech
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -558,7 +558,7 @@ categories:
     name: Estate cleanout
     group: moving/hauling
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -575,7 +575,7 @@ categories:
     name: Donation pickup
     group: moving/hauling
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -592,7 +592,7 @@ categories:
     name: Septic pumping
     group: home systems/repair
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: state_agency, agency: ADEQ septage-hauler vehicle license}
     handyman_allowed: false
     construction_type: false
@@ -609,7 +609,7 @@ categories:
     name: Alarm systems
     group: events/tech
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc_and_state_agency, classes: [R-67], agency: Board of Technical Registration (alarm business certificate)}
     handyman_allowed: false
     construction_type: true
@@ -626,7 +626,7 @@ categories:
     name: Security cameras
     group: events/tech
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-67]}
     handyman_allowed: true
     construction_type: true
@@ -643,7 +643,7 @@ categories:
     name: Home inspection
     group: home systems/repair
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: state_agency, agency: Board of Technical Registration (certified home inspector)}
     handyman_allowed: false
     construction_type: false
@@ -661,7 +661,7 @@ categories:
     name: Home watch
     group: cleaning/property care
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: none}
     handyman_allowed: false
     construction_type: false
@@ -682,7 +682,7 @@ categories:
     name: Water softeners, RO and misting
     group: pool/spa/water
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-54]}
     handyman_allowed: false
     construction_type: true
@@ -699,7 +699,7 @@ categories:
     name: Gutters
     group: home systems/repair
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-45]}
     handyman_allowed: false
     construction_type: true
@@ -716,7 +716,7 @@ categories:
     name: Insulation
     group: interior/remodel
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-40]}
     handyman_allowed: false
     construction_type: true
@@ -733,7 +733,7 @@ categories:
     name: Pavers, hardscape and irrigation
     group: yard/outdoor
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-21]}
     handyman_allowed: false
     construction_type: true
@@ -751,7 +751,7 @@ categories:
     name: Epoxy floors
     group: interior/remodel
     enabled: true
-    launch_open: false
+    launch_open: true
     license: {kind: roc, classes: [R-8, R-34]}
     handyman_allowed: false
     construction_type: true

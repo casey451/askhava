@@ -23,7 +23,7 @@ The next question about your job follows right away. We keep the time of your fi
 
 You accept the Ask Hava Homeowner Terms only when you pick a quote, next to the line "By picking, you agree to the Terms". Free for you; the business you choose pays Ask Hava a set fee of $25 to $199, by quote size.
 
-After your request goes out, we ask once how you want quote updates: by text, by email, or both. Text is the default. Every update links to your private quote page.
+Quote updates come by text unless you switch to email, or both, on your quote page. Every update links to your private quote page.
 
 You must be 18 or older. Consent is not a condition of buying anything; Ask Hava is free for you, and you can also use askhava.com and email instead of texts.
 
