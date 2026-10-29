@@ -1,8 +1,8 @@
 """Tests for the matching worked examples check in scripts/check_catalog.py (T003).
 
 D-110: docs/catalog/matching_examples.yaml holds M01 to M16 (docs/test-design.md section 7.2),
-the oracle for who receives a job card (CARD-001, CARD-002, CARD-003, LIC-012, LIC-013,
-LIC-014, LIC-016, LIC-017, LIC-021, LIC-022, LIC-035). Each test plants one fault in a copy of
+the oracle for who receives a job card (CARD-001, LIC-012, LIC-013, LIC-014, LIC-016, LIC-017,
+LIC-021, LIC-022, LIC-035; CARD-002 and CARD-003 are TD-LIC-02's property tests). Each test plants one fault in a copy of
 the real catalog and checks that `check_catalog.py` fails on it.
 """
 
@@ -134,6 +134,8 @@ M02_EXPECTED = "expected: {outcome: no_card, rules: [LIC-035], map_covers: false
          "expected: {outcome: card, rules: [LIC-001], map_covers: null, condition: under $1,000}",
          "M07: a card to a handyman for work handymen never get"),
         (", condition: quote must be under $1,000}", "}", "M05: a handyman card without its $1,000 condition"),
+        ("city_list: true, ticked: [faucet replacement]", "city_list: false, ticked: [faucet replacement]",
+         "M05: a handyman card to a business not on the city list"),
         ("expected: {outcome: no_card, rules: [LIC-013], map_covers: true}",
          "expected: {outcome: card, rules: [LIC-013], map_covers: true}", "M10: a card without the category's agency"),
         ("outcome: refused_at_intake", "outcome: no_card", "M14: refused_at_intake exactly when"),
@@ -153,3 +155,13 @@ def test_non_list_and_non_mapping_examples_fail() -> None:
     ]
     report = check_catalog.check_matching({"examples": ["M01"]}, {}, {})
     assert "matching example is not a mapping" in report.errors
+
+
+def test_pest_record_category_jobs_count_as_granted() -> None:
+    """LIC-012, D-504: the pest agency's termite job counts as covered, as in mapped_jobs."""
+    cats, _ = check_catalog.check_categories(check_catalog.load(REPO_ROOT, check_catalog.CATEGORIES_FILE))
+    rows = check_catalog.license_rows(check_catalog.load(REPO_ROOT, check_catalog.LICENSE_MAP_FILE))
+    pest = "AZ Department of Agriculture pest-management business license"
+    ex = {"job": {"category": "pest_control", "candidates": ["termites"]}}
+    assert check_catalog.covers([pest], ex, rows, cats)
+    assert not check_catalog.covers(["R-11"], ex, rows, cats)

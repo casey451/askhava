@@ -13,8 +13,8 @@ every job type of an enabled licensed category has a license that covers it (CAR
 a subclassification receives only job types within its scope (LIC-035, D-058, D-504).
 Loads the matching worked examples M01 to M16 (D-110) and fails on a missing, duplicated or
 malformed one, on a name the catalog or license map lacks, and on an expected outcome that breaks
-a necessary card condition (CARD-001, CARD-002, CARD-003, LIC-012, LIC-013, LIC-014, LIC-016,
-LIC-017, LIC-021, LIC-022, LIC-035).
+a necessary card condition (CARD-001, LIC-013, LIC-017, LIC-019, LIC-021, LIC-022, LIC-035,
+LIC-038, LIC-043).
 Prints one line per example; exits 1 on any error.
 
 Usage: python3 scripts/check_catalog.py [--root REPO_ROOT]
@@ -806,13 +806,19 @@ def license_rows(lmap: dict[str, Any]) -> dict[str, dict[str, Any]]:
 def row_grants(
     name: str, rows: dict[str, dict[str, Any]], cats: dict[str, dict[str, Any]], seen: frozenset[str]
 ) -> set[tuple[str, str]]:
-    """LIC-043: every (category, job type) a class or agency gets, directly or through includes."""
+    """LIC-043: every (category, job type) a class or agency gets, directly or through includes.
+
+    An agency's record-category jobs (LIC-012: termites, pre-emergent weed control) count as
+    granted, as in `mapped_jobs` (D-504); the examples do not model the record category (D-506).
+    """
     row = rows.get(name) or {}
+    needed = [str(job) for job in row.get("record_category_needed") or {}]
     pairs = {
         (str(cat_id), job)
         for cat_id, grant in (row.get("job_types") or {}).items()
         if str(cat_id) in cats
-        for job in granted_jobs(grant, cats[str(cat_id)])
+        for job in [*granted_jobs(grant, cats[str(cat_id)]), *needed]
+        if job in job_names(cats[str(cat_id)])
     }
     for inc in row.get("includes", []):
         if str(inc) not in seen:
@@ -849,7 +855,7 @@ def match_refs(ex: dict[str, Any], cat: dict[str, Any], rows: dict[str, Any]) ->
 
 def card_problems(ex: dict[str, Any], cat: dict[str, Any], covered: bool | None, rows: dict[str, Any],
                   cats: dict[str, Any]) -> list[str]:
-    """CARD-001, CARD-002, LIC-013, LIC-019, LIC-021, LIC-022: conditions every card needs."""
+    """CARD-001, LIC-013, LIC-019, LIC-021, LIC-022, LIC-038: conditions every card needs."""
     job, biz = ex["job"], ex["business"]
     problems: list[str] = []
     if job["town"] not in biz["towns"]:
@@ -862,6 +868,8 @@ def card_problems(ex: dict[str, Any], cat: dict[str, Any], covered: bool | None,
             problems.append("a card to a handyman for work handymen never get (LIC-021, LIC-022)")
         if not ex["expected"].get("condition"):
             problems.append("a handyman card without its $1,000 condition (LIC-019)")
+        if not biz["city_list"]:
+            problems.append("a handyman card to a business not on the city list (LIC-038)")
     elif cat["license"]["kind"] == "none":
         if not biz["city_list"]:
             problems.append("a no-license card to a business not on the city list")

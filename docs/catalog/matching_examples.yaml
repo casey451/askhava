@@ -2,9 +2,10 @@
 # and apart from both the app and the twin, so the two cannot share one licensing mistake (F07).
 # Rows M01 to M16 are docs/test-design.md section 7.2; `table` keeps that table's job name and
 # `candidates` uses the catalog's job-type names (categories.yaml, refused jobs included).
-# Rules: CARD-001, CARD-002, CARD-003, LIC-012, LIC-013, LIC-014, LIC-016, LIC-017, LIC-021,
-# LIC-022, LIC-035. Checked by scripts/check_catalog.py; the app's matching tests (TD-LIC-02)
-# and the Twin gate's license table are checked against it.
+# Rules: CARD-001, LIC-012, LIC-013, LIC-014, LIC-016, LIC-017, LIC-021, LIC-022, LIC-035.
+# CARD-002 (neighbouring towns, same rules) and CARD-003 (no cap) are TD-LIC-02's property
+# tests, not rows here. Checked by scripts/check_catalog.py; the app's matching tests
+# (TD-LIC-02) and the Twin gate's license table are checked against it.
 #
 # Every business is active and verified. Fields:
 #   job:      category, candidates (the job types still possible), town, table (7.2's name)
@@ -39,7 +40,7 @@ examples:
     expected: {outcome: card, rules: [CARD-001, LIC-035], map_covers: true}
   - id: M04
     job: {category: plumbing_repair, candidates: [water heater replacement], town: Lake Havasu City, table: water heater replacement}
-    business: {roc: [], agencies: [], handyman: true, city_list: true, ticked: [leak repair, faucet replacement], towns: [Lake Havasu City]}
+    business: {roc: [], agencies: [], handyman: true, city_list: true, ticked: [water heater replacement], towns: [Lake Havasu City]}
     expected: {outcome: no_card, rules: [LIC-022], map_covers: null}
   - id: M05
     job: {category: plumbing_repair, candidates: [faucet replacement], town: Lake Havasu City, table: faucet repair}
@@ -47,7 +48,7 @@ examples:
     expected: {outcome: card, rules: [CARD-001, LIC-019], map_covers: null, condition: quote must be under $1,000}
   - id: M06
     job: {category: appliance_repair, candidates: ["gas appliance repair (gas dryer, range or oven)"], town: Lake Havasu City, table: gas dryer}
-    business: {roc: [], agencies: [], handyman: true, city_list: true, ticked: [dryer], towns: [Lake Havasu City]}
+    business: {roc: [], agencies: [], handyman: true, city_list: true, ticked: ["gas appliance repair (gas dryer, range or oven)"], towns: [Lake Havasu City]}
     expected: {outcome: no_card, rules: [LIC-021], map_covers: null}
   - id: M07
     job: {category: electrical, candidates: [outlet repair], town: Lake Havasu City, table: outlet repair}
