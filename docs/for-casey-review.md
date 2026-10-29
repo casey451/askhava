@@ -1080,3 +1080,17 @@ You said "do what you recommend". What changed:
 - **Cut:** the AI receptionist plan and the Ruby answering service. Fixed costs stay near $150 a month or less.
 
 Held for one re-plan pass after the test, so the plan changes once on real numbers: the scope cut (team members, the monthly fee limit, the live license lookup, the full restore replay, the switched-off features) and the fee level. Your before-build list is `docs/PREBUILD.md` section 3.
+
+## Fix round 16: ChatGPT's stress test of the hand-run test (D-468, October 28)
+
+ChatGPT found the test's weak spot: a business saying "it would have been worth $25" isn't the same as paying $25. What changed in `docs/pilot/hand-run-test.md`:
+- **Real money in weeks 4 to 6.** In the trades you push, a picked business pays the real fee by payment link before getting the homeowner's details. No free first win during the test. Gate P needs at least 5 different businesses to have paid.
+- **The LLC, EIN and Stripe start now,** with the test, so the paid weeks can happen.
+- **Honest demand.** Jobs from people you know are marked Seeded and used for practice; only Organic requests (strangers who found Ask Hava) count as demand. Partner requests (property managers, hosts, realtors) are their own channel.
+- **Choice, not just a reply.** The scorecard looks at requests with 2 or more quotes, the slowest quarter of response times, and businesses that actually quote, not just sign up.
+- **Does Ask Hava work, or do you?** Weeks 1 to 3 you may nudge businesses; weeks 4 to 6 you don't, and the two are compared. Every nudge is logged.
+- **Your time** is counted per request, and should settle near 5 hours a week.
+- **A winter test.** The result says "winter Havasu, in these trades", not the whole year.
+- **Privacy.** Homeowner details are deleted from the sheet and inbox 90 days after the test.
+
+In the build: the scorecard adds the same measures, the crowding flag shows quotes per win, and the home page waits for 50 requests before showing any numbers. All trades stay open, as you decided; the pushed trades are the ones judged.
