@@ -3,6 +3,8 @@
 #[tokio::main]
 async fn main() {
     let app = core_spike::router();
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.expect("bind");
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind");
     drop((app, listener));
 }
