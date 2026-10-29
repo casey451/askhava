@@ -67,6 +67,17 @@ class FakeEnv:
         self.pushes += 1
         return True
 
+    def update_state(self, transform: Callable[[st.State], st.State | None]) -> st.State | None:
+        """GitHubEnv.update_state over the fake store: read fresh, transform, push; five tries (D-514)."""
+        for _ in range(5):
+            fresh = self.read_state()
+            new = transform(copy.deepcopy(fresh))
+            if new is None:
+                return None
+            if new == fresh or self.push_state(new, fresh):
+                return new
+        return None
+
     def read_inbox(self) -> list[tuple[str, str, str]]:
         return list(self.inbox)
 
@@ -801,3 +812,75 @@ def test_drill_a_rejected_branch_push_blocks_the_task_and_frees_the_lease(tmp_pa
     assert t1["status"] == st.BLOCKED and "push rejected" in t1["reason"]
     assert env.store["lease"] is None
     assert st.eligible(env.store, NOW) == ["T002"]
+
+
+# ---- D-514 drills: safe writes (update_state) for renew and the final lease release
+
+
+def _rival_records_inbox(env: FakeEnv, tmp_path: Path, at: datetime) -> None:
+    """A second session's cycle while the lease is live: it records an inbox answer and exits lease_live."""
+    env.inbox = [("6-1", "T127", "hello")]
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path, "rival"), env, at) == "lease_live"
+
+
+def test_drill_a_rival_write_before_the_final_release_keeps_both_writes(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    real_push = env.push_branch
+
+    def push_then_rival(branch: str, head: str) -> bool:
+        _rival_records_inbox(env, tmp_path, NOW + timedelta(minutes=1))
+        return real_push(branch, head)
+
+    env.push_branch = push_then_rival  # type: ignore[method-assign]  # reason: a rival writes mid-finish
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    assert st.status(env.store, "T001") == st.MERGE_PENDING and env.store["lease"] is None
+    assert st.entry(env.store, "T001")["reviewed_sha"] == "good0001"
+    assert env.store["owner_answers"][0]["note"] == "hello" and env.store["inbox_processed"] == ["6-1"]
+
+
+def test_drill_the_final_release_gives_up_when_the_lease_moved_on(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+
+    def lease_taken(branch: str, head: str) -> bool:
+        env.store = st.with_lease(env.store, "1", {"task": "T001", "session": "other", "expires": "2026-11-01T18:00:00Z"})
+        return True
+
+    env.push_branch = lease_taken  # type: ignore[method-assign]  # reason: another session holds the lease now
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+    assert env.store["lease"]["session"] == "other" and st.status(env.store, "T001") == st.IN_PROGRESS
+
+
+def test_drill_heartbeat_renews_on_the_fresh_state_after_a_rival_write(tmp_path: Path) -> None:
+    env = FakeEnv()
+    clock = {"now": NOW}
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        _rival_records_inbox(env, tmp_path, NOW + timedelta(minutes=10))
+        clock["now"] = NOW + timedelta(minutes=31)
+        heartbeat()
+        assert env.store["lease"]["expires"] == "2026-11-01T15:31:00Z"
+        return good(task, model)
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    assert env.store["owner_answers"][0]["note"] == "hello" and env.store["lease"] is None
+
+
+def test_drill_heartbeat_leaves_a_lost_lease_alone(tmp_path: Path) -> None:
+    env = FakeEnv()
+    clock = {"now": NOW}
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        env.store = st.with_lease(env.store, "1", {"task": "T001", "session": "other", "expires": "2026-11-01T18:00:00Z"})
+        clock["now"] = NOW + timedelta(minutes=31)
+        pushes = env.pushes
+        heartbeat()
+        assert env.pushes == pushes and env.store["lease"]["session"] == "other"
+        return good(task, model)
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"

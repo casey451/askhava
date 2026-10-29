@@ -43,10 +43,16 @@ class Env(Protocol):
     push_state(new, base) writes kit/state.json to claude/kit-state and returns False when the
     push is rejected. The real Env fetches and retries when only inbox/outbox files moved and
     returns False only if the state itself (the lease) changed (K0 review N2).
+
+    update_state(transform) reads the state fresh, applies transform (State -> State, or None to
+    give up) and pushes the result, reading and applying again up to 5 times when the push loses a
+    race; it returns the state it pushed (the fresh state when transform changed nothing) or None.
+    The transform re-checks its own preconditions on the fresh state each time (D-514).
     """
 
     def read_state(self) -> State: ...
     def push_state(self, new: State, base: State) -> bool: ...
+    def update_state(self, transform: Callable[[State], State | None]) -> State | None: ...
     def read_inbox(self) -> list[tuple[str, str, str]]:
         """New inbox files as (file id, outbox id, text); they stay until ack_inbox."""
         ...
@@ -101,6 +107,7 @@ class Config:
     pacer: Callable[[State, dict[str, Any], datetime], tuple[str, str | None, State]] | None = None  # scripts/pacing.py
     on_usage: Callable[[State, dict[str, Any], datetime], State] | None = None  # usage windows (scripts/pacing.py)
     owner_paths: tuple[str, ...] = ()  # .github/CODEOWNERS entries: a PR touching one waits for Casey (D-511)
+    lanes: int = 1  # kit/runner.json "lanes"; only lane "1" is ever claimed until a later stage (D-514)
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -257,7 +264,7 @@ def release_proven(state: State) -> State:
 def _auto_merge(state: State, env: Env, tid: str, head: str) -> State:
     """Turn on auto-merge only for the reviewed head under the task's lease (D-486); record the outcome."""
     task = st.entry(state, tid)
-    reason = verify.auto_merge_reason(state, str(task.get("branch", "")), head, state.get("lease"))
+    reason = verify.auto_merge_reason(state, str(task.get("branch", "")), head, st.leases_of(state))
     if reason:
         return st.with_task(state, tid, auto_merge={"enabled": False, "why": reason, "head": head})
     done, how = env.enable_auto_merge(str(task.get("branch", "")), head)
@@ -398,12 +405,14 @@ def _record_inbox(state: State, cfg: Config, items: list[tuple[str, str, str]], 
 
 
 def _adopt_orphan_pr(before: State, after: State, env: Env) -> State:
-    """A worker that died after opening a PR but before MERGE_PENDING: look at the PR, don't redo the work."""
-    lease = before.get("lease")
-    if not lease or st.status(before, lease["task"]) != st.IN_PROGRESS:
-        return after
-    if st.status(after, lease["task"]) == st.QUEUED and env.pr_for(lease["task"]) is not None:
-        return st.with_task(after, lease["task"], status=st.MERGE_PENDING)
+    """A worker that died after opening a PR but before MERGE_PENDING: look at the PR, don't redo the work.
+
+    Every lane's lease is looked at (D-514); with one lane that is the single lease, as before."""
+    for lease in st.leases_of(before).values():
+        if not lease or st.status(before, lease["task"]) != st.IN_PROGRESS:
+            continue
+        if st.status(after, lease["task"]) == st.QUEUED and env.pr_for(lease["task"]) is not None:
+            after = st.with_task(after, lease["task"], status=st.MERGE_PENDING)
     return after
 
 
@@ -524,12 +533,18 @@ def _work(cfg: Config, env: Env, claimed: State, task: dict[str, Any], now: date
     model = attempt_model(task, int(entry.get("attempts", 0)), cfg.models)
     current = {"state": claimed}
 
+    lane = st.lane_of(claimed, tid) or st.LANE_ONE
+
     def heartbeat() -> None:
+        """Renew when due, on the fresh state (update_state); a lease lost meanwhile is left alone."""
         moment = cfg.clock()
         if not st.renewal_due(current["state"], moment):
             return
-        renewed = st.renew(current["state"], tid, cfg.session, moment)
-        if env.push_state(renewed, current["state"]):
+        try:
+            renewed = env.update_state(lambda fresh: st.renew(fresh, tid, cfg.session, moment, lane))
+        except st.LeaseError:
+            return
+        if renewed is not None:
             current["state"] = renewed
 
     res = env.run_worker(task, model, str(entry.get("last_failure", "")), heartbeat)
@@ -573,33 +588,76 @@ def finish(
     pushed to claude/kit-state, then the branch, then the runner itself turns on auto-merge for exactly
     that head (so the merge is the runner's identity and starts workflows), then MERGE_PENDING (D-486)."""
     tid = task["id"]
+    lane = st.lane_of(state, tid) or st.LANE_ONE
     record = _history_entry(state, task, res, model, cfg)
     final = _after_worker(state, task, res, cfg, model, now)
     history = [*st.entry(state, tid).get("history", []), dict(record, result=st.status(final, tid))]
     final = _record_usage(st.with_task(final, tid, history=history), tid, model, res, now, cfg)
     if st.status(final, tid) == st.MERGE_PENDING:
-        review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(state.get("lease")), "branch": res.branch}
+        review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(st.lease_in(state, lane)), "branch": res.branch}
         reviewed = st.with_task(state, tid, **review)
         if not env.push_state(reviewed, state):
             return "lost_race"
         if not env.push_branch(res.branch, res.head_sha):
-            return _push_failed(env, reviewed, tid)
+            return _push_failed(env, reviewed, tid, lane)
         merged = _auto_merge(reviewed, env, tid, res.head_sha)
         state, final = reviewed, st.with_task(final, tid, **review, auto_merge=st.entry(merged, tid)["auto_merge"])
-    final["lease"] = None
-    if not env.push_state(final, state):
+    final = st.with_lease(final, lane, None)
+    if env.update_state(_release_onto(state, final, (tid, lane, cfg.session))) is None:
         return "lost_race"
     return str(st.entry(final, tid)["status"])
 
 
-def _push_failed(env: Env, state: State, tid: str) -> str:
+def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Callable[[State], State | None]:
+    """The transform for finish's last write, the lease release (update_state, D-514).
+
+    On an unchanged state it is `final` itself. When another writer moved the state meanwhile (an
+    inbox record, a graph sync), it applies only what finish changed (the keys and task entries that
+    differ from `base`) onto the fresh state, and only while this session still holds the task's
+    lane lease and the task's status is still the one finish started from; otherwise it gives up."""
+    tid, lane, session = holder
+
+    def apply(fresh: State) -> State | None:
+        if fresh == base:
+            return final
+        held = st.lease_in(fresh, lane) or {}
+        if held.get("task") != tid or held.get("session") != session or st.status(fresh, tid) != st.status(base, tid):
+            return None
+        return st.with_lease(_ours_onto(base, final, fresh), lane, None)
+
+    return apply
+
+
+def _ours_onto(base: State, ours: State, fresh: State) -> State:
+    """`fresh` with every top-level key and task entry that `ours` changed from `base` taken from `ours`."""
+    out = copy.deepcopy(fresh)
+    for key in (set(base) | set(ours)) - {"tasks", "lease", "leases"}:
+        if key in ours and ours[key] != base.get(key):
+            out[key] = copy.deepcopy(ours[key])
+        elif key not in ours and key in base:
+            out.pop(key, None)
+    before = {t["id"]: t for t in base["tasks"]}
+    for task in ours["tasks"]:
+        if before.get(task["id"]) != task:
+            out = _put_task(out, task)
+    return out
+
+
+def _put_task(state: State, task: dict[str, Any]) -> State:
+    """`state` with the task's entry replaced whole (appended when the state lacks it)."""
+    tasks = [copy.deepcopy(task) if t["id"] == task["id"] else t for t in state["tasks"]]
+    if not any(t["id"] == task["id"] for t in state["tasks"]):
+        tasks.append(copy.deepcopy(task))
+    return dict(state, tasks=tasks)
+
+
+def _push_failed(env: Env, state: State, tid: str, lane: str = st.LANE_ONE) -> str:
     """A rejected branch push is a credential or permission problem, not the worker's: retrying would
     spend a whole attempt to fail the same way. The task is BLOCKED with the reason (only its dependents
     wait), the lease is released at once and the build moves on; a person fixes the cause and re-queues
     the task (D-513)."""
     reason = "branch push rejected; fix the push credential, then set the task back to QUEUED"
-    blocked = st.with_task(state, tid, status=st.BLOCKED, reason=reason)
-    blocked["lease"] = None
+    blocked = st.with_lease(st.with_task(state, tid, status=st.BLOCKED, reason=reason), lane, None)
     return "push_failed" if env.push_state(blocked, state) else "lost_race"
 
 

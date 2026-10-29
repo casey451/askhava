@@ -8,7 +8,9 @@ in a session it fails closed and the cycle reports it.
 Where things live:
   - `claude/kit-state`: kit/state.json, STATUS.md, PROGRESS.md, outbox/, inbox/, kit/nightly.json and
     kit/owner_answers.jsonl (governance section 8);
-  - `claude/lease`: one file, lease.json = {"lease": {task, session, expires} | null, "seq": n}. Every
+  - `claude/lease`: one file, lease.json = {"lease": {task, session, expires} | null, "leases": {lane:
+    {task, session, expires, lane} | null}, "seq": n}; `lease` is lane "1" (runner/state.py, D-514) and a
+    file without `leases` (written before D-514) reads as lane "1" holding `lease`. Every
     state push writes a new lease commit and pushes both refs with `git push --atomic`, so the lease
     ref is the lock (BUILD_BRIEF.md:221): notify, inbox and nightly push only to claude/kit-state and
     never race it. When the atomic push is rejected, the runner fetches; if the lease ref and
@@ -40,9 +42,11 @@ from __future__ import annotations
 import glob
 import json
 import os
+import random
 import shlex
 import subprocess
 import tempfile
+import time
 from collections.abc import Callable, Iterable
 from datetime import datetime, timezone
 from pathlib import Path
@@ -59,6 +63,7 @@ NIGHTLY_FILE = "kit/nightly.json"
 RUNNER_LOG = "kit/runner_log.jsonl"  # one JSON line per cycle, the last 200 kept (D-499)
 ANSWERS_FILE = "kit/owner_answers.jsonl"
 PUSH_RETRIES = 3
+UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-514)
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
 HEARTBEAT_SECONDS = 60
 ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
@@ -187,6 +192,7 @@ class GitHubEnv:
         self.last_state: State | None = None
         self.log: list[str] = []
         self._progress: dict[str, str] = {}
+        self.sleep: Callable[[float], None] = time.sleep  # update_state's wait between tries; tests replace it
 
     # ---- git plumbing
 
@@ -242,8 +248,11 @@ class GitHubEnv:
         state: State = json.loads(raw)
         lease_raw = self._show(self.lease_head, LEASE_FILE)
         if lease_raw is not None:
-            state["lease"] = json.loads(lease_raw).get("lease")
+            doc = json.loads(lease_raw)
+            state["lease"] = doc.get("lease")
+            state["leases"] = doc.get("leases") if isinstance(doc.get("leases"), dict) else {}
         state.pop("lease_on", None)
+        state = st.with_leases_map(state)  # `leases` always present, lane "1" taken from `lease` (D-514)
         self.first_state = self.first_state or json.loads(json.dumps(state))
         self.last_state = state
         return state
@@ -255,6 +264,7 @@ class GitHubEnv:
     def _state_files(self, new: State, base: State) -> tuple[dict[str, str], list[str]]:
         now = self.clock()
         stamped = dict(new, runner_sha=self.runner_sha, starter=self.starter, updated_at=st.iso(now), lease=None, lease_on=self.lease_ref)
+        stamped.pop("leases", None)  # the lanes live in lease.json only, like the lease (D-514)
         pace = self.pacing_line(new) if self.pacing_line else ""
         status = render_status(stamped | {"lease": new.get("lease")}, self.progress_markdown(new), now, pace)
         writes = {STATE_FILE: json.dumps(stamped, indent=1) + "\n", "STATUS.md": status}
@@ -279,7 +289,8 @@ class GitHubEnv:
         for _ in range(PUSH_RETRIES):
             writes, removes = self._state_files(new, base)
             state_commit = self._commit(self.state_head, writes, removes, self._trailers("state"))
-            lease_doc = {"lease": new.get("lease"), "seq": self._lease_seq() + 1, "runner_sha": self.runner_sha, "starter": self.starter}
+            lease_doc = {"lease": new.get("lease"), "leases": st.leases_of(new), "seq": self._lease_seq() + 1,
+                         "runner_sha": self.runner_sha, "starter": self.starter}
             lease_commit = self._commit(self.lease_head, {LEASE_FILE: json.dumps(lease_doc, indent=1) + "\n"}, [], self._trailers("lease"))
             if self._push_atomic(state_commit, lease_commit):
                 self.state_head, self.lease_head = state_commit, lease_commit
@@ -290,6 +301,26 @@ class GitHubEnv:
             if not self._only_side_files_moved():
                 return False
         return False
+
+    def update_state(self, transform: Callable[[State], State | None]) -> State | None:
+        """Read fresh, transform, push atomically; on a lost race wait a moment and do it again (D-514).
+
+        Up to UPDATE_ATTEMPTS tries with a short random wait between them, so two writers that collide
+        do not collide again in step. `transform` gets a fresh copy each time and must re-check its own
+        preconditions on it; None from it stops at once. Returns the state pushed (the fresh state when
+        the transform changed nothing, with nothing pushed) or None.
+        """
+        for attempt in range(UPDATE_ATTEMPTS):
+            fresh = self.read_state()
+            new = transform(json.loads(json.dumps(fresh)))
+            if new is None:
+                return None
+            if new == fresh or self.push_state(new, fresh):
+                return new
+            self.log.append(f"update_state: lost race {attempt + 1} of {UPDATE_ATTEMPTS}")
+            if attempt + 1 < UPDATE_ATTEMPTS:
+                self.sleep(random.uniform(0.5, 2.0) * (attempt + 1))
+        return None
 
     def _push_atomic(self, state_commit: str, lease_commit: str) -> bool:
         if self.dry_run:

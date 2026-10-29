@@ -495,3 +495,91 @@ def test_task_branch_push_uses_the_push_token(monkeypatch: pytest.MonkeyPatch) -
     assert "RUNNER_PUSH_TOKEN" in env["GIT_CONFIG_VALUE_2"] and "fake-push-token" not in env["GIT_CONFIG_VALUE_2"]
     assert github_env._env_for(["git", "push", "--porcelain", "origin", "abc:refs/heads/claude/kit-state"]) is None
     assert github_env._env_for(["git", "fetch", "https://github.com/o/r.git"]) is None
+
+
+# ---- D-514: the lane map in lease.json, and update_state over real git
+
+
+def push_lease_file(repo: dict[str, Path], text: str) -> None:
+    """Write lease.json on claude/lease the way a runner from before D-514 would."""
+    seed = repo["seed"]
+    git(seed, "fetch", "-q", "origin", "claude/lease")
+    git(seed, "checkout", "-q", "-B", "lease-edit", "FETCH_HEAD")
+    (seed / "lease.json").write_text(text)
+    git(seed, "commit", "-qam", "old lease file")
+    git(seed, "push", "-q", "origin", "HEAD:claude/lease")
+    git(seed, "checkout", "-q", "claude/kit-state")
+
+
+def claimed_on_origin(repo: dict[str, Path], tmp_path: Path) -> GitHubEnv:
+    env = make_env(repo["a"], tmp_path)
+    base = env.read_state()
+    assert env.push_state(st.claim(st.with_task(base, "K10"), "K10", "session-a", NOW), base)
+    return env
+
+
+def test_lease_file_carries_the_lane_map_and_an_old_file_still_reads(repo: dict[str, Path], tmp_path: Path) -> None:
+    assert make_env(repo["a"], tmp_path).read_state()["leases"] == {"1": None}
+    claimed_on_origin(repo, tmp_path)
+    doc = json.loads(origin_file(repo, "claude/lease", "lease.json"))
+    assert doc["leases"] == {"1": dict(doc["lease"], lane="1")}
+    assert "leases" not in json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    push_lease_file(repo, json.dumps({"lease": doc["lease"], "seq": doc["seq"]}))
+    state = make_env(repo["b"], tmp_path, "b").read_state()
+    assert state["lease"]["session"] == "session-a" and state["leases"] == {"1": dict(doc["lease"], lane="1")}
+
+
+def test_update_state_retries_after_a_lost_race(repo: dict[str, Path], tmp_path: Path) -> None:
+    env, rival = make_env(repo["a"], tmp_path), make_env(repo["b"], tmp_path, "b")
+    base = env.read_state()
+    assert env.push_state(st.with_task(base, "K10"), base)
+    waits: list[float] = []
+    env.sleep = waits.append  # no real waiting in tests
+    calls = {"n": 0}
+
+    def claim_k10(fresh: st.State) -> st.State:
+        calls["n"] += 1
+        if calls["n"] == 1:  # a rival moves the state and the lease ref between this read and this push
+            theirs = rival.read_state()
+            assert rival.push_state(st.with_task(theirs, "K11"), theirs)
+        return st.claim(fresh, "K10", "session-a", NOW)
+
+    assert env.update_state(claim_k10) is not None
+    assert calls["n"] == 2 and len(waits) == 1 and 0.5 <= waits[0] <= 2.0
+    stored = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    assert {t["id"] for t in stored["tasks"]} == {"K10", "K11"}
+    assert json.loads(origin_file(repo, "claude/lease", "lease.json"))["lease"]["session"] == "session-a"
+
+
+def test_update_state_gives_up_after_five_lost_races(repo: dict[str, Path], tmp_path: Path) -> None:
+    env, rival = make_env(repo["a"], tmp_path), make_env(repo["b"], tmp_path, "b")
+    waits: list[float] = []
+    env.sleep = waits.append  # no real waiting in tests
+    calls = {"n": 0}
+
+    def always_beaten(fresh: st.State) -> st.State:
+        calls["n"] += 1
+        theirs = rival.read_state()
+        assert rival.push_state(dict(theirs, rival_note=calls["n"]), theirs)
+        return dict(fresh, mine=True)
+
+    assert env.update_state(always_beaten) is None
+    assert calls["n"] == 5 and len(waits) == 4
+    assert all(0.5 * (i + 1) <= w <= 2.0 * (i + 1) for i, w in enumerate(waits))
+    stored = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    assert "mine" not in stored and stored["rival_note"] == 5
+    assert env.update_state(lambda fresh: None) is None  # a transform that gives up pushes nothing
+
+
+def test_renew_command_renews_on_the_fresh_state(repo: dict[str, Path], tmp_path: Path) -> None:
+    env = claimed_on_origin(repo, tmp_path)
+    rival = make_env(repo["b"], tmp_path, "b")
+    theirs = rival.read_state()
+    assert rival.push_state(st.with_task(theirs, "K11"), theirs)  # the state moved since session-a's claim
+    later = NOW + timedelta(minutes=31)
+    cfg = cycle.Config([TASK], MODELS, [], [], env.outbox_dir, "session-a", lambda: later)
+    assert entry.renew(cfg, env) == "renewed"
+    doc = json.loads(origin_file(repo, "claude/lease", "lease.json"))
+    assert doc["lease"]["expires"] == "2026-11-01T15:31:00Z" and doc["leases"]["1"] == dict(doc["lease"], lane="1")
+    stranger = cycle.Config([TASK], MODELS, [], [], env.outbox_dir, "nobody", lambda: later)
+    assert entry.renew(stranger, env).startswith("renew_refused")

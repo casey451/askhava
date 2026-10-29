@@ -2,7 +2,14 @@
 
 The state is a dict as kept on claude/kit-state:
     {"schema": 1, "lease": {"task", "session", "expires"} | None, "build_hold": str | None,
+     "leases": {"1": {"task", "session", "expires", "lane"} | None, "2": ..., "fix": ...},
      "tasks": [{"id", "deps", "status", "attempts", ...}, ...], ...other keys kept as they are}
+Lanes (D-514): `leases` holds one lease per lane ("1", "2", ... and "fix", reserved for FIX-MAIN).
+Lane "1" is also kept in the old top-level `lease` key, without its "lane" field, so every reader
+that knows only `lease` keeps working; `lease` is what lane "1" reads, and every writer goes
+through `with_lease`, which keeps the two in step. A state without `leases` (written before D-514)
+reads as lane "1" holding `lease`, and stays in that old shape while only lane "1" is written.
+The lane count is `lanes` in kit/runner.json (1 for now: one task in flight, BUILD_BRIEF.md:222).
 Times are UTC ISO strings ending in "Z". Every function returns a new state; nothing mutates
 its argument. Keys this runner adds (D-486, kit/state_schema.json): `main_red` (falsy, or the failing
 check, SHA and offending merge: docs/governance.md section 5), `stage_proofs`, `smoke_runs`,
@@ -42,6 +49,7 @@ class LeaseError(Exception):
 
 
 def new_state() -> State:
+    """An empty state in the pre-D-514 shape; `leases` is added by the first write that needs it."""
     return {"schema": 1, "lease": None, "build_hold": None, "tasks": []}
 
 
@@ -94,66 +102,154 @@ def sync_graph(state: State, graph: list[Task]) -> State:
     return out
 
 
-def live_lease(state: State, now: datetime) -> Task | None:
+LANE_ONE = "1"  # the lane mirrored by the top-level `lease` key (D-514)
+FIX_LANE = "fix"  # reserved for FIX-MAIN; never counted against `lanes` (D-514)
+
+
+def lane_ok(lane: str) -> bool:
+    """A lane name is "fix" or a whole number from 1."""
+    return lane == FIX_LANE or (lane.isdigit() and int(lane) >= 1)
+
+
+def leases_of(state: State) -> dict[str, Task | None]:
+    """Every lane's lease as {lane: {task, session, expires, lane} | None}; lane "1" always first.
+
+    Lane "1" is read from `lease`, so a state written before D-514 (no `leases`) loads as lane "1"
+    holding its lease, and a stray `leases["1"]` can never disagree with what old readers see.
+    """
     lease = state.get("lease")
+    out: dict[str, Task | None] = {LANE_ONE: dict(lease, lane=LANE_ONE) if lease else None}
+    stored = state.get("leases")
+    for lane, held in stored.items() if isinstance(stored, dict) else ():
+        if str(lane) != LANE_ONE:
+            out[str(lane)] = copy.deepcopy(held) if held else None
+    return out
+
+
+def lease_in(state: State, lane: str = LANE_ONE) -> Task | None:
+    """The lease stored for one lane, live or not; lane "1" is the `lease` value itself."""
+    if lane == LANE_ONE:
+        held: Task | None = state.get("lease")
+        return held
+    return leases_of(state).get(lane)
+
+
+def with_lease(state: State, lane: str, lease: Task | None) -> State:
+    """A copy with `lane` holding `lease` (None frees it) and `lease` kept as the mirror of lane "1".
+
+    A state without `leases` keeps its old shape while only lane "1" is written; the first write
+    to another lane adds the map (the real Env adds it on every read, runner/github_env.py).
+    """
+    if not lane_ok(lane):
+        raise LeaseError(f"{lane!r} is not a lane")
+    out = copy.deepcopy(state)
+    value = dict(lease, lane=lane) if lease else None
+    if lane == LANE_ONE:
+        out["lease"] = {k: v for k, v in value.items() if k != "lane"} if value else None
+    if "leases" in state or lane != LANE_ONE:
+        out["leases"] = {**leases_of(state), lane: value}
+    return out
+
+
+def with_leases_map(state: State) -> State:
+    """A copy that carries `leases` (derived from `lease` when missing), the shape the real Env loads."""
+    out = copy.deepcopy(state)
+    out["leases"] = leases_of(state)
+    return out
+
+
+def live_lease(state: State, now: datetime, lane: str = LANE_ONE) -> Task | None:
+    """The lane's lease while it has not expired; for lane "1" the `lease` value itself."""
+    lease = lease_in(state, lane)
     if lease and parse(lease["expires"]) > now:
         held: Task = lease
         return held
     return None
 
 
+def live_leases(state: State, now: datetime) -> dict[str, Task]:
+    """{lane: lease} for every lane whose lease has not expired, lane "1" first."""
+    return {lane: lease for lane, lease in leases_of(state).items() if lease and parse(lease["expires"]) > now}
+
+
+def free_lanes(state: State, now: datetime, lanes: int) -> list[str]:
+    """The numbered lanes "1" to `lanes` with no live lease, in order; "fix" is never one of them."""
+    held = live_leases(state, now)
+    return [str(n) for n in range(1, max(lanes, 0) + 1) if str(n) not in held]
+
+
+def lane_of(state: State, task_id: str) -> str | None:
+    """The lane whose lease (live or not) names the task, or None."""
+    return next((lane for lane, lease in leases_of(state).items() if lease and lease.get("task") == task_id), None)
+
+
 def _lease_for(task_id: str, session: str, now: datetime) -> Task:
     return {"task": task_id, "session": session, "expires": iso(now + timedelta(hours=LEASE_HOURS))}
 
 
-def claim(state: State, task_id: str, session: str, now: datetime) -> State:
-    """Claim a task. One task is in flight at a time (BUILD_BRIEF.md:222)."""
-    held = live_lease(state, now)
+def _claim_refusal(state: State, task_id: str, now: datetime, lane: str) -> str:
+    """Why a claim of the task on this lane must not go ahead; '' when it may."""
+    held = live_lease(state, now, lane)
     if held is not None:
-        raise LeaseError(f"lease on {held['task']} is live")
+        return f"lease on {held['task']} is live"
+    other = next((n for n, lease in live_leases(state, now).items() if lease.get("task") == task_id), None)
+    if other is not None:
+        return f"{task_id} already holds lane {other}"
     for task in state["tasks"]:
         if task.get("status") == MERGE_PENDING:
-            raise LeaseError(f"{task['id']} is MERGE_PENDING; nothing new is claimed")
+            return f"{task['id']} is MERGE_PENDING; nothing new is claimed"
     if status(state, task_id) not in RETRYABLE:
-        raise LeaseError(f"{task_id} is {status(state, task_id)}, not claimable")
+        return f"{task_id} is {status(state, task_id)}, not claimable"
+    return ""
+
+
+def claim(state: State, task_id: str, session: str, now: datetime, lane: str = LANE_ONE) -> State:
+    """Claim a task on a lane. With one lane, one task is in flight at a time (BUILD_BRIEF.md:222)."""
+    refusal = _claim_refusal(state, task_id, now, lane)
+    if refusal:
+        raise LeaseError(refusal)
     out = with_task(state, task_id, status=IN_PROGRESS, attempt_started_at=iso(now))
-    out["lease"] = _lease_for(task_id, session, now)
+    out = with_lease(out, lane, _lease_for(task_id, session, now))
     out["current"] = task_id
     return out
 
 
-def renew(state: State, task_id: str, session: str, now: datetime) -> State:
-    lease = state.get("lease")
+def renew(state: State, task_id: str, session: str, now: datetime, lane: str = LANE_ONE) -> State:
+    """Set the lane's lease to three hours from now, only for the session that holds it."""
+    lease = lease_in(state, lane)
     if not lease or lease["task"] != task_id or lease["session"] != session:
         raise LeaseError(f"{session} does not hold the lease on {task_id}")
     if parse(lease["expires"]) <= now:
         raise LeaseError("lease already expired; the task went back to the queue")
-    out = copy.deepcopy(state)
-    out["lease"] = _lease_for(task_id, session, now)
-    return out
+    return with_lease(state, lane, _lease_for(task_id, session, now))
 
 
-def renewal_due(state: State, now: datetime) -> bool:
+def renewal_due(state: State, now: datetime, lane: str = LANE_ONE) -> bool:
     """True once 30 minutes have passed since the lease was last set (it lasts 3 hours)."""
-    lease = state.get("lease")
+    lease = lease_in(state, lane)
     if not lease:
         return False
     renewed = parse(lease["expires"]) - timedelta(hours=LEASE_HOURS)
     return now - renewed >= timedelta(minutes=RENEW_MINUTES)
 
 
-def release_expired(state: State, now: datetime) -> State:
-    """Lease expired with no PR: back to the queue, branch kept (BUILD_BRIEF.md:271)."""
-    lease = state.get("lease")
-    if not lease or parse(lease["expires"]) > now:
-        return state
+def _release_lane(state: State, lane: str, lease: Task) -> State:
+    """Free one lane; its task, if still IN_PROGRESS, goes back to the queue with the lease kept as evidence."""
     task_id = lease["task"]
     stale = list(entry(state, task_id).get("stale_leases", [])) + [lease]
     out = state
     if status(state, task_id) == IN_PROGRESS:
         out = with_task(state, task_id, status=QUEUED, stale_leases=stale)
-    out = copy.deepcopy(out)
-    out["lease"] = None
+    return with_lease(out, lane, None)
+
+
+def release_expired(state: State, now: datetime) -> State:
+    """Each lane whose lease expired with no PR: back to the queue, branch kept (BUILD_BRIEF.md:271)."""
+    out = state
+    for lane in leases_of(state):
+        lease = lease_in(state, lane)
+        if lease and parse(lease["expires"]) <= now:
+            out = _release_lane(out, lane, lease)
     return out
 
 

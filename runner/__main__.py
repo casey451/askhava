@@ -125,7 +125,8 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
 
     cfg = cycle.Config(kit["tasks"], kit["models"], kit["protected_paths"], kit["shared_paths"], outbox_dir,
                        session_id(args, starter), now_utc, gate, pacing.make_pacer(kit["tasks"], ROOT), pacing.usage_recorder(ROOT),
-                       owner_paths(ROOT / ".github" / "CODEOWNERS") if owner_review(ROOT / "kit" / "runner.json") else ())
+                       owner_paths(ROOT / ".github" / "CODEOWNERS") if owner_review(ROOT / "kit" / "runner.json") else (),
+                       lanes(ROOT / "kit" / "runner.json"))
     return cfg, env
 
 
@@ -134,6 +135,15 @@ def owner_review(settings: Path) -> bool:
     if not settings.is_file():
         return True
     return bool(json.loads(settings.read_text(encoding="utf-8")).get("owner_review", True))
+
+
+def lanes(settings: Path) -> int:
+    """How many tasks may be in flight at once (D-514): kit/runner.json "lanes", 1 when unset or not a
+    whole number of at least 1. Only lane "1" is claimed until a later stage uses more."""
+    if not settings.is_file():
+        return 1
+    value = json.loads(settings.read_text(encoding="utf-8")).get("lanes", 1)
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 1 else 1
 
 
 def owner_paths(codeowners: Path) -> tuple[str, ...]:
@@ -151,13 +161,17 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
 
 
 def renew(cfg: cycle.Config, env: GitHubEnv) -> str:
+    """Renew this session's lease on the fresh state (update_state, D-514): the lane it holds, lane "1"
+    when it holds none (which st.renew then refuses)."""
     state = env.read_state()
-    lease = state.get("lease") or {}
+    held = st.leases_of(state)
+    lane = next((n for n, lease in held.items() if lease and lease.get("session") == cfg.session), st.LANE_ONE)
+    task = str((held.get(lane) or {}).get("task"))
     try:
-        renewed = st.renew(state, str(lease.get("task")), cfg.session, cfg.clock())
+        renewed = env.update_state(lambda fresh: st.renew(fresh, task, cfg.session, cfg.clock(), lane))
     except st.LeaseError as err:
         return f"renew_refused: {err}"
-    return "renewed" if env.push_state(renewed, state) else "lost_race"
+    return "renewed" if renewed is not None else "lost_race"
 
 
 def record_proof(args: argparse.Namespace, env: GitHubEnv) -> str:
@@ -192,7 +206,7 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
 
 
 def run(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
-    problems = check_state.check(env.read_state())
+    problems = check_state.check(env.read_state(), lanes=cfg.lanes)
     if problems:
         print("state_invalid: " + "; ".join(problems[:10]))
         return "state_invalid"
