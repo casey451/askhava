@@ -1,0 +1,438 @@
+# Run agent output, variant playbook. Fake data only. Rules: docs/catalog/expert/judges/intake_agent.md.
+# Policy used in every scenario: bank questions in order, skipped only when her own words answered them;
+# details question not asked (must-know facts covered without it); at most one follow-up; at most one photo ask.
+# The fixed 911 text is sent by code and is not in the repo; it appears below as a placeholder.
+category: plumbing_repair
+variant: playbook
+model: "claude-haiku-5-5"
+run: "run-2026-10-29"
+results:
+
+  - scenario_id: plumbing_repair_s01
+    transcript:
+      - {who: homeowner, text: "got a plumbing problem. can someone come look at it"}
+      - {who: intake, step: question, text: "What is it about? 1 Sink or faucet 2 Toilet 3 Shower or tub 4 Water heater 5 Pipe or line 6 Drain or sewer backup 7 Not sure"}
+      - {who: homeowner, text: "1"}
+      - {who: intake, step: question, text: "Where is the water showing up? 1 Under a sink 2 On the floor 3 On a wall or ceiling 4 Outside in the yard 5 No leak 6 Not sure"}
+      - {who: homeowner, text: "1 under the sink"}
+      - {who: intake, step: follow_up, text: "Does it drip all the time, or only when the water is running or draining? 1 All the time 2 Only when running 3 Only when draining 4 Not sure"}
+      - {who: homeowner, text: "1 all the time"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "3 cant. i tried last month and the handle wont turn"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "3 manufactured home. the cabinet floor under the sink is soft and has a dark stain"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo under the sink with the cabinet doors open?"}
+      - {who: homeowner, text: "no pics"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 6
+    follow_up_used: fu_drip_when
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: leak_slow, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Plumbing repair | Lake Havasu City, area not said | Manufactured home
+      Drip under the sink; water is on.
+      Drips: all the time. Shows at: under the sink. Valve: won't close (handle will not turn, tried last month).
+      Pipe and valves in sight: not sent. Floor: manufactured home. Homeowner adds: cabinet floor under the sink is soft and has a dark stain.
+      Photos: 0 (homeowner sent none).
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s02
+    transcript:
+      - {who: homeowner, text: "my sewer line is clogd. kitchen side wont drain at all, standing water in the sink, been like that since last nite"}
+      - {who: intake, step: question, text: "Where is the water showing up? 1 Under a sink 2 On the floor 3 On a wall or ceiling 4 Outside in the yard 5 No leak 6 Not sure"}
+      - {who: homeowner, text: "5 no leak, its just standing in the sink"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "2"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "1 concrete slab"}
+      - {who: intake, step: follow_up, text: "Is it just this one drain, or do other drains in the house back up or gurgle too? 1 Just this one 2 Two or three 3 All of them"}
+      - {who: homeowner, text: "1 just this one. both baths and the washer drain fine"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo under the sink with the cabinet doors open?"}
+      - {who: homeowner, text: "[photo] kitchen sink full of gray water, dish rack beside it"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 5
+    follow_up_used: fu_other_drains
+    skipped_bank_questions: [fixture]
+    routing: {category: plumbing_repair, job_type: clogged_drain, bank_job_type: "drain clearing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Plumbing repair | Lake Havasu City, area not said | Concrete slab home
+      Kitchen sink drain not draining; standing water in the sink since last night; only this drain.
+      Other drains: just this one. Tried: not said. Clogged before: not said.
+      Photos: 1 (kitchen sink full of gray water, dish rack beside it). Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s03
+    transcript:
+      - {who: homeowner, text: "I need someone to fix my toilet. it gurgles and burbles every time my washing machine drains. I think the toilet wax ring or the vent in it is shot"}
+      - {who: intake, step: question, text: "Where is the water showing up? 1 Under a sink 2 On the floor 3 On a wall or ceiling 4 Outside in the yard 5 No leak 6 Not sure"}
+      - {who: homeowner, text: "5. nothing has come up yet"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "2"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "4 not sure"}
+      - {who: intake, step: follow_up, text: "Is it just this one drain, or do other drains in the house back up or gurgle too? 1 Just this one 2 Two or three 3 All of them"}
+      - {who: homeowner, text: "2. the tub glugged twice this week too"}
+      - {who: intake, step: photo, text: "If you can, a photo of the sewer cleanout cap in the yard. No photo is fine too."}
+      - {who: homeowner, text: "theres a capped pipe in the front yard by the sidewalk side. no pic, cant get to it right now"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 5
+    follow_up_used: fu_other_drains
+    skipped_bank_questions: [fixture]
+    routing: {category: plumbing_repair, job_type: main_line_backup, bank_job_type: "drain clearing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Plumbing repair | Lake Havasu City, area not said | House (type not said)
+      Toilet gurgles when the washer drains; no water has come up yet.
+      Drains affected: two or three (toilet and tub). Neighbors: not said. Yard cleanout: capped pipe in the front yard by the sidewalk side, described by homeowner, no photo.
+      Inside the home: none. Floor: not sure.
+      Photos: 0. Homeowner adds: tub glugged twice this week.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s04
+    transcript:
+      - {who: homeowner, text: "need a plumber my washing machine wont drain, water just sits in the drum. i think the drain pipe in the wall is clogged"}
+      - {who: intake, step: read, text: "Is this about your washing machine or the drain pipe in the wall? 1 Washing machine 2 Drain pipe in the wall 3 Not sure"}
+      - {who: homeowner, text: "1 the washer. water just sits in the drum"}
+      - {who: intake, step: question, text: "What brand? 1 Whirlpool or Maytag 2 GE 3 Samsung 4 LG 5 Frigidaire or Electrolux 6 Other 7 Not sure"}
+      - {who: homeowner, text: "7 not sure"}
+      - {who: intake, step: question, text: "Is an error code showing? 1 Yes 2 No 3 Not sure"}
+      - {who: homeowner, text: "3 not sure. it doesnt matter i think"}
+      - {who: intake, step: question, text: "About how old is it? 1 Under 5 years 2 5 to 10 years 3 Over 10 years 4 Not sure"}
+      - {who: homeowner, text: "2 about 6 years i think"}
+      - {who: intake, step: photo, text: "A photo of the display helps. No photo is fine too."}
+      - {who: homeowner, text: "[photo] front loader, door open, water in the drum. display reads OE"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: [appliance]
+    routing: {category: appliance_repair, job_type: washer, bank_job_type: "washer", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Freestanding appliance repair | Lake Havasu City, area not said | Washer (home type not said)
+      Washer will not drain; water stays in the drum.
+      Type: front-load (photo). Age: 5 to 10 years. Brand: not sure. Display: code OE (photo).
+      Photos: 1 (front loader, door open, water in the drum, display reads OE). Homeowner adds: not said.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s05
+    transcript:
+      - {who: homeowner, text: "toilet is leaking at the base, floor keeps getting wet. pic attached", photo: "[photo] bathroom floor, wet patch around the toilet base, folded towel on the floor"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "2 no, the toilet works, its just the base"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "1 concrete slab"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 2
+    follow_up_used: null
+    skipped_bank_questions: [fixture, leak_where]
+    routing: {category: plumbing_repair, job_type: toilet_issue, bank_job_type: "toilet repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Plumbing repair | Lake Havasu City, area not said | Concrete slab home
+      Toilet leaking at the base; floor around the toilet keeps getting wet.
+      Doing: water at base. Other drains gurgle: not said. New toilet on site: n/a.
+      Water now: on. Floor: concrete slab.
+      Photos: 1 (bathroom floor with a wet patch around the toilet base, a folded towel on the floor). Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s06
+    transcript:
+      - {who: homeowner, text: "I need my kitchen faucet replaced. already bought the new one. cant send pics im at work, just text me"}
+      - {who: intake, step: question, text: "Where is the water showing up? 1 Under a sink 2 On the floor 3 On a wall or ceiling 4 Outside in the yard 5 No leak 6 Not sure"}
+      - {who: homeowner, text: "5 no leak, its not leaking, were just replacing it"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "4 not sure. the valves under there havent been turned in years. whatever it takes"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "4 not sure"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the new faucet?"}
+      - {who: homeowner, text: "i said i cant send pics. im at work"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: [fixture]
+    routing: {category: plumbing_repair, job_type: fixture_replace, bank_job_type: "faucet replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Plumbing repair | Lake Havasu City, area not said | Kind of place not said
+      Replace the kitchen faucet; the new faucet is already bought; no leak.
+      New fixture: on site. Old fixture: not seen (no photo). Valves in sight: not seen; not turned in years, homeowner not sure they close.
+      Photos: 0 (homeowner cannot send photos).
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s07
+    transcript:
+      - {who: homeowner, text: "My daughter said to text this. the water bill came and it is three times what it always is. the city lady said I maybe have a leak. I dont know where"}
+      - {who: intake, step: question, text: "What is it about? 1 Sink or faucet 2 Toilet 3 Shower or tub 4 Water heater 5 Pipe or line 6 Drain or sewer backup 7 Not sure"}
+      - {who: homeowner, text: "7 not sure"}
+      - {who: intake, step: question, text: "Where is the water showing up? 1 Under a sink 2 On the floor 3 On a wall or ceiling 4 Outside in the yard 5 No leak 6 Not sure"}
+      - {who: homeowner, text: "6 I dont know where"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "2"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "1 concrete slab"}
+      - {who: intake, step: follow_up, text: "Have you noticed any of these? 1 Running toilet 2 Wet spot in the yard 3 Pool keeps filling 4 Irrigation at odd times 5 None of these"}
+      - {who: homeowner, text: "1 and 2. the back toilet runs a little all the time, i jiggle the handle. and a green wet spot in the front yard"}
+      - {who: intake, step: photo, text: "If you have checked the water meter with all water off, a photo of its face would help. No photo is fine too."}
+      - {who: homeowner, text: "i dont know how to do that. no pic"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 6
+    follow_up_used: fu_bill_signs
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: high_water_bill, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Plumbing repair | Lake Havasu City, area not said | House, concrete slab
+      Water bill about three times normal; signs: running toilet and a wet spot in the front yard.
+      Meter with everything off: not checked. Signs: running toilet (back toilet runs a little all the time) / wet yard spot. Floor: concrete slab. Irrigation or pool: not said.
+      Photos: 0. Homeowner adds: bill is three times what it always is.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s08
+    transcript:
+      - {who: homeowner, text: "hi im renting and my shower wont drain. my landlord said to get a quote and send it to him"}
+      - {who: intake, step: question, text: "Where is the water showing up? 1 Under a sink 2 On the floor 3 On a wall or ceiling 4 Outside in the yard 5 No leak 6 Not sure"}
+      - {who: homeowner, text: "5 no leak. just standing water in the shower"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "2 no"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "4 not sure, i dont know what its built on"}
+      - {who: intake, step: follow_up, text: "Is it just this one drain, or do other drains in the house back up or gurgle too? 1 Just this one 2 Two or three 3 All of them"}
+      - {who: homeowner, text: "2. the bathroom sink is slow too"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the shower drain area?"}
+      - {who: homeowner, text: "[photo] shower stall with about 2 inches of water standing over the drain"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 5
+    follow_up_used: fu_other_drains
+    skipped_bank_questions: [fixture]
+    routing: {category: plumbing_repair, job_type: clogged_drain, bank_job_type: "drain clearing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Plumbing repair | Lake Havasu City, area not said | Rental home (renter)
+      Shower drain not draining; standing water in the shower; bathroom sink also slow.
+      Other drains: two or three (bathroom sink slow). Tried: not said. Clogged before: not said.
+      Photos: 1 (shower stall with about 2 inches of standing water over the drain). Homeowner adds: renting; landlord asked for the quote to be sent to him.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s09
+    transcript:
+      - {who: homeowner, text: "Hola buenas tardes tengo una fuga debajo del fregadero de la cocina gotea todo el dia ya puse una cubeta y la tengo que vaciar dos veces al dia no se si me pueden ayudar"}
+      - {who: intake, step: question, text: "¿El agua está cerrada ahora? 1 Sí 2 No 3 No se puede cerrar 4 No sé"}
+      - {who: homeowner, text: "2 no. las llaves de abajo si giran pero no las he cerrado"}
+      - {who: intake, step: question, text: "¿Sobre qué tipo de piso está la casa? 1 Losa de concreto 2 Espacio bajo la casa 3 Casa prefabricada 4 No sé"}
+      - {who: homeowner, text: "3 casa prefabricada. el piso del gabinete esta blando y oscuro"}
+      - {who: intake, step: photo, text: "Una foto ayuda a que coticen. No es obligatoria. ¿Puede mandar una foto debajo del fregadero con las puertas abiertas?"}
+      - {who: homeowner, text: "[photo] debajo del fregadero, la cubeta, el tubo blanco de plastico y el piso del mueble oscuro e hinchado"}
+      - {who: intake, step: card, text: "Solicitud lista para su aprobación."}
+    questions_asked: 3
+    follow_up_used: null
+    skipped_bank_questions: [fixture, leak_where]
+    routing: {category: plumbing_repair, job_type: leak_slow, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Plumbing repair | Lake Havasu City, area not said | Manufactured home
+      Drip under the kitchen sink; bucket fills about twice a day; water is on.
+      Drips: all the time. Shows at: under the sink, bucket catching water (photo). Valve: not tried (homeowner says the valves turn).
+      Pipe and valves in sight: white plastic drain pipe; cabinet floor dark and swollen (photo). Floor: manufactured home.
+      Photos: 1 (open cabinet under kitchen sink, plastic bucket catching water, white plastic drain pipe, cabinet floor dark and swollen). Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s10
+    transcript:
+      - {who: homeowner, text: "HELP!!! TOILET OVERFLOWED ALL OVER THE BATHROOM FLOOR AND ITS SEWAGE!!! I DONT KNOW WHAT TO DO IM SCARED SOMETHING IS WRONG WITH THE WHOLE HOUSE"}
+      - {who: intake, step: question, text: "Got it. Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "2 NO i dont know!!"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "1 concrete slab"}
+      - {who: intake, step: follow_up, text: "Is it just this one drain, or do other drains in the house back up or gurgle too? 1 Just this one 2 Two or three 3 All of them"}
+      - {who: homeowner, text: "1 just the one toilet, nothing else is backing up"}
+      - {who: intake, step: photo, text: "A photo helps businesses quote. No photo is fine too. Can you send a photo of the bathroom floor?"}
+      - {who: homeowner, text: "[photo] bathroom floor, thin water around the toilet, bowl full, plunger on the floor"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 4
+    follow_up_used: fu_other_drains
+    skipped_bank_questions: [fixture, leak_where]
+    routing: {category: plumbing_repair, job_type: clogged_drain, bank_job_type: "drain clearing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Plumbing repair | Lake Havasu City, area not said | Concrete slab home
+      Toilet overflowed onto the bathroom floor; homeowner says sewage is on the floor.
+      Other drains: just this one. Tried: not said. Clogged before: not said.
+      Photos: 1 (bathroom floor with a thin layer of water around the toilet, bowl full, plunger on the floor). Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s11
+    transcript:
+      - {who: homeowner, text: "Hi, hoping to get a quote for a dripping valve under my bathroom sink, it has been slow for a month. Oh by the way there is a faint gas smell in the garage near the water heater since yesterday, probably nothing. Anyway about the sink"}
+      - {who: intake, step: 911, text: "[fixed INT-004 911 text, sent by code; text not in repo] Reply SAFE when you are safe."}
+      - {who: homeowner, text: "SAFE. ok its probably nothing lol. anyway the sink"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "2 no, the valve is on, i havent touched it"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "1 concrete slab"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo under the sink with the cabinet doors open?"}
+      - {who: homeowner, text: "[photo] shutoff valve under the bathroom sink, a drop hanging off the stem"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 3
+    follow_up_used: null
+    skipped_bank_questions: [fixture, leak_where]
+    routing: {category: plumbing_repair, job_type: leak_slow, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: true
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0111 | Plumbing repair | Lake Havasu City, area not said | Concrete slab home
+      Slow drip at the shutoff valve under the bathroom sink, about a month; water is on.
+      Drips: not said. Shows at: shutoff valve under the bathroom sink. Valve: not tried.
+      Pipe and valves in sight: shutoff valve with a drop hanging from the stem (photo). Floor: concrete slab.
+      Photos: 1 (shutoff valve under a bathroom sink, water drop hanging from the stem). Homeowner adds: faint gas smell in the garage near the water heater since yesterday.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
+
+  - scenario_id: plumbing_repair_s12
+    transcript:
+      - {who: homeowner, text: "I want to move my washer and dryer from the hallway closet into the garage. Need new water and drain lines out there and also a 240 outlet for the dryer"}
+      - {who: intake, step: read, text: "The 240 outlet is electrical and gets its own request. Plumbing first."}
+      - {who: intake, step: question, text: "Where is the water showing up? 1 Under a sink 2 On the floor 3 On a wall or ceiling 4 Outside in the yard 5 No leak 6 Not sure"}
+      - {who: homeowner, text: "5. no leak, were adding new lines"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "2 no, not needed"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "1 concrete slab"}
+      - {who: intake, step: follow_up, text: "About how far is the new spot from the nearest existing sink, toilet or washer hookup? 1 Same wall 2 Next room 3 Across the house or in the garage 4 Not sure"}
+      - {who: homeowner, text: "3. about 30 feet from the closet, garage wall"}
+      - {who: intake, step: photo, text: "If you can see any pipe now, a photo of it helps. No photo is fine too."}
+      - {who: homeowner, text: "no pics, nothing is visible out there yet"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 5
+    follow_up_used: fu_distance
+    skipped_bank_questions: [fixture]
+    routing: {category: plumbing_repair, job_type: fixture_add_move, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0112 | Plumbing repair | Lake Havasu City, area not said | Concrete slab home
+      Move the washer from the hallway closet to the garage; new water supply and drain lines; about 30 feet away.
+      Distance from existing lines: across the house or in the garage (about 30 feet). Floor: concrete slab.
+      Permit-type work: yes (added or relocated fixture, per template). Fixture: not said.
+      Photos: 0 (no photo sent). Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)", "permit-type line (template text, not said by homeowner)"]
+
+  - scenario_id: plumbing_repair_s13
+    transcript:
+      - {who: homeowner, text: "hey I'm in Parker, kitchen faucet drips constantly and the handle is loose. anyone who can come fix it"}
+      - {who: intake, step: coverage, text: "We don't cover Parker yet."}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: plumbing_repair_s14
+    transcript:
+      - {who: homeowner, text: "my insurance says I have to replace the gray plastic pipes in my house or they wont renew. its polybutylene. need a quote to repipe the whole house"}
+      - {who: intake, step: coverage, text: "We don't cover plumbing jobs yet. We've noted your request so we can add businesses."}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: repipe, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: plumbing_repair_s15
+    transcript:
+      - {who: homeowner, text: "water heater is shot. theres a wet spot at the bottom of it and a little puddle. need a new one installed, can you send a plumber"}
+      - {who: intake, step: follow_up, text: "Where exactly is the water coming from? 1 A hose or pipe 2 The bottom of a tank 3 Can't tell"}
+      - {who: homeowner, text: "2 the bottom of the tank i think. i havent looked at the pipe on the side"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "2 no"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "4 not sure"}
+      - {who: intake, step: photo, text: "A photo of where the water is coming from helps. No photo is fine too."}
+      - {who: homeowner, text: "[photo] water heater in garage corner, damp ring on the concrete at the bottom, copper pipe above it"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 4
+    follow_up_used: fu_where_exactly
+    skipped_bank_questions: [fixture, leak_where]
+    routing: {category: plumbing_repair, job_type: "water heater replacement", bank_job_type: "water heater replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0115 | Plumbing repair | Lake Havasu City, area not said | Home, water heater in the garage
+      Wet spot and a small puddle at the bottom of the water heater; homeowner wants a new one installed.
+      Drips: not said. Shows at: bottom of the tank. Valve: not said.
+      Pipe and tank in sight: water heater in a garage corner, damp ring on the concrete at its base, copper pipe above it (photo). Floor: not sure.
+      Photos: 1 (water heater in a garage corner, damp ring on the concrete at its base, copper pipe above it). Homeowner adds: wants a new one installed.
+      Licensed plumbers only (water heater replacement).
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)", "licensed-only line (category rule, not said by homeowner)"]
+
+  - scenario_id: plumbing_repair_s16
+    transcript:
+      - {who: homeowner, text: "is it normal for part of the floor in the hallway to feel warm? and i swear i hear water running at night"}
+      - {who: intake, step: question, text: "A business can look at it and tell you. What is it about? 1 Sink or faucet 2 Toilet 3 Shower or tub 4 Water heater 5 Pipe or line 6 Drain or sewer backup 7 Not sure"}
+      - {who: homeowner, text: "7 not sure. i dont know what to call it"}
+      - {who: intake, step: question, text: "Is the water shut off right now? 1 Yes 2 No 3 Can't shut it off 4 Not sure"}
+      - {who: homeowner, text: "4 not sure"}
+      - {who: intake, step: question, text: "What kind of floor is the home on? 1 Concrete slab 2 Crawl space 3 Manufactured home 4 Not sure"}
+      - {who: homeowner, text: "1 concrete slab"}
+      - {who: intake, step: follow_up, text: "Which of these have you noticed? 1 Warm spot on the floor 2 Sound of water with everything off 3 Wet floor by a wall 4 Higher water bill 5 More than one of these"}
+      - {who: homeowner, text: "5. warm spot and the sound. and the water bill went up last month too"}
+      - {who: intake, step: photo, text: "A photo of any water damage helps. No photo is fine too."}
+      - {who: homeowner, text: "no pic, sorry"}
+      - {who: intake, step: card, text: "Request ready for your approval."}
+    questions_asked: 5
+    follow_up_used: fu_warm_spot
+    skipped_bank_questions: [leak_where]
+    routing: {category: plumbing_repair, job_type: slab_leak, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0116 | Plumbing repair | Lake Havasu City, area not said | Concrete slab home
+      Warm spot on the hallway floor and a sound of running water at night.
+      Signs: warm spot, sound of water, higher water bill. Meter with everything off: not checked. Floor: concrete slab. Water now: not sure.
+      Photos: 0 (none sent). Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: ["town Lake Havasu City (coverage default; homeowner did not name it)"]
