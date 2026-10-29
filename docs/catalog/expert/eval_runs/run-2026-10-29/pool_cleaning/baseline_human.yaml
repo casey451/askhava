@@ -1,0 +1,595 @@
+category: pool_cleaning
+variant: baseline_human
+model: "claude-opus-5-5"
+run: "run-2026-10-29"
+notes: >-
+  The intake is played as the best pool-service estimator in Arizona (25 years, has priced thousands of
+  Lake Havasu routes, knows the heat, the dust storms, the palms and mesquite, hard water and what six
+  years of chlorine tabs does to stabilizer), texting one question at a time, with no question bank, no
+  expert file and no trade file. The estimator may say what they suspect and may give the advice a real
+  estimator would; the judge notes it, it does not count against this variant. The card holds the crew
+  notes (FACTS the homeowner gave or a photo showed, SUSPECT, ON SITE). The homeowner is played strictly
+  from the scenario: hidden facts only when a question clearly calls for them, "not sure" for anything
+  outside them, busy after max_questions plus 2. Coverage is assumed confirmed for Lake Havasu City
+  except in s12 (outside area) and s13 (no businesses), where the intake stops before any trade question
+  as intake_agent.md says. questions_asked counts every question and photo ask the estimator sent (not
+  the coverage line, not the gas-smell message, not the closing line). job_type values use the kb ids
+  named in the scenario file where they fit the estimator's own call. In s11 the palm trimming goes out
+  as a separate request in the extra key second_card, so the pool card stays pool only.
+results:
+  - scenario_id: pool_cleaning_s01
+    transcript:
+      - {who: homeowner, text: "somethings off with the pool"}
+      - {who: intake, text: "What's going on with it? Something not running, water looks bad, or you need someone to take care of it?", step: question}
+      - {who: homeowner, text: "need somebody every week"}
+      - {who: intake, text: "Got it, weekly service. Is the water clear right now, or cloudy or green?", step: question}
+      - {who: homeowner, text: "clear"}
+      - {who: intake, text: "How big is the pool, and is there a spa?", step: question}
+      - {who: homeowner, text: "medium. no spa"}
+      - {who: intake, text: "How does it get chlorine? Tablets, liquid, or a salt system?", step: question}
+      - {who: homeowner, text: "the salt box"}
+      - {who: intake, text: "Any trees or palms near the pool?", step: question}
+      - {who: homeowner, text: "two big palms. north side. fronds"}
+      - {who: intake, text: "Last one. Chemicals in the monthly price, or do you buy your own?", step: question}
+      - {who: homeowner, text: "i buy the salt. you do the rest"}
+      - {who: intake, text: "Thanks. Notes going out to the pool services.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0171 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - Weekly service wanted. Nothing reported broken.
+      - Water clear now.
+      - Medium pool, no spa.
+      - Salt system (owner calls it the salt box).
+      - Two big palms on the north side drop fronds.
+      - Owner buys his own salt; service supplies all other chemicals.
+      - Filter type not asked. No photo.
+      - Needed: not said.
+      SUSPECT
+      - Nothing wrong; a service gap. Palms mean heavy skimming and full baskets most weeks, more in frond season.
+      ON SITE
+      - First visit: full water test (salt level, CYA, calcium), inspect and clean the salt cell, note filter type and clean it.
+      - Quote weekly with chemicals except salt; add palm debris to the route time.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s02
+    transcript:
+      - {who: homeowner, text: "Hello dear we are looking for someone to take care of our pool when we are in town. We come down the first of November and go home the end of April. Can you help us?"}
+      - {who: intake, text: "Yes. Weekly visits November through April. What do you want done with the pool May through October while you're away?", step: question}
+      - {who: homeowner, text: "Oh, that's the question, isn't it. We honestly haven't decided what to do with it in the summer months. My husband says one thing and our son says another, and we go back and forth every spring. So we don't know yet, dear."}
+      - {who: intake, text: "That's fine. How big is the pool, and is there a spa with it?", step: question}
+      - {who: homeowner, text: "It's a small pool, and there's a little spa attached. We use the spa in the winter, it's the best part of coming down."}
+      - {who: intake, text: "Do you want chemicals included? And how does it get chlorine now?", step: question}
+      - {who: homeowner, text: "Yes, please include the chemicals, we don't want to fuss with it. We use those chlorine tablets in the little floating holder."}
+      - {who: intake, text: "Do you know the filter type? Sand or cartridge. It's usually on a label on the tank.", step: question}
+      - {who: homeowner, text: "It's a sand filter, dear."}
+      - {who: intake, text: "How will the tech get into the backyard? Is the gate locked, and any pets?", step: question}
+      - {who: homeowner, text: "There's a lockbox on the back gate with a code. We'd give it to whoever we choose. And our little dog stays out in the yard when we're home."}
+      - {who: intake, text: "Any chance of a photo of the pool and the equipment?", step: photo}
+      - {who: homeowner, text: "We're still up in Washington until the first, dear, so I can't right now. I'm sorry."}
+      - {who: intake, text: "No problem. Notes going out now for a November to April season.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0172 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - Seasonal: weekly service November through April only. Owners arrive the first of November, leave end of April.
+      - May through October: owners have not decided what to do with the pool. Not part of this request.
+      - Small pool with an attached spa; spa used in winter.
+      - Sand filter.
+      - Chlorine tablets in a floating feeder.
+      - Chemicals included.
+      - Back gate has a lockbox; code goes only to the chosen business.
+      - Small dog in the yard when owners are home.
+      - No photo yet; owners out of town until November.
+      - Needed: weekly from the first of November.
+      SUSPECT
+      - Pool sitting six summer months in Havasu heat with no one on it will probably need more than a normal first visit when they arrive, depending on what they decide.
+      ON SITE
+      - First visit: test the water and look at its condition before quoting the season; pool plus spa.
+      - Backwash the sand filter; check the floater tab supply and the spa side.
+      - Close the gate behind you; dog in the yard.
+      - Quote the November to April season; quote summer only if they ask.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s03
+    transcript:
+      - {who: homeowner, text: "I own a short term rental in Havasu with a pool. I need a pool service that can do a weekly visit plus a quick check between guest stays. I'm out of state so I can't send photos right now"}
+      - {who: intake, text: "Got it. How many extra visits for turnovers in a typical week, on top of the weekly?", step: question}
+      - {who: homeowner, text: "Usually one or two extra a week in summer, on top of the weekly visit."}
+      - {who: intake, text: "Pool size, and is there a spa? Any water trouble from guest use?", step: question}
+      - {who: homeowner, text: "Medium pool with an attached spa. Guests use the spa daily, and it gets cloudy fast. Sunscreen and hair, mostly."}
+      - {who: intake, text: "Salt or chlorine? And cartridge or sand filter?", step: question}
+      - {who: homeowner, text: "Salt system, cartridge filter."}
+      - {who: intake, text: "Chemicals included? And do you want a report after each visit?", step: question}
+      - {who: homeowner, text: "Yes, chemicals included. And I want a text or a note after each visit."}
+      - {who: intake, text: "How does the tech get in, and is anyone else working the turnovers?", step: question}
+      - {who: homeowner, text: "There's a lockbox on the side gate. I'll give the code only to the business I choose. A house cleaner is already booked and comes the same days."}
+      - {who: intake, text: "Can anyone local send a photo of the pool and the equipment?", step: photo}
+      - {who: homeowner, text: "A neighbor can send photos tomorrow."}
+      - {who: intake, text: "That works. Notes going out now; photos can follow.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0173 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - Short-term rental; owner lives out of state.
+      - Weekly visit plus extra visits at guest turnovers, usually one or two extra a week in summer.
+      - Medium pool with an attached spa; guests use the spa daily; spa gets cloudy fast (sunscreen, hair).
+      - Salt system, cartridge filter.
+      - Chemicals included.
+      - Wants a text or note after each visit.
+      - Side gate lockbox; code goes only to the chosen business.
+      - House cleaner already booked on the same days.
+      - No photos yet; a neighbor can send photos tomorrow.
+      - Needed: not said.
+      SUSPECT
+      - Daily rental spa use is the work here: bather load, oils and sunscreen. Expect frequent spa shocking, drains and cartridge cleanings well above a normal residential route.
+      ON SITE
+      - Price weekly plus per-turnover visits separately; summer can mean two to three visits a week.
+      - Check spa volume, cartridge condition and salt cell; plan a cartridge cleaning schedule.
+      - Coordinate turnover timing with the house cleaner; send the visit note each time.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s04
+    transcript:
+      - {who: homeowner, text: "pool went green over the weekend. need someone to come dump a bunch of shock in it and clean it up. its just the heat"}
+      - {who: intake, text: "How green? Can you see the steps or the floor?", step: question}
+      - {who: homeowner, text: "can see the first step. not the second"}
+      - {who: intake, text: "Is the pump running? Water coming out of the returns?", step: question}
+      - {who: homeowner, text: "pump hums when i flip the switch but it wont spin. hasnt run in like three weeks. anyway just need it shocked"}
+      - {who: intake, text: "That's the real problem. With no circulation, shock alone won't hold; the pump has to run first. How old is the pump?", step: question}
+      - {who: homeowner, text: "like 9 years"}
+      - {who: intake, text: "Size, spa, filter type, and how do you chlorinate?", step: question}
+      - {who: homeowner, text: "medium, no spa. cartridge. tabs. whatever, just get it clean"}
+      - {who: intake, text: "When do you need it by, and how does the tech get to the equipment?", step: question}
+      - {who: homeowner, text: "party in nine days. side gate, its not locked"}
+      - {who: intake, text: "Send me a pic of the water?", step: photo}
+      - {who: homeowner, text: "[photo: dark green water from the deck, a floating leaf or two, steps barely visible] thats it"}
+      - {who: intake, text: "Notes going out. The companies will see the pump isn't running, so they can price the pump side too.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: green_pool, bank_job_type: "green pool cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0174 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - One-time green pool cleanup. Homeowner asked for shock and clean-up; he says it's the heat.
+      - Can see the first step, not the second.
+      - Pump has not run in about three weeks; hums and does not spin when switched on.
+      - Pump about 9 years old.
+      - Medium pool, no spa, cartridge filter, chlorine tabs.
+      - Equipment through a side gate, not locked.
+      - Photo: dark green water from the deck, a floating leaf or two, steps barely visible.
+      - Needed: clean for a family party in nine days.
+      SUSPECT
+      - Green because nothing has circulated for three weeks, not the heat. Hum with no spin: start capacitor or seized motor. Shock without circulation will not clear it.
+      ON SITE
+      - Pump repair or replacement comes first or at the same visit (pool repair side); no point quoting the cleanup alone.
+      - Then: brush, heavy chlorine, run 24/7, clean the cartridge more than once, vacuum to waste, test CYA (tab user).
+      - Nine-day deadline is workable only if the pump is running in the first day or two.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s05
+    transcript:
+      - {who: homeowner, text: "need someone to rebalance my pool and recallibrate the chlorine, my test strip says the ph is way off and the alkaline is high. also the sand needs changing?"}
+      - {who: intake, text: "Is the water clear, or any green or cloudy?", step: question}
+      - {who: homeowner, text: "clear no algae"}
+      - {who: intake, text: "What do you use for chlorine, and for how long?", step: question}
+      - {who: homeowner, text: "3 inch tabs in a floater. been doing that 6 yrs"}
+      - {who: intake, text: "Has anyone ever tested the stabilizer, or has the pool ever been drained?", step: question}
+      - {who: homeowner, text: "never drained. nobody tested that"}
+      - {who: intake, text: "Six years of tabs usually pushes stabilizer way up, and strips don't read it well. We'd test it on site. What does the filter look like: a tank with a valve handle on top, or one that opens to cartridges inside?", step: question}
+      - {who: homeowner, text: "oh wait its cartridges. the old house had sand, my bad"}
+      - {who: intake, text: "Size, any spa, and how old is the pool and its surface?", step: question}
+      - {who: homeowner, text: "small no spa. about 15 yrs old, plaster"}
+      - {who: intake, text: "One visit to fix it, or ongoing service?", step: question}
+      - {who: homeowner, text: "one time first then maybe weekly"}
+      - {who: intake, text: "Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: one_time_clean, bank_job_type: "chemical balancing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0175 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - One-time chemical balancing visit first; may want weekly after.
+      - Homeowner's test strip shows pH way off and alkalinity high.
+      - Water clear, no algae.
+      - 3-inch chlorine tabs in a floating feeder for about six years.
+      - Never drained; stabilizer never tested.
+      - Cartridge filter (homeowner first said sand, corrected himself). Asked about changing the sand; it is a cartridge.
+      - Small pool, no spa, about 15 years old, plaster.
+      - No photo sent.
+      - Needed: not said.
+      SUSPECT
+      - Stabilizer likely very high after six years of tabs with no drain; that can make chlorine weak and may mean a partial drain and refill, not just a rebalance. Havasu fill water is hard, so calcium is likely high too.
+      ON SITE
+      - Full drop test: CYA, calcium hardness, TA, pH, chlorine. Don't trust the strip.
+      - If CYA is high, quote a partial drain and refill as an option; 15-year plaster, check surface condition before draining.
+      - Clean the cartridge; "change the sand" is probably a filter cleaning or cartridge replacement request.
+      - Suggest switching off tabs if weekly follows.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s06
+    transcript:
+      - {who: homeowner, text: "my pool looks green in pics, I think there's algae. want a pool guy to come every week and fix it"}
+      - {who: intake, text: "When you stand at the edge, can you see the floor and the main drain clearly?", step: question}
+      - {who: homeowner, text: "yeah actually the water is clear, I can see the drain. the green might be the plaster? the previous owner said it's a dark green pebble finish"}
+      - {who: intake, text: "Then it's likely the finish, not algae. Send me one of those pics?", step: photo}
+      - {who: homeowner, text: "[photo: wide shot from the deck of a pool with deep green-looking plaster and clear water; the main drain is visible at the bottom; a few dark spots on the top step] here"}
+      - {who: intake, text: "Any spots or patches that don't brush or wipe off?", step: question}
+      - {who: homeowner, text: "yes a few dark spots on the top step and in the shallow corner, they don't wipe off"}
+      - {who: intake, text: "Size, spa, filter type, and salt or chlorine?", step: question}
+      - {who: homeowner, text: "medium, no spa, cartridge filter. it's salt, there's a display with a number on it I don't understand"}
+      - {who: intake, text: "When do you want weekly to start?", step: question}
+      - {who: homeowner, text: "next week"}
+      - {who: intake, text: "Notes going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0176 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - Weekly service wanted, starting next week.
+      - Water clear; homeowner can see the main drain.
+      - Finish is a dark green pebble per the previous owner; that is the green in his photos.
+      - A few dark spots on the top step and in the shallow corner that do not wipe off.
+      - Medium pool, no spa, cartridge filter.
+      - Salt system; display shows a number he doesn't understand.
+      - Photo: deep green-looking finish, clear water, main drain visible, a few dark spots on the top step.
+      - New to the house.
+      - Needed: next week.
+      SUSPECT
+      - Not a green pool. The dark spots could be early black algae or metal or calcium staining; can't tell from a photo.
+      - Salt display number is probably salt ppm or a cell status code.
+      ON SITE
+      - Brush the spots hard; if they don't move, try a chlorine tab or vitamin C test to tell algae from stain.
+      - Read the salt display, inspect the cell, full water test as a baseline for the new owner.
+      - Quote weekly; quote spot treatment separately if it's algae.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s07
+    transcript:
+      - {who: homeowner, text: "im renting a house with a pool and the landlord said i have to keep it up. never had a pool. can someone come clean it every week. dont have a lot of money"}
+      - {who: intake, text: "Yes. How does the water look now, can you see the bottom?", step: question}
+      - {who: homeowner, text: "its a little cloudy but i can see the bottom"}
+      - {who: intake, text: "Send me a pic of the pool, and one of the equipment by the pump if you can?", step: photo}
+      - {who: homeowner, text: "[photo: pool seen from a patio, water slightly cloudy, leaves on the surface, a skimmer lid open] by the pump theres a gray tank next to it, i dont know what it is. theres a floating plastic thing in the pool too"}
+      - {who: intake, text: "That helps. About how big, and is there a spa?", step: question}
+      - {who: homeowner, text: "small i think. no spa"}
+      - {who: intake, text: "How will the tech get in? Gate locked, any pets?", step: question}
+      - {who: homeowner, text: "2 big dogs, they dont like strangers. the gate has a padlock, landlord leaves a key under a pot"}
+      - {who: intake, text: "When was it last serviced?", step: question}
+      - {who: homeowner, text: "i moved in 2 weeks ago, nobody since. what can i skip to keep it cheap"}
+      - {who: intake, text: "The companies will quote you the options. Notes going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0177 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - Weekly service wanted. Renter arranging service; landlord requires the tenant to keep the pool up.
+      - Water a little cloudy, bottom visible.
+      - Small pool (his guess), no spa.
+      - Filter and sanitizer type unknown: a gray tank next to the pump; a floating plastic thing in the pool. Equipment photo requested, not yet sent.
+      - Not serviced since he moved in two weeks ago. New to pools.
+      - Two large dogs in the yard that don't like strangers.
+      - Padlocked gate; tenant can arrange the key.
+      - Photo: pool from the patio, slightly cloudy water, leaves on the surface, skimmer lid open.
+      - Needed: not said.
+      SUSPECT
+      - Two weeks with no care: low chlorine, starting to cloud. Floating plastic thing is a tab floater; gray tank is likely a cartridge or sand filter.
+      ON SITE
+      - Dogs must be put up before each visit; get the key arrangement.
+      - First visit: shock, clean the filter, full water test, ID the filter, close the skimmer lid.
+      - Quote basic weekly and weekly-with-chemicals so he can choose.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s08
+    transcript:
+      - {who: homeowner, text: "Buenas, mi alberca esta toda verde, ya no se ve el fondo. Quiero que alguien la limpie una vez y despues si me gusta que venga cada semana"}
+      - {who: intake, text: "Claro. ¿Cuánto tiempo lleva verde?", step: question}
+      - {who: homeowner, text: "como un mes. nos fuimos de viaje"}
+      - {who: intake, text: "¿Qué tamaño es la alberca y tiene spa?", step: question}
+      - {who: homeowner, text: "grande, sin spa"}
+      - {who: intake, text: "¿El filtro es de arena o de cartucho? ¿Y la bomba prende?", step: question}
+      - {who: homeowner, text: "de arena. la bomba prende con el timer"}
+      - {who: intake, text: "¿Cómo le pone el cloro?", step: question}
+      - {who: homeowner, text: "tabletas. el flotador esta vacio"}
+      - {who: intake, text: "¿Me manda una foto del agua?", step: photo}
+      - {who: homeowner, text: "[foto: agua vista desde el patio, verde oscuro, no se ve el piso, una manguera de aspiradora en el deck]"}
+      - {who: intake, text: "¿Cómo entra el técnico? ¿Portón con candado, perros?", step: question}
+      - {who: homeowner, text: "el porton tiene pestillo y funciona"}
+      - {who: intake, text: "Gracias. Ya mando sus datos a las compañías de albercas.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: green_pool, bank_job_type: "green pool cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0178 | Weekly pool cleaning | Lake Havasu City
+      FACTS (homeowner texts in Spanish; reply to him in Spanish)
+      - One-time green pool cleanup; may want weekly service after if happy.
+      - Dark green, cannot see the floor. Green about a month, family was traveling.
+      - Large pool, no spa.
+      - Sand filter. Pump runs on a timer.
+      - Chlorine tabs; floating feeder is empty.
+      - Pool gate has a working latch.
+      - Photo: dark green water from the patio, no floor visible, a vacuum hose on the deck.
+      - Needed: not said.
+      SUSPECT
+      - A month with no chlorine at Havasu temps; a big, dark swamp. Timer run hours are probably too short for a cleanup. Sand filter will need many backwashes; may be a drain-and-clean candidate if it doesn't clear.
+      ON SITE
+      - Can't see the floor: check for debris before vacuuming. Run the pump 24/7 during cleanup, heavy shock, brush, floc or vacuum to waste.
+      - Test CYA; restock the floater only after the water clears.
+      - Quote the cleanup and a weekly price for after.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s09
+    transcript:
+      - {who: homeowner, text: "OMG MY POOL TURNED BLACK OVERNIGHT!!! HELP!!! I HAVE 20 PEOPLE COMING TOMORROW AFTERNOON"}
+      - {who: intake, text: "We can work with that. How far down can you see into the water?", step: question}
+      - {who: homeowner, text: "MAYBE 2 FEET?? ITS LIKE BROWN GRAY NOT BLACK BLACK"}
+      - {who: intake, text: "Did a wind or dust storm come through lately?", step: question}
+      - {who: homeowner, text: "YES A DUST STORM 2 NIGHTS AGO"}
+      - {who: intake, text: "That's dirt, not algae. Usually fixable in a day. Is the pump running? And size, spa, filter, salt or chlorine?", step: question}
+      - {who: homeowner, text: "ok. pump is running normal. medium with a spa attached. cartridge filter, salt system"}
+      - {who: intake, text: "Any trees over the pool? And can someone get in today?", step: question}
+      - {who: homeowner, text: "a mesquite hangs over it. im home all day, anytime today"}
+      - {who: intake, text: "Notes going out now, marked for today.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: one_time_clean, bank_job_type: "green pool cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0179 | Weekly pool cleaning | Lake Havasu City | TODAY
+      FACTS
+      - One-time cleanup; needed before a party tomorrow afternoon (about 20 people).
+      - Water brown-gray, can see about two feet down. Homeowner first said black.
+      - Dust storm two nights ago.
+      - Mesquite tree hangs over the pool.
+      - Medium pool with an attached spa.
+      - Cartridge filter, salt system. Pump running normally.
+      - Homeowner home all day; any time today.
+      - No photo asked.
+      - Needed: before tomorrow afternoon.
+      SUSPECT
+      - Dust storm dirt plus mesquite debris, not algae. Cartridge is probably packed with dirt.
+      ON SITE
+      - Go today. Net debris, brush, vacuum (to waste if the filter can't keep up), pull and hose the cartridge, maybe twice.
+      - Shock and balance, check the salt cell output; spa too.
+      - Return or check tomorrow morning if it isn't clear by tonight.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s10
+    transcript:
+      - {who: homeowner, text: "Hi, looking for a weekly pool service. Medium pool, cartridge filter, clear water. Oh by the way there's a faint gas smell by the pool heater when it kicks on, probably nothing"}
+      - {who: intake, text: "Before the pool: a gas smell at a heater needs to be checked, even faint. Turn the heater off, get everyone away from it, and call 911 or the gas company from outside. Text SAFE when you're clear of it.", step: "911"}
+      - {who: homeowner, text: "I really don't think it's anything, but OK. SAFE."}
+      - {who: intake, text: "Thanks. How often have you noticed the smell?", step: question}
+      - {who: homeowner, text: "Twice this week, when the heater runs."}
+      - {who: intake, text: "Now the pool. Chemicals included? Any spa? And how does it get chlorine?", step: question}
+      - {who: homeowner, text: "Yes, include the chemicals. No spa. Chlorine tabs."}
+      - {who: intake, text: "How does the tech get to the equipment?", step: question}
+      - {who: homeowner, text: "Pad is on the west side, behind a gate with no lock."}
+      - {who: intake, text: "Send a pic of the equipment pad?", step: photo}
+      - {who: homeowner, text: "[photo: equipment pad with a pump, a cartridge filter tank and a gas heater with a vent stack]"}
+      - {who: intake, text: "Weekly notes going out. Keep the heater off until the gas company or a licensed heater tech checks it; that part is licensed work, not the pool service.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: true
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0180 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - Weekly service wanted, chemicals included.
+      - Medium pool, no spa, cartridge filter, chlorine tabs. Water clear.
+      - Equipment pad on the west side behind a gate with no lock.
+      - Photo: pump, cartridge filter tank, gas heater with a vent stack.
+      - Homeowner reported a faint gas smell at the pool heater when it runs, twice this week. Sent to 911 / gas company; he replied SAFE. Heater work is not part of this request.
+      - Needed: not said.
+      SUSPECT
+      - Heater may have a gas leak at a fitting or valve, or a burner or venting problem. Not ours to touch.
+      ON SITE
+      - Do not run or open the heater. If you smell gas on arrival, leave the pad and call it in.
+      - Normal weekly start: water test, cartridge clean, tab supply.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s11
+    transcript:
+      - {who: homeowner, text: "need a weekly pool guy AND someone to trim the palms around the pool they drop junk in it constantly. can one person do both or do i need two"}
+      - {who: intake, text: "I'll send it as two requests, pool service and palm trimming; each business quotes what they do. Pool first: size, spa, filter type, and how do you chlorinate?", step: question}
+      - {who: homeowner, text: "- medium\n- no spa\n- sand filter\n- tabs"}
+      - {who: intake, text: "Chemicals in the monthly price, or do you buy your own?", step: question}
+      - {who: homeowner, text: "- not included\n- i buy my own"}
+      - {who: intake, text: "Water clear right now? How bad is the debris day to day?", step: question}
+      - {who: homeowner, text: "- water is clear\n- skimmer basket fills every day"}
+      - {who: intake, text: "Now the palms: how many, how tall, haul the trimmings away, and one time or regular?", step: question}
+      - {who: homeowner, text: "- 4 palms\n- 2 are tall, like 30 ft\n- once then maybe twice a year\n- yes haul it away\nso can one guy do both or not"}
+      - {who: intake, text: "Two requests is fine; whoever quotes will say what they cover. Send a pic that shows the palms and the pool?", step: photo}
+      - {who: homeowner, text: "[photo: pool with two tall palms on one side and a pile of dead fronds on the deck]"}
+      - {who: intake, text: "Pool notes going out first; the palm request is ready to send after.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0181 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - Weekly service wanted. Chemicals not included; homeowner buys his own.
+      - Medium pool, no spa, sand filter, chlorine tabs.
+      - Water clear; skimmer basket fills every day.
+      - Palms around the pool drop debris into it (palm trimming sent as a separate request).
+      - Photo: two tall palms on one side, a pile of dead fronds on the deck.
+      - Needed: not said.
+      SUSPECT
+      - Heavy frond and seed load; more backwashing on the sand filter and a full basket every visit until the palms are trimmed.
+      ON SITE
+      - Labor-only weekly quote (owner supplies chemicals); confirm what he keeps on hand.
+      - Check the pump basket and skimmer weir; backwash schedule for the sand filter.
+    second_card: |
+      REQ-0182 | Landscape maintenance | Lake Havasu City
+      FACTS
+      - Palm trimming around a pool: 4 palms, 2 are tall, about 30 feet.
+      - Once now, then maybe twice a year.
+      - Haul away the trimmings.
+      - Fronds drop into the pool.
+      - Photo: two tall palms beside the pool, a pile of dead fronds on the deck.
+      - Needed: not said.
+      ON SITE
+      - 30-foot palms need a climber or lift; keep fronds out of the pool during the cut.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s12
+    transcript:
+      - {who: homeowner, text: "looking for weekly pool service in Bullhead City, pool is about 15k gallons"}
+      - {who: intake, text: "We don't cover Bullhead City yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s13
+    transcript:
+      - {who: homeowner, text: "Looking for someone to clean my pool every other week. Lake Havasu City, we're in the Mesa Verde neighborhood"}
+      - {who: intake, text: "We don't cover pool cleaning jobs yet. We've noted your request so we can add businesses.", step: coverage}
+      - {who: homeowner, text: "Oh, so nobody is available right now?"}
+      - {who: intake, text: "Not in pool cleaning yet. Your request is noted.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s14
+    transcript:
+      - {who: homeowner, text: "my pool pump motor died, need the pool guy to come put a new one in. it just wont start"}
+      - {who: intake, text: "That's a repair, so it goes to the pool repair companies. When you turn it on, does it hum, or nothing at all?", step: question}
+      - {who: homeowner, text: "it hums but it doesnt spin. motors dead"}
+      - {who: intake, text: "Has the breaker tripped?", step: question}
+      - {who: homeowner, text: "tripped once yesterday. i reset it"}
+      - {who: intake, text: "Leave it off for now so it doesn't keep tripping. One speed or variable, and about how old?", step: question}
+      - {who: homeowner, text: "single speed. about 11 yrs"}
+      - {who: intake, text: "Any water around the pump, and is the pad easy to get to?", step: question}
+      - {who: homeowner, text: "yeah theres water on the pad by the pump lid, started about a week ago. its in the side yard, gate is open"}
+      - {who: intake, text: "Send me a pic of the pump?", step: photo}
+      - {who: homeowner, text: "[photo: pump housing and motor on the pad, a wet ring on the pad below the lid] just want the pump looked at, dont need weekly"}
+      - {who: intake, text: "Got it, pump only. Notes going out to the repair companies.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0183 | Pool and spa repair | Lake Havasu City
+      FACTS
+      - Pump motor hums and does not spin. Homeowner calls it a dead motor.
+      - Single speed, about 11 years old.
+      - Breaker tripped once yesterday; he reset it. Told to leave it off.
+      - Water on the pad near the pump lid, started about a week ago.
+      - Equipment in the side yard; gate open.
+      - Pump only; no weekly service wanted.
+      - Photo: pump housing and motor on the pad, a wet ring below the lid.
+      - Needed: not said.
+      SUSPECT
+      - Hum and no spin with a trip: bad start capacitor or seized bearings. A week-old leak at the lid could be the lid O-ring, or a shaft seal that has let water into the motor bearings.
+      ON SITE
+      - Spin the shaft by hand power off, test the capacitor, check amp draw.
+      - Find the leak: lid O-ring vs shaft seal. If water got into the motor, price a motor or full pump.
+      - At 11 years single speed, price a variable-speed replacement too.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s15
+    transcript:
+      - {who: homeowner, text: "My pool boiler will not come on and the pool is cold. I need the pool man to get a new gas one put in, can you find me one"}
+      - {who: intake, text: "That's a gas pool heater; it goes to licensed pool repair companies. Is it propane or natural gas, and about how old?", step: question}
+      - {who: homeowner, text: "It is propane, and it is about 16 years old."}
+      - {who: intake, text: "When it tries to come on, what does it do?", step: question}
+      - {who: homeowner, text: "The fan runs and it clicks, but the burner does not light."}
+      - {who: intake, text: "Any gas smell around it?", step: question}
+      - {who: homeowner, text: "No smell. I checked the area and I smell nothing."}
+      - {who: intake, text: "Do you want it replaced outright, or fixed if it's a small part?", step: question}
+      - {who: homeowner, text: "I want it replaced with a new gas heater of the same size."}
+      - {who: intake, text: "Where is the equipment, and how soon do you need heat?", step: question}
+      - {who: homeowner, text: "The equipment is inside a block enclosure with a door. My wife uses the pool for therapy swims, so I want it warm this month."}
+      - {who: intake, text: "Could you send a photo of the heater and its label?", step: photo}
+      - {who: homeowner, text: "[photo: gas pool heater on the pad with a vent stack and a gas line running into it]"}
+      - {who: intake, text: "Thank you. Notes going to licensed heater companies only.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: heater, bank_job_type: "equipment replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0184 | Pool and spa repair | Lake Havasu City | Licensed only (R-6 or B-6)
+      FACTS
+      - Gas pool heater, propane, about 16 years old. Homeowner calls it a boiler.
+      - Fan runs and clicks; burner does not light.
+      - No gas smell per homeowner; he checked the area.
+      - Wants it replaced with a new gas heater of the same size.
+      - Equipment inside a block enclosure with a door.
+      - Pool used for therapy swims; wants it warm this month.
+      - Photo: gas heater on the pad with a vent stack and a gas line into it.
+      - Needed: this month.
+      SUSPECT
+      - Fan and click with no light: igniter, gas valve, pressure switch, or low propane supply. At 16 years a replacement is reasonable, as he wants.
+      ON SITE
+      - Check propane tank level and regulator first.
+      - Confirm BTU size and enclosure venting and clearances for the new unit; permit if required.
+      - Licensed gas work only; quote same-size propane replacement installed.
+    facts_in_card_not_stated: []
