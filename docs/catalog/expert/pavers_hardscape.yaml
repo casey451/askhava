@@ -1,0 +1,886 @@
+# Ask Hava expert layer: pavers_hardscape (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set pavers_hardscape and trade_kb/trades/pavers_concrete.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - Mapping. The category routes only R-21 work (A.A.C. R4-9-103: uncovered patios, walkways and driveways
+#   of brick, stone, pavers or gravel; non-loadbearing concrete; garden walls to 6 ft; retaining walls to
+#   3 ft; freestanding fire pits; irrigation and backflow devices). Kept from pavers_concrete.yaml:
+#     new_patio_walk -> "paver patio" (patios only; walkways get their own id below)
+#     paver_repair   -> "paver patio" (sunk, lifted or loose pavers; re-sand and re-seal)
+#     driveway       -> "paver patio" (paver or gravel driveway work only; see below)
+#     garden_wall    -> "paver patio" (seat walls, short garden and retaining walls, fire pits)
+#     pool_deck      -> "paver patio" (pavers or travertine around a pool only; see below)
+#     crack_repair   -> "walkway" (cracked or lifted concrete walkways and patios; non-loadbearing concrete)
+# - new_job_type new_walkway ("walkway"): the kb's new_patio_walk covers patios and walkways in one id, but
+#   each kb id may appear once and the category routes both job types. Scenarios pavers_hardscape_s05,
+#   s06 and s13 name job_type new_patio_walk with bank_job_type "walkway"; routing should read new_walkway
+#   for those. Scenario s04 names paver_repair with bank "walkway"; here paver_repair carries "paver patio".
+#   Suggest a "paver repair" category job type so repair cards are not opted into with new-patio work.
+# - new_job_type irrigation_install ("irrigation install"): the kb file has no irrigation job type. Questions
+#   and must-knows draw on landscaping_irrigation.yaml's new_system entry; photos use only pavers_concrete.yaml
+#   ids (p1 whole area). The bank's photos [p1, p2, p3] do not fit irrigation (p2 is a crack close-up, p3 the
+#   street path); the landscaping_irrigation photos (controller p2, valve box p3, backflow p5) would serve it
+#   far better if the set could draw on two kb files.
+# - Irrigation REPAIR has no catalog home. landscape_maintenance routes watering problems here as the closest
+#   fit, and scenario s14 expects the card to keep "repair" and "drip". This file lets irrigation_install take
+#   "fix what's there" as a fu_irrigation_scope answer so the card says repair honestly. Suggest an
+#   "irrigation repair" job type in this category.
+# - Left out, with no R-21 home:
+#     slab_pad: concrete slabs and RV or shed pads are R-9 concrete work in the kb's license_classes. A paver or
+#       gravel pad rides on driveway. No enabled category takes R-9 work.
+#     coating_stain: stamped, stained or coated concrete is concrete or painting work, and R-21 excludes pool
+#       deck coatings. Paver re-sand and re-seal is kept inside paver_repair (the kb label includes it).
+#     demo_remove: stand-alone concrete removal is R-9 in the kb. Removal before new pavers is caught by
+#       fu_surface_now and goes on the patio or walkway card.
+# - Concrete driveways are excluded from R-21. driveway here is pavers or gravel only; fu_driveway_now puts the
+#   material on the card. A concrete driveway or concrete driveway crack has no route today.
+# - pool_deck: R-21 covers uncovered paver patios but excludes "pool deck coatings". A Kool Deck or coating
+#   request has no home; fu_deck_now puts the surface on the card so a business can decline cleanly.
+# - Bank gaps: (1) no material question (concrete pavers, travertine, flagstone, gravel), the second-biggest
+#   price driver; fu_material carries it. (2) size is in square feet, which homeowners guess poorly for paths
+#   and yards; fu_walk_length and fu_yard_area carry better proxies. (3) access option "No hand access only"
+#   reads oddly; suggest "No, hand access only" and a third option "Only through a narrow side gate".
+#   (4) Suggest photos [p1, p4, p3] for new work: where water drains moves a patio quote more than a crack
+#   close-up.
+# - fire_dept_triggers here are only gas or propane smell or hiss, and a downed power line, from the D-436 list.
+#   A hole or collapse under pavers (kb emergency signal) is urgent-capable for businesses, never a 911 text.
+schema: 1
+category: pavers_hardscape
+question_set: pavers_hardscape
+kb_trade: pavers_concrete
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: s2_aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (R-21 Hardscaping and Irrigation Systems: non-loadbearing concrete; uncovered patios, walkways and driveways of brick, stone, pavers or gravel; garden walls and fences to 6 ft; retaining walls to 3 ft; freestanding fire pits with electric, plumbing and gas subcontracted; irrigation systems with wiring 120 V or less, potable connections, backflow devices and trenching; misting to 1,000 PSI. Excludes new gas or plumbing lines, pool deck coatings, concrete driveways, load-bearing walls, perimeter fencing. R-9 Concrete; R-48 Tile lists pavers)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: s4_ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14): under $1,000, no permit; never fuel gas (D))"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: s17_lhc_permit_list
+    title: "[S17] Lake Havasu City Building Division permit lists (permit required: retaining walls over 2 ft 6 in with slope or over 3 ft 0 in with no slope, patio covers, gas lines, fireplaces; no permit: privacy walls up to 6 ft)"
+    url: "https://www.lhcaz.gov/development-permitting/building"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_building_forms
+    title: "Lake Havasu City Building Permits page (2024 I-codes including the 2024 IPC adopted; Residential Driveway Permit Requirements; driveways in the 10-business-day review group; Encroachment Agreement for color or stamped concrete, driveway pavers and city right-of-way; General Right of Way permit)"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City annual drinking water quality report (total hardness 19 grains per gallon average, range 18 to 20)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_conservation
+    title: "Lake Havasu City Water Conservation: 60 to 70 percent of the community's water use goes to landscape irrigation and pools"
+    url: "https://www.lhcaz.gov/havasuwatersavers/water-conservation"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (season officially June 15 to September 30)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ua_caliche
+    title: "University of Arizona Cooperative Extension, Caliche Quick Guide (lime-cemented soil layer from a few inches to several feet thick; can stop roots; slows water movement; common in southern Arizona soils)"
+    url: "https://extension.arizona.edu/publication/caliche-quick-guide"
+    checked: "2026-10-29"
+    kind: other
+  - id: s24_az811
+    title: "[S24 cites] Arizona 811: by law, contact Arizona 811 before digging; locators have two full working days to respond"
+    url: "https://www.arizona811.com/"
+    checked: "2026-10-29"
+    kind: other
+  - id: ars_40_360_22
+    title: "A.R.S. 40-360.22 Excavation requirements (operator marks facilities not later than two working days after the request)"
+    url: "https://www.azleg.gov/ars/40/00360-22.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: icc_backflow
+    title: "ICC PMG CodeNotes, Backflow (IPC: the potable connection to an irrigation system must have an approved backflow device: AVB, PVB, SVB or RP, per IPC Table 608.1)"
+    url: "https://iccsafe.org/wp-content/uploads/24-23632_PMG_CodeNotes_Backflow_2021_FINAL_HIRES.pdf"
+    checked: "2026-10-29"
+    kind: code_standard
+  - id: aac_r18_4_215
+    title: "A.A.C. R18-4-215 Backflow prevention (water systems require assemblies in listed cases; single-family homes generally exempt unless a cross-connection is found; assemblies tested at least yearly; a pressure vacuum breaker on landscape irrigation only when no chemigation and no backpressure)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-4-215"
+    checked: "2026-10-29"
+    kind: statute
+  - id: nicolock_thickness
+    title: "Nicolock (paver manufacturer), Paver thickness for patios, walkways and driveways (patios and walks: at least 2 in pavers on 4 to 6 in of compacted base; driveways: 2 3/8 in pavers on 8 to 12 in of base; weak soil or poor drainage may need more)"
+    url: "https://nicolock.com/2026/03/25/paver-thickness-how-thick-should-pavers-be-for-patios-walkways-and-driveways/"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: rainbird_drip_zone
+    title: "Rain Bird, Drip control zone kits (inline valve plus a pressure-regulating filter, regulated to 30 psi)"
+    url: "https://www.rainbird.com/node/2249"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: tvmg_hardscape_ads
+    title: "The Valley Marketing Group (marketing vendor): hardscaping and patio contractor Google Ads 2026 (LSA $25 to $80 per lead, suburban $25 to $40; 43.9 percent book rate; about $233 per paying customer per SearchLight Digital; search ads about $153 per lead; $6 to $25 per click)"
+    url: "https://thevalleymarketinggroup.com/blog/hardscaping-patio-contractor-google-ads-2026"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: pipeline_landscapers
+    title: "Pipeline (marketing vendor): landscaper internet marketing (hardscape Google Ads $80 to $150 per lead per Service Autopilot; LSA $15 to $40; Facebook $25 to $60; Angi and Thumbtack $10 to $40 per lead shared with 3 to 4 companies)"
+    url: "https://pipelineon.com/blog/landscapers-internet-marketing/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "What has to come out first and what is under it: bare dirt, rock, grass, old concrete, or a hard caliche layer"
+      why: "Demolition, haul-off and digging through lime-cemented caliche can match the cost of the pavers; the pro reads it off the whole-area photo and fu_surface_now. Caliche runs a few inches to several feet thick."
+      source: ua_caliche
+    - driver: "Access: machine through a gate or the street, or wheelbarrow only"
+      why: "A skid steer or mini-ex through a wide gate moves base in hours; hand-carrying tons of base and pavers through a narrow side gate adds days of labor. The bank's access question and the street-path photo carry it. [judgment]"
+      source: null
+    - driver: "Square footage and shape (straight edges versus curves, steps and many cuts)"
+      why: "Labor and material scale with area; curves, borders and steps add cutting time. The bank's size question sets the band. [judgment]"
+      source: null
+    - driver: "Material: concrete pavers, travertine, flagstone, or gravel and decomposed granite"
+      why: "Material cost spreads several times over from gravel to travertine, and natural stone sets slower. The bank has no material question, so fu_material or the inspiration pictures carry it. [judgment]"
+      source: null
+    - driver: "What drives or parks on it: foot traffic, cars, or an RV, boat or trailer"
+      why: "Pavers for a patio or walk sit on 4 to 6 inches of compacted base; a driveway needs thicker pavers on 8 to 12 inches, more where soil or drainage is poor."
+      source: nicolock_thickness
+    - driver: "Grade and where water goes: slope toward the house, water standing at a door, downspouts onto the area"
+      why: "Regrading, a drain or a raised base to move water away from the house is extra work the pro has to see coming; fu_water_goes and the drainage photo surface it. [judgment]"
+      source: null
+    - driver: "Extras built with it: seat walls, retaining walls, steps, fire pits, borders"
+      why: "Each is its own line item; any gas, electric or plumbing for a fire pit or kitchen must be subcontracted under R-21, and a retaining wall over 2 ft 6 in with slope needs a city permit."
+      source: s2_aac_r4_9_103
+    - driver: "For irrigation: how much yard, how many zones, and whether a backflow device and controller are new"
+      why: "Zone count drives valves, wire and trenching; a new potable connection needs an approved backflow device under the plumbing code. fu_yard_area and fu_controller carry it."
+      source: icc_backflow
+  hidden_conditions:
+    - condition: "Caliche a few inches down that a shovel will not go through"
+      how_a_pro_spots_it: "Whitish crusty ground in the whole-area photo; the homeowner says a shovel or pick bounced off"
+      question_or_photo: fu_surface_now
+      source: ua_caliche
+    - condition: "Yard slopes toward the house and water stands at the slider or stucco after rain"
+      how_a_pro_spots_it: "Stain line low on the stucco, ground lower at the wall, puddles in the drainage photo"
+      question_or_photo: fu_water_goes
+      source: null
+    - condition: "Buried lines in the footprint: sprinkler or drip lines, a valve box, a water meter, a propane tank lid or gas line"
+      how_a_pro_spots_it: "Valve box lids, sprinkler heads, a meter box or tank lid in the whole-area photo; any digging needs an Arizona 811 ticket first"
+      question_or_photo: fu_in_the_area
+      source: s24_az811
+    - condition: "A downspout, sprinkler zone or pool splash-out emptying onto the sunken or lifted pavers"
+      how_a_pro_spots_it: "Downspout elbow or corrugated pipe ending at the low spot; wet edges; low spot next to the pool coping"
+      question_or_photo: fu_water_at_spot
+      source: null
+    - condition: "A pool losing water under a sunken pool-side paver area"
+      how_a_pro_spots_it: "Sinking right along the coping with no downspout nearby; the homeowner adds water to the pool more often"
+      question_or_photo: fu_pool_losing
+      source: null
+    - condition: "Driveway widening that reaches the city strip by the street"
+      how_a_pro_spots_it: "No visible property line in the photo; work at the curb; the city has a driveway permit and an encroachment agreement for driveway pavers in city right-of-way"
+      question_or_photo: fu_property_line
+      source: lhc_building_forms
+    - condition: "A wall that holds back soil and is taller than it looks"
+      how_a_pro_spots_it: "Grade change across the wall line in the photo; the city requires a permit over 2 ft 6 in with slope or 3 ft with none, and R-21 stops at 3 ft"
+      question_or_photo: fu_wall_what
+      source: s17_lhc_permit_list
+    - condition: "An old irrigation tie-in with no backflow device or a cracked, sun-faded valve manifold"
+      how_a_pro_spots_it: "Gray or white PVC above ground near the hose bib, no vacuum breaker; the homeowner says the system is old"
+      question_or_photo: fu_irrigation_scope
+      source: icc_backflow
+  misdiagnosis_checks:
+    - sounds_like: "paver patio (with a fire pit)"
+      might_be: "gas line work for a gas or propane fire pit, licensed-only work in plumbing_repair"
+      one_question: fu_fire_fuel
+      if_other_route_to: {category: plumbing_repair, job_type: "gas line work"}
+      source: s2_aac_r4_9_103
+    - sounds_like: "paver patio (sunken pavers by the pool)"
+      might_be: "a pool leak under the deck"
+      one_question: fu_pool_losing
+      if_other_route_to: {category: pool_repair, job_type: "pool leak"}
+      source: null
+    - sounds_like: "paver patio (sunken pavers in the yard)"
+      might_be: "a broken sprinkler or drip line washing out the base"
+      one_question: fu_water_at_spot
+      if_other_route_to: {category: pavers_hardscape, job_type: "irrigation install"}
+      source: null
+    - sounds_like: "irrigation install (patio cooling)"
+      might_be: "a misting system, which the catalog routes to water_treatment"
+      one_question: fu_irrigation_what
+      if_other_route_to: {category: water_treatment, job_type: "misting system"}
+      source: null
+    - sounds_like: "walkway (cracked concrete)"
+      might_be: "a concrete driveway, which R-21 excludes"
+      one_question: fu_concrete_where
+      if_other_route_to: {category: pavers_hardscape, job_type: "walkway"}
+      source: s2_aac_r4_9_103
+    - sounds_like: "irrigation install"
+      might_be: "drip_repair: a repair of an existing system, with no repair job type in the catalog"
+      one_question: fu_irrigation_scope
+      if_other_route_to: {category: pavers_hardscape, job_type: "irrigation install"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Bare dirt, rock, grass or old concrete now", "Whitish crusty ground", "Slope toward the house", "Sprinkler heads, valve box lids, meter or tank lid in the area", "Trees and roots near the edge", "Existing hose bib or irrigation manifold"]
+      neutral_wording: "Bare packed dirt with a whitish crust, ground lower near the house wall, two sprinkler heads in the area."
+    - photo_id: p2
+      reads: ["Depth of the dip against a shoe or coin", "Joint sand missing", "One side of a crack higher than the other", "Broken or chipped pavers"]
+      neutral_wording: "Pavers dipped about two inches over a three-foot area next to a shoe; joint sand missing at the dip."
+    - photo_id: p3
+      reads: ["Gate width and whether it opens fully", "Steps, slope or a pool in the way", "Distance to the street", "Overhead wires"]
+      neutral_wording: "Side gate about 4 feet wide with a step down into the back yard."
+    - photo_id: p4
+      reads: ["Downspout outlets", "Puddles or stain lines", "Which way the ground falls"]
+      neutral_wording: "Roof downspout ends at the low corner of the patio; dirt stain line on the stucco about two inches up."
+    - photo_id: p5
+      reads: ["Pool coping and equipment pad", "Block wall footing", "House foundation edge and weep screed"]
+      neutral_wording: "Pavers meet the pool coping; pool equipment pad about 10 feet away."
+  local_factors:
+    - fact: "Caliche, a lime-cemented soil layer from a few inches to several feet thick, is common in Arizona desert soils and slows water movement"
+      effect: "Digging for base and trenching for irrigation can take far longer than the size suggests, and water can pond on it; pros ask what is under the surface"
+      source: ua_caliche
+    - fact: "By law, Arizona 811 must be contacted before digging, and locators have two working days to mark lines"
+      effect: "Patio and irrigation start dates sit at least two working days out; buried lines in the footprint change the dig plan"
+      source: ars_40_360_22
+    - fact: "The city requires a permit for retaining walls over 2 ft 6 in with slope or over 3 ft with no slope, and for patio covers and gas lines; privacy walls up to 6 ft need none"
+      effect: "Hillside lots with terraces and requests for a pergola or gas fire pit carry permit time and other trades; the card notes height and extras as facts"
+      source: s17_lhc_permit_list
+    - fact: "Lake Havasu City has a residential driveway permit, and an encroachment agreement for driveway pavers and stamped concrete in city right-of-way"
+      effect: "Driveway widening toward the curb carries permit time and paperwork; the card notes whether the work reaches the street strip"
+      source: lhc_building_forms
+    - fact: "60 to 70 percent of the community's water use goes to landscape irrigation and pools"
+      effect: "Most yards are rock and desert plants on drip; new systems are mostly drip zones, with some lawn spray zones [judgment]"
+      source: lhc_conservation
+    - fact: "City water hardness averages about 19 grains per gallon"
+      effect: "White scale clogs drip emitters and stains pavers near spray heads and pools; pros ask about filters and emitter type [judgment]"
+      source: lhc_ccr
+    - fact: "Monsoon season runs June 15 to September 30"
+      effect: "Storm runoff washes out paver base near downspouts, washes and pool edges, so repair requests spike after storms [judgment]"
+      source: nws_monsoon
+    - fact: "Drip zones run through a pressure-regulating filter, about 30 psi on common kits"
+      effect: "A drip zone tied into house pressure without one is a redo item the pro wants to see"
+      source: rainbird_drip_zone
+    - fact: "Summer heat limits crews to early mornings, and HOAs in planned neighborhoods review front-yard changes"
+      effect: "Summer jobs run longer on the calendar; an HOA front yard adds approval time before work starts [judgment]"
+      source: null
+    - fact: "Seasonal residents and vacant second homes"
+      effect: "Owners often want work done while away; gate codes and water access must be arranged [judgment]"
+      source: null
+  seasonality:
+    busy: "October to May for new patios, walkways and irrigation installs (cool weather, seasonal residents back); repair calls after June 15 to September 30 monsoon storms [judgment on the months outside the monsoon dates]"
+    slow: "June to August for new installs because of heat [judgment]"
+    source: nws_monsoon
+
+job_types:
+  - id: new_patio_walk
+    label: "New paver, stone or gravel patio (back yard, side yard, courtyard, patio extension)"
+    bank_job_type: "paver patio"
+    recurring: false
+    homeowner_phrasings: ["want pavers in the back yard", "extend my patio", "cobblestone patio", "travertine patio", "ripped out the grass, want pavers"]
+    must_know:
+      - fact: "What is on the ground now and what has to come out"
+        bank_question: null
+        follow_up: fu_surface_now
+        photo: p1
+        why_it_moves_price: "Removing old concrete, rock or grass and digging hard ground can match the cost of the pavers. [judgment]"
+        skip_if: "Whole-area photo or her words show it"
+      - fact: "Size and access"
+        bank_question: size
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Area sets material; a narrow gate turns machine work into hand work. [judgment]"
+        skip_if: "Answered"
+      - fact: "Material and look wanted"
+        bank_question: project
+        follow_up: fu_material
+        photo: null
+        why_it_moves_price: "Concrete pavers, travertine and gravel are different price bands. [judgment]"
+        skip_if: "Inspiration pictures or her words name the material"
+      - fact: "Where rain water goes in that spot"
+        bank_question: null
+        follow_up: fu_water_goes
+        photo: p4
+        why_it_moves_price: "Slope toward the house means grading or a drain before any pavers go down. [judgment]"
+        skip_if: "Drainage photo sent and it shows the fall"
+      - fact: "Lines, boxes or a tank lid inside the area"
+        bank_question: null
+        follow_up: fu_in_the_area
+        photo: p1
+        why_it_moves_price: "Sprinkler lines must be capped or moved and gas or meter boxes change the layout. [judgment]"
+        skip_if: "Photo shows the area clear"
+    allowed_follow_ups:
+      - id: fu_surface_now
+        ask_when: "New patio, walkway or wall and the homeowner did not say what is there now"
+        text_en: "What is on the ground there now?"
+        text_es: "¿Qué hay ahora en el suelo de esa área?"
+        options_en: ["Bare dirt", "Rock or gravel", "Grass", "Old concrete or pavers", "Very hard ground a shovel won't go into"]
+        options_es: ["Tierra sola", "Piedra o grava", "Pasto", "Concreto o adoquín viejo", "Suelo muy duro donde no entra la pala"]
+        card_field: true
+        why: "Removal and hard digging are the biggest unseen cost on a new patio. [judgment]"
+      - id: fu_material
+        ask_when: "No inspiration pictures and the homeowner did not name a material"
+        text_en: "What material do you have in mind?"
+        text_es: "¿Qué material tiene en mente?"
+        options_en: ["Concrete pavers", "Travertine or natural stone", "Flagstone", "Gravel or decomposed granite", "Want to see options"]
+        options_es: ["Adoquín de concreto", "Travertino o piedra natural", "Laja", "Grava o granito descompuesto", "Quiero ver opciones"]
+        card_field: true
+        why: "Material is the second number an estimator writes down after square feet. [judgment]"
+      - id: fu_water_goes
+        ask_when: "New hardscape next to the house, or the homeowner mentions slope or puddles"
+        text_en: "When it rains, where does the water go in that spot?"
+        text_es: "Cuando llueve, ¿a dónde se va el agua en esa área?"
+        options_en: ["Runs away from the house", "Runs toward the house or a door", "Stands in puddles", "A downspout empties there"]
+        options_es: ["Se va lejos de la casa", "Corre hacia la casa o una puerta", "Se queda en charcos", "Ahí cae una bajada de agua del techo"]
+        card_field: true
+        why: "Water toward the house means grading or a drain, priced before any pavers. [judgment]"
+      - id: fu_in_the_area
+        ask_when: "New hardscape and the photo does not show the whole area clearly"
+        text_en: "Is anything in the spot now, like sprinkler lines, a valve box, a meter, a tank lid or a tree?"
+        text_es: "¿Hay algo ahora en esa área, como líneas de riego, una caja de válvulas, un medidor, la tapa de un tanque o un árbol?"
+        options_en: ["Sprinkler or drip lines", "A meter, valve box or tank lid", "A tree or large plant", "Nothing I know of"]
+        options_es: ["Líneas de riego o goteo", "Un medidor, caja de válvulas o tapa de tanque", "Un árbol o una planta grande", "Nada que yo sepa"]
+        card_field: true
+        why: "Buried lines and lids change the layout and the dig plan. [judgment]"
+    photos_priority: [p1, p4, p3]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell or hiss in the yard", "Downed power line in the yard"]
+      urgent_capable_triggers: ["Water spraying from a broken line in the work area"]
+      regular: "Any new patio"
+    scope_line_en: "New concrete paver patio about 14 by 18 feet off the back slider, bare dirt now, side gate about 4 feet wide."
+    scope_line_es: "Patio nuevo de adoquín de concreto de unos 14 por 18 pies junto a la puerta corrediza de atrás, ahora es tierra, portón lateral de unos 4 pies."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end", "earliest start"]
+    card_template: |
+      REQ-<id> | Pavers and hardscape | <town>, <general area> | <house / manufactured home / HOA home>
+      <one scope line: new patio, material, size, where>
+      Size: <band or her dimensions, with feet if she gave meters>. Ground now: <dirt / rock / grass / old concrete / very hard>. Access: <machine through gate / hand only, gate width>.
+      Rain water: <away / toward house / puddles / downspout>. In the area: <lines, boxes, lid, tree, or none said>. Extras wanted: <walls, fire pit, lights, gas, as she said>.
+      Look: <inspiration pictures, labeled not her yard> or <her words>. Concept image: <attached, labeled AI-generated, not exact, may not be feasible> or <none>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>. Needed: <timing answer>.
+    never_say: ["Sand will level that slope out.", "That white layer is caliche, it'll cost extra.", "Pavers run about fifteen a square foot.", "You'll need a permit for that.", "Call 811 before anyone digs."]
+
+  - id: new_walkway
+    new_job_type: true
+    label: "New paver, stone or gravel walkway or path (front walk, side yard path, path to a gate)"
+    bank_job_type: "walkway"
+    recurring: false
+    homeowner_phrasings: ["paver walkway to the back gate", "path along the side of the house", "front walk redo", "stepping stones to the patio"]
+    must_know:
+      - fact: "Length and width of the path"
+        bank_question: size
+        follow_up: fu_walk_length
+        photo: p1
+        why_it_moves_price: "Paths are priced by run and width; a square-foot band is a poor fit for a long narrow path. [judgment]"
+        skip_if: "She gave length and width"
+      - fact: "What is on the ground now"
+        bank_question: null
+        follow_up: fu_surface_now
+        photo: p1
+        why_it_moves_price: "Tearing out an old concrete walk adds demolition and haul-off. [judgment]"
+        skip_if: "Photo shows bare dirt or rock"
+      - fact: "Material"
+        bank_question: project
+        follow_up: fu_material
+        photo: null
+        why_it_moves_price: "Pavers, flagstone and gravel are different bands. [judgment]"
+        skip_if: "Inspiration pictures or her words name it"
+      - fact: "Access and whether it runs under an eave or along a wall"
+        bank_question: access
+        follow_up: fu_water_goes
+        photo: p3
+        why_it_moves_price: "Side-yard paths are hand-carry work, and roof or AC drip along the wall shapes the base. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_walk_length
+        ask_when: "Walkway request with no length given"
+        text_en: "About how long is the path, and about how wide?"
+        text_es: "¿Más o menos qué tan largo es el andador, y qué tan ancho?"
+        options_en: ["Under 20 feet long", "20 to 50 feet long", "Over 50 feet long"]
+        options_es: ["Menos de 20 pies de largo", "20 a 50 pies de largo", "Más de 50 pies de largo"]
+        card_field: true
+        why: "Run length is how path work is measured; she can add the width in her own words. [judgment]"
+      - fu_surface_now
+      - fu_material
+      - fu_water_goes
+    photos_priority: [p1, p3, p4]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell or hiss in the yard"]
+      urgent_capable_triggers: []
+      regular: "Any new walkway"
+    scope_line_en: "New gray paver walkway about 30 feet long and 3.5 feet wide along the side of the house, bare dirt, hand access through a 3-foot gate."
+    scope_line_es: "Andador nuevo de adoquín gris de unos 30 pies de largo y 3.5 de ancho por un lado de la casa, tierra, acceso a mano por un portón de 3 pies."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end", "earliest start"]
+    card_template: |
+      REQ-<id> | Pavers and hardscape | <town>, <general area> | <kind of place>
+      <one scope line: new walkway, material, length and width, where>
+      Length: <band or her numbers>. Ground now: <dirt / rock / grass / old concrete>. Access: <machine / hand only, gate width>.
+      Rain or drip water: <away / toward house / puddles / downspout or AC drip on the path>. Material: <as she said>.
+      Look: <inspiration pictures, labeled not her yard> or <her words>. Concept image: <attached, labeled AI-generated, not exact, may not be feasible> or <none>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>. Needed: <timing answer>.
+    never_say: ["A walkway that size is a weekend job.", "Gravel is cheaper and works just as well.", "The bumps are from tree roots.", "You should pick pavers over concrete."]
+
+  - id: paver_repair
+    label: "Sunken, lifted or loose pavers; re-sand or re-seal existing pavers"
+    bank_job_type: "paver patio"
+    recurring: false
+    homeowner_phrasings: ["pavers sinking by the pool", "pavers popping up", "low spot in the patio", "ants digging out the sand", "re-sand and seal my pavers"]
+    must_know:
+      - fact: "What the pavers are doing"
+        bank_question: project
+        follow_up: fu_repair_what
+        photo: p2
+        why_it_moves_price: "Re-sanding is a surface job; lifting and resetting a sunken area means pulling pavers and rebuilding base. [judgment]"
+        skip_if: "Close-up photo and her words make it plain"
+      - fact: "How big the problem area is"
+        bank_question: size
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "A 3-foot dip and a whole patio reset are different jobs. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether roof, sprinkler or pool water runs onto the spot"
+        bank_question: null
+        follow_up: fu_water_at_spot
+        photo: p4
+        why_it_moves_price: "A reset that ignores the water source comes back; the pro prices in a downspout extension or line repair. [judgment]"
+        skip_if: "Drainage photo shows the source"
+      - fact: "Whether it sits by a pool, and whether the pool is losing water"
+        bank_question: null
+        follow_up: fu_pool_losing
+        photo: p5
+        why_it_moves_price: "A pool leak under the deck is a different job that has to come first. [judgment]"
+        skip_if: "No pool near the spot"
+    allowed_follow_ups:
+      - id: fu_repair_what
+        ask_when: "Paver repair request that does not say what is happening"
+        text_en: "What are the pavers doing?"
+        text_es: "¿Qué está pasando con los adoquines?"
+        options_en: ["Sunk in one spot", "Lifted or popped up", "Loose, with sand missing", "A hole opened under them", "Want them re-sanded or sealed"]
+        options_es: ["Se hundieron en una parte", "Se levantaron o se botaron", "Flojos, les falta arena", "Se abrió un hoyo debajo", "Quiero que les pongan arena o sellador"]
+        card_field: true
+        why: "Each answer is a different job and crew-day count. [judgment]"
+      - id: fu_water_at_spot
+        ask_when: "Sunken or lifted pavers and no drainage photo"
+        text_en: "Does any water drain onto that spot, like a roof downspout, a sprinkler or drip line, or pool splash?"
+        text_es: "¿Cae agua en esa parte, como de una bajada del techo, una línea de riego o goteo, o agua de la alberca?"
+        options_en: ["Roof downspout", "Sprinkler or drip water", "Pool water or splash", "None I know of"]
+        options_es: ["Bajada de agua del techo", "Agua de riego o goteo", "Agua de la alberca", "Ninguna que yo sepa"]
+        card_field: true
+        why: "Separates a base washout from other repairs without naming a cause. [judgment]"
+      - id: fu_pool_losing
+        ask_when: "Sunken or lifted pavers next to a pool"
+        text_en: "Has the pool been needing more water than usual lately?"
+        text_es: "¿Ha tenido que ponerle más agua a la alberca de lo normal últimamente?"
+        options_en: ["Yes, more than usual", "No, about the same"]
+        options_es: ["Sí, más de lo normal", "No, lo mismo de siempre"]
+        card_field: true
+        why: "A pool losing water points at pool_repair before any paver reset. [judgment]"
+    photos_priority: [p2, p4, p5]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Hole or collapse under pavers where people walk", "Pavers dropped next to the pool after a storm"]
+      regular: "Dip, lift or loose sand with no hole"
+    scope_line_en: "Low spot about 3 feet wide and 1.5 inches deep in a 12 by 15 foot paver patio by the back door; joint sand missing there."
+    scope_line_es: "Parte hundida de unos 3 pies de ancho y 1.5 pulgadas de hondo en un patio de adoquín de 12 por 15 pies junto a la puerta de atrás; ahí falta arena entre las piezas."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (base rebuild, extra pavers)", "earliest start"]
+    card_template: |
+      REQ-<id> | Pavers and hardscape | <town>, <general area> | <kind of place>
+      <one scope line: what the pavers do, size of the area, where>
+      Doing: <sunk / lifted / loose sand / hole under them / re-sand or seal>. Area: <size>. Pavers age: <if she said>.
+      Water onto the spot: <downspout / sprinkler or drip / pool / none said>. Pool needs more water: <yes / no / no pool>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed, including any other wish such as ant control>.
+      Needed: <timing answer>.
+    never_say: ["The ants did that.", "It's a sinkhole.", "Your downspout washed out the base.", "That's a quick re-level.", "Keep everyone away from it."]
+
+  - id: driveway
+    label: "Paver or gravel driveway: new, widened or extended (not a concrete driveway)"
+    bank_job_type: "paver patio"
+    recurring: false
+    homeowner_phrasings: ["widen the driveway for the trailer", "paver driveway", "extend the driveway for the boat", "gravel parking pad by the garage"]
+    must_know:
+      - fact: "What parks or drives on it"
+        bank_question: null
+        follow_up: fu_vehicle_load
+        photo: null
+        why_it_moves_price: "A trailer or RV needs thicker pavers on a deeper base than a car. [judgment]"
+        skip_if: "She named the vehicle"
+      - fact: "What the driveway is now"
+        bank_question: null
+        follow_up: fu_driveway_now
+        photo: p3
+        why_it_moves_price: "Matching existing pavers is a sourcing job; concrete driveways are outside R-21. [judgment]"
+        skip_if: "Photo shows it"
+      - fact: "Whether the new part reaches the street strip"
+        bank_question: null
+        follow_up: fu_property_line
+        photo: p3
+        why_it_moves_price: "Work in city right-of-way carries a driveway permit and an encroachment agreement."
+        skip_if: "Work is plainly well inside the lot"
+      - fact: "Size and boxes in the strip"
+        bank_question: size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Area sets material; a meter box in the strip needs a riser or a cut. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_vehicle_load
+        ask_when: "Driveway or parking pad and the vehicle is not named"
+        text_en: "What will park or drive on it?"
+        text_es: "¿Qué se va a estacionar o pasar por encima?"
+        options_en: ["Cars", "A pickup truck", "An RV, boat or trailer"]
+        options_es: ["Carros", "Una camioneta pickup", "Una casa rodante, lancha o tráiler"]
+        card_field: true
+        why: "Load sets paver thickness and base depth. [judgment]"
+      - id: fu_driveway_now
+        ask_when: "Widening or extending a driveway and the photo does not show its surface"
+        text_en: "What is the driveway made of now?"
+        text_es: "¿De qué es la entrada de carros ahora?"
+        options_en: ["Pavers", "Concrete", "Gravel or dirt"]
+        options_es: ["Adoquín", "Concreto", "Grava o tierra"]
+        card_field: true
+        why: "Paver matching and the concrete-driveway exclusion both turn on this. [judgment]"
+      - id: fu_property_line
+        ask_when: "Driveway work toward the street or curb"
+        text_en: "Does the new part stay on your lot, or reach the strip by the street?"
+        text_es: "¿La parte nueva queda dentro de su terreno, o llega a la franja junto a la calle?"
+        options_en: ["Stays on my lot", "Reaches the strip by the street"]
+        options_es: ["Queda dentro de mi terreno", "Llega a la franja junto a la calle"]
+        card_field: true
+        why: "The city has a driveway permit and an encroachment agreement for driveway pavers in its right-of-way."
+      - fu_in_the_area
+    photos_priority: [p3, p1, p4]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Any driveway job"
+    scope_line_en: "Widen an existing paver driveway about 10 by 30 feet toward the street for a travel trailer, matching the current pavers."
+    scope_line_es: "Ampliar una entrada de adoquín unos 10 por 30 pies hacia la calle para un tráiler, igualando el adoquín que ya tiene."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (base depth, matching pavers, permit)", "earliest start"]
+    card_template: |
+      REQ-<id> | Pavers and hardscape | <town>, <general area> | <kind of place>
+      <one scope line: widen, extend or new; size; for what vehicle>
+      Driveway now: <pavers / concrete / gravel or dirt>. Load: <cars / pickup / RV, boat or trailer>. Size: <band or her numbers>.
+      Reaches the street strip: <stays on lot / reaches the strip / not sure>. In the strip: <meter, valve box, lines, or none said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You own it all the way to the curb.", "That will need a city permit.", "No permit needed for pavers.", "Trailers crack pavers, go with concrete."]
+
+  - id: garden_wall
+    label: "Seat wall, short garden or retaining wall, fire pit or built-in grill area"
+    bank_job_type: "paver patio"
+    recurring: false
+    homeowner_phrasings: ["fire pit with a bench wall", "seat wall around the patio", "short retaining wall on the slope", "want this in my back yard (picture)", "built-in BBQ"]
+    must_know:
+      - fact: "What kind of wall and how tall"
+        bank_question: null
+        follow_up: fu_wall_what
+        photo: p1
+        why_it_moves_price: "A seat wall is decorative; a wall holding back soil over 2 ft 6 in needs engineering, a permit and may leave R-21 scope."
+        skip_if: "Fire pit only, no wall"
+      - fact: "Wood or gas for a fire pit"
+        bank_question: null
+        follow_up: fu_fire_fuel
+        photo: null
+        why_it_moves_price: "A gas line is licensed gas work that the hardscape crew must subcontract. [judgment]"
+        skip_if: "No fire pit"
+      - fact: "Ground and access"
+        bank_question: access
+        follow_up: fu_surface_now
+        photo: p3
+        why_it_moves_price: "Block and stone are heavy; a narrow gate means hand-carrying every piece. [judgment]"
+        skip_if: "Answered"
+      - fact: "Look wanted"
+        bank_question: null
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Stacked stone veneer, stucco block and plain block are different bands; inspiration pictures carry it. [judgment]"
+        skip_if: "Inspiration pictures sent"
+    allowed_follow_ups:
+      - id: fu_wall_what
+        ask_when: "Any wall request without height or purpose"
+        text_en: "What kind of wall is it, and about how tall?"
+        text_es: "¿Qué tipo de barda es, y más o menos qué tan alta?"
+        options_en: ["Seat wall or low border", "Holds back soil, under 3 feet", "Holds back soil, 3 feet or taller", "Free-standing garden wall, 3 to 6 feet", "No wall, just a fire pit"]
+        options_es: ["Barda para sentarse o borde bajo", "Detiene tierra, menos de 3 pies", "Detiene tierra, 3 pies o más", "Barda de jardín sola, 3 a 6 pies", "Sin barda, solo un fogón"]
+        card_field: true
+        why: "Height and whether it holds soil decide permit and license scope."
+      - id: fu_fire_fuel
+        ask_when: "Homeowner mentions a fire pit, fireplace or built-in grill and not the fuel"
+        text_en: "Would the fire pit burn wood, or run on gas or propane?"
+        text_es: "¿El fogón sería de leña, o de gas o propano?"
+        options_en: ["Wood", "Natural gas", "Propane", "Not decided"]
+        options_es: ["Leña", "Gas natural", "Propano", "No lo he decidido"]
+        card_field: true
+        why: "Gas or propane means a licensed gas line, subcontracted under R-21 and on the city permit list."
+      - fu_surface_now
+      - fu_in_the_area
+    photos_priority: [p1, p3, p5]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell or hiss in the yard"]
+      urgent_capable_triggers: []
+      regular: "Any wall or fire pit"
+    scope_line_en: "Round fire pit with a curved seat wall, about 15 feet across, on bare dirt in the back yard; wants it fed by propane."
+    scope_line_es: "Fogón redondo con una barda curva para sentarse, de unos 15 pies, sobre tierra en el patio de atrás; lo quiere con propano."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (veneer, gas line by others, footing)", "earliest start"]
+    card_template: |
+      REQ-<id> | Pavers and hardscape | <town>, <general area> | <kind of place>
+      <one scope line: wall or fire pit, size, where>
+      Wall: <seat or border / holds soil under 3 ft / holds soil 3 ft or more / garden wall 3 to 6 ft / none>. Fire pit fuel: <wood / natural gas / propane / not decided / none>.
+      Gas source if any: <meter or tank, distance she gave>. Ground now: <dirt / rock / grass / old concrete>. Access: <gate width, machine or hand>.
+      Look: <inspiration pictures, labeled not her yard> or <her words>. Concept image: <attached, labeled AI-generated, not exact, may not be feasible> or <none>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>. Needed: <timing answer>.
+    never_say: ["A gas fire pit is easy to hook up.", "Walls that short don't need a permit.", "Fire pits are banned in some HOAs, check first.", "Stone veneer runs about thirty a square foot."]
+
+  - id: pool_deck
+    label: "Pavers or travertine around a pool: new, replace or repair (not a deck coating)"
+    bank_job_type: "paver patio"
+    recurring: false
+    homeowner_phrasings: ["replace the kool deck with pavers", "travertine around the pool", "pool deck pavers lifting", "redo the pool deck"]
+    must_know:
+      - fact: "What is around the pool now"
+        bank_question: null
+        follow_up: fu_deck_now
+        photo: p5
+        why_it_moves_price: "Pavers over an old coated slab and a full tear-out are different jobs; a coating-only request is outside R-21."
+        skip_if: "Photo shows it"
+      - fact: "Size of the deck"
+        bank_question: size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Area sets material, and pool decks have many coping cuts. [judgment]"
+        skip_if: "Answered"
+      - fact: "Material wanted"
+        bank_question: null
+        follow_up: fu_material
+        photo: null
+        why_it_moves_price: "Travertine and concrete pavers price apart. [judgment]"
+        skip_if: "Her words or pictures name it"
+      - fact: "Whether the pool is losing water"
+        bank_question: null
+        follow_up: fu_pool_losing
+        photo: null
+        why_it_moves_price: "A leak under the deck is fixed before any new deck goes down. [judgment]"
+        skip_if: "Not a repair request"
+    allowed_follow_ups:
+      - id: fu_deck_now
+        ask_when: "Pool deck request that does not say what is there now"
+        text_en: "What is around the pool now?"
+        text_es: "¿Qué hay ahora alrededor de la alberca?"
+        options_en: ["Pavers", "Travertine", "A textured or painted coating", "Plain concrete"]
+        options_es: ["Adoquín", "Travertino", "Un recubrimiento texturizado o pintado", "Concreto liso"]
+        card_field: true
+        why: "Sets tear-out and tells a business whether the request is in its license scope."
+      - fu_material
+      - fu_pool_losing
+      - fu_repair_what
+    photos_priority: [p5, p1, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Pavers dropped next to the pool after a storm"]
+      regular: "Any pool deck job"
+    scope_line_en: "Replace the textured coating around the pool with travertine, deck about 500 square feet, side gate about 5 feet."
+    scope_line_es: "Cambiar el recubrimiento texturizado alrededor de la alberca por travertino, unos 500 pies cuadrados, portón lateral de unos 5 pies."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (tear-out, coping, cuts)", "earliest start"]
+    card_template: |
+      REQ-<id> | Pavers and hardscape | <town>, <general area> | <kind of place>
+      <one scope line: new, replace or repair; material; size>
+      Deck now: <pavers / travertine / coating / plain concrete>. Wanted: <material>. Size: <band>. Pool needs more water: <yes / no / not asked>.
+      Access: <gate width, machine or hand>. Equipment pad: <distance if seen in photo>.
+      Look: <inspiration pictures, labeled not her yard> or <her words>. Concept image: <attached, labeled AI-generated, not exact, may not be feasible> or <none>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>. Needed: <timing answer>.
+    never_say: ["Travertine stays cooler, go with that.", "You can lay pavers right over the old deck.", "The deck is lifting because the pool leaks.", "Kool Deck is a cheap redo."]
+
+  - id: crack_repair
+    label: "Cracked, lifted or chipped concrete walkway or patio (not a concrete driveway)"
+    bank_job_type: "walkway"
+    recurring: false
+    homeowner_phrasings: ["walkway is all bumpy, I tripped", "crack in the patio slab", "sidewalk to the door lifted", "chipped concrete step"]
+    must_know:
+      - fact: "Whether it is a patio or walkway, or a driveway"
+        bank_question: null
+        follow_up: fu_concrete_where
+        photo: p1
+        why_it_moves_price: "R-21 covers non-loadbearing concrete but excludes concrete driveways."
+        skip_if: "Her words or the photo make it plain"
+      - fact: "What the crack looks like"
+        bank_question: null
+        follow_up: fu_crack_what
+        photo: p2
+        why_it_moves_price: "A flat hairline is a fill; a raised edge means grinding or replacing the panel. [judgment]"
+        skip_if: "Close-up photo with a coin shows it"
+      - fact: "How much of it"
+        bank_question: size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "One panel and a whole walk are different jobs; replacing it with pavers is a new walkway. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_concrete_where
+        ask_when: "Concrete crack or lift and the homeowner did not say where"
+        text_en: "Is the cracked concrete a patio or walkway, a driveway, or around a pool?"
+        text_es: "¿El concreto con grietas es un patio o andador, una entrada de carros, o alrededor de la alberca?"
+        options_en: ["Patio or walkway", "Driveway", "Around the pool"]
+        options_es: ["Patio o andador", "Entrada de carros", "Alrededor de la alberca"]
+        card_field: true
+        why: "Driveways and pool deck coatings are outside R-21, so the answer tells businesses whether it is theirs."
+      - id: fu_crack_what
+        ask_when: "Concrete crack request with no close-up photo"
+        text_en: "Is one side of the crack higher than the other, or is it flat with a gap?"
+        text_es: "¿Un lado de la grieta está más alto que el otro, o está parejo con una abertura?"
+        options_en: ["One side is higher", "Flat with a gap", "Broken pieces or chips"]
+        options_es: ["Un lado está más alto", "Parejo con una abertura", "Pedazos rotos o despostillados"]
+        card_field: true
+        why: "Raised edges and broken pieces are a bigger job than filling a gap. [judgment]"
+      - fu_material
+    photos_priority: [p2, p1, p4]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Hole or collapse under a slab people walk on"]
+      regular: "Cracks and raised edges"
+    scope_line_en: "Concrete walkway from the carport, about 25 feet, has raised edges at three cracks; homeowner wants it made flat."
+    scope_line_es: "Andador de concreto de la cochera, de unos 25 pies, tiene bordes levantados en tres grietas; la dueña lo quiere parejo."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (grind, replace panels, switch to pavers)", "earliest start"]
+    card_template: |
+      REQ-<id> | Pavers and hardscape | <town>, <general area> | <kind of place>
+      <one scope line: what concrete, where, what she wants>
+      Where: <patio or walkway / driveway / around pool>. Crack: <one side higher / flat gap / broken pieces>. Size: <band or her length>.
+      Open to pavers instead: <if she said>. Photos: <n> (<neutral description>).
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Tree roots lifted that.", "Just fill it with caulk.", "That slab has to be torn out.", "Grinding is the cheap way."]
+
+  - id: irrigation_install
+    new_job_type: true
+    label: "New drip or sprinkler system, added zones, or a redo of an old system (repairs ride here until the catalog has a repair job type)"
+    bank_job_type: "irrigation install"
+    recurring: false
+    homeowner_phrasings: ["want drip put in the front yard", "new sprinkler system", "add a zone for the new trees", "redo my old drip", "drip system broken, need it fixed"]
+    must_know:
+      - fact: "New, added, redone, or a fix"
+        bank_question: project
+        follow_up: fu_irrigation_scope
+        photo: p1
+        why_it_moves_price: "A new system needs a tie-in, backflow device, valves and controller; adding a zone uses what is there. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Which parts of the yard"
+        bank_question: size
+        follow_up: fu_yard_area
+        photo: p1
+        why_it_moves_price: "Front, back or both sets zone count, trenching and valves; square feet is a weak proxy for a yard. [judgment]"
+        skip_if: "She named the area"
+      - fact: "What it will water"
+        bank_question: null
+        follow_up: fu_irrigation_what
+        photo: p1
+        why_it_moves_price: "Drip for desert plants and spray zones for a lawn are different parts lists; misters are a different trade in this catalog. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Whether a working controller is there"
+        bank_question: null
+        follow_up: fu_controller
+        photo: null
+        why_it_moves_price: "A new controller and wire runs add a line item. [judgment]"
+        skip_if: "New system with no existing parts"
+    allowed_follow_ups:
+      - id: fu_irrigation_scope
+        ask_when: "Any watering-system request that does not say new, added or fix"
+        text_en: "Is this a new system, adding to the one you have, redoing an old one, or fixing what's there?"
+        text_es: "¿Es un sistema nuevo, agregar al que ya tiene, rehacer uno viejo, o arreglar lo que hay?"
+        options_en: ["Brand new system", "Add zones or lines", "Redo an old system", "Fix what's there"]
+        options_es: ["Sistema nuevo", "Agregar zonas o líneas", "Rehacer un sistema viejo", "Arreglar lo que hay"]
+        card_field: true
+        why: "Install, add-on, redo and repair are four different quotes; the answer keeps a repair from being sold as a new system. [judgment]"
+      - id: fu_yard_area
+        ask_when: "Irrigation request with no area named"
+        text_en: "Which parts of the yard would it cover?"
+        text_es: "¿Qué partes de la yarda cubriría?"
+        options_en: ["One bed or strip", "Front yard", "Back yard", "Front and back"]
+        options_es: ["Una jardinera o franja", "Yarda de enfrente", "Yarda de atrás", "Enfrente y atrás"]
+        card_field: true
+        why: "Area is how irrigation crews size zones and trenching. [judgment]"
+      - id: fu_irrigation_what
+        ask_when: "Irrigation request that does not say what it is for"
+        text_en: "What is it for?"
+        text_es: "¿Para qué es?"
+        options_en: ["Desert plants and trees", "A lawn", "Pots, planters or a garden bed", "A mix of these", "Patio misters"]
+        options_es: ["Plantas del desierto y árboles", "Pasto", "Macetas, jardineras o un huerto", "Una mezcla", "Nebulizadores para el patio"]
+        card_field: true
+        why: "Drip versus spray sets the parts list; patio misters route to water_treatment. [judgment]"
+      - id: fu_controller
+        ask_when: "Add-on, redo or fix, and the controller is not mentioned"
+        text_en: "Is there a timer or controller now, and does it work?"
+        text_es: "¿Hay un timer o controlador ahora, y funciona?"
+        options_en: ["Yes, it works", "Yes, but the screen is blank or it won't run", "No timer now"]
+        options_es: ["Sí, funciona", "Sí, pero la pantalla está apagada o no corre", "No hay timer"]
+        card_field: true
+        why: "A dead or missing controller is its own line item. [judgment]"
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell or hiss in the yard"]
+      urgent_capable_triggers: ["Water spraying from a line that won't shut off"]
+      regular: "Any install, add-on or redo"
+    scope_line_en: "New drip system for the front yard, desert plants and two trees, no system there now, hose bib on the garage wall."
+    scope_line_es: "Sistema de goteo nuevo para la yarda de enfrente, plantas del desierto y dos árboles, no hay sistema ahora, llave de manguera en la pared de la cochera."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (zones, controller, backflow device, trenching)", "earliest start"]
+    card_template: |
+      REQ-<id> | Pavers and hardscape: irrigation | <town>, <general area> | <kind of place>
+      <one scope line: new, add, redo or fix; what it waters; which yard>
+      Scope: <brand new / add zones / redo / fix what's there>. Covers: <one bed / front / back / front and back>. For: <desert plants / lawn / pots / mix / misters>.
+      Controller now: <works / blank or won't run / none>. What she sees: <her words on broken parts, scrubbed>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your timer is bad.", "Drip is the way to go in the desert.", "You need a backflow preventer by code.", "A front-yard drip system runs about a thousand."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing, reviews and photo galleries of past patios", "Word of mouth, repeat customers and neighbors who see the job", "Yard signs during the job and truck lettering [judgment]", "Referrals from paver and stone yards, pool builders and realtors [judgment]", "Google Local Services Ads and search ads", "Angi, Thumbtack and similar sites", "Local Facebook groups [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google Local Services Ads (hardscaping and patio)"
+      figure: "About $25 to $80 per lead, $25 to $40 in suburban markets; about 43.9 percent book; about $233 per paying customer (marketing-vendor figures)"
+      source: tvmg_hardscape_ads
+      unverified: false
+    - channel: "Google search ads (hardscape)"
+      figure: "About $153 per lead average; other vendor data puts hardscape at $80 to $150 per lead (marketing-vendor figures)"
+      source: tvmg_hardscape_ads
+      unverified: false
+    - channel: "Angi and Thumbtack (landscaping and hardscape)"
+      figure: "About $10 to $40 per lead, shared with 3 to 4 other companies (marketing-vendor figure)"
+      source: pipeline_landscapers
+      unverified: false
+    - channel: "Facebook ads (landscaping and hardscape)"
+      figure: "About $25 to $60 per lead (marketing-vendor figure)"
+      source: pipeline_landscapers
+      unverified: false
+    - channel: "Lake Havasu City hardscape and irrigation businesses specifically"
+      figure: "No local figures found; a small market with fewer bidders may run below these national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Same request sold to four other crews", "People who only want a price per square foot over the phone", "Driving out to measure a job that was never real", "Monthly fees whether or not jobs come", "Requests for work outside their license, like gas lines or concrete driveways"]
+  what_makes_a_lead_worth_paying_for: ["Size, access and what is on the ground now, stated up front", "A whole-area photo and the gate width", "Material and look, with her own pictures", "Timing stated, so they can fit it before summer heat", "The homeowner already picked them, and they pay only then"]
+  their_words: ["base", "ABC", "compaction", "plate compactor", "bedding sand", "polymeric sand", "edge restraint", "soldier course", "cuts", "herringbone", "travertine", "flagstone", "DG", "caliche", "skid steer", "mini-ex", "sleeve", "drip zone", "manifold", "PVB", "anti-siphon valve", "emitter", "half-inch poly", "controller"]
+  signup_objections:
+    - objection: "I can't price a patio from a text. I have to see it."
+      answer: "You don't give a final price. You quote a low and high range and say what puts it at the high end. Most cards come with size, gate width, what is on the ground now and photos, so you can tell whether it is worth a visit."
+    - objection: "Why pay up to $199 for a patio job?"
+      answer: "The fee is set by job size: $25, $75 or $199. You pay it only when the homeowner picks your quote and you confirm. Nothing to join and nothing monthly."
+    - objection: "Is this the same request sent to every crew in town?"
+      answer: "It goes to the local businesses whose license covers the work and who chose that job type. She sees each quote in the order it came in and picks one. Only the business she picks pays, and only that business gets her contact details."
+    - objection: "Will you rank me against other crews?"
+      answer: "No. Ask Hava never sorts, rates or scores a business. Each quote shows the business's own words, license numbers and review links."
+    - objection: "I only do pavers, not irrigation."
+      answer: "You pick the job types you want at sign-up and can change them any time. You get cards only for those."
+    - objection: "Homeowners send Pinterest pictures of things that can't be built here."
+      answer: "Her pictures are marked as the look she wants, not her yard. Any concept image is labeled AI-generated, not exact, may not be feasible. Quote from her photos and answers, and say in your quote what you would change."
+    - objection: "What if she cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Half these jobs turn into gas lines and electrical I can't do."
+      answer: "The card lists any gas, power or wall she asked for as her words, so you can quote your part and say what others would need to do."
+  quote_tips_for_card: ["Give a low and high range and say what moves it to the high end", "Say whether haul-off of old concrete, rock or grass is included", "Say what base depth and material the range assumes", "Name any part you would leave to another trade, like a gas line or outlet", "Give your earliest start and how many working days the job takes"]
