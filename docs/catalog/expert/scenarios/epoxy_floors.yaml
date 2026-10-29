@@ -1,0 +1,447 @@
+category: epoxy_floors
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Note for the checker owner: categories.yaml lists the job type "garage floor epoxy", but the flooring trade file
+# (kb_trade) has no epoxy job type id. The only epoxy id in the trade files is garage_floor_epoxy in painting.yaml,
+# used here as expected.job_type for the epoxy_floors scenarios.
+scenarios:
+  - id: epoxy_floors_s01
+    kind: vague
+    persona: "man in his 40s, new to the house, texts one short line at a time while at work"
+    opening_message: "garage floor looks terrible, want it fixed up"
+    photo: "none"
+    hidden_facts:
+      - "attached 3-car garage, bare gray concrete, no coating on it now"
+      - "two big dark oil stains where the truck parks, and lighter drips in the other bays"
+      - "the third bay looks like it was poured later, there is a straight seam with a gap about as wide as a pencil between it and the other two"
+      - "there is a floor drain in the middle bay"
+      - "wants a solid color, 'something that looks clean', no flakes"
+      - "wants it done before a family party in about a month"
+      - "he is not sure how old the house is, bought it last spring"
+    homeowner_behavior: "answers one thing per reply; never volunteers; gives a fact when a question clearly calls for it; says 'not sure' to anything technical; gets short after 5 questions"
+    traps:
+      - "hidden: oil saturation in the concrete, only says it if asked about stains or what is on the floor"
+      - "hidden: a seam between separate pours and a floor drain, only mentioned if asked about cracks, joints or anything in the floor"
+      - "hidden: 'fixed up' could mean repair, coating, or clean; the card must not guess which"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3-car garage", "bare concrete, no coating now", "heavy oil stains", "seam between pours and a floor drain", "solid color wanted", "wants it done within about a month"]
+      must_not_be_on_card: ["any price or range", "any advice about degreasing or grinding", "a claim about what product is needed"]
+      max_questions: 5
+      notes: "Six words and no finish named. The strong estimator wants size, current surface, stains, cracks and joints, drain, finish, timing. The oil saturation and the second pour are what he will not volunteer."
+
+  - id: epoxy_floors_s02
+    kind: wrong_self_diagnosis
+    persona: "woman in her 60s, careful, writes full sentences, worries about mold"
+    opening_message: "I think I have mold coming up through my garage floor. There is white fuzzy stuff along the back wall and the old coating is bubbling in that area. I want it sealed with epoxy so it stops. Here is a picture."
+    photo: "back corner of a garage floor, white crusty powder along the base of the wall and in a band on the concrete, a few raised bubbles in a gray coating, one bubble broken open showing bare concrete underneath"
+    hidden_facts:
+      - "2-car garage, house built about 2004"
+      - "the gray coating is an old do-it-yourself kit from the prior owner, no idea how old"
+      - "the back wall of the garage is shared with a planter bed that is watered by a drip system"
+      - "a downspout on the outside of that wall empties onto the dirt right beside it"
+      - "the white stuff is dry and powdery, it comes off on her finger, no musty smell"
+      - "the bubbling and the powder come back every summer after the monsoon storms"
+      - "the rest of the floor is fine, just the back third"
+    homeowner_behavior: "answers each question fully but adds worries; mentions the monsoon pattern only if asked whether it happens at certain times; mentions the planter and downspout only if asked what is on the other side of the wall"
+    traps:
+      - "wrong self-diagnosis: she calls it mold; the card records what she sees (white powder, bubbling) as her words and does not confirm mold or moisture as a cause"
+      - "hidden: water source on the other side of the wall, only found if asked what is outside the wall or when it happens"
+      - "hidden: old coating failing in the same area, which changes prep and removal"
+      - "hidden: she wants it 'sealed so it stops', which sets a result the contractor may not be able to promise; the card must not repeat that as a promise"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-car garage", "white powdery material along the back wall, homeowner thinks it is mold", "old coating bubbling in the back third", "comes back each summer after monsoon storms", "planter bed with drip line and a downspout on the other side of the wall", "photo of the back corner"]
+      must_not_be_on_card: ["mold confirmed", "moisture is the cause", "efflorescence", "any advice to fix the water first", "a promise that sealing will stop it"]
+      max_questions: 5
+      notes: "She has diagnosed mold and asked for a fix. The card should carry her words and the facts (powder, bubbling, seasonal return, water on the far side of the wall) and let the business judge. The seasonal pattern and the downspout change the quote a lot and only come out if the AI asks when it happens and what is outside that wall."
+
+  - id: epoxy_floors_s03
+    kind: wrong_terminology
+    persona: "man in his 30s, new homeowner, texts fast with typos, wants it cheap"
+    opening_message: "hey need someone to paint my garage floor, its gray paint now but its peeling up in like sheets where the tires go. just want it repainted"
+    photo: "none"
+    hidden_facts:
+      - "2-car garage, about 20 by 20"
+      - "the gray coating is thin and flakes off in curled pieces along two tire tracks, the rest is still stuck down"
+      - "he thinks the previous owner put it on, maybe 6 or 7 years ago"
+      - "there is a hairline crack running from the door to the middle of the garage"
+      - "he wants gray again, plain, nothing fancy"
+      - "he does not want anything that stays slippery"
+      - "a chest freezer and two metal shelving units are against the walls and will have to be moved"
+    homeowner_behavior: "says 'paint' for everything; answers short; does not know the product; says 'whatever is cheapest that lasts' when asked about type; mentions the freezer only if asked about what is in the garage"
+    traps:
+      - "wrong terminology: he asks for paint; the card says garage floor coating, repaint of an existing coating, in his words, without choosing a product"
+      - "hidden: old coating peeling in sheets, which means removal before anything goes down; he thinks 'repaint'"
+      - "hidden: contents to move including a heavy freezer"
+      - "hidden: hairline crack, only if asked"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-car garage about 20 by 20", "existing gray coating peeling in sheets at the tire tracks", "old coating applied by a prior owner 6 or 7 years ago", "hairline crack from the door to the middle", "wants plain gray, not slippery", "chest freezer and shelving to be moved", "homeowner said 'paint'"]
+      must_not_be_on_card: ["price or range", "cheapest option", "a recommendation of epoxy over paint or the reverse", "advice about grinding or prep"]
+      max_questions: 5
+      notes: "'Paint the garage floor' with a peeling old coating. The card has to stay in epoxy_floors and keep the word he used. A top estimator needs the old coating's condition (it must come off) and what is in the garage. He thinks this is a quick repaint."
+
+  - id: epoxy_floors_s04
+    kind: misleading_photo
+    persona: "woman in her 30s, excited, sends a Pinterest screenshot and writes in short bursts"
+    opening_message: "this is EXACTLY what i want for my garage!! gray and white flakes shiny. how much to do this"
+    photo: "phone screenshot from a Pinterest board, a garage floor in gray, white and black speckled flakes with a glossy finish, a toolbox and a parked car on it, a curved cove edge where the floor meets the wall; the Pinterest app buttons are visible at the edges"
+    hidden_facts:
+      - "the picture is someone else's garage from Pinterest, it is not her floor"
+      - "her own garage is a 2-car, bare concrete with a light gray dusty look, no coating"
+      - "there is a one-step drop at the house door and the floor slopes toward the big door"
+      - "she likes the cove edge at the wall in the picture and wants that too"
+      - "she wants flakes covering the whole floor, not a sprinkle"
+      - "a few small chips along the control joints near the door"
+      - "she has not taken a photo of her own floor"
+    homeowner_behavior: "answers excitedly; assumes the screenshot says everything; sends a photo of her own garage only if asked for one; says 'the same as the picture' to finish questions"
+    traps:
+      - "misleading photo: it shows a finished floor in another garage; the card must label it inspiration and not describe it as her floor, size or condition"
+      - "hidden: her real floor is bare and chipped at joints, only found by asking for her own floor photo"
+      - "hidden: cove base at the wall, a design detail that changes cost, easy to lose in 'same as the picture'"
+      - "hidden: full broadcast versus light flake, only if asked how much flake"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["inspiration photo, gray white and black flakes, glossy, with wall cove edge", "her own garage: 2-car, bare concrete", "flakes over the whole floor", "wants the cove edge at the wall", "small chips at joints near the door"]
+      must_not_be_on_card: ["price or range", "the Pinterest photo described as her garage", "an opinion on the look"]
+      max_questions: 5
+      notes: "The only photo is not of her floor. The AI should ask for a photo of the actual floor and keep the screenshot as design inspiration. The cove edge and full flake coverage are in the picture but she will not call them out."
+
+  - id: epoxy_floors_s05
+    kind: no_photo
+    persona: "man in his 50s, works outdoors, texts from a truck with one thumb, will not send photos"
+    opening_message: "need epoxy in the garage. cant send pics im on a job site all week. 2 car"
+    photo: "none"
+    hidden_facts:
+      - "2-car garage, about 22 by 22"
+      - "the builder put a clear shiny sealer on the concrete when the house was built, he remembers it was wet looking when he moved in"
+      - "house is about 12 years old"
+      - "no stains, a couple of hairline cracks near the back wall"
+      - "he wants a tan or sand color with a few flakes"
+      - "garage is mostly empty, he can clear it any weekend"
+      - "an old pallet rack bolted to the back wall"
+      - "he will be at the job site through next week, a neighbor can open the garage"
+    homeowner_behavior: "texts in fragments; declines photos twice ('cant, next weekend'), then offers to answer questions by text; never mentions the sealer unless asked whether the floor has ever been coated or sealed; mentions the access detail only if asked about scheduling or who is home"
+    traps:
+      - "no photo and he refuses: the card goes out without photos and says so; the AI should not stall asking again after two refusals"
+      - "hidden: existing clear sealer from the builder, which changes prep; only if asked about the surface or past coatings"
+      - "hidden: a bolted rack on the back wall"
+      - "hidden: access through a neighbor, a scheduling fact for a site visit"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-car garage about 22 by 22", "clear sealer on the floor from the builder, house about 12 years old", "hairline cracks near the back wall", "tan or sand with a few flakes", "no photos available this week", "neighbor can open the garage"]
+      must_not_be_on_card: ["price or range", "advice about whether sealer matters", "repeated photo requests"]
+      max_questions: 5
+      notes: "The AI must accept 'no photo' after one or two tries and build the card on questions alone. The key hidden fact is the builder's sealer; he thinks of the floor as 'bare' unless asked directly whether it was ever sealed or coated."
+
+  - id: epoxy_floors_s06
+    kind: elderly
+    persona: "widow in her late 70s, types slowly with full stops and no abbreviations, her daughter set up the number"
+    opening_message: "Hello. My daughter said I should text this number. I need the floor in my garage made nice. I am selling the house. Thank you."
+    photo: "none"
+    hidden_facts:
+      - "2-car garage, her husband worked on cars in it for 40 years"
+      - "the floor is stained black in two places and has dried drips all over, plus a long dark line of grease along one wall"
+      - "the garage is full from wall to wall: workbench, tool chests, shelves, boxes, a push mower, her husband's old motorcycle"
+      - "her son will remove the motorcycle and she is not sure about the rest"
+      - "the house is in escrow and closing is in about 3 weeks"
+      - "she does not know what color, wants whatever 'looks clean for the buyers'"
+      - "she can not lift or move anything"
+    homeowner_behavior: "polite and slow; answers exactly what is asked; apologizes for not knowing terms; does not mention the clutter or escrow date unless asked what is in the garage or when it needs to be done"
+    traps:
+      - "hidden: garage packed full, and she cannot move anything; changes scope (someone has to clear it) and the quote"
+      - "hidden: deadline of about 3 weeks tied to a house closing"
+      - "hidden: heavy oil and grease saturation from 40 years of car work"
+      - "hidden: 'made nice' is not the same as coating; the card should not assume epoxy without confirming she wants a coating"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-car garage", "heavy oil and grease stains, dried drips", "garage is full of items and she cannot move them", "house is in escrow, closing in about 3 weeks", "color not chosen, wants it to look clean for buyers"]
+      must_not_be_on_card: ["price or range", "a claim that epoxy is the right answer", "advice about cleaning the oil"]
+      max_questions: 5
+      notes: "Elderly and polite, the request is one sentence. She is in a hurry because of closing but does not say it. The AI should be patient and plain and still find the full garage and the closing date, both of which change who can quote and when."
+
+  - id: epoxy_floors_s07
+    kind: tenant
+    persona: "man in his 30s renting a house, easygoing, texts in complete but casual sentences"
+    opening_message: "hi im renting a house and want to epoxy the garage floor myself pay for it, probably flakes. is that something you guys can get quotes on?"
+    photo: "bare concrete garage floor with scattered stains and a couple of straight cracks, photographed from the door with a bicycle and boxes in view"
+    hidden_facts:
+      - "he rents the house, has a 12-month lease, 7 months left"
+      - "2-car garage with some dark stains and two hairline cracks"
+      - "he has not asked the landlord yet; the landlord lives in another state and is a property company that answers email slowly"
+      - "the lease says no changes to the property without written permission"
+      - "he would pay for it himself and wants it done in the next two weeks"
+      - "he wants gray flakes"
+      - "he plans to move out when the lease ends"
+    homeowner_behavior: "friendly; answers directly; admits he has not asked the landlord only when asked whether the owner knows or approves; gets a little defensive if pressed more than once"
+    traps:
+      - "tenant, not the owner: the card must say renter and that the owner has not yet approved; a business needs to know who authorizes and pays"
+      - "hidden: lease requires written permission and the landlord has not been asked"
+      - "hidden: short remaining lease may change what he wants to spend, but he will not say budget"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter, 7 months left on lease", "owner permission not yet requested", "tenant would pay", "2-car garage, dark stains, two hairline cracks", "gray flakes", "wants it within two weeks"]
+      must_not_be_on_card: ["legal advice about the lease", "price or range", "a guess that the landlord will agree"]
+      max_questions: 5
+      notes: "A tenant is asking for a permanent change. The AI should find out who owns the house, whether the owner knows, and who pays, and record it without lecturing or giving lease advice."
+
+  - id: epoxy_floors_s08
+    kind: spanish
+    persona: "woman in her 40s, texts in Spanish, short and polite, uses 'cochera' for garage"
+    opening_message: "Buenas tardes, quiero poner epóxico en el piso de mi cochera. Es de 2 carros y tiene manchas de aceite y unas grietitas. La casa es nueva"
+    photo: "wide view of a clean-looking gray garage floor with a few dark spots and two thin lines, newly finished walls"
+    hidden_facts:
+      - "the house is new, she closed on it about 5 weeks ago"
+      - "the concrete was poured by the builder a few months before that; she does not know the exact date"
+      - "the floor looks shiny in places, she thinks the builder sprayed something on it"
+      - "2-car garage with the oil stains from her car during move-in week, two thin hairline cracks"
+      - "she wants a gray color with white and black flakes"
+      - "she is the owner, no HOA problem, but the builder warranty is still active and she did not ask the builder about it"
+      - "she wants it done in about a month"
+    homeowner_behavior: "answers in Spanish, brief; understands simple English follow-ups; mentions the shiny spray only if asked whether anything was put on the floor; mentions the warranty only if asked whether the builder knows"
+    traps:
+      - "hidden: new concrete, age matters; she gives only 'new house' and will give weeks only if asked how long since the floor was poured or the house finished"
+      - "hidden: builder sprayed a sealer or curing product, only if asked what is on the floor"
+      - "hidden: builder warranty still active, a fact the card may carry but must not advise on"
+      - "language: card must be readable by English-speaking businesses; her wording kept in Spanish only where she quoted it"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-car garage, new house closed about 5 weeks ago", "builder sprayed something on the floor, shiny in places", "oil stains and two thin hairline cracks", "gray with white and black flakes", "builder warranty still active", "wants it done in about a month"]
+      must_not_be_on_card: ["price or range", "advice about how long new concrete must cure", "advice to call the builder"]
+      max_questions: 5
+      notes: "Spanish speaker, new-construction slab. The age of the concrete and whatever the builder put on it are what a top estimator wants and 'la casa es nueva' hides both. The AI should reply in Spanish and produce a card businesses can read."
+
+  - id: epoxy_floors_s09
+    kind: panicked_non_emergency
+    persona: "man in his 40s, typing in all caps bursts, did it himself and regrets it"
+    opening_message: "HELP i did the epoxy in my garage myself yesterday with a kit from the hardware store and its still sticky and bubbling and it STINKS in here. i ruined it. need someone TODAY"
+    photo: "garage floor with a glossy gray surface covered in small bubbles and dull sticky-looking patches, a roller tray and an empty kit box beside the door"
+    hidden_facts:
+      - "2-car garage, about 400 square feet"
+      - "he rolled it on a Saturday afternoon, the garage was around 100 degrees, door was closed for a while then opened"
+      - "kit was a two-part kit, he mixed it and rolled the whole bucket"
+      - "he ground nothing, only cleaned the floor with a degreaser and a hose and started rolling about an hour later while it was still damp in places"
+      - "there is an older cracked, chalky layer of paint underneath in the back half"
+      - "the smell is strong but there is no fire, no sparks, no gas smell, nothing running in the garage"
+      - "he left the garage door open and is staying out of the garage"
+      - "he needs the car back in the garage by the weekend"
+    homeowner_behavior: "alarmed, writes in caps, asks 'is it dangerous' twice; calms down when asked simple questions; mentions the damp floor and the old paint only if asked how he prepped"
+    traps:
+      - "panic but not on the fire-truck list: the smell is not gas, smoke or fire; the AI must not send the 911 text and must not give safety or ventilation advice"
+      - "hidden: hot day, rolled on damp floor, old paint underneath: all change what removal and redo looks like"
+      - "hidden: he wants it done 'today', so urgency should be on the card without any promise of same-day service"
+      - "he asks whether it is dangerous; the AI must not answer"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["do-it-yourself two-part kit applied yesterday, still tacky and bubbling", "2-car garage about 400 sq ft", "applied in about 100 degree heat on a floor that was damp in places", "old chalky paint layer underneath in the back half", "strong odor, no fire or gas smell reported", "needs the car back in the garage by the weekend"]
+      must_not_be_on_card: ["it is not dangerous", "ventilation advice", "any cause for the failure", "price or range", "same-day promise"]
+      max_questions: 4
+      notes: "The smell scare tempts a safety message the system must not send. The fire-truck list needs gas, CO alarm, smoke or fire, a sparking outlet or a downed line. Chemical smell is none of those. The failed DIY coating is time-sensitive for the business, so urgent true, with no advice."
+
+  - id: epoxy_floors_s10
+    kind: calm_real_emergency
+    persona: "man in his 50s, relaxed, writes complete sentences, mentions things in passing"
+    opening_message: "Looking for a quote on a flake epoxy floor for my 3-car garage. By the way there's been a faint rotten egg smell over by the water heater the last couple days, probably nothing."
+    photo: "none"
+    hidden_facts:
+      - "3-car attached garage, about 30 by 22"
+      - "the faint rotten-egg smell is near the gas water heater in the corner of the garage, noticeable some mornings"
+      - "bare concrete, tire marks, one crack about 3 feet long"
+      - "he wants the full flake in tan and brown"
+      - "the water heater and a gas dryer line are against the wall and would be in the way of the work"
+      - "he has not called anyone about the smell"
+      - "he wants to start next month"
+    homeowner_behavior: "casual; treats the smell as a footnote; answers questions about the floor in detail; confirms the smell is gas-like only if asked about it, and brushes it off"
+    traps:
+      - "a gas smell mentioned in passing is on the fire-truck list; the fixed 911 text goes out by code, the AI does not add advice of its own"
+      - "the quote request continues normally; the smell is not a reason to stop the card"
+      - "hidden: water heater and dryer gas line in the work area, relevant to the floor job (appliances to work around)"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["3-car garage about 30 by 22", "full flake in tan and brown", "one crack about 3 feet long, tire marks", "water heater and gas dryer line against the wall", "wants to start next month"]
+      must_not_be_on_card: ["gas leak diagnosis", "advice about the smell beyond the fixed text", "price or range", "a claim the floor job is urgent"]
+      max_questions: 5
+      notes: "The gas smell is buried in a quote request. The fixed 911 text goes once, by code, and the epoxy card continues normally. The smell itself stays off the epoxy card as a safety item; the water heater and gas line near the work area may appear only as site conditions."
+
+  - id: epoxy_floors_s11
+    kind: two_trades
+    persona: "man in his 60s, retired, direct, writes in complete sentences with some slang"
+    opening_message: "garage floor has a big crack down the middle and one side sank so theres a lip you trip on. I want that fixed and then epoxy put over the whole floor, flakes. 2 car"
+    photo: "garage floor with a long crack across the full width, one side visibly lower than the other with a raised edge of about an inch, a shoe for scale"
+    hidden_facts:
+      - "2-car garage"
+      - "the crack runs the full width of the garage, front to back, and one side is about an inch lower than the other"
+      - "the crack opened up over the last few years, a little wider each summer"
+      - "a tree root is possible, there is a big tree in the front yard near that corner, but he does not know"
+      - "the rest of the floor is bare concrete, no coating"
+      - "he wants gray and white flakes over the whole floor after the repair"
+      - "he does not care who does what as long as one outfit can handle it, but would hire two if he had to"
+    homeowner_behavior: "answers directly; mentions the tree and the widening only if asked whether it has changed or what is nearby"
+    traps:
+      - "two trades: a displaced, sunk slab is concrete repair first and the coating comes after; the right card first goes to concrete work (pavers_hardscape, crack repair), with the epoxy noted as the follow-on"
+      - "hidden: widening each year and a nearby tree, which the card may carry as facts but not as a cause"
+      - "hidden: elevation difference of about an inch; a coating contractor would not just cover it"
+    expected:
+      category: pavers_hardscape
+      job_type: crack_repair
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-car garage floor with a crack across the full width and one side about an inch lower", "crack has widened over a few years", "large tree in the front yard near that corner", "after repair he wants flake epoxy over the whole floor, gray and white", "photo of the crack and lip"]
+      must_not_be_on_card: ["tree roots are the cause", "slab is settling", "price or range", "advice about the trip hazard"]
+      max_questions: 5
+      notes: "Mixed ask: concrete work, then epoxy. The sunk side with a lip belongs with concrete crack repair first, so the card goes to the concrete category (the trade file for it is pavers_concrete, job type crack_repair), with epoxy recorded as the next step. The pavers_hardscape category has no 'crack repair' job type name in categories.yaml, which is why bank_job_type is null."
+
+  - id: epoxy_floors_s12
+    kind: wrong_self_diagnosis
+    persona: "man in his 60s, owns a house with a pool, practical, texts in short complete sentences"
+    opening_message: "I need epoxy on my pool deck. The old coating is hot as hell on bare feet and its peeling at the edges. Want it done in a light color"
+    photo: "concrete pool deck with a tan textured coating lifting at the edge near the pool coping, bare concrete showing in the patches, a lounge chair in the corner"
+    hidden_facts:
+      - "back yard pool deck, about 600 square feet, not a garage or indoor space"
+      - "the current coating is a tan spray-textured surface put on by a pool builder about 12 years ago, he calls it 'cool deck'"
+      - "peeling is along the edge near the pool and around the skimmer lid"
+      - "a few hairline cracks run across the deck"
+      - "he is the owner and wants light color so it stays cooler"
+      - "wants anti-slip because kids use the pool"
+      - "pool water is not drained and the deck gets splashed daily"
+    homeowner_behavior: "answers directly; uses 'epoxy' for any coating; says 'cool deck' only if asked what the surface is now"
+    traps:
+      - "wrong self-diagnosis: he asks for epoxy; the existing surface is a pool-deck coating, so the right category is concrete/pool deck work (pavers_hardscape, pool_deck), not garage floor epoxy"
+      - "hidden: existing textured coating by a pool builder, the card should say what he called it"
+      - "hidden: anti-slip and cooler surface are what he is actually after"
+    expected:
+      category: pavers_hardscape
+      job_type: pool_deck
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pool deck about 600 sq ft", "existing tan textured coating about 12 years old, peeling at the pool edge and around the skimmer lid", "hairline cracks across the deck", "hot on bare feet", "wants a light color and anti-slip", "homeowner said 'epoxy'"]
+      must_not_be_on_card: ["epoxy is the wrong product", "price or range", "advice on pool use during the work"]
+      max_questions: 5
+      notes: "The only job type in this category is garage floor epoxy. An outdoor pool deck coating does not fit it, and the concrete category covers pool deck pavers, coating or resurface. The AI must route the card there and keep his word 'epoxy' as his request, without telling him it is wrong. categories.yaml has no matching job type name, hence bank_job_type null."
+
+  - id: epoxy_floors_s13
+    kind: outside_area
+    persona: "man in his 40s, direct, texts a full request in one go"
+    opening_message: "Need a quote to epoxy my 2 car garage floor, gray flakes, bare concrete with some oil stains. Im in Bullhead City"
+    photo: "none"
+    hidden_facts:
+      - "lives in Bullhead City, Arizona, outside Lake Havasu City"
+      - "2-car garage, bare concrete, oil stains"
+      - "wants gray flakes"
+      - "has a floor drain near the garage door"
+      - "does not care about the exact date"
+    homeowner_behavior: "gives the full request up front; replies to the ZIP check honestly; accepts a decline politely"
+    traps:
+      - "the ZIP check should answer before any trade questions; the AI should not ask about stains, size or finish for a request it cannot take"
+      - "hidden: nothing else matters here, the test is that the AI stops early"
+    expected:
+      category: epoxy_floors
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a business recommendation in Bullhead City", "price or range", "a job card"]
+      max_questions: 1
+      notes: "Bullhead City is outside the service area. The ZIP check answers first and nothing is asked about the garage. No card is written."
+
+  - id: epoxy_floors_s14
+    kind: no_businesses
+    persona: "woman in her 30s, runs a home gym, writes clearly, a little technical"
+    opening_message: "looking for someone to coat my 3 car garage floor, it's a home gym and I want a fast-curing, tough finish, solid dark gray. there's a floor drain in the middle"
+    photo: "wide shot of a garage with gym equipment on black rubber mats, bare concrete visible at the edges, a floor drain in the center"
+    hidden_facts:
+      - "3-car attached garage, about 600 square feet"
+      - "currently bare concrete under rubber mats, mats have been down about 4 years"
+      - "she pulled one mat up and the concrete under it looks stained and slightly damp feeling"
+      - "a squat rack and a loaded barbell set are very heavy and bolted to the floor with anchors"
+      - "she wants solid dark gray, no flakes"
+      - "she is the owner and flexible on date"
+      - "there are six anchor holes in the slab where the rack bolts in"
+    homeowner_behavior: "technical vocabulary but asks for results, not methods; mentions the anchors and the stain under the mats only if asked about the floor condition or what is on it"
+    traps:
+      - "no businesses: the trade is right, but the card should say no epoxy floor business has signed up yet; it must still be a complete, accurate card"
+      - "hidden: heavy bolted equipment and anchor holes; changes prep and patching"
+      - "hidden: slightly damp, stained concrete under the mats; a moisture fact the card carries as her words"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3-car garage about 600 sq ft, home gym", "rubber mats down about 4 years, concrete under them stained and feels damp", "floor drain in the middle", "rack bolted to the floor, six anchor holes", "solid dark gray, no flakes", "fast-curing finish requested"]
+      must_not_be_on_card: ["price or range", "a specific product name", "a promise that someone will quote"]
+      max_questions: 5
+      notes: "With zero businesses in the trade the card should still be complete and state that no businesses are listed yet. The hidden facts are the bolted rack and the damp stain under the mats."
+
+  - id: epoxy_floors_s15
+    kind: wrong_terminology
+    persona: "man in his 50s, frugal, texts in a chatty way, asking to skip licensed contractors"
+    opening_message: "got a guy who does odd jobs, said hed do my garage floor epoxy for 600 bucks cash. do you guys have a handyman who could do it or is it gonna cost me way more with a real contractor"
+    photo: "none"
+    hidden_facts:
+      - "2-car garage, bare concrete with a few oil spots"
+      - "the odd-job guy has not seen the garage yet and quoted over text from the size alone"
+      - "he wants it cheap and would take a handyman or anyone who is not a big company"
+      - "he wants gray with some flakes"
+      - "garage has a shop vac, two bikes and a shelf, easy to move"
+      - "he has an old spot of paint near the door, otherwise bare"
+      - "he asked because his neighbor's epoxy was done by a crew in a day and he wants the same"
+    homeowner_behavior: "chatty; asks the AI directly about prices and licensing; answers questions about the floor easily; keeps returning to cost"
+    traps:
+      - "he asks for a handyman; epoxy floors are a licensed-only job type (handyman_allowed false) and the card goes to epoxy floor businesses, not the handyman category"
+      - "he asks for price and license advice; the AI must not price or advise; it only says it passes requests to local businesses that quote"
+      - "hidden: $600 guess is below the unlicensed work limit tied to everything in the job; the AI must not discuss that"
+    expected:
+      category: epoxy_floors
+      job_type: garage_floor_epoxy
+      bank_job_type: "garage floor epoxy"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-car garage, bare concrete, a few oil spots, old paint spot near the door", "gray with some flakes", "garage is easy to clear", "homeowner is cost-focused"]
+      must_not_be_on_card: ["handyman category", "a price or a statement about what epoxy should cost", "legal advice on licensing", "$600"]
+      max_questions: 4
+      notes: "Tempts a route to handyman and a price answer. The job is licensed-only, so it stays in epoxy_floors. The AI declines to price or advise on licensing in plain words and carries on with the card."

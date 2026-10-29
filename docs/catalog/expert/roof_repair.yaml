@@ -1,0 +1,1062 @@
+# Ask Hava expert layer: roof_repair (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set roof_repair and trade_kb/trades/roofing.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The category has three job types (leak repair, tile replacement, re-roof); the kb has eleven. Mapping:
+#   active_leak, leak_repair, foam_coating, shingle_repair, storm_damage, roof_inspection, flashing_skylight
+#   -> "leak repair"; tile_repair -> "tile replacement"; reroof, tile_underlayment, manufactured_home_roof -> "re-roof".
+#   A whole-roof foam recoat is closer in size to a re-roof than to a leak repair; consider a "foam recoat" job type.
+#   A roof check has no close home; it is kept under "leak repair" because roofers do them and quote a range,
+#   but a "roof check" job type would route it more cleanly.
+# - Businesses opt in by job type, not by roof type, so a tile-only or foam-only roofer gets every roof type's
+#   cards. The card states the roof type on its first lines. A roof-type filter at sign-up would help.
+# - Manufactured-home roof-overs add a structure. A.A.C. R4-34-204 gives attached accessory structures to
+#   Department of Housing installers (I-10C, I-10D); the rule does not name roof-overs, so whether a roof-over
+#   is R-42 work is [judgment]. roof_repair has no refused row, so roof-over cards go to R-42 roofers today.
+#   Worth a license_map or refused-row decision.
+# - The bank set has no "Is water coming in right now?" and no roof age (kb q5, q6). Both are carried here as
+#   follow-ups (fu_wet_now, fu_roof_age), but only one follow-up is allowed per request. Adding roof age to
+#   the bank would free the follow-up for the job-specific question.
+# - The bank photo list is p1 to p3; kb p4 (attic) is read in photo_reading but not in any photos_priority.
+# - hvac_repair has no water-leak job type, so an AC drip routes to "AC not cooling".
+# - IRC R908 re-cover limits (layers, tile) could not be read (ICC paywall); the layering point is [judgment].
+schema: 1
+category: roof_repair
+question_set: roof_repair
+kb_trade: roofing
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications [S2]: R-42 Roofing (tile, shingles, metal, foam, coatings; up to 10 percent of roof substrate found after contract; may lift HVAC units, duct changes subcontracted; skylights without framing change; up to 24 linear feet of fascia); R-45 Sheet Metal (flashings, gutters, metal roofing)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104 Dual license classifications [S3]: CR-42 Roofing allows the C-42 and R-42 scopes"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed [S4] (handyman exemption (A)(14): under $1,000, no permit)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_34_204
+    title: "A.A.C. R4-34-204 Manufactured housing installer license classes [S11] (I-10C and I-10D install accessory structures attached to manufactured homes)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-34-204"
+    checked: "2026-10-29"
+    kind: statute
+  - id: adoh_licensing
+    title: "Arizona Department of Housing, Office of Manufactured Housing, Licensing [S12]"
+    url: "https://housing.az.gov/manufactured-housing/licensing"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits [S17]: replacing roof covering needs no permit; replacing roof sheathing does"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_irc_amend
+    title: "Lake Havasu City amendments to the 2024 IRC, R105.2 Building (11): in-kind reroofing exempt when sheathing removed and replaced is 25 percent of roof area or less"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/1204/Amendments-To-2024-Intl-Residential-Code-PDF"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Phoenix, Monsoon Awareness: season officially June 15 to September 30; downbursts and outflow winds of 50 mph or more"
+    url: "https://weather.gov/psr/monsoonawarenessweek"
+    checked: "2026-10-29"
+    kind: other
+  - id: tri_post_storm
+    title: "Tile Roofing Industry Alliance Tech Brief 2022-001, Post Storm Event: Considerations for Repairing Damaged Concrete and Clay Roofing Tiles (underlayment is the secondary water barrier; inspect it before repair; no tile over compromised underlayment; repaired tiles rarely match), copy hosted by FRSA"
+    url: "https://floridaroof.com/Post-Storm-Event---Considerations-For-Repairing-Damaged-Concrete-and-Clay-Roofing-Tiles---November-2022-1-15048.html"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: tri_tile_replacement
+    title: "Tile Roofing Industry Alliance Tech Brief 2021-02, Tile Replacement Considerations (tiles must interlock and seat; some profiles no longer made; salvage or harvested tiles; replacing past a minimum share may trigger code upgrades)"
+    url: "https://www.tileroofing.org/uploads/1/4/9/0/149044128/%E2%80%8Btile_replacement_considerations_for_tile_roofs.pdf"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: ibhs_spf
+    title: "IBHS / RICOWI roof guide, spray polyurethane foam roofs (inspect spring and fall; coatings re-applied every 10 to 20 years; check coating wear, exposed or wet foam, blisters, ponding)"
+    url: "https://ibhs.org/guidance/ricowi-roof-guide-spray-foam/"
+    checked: "2026-10-29"
+    kind: other
+  - id: leadgen_economy
+    title: "Leadgen Economy (marketing publication): home-improvement lead marketplaces; roofing on Angi/HomeAdvisor about $25 to $60 per lead shared by 3 to 5 contractors; Thumbtack about $35 to $70 per quote"
+    url: "https://www.leadgen-economy.com/blog/home-improvement-lead-marketplaces-angi-thumbtack-homeadvisor/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: activeprospect_roofing
+    title: "ActiveProspect (marketing vendor): how much do roofing leads cost (shared marketplace about $75 to $110 or more; exclusive about $150 to $300 or more; Local Services Ads about $25 to $80 or more)"
+    url: "https://activeprospect.com/blog/roofing-leads-cost/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: webtonic_roofing_ads
+    title: "WebTonic (marketing vendor): Google Ads for roofing, 2026 (non-branded search about $124 per lead, Q1 2026, 15 accounts; Local Services Ads $75 to $150 per lead citing BaaDigi; cost per acquisition $268 in 2025)"
+    url: "https://www.webtonic.io/blog/roofing-google-ads-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Scope: one spot, several spots, an underlayment lift-and-relay, or a full re-roof"
+      why: "A patch is hours; a lift-and-relay or re-roof is days of crew time priced by the square. The bank's problem question and the follow-ups settle which. [judgment]"
+      source: null
+    - driver: "Roof type: concrete or clay tile, flat foam or coating, asphalt shingle, metal"
+      why: "Each is a different crew, material and method; a foam roofer and a tile roofer quote different work for the same stain. [judgment]"
+      source: null
+    - driver: "Roof area and pitch: home size and stories"
+      why: "Area sets material and labor in every whole-roof quote; two-story and steep roofs add setup and time. [judgment]"
+      source: null
+    - driver: "Roof age, which on a tile roof stands in for underlayment condition"
+      why: "The tile sheds most water and the underlayment is the secondary barrier; tile should not go back over compromised underlayment, so an old roof turns a tile repair into an underlayment job."
+      source: tri_post_storm
+    - driver: "What is mounted on the roof: solar panels, a package AC unit, a swamp cooler, skylights"
+      why: "R-42 may lift HVAC units but duct changes go to a subcontractor; solar must come off and go back on, usually by another trade. Both add days. [judgment on solar]"
+      source: aac_r4_9_103
+    - driver: "Rotted deck or sheathing found once tile or shingles come off"
+      why: "R-42 may replace only up to 10 percent of the roof substrate found after the contract; more goes to a subcontractor, and sheathing replacement needs a city permit."
+      source: aac_r4_9_103
+    - driver: "Whether matching tile can be found for an older profile"
+      why: "Replacement tiles must interlock with the old ones, some profiles are no longer made, and salvage or harvested tile adds labor."
+      source: tri_tile_replacement
+    - driver: "Water coming in now (same-day tarp or dry-in visit) versus a scheduled repair, and monsoon backlog"
+      why: "Active leaks during monsoon get a premium and crews are booked out after big storms. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Underlayment under the tile is dried out and cracked, so the leak repair becomes a lift-and-relay"
+      how_a_pro_spots_it: "Roof age over about 20 years, black underlayment visible between slipped tiles in a close-up, stains in several rooms"
+      question_or_photo: fu_roof_age
+      source: tri_post_storm
+    - condition: "Rotted roof deck beyond the 10 percent an R-42 roofer may replace, which brings a subcontractor and a city permit"
+      how_a_pro_spots_it: "Sagging roof line in the outside photo, a leak that ran for months in a vacant home, daylight or dark wood in an attic photo"
+      question_or_photo: p2
+      source: aac_r4_9_103
+    - condition: "The tile profile is out of production, so spares, salvage tile or harvesting from another slope is needed"
+      how_a_pro_spots_it: "Older home, an unusual tile shape or color in the close-up, no spare tiles on site"
+      question_or_photo: fu_spare_tiles
+      source: tri_tile_replacement
+    - condition: "Solar panels or a rooftop AC or cooler sit over the work area"
+      how_a_pro_spots_it: "Panels or units in the outside photo; the homeowner's answer on what is mounted"
+      question_or_photo: fu_roof_equipment
+      source: null
+    - condition: "Wet foam under the coating on a flat roof, which turns a recoat into a partial tear-off"
+      how_a_pro_spots_it: "Bare or worn coating, blisters or soft spots in the close-up; last coat over 10 years ago"
+      question_or_photo: fu_last_coat
+      source: ibhs_spf
+    - condition: "Interior damage past the roofer's scope (wet drywall, matted insulation, stained ceiling texture)"
+      how_a_pro_spots_it: "Inside photo shows a large or sagging stain; the card says how long it has leaked"
+      question_or_photo: p1
+      source: null
+    - condition: "Two or more layers of shingles already on the roof, so any replacement is a full tear-off"
+      how_a_pro_spots_it: "Thick, wavy roof edge in the outside photo; homeowner's answer on layers"
+      question_or_photo: fu_layers
+      source: null
+    - condition: "Water travels along the underlayment or framing, so the stain is far from where it gets in"
+      how_a_pro_spots_it: "Stain in several rooms, or on an inside wall away from any roof feature"
+      question_or_photo: leak_where
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "leak repair (ceiling stain under a bathroom or a room above)"
+      might_be: "plumbing leak (plumbing kb leak_slow)"
+      one_question: fu_when_wet
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "leak repair (ceiling drip in summer with no rain, near a vent or the attic unit)"
+      might_be: "ac_leaking_water (hvac kb), a different category"
+      one_question: fu_when_wet
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "flashing_skylight (water around the swamp cooler on the roof)"
+      might_be: "cooler_leak or cooler_overflow (evaporative_coolers kb), a different category"
+      one_question: fu_when_wet
+      if_other_route_to: {category: hvac_repair, job_type: "evaporative (swamp) cooler repair"}
+      source: null
+    - sounds_like: "tile replacement (a few broken tiles and a leak inside)"
+      might_be: "tile_underlayment (worn underlayment under the tile)"
+      one_question: fu_roof_age
+      if_other_route_to: {category: roof_repair, job_type: "re-roof"}
+      source: tri_post_storm
+    - sounds_like: "re-roof (wants a new roof after one leak)"
+      might_be: "leak_repair"
+      one_question: fu_why_new
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "roof_inspection (roof check before a sale)"
+      might_be: "pre_listing (home_inspection kb), a full home inspection"
+      one_question: fu_check_scope
+      if_other_route_to: {category: home_inspection, job_type: "pre-listing inspection"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Size and spread of the stain", "Sagging or bulging drywall", "Stain near a vent, light, skylight or outside wall", "Rings that show repeat wetting"]
+      neutral_wording: "Brown ring stain about 2 feet across on the hallway ceiling near a vent; drywall looks flat."
+    - photo_id: p2
+      reads: ["Roof type and tile shape (flat, S-shaped, barrel)", "Stories and pitch", "Solar panels, AC unit, cooler or skylights on the roof", "Sagging ridge or roof line", "Flat sections and patio covers"]
+      neutral_wording: "S-shaped concrete tile on a one-story pitched roof; swamp cooler on the back slope; solar panels on the south side."
+    - photo_id: p3
+      reads: ["Cracked or slipped tiles and about how many", "Black underlayment showing between tiles", "Blisters, cracks or bare foam on a flat roof", "Lifted or missing shingles", "Rust or open seams on metal"]
+      neutral_wording: "Four cracked tiles near the front edge, with dark underlayment showing in one gap."
+    - photo_id: p4
+      reads: ["Wet or stained roof deck", "Daylight through the deck", "Wet or matted insulation"]
+      neutral_wording: "Dark stained wood on the underside of the roof above the hallway; insulation below looks matted."
+  local_factors:
+    - fact: "Monsoon season officially runs June 15 to September 30, with downbursts and outflow winds of 50 mph or more"
+      effect: "Wind-lifted tile, blown shingles and debris calls arrive in bursts after storms, and active-leak cards cluster on storm nights"
+      source: nws_monsoon
+    - fact: "Lake Havasu City needs no permit to replace roof covering but does to replace roof sheathing"
+      effect: "A covering-only re-roof has no permit line in the quote; deck rot found on tear-off can add one"
+      source: lhc_permits
+    - fact: "The city's IRC amendment exempts in-kind reroofing when sheathing replaced is 25 percent of roof area or less"
+      effect: "Roofers price a permit only when deck replacement runs past that share or the roof type changes"
+      source: lhc_irc_amend
+    - fact: "Roofing needs ROC R-42, the dual CR-42 or a B general license; R-42 may replace up to 10 percent of substrate found after contract"
+      effect: "Roofing rarely fits the handyman exemption (most jobs run over $1,000), and big deck repairs bring in a subcontractor"
+      source: aac_r4_9_103
+    - fact: "The handyman exemption covers only work under $1,000 with no permit"
+      effect: "This category takes no handyman cards; even a few slipped tiles go to licensed roofers"
+      source: ars_32_1121
+    - fact: "Department of Housing installer classes I-10C and I-10D install accessory structures attached to manufactured homes"
+      effect: "A manufactured-home roof-over may need an installer license as well as roofing skill [judgment on roof-overs]"
+      source: aac_r4_34_204
+    - fact: "Spray foam roofs are checked in spring and fall, and their coatings are re-applied every 10 to 20 years"
+      effect: "The last coat date is the first thing a foam roofer asks; a worn coating exposes foam to sun damage"
+      source: ibhs_spf
+    - fact: "Most homes have concrete or clay tile on pitched roofs, with foam or coated flat sections over back rooms and patios; rooftop coolers, package AC units and solar are common"
+      effect: "The card should say what is on the roof, since every unit is a flashing point and solar adds a trade [judgment]"
+      source: null
+    - fact: "Many second homes sit empty for months, and seasonal residents find leaks when they return in the fall"
+      effect: "Damage may be large by the time a roofer sees it; October brings a wave of past-leak requests [judgment]"
+      source: null
+    - fact: "Summer roof surfaces get very hot; crews start at dawn and re-roof output drops in July and August"
+      effect: "Re-roof start dates stretch in summer and quotes may give later earliest days [judgment]"
+      source: null
+    - fact: "Many HOAs in the area approve tile color and profile before a re-roof"
+      effect: "Changing roof type or color can add an HOA step before work starts [judgment]"
+      source: null
+  seasonality:
+    busy: "Leak and storm calls July to September (monsoon, officially June 15 to September 30); re-roof and underlayment work October to April, when roofs are cooler and seasonal residents are in town [judgment on re-roof timing]"
+    slow: "May to June for repair calls (dry and hot) [judgment]"
+    source: nws_monsoon
+
+job_types:
+  - id: active_leak
+    label: "Water coming through the ceiling now (during or right after rain)"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["roof leaking right now", "water coming through the ceiling", "bucket is filling up", "dripping out of the ceiling light"]
+    must_know:
+      - fact: "Roof type"
+        bank_question: roof_type
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Tile, foam, shingle and metal take different crews and materials, even for a same-day dry-in. [judgment]"
+        skip_if: "Homeowner named the roof type or the outside photo shows it"
+      - fact: "Where the water shows, and in how many rooms"
+        bank_question: leak_where
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "One room near a vent or wall is a spot repair; several rooms points at a wider roof or underlayment job. [judgment]"
+        skip_if: "Homeowner said where and the inside photo shows it"
+      - fact: "Whether the ceiling is flat, sagging, or dripping at a light or fan"
+        bank_question: null
+        follow_up: fu_ceiling_state
+        photo: p1
+        why_it_moves_price: "A sagging ceiling or water at a fixture makes it a same-day call and can bring drywall and electrical trades into the job. [judgment]"
+        skip_if: "Inside photo shows the ceiling clearly"
+      - fact: "Roof age"
+        bank_question: null
+        follow_up: fu_roof_age
+        photo: null
+        why_it_moves_price: "An older tile roof leaking now often ends in an underlayment quote after the emergency visit. [judgment]"
+        skip_if: "Homeowner gave the age"
+      - fact: "Stories"
+        bank_question: stories
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "A two-story or steep roof is a harder call-out in rain. [judgment]"
+        skip_if: "Answered or the outside photo shows it"
+    allowed_follow_ups:
+      - id: fu_ceiling_state
+        ask_when: "Water is coming in now and no inside photo shows the ceiling"
+        text_en: "Is the ceiling where the water shows flat, sagging, or dripping from a light or fan?"
+        text_es: "¿La parte del techo de adentro donde sale el agua está plana, colgando, o gotea de una lámpara o ventilador?"
+        options_en: ["Flat, just wet or stained", "Sagging or bulging", "Dripping from a light or fan"]
+        options_es: ["Plana, solo mojada o manchada", "Colgando o inflada", "Gotea de una lámpara o ventilador"]
+        card_field: true
+        why: "These are the facts a roofer asks before deciding how fast to come and whether another trade is needed. [judgment]"
+      - id: fu_when_wet
+        ask_when: "Homeowner reports a stain or drip and has not said whether it follows rain"
+        text_en: "When does the wet spot show up: when it rains, when the AC or cooler runs, or when water is used in a room above?"
+        text_es: "¿Cuándo aparece la parte mojada: cuando llueve, cuando prende el aire o el cooler, o cuando se usa agua en un cuarto de arriba?"
+        options_en: ["When it rains", "When the AC or cooler runs", "When a bathroom or sink above is used", "Any time, no pattern"]
+        options_es: ["Cuando llueve", "Cuando prende el aire o el cooler", "Cuando se usa un baño o lavabo de arriba", "En cualquier momento, sin patrón"]
+        card_field: true
+        why: "Rain points at the roof, AC or cooler use at HVAC, and a room above at plumbing; each is a different category. [judgment]"
+      - id: fu_roof_age
+        ask_when: "Leak, tile, underlayment, shingle, flashing or roof check request and the homeowner has not said how old the roof is"
+        text_en: "About how old is the roof?"
+        text_es: "¿Más o menos qué edad tiene el techo?"
+        options_en: ["Under 10 years", "10 to 20 years", "Over 20 years"]
+        options_es: ["Menos de 10 años", "10 a 20 años", "Más de 20 años"]
+        card_field: true
+        why: "Underlayment under tile wears out well before the tile does, so age is the first number a tile roofer writes down (TRI Alliance: tile should not be relaid over compromised underlayment)."
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: ["Sparking or burning smell at a light or outlet near the leak"]
+      urgent_capable_triggers: ["Water dripping inside now", "Ceiling sagging or bulging with water", "Water dripping from a light or ceiling fan"]
+      regular: "Dripping has stopped and the stain is drying"
+    scope_line_en: "Water dripping into the living room ceiling during rain right now; concrete tile roof, one story."
+    scope_line_es: "Está goteando agua del techo de la sala ahorita con la lluvia; techo de teja de concreto, un piso."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (dry-in visit, repair, or both)", "earliest arrival", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: where water shows, coming in now, roof type>
+      Roof: <tile / flat or foam / shingle / metal>, <1 / 2 or more> stories, about <home size band>, age <answer or not said>.
+      Shows in: <one room / several rooms / garage or patio>. Ceiling: <flat and wet / sagging / dripping at a light or fan>. Wet when: <rain / AC or cooler / room above / no pattern>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's probably a cracked tile.", "Put a tarp over it until someone comes.", "Poke a hole in the ceiling to let the water out.", "Roof leaks usually run a few hundred to fix.", "That sounds like the underlayment."]
+
+  - id: leak_repair
+    label: "Past leak or ceiling stain, dry now, needs finding and fixing"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["brown stain on the ceiling", "leaks every time it rains", "water spot after the monsoon", "ceiling stain, not sure if it's the roof"]
+    must_know:
+      - fact: "Whether water is coming in now, only in rain, or the stain is old and dry"
+        bank_question: null
+        follow_up: fu_wet_now
+        photo: p1
+        why_it_moves_price: "Dripping now is a same-day call; a dry stain is a scheduled visit. [judgment]"
+        skip_if: "Homeowner said it is dry or dripping"
+      - fact: "Whether the spot follows rain, AC or cooler use, or water use above"
+        bank_question: null
+        follow_up: fu_when_wet
+        photo: null
+        why_it_moves_price: "If it is not rain, the job is HVAC or plumbing and a roofer's visit is wasted. [judgment]"
+        skip_if: "Homeowner said it shows only after rain"
+      - fact: "Roof type"
+        bank_question: roof_type
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sets the crew and the repair method. [judgment]"
+        skip_if: "Named or shown"
+      - fact: "Where the stain is, and in how many rooms"
+        bank_question: leak_where
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Several rooms points at a wider job; one spot near a roof feature is a spot repair. [judgment]"
+        skip_if: "Answered"
+      - fact: "Roof age"
+        bank_question: null
+        follow_up: fu_roof_age
+        photo: null
+        why_it_moves_price: "An older tile roof with stains is often quoted as underlayment work. [judgment]"
+        skip_if: "Homeowner gave the age"
+    allowed_follow_ups:
+      - id: fu_wet_now
+        ask_when: "Homeowner mentions a stain or leak and has not said whether water is coming in now"
+        text_en: "Is water coming in right now, only when it rains, or is it an old dry stain?"
+        text_es: "¿Está entrando agua ahorita, solo cuando llueve, o es una mancha vieja y seca?"
+        options_en: ["Dripping now", "Only when it rains", "Old stain, dry now"]
+        options_es: ["Gotea ahorita", "Solo cuando llueve", "Mancha vieja, seca"]
+        card_field: true
+        why: "Moves the request between the active and past leak job types and tells the business how fast to come. [judgment]"
+      - fu_when_wet
+      - fu_roof_age
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water dripping inside now"]
+      regular: "Dry stain, no rain in the forecast"
+    scope_line_en: "Brown stain on the hallway ceiling after last week's storm, dry now; concrete tile roof about 20 years old."
+    scope_line_es: "Mancha café en el techo del pasillo después de la tormenta de la semana pasada, ya seca; techo de teja de concreto de unos 20 años."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (finding the entry point, the repair)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: where the stain is, wet or dry, roof type>
+      Roof: <tile / flat or foam / shingle / metal>, <1 / 2 or more> stories, about <home size band>, age <answer or not said>.
+      Shows in: <one room / several rooms / garage or patio>. Now: <dripping / only in rain / dry>. Wet when: <rain / AC or cooler / room above / no pattern>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's a flashing leak.", "Stains like that mean the underlayment is shot.", "It might just be condensation.", "A leak repair runs about five hundred."]
+
+  - id: tile_repair
+    label: "Broken, slipped or missing tiles"
+    bank_job_type: "tile replacement"
+    recurring: false
+    homeowner_phrasings: ["cracked tiles", "tile slid down", "tiles on the ground after the wind", "installer broke some tiles walking on the roof"]
+    must_know:
+      - fact: "About how many tiles are broken or out of place"
+        bank_question: null
+        follow_up: fu_tile_count
+        photo: p3
+        why_it_moves_price: "A handful is a short visit; dozens can mean harvesting tile or an underlayment conversation. [judgment]"
+        skip_if: "Close-up photo shows the count"
+      - fact: "Whether spare tiles are on site"
+        bank_question: null
+        follow_up: fu_spare_tiles
+        photo: p3
+        why_it_moves_price: "Replacement tiles must interlock with the old ones and some profiles are out of production; spares settle the match."
+        skip_if: "Homeowner mentioned spares or a new roof under 10 years old"
+      - fact: "Whether water is getting in"
+        bank_question: null
+        follow_up: fu_wet_now
+        photo: p1
+        why_it_moves_price: "Tiles off with a leak inside means underlayment damage to check and a sooner visit. [judgment]"
+        skip_if: "Homeowner said no leak"
+      - fact: "Roof age"
+        bank_question: null
+        follow_up: fu_roof_age
+        photo: null
+        why_it_moves_price: "Tile should not go back over compromised underlayment, and old underlayment is the usual worry."
+        skip_if: "Homeowner gave the age"
+    allowed_follow_ups:
+      - id: fu_tile_count
+        ask_when: "Homeowner reports broken or slipped tiles without a count and no close-up photo"
+        text_en: "About how many tiles look broken, slipped or missing?"
+        text_es: "¿Más o menos cuántas tejas se ven rotas, movidas o faltan?"
+        options_en: ["1 to 5", "6 to 20", "More than 20"]
+        options_es: ["1 a 5", "6 a 20", "Más de 20"]
+        card_field: true
+        why: "The count sets whether the quote is a short repair or a bigger tile job. [judgment]"
+      - id: fu_spare_tiles
+        ask_when: "Tile repair and the homeowner has not mentioned spare tiles"
+        text_en: "Do you have spare tiles left over, for example stacked by the house or in the garage?"
+        text_es: "¿Tiene tejas de sobra guardadas, por ejemplo junto a la casa o en la cochera?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Some tile profiles are no longer made and new tiles must seat with the old ones (TRI Alliance Tech Brief 2021-02)."
+      - fu_wet_now
+      - fu_roof_age
+    photos_priority: [p3, p2, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Tiles off and water coming in now"]
+      regular: "Broken tiles, nothing coming in"
+    scope_line_en: "About 6 cracked concrete tiles above the garage, seen from the driveway; no leak inside; one story."
+    scope_line_es: "Unas 6 tejas de concreto quebradas arriba de la cochera, vistas desde la entrada; no gotea adentro; un piso."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (tiles supplied, underlayment check)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: how many tiles, where, leak or not>
+      Roof: tile <clay / concrete / shape from photo>, <1 / 2 or more> stories, age <answer or not said>.
+      Tiles: <1 to 5 / 6 to 20 / more than 20>. Spares on site: <yes / no / not said>. Water inside: <dripping / only in rain / none>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those are easy to swap.", "You can glue the cracked ones.", "Cracked tiles mean the felt is going too.", "Tiles are only a few bucks each."]
+
+  - id: tile_underlayment
+    label: "Tile lift-and-relay (new underlayment, same tiles)"
+    bank_job_type: "re-roof"
+    recurring: false
+    homeowner_phrasings: ["need new underlayment", "lift and relay", "re-felt the roof", "roofer said the felt under the tile is bad"]
+    must_know:
+      - fact: "Home size"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Lift-and-relays are priced by roof area. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whole roof or one section"
+        bank_question: null
+        follow_up: fu_relay_section
+        photo: p2
+        why_it_moves_price: "One slope or a patio section is a fraction of a whole-roof job. [judgment]"
+        skip_if: "Homeowner said whole roof"
+      - fact: "What is mounted on the roof"
+        bank_question: null
+        follow_up: fu_roof_equipment
+        photo: p2
+        why_it_moves_price: "Solar removal and reset and lifting a rooftop unit add days and another trade. [judgment]"
+        skip_if: "Outside photo shows every slope"
+      - fact: "Roof age"
+        bank_question: null
+        follow_up: fu_roof_age
+        photo: null
+        why_it_moves_price: "Age sets how much tile breakage and deck repair to expect when the tile comes up. [judgment]"
+        skip_if: "Homeowner gave the age"
+      - fact: "Stories"
+        bank_question: stories
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Two stories means more staging and tile handling. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_relay_section
+        ask_when: "Underlayment or lift-and-relay request without saying how much of the roof"
+        text_en: "Is this for the whole roof, or one side or section?"
+        text_es: "¿Es para todo el techo, o solo un lado o una sección?"
+        options_en: ["Whole roof", "One side or section", "Over a patio or garage only"]
+        options_es: ["Todo el techo", "Un lado o una sección", "Solo sobre un patio o la cochera"]
+        card_field: true
+        why: "The share of the roof is the biggest number in the quote. [judgment]"
+      - id: fu_roof_equipment
+        ask_when: "Re-roof, underlayment, foam or flashing job and no outside photo shows what is mounted on the roof"
+        text_en: "What is mounted on the roof: solar panels, an AC unit, a swamp cooler, skylights, or nothing?"
+        text_es: "¿Qué hay instalado en el techo: paneles solares, una unidad de aire, un cooler de agua, tragaluces, o nada?"
+        options_en: ["Solar panels", "AC unit or swamp cooler", "Skylights", "More than one of these", "Nothing"]
+        options_es: ["Paneles solares", "Unidad de aire o cooler de agua", "Tragaluces", "Más de uno de estos", "Nada"]
+        card_field: true
+        why: "R-42 may lift HVAC units for roofing, with duct changes subcontracted (A.A.C. R4-9-103); solar comes off and goes back on, usually by another trade. [judgment on solar]"
+      - fu_roof_age
+    photos_priority: [p2, p3, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["A leak is coming in now (route as active_leak first)"]
+      regular: "Planning an underlayment job"
+    scope_line_en: "Lift-and-relay quote for the whole concrete tile roof, about 1,800 sq ft, one story, roof about 25 years old, solar on the back slope."
+    scope_line_es: "Cotización para levantar y volver a poner la teja con membrana nueva en todo el techo de concreto, unos 1,800 pies², un piso, techo de unos 25 años, paneles solares atrás."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (underlayment type, tile breakage allowance, haul-away, solar or unit lifting)", "earliest start", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: lift-and-relay, how much of the roof, size>
+      Roof: tile <clay / concrete / shape from photo>, <1 / 2 or more> stories, about <home size band>, age <answer or not said>.
+      Area: <whole roof / one side or section / patio or garage>. Mounted on roof: <solar / AC or cooler / skylights / nothing / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your felt is definitely shot.", "Go with synthetic underlayment.", "Lift-and-relays run about ten grand.", "You won't need a permit for that."]
+
+  - id: foam_coating
+    label: "Flat foam or coated roof: repair, ponding, blisters or recoat"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["flat roof has water sitting on it", "bubbles in the roof coating", "foam roof needs recoating", "elastomeric is peeling"]
+    must_know:
+      - fact: "What shows on the flat roof: ponding, blisters or cracks, worn or bare spots, a leak inside"
+        bank_question: null
+        follow_up: fu_flat_what
+        photo: p3
+        why_it_moves_price: "Coating wear, exposed or wet foam, blisters and ponding are what a foam roof check looks for; each moves the quote between a patch and a recoat."
+        skip_if: "Close-up photo shows the surface"
+      - fact: "Whether the flat part is the whole roof or one section"
+        bank_question: home_size
+        follow_up: fu_flat_area
+        photo: p2
+        why_it_moves_price: "Foam and coating are priced by area; a back-room flat or patio is a small job. [judgment]"
+        skip_if: "Homeowner said which"
+      - fact: "When it was last coated"
+        bank_question: null
+        follow_up: fu_last_coat
+        photo: null
+        why_it_moves_price: "Coatings are re-applied every 10 to 20 years, so the last coat date points at a spot repair or a recoat."
+        skip_if: "Homeowner gave the date"
+      - fact: "What is mounted on the flat roof"
+        bank_question: null
+        follow_up: fu_roof_equipment
+        photo: p2
+        why_it_moves_price: "Units and curbs are foamed around by hand and are the usual leak points. [judgment]"
+        skip_if: "Outside photo shows the flat roof"
+    allowed_follow_ups:
+      - id: fu_flat_what
+        ask_when: "Flat or foam roof request without saying what is wrong on top"
+        text_en: "What do you see on the flat roof: water sitting after rain, bubbles or cracks, worn or bare spots, or a leak inside?"
+        text_es: "¿Qué ve en el techo plano: agua estancada después de llover, burbujas o grietas, partes gastadas o peladas, o una gotera adentro?"
+        options_en: ["Water sitting after rain", "Bubbles or cracks", "Worn or bare spots", "Leak inside", "More than one of these"]
+        options_es: ["Agua estancada después de llover", "Burbujas o grietas", "Partes gastadas o peladas", "Gotera adentro", "Más de uno de estos"]
+        card_field: true
+        why: "These are the items on the IBHS foam roof checklist, in homeowner words."
+      - id: fu_flat_area
+        ask_when: "Flat roof request and it is not clear whether it is the whole roof or one section"
+        text_en: "Is the flat part the whole roof, or one section such as a back room or patio cover?"
+        text_es: "¿La parte plana es todo el techo, o solo una sección como un cuarto de atrás o el techo del patio?"
+        options_en: ["Whole roof", "One section or room", "Patio cover only"]
+        options_es: ["Todo el techo", "Una sección o cuarto", "Solo el techo del patio"]
+        card_field: true
+        why: "Area is the price for foam and coatings. [judgment]"
+      - id: fu_last_coat
+        ask_when: "Foam or coated roof and the homeowner has not said when it was last coated"
+        text_en: "About when was the flat roof last coated?"
+        text_es: "¿Más o menos cuándo se le puso la última capa al techo plano?"
+        options_en: ["Under 5 years ago", "5 to 10 years ago", "Over 10 years ago"]
+        options_es: ["Hace menos de 5 años", "Hace 5 a 10 años", "Hace más de 10 años"]
+        card_field: true
+        why: "IBHS puts the recoat cycle at 10 to 20 years, so this answer frames the quote."
+      - fu_roof_equipment
+    photos_priority: [p3, p2, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water dripping inside now"]
+      regular: "Ponding, blisters or a recoat with nothing coming in"
+    scope_line_en: "Water sits on the flat foam roof over the back room for days after rain, with bubbles in the coating; no leak inside."
+    scope_line_es: "El agua se queda varios días sobre el techo plano de espuma del cuarto de atrás después de llover, con burbujas en la capa; no gotea adentro."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (repair, recoat, coating type)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: what shows on the flat roof, where, leak or not>
+      Roof: flat foam or coated, <whole roof / one section / patio cover>, about <home size band>. Last coated: <answer or not said>.
+      Shows: <ponding / bubbles or cracks / worn or bare spots / leak inside>. Mounted on roof: <solar / AC or cooler / skylights / nothing / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's normal ponding.", "Put a silicone coat over it.", "The foam is waterlogged.", "Recoats go for about two dollars a foot."]
+
+  - id: shingle_repair
+    label: "Asphalt shingles missing, lifted or leaking"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["shingles blew off", "shingles curling", "asphalt roof leaking", "can see the black paper"]
+    must_know:
+      - fact: "What the shingles are doing: missing, lifted or curling, water getting in"
+        bank_question: null
+        follow_up: fu_shingle_what
+        photo: p3
+        why_it_moves_price: "Blown-off tabs are a short repair; curling across the roof or a leak points at replacement talk. [judgment]"
+        skip_if: "Close-up photo shows it"
+      - fact: "Number of shingle layers"
+        bank_question: null
+        follow_up: fu_layers
+        photo: p2
+        why_it_moves_price: "Extra layers add tear-off labor and dump weight. [judgment]"
+        skip_if: "Spot repair only"
+      - fact: "Roof age"
+        bank_question: null
+        follow_up: fu_roof_age
+        photo: null
+        why_it_moves_price: "Shingles near the end of their life break when lifted for a repair. [judgment]"
+        skip_if: "Homeowner gave the age"
+      - fact: "Stories and size"
+        bank_question: stories
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sets setup time and, for a bigger job, the material count. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_shingle_what
+        ask_when: "Shingle roof and the homeowner has not said what is wrong"
+        text_en: "What are the shingles doing: missing or blown off, lifted or curling, or is water getting in?"
+        text_es: "¿Qué pasa con el tejamanil: falta o se voló, está levantado o enroscado, o está entrando agua?"
+        options_en: ["Missing or blown off", "Lifted or curling", "Water getting in", "More than one of these"]
+        options_es: ["Falta o se voló", "Levantado o enroscado", "Entra agua", "Más de uno de estos"]
+        card_field: true
+        why: "Each answer is a different visit for a shingle roofer. [judgment]"
+      - id: fu_layers
+        ask_when: "Shingle roof and the homeowner mentions replacing it or a large area"
+        text_en: "Do you know if there is more than one layer of shingles on the roof?"
+        text_es: "¿Sabe si el techo tiene más de una capa de tejamanil?"
+        options_en: ["One layer", "Two or more layers"]
+        options_es: ["Una capa", "Dos capas o más"]
+        card_field: true
+        why: "Layers set tear-off labor and whether another layer can go on. [judgment]"
+      - fu_roof_age
+    photos_priority: [p3, p2, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water dripping inside now", "Bare roof deck showing after wind"]
+      regular: "A few shingles off, nothing coming in"
+    scope_line_en: "About a dozen shingles blew off the back slope in last night's wind; black paper showing; no leak inside; one story."
+    scope_line_es: "Se volaron como una docena de tejas de asfalto del lado de atrás con el viento de anoche; se ve el papel negro; no gotea adentro; un piso."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (shingles supplied, color match)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: what the shingles are doing, where, leak or not>
+      Roof: asphalt shingle, <1 / 2 or more> stories, about <home size band>, age <answer or not said>. Layers: <one / two or more / not said>.
+      Shingles: <missing / lifted or curling / water getting in>. Water inside: <dripping / only in rain / none>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Nail them back down yourself.", "Your whole roof needs replacing.", "Shingles are cheap to patch.", "Insurance will cover that."]
+
+  - id: reroof
+    label: "Full roof replacement"
+    bank_job_type: "re-roof"
+    recurring: false
+    homeowner_phrasings: ["need a new roof", "roof is 25 years old", "how much for a new roof", "replace the whole roof before we sell"]
+    must_know:
+      - fact: "Home size"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Re-roofs are priced by the square; size is the first number. [judgment]"
+        skip_if: "Answered"
+      - fact: "Roof type now"
+        bank_question: roof_type
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Tear-off of tile, foam or shingle is different labor and dump weight. [judgment]"
+        skip_if: "Named or shown"
+      - fact: "Why a new roof now"
+        bank_question: null
+        follow_up: fu_why_new
+        photo: null
+        why_it_moves_price: "One leak may be a repair instead; a sale or insurance deadline sets timing. [judgment]"
+        skip_if: "Homeowner said why"
+      - fact: "Same roof type or a change"
+        bank_question: null
+        follow_up: fu_reroof_what
+        photo: null
+        why_it_moves_price: "A change in roof type changes weight, method and maybe HOA approval. [judgment]"
+        skip_if: "Homeowner said what she wants"
+      - fact: "What is mounted on the roof"
+        bank_question: null
+        follow_up: fu_roof_equipment
+        photo: p2
+        why_it_moves_price: "Solar removal and reset and rooftop units add days and another trade. [judgment]"
+        skip_if: "Outside photos show every slope"
+    allowed_follow_ups:
+      - id: fu_why_new
+        ask_when: "Homeowner asks for a new roof and has not said why"
+        text_en: "What has you looking at a new roof: a leak, broken tiles, the roof's age, selling the home, or insurance?"
+        text_es: "¿Por qué está pensando en un techo nuevo: una gotera, tejas rotas, la edad del techo, va a vender la casa, o el seguro?"
+        options_en: ["A leak", "Broken or slipped tiles", "The roof's age", "Selling the home", "Insurance or an inspection asked for it"]
+        options_es: ["Una gotera", "Tejas rotas o movidas", "La edad del techo", "Voy a vender la casa", "El seguro o una inspección lo pidió"]
+        card_field: true
+        why: "Separates a true re-roof from a leak or tile repair, without naming either. [judgment]"
+      - id: fu_reroof_what
+        ask_when: "Re-roof request and the homeowner has not said what she wants on the new roof"
+        text_en: "Would you like the same kind of roof as now, or a different kind?"
+        text_es: "¿Quiere el mismo tipo de techo que tiene ahora, o uno diferente?"
+        options_en: ["Same kind as now", "A different kind", "Open to options"]
+        options_es: ["El mismo tipo", "Uno diferente", "Abierto a opciones"]
+        card_field: true
+        why: "A change of roof type is a different quote and may need HOA approval. [judgment]"
+      - fu_roof_equipment
+      - fu_roof_age
+    photos_priority: [p2, p3, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["A leak is coming in now (route as active_leak first)"]
+      regular: "Planning a re-roof"
+    scope_line_en: "Full re-roof quote; concrete tile now, about 2,000 sq ft, one story, roof over 20 years old, solar on the south side."
+    scope_line_es: "Cotización para techo nuevo completo; ahora es teja de concreto, unos 2,000 pies², un piso, techo de más de 20 años, paneles solares del lado sur."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (tear-off, underlayment, new material, haul-away, solar or unit lifting)", "earliest start", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: re-roof quote, roof type now, size>
+      Roof now: <tile / flat or foam / shingle / metal>, <1 / 2 or more> stories, about <home size band>, age <answer or not said>.
+      Reason: <leak / broken tiles / age / selling / insurance>. New roof: <same kind / different kind / open>. Mounted on roof: <solar / AC or cooler / skylights / nothing / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You don't need a new roof yet.", "Tile roofs last fifty years.", "A re-roof runs about fifteen thousand.", "Go with foam, it's cheaper.", "No permit needed for that."]
+
+  - id: storm_damage
+    label: "Monsoon or wind storm damage (tiles or shingles off, debris hit the roof)"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["wind blew tiles off", "monsoon tore up the roof", "branch hit the roof", "after the storm the ceiling is leaking"]
+    must_know:
+      - fact: "What the storm did: tiles or shingles off, debris hit, water coming in"
+        bank_question: null
+        follow_up: fu_storm_what
+        photo: p2
+        why_it_moves_price: "Loose tile, an impact and a leak are three different crews and timelines. [judgment]"
+        skip_if: "Homeowner's words and photos show it"
+      - fact: "Roof type"
+        bank_question: roof_type
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sets the crew and materials. [judgment]"
+        skip_if: "Named or shown"
+      - fact: "Whether water is coming in"
+        bank_question: null
+        follow_up: fu_wet_now
+        photo: p1
+        why_it_moves_price: "A leak after a storm is a same-day call during a busy week. [judgment]"
+        skip_if: "Homeowner said"
+      - fact: "Whether an insurance claim is being filed"
+        bank_question: null
+        follow_up: fu_insurance
+        photo: null
+        why_it_moves_price: "Claim jobs need photo records and an itemized estimate; some roofers take claim work and some avoid it. [judgment]"
+        skip_if: "Homeowner mentioned insurance"
+      - fact: "Stories"
+        bank_question: stories
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Setup time and safety gear. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_storm_what
+        ask_when: "Storm damage reported without saying what happened to the roof"
+        text_en: "What did the storm do to the roof: tiles or shingles off or moved, something hit it, or water coming in?"
+        text_es: "¿Qué le hizo la tormenta al techo: se volaron o movieron tejas, le cayó algo encima, o está entrando agua?"
+        options_en: ["Tiles or shingles off or moved", "A branch or debris hit it", "Water coming in", "More than one of these"]
+        options_es: ["Se volaron o movieron tejas", "Le cayó una rama o escombro", "Está entrando agua", "Más de uno de estos"]
+        card_field: true
+        why: "Each answer is a different visit; tiles only and no leak may route as tile_repair. [judgment]"
+      - id: fu_insurance
+        ask_when: "Storm damage and the homeowner has not mentioned insurance"
+        text_en: "Are you filing an insurance claim for this damage?"
+        text_es: "¿Va a hacer un reclamo al seguro por este daño?"
+        options_en: ["Yes", "No", "Haven't decided"]
+        options_es: ["Sí", "No", "No he decidido"]
+        card_field: true
+        why: "Tells the business whether to plan for claim photos and an itemized estimate. [judgment]"
+      - fu_wet_now
+    photos_priority: [p2, p3, p1]
+    urgency:
+      fire_dept_triggers: ["Downed power line on or near the house"]
+      urgent_capable_triggers: ["Water coming in now", "Roof opened up by a branch or debris"]
+      regular: "Tiles off, nothing coming in"
+    scope_line_en: "Monsoon wind lifted and broke tiles along the front edge last night; no water inside; concrete tile, one story."
+    scope_line_es: "El viento del monzón levantó y quebró tejas en la orilla del frente anoche; no entra agua; teja de concreto, un piso."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (repair, dry-in, claim photos)", "earliest arrival", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: what the storm did, when, leak or not>
+      Roof: <tile / flat or foam / shingle / metal>, <1 / 2 or more> stories, about <home size band>.
+      Storm did: <tiles or shingles off / debris hit / water coming in>. Water inside: <dripping / only in rain / none>. Insurance claim: <yes / no / undecided / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Insurance will pay for a new roof.", "That's definitely wind damage.", "Don't let anyone look until the adjuster comes.", "Storm repairs run about a thousand."]
+
+  - id: manufactured_home_roof
+    label: "Manufactured or mobile home roof: recoat, seam repair or roof-over"
+    bank_job_type: "re-roof"
+    recurring: false
+    homeowner_phrasings: ["mobile home roof needs coating", "trailer roof leaks at the seams", "want a roof-over on my manufactured home", "rumble roof is loud and leaks"]
+    must_know:
+      - fact: "What she wants: recoat or seal, a leak or seam repair, or a roof-over"
+        bank_question: null
+        follow_up: fu_mh_what
+        photo: p2
+        why_it_moves_price: "A recoat is a day or two of roofing; a roof-over adds framing and may need a Department of Housing installer. [judgment on roof-overs]"
+        skip_if: "Homeowner said which"
+      - fact: "What the roof is now"
+        bank_question: null
+        follow_up: fu_mh_roof_now
+        photo: p2
+        why_it_moves_price: "Bare metal, coated metal, shingles and an older roof-over each take different prep. [judgment]"
+        skip_if: "Outside photo shows it"
+      - fact: "Year the home was built"
+        bank_question: null
+        follow_up: fu_mh_year
+        photo: null
+        why_it_moves_price: "Older mobile homes have lighter roof framing, which limits what can go on top. [judgment]"
+        skip_if: "Homeowner gave the year"
+      - fact: "Home size"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Single-wide or double-wide sets the area. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_mh_what
+        ask_when: "Manufactured home roof request without saying what work is wanted"
+        text_en: "What would you like done: recoat or seal the roof, fix a leak or seam, or add a new roof over the old one?"
+        text_es: "¿Qué quiere que se haga: recubrir o sellar el techo, arreglar una gotera o costura, o poner un techo nuevo encima del viejo?"
+        options_en: ["Recoat or seal", "Fix a leak or seam", "Add a roof-over"]
+        options_es: ["Recubrir o sellar", "Arreglar una gotera o costura", "Poner un techo encima"]
+        card_field: true
+        why: "A roof-over adds a structure, which may fall under Department of Housing installer classes (A.A.C. R4-34-204 covers attached accessory structures). [judgment on roof-overs]"
+      - id: fu_mh_roof_now
+        ask_when: "Manufactured home roof and no outside photo shows the roof surface"
+        text_en: "What is the roof now: bare metal, coated metal, shingles, or a roof-over added before?"
+        text_es: "¿Cómo es el techo ahora: metal sin cubrir, metal con capa, tejamanil, o ya tiene un techo encima?"
+        options_en: ["Bare metal", "Coated (white or gray)", "Shingles", "Already has a roof-over"]
+        options_es: ["Metal sin cubrir", "Con capa (blanca o gris)", "Tejamanil", "Ya tiene un techo encima"]
+        card_field: true
+        why: "The surface sets the prep and the coating or covering that will bond. [judgment]"
+      - id: fu_mh_year
+        ask_when: "Roof-over or full recoat on a manufactured home and the year built is not known"
+        text_en: "About what year was the home built: before 1976, or 1976 or later?"
+        text_es: "¿Más o menos de qué año es la casa: antes de 1976, o de 1976 en adelante?"
+        options_en: ["Before 1976", "1976 or later"]
+        options_es: ["Antes de 1976", "De 1976 en adelante"]
+        card_field: true
+        why: "Homes built before the June 1976 federal manufactured home code have their own state rules and lighter framing. [judgment]"
+    photos_priority: [p2, p3, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water dripping inside now"]
+      regular: "Recoat, seam repair or roof-over planning"
+    scope_line_en: "Recoat the metal roof on a single-wide manufactured home; seams leak in heavy rain; built 1985."
+    scope_line_es: "Recubrir el techo de metal de una casa prefabricada sencilla; las costuras gotean con lluvia fuerte; construida en 1985."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (prep, coating type, seams, roof-over framing)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | manufactured home
+      <one scope line: work wanted, roof now, leak or not>
+      Wanted: <recoat or seal / leak or seam / roof-over>. Roof now: <bare metal / coated / shingles / has a roof-over>. Built: <before 1976 / 1976 or later / not said>.
+      Size: <home size band>. Water inside: <shows in, or none>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Roll on some elastomeric and you're set.", "A roof-over is the way to go.", "Older trailers can't take a new roof.", "Coatings run about a dollar a foot."]
+
+  - id: roof_inspection
+    label: "Roof check before a sale, after a storm, or for insurance"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["roof inspection before selling", "need a roof certification", "check the roof after the storm", "insurance wants a roof report"]
+    must_know:
+      - fact: "What the check is for: selling, buying, after a storm, insurance"
+        bank_question: null
+        follow_up: fu_check_why
+        photo: null
+        why_it_moves_price: "A sale or insurance report needs a written report and a firm date; an after-storm look may be quick. [judgment]"
+        skip_if: "Homeowner said why"
+      - fact: "Roof only, or a full home inspection"
+        bank_question: null
+        follow_up: fu_check_scope
+        photo: null
+        why_it_moves_price: "A full home inspection is a different category done by a certified home inspector. [judgment]"
+        skip_if: "Homeowner said roof only"
+      - fact: "Roof type and size"
+        bank_question: roof_type
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Walking a tile roof takes more care and time than a flat roof. [judgment]"
+        skip_if: "Named or shown"
+      - fact: "Roof age"
+        bank_question: null
+        follow_up: fu_roof_age
+        photo: null
+        why_it_moves_price: "Sets what the roofer expects to write up. [judgment]"
+        skip_if: "Homeowner gave the age"
+    allowed_follow_ups:
+      - id: fu_check_why
+        ask_when: "Roof check request without a reason"
+        text_en: "What is the roof check for: selling the home, buying one, after a storm, or insurance?"
+        text_es: "¿Para qué es la revisión del techo: va a vender la casa, a comprar una, después de una tormenta, o el seguro?"
+        options_en: ["Selling the home", "Buying a home", "After a storm", "Insurance asked for it"]
+        options_es: ["Voy a vender la casa", "Voy a comprar una casa", "Después de una tormenta", "El seguro lo pidió"]
+        card_field: true
+        why: "The reason sets the report and the deadline. [judgment]"
+      - id: fu_check_scope
+        ask_when: "Roof check tied to a sale or purchase"
+        text_en: "Do you want a roof check only, or a full home inspection?"
+        text_es: "¿Quiere revisar solo el techo, o una inspección completa de la casa?"
+        options_en: ["Roof check only", "Full home inspection"]
+        options_es: ["Solo el techo", "Inspección completa de la casa"]
+        card_field: true
+        why: "A full inspection routes to home_inspection, a different license (Board of Technical Registration). [judgment]"
+      - fu_roof_age
+    photos_priority: [p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All roof checks"
+    scope_line_en: "Roof check before listing the home for sale; concrete tile, about 1,600 sq ft, one story, roof age not known."
+    scope_line_es: "Revisión del techo antes de poner la casa a la venta; teja de concreto, unos 1,600 pies², un piso, no se sabe la edad del techo."
+    quote_format: range
+    business_fills: ["low and high price for the check", "whether a written report is included", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: roof check, reason>
+      For: <selling / buying / after a storm / insurance>. Scope: roof check only.
+      Roof: <tile / flat or foam / shingle / metal>, <1 / 2 or more> stories, about <home size band>, age <answer or not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The roof will pass.", "You have to get a roof cert to sell.", "Inspectors always flag tile roofs.", "A roof check is about a hundred and fifty."]
+
+  - id: flashing_skylight
+    label: "Leak at a skylight, vent, AC or cooler curb, chimney or roof-to-wall joint"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["skylight leaks when it rains", "leak around the vent pipe", "water coming in around the AC on the roof", "leak where the patio roof meets the house"]
+    must_know:
+      - fact: "Where the water seems to come in"
+        bank_question: leak_where
+        follow_up: fu_flashing_where
+        photo: p2
+        why_it_moves_price: "Each roof feature is flashed differently, and a unit curb may need the unit lifted. [judgment]"
+        skip_if: "Homeowner named the spot"
+      - fact: "Whether it follows rain or the AC or cooler running"
+        bank_question: null
+        follow_up: fu_when_wet
+        photo: null
+        why_it_moves_price: "A drip only when the unit runs is HVAC work, not flashing. [judgment]"
+        skip_if: "Homeowner said only in rain"
+      - fact: "Roof type"
+        bank_question: roof_type
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Tile around a skylight means lifting and resetting tile; foam is cut and refoamed. [judgment]"
+        skip_if: "Named or shown"
+      - fact: "Roof age"
+        bank_question: null
+        follow_up: fu_roof_age
+        photo: null
+        why_it_moves_price: "Old underlayment around the feature often fails with the flashing. [judgment]"
+        skip_if: "Homeowner gave the age"
+    allowed_follow_ups:
+      - id: fu_flashing_where
+        ask_when: "Leak near a roof feature and the homeowner has not said which one"
+        text_en: "Where does the water seem to come in: a skylight, a vent or pipe, around an AC or cooler on the roof, or where the roof meets a wall or chimney?"
+        text_es: "¿Por dónde parece entrar el agua: un tragaluz, un tubo o ventila, alrededor del aire o cooler del techo, o donde el techo se junta con una pared o chimenea?"
+        options_en: ["A skylight", "A vent or pipe", "Around an AC or cooler", "Where the roof meets a wall or chimney"]
+        options_es: ["Un tragaluz", "Un tubo o ventila", "Alrededor del aire o cooler", "Donde el techo se junta con una pared o chimenea"]
+        card_field: true
+        why: "R-42 may replace skylights without framing changes and lift HVAC units, with duct changes subcontracted (A.A.C. R4-9-103); the spot sets the trades involved."
+      - fu_when_wet
+      - fu_roof_age
+    photos_priority: [p2, p3, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water dripping inside now"]
+      regular: "Drips only in heavy rain, dry now"
+    scope_line_en: "Kitchen skylight drips at one corner during heavy rain; concrete tile roof, one story, about 15 years old."
+    scope_line_es: "El tragaluz de la cocina gotea en una esquina con lluvia fuerte; techo de teja de concreto, un piso, de unos 15 años."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (flashing, skylight, unit lifting)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Roof repair | <town>, <general area> | <house / townhome / manufactured home>
+      <one scope line: which roof feature, when it drips>
+      Spot: <skylight / vent or pipe / AC or cooler / roof meets wall or chimney>. Wet when: <rain / AC or cooler / no pattern>.
+      Roof: <tile / flat or foam / shingle / metal>, <1 / 2 or more> stories, age <answer or not said>. Shows in: <room>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the skylight seal.", "Caulk around it for now.", "Your cooler is leaking, not the roof.", "Flashing repairs are cheap."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Repeat customers and word of mouth", "Realtors, home inspectors and property managers who send roof checks and repairs [judgment]", "Google Local Services Ads and search ads", "Home-service marketplaces (Angi, HomeAdvisor, Thumbtack)", "Yard signs and neighbor calls after monsoon storms [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Angi and HomeAdvisor (roofing)"
+      figure: "About $25 to $60 per lead, shared among 3 to 5 contractors (marketing-publication figure)"
+      source: leadgen_economy
+      unverified: false
+    - channel: "Thumbtack (roofing)"
+      figure: "About $35 to $70 per quote sent (marketing-publication figure)"
+      source: leadgen_economy
+      unverified: false
+    - channel: "Shared lead marketplaces versus sole-buyer leads (roofing)"
+      figure: "Shared about $75 to $110 or more per lead; sole-buyer leads about $150 to $300 or more (marketing-vendor figure)"
+      source: activeprospect_roofing
+      unverified: false
+    - channel: "Google Local Services Ads (roofing)"
+      figure: "About $75 to $150 per lead per one vendor; another vendor puts it at about $25 to $80 (marketing-vendor figures, wide spread)"
+      source: webtonic_roofing_ads
+      unverified: false
+    - channel: "Google search ads (roofing)"
+      figure: "About $124 per lead on non-branded search (Q1 2026, 15 accounts); about $268 per paying customer in 2025 (marketing-vendor figure)"
+      source: webtonic_roofing_ads
+      unverified: false
+    - channel: "Lake Havasu City roofers specifically"
+      figure: "No local figures found; a small market has fewer bidders, and storm weeks bring more calls than crews"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a roof lead four other roofers also bought", "Tire-kickers who want a re-roof price over the phone", "Out-of-town storm crews buying the same calls after a monsoon", "Monthly fees whether or not jobs come", "Leads with no roof type, size or photos", "Being ranked or reviewed by the lead site itself"]
+  what_makes_a_lead_worth_paying_for: ["Roof type, size, stories and age on the card", "Photos of each side from the ground", "Whether solar or rooftop units are in the way", "Whether water is coming in now", "Pay only when picked, nothing monthly", "Insurance claim or not stated up front"]
+  their_words: ["square", "tear-off", "lift and relay", "underlayment", "felt", "30-lb", "synthetic", "battens", "bird stop", "flashing", "valley", "drip edge", "cricket", "dry-in", "SPF", "elastomeric", "silicone", "mils", "re-cover", "R and R solar", "curb", "pitch", "decking", "roof cert"]
+  signup_objections:
+    - objection: "I can't price a roof from a text."
+      answer: "You don't give a firm price. Roof quotes here are a low and a high number, and you can tick Range to be confirmed on site. Most cards come with roof type, size, stories and photos from the ground."
+    - objection: "Re-roofs are big jobs. What does your fee look like on those?"
+      answer: "The fee is set by job size: $25, $75 or $199, based on the middle of your range. It is never a share of the job, and you pay it only when the homeowner picks your quote and you confirm."
+    - objection: "Shared-lead sites sold me the same call as four other roofers."
+      answer: "Several roofers can quote the same card, but quoting costs nothing. You pay only when the homeowner picks you, and then the job is yours. There is no monthly fee and nothing to join."
+    - objection: "During monsoon I'm booked out for weeks."
+      answer: "Give your earliest start date on the quote and the homeowner decides. You can pause cards when you're full and turn them back on later."
+    - objection: "I don't want leak emails at 2 a.m."
+      answer: "Night emergency cards go only to businesses that tick after-hours emergencies. Leave it off and you see night requests at 8 a.m."
+    - objection: "I only do tile, not foam or shingles."
+      answer: "You pick job types at sign-up: leak repair, tile replacement and re-roof. Each card shows the roof type in its first lines, so you can pass on the ones you don't do. Passing costs nothing."
+    - objection: "Do you handle the insurance claim?"
+      answer: "No. Ask Hava is not a contractor and does not perform, bid on or supervise work. The card says whether the homeowner is filing a claim, so you can decide whether to quote."
+    - objection: "Will you rank me against other roofers?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license numbers and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town, photos and answers to the questions a roofer asks. Names and addresses go only to the business the homeowner picks."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+  quote_tips_for_card: ["Say what the range covers: tear-off, underlayment type, haul-away, and any permit if sheathing is replaced", "If deck condition could move the price, say so and tick Range to be confirmed on site", "Say whether removing and resetting solar or lifting a rooftop unit is in the range", "Give your earliest day, and say if you can dry in an active leak sooner", "If you need a photo of another side or the attic, say which"]
