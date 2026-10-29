@@ -120,6 +120,8 @@ def main(argv: list[str] | None = None) -> int:
         scenarios = data.get("scenarios") or []
         stats = {v: variant_stats(scenarios, v) for v in VARIANTS}
         comp = (data.get("compliance") or {}).get("violations") or []
+        comp_v3 = (data.get("compliance_v3") or {}).get("violations")
+        v3_comp = "n/a" if comp_v3 is None else str(len(comp_v3))
         ok, fails = passes(category, stats["playbook"], len(comp))
         passed += ok
         p, n, h, v2, v3 = stats["playbook"], stats["baseline_none"], stats["baseline_human"], stats["playbook_v2"], stats["playbook_v3"]
@@ -129,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
             f"| {category} | {p['scenarios']} | {pct(p['quotable_share'])} | {num(p['median_questions'])} | {pct(p['routing_correct_share'])} | "
             f"{pct(p['fire_dept_correct_share'])} | {pct(p['trap_caught_share'])} | {len(comp)} | "
             f"{pct(n['quotable_share'])} / {num(n['median_questions'])} | {pct(h['quotable_share'])} / {num(h['median_questions'])} | "
-            f"{beats(p, n, True)} / {beats(p, h, False)} | {pct(v2['quotable_share'])} / {num(v2['median_questions'])} / {pct(v2['trap_caught_share'])} | {pct(v3['quotable_share'])} / {num(v3['median_questions'])} / {pct(v3['trap_caught_share'])} | {'pass' if ok else 'FAIL: ' + '; '.join(fails)} |"
+            f"{beats(p, n, True)} / {beats(p, h, False)} | {pct(v2['quotable_share'])} / {num(v2['median_questions'])} / {pct(v2['trap_caught_share'])} | {pct(v3['quotable_share'])} / {num(v3['median_questions'])} / {pct(v3['trap_caught_share'])} / {v3_comp} | {'pass' if ok else 'FAIL: ' + '; '.join(fails)} |"
         )
         for item in data.get("where_playbook_lost_to_human") or []:
             losses.append(f"- {category}: {item}")
@@ -142,7 +144,7 @@ def main(argv: list[str] | None = None) -> int:
         "",
         f"**Categories judged: {len(categories)}. Passing the bar: {passed}.**",
         "",
-        "| Category | Scenarios | Quotable (playbook) | Median questions | Routing | 911 flag | Traps caught | Compliance violations | No-playbook baseline: quotable / questions | Human estimator: quotable / questions | Beats no-playbook / meets human | Proposed rules (v2): quotable / questions / traps | Guided free intake (v3): quotable / questions / traps | Result |",
+        "| Category | Scenarios | Quotable (playbook) | Median questions | Routing | 911 flag | Traps caught | Compliance violations | No-playbook baseline: quotable / questions | Human estimator: quotable / questions | Beats no-playbook / meets human | Proposed rules (v2): quotable / questions / traps | Guided free intake (v3): quotable / questions / traps / compliance | Result |",
         "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
         *rows,
         "",
