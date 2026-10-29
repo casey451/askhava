@@ -44,7 +44,7 @@ Cargo.toml           the workspace: members "app/*" and the Rust test-layer crat
                      too_many_lines and excessive_nesting denied with their thresholds in clippy.toml; missing_docs;
                      every member sets [lints] workspace = true, which the architecture test checks, D-481)
 Cargo.lock           committed
-.sqlx/               offline query data from `cargo sqlx prepare --workspace -- --all-targets --all-features`,
+.sqlx/               offline query data from `cargo sqlx prepare --workspace -- --all-targets --all-features` (and `--check` placed before the `--`),
                      committed; every build and `Ci` run with SQLX_OFFLINE=true, and `Ci` fails on a stale entry
                      through `cargo sqlx prepare --check` after `sqlx migrate run` (D-481)
 rust-toolchain.toml  the pinned Rust release (section 11)
@@ -64,7 +64,8 @@ app/
                      contract test checks on the Python and the Rust side (D-481)
   core/              shared kernel (section 5); not a business module; `build.rs` is `sqlx migrate build-script`
                      so a new migration file is seen without a clean build (T012)
-  <module>/          one crate per module in section 3
+  <module>/          one crate per module in section 3, package name `askhava-<module>` (lib `askhava_<module>`), so
+                     no first-party crate shadows Rust's built-in `core` or another standard name (D-484)
     Cargo.toml       depends only on the lower crates section 4 allows (the compiler refuses anything else)
     src/lib.rs       hand-written: `pub mod api;` plus private `mod models; mod rules; mod service; mod handlers;
                      mod routes;` and `#[cfg(test)] mod tests;` (no automod, D-481)
@@ -142,7 +143,7 @@ Twelve v9.3 record types map onto these tables (`sources/01_spec/Havasu_Home_Quo
 
 ## 4. Dependency rules
 
-1. **Layers.** A module may use only the `api` of a module in a lower layer, never its `models`, `service` or `rules` (D-091). In Rust this is a compile error, not a convention: a crate lists only its allowed lower crates in `Cargo.toml`, Cargo refuses a dependency cycle, and only `api` is `pub` (D-453):
+1. **Layers.** A module may use only the `api` of a module in a lower layer, never its `models` or `service`; the pure decision functions a lower crate re-exports as `api::rules` are part of its `api` and may be called (D-091, D-481, D-484). In Rust this is a compile error, not a convention: a crate lists only its allowed lower crates in `Cargo.toml`, Cargo refuses a dependency cycle, and only `api` is `pub` (D-453):
 
    | Layer | Modules |
    |---|---|
@@ -157,7 +158,7 @@ Twelve v9.3 record types map onto these tables (`sources/01_spec/Havasu_Home_Quo
    | 8 | `recovery`, `portals`, `site` |
 
    `adapters` uses only `core` and the HTTP and crypto crates. Same-layer imports are allowed only where section 3's "Calls" column lists them (none today). The layer table is kept in machine-readable form in `kit/layers.json` (protected), which the architecture test reads (D-479). There is no `testing` feature: unit and property tests live inside each crate, and the test-layer crates see only `api` (D-481).
-2. **Events go up, calls go down.** When a lower module must tell a higher one something (Stripe says a charge succeeded; an inbound text arrives; a license lapses; an alert is raised), it enqueues a `core.task` with an event kind and IDs only, never personal details. `app/server/src/main.rs` registers which module's handler runs for each kind. No module imports a higher one.
+2. **Events go up, calls go down.** When a lower module must tell a higher one something (Stripe says a charge succeeded; an inbound text arrives; a license lapses; an alert is raised), it enqueues a `core.task` with an event kind and IDs only, never personal details. `app/server/src/lib.rs` (`register_handlers()`) registers which module's handler runs for each kind (D-481). No module imports a higher one.
 3. **Tables.** Every query and migration names its own module's schema. The architecture test (T009, SEC-029) reads every crate's `Cargo.toml` and every migration and fails on a dependency not allowed by the layer table, any cross-schema foreign key, and any query that names another module's schema; SQLx checks each query against the schema when it compiles.
 4. **Money** moves only through `payments` (FEE-032). **Vault plaintext** comes only from `privacy::api` and only to the readers in section 8. **Release needs proof:** the function that reads contact fields for a release takes a `ReleaseProof`. Because `privacy` (layer 2) cannot name a `payments` (layer 3) type, the design is a capability (D-481): `privacy::api` defines `ReleaseProof` and a non-`Clone` `ReleaseMint`, both with private fields; `privacy::api::release_mint()` can be called once per process and panics on a second call; `server/src/lib.rs` calls it once and hands the mint to `payments`, which alone turns a signature-checked Stripe event for a succeeded charge, or a fee decision of no fee due, into a proof. The architecture test fails if any crate other than `server` and `payments` names `ReleaseMint`, and a compile-fail test in a crate with no feature on proves that nothing else can build a proof (SEC-030). The homeowner and owner realm reads take the capability types of SEC-046 the same way.
 5. **Statuses are enums.** Job, pick, quote, charge and consent statuses are Rust enums; every `match` on them names every status: the modules that act on statuses deny clippy `wildcard_enum_match_arm` (not the whole workspace, since `Option` and foreign non-exhaustive enums need a wildcard arm), and a source scan fails on `_ =>`, `matches!` or `if let` on a status enum outside its own helpers, so a new status does not build until every place handles it (SEC-031).

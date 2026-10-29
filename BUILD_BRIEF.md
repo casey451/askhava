@@ -205,7 +205,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 ## 7. The runner (how the build moves itself)
 
 **Shape:**
-- one scheduled task (Appendix A) runs the **runner**;
+- a scheduled runner runs the **runner** code: the Actions runner first, the Appendix A routine as safety net (D-483);
 - the runner does **one task per session, one session at a time**. There's no parallel building, so there are no state races or merge conflicts;
 - parallelism exists only inside a session, as read-only review subagents.
 
@@ -495,7 +495,7 @@ The list below is the minimum, not the whole set:
 **Models**
 - **Haiku 5.5:** running tests and summarizing, scans, formatting, docs upkeep.
 - **Sonnet 5.5:** most code.
-- **Opus 5.5:** spec, architecture, money, privacy, security, recovery, reviews of those, and the final audit.
+- **Opus 5.5:** spec, architecture, money, privacy, security and recovery application code, reviews of all work in those areas, and the final audit; test-only, docs and harness work there runs on Sonnet with an Opus reviewer (D-483).
 - **Fable:** not used.
 - Models are named in each task. The runner's own session uses Sonnet at low effort.
 

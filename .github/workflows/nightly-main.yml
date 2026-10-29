@@ -5,7 +5,7 @@ on:
     - cron: "17 9 * * *"
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
@@ -18,8 +18,11 @@ jobs:
     # see whether the last full run on main was green, and on which commit (docs/governance.md).
     name: record
     needs: [ci, twin, a11y]
-    if: always()
+    if: always() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
     concurrency:
       group: kit-state-writer
       cancel-in-progress: false
@@ -28,17 +31,20 @@ jobs:
       TWIN_RESULT: ${{ needs.twin.result }}
       A11Y_RESULT: ${{ needs.a11y.result }}
       TESTED_SHA: ${{ github.sha }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: claude/kit-state
       - name: Record the result
         run: |
+          export STARTED_AT="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .run_started_at)"
           python3 - <<'PY'
           import json, os, datetime
           results = {k: os.environ[v] for k, v in (("ci", "CI_RESULT"), ("twin", "TWIN_RESULT"), ("a11y", "A11Y_RESULT"))}
           conclusion = "success" if all(r == "success" for r in results.values()) else "failure"
           stamp = {"schema": 1, "conclusion": conclusion, "results": results,
+                   "started_at": os.environ["STARTED_AT"],
                    "ran_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                    "sha": os.environ["TESTED_SHA"]}
           os.makedirs("kit", exist_ok=True)

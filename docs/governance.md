@@ -93,6 +93,7 @@ The runner pastes `scripts/progress.py --markdown` at the top of STATUS.md every
 
 ## 7. Reviews, audits and regression
 
+- **Every plan change, including an audit's:** an independent Opus review of its own diff before merge (D-484 found 16 defects in the audit that wrote this file).
 - **Every task:** a fresh-eyes reviewer that sees only the diff and the task's spec files (Opus for money, privacy, security, recovery, harness and any diff touching a locked architecture section; Sonnet otherwise). Findings go back once; a second round of findings blocks the hand-in.
 - **Every stage:** the cleanup task (dead code, duplicates, docs current) and, from stage 3 on, the twin chaos run.
 - **Every night:** the full suite, randomized property tests, cargo-mutants on the rule modules; a red run makes `main` red.
@@ -124,4 +125,4 @@ Every open planning or build risk lives in `docs/risk-register.md` with an ID, o
 
 ## 10. Readiness
 
-No build task (T001 onward) is claimed until `docs/build-readiness.md` records READY with every Critical and High risk closed or accepted by Casey in writing, Gate P is answered `approved to build`, and this file's section 2 shows no "reader"-enforced rule that a build task could break in its first stage. The readiness file is re-issued at each stage boundary and before Gate C.
+No build task (T002 onward; T001 was absorbed by D-479) is claimed until `docs/build-readiness.md` records READY with every Critical and High risk closed or accepted by Casey in writing, Gate P is answered `approved to build`, and this file's section 2 shows no "reader"-enforced rule that a build task could break in its first stage. The readiness file is re-issued at each stage boundary and before Gate C.

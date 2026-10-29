@@ -8,8 +8,10 @@ Fails on, anywhere under app/ and tests/ (Rust files):
 - in a status module (a file under `app/*/src/` whose name is `status.rs` or that defines a
   `Status` enum), a wildcard match arm `_ =>` or a `matches!(` on a status enum, as SEC-031
   requires, outside the enum's own `impl` block;
-- outside a status module, a glob import of a status enum (`use ...Status::*`) or an `==` /
-  `!=` comparison against a status variant, which would hide a new status from the compiler;
+- outside a status module, a glob import of a status enum (`use ...Status::*`), an `==` / `!=`
+  comparison against a status variant, a `matches!`, `if let` or match arm on one, which
+  would hide a new status from the compiler (every match on a status lives in `status.rs`,
+  which holds nothing else, so its wildcard rule never meets an `Option`);
 - in any Askama template under `app/*/templates/`, `|safe` or `escape = "none"` (D-481).
 
 Nothing to scan (no app/ yet) exits 0. Usage: python3 scripts/check_rust_rules.py [--root .]
@@ -23,9 +25,10 @@ import sys
 from pathlib import Path
 
 ALLOW = re.compile(r"#!?\[allow\(")
-ALLOW_WITH_REASON = re.compile(r"#!?\[allow\([^\]]*reason\s*=")
+ALLOW_WITH_REASON = re.compile(r"#!?\[allow\([^\]]*reason\s*=", re.S)
+COMMENT = re.compile(r"//.*$")
 BANNED_MACROS = re.compile(r"\b(todo|unimplemented|dbg)!\s*\(")
-BANNED_WORDS = re.compile(r"\b(TODO|FIXME|XXX)\b")
+BANNED_WORDS = re.compile(r"\b(TODO|FIXME)\b|\bXXX\b(?!-)")
 UNSAFE = re.compile(r"\bunsafe\s*(\{|fn\b|impl\b)")
 STATUS_ENUM = re.compile(r"^\s*pub(?:\(crate\))?\s+enum\s+\w*Status\b", re.M)
 WILDCARD_ARM = re.compile(r"^\s*_\s*=>")
@@ -33,6 +36,9 @@ MATCHES_MACRO = re.compile(r"\bmatches!\s*\(")
 IMPL_START = re.compile(r"^\s*impl\b.*\b(\w*Status)\b")
 STATUS_GLOB = re.compile(r"\buse\b[^;]*\w*Status::\*")
 STATUS_EQ = re.compile(r"[=!]=\s*(?:\w+::)*\w*Status::\w+")
+STATUS_MATCHES = re.compile(r"\bmatches!\s*\([^)]*\w*Status::")
+STATUS_IF_LET = re.compile(r"\b(?:if|while)\s+let\s+(?:\w+::)*\w*Status::")
+STATUS_ARM = re.compile(r"^\s*(?:\w+::)*\w*Status::\w+.*=>")
 TEMPLATE_UNSAFE = re.compile(r"\|\s*safe\b|escape\s*=\s*\"none\"")
 
 
@@ -42,13 +48,21 @@ def scan_file(path: Path, rel: str) -> list[str]:
     is_status_module = path.name == "status.rs" or bool(STATUS_ENUM.search(text))
     in_status_impl = False
     depth = 0
-    for lineno, line in enumerate(text.splitlines(), start=1):
+    lines = text.splitlines()
+    for lineno, line in enumerate(lines, start=1):
         where = f"{rel}:{lineno}"
-        if ALLOW.search(line) and not ALLOW_WITH_REASON.search(line):
-            problems.append(f"{where}: #[allow] without a reason")
+        if ALLOW.search(line):
+            attribute = line
+            k = lineno
+            while ")]" not in attribute and k < len(lines):  # rustfmt may split an attribute over lines
+                attribute += "\n" + lines[k]
+                k += 1
+            if not ALLOW_WITH_REASON.search(attribute):
+                problems.append(f"{where}: #[allow] without a reason")
         if BANNED_MACROS.search(line):
             problems.append(f"{where}: todo!/unimplemented!/dbg! is never merged")
-        if BANNED_WORDS.search(line) and "check_rust_rules" not in line:
+        comment = COMMENT.search(line)
+        if comment and BANNED_WORDS.search(comment.group(0)) and "check_rust_rules" not in line:
             problems.append(f"{where}: TODO/FIXME/XXX comment on main")
         if UNSAFE.search(line):
             problems.append(f"{where}: unsafe code is forbidden")
@@ -65,6 +79,8 @@ def scan_file(path: Path, rel: str) -> list[str]:
             if MATCHES_MACRO.search(line):
                 problems.append(f"{where}: matches! on a status enum outside its impl (SEC-031)")
         else:
+            if STATUS_MATCHES.search(line) or STATUS_IF_LET.search(line) or STATUS_ARM.match(line):
+                problems.append(f"{where}: match, matches! or if let on a status enum outside its status module (SEC-031)")
             if STATUS_GLOB.search(line):
                 problems.append(f"{where}: glob import of a status enum (SEC-031)")
             if STATUS_EQ.search(line):

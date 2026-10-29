@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
@@ -77,12 +78,39 @@ def _task_states(state: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
     return {t["id"]: t for t in state.get("tasks", [])}
 
 
-def _nightly_green_after(nightly: dict[str, Any] | None, merged_at: list[str]) -> bool:
-    """True when the recorded nightly-main run was green and ran at or after every merge named."""
+def _is_ancestor(root: Path, older: str, newer: str) -> bool | None:
+    """git merge-base --is-ancestor; None when git or either commit is unavailable."""
+    try:
+        r = subprocess.run(
+            ["git", "-C", str(root), "merge-base", "--is-ancestor", older, newer],
+            capture_output=True, text=True, timeout=20,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return {0: True, 1: False}.get(r.returncode)
+
+
+def _nightly_green_after(
+    nightly: dict[str, Any] | None, merges: list[tuple[str, str]], root: Path | None = None
+) -> bool:
+    """True when the recorded nightly-main run was green and tested every merge named.
+
+    A merge counts as tested when its squash commit is an ancestor of the nightly run's commit
+    (D-484); only when git cannot answer does it fall back to the run's start time (`started_at`,
+    else `ran_at`) being after the merge.
+    """
     if not nightly or nightly.get("conclusion") != "success":
         return False
-    ran_at = nightly.get("ran_at", "")
-    return all(ran_at >= m for m in merged_at if m)
+    tested = nightly.get("sha", "")
+    started = nightly.get("started_at") or nightly.get("ran_at", "")
+    for sha, at in merges:
+        answer = _is_ancestor(root, sha, tested) if (root and sha and tested) else None
+        if answer is None:
+            if at and started < at:
+                return False
+        elif not answer:
+            return False
+    return True
 
 
 def compute(root: Path, state: dict[str, Any] | None, nightly: dict[str, Any] | None = None) -> list[ReqStatus]:
@@ -118,7 +146,8 @@ def compute(root: Path, state: dict[str, Any] | None, nightly: dict[str, Any] | 
         tds_done = [td for td in tds if td_owner.get(td) and all(is_done(t) for t in td_owner[td])]
         all_tasks_done = bool(tasks) and len(done) == len(tasks)
         all_td_done = len(tds_done) == len(tds)
-        nightly_ok = _nightly_green_after(nightly, [merged_at(t) for t in done])
+        merges = [(str(states.get(t, {}).get("merged_sha") or ""), merged_at(t)) for t in done]
+        nightly_ok = _nightly_green_after(nightly, merges, root)
         verified = all_tasks_done and all_td_done and nightly_ok
         out.append(
             ReqStatus(

@@ -71,3 +71,14 @@ def test_template_escaping_cannot_be_disabled(tmp_path: Path) -> None:
     write(tmp_path, "app/site/templates/page.html", "<p>{{ text|safe }}</p>\n")
     problems = rr.run(tmp_path)
     assert len(problems) == 1 and "disables escaping" in problems[0]
+
+
+def test_multiline_allow_with_reason_and_masked_phone_text_pass(tmp_path: Path) -> None:
+    write(tmp_path, "app/site/src/routes.rs", '#[allow(\n    clippy::too_many_arguments,\n    reason = "axum handler"\n)]\nfn f() {}\nconst MASK: &str = "XXX-XXX-1234";\n')
+    assert rr.run(tmp_path) == []
+
+
+def test_status_matches_if_let_and_arms_outside_status_module_fail(tmp_path: Path) -> None:
+    write(tmp_path, "app/picks/src/service.rs", "fn f(s: PickStatus) {\n    if let PickStatus::Paid = s {}\n    let _ = matches!(s, PickStatus::Free);\n    match s {\n        PickStatus::Paid => {}\n    }\n}\n")
+    problems = rr.run(tmp_path)
+    assert len([p for p in problems if "outside its status module" in p]) == 3

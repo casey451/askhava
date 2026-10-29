@@ -2,7 +2,7 @@
 
 **Auditor:** Claude (Fable 5.1) as principal architect, Rust engineer, security architect, QA director and technical program manager, with five independent Opus reviewers who saw only their own scope and not each other's work. **Commit audited:** `debbd3e` on `main`. **Decisions:** D-479 (governance and tooling), D-480 (security and privacy requirements). **Verdict:** `docs/build-readiness.md`.
 
-Every finding below was checked against the files before it was accepted; a reviewer's claim that did not hold is not listed. Each finding has a severity, where it lives, what is wrong, the fix, and how we will know it is fixed. "Done here" means this audit's pull request carries the fix; "before T001" means it is on the readiness list; "escalated" means it needs Casey's word.
+Every finding below was checked against the files before it was accepted; a reviewer's claim that did not hold is not listed. Each finding has a severity, where it lives, what is wrong, the fix, and how we will know it is fixed. "Done here" means this audit's pull request carries the fix; "before the first build task" means it is on the readiness list; "escalated" means it needs Casey's word.
 
 ## 1. What was audited
 
@@ -21,13 +21,13 @@ The blueprint is unusually complete: every live requirement has a task, 635 of 6
 
 What the audit found is of a different kind: rules that exist only as prose, checks that pass by doing nothing, and a few places where the plan assumes a file or a process that nothing creates. None of it is a reason to change direction. All of it is a reason not to start building yet.
 
-**Counts:** Critical 7 (all fixed here or converted to a named task before T001), High 34, Medium 38, Low 18.
+**Counts:** Critical 7 (all fixed here or converted to a named task before the first build task), High 34, Medium 38, Low 18.
 
 ## 3. Governance and runner (reviewer C, verified)
 
 ### G-C1 Critical: the runner's code never runs live
 `runner/cycle.py` has an `Env` interface and no implementation, no `__main__`, no caller. The live runner is a Sonnet session reading `BUILD_BRIEF.md` Appendix A prose, and the state record shows it skipping the code's rules (D-171 ignored a lease; K2 and K2b model evidence "not independently verified"; P1 and P2 skipped the reviewer, D-166). So every "runner-side" rule is in practice document-only.
-**Fix (before T001, harness task T174 in the readiness list):** `runner/__main__.py` plus `runner/github_env.py` (git and GitHub REST, `--no-renames` diffs); Appendix A cut to "run `python3 -m runner`, do the task it hands you, run `python3 -m runner --after`"; every state commit stamped with the runner code SHA.
+**Fix (before the first build task, harness task T174 in the readiness list):** `runner/__main__.py` plus `runner/github_env.py` (git and GitHub REST, `--no-renames` diffs); Appendix A cut to "run `python3 -m runner`, do the task it hands you, run `python3 -m runner --after`"; every state commit stamped with the runner code SHA.
 **Resolved when:** a rehearsal session holding a live lease exits with `lease_live` from code, and every state commit carries `runner_sha`.
 
 ### G-C2 Critical: Claude acts as Casey on GitHub
@@ -65,7 +65,7 @@ Also reviewer B's C1: `twin/` does not exist on `main`; `Twin` runs a smoke copy
 
 ### G-H6 High: any push to `claude/task/**` gets a PR with auto-merge
 A worker subagent shares the runner's credentials and can push before the path check and review.
-**Before T001 (with G-C1):** the runner writes `reviewed_sha` and the lease to `claude/kit-state` before pushing; `auto-pr` enables auto-merge only when the lease names the task and `reviewed_sha` equals the head.
+**Before the first build task (with G-C1):** the runner writes `reviewed_sha` and the lease to `claude/kit-state` before pushing; `auto-pr` enables auto-merge only when the lease names the task and `reviewed_sha` equals the head.
 
 ### G-H7 High: branches need not be up to date to merge
 Ruleset `strict_required_status_checks_policy: false`; a stale branch can merge an untested combination, caught only afterwards by the tree check. **Escalated (E-2).**
@@ -74,7 +74,7 @@ Ruleset `strict_required_status_checks_policy: false`; a stale branch can merge 
 Only `claude/task/T###-` branches got the ownership check. **Done here:** a non-task branch touching protected or locked paths must carry a `Plan-Change: D-###` trailer naming a new decision entry. With G-C2 open, this proves intent, not authorship.
 
 ### G-M1 Medium: nothing protects `claude/kit-state`
-No ruleset; force-push and delete are blocked only by local patterns; three workflows push to the branch the lease lives on. **Escalated (E-2):** a ruleset on `claude/kit-state` blocking deletion and non-fast-forward pushes. **Before T001:** `scripts/check_state.py` schema check at runner start; the lease moved to its own ref.
+No ruleset; force-push and delete are blocked only by local patterns; three workflows push to the branch the lease lives on. **Escalated (E-2):** a ruleset on `claude/kit-state` blocking deletion and non-fast-forward pushes. **Before the first build task:** `scripts/check_state.py` schema check at runner start; the lease moved to its own ref.
 
 ### G-M2 Medium: the decisions log was append-only on paper
 **Done here:** `check_pr_change.py` requires the base's `D-###` entries to be a byte-identical, ordered prefix of the head's.
@@ -86,10 +86,10 @@ No ruleset; force-push and delete are blocked only by local patterns; three work
 **Done here:** `kit/allowed_crates.txt` (protected) and `scripts/check_crates.py` fail `Ci` on any direct dependency not listed.
 
 ### G-M5 Medium: a red `main` had no way out in code
-`main_red` was set and never cleared; `FIX-MAIN` was not a task; nightly results were not read. **Done here:** `nightly-main` records `kit/nightly.json` on `claude/kit-state`; `docs/governance.md` section 5 defines the protocol. **Before T001 (T174):** implement it in the runner with a drill.
+`main_red` was set and never cleared; `FIX-MAIN` was not a task; nightly results were not read. **Done here:** `nightly-main` records `kit/nightly.json` on `claude/kit-state`; `docs/governance.md` section 5 defines the protocol. **Before the first build task (T174):** implement it in the runner with a drill.
 
 ### G-M6 Medium: state cannot resume a session with zero loss
-Missing: per-attempt history (model, evidence, head SHA, checks, reviewer), an open-deviations register, the usage reading (`usage.last_reading` is null), the plan-lock hash at claim time, `main`'s SHA and smoke result at cycle start, owner answers as an append-only file. **Before T001 (T174).**
+Missing: per-attempt history (model, evidence, head SHA, checks, reviewer), an open-deviations register, the usage reading (`usage.last_reading` is null), the plan-lock hash at claim time, `main`'s SHA and smoke result at cycle start, owner answers as an append-only file. **Before the first build task (T174).**
 
 ### G-L1 to G-L4 Low
 `docs/sources.md:29` contradicted section 16 (done here; T001 removed from the graph); `CLAUDE.md` 200-line rule unchecked (done here in `check_code_docs.py`); reviewer models unverified (T174); usage reading undefined (T174: worker-transcript token totals per task in `usage.by_task`).
@@ -111,34 +111,34 @@ No workflow boots the server and runs `tests/e2e`. **Done here:** T173 adds the 
 "License check at pick skipped" needed TD-PICK-09 (T063, stage 3). **Done here:** moved to T073.
 
 ### B-H4 High: only stage 3 had a machine-checkable exit
-**Done here:** `docs/build-readiness.md` section 3 names an exit test per stage; each cleanup prompt names it. **Before T001 (T174):** `scripts/stage_exit.py --stage N` reading `kit/nightly.json` and a test-results file, run by the runner before the next stage; the runner dispatches `nightly-main` when a cleanup task merges.
+**Done here:** `docs/build-readiness.md` section 3 names an exit test per stage; each cleanup prompt names it. **Before the first build task (T174):** `scripts/stage_exit.py --stage N` reading `kit/nightly.json` and a test-results file, run by the runner before the next stage; the runner dispatches `nightly-main` when a cleanup task merges.
 
 ### B-H5 High: cleanup tasks were barriers with an impossible scope
 They owned all of `app/` with a budget of one file and 200 lines, and every next-stage task depended on them. **Done here:** cleanup tasks are scan-driven (`cargo machete`, duplicate scan, `check_rust_rules.py`, `check_code_docs.py`, a commented-out-code grep), own `app/` and `migrations/`, budget 14 files; done means zero findings and the stage exit test recorded. **Open:** gating the next stage on `stage_exit` rather than on every stage task (T174), so a blocked mid-stage task does not halt stages 3 to 7.
 
 ### B-H6 High: the first whole-codebase audit came at task 136 of 171, and nothing acted on its findings
-**Before T001:** stage-boundary Opus audits of each stage's money, privacy and security diff inside `stage_exit`; a FIX task queued per Critical or High finding; audit files with a machine-readable findings table.
+**Before the first build task:** stage-boundary Opus audits of each stage's money, privacy and security diff inside `stage_exit`; a FIX task queued per Critical or High finding; audit files with a machine-readable findings table.
 
 ### B-H7 High: context budgets are understated
-D-119 counts every read as 1% whatever its size; 126 tasks read `docs/test-design.md` (170 KB), 153 read `docs/architecture.md` (56 KB). Reviewer B's estimate puts T150 near 145k tokens against an 18% budget; T147 to T149, T151, T104, T156, T160 and T162 over 100k. **Before T001 (plan change P-1):** `gen_prompts.py` pastes only the task's own requirement sentences, TD rows and decision lines, and computes `context_pct` from bytes; `--check` prints a token estimate per prompt.
+D-119 counts every read as 1% whatever its size; 126 tasks read `docs/test-design.md` (170 KB), 153 read `docs/architecture.md` (56 KB). Reviewer B's estimate puts T150 near 145k tokens against an 18% budget; T147 to T149, T151, T104, T156, T160 and T162 over 100k. **Before the first build task (plan change P-1):** `gen_prompts.py` pastes only the task's own requirement sentences, TD rows and decision lines, and computes `context_pct` from bytes; `--check` prints a token estimate per prompt.
 
 ### B-H8 High: some tasks are too big for one session
-44 tasks exceed 600 lines, 12 requirements or 10 files (T147 to T150, T102, T104, T105, T081, T151, T156, T157, T158, T160, T162 to T165, T016, T069 and others). **Before T001 (P-1):** split at 600 lines, 12 requirements, 10 files; `validate_tasks.py` limits lowered to match.
+44 tasks exceed 600 lines, 12 requirements or 10 files (T147 to T150, T102, T104, T105, T081, T151, T156, T157, T158, T160, T162 to T165, T016, T069 and others). **Before the first build task (P-1):** split at 600 lines, 12 requirements, 10 files; `validate_tasks.py` limits lowered to match.
 
 ### B-M1 Medium: model allocation goes beyond D-115
 127 of 171 tasks on Opus; 14 Opus tasks have no money, privacy, security or recovery area (T002, T003, T004, T005, T034, T035, T042, T044, T152, T153, T154, T156, T159, T170); the journeys are on Opus though `docs/test-design.md:48` says Sonnet writes them. Low-risk moves to Sonnet with an Opus reviewer: T004, T154, T159, T168, T010, T019, T135, T138, T169, T170, T098, T099, T118, T119, T072, T121, T117, T122, T133, T134. Should be Opus instead: T039 (emergency text, 15 requirements), T032 (timers driving Confirm and refunds), T036 (license imports, a 95% floor area); T040 and T032 need an Opus reviewer. Net about 60% Opus. **Escalated (E-3)** as a one-line choice; the task file then changes in a plan change.
 
 ### B-M2 Medium: prompt template gaps
-134 of 164 prompts have goal equal to title, so the Goal section is dropped; IDs are listed without their text; no per-task test command; no pointer to the crate layout conventions; three definition-of-done items a worker cannot verify (required checks, coverage before T169, the twin before T172); the fresh-eyes review is duplicated between the template and the runner. **Before T001 (P-1):** with B-H7.
+134 of 164 prompts have goal equal to title, so the Goal section is dropped; IDs are listed without their text; no per-task test command; no pointer to the crate layout conventions; three definition-of-done items a worker cannot verify (required checks, coverage before T169, the twin before T172); the fresh-eyes review is duplicated between the template and the runner. **Before the first build task (P-1):** with B-H7.
 
 ### B-M3 Medium: progress measurement
-`scripts/progress.py` (written in this audit) needed `merged_at` from the runner and test evidence. **Done here:** the runner records `merged_sha` and `merged_at` on DONE; `nightly-main` writes `kit/nightly.json`. **Before T001 (T174):** a nightly `kit/test_results.json` of TD markers that passed, ancestry (`merge-base --is-ancestor`) instead of timestamps, and a separate "manual or Phase 2" class for A11Y-022 and its kind.
+`scripts/progress.py` (written in this audit) needed `merged_at` from the runner and test evidence. **Done here:** the runner records `merged_sha` and `merged_at` on DONE; `nightly-main` writes `kit/nightly.json`. **Before the first build task (T174):** a nightly `kit/test_results.json` of TD markers that passed, ancestry (`merge-base --is-ancestor`) instead of timestamps, and a separate "manual or Phase 2" class for A11Y-022 and its kind.
 
 ### B-M4 Medium: validator checks to add
-Done here: withdrawn requirement references fail. Before T001 (P-1): tests or an `acceptance` field on every build and harness task; kit outputs must exist once K9 is DONE; mutant "killed by" entries owned by an ancestor; harness-before-code order; goal must differ from title; Opus reviewer for any owner of a cargo-mutants target; every task reads the spec file of each requirement it names (13 miss one today); migration numbers increase in serial order.
+Done here: withdrawn requirement references fail. Before the first build task (P-1): tests or an `acceptance` field on every build and harness task; kit outputs must exist once K9 is DONE; mutant "killed by" entries owned by an ancestor; harness-before-code order; goal must differ from title; Opus reviewer for any owner of a cargo-mutants target; every task reads the spec file of each requirement it names (13 miss one today); migration numbers increase in serial order.
 
 ### B-M5 Medium: the sentinel no-leak test (T120) sits at position 139, long after the vault
-**Before T001 (P-1):** a database-and-logs sentinel scan in stage 2 (after T022), extended by the journeys later.
+**Before the first build task (P-1):** a database-and-logs sentinel scan in stage 2 (after T022), extended by the journeys later.
 
 ### B-L1 to B-L4 Low
 Migration numbers out of serial order (0044 after 0051; 0105, 0109, 0110 after 0147 to 0151) — safe for SQLx but fragile; number by serial position in P-1. Tiny sessions (T004 30 lines, T124 100 lines, T030 one requirement) — merge in P-1. T167 and T170 labelled stage 1 but ordered after T008 — relabel in P-1. The copy-panel steps appear in pure-infrastructure prompts; T169's module was "adapters" (fixed here).
@@ -181,7 +181,7 @@ Business replies and help emails land in a mailbox with homeowner data outside t
 **Now PICK-056.**
 
 ### S-M1 to S-M15 Medium (all now requirements)
-Scrubber corpus and Unicode normalization (AI-020); HELP notification scrubbing (PRIV-030); AI output content screen and cost caps (AI-021); Resend and Lob webhook verification, Twilio dedupe keys, Stripe proof checks (SEC-039); client IP and atomic rate limits (SEC-040); realm capability proofs inside `portals` (SEC-046); off-database integrity and retention (PRIV-029); data leaving the vault through the dispute pack, card-email bytes, Twilio bodies and Cloudflare (PRIV-027); logging and Sentry paths (PRIV-028); supply-chain pins and gitleaks range scans (SEC-045); owner session timeout and step-up (SEC-043); vault read-volume alert (SEC-047); SSRF (SEC-041); photo store contradiction (D-094 says Postgres, PRIV-023 says object storage — **before T001 (P-1):** one decision); PII scanner misses emails and image metadata (**before T001 (P-1):** `pii_scan.py` rules).
+Scrubber corpus and Unicode normalization (AI-020); HELP notification scrubbing (PRIV-030); AI output content screen and cost caps (AI-021); Resend and Lob webhook verification, Twilio dedupe keys, Stripe proof checks (SEC-039); client IP and atomic rate limits (SEC-040); realm capability proofs inside `portals` (SEC-046); off-database integrity and retention (PRIV-029); data leaving the vault through the dispute pack, card-email bytes, Twilio bodies and Cloudflare (PRIV-027); logging and Sentry paths (PRIV-028); supply-chain pins and gitleaks range scans (SEC-045); owner session timeout and step-up (SEC-043); vault read-volume alert (SEC-047); SSRF (SEC-041); photo store contradiction (D-094 says Postgres, PRIV-023 says object storage — **before the first build task (P-1):** one decision); PII scanner misses emails and image metadata (**before the first build task (P-1):** `pii_scan.py` rules).
 
 ### S-L1 to S-L6 Low
 CSRF details and fixation (now SEC-042); recycled phone numbers (P-1: masked addresses until re-confirmed); database TLS and migration credentials (P-1); forged owner answers (G-C2); request smuggling test (P-1); the threat-model review record (this audit is the K4 fresh-eyes review; TB12 inbound email and the new rows are added to the threat model in P-1).
@@ -280,6 +280,10 @@ Casey's answer to the escalations was to decide them on best practice rather tha
 | E-5 | The three behaviour-changing security rules stand | none |
 | E-6 | `Ci` designed for cost; pacing set from the real quota | Read the Actions minutes quota in the repository's billing page once and reply with the number |
 
-## 9. What this audit changed in the repository (D-479, D-480)
+## 8a. Independent review of this audit's own changes (D-484)
+
+A fresh Opus reviewer read the pull request's diff and found 16 problems in the audit's own work, from a lock-rule bypass (the change rules read ownership from the branch under test) to gate phrases still matched as substrings and CODEOWNERS paths that would have made seven ordinary tasks wait for Casey. All were verified and fixed; D-484 lists each. The lesson is recorded in the governance file's section 7: the audit's own changes get the same review it asks of every task.
+
+## 9. What this audit changed in the repository (D-479 to D-484)
 
 Added (D-481 too): `docs/governance.md`, `docs/ai-operating-manual.md`, `docs/risk-register.md`, `docs/build-readiness.md`, this report; `scripts/progress.py`, `scripts/check_plan_lock.py`, `scripts/check_pr_change.py`, `scripts/check_rust_rules.py`, `scripts/check_crates.py` with tests; `kit/plan.lock`, `kit/layers.json`, `kit/allowed_crates.txt`; `.github/workflows/governance.yml`; tasks T172 and T173. Changed: `ci.yml` (skip guard, plan lock, Rust rules, crates, clippy forbid), `nightly-main.yml` (result stamp), `inbox.yml` (app-posted comments ignored), `.claude/settings.json` (deny rules), `runner/outbox.py` (gate phrases), `runner/verify.py` (nightly file), `runner/cycle.py` (merged SHA and time), `scripts/validate_tasks.py` (withdrawn IDs, protected files, shared lock), `scripts/check_code_docs.py` (CLAUDE.md limit), `scripts/smoke.sh`, `kit/prompts/TEMPLATE.md`, `kit/tasks.json` (withdrawn IDs dropped, T001 removed, T169 split, T056/T073/T074 ownership, cleanup scope, coverage ordering), `docs/test-design.md` (28 new entries, mutant ownership, TD-PRIV-08), `docs/spec/` (28 new requirements), `docs/sources.md:29`.

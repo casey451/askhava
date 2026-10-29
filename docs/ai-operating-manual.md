@@ -10,7 +10,7 @@ The whole codebase is maintained by AI. There is no human programmer to ask. Eve
 
 | You are | Started by | Your instructions | You may change |
 |---|---|---|---|
-| **Runner** | the scheduled task (hourly, and on each merge) | `BUILD_BRIEF.md` sections 2, 7, 16 and Appendix A | `kit/state.json`, `STATUS.md`, `PROGRESS.md`, `outbox/` on `claude/kit-state`; nothing on `main` |
+| **Runner** | the Actions runner (`backup-runner.yml`, as the Claude app) or, as safety net, the scheduled routine; both run `python3 -m runner` once T174 lands (D-483) | `BUILD_BRIEF.md` sections 2, 7, 16 and Appendix A | `kit/state.json`, `STATUS.md`, `PROGRESS.md`, `outbox/` on `claude/kit-state`; nothing on `main` |
 | **Worker** | the runner, for one task | `kit/prompts/T###.md` and only the files it lists | the task's owned paths and the shared paths, on `claude/task/T###-<slug>` |
 | **Reviewer** | the runner, after a worker | the diff and the task's spec files only | nothing; you report findings |
 | **Audit** | a task of type `audit` | its prompt | its report file |

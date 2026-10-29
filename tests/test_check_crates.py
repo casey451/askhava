@@ -30,6 +30,6 @@ def test_listed_crates_pass_and_unlisted_fail(tmp_path: Path) -> None:
     root = repo(tmp_path)
     (root / "Cargo.toml").write_text('[workspace]\nmembers = ["app/*"]\n[workspace.dependencies]\naxum = "=0.8.9"\nserde = "1"\n', encoding="utf-8")
     (root / "app/jobs").mkdir(parents=True)
-    (root / "app/jobs/Cargo.toml").write_text('[package]\nname = "jobs"\n[dependencies]\naxum.workspace = true\nleftpad = "1"\n[dev-dependencies]\nproptest = "1"\n', encoding="utf-8")
+    (root / "app/jobs/Cargo.toml").write_text('[package]\nname = "jobs"\n[dependencies]\naxum.workspace = true\nleftpad = "1"\nsneaky = { package = "evil-crate", version = "1" }\n[dev-dependencies]\nproptest = "1"\n', encoding="utf-8")
     problems = ck.run(root)
-    assert len(problems) == 1 and "leftpad" in problems[0]
+    assert len(problems) == 2 and any("leftpad" in p for p in problems) and any("evil-crate" in p for p in problems)

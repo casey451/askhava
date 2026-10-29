@@ -122,8 +122,40 @@
    "messaging",
    "ops"
   ],
-  "recovery": "layers 0-7",
-  "portals": "layers 0-7",
+  "recovery": [
+   "core",
+   "ops",
+   "adapters",
+   "catalog",
+   "privacy",
+   "ai",
+   "messaging",
+   "payments",
+   "licensing",
+   "businesses",
+   "jobs",
+   "calls",
+   "quotes",
+   "picks",
+   "intake"
+  ],
+  "portals": [
+   "core",
+   "ops",
+   "adapters",
+   "catalog",
+   "privacy",
+   "ai",
+   "messaging",
+   "payments",
+   "licensing",
+   "businesses",
+   "jobs",
+   "calls",
+   "quotes",
+   "picks",
+   "intake"
+  ],
   "site": [
    "intake",
    "catalog"

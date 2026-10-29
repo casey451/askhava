@@ -19,7 +19,7 @@ The technical blueprint is otherwise complete, consistent to the limit the check
 | Requirements traceable | `scripts/trace_spec.py`: 674 requirements (664 live, 10 withdrawn), 0 errors | pass |
 | Requirements → tasks → tests | `scripts/validate_tasks.py`: every live requirement, every TD entry (332) and every journey (J1 to J4) owned by a task; withdrawn IDs rejected; 0 errors | pass |
 | Requirements → test design | every live requirement appears in a test-design row or the accessibility table (WORD-029 through TD-OPS-20's docs test is the one process-class item) | pass |
-| Task prompts current | `scripts/gen_prompts.py --check`: 165 prompts, 0 problems | pass |
+| Task prompts current | `scripts/gen_prompts.py --check`: 166 prompts, 0 problems | pass |
 | Blueprint locked | `scripts/check_plan_lock.py` | pass |
 | Governance rules from `main` | `.github/workflows/governance.yml` (first run on this PR) | pending E-2 to become required |
 | Per-change rules | `scripts/check_pr_change.py` on this branch | pass |
@@ -27,6 +27,7 @@ The technical blueprint is otherwise complete, consistent to the limit the check
 | Rust path in `Ci` | D-476 spike: fmt, clippy, build, test against Postgres, audit, deny, 12 minutes | pass (1 crate only; see R-01) |
 | Rust design reviewed | Independent review of every pin and the layout; eight design defects found and decided (D-481) | decided on paper, unproven until T009 |
 | Runner rehearsed | K9 (D-171): one task passed end to end, one failed and never merged, one double-triggered and resumed after a simulated usage limit; paper rehearsal D-472 reached "Finished" | pass |
+| Independent review of this audit's own PR | 16 defects found in the audit's changes and fixed (D-484) | pass |
 | Fresh contradiction sweeps | D-477, D-478: 27 conflicts found and fixed by an independent Opus sweep; this audit's five reviewers' findings in `docs/audit/` | see the audit |
 
 ## 3. Stage exit tests (milestone completion criteria)
@@ -48,7 +49,7 @@ The task list of each stage is the set of tasks whose `stage` value in `kit/task
 | **Gate B** (T144) | Casey's click-through completes every J1 step and the business card-entry step with VoiceOver, with no step he could not finish and no violation he reports (the pass bar; D-482) |
 | **7. Go live** (T145, T146) | Every item of OPS-042 and `docs/account-checklist.md` Part 2 ticked; live keys entered by Casey; the real-phone rehearsal completes J1 on his phone end to end (the script is T141's); the reviewed commit named (OPS-043); first live charge approved and reconciled to Stripe |
 
-## 4. Before T001 (ordered)
+## 4. Before the first build task (ordered)
 
 | # | Item | Owner | Done when |
 |---|---|---|---|
@@ -57,7 +58,7 @@ The task list of each stage is the set of tasks whose `stage` value in `kit/task
 | 3 | The build's own identity (D-483): `claude setup-token` into the `CLAUDE_CODE_OAUTH_TOKEN` secret; T174 then flips `backup_runner` on after a rehearsal under it | Casey (hands-on), then T174 | A session-posted comment on an owner issue produces no inbox file; a cycle runs under the Actions runner |
 | 4 | Model allocation (D-483): done in this PR | — | `validate_tasks.py` green |
 | 5 | The Actions minutes quota read and logged (D-483) | Casey (one number) | Decision entry with the figure and the pacing |
-| 6 | **T174** harness task: the runner's live entry point (`python3 -m runner`, a GitHub `Env`, `runner_sha` on state commits, `reviewed_sha` gating of `auto-pr`), the red-`main` protocol with its drill, `scripts/stage_exit.py`, per-attempt history, the deviations register, `scripts/check_state.py`, usage readings, the lease on its own ref, STATUS.md carrying `scripts/progress.py --markdown` | Claude (harness task, Opus review) | Drills in `tests/test_failure_drills.py` pass; a rehearsal cycle runs from code end to end |
+| 6 | **T174** harness task (now in `kit/tasks.json`, first in the graph, D-484): the runner's live entry point (`python3 -m runner`, a GitHub `Env`, `runner_sha` on state commits, `reviewed_sha` gating of `auto-pr`), the red-`main` protocol with its drill, `scripts/stage_exit.py`, per-attempt history, the deviations register, `scripts/check_state.py`, usage readings, the lease on its own ref, STATUS.md carrying `scripts/progress.py --markdown` | Claude (harness task, Opus review) | Drills in `tests/test_failure_drills.py` pass; a rehearsal cycle runs from code end to end |
 | 7 | **P-1** plan change: prompts carry requirement and test text with byte-based budgets and a token estimate; tasks split at 600 lines, 12 requirements or 10 files; the validator's new checks (acceptance per task, kit outputs exist after K9, mutant ownership, harness-before-code, goal differs from title, Opus reviewer on cargo-mutants targets, spec reads, migration order); a stage-2 sentinel scan; the photo-store decision (D-094 vs PRIV-023); `pii_scan.py` email and image-metadata rules; the threat model's TB12 and new rows; the brief's stale lines; TLS and smuggling items | Claude (plan change, Opus review) | `validate_tasks.py`, `trace_spec.py`, `gen_prompts.py --check`, the lock and the change rules all green on the merged PR |
 | 8 | Hand-run test, re-plan pass, Gate P | Casey, then Claude | PREBUILD items 11 to 17 |
 | 9 | Re-issue this file as READY | Claude | Every Critical and High risk closed or accepted in writing; section 2 evidence refreshed |

@@ -35,7 +35,7 @@ This is the only to-do list. The same file is in the repository as `docs/PREBUIL
 
 ## 1b. What changed in the pre-build engineering audit (October 28, D-479 and D-480)
 
-One pull request. Report: `docs/audit/prebuild-audit-2026-10-28.md`. Verdict: `docs/build-readiness.md`, **not ready**, with the ordered list of what comes before T001 (its section 4 is now part of this checklist as items 2a to 2d). New standing files: `docs/governance.md`, `docs/ai-operating-manual.md`, `docs/risk-register.md`. The plan is fingerprinted (`kit/plan.lock`); any change to a plan file without a logged decision fails the build. Progress is counted in verified requirements (`scripts/progress.py`). 28 security and privacy requirements were added with tests and owning tasks. Two harness tasks were added (T172 twin gate, T173 journeys in CI) and T001 was absorbed. Five decisions are yours: section 4, items E-1 to E-5.
+One pull request. Report: `docs/audit/prebuild-audit-2026-10-28.md`. Verdict: `docs/build-readiness.md`, **not ready**, with the ordered list of what comes before the first build task (its section 4 is now part of this checklist as items 2a to 2d). New standing files: `docs/governance.md`, `docs/ai-operating-manual.md`, `docs/risk-register.md`. The plan is fingerprinted (`kit/plan.lock`); any change to a plan file without a logged decision fails the build. Progress is counted in verified requirements (`scripts/progress.py`). 28 security and privacy requirements were added with tests and owning tasks. Two harness tasks were added (T172 twin gate, T173 journeys in CI) and T001 was absorbed. Five decisions are yours: section 4, items E-1 to E-5.
 
 ## 1a. What changed in fix round 16 (October 28, ChatGPT's stress test)
 
@@ -290,7 +290,7 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 - **What it proves:** every gate opens in the right order (Gate P, account checkpoint, Stage 0.5, real texts, Finished, Gate B, Gate C, first charge); no task waits on something that never finishes; a blocked task holds only its dependents; the number of cycles to the end.
 - **How long and how much usage:** one session, about 30 to 45 minutes, no worker sessions, a small share of one usage window.
 - **Go means:** it reaches "Finished" with only the stops in the table above, no deadlock, and the failing task blocks only its dependents. Anything else becomes a fix before Gate P.
-- **Then:** the first two real tasks after Gate P (T001 and T002) act as the live check: both merge green, and the next cycle starts on its own. They're real work, so nothing is wasted.
+- **Then:** the first two real tasks after Gate P (T002 and T003) act as the live check: both merge green, and the next cycle starts on its own. They're real work, so nothing is wasted.
 
 ---
 

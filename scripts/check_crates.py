@@ -35,14 +35,22 @@ def manifests(root: Path) -> list[Path]:
     return found
 
 
+def _real_names(table: dict) -> set[str]:
+    """Package names, following `package = "..."` renames so an alias cannot hide a crate (D-484)."""
+    out = set()
+    for key, spec in table.items():
+        out.add(spec.get("package", key) if isinstance(spec, dict) else key)
+    return out
+
+
 def names_in(manifest: Path) -> set[str]:
     data = tomllib.loads(manifest.read_text(encoding="utf-8"))
     names: set[str] = set()
     for section in SECTIONS:
-        names.update(data.get(section, {}).keys())
+        names |= _real_names(data.get(section, {}))
         for target in data.get("target", {}).values():
-            names.update(target.get(section, {}).keys())
-    names.update(data.get("workspace", {}).get("dependencies", {}).keys())
+            names |= _real_names(target.get(section, {}))
+    names |= _real_names(data.get("workspace", {}).get("dependencies", {}))
     return names
 
 

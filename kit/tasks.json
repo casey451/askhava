@@ -94,7 +94,45 @@
   "app/privacy/src/tests/mod.rs",
   "app/quotes/src/tests/mod.rs",
   "app/recovery/src/tests/mod.rs",
-  "app/site/src/tests/mod.rs"
+  "app/site/src/tests/mod.rs",
+  "app/core/src/lib.rs",
+  "app/core/src/api.rs",
+  "app/ops/src/lib.rs",
+  "app/ops/src/api.rs",
+  "app/adapters/src/lib.rs",
+  "app/adapters/src/api.rs",
+  "app/catalog/src/lib.rs",
+  "app/catalog/src/api.rs",
+  "app/privacy/src/lib.rs",
+  "app/privacy/src/api.rs",
+  "app/ai/src/lib.rs",
+  "app/ai/src/api.rs",
+  "app/messaging/src/lib.rs",
+  "app/messaging/src/api.rs",
+  "app/payments/src/lib.rs",
+  "app/payments/src/api.rs",
+  "app/licensing/src/lib.rs",
+  "app/licensing/src/api.rs",
+  "app/businesses/src/lib.rs",
+  "app/businesses/src/api.rs",
+  "app/jobs/src/lib.rs",
+  "app/jobs/src/api.rs",
+  "app/calls/src/lib.rs",
+  "app/calls/src/api.rs",
+  "app/quotes/src/lib.rs",
+  "app/quotes/src/api.rs",
+  "app/picks/src/lib.rs",
+  "app/picks/src/api.rs",
+  "app/intake/src/lib.rs",
+  "app/intake/src/api.rs",
+  "app/recovery/src/lib.rs",
+  "app/recovery/src/api.rs",
+  "app/portals/src/lib.rs",
+  "app/portals/src/api.rs",
+  "app/site/src/lib.rs",
+  "app/site/src/api.rs",
+  "app/server/src/lib.rs",
+  "app/server/src/api.rs"
  ],
  "kit_outputs": [
   "kit/prompts/",
@@ -115,6 +153,65 @@
  ],
  "tasks": [
   {
+   "id": "T174",
+   "slug": "runner-live",
+   "title": "Runner live: python3 -m runner, the GitHub Env, reviewed_sha gating, red-main protocol, stage exits, state schema",
+   "goal": "Give runner/ a live entry point (`python3 -m runner`, `--after`) and a GitHub `Env` (git plus the REST API, `--no-renames` diffs), so the scheduled session and the Actions runner both execute the code rather than prose; stamp every state commit with `runner_sha` and the starter's name; write `reviewed_sha` and the lease before pushing a task branch and make auto-pr enable auto-merge only when they match; implement docs/governance.md section 5 (FIX-MAIN as a revert-first task, main_red cleared only on a verified green smoke run and kit/nightly.json); add scripts/stage_exit.py (stage exit tests of docs/build-readiness.md section 3 from kit/nightly.json and a test-results file) run before the next stage, with a blocked mid-stage task leaving later stages eligible; per-attempt history, the open-deviations register, usage readings in usage.by_task, the lease on its own ref, scripts/check_state.py at runner start; STATUS.md carries `scripts/progress.py --markdown`; flip backup_runner on once CLAUDE_CODE_OAUTH_TOKEN exists and a rehearsal cycle has run under it; cut BUILD_BRIEF.md Appendix A to the entry-point form (line count kept). Acceptance (each shown in the task report): a rehearsal session holding a live lease exits with lease_live from code; a red-main drill goes red, reverts, clears and continues; a push without a review record gets no auto-merge (D-479, D-483, D-484).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "1",
+   "module": null,
+   "deps": [],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "runner/__main__.py",
+    "runner/github_env.py",
+    "runner/cycle.py",
+    "runner/state.py",
+    "scripts/stage_exit.py",
+    "scripts/check_state.py",
+    ".github/workflows/auto-pr.yml",
+    ".github/workflows/backup-runner.yml",
+    "tests/test_runner_live.py",
+    "BUILD_BRIEF.md"
+   ],
+   "reads": [
+    "docs/governance.md",
+    "docs/build-readiness.md",
+    "runner/verify.py",
+    "runner/outbox.py",
+    "scripts/progress.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-479",
+    "D-483",
+    "D-484"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:205"
+   ],
+   "budget": {
+    "files": 10,
+    "lines": 800,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T174-runner-live",
+   "prompt": "kit/prompts/T174.md"
+  },
+  {
    "id": "T002",
    "slug": "catalog-license-scope",
    "title": "Per-job-type license scope in the catalog (R-37R drains only, R-39R cooling only)",
@@ -123,7 +220,9 @@
    "phase": 1,
    "stage": "1",
    "module": "catalog",
-   "deps": [],
+   "deps": [
+    "T174"
+   ],
    "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
@@ -173,7 +272,8 @@
    "stage": "1",
    "module": "catalog",
    "deps": [
-    "T002"
+    "T002",
+    "T174"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -231,7 +331,9 @@
    "phase": 1,
    "stage": "1",
    "module": null,
-   "deps": [],
+   "deps": [
+    "T174"
+   ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
@@ -281,7 +383,8 @@
    "stage": "1",
    "module": null,
    "deps": [
-    "T003"
+    "T003",
+    "T174"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -303,9 +406,10 @@
     ".github/workflows/twin.yml"
    ],
    "reads": [
+    "docs/sources.md",
     "docs/twin-warnings.md",
-    "sources/01_spec/hhq_twin/README.md",
-    "docs/sources.md"
+    "sources/01_spec/hhq_twin/",
+    "sources/01_spec/hhq_twin/README.md"
    ],
    "requirements": [],
    "tests": [],
@@ -594,7 +698,8 @@
    "stage": "1",
    "module": null,
    "deps": [
-    "T008"
+    "T008",
+    "T174"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -663,7 +768,8 @@
     "tests/integration/Cargo.toml",
     "tests/integration/tests/architecture.rs",
     "app/server/Cargo.toml",
-    "clippy.toml"
+    "clippy.toml",
+    "app/server/src/lib.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -689,7 +795,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 11,
+    "files": 12,
     "lines": 350,
     "context_pct": 11
    },
@@ -3644,8 +3750,8 @@
   {
    "id": "T169",
    "slug": "ci-rust-playwright",
-   "title": "CI for the Rust workspace: pinned Postgres service, coverage floors, sqlx prepare check, per-crate clippy",
-   "goal": "Ci pins the Postgres service image by digest, caches the Cargo registry and target with Swatinem/rust-cache pinned by commit SHA (keyed on Cargo.lock and the toolchain, CARGO_INCREMENTAL=0, dev profile debug = line-tables-only), installs cargo-audit, cargo-deny, sqlx-cli and cargo-llvm-cov from pinned prebuilt binaries, runs `sqlx migrate run` then `cargo sqlx prepare --workspace -- --all-targets --all-features --check` so stale offline query data fails, measures branch coverage in its own parallel job on a nightly pinned by date against tests/coverage_floor.json (this task writes the file with the measured total and the 95% floors for app/payments, app/catalog fee rules, app/privacy and app/licensing, FEE-034, PRIV-022, LIC-033), fails any PR that lowers a floor, and keeps `cargo build -p server --locked` as the one boundary build (no per-crate clippy runs) (D-453, D-479, D-481). Acceptance: a PR that lowers coverage by one line in app/privacy turns Ci red, a deliberately stale .sqlx entry turns Ci red, and a warm-cache run finishes in 15 minutes or less (all shown in the task report).",
+   "title": "CI for the Rust workspace: pinned Postgres service, cache, coverage floors, sqlx prepare check, one boundary build",
+   "goal": "Ci pins the Postgres service image by digest, caches the Cargo registry and target with Swatinem/rust-cache pinned by commit SHA (keyed on Cargo.lock and the toolchain, CARGO_INCREMENTAL=0, dev profile debug = line-tables-only), installs cargo-audit, cargo-deny, sqlx-cli and cargo-llvm-cov from pinned prebuilt binaries, runs `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features` so stale offline query data fails, measures branch coverage in its own parallel job on a nightly pinned by date against tests/coverage_floor.json (this task writes the file with the measured total and the 95% floors for app/payments, app/catalog fee rules, app/privacy and app/licensing, FEE-034, PRIV-022, LIC-033), fails any PR that lowers a floor, and keeps `cargo build -p server --locked` as the one boundary build (no per-crate clippy runs) (D-453, D-479, D-481). Acceptance: a PR that lowers coverage by one line in app/privacy turns Ci red, a deliberately stale .sqlx entry turns Ci red, and a warm-cache run finishes in 15 minutes or less (all shown in the task report).",
    "type": "harness",
    "phase": 1,
    "stage": "2",
@@ -10331,7 +10437,8 @@
    "stage": "1",
    "module": "catalog",
    "deps": [
-    "T003"
+    "T003",
+    "T174"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -11208,7 +11315,8 @@
    "stage": "1",
    "module": "adapters",
    "deps": [
-    "T008"
+    "T008",
+    "T174"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",

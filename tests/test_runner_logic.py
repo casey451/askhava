@@ -358,3 +358,14 @@ def test_negated_or_long_answers_never_clear_a_gate() -> None:
     assert st.status(s, outbox.GATE_P) == st.DONE
     long_reply = "approved to build " + "word " * 12
     assert st.status(outbox.apply_gate_p_answer(st.new_state(), long_reply), outbox.GATE_P) != st.DONE
+
+
+def test_gate_phrase_must_be_a_whole_word() -> None:
+    """D-484: 'got it', 'sounds good' and 'yesterday' never clear a 'go' or 'yes' gate."""
+    go = {"id": "T128", "type": "gate", "gate": {"resume": "reply 'go'"}}
+    for text in ("got it, thanks", "sounds good", "I have a question about the logo", "going to look later"):
+        assert not outbox.clears(go, text), text
+    assert outbox.clears(go, "Go.")
+    yes = {"id": "T130", "type": "gate", "gate": {"resume": "answer 'yes'"}}
+    assert not outbox.clears(yes, "yesterday I saw it")
+    assert outbox.clears(yes, "yes")

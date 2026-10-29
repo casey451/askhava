@@ -140,6 +140,8 @@ ALLOWED_SHARED = frozenset(
     | {f"app/{m}/Cargo.toml" for m in CRATE_MODULES}
     | {f"app/{m}/CLAUDE.md" for m in CRATE_MODULES}  # crate docs any task updates (D-473)
     | {f"app/{m}/src/tests/mod.rs" for m in CRATE_MODULES}  # in-crate test module list, one `mod` line per task (D-481)
+    | {f"app/{m}/src/lib.rs" for m in CRATE_MODULES}  # hand-written module list, one `mod` line per task (D-481, D-484)
+    | {f"app/{m}/src/api.rs" for m in CRATE_MODULES}  # each task adds its own public functions (D-484)
     | {f"tests/{layer}/Cargo.toml" for layer in TEST_CRATES}
 )
 JOURNEYS = ("J1", "J2", "J3", "J4")
@@ -306,9 +308,11 @@ def check_models(task: Task) -> list[str]:
     # The Opus *model* is required for money, privacy, security and recovery application code
     # (owned paths under the sensitive prefixes); docs, harness, audit and test-only work in those
     # areas needs the Opus *reviewer* above, and Sonnet may write it (D-483 narrows BUILD_BRIEF.md:498).
-    owns_app_code = any(o.startswith(("app/", "migrations/")) for o in task["owns"])
+    owns_app_code = any(
+        o.startswith(("app/", "migrations/")) and "/src/tests/" not in o for o in task["owns"]
+    )
     writes_sensitive_code = task["type"] == "build" and owns_app_code and bool(
-        derived_areas(task) or areas & {"money", "privacy", "recovery"}
+        derived_areas(task) or areas & OPUS_REVIEW_AREAS
     )
     if writes_sensitive_code and task["model"] != OPUS:
         errors.append(

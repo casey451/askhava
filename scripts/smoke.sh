@@ -60,7 +60,7 @@ if [ -f Cargo.toml ]; then
   cargo build -p server --locked
   if command -v sqlx >/dev/null 2>&1 && [ -n "${DATABASE_URL:-}" ]; then
     sqlx migrate run
-    cargo sqlx prepare --workspace -- --all-targets --all-features --check
+    cargo sqlx prepare --workspace --check -- --all-targets --all-features
   fi
   cargo test --workspace --locked
   if [ "${FULL}" = "--full" ]; then

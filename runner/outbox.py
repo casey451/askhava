@@ -68,7 +68,7 @@ def clears(gate: dict[str, Any], text: str) -> bool:
         return False
     phrase = resume_phrase(gate)
     if phrase:
-        return _plain(phrase) in plain
+        return re.search(rf"(?<![a-z0-9']){re.escape(_plain(phrase))}(?![a-z0-9'])", plain) is not None
     return any(w in words for w in DEFAULT_WORDS)
 
 

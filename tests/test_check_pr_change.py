@@ -200,3 +200,37 @@ def test_lock_rewrite_by_non_harness_task_without_locked_ownership_fails(tmp_pat
 def test_decision_may_name_requirements_as_a_range() -> None:
     assert cc.ids_named("new SEC-035 to SEC-037 and PRIV-024") == {"SEC-035", "SEC-036", "SEC-037", "PRIV-024"}
     assert "SEC-036" in cc.ids_named("SEC-035 to 037")
+
+
+def test_task_branch_cannot_grant_itself_paths(tmp_path: Path, capsys) -> None:
+    """D-484: ownership is read from the base task graph, never from the branch's own copy."""
+    root = repo(tmp_path)
+    graph = json.loads((root / "kit/tasks.json").read_text(encoding="utf-8"))
+    graph["tasks"][0]["owns"].append("runner/x.py")
+    graph["tasks"][0]["type"] = "harness"
+    (root / "kit/tasks.json").write_text(json.dumps(graph), encoding="utf-8")
+    (root / "runner/x.py").write_text("x = 2\n", encoding="utf-8")
+    pl.write_lock(root)
+    add_decision(root)
+    commit(root)
+    assert run(root, "claude/task/T001-fix") == 1
+    assert "runner/x.py: protected path" in capsys.readouterr().err
+
+
+def test_deleting_a_locked_file_needs_a_decision(tmp_path: Path, capsys) -> None:
+    root = repo(tmp_path)
+    (root / "BUILD_BRIEF.md").unlink()
+    pl.write_lock(root)
+    commit(root)
+    assert run(root) == 1
+    assert "no new docs/decisions.md entry" in capsys.readouterr().err
+
+
+def test_trailer_must_name_a_new_entry_exactly(tmp_path: Path, capsys) -> None:
+    root = repo(tmp_path)
+    (root / "BUILD_BRIEF.md").write_text("brief changed\n", encoding="utf-8")
+    pl.write_lock(root)
+    add_decision(root, "- **D-002** Question: like D-001 before it. Choice: c.\n")
+    commit(root, "D-001")
+    assert run(root) == 1
+    assert "not a new entry" in capsys.readouterr().err

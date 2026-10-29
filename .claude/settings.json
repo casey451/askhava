@@ -63,7 +63,10 @@
       "Bash(*api.github.com/repos/*/statuses/*)",
       "Bash(*api.github.com/repos/*/check-runs*)",
       "Bash(gh api *rulesets*)",
-      "Bash(gh api *git/refs/heads/claude/kit-state*)"
+      "Bash(gh api *git/refs/heads/claude/kit-state*)",
+      "Bash(gh api *-X PATCH*issues*)",
+      "Bash(gh api *--method PATCH*issues*)",
+      "Bash(*api.github.com/repos/*/issues/*-X PATCH*)"
     ]
   }
 }

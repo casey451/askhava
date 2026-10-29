@@ -68,11 +68,22 @@ def changed_files(root: Path, base: str) -> list[str]:
     return sorted(line for line in out.splitlines() if line.strip())
 
 
+def base_graph(root: Path) -> dict:
+    """The task graph as it stands on the base: a branch never grants itself paths or a type (D-484)."""
+    text = show(root, BASE[0], "kit/tasks.json") if BASE else None
+    if text is None:
+        text = (root / "kit/tasks.json").read_text(encoding="utf-8")
+    return json.loads(text)
+
+
+BASE: list[str] = []
+
+
 def task_paths_check(root: Path, branch: str, changed: list[str]) -> list[str]:
     m = TASK_BRANCH.match(branch or "")
     if not m:
         return []
-    graph = json.loads((root / "kit/tasks.json").read_text(encoding="utf-8"))
+    graph = base_graph(root)
     task = next((t for t in graph["tasks"] if t["id"] == m.group("id")), None)
     if task is None:
         return [f"branch {branch}: task {m.group('id')} is not in kit/tasks.json"]
@@ -134,7 +145,7 @@ def task_for_branch(root: Path, branch: str) -> dict | None:
     m = TASK_BRANCH.match(branch or "")
     if not m:
         return None
-    graph = json.loads((root / "kit/tasks.json").read_text(encoding="utf-8"))
+    graph = base_graph(root)
     return next((t for t in graph["tasks"] if t["id"] == m.group("id")), None)
 
 
@@ -143,7 +154,7 @@ def lock_rewrite_check(root: Path, branch: str, changed: list[str]) -> list[str]
     task = task_for_branch(root, branch)
     if task is None or LOCK not in changed or task.get("type") == "harness":
         return []
-    locked = set(check_plan_lock.locked_paths(root))
+    locked = locked_set(root, BASE[0]) if BASE else set(check_plan_lock.locked_paths(root))
     owned_locked = [p for p in changed if p in locked and p in task.get("owns", [])]
     if owned_locked:
         return []
@@ -156,9 +167,9 @@ def plan_change_trailer_check(
     """A non-task branch touching protected or locked paths must say which decision it carries out."""
     if TASK_BRANCH.match(branch or ""):
         return []
-    graph = json.loads((root / "kit/tasks.json").read_text(encoding="utf-8"))
+    graph = base_graph(root)
     protected = tuple(graph["protected_paths"])
-    locked = set(check_plan_lock.locked_paths(root))
+    locked = locked_set(root, base)
     touched = [p for p in changed if p in locked or any(p.startswith(q) if q.endswith("/") else p == q for q in protected)]
     if not touched:
         return []
@@ -168,14 +179,23 @@ def plan_change_trailer_check(
     if not found:
         return [f"plan change touching {touched[0]} needs a 'Plan-Change: D-###' trailer on one of its commits"]
     m = re.match(r"(D-\d{3})", found[0])  # the newest commit's trailer governs
-    if not any(m.group(1) in line for line in decisions_added):
+    if not any(DECISION.match(line).group(1) == m.group(1) for line in decisions_added):
         return [f"Plan-Change trailer names {m.group(1)}, which is not a new entry in docs/decisions.md"]
     return []
 
 
+def locked_set(root: Path, base: str) -> set[str]:
+    """Locked paths on the head plus every file the base lock names, so a deleted locked file still counts."""
+    locked = set(check_plan_lock.locked_paths(root))
+    base_lock = show(root, base, check_plan_lock.LOCK_FILE.as_posix())
+    if base_lock:
+        locked |= {k for k in json.loads(base_lock).get("items", {}) if "#" not in k}
+    return locked
+
+
 def locked_change_check(root: Path, base: str, changed: list[str], decisions_added: list[str]) -> list[str]:
     errors: list[str] = []
-    locked = set(check_plan_lock.locked_paths(root))
+    locked = locked_set(root, base)
     touched = [p for p in changed if p in locked]
     base_arch = show(root, base, check_plan_lock.ARCHITECTURE) or ""
     head_arch = show(root, "HEAD", check_plan_lock.ARCHITECTURE) or ""
@@ -214,7 +234,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--branch", default="", help="head branch name (claude/task/T###-slug enables the path check)")
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
-    base = git(root, "merge-base", args.base, "HEAD").strip()
+    try:
+        base = git(root, "merge-base", args.base, "HEAD").strip()
+    except subprocess.CalledProcessError:
+        print(f"ERROR no merge base between {args.base} and HEAD: fetch more history (git fetch --deepen) and rerun", file=sys.stderr)
+        return 1
+    BASE[:] = [base]
     changed = changed_files(root, base)
     errors: list[str] = []
     errors += task_paths_check(root, args.branch, changed)
