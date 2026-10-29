@@ -3300,7 +3300,7 @@
   {
    "id": "FIX-MAIN",
    "deps": [],
-   "status": "QUEUED",
+   "status": "SKIPPED",
    "attempts": 0,
    "type": "harness",
    "model": "claude-sonnet-5-5",
@@ -3313,7 +3313,7 @@
    "goal": "Fix main. First option: `git revert --no-edit cf319c3` (the merge of FIX1). Patch over only if the revert itself would break main, and say why in the report.",
    "retry_after": null,
    "last_failure": null,
-   "reason": null,
+   "reason": "false red: the head's checks were green (D-498)",
    "attempt_started_at": "2026-10-29T18:01:50Z",
    "stale_leases": [
     {
@@ -3367,7 +3367,7 @@
    }
   }
  },
- "updated_at": "2026-10-29T18:17:47Z",
+ "updated_at": "2026-10-29T18:17:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -3475,14 +3475,7 @@
    "why": "start routine"
   }
  ],
- "main_red": {
-  "check": "smoke",
-  "sha": "aab336d5776225876e4dd670fcc3870aabe33884",
-  "task": "FIX1",
-  "revert_sha": "cf319c3",
-  "files": [],
-  "set_at": "2026-10-29T16:58:58Z"
- },
+ "main_red": null,
  "pacing": {
   "last": "FIX-MAIN estimated 0k tokens (default); five-hour window has 7.2M left, week 135.0M (ledger); claimed",
   "at": "2026-10-29T18:01:50Z",
@@ -3505,5 +3498,24 @@
   "remaining_estimate": 63160817,
   "projected_finish": "2026-11-02T00:37:50Z"
  },
+ "main_red_history": [
+  {
+   "check": "smoke",
+   "sha": "aab336d5776225876e4dd670fcc3870aabe33884",
+   "task": "FIX1",
+   "revert_sha": "cf319c3",
+   "files": [],
+   "set_at": "2026-10-29T16:58:58Z",
+   "cleared_at": "2026-10-29T18:17:43Z",
+   "false_red": true
+  }
+ ],
+ "smoke_env_problems": [
+  {
+   "sha": "aab336d5776225876e4dd670fcc3870aabe33884",
+   "at": "2026-10-29T18:17:43Z",
+   "why": "smoke red while Ci, Twin and Ally were green on the head"
+  }
+ ],
  "lease_on": "claude/lease"
 }

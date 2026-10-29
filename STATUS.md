@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-29T18:17:47Z by runner 95c475f76a2e (actions).
+Updated 2026-10-29T18:17:51Z by runner 95c475f76a2e (actions).
 
 **Requirements verified:** 0 of 725 (0.0%) · partial 0 · unstarted 725
 **Tasks merged (throughput only):** 0 of 221
@@ -49,7 +49,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 
 ## Needs attention
-- MAIN IS RED: smoke; only FIX-MAIN runs
+- nothing
 
 ## Last usage reading
 - none yet
