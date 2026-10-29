@@ -9,6 +9,7 @@ tokio
 tower
 tower-http
 askama
+pulldown-cmark
 serde
 serde_json
 serde-saphyr
@@ -41,6 +42,7 @@ base64
 proptest
 trybuild
 toml
+cargo-chef
 # First-party crates (workspace path dependencies), named askhava-<module> (D-484)
 askhava-core
 askhava-ops

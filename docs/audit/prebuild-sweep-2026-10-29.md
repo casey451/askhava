@@ -15,7 +15,11 @@
 | 8 | 20 | 19 | 3 | 10 | 6 |
 | 1 | 30 | 25 | 3 | 9 | 13 |
 | Spec sweep | 713 requirements | 22 (8 contradictions, 9 gaps, 5 stale) | | | |
-| **Total (all batches and the sweep)** | | **228** | **52** | **90** | **64** |
+| **Total, first pass (all batches and the sweep)** | | **228** | **52** | **90** | **64** |
+| v1 (second pass, repaired prompts T172 to T213) | 55 | 22 | 2 | 10 | 10 |
+| v2 (second pass, T057 to T150) | 55 | 27 | 5 | 11 | 11 |
+| v3 (second pass, T199 to T142) | 55 | 33 | 4 | 18 | 11 |
+| **Total, both passes** | | **310** | **63** | **129** | **96** |
 
 A blocker is a task the worker could not finish as written; the plan's own validators (`validate_tasks.py`, `trace_spec.py`, `gen_prompts.py --check`) were green throughout, because none of these defects is visible to a structural check.
 
@@ -126,6 +130,10 @@ Other test-design text that changed:
   - §3 needed nothing: line 138 already says there is no service worker.
 
 
-## 4. Left for the re-plan after the hand-run test
+## 4. The second pass
+
+After the first repair, three reviewers re-read the 165 prompts it had changed. Their 82 findings were of the same eight kinds plus one new one: repairs that moved a test row to a task which still could not write it. The second repair (the same decision, D-491) added T224 (the Confirm-and-pay page) and T225 (the ledger table first), removed T160 and T211, moved the email pipeline to the start of stage 3, let `site` read the figures its pages show, started the shared layout early, split or corrected 31 test rows and added 16, and fixed the photo-check requirements the first pass had left contradicting the allow-list. The second Rust trial (`docs/audit/rust-trial-2-2026-10-29.md`) ran alongside and its twenty deviations are in the same decision.
+
+## 5. Left for the re-plan after the hand-run test
 
 From the three expertise files added today (`docs/brains/ai-intake.md`, `legal-terms-privacy.md`, `deploy-operations.md`), the proposals D-491 did not adopt, in the order they matter: TERMS-001 says the terms are never accepted by a text reply while TXT-031 and PICK-046 accept a pick by "2 YES" (legal brain 1); PICK-049's share box starts ticked (FTC dark-pattern note, legal brain 4); the incident plan notifies by text, which A.R.S. 18-552 does not list (legal brain 10); Railway's Config as Code files stop being read on 2026-12-01 and T135 owns `railway.toml` (deploy brain 1); Railway does not watch the health check after deploy, so OPS-033's restart assumption is wrong (deploy brain 2); a rollback restores the old variables (deploy brain 3); Cloudflare's strictest TLS mode does not work with Railway and Bot Fight Mode can challenge webhooks (deploy brain 4); no documented Railway proxy ranges for SEC-040 (deploy brain 5); R2 has no write-only prefix-scoped key for PRIV-029 (deploy brain 8); the migration credential sits in the web service (deploy brain 3 proposal); the AI brain's INT-021 disagreement (fall back to the AI-off path instead of a 30-minute hold), the retention nuance that flagged text may be kept up to 2 years, and the measured-threshold rule for INT-039.

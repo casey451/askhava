@@ -29,13 +29,13 @@ To run your request: send a description of the job to local businesses, show you
 
 ### When you pick a business
 
-When you send a request, Ask Hava sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. If you send photos, those businesses also see them, with location data removed and any faces, house numbers, license plates or readable text blurred. Only after you pick a business, and it confirms (and pays its introduction fee, when one is due), does Ask Hava give that one business your first name and the job address, plus your email if you chose to share it and your photos at full size, with location data removed. Ask Hava never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.
+When you send a request, Ask Hava sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. If you send photos, those businesses also see them, with location data removed; we ask you to send only photos that show no person or house number, and once our AI photo screening is on, any faces, house numbers, license plates or readable text are blurred as well. Only after you pick a business, and it confirms (and pays its introduction fee, when one is due), does Ask Hava give that one business your first name and the job address, plus your email if you chose to share it and your photos at full size, with location data removed. Ask Hava never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.
 
 ### Who sees what at each step
 
 | Who | What they see | When |
 |---|---|---|
-| Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions; any photos you sent, with location data removed and faces, house numbers, license plates or readable text blurred | When the request goes out |
+| Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions; any photos you sent, with location data removed (faces, house numbers, license plates and readable text blurred once AI photo screening is on) | When the request goes out |
 | Anyone on askhava.com | Your feedback, with your first name and town, only if you ticked the box allowing it | After your job is done |
 | The one business you pick | Your first name and the job address, plus your email if you chose to share it, and your photos at full size with location data removed | Only after you pick it, ask us to share them, and it confirms (and pays its introduction fee, when one is due) |
 | Businesses that get your job card | The job card you saw, your answers and the photos you kept, with no name, phone, email or street address | When the card goes out |

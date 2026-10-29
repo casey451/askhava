@@ -177,7 +177,26 @@
   "app/portals/src/status.rs",
   "app/site/src/status.rs",
   "app/server/src/status.rs",
-  "kit/prompts/"
+  "kit/prompts/",
+  "app/core/askama.toml",
+  "app/ops/askama.toml",
+  "app/adapters/askama.toml",
+  "app/catalog/askama.toml",
+  "app/privacy/askama.toml",
+  "app/ai/askama.toml",
+  "app/messaging/askama.toml",
+  "app/payments/askama.toml",
+  "app/licensing/askama.toml",
+  "app/businesses/askama.toml",
+  "app/jobs/askama.toml",
+  "app/calls/askama.toml",
+  "app/quotes/askama.toml",
+  "app/picks/askama.toml",
+  "app/intake/askama.toml",
+  "app/recovery/askama.toml",
+  "app/portals/askama.toml",
+  "app/site/askama.toml",
+  "app/server/askama.toml"
  ],
  "kit_outputs": [
   "kit/prompts/",
@@ -223,8 +242,7 @@
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/job-cards.md",
-    "docs/spec/licensing.md",
-    "docs/brains/rust-production.md"
+    "docs/spec/licensing.md"
    ],
    "requirements": [
     "CARD-001",
@@ -278,7 +296,6 @@
     "docs/code-docs.md",
     "docs/spec/job-cards.md",
     "docs/spec/licensing.md",
-    "docs/brains/rust-production.md",
     "docs/test-design.md",
     "docs/catalog/categories.yaml",
     "docs/catalog/license_map.yaml"
@@ -369,7 +386,7 @@
    "id": "T172",
    "slug": "twin-gate-into-repo",
    "title": "Twin into twin/: gate.py, waivers, self-tests, and twin.yml switched to the gate",
-   "goal": "Copy the twin from sources/01_spec/hhq_twin into twin/ unchanged except for the brand (T007 applies the fee and category values); the PII scanner allowlists the twin's generator patterns (D-109), so this task owns `scripts/pii_scan.py` and its test; write twin/gate.py, twin/waivers.json (one pinned entry per current instance) and the self-tests and negative control of docs/twin-warnings.md sections 5 and 6; switch .github/workflows/twin.yml from the sources smoke run to `PYTHONHASHSEED=0 python3 twin/gate.py` so Twin fails on any unwaived instance. Done means: on main, twin/gate.py exists, twin.yml invokes it, and in the task report a deliberately broken waiver entry turned Twin red before being restored (D-479).",
+   "goal": "Copy the twin from sources/01_spec/hhq_twin into twin/ unchanged except for the brand (T007 applies the fee and category values); the PII scanner allowlists the twin's generator patterns (D-109), so this task owns `scripts/pii_scan.py` and its test; write twin/gate.py, twin/waivers.json (one pinned entry per current instance) and the self-tests and negative control of docs/twin-warnings.md sections 5 and 6 that need no oracle file (the `job_card_outside_license` check against `twin/oracle/license_scope.json` and the `matching_examples.yaml` oracle self-test are T007's, which generates that file, D-491); switch .github/workflows/twin.yml from the sources smoke run to `PYTHONHASHSEED=0 python3 twin/gate.py` so Twin fails on any unwaived instance. Done means: on main, twin/gate.py exists, twin.yml invokes it, and in the task report a deliberately broken waiver entry turned Twin red before being restored (D-479).",
    "type": "harness",
    "phase": 1,
    "stage": "1",
@@ -395,7 +412,6 @@
     "twin/review_tests.py",
     "tests/twin/test_gate.py",
     ".github/workflows/twin.yml",
-    "twin/chaos_baseline.json",
     "scripts/pii_scan.py",
     "tests/test_pii_scan.py"
    ],
@@ -415,7 +431,7 @@
     "docs/twin-warnings.md:125"
    ],
    "budget": {
-    "files": 14,
+    "files": 13,
     "lines": 600,
     "context_pct": 10
    },
@@ -562,7 +578,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -577,7 +593,7 @@
    "id": "T007",
    "slug": "twin-changes-file",
    "title": "Twin: changes-file rules (fees, 4 months, catalog categories, license oracle from the catalog)",
-   "goal": "Stage 1 done: the twin runs the changes file's rules, its license oracle is generated from the catalog, and gate.py --no-pinned passes.",
+   "goal": "Stage 1 done: the twin runs the changes file's rules, its license oracle is generated from the catalog, and gate.py --no-pinned passes. It also adds the oracle checks T172 leaves to it: the gate's `job_card_outside_license` check against `twin/oracle/license_scope.json` and the oracle self-test against `matching_examples.yaml` (docs/twin-warnings.md sections 5 and 6), in `twin/gate.py` and `tests/twin/test_gate.py` (D-491).",
    "type": "harness",
    "phase": 1,
    "stage": "1",
@@ -600,7 +616,9 @@
     "twin/twin_scenarios.json",
     "twin/oracle/license_scope.json",
     "twin/waivers.json",
-    "twin/oracle/gen_license_scope.py"
+    "twin/oracle/gen_license_scope.py",
+    "twin/gate.py",
+    "tests/twin/test_gate.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -630,7 +648,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 9,
     "lines": 500,
     "context_pct": 19
    },
@@ -647,7 +665,7 @@
    "id": "T008",
    "slug": "cleanup-stage1",
    "title": "Stage 1 cleanup: dead code, duplicates, docs up to date",
-   "goal": "Cleanup after stage 1 (BUILD_BRIEF.md:488): dead-code scan, duplicate check, docs brought up to date.",
+   "goal": "Cleanup after stage 1 (BUILD_BRIEF.md:488): dead-code scan, duplicate check, docs brought up to date; it also makes `scripts/check_catalog.py` meet TD-LIC-23 on the real question bank (moved from T177, whose Rust loader case is TD-LIC-24, D-491).",
    "type": "cleanup",
    "phase": 1,
    "stage": "1",
@@ -669,10 +687,14 @@
     "scripts/check_catalog.py"
    ],
    "reads": [
-    "docs/architecture.md"
+    "docs/architecture.md",
+    "docs/spec/licensing.md",
+    "docs/catalog/question_bank.yaml"
    ],
    "requirements": [],
-   "tests": [],
+   "tests": [
+    "TD-LIC-23"
+   ],
    "decisions": [],
    "cites": [
     "BUILD_BRIEF.md:488"
@@ -680,7 +702,7 @@
    "budget": {
     "files": 1,
     "lines": 150,
-    "context_pct": 14
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -689,7 +711,7 @@
    ],
    "branch": "claude/task/T008-cleanup-stage1",
    "prompt": "kit/prompts/T008.md",
-   "acceptance": "`python3 scripts/check_catalog.py` and every stage-1 test pass; the stage-1 exit row in `docs/build-readiness.md` section 3 is recorded as passed in the task report; no TODO, dead code or stale doc line remains in the stage's files."
+   "acceptance": "`python3 scripts/check_catalog.py` and every stage-1 test pass, including `python3 -m pytest tests/test_check_catalog.py -q -p no:cacheprovider` with a case for each TD-LIC-23 failure (the test file is protected: a missing case is reported for a harness task, never written here, and the script is fixed until the existing cases pass); the stage-1 exit row in `docs/build-readiness.md` section 3 is recorded as passed in the task report; no TODO, dead code or stale doc line remains in the stage's files."
   },
   {
    "id": "T170",
@@ -799,7 +821,7 @@
    "budget": {
     "files": 10,
     "lines": 200,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -853,7 +875,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -867,7 +889,7 @@
    "id": "T175",
    "slug": "architecture-test",
    "title": "Module-boundary architecture test: the integration test crate and the layer-table test",
-   "goal": "The integration test crate exists and its architecture test reads every crate's `Cargo.toml` and SQL, takes the layer table from `kit/layers.json` (never from the document), and fails on an upward or unlisted crate dependency, a crate without `unsafe_code = \"forbid\"`, a first-party package not named `askhava-<module>`, a cross-schema key, a non-literal `sqlx::query`, a route input that is not a `deny_unknown_fields` struct, and any crate but `payments` importing the payments adapter (D-453, D-479). Per the skeleton trial (D-488) the test also follows `package =` renames, requires `workspace = true` on every dependency, scans for `ReleaseMint`, `release_mint`, `SessionMint` and `session_mint` outside their crates, special-cases `server` and `core`, maps `tests/recovery` to `askhava-recovery-tests`, and plants its violations under `CARGO_TARGET_TMPDIR`. This task adds `tests/integration` to the workspace members. The test also checks that every adapter method that acts outside takes an idempotency key (TD-SEC-03's architecture case, D-491). `test-control` on `core` is the one feature the visibility check allows.",
+   "goal": "The integration test crate exists and its architecture test reads every crate's `Cargo.toml` and SQL, takes the layer table from `kit/layers.json` (never from the document), and fails on an upward or unlisted crate dependency, a crate without `unsafe_code = \"forbid\"`, a first-party package not named `askhava-<module>`, a cross-schema key, a non-literal `sqlx::query`, a route input that is not a `deny_unknown_fields` struct, and any crate but `payments` importing the payments adapter (D-453, D-479). Per the skeleton trial (D-488) the test also follows `package =` renames, requires `workspace = true` on every dependency, scans for `ReleaseMint`, `release_mint`, `SessionMint` and `session_mint` outside their crates, special-cases `server` and `core`, maps `tests/recovery` to `askhava-recovery-tests`, and plants its violations under `CARGO_TARGET_TMPDIR`. This task adds `tests/integration` to the workspace members. The test also checks that every adapter method that acts outside takes an idempotency key (TD-SEC-03's architecture case, D-491). `test-control` on `core` is the one feature the visibility check allows. The migration checks and the SQL scan are T226's second file; planted fixtures go in helper functions under 50 lines (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -895,7 +917,8 @@
     "kit/layers.json",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
-    "docs/audit/rust-skeleton-trial-2026-10-29.md"
+    "docs/audit/rust-skeleton-trial-2026-10-29.md",
+    "docs/audit/rust-trial-2-2026-10-29.md"
    ],
    "requirements": [
     "SEC-029",
@@ -908,13 +931,14 @@
    ],
    "decisions": [
     "D-453",
-    "D-488"
+    "D-488",
+    "D-491"
    ],
    "cites": [],
    "budget": {
     "files": 2,
-    "lines": 450,
-    "context_pct": 14
+    "lines": 600,
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -923,6 +947,59 @@
    ],
    "branch": "claude/task/T175-architecture-test",
    "prompt": "kit/prompts/T175.md"
+  },
+  {
+   "id": "T226",
+   "slug": "architecture-test-migrations-sql",
+   "title": "Module-boundary architecture test, part 2: migration order and ownership, cross-schema references, the SQL-form scan",
+   "goal": "`tests/integration/tests/architecture_migrations.rs` fails on a migration whose number does not rise (gaps allowed, no duplicates), whose first line (or second after `-- no-transaction`) does not read `-- <module> (T###)`, whose owner is missing from `kit/tasks.json`, or whose order disagrees with its tasks' dependency order; on any `<module>.` or `SCHEMA x` reference to another module's schema (comments and strings removed; the one exception is `core` naming `public`), with a separate message for `REFERENCES`; and on any SQL outside the query macros in `app/` (the `sqlx::query*` and `raw_sql` function forms, `AssertSqlSafe`, `QueryBuilder`, `sqlx::Executor`, `query_unchecked!`, found by a lexer scan); planted violations under `CARGO_TARGET_TMPDIR` give exactly one finding each (SEC-029, D-491).",
+   "type": "build",
+   "phase": 1,
+   "stage": "2",
+   "module": null,
+   "deps": [
+    "T175"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "tests/integration/tests/architecture_migrations.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/audit/rust-trial-2-2026-10-29.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/postgres-operations.md"
+   ],
+   "requirements": [
+    "SEC-029"
+   ],
+   "tests": [
+    "TD-SEC-10"
+   ],
+   "decisions": [
+    "D-488",
+    "D-491"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 500,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T226-architecture-test-migrations-sql",
+   "prompt": "kit/prompts/T226.md"
   },
   {
    "id": "T010",
@@ -969,7 +1046,7 @@
    "budget": {
     "files": 4,
     "lines": 250,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -1054,13 +1131,14 @@
    "id": "T012",
    "slug": "core-db-migrations",
    "title": "core: database pool, row locks, sqlx migrations, two database roles",
-   "goal": "`core` owns the PostgreSQL pool, the `sqlx` migrations run by `server migrate` with the app role and the migration role kept apart, and the row-lock helper every status change uses, applying a change only while the row is still in the expected status (JOB-004). Per the skeleton trial (D-488): `MIGRATOR = sqlx::migrate!(\"../../migrations\")`, `build.rs` from `sqlx migrate build-script --source ../../migrations` plus a `//!` line, and `app/core/sqlx.toml` with the uppercase `TIMESTAMPTZ` override to `jiff_sqlx::Timestamp`.",
+   "goal": "`core` owns the PostgreSQL pool, the `sqlx` migrations run by `server migrate` with the app role and the migration role kept apart, and the row-lock helper every status change uses, applying a change only while the row is still in the expected status (JOB-004). Per the skeleton trial (D-488): `MIGRATOR = sqlx::migrate!(\"../../migrations\")`, `build.rs` from `sqlx migrate build-script --source ../../migrations` plus a `//!` line, and `app/core/sqlx.toml` with the uppercase `TIMESTAMPTZ` override to `jiff_sqlx::Timestamp`. Per the second trial (D-491): `scripts/bootstrap_roles.sql` creates `askhava_migrator` and `askhava_app` idempotently with the grants section 1 of the trial report lists (test-cluster extras behind a flag); migrations write `ALTER DEFAULT PRIVILEGES IN SCHEMA x` with no `FOR ROLE`; every migration and `#[sqlx::test]` runs as the migrator; `Guarded<T>` is the JOB-004 outcome and each module writes its own guarded `UPDATE`; `-- no-transaction` is line 1 when used; test database names are a hash shared across the cluster, so one role only.",
    "type": "build",
    "phase": 1,
    "stage": "2",
    "module": "core",
    "deps": [
-    "T011"
+    "T011",
+    "T226"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -1073,7 +1151,8 @@
     "migrations/0018_core_db_migrations.sql",
     "tests/integration/src/lib.rs",
     "tests/integration/tests/migrations.rs",
-    "app/core/build.rs"
+    "app/core/build.rs",
+    "scripts/bootstrap_roles.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -1082,7 +1161,8 @@
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
     "docs/audit/rust-skeleton-trial-2026-10-29.md",
-    "docs/brains/deploy-operations.md"
+    "docs/brains/deploy-operations.md",
+    "docs/audit/rust-trial-2-2026-10-29.md"
    ],
    "requirements": [
     "JOB-004"
@@ -1091,13 +1171,14 @@
    "decisions": [
     "D-091",
     "D-092",
-    "D-488"
+    "D-488",
+    "D-491"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 6,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -1112,7 +1193,7 @@
    "id": "T013",
    "slug": "core-task-queue",
    "title": "core: task queue with leases and SKIP LOCKED, rate-limit counters",
-   "goal": "`core` has a database task queue that workers claim with `FOR UPDATE SKIP LOCKED` and leases, so timers survive a restart and two workers never run one task, and atomic rate-limit counters keyed on the client IP from `CF-Connecting-IP` only behind Cloudflare or the host proxy (JOB-006, SEC-040).",
+   "goal": "`core` has a database task queue that workers claim with `FOR UPDATE SKIP LOCKED` and leases, so timers survive a restart and two workers never run one task, and atomic rate-limit counters keyed on the client IP from `CF-Connecting-IP` only behind Cloudflare or the host proxy (JOB-006, SEC-040). Per the second trial (D-491): the claim, fenced finish/fail/renew, `release_leases` and `reap_expired` SQL as section 2 of the trial report shows; `lease_until` computed in Rust from the injected clock; `last_error` a fixed `&'static str`; `register_handlers()` returns the registry; tokio's `sync` feature; tests for exactly-once with 100 and 1000 tasks across two workers, lease reclaim with old-owner fencing, dedupe refusal, backoff then dead-letter.",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -1139,7 +1220,8 @@
     "docs/spec/lifecycle.md",
     "docs/spec/security.md",
     "docs/brains/postgres-operations.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/audit/rust-trial-2-2026-10-29.md"
    ],
    "requirements": [
     "JOB-006",
@@ -1149,13 +1231,14 @@
     "TD-SEC-19"
    ],
    "decisions": [
-    "D-480"
+    "D-480",
+    "D-491"
    ],
    "cites": [],
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -1169,7 +1252,7 @@
    "id": "T014",
    "slug": "core-ids-webhooks",
    "title": "core: derived IDs (HMAC) and the webhook dedupe helper",
-   "goal": "`core` derives card, quote, pick and link IDs by HMAC from what they identify plus a server secret (link tokens with a stored per-record salt, so a link can be re-issued and revoked), and gives every webhook handler one dedupe helper so an event processed once changes nothing the next 99 times (CARD-017, PICK-028, SEC-017, SEC-037, SEC-039). This task also owns the quote-page token hashes and salt in `jobs` with an issue/revoke `api` (SEC-037, D-491); `jobs` is created by T031, so T014 depends on it.",
+   "goal": "`core` derives card, quote, pick and link IDs by HMAC from what they identify plus a server secret (link tokens with a stored per-record salt, so a link can be re-issued and revoked), and gives every webhook handler one dedupe helper so an event processed once changes nothing the next 99 times (CARD-017, PICK-028, SEC-017, SEC-037, SEC-039). This task also owns the quote-page token hashes and salt in `jobs` with an issue/revoke `api` (SEC-037, D-491); `jobs` is created by T031, so T014 depends on it. `core` cannot hold the dedupe insert for another module's table: it gives the outcome type and the `INSERT … ON CONFLICT DO NOTHING RETURNING` pattern, and each module writes its own literal insert into its own `webhook_event` (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -1201,7 +1284,8 @@
     "docs/spec/quotes-pick.md",
     "docs/spec/security.md",
     "docs/brains/postgres-operations.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/audit/rust-trial-2-2026-10-29.md"
    ],
    "requirements": [
     "CARD-017",
@@ -1217,13 +1301,14 @@
     "TD-SEC-18"
    ],
    "decisions": [
-    "D-480"
+    "D-480",
+    "D-491"
    ],
    "cites": [],
    "budget": {
     "files": 7,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -1267,7 +1352,8 @@
     "docs/spec/ops-recovery.md",
     "docs/spec/privacy.md",
     "docs/brains/postgres-operations.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/audit/rust-trial-2-2026-10-29.md"
    ],
    "requirements": [
     "JOB-005",
@@ -1280,13 +1366,14 @@
     "TD-PRIV-13"
    ],
    "decisions": [
-    "D-480"
+    "D-480",
+    "D-491"
    ],
    "cites": [],
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -1436,7 +1523,7 @@
    "id": "T017",
    "slug": "ops-offdb-stream",
    "title": "ops: audit stream, request log and AI readings written off-database",
-   "goal": "The audit stream, the web request log and the AI structured readings are written to object storage as they happen through a write-only, prefix-scoped token, the audit stream carrying a hash chain verified nightly and the request log kept 30 days, so a restore can be replayed (OPS-010, OPS-011, PRIV-029). `ops` only enqueues the stream event on `core.task`; the writer is a `server`-registered handler (`app/server/src/offdb_stream.rs`) that calls the storage adapter, since `ops` may call nothing (D-491).",
+   "goal": "The audit stream, the web request log and the AI structured readings are written to object storage as they happen through a write-only, prefix-scoped token, the audit stream carrying a hash chain verified nightly and the request log kept 30 days, so a restore can be replayed (OPS-010, OPS-011, PRIV-029). `ops` only enqueues the stream event on `core.task`, through a function this task adds to `ops`' `api.rs` (a shared path) and T015's audit write calls; the writer is a `server`-registered handler (`app/server/src/offdb_stream.rs`) that calls the storage adapter, since `ops` may call nothing (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -1454,7 +1541,8 @@
    ],
    "owns": [
     "app/server/src/offdb_stream.rs",
-    "tests/integration/tests/offdb_stream.rs"
+    "tests/integration/tests/offdb_stream.rs",
+    "app/ops/src/api.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -1478,9 +1566,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 3,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -1545,7 +1633,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -1559,7 +1647,7 @@
    "id": "T019",
    "slug": "docker-image",
    "title": "Dockerfile pinned by digest; web and worker commands",
-   "goal": "The production image is built from a Dockerfile whose base images are pinned by digest, with separate web and worker commands, and a security test fails on an unpinned image; the audit tools and pinned Actions are part of the same supply-chain rule (SEC-021, SEC-045). TD-SEC-24's docs test, in this task, covers the Dockerfile (base image by digest); the workflow `uses:` SHA cases are T169's and T121's (D-491).",
+   "goal": "The production image is built from a Dockerfile whose base images are pinned by digest, with separate web and worker commands, and a security test fails on an unpinned image; the audit tools and pinned Actions are part of the same supply-chain rule (SEC-021, SEC-045). TD-SEC-24's docs test, in this task, covers the Dockerfile (base image by digest); the workflow `uses:` SHA cases are T169's and T121's (D-491). Per the second trial (D-491): cargo-chef stages, `debian:trixie-slim` by digest with `ca-certificates` and `libssl3t64`, user 10001, `RUSTUP_TOOLCHAIN` set in the builder, no `# syntax=` line; both binaries handle SIGTERM and the web binary binds `0.0.0.0:$PORT`.",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -1584,7 +1672,8 @@
     "docs/code-docs.md",
     "docs/spec/security.md",
     "docs/brains/rust-production.md",
-    "docs/brains/deploy-operations.md"
+    "docs/brains/deploy-operations.md",
+    "docs/audit/rust-trial-2-2026-10-29.md"
    ],
    "requirements": [
     "SEC-021",
@@ -1595,13 +1684,14 @@
    ],
    "decisions": [
     "D-453",
-    "D-480"
+    "D-480",
+    "D-491"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 120,
-    "context_pct": 12
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -1677,7 +1767,7 @@
    "id": "T021",
    "slug": "catalog-module",
    "title": "catalog: load categories, job types, license and fee rules, settings and switches",
-   "goal": "`catalog` loads `docs/catalog/categories.yaml` into its tables: each category's job types, license rule, recurring flag and switch; a category not confirmed in the K2b list, or on the not-at-launch list, stays off; the AI never sets a license class; and switching a category on or off is a logged settings change with no code change (LIC-001 to LIC-005, AI-017). The TD-LIC-01 card-field case is checked against `question_bank.yaml`'s flags; the not-offered reply is T024's intake behaviour.",
+   "goal": "`catalog` loads `docs/catalog/categories.yaml` into its tables: each category's job types, license rule, recurring flag and switch; a category not confirmed in the K2b list, or on the not-at-launch list, stays off; the AI never sets a license class; and switching a category on or off is a logged settings change with no code change (LIC-001 to LIC-005, AI-017). The TD-LIC-01 card-field case is checked against `question_bank.yaml`'s flags; the not-offered reply is T043's intake behaviour (TD-LIC-01 is shared with T043, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -1710,7 +1800,6 @@
     "docs/catalog/categories.yaml",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
-    "docs/brains/ai-intake.md",
     "docs/catalog/question_bank.yaml"
    ],
    "requirements": [
@@ -1781,7 +1870,7 @@
    ],
    "tests": [
     "TD-LIC-16",
-    "TD-LIC-23"
+    "TD-LIC-24"
    ],
    "decisions": [
     "D-257",
@@ -1805,7 +1894,7 @@
    "id": "T022",
    "slug": "privacy-vault",
    "title": "privacy: encrypted contact vault, blind index, audited plaintext reads",
-   "goal": "`privacy` holds the contact vault: every homeowner contact field encrypted field by field with AES-256-GCM under `VAULT_KEY` with associated data and a key version, phone lookup by a per-purpose HMAC blind index, every plaintext read audit-logged with its reader and purpose, realm reads gated by session proof types, the key inventory and escrow recorded by T117, and an alert when reads exceed three times their baseline (PRIV-001 to PRIV-004, PRIV-024, SEC-046, SEC-047). This task also defines `ReleaseProof`, the non-Clone `ReleaseMint`, `release_mint()` (once per process) and the session capability types in `privacy::api` (D-481, D-488).",
+   "goal": "`privacy` holds the contact vault: every homeowner contact field encrypted field by field with AES-256-GCM under `VAULT_KEY` with associated data and a key version, phone lookup by a per-purpose HMAC blind index, every plaintext read audit-logged with its reader and purpose, realm reads gated by session proof types, the key inventory and escrow recorded by T117, and an alert when reads exceed three times their baseline (PRIV-001 to PRIV-004, PRIV-024, SEC-046, SEC-047); its tests meet the 95% `app/privacy` floor T169 wrote into `tests/coverage_floor.json`, the first code that floor measures (D-491). This task also defines `ReleaseProof`, the non-Clone `ReleaseMint`, `release_mint()` (once per process) and the session capability types in `privacy::api` (D-481, D-488).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -2058,7 +2147,7 @@
    "budget": {
     "files": 9,
     "lines": 550,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -2178,7 +2267,8 @@
     "AI-014"
    ],
    "tests": [
-    "TD-AI-07"
+    "TD-AI-07",
+    "TD-AI-04"
    ],
    "decisions": [
     "D-080",
@@ -2188,7 +2278,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -2253,7 +2343,7 @@
     "TD-TXT-01",
     "TD-TXT-02",
     "TD-LIC-18",
-    "TD-CON-16"
+    "TD-TXT-28"
    ],
    "decisions": [
     "D-063",
@@ -2270,7 +2360,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -2351,7 +2441,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -2404,8 +2494,7 @@
    "tests": [
     "TD-TXT-04",
     "TD-TXT-03",
-    "TD-QH-02",
-    "TD-QH-04"
+    "TD-QH-02"
    ],
    "decisions": [],
    "cites": [],
@@ -2470,7 +2559,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -2550,7 +2639,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -2797,7 +2886,8 @@
     "TXT-042"
    ],
    "tests": [
-    "TD-JOB-03"
+    "TD-JOB-03",
+    "TD-PICK-33"
    ],
    "decisions": [
     "D-004",
@@ -2818,7 +2908,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -2944,7 +3034,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -3075,7 +3165,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -3125,7 +3215,8 @@
    ],
    "tests": [
     "TD-LIC-05",
-    "TD-LIC-04"
+    "TD-LIC-04",
+    "TD-LIC-15"
    ],
    "decisions": [
     "D-199",
@@ -3138,7 +3229,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -3191,7 +3282,8 @@
    "tests": [
     "TD-LIC-11",
     "TD-LIC-14",
-    "TD-LIC-15"
+    "TD-LIC-25",
+    "TD-BIZ-12"
    ],
    "decisions": [
     "D-057",
@@ -3303,7 +3395,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -3433,7 +3525,8 @@
     "TD-INT-01",
     "TD-INT-10",
     "TD-INT-13",
-    "TD-INT-16"
+    "TD-INT-16",
+    "TD-INT-12"
    ],
    "decisions": [
     "D-054",
@@ -3467,7 +3560,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 15
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -3524,7 +3617,7 @@
     "TD-INT-11",
     "TD-INT-14",
     "TD-INT-20",
-    "TD-AI-04"
+    "TD-INT-25"
    ],
    "decisions": [
     "D-138",
@@ -3656,7 +3749,7 @@
     "BIZ-023"
    ],
    "tests": [
-    "TD-BIZ-06"
+    "TD-BIZ-34"
    ],
    "decisions": [
     "D-491"
@@ -3665,7 +3758,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -3679,7 +3772,7 @@
    "id": "T182",
    "slug": "businesses-pause-quiet-times",
    "title": "businesses: self-pause, own quiet times, the after-hours tick and sender directory sync",
-   "goal": "A business can pause itself and set its own quiet times, which only narrow the app-wide window; the after-hours tick is allowed only while a person who can confirm has emergency emails on; and the sender directory follows every change (BIZ-007, BIZ-010).",
+   "goal": "A business can pause itself and set its own quiet times, which only narrow the app-wide window, and the sender directory follows every change (BIZ-010); the after-hours tick and its emergency-email condition are T150's (BIZ-007, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -3712,7 +3805,6 @@
     "docs/brains/rust-production.md"
    ],
    "requirements": [
-    "BIZ-007",
     "BIZ-010"
    ],
    "tests": [
@@ -3798,7 +3890,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -3913,7 +4005,8 @@
    "tests": [
     "TD-LIC-07",
     "TD-INT-19",
-    "TD-INT-14"
+    "TD-INT-14",
+    "TD-LIC-01"
    ],
    "decisions": [
     "D-082",
@@ -3982,8 +4075,7 @@
     "CARD-003"
    ],
    "tests": [
-    "TD-LIC-02",
-    "TD-CON-03"
+    "TD-LIC-02"
    ],
    "decisions": [
     "D-110",
@@ -4046,7 +4138,7 @@
    "tests": [
     "TD-LIC-03",
     "TD-CARD-05",
-    "TD-INT-25"
+    "TD-INT-29"
    ],
    "decisions": [
     "D-042"
@@ -4055,7 +4147,7 @@
    "budget": {
     "files": 4,
     "lines": 250,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -4107,7 +4199,8 @@
    ],
    "tests": [
     "TD-CARD-01",
-    "TD-CARD-08"
+    "TD-CARD-08",
+    "TD-CARD-11"
    ],
    "decisions": [
     "D-202",
@@ -4121,7 +4214,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -4129,7 +4222,8 @@
     "Ally"
    ],
    "branch": "claude/task/T045-quotes-card-content",
-   "prompt": "kit/prompts/T045.md"
+   "prompt": "kit/prompts/T045.md",
+   "copy": true
   },
   {
    "id": "T185",
@@ -4180,7 +4274,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -4194,7 +4288,7 @@
    "id": "T046",
    "slug": "quotes-intake",
    "title": "quotes: quote window, quote fields, the fee preview and bounces",
-   "goal": "Each business may quote for 24 hours after its own card was actually sent; a quote stores its category's format and amounts (hourly quotes with hours, read back to text quoters), the form shows the fee it would carry before submit, the business can see its card as homeowners do, and a quote with a phone number, link or contact wording bounces (PICK-001, PICK-002, PICK-005 to PICK-007, PICK-039, FEE-043).",
+   "goal": "Each business may quote for 24 hours after its own card was actually sent; a quote stores its category's format and amounts (hourly quotes with hours, read back to text quoters), the form shows the fee it would carry before submit, the business can see its card as homeowners do, and a quote with a phone number, link or contact wording bounces (PICK-001, PICK-002, PICK-005 to PICK-007, FEE-043).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -4222,7 +4316,8 @@
     "docs/spec/quotes-pick.md",
     "docs/spec/fees.md",
     "docs/brains/contractor-lead-experience.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/ai.md"
    ],
    "requirements": [
     "PICK-001",
@@ -4238,7 +4333,7 @@
     "TD-PICK-03",
     "TD-PICK-22",
     "TD-FEE-27",
-    "TD-PICK-20"
+    "TD-PICK-37"
    ],
    "decisions": [
     "D-042",
@@ -4254,7 +4349,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -4319,7 +4414,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -4327,13 +4422,14 @@
     "Ally"
    ],
    "branch": "claude/task/T186-quotes-original-wording-card",
-   "prompt": "kit/prompts/T186.md"
+   "prompt": "kit/prompts/T186.md",
+   "copy": true
   },
   {
    "id": "T047",
    "slug": "quotes-homeowner-texts",
    "title": "quotes: first-quote text, update texts at most every 3 hours",
-   "goal": "When the first quote arrives the homeowner gets the TXT-016 text, later quote-count updates go at most once per 3 hours, LIST returns the pickable quotes as text lines, the cards-out and who's-calling texts follow their fixed wording with every time in Arizona time, and no text changes a quote's amount or words (TXT-016, TXT-017, TXT-027, TXT-031 to TXT-033, WORD-011, PICK-002, PICK-003).",
+   "goal": "When the first quote arrives the homeowner gets the TXT-016 text, later quote-count updates go at most once per 3 hours, LIST returns the pickable quotes as text lines, the cards-out text follows its fixed wording with every time in Arizona time, and no text changes a quote's amount or words (TXT-016, TXT-017, TXT-031 to TXT-033, WORD-011, PICK-002, PICK-003).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -4376,7 +4472,9 @@
     "TD-TXT-06",
     "TD-TXT-14",
     "TD-TXT-21",
-    "TD-TXT-22"
+    "TD-TXT-22",
+    "TD-TXT-11",
+    "TD-TXT-20"
    ],
    "decisions": [
     "D-012",
@@ -4404,7 +4502,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -4454,7 +4552,8 @@
    ],
    "tests": [
     "TD-INT-08",
-    "TD-INT-14"
+    "TD-INT-14",
+    "TD-PICK-33"
    ],
    "decisions": [
     "D-095",
@@ -4465,7 +4564,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -4557,7 +4656,8 @@
    "owns": [
     "app/intake/src/service.rs",
     "app/intake/src/tests/prop_optout_no_close.rs",
-    "migrations/0066_intake_optout_jobs.sql"
+    "migrations/0066_intake_optout_jobs.sql",
+    "tests/integration/tests/optout_job_notice.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4586,7 +4686,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 250,
     "context_pct": 12
    },
@@ -4596,13 +4696,14 @@
     "Ally"
    ],
    "branch": "claude/task/T050-intake-optout-jobs",
-   "prompt": "kit/prompts/T050.md"
+   "prompt": "kit/prompts/T050.md",
+   "copy": true
   },
   {
    "id": "T051",
    "slug": "portals-base-security",
    "title": "portals: sessions, __Host- cookies, CSRF, security headers, no third-party hosts",
-   "goal": "`portals` sets the shared web security: `__Host-` cookies that are Secure, HttpOnly and SameSite=Lax and rotate on login, CSRF tokens on every form (pre-session ones bound to their own cookie) plus `Sec-Fetch-Site` and `Origin` checks, Askama autoescaping always on, the SEC-012 headers and `no-store` on contact or photo pages, no third-party script or font host, realm proof types for vault reads, and security events logged with route and actor reference only (SEC-009, SEC-011 to SEC-013, SEC-034, SEC-042, SEC-046, SEC-048). The realm capability types of SEC-046 are T022's; this task uses them once T022 has landed (D-491).",
+   "goal": "`portals` sets the shared web security: `__Host-` cookies that are Secure, HttpOnly and SameSite=Lax and rotate on login, CSRF tokens on every form (pre-session ones bound to their own cookie) plus `Sec-Fetch-Site` and `Origin` checks, Askama autoescaping always on, the SEC-012 headers and `no-store` on contact or photo pages, no third-party script or font host, realm proof types for vault reads, and security events logged with route and actor reference only (SEC-009, SEC-011 to SEC-013, SEC-034, SEC-042, SEC-046, SEC-048). It also creates the plain shared layout `app/site/templates/base.html` and `app/portals/askama.toml` (whose `dirs` point portal templates at that layout), so every portal page from here on extends it; T101 restyles it later (D-491). The realm capability types of SEC-046 are T022's; this task uses them once T022 has landed (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -4626,7 +4727,9 @@
     "migrations/0057_portals_base_security.sql",
     "tests/security/tests/headers.rs",
     "tests/security/tests/cookies_csrf.rs",
-    "tests/security/tests/no_third_party.rs"
+    "tests/security/tests/no_third_party.rs",
+    "app/site/templates/base.html",
+    "app/portals/askama.toml"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4666,9 +4769,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 10,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -4741,7 +4844,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -4810,7 +4913,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -4825,7 +4928,7 @@
    "id": "T169",
    "slug": "ci-rust-playwright",
    "title": "CI for the Rust workspace: pinned Postgres service, cache, coverage floors, sqlx prepare check, one boundary build",
-   "goal": "Ci pins the Postgres service image by digest, caches the Cargo registry and target with Swatinem/rust-cache pinned by commit SHA (keyed on Cargo.lock and the toolchain, CARGO_INCREMENTAL=0, dev profile debug = line-tables-only), installs cargo-audit, cargo-deny, sqlx-cli and cargo-llvm-cov from pinned prebuilt binaries, runs `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features` so stale offline query data fails, measures branch coverage in its own parallel job on a nightly pinned by date against tests/coverage_floor.json (this task writes the file with the measured total and the 95% floors for app/payments, app/catalog fee rules, app/privacy and app/licensing, FEE-034, PRIV-022, LIC-033), fails any PR that lowers a floor, and keeps `cargo build -p askhava-server --locked` as the one boundary build (no per-crate clippy runs) (D-453, D-479, D-481). Acceptance: a PR that lowers coverage by one line in app/privacy turns Ci red, a deliberately stale .sqlx entry turns Ci red, and a warm-cache run finishes in 15 minutes or less (all shown in the task report). Per the skeleton trial (D-488): `cargo build -p askhava-server --locked`; `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features`; cargo-audit and cargo-deny from their musl release tarballs with pinned SHA-256s; clippy before the build in the same job; and a check that the cache keeps `target/tests/trybuild`, without which a cold pass runs 12 to 15 minutes on 2 vCPU.",
+   "goal": "Ci pins the Postgres service image by digest, caches the Cargo registry and target with Swatinem/rust-cache pinned by commit SHA (keyed on Cargo.lock and the toolchain, CARGO_INCREMENTAL=0, dev profile debug = line-tables-only), installs cargo-audit, cargo-deny, sqlx-cli and cargo-llvm-cov from pinned prebuilt binaries, runs `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features` so stale offline query data fails, measures branch coverage in its own parallel job on a nightly pinned by date against tests/coverage_floor.json (this task writes the file with the measured total and the 95% floors for app/payments, app/catalog fee rules, app/privacy and app/licensing, FEE-034, PRIV-022, LIC-033), fails any PR that lowers a floor, and keeps `cargo build -p askhava-server --locked` as the one boundary build (no per-crate clippy runs) (D-453, D-479, D-481). Acceptance: a PR that lowers coverage by one line in app/core (which has code by now; `app/privacy` is empty until T022) turns Ci red, a deliberately stale .sqlx entry turns Ci red, and a warm-cache run finishes in 15 minutes or less (all shown in the task report). Per the skeleton trial (D-488): `cargo build -p askhava-server --locked`; `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features`; cargo-audit and cargo-deny from their musl release tarballs with pinned SHA-256s; clippy before the build in the same job; and a check that the cache keeps `target/tests/trybuild`, without which a cold pass runs 12 to 15 minutes on 2 vCPU.",
    "type": "harness",
    "phase": 1,
    "stage": "2",
@@ -4849,7 +4952,8 @@
     "docs/architecture.md",
     "BUILD_BRIEF.md",
     "docs/spec/security.md",
-    "docs/audit/rust-skeleton-trial-2026-10-29.md"
+    "docs/audit/rust-skeleton-trial-2026-10-29.md",
+    "docs/audit/rust-trial-2-2026-10-29.md"
    ],
    "requirements": [
     "SEC-021",
@@ -4861,7 +4965,8 @@
     "D-453",
     "D-472",
     "D-480",
-    "D-488"
+    "D-488",
+    "D-491"
    ],
    "cites": [
     "docs/test-design.md:39"
@@ -4869,7 +4974,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -4884,7 +4989,7 @@
    "id": "T173",
    "slug": "ci-ally-e2e",
    "title": "Ally and end-to-end in CI: Playwright and axe in Ally, the e2e job in Ci, the Dockerfile's npm and tsc stage",
-   "goal": "Ally runs the Playwright accessibility suite at 320, 768 and 1280 px; Ci gains a job that builds the server and worker, starts stand_ins/server.py (T167) and a Postgres service, and runs `npx playwright test tests/e2e`, so the four journeys are a required check (BUILD_BRIEF.md section 11); the Dockerfile's build stage runs `npm ci` and `tsc` so compiled browser scripts ship in the image (D-453, D-479). Acceptance: a journey spec with one failing assertion turns Ci red, and one axe violation turns Ally red (both shown in the task report) The e2e job builds server and worker with the test-control feature, starts Postgres, stand_ins/server.py and stripe-mock (pinned by digest) as services, runs `server migrate`, lets Playwright's webServer start both binaries and wait for /healthz, runs `npm run build` first so the compiled .js exists, uses actions/setup-node with Node 22, and caches the Playwright browsers (D-481). This task also writes the reduced J1 (steps 1 to 6: text to pick code, no payment or call) as `tests/e2e/j1_reduced.spec.ts` against the stand-ins, the stage-2 exit evidence (D-491).",
+   "goal": "Ally runs the Playwright accessibility suite at 320, 768 and 1280 px; Ci gains a job that builds the server and worker, starts stand_ins/server.py (T167) and a Postgres service, and runs `npx playwright test tests/e2e`, so the four journeys are a required check (BUILD_BRIEF.md section 11); the Dockerfile's build stage runs `npm ci` and `tsc` so compiled browser scripts ship in the image (D-453, D-479). Acceptance: a journey spec with one failing assertion turns Ci red, and one axe violation turns Ally red (both shown in the task report) The e2e job builds server and worker with the test-control feature, starts Postgres, stand_ins/server.py and stripe-mock (pinned by digest) as services, runs `server migrate`, lets Playwright's webServer start both binaries and wait for /healthz, runs `npm run build` first so the compiled .js exists, uses actions/setup-node with Node 22, and caches the Playwright browsers (D-481). This task also writes the reduced J1 as `tests/e2e/j1_reduced.spec.ts` against the stand-ins, the stage-2 exit evidence: J1 steps 1 to 6 (text in and consent, ZIP and trade, the urgency and question set, the card shown and sent, quotes on the quote page, the pick by code and the contact choice) with these omissions: no photo (step 3 sends none and step 4's card has no photo), no review links (step 5), no share box (step 6), and the two diagnostic-visit quotes seeded through the test-control router instead of a business quoting; no payment or call (D-491).",
    "type": "harness",
    "phase": 1,
    "stage": "2",
@@ -4995,15 +5100,12 @@
     "PICK-031",
     "PICK-032",
     "PICK-036",
-    "PICK-055",
-    "TXT-027"
+    "PICK-055"
    ],
    "tests": [
     "TD-PICK-07",
     "TD-PICK-14",
     "TD-A11Y-02",
-    "TD-TXT-11",
-    "TD-TXT-20",
     "TD-CON-12"
    ],
    "decisions": [
@@ -5035,7 +5137,7 @@
    "id": "T055",
    "slug": "picks-page-flow",
    "title": "portals: pick review step, 'Go back', the terms line and the pick result",
-   "goal": "The quote page's pick goes through a review step that says exactly what happens next, with \"Go back\" and only \"By picking, you agree to the Terms\" beside the Pick button; after the pick, focus moves to the result heading, new quotes are announced politely, and the result shows the contact card and after-Done line (PICK-016, PICK-017, PICK-019, PICK-021, PICK-045, PICK-054, A11Y-014).",
+   "goal": "The quote page's pick goes through a review step that says exactly what happens next, with \"Go back\" and only \"By picking, you agree to the Terms\" beside the Pick button; after the pick, focus moves to the result heading, new quotes are announced politely, and the result shows the contact card and after-Done line (PICK-016, PICK-017, PICK-045, PICK-054, A11Y-014); the business's Confirm page is T224's and the Confirm window T063's (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -5258,7 +5360,7 @@
    "id": "T057",
    "slug": "cleanup-stage2",
    "title": "Stage 2 cleanup: dead code, duplicates, docs up to date",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: `cargo machete` (unused dependencies), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479).",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479).",
    "type": "cleanup",
    "phase": 1,
    "stage": "2",
@@ -5319,7 +5421,8 @@
     "T173",
     "T219",
     "T217",
-    "T223"
+    "T223",
+    "T226"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -5349,7 +5452,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -5358,6 +5461,143 @@
    ],
    "branch": "claude/task/T057-cleanup-stage2",
    "prompt": "kit/prompts/T057.md"
+  },
+  {
+   "id": "T094",
+   "slug": "messaging-retries-email",
+   "title": "messaging: 3 retries over 30 minutes, then email and portal, then call-back alert",
+   "goal": "Important texts are retried 3 times over 30 minutes, then sent by email and shown in the portal; a homeowner whose texts keep failing with no email on file becomes a call-back alert for Casey; and above 90% of the email provider's daily limit, only digests and open-cards emails wait for the reset (TXT-014, TXT-015, OPS-038). This is the email pipeline every later sender uses, so it runs first in stage 3: `messaging.email_outbox` sends each email once, every email template carries the SEC-028 footer with the LLC postal address and \"Manage email notices\", and a module below or beside `messaging` (payments, picks) never sends mail itself: it enqueues a `core.task` event that a `messaging` handler turns into the email (D-491).",
+   "type": "build",
+   "phase": 1,
+   "stage": "3",
+   "module": "messaging",
+   "deps": [
+    "T028",
+    "T026",
+    "T057"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-sonnet-5-5",
+   "review_areas": [
+    "compliance"
+   ],
+   "owns": [
+    "app/messaging/src/email.rs",
+    "app/messaging/src/retries.rs",
+    "app/messaging/src/models.rs",
+    "migrations/0087_messaging_retries_email.sql",
+    "tests/integration/tests/text_retries.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/ops-recovery.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/brains/email-deliverability.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/sms-compliance.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/accessibility-forms.md"
+   ],
+   "requirements": [
+    "TXT-014",
+    "TXT-015",
+    "OPS-038",
+    "SEC-050",
+    "SEC-051",
+    "BIZ-055",
+    "A11Y-034",
+    "SEC-028"
+   ],
+   "tests": [
+    "TD-TXT-05",
+    "TD-OPS-14",
+    "TD-SEC-27",
+    "TD-BIZ-33",
+    "TD-A11Y-02",
+    "TD-BIZ-26"
+   ],
+   "decisions": [
+    "D-308",
+    "D-381",
+    "D-490"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 400,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T094-messaging-retries-email",
+   "prompt": "kit/prompts/T094.md"
+  },
+  {
+   "id": "T225",
+   "slug": "payments-ledger-append",
+   "title": "payments: the append-only ledger table and `api::ledger_append`",
+   "goal": "`payments.ledger_entry` exists before any task writes a ledger row: an append-only table (the app role can insert and select, never update or delete, D-092) with the FEE-028 entry types, including countering-fee, countering-fee-return and processing-fee, and `payments::api::ledger_append` as the only way to write one, so the free-win, refund, dispute and charge tasks each add their own rows through it and money moves only through `payments` (FEE-028, FEE-032). This task creates the `payments` crate if it is not there yet (`Cargo.toml`, `lib.rs` and `api.rs` are shared paths); the nightly reconcile is T067's (D-491).",
+   "type": "build",
+   "phase": 1,
+   "stage": "3",
+   "module": "payments",
+   "deps": [
+    "T057"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money"
+   ],
+   "owns": [
+    "app/payments/src/ledger.rs",
+    "migrations/0088_payments_ledger.sql",
+    "app/payments/src/tests/ledger_append.rs",
+    "app/payments/Cargo.toml",
+    "app/payments/src/lib.rs",
+    "app/payments/src/api.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-028",
+    "FEE-032"
+   ],
+   "tests": [
+    "TD-FEE-16"
+   ],
+   "decisions": [
+    "D-491"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 300,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T225-payments-ledger-append",
+   "prompt": "kit/prompts/T225.md"
   },
   {
    "id": "T058",
@@ -5369,7 +5609,8 @@
    "stage": "3",
    "module": "payments",
    "deps": [
-    "T057"
+    "T057",
+    "T225"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -5425,7 +5666,7 @@
    "budget": {
     "files": 7,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -5482,7 +5723,8 @@
    "tests": [
     "TD-FEE-03",
     "TD-FEE-21",
-    "TD-PICK-20"
+    "TD-FEE-24",
+    "TD-FEE-35"
    ],
    "decisions": [
     "D-010",
@@ -5497,7 +5739,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -5529,7 +5771,7 @@
    "owns": [
     "app/payments/src/models.rs",
     "app/payments/src/service.rs",
-    "migrations/0089_payments_customers_cards.sql",
+    "migrations/0091_payments_customers_cards.sql",
     "tests/integration/tests/setup_intent.rs",
     "tests/security/tests/no_homeowner_charge.rs"
    ],
@@ -5649,7 +5891,8 @@
    "stage": "3",
    "module": "payments",
    "deps": [
-    "T060"
+    "T060",
+    "T225"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -5661,7 +5904,7 @@
     "app/payments/src/free_wins.rs",
     "app/payments/src/models.rs",
     "app/payments/src/api.rs",
-    "migrations/0091_payments_free_wins.sql",
+    "migrations/0093_payments_free_wins.sql",
     "tests/integration/tests/free_wins.rs",
     "tests/integration/tests/repeat_customer.rs"
    ],
@@ -5697,7 +5940,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -5711,13 +5954,14 @@
    "id": "T062",
    "slug": "payments-charge",
    "title": "payments: Confirm-and-pay charge with a key per attempt, Stripe outage and the decline window",
-   "goal": "A charge runs only from the business's Confirm press, with a new idempotency key per attempt and the FEE-017 check first; when Stripe is unreachable the pick is released after 4 hours and the next quote offered; a decline opens the card-fix window; and charges are paused while safe mode or the charging switch says so (FEE-016 to FEE-020, FEE-037, FEE-038, FEE-041); the pick owns one PaymentIntent that every attempt confirms (FEE-047).",
+   "goal": "A charge runs only from the business's Confirm press, with a new idempotency key per attempt and the FEE-017 check first; when Stripe is unreachable the pick is released after 4 hours and the next quote offered; a decline opens the card-fix window; and charges are paused while safe mode or the charging switch says so (FEE-016 to FEE-020, FEE-037, FEE-038, FEE-041); the pick owns one PaymentIntent that every attempt confirms (FEE-047). `payments` cannot call `messaging`: every email this task \"sends\" (the FEE-020 notice) is a `core.task` event that a `messaging` handler sends through T094's pipeline (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "3",
    "module": "payments",
    "deps": [
-    "T061"
+    "T061",
+    "T094"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -5730,7 +5974,7 @@
     "app/payments/src/charge.rs",
     "app/payments/src/handlers.rs",
     "app/payments/src/models.rs",
-    "migrations/0092_payments_charge.sql",
+    "migrations/0094_payments_charge.sql",
     "tests/integration/tests/charge_attempts.rs"
    ],
    "reads": [
@@ -5759,7 +6003,9 @@
     "TD-FEE-11",
     "TD-FEE-21",
     "TD-FEE-32",
-    "TD-FEE-24"
+    "TD-FEE-24",
+    "TD-FEE-36",
+    "TD-FEE-20"
    ],
    "decisions": [
     "D-135",
@@ -5775,7 +6021,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -5790,7 +6036,7 @@
    "id": "T189",
    "slug": "payments-confirm-release-proof",
    "title": "payments: Stripe Elements on the Confirm page, the card authorization, and the ReleaseProof from a verified event",
-   "goal": "Cards are collected only by Stripe Elements on the Confirm page and charged on-session when the business presses \"Confirm and pay\", with the authorization text and version stored; and `payments` alone builds a `ReleaseProof`, only from a signature-checked Stripe event whose livemode, account, amount and pick match, never from a redirect (FEE-014, FEE-015, FEE-036, PICK-021, PICK-022, PICK-033, JOB-014, SEC-030, SEC-039). This task also writes payments' minter (a `VerifiedStripeEvent` for `payment_intent.succeeded`, or a no-fee decision, into a `ReleaseProof`) and the `register_handlers()` hookup in `app/server/src/lib.rs` that takes the mint once (D-488).",
+   "goal": "Cards are collected only by Stripe Elements on the Confirm page (the page and the webhook route are T224's) and charged on-session when the business presses \"Confirm and pay\", with the authorization text and version stored; and `payments` alone builds a `ReleaseProof`, only from a signature-checked Stripe event whose livemode, account, amount and pick match, never from a redirect (FEE-014, FEE-015, FEE-036, PICK-021, PICK-022, PICK-033, JOB-014, SEC-030, SEC-039). This task also writes payments' minter (a `VerifiedStripeEvent` for `payment_intent.succeeded`, or a no-fee decision, into a `ReleaseProof`) and the `register_handlers()` hookup in `app/server/src/lib.rs` that takes the mint once (D-488).",
    "type": "build",
    "phase": 1,
    "stage": "3",
@@ -5836,7 +6082,8 @@
     "SEC-049"
    ],
    "tests": [
-    "TD-SEC-18"
+    "TD-SEC-18",
+    "TD-SEC-27"
    ],
    "decisions": [
     "D-270",
@@ -5861,16 +6108,80 @@
    "copy": true
   },
   {
+   "id": "T224",
+   "slug": "portals-confirm-and-pay-page",
+   "title": "portals: the business Confirm-and-pay page with Stripe Elements and the Stripe webhook route",
+   "goal": "The Confirm review step is a portals page (`confirm_pay.html`, `confirm_pay.rs`) that shows the job number, fee, tier, basis, refund line, terms version and one \"Confirm and pay $<fee>\" button, loads Stripe.js only on this page (TD-SEC-04) and collects the card through Stripe Elements (`confirm_pay.ts`, compiled by `tsc`), with the unticked save box and its authorization text; the pick's one PaymentIntent is created on the first page load through `payments::api` (FEE-047), a 3-D Secure step completes in the page, a decline shows at once and the next press uses the next attempt key; and `app/payments/src/routes.rs` is the signature-checked Stripe webhook route that hands verified events to T189's minter, so nothing is released from a redirect (PICK-021, TD-FEE-25). The charge rules are T062's and the `ReleaseProof` minter T189's; this task builds the page and the route that call them (D-491).",
+   "type": "build",
+   "phase": 1,
+   "stage": "3",
+   "module": "portals",
+   "deps": [
+    "T189",
+    "T051"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/portals/templates/confirm_pay.html",
+    "app/portals/static/confirm_pay.ts",
+    "app/portals/src/confirm_pay.rs",
+    "app/payments/src/routes.rs",
+    "tests/e2e/confirm_pay.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/fees.md",
+    "docs/spec/security.md",
+    "docs/threat-model.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/accessibility-forms.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-021"
+   ],
+   "tests": [
+    "TD-FEE-25"
+   ],
+   "decisions": [
+    "D-491"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 500,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T224-portals-confirm-and-pay-page",
+   "prompt": "kit/prompts/T224.md",
+   "copy": true
+  },
+  {
    "id": "T063",
    "slug": "picks-confirm-window",
    "title": "picks: Confirm within 4 business hours, license at pick and at Confirm",
-   "goal": "After a pick the business has 4 business hours (a setting) from the pick notice to confirm; its license and account are re-checked at the pick with the one live lookup and again at Confirm; a recurring pick shows how its fee was set; a late answer is told the pick expired; and the notice goes to the owner and every \"Confirm and billing\" member (PICK-019, PICK-020, PICK-033 to PICK-035, PICK-037).",
+   "goal": "After a pick the business has 4 business hours (a setting) from the pick notice to confirm; its license and account are re-checked at the pick with the one live lookup and again at Confirm; a recurring pick shows how its fee was set; a late answer is told the pick expired; and the notice goes to the owner and every \"Confirm and billing\" member (PICK-019, PICK-020, PICK-033 to PICK-035, PICK-037). The pick notice email goes through T094's email pipeline as a `core.task` event a `messaging` handler sends; the reminder emails are T197's (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "3",
    "module": "picks",
    "deps": [
-    "T189"
+    "T189",
+    "T094"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -5905,7 +6216,6 @@
    "tests": [
     "TD-PICK-09",
     "TD-PICK-15",
-    "TD-PICK-16",
     "TD-JOB-03"
    ],
    "decisions": [
@@ -6009,7 +6319,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -6061,7 +6371,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -6190,7 +6500,8 @@
    "tests": [
     "TD-JOB-07",
     "TD-TXT-10",
-    "TD-FEE-22"
+    "TD-FEE-22",
+    "TD-TXT-13"
    ],
    "decisions": [
     "D-049",
@@ -6230,7 +6541,8 @@
    "stage": "3",
    "module": "payments",
    "deps": [
-    "T065"
+    "T065",
+    "T225"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -6243,7 +6555,7 @@
     "app/payments/src/refunds.rs",
     "app/payments/src/disputes.rs",
     "app/payments/src/models.rs",
-    "migrations/0097_payments_refunds_disputes.sql",
+    "migrations/0100_payments_refunds_disputes.sql",
     "app/payments/src/tests/prop_one_refund.rs",
     "tests/integration/tests/disputes.rs"
    ],
@@ -6296,14 +6608,15 @@
   {
    "id": "T067",
    "slug": "payments-ledger-reconcile",
-   "title": "payments: append-only ledger, nightly reconcile, auto-match or auto-refund",
-   "goal": "The ledger is append-only with the FEE-028 entry types, a nightly reconcile auto-matches or auto-refunds every unknown Stripe charge, the money view and statements come only from the ledger and match Stripe to the cent, and only `payments` moves money (FEE-028 to FEE-030, FEE-032).",
+   "title": "payments: nightly reconcile, auto-match or auto-refund, ledger-only statements",
+   "goal": "On the append-only ledger T225 built, a nightly reconcile auto-matches or auto-refunds every unknown Stripe charge, the money view and statements come only from the ledger and match Stripe to the cent, and only `payments` moves money (FEE-029, FEE-030, FEE-032, FEE-051).",
    "type": "build",
    "phase": 1,
    "stage": "3",
    "module": "payments",
    "deps": [
-    "T066"
+    "T066",
+    "T225"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -6313,11 +6626,10 @@
     "recovery"
    ],
    "owns": [
-    "app/payments/src/ledger.rs",
     "app/payments/src/reconcile.rs",
     "app/payments/src/models.rs",
     "app/payments/src/api.rs",
-    "migrations/0099_payments_ledger_reconcile.sql",
+    "migrations/0102_payments_reconcile.sql",
     "app/payments/src/tests/prop_ledger_matches_stripe.rs",
     "tests/integration/tests/reconcile.rs",
     "tests/integration/tests/ledger_append_only.rs"
@@ -6331,7 +6643,6 @@
     "docs/brains/rust-production.md"
    ],
    "requirements": [
-    "FEE-028",
     "FEE-029",
     "FEE-030",
     "FEE-032",
@@ -6348,9 +6659,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 7,
     "lines": 600,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -6364,25 +6675,30 @@
    "id": "T068",
    "slug": "payments-receipts-flag",
    "title": "payments: receipt emails, charge description, just-under-a-tier flag",
-   "goal": "Every charge gets a receipt email with the description \"Ask Hava introduction service, job <n>\", \"Tax included.\" and the \"Why was I charged?\" link, and the owner portal flags, with no automatic action, a business whose recent quotes cluster just under a tier edge (FEE-031, FEE-033).",
+   "goal": "Every charge gets a receipt email with the description \"Ask Hava introduction service, job <n>\", \"Tax included.\" and the \"Why was I charged?\" link, and the owner portal flags, with no automatic action, a business whose recent quotes cluster just under a tier edge (FEE-031, FEE-033). `payments` cannot call `messaging`: it enqueues a `core.task` receipt event (IDs only) and the receipt is composed and sent by `app/messaging/src/receipt_email.rs` through T094's pipeline; the \"Why was I charged?\" page is a portals page (`receipts_page.rs`, `why_charged.html`) reading `payments::api`; the tier-edge flag uses the fee bases `payments` itself stored at the pick (T060), never `quotes` tables (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "3",
    "module": "payments",
    "deps": [
-    "T067"
+    "T067",
+    "T094"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "money"
+    "money",
+    "security"
    ],
    "owns": [
     "app/payments/src/receipts.rs",
     "app/payments/src/flags.rs",
     "tests/integration/tests/receipts.rs",
-    "app/payments/src/tests/tier_edge_flag.rs"
+    "app/payments/src/tests/tier_edge_flag.rs",
+    "app/portals/src/receipts_page.rs",
+    "app/portals/templates/why_charged.html",
+    "app/messaging/src/receipt_email.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -6400,7 +6716,8 @@
    "tests": [
     "TD-FEE-17",
     "TD-FEE-18",
-    "TD-FEE-32"
+    "TD-FEE-32",
+    "TD-FEE-34"
    ],
    "decisions": [
     "D-070",
@@ -6414,9 +6731,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 7,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -6431,13 +6748,14 @@
    "id": "T069",
    "slug": "picks-release",
    "title": "picks: release only on paid or free; never the homeowner's phone",
-   "goal": "`picks` releases the first name, address and chosen email to the signed-in business portal only with a `ReleaseProof` (paid, or a recorded $0 fee decision), the release email carries no homeowner detail, and the homeowner's phone number is never released to anyone (PICK-022 to PICK-024, PRIV-005, PRIV-020, BIZ-014).",
+   "goal": "`picks` releases the first name, address and chosen email to the signed-in business portal only with a `ReleaseProof` (paid, or a recorded $0 fee decision), the release email carries no homeowner detail, and the homeowner's phone number is never released to anyone (PICK-022 to PICK-024, PRIV-005, PRIV-020, BIZ-014). The release email is a `core.task` event a `messaging` handler sends through T094's pipeline, to the addresses `businesses::api::notice_addresses` returns for the release purpose (T149 adds backup addresses there) (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "3",
    "module": "picks",
    "deps": [
-    "T067"
+    "T067",
+    "T094"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -6450,7 +6768,7 @@
     "app/picks/src/release.rs",
     "app/picks/src/models.rs",
     "app/picks/src/api.rs",
-    "migrations/0101_picks_release.sql",
+    "migrations/0104_picks_release.sql",
     "app/picks/src/tests/prop_release_only_paid.rs",
     "tests/security/tests/no_phone_released.rs"
    ],
@@ -6475,8 +6793,7 @@
     "PRIV-020"
    ],
    "tests": [
-    "TD-PICK-10",
-    "TD-SEC-27"
+    "TD-PICK-10"
    ],
    "decisions": [
     "D-074",
@@ -6605,8 +6922,7 @@
    "tests": [
     "TD-PICK-11",
     "TD-PICK-17",
-    "TD-PICK-33",
-    "TD-FEE-24"
+    "TD-PICK-33"
    ],
    "decisions": [
     "D-044",
@@ -6621,7 +6937,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -6677,7 +6993,7 @@
    "budget": {
     "files": 1,
     "lines": 250,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -6727,7 +7043,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -6785,7 +7101,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 10
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -6800,7 +7116,7 @@
    "id": "T074",
    "slug": "twin-link-app",
    "title": "Twin: run the gate against the app's rules modules",
-   "goal": "The twin uses the app's fee, matching, quiet-hours and lifecycle rules through the rules_bridge binary (JSON in, JSON out), so Twin checks app/ (docs/test-design.md section 2, D-453). twin.yml installs the pinned Rust toolchain and runs `cargo build -p askhava-server --bin rules_bridge --locked` from the PR's commit before the gate, and a JSON-schema contract test covers the bridge on both sides (D-481). A planted 2-month recurring rule in `payments::rules` turns the twin red as well as a planted wrong fee (D-491).",
+   "goal": "The twin uses the app's fee, matching, quiet-hours and lifecycle rules through the rules_bridge binary (JSON in, JSON out), so Twin checks app/ (docs/test-design.md section 2, D-453). twin.yml installs the pinned Rust toolchain and runs `cargo build -p askhava-server --bin rules_bridge --locked` from the PR's commit before the gate, and a JSON-schema contract test covers the bridge on both sides (D-481). A planted 2-month recurring rule in `payments::rules` turns the twin red as well as a planted wrong fee (D-491). This task also writes `twin/__main__.py` with a `chaos` subcommand (`python3 -m twin chaos --baseline twin/chaos_baseline.json`, exit 1 on any problem not in the baseline) and commits `twin/chaos_baseline.json` from a chaos run through the app's rules, after T005 to T007 changed the twin; T126 runs it (D-491). Per the second trial (D-491): one long-lived process speaking JSON lines `{id, call, args}`; the schema is hand-written at `app/server/rules_bridge.schema.json`; the Rust contract test uses a small subset validator (no JSON-schema crate is allowed); `twin.yml` sets `SQLX_OFFLINE=true`; the measured cost is about 0.05 ms a call, so the budget is 1 ms.",
    "type": "harness",
    "phase": 1,
    "stage": "3",
@@ -6823,8 +7139,11 @@
     "twin/gate.py",
     "app/server/src/bin/rules_bridge.rs",
     ".github/workflows/twin.yml",
-    "twin/rules_bridge.schema.json",
-    "tests/contract/test_rules_bridge.py"
+    "tests/contract/test_rules_bridge.py",
+    "twin/chaos_baseline.json",
+    "twin/__main__.py",
+    "app/server/rules_bridge.schema.json",
+    "app/server/tests/rules_bridge_contract.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -6833,7 +7152,8 @@
     "docs/spec/lifecycle.md",
     "docs/spec/quiet-hours.md",
     "twin/",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/audit/rust-trial-2-2026-10-29.md"
    ],
    "requirements": [
     "CARD-001",
@@ -6843,13 +7163,14 @@
    ],
    "tests": [],
    "decisions": [
-    "D-107"
+    "D-107",
+    "D-491"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 10,
     "lines": 450,
-    "context_pct": 11
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -6864,7 +7185,7 @@
    "id": "T075",
    "slug": "cleanup-stage3",
    "title": "Stage 3 cleanup: dead code, duplicates, docs up to date",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: `cargo machete` (unused dependencies), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479).",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479).",
    "type": "cleanup",
    "phase": 1,
    "stage": "3",
@@ -6887,7 +7208,10 @@
     "T073",
     "T074",
     "T169",
-    "T065"
+    "T065",
+    "T094",
+    "T224",
+    "T225"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -6917,7 +7241,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -6951,7 +7275,7 @@
     "app/calls/src/api.rs",
     "app/calls/src/models.rs",
     "app/calls/src/service.rs",
-    "migrations/0109_calls_pool.sql",
+    "migrations/0112_calls_pool.sql",
     "tests/integration/tests/number_pool.rs"
    ],
    "reads": [
@@ -6995,13 +7319,14 @@
    "id": "T077",
    "slug": "calls-pin-routing",
    "title": "calls: PIN routing and the paid-business read-back",
-   "goal": "A call from an unlinked phone must enter the 4-digit job PIN, at most 3 tries per call and 6 per number per day; a caller with two jobs on one number is routed only by PIN; and the first-name-and-street read-back goes only to a phone linked to the paid business on a call with A-level attestation (CALL-003 to CALL-005, CALL-025).",
+   "goal": "A call from an unlinked phone must enter the 4-digit job PIN, at most 3 tries per call and 6 per number per day; a caller with two jobs on one number is routed only by PIN; and the first-name-and-street read-back goes only to a phone linked to the paid business on a call with A-level attestation (CALL-003 to CALL-005, CALL-025). Once the pool gives the masked number, this task also sends the who's-calling text (TXT-027) and the missed-call text as important texts through `messaging`, at once on an emergency job and held to 08:00 on a regular one (TD-TXT-29, TD-QH-04, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "calls",
    "deps": [
-    "T076"
+    "T076",
+    "T069"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -7021,17 +7346,22 @@
     "docs/spec/calls.md",
     "docs/brains/rust-production.md",
     "docs/brains/sms-compliance.md",
-    "docs/brains/ai-intake.md"
+    "docs/brains/ai-intake.md",
+    "docs/spec/messaging.md",
+    "docs/spec/quiet-hours.md"
    ],
    "requirements": [
     "CALL-003",
     "CALL-004",
     "CALL-005",
-    "CALL-025"
+    "CALL-025",
+    "TXT-027"
    ],
    "tests": [
     "TD-CALL-02",
-    "TD-CALL-11"
+    "TD-CALL-11",
+    "TD-TXT-29",
+    "TD-QH-04"
    ],
    "decisions": [
     "D-026",
@@ -7041,7 +7371,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -7049,7 +7379,8 @@
     "Ally"
    ],
    "branch": "claude/task/T077-calls-pin-routing",
-   "prompt": "kit/prompts/T077.md"
+   "prompt": "kit/prompts/T077.md",
+   "copy": true
   },
   {
    "id": "T078",
@@ -7075,7 +7406,7 @@
     "app/calls/src/handlers.rs",
     "app/calls/src/tests/connection.rs",
     "tests/integration/tests/no_recording.rs",
-    "migrations/0111_calls_call_log.sql"
+    "migrations/0114_calls_call_log.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -7100,7 +7431,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -7121,7 +7452,8 @@
    "module": "calls",
    "deps": [
     "T078",
-    "T220"
+    "T220",
+    "T094"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -7170,7 +7502,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -7185,7 +7517,7 @@
    "id": "T080",
    "slug": "calls-voice",
    "title": "calls: relay-friendly bridging, identity call, code call",
-   "goal": "The masked line works with 711 relay (spoken prompts, long PIN waits); the homeowner's code call happens only on her tap, opens \"This is Ask Hava LLC\" with the main number as callback, speaks slowly and repeats the code; no business can text a homeowner on Ask Hava's number; no announcement plays on a bridged call; and the safety voice call stays off unless every CALL-022 condition is met (CALL-013 to CALL-016, CALL-019, CALL-022, CALL-023).",
+   "goal": "The masked line works with 711 relay (spoken prompts, long PIN waits); the homeowner's code call happens only on her tap, opens \"This is Ask Hava LLC\" with the main number as callback, speaks slowly and repeats the code; no business can text a homeowner on Ask Hava's number; no announcement plays on a bridged call; and the safety voice call stays off unless every CALL-022 condition is met (CALL-013 to CALL-016, CALL-019, CALL-022, CALL-023); a safety voice call answered by a person acknowledges its critical alert through `ops::api` and lists it in the digest, and `calls::api` offers the bridge that rings Casey's phone and connects him to the homeowner with the Ask Hava number shown (OPS-028); the owner-portal button that starts it is T108's (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7208,7 +7540,8 @@
     "docs/code-docs.md",
     "docs/spec/calls.md",
     "docs/brains/rust-production.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "docs/spec/ops-recovery.md"
    ],
    "requirements": [
     "CALL-013",
@@ -7217,12 +7550,14 @@
     "CALL-016",
     "CALL-019",
     "CALL-022",
-    "CALL-023"
+    "CALL-023",
+    "OPS-028"
    ],
    "tests": [
     "TD-CALL-06",
     "TD-TXT-09",
-    "TD-CALL-09"
+    "TD-CALL-09",
+    "TD-TXT-12"
    ],
    "decisions": [
     "D-206",
@@ -7237,7 +7572,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -7252,13 +7587,14 @@
    "id": "T081",
    "slug": "businesses-signup-identity",
    "title": "businesses: sign-up, identity chain from public records, activation",
-   "goal": "Sign-up creates a Stripe customer with no card, starts from the category list, asks the optional source question, requires a verified email, and checks identity by the chain (Verify text to the record phone, then the record email, then a letter); a business activates automatically only when the code and the license or city-list match pass with no flag, and a needs-review sign-up is told its status (BIZ-001 to BIZ-003, BIZ-016, BIZ-019 to BIZ-021, BIZ-053).",
+   "goal": "Sign-up creates a Stripe customer with no card, starts from the category list, asks the optional source question, and checks identity by the chain (Verify text to the record phone, then the record email, then a letter); a business activates automatically only when the code and the license or city-list match pass with no flag, and a needs-review sign-up is told its status (BIZ-001 to BIZ-003, BIZ-016, BIZ-019 to BIZ-021, BIZ-053); the verified-email check before activation (BIZ-040) is added to `identity.rs` by T196, which builds the verification (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "businesses",
    "deps": [
-    "T075"
+    "T075",
+    "T094"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -7272,7 +7608,7 @@
     "app/businesses/src/identity.rs",
     "app/businesses/src/api.rs",
     "app/businesses/src/models.rs",
-    "migrations/0114_businesses_signup_identity.sql",
+    "migrations/0117_businesses_signup_identity.sql",
     "tests/integration/tests/identity_chain.rs"
    ],
    "reads": [
@@ -7300,7 +7636,7 @@
     "TD-BIZ-01",
     "TD-BIZ-05",
     "TD-BIZ-17",
-    "TD-LIC-22"
+    "TD-BIZ-12"
    ],
    "decisions": [
     "D-059",
@@ -7328,7 +7664,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -7343,7 +7679,7 @@
    "id": "T193",
    "slug": "businesses-signup-screens",
    "title": "businesses: sign-up screens for someone else filling in, the masked record contact, the review target, the fee summary and the done screen",
-   "goal": "Anyone may fill in the form but the code goes only to the record contact; the masked contact and its kind show before a code is sent; a needs-review sign-up gets a decision target of 4 days; the plain-words fee summary sits above the Terms link; and the done screen gives the trade's business count (BIZ-024, BIZ-026, BIZ-027, BIZ-030, BIZ-031).",
+   "goal": "Anyone may fill in the form but the code goes only to the record contact; the masked contact and its kind show before a code is sent; a needs-review sign-up gets a decision target of 4 days; the plain-words fee summary sits above the Terms link; and the done screen gives the trade's business count (BIZ-024, BIZ-026, BIZ-027, BIZ-030, BIZ-031). The sign-up screens are the portals page `business_signup.html` with its route `business_signup.rs`, which reads the open-jobs count of BIZ-031 through `quotes::api` (`businesses` cannot call `quotes`, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7357,11 +7693,14 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "money",
-    "security"
+    "security",
+    "accessibility"
    ],
    "owns": [
     "app/businesses/src/signup.rs",
-    "tests/integration/tests/signup_screens.rs"
+    "tests/integration/tests/signup_screens.rs",
+    "app/portals/templates/business_signup.html",
+    "app/portals/src/business_signup.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -7383,7 +7722,10 @@
    "tests": [
     "TD-BIZ-07",
     "TD-BIZ-10",
-    "TD-BIZ-27"
+    "TD-BIZ-27",
+    "TD-PICK-33",
+    "TD-BIZ-11",
+    "TD-BIZ-12"
    ],
    "decisions": [
     "D-173",
@@ -7410,9 +7752,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 4,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -7427,7 +7769,7 @@
    "id": "T082",
    "slug": "businesses-consent",
    "title": "businesses: E-SIGN consent box, welcome text, business STOP",
-   "goal": "Business sign-up carries the unticked E-SIGN consent box naming each notice kind, an activated business gets the welcome email before its first card, STOP from a business phone stops only texts, a texting business can PAUSE, RESUME or BUSY, unexpected business texts get the portal-link reply, every email carries the postal-address footer, and Ask Hava never texts or calls to recruit (BIZ-017, BIZ-028, BIZ-032, BIZ-048, CON-019, CON-020, SEC-028). The channel preference, the business-texting switch and the SEC-028 footer are T147's and T094's, which run later; this task records the E-SIGN consent and the welcome notice request (D-491).",
+   "goal": "Business sign-up carries the unticked E-SIGN consent box naming each notice kind, an activated business gets the welcome email before its first card, STOP from a business phone stops only texts, a texting business can PAUSE, RESUME or BUSY, unexpected business texts get the portal-link reply, and Ask Hava never texts or calls to recruit (BIZ-017, BIZ-028, BIZ-032, BIZ-048, CON-019, CON-020). The SEC-028 email footer is T094's (it runs earlier); the channel preference and the business-texting switch are T147's, which runs later; this task records the E-SIGN consent and the welcome notice request (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7444,7 +7786,7 @@
    "owns": [
     "app/businesses/src/consent.rs",
     "tests/integration/tests/business_consent.rs",
-    "migrations/0116_businesses_consent.sql"
+    "migrations/0119_businesses_consent.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -7465,13 +7807,14 @@
     "CON-019",
     "CON-020",
     "BIZ-032",
-    "BIZ-048",
-    "SEC-028"
+    "BIZ-048"
    ],
    "tests": [
     "TD-CON-08",
     "TD-BIZ-08",
-    "TD-BIZ-26"
+    "TD-BIZ-11",
+    "TD-BIZ-12",
+    "TD-TXT-13"
    ],
    "decisions": [
     "D-062",
@@ -7523,7 +7866,8 @@
    "stage": "4",
    "module": "businesses",
    "deps": [
-    "T082"
+    "T082",
+    "T094"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -7532,7 +7876,7 @@
    "owns": [
     "app/businesses/src/complaints.rs",
     "app/businesses/src/models.rs",
-    "migrations/0117_businesses_complaints.sql",
+    "migrations/0120_businesses_complaints.sql",
     "tests/integration/tests/complaints.rs"
    ],
    "reads": [
@@ -7554,8 +7898,7 @@
    "tests": [
     "TD-BIZ-03",
     "TD-BIZ-09",
-    "TD-BIZ-11",
-    "TD-BIZ-12"
+    "TD-BIZ-11"
    ],
    "decisions": [
     "D-016",
@@ -7596,7 +7939,8 @@
    "stage": "4",
    "module": "portals",
    "deps": [
-    "T193"
+    "T193",
+    "T094"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -7607,7 +7951,7 @@
    "owns": [
     "app/portals/src/business_auth.rs",
     "app/portals/src/models.rs",
-    "migrations/0118_portals_business_signin.sql",
+    "migrations/0121_portals_business_signin.sql",
     "app/portals/templates/business_signin.html",
     "tests/security/tests/business_signin.rs"
    ],
@@ -7648,7 +7992,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -7671,7 +8015,8 @@
    "deps": [
     "T193",
     "T084",
-    "T220"
+    "T220",
+    "T094"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -7732,7 +8077,7 @@
    "id": "T085",
    "slug": "portals-business-portal",
    "title": "portals: business portal home (contact choice, your numbers, call log, step-up changes)",
-   "goal": "The business portal shows how the homeowner chose to be contacted, the \"Your numbers\" panel, the released job's call log, and asks for a fresh Verify code before any sensitive change (BIZ-013, BIZ-025, BIZ-035, SEC-038). The business chooses its open-cards email times here (CARD-022's setting page, D-491); T198 reads the setting.",
+   "goal": "The business portal shows how the homeowner chose to be contacted, the \"Your numbers\" panel, the released job's call log, and asks for a fresh Verify code before any sensitive change (BIZ-013, BIZ-025, BIZ-035, SEC-038). Each person chooses their open-cards email times here (CARD-022's setting page, D-491), stored per person in `businesses.open_cards_time` through `app/businesses/src/open_cards_times.rs`; T198's composer reads them through `businesses::api` (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7754,7 +8099,9 @@
     "app/portals/templates/business_home.html",
     "tests/e2e/business_portal.spec.ts",
     "app/portals/src/digest_times.rs",
-    "app/portals/templates/digest_times.html"
+    "app/portals/templates/digest_times.html",
+    "app/businesses/src/open_cards_times.rs",
+    "migrations/0123_businesses_open_cards_times.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -7776,7 +8123,8 @@
     "TD-BIZ-04",
     "TD-PICK-17",
     "TD-SEC-17",
-    "TD-BIZ-12"
+    "TD-BIZ-12",
+    "TD-BIZ-11"
    ],
    "decisions": [
     "D-193",
@@ -7788,7 +8136,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 350,
     "context_pct": 14
    },
@@ -7805,7 +8153,7 @@
    "id": "T195",
    "slug": "portals-business-billing",
    "title": "portals: business billing and statements from the ledger",
-   "goal": "The business portal's billing page shows charges, the free first win, refunds, credits, payment methods and PDF and CSV statements, all built from the ledger (BIZ-015). Statements are CSV only in V1 (BIZ-015 as reworded by D-491).",
+   "goal": "The business portal's billing page shows charges, the free first win, refunds, credits, payment methods and CSV statements, all built from the ledger (BIZ-015). Statements are CSV only in V1 (BIZ-015 as reworded by D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7864,7 +8212,7 @@
    "id": "T086",
    "slug": "portals-owner-auth",
    "title": "portals: owner password, passkey or TOTP, recovery codes, 12-hour sessions",
-   "goal": "Owner sign-in uses an argon2id password plus a passkey or TOTP, sessions of at most 12 hours that end after 30 minutes idle, fresh step-up for sensitive actions, recovery by two factors plus offline codes and never email alone, and the first owner credential only from the one-time bootstrap command; the owner portal alone holds pause, refund and release powers (SEC-004 to SEC-008, SEC-019, SEC-022, SEC-023, SEC-043, SEC-044).",
+   "goal": "Owner sign-in uses an argon2id password plus a passkey or TOTP, sessions of at most 12 hours that end after 30 minutes idle, fresh step-up for sensitive actions, recovery by two factors plus offline codes and never email alone, and the first owner credential only from the one-time bootstrap command; the owner portal alone holds pause, refund and release powers (SEC-004 to SEC-008, SEC-019, SEC-022, SEC-023, SEC-043, SEC-044); the passkey ceremony runs in `app/portals/static/passkey.ts` (WebAuthn in the browser, compiled by `tsc`), and new passwords are checked against the offline list in `app/portals/data/breached_passwords.txt` (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7881,9 +8229,11 @@
    "owns": [
     "app/portals/src/owner_auth.rs",
     "app/portals/src/models.rs",
-    "migrations/0122_portals_owner_auth.sql",
+    "migrations/0125_portals_owner_auth.sql",
     "app/portals/templates/owner_signin.html",
-    "tests/security/tests/owner_auth.rs"
+    "tests/security/tests/owner_auth.rs",
+    "app/portals/static/passkey.ts",
+    "app/portals/data/breached_passwords.txt"
    ],
    "reads": [
     "docs/architecture.md",
@@ -7908,7 +8258,8 @@
    "tests": [
     "TD-SEC-01",
     "TD-SEC-22",
-    "TD-SEC-23"
+    "TD-SEC-23",
+    "TD-SEC-06"
    ],
    "decisions": [
     "D-098",
@@ -7919,9 +8270,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 550,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -7935,7 +8286,7 @@
    "id": "T087",
    "slug": "portals-homeowner-portal",
    "title": "portals: homeowner portal (phone and code), own data, no forbidden fields",
-   "goal": "The homeowner portal signs in with phone and texted code (Verify sends capped), lets her review and change her properties, language and texts setting through realm-checked vault reads, and never collects SSNs, driver's licenses or tax ID images; privacy code holds its 95% branch floor and backups are encrypted (PRIV-012, PRIV-018, PRIV-021, PRIV-022, PICK-055, SEC-046).",
+   "goal": "The homeowner portal signs in with phone and texted code (Verify sends capped), lets her review and change her properties, language and texts setting through realm-checked vault reads, and never collects SSNs, driver's licenses or tax ID images (PRIV-012, PRIV-021, PICK-055, SEC-046); encrypted backups are T109's and the 95% floor T056's (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7969,9 +8320,7 @@
    ],
    "requirements": [
     "PRIV-012",
-    "PRIV-018",
     "PRIV-021",
-    "PRIV-022",
     "SEC-046",
     "PICK-055",
     "A11Y-032"
@@ -7979,7 +8328,8 @@
    "tests": [
     "TD-SEC-25",
     "TD-PICK-36",
-    "TD-A11Y-02"
+    "TD-A11Y-02",
+    "TD-PRIV-05"
    ],
    "decisions": [
     "D-480",
@@ -7989,7 +8339,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -8004,7 +8354,7 @@
    "id": "T088",
    "slug": "portals-auth-matrix",
    "title": "Authorization matrix over every route and actor; token isolation",
-   "goal": "A security test generated from the route table checks every route against anonymous, two homeowners, two businesses and the owner, proving each gets exactly its expected allow or deny, one homeowner's token never reads another's job, and every denial is logged as a security event (SEC-004 to SEC-006, SEC-008, SEC-019, SEC-048).",
+   "goal": "A security test generated from the route table checks every route against anonymous, two homeowners, two businesses and the owner, proving each gets exactly its expected allow or deny, one homeowner's token never reads another's job, and every denial is logged as a security event (SEC-004 to SEC-006, SEC-008, SEC-019, SEC-048); and, since the push web app is not built in the pilot build (BIZ-041), the route table holds no push-subscription route and no portal page registers a service worker or serves a web app manifest (TD-BIZ-31, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8028,7 +8378,8 @@
     "docs/spec/security.md",
     "docs/brains/accessibility-forms.md",
     "docs/brains/payments-stripe.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/businesses.md"
    ],
    "requirements": [
     "SEC-004",
@@ -8036,10 +8387,12 @@
     "SEC-006",
     "SEC-008",
     "SEC-019",
-    "SEC-048"
+    "SEC-048",
+    "BIZ-041"
    ],
    "tests": [
-    "TD-SEC-01"
+    "TD-SEC-01",
+    "TD-BIZ-31"
    ],
    "decisions": [
     "D-313",
@@ -8051,7 +8404,7 @@
    "budget": {
     "files": 1,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -8144,7 +8497,7 @@
    "owns": [
     "app/privacy/src/photos.rs",
     "app/privacy/src/models.rs",
-    "migrations/0126_privacy_photos.sql",
+    "migrations/0129_privacy_photos.sql",
     "app/privacy/src/tests/photo_checks.rs",
     "tests/integration/tests/photo_links.rs"
    ],
@@ -8178,7 +8531,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -8193,7 +8546,7 @@
    "id": "T091",
    "slug": "quotes-card-photos",
    "title": "quotes: photos on cards only after zero retention and all three screens",
-   "goal": "A card photo is a screened copy made only after metadata stripping and the on-server check (blurring or leaving off flagged parts) and, once AI photo screening is on, both AI checks; card emails link to the photo route and never carry image bytes, and no photo reaches an AI before zero retention (AI-016, CARD-013, CARD-014, PRIV-027).",
+   "goal": "A card photo is a screened copy made only after the format and size checks, metadata stripping and re-encoding and the homeowner's confirmation that it shows no person and no house number, and, once AI photo screening is on after zero retention, both AI checks with their face, plate and text detection; card emails link to the photo route and never carry image bytes, and no photo reaches an AI before zero retention (AI-016, CARD-013, CARD-014, PRIV-027; CARD-014 as reworded by D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8229,7 +8582,9 @@
     "PRIV-027"
    ],
    "tests": [
-    "TD-PRIV-12"
+    "TD-PRIV-12",
+    "TD-AI-11",
+    "TD-CARD-04"
    ],
    "decisions": [
     "D-480"
@@ -8252,28 +8607,35 @@
    "id": "T092",
    "slug": "privacy-retention-purge",
    "title": "privacy: 180-day contact purge, holds, photo and message deletion, delete my data",
-   "goal": "A daily `privacy` job purges contact details 180 days after close unless a hold exists (the phone kept encrypted with its consent records), photos at 30 days, scrubbed job text at 3 years, and ledger and audit records at 7 years; \"Delete my data\" removes the vault entry and photos and confirms what is kept (PRIV-007 to PRIV-011, PRIV-027).",
+   "goal": "A daily `privacy` job purges contact details 180 days after close unless a hold exists (the phone kept encrypted with its consent records), photos at 30 days, scrubbed job text at 3 years, and ledger and audit records at 7 years; \"Delete my data\" removes the vault entry and photos and confirms what is kept (PRIV-007 to PRIV-011, PRIV-027). `privacy` calls only `adapters` and `ops`, so the purge runs on `core.task` events: `app/jobs/src/purge_events.rs` enqueues each job's close date for `privacy`; at purge time the `payments` and `businesses` handlers this task owns turn an open dispute (T066's record) or complaint (T083's record) into a `privacy.retention_hold`; and the `intake`, `messaging` and `payments` handlers delete or keep their own rows (scrubbed job text, `messaging.inbox`, ledger rows without names) when `privacy` enqueues the purge (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "privacy",
    "deps": [
     "T091",
-    "T083"
+    "T083",
+    "T066"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "privacy",
-    "security"
+    "security",
+    "money"
    ],
    "owns": [
     "app/privacy/src/purge.rs",
     "app/privacy/src/handlers.rs",
     "app/privacy/src/models.rs",
-    "migrations/0128_privacy_retention_purge.sql",
-    "tests/integration/tests/retention_purge.rs"
+    "migrations/0131_privacy_retention_purge.sql",
+    "tests/integration/tests/retention_purge.rs",
+    "app/jobs/src/purge_events.rs",
+    "app/intake/src/purge.rs",
+    "app/messaging/src/purge.rs",
+    "app/payments/src/purge.rs",
+    "app/businesses/src/purge.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -8302,9 +8664,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 500,
-    "context_pct": 12
+    "files": 10,
+    "lines": 600,
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -8336,7 +8698,7 @@
    "owns": [
     "app/messaging/src/retention.rs",
     "tests/integration/tests/message_log_retention.rs",
-    "migrations/0129_messaging_optout_evidence.sql"
+    "migrations/0132_messaging_optout_evidence.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -8374,81 +8736,6 @@
    "prompt": "kit/prompts/T093.md"
   },
   {
-   "id": "T094",
-   "slug": "messaging-retries-email",
-   "title": "messaging: 3 retries over 30 minutes, then email and portal, then call-back alert",
-   "goal": "Important texts are retried 3 times over 30 minutes, then sent by email and shown in the portal; a homeowner whose texts keep failing with no email on file becomes a call-back alert for Casey; and above 90% of the email provider's daily limit, only digests and open-cards emails wait for the reset (TXT-014, TXT-015, OPS-038).",
-   "type": "build",
-   "phase": 1,
-   "stage": "4",
-   "module": "messaging",
-   "deps": [
-    "T093"
-   ],
-   "model": "claude-sonnet-5-5",
-   "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
-   "review_areas": [
-    "compliance"
-   ],
-   "owns": [
-    "app/messaging/src/email.rs",
-    "app/messaging/src/retries.rs",
-    "app/messaging/src/models.rs",
-    "migrations/0130_messaging_retries_email.sql",
-    "tests/integration/tests/text_retries.rs"
-   ],
-   "reads": [
-    "docs/architecture.md",
-    "docs/code-docs.md",
-    "docs/spec/messaging.md",
-    "docs/spec/ops-recovery.md",
-    "docs/design/DESIGN_SPEC.md",
-    "docs/brains/email-deliverability.md",
-    "docs/brains/postgres-operations.md",
-    "docs/brains/rust-production.md",
-    "docs/brains/sms-compliance.md",
-    "docs/spec/security.md",
-    "docs/spec/businesses.md",
-    "docs/spec/accessibility.md",
-    "docs/brains/accessibility-forms.md"
-   ],
-   "requirements": [
-    "TXT-014",
-    "TXT-015",
-    "OPS-038",
-    "SEC-050",
-    "SEC-051",
-    "BIZ-055",
-    "A11Y-034"
-   ],
-   "tests": [
-    "TD-TXT-05",
-    "TD-OPS-14",
-    "TD-SEC-27",
-    "TD-BIZ-33",
-    "TD-A11Y-02"
-   ],
-   "decisions": [
-    "D-308",
-    "D-381",
-    "D-490"
-   ],
-   "cites": [],
-   "budget": {
-    "files": 5,
-    "lines": 400,
-    "context_pct": 14
-   },
-   "checks": [
-    "Ci",
-    "Twin",
-    "Ally"
-   ],
-   "branch": "claude/task/T094-messaging-retries-email",
-   "prompt": "kit/prompts/T094.md"
-  },
-  {
    "id": "T095",
    "slug": "picks-email-code",
    "title": "picks: pick code by email when texting is off; '2 YES' from an opted-out phone",
@@ -8458,7 +8745,8 @@
    "stage": "4",
    "module": "picks",
    "deps": [
-    "T094"
+    "T094",
+    "T075"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -8508,13 +8796,14 @@
    "id": "T096",
    "slug": "messaging-web-email-mode",
    "title": "messaging: web-and-email mode, number suspension, one configured number",
-   "goal": "The homeowner-texting switch (web-and-email mode) and a suspended number move homeowner updates to email and the quote page, no second number is ever used, people with no email go on Casey's call list, emergencies still raise critical alerts and safety messages, and every step can be finished without a text (TXT-021 to TXT-024, TXT-034, OPS-028).",
+   "goal": "The homeowner-texting switch (web-and-email mode) and a suspended number move homeowner updates to email and the quote page, no second number is ever used, people with no email go on Casey's call list, emergencies still raise critical alerts and safety messages, and every step can be finished without a text (TXT-021 to TXT-024, TXT-034); the answered-call acknowledgement and the owner bridge are T080's (OPS-028, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "messaging",
    "deps": [
-    "T095"
+    "T095",
+    "T080"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -8533,21 +8822,21 @@
     "docs/spec/ops-recovery.md",
     "docs/brains/email-deliverability.md",
     "docs/brains/rust-production.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "docs/spec/consent.md"
    ],
    "requirements": [
     "TXT-021",
     "TXT-022",
     "TXT-023",
     "TXT-024",
-    "OPS-028",
     "TXT-034"
    ],
    "tests": [
     "TD-TXT-08",
     "TD-TXT-09",
-    "TD-TXT-12",
-    "TD-TXT-16"
+    "TD-TXT-16",
+    "TD-CON-16"
    ],
    "decisions": [
     "D-144",
@@ -8566,7 +8855,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -8613,7 +8902,8 @@
    "tests": [
     "TD-JOB-04",
     "TD-JOB-08",
-    "TD-JOB-09"
+    "TD-JOB-09",
+    "TD-TXT-13"
    ],
    "decisions": [
     "D-071",
@@ -8630,7 +8920,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -8653,7 +8943,8 @@
    "deps": [
     "T097",
     "T096",
-    "T088"
+    "T088",
+    "T224"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -8677,8 +8968,7 @@
     "A11Y-021"
    ],
    "tests": [
-    "J1",
-    "TD-TXT-15"
+    "J1"
    ],
    "decisions": [],
    "cites": [],
@@ -8710,7 +9000,8 @@
     "T196",
     "T197",
     "T198",
-    "T199"
+    "T199",
+    "T155"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -8741,7 +9032,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -8755,7 +9046,7 @@
    "id": "T147",
    "slug": "business-notices-email",
    "title": "messaging and businesses: business notices by chosen channel and the business-texting switch",
-   "goal": "Every business notice goes by the business's chosen channels, email by default and text only while the business-texting switch is on, never carrying homeowner details by text; job cards go to the owner and every \"Cards and quotes\" member; texts that fail fall back to email and the portal; and business quiet times hold texts, not emails (TXT-014, TXT-035 to TXT-037, BIZ-019, BIZ-036, BIZ-037, CARD-020, QH-005).",
+   "goal": "Every business notice goes by the business's chosen channels, email by default and text only while the business-texting switch is on, never carrying homeowner details by text; job cards go to the owner and every \"Cards and quotes\" member; texts that fail fall back to email and the portal; and business quiet times hold texts, not emails (TXT-014, TXT-035 to TXT-037, BIZ-019, BIZ-036, BIZ-037, CARD-020, QH-005); every recipient address comes from `businesses::api::notice_addresses` (T149 adds the backup addresses there, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8776,7 +9067,7 @@
    "owns": [
     "app/messaging/src/business_notices.rs",
     "app/businesses/src/channel_preference.rs",
-    "migrations/0136_business_notices.sql",
+    "migrations/0138_business_notices.sql",
     "tests/integration/tests/business_notices.rs"
    ],
    "reads": [
@@ -8812,7 +9103,7 @@
     "TD-TXT-18",
     "TD-BIZ-14",
     "TD-TXT-27",
-    "TD-TXT-13"
+    "TD-BIZ-06"
    ],
    "decisions": [
     "D-303",
@@ -8831,7 +9122,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 19
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -8846,7 +9137,7 @@
    "id": "T196",
    "slug": "businesses-notice-email",
    "title": "businesses: verified notice email, sender rules and the address-change protections",
-   "goal": "A business notice address is verified before it gets anything, a change is allowed only from a signed-in owner session, tells the old address and is audit-logged; every business email comes from the authenticated askhava.com sending subdomain; and the welcome email goes before the first card (BIZ-036, BIZ-040, BIZ-041, CON-020, SEC-024, SEC-025, WEB-024).",
+   "goal": "A business notice address is verified before it gets anything and activation in `identity.rs` waits for the verified sign-up email (BIZ-040), a change is allowed only from a signed-in owner session, tells the old address and is audit-logged; every business email comes from the authenticated askhava.com sending subdomain; and the welcome email goes before the first card (BIZ-036, BIZ-040, BIZ-041, CON-020, SEC-024, SEC-025, WEB-024).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8869,7 +9160,8 @@
     "app/businesses/src/email_verification.rs",
     "tests/integration/tests/email_verification.rs",
     "tests/security/tests/notice_addresses.rs",
-    "migrations/0137_businesses_email_verification.sql"
+    "migrations/0139_businesses_email_verification.sql",
+    "app/businesses/src/identity.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -8911,9 +9203,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 400,
-    "context_pct": 19
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -8928,7 +9220,7 @@
    "id": "T148",
    "slug": "business-actions-pick-call",
    "title": "portals: secure email action links for every former text keyword, signed Hold links and the email sender rules",
-   "goal": "Every action a business once did by text keyword has a signed, single-purpose email link to a portal page that shows what it will do first; an email reply never acts; Hold works without a session; and the action pages and emails meet the A11Y-023 and A11Y-024 rows (BIZ-028, BIZ-032 to BIZ-034, BIZ-038, CALL-011, SEC-025, A11Y-023, A11Y-024).",
+   "goal": "Every action a business once did by text keyword has a signed, single-purpose email link to a portal page that shows what it will do first; an email reply never acts; Hold works without a session; the Confirm-and-pay page itself is T224's; and the action pages and emails meet the A11Y-023 and A11Y-024 rows (BIZ-028, BIZ-032 to BIZ-034, BIZ-038, CALL-011, SEC-025, A11Y-023, A11Y-024).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8962,7 +9254,6 @@
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
-    "docs/threat-model.md",
     "docs/spec/businesses.md",
     "docs/spec/messaging.md",
     "docs/spec/quotes-pick.md",
@@ -8984,14 +9275,13 @@
     "SEC-025",
     "A11Y-023",
     "A11Y-024",
-    "PICK-039",
-    "PICK-021"
+    "PICK-039"
    ],
    "tests": [
     "TD-BIZ-15",
     "TD-BIZ-16",
     "TD-SEC-09",
-    "TD-FEE-25"
+    "TD-CALL-05"
    ],
    "decisions": [
     "D-309",
@@ -9016,8 +9306,8 @@
    "cites": [],
    "budget": {
     "files": 5,
-    "lines": 450,
-    "context_pct": 20
+    "lines": 400,
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -9032,7 +9322,7 @@
    "id": "T197",
    "slug": "picks-confirm-by-email",
    "title": "picks: Confirm by email alone with the 4-business-hour window, reminders, the end-time text and lapse re-pick",
-   "goal": "A pick is confirmed from the pick email alone within 4 business hours, with a reminder email every business hour carrying the Hold link; the homeowner is told the end time; and a lapsed pick sends her the other quotes to re-pick with \"<number> YES\" (BIZ-039, PICK-019, PICK-033, PICK-037, PICK-043 to PICK-046).",
+   "goal": "A pick is confirmed from the pick email alone within 4 business hours, with a reminder email every business hour carrying the Hold link; the homeowner is told the end time; and a lapsed pick sends her the other quotes to re-pick with \"<number> YES\" (BIZ-039, PICK-019, PICK-033, PICK-037, PICK-043 to PICK-046); it also adds the PICK-019 all-bounced grace to `confirm.rs` (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9058,7 +9348,8 @@
    "owns": [
     "app/picks/src/confirm_reminders.rs",
     "tests/integration/tests/confirm_reminders.rs",
-    "migrations/0139_picks_confirm_reminder.sql"
+    "migrations/0141_picks_confirm_reminder.sql",
+    "app/picks/src/confirm.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9071,7 +9362,6 @@
     "docs/spec/quiet-hours.md",
     "docs/spec/security.md",
     "docs/spec/accessibility.md",
-    "docs/design/DESIGN_SPEC.md",
     "docs/brains/payments-stripe.md",
     "docs/brains/rust-production.md",
     "docs/brains/sms-compliance.md"
@@ -9090,7 +9380,8 @@
     "TD-PICK-25",
     "TD-PICK-26",
     "TD-PICK-27",
-    "TD-PICK-31"
+    "TD-PICK-31",
+    "TD-PICK-16"
    ],
    "decisions": [
     "D-309",
@@ -9107,7 +9398,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 350,
     "context_pct": 20
    },
@@ -9124,7 +9415,7 @@
    "id": "T149",
    "slug": "business-email-reliability",
    "title": "businesses: sign-up deliverability check with a sample card, and the backup notice address",
-   "goal": "After email verification sign-up sends a fake sample card from the real sender and walks the person through the inbox, spam and alert steps for their mail app without blocking activation; and a verified backup notice address can be added only from that person's or the owner's session (BIZ-042, BIZ-043).",
+   "goal": "After email verification sign-up sends a fake sample card from the real sender and walks the person through the inbox, spam and alert steps for their mail app without blocking activation; and a verified backup notice address can be added only from that person's or the owner's session (BIZ-042, BIZ-043). Each mail-app step is written in `docs/copy/mail-app-steps.md` with the maker's help-page address and the date it was checked, and the screens read it; the backup address reaches every notice through `businesses::api::notice_addresses`, the one lookup T147's fan-out and T069's release email use (so the release purpose returns a backup only for an owner or a \"Confirm and billing\" person); the test emergency email is T150's (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9144,11 +9435,12 @@
    "owns": [
     "app/businesses/src/deliverability_check.rs",
     "app/businesses/src/backup_address.rs",
-    "migrations/0140_email_reliability.sql",
+    "migrations/0142_email_reliability.sql",
     "tests/integration/tests/deliverability_check.rs",
     "tests/security/tests/backup_address.rs",
     "app/portals/src/email_check.rs",
-    "app/portals/templates/email_check.html"
+    "app/portals/templates/email_check.html",
+    "docs/copy/mail-app-steps.md"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9188,7 +9480,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 8,
     "lines": 400,
     "context_pct": 19
    },
@@ -9205,7 +9497,7 @@
    "id": "T198",
    "slug": "messaging-open-cards-notice-log",
    "title": "messaging and portals: daily open-cards email, missed-card account email and the per-job notice log",
-   "goal": "A business with open cards gets the daily open-cards email at its chosen times, a business that misses cards gets the account email, and the portal shows a per-job notice log of send times, provider statuses and first page opens with no homeowner detail (BIZ-044, BIZ-045, CARD-022, OPS-037).",
+   "goal": "A business with open cards gets the daily open-cards email at its chosen times, a business that misses cards gets the account email, and the portal shows a per-job notice log of send times, provider statuses and first page opens with no homeowner detail (BIZ-044, BIZ-045, CARD-022, OPS-037). The open-cards and missed-card lines are composed in `app/picks/src/open_cards_email.rs`, a `picks` handler that reads `quotes::api`, `picks::api` and the per-person times through `businesses::api`, and enqueues the finished email for `messaging` to send, since `messaging` sits below `quotes` and `picks` (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9232,8 +9524,8 @@
     "tests/integration/tests/open_cards_digest.rs",
     "tests/integration/tests/missed_cards.rs",
     "tests/integration/tests/notice_log.rs",
-    "app/quotes/src/open_cards_events.rs",
-    "migrations/0141_messaging_notice_log.sql"
+    "app/picks/src/open_cards_email.rs",
+    "migrations/0143_messaging_notice_log.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9260,7 +9552,8 @@
    "tests": [
     "TD-BIZ-20",
     "TD-BIZ-21",
-    "TD-CARD-10"
+    "TD-CARD-10",
+    "TD-PICK-33"
    ],
    "decisions": [
     "D-330",
@@ -9276,7 +9569,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 18
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -9291,7 +9584,7 @@
    "id": "T150",
    "slug": "business-calls-link-hardening",
    "title": "picks and quotes: EMERGENCY card and pick emails with the emergency-email switch and its test email",
-   "goal": "Emergency job cards and picks go by email with the EMERGENCY subject and first line, at night only to people with \"Emergency emails at any hour\" on, whose switch needs a passed test emergency email renewed every 90 days; a business without that stops counting for after-hours coverage (CARD-021, BIZ-007, BIZ-042, INT-033).",
+   "goal": "Emergency job cards and picks go by email with the EMERGENCY subject and first line, at night only to people with \"Emergency emails at any hour\" on, whose switch needs a passed test emergency email renewed every 90 days; a business without that stops counting for after-hours coverage (CARD-021, BIZ-007, BIZ-042, INT-033); the INT-033 night count of emergency businesses, which counts only businesses with a person whose emergency emails are on with a current Yes, is `app/intake/src/emergency_count.rs`, which T039's flow calls (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9312,10 +9605,11 @@
    "owns": [
     "app/picks/src/emergency_emails.rs",
     "app/quotes/src/emergency_card_notice.rs",
-    "migrations/0142_emergency_emails.sql",
+    "migrations/0144_emergency_emails.sql",
     "tests/integration/tests/emergency_card_email.rs",
     "app/businesses/src/emergency_switch.rs",
-    "app/portals/templates/emergency_test_email.html"
+    "app/portals/templates/emergency_test_email.html",
+    "app/intake/src/emergency_count.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9345,7 +9639,6 @@
    "tests": [
     "TD-CARD-09",
     "TD-BIZ-24",
-    "TD-INT-12",
     "TD-INT-15"
    ],
    "decisions": [
@@ -9359,7 +9652,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 400,
     "context_pct": 19
    },
@@ -9376,7 +9669,7 @@
    "id": "T199",
    "slug": "portals-no-business-calls-safe-links",
    "title": "portals: no automated call to a business, voice codes only on the homeowner's tap, the homeowner-calls contact card, and scanner-safe links with the shared-inbox switch",
-   "goal": "No Verify voice call ever reaches a business phone and identity codes go by text, email or letter; the homeowner's voice code call happens only on her tap and opens \"This is Ask Hava LLC\"; businesses get the \"Ask Hava homeowner calls\" contact card; and opening any email link only shows its page, a POST with a CSRF token acting, with a \"This inbox is shared\" switch requiring a fresh code (BIZ-002, BIZ-026, BIZ-039, BIZ-046, SEC-004, SEC-008, SEC-026, SEC-027, PICK-013, TXT-038, CALL-014, CALL-015).",
+   "goal": "No Verify voice call ever reaches a business phone and identity codes go by text, email or letter; the homeowner's voice code call happens only on her tap and opens \"This is Ask Hava LLC\"; businesses get the \"Ask Hava homeowner calls\" contact card; and opening any email link only shows its page, a POST with a CSRF token acting, with a \"This inbox is shared\" switch requiring a fresh code; the switch and the current contact-card list are on the portal home (`business_home.html`) and the contact-card offer on the sign-up done screen (`business_signup.html`), both extended here (D-491) (BIZ-002, BIZ-026, BIZ-039, BIZ-046, SEC-004, SEC-008, SEC-026, SEC-027, PICK-013, TXT-038, CALL-014, CALL-015).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9401,7 +9694,9 @@
     "app/portals/templates/contact_card.vcf",
     "tests/integration/tests/no_business_calls.rs",
     "tests/security/tests/link_scanners.rs",
-    "migrations/0143_portals_shared_inbox.sql"
+    "migrations/0145_portals_shared_inbox.sql",
+    "app/portals/templates/business_home.html",
+    "app/portals/templates/business_signup.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9451,9 +9746,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 8,
     "lines": 400,
-    "context_pct": 19
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -9468,7 +9763,7 @@
    "id": "T151",
    "slug": "help-requests",
    "title": "ops and messaging: HELP requests with one owner notification each and the plain-word auto-answers",
-   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, inbound help emails arrive only through the signed webhook into `privacy`, and plain-word questions after HELP get the fixed auto-answers (CON-034, OPS-036, PRIV-026, PRIV-030).",
+   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, inbound help emails arrive only through the signed webhook into `privacy`, and plain-word questions after HELP get the fixed auto-answers (CON-034, OPS-036, PRIV-026, PRIV-030). The `ops.help_request` and `ops.help_message` tables of architecture section 3 are created by this task's migration in the `ops` schema and written only through `app/ops/src/help_requests.rs` and `ops::api`; the owner's reply box and its link are T200's (TD-OPS-23) (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -9490,9 +9785,9 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0167_help_requests.sql",
+    "migrations/0169_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
-    "app/messaging/src/help_answers.rs"
+    "app/ops/src/help_requests.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9520,7 +9815,8 @@
     "TD-CON-17",
     "TD-OPS-11",
     "TD-PRIV-11",
-    "TD-OPS-20"
+    "TD-OPS-20",
+    "TD-OPS-22"
    ],
    "decisions": [
     "D-348",
@@ -9534,7 +9830,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 19
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -9549,7 +9845,7 @@
    "id": "T200",
    "slug": "help-page-get-help-form",
    "title": "ops and portals: the owner help page with its screened reply box, and the business Get help form",
-   "goal": "The owner help page lists open help requests with a 300-character reply box screened like a quote, and businesses send help through the portal's Get help form, which opens one request (BIZ-047, CON-034, OPS-036).",
+   "goal": "The owner help page lists open help requests with a 300-character reply box screened like a quote, and businesses send help through the portal's Get help form, which opens one request (BIZ-047, CON-034, OPS-036). The \"Get help\" link goes in the shared layout (`app/site/templates/base.html`) every portal page extends, and the site help page's owner-message form (`help.html`, WEB-008) is wired to the same help-request endpoint here (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -9560,7 +9856,8 @@
     "T082",
     "T030",
     "T151",
-    "T108"
+    "T108",
+    "T201"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -9575,7 +9872,9 @@
     "app/portals/templates/get_help.html",
     "tests/security/tests/owner_help_reply.rs",
     "app/portals/src/help.rs",
-    "tests/e2e/get_help.spec.ts"
+    "tests/e2e/get_help.spec.ts",
+    "app/site/templates/base.html",
+    "app/site/templates/help.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9599,7 +9898,8 @@
     "OPS-036"
    ],
    "tests": [
-    "TD-BIZ-23"
+    "TD-BIZ-23",
+    "TD-OPS-23"
    ],
    "decisions": [
     "D-348",
@@ -9609,9 +9909,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 300,
-    "context_pct": 19
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -9671,7 +9971,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -9686,7 +9986,7 @@
    "id": "T100",
    "slug": "cleanup-stage4",
    "title": "Stage 4 cleanup: dead code, duplicates, docs up to date",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: `cargo machete` (unused dependencies), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). `cargo machete` is not pinned; the dead-dependency check is `cargo udeps`-free: use `cargo tree` plus `scripts/check_crates.py`, and the duplicate-function scan is `scripts/check_duplicates.py` (owned here) (D-491).",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). The duplicate-function scan is `scripts/check_duplicates.py` (owned here) (D-491).",
    "type": "cleanup",
    "phase": 1,
    "stage": "4",
@@ -9756,7 +10056,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -9770,7 +10070,7 @@
    "id": "T101",
    "slug": "site-base",
    "title": "site: base layout in the design spec's look, works without JavaScript, help in one place",
-   "goal": "The site's base layout (shared template, stylesheet, routes) renders every page server-side without JavaScript in the design spec's plaster-and-brass look, with one `h1`, landmarks, a skip link, `lang` on page and passages, help in the same place on every page, and the introduction-fee line of WEB-026 on the how-it-works page (A11Y-003, A11Y-004, A11Y-017, WEB-001, WEB-026).",
+   "goal": "The site's base layout (the shared template T051 created, restyled here, plus the stylesheet and routes) renders every page server-side without JavaScript in the design spec's plaster-and-brass look, with one `h1`, landmarks, a skip link, `lang` on page and passages, help in the same place on every page, and the introduction-fee line of WEB-026 on the how-it-works page (A11Y-003, A11Y-004, A11Y-017, WEB-001, WEB-026).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -9788,7 +10088,6 @@
     "app/site/Cargo.toml",
     "app/site/src/lib.rs",
     "app/site/src/routes.rs",
-    "app/site/templates/base.html",
     "app/site/static/site.css",
     "app/site/static/site.ts",
     "tests/e2e/site_no_js.spec.ts"
@@ -9822,9 +10121,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 6,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -9838,7 +10137,7 @@
    "id": "T221",
    "slug": "site-legal-pages",
    "title": "site: the terms, privacy policy, SMS terms, homeowner data and business data pages",
-   "goal": "askhava.com serves /terms, /privacy, /sms-terms, /your-data and /business-data in English and Spanish from the drafted legal documents (`docs/legal/`, rendered through Askama from a build step that fails if a document is missing), each with the WORD-002 footer statement, the TERMS-021 and TERMS-023 items, and the consent text's links resolving (WEB-013, WEB-014, WEB-017).",
+   "goal": "askhava.com serves /terms, /privacy, /sms-terms, /your-data and /business-data in English from the drafted legal documents in `docs/legal/`, rendered at build time by `app/site/build.rs` with `pulldown-cmark` (allowed by D-491) into Askama pages, the build failing if a document is missing; the two data pages also exist in Spanish (TERMS-021, TERMS-023; the terms, privacy policy and SMS terms have no Spanish source yet); each page carries the WORD-002 footer statement, the data pages and the help-page link hold the AI-018 switched-off sentence while the AI switch is off, and the consent text's links resolve (WEB-014, TERMS-021, TERMS-023, AI-018). The Stage 0.5 static set is T116's (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -9858,7 +10157,8 @@
     "app/site/templates/business_data.html",
     "app/site/src/legal_pages.rs",
     "tests/e2e/legal_pages.spec.ts",
-    "tests/docs/test_legal_pages.py"
+    "tests/docs/test_legal_pages.py",
+    "app/site/build.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9867,27 +10167,27 @@
     "docs/spec/terms.md",
     "docs/spec/wording.md",
     "docs/brains/legal-terms-privacy.md",
-    "docs/brains/accessibility-forms.md"
+    "docs/brains/accessibility-forms.md",
+    "docs/spec/ai.md"
    ],
    "requirements": [
-    "WEB-013",
     "WEB-014",
-    "WEB-017",
     "TERMS-021",
-    "TERMS-023"
+    "TERMS-023",
+    "AI-018"
    ],
    "tests": [
     "TD-WEB-01",
-    "TD-WEB-02",
     "TD-PRIV-06",
-    "TD-PRIV-07"
+    "TD-PRIV-07",
+    "TD-TERMS-04"
    ],
    "decisions": [
     "D-491"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 350,
     "context_pct": 12
    },
@@ -9904,7 +10204,7 @@
    "id": "T102",
    "slug": "site-pages",
    "title": "site: home and how-it-works pages with the footer, tagline, launch offer and status banner",
-   "goal": "The home and how-it-works pages render without JavaScript in the design spec's look, with the not-a-contractor statement and the \"Homeowners\" footer column, the tagline \"Local quotes. Your choice.\", the launch-offer line, the hidden status banner, web chat always offered, the homeowner \"Who runs Ask Hava\" block and old directory URLs answered with an Ask Hava page (WEB-001, WEB-003 to WEB-005, WEB-007, WEB-009, WEB-012, WEB-022, WORD-002).",
+   "goal": "The home and how-it-works pages render without JavaScript in the design spec's look, with the not-a-contractor statement and the \"Homeowners\" footer column, the tagline \"Local quotes. Your choice.\", the launch-offer line, the hidden status banner, web chat always offered, the homeowner \"Who runs Ask Hava\" block and old directory URLs answered with an Ask Hava page (WEB-001, WEB-003 to WEB-005, WEB-007, WEB-009, WEB-012, WEB-022, WORD-002); the home-page numbers (WEB-028) are computed through `payments::api` and `ops::api` (site calls `intake`, `catalog`, `ops`, `payments` and `businesses`, D-491) and tested in `tests/integration/tests/home_numbers.rs` (TD-JOB-04).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -9922,7 +10222,8 @@
     "app/site/src/pages.rs",
     "app/site/templates/home.html",
     "app/site/templates/how_it_works.html",
-    "tests/e2e/site_pages.spec.ts"
+    "tests/e2e/site_pages.spec.ts",
+    "tests/integration/tests/home_numbers.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9969,7 +10270,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 300,
     "context_pct": 15
    },
@@ -9985,7 +10286,7 @@
    "id": "T201",
    "slug": "site-services-help-pages",
    "title": "site: services and help pages, the ROC complaint page and the request page's consent text",
-   "goal": "The services page opens each licensed trade with \"Get quotes from licensed <trade>.\" and the long statement; the help page answers \"Is Ask Hava a person?\" with the automated-texts line; askhava.com/help/roc-complaint links to the ROC; the request page shows the full consent text; and the \"What we cover now\" page lists the open and not-yet categories (WEB-008, WEB-011, WEB-014, WEB-015, WEB-023, WORD-009).",
+   "goal": "The services page opens each licensed trade with \"Get quotes from licensed <trade>.\" and the long statement; the help page answers \"Is Ask Hava a person?\" with the automated-texts line; askhava.com/help/roc-complaint links to the ROC; the request page shows the full consent text; and the \"What we cover now\" page lists the open and not-yet categories (WEB-008, WEB-011, WEB-015, WEB-023, WORD-009); the help page also holds the AI-018 switched-off sentence while the AI switch is off (AI-018), and its \"Send the Ask Hava owner a message\" form is wired to the help-request endpoint by T200 (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10015,20 +10316,23 @@
     "docs/design/DESIGN_SPEC.md",
     "docs/brains/accessibility-forms.md",
     "docs/brains/contractor-lead-experience.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/ai.md"
    ],
    "requirements": [
     "WEB-008",
     "WEB-011",
     "WEB-015",
     "WEB-023",
-    "WORD-009"
+    "WORD-009",
+    "AI-018"
    ],
    "tests": [
     "TD-WEB-01",
     "TD-WORD-02",
     "TD-WORD-03",
-    "TD-WEB-07"
+    "TD-WEB-07",
+    "TD-TERMS-04"
    ],
    "decisions": [
     "D-175",
@@ -10048,7 +10352,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -10081,7 +10385,9 @@
    "owns": [
     "app/site/src/pages.rs",
     "app/site/templates/es_home.html",
-    "tests/docs/test_required_lines.py"
+    "tests/docs/test_required_lines.py",
+    "app/site/templates/business.html",
+    "app/site/templates/es_business.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10109,8 +10415,7 @@
     "TD-WORD-02",
     "TD-WEB-03",
     "TD-WEB-04",
-    "TD-WEB-05",
-    "TD-TERMS-03"
+    "TD-WEB-05"
    ],
    "decisions": [
     "D-180",
@@ -10132,7 +10437,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 5,
     "lines": 250,
     "context_pct": 15
    },
@@ -10149,7 +10454,7 @@
    "id": "T103",
    "slug": "site-web-chat",
    "title": "site: web chat with the consent text first, starting the chat is the opt-in, a typed number verified by code first",
-   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected, and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021).",
+   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10169,7 +10474,8 @@
     "app/site/src/chat.rs",
     "app/site/templates/request.html",
     "tests/e2e/web_chat.spec.ts",
-    "app/intake/src/web_chat.rs"
+    "app/intake/src/web_chat.rs",
+    "app/intake/src/conversation.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10191,13 +10497,15 @@
     "INT-020",
     "INT-047",
     "AI-021",
-    "A11Y-035"
+    "A11Y-035",
+    "INT-043"
    ],
    "tests": [
     "TD-CON-10",
     "TD-INT-09",
     "TD-AI-10",
-    "TD-A11Y-02"
+    "TD-A11Y-02",
+    "TD-INT-30"
    ],
    "decisions": [
     "D-051",
@@ -10210,7 +10518,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 500,
     "context_pct": 15
    },
@@ -10227,7 +10535,7 @@
    "id": "T222",
    "slug": "journeys-full-variants",
    "title": "Journeys J1 and J2, the full variants: web chat, photos, question order, quote formats, share box, review links",
-   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence.",
+   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence; J1 and J2 also run with the launch channel set to web-and-email while the fake carrier records zero texts (TD-TXT-15, shared with J3 and J4 in T118 and T119, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10252,7 +10560,8 @@
    ],
    "owns": [
     "tests/e2e/j1_full.spec.ts",
-    "tests/e2e/j2_full.spec.ts"
+    "tests/e2e/j2_full.spec.ts",
+    "tests/a11y/j_full_keyboard.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10271,16 +10580,17 @@
    ],
    "tests": [
     "J1",
-    "J2"
+    "J2",
+    "TD-TXT-15"
    ],
    "decisions": [
     "D-491"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 3,
     "lines": 500,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -10438,7 +10748,7 @@
    "budget": {
     "files": 1,
     "lines": 200,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -10452,7 +10762,7 @@
    "id": "T105",
    "slug": "ops-alerts-safe-mode",
    "title": "ops: High and critical alerts, safe mode after 24 hours, pause checks",
-   "goal": "Casey is alerted on the delivery-rate, safety, dispute and coverage conditions, one delivery alert at a time with automatic acknowledgement at 97%; owner pause switches are checked by every action; and safe mode pauses only charges and releases when a pushed High alert is unacknowledged for 24 hours, each paused item going ahead after the FEE-017 check when it ends (OPS-001 to OPS-006, OPS-023 to OPS-025).",
+   "goal": "Casey is alerted on the delivery-rate, safety, dispute and coverage conditions, one delivery alert at a time with automatic acknowledgement at 97%; owner pause switches are checked by every action; and safe mode pauses only charges and releases when a pushed High alert is unacknowledged for 24 hours, each paused item going ahead after the FEE-017 check when it ends (OPS-001 to OPS-006, OPS-023 to OPS-025). `ops` reads nothing above it: `messaging` reports delivery counts by calling `ops::api::record_delivery_counts` and `businesses` its active-business counts by `ops::api::record_business_counts`, both added here to `ops`' `api.rs`; the email-limit push itself is T204's (TD-OPS-13, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10472,7 +10782,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0165_ops_alerts_safe_mode.sql",
+    "migrations/0167_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/ops/src/tests/prop_pause_checked.rs",
     "app/payments/src/safe_mode_check.rs",
@@ -10502,8 +10812,7 @@
    "tests": [
     "TD-OPS-01",
     "TD-OPS-06",
-    "TD-FEE-20",
-    "TD-OPS-13"
+    "TD-FEE-20"
    ],
    "decisions": [
     "D-075",
@@ -10525,7 +10834,7 @@
    "budget": {
     "files": 8,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -10540,7 +10849,7 @@
    "id": "T204",
    "slug": "ops-pushes-digest-security-alerts",
    "title": "ops: phone pushes by alert email, the weekly digest, owner flags, the away setting and security-event alerts",
-   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses and HELP replies are told; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491).",
+   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses and HELP replies are told; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10560,7 +10869,8 @@
     "app/ops/src/alerts.rs",
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
-    "app/portals/src/digest_flags.rs"
+    "app/portals/src/digest_flags.rs",
+    "migrations/0168_ops_owner_digest.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10589,7 +10899,8 @@
     "TD-OPS-08",
     "TD-OPS-09",
     "TD-OPS-10",
-    "TD-SEC-26"
+    "TD-SEC-26",
+    "TD-OPS-13"
    ],
    "decisions": [
     "D-189",
@@ -10619,9 +10930,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -10636,7 +10947,7 @@
    "id": "T106",
    "slug": "ops-health",
    "title": "ops: /healthz, health page figures, weekly spot-check",
-   "goal": "The app answers `/healthz` for the uptime monitor, the owner portal shows the OPS-008 health figures, and it offers the monthly spot-check of 10 random job cards (OPS-007 to OPS-009). The `/healthz` probe stays in `ops` (process and database only); the health page with its figures is a portals page reading each module's `api` (the last-backup figure reads `recovery::api` and waits for T109, so T106 shows it as 'not yet recorded' until then).",
+   "goal": "The app answers `/healthz` for the uptime monitor, the owner portal shows the OPS-008 health figures, and it offers the monthly spot-check of 10 random job cards (OPS-007 to OPS-009). The `/healthz` probe is `app/server/src/healthz.rs` (the server binary checks the process, the database and the worker heartbeat; `ops` holds no route, D-491); the health page with its figures is a portals page reading each module's `api` (the last-backup figure reads `recovery::api` and waits for T109, so T106 shows it as 'not yet recorded' until then).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10653,7 +10964,8 @@
    "owns": [
     "app/portals/src/health_page.rs",
     "tests/integration/tests/health.rs",
-    "app/portals/templates/health.html"
+    "app/portals/templates/health.html",
+    "app/server/src/healthz.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10680,7 +10992,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 300,
     "context_pct": 13
    },
@@ -10739,7 +11051,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -10754,7 +11066,7 @@
    "id": "T108",
    "slug": "owner-portal-tools",
    "title": "portals: owner tools for pauses, fee mode, categories and settings",
-   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043).",
+   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Ask Hava number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), and records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) that T209 reads (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10786,14 +11098,17 @@
     "docs/design/DESIGN_SPEC.md",
     "docs/brains/accessibility-forms.md",
     "docs/brains/payments-stripe.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/consent.md"
    ],
    "requirements": [
     "FEE-007",
     "LIC-002",
     "OPS-003",
     "OPS-035",
-    "SEC-043"
+    "SEC-043",
+    "OPS-028",
+    "CON-024"
    ],
    "tests": [
     "TD-SEC-22",
@@ -10810,7 +11125,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -10875,7 +11190,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -10911,7 +11226,7 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0173_recovery_backup_export.sql",
+    "migrations/0175_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs"
    ],
    "reads": [
@@ -10932,8 +11247,9 @@
    "tests": [
     "TD-PRIV-09",
     "TD-OPS-19",
-    "TD-PRIV-05",
-    "TD-JOB-06"
+    "TD-JOB-06",
+    "TD-PRIV-14",
+    "TD-OPS-22"
    ],
    "decisions": [
     "D-094",
@@ -10944,7 +11260,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -10976,7 +11292,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0174_recovery_replay.sql",
+    "migrations/0176_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs"
    ],
    "reads": [
@@ -11002,7 +11318,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -11059,7 +11375,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -11073,7 +11389,7 @@
    "id": "T111",
    "slug": "terms-homeowner-business",
    "title": "Draft homeowner and business terms with every required clause",
-   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-021, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030).",
+   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -11091,7 +11407,8 @@
    "owns": [
     "docs/legal/homeowner-terms.md",
     "docs/legal/business-terms.md",
-    "tests/docs/test_terms_clauses.py"
+    "tests/docs/test_terms_clauses.py",
+    "docs/legal/business-terms-summary-es.md"
    ],
    "reads": [
     "docs/spec/terms.md",
@@ -11131,11 +11448,11 @@
    ],
    "tests": [
     "TD-TERMS-01",
-    "TD-WEB-03",
     "TD-TERMS-05",
     "TD-TERMS-06",
     "TD-BIZ-33",
-    "TD-CON-22"
+    "TD-CON-22",
+    "TD-TERMS-03"
    ],
    "decisions": [
     "D-047",
@@ -11165,9 +11482,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 650,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -11181,7 +11498,7 @@
    "id": "T112",
    "slug": "privacy-sms-docs",
    "title": "Draft the privacy policy and SMS terms",
-   "goal": "`docs/legal/` holds the privacy policy and SMS terms drafts (what is collected and shared, the mobile-information line, 5-year consent records, the homeowner data page, the AI wording of AI-018, the one honest description of Ask Hava, and no claim that numbers are shared or sold), and a docs test finds each required line (TERMS-002 to TERMS-004, TERMS-006 to TERMS-015, TERMS-018, TERMS-020, TERMS-023, TERMS-025, TERMS-027, WORD-018, WORD-023, AI-018, PRIV-027).",
+   "goal": "`docs/legal/` holds the privacy policy and SMS terms drafts (what is collected and shared, the mobile-information line, 5-year consent records, the AI wording of AI-018, the one honest description of Ask Hava, and no claim that numbers are shared or sold), and a docs test finds each required line (TERMS-002 to TERMS-004, TERMS-006 to TERMS-015, TERMS-018, TERMS-020, TERMS-025, TERMS-027, WORD-018, WORD-023, AI-018, PRIV-027).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -11511,7 +11828,9 @@
    ],
    "requirements": [
     "WEB-016",
-    "OPS-045"
+    "OPS-045",
+    "WEB-013",
+    "WEB-017"
    ],
    "tests": [
     "TD-WEB-02",
@@ -11526,7 +11845,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -11635,14 +11954,15 @@
     "A11Y-021"
    ],
    "tests": [
-    "J3"
+    "J3",
+    "TD-TXT-15"
    ],
    "decisions": [],
    "cites": [],
    "budget": {
     "files": 2,
     "lines": 550,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -11687,14 +12007,15 @@
     "A11Y-021"
    ],
    "tests": [
-    "J4"
+    "J4",
+    "TD-TXT-15"
    ],
    "decisions": [],
    "cites": [],
    "budget": {
     "files": 2,
     "lines": 550,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -11859,7 +12180,9 @@
     "docs/brains/sms-compliance.md",
     "docs/spec/terms.md",
     "docs/spec/security.md",
-    "docs/brains/deploy-operations.md"
+    "docs/brains/deploy-operations.md",
+    "docs/spec/consent.md",
+    "docs/spec/messaging.md"
    ],
    "requirements": [
     "PRIV-024",
@@ -11867,14 +12190,16 @@
     "OPS-043",
     "TERMS-032",
     "SEC-050",
-    "OPS-044"
+    "OPS-044",
+    "CON-032"
    ],
    "tests": [
     "TD-PRIV-09",
     "TD-OPS-20",
     "TD-WEB-12",
     "TD-SEC-27",
-    "TD-OPS-21"
+    "TD-OPS-21",
+    "TD-TXT-28"
    ],
    "decisions": [
     "D-067",
@@ -11913,7 +12238,13 @@
    "stage": "5",
    "module": null,
    "deps": [
-    "T122"
+    "T122",
+    "T158",
+    "T210",
+    "T161",
+    "T166",
+    "T216",
+    "T218"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -11968,7 +12299,10 @@
     "T203",
     "T158",
     "T210",
-    "T161"
+    "T161",
+    "T166",
+    "T216",
+    "T218"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -12011,7 +12345,7 @@
    "id": "T126",
    "slug": "cleanup-stage5",
    "title": "Stage 5 cleanup: dead code, duplicates, docs up to date (end of Phase 1)",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: `cargo machete` (unused dependencies), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479).",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479).",
    "type": "cleanup",
    "phase": 1,
    "stage": "5",
@@ -12081,7 +12415,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -12195,7 +12529,7 @@
     "stand_ins/twilio.py",
     "app/adapters/src/sms.rs",
     "app/adapters/src/verify.rs",
-    "tests/contract/sandbox_t129.py",
+    "tests/contract/test_sandbox_t129.py",
     "tests/contract/conftest.py"
    ],
    "reads": [
@@ -12228,7 +12562,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -12303,7 +12637,7 @@
     "app/adapters/src/twilio_verify.rs",
     "stand_ins/twilio.py",
     "app/adapters/src/voice.rs",
-    "tests/contract/sandbox_t131.py"
+    "tests/contract/test_sandbox_t131.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12332,7 +12666,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -12366,7 +12700,7 @@
     "app/adapters/src/stripe_real.rs",
     "stand_ins/stripe.py",
     "app/adapters/src/payments.rs",
-    "tests/contract/sandbox_t132.py"
+    "tests/contract/test_sandbox_t132.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12404,7 +12738,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -12438,7 +12772,8 @@
     "app/adapters/src/lob_real.rs",
     "stand_ins/resend.py",
     "app/adapters/src/email.rs",
-    "tests/contract/sandbox_t133.py"
+    "tests/contract/test_sandbox_t133.py",
+    "stand_ins/lob.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12479,9 +12814,9 @@
     "BUILD_BRIEF.md:191"
    ],
    "budget": {
-    "files": 5,
+    "files": 6,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -12516,7 +12851,7 @@
     "app/adapters/src/storage_real.rs",
     "stand_ins/server.py",
     "app/adapters/src/storage.rs",
-    "tests/contract/sandbox_t134.py"
+    "tests/contract/test_sandbox_t134.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12656,7 +12991,7 @@
    "budget": {
     "files": 1,
     "lines": 100,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -12664,7 +12999,8 @@
     "Ally"
    ],
    "branch": "claude/task/T136-e2e-test-site",
-   "prompt": "kit/prompts/T136.md"
+   "prompt": "kit/prompts/T136.md",
+   "acceptance": "`docs/phase2/e2e-test-site.md` records, for each of J1 to J3, the test-site variant that was run: the release binary has no test-control router, so no clock is advanced (timers shortened only through settings), delivered messages and charges are read from the vendors' sandbox records (their IDs recorded), and steps that need the stand-ins are marked as covered by the `Ci` run instead; J4 is recorded from its stand-in run; every failure is fixed or filed (D-491)."
   },
   {
    "id": "T137",
@@ -12868,7 +13204,7 @@
     "SEC-022"
    ],
    "tests": [
-    "TD-SEC-06"
+    "TD-SEC-28"
    ],
    "decisions": [
     "D-473"
@@ -12880,7 +13216,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -13002,7 +13338,7 @@
    "id": "T142",
    "slug": "cleanup-stage6",
    "title": "Stage 6 cleanup: dead code, duplicates, docs up to date (end of Phase 2)",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: `cargo machete` (unused dependencies), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479).",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479).",
    "type": "cleanup",
    "phase": 2,
    "stage": "6",
@@ -13021,8 +13357,7 @@
     "T140",
     "T141",
     "T216",
-    "T171",
-    "T211"
+    "T171"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13052,7 +13387,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -13277,7 +13612,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 17
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -13352,7 +13687,8 @@
    "module": "businesses",
    "deps": [
     "T193",
-    "T153"
+    "T153",
+    "T199"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -13368,7 +13704,9 @@
     "tests/integration/tests/capability_setup.rs",
     "app/portals/src/capability_setup.rs",
     "app/quotes/src/capability_match.rs",
-    "migrations/0145_businesses_capability.sql"
+    "migrations/0146_businesses_capability.sql",
+    "app/businesses/src/signup.rs",
+    "app/portals/templates/business_signup.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13397,9 +13735,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 8,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -13461,7 +13799,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -13533,7 +13871,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 17
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -13588,8 +13926,7 @@
    ],
    "tests": [
     "TD-INT-23",
-    "TD-TXT-23",
-    "TD-CARD-11"
+    "TD-TXT-23"
    ],
    "decisions": [
     "D-394",
@@ -13620,7 +13957,7 @@
    "id": "T157",
    "slug": "picks-backup-autoconfirm",
    "title": "picks: the homeowner's backup choice at the pick",
-   "goal": "At the pick the homeowner may choose a backup quote, offered automatically if the first business lapses or can't take it, and a lapse with no backup sends her the other quotes (PICK-046, PICK-047).",
+   "goal": "At the pick the homeowner may choose a backup quote, offered automatically if the first business lapses or can't take it, and a lapse with no backup sends her the other quotes (PICK-046, PICK-047); the backup selector sits on the quote page's pick review step (`pick_review.html`, `pick_flow.rs`), which this task extends (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -13640,7 +13977,9 @@
    "owns": [
     "app/picks/src/backup_choice.rs",
     "tests/integration/tests/backup_choice.rs",
-    "migrations/0147_picks_backup_choice.sql"
+    "migrations/0149_picks_backup_choice.sql",
+    "app/portals/templates/pick_review.html",
+    "app/portals/src/pick_flow.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13666,9 +14005,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 5,
     "lines": 300,
-    "context_pct": 17
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -13683,7 +14022,7 @@
    "id": "T209",
    "slug": "picks-auto-confirm",
    "title": "picks and payments: the optional auto-confirm-and-pay box with one off-session charge",
-   "goal": "A business may tick auto-confirm-and-pay on a quote, after a fresh Verify code, only while Stripe's written answer is filed; a portal pick then makes one off-session charge and any failure falls back to the normal Confirm step; a text pick never auto-charges; and no other code path charges off-session (PICK-048, PICK-056, FEE-014, SEC-038).",
+   "goal": "A business may tick auto-confirm-and-pay on a quote, after a fresh Verify code, only while Stripe's written answer is filed; a portal pick then makes one off-session charge and any failure falls back to the normal Confirm step; a text pick never auto-charges; and no other code path charges off-session (PICK-048, PICK-056, FEE-014, SEC-038). The box is on the quote form (`business_actions.html`); its tick is stored with the quote by `app/quotes/src/auto_confirm_box.rs` in the `quotes` schema and read by `picks` through `quotes::api`; Stripe's written answer is a settings record the owner portal's settings page (T108) files later, so the tests insert it directly (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -13706,7 +14045,9 @@
     "tests/integration/tests/auto_confirm.rs",
     "app/picks/src/tests/prop_no_other_off_session_charge.rs",
     "app/payments/src/off_session.rs",
-    "migrations/0148_quotes_auto_confirm.sql"
+    "migrations/0150_quotes_auto_confirm.sql",
+    "app/portals/templates/business_actions.html",
+    "app/quotes/src/auto_confirm_box.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13736,7 +14077,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 450,
     "context_pct": 18
    },
@@ -13753,7 +14094,7 @@
    "id": "T158",
    "slug": "owner-scorecard-money",
    "title": "ops: the owner's pilot scorecard page with go and stop lines, and the masked-call answered share",
-   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024).",
+   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page (`job_page.rs`), extended here (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13776,7 +14117,8 @@
     "tests/integration/tests/scorecard.rs",
     "tests/e2e/scorecard.spec.ts",
     "app/portals/templates/not_a_fit.html",
-    "app/portals/src/not_a_fit.rs"
+    "app/portals/src/not_a_fit.rs",
+    "app/quotes/src/job_page.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13811,7 +14153,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 400,
     "context_pct": 14
    },
@@ -13852,7 +14194,7 @@
     "tests/integration/tests/intake_report.rs",
     "app/payments/src/tests/money_view.rs",
     "app/portals/templates/money_view.html",
-    "migrations/0190_payments_expenses.sql"
+    "migrations/0191_payments_expenses.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13935,7 +14277,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -13946,130 +14288,10 @@
    "prompt": "kit/prompts/T159.md"
   },
   {
-   "id": "T160",
-   "slug": "business-push-app",
-   "title": "portals: the installable business web app (manifest, service worker after Turn on job alerts)",
-   "goal": "The business portal can be installed from a manifest, and its same-origin service worker registers only after the person taps \"Turn on job alerts\"; push subscriptions are stored per person and removed with them (BIZ-041). Phase 2 work (BIZ-041 as reworded by D-491): built after the account checkpoint, in stage 6, never in Phase 1.",
-   "type": "build",
-   "phase": 2,
-   "stage": "6",
-   "module": "portals",
-   "deps": [
-    "T129"
-   ],
-   "model": "claude-opus-5-5",
-   "effort": "high",
-   "reviewer_model": "claude-opus-5-5",
-   "review_areas": [
-    "security",
-    "privacy",
-    "accessibility"
-   ],
-   "owns": [
-    "app/portals/static/manifest.webmanifest",
-    "app/portals/static/sw.ts",
-    "app/portals/templates/job_alerts.html",
-    "tests/security/tests/push_subscriptions.rs"
-   ],
-   "reads": [
-    "docs/architecture.md",
-    "docs/code-docs.md",
-    "docs/spec/businesses.md",
-    "docs/spec/security.md",
-    "docs/spec/accessibility.md",
-    "docs/threat-model.md",
-    "docs/design/DESIGN_SPEC.md",
-    "docs/brains/accessibility-forms.md",
-    "docs/brains/payments-stripe.md",
-    "docs/brains/rust-production.md"
-   ],
-   "requirements": [
-    "BIZ-041"
-   ],
-   "tests": [
-    "TD-BIZ-31"
-   ],
-   "decisions": [
-    "D-401"
-   ],
-   "cites": [],
-   "budget": {
-    "files": 4,
-    "lines": 350,
-    "context_pct": 18
-   },
-   "checks": [
-    "Ci",
-    "Twin",
-    "Ally"
-   ],
-   "branch": "claude/task/T160-business-push-app",
-   "prompt": "kit/prompts/T160.md"
-  },
-  {
-   "id": "T211",
-   "slug": "portals-push-alerts",
-   "title": "portals: push job alerts through allowlisted push services with email as the fallback",
-   "goal": "Job alerts go by web push only to allowlisted push services, signed with the VAPID key held as a secret, carrying no homeowner details, and email stays the channel of record when a push fails (BIZ-041). Phase 2 work (BIZ-041 as reworded by D-491): built after the account checkpoint, in stage 6, never in Phase 1.",
-   "type": "build",
-   "phase": 2,
-   "stage": "6",
-   "module": "portals",
-   "deps": [
-    "T160"
-   ],
-   "model": "claude-opus-5-5",
-   "effort": "high",
-   "reviewer_model": "claude-opus-5-5",
-   "review_areas": [
-    "security",
-    "privacy",
-    "accessibility"
-   ],
-   "owns": [
-    "app/portals/src/push.rs",
-    "tests/integration/tests/push_alerts.rs"
-   ],
-   "reads": [
-    "docs/architecture.md",
-    "docs/code-docs.md",
-    "docs/spec/businesses.md",
-    "docs/spec/security.md",
-    "docs/spec/accessibility.md",
-    "docs/threat-model.md",
-    "docs/design/DESIGN_SPEC.md",
-    "docs/brains/accessibility-forms.md",
-    "docs/brains/payments-stripe.md",
-    "docs/brains/rust-production.md"
-   ],
-   "requirements": [
-    "BIZ-041"
-   ],
-   "tests": [
-    "TD-BIZ-31"
-   ],
-   "decisions": [
-    "D-401"
-   ],
-   "cites": [],
-   "budget": {
-    "files": 2,
-    "lines": 350,
-    "context_pct": 18
-   },
-   "checks": [
-    "Ci",
-    "Twin",
-    "Ally"
-   ],
-   "branch": "claude/task/T211-portals-push-alerts",
-   "prompt": "kit/prompts/T211.md"
-  },
-  {
    "id": "T161",
    "slug": "wording-voice-scan",
    "title": "wording: the WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience, and the CON-031 consent texts and \"Who runs Ask Hava\" record links checked against the spec",
-   "goal": "wording: the WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience, and the CON-031 consent texts and \"Who runs Ask Hava\" record links checked against the spec It also wires the copy panel (WORD-029, D-474): the template test checks every customer template, and the template test checks each page's blocks against `docs/copy/site-copy.md`.",
+   "goal": "The WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience and the CON-031 consent-text check against the spec run as docs tests; the \"Who runs Ask Hava\" record links are checked by rendering both blocks with their settings set and unset (`tests/e2e/who_runs_links.spec.ts`, TD-WEB-10); and the copy panel is wired (WORD-029, D-474): `tests/docs/test_ai_smell_app.py` checks every customer template and `tests/docs/test_site_copy_blocks.py` checks each page's blocks against `docs/copy/site-copy.md` (WORD-024, WORD-025, WORD-027 to WORD-029, CON-004, CON-031, WEB-021, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14088,9 +14310,10 @@
     "tests/docs/test_voice_rules.py",
     "tests/docs/test_request_job_numbering.py",
     "tests/docs/test_consent_segments.py",
-    "tests/docs/test_who_runs_links.py",
+    "tests/e2e/who_runs_links.spec.ts",
     "tests/docs/test_ai_smell_app.py",
-    "docs/ai_smell.yaml"
+    "docs/ai_smell.yaml",
+    "tests/docs/test_site_copy_blocks.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14134,9 +14357,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 500,
-    "context_pct": 17
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -14150,7 +14373,7 @@
    "id": "T162",
    "slug": "intake-photos-design",
    "title": "intake: the one intake order for the five paths and the Spanish 'we continue in English' line",
-   "goal": "Every intake path (text, web chat, emergency, design and the business-intent reply) follows the INT-043 order, and a Spanish homeowner with Spanish conversations off gets the \"we continue in English\" line (INT-043, TXT-041).",
+   "goal": "Every intake path in INT-043's \"Intake order\" table (regular, urgent, 911 list, night and web chat) follows the INT-043 order, with a golden test per text path here and the web-chat golden test in T103 (TD-INT-30, which runs later, D-491), and a Spanish homeowner with Spanish conversations off gets the \"we continue in English\" line (INT-043, TXT-041).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -14178,7 +14401,6 @@
     "docs/spec/privacy.md",
     "docs/spec/messaging.md",
     "docs/catalog/question_bank.yaml",
-    "docs/catalog/categories.yaml",
     "docs/spec/security.md",
     "docs/brains/accessibility-forms.md",
     "docs/brains/rust-production.md",
@@ -14202,7 +14424,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -14216,7 +14438,7 @@
    "id": "T212",
    "slug": "intake-photo-asks-preview",
    "title": "intake: photo asks with on-server checks and preview, inspiration pictures and the labeled concept image",
-   "goal": "Intake asks for the job type's photos after the trade questions, fetches picture texts from allowed hosts only, strips metadata and checks each photo on Ask Hava's own server, shows the homeowner each one before the card goes, and for design categories takes inspiration pictures and offers a labeled concept image only while its switch is on (INT-044 to INT-046, SEC-041). Picture-link fetching and the concept-image call live in `privacy` (which calls `adapters`); the upload page is a portals page (D-491).",
+   "goal": "Intake asks for the job type's photos after the trade questions, fetches picture texts from allowed hosts only, strips metadata and checks each photo on Ask Hava's own server, shows the homeowner each one before the card goes, and for design categories takes inspiration pictures and offers a labeled concept image only while its switch is on (INT-044 to INT-046, SEC-041). Picture-link fetching and the concept-image call live in `privacy` (which calls `adapters`); the upload page is a portals page; the photo and concept-image slots on the business job page (`job_page.rs`) are filled here (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -14241,7 +14463,8 @@
     "tests/integration/tests/design_intake.rs",
     "app/privacy/src/media_fetch.rs",
     "app/portals/templates/photo_upload.html",
-    "app/portals/src/photo_upload.rs"
+    "app/portals/src/photo_upload.rs",
+    "app/quotes/src/job_page.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14277,9 +14500,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 8,
     "lines": 500,
-    "context_pct": 17
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -14422,7 +14645,7 @@
    "id": "T164",
    "slug": "quotes-uniform-notes",
    "title": "quotes: one quote format per category, screened notes, and edit or withdraw before a pick",
-   "goal": "Every quote uses its category's `quote_format`; a quote's 300-character note goes back with the reason when it holds a contact detail or an off-platform phrase; and before any pick a business may edit (re-checked, shown as updated) or withdraw its quote (PICK-051 to PICK-053).",
+   "goal": "Every quote uses its category's `quote_format`; a quote's 300-character note goes back with the reason when it holds a contact detail or an off-platform phrase; and before any pick a business may edit (re-checked, shown as updated) or withdraw its quote (PICK-051 to PICK-053); the edit and withdraw controls go on the business job page (`job_page.rs`) and the format choice on the quote form (`business_actions.html`), both extended here (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -14430,7 +14653,8 @@
    "deps": [
     "T209",
     "T190",
-    "T186"
+    "T186",
+    "T212"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14438,7 +14662,8 @@
    "review_areas": [
     "compliance",
     "privacy",
-    "money"
+    "money",
+    "security"
    ],
    "owns": [
     "app/quotes/src/formats.rs",
@@ -14446,7 +14671,9 @@
     "app/quotes/src/edit_withdraw.rs",
     "tests/integration/tests/quote_formats.rs",
     "tests/integration/tests/quote_notes.rs",
-    "migrations/0151_quotes_formats.sql"
+    "migrations/0153_quotes_formats.sql",
+    "app/quotes/src/job_page.rs",
+    "app/portals/templates/business_actions.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14476,9 +14703,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 8,
     "lines": 450,
-    "context_pct": 15
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -14493,7 +14720,7 @@
    "id": "T214",
    "slug": "picks-share-box-cant-take",
    "title": "picks: the homeowner's share box at the pick, the 'Can't take it' link and the introduction-fee wording scan",
-   "goal": "The pick review step shows the required, pre-ticked share box and logs its tick; the pick notice and Confirm step carry a \"Can't take it\" link that ends the pick at once with no fee; and a docs test fails on business copy that calls the fee anything but an introduction fee (PICK-049, PICK-050, WORD-026).",
+   "goal": "The pick review step shows the required, pre-ticked share box and logs its tick; the pick notice and Confirm step carry a \"Can't take it\" link that ends the pick at once with no fee; and a docs test fails on business copy that calls the fee anything but an introduction fee (PICK-049, PICK-050, WORD-026); the share box goes on the pick review step (`pick_review.html`, `pick_flow.rs`) and the \"Can't take it\" link on the business action page (`business_actions.html`), both extended here (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -14502,7 +14729,9 @@
     "T209",
     "T190",
     "T186",
-    "T164"
+    "T164",
+    "T157",
+    "T148"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14510,14 +14739,18 @@
    "review_areas": [
     "compliance",
     "privacy",
-    "money"
+    "money",
+    "security"
    ],
    "owns": [
     "app/picks/src/share_consent.rs",
     "app/picks/src/cant_take.rs",
     "tests/integration/tests/share_and_cant_take.rs",
     "tests/docs/test_introduction_fee_wording.py",
-    "migrations/0152_picks_share_box.sql"
+    "migrations/0154_picks_share_box.sql",
+    "app/portals/templates/pick_review.html",
+    "app/portals/src/pick_flow.rs",
+    "app/portals/templates/business_actions.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14546,7 +14779,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 8,
     "lines": 350,
     "context_pct": 16
    },
@@ -14563,7 +14796,7 @@
    "id": "T165",
    "slug": "businesses-links-leaving",
    "title": "businesses: Google and Yelp links and license numbers at sign-up and on quotes, and leaving Ask Hava",
-   "goal": "Sign-up saves the business's Google and Yelp links (fetched only through the SSRF guard) and license numbers for its quote cards, and a business leaving Ask Hava is asked the BIZ-054 reason and its data handled as the requirement says (BIZ-051, BIZ-052, BIZ-054, SEC-041).",
+   "goal": "Sign-up saves the business's Google and Yelp links (fetched only through the SSRF guard) and license numbers for its quote cards, and a business leaving Ask Hava is asked the BIZ-054 reason and its data handled as the requirement says (BIZ-051, BIZ-052, BIZ-054, SEC-041); it fills the review-link slot T186 left on every quote card (`quote_card.rs`, PICK-041) (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -14589,7 +14822,8 @@
     "app/quotes/src/business_left.rs",
     "app/picks/src/business_left.rs",
     "app/portals/src/business_left.rs",
-    "migrations/0153_businesses_links_leave.sql"
+    "migrations/0155_businesses_links_leave.sql",
+    "app/quotes/src/quote_card.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14622,9 +14856,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 9,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -14672,7 +14906,8 @@
     "docs/spec/security.md",
     "docs/brains/contractor-lead-experience.md",
     "docs/brains/email-deliverability.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/website.md"
    ],
    "requirements": [
     "LIC-048",
@@ -14681,7 +14916,8 @@
    "tests": [
     "TD-BIZ-32",
     "TD-OPS-18",
-    "TD-INT-07"
+    "TD-INT-07",
+    "TD-LIC-22"
    ],
    "decisions": [
     "D-435",
@@ -14694,7 +14930,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -14708,8 +14944,8 @@
   {
    "id": "T166",
    "slug": "site-design-assets",
-   "title": "site: self-hosted fonts, the home-page numbers and the design-token contrast test",
-   "goal": "The site serves its fonts from `app/site/static/fonts/` (no font host), the home-page numbers are T102's (WEB-028), and a Playwright test checks every color pair against the design spec's contrast values (WEB-027, WEB-028).",
+   "title": "site: self-hosted fonts and the design-token contrast test",
+   "goal": "The site serves its fonts from `app/site/static/fonts/` (no font host), and a Playwright test checks every color pair against the design spec's contrast values (WEB-027, A11Y-028); the home-page numbers are T102's (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14760,7 +14996,7 @@
    "budget": {
     "files": 8,
     "lines": 200,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -14774,7 +15010,7 @@
    "id": "T216",
    "slug": "site-textures",
    "title": "site: the plaster, brass and paper textures",
-   "goal": "The plaster, brass bar, brass plate and paper textures from `docs/design/textures/` are served from `app/site/static/textures/` with no metadata, and T166's stylesheet references them (WEB-027).",
+   "goal": "The plaster, brass bar, brass plate and paper textures from `docs/design/textures/` are served from `app/site/static/textures/` with no metadata, and the stylesheet (`site.css`, which this task edits after T166) references them (WEB-027).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14793,7 +15029,8 @@
     "app/site/static/textures/plaster@2x.jpg",
     "app/site/static/textures/brass-bar@2x.jpg",
     "app/site/static/textures/brass-plate@2x.jpg",
-    "app/site/static/textures/paper@2x.jpg"
+    "app/site/static/textures/paper@2x.jpg",
+    "app/site/static/site.css"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14813,7 +15050,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 100,
     "context_pct": 13
    },
@@ -14824,7 +15061,7 @@
    ],
    "branch": "claude/task/T216-site-textures",
    "prompt": "kit/prompts/T216.md",
-   "acceptance": "The four texture files are under 400 KB each, strip EXIF (the PII scanner passes), and T166's stylesheet references them by the design spec's token names; a page rendered with them passes the TD-WEB-11 contrast cases T166 owns."
+   "acceptance": "The four texture files are under 400 KB each, strip EXIF (the PII scanner passes), and `site.css` references them by the design spec's token names; a page rendered with them passes the TD-WEB-11 contrast cases T166 owns."
   },
   {
    "id": "T167",
@@ -14936,7 +15173,7 @@
    "budget": {
     "files": 4,
     "lines": 200,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -14999,7 +15236,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
