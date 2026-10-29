@@ -1,0 +1,12 @@
+/home/claude/spike/target/debug/deps/askama_parser-28f28c6bfd75bc9f.d: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/ascii_str.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/expr.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/node.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/target.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/../README.md
+
+/home/claude/spike/target/debug/deps/libaskama_parser-28f28c6bfd75bc9f.rlib: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/ascii_str.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/expr.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/node.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/target.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/../README.md
+
+/home/claude/spike/target/debug/deps/libaskama_parser-28f28c6bfd75bc9f.rmeta: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/ascii_str.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/expr.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/node.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/target.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/../README.md
+
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/lib.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/ascii_str.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/expr.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/node.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/target.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/askama_parser-0.16.1/src/../README.md:

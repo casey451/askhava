@@ -1,0 +1,23 @@
+[workspace]
+resolver = "3"
+members = ["app/core", "tests/integration"]
+
+[workspace.package]
+edition = "2024"
+license = "UNLICENSED"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+
+[workspace.lints.clippy]
+missing_errors_doc = "warn"
+missing_panics_doc = "warn"
+
+[workspace.dependencies]
+axum = { version = "=0.8.9", features = ["multipart"] }
+tokio = { version = "=1.53.3", features = ["macros", "rt-multi-thread"] }
+askama = "=0.16.1"
+serde = { version = "=1.0.229", features = ["derive"] }
+sqlx = { version = "=0.9.0", default-features = false, features = ["postgres", "runtime-tokio", "tls-rustls", "macros", "migrate", "uuid", "json"] }
