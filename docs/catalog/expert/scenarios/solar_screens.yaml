@@ -1,0 +1,458 @@
+category: solar_screens
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: solar_screens_s01
+    kind: vague
+    persona: "Man in his 30s, works from home, texts one short line at a time, no punctuation"
+    opening_message: "house is an oven in the afternoon, need something for the windows"
+    photo: "none at first; if asked, one photo of the back of a two-story stucco house with windows along the whole upper and lower floor, afternoon sun on the wall"
+    hidden_facts:
+      - "the hot rooms are on the west side: living room, kitchen nook and one upstairs bedroom, about 7 windows on that wall"
+      - "he does not know whether he wants solar screens or film, only that he wants the sun blocked from outside if possible"
+      - "two of the 7 windows are upstairs, about 15 feet off the ground"
+      - "two of the windows are large sliding windows, the others are smaller"
+      - "house is stucco, built about 1999, aluminum frames"
+      - "the windows already have thin bug screens in the frames"
+      - "he wants it done before the end of the summer heat but it is not an emergency"
+      - "the AC runs all day and keeps up, it just runs a lot"
+    homeowner_behavior: "answers one thing per reply; never volunteers; says 'idk' to product words; gets short after 5 questions"
+    traps:
+      - "hidden: west wall in July, which is the whole reason for the request; only said if asked which side or which rooms"
+      - "hidden: two upstairs windows 15 feet up, only said if asked about stories or height"
+      - "hidden: existing bug screens in the frames, which a screen installer needs to know about when mounting"
+      - "the AI must not pick screens vs film for him; the card says he wants the sun blocked and has not chosen"
+    expected:
+      category: solar_screens
+      job_type: screens
+      bank_job_type: "solar screens"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["blocking afternoon sun on the west wall", "about 7 windows, 2 upstairs about 15 feet up", "2 large sliding windows", "stucco, aluminum frames, built about 1999", "existing bug screens in the frames", "undecided between solar screens and film, wants exterior if possible"]
+      must_not_be_on_card: ["any price", "which product is better", "energy savings claim", "any advice"]
+      max_questions: 6
+      notes: "Almost nothing in the first text. A good flow finds the product (or that he has not chosen), the count, stories, and which wall without making it an interrogation. The west wall and the upstairs windows are the facts a top estimator needs and he will not offer them."
+
+  - id: solar_screens_s02
+    kind: wrong_terminology
+    persona: "Woman in her 50s, texts in long run-on messages, mixes up product names"
+    opening_message: "hi my neighbor just got those sun shade mesh things put on the outside of all her windows and i want them too, not the tint stuff and not blinds, the black net kind that you can still see out of. we have a lot of windows on the sunny side and a big patio door"
+    photo: "photo of the neighbor's house showing dark mesh panels in frames on the outside of the windows; her own house is not in the photo"
+    hidden_facts:
+      - "she wants exterior solar screens, which she calls sun shade mesh and net"
+      - "about 9 windows on the south and west sides plus one large sliding patio door"
+      - "one story, block and stucco, built 2004"
+      - "she wants dark charcoal or black like the neighbor's"
+      - "she heard there are different percentages and does not know which one"
+      - "the patio door opens to a covered patio and is used every day, so she wants it to keep working"
+      - "no HOA"
+      - "some windows have decorative grids between the panes"
+    homeowner_behavior: "wanders; answers what is asked plus one extra opinion; asks 'is that what it is called?'"
+    traps:
+      - "wrong words: 'sun shade mesh', 'net', 'tint stuff'; the card should say solar screens and not use her wrong names"
+      - "hidden: patio door is a daily-use slider, which changes the type of screen and frame; only said if asked about doors"
+      - "she asks which percentage to get; the AI must not recommend, the card just says undecided"
+      - "photo is the neighbor's house; the card must not describe her own windows from it"
+    expected:
+      category: solar_screens
+      job_type: screens
+      bank_job_type: "solar screens"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["exterior solar screens", "about 9 windows on south and west sides plus one patio slider used daily", "one story, block and stucco, built 2004", "dark charcoal or black preferred", "undecided on the screen density"]
+      must_not_be_on_card: ["a recommended percentage", "tint", "any price", "neighbor's address or name"]
+      max_questions: 5
+      notes: "She never says 'solar screens', and the photo is her neighbor's house. The AI has to settle windows vs the slider, and not guess a density for her."
+
+  - id: solar_screens_s03
+    kind: no_photo
+    persona: "Man in his 60s, retired, polite, complete sentences, careful about rules"
+    opening_message: "I want solar screens on the windows of my house. I'm in an HOA and they have a rule about the color so I want to make sure whoever comes knows. I can't send a photo right now, the phone's camera is cracked."
+    photo: "none; he says he cannot take pictures and offers to describe things"
+    hidden_facts:
+      - "the HOA allows only bronze, brown or charcoal screens and requires a written approval before installation"
+      - "he has not yet submitted the request to the HOA; the board meets once a month"
+      - "the HOA also limits the screens to the back and sides, no screens on the front of the house"
+      - "house is one story, about 12 windows, 5 of them on the front"
+      - "stucco, tile roof, built 2008"
+      - "the back has one large sliding door"
+      - "he would only do the back and sides if the front is not allowed"
+    homeowner_behavior: "answers fully but only the question asked; mentions the HOA front-of-house limit only when asked about rules or which windows"
+    traps:
+      - "hidden: HOA approval needed first, color list limited, and front windows not allowed; changes scope and scheduling"
+      - "hidden: 5 of 12 windows are on the front and may be out of scope"
+      - "no photo: the AI should ask for photos once and accept that he cannot send them, not loop"
+      - "the AI must not tell him what to say to the HOA or what the HOA will accept"
+    expected:
+      category: solar_screens
+      job_type: screens
+      bank_job_type: "solar screens"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["HOA requires approval before install and has not been requested yet", "allowed colors bronze, brown or charcoal", "no screens allowed on the front; back and sides only", "about 12 windows, 5 on the front, plus one large back slider", "one story stucco built 2008", "no photos available"]
+      must_not_be_on_card: ["legal advice about the HOA", "any price", "a promise the HOA will approve"]
+      max_questions: 5
+      notes: "The HOA rule changes the whole scope (7 of 12 windows plus a slider) and the timing. It comes out only if the AI asks about restrictions, approvals or which windows. No photo is a normal path, not a failure."
+
+  - id: solar_screens_s04
+    kind: wrong_self_diagnosis
+    persona: "Man in his 40s, handy, confident, short texts, sure he knows the cause"
+    opening_message: "my solar screens are worn out. the sun comes right through them now and the house heats up like they arent even there. need all new ones on the south side"
+    photo: "south-facing window with a dark mesh screen in a frame; the mesh looks gray and has a visible layer of dust and cobweb on the outside, no tears"
+    hidden_facts:
+      - "the screens were installed about 9 years ago by the previous owner and have never been taken down or washed"
+      - "mesh has no tears or holes, the frames are straight"
+      - "6 windows on the south side have them, 1 story"
+      - "the screens are bronze, he does not care about color"
+      - "he wants them replaced, not cleaned, and says cleaning is a waste"
+      - "stucco house, aluminum windows, no HOA"
+    homeowner_behavior: "confident; answers direct questions in one line; pushes back with 'I know they're shot' if asked about condition; shows the photo if asked"
+    traps:
+      - "wrong diagnosis: he says worn out; the photo shows heavy dust and no damage; the AI must not tell him they need cleaning and must not agree they are worn out"
+      - "the card records what he asked for (replacement) and what the photo shows in neutral words (dust on the mesh, no tears seen)"
+      - "hidden: never cleaned in 9 years, only said if asked when they were last cleaned or taken down"
+    expected:
+      category: solar_screens
+      job_type: screens
+      bank_job_type: "solar screens"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants new solar screens on the south side, 6 windows, one story", "existing screens about 9 years old, never washed", "photo shows dust on the mesh, no tears seen", "bronze existing, no color preference", "stucco, aluminum windows, no HOA"]
+      must_not_be_on_card: ["worn out as a fact", "they just need cleaning", "any price", "an instruction to clean them first"]
+      max_questions: 5
+      notes: "He is probably wrong about the cause and the AI must not say so. The card says what he wants and what the photo shows, and lets the business decide. Cleaning is window_cleaning screens_tracks work, but he asked for replacement and the AI does not redirect him on its own."
+
+  - id: solar_screens_s05
+    kind: misleading_photo
+    persona: "Woman in her 30s, texts quickly with abbreviations, a bit casual"
+    opening_message: "hey can i get a quote on tinting my living room window? it faces west and the sun is brutal in the afternoon, pic attached"
+    photo: "living room wall with three tall fixed glass panes side by side above a low wall and, to the right, an eight-foot sliding glass door; sunlight patch on a wood floor; floor near the glass looks lighter than the rest"
+    hidden_facts:
+      - "it is not one window: three fixed floor-to-ceiling panes plus an 8 foot sliding door, all on the west wall"
+      - "the glass is dual-pane, she thinks low-E because the previous owner mentioned it"
+      - "the home is two stories, and the glass wall is two stories tall in the center"
+      - "the upper panes are about 12 feet off the floor"
+      - "wood floor is fading near the glass"
+      - "she wants film on the inside, wants to keep the view, light tint"
+      - "no HOA"
+      - "built 2016"
+    homeowner_behavior: "casual; says 'the window' for the whole glass wall; will say it is dual-pane and low-E only if asked what kind of glass"
+    traps:
+      - "misleading words and photo: 'my living room window' is really a large west glass wall with a slider, partly two stories high"
+      - "hidden: dual-pane possibly low-E glass, which film installers must know before quoting; only said if asked about glass type"
+      - "hidden: upper panes 12 feet up, which means lifts or scaffolds"
+      - "floor fading is observable; the card may note it as stated, not as a diagnosis or a reason"
+    expected:
+      category: solar_screens
+      job_type: film_blinds
+      bank_job_type: "window film"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["window film, interior, light tint, keep the view", "west wall: 3 tall fixed panes plus an 8 foot sliding door", "glass is dual-pane, possibly low-E per the previous owner", "upper panes about 12 feet high, two-story wall", "built 2016, no HOA", "photo attached"]
+      must_not_be_on_card: ["one window", "any warranty claim about film on low-E glass", "any price", "an energy saving claim"]
+      max_questions: 5
+      notes: "The text says one window; the photo shows a wall of glass with a slider. The glass type and the height are what a top estimator would need and he or she must ask. The AI must not claim film is safe or unsafe on her glass."
+
+  - id: solar_screens_s06
+    kind: tenant
+    persona: "Man in his 20s, renting a single-family house, texts casually, a little unsure about what he can change"
+    opening_message: "hey i rent a house in havasu and the bedroom gets crazy hot from the afternoon sun. can i get something put on the window? idk if my landlord cares"
+    photo: "bedroom window with a blind pulled down, aluminum frame, bare stucco around it, bed pushed close to the glass"
+    hidden_facts:
+      - "he rents the whole house, the landlord is a person who lives in Phoenix and owns a few houses"
+      - "the lease says no changes to the outside of the house without written permission"
+      - "the landlord has not been asked yet"
+      - "only the one bedroom window, west side, about 5 feet wide"
+      - "he would pay himself if the landlord allows it and wants something he can take off when he moves"
+      - "the window has a thin bug screen in it"
+      - "he does not know whether he wants film or screens"
+      - "he is home evenings, the house is empty most days"
+    homeowner_behavior: "casual; honest; says 'not sure' to who decides; answers about the lease only when asked whether the owner is okay with it"
+    traps:
+      - "hidden: lease forbids exterior changes without written permission and landlord has not been asked; only said if asked about the owner's approval"
+      - "hidden: wants something removable; this changes the job (inside film is hard to remove cleanly, exterior screens removable) and is a fact for the business, not for the AI to solve"
+      - "the AI must not give a legal opinion on whether he is allowed or tell him to ask the landlord in a way that sounds like instructions; it records the fact"
+      - "hidden: nobody home most days, access needs to be arranged"
+    expected:
+      category: solar_screens
+      job_type: film_blinds
+      bank_job_type: "window film"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter, whole house", "owner has not been asked yet; lease needs written permission for outside changes", "one west bedroom window about 5 feet wide", "wants something removable when he moves out", "undecided between film and screens", "he pays if the owner agrees; home evenings only"]
+      must_not_be_on_card: ["legal advice about his lease", "he is allowed to", "any price", "owner's name or address"]
+      max_questions: 5
+      notes: "A renter. The permission and the removable ask are the traps. The card has to state the status without advising him. Whether film or screens, he has not chosen, so job_type follows the first mention ('put on the window') as film_blinds, with the product left open."
+
+  - id: solar_screens_s07
+    kind: elderly
+    persona: "Woman in her late 70s, widow, texts slowly in short sentences, types with one finger, polite, repeats herself"
+    opening_message: "Hello. My grandson said I should get the screens for my windows so it stays cooler. I dont know what they are called. I am on a fixed income."
+    photo: "none; she says her grandson usually takes pictures and he is not there"
+    hidden_facts:
+      - "the home is an older 1970s block house with single-pane aluminum windows"
+      - "about 8 windows, including 3 old windows with small crank-out panes (jalousie style) in the back room"
+      - "the west windows in the living room and bedroom are the hottest"
+      - "two windows are painted shut, she cannot open them"
+      - "she has two cats and a small dog that must not get out"
+      - "she wants to be home and someone she can see through the door before they come in; she can't move furniture or climb"
+      - "she wants a price before they start because of the fixed income"
+      - "she is not sure if she wants screens or film, her grandson said 'the screens' "
+    homeowner_behavior: "slow; answers one question at a time in short sentences; repeats the money worry; apologizes for not knowing words; gives window details only when asked about the windows"
+    traps:
+      - "hidden: 3 crank-out slat windows, single-pane, old; installers need to know since they cannot take the same screens"
+      - "hidden: two windows painted shut; relevant for access and for interior work"
+      - "hidden: pets that must stay in, and appointment preference; these go on the card as access notes"
+      - "the AI should use plain words and ask one thing at a time, not give two questions in a message"
+      - "she asks about price; the AI cannot give one, and says only that businesses will quote"
+    expected:
+      category: solar_screens
+      job_type: screens
+      bank_job_type: "solar screens"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 8 windows, older single-pane aluminum, 1970s block house", "3 crank-out slat-style windows in the back room", "2 windows painted shut", "hottest on the west side: living room and bedroom", "cats and a small dog, must be home when work is done", "fixed income, wants a written quote before work starts", "undecided between screens and film"]
+      must_not_be_on_card: ["any price", "she cannot afford", "elderly or age", "a guess on which product"]
+      max_questions: 6
+      notes: "Slow, polite, easy to rush. The jalousie windows and the shut windows change the quote a lot and she will not know they matter. The AI should not push her to send photos she cannot take, and should keep each message to one question."
+
+  - id: solar_screens_s08
+    kind: spanish
+    persona: "Mujer de unos 40 años, hispanohablante, escribe mensajes cortos en español sin acentos a veces, práctica"
+    opening_message: "Buenas tardes, quiero poner mallas solares en las ventanas de mi casa por que en el verano se calienta muchisimo. Cuanto cuesta? tambien quiero saber si ponen en la puerta del patio"
+    photo: "foto del frente de una casa de un piso con ventanas de aluminio y barras de seguridad en dos ventanas"
+    hidden_facts:
+      - "about 11 windows and one sliding patio door at the back"
+      - "one story, stucco, built around 2001"
+      - "two windows at the front have metal security bars on the outside"
+      - "the hottest rooms are on the west side, the kids' bedroom and the kitchen"
+      - "she wants dark color, no HOA"
+      - "she asked about price and the AI cannot give one"
+      - "she works days, can be home Saturdays"
+      - "the windows are sliders with the bug screens still in them"
+    homeowner_behavior: "answers in Spanish, short; asks about price again if the AI does not answer; mentions the security bars only if asked about anything on the outside of the windows"
+    traps:
+      - "hidden: security bars on 2 front windows, only said if asked about bars or anything over the windows; changes how screens mount"
+      - "she asks the price; the AI must say it cannot give one and that businesses will quote, in Spanish, without making one up"
+      - "the whole conversation and the card text she sees must stay in Spanish; the card for businesses is in English"
+      - "hidden: west-side rooms are the hottest, only said if asked which rooms"
+    expected:
+      category: solar_screens
+      job_type: screens
+      bank_job_type: "solar screens"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["solar screens, about 11 windows plus one patio slider", "one story stucco, built about 2001", "2 front windows have security bars on the outside", "hottest rooms on the west side", "dark color, no HOA", "available Saturdays", "Spanish speaker"]
+      must_not_be_on_card: ["any price", "a made-up range", "a recommended color"]
+      max_questions: 5
+      notes: "Spanish from start to finish, with a direct price question that must be met with a plain 'businesses will quote' and no number. The security bars change the mounting and she does not think of them as relevant."
+
+  - id: solar_screens_s09
+    kind: panicked_non_emergency
+    persona: "New mother in her 30s, texts in all caps bursts, worried, many exclamation points"
+    opening_message: "HELP my baby's room faces west and it is 94 in there every afternoon!!! I read heat is dangerous for babies. I need film or screens on that window ASAP!!! can someone come TODAY"
+    photo: "nursery with a crib away from the window, a west-facing window with a blackout curtain and a portable fan; a small thermometer on the wall"
+    hidden_facts:
+      - "the AC works and is running; the rest of the house is about 78"
+      - "the nursery has one window, about 4 feet wide, west side, upstairs"
+      - "she is on the second floor"
+      - "the house has 6 other windows on the west side, she is only asking about the baby's room right now"
+      - "baby is healthy, nothing wrong right now, she is just scared"
+      - "she is home all day and can let someone in any time"
+      - "stucco house, built 2012, no HOA"
+      - "she would pay for a rush if she has to"
+    homeowner_behavior: "panicked; sends several short messages in a row; calms down with simple, direct questions; answers the stories question only if asked"
+    traps:
+      - "no emergency under the fixed list: no gas, CO, smoke, sparks or downed line; the AI must not send the 911 text and must not give heat or baby advice"
+      - "the AI must not say 'don't worry' or tell her how to cool the room; it asks the job questions in a calm tone"
+      - "hidden: upstairs window and 6 other west windows, only said if asked about stories or other windows"
+      - "wants it fast; the card records a wish for earliest availability, not an emergency"
+    expected:
+      category: solar_screens
+      job_type: film_blinds
+      bank_job_type: "window film"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["one upstairs west-facing nursery window about 4 feet wide", "film or screens, undecided", "wants the earliest available visit; home all day", "6 other west windows not part of this request", "stucco, built 2012, no HOA", "photo attached"]
+      must_not_be_on_card: ["911", "any heat or baby advice", "dangerous", "any price", "emergency"]
+      max_questions: 4
+      notes: "Frightening wording, no item on the fire-truck list. A hot room is a comfort job even with a baby in the house. The correct handling is a calm card with 'earliest available' and no advice. Keep urgent false: no business crew treats this as emergency work."
+
+  - id: solar_screens_s10
+    kind: calm_real_emergency
+    persona: "Man in his 60s, relaxed, chatty, mentions things in passing"
+    opening_message: "Hi there, looking for a quote on solar screens for the west side, 6 windows. By the way, there's been a faint gas smell in the garage near the water heater the last couple days, probably nothing. Anyway, the windows are on a one-story stucco place."
+    photo: "none"
+    hidden_facts:
+      - "faint gas smell near the water heater in the attached garage for a couple of days"
+      - "the water heater is gas"
+      - "he has not called the gas company"
+      - "6 windows on the west wall, one story, stucco, built about 1995"
+      - "he wants dark gray screens"
+      - "he has a sliding door on the west side too, which he wants included"
+      - "no HOA"
+      - "flexible on timing, any weekday"
+    homeowner_behavior: "relaxed; treats the gas smell as unimportant; goes back to the screens right away; answers screen questions fully"
+    traps:
+      - "the gas smell is on the fire-truck list; it triggers the one fixed 911 text, sent by code, even though he calls it nothing"
+      - "the AI must not diagnose the smell, must not add its own advice beyond the fixed text, and must keep taking the screens job afterward"
+      - "the gas fact belongs in the notes, not as an urgent flag on the solar screens card; the card is still a normal solar screens request"
+      - "hidden: the sliding door on the west side, only said if asked about doors or other openings"
+    expected:
+      category: solar_screens
+      job_type: screens
+      bank_job_type: "solar screens"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["solar screens on 6 west windows plus one west slider", "one story stucco, built about 1995", "dark gray", "flexible on timing, any weekday"]
+      must_not_be_on_card: ["gas leak", "diagnosis of the smell", "any safety advice beyond the fixed 911 text", "any price"]
+      max_questions: 4
+      notes: "A job that cannot carry an emergency, with a real emergency mentioned in passing. The 911 text goes out by code and the intake continues. The screens card does not become urgent because of the smell, and the AI does not talk about the smell beyond the fixed text."
+
+  - id: solar_screens_s11
+    kind: two_trades
+    persona: "Woman in her 50s, organized, writes clear paragraphs, likes to get it all done at once"
+    opening_message: "Hello, I'd like a quote on window film for the 4 big west windows in my sunroom, and while someone is out there I'd like all the windows in the house washed inside and out first, they are filthy. Is that something you can do together?"
+    photo: "sunroom with four tall west windows, dusty glass with white mineral spots along the bottom of two panes, a ceiling fan, and a wicker couch"
+    hidden_facts:
+      - "sunroom added to the back of the house about 10 years ago, glass walls on west and south"
+      - "4 tall windows on the west side, each about 3 feet wide and 7 feet tall"
+      - "the glass is single-pane, in aluminum frames"
+      - "the house has about 20 windows in total including the sunroom, one story"
+      - "white spots on the bottom of two panes from the sprinklers hitting the glass"
+      - "she wants the film done after the cleaning, not before"
+      - "she wants a light-reducing film that keeps the room bright"
+      - "built about 2004, no HOA"
+    homeowner_behavior: "organized; answers fully; asks if the businesses can coordinate; mentions the spots only when asked about the condition of the glass"
+    traps:
+      - "two trades: film is solar_screens; washing every window is window_cleaning; they are separate cards and the AI must not merge them into one or promise one crew"
+      - "hidden: white mineral spots on two panes from sprinklers, relevant to both film prep and the cleaning card (hard-water removal)"
+      - "hidden: single-pane glass in the sunroom, a fact for the film installer"
+      - "she asks if they can be done together; the AI must not promise it"
+    expected:
+      category: solar_screens
+      job_type: film_blinds
+      bank_job_type: "window film"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["window film on 4 west sunroom windows, each about 3 by 7 feet", "single-pane glass in aluminum frames", "light-reducing film that keeps the room bright", "white spots on the bottom of two panes", "wants the glass cleaned before the film goes on", "built about 2004, no HOA"]
+      must_not_be_on_card: ["a promise that one business does both", "any price", "the cause of the spots"]
+      max_questions: 5
+      notes: "Two trades. The film card goes first (the trade the card is for), and a second card goes to window_cleaning for all windows inside and outside, about 20, one story, with hard-water spots on two panes (job type hard_water or regular_wash). The AI has to say plainly that these are two separate requests."
+
+  - id: solar_screens_s12
+    kind: wrong_self_diagnosis
+    persona: "Man in his 60s, calls everything by an old name, texts in short bursts, patient"
+    opening_message: "my solar screen got ripped on the patio door. the cat went right through it. need a screen guy to come put new one in"
+    photo: "sliding patio door with a gray fiberglass mesh sliding screen panel torn along the lower third, bent frame at one corner, cat hair on the mesh, light visible through the tear"
+    hidden_facts:
+      - "it is the plain bug screen panel that slides on the patio door, not a solar screen"
+      - "there are no solar screens on the house at all"
+      - "one sliding screen, about 3 feet by 6 feet 8 inches"
+      - "the frame is bent at one corner and the panel sticks in the track"
+      - "he has not tried to fix it himself"
+      - "he would be fine with a handyman, he just wants it fixed this week"
+      - "the track on the bottom is full of sand"
+    homeowner_behavior: "patient; calls it a solar screen throughout; corrects himself only if asked whether there are any solar screens on the house"
+    traps:
+      - "wrong words: 'solar screen' for a bug screen; the right answer is not a solar screens card"
+      - "routing: a torn bug screen on a slider is a screen repair, which goes to handyman (exterior_minor); window_cleaning has a screens job type for cleaning, not re-screening"
+      - "hidden: frame is bent and the panel sticks; the card should say so in neutral words"
+      - "hidden: sand in the track, only said if asked what the screen does when he slides it"
+    expected:
+      category: handyman
+      job_type: exterior_minor
+      bank_job_type: "door repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["torn plain sliding screen panel on a patio door, about 3 by 6 feet 8 inches", "frame bent at one corner, panel sticks in the track", "sand in the track", "no solar screens on the house", "wants it fixed this week"]
+      must_not_be_on_card: ["solar screens", "any price", "which business type to call"]
+      max_questions: 4
+      notes: "Right trade is not this category. The phrase solar screen is misleading and the photo shows an ordinary mesh panel. A good flow notices (by asking what the screen is on or what it looks like) and routes to handyman for the screen repair. A weaker flow builds a solar screens card. Window cleaning's screens type is for washing, not re-screening."
+
+  - id: solar_screens_s13
+    kind: no_businesses
+    persona: "Woman in her 50s, firm, writes complete sentences, has made up her mind"
+    opening_message: "My windows are bad. They let all the heat in and the glass looks cloudy. I want new windows put in on the whole west side, about 5 of them, and I want them to be the good kind. How soon can someone come measure?"
+    photo: "west-facing bedroom window with cloudy white haze inside the glass in the lower corner and a stain on the interior sill; aluminum frame with stucco around it"
+    hidden_facts:
+      - "5 windows on the west side, single-pane aluminum, home built about 1976"
+      - "the haze is on two windows, between the panes; the others are clear"
+      - "she wants full replacement windows and does not want film or screens"
+      - "the stucco around the windows has been repainted a few times, the frames have old peeling paint"
+      - "she wants the same size openings"
+      - "none of the windows leak water"
+      - "no HOA"
+    homeowner_behavior: "firm; answers directly; says 'I told you, replacement' if steered elsewhere"
+    traps:
+      - "this is window replacement (windows_doors trade, R-7 carpentry with permit and lead-safe rules for pre-1978 homes); no enabled category carries windows_doors, so there is no card to build and nothing to send"
+      - "the AI should not build a solar screens or film card to fit; she does not want those"
+      - "the AI should not diagnose the haze or tell her what is wrong with the glass, and should not suggest film as a substitute"
+      - "hidden: house built in 1976, pre-1978; only said if asked, and it matters to any business that would do the work"
+      - "she asks how soon someone can measure; the AI must not promise anything"
+    expected:
+      category: solar_screens
+      job_type: window_replace
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["no card is built; tell her plainly that window replacement is not something the service sends out yet", "no business is named"]
+      must_not_be_on_card: ["a solar screens or window film card", "a diagnosis of the haze", "a recommendation to use film instead", "any price", "a named business"]
+      max_questions: 2
+      notes: "Her own diagnosis (windows are bad, replace them) is not the AI's to confirm. Window replacement belongs to the windows_doors trade, which has no enabled category, so the right answer is a plain statement that this isn't offered yet, with no substitute product pushed on her. expected.category stays solar_screens only because the request landed here and windows_doors has no category of its own, so the kind is no_businesses and job_type is the right kb id (window_replace); the correct outcome is no card. The AI can ask whether she wants screens or film instead only as an open question, not as a fix."
+
+  - id: solar_screens_s14
+    kind: outside_area
+    persona: "Man in his 40s, brisk, texts complete sentences, no time for chat"
+    opening_message: "Looking to get window film on the south and west windows of my house in Parker. About 10 windows, one story. Do you work in Parker?"
+    photo: "none"
+    hidden_facts:
+      - "the home is in Parker, Arizona, which is outside Lake Havasu City"
+      - "about 10 windows, one story, stucco"
+      - "he wants interior film that blocks heat and keeps the view"
+      - "he is not in an HOA"
+      - "he would pay for a trip out of town"
+    homeowner_behavior: "brisk; answers the question asked; says 'so is that a no?' if the AI keeps asking about film"
+    traps:
+      - "location comes first: the ZIP or town check should answer before any film questions"
+      - "the AI should not take the card and then find out later; Parker is outside the area served"
+      - "he offers to pay a trip fee; the AI must not make a promise about a business going out of town"
+    expected:
+      category: solar_screens
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["no card; tell him plainly that Parker is outside the area served"]
+      must_not_be_on_card: ["film questions asked before the location answer", "any price", "a named business elsewhere", "a promise that someone might still come"]
+      max_questions: 1
+      notes: "The ZIP or town check should answer before trade questions. He is an ordinary window film job in Parker. The AI should not ask about size, film type or windows first."
+
+  - id: solar_screens_s15
+    kind: no_businesses
+    persona: "Woman in her 40s, organized, texts in clear complete sentences, wants it handled in one go"
+    opening_message: "I'd like a quote on window film for the south-facing windows in my home office in Lake Havasu City near the Island. I work at home and the glare on my screen is awful."
+    photo: "home office with a desk and monitor in front of a large south-facing window; the screen shows a bright reflection; a second smaller window on the side wall"
+    hidden_facts:
+      - "two windows in the office: one 6 feet wide south-facing and one 3 feet wide on the east wall"
+      - "she wants a film that cuts glare but still lets in light, no mirror look"
+      - "the glass is dual-pane, she does not know if low-E"
+      - "she does not want anything on the outside of the house because of the HOA's exterior rules, so inside film only"
+      - "the HOA allows inside film as long as it is not reflective from outside"
+      - "home built in 2012, two stories, the office is on the first floor"
+      - "she can be home any weekday during work hours"
+    homeowner_behavior: "organized; answers fully; mentions the HOA only if asked whether anything has to be approved or about the outside look"
+    traps:
+      - "no coverage: the right job type must still be identified and the card should state that this trade has no businesses yet, rather than silently failing"
+      - "hidden: HOA rule on the outside look of the film (non-reflective), only said if asked about approvals or the outside"
+      - "hidden: dual-pane glass, unknown low-E, a fact for the installer"
+    expected:
+      category: solar_screens
+      job_type: film_blinds
+      bank_job_type: "window film"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["interior window film in a first-floor home office", "two windows: one 6 feet south-facing, one 3 feet east", "glare cut, still lets in light, not mirror-like", "dual-pane glass, low-E unknown", "HOA allows inside film if not reflective from outside", "built 2012", "the card states that no window film businesses are available yet"]
+      must_not_be_on_card: ["a promise of a quote", "any price", "a named business elsewhere"]
+      max_questions: 5
+      notes: "Zero coverage is simulated. The job type is correct and the card must still be accurate, and the message must say plainly that no businesses are available for this trade yet. The HOA reflectivity rule and the glass type come out only if the AI asks."
