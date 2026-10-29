@@ -19,8 +19,8 @@ with `main`. It makes four governance rules machine-enforced (docs/governance.md
 4. **Withdrawals keep their ID.** A requirement ID present in the base spec is never
    removed; it is withdrawn in place ("Withdrawn by D-###.").
 5. **A plan change says so.** A branch that is not a task branch and touches a protected
-   or locked path must carry a `Plan-Change: D-###` trailer in its head commit naming one of
-   the new decision entries. (Until Claude runs under its own GitHub identity, this proves
+   or locked path must carry a `Plan-Change: D-###` trailer on one of its commits naming one
+   of the new decision entries. (Until Claude runs under its own GitHub identity, this proves
    intent, not authorship; docs/governance.md section 2 records that gap.)
 
 Diffs are listed with `--no-renames`, so a protected file moved into an owned path shows as
@@ -150,7 +150,9 @@ def lock_rewrite_check(root: Path, branch: str, changed: list[str]) -> list[str]
     return [f"{LOCK} rewritten by {task['id']}, which is not a harness task and owns no locked file in this change"]
 
 
-def plan_change_trailer_check(root: Path, branch: str, changed: list[str], decisions_added: list[str]) -> list[str]:
+def plan_change_trailer_check(
+    root: Path, branch: str, changed: list[str], decisions_added: list[str], base: str
+) -> list[str]:
     """A non-task branch touching protected or locked paths must say which decision it carries out."""
     if TASK_BRANCH.match(branch or ""):
         return []
@@ -160,10 +162,12 @@ def plan_change_trailer_check(root: Path, branch: str, changed: list[str], decis
     touched = [p for p in changed if p in locked or any(p.startswith(q) if q.endswith("/") else p == q for q in protected)]
     if not touched:
         return []
-    message = git(root, "log", "-1", "--format=%B", "HEAD")
-    m = re.search(r"^Plan-Change: (D-\d{3})\s*$", message, re.M)
-    if not m:
-        return [f"plan change touching {touched[0]} needs a 'Plan-Change: D-###' trailer in the head commit"]
+    # The trailer may sit on any commit of the change (a pull-request run checks out a merge commit).
+    message = git(root, "log", "--format=%B", f"{base}..HEAD")
+    found = re.findall(r"^Plan-Change: (D-\d{3})\s*$", message, re.M)
+    if not found:
+        return [f"plan change touching {touched[0]} needs a 'Plan-Change: D-###' trailer on one of its commits"]
+    m = re.match(r"(D-\d{3})", found[-1])
     if not any(m.group(1) in line for line in decisions_added):
         return [f"Plan-Change trailer names {m.group(1)}, which is not a new entry in docs/decisions.md"]
     return []
@@ -220,7 +224,7 @@ def main(argv: list[str] | None = None) -> int:
     added = new_decisions(base_dec, head_dec)
     errors += locked_change_check(root, base, changed, added)
     errors += lock_rewrite_check(root, args.branch, changed)
-    errors += plan_change_trailer_check(root, args.branch, changed, added)
+    errors += plan_change_trailer_check(root, args.branch, changed, added, base)
     spec_ids, spec_errors = spec_changes(root, base, changed)
     errors += spec_errors
     errors += spec_decision_check(spec_ids, added)
