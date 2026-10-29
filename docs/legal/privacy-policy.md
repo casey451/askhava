@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.4 (draft, packaged jobs) · October 28, 2026 · Not yet in effect
+Version 0.5 (draft, D-492 changes) · October 29, 2026 · Not yet in effect
 
 # Ask Hava Privacy Policy
 
@@ -47,7 +47,7 @@ Your number is never shared. Your first name and address go only to the business
 
 The business you pick may use your details only for your job and follow-up about it. Our business terms forbid marketing lists and resale.
 
-**Vendors** (under contract, only to run Ask Hava): texting and calls (Twilio), email (Resend), payments (Stripe), hosting (Railway), error monitoring (Sentry), letters for business identity checks (Lob), website delivery and security (Cloudflare), and, only once it is switched on, automated text reading (Anthropic; see section 6).
+**Vendors** (under contract, only to run Ask Hava): texting and calls (Twilio), email (Resend), payments (Stripe), hosting and its 30-day logs (Railway), encrypted backup storage (Backblaze B2), error monitoring (Sentry), letters for business identity checks (Lob), website delivery and security (Cloudflare), and, only once it is switched on, automated text reading (Anthropic; see section 6).
 
 **Legal demands.** We'll tell you about a legal demand for your data unless the law forbids it.
 
@@ -65,11 +65,11 @@ Ask Hava never sells or rents lists of people, phone numbers or texting consent.
 
 ## 6. Automated tools and AI
 
-*(Use the first paragraph while AI is switched off. Switch to the second, with the change dated, only on the day AI is switched on. Add the zero-retention sentence once that agreement is signed; before then use "The AI provider doesn't use that text to train its AI and deletes it within <days> days.", using the provider's recorded terms (AI-008, AI-018).)*
+*(Use the first paragraph while AI is switched off. Switch to the second, with the change dated, only on the day AI is switched on. Add the zero-retention sentence once that agreement is signed; before then use "The AI provider doesn't use that text to train its AI and deletes it within <days> days, unless its safety systems flag it, when it may keep it up to <flag period>.", using the provider's recorded terms (AI-008, AI-018).)*
 
 **While AI is off:** Our texts are automated. When it's switched on, an AI service helps word our questions and write your job card from your request, after our software removes names, phone numbers, emails and street numbers. You see the card before it goes.
 
-**While AI is on:** To sort your request and help word our questions, an AI service from Anthropic reads your job description after our software removes names, phone numbers, emails and street numbers. It also writes your job card, which you see before it goes out. The AI never sees your contact details, never gives prices or diagnoses, and never makes decisions about money or who gets your details. Under our zero-retention agreement the AI provider doesn't keep that text or train on it.
+**While AI is on:** To sort your request and help word our questions, an AI service from Anthropic reads your job description after our software removes names, phone numbers, emails and street numbers. It also writes your job card, which you see before it goes out. The AI never sees your contact details, never gives prices or diagnoses, and never makes decisions about money or who gets your details. Under our zero-retention agreement the AI provider doesn't keep that text or train on it, except text its safety systems flag, which it may keep up to <flag period>.
 
 *(Add only while AI photo reading is on, after the zero-retention agreement:)* If you send photos, the AI also looks at them to describe what they show on your job card.
 
@@ -90,11 +90,13 @@ Photos are optional; a request goes out the same way without them. When you send
 - **Job descriptions** with contact details removed: 3 years.
 - **Your phone number, locked (encrypted), with your texting permission and opt-out records:** 5 years after our last message to that number, only as proof of your texting choices.
 - **Payment, ledger and tax records, and our audit log:** 7 years.
+- **Records of which terms you accepted, and each version of the terms:** 7 years after the last pick or charge made under them, with no contact details.
+- **Website request logs** (request IDs, pages and status codes, no contact details): 30 days, in our own logs and our host's.
 - **Business records, team phones and call logs:** [days, set before launch and shown on the business data page].
 
 ## 9. Your choices
 
-You can see and change your details (properties, language, texts on or off) on your homeowner page, and ask us to delete your data there or by emailing help@askhava.com. When we delete, we keep only what the law or proof of your texting choices requires, without your other details. We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.
+You can see and change your details (properties, language, texts on or off) on your homeowner page. You can also get a copy there: "Download my data" gives you a file of your requests, quotes, messages and the texting-permission records we still hold. You can ask us to delete your data there or by emailing help@askhava.com. Before we act on a delete or copy request sent by email or the help form, we text a code to the number on file and you type it back, so no one else can ask in your name. We answer each request within 30 days. When we delete, we keep only what the law or proof of your texting choices requires, without your other details. We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.
 
 ## 10. How we protect it
 

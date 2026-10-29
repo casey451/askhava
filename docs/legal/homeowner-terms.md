@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.3 (draft, packaged jobs) · October 28, 2026 · Not yet in effect
+Version 0.4 (draft, D-492 clauses) · October 29, 2026 · Not yet in effect
 
 # Ask Hava Homeowner Terms
 
@@ -44,7 +44,7 @@ You and the business make your own agreement; Ask Hava is not part of it and doe
 
 - **Licensed trades:** we check the business's license status on the state's records each day and show the date we last checked, for example "ROC #<number> showed Active on the ROC website when we checked on <date>. Check it yourself."
 - **We don't check** workmanship, background, references, reviews or insurance. Google and Yelp links on a quote are links the business gave us; we don't rate or rank anyone. Insurance shown on a quote is what the business told us ("Insurance (business-reported)").
-- Check any business yourself before you hire it. For licensed contractors, the Arizona Registrar of Contractors takes complaints at askhava.com/help/roc-complaint. Handymen are not licensed by the Registrar.
+- Check any business yourself before you hire it. For licensed contractors, the Arizona Registrar of Contractors takes complaints; our help page links to its complaint form at askhava.com/help/roc-complaint. Handymen are not licensed by the Registrar.
 
 ## 6. Not an emergency service
 
@@ -56,7 +56,9 @@ Our texts are automated. When you text Ask Hava, or give us your mobile number i
 
 ## 8. Electronic signatures
 
-You accept these terms when you pick a quote: next to the Pick button the page says "By picking, you agree to the Terms", with a link to them. Picking a quote after that line is an electronic signature with the same effect as signing on paper, under the Arizona Electronic Transactions Act (A.R.S. 44-7007) and the federal E-SIGN Act. We keep a record of the terms version you accepted, when, and for which request.
+You accept these terms only when you pick a quote, on your quote page or by text. On the quote page, next to the Pick button the page says "By picking, you agree to the Terms", with a link to them. A text that lists your quotes ends with the same line and a link to askhava.com/terms; you pick by texting back the quote's number and YES, for example 2 YES.
+
+Your first text, our consent text and any other reply never accept these terms. Picking a quote after that line is an electronic signature with the same effect as signing on paper, under the Arizona Electronic Transactions Act (A.R.S. 44-7007) and the federal E-SIGN Act. We keep a record of the terms version you accepted, its exact text, the language, whether you picked on the page or by text, when, and for which request.
 
 ## 9. No warranties
 
@@ -94,8 +96,16 @@ The Ask Hava Privacy Policy explains what we collect, who sees it and when, and 
 
 ## 13. Changes
 
-We'll post any change with its effective date. For a change that matters to you, we'll tell you before it applies to a request you already sent. We keep each version and the date you accepted it.
+We'll post any change with its effective date. A change applies only to requests you send after that date. The version in effect when you pick governs that request. We keep each version, unchanged, and the date you accepted it.
 
-## 14. Contact
+## 14. General
+
+- If any part of these terms can't be enforced, the rest still applies.
+- These terms, the Ask Hava Privacy Policy and the Ask Hava SMS Terms are the whole agreement between you and Ask Hava about the service.
+- If we don't enforce a part of these terms right away, we can still enforce it later.
+- Ask Hava may transfer these terms to a business that takes over the service, and will tell you first.
+- We send notices about these terms by email or text to the contact you gave us. You can write to us at help@askhava.com.
+
+## 15. Contact
 
 Ask Hava LLC, [mailing address: P.O. box or registered agent, never a home address], Lake Havasu City, Arizona. Email help@askhava.com, or text HELP to the Ask Hava number. The Ask Hava owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent.

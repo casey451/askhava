@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.1 (draft) · October 28, 2026 · Not yet in effect
+Version 0.2 (draft, D-492) · October 29, 2026 · Not yet in effect
 
 # Ask Hava Business Email Notice Terms
 
@@ -47,7 +47,7 @@ For each notice we keep its send time, the provider's delivery status, and when 
 
 ## 6. Recruiting emails
 
-Ask Hava never texts or calls a business to recruit it. If we email a business that hasn't signed up, the email says who we are, carries our postal address and has a working way to stop further recruiting emails, honored at once.
+Ask Hava never texts or calls a business to recruit it. If we email a business that hasn't signed up, the email says in its first line that it is an advertisement for Ask Hava, says who we are, has an honest subject, carries our postal address and has a working way to stop further recruiting emails, honored at once and never later than 10 business days.
 
 ## 7. Contact
 

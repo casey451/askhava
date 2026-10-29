@@ -23,7 +23,7 @@ Ask Hava is built and maintained entirely by AI sessions that start with no memo
 1. Your task prompt lists the brains for your module under "Files you read". Read the sections for your task, not the whole file.
 2. When a design choice rests on a principle, cite its tag (for example `R7`, `S12`, `P4`) in the pull request text and, for a rule the code applies, in the `///` comment beside the requirement ID (`docs/code-docs.md`).
 3. Run the brain's review checklist before hand-in. The fresh-eyes reviewer runs it too.
-4. A gap or conflict a brain names is a **proposal**, not a rule: a task may not add it. Proposals adopted into the spec carry a decision number; the rest wait for a plan change. The adopted set from the first edition is D-490; the second edition's proposals (the three brains added October 29 afternoon) wait for the re-plan after the hand-run test, except where D-491 names one.
+4. A gap or conflict a brain names is a **proposal**, not a rule: a task may not add it. Proposals adopted into the spec carry a decision number; the rest wait for a plan change. The adopted set from the first edition is D-490; the second edition's corrections the build depends on are D-492 (22 new requirements, 29 rewrites); the rest of the three new brains' proposals wait for the re-plan after the hand-run test, each listed in D-492 with its reason.
 5. A brain is corrected by a plan change with a decision entry, like any locked file. Add the date to "Last verified" when you re-check its sources.
 
 ## What is not here

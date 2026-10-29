@@ -606,6 +606,49 @@ def td_entries(root: Path) -> list[str]:
     return [m.group("id") for line in lines if (m := TD_ROW.match(line))]
 
 
+def td_covers(root: Path) -> dict[str, list[str]]:
+    """Each test-design row's covered requirement IDs."""
+    path = root / TEST_DESIGN
+    if not path.is_file():
+        return {}
+    out: dict[str, list[str]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        m = TD_ROW.match(line)
+        if m:
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            out[m.group("id")] = re.findall(r"\b[A-Z]{2,5}-\d{3}\b", cells[3]) if len(cells) > 3 else []
+    return out
+
+
+def check_row_cases_have_a_builder(root: Path, graph: Graph) -> list[str]:
+    """V11 (D-491): a test row's case for requirement R is written by a task that owns R.
+
+    When a task lists a row whose covered requirement R is owned only by tasks that run after it and do
+    not share the row, nobody writes R's case: the cold reads found this shape about sixty times. The
+    rule passes when R's owner is the task itself, one of its ancestors, or another task that lists the
+    same row.
+    """
+    covers = td_covers(root)
+    owners: dict[str, set[str]] = {}
+    row_tasks: dict[str, set[str]] = {}
+    for task in graph.tasks:
+        for r in task["requirements"]:
+            owners.setdefault(r, set()).add(task["id"])
+        for row in task["tests"]:
+            row_tasks.setdefault(row, set()).add(task["id"])
+    errors = []
+    for task in graph.tasks:
+        for row in task["tests"]:
+            for r in covers.get(row, []):
+                who = owners.get(r)
+                if not who or task["id"] in who or who & graph.ancestors[task["id"]] or who & row_tasks[row]:
+                    continue
+                errors.append(
+                    f"{where(task)}: {row} covers {r}, owned only by {sorted(who)}, which run after this task and do not list the row (nobody writes that case; V11)"
+                )
+    return errors
+
+
 def check_coverage(
     graph: Graph, req_ids: set[str], td_ids: set[str], withdrawn: set[str] = frozenset()
 ) -> list[str]:
@@ -940,6 +983,7 @@ def run(root: Path, tasks_path: Path | None = None) -> Report:
     req_files = {r.req_id: r.spec_file for r in spec.requirements}
     errors += check_spec_reads(graph, req_files) + check_mutant_killers(root, graph)
     errors += check_harness_order(graph) + check_migration_order(graph)
+    errors += check_row_cases_have_a_builder(root, graph)
     return Report(tasks, len(req_ids), len(td_ids), errors)
 
 
