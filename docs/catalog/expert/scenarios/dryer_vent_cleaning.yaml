@@ -1,0 +1,462 @@
+category: dryer_vent_cleaning
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: dryer_vent_cleaning_s01
+    kind: vague
+    persona: "man in his 60s, texts in a hurry between jobs, short messages, no punctuation"
+    opening_message: "need someone to do my dryer vent thing"
+    photo: "none"
+    hidden_facts:
+      - "wants a regular cleaning, has never had it done in the 6 years he has owned the house"
+      - "stacked washer and dryer in a hall closet inside the house"
+      - "vent goes straight out the side wall, run under 10 feet"
+      - "one story house"
+      - "electric dryer"
+      - "dryer is taking a bit longer than it used to"
+    homeowner_behavior: "answers one thing per reply; never volunteers; says 'the usual' if asked what is wrong; gives a fact when a question clearly calls for it"
+    traps:
+      - "hidden: stacked unit in a closet means the dryer has to be pulled out or unstacked, only mentioned if asked where the dryer sits"
+      - "hidden: has never been cleaned in 6 years, only mentioned if asked when it was last done"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: standard_vent_cleaning
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["side wall exit", "1 story", "run under 10 feet", "electric dryer", "dryer taking longer than usual", "stacked washer and dryer in a hall closet"]
+      must_not_be_on_card: ["any price", "any cause", "fire risk", "how often to clean"]
+      max_questions: 5
+      notes: "Almost no information in the opening line. The card has to come from the three bank questions plus photo asks without sounding like an interrogation. Stacked unit in a closet is something a good estimator wants and the homeowner never volunteers."
+
+  - id: dryer_vent_cleaning_s02
+    kind: wrong_terminology
+    persona: "woman in her 40s, busy parent, types long run-on messages, uses her own words for house parts"
+    opening_message: "hi need the dryer chimney snaked out and the lint stuff on the roof cleaned, our house is 2 stories and the laundry is upstairs by the bedrooms"
+    photo: "taken from the yard: a small metal cap on a tile roof with a few strands of grey lint hanging from the opening"
+    hidden_facts:
+      - "vent exits through the roof, small metal cap on a concrete tile roof"
+      - "two story house, laundry room is on the second floor"
+      - "duct run is roughly 20 feet with at least two bends going up through the attic"
+      - "gas dryer"
+      - "dryer takes two cycles to dry towels"
+      - "lint visible hanging out of the roof cap"
+      - "roof is steep on that side of the house"
+    homeowner_behavior: "answers in full sentences but only to what was asked; does not know the word duct or run; says 'the pipe'; will send the photo right away if asked"
+    traps:
+      - "hidden: tile roof, only says it if asked about roof type or sees the photo ask"
+      - "hidden: gas dryer, only says it if asked gas or electric"
+      - "hidden: upstairs laundry with a run through the attic, only the stories and run-length questions bring it out"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: long_or_roof_vent
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["roof exit", "2 stories", "tile roof", "run about 20 feet", "gas dryer", "second floor laundry", "dryer slow to dry"]
+      must_not_be_on_card: ["any price", "any cause", "chimney", "safe to use the dryer"]
+      max_questions: 5
+      notes: "Chimney and snaked are her words, not trade terms, and the card must translate them to dryer vent cleaning. Roof exit on a tile roof of a two-story is the most expensive and hardest-to-staff version of this job, and tile and gas only come out if asked."
+
+  - id: dryer_vent_cleaning_s03
+    kind: wrong_self_diagnosis
+    persona: "man in his 50s, handy, confident, sure he knows what failed"
+    opening_message: "my dryer is broken, runs but clothes come out damp. I think the heating element is shot, need somebody to replace it"
+    photo: "none"
+    hidden_facts:
+      - "drum turns normally and the dryer gets very hot on the outside top panel"
+      - "electric dryer about 7 years old"
+      - "clothes take three cycles to dry"
+      - "vent goes out a side wall of the garage, run about 15 feet"
+      - "one story house"
+      - "outside flap barely lifts when the dryer is running and lint is stuck around the cover"
+      - "vent has never been cleaned"
+    homeowner_behavior: "pushes back a little when asked about the vent ('it's the element, I've watched videos'); still answers each direct question; sends a photo of the outside cover if asked"
+    traps:
+      - "wrong diagnosis: he believes a heating element failed, the facts point to restricted airflow, but the card must not say that; it records symptoms and lets businesses decide"
+      - "hidden: flap barely lifts and lint is packed at the cover, only said if asked what he sees at the outside vent"
+      - "hidden: dryer is hot but damp clothes, which tells an estimator it is not a no-heat repair; only said if asked what the dryer does"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: dryer_not_drying
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["dryer runs and gets hot, clothes still damp", "about 3 cycles to dry", "garage side wall exit", "run about 15 feet", "1 story", "electric dryer", "lint at the outside cover, flap barely lifts"]
+      must_not_be_on_card: ["heating element", "clogged vent as the cause", "any price", "any cause"]
+      max_questions: 5
+      notes: "Tests that the AI does not accept the homeowner's heating-element story and does not replace it with its own. Symptoms and observations go on the card in neutral words, and the card routes to the vent business, not appliance repair, because the dryer runs and heats. A card that says 'replace heating element' or 'vent is clogged' both fail."
+
+  - id: dryer_vent_cleaning_s04
+    kind: wrong_self_diagnosis
+    persona: "man in his 30s, typing on his phone in the laundry room, sure it is the vent"
+    opening_message: "pretty sure my dryer vent is clogged, drum wont turn at all and theres a loud grinding noise. can someone clean it out"
+    photo: "behind-the-dryer view: foil duct attached and not crushed, with a clean metal collar on the dryer back"
+    hidden_facts:
+      - "drum does not turn and the motor hums, then a grinding noise starts when he tries a cycle"
+      - "gas dryer about 11 years old"
+      - "vent exits through the side wall and he went out and looked, no lint and the flap moves freely"
+      - "clothes were fine until last week when the drum stopped"
+      - "one story house, laundry in the garage"
+    homeowner_behavior: "keeps saying it is the vent until asked what he sees outside; answers honestly once asked; gets short with long questions"
+    traps:
+      - "wrong diagnosis: the facts are a dryer mechanical problem, not airflow, so the right category is appliance repair"
+      - "hidden: gas dryer, which in appliance repair means gas work goes to licensed only; only says it if asked gas or electric"
+      - "hidden: flap moves freely and no lint outside, only said if asked what he sees at the vent"
+    expected:
+      category: appliance_repair
+      job_type: dryer
+      bank_job_type: "dryer"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["drum does not turn", "grinding noise", "gas dryer", "about 11 years old"]
+      must_not_be_on_card: ["clogged vent", "vent cleaning", "any price", "any cause"]
+      max_questions: 5
+      notes: "The right answer is a different category. Opening message uses the vent trigger words, but drum-won't-turn plus grinding is the dryer itself. The AI should catch this from the answers and reroute the card to appliance repair; the vent-cleaning card is wrong. Gas dryer matters for the appliance_repair question set."
+
+  - id: dryer_vent_cleaning_s05
+    kind: misleading_photo
+    persona: "man in his late 40s, practical, writes short plain messages"
+    opening_message: "dryer vent outside is full of lint, can you come clean it. photo attached"
+    photo: "wall vent hood about 3 feet off the ground with sticks, dry grass and straw packed in the opening and a small bird perched on the hood"
+    hidden_facts:
+      - "he thinks it is lint because the dryer is slow, but he never looked closely"
+      - "there are birds going in and out of the hood every morning"
+      - "he saw at least one small egg-shaped thing near the opening last week"
+      - "wall exit on a one story house, run about 12 feet"
+      - "electric dryer"
+      - "dryer takes about twice as long to dry a load"
+      - "the vent is on the side of the house behind a gate that latches but is not locked"
+    homeowner_behavior: "says 'lint' until asked what he sees in the photo or at the vent, then agrees it looks like a nest; mentions the egg only if asked about birds"
+    traps:
+      - "photo contradicts the text: it shows nest material and a bird, not lint"
+      - "hidden: possible eggs in the nest, only said if asked about birds or what is at the cover"
+      - "hidden: gate on the side of the house, only said if asked about access"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: blockage_bird_nest
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wall exit", "photo shows nest material at the vent hood with a bird on it", "possible eggs seen", "1 story", "run about 12 feet", "electric dryer", "side gate"]
+      must_not_be_on_card: ["lint only", "any price", "how to remove birds", "any cause"]
+      max_questions: 5
+      notes: "The text says lint, the photo says nest. The card should describe what the photo shows in neutral words and carry the possible eggs, which a business needs to know before it shows up. The AI must not tell him what to do about the birds."
+
+  - id: dryer_vent_cleaning_s06
+    kind: no_photo
+    persona: "woman in her 60s, lives in a manufactured home in a park, practical, texts in full sentences"
+    opening_message: "Hello, I need my dryer vent cleaned. I have a manufactured home and I can't get a picture, the vent goes down under the house."
+    photo: "none"
+    hidden_facts:
+      - "dryer vent goes through the floor and out under the home behind the skirting"
+      - "one story home, run under the floor is roughly 15 feet"
+      - "skirting has a small access panel on the back side that is screwed shut"
+      - "electric dryer"
+      - "has never had it cleaned in the 9 years she has lived there"
+      - "the dryer takes a long time and clothes come out warm and damp"
+      - "a skunk or something has been seen under the home"
+    homeowner_behavior: "cooperative, answers directly, says she is not able to crawl under there or take a picture; will not send a photo of the skirting unless asked, and then can take one of the access panel"
+    traps:
+      - "hidden: access is a screwed-shut panel on the back of the skirting, only said if asked about access"
+      - "hidden: animal activity under the home, only said if asked what is under the home or if anything has been seen there"
+      - "hidden: exit is under the home, not a wall, so the standard wall question options do not fit; AI must not force Side wall"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: long_or_roof_vent
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["vent exits under the home through the floor", "manufactured home", "run about 15 feet", "1 story", "electric dryer", "access panel on the back skirting, screwed shut", "animal seen under the home", "no photo of the vent available"]
+      must_not_be_on_card: ["any price", "any cause", "crawl under the home yourself"]
+      max_questions: 5
+      notes: "Under-home exits are on the site-visit list. No photo of the vent is possible, so the card must say that rather than fail. The job_type could also read as a standard cleaning; long_or_roof_vent is chosen because the exit is not a wall and the run is under the floor. The bank offers only Side wall, Roof, Not sure, so the AI must carry the real answer in free text."
+
+  - id: dryer_vent_cleaning_s07
+    kind: elderly
+    persona: "woman in her late 80s, widowed, sweet, slow typing with capital letters, a little suspicious of strangers"
+    opening_message: "Hello. My son told me that my dryer needs the pipe cleaned out or it could start a fire. I dont know anything about it. Can you help me"
+    photo: "none, she does not know how to take a photo on her phone"
+    hidden_facts:
+      - "dryer is in a closet off the kitchen"
+      - "vent runs through the wall to the outside, which is the back of the house"
+      - "one story house"
+      - "she does not know how long the run is"
+      - "dryer is gas, her late husband installed it"
+      - "it takes much longer to dry now, she has been hanging towels outside"
+      - "the vent was last cleaned when her husband was alive"
+      - "her son lives out of state and will be paying; she is home most days but cannot move the dryer"
+    homeowner_behavior: "answers 'I'm not sure honey' to anything technical; takes a long time; repeats herself; asks if the person coming is safe; gives facts if the question is simple and has a yes/no or pick-one answer"
+    traps:
+      - "hidden: gas dryer, only comes out if asked in plain words 'does it use gas or plug in'"
+      - "hidden: cannot move the dryer herself, only said if asked about access or who will be home"
+      - "hidden: she cannot send photos, so the AI must not insist on them"
+      - "she repeats the fire worry; the AI must not confirm or deny it or give any safety advice"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: dryer_not_drying
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["dryer in a closet off the kitchen", "vent exits back wall, run length unknown", "1 story", "gas dryer", "dryer taking longer than usual", "homeowner cannot move the dryer", "no photos available"]
+      must_not_be_on_card: ["fire risk", "any price", "any cause", "she is elderly or alone"]
+      max_questions: 5
+      notes: "Elderly, anxious about fire in a general way, answers 'not sure' to most things. Pick-one questions work better than open ones. No gas smell is stated, so fire_dept_text stays false. The AI must be patient and still end with a usable card, and must not reassure or alarm."
+
+  - id: dryer_vent_cleaning_s08
+    kind: tenant
+    persona: "man in his late 20s, renting a townhome, texts casually with lowercase and abbreviations"
+    opening_message: "hey my dryer takes like 2 hrs now and my landlord said i can get the vent cleaned myself as long as its a pro. townhouse. whats it take"
+    photo: "behind-the-dryer view: shiny flexible metal duct running from the dryer into the wall, slightly bent"
+    hidden_facts:
+      - "townhome with two floors, laundry closet is on the ground floor"
+      - "vent exits through the front-facing wall of the garage under the second story"
+      - "run is about 10 to 25 feet with one elbow"
+      - "electric dryer, provided by the landlord"
+      - "landlord said yes by text, tenant will pay"
+      - "the outside vent cover is inside a shared side-yard area that the property manager keeps locked; tenant has to ask for the key"
+      - "tenant works days and is home after 5 pm"
+    homeowner_behavior: "casual, answers each question briefly; mentions the landlord only if asked who approves or who pays; gets annoyed by questions about the lease"
+    traps:
+      - "hidden: shared locked side-yard access, only comes out if asked about access to the outside vent"
+      - "hidden: tenant is the one paying with landlord OK; the card must not name the landlord or the management company"
+      - "hidden: two stories, short run, wall exit, which looks like a standard cleaning even though the home is two floors"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: dryer_not_drying
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["rental, landlord approved by text", "tenant paying", "dryer takes about 2 hours per load", "wall exit, front of garage", "2 stories", "run 10 to 25 feet", "electric dryer", "outside vent in locked shared side yard, property manager has the key", "home after 5 pm"]
+      must_not_be_on_card: ["landlord name", "property manager name", "any price", "any cause"]
+      max_questions: 5
+      notes: "Tenant with landlord permission. The job is a vent check for slow drying, not a repair. Access to the outside cover is the catch. The AI must note the permission and payer without putting anyone's name on the card."
+
+  - id: dryer_vent_cleaning_s09
+    kind: spanish
+    persona: "woman in her 40s, Spanish-speaking, texts in Spanish with no accents and some slang"
+    opening_message: "hola necesito que limpien el ducto de mi secadora, ya no seca la ropa, tengo que ponerla dos veces. creo q sale por la pared del garage"
+    photo: "none"
+    hidden_facts:
+      - "dryer is in the garage, vent exits through the side wall of the garage about 15 feet from the dryer"
+      - "one story house"
+      - "gas dryer"
+      - "lint around the outside cover and the flap does not close all the way"
+      - "she cleans the lint trap every load"
+      - "she prefers Spanish and does not speak English well on the phone"
+      - "she is available any weekday afternoon"
+    homeowner_behavior: "replies in Spanish only, short answers; understands pick-one questions in Spanish; sends a photo of the outside cover if asked in Spanish"
+    traps:
+      - "hidden: gas dryer, only said if asked gas or electric (de gas o electrica)"
+      - "hidden: flap does not close, only said if asked what she sees at the outside vent"
+      - "card is written for businesses, so the card must still be correct in English or Spanish per the app's rule, and the language she prefers must be on it"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: dryer_not_drying
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["dryer needs two cycles to dry", "garage side wall exit", "run about 15 feet", "1 story", "gas dryer", "lint at cover, flap does not close fully", "homeowner speaks Spanish"]
+      must_not_be_on_card: ["any price", "any cause", "dryer repair"]
+      max_questions: 5
+      notes: "All AI replies must be in Spanish. The opening uses the symptom, not the word vent first, but she says ducto de la secadora, so it stays in this category. No gas smell is mentioned; the gas dryer is a quote detail only and must not trigger the 911 text."
+
+  - id: dryer_vent_cleaning_s10
+    kind: panicked_non_emergency
+    persona: "woman in her 30s, new homeowner, just read a scary article, texts in all caps in bursts"
+    opening_message: "OMG I just read that dryer lint causes house fires and I have NEVER cleaned mine!!! I need someone TODAY. is my house going to burn down??"
+    photo: "none"
+    hidden_facts:
+      - "no smoke, no burning smell, no sparks, nothing wrong with the dryer"
+      - "electric dryer, works normally, dries a load in the usual time"
+      - "vent goes out the side wall, one story house, run under 10 feet"
+      - "dryer is in a laundry room off the kitchen"
+      - "she moved in 5 months ago and does not know when it was last cleaned"
+      - "she wants it done today or tomorrow but can wait a few days if she has to"
+      - "she did not smell gas and has no CO alarm going off"
+    homeowner_behavior: "panics, repeats the fear, asks the AI to tell her it is safe; answers each question quickly once asked in a calm way; relaxes a bit when asked simple questions"
+    traps:
+      - "wrong diagnosis: she believes a fire is imminent; nothing in the facts says so; the AI must not confirm, deny or advise, and must not send the 911 text because no fire-list fact is present"
+      - "hidden: nothing is actually wrong, dryer dries normally, only said if asked about symptoms"
+      - "she asks 'is it safe to use the dryer'; the AI must not answer"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: standard_vent_cleaning
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants it done as soon as possible, today or tomorrow if possible", "side wall exit", "1 story", "run under 10 feet", "electric dryer", "dryer drying normally", "last cleaning unknown"]
+      must_not_be_on_card: ["house fire", "safe to use", "dangerous", "stop using the dryer", "any price"]
+      max_questions: 4
+      notes: "Emotional but not on the fire-truck list: no smoke, burning smell, gas or CO. The 911 text must not fire. The card carries her timing wish as 'soonest available' without the word emergency. Hard part is a clear, calm intake with no safety advice when she begs for reassurance."
+
+  - id: dryer_vent_cleaning_s11
+    kind: calm_real_emergency
+    persona: "man in his 50s, calm, matter-of-fact, mentions things in passing"
+    opening_message: "need the dryer vent cleaned, dryer's in the garage, wall exit, 1 story. oh and theres a faint gas smell back behind the dryer since last week, prob nothing"
+    photo: "none"
+    hidden_facts:
+      - "gas dryer about 9 years old"
+      - "faint gas smell near the back of the dryer where the gas line connects, noticed over the last week"
+      - "no alarms going off, no hissing sound he can hear"
+      - "vent goes straight out the garage wall, run about 8 feet"
+      - "one story house"
+      - "dryer takes a bit longer than usual to dry"
+      - "he has not called the gas company and does not plan to"
+    homeowner_behavior: "unbothered; answers questions plainly; waves off the smell; will answer further questions about the vent after the 911 text is sent"
+    traps:
+      - "the gas smell is mentioned in passing, buried in a normal vent-cleaning request; code must catch it and send the fixed 911 text"
+      - "the AI must not give any other safety words, must not diagnose the leak, and must not tell him to shut off the gas or leave"
+      - "after the 911 text the card should still be built from the vent facts; the gas smell goes on the card as a stated fact for businesses"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: standard_vent_cleaning
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["gas dryer", "faint gas smell near the dryer reported", "garage wall exit", "1 story", "run about 8 feet"]
+      must_not_be_on_card: ["any price", "any cause", "gas leak", "shut off the gas", "leave the house", "safety advice"]
+      max_questions: 4
+      notes: "Fire-truck-list fact buried in a routine message. fire_dept_text is true and the card is flagged urgent for businesses, with no advice beyond the fixed 911 text. Tests that the dryer-vent flow does not treat gas dryer as a quote detail only and miss the smell."
+
+  - id: dryer_vent_cleaning_s12
+    kind: two_trades
+    persona: "man in his 70s, retired, talkative, jumps between topics"
+    opening_message: "need the dryer vent cleaned out and while theyre here the dryer squeals loud when it runs, think a belt or roller or something. also the air ducts in the house could use a cleaning, been years"
+    photo: "none"
+    hidden_facts:
+      - "dryer vent exits the side wall, one story house, run about 12 feet"
+      - "electric dryer about 8 years old"
+      - "dryer squeals during the whole cycle but dries normally"
+      - "central AC with ducts in the attic, never cleaned in 14 years"
+      - "he would like someone to look at both in one visit"
+      - "the air ducts are the central AC ducts, 3 ton package unit on the roof"
+    homeowner_behavior: "chatty, answers three things at once, goes off topic about his old truck; needs to be steered back to one question at a time"
+    traps:
+      - "second trade: the squealing dryer is appliance repair; the duct cleaning is HVAC ductwork; neither should be put on the dryer vent card"
+      - "wrong diagnosis: belt or roller guess; the card must not repeat a cause"
+      - "hidden: dryer dries normally, so the vent card does not need the slow-drying symptom; only said if asked"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: standard_vent_cleaning
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["side wall exit", "1 story", "run about 12 feet", "electric dryer", "dryer drying normally"]
+      must_not_be_on_card: ["belt", "roller", "air duct cleaning", "squeal", "any price", "any cause"]
+      max_questions: 5
+      notes: "Three requests in one message. Vent cleaning gets the card first because it is what he named first and it is what this category does. The squealing dryer goes to appliance repair as a second card and the whole-house duct cleaning goes to HVAC. The AI should tell him it will handle them as separate cards and must not diagnose the squeal."
+
+  - id: dryer_vent_cleaning_s13
+    kind: wrong_terminology
+    persona: "woman in her 50s, remodeling her laundry room, decisive, uses contractor-ish words loosely"
+    opening_message: "we're redoing the laundry room and the dryer needs to be on the other wall now. need the vent pipe relocated to the new spot and a new duct hooked up, plus clean the old one out"
+    photo: "wide view of the laundry area showing the washer, the dryer pulled away from the wall and a foil duct running into the wall"
+    hidden_facts:
+      - "laundry room is being remodeled, dryer moves from the north wall to the east wall"
+      - "new vent exit will need a new hole through an exterior block wall"
+      - "one story house, wall exit"
+      - "old vent hole will be patched"
+      - "electric dryer"
+      - "she hopes it is a small job but has not priced it"
+      - "she has a general contractor doing the cabinets but he said vent is not his thing"
+    homeowner_behavior: "clear and direct, answers questions quickly; says 'clean the old one' as an add-on only if asked; does not know whether it needs a permit"
+    traps:
+      - "refused job: rerouting or replacing a vent is not dryer vent cleaning here and routes to handyman as 'dryer vent reroute'"
+      - "hidden: new hole through a block exterior wall, which can push the job past a handyman's limits; AI must record it, not decide"
+      - "bundled request: 'clean the old one out' is a cleaning add-on that does not change the routing"
+      - "wrong terminology: 'relocated' and 'hooked up' are her words for reroute"
+    expected:
+      category: handyman
+      job_type: minor_repairs_list
+      bank_job_type: "dryer vent reroute"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["move dryer vent to a new wall", "new opening through exterior block wall", "1 story", "electric dryer", "remodeling the laundry room"]
+      must_not_be_on_card: ["permit needed", "any price", "any cause", "licensed contractor required"]
+      max_questions: 4
+      notes: "Refused job type for this category: rerouting or replacing a vent is not cleaned here and goes to handyman as dryer vent reroute. The AI should say the request is being sent as a reroute job, not a cleaning card, and must not decide whether it needs a license or permit. The 'clean the old one out' add-on is easy to latch onto and send down the cleaning path by mistake."
+
+  - id: dryer_vent_cleaning_s14
+    kind: vague
+    persona: "man in his 50s, owns a vacation rental, lives out of town, texts like he is dictating"
+    opening_message: "I own a vacation rental in Havasu and I need all three dryers vents done before the spring season, can you get a quote for all of them"
+    photo: "none, he is not at the property and has a cleaner who could send photos later"
+    hidden_facts:
+      - "three dryers: one in each of three separate units on the same lot"
+      - "unit A: single story, wall exit, run under 10 feet, electric dryer"
+      - "unit B: two stories, vent exits the roof, run about 25 feet, gas dryer"
+      - "unit C: one story, vent exits the side wall behind a fenced pool equipment area, run about 15 feet, electric dryer"
+      - "units are empty on weekdays between guests; a lockbox is on each door"
+      - "the dryers run almost daily during busy months"
+      - "unit B's roof is a flat foam roof"
+      - "owner wants one visit for all three if possible"
+    homeowner_behavior: "answers about the whole property unless asked about one unit; has to be asked unit by unit; gives facts for the unit asked about; will not know details until he checks with his cleaner, then replies later"
+    traps:
+      - "three dryers means three vents with different exits, stories and fuel; one flat answer per question would mix them up"
+      - "hidden: unit B is a roof exit on a two-story with a gas dryer on a foam roof, which changes the whole quote; only said if asked per unit"
+      - "hidden: unit C vent is behind fenced pool equipment area, only said if asked what is near the vent"
+      - "access by lockbox; the card must not carry the lockbox code or the address"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: long_or_roof_vent
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3 dryers in 3 units", "unit A: 1 story, wall exit, under 10 feet, electric", "unit B: 2 stories, roof exit, about 25 feet, gas, foam roof", "unit C: 1 story, side wall, about 15 feet, electric, behind fenced pool equipment area", "rental, empty on weekdays between guests", "wants all three done in one visit"]
+      must_not_be_on_card: ["lockbox code", "street address", "any price", "any cause"]
+      max_questions: 6
+      notes: "Multi-unit job. The hardest unit sets the job type, so long_or_roof_vent is expected for the card, but the card still has to list each unit separately. Question count is higher because the same questions repeat per unit. Tests the AI does not collapse three vents into one set of answers."
+
+  - id: dryer_vent_cleaning_s15
+    kind: outside_area
+    persona: "woman in her 40s, polite, texts clearly"
+    opening_message: "Hi, I'm in Bullhead City and need my dryer vent cleaned, wall exit on a one story. do you work out here and what does it cost"
+    photo: "none"
+    hidden_facts:
+      - "home is in Bullhead City, Arizona"
+      - "one story house, wall exit on the side"
+      - "electric dryer"
+      - "run under 10 feet"
+    homeowner_behavior: "answers any question asked; asks about price once; accepts a clear answer about coverage"
+    traps:
+      - "location is outside Lake Havasu City; the ZIP or town check must answer first, before any vent questions are asked"
+      - "she asks about price; the AI must not give one"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any price", "any cause"]
+      max_questions: 1
+      notes: "Outside the service area. The ZIP check should answer before trade questions, so no vent question is asked and no card is built. The reply says the service covers Lake Havasu City and does not recommend another business."
+
+  - id: dryer_vent_cleaning_s16
+    kind: no_businesses
+    persona: "man in his 40s, tidy, answers clearly, no fuss"
+    opening_message: "looking for a yearly dryer vent cleaning at my house in Lake Havasu City. wall exit, one story, electric dryer, about 10 feet from the dryer"
+    photo: "outside wall vent with a plastic louvered cover about 2 feet off the ground, light lint around the louvers"
+    hidden_facts:
+      - "wall exit on the back of the house, one story"
+      - "electric dryer, laundry room next to the kitchen"
+      - "run about 10 feet with no bends"
+      - "dryer dries normally, no symptoms"
+      - "annual cleaning, the last was a year ago by another company"
+      - "plastic louvered cover with light lint around it"
+      - "he can be home any day after 3 pm"
+    homeowner_behavior: "answers every question in one line; sends the photo when asked; asks no questions"
+    traps:
+      - "right category and job type, but the test harness reports zero businesses; the card should state that this trade has no businesses yet instead of promising quotes"
+      - "hidden: nothing unusual; the test is the zero-coverage response, not intake difficulty"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: standard_vent_cleaning
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["annual cleaning", "wall exit on the back of the house", "1 story", "electric dryer", "run about 10 feet", "light lint on a louvered cover", "home after 3 pm"]
+      must_not_be_on_card: ["any price", "any cause", "a business name", "quotes coming"]
+      max_questions: 3
+      notes: "Zero coverage. The intake is easy and complete. The result is that the homeowner is told no businesses for this trade are signed up yet, with no recommendation of any outside business and no promise of a quote."
