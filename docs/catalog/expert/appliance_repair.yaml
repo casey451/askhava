@@ -1,0 +1,838 @@
+# Ask Hava expert layer: appliance_repair (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set appliance_repair and trade_kb/trades/appliance_repair.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - Mapping. The category's job types are washer, dryer, refrigerator, dishwasher repair. kb ids kept:
+#     fridge -> "refrigerator"; washer -> "washer"; dryer -> "dryer" (electric dryers);
+#     dishwasher -> "dishwasher repair";
+#     range_oven -> "gas appliance repair (gas dryer, range or oven)" (the refused, licensed-only R-63 row).
+#       The category has no electric range or oven job type, so electric ranges, wall ovens and cooktops
+#       ride on the licensed-only row too. That keeps gas safe but shuts handymen out of electric range
+#       work. Suggest adding a "range or oven repair" job type, with gas units staying licensed-only.
+#     appliance_install -> "washer" (washer and dryer hookups are the usual install request). A fridge or
+#       dishwasher install then reaches only businesses that opted into "washer". Suggest an
+#       "appliance install" job type.
+# - Added with new_job_type: gas_dryer -> the refused gas appliance row, so a gas dryer never reaches a
+#   handyman (A.R.S. 32-1121(D)(2)). Scenario appliance_repair_s10 (gas dryer) expects job_type `dryer`;
+#   either the scenario moves to gas_dryer or the intake switches job type on the fu_fuel answer.
+# - Left out, with no home in this category:
+#     microwave: no category job type. Countertop units are rarely repaired; over-the-range installs
+#       touch cabinets and a dedicated circuit.
+#     dryer_vent: belongs to the dryer_vent_cleaning category; the misdiagnosis check below routes there.
+# - The question set has no gas-or-electric question and no warranty question, and the AI may ask only
+#   one follow-up. On a dryer or range the fuel answer decides who may quote, so it should be a bank
+#   question (kb q2_fuel), not a follow-up. Warranty (kb q6_warranty) changes who can be paid for the
+#   work and is the second-best bank addition.
+# - The set's photos are [p1, p2, p3]; p4 (hookups behind: cord, gas line, water line, vent) is in the kb
+#   and is the photo that shows gas, vent and install conditions. Suggest adding p4 to the set.
+# - Whether a repair-only visit on an existing appliance needs an ROC license is [unverified] (foundation
+#   az_license_master.md). This file follows the catalog row (R-63, handyman allowed).
+# - Scenario files use bank_job_type strings such as "washer repair" and "range/oven repair" that are not
+#   the names in categories.yaml.
+# - Refrigerant work needs EPA Section 608 certification (Type I covers small appliances such as home
+#   refrigerators). Ask Hava does not check 608 cards; a business attests at sign-up, if anything.
+schema: 1
+category: appliance_repair
+question_set: appliance_repair
+kb_trade: appliance_repair
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-63 Appliances: install and repair appliances, not gas, electrical or plumbing lines; R-11 Electrical; R-37 Plumbing including gas piping) [S2]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104 Dual license classifications (CR-63 Appliances: C-63 plus R-63) [S3]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed ((A)(14) handyman exemption leaves unmodified plug-in appliances out of the $1,000 total; (D)(2) never covers work connecting to natural gas, propane or other fuel gas) [S4]"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Division: permit required for gas lines and electrical updates; replacing existing fixtures needs none; 2024 IRC and 2023 NEC adopted [S17]"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (total hardness 19 grains per gallon average, range 18 to 20; TDS 753 ppm average)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233/Water-Quality-Report-PDF"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ues_about
+    title: "UniSource Energy Services About: natural gas service in Santa Cruz, Mohave, Yavapai, Coconino and Navajo counties [S21]"
+    url: "https://www.uesaz.com/about/"
+    checked: "2026-10-29"
+    kind: other
+  - id: epa_608_types
+    title: "US EPA Section 608 Types of technician certification (Type I: servicing small appliances) [S38]"
+    url: "https://www.epa.gov/section608/types-technician-certification"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_608_definitions
+    title: "US EPA Section 608 definitions: small appliance is factory charged and sealed with 5 pounds or less of refrigerant (home refrigerators and freezers, compact ice makers, dehumidifiers, window AC) (archived EPA snapshot)"
+    url: "https://19january2021snapshot.epa.gov/section608/definitions-section-608-terms_.html"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ge_fridge_location
+    title: "GE Appliances: refrigerator installation location and temperature (do not install where it goes below 60 F or above 110 F; Garage Ready top-freezer models 38 F to 110 F)"
+    url: "https://products.geappliances.com/appliance/gea-support-search-content?contentId=16910"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: whirlpool_garage_ready
+    title: "Whirlpool: how garage-ready refrigerators work (near-freezing to 110 F; standard models are meant for indoor, climate-controlled rooms)"
+    url: "https://producthelp.whirlpool.com/Refrigeration/Full-Size_Refrigerators/Product_Info/Product_Assistance/How_Garage-Ready_Refrigerators_Work"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: whirlpool_warranty
+    title: "Whirlpool major appliance limited warranty (one year parts and labor; service must be by a Whirlpool designated service company; travel for service in remote locations excluded) (retailer-hosted copy)"
+    url: "https://static.pcrichard.com/docs/WFE500M4HS_Warranty_01.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: nfpa_dryer
+    title: "NFPA clothes dryer fact sheet: failure to clean was the leading cause (29 percent) of home dryer and washer fires; about 17,700 such fires in 2006 (DOE-hosted copy)"
+    url: "https://www.energy.gov/sites/default/files/2016/06/f32/NFPA_DryerFactSheet.pdf"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: usfa_dryer
+    title: "USFA/FEMA Clothes dryer fire safety flyer (lint and vent cleaning; vent not crushed or restricted; outdoor flap opens when running) [T-usfa_dryer]"
+    url: "https://www.usfa.fema.gov/downloads/pdf/publications/clothes_dryer_fire_safety_flyer.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: cpsc_range
+    title: "CPSC range tip-over safety alert (anti-tip brackets supplied with new ranges and attached to wall or floor) [T-cpsc_range]"
+    url: "https://www.cpsc.gov/s3fs-public/pdfs/blk_media_5007.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_climate
+    title: "US Climate Data, Lake Havasu City normals (average highs 105 F June, 109 F July, 108 F August; about 3.8 inches of rain a year)"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: valley_angi_costs
+    title: "The Valley Marketing Group (marketing vendor): HomeAdvisor and Angi cost per lead for contractors, 2026 (standard leads sold to 3 to 8 contractors; plumbing $20 to $85, electrical $18 to $70, HVAC $35 to $90; no appliance figure)"
+    url: "https://thevalleymarketinggroup.com/blog/homeadvisor-angi-cost-per-lead-contractors-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: servicemag_thumbtack
+    title: "Service Magazine (appliance and HVAC trade magazine): Thumbtack review (contractors report $15 to $80 or more per contact depending on trade and market)"
+    url: "https://servicemag.org/software/thumbtack"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: wordstream_2025
+    title: "Shopifreaks summary of the WordStream by LocaliQ 2025 Google Ads benchmarks (home improvement clicks in the $7+ range; all-industry average cost per lead $70.11)"
+    url: "https://www.shopifreaks.com/google-ads-cpcs-rose-to-5-42-in-2025-with-87-of-industries-seeing-increases-but-conversion-rates-climbed-to-8-18-as-automation-improves/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: serviceworks_marketing
+    title: "Service.works (field-service software vendor): appliance repair marketing (Angi high lead costs and bidding; Local Services Ads pay per lead; budgets 5 to 10 percent of revenue)"
+    url: "https://blog.service.works/service-business/appliance-repair/appliance-repair-marketing/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Gas or electric"
+      why: "Any work connecting to natural gas or propane is never handyman work, so a gas dryer or range goes only to licensed businesses; R-63 itself does not cover gas lines."
+      source: ars_32_1121
+    - driver: "Model and serial number in hand before the visit"
+      why: "With the label photo a tech checks parts and stock first and can fix on the first trip; without it, many jobs become a diagnose visit plus a second trip for parts. [judgment]"
+      source: null
+    - driver: "Sealed refrigeration system versus a fan, control or defrost part (refrigerators)"
+      why: "Opening the sealed system needs an EPA 608 certified tech, recovery gear and hours; on an older unit it turns the repair into a repair-or-replace talk. [judgment]"
+      source: epa_608_types
+    - driver: "Age and brand"
+      why: "Over about 10 years, parts get scarce and many owners replace instead; some brands carry pricier boards and longer part waits. [judgment]"
+      source: null
+    - driver: "Warranty status (maker's warranty, store plan or home warranty)"
+      why: "Maker's warranty work must go to the maker's designated service company, so an independent shop may only be able to quote it as a paid visit."
+      source: whirlpool_warranty
+    - driver: "Access: stacked in a closet, upstairs, built into cabinets, in a hot garage"
+      why: "Pulling a stacked pair or a built-in unit can take two techs and more time; a second-floor washer raises the stakes on any water. [judgment]"
+      source: null
+    - driver: "Error code shown"
+      why: "A code narrows the parts list before the visit and shortens the diagnosis. [judgment]"
+      source: null
+    - driver: "Town and drive time (Lake Havasu City, Bullhead City, Kingman are far apart)"
+      why: "Many shops cover one town and add a trip charge for the others. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Water damage already under a dishwasher, fridge or washer (soft subfloor, swollen cabinet base)"
+      how_a_pro_spots_it: "Puddle photo, stained or lifted flooring at the toe kick, manufactured home with particle-board floor"
+      question_or_photo: p3
+      source: null
+    - condition: "Old or kinked gas connector, or no shutoff valve, behind a gas dryer or range"
+      how_a_pro_spots_it: "Hookups photo shows the flex line and valve; age of the unit"
+      question_or_photo: p4
+      source: null
+    - condition: "Crushed, foil or very long dryer vent behind a dryer that runs but dries slowly"
+      how_a_pro_spots_it: "Hookups photo shows the duct; slow drying getting worse over months; vent goes through the roof"
+      question_or_photo: fu_vent_cleaned
+      source: usfa_dryer
+    - condition: "Seized or scaled water valve behind a washer or fridge that will not close or leaks when moved"
+      how_a_pro_spots_it: "White crust on the valve in the hookups photo; hard city water"
+      question_or_photo: p4
+      source: lhc_ccr
+    - condition: "Sealed-system fault on a fridge that turns a part swap into a repair-or-replace decision"
+      how_a_pro_spots_it: "Both sections warm, unit over 10 years, frost on the freezer back wall in a photo"
+      question_or_photo: fu_fridge_symptom
+      source: null
+    - condition: "Unit still under the maker's warranty, found out at the door"
+      how_a_pro_spots_it: "Age under 1 to 2 years, recent purchase mentioned, model label photo"
+      question_or_photo: fu_warranty
+      source: whirlpool_warranty
+    - condition: "Range missing its anti-tip bracket when it is pulled out for service"
+      how_a_pro_spots_it: "Hookups photo with the range pulled out; no bracket at the back foot"
+      question_or_photo: p4
+      source: cpsc_range
+    - condition: "The appliance is fine and the circuit or breaker is the fault"
+      how_a_pro_spots_it: "Dead unit with a blank display; breaker tripped recently or will not reset"
+      question_or_photo: fu_breaker
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "dryer (runs but clothes stay damp, takes two or three cycles)"
+      might_be: "dryer_vent (clogged or long vent run), a different category"
+      one_question: fu_vent_cleaned
+      if_other_route_to: {category: dryer_vent_cleaning, job_type: "dryer vent cleaning"}
+      source: nfpa_dryer
+    - sounds_like: "dishwasher repair (water on the floor in front of it)"
+      might_be: "sink drain or disposal leak in the cabinet next to it"
+      one_question: fu_dw_leak_when
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "dishwasher repair (water left in the bottom)"
+      might_be: "kitchen drain clog shared with the sink"
+      one_question: fu_sink_drains
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}
+      source: null
+    - sounds_like: "washer (water on the floor while it drains)"
+      might_be: "standpipe or laundry drain backing up"
+      one_question: fu_washer_leak_when
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}
+      source: null
+    - sounds_like: "washer (water on the floor even when it is off)"
+      might_be: "supply valve or hose leak at the wall"
+      one_question: fu_washer_leak_when
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "dryer, range or oven dead with a blank display"
+      might_be: "tripped or failed breaker or circuit"
+      one_question: fu_breaker
+      if_other_route_to: {category: electrical, job_type: "breaker trips"}
+      source: null
+    - sounds_like: "appliance_install (hook up a new dryer or range)"
+      might_be: "new 240-volt outlet or circuit needed first"
+      one_question: fu_existing_hookups
+      if_other_route_to: {category: electrical, job_type: "new circuit"}
+      source: aac_r4_9_103
+    - sounds_like: "dryer (homeowner never says gas)"
+      might_be: "gas_dryer, licensed-only work in this category"
+      one_question: fu_fuel
+      if_other_route_to: {category: appliance_repair, job_type: "gas appliance repair (gas dryer, range or oven)"}
+      source: ars_32_1121
+  photo_reading:
+    - photo_id: p1
+      reads: ["Brand, model and serial (serial often encodes the build year)", "Style: top-freezer, side-by-side, French door; top-load or front-load", "Gas or electric from the model letters or label text"]
+      neutral_wording: "Model label photo is readable; brand and model number are on the card."
+    - photo_id: p2
+      reads: ["Exact error code and which lights flash", "Whether the display is lit at all"]
+      neutral_wording: "Display shows the code OE with the start light blinking."
+    - photo_id: p3
+      reads: ["Where the water sits: front, under the door, behind, at the toe kick", "Size of the wet area and flooring type", "Frost or ice on a freezer back wall"]
+      neutral_wording: "Water on the tile in front of the dishwasher, about 2 feet across."
+    - photo_id: p4
+      reads: ["Cord type (3-prong or 4-prong) or hardwired", "Gas flex line, valve and its age", "Water valve crust, braided or rubber hoses", "Vent duct: foil, flexible or rigid metal, crushed or kinked", "Anti-tip bracket on a range"]
+      neutral_wording: "Behind the dryer: 4-prong cord, flexible foil vent duct bent at the wall."
+  local_factors:
+    - fact: "City water hardness averages about 19 grains per gallon, TDS about 753 ppm"
+      effect: "Scale builds in dishwasher spray arms and valves, washer inlet screens and ice makers; pros ask about a softener and expect crusted valves"
+      source: lhc_ccr
+    - fact: "Average highs run 105 to 109 F from June to August"
+      effect: "Garage fridges and freezers struggle in summer; makers rate standard and many garage-ready units to 110 F, so where the fridge stands goes on the card"
+      source: lhc_climate
+    - fact: "GE says not to install a standard refrigerator where the temperature goes above 110 F; garage-ready models are rated to about 110 F"
+      effect: "A warm garage fridge in July may be a location question more than a part; the card says garage so the business can plan"
+      source: ge_fridge_location
+    - fact: "UniSource supplies natural gas in Mohave County; homes outside the gas mains use propane [judgment]"
+      effect: "Gas and propane dryers and ranges are common, so the fuel answer decides who may quote"
+      source: ues_about
+    - fact: "Many manufactured homes, with laundry in hall closets and stacked or compact units [judgment]"
+      effect: "Tight access and particle-board floors change labor and water-damage risk"
+      source: null
+    - fact: "Seasonal residents and vacant second homes; problems found on return in October and November [judgment]"
+      effect: "Fridges found warm, ice makers leaking, washers with standing water after months off; cards should say how long the home was empty"
+      source: null
+    - fact: "Vacation rentals turn over on tight schedules [judgment]"
+      effect: "Owners and managers want a dated visit before the next guest; timing answer matters more than usual"
+      source: null
+  seasonality:
+    busy: "June to September (fridges, freezers and ice makers in the heat) and October to December (seasonal residents return, holiday ovens) [judgment]"
+    slow: "February to April [judgment]"
+    source: null
+
+job_types:
+  - id: fridge
+    label: "Refrigerator or freezer not cooling, leaking, frosting up, ice maker or water dispenser"
+    bank_job_type: "refrigerator"
+    recurring: false
+    homeowner_phrasings: ["fridge not cold", "freezer works but fridge is warm", "ice maker quit", "water under the fridge", "icebox making noise"]
+    must_know:
+      - fact: "Which part has the trouble: fridge section, both sections, ice and water, or a leak"
+        bank_question: details
+        follow_up: fu_fridge_symptom
+        photo: p3
+        why_it_moves_price: "Fridge-only warm points at fans or defrost parts; both warm can mean the sealed system and an EPA 608 tech; ice and water is a valve or ice-maker part. [judgment]"
+        skip_if: "Her words already say which section and what it does"
+      - fact: "Brand, model and serial"
+        bank_question: brand
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Lets the business check parts before the visit and fix on the first trip. [judgment]"
+        skip_if: "Label photo sent or model typed in"
+      - fact: "Age"
+        bank_question: age
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Over 10 years shifts many fridge jobs to repair-or-replace. [judgment]"
+        skip_if: "Answered"
+      - fact: "Where it stands: kitchen, garage, outdoor kitchen"
+        bank_question: null
+        follow_up: fu_fridge_location
+        photo: null
+        why_it_moves_price: "A garage unit in summer heat may be running past its rated range, which changes the visit."
+        skip_if: "Her words say where it is"
+      - fact: "Warranty status"
+        bank_question: null
+        follow_up: fu_warranty
+        photo: null
+        why_it_moves_price: "Maker's warranty work goes to the maker's service company; others quote a paid visit."
+        skip_if: "Age over 5 years"
+    allowed_follow_ups:
+      - id: fu_fridge_symptom
+        ask_when: "Homeowner says the fridge has a problem without saying which part"
+        text_en: "Which fits it: the fridge side is warm but the freezer is cold, both are warm, the ice maker or water stopped, or water is on the floor?"
+        text_es: "¿Cuál le queda: el lado del refrigerador está tibio pero el congelador frío, los dos están tibios, el hielo o el agua dejó de salir, o hay agua en el piso?"
+        options_en: ["Fridge warm, freezer cold", "Both warm", "Ice maker or water dispenser", "Water on the floor"]
+        options_es: ["Refrigerador tibio, congelador frío", "Los dos tibios", "Máquina de hielo o dispensador de agua", "Agua en el piso"]
+        card_field: true
+        why: "The four answers send a different tech and parts list. [judgment]"
+      - id: fu_fridge_location
+        ask_when: "Fridge or freezer is not cooling and her words do not say where it stands"
+        text_en: "Where does it stand: in the kitchen, in the garage, or outside on a patio?"
+        text_es: "¿Dónde está: en la cocina, en la cochera, o afuera en un patio?"
+        options_en: ["Kitchen or inside the house", "Garage", "Outside or patio"]
+        options_es: ["Cocina o dentro de la casa", "Cochera", "Afuera o en el patio"]
+        card_field: true
+        why: "Makers rate many units to about 110 F; a Havasu garage passes that in summer."
+      - id: fu_warranty
+        ask_when: "Appliance is under about 5 years old, or she mentions buying it recently"
+        text_en: "Is it still under the maker's warranty, or a store or home warranty plan?"
+        text_es: "¿Todavía tiene la garantía del fabricante, o un plan de garantía de la tienda o de la casa?"
+        options_en: ["Maker's warranty", "Store or home warranty plan", "No warranty"]
+        options_es: ["Garantía del fabricante", "Plan de la tienda o de la casa", "Sin garantía"]
+        card_field: true
+        why: "Warranty work must go to the maker's designated service company, so businesses need to know before quoting."
+    photos_priority: [p1, p3, p2]
+    urgency:
+      fire_dept_triggers: ["Smoke or burning smell from the fridge or its outlet"]
+      urgent_capable_triggers: ["Food inside and the fridge or freezer is warm", "Water spreading on the floor"]
+      regular: "Ice maker or dispenser only, food is cold"
+    scope_line_en: "Side-by-side fridge, about 8 years old; fresh-food side warm since yesterday, freezer still cold; food inside."
+    scope_line_es: "Refrigerador de dos puertas verticales, unos 8 años; el lado de refrigeración está tibio desde ayer, el congelador sigue frío; hay comida adentro."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "whether the fee comes off the repair", "earliest visit"]
+    card_template: |
+      REQ-<id> | Appliance repair | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: style, age, which part, since when>
+      Refrigerator: <brand>, <model from label or not sent>, <age>. Trouble: <fridge warm / both warm / ice or water / water on floor>.
+      Stands in: <kitchen / garage / outside>. Warranty: <maker / store or home plan / none / not said>. Code: <code or none>. Food inside: <yes / no / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's probably the compressor.", "Sounds like a refrigerant leak.", "Your food should be fine for a day.", "At that age you should just replace it.", "A defrost fix is cheap."]
+
+  - id: washer
+    label: "Washer not draining, not spinning, leaking, won't start, loud"
+    bank_job_type: "washer"
+    recurring: false
+    homeowner_phrasings: ["washer won't drain", "water stuck in the drum", "washer won't spin", "washer leaking", "washer walks across the floor"]
+    must_know:
+      - fact: "What it does and whether water is standing in the drum"
+        bank_question: details
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Standing water means the tech brings a way to drain it before working; a leak, a no-spin and a dead unit are different visits. [judgment]"
+        skip_if: "Her words say it"
+      - fact: "When water shows on the floor: filling, draining, or even when off"
+        bank_question: null
+        follow_up: fu_washer_leak_when
+        photo: p3
+        why_it_moves_price: "Water while draining or when off can be the drain or the wall valve, plumbing work and not the washer. [judgment]"
+        skip_if: "No leak mentioned"
+      - fact: "Top-load, front-load or stacked"
+        bank_question: null
+        follow_up: fu_washer_type
+        photo: p1
+        why_it_moves_price: "A stacked pair in a closet may need two techs to pull; front-loads have door seals and pumps reached from the front. [judgment]"
+        skip_if: "Label photo or her words show the type"
+      - fact: "Where it sits: garage, main-floor closet or upstairs"
+        bank_question: null
+        follow_up: fu_laundry_location
+        photo: null
+        why_it_moves_price: "Upstairs over a finished room and tight closets add time and care. [judgment]"
+        skip_if: "Her words say where"
+      - fact: "Error code and brand"
+        bank_question: error_code
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "A code plus the model narrows parts before the trip. [judgment]"
+        skip_if: "Code photo sent"
+    allowed_follow_ups:
+      - id: fu_washer_leak_when
+        ask_when: "Homeowner reports water on the floor near the washer"
+        text_en: "When does the water show up: while it fills, while it drains, or even when the washer is off?"
+        text_es: "¿Cuándo aparece el agua: mientras se llena, mientras desagua, o aunque la lavadora esté apagada?"
+        options_en: ["While it fills", "While it drains", "Even when it is off"]
+        options_es: ["Mientras se llena", "Mientras desagua", "Aunque esté apagada"]
+        card_field: true
+        why: "Draining points at the house drain and off points at the wall valve, both plumbing; filling or running stays with the washer. [judgment]"
+      - id: fu_washer_type
+        ask_when: "Type of washer is not known from her words or a photo"
+        text_en: "What kind of washer is it: top-load, front-load, or stacked under a dryer?"
+        text_es: "¿Qué tipo de lavadora es: de carga superior, de carga frontal, o apilada debajo de una secadora?"
+        options_en: ["Top-load", "Front-load", "Stacked under a dryer", "Washer and dryer in one"]
+        options_es: ["Carga superior", "Carga frontal", "Apilada debajo de una secadora", "Lavadora y secadora en una"]
+        card_field: true
+        why: "Type sets access, parts and whether one tech can do it. [judgment]"
+      - id: fu_laundry_location
+        ask_when: "Washer or dryer job and her words do not say where the laundry is"
+        text_en: "Where is the laundry: in the garage, in a room or closet on the main floor, or upstairs?"
+        text_es: "¿Dónde está la lavandería: en la cochera, en un cuarto o clóset en la planta baja, o en el piso de arriba?"
+        options_en: ["Garage", "Main floor room or closet", "Upstairs"]
+        options_es: ["Cochera", "Cuarto o clóset en la planta baja", "Piso de arriba"]
+        card_field: true
+        why: "Location sets access, vent length and water-damage stakes. [judgment]"
+      - fu_warranty
+    photos_priority: [p2, p1, p3]
+    urgency:
+      fire_dept_triggers: ["Smoke, sparks or burning smell from the washer or its outlet"]
+      urgent_capable_triggers: ["Water on the floor and still coming", "Water reaching carpet or a room below"]
+      regular: "Standing water in the drum, no water on the floor"
+    scope_line_en: "Front-load washer, bottom of a stacked pair in a hall closet; stops with water in the drum; code OE shows."
+    scope_line_es: "Lavadora de carga frontal, abajo de un par apilado en un clóset del pasillo; se detiene con agua en el tambor; muestra el código OE."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "whether the fee comes off the repair", "earliest visit"]
+    card_template: |
+      REQ-<id> | Appliance repair | <town>, <general area> | <kind of place>
+      <one scope line: type, what it does, water in drum or on floor>
+      Washer: <brand>, <model or not sent>, <age>. Type: <top-load / front-load / stacked / combo>. Code: <code or none>.
+      Water: <in drum / on floor while filling / while draining / when off / none>. Laundry: <garage / main floor / upstairs>. Warranty: <maker / plan / none / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the drain pump.", "Clean the filter at the bottom front.", "Sounds like the motor.", "Shut off the water valves behind it.", "That's a quick fix."]
+
+  - id: dryer
+    label: "Electric dryer not heating, slow drying, won't start, loud"
+    bank_job_type: "dryer"
+    recurring: false
+    homeowner_phrasings: ["dryer not heating", "clothes still wet", "takes three cycles", "dryer won't turn on", "dryer squeaks"]
+    must_know:
+      - fact: "Gas or electric"
+        bank_question: null
+        follow_up: fu_fuel
+        photo: p4
+        why_it_moves_price: "A gas dryer is licensed-only work and routes to gas_dryer."
+        skip_if: "Her words or the hookups photo show a 240-volt cord and no gas line"
+      - fact: "What it does: no heat, slow drying, won't start, noise"
+        bank_question: details
+        follow_up: fu_dryer_symptom
+        photo: null
+        why_it_moves_price: "No heat is a heating-part visit; slow drying is often the vent, a different job; won't start can be the circuit. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Vent run and when it was last cleaned"
+        bank_question: null
+        follow_up: fu_vent_cleaned
+        photo: p4
+        why_it_moves_price: "Failure to clean is the leading cause of dryer fires and a common reason for slow drying; a long or roof vent may need a vent business."
+        skip_if: "No heat at all or won't start"
+      - fact: "Brand, model and age"
+        bank_question: brand
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Parts check before the visit. [judgment]"
+        skip_if: "Label photo sent"
+    allowed_follow_ups:
+      - id: fu_fuel
+        ask_when: "Dryer, range, oven or install and her words do not say gas, propane or electric"
+        text_en: "Does it run on natural gas or propane, or only on electricity?"
+        text_es: "¿Funciona con gas natural o gas propano, o solo con electricidad?"
+        options_en: ["Electric only", "Natural gas", "Propane"]
+        options_es: ["Solo eléctrica", "Gas natural", "Gas propano"]
+        card_field: true
+        why: "Gas and propane work is never handyman work and goes only to licensed businesses."
+      - id: fu_dryer_symptom
+        ask_when: "Dryer has a problem and her words do not say which kind"
+        text_en: "Which fits it: runs with no heat, heats but takes more than one cycle, won't start, or makes a loud noise?"
+        text_es: "¿Cuál le queda: funciona pero no calienta, calienta pero tarda más de un ciclo, no prende, o hace mucho ruido?"
+        options_en: ["Runs, no heat", "Heats, takes more than one cycle", "Won't start", "Loud noise"]
+        options_es: ["Funciona, no calienta", "Calienta, tarda más de un ciclo", "No prende", "Mucho ruido"]
+        card_field: true
+        why: "Each answer is a different visit, and slow drying may be a vent job. [judgment]"
+      - id: fu_vent_cleaned
+        ask_when: "Dryer heats but clothes take longer than one cycle"
+        text_en: "When was the dryer vent, the duct to the outside, last cleaned?"
+        text_es: "¿Cuándo se limpió por última vez el ducto de la secadora que va hacia afuera?"
+        options_en: ["Within the last year", "1 to 3 years ago", "Over 3 years ago or never"]
+        options_es: ["En el último año", "Hace 1 a 3 años", "Hace más de 3 años o nunca"]
+        card_field: true
+        why: "Separates a dryer part from a vent cleaning job, which has its own category."
+      - id: fu_breaker
+        ask_when: "Dryer, range or oven is dead with no lights or a blank display"
+        text_en: "Has a breaker for it tripped lately?"
+        text_es: "¿Se ha botado el breaker de ese aparato últimamente?"
+        options_en: ["Yes, and it was reset", "Yes, and it won't stay on", "No"]
+        options_es: ["Sí, y se volvió a subir", "Sí, y no se queda arriba", "No"]
+        card_field: true
+        why: "A breaker that will not stay on is electrical work, not the appliance. [judgment]"
+    photos_priority: [p4, p1, p2]
+    urgency:
+      fire_dept_triggers: ["Smoke, flames or burning smell from the dryer"]
+      urgent_capable_triggers: []
+      regular: "All electric dryer requests"
+    scope_line_en: "Electric dryer, about 8 years old; heats but needs three cycles; vent goes up through the roof and has not been cleaned in 6 years."
+    scope_line_es: "Secadora eléctrica, unos 8 años; calienta pero necesita tres ciclos; el ducto sale por el techo y no se ha limpiado en 6 años."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "whether the fee comes off the repair", "earliest visit"]
+    card_template: |
+      REQ-<id> | Appliance repair | <town>, <general area> | <kind of place>
+      <one scope line: fuel, age, what it does>
+      Dryer: electric, <brand>, <model or not sent>, <age>. Doing: <no heat / slow / won't start / noise>. Code: <code or none>.
+      Vent: <goes out the wall behind / long run / roof / not said>; last cleaned <within a year / 1 to 3 years / over 3 or never / not said>. Breaker: <tripped and reset / won't stay on / no / not asked>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your heating element burned out.", "It's the thermal fuse.", "That vent is a fire hazard.", "Clean the lint trap and try again.", "Element swaps run about a hundred."]
+
+  - id: gas_dryer
+    new_job_type: true
+    label: "Gas or propane dryer not heating, slow, won't start, loud (licensed only)"
+    bank_job_type: "gas appliance repair (gas dryer, range or oven)"
+    recurring: false
+    homeowner_phrasings: ["gas dryer not heating", "propane dryer takes forever", "gas dryer clicks but no heat", "gas dryer won't start"]
+    must_know:
+      - fact: "Natural gas or propane"
+        bank_question: null
+        follow_up: null
+        photo: p4
+        why_it_moves_price: "Propane units use different orifices and parts; the card tells the business which. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "What it does: no heat, slow drying, won't start, noise"
+        bank_question: details
+        follow_up: fu_dryer_symptom
+        photo: null
+        why_it_moves_price: "No heat on a gas unit is an ignition-part visit; slow drying is often the vent. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Vent run and when it was last cleaned"
+        bank_question: null
+        follow_up: fu_vent_cleaned
+        photo: p4
+        why_it_moves_price: "Slow drying with an old or long vent may be a vent cleaning job instead."
+        skip_if: "No heat at all"
+      - fact: "Hookups behind it: gas connector, valve and vent"
+        bank_question: null
+        follow_up: null
+        photo: p4
+        why_it_moves_price: "An old connector or missing valve adds parts and gas work to the visit. [judgment]"
+        skip_if: "No photo possible"
+    allowed_follow_ups:
+      - fu_dryer_symptom
+      - fu_vent_cleaned
+      - id: fu_vent_run
+        ask_when: "Slow drying and her words do not say where the vent goes"
+        text_en: "Where does the dryer vent go out: the wall right behind the dryer, a long run to another wall, or up through the roof?"
+        text_es: "¿Por dónde sale el ducto de la secadora: la pared justo detrás, un tramo largo hasta otra pared, o por el techo?"
+        options_en: ["Wall right behind it", "Long run to another wall", "Up through the roof"]
+        options_es: ["La pared justo detrás", "Tramo largo a otra pared", "Por el techo"]
+        card_field: true
+        why: "Long and roof vents clog sooner and need vent gear the appliance tech may not carry. [judgment]"
+      - fu_laundry_location
+    photos_priority: [p4, p1, p2]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell or hissing near the dryer", "Smoke, flames or burning smell from the dryer"]
+      urgent_capable_triggers: []
+      regular: "No smell, dryer just will not heat or dries slowly"
+    scope_line_en: "Natural gas dryer in the garage, about 9 years old; clothes still damp after a full cycle."
+    scope_line_es: "Secadora de gas natural en la cochera, unos 9 años; la ropa sale húmeda después de un ciclo completo."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "whether the fee comes off the repair", "earliest visit"]
+    card_template: |
+      REQ-<id> | Appliance repair (gas, licensed only) | <town>, <general area> | <kind of place>
+      <one scope line: gas or propane, age, what it does>
+      Dryer: <natural gas / propane>, <brand>, <model or not sent>, <age>. Doing: <no heat / slow / won't start / noise>.
+      Vent: <wall behind / long run / roof / not said>; last cleaned <within a year / 1 to 3 years / over 3 or never / not said>. Laundry: <garage / main floor / upstairs>.
+      Photos: <n> (<neutral description, including the hookups if sent>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the igniter.", "The gas valve coils are bad.", "It's safe to keep using it.", "Check the gas valve behind it.", "A handyman can swap that part."]
+
+  - id: dishwasher
+    label: "Dishwasher not draining, leaking, not cleaning, won't start"
+    bank_job_type: "dishwasher repair"
+    recurring: false
+    homeowner_phrasings: ["dishwasher won't drain", "water in the bottom", "dishwasher leaking on the floor", "dishes come out dirty", "dishwasher won't start"]
+    must_know:
+      - fact: "What it does: water left in it, leaking, dirty dishes, won't start"
+        bank_question: details
+        follow_up: fu_dw_symptom
+        photo: p3
+        why_it_moves_price: "A drain job, a leak, a wash problem and a dead unit bring different parts. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "For a leak: when the water shows, dishwasher running or sink in use"
+        bank_question: null
+        follow_up: fu_dw_leak_when
+        photo: p3
+        why_it_moves_price: "Water only when the sink or disposal runs is a plumbing leak in the cabinet next door. [judgment]"
+        skip_if: "No leak"
+      - fact: "For not draining: whether the kitchen sink drains slowly too"
+        bank_question: null
+        follow_up: fu_sink_drains
+        photo: null
+        why_it_moves_price: "A shared slow drain is a plumber's drain clearing job, not the dishwasher. [judgment]"
+        skip_if: "Not a drain problem"
+      - fact: "Brand, model and age"
+        bank_question: brand
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Parts check before the visit; label sits on the inside edge of the door or tub. [judgment]"
+        skip_if: "Label photo or model typed in"
+    allowed_follow_ups:
+      - id: fu_dw_symptom
+        ask_when: "Dishwasher has a problem and her words do not say which kind"
+        text_en: "Which fits it: water left in the bottom, water on the floor, dishes not getting clean, or it won't start?"
+        text_es: "¿Cuál le queda: queda agua en el fondo, hay agua en el piso, los platos no salen limpios, o no prende?"
+        options_en: ["Water left in the bottom", "Water on the floor", "Dishes not clean", "Won't start"]
+        options_es: ["Queda agua en el fondo", "Agua en el piso", "Platos no salen limpios", "No prende"]
+        card_field: true
+        why: "Four answers, four visits. [judgment]"
+      - id: fu_dw_leak_when
+        ask_when: "Water on the floor near the dishwasher"
+        text_en: "Does the water show up when the dishwasher runs, or when the kitchen sink or disposal is used?"
+        text_es: "¿El agua aparece cuando funciona el lavaplatos, o cuando se usa el fregadero o el triturador?"
+        options_en: ["When the dishwasher runs", "When the sink or disposal is used", "Both"]
+        options_es: ["Cuando funciona el lavaplatos", "Cuando se usa el fregadero o el triturador", "Las dos"]
+        card_field: true
+        why: "Separates a dishwasher leak from a sink or disposal leak, which is plumbing. [judgment]"
+      - id: fu_sink_drains
+        ask_when: "Dishwasher leaves water in the bottom"
+        text_en: "Is the kitchen sink next to it draining slowly too?"
+        text_es: "¿El fregadero de la cocina a un lado también drena lento?"
+        options_en: ["Yes, slow too", "No, the sink drains fine"]
+        options_es: ["Sí, también lento", "No, el fregadero drena bien"]
+        card_field: true
+        why: "A shared slow drain is plumbing drain clearing. [judgment]"
+      - fu_warranty
+    photos_priority: [p3, p1, p2]
+    urgency:
+      fire_dept_triggers: ["Smoke or burning smell from the dishwasher"]
+      urgent_capable_triggers: ["Water on the floor and still coming"]
+      regular: "Water left in the tub, dirty dishes or a dead unit"
+    scope_line_en: "Built-under dishwasher, about 12 years old; an inch of water left in the bottom after each cycle; no code."
+    scope_line_es: "Lavaplatos empotrado, unos 12 años; queda una pulgada de agua en el fondo después de cada ciclo; sin código."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "whether the fee comes off the repair", "earliest visit"]
+    card_template: |
+      REQ-<id> | Appliance repair | <town>, <general area> | <kind of place>
+      <one scope line: age, what it does>
+      Dishwasher: <brand>, <model or not sent>, <age>. Doing: <water left / leak / not clean / won't start>. Code: <code or none>.
+      Leak shows: <when it runs / when sink or disposal used / both / n/a>. Sink drains: <slow too / fine / not asked>. Warranty: <maker / plan / none / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The filter is clogged.", "It's the door gasket.", "Run vinegar through it.", "That's the drain pump.", "Hard water ruined it."]
+
+  - id: range_oven
+    label: "Range, oven, cooktop or wall oven, gas or electric (licensed only)"
+    bank_job_type: "gas appliance repair (gas dryer, range or oven)"
+    recurring: false
+    homeowner_phrasings: ["oven won't heat", "burner clicks but won't light", "stove display blank", "oven shows a code", "cooktop burner dead"]
+    must_know:
+      - fact: "Gas, propane or electric"
+        bank_question: null
+        follow_up: fu_fuel
+        photo: p4
+        why_it_moves_price: "Gas and propane units go only to gas-qualified licensed businesses."
+        skip_if: "Her words say gas or electric"
+      - fact: "Freestanding range, built-in wall oven or counter cooktop"
+        bank_question: null
+        follow_up: fu_range_type
+        photo: p1
+        why_it_moves_price: "Built-in and hardwired units take longer to pull and may need two techs. [judgment]"
+        skip_if: "Her words or a photo show the type"
+      - fact: "Which part: one burner, all burners, the oven, the display"
+        bank_question: details
+        follow_up: fu_range_symptom
+        photo: p2
+        why_it_moves_price: "One burner is a small part; a dead display or oven can be a board or the circuit. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Brand, model and age"
+        bank_question: brand
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Board and igniter parts vary by model and age. [judgment]"
+        skip_if: "Label photo sent"
+    allowed_follow_ups:
+      - fu_fuel
+      - id: fu_range_type
+        ask_when: "Type of cooking appliance is not clear from her words"
+        text_en: "Is it a freestanding range, an oven built into the cabinets, or a cooktop set into the counter?"
+        text_es: "¿Es una estufa de pie, un horno empotrado en los gabinetes, o una parrilla empotrada en la barra?"
+        options_en: ["Freestanding range", "Built-in wall oven", "Cooktop in the counter"]
+        options_es: ["Estufa de pie", "Horno empotrado en la pared", "Parrilla empotrada en la barra"]
+        card_field: true
+        why: "Type sets access and time. [judgment]"
+      - id: fu_range_symptom
+        ask_when: "Range or oven problem and her words do not say which part"
+        text_en: "Which part has the trouble: one burner, all the burners, the oven, or the display and controls?"
+        text_es: "¿Qué parte falla: un quemador, todos los quemadores, el horno, o la pantalla y los controles?"
+        options_en: ["One burner", "All burners", "The oven", "Display or controls"]
+        options_es: ["Un quemador", "Todos los quemadores", "El horno", "Pantalla o controles"]
+        card_field: true
+        why: "Each answer brings a different parts list. [judgment]"
+      - fu_breaker
+    photos_priority: [p1, p2, p4]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell or hissing near the range", "Smoke, flames or sparks from the range or oven"]
+      urgent_capable_triggers: []
+      regular: "Burner or oven not working, no smell"
+    scope_line_en: "Natural gas range, about 13 years old; back left burner clicks but does not light; other burners and oven work; no gas smell reported."
+    scope_line_es: "Estufa de gas natural, unos 13 años; el quemador de atrás a la izquierda hace clic pero no prende; los otros quemadores y el horno funcionan; no se reporta olor a gas."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "whether the fee comes off the repair", "earliest visit"]
+    card_template: |
+      REQ-<id> | Appliance repair (licensed only) | <town>, <general area> | <kind of place>
+      <one scope line: fuel, type, age, which part>
+      Fuel: <natural gas / propane / electric>. Type: <freestanding / wall oven / cooktop>. <brand>, <model or not sent>, <age>.
+      Trouble: <one burner / all burners / oven / display>. Code: <code or none>. Breaker: <tripped and reset / won't stay on / no / not asked>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your igniter is shot.", "It's the control board.", "Go ahead and swap the igniter yourself.", "Using the other burners is fine.", "That's an electrical problem."]
+
+  - id: appliance_install
+    label: "Hook up or install a new appliance (washer, dryer, fridge, dishwasher, range)"
+    bank_job_type: "washer"
+    recurring: false
+    homeowner_phrasings: ["hook up my new washer", "install a dishwasher", "connect the ice maker line", "delivery won't hook it up", "swap the old dryer for a new one"]
+    must_know:
+      - fact: "Which appliance and which hookups it needs"
+        bank_question: appliance
+        follow_up: fu_install_hookups
+        photo: p4
+        why_it_moves_price: "Plug-in only is short labor; water, gas or vent connections add parts and, for gas, licensed-only work."
+        skip_if: "Her words name the appliance and the hookups"
+      - fact: "Whether the hookups already exist where it goes"
+        bank_question: null
+        follow_up: fu_existing_hookups
+        photo: p4
+        why_it_moves_price: "A new outlet, circuit, gas line or water line is electrical or plumbing work, not R-63."
+        skip_if: "Replacing an old unit in the same spot"
+      - fact: "Gas, propane or electric"
+        bank_question: null
+        follow_up: fu_fuel
+        photo: p4
+        why_it_moves_price: "A gas connection is never handyman work."
+        skip_if: "Washer, fridge or dishwasher"
+      - fact: "Whether the old unit goes away"
+        bank_question: null
+        follow_up: fu_haul_away
+        photo: null
+        why_it_moves_price: "Haul-away adds labor and disposal; old fridges need refrigerant recovery before disposal."
+        skip_if: "No old unit"
+    allowed_follow_ups:
+      - id: fu_install_hookups
+        ask_when: "Install request and her words do not say what it connects to"
+        text_en: "What does the new one connect to: just a plug, a water line, a gas line, or a dryer vent?"
+        text_es: "¿A qué se conecta el aparato nuevo: solo un enchufe, una línea de agua, una línea de gas, o un ducto de secadora?"
+        options_en: ["Just a plug", "Water line", "Gas line", "Dryer vent", "More than one of these"]
+        options_es: ["Solo un enchufe", "Línea de agua", "Línea de gas", "Ducto de secadora", "Más de una de estas"]
+        card_field: true
+        why: "Sets the parts list and whether the job is licensed-only. [judgment]"
+      - id: fu_existing_hookups
+        ask_when: "Install in a new spot, or her words mention a missing outlet, line or vent"
+        text_en: "Are the outlet, water valve, drain or vent already in place where it goes?"
+        text_es: "¿Ya están el enchufe, la llave de agua, el desagüe o el ducto donde va a quedar?"
+        options_en: ["All there, used before", "Some are missing", "New spot, nothing there"]
+        options_es: ["Todo está, ya se usó", "Faltan algunos", "Lugar nuevo, no hay nada"]
+        card_field: true
+        why: "Missing hookups mean an electrician or plumber first. [judgment]"
+      - fu_fuel
+      - id: fu_haul_away
+        ask_when: "Install replaces an old unit and haul-away is not mentioned"
+        text_en: "Should the old one be taken away?"
+        text_es: "¿Hay que llevarse el aparato viejo?"
+        options_en: ["Yes, take it away", "No, I'll keep it", "No old one"]
+        options_es: ["Sí, llévenselo", "No, me lo quedo", "No hay viejo"]
+        card_field: true
+        why: "Haul-away changes labor and disposal. [judgment]"
+    photos_priority: [p4, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All install requests"
+    scope_line_en: "Hook up a new electric dryer, 4-prong cord, delivered Friday; the old dryer is gone; outlet already in place."
+    scope_line_es: "Conectar una secadora eléctrica nueva, cable de 4 puntas, llega el viernes; la secadora vieja ya no está; el enchufe ya está."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee or install price", "what is included (hoses, cord, vent, haul-away)", "earliest day"]
+    card_template: |
+      REQ-<id> | Appliance repair: install | <town>, <general area> | <kind of place>
+      <one scope line: which appliance, delivered when, same spot or new>
+      Connects to: <plug / water / gas / vent>. Hookups in place: <all / some missing / none>. Fuel: <electric / natural gas / propane / n/a>.
+      Old unit: <take away / keep / none>. New unit: <brand and model if given>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Any handyman can hook up a gas dryer.", "You can reuse the old hoses.", "Just plug it into the old outlet.", "Installs run about a hundred.", "You'll need a new circuit."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Repeat customers and word of mouth", "Maker's authorized-service and warranty dispatch", "Home warranty company dispatch", "Property managers, vacation-rental managers and realtors", "Appliance store and delivery referrals [judgment]", "Google Local Services Ads and search ads", "Angi, HomeAdvisor and Thumbtack"]
+  customer_acquisition_benchmarks:
+    - channel: "Angi and HomeAdvisor (closest trades; no appliance-repair figure found)"
+      figure: "Plumbing about $20 to $85 and electrical about $18 to $70 per lead; standard leads sold to 3 to 8 contractors at once; marketing-vendor figures"
+      source: valley_angi_costs
+      unverified: false
+    - channel: "Thumbtack (all trades)"
+      figure: "About $15 to $80 or more per contact, depending on trade and market; trade-magazine summary of contractor reports"
+      source: servicemag_thumbtack
+      unverified: false
+    - channel: "Google search ads (home improvement)"
+      figure: "Clicks in the $7+ range; all-industry average cost per lead about $70; marketing-vendor benchmark"
+      source: wordstream_2025
+      unverified: false
+    - channel: "Total marketing budget (appliance repair)"
+      figure: "About 5 to 10 percent of yearly revenue; software-vendor guidance"
+      source: serviceworks_marketing
+      unverified: false
+    - channel: "Lake Havasu City appliance repair specifically"
+      figure: "No local figures found; a small market with few shops may pay less per contact than national figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a contact that 3 to 8 other shops also bought", "People who want a price over the phone and never book", "Warranty customers who will call the maker anyway", "Fake numbers and test requests", "Monthly fees whether or not jobs come", "Being ranked by the site"]
+  what_makes_a_lead_worth_paying_for: ["Model label photo up front, so parts can be checked", "Age, brand and error code on the card", "Warranty status known before the drive", "Gas or electric stated", "Access stated (stacked, upstairs, garage, built-in)", "Pay only when picked, nothing monthly"]
+  their_words: ["service call", "diagnostic fee", "trip charge", "applied to the repair", "model and serial", "sealed system", "control board", "NLA (no longer available)", "warranty dispatch", "two-man job", "haul-away", "first-trip fix"]
+  signup_objections:
+    - objection: "My diagnostic fee is the only sure money on a call. Why give you some of it?"
+      answer: "You keep your diagnostic fee. The $25 introduction fee is charged only when a homeowner picks your quote and you confirm. Nothing to join and nothing monthly."
+    - objection: "Most of these will be people who want a price over the phone."
+      answer: "Every card has the appliance, brand, age, what it does and photos when she has them. You quote your visit fee in your own words, and she picks knowing that."
+    - objection: "Half my calls turn out to be under warranty and I can't bill the maker."
+      answer: "When the homeowner says it is under warranty, the card says so before you quote. You decide whether to quote it."
+    - objection: "I don't do gas work."
+      answer: "You pick your job types at sign-up and can change them any time. Gas dryers and ranges are sent only to licensed businesses that chose them."
+    - objection: "What if I quote, drive out, and she decides to buy a new one instead?"
+      answer: "Your visit fee is yours to set and collect. The introduction fee is the same either way, and it is refunded if she cancels before you have spoken."
+    - objection: "Will you rank me against other shops?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license number and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "I'm a one-man shop and can't take every card."
+      answer: "Quote only the cards you want. Skipping a card costs nothing."
+    - objection: "Do I need an ROC license to get cards?"
+      answer: "Cards go to businesses whose license or exemption covers the job. Gas appliance work always needs a license; you list your license numbers at sign-up and the homeowner sees them."
+  quote_tips_for_card: ["Say what the visit fee covers and whether it comes off the repair", "Give your earliest day", "Say if you carry parts for this brand", "Say if you do warranty work for this maker", "If you need the model label first, say so"]
