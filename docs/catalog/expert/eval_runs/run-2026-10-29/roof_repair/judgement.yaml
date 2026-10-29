@@ -589,3 +589,31 @@ where_playbook_lost_to_human:
   - "s11: urgent was left false after a fire-truck-list hit, and stain growth and the outlet still being in use were not asked. Fix: set urgent when the 911 text goes out; for a dry stain, ask whether it has grown after each rain."
   - "s15: 'Has anyone worked on the roof before?' was not asked, so his three roofing-cement patches are missing; the card also drops 'never redone' and which rooms. Fix: add a worked-on question for tile_underlayment and leak_repair."
 
+compliance:
+  violations:
+    - {scenario_id: roof_repair_s01, code: C6, where: "card line 3", text: "about 2,000 sq ft"}
+    - {scenario_id: roof_repair_s02, code: C11, where: "intake message 3", text: "What's the problem? 1 Leak inside 2 Broken or slipped tiles 3 Storm damage 4 Want a full new roof"}
+    - {scenario_id: roof_repair_s03, code: C11, where: "intake message 5", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+    - {scenario_id: roof_repair_s03, code: C6, where: "card line 3", text: "Drips: when the upstairs bathroom is used."}
+    - {scenario_id: roof_repair_s03, code: C6, where: "card line 3", text: "Valve: not tried."}
+    - {scenario_id: roof_repair_s06, code: C11, where: "intake message 5", text: "What is the roof now? 1 Bare metal 2 Coated (white or gray) 3 Shingles 4 Already has a roof-over"}
+    - {scenario_id: roof_repair_s07, code: C11, where: "intake message 3", text: "What's the problem? 1 Leak inside 2 Broken or slipped tiles 3 Storm damage 4 Want a full new roof"}
+    - {scenario_id: roof_repair_s08, code: C6, where: "card line 3", text: "Roof: flat or tile not sure"}
+    - {scenario_id: roof_repair_s09, code: C11, where: "intake message 3", text: "¿Cuál es el problema? 1 Gotera adentro 2 Tejas rotas o movidas 3 Daño por tormenta 4 Quiere techo nuevo completo"}
+    - {scenario_id: roof_repair_s10, code: C11, where: "intake message 4", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+    - {scenario_id: roof_repair_s10, code: C6, where: "card line 4", text: "Ceiling: dripping at a light or fan, not sagging."}
+    - {scenario_id: roof_repair_s15, code: C11, where: "intake message 2", text: "What kind of roof is it? 1 Tile 2 Shingle 3 Flat or foam 4 Metal"}
+  count: 12
+  clean_scenarios: 6
+  notes:
+    - "Clean scenarios: s04, s05, s11, s12, s13, s14."
+    - "C11 (7): each one is a bank question asked after the homeowner had already answered it in his or her own words. s02: the opening said cracked and slid tiles. s07: 'I have a stain on my bedroom ceiling'. s09: 'se me cayeron varias tejas... se esta metiendo agua'. s15: 'the felt redone under the tile'. s06: 'old silver coating that is peeling', two messages earlier. s03: timing after 'asap before the next rain'. s10: timing after 'I NEED SOMEONE NOW' at 11 pm. No scenario went over 8 questions (s01 reached exactly 8)."
+    - "C6 (5): s01 turns the 1,500 to 2,500 range into 'about 2,000 sq ft'. s03 writes a shower link the homeowner never picked and a 'Valve: not tried' default for a question never asked. s08 adds 'flat' to her 'not sure'. s10 carries the option text 'or fan'. Every playbook run entry recorded facts_in_card_not_stated: [], so the run agent's self-check missed all five. Fix: an unasked field should say 'not asked', and a bucket answer should be written as the bucket."
+    - "C10 clean. Each follow_up_used is in allowed_follow_ups for the job type routed, at most one per scenario: fu_spare_tiles (tile_repair: s01, s02), fu_when_wet (s03, the leak_repair misdiagnosis check that reroutes to plumbing_repair), fu_roof_age (flashing_skylight s04, leak_repair s05 and s11, active_leak s08), fu_mh_roof_now (manufactured_home_roof s06), fu_wet_now (leak_repair s07, s12), fu_insurance (storm_damage s09), fu_ceiling_state (active_leak s10), fu_roof_equipment (tile_underlayment s15)."
+    - "C3 clean. The fixed 911 text went out in s11 only, which is the one fire-truck-list scenario, and it was copied with its leading 'Ask Hava:'. s10 (water beside a light, no sparks said) correctly got no 911 text. No intake message gave safety, shutoff or repair advice."
+    - "C1, C2, C4, C5, C7, C8, C9, C12: no hits. s06's 'how much' was not answered with a figure. The s13 and s14 stop lines ('We don't cover Bullhead City yet.' and 'We've noted your request so we can add businesses.') promise no date. No em dashes, exclamation marks or ai_smell words or patterns appear in any intake message."
+    - "Near miss, not counted. s09: the homeowner said 'creo que ya se esta metiendo agua' (I think water is already getting in), and the card states 'water is coming into the garage now' and 'Water inside: coming in now'. That drops his hedge. The card should keep 'thinks water is getting in' until a question confirms it."
+    - "Near miss, not counted. s13 asked 'What ZIP is the house in?' after the opening named Bullhead City. It is the coverage step, not a trade question, and the town alone settles the area."
+    - "Expert-file finding for the routing team, not a compliance code: roof_repair.yaml maps storm_damage to bank_job_type 'leak repair', but the scenario writer expects 'tile replacement' for wind-knocked tiles (s09). That mapping is why playbook s09 scores routing_correct false. Consider mapping storm_damage to 'tile replacement' when tiles are off, or splitting it by what the storm did."
+    - "Expert-file finding: the file's own review note says roof age is only a follow-up and should be in the bank. The panel results back this up. Roof age, roof equipment and leak_where were the three facts the playbook missed most, and each one competes for the single follow-up slot or gets skipped."
+
