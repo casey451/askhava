@@ -945,11 +945,26 @@ scenarios:
           owner: "Leak detection, then spot repair vs reroute. Clear."
           estimator: "The hot-water-runs-out question points at the hot line. Nobody else asked it."
           field_tech: "Isolate the hot side first. Good plan."
+      D:
+        quotable: 2
+        missing_facts: ["damp rug over the warm spot (she mentioned 'the rug' while declining a photo; never asked)", "water bill went up last month", "home built in the 1980s (she said it; the card dropped it)", "hot water runs out faster than before"]
+        wasted_questions: ["water meter follow-up (answered 'havent checked')", "Is the water shut off right now?", "water damage photo ask (declined)", "pipe printing photo ask (declined, no pipes visible)", "When do you need this? (answered 'not sure'; card says not said)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes:
+          owner: "Leak detection on a visit fee. Fine, but nothing on the card confirms water is actually escaping."
+          estimator: "Eight questions against a max of 5, the most of any variant on any scenario, and five of them wasted. She said 'the rug' and '1980s' and neither reached the card. The bill and the damp rug, the two facts the trap is about, are both missing. Worse than the first run, which at least got the bill."
+          field_tech: "I'd find the damp rug myself. I don't know to isolate the hot side."
 
 summary_by_variant:
   playbook: {median_quotable: 2, quotable_share: 0.71, median_questions: 4, routing_correct_share: 0.94, fire_dept_correct_share: 1.0, trap_caught_share: 0.43, facts_not_stated_count: 1}
   baseline_none: {median_quotable: 2, quotable_share: 0.93, median_questions: 6, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 0.93, facts_not_stated_count: 0}
   baseline_human: {median_quotable: 2, quotable_share: 1.0, median_questions: 5, routing_correct_share: 0.94, fire_dept_correct_share: 1.0, trap_caught_share: 1.0, facts_not_stated_count: 4}
+  playbook_v2: {median_quotable: 2, quotable_share: 0.62, median_questions: 4.5, routing_correct_share: 0.88, fire_dept_correct_share: 1.0, trap_caught_share: 0.36, facts_not_stated_count: 5}
 
 where_playbook_lost_to_human:
   - "Fixed bank questions spend the budget on menus that don't fit the job: 'Where is the water showing up?' and 'Is the water shut off right now?' were asked on clogs, a faucet swap, a laundry move and a water heater replacement (s02, s03, s06, s08, s10, s12, s15), and 'What kind of floor' on a faucet swap and a garage water heater. Fix: give each job type its own bank question set, or skip leak_where, shutoff and floor when the job type has no leak or no floor-dependent access."

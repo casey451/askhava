@@ -1,0 +1,591 @@
+category: roof_repair
+run: run-2026-10-29
+judge_model: "claude-opus-5-5"
+panel: [owner, estimator, field_tech]
+judging_notes:
+  - "All three variant files were present (playbook, baseline_none, baseline_human). Labels were shuffled per scenario and the mapping is in each block. The panel was scored from the scenario file and the three run files only. The expert file was opened only afterwards, for compliance check C10."
+  - "trap_caught is true only when every trap listed for the scenario surfaced on the card, or for a stop, when the stop behavior the trap describes was met. s14's traps are hidden facts that a correct no_businesses stop cannot surface, so trap_caught is null for all three variants there."
+  - "Stops for the expected reason (s13 outside_area, s14 no_businesses) score quotable null and routing_correct true. baseline_none s14 recorded job_type null even though the scenario notes say the intake should still capture foam_coating; it still scores routing_correct true under the stop rule, and the gap is noted."
+  - "routing_correct means the category and bank job type match what the scenario expects. Baseline job_type labels from categories.yaml ('tile replacement', 'leak repair', 're-roof') count as correct when they name the job type the scenario expects. baseline_none s02 ('leak repair', unsure) and playbook s09 (bank 'leak repair' for storm_damage) name the wrong bank job type, so both score false. playbook s08 routed to job_type active_leak where the scenario expects leak_repair, but its category and bank job type ('leak repair') match, so it scores true; the mismatch is noted."
+  - "questions_asked is copied from each run file. baseline_none's own counts are off by one in s02 (8 questions sent, 7 recorded) and s05 (6 sent, 7 recorded); noted in the panel notes, not changed."
+  - "urgent is not a scored field, but it is noted where it differs from the scenario: playbook s11 (false, expected true), baseline_none s09, s10 and s11 (false, expected true; its run header says the variant cannot judge urgency)."
+  - "Every playbook run entry recorded facts_in_card_not_stated: [], but the panel found 5 card facts the homeowner never said (s01, s03 x2, s08, s10). The run agent's self-check is not reliable."
+  - "Panel finding across the playbook run: leak_where was skipped in 12 of the 13 carded scenarios, and roof equipment (solar, cooler) was asked only once, as a follow-up in s15. Those two gaps account for most of the missed traps (solar in s01 and s12, the cooler in s06, the flat sections in s08, the electrical signs in s10)."
+scenarios:
+  - scenario_id: roof_repair_s01
+    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["one story (never asked)"]
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Three slid tiles on a 22-year concrete tile roof with solar on the south side. I'd go on a minimum-charge reset and bring matching tile.", estimator: "Stories not asked; I'd assume one story from a 2,000 sq ft desert ranch, but it should be on the card. 7 questions against a man who gets impatient after 5.", field_tech: "Solar and roof age both on the card, so I know to look at the felt and whether panels are near the work."}
+      B:
+        quotable: 2
+        missing_facts: ["solar panels on the south side", "roof about 22 years old, never redone", "no water inside (card says 'Water inside: not said')"]
+        wasted_questions: ["About how big is the home? (does not move a three-tile reset)", "Do you have spare tiles left over? (answer 'not sure')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'about 2,000 sq ft' (homeowner picked the 1,500 to 2,500 range)"]
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "I'd still send a truck on a small-repair price for three slid tiles, but I don't know the roof's age or what's up there.", estimator: "8 questions to an impatient retiree, and neither hidden trap came out. The size bucket and the spares question used turns that should have gone to 'anything on the roof' and 'how old is the roof'.", field_tech: "I'd find solar panels on site with no warning and no way of knowing if the felt is original."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'Homeowner is short on patience by text' (an inference from 'how many more questions', not something he said)"]
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Small reset with a fallback lift-and-relay price on the patio side. I'd go.", estimator: "Every must-have in 6 short questions, ending before his patience ran out. Size skipped on purpose.", field_tech: "Solar flagged with a note to schedule the solar company if the panels are in the way."}
+
+  - scenario_id: roof_repair_s02
+    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["black paper showing where the tiles slipped", "built in the 1990s, roof age unknown (card says 'age not said')"]
+        wasted_questions: ["About how big is the home? (answer 'not sure'; does not move a ridge reset)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Two-story steep front with six tiles near the ridge. I'd quote a reset on a visit fee.", estimator: "The card says tile, not shingle or clay, and records the 'sealed' wish without picking a coating job. But nobody asked if the paper is showing, and that's the one fact that tells me the felt is exposed to sun.", field_tech: "Two stories and steep are there, so I bring fall protection. I don't know the house age."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Reset and replace two, felt check. Visit fee or small range.", estimator: "All seven must-haves. The card does carry the words 'shingles or clay', but only as the homeowner's wrong terms next to 'concrete tile'; the material is right.", field_tech: "Steep two-story front and exposed felt both flagged."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: false
+        fire_dept_correct: true
+        facts_not_stated: ["'Two tiles cracked' (homeowner said 'a few tiles cracked'; the photo shows two crooked tiles, not cracks)"]
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Good facts, but it's labeled leak repair (unsure) when it's a tile reset with nothing leaking.", estimator: "Complete card. Run file says 7 questions; 8 were actually sent.", field_tech: "Black paper showing, steep front, two stories. Good."}
+
+  - scenario_id: roof_repair_s03
+    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Plumber on a leak-detection visit fee. Clear.", estimator: "Shower link, soft sagging ceiling, damp floor by the tub. Everything a plumber prices from.", field_tech: "Sagging drywall is flagged as a hazard before I walk under it."}
+      B:
+        quotable: 2
+        missing_facts: ["stain grows after showers (the shower link was never asked about; homeowner said 'i dont know why')"]
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Rerouted to plumbing correctly. Visit fee.", estimator: "Damp floor and soft ceiling are there. I'd want the shower link but the bathroom-above fact gets me most of the way.", field_tech: "Sagging ceiling warned. Good."}
+      C:
+        quotable: 2
+        missing_facts: ["ceiling soft and slightly sagging (safety fact the scenario says must be kept)", "damp bathroom floor near the tub", "grows after showers (never actually established)"]
+        wasted_questions: ["What kind of roof is it? (not used on a plumbing card)", "How many stories? (answer 'not sure' from a man with an upstairs hall)", "When do you need this? (he already said 'asap before the next rain')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'Drips: when the upstairs bathroom is used' (he never picked that option or said it)", "'Valve: not tried' (never asked)"]
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "A stain under a bathroom with five weeks of no rain is a plumber visit. I'd go.", estimator: "The reroute is right, but the card claims the drips follow bathroom use, which he never said, and it leaves out the soft ceiling and the damp floor.", field_tech: "I'd walk in under a soft, sagging ceiling with no warning on the card."}
+
+  - scenario_id: roof_repair_s04
+    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["no other stains anywhere (she said it; the card dropped it)", "only after hard rain", "one story, about 2,200 sq ft (stories and size both skipped)"]
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Skylight leak on a 12-year tile roof. Visit fee to re-flash. I'd go.", estimator: "Routed to the skylight job and keeps her re-roof request as her words, which is right. But she said there are no other stains and the card doesn't, and that's the fact that argues against a re-roof.", field_tech: "Don't know if it's one story or two. Hard rain versus any rain is not on the card."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'Tile roof' (roof type was never asked and never said in this transcript)"]
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Skylight-only, 12 years, no other stains. Visit fee for the skylight, with a re-roof quote if she insists.", estimator: "All the facts, but it's labeled as a general leak repair and 'Tile' is assumed.", field_tech: "Hard rain only and one story are both there."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Two lines, skylight re-flash and the re-roof she asked for. Easy.", estimator: "Skylight age (15 years, older than the roof) is the extra fact that makes the call.", field_tech: "I'll check the curb and the cricket first."}
+
+  - scenario_id: roof_repair_s05
+    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Foam repair and recoat on the addition, front tiles as a separate line. I'd go.", estimator: "The 'what's over the back bedroom' question fixed the misleading photo in one turn.", field_tech: "Go to the flat roof first. Ponding, blisters, bare foam all flagged."}
+      B:
+        quotable: 2
+        missing_facts: ["back bedroom is a later addition", "the front tiles are over the garage and water has never come in under them"]
+        wasted_questions: ["How many stories? (answer 'not sure')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Card points me at the flat back section with blisters and bare foam in the photo. Visit fee.", estimator: "The roof-over-that-room question and the photo ask both worked. Ponding comes from the photo only ('shallow puddle'), not how long it sits.", field_tech: "I don't know whether the front tiles ever leaked, so I can't tell if they're part of the job."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Full picture of the flat addition and the front tiles. Visit fee.", estimator: "Complete. Run file says 7 questions; 6 were actually sent.", field_tech: "Ponding a day or two, bare foam, front tiles never leaked. Good."}
+
+  - scenario_id: roof_repair_s06
+    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "Single-wide, 1974, cooler, park approval needed. I'd go out to price the roof-over, or the leak fix, on site.", estimator: "Every must-have and the park's OK. 8 questions though.", field_tech: "Swamp cooler at the kitchen end is the first place I look."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Two lines, the leak now and the roof-over if licensed. Clear.", estimator: "1974 pre-HUD flagged, owns home on a rented space. All there.", field_tech: "Cooler curb and seams noted."}
+      C:
+        quotable: 1
+        missing_facts: ["built 1974", "owns the home on a rented space in a park", "rooftop swamp cooler near the kitchen end", "metal roof (he said metal; the card says only 'coated, silver, peeling')"]
+        wasted_questions: ["How many stories? (single-wide)", "About how big is the home? (answer 'not sure')", "What is the roof now? (he had already said 'old silver coating that is peeling')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "A roof-over on a trailer I know nothing about: no year, no size, no idea what's on the roof. I'd call first.", estimator: "Three of six turns went to questions that were obvious or already answered, and the year and the cooler never came out.", field_tech: "I'd find a swamp cooler right over the leak with no warning."}
+
+  - scenario_id: roof_repair_s07
+    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    scores:
+      A:
+        quotable: 1
+        missing_facts: ["text only, cannot take phone calls", "another company already gave her a written figure", "appeared after heavy rain in September", "home about 30 years old", "stain in the corner, about hand-sized"]
+        wasted_questions: ["About how big is the home? (answer 'not sure')", "What's the problem? (her opening already said a ceiling stain)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "A dry stain on a tile roof with nothing else. I'd want to call her, and the card doesn't say she can't take calls.", estimator: "7 numbered multiple-choice messages to an 80-year-old who needs plain words and one thing at a time. The two things that matter for her, text only and the door-knocker's written figure, are missing.", field_tech: "I'd phone ahead and she wouldn't hear it."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Small dry stain after September rain, 30-year tile. Free or low-fee leak inspection.", estimator: "All five must-haves, no price from the door-knocker. 7 questions against a limit of 5.", field_tech: "Text only is on the card."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'Elderly homeowner, types slowly' (she never said her age or how she types)"]
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Repair option plus a written re-roof option only if the felt is done. I'd go.", estimator: "Five short questions, one at a time. Door-knocker figure recorded without the number.", field_tech: "Text before arriving. Clear."}
+
+  - scenario_id: roof_repair_s08
+    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["Are you the owner, or do you rent the house? (her opening said 'im renting')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "Tenant, owner pays, flat section over the closet. Visit fee.", estimator: "Every must-have, but 8 questions against a limit of 5.", field_tech: "Flat section flagged; I bring coating and foam gear."}
+      B:
+        quotable: 2
+        missing_facts: ["flat-looking section above the closet", "leaks when it rains hard", "owner approves and pays (card says only that the landlord asked for quotes sent to him)"]
+        wasted_questions: ["About how big is the home? (answer 'not sure')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'flat or tile not sure' (she never said flat)"]
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Tenant with access times. I'd go on a visit fee, but I'd want the owner's OK spelled out.", estimator: "Routed active_leak where the scenario expects leak_repair (same bank job type). Nobody asked what's above the closet.", field_tech: "I'd bring tile gear and find a flat section."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Quote addressed to the owner, access windows clear. Go.", estimator: "'What's the roof like over that closet' found the flat section, same as in s05.", field_tech: "Flat section and tie-in flagged."}
+
+  - scenario_id: roof_repair_s09
+    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Urgent dry-in and reset with saved tiles. Spanish contact. Go today.", estimator: "Wet spot, 15 years, saved tiles, size. All in 5.", field_tech: "Dry-in first, then reset."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'about 1,800 sq ft' (size never asked or said in this transcript)", "'Home in the mornings' (never said in this transcript)"]
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "All the roof facts. Not marked urgent though water is coming in.", estimator: "8 questions against a limit of 5. Two card facts the homeowner never said.", field_tech: "Wet spot on the garage ceiling noted."}
+      C:
+        quotable: 2
+        missing_facts: ["wet spot on the garage ceiling after last night's light rain (card has only 'water coming in now')", "roof about 15 years old", "some whole tiles saved", "five or six tiles (card says 'several')"]
+        wasted_questions: ["¿Cuál es el problema? (the opening already said wind knocked tiles off and water is getting in)", "¿Más o menos qué tamaño tiene la casa? (does not move a garage-side reset)", "¿Va a hacer un reclamo al seguro? (answer 'no he decidido'; does not change the quote)"]
+        trap_caught: false
+        routing_correct: false
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Urgent and in Spanish, so I'd go today. But it's filed under leak repair, not tile replacement.", estimator: "He said 'creo que' (I think) water is getting in; the card firms that up to 'coming in now' without asking where. Age and saved tiles never asked.", field_tech: "No idea whether he kept any tiles I can reuse."}
+
+  - scenario_id: roof_repair_s10
+    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["light is switched off", "no sparks, buzzing or burning smell", "tile roof about 18 years old, one story", "buckets catching water"]
+        wasted_questions: ["When do you need this? (she had said 'I NEED SOMEONE NOW' at 11 pm)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'dripping at a light or fan' ('or fan' is option text; she said beside the light)"]
+        questions_asked: 3
+        stopped_before_card: null
+        panel_notes: {owner: "Urgent after-hours leak. I'd send a dry-in crew on an emergency fee.", estimator: "No 911 text over-trigger, good, and 3 questions. But the timing question was wasted on 'NOW' when it could have gone to 'any sparks or burning smell'.", field_tech: "Water at a light fixture and the card doesn't say if it's off or sparking. That's the first thing I need to know before I walk in."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 3
+        stopped_before_card: null
+        panel_notes: {owner: "Urgent, after-hours, safe electrically. Go.", estimator: "Sparks question first, then ceiling, then roof. Three questions, all the facts.", field_tech: "Light off, no sparks, firm ceiling. I know what I'm walking into."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["When do you need this? (she had said 'NOW')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "All the facts, but not marked urgent.", estimator: "6 questions to a panicked homeowner against a limit of 3.", field_tech: "Electrical signs covered."}
+
+  - scenario_id: roof_repair_s11
+    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Leak visit; outlet in use is on the card. Not marked urgent.", estimator: "911 text first, then every must-have.", field_tech: "Outlet still in use with a lamp. I know before I touch that wall."}
+      B:
+        quotable: 2
+        missing_facts: ["stain about two feet wide", "stain grows after each rain", "one story", "outlet still in use with a lamp plugged in"]
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "911 text went out and the roof job continued. Visit fee. But it's not flagged urgent after a fire-truck-list hit.", estimator: "No size, and nothing on whether it's growing. That separates an old stain from an active leak.", field_tech: "The sparking outlet is in the homeowner's notes, but not that it's still live and in use."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Urgent for the outlet, roof leak priced on a visit. Go.", estimator: "Growth, size, shared garage wall. All in 4.", field_tech: "Don't touch the outlet until an electrician clears it. Flagged."}
+
+  - scenario_id: roof_repair_s12
+    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Solar R&R over the leak is the big line. I can range it.", estimator: "Solar, bow size, September timing. Second request kept separate.", field_tech: "Coordinate with the solar company before the visit."}
+      B:
+        quotable: 1
+        missing_facts: ["solar panels on the roof section above the dining room", "leak showed up after the September storms", "bowed section about two feet wide (photo says only 'slightly bowed')"]
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Solar panels right over the leak change the whole quote and need a separate crew. The card doesn't know they're there. I'd call before booking.", estimator: "Size and stories asked, but not 'anything on the roof above it'. 6 questions against a limit of 5.", field_tech: "I'd show up and find panels over the leak with no solar crew booked."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Solar above the leak is on the card. Range quote.", estimator: "Complete, 7 questions against a limit of 5.", field_tech: "Bowed popcorn ceiling noted."}
+
+  - scenario_id: roof_repair_s13
+    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    scores:
+      A:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: outside_area
+        panel_notes: {owner: "Correct stop.", estimator: "n/a", field_tech: "n/a"}
+      B:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: outside_area
+        panel_notes: {owner: "Correct stop, no roof questions first.", estimator: "Asked for the ZIP even though the opening named Bullhead City. Harmless, but one turn more than needed.", field_tech: "n/a"}
+      C:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: outside_area
+        panel_notes: {owner: "Correct stop on the town named.", estimator: "n/a", field_tech: "n/a"}
+
+  - scenario_id: roof_repair_s14
+    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    scores:
+      A:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: no_businesses
+        panel_notes: {owner: "Correct stop for zero roofing coverage.", estimator: "Job type left null. The scenario says the intake should still capture foam_coating so the request can be matched when roofers join.", field_tech: "n/a"}
+      B:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: no_businesses
+        panel_notes: {owner: "Correct stop; foam_coating recorded.", estimator: "n/a", field_tech: "n/a"}
+      C:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: no_businesses
+        panel_notes: {owner: "Correct stop; foam_coating recorded, no date promised.", estimator: "n/a", field_tech: "n/a"}
+
+  - scenario_id: roof_repair_s15
+    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["three spots patched with roofing cement by the homeowner", "roof never redone (original 1998)", "which rooms: hallway and guest room, both dry now"]
+        wasted_questions: ["What kind of roof is it? (opening said 'the felt redone under the tile')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Lift-and-relay on 2,300 sq ft, one story, with solar on half the south roof. I can range it.", estimator: "The request is turned into plain words with no tar. Solar came out through the roof-equipment follow-up. His own cement patches never did.", field_tech: "I'd find three blobs of can cement on the tile with no warning."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Full lift-and-relay range with solar R&R and a permit. Go.", estimator: "'Has anyone done any work on it' got the patches. Attic hatch is a bonus.", field_tech: "Patches and solar both flagged."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["What is the roof covering made of? (opening said 'under the tile')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "All the facts; re-roof label is right.", estimator: "8 questions against a limit of 6.", field_tech: "Patches and solar on the card."}
+
+summary_by_variant:
+  playbook: {median_quotable: 2, quotable_share: 0.769, median_questions: 6, routing_correct_share: 0.933, fire_dept_correct_share: 1.0, trap_caught_share: 0.214, facts_not_stated_count: 5}
+  baseline_none: {median_quotable: 2, quotable_share: 1.0, median_questions: 7, routing_correct_share: 0.933, fire_dept_correct_share: 1.0, trap_caught_share: 1.0, facts_not_stated_count: 4}
+  baseline_human: {median_quotable: 2, quotable_share: 1.0, median_questions: 5, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 1.0, facts_not_stated_count: 2}
+
+where_playbook_lost_to_human:
+  - "Roof equipment (solar, AC or swamp cooler) is only a follow-up, used once (s15). The human asked 'anything on the roof' in s01, s06, s12 and s15 and found solar in three and the cooler over the leak in one. Fix: make 'What is mounted on the roof?' a fixed question for every roof_repair job type. It is the biggest single driver of the quote and of who has to be scheduled."
+  - "leak_where was skipped in 12 of 13 carded scenarios. The human's 'What's the roof like over that room?' found the flat foam section in s05 and s08. When the playbook did ask it, as the roof-type question in s05, it worked. Fix: never skip leak_where when water shows inside; word it as 'What is the roof like right above that room?'"
+  - "Roof age and whether it was ever redone were missing in s01, s02, s07, s09 and s12 because the one follow-up slot went elsewhere. The human asked it in every tile scenario. Fix: make roof or house age, and whether it was redone, a fixed question, so the follow-up is free for the job-specific fact."
+  - "The home size question was wasted. It got 'not sure' in s02, s06, s07 and s08, and it doesn't move a tile reset or a leak visit. The human asked size only for the skylight, re-roof and lift-and-relay jobs. Fix: ask home_size only for re-roof, tile_underlayment, foam_coating and manufactured_home_roof."
+  - "Already-answered questions were re-asked: the problem question after the opening named it (s02, s07, s09), timing after 'asap' or 'NOW' (s03, s10), roof type after 'under the tile' (s15), and the roof-now follow-up after 'old silver coating that is peeling' (s06). Fix: skip a bank question when the opening or an earlier reply answers it; for timing, take 'now', 'asap' or 'today' from the opening."
+  - "When and how the leak shows was not asked in s04 (hard rain only), s07 (after September's heavy rain), s08 (hard rain), s11 (grows after each rain) and s12 (after September storms). The human asked 'every rain or only hard rain?' and 'has it grown?'. Fix: for leak_repair and flashing_skylight, ask when it shows up and whether it has grown, in place of the size question."
+  - "s03: the follow-up answer never confirmed the shower link, but the card wrote 'Drips: when the upstairs bathroom is used'. It also dropped the soft, sagging ceiling and the damp floor, which the human got with 'Is the ceiling soft or sagging?' and 'Is the floor near the tub damp?'. Fix: on a reroute to plumbing, use the turn for the ceiling's state, not stories or roof type, and only write an option the homeowner actually picked."
+  - "s04: she said 'no other stains anywhere in the house' and the card dropped it. That is the fact that argues against her re-roof request. Fix in the card writer: every fact the homeowner states in reply to a question goes on the card."
+  - "s06: year built (1974, pre-HUD) and owning the home on a rented park space were never asked; the human asked both. Fix: for manufactured_home_roof, make year built and 'own the home and rent the space?' fixed questions, and drop stories (a single-wide) and size."
+  - "s07: the elderly widow got 7 numbered multiple-choice messages, and the card is missing text-only contact and the door-knocker's written figure. The human asked 'Did the man at the door give you a price in writing?' and 'Is texting the best way for roofers to reach you?' in plain words. Fix: when the opening mentions another company, ask whether anyone else has looked at it. When the homeowner signals phone or hearing trouble, ask her contact preference and put 'text only' on the card. Use plain-word questions, not numbered lists, for slow typists."
+  - "s08: 'owner approves and pays' is not stated plainly on the card, and the flat section above the closet was missed (see leak_where). Fix: for tenants, the card line should read 'Tenant; owner approves and pays', and the job type should be leak_repair, not active_leak, for a leak that is not dripping now."
+  - "s09: storm_damage carried bank_job_type 'leak repair' where the scenario expects 'tile replacement'. Roof age, saved tiles and the wet spot were not asked; the insurance follow-up took the slot. Fix: map storm_damage with tiles off to 'tile replacement'. For tiles off, the follow-up should be 'Did you keep any whole tiles?'"
+  - "s10: water beside a light fixture, but the electrical-signs question was never asked. The human's first question was 'Any sparks or burning smell?', which both guards the 911 rule and tells the crew what they're walking into. Fix: when water shows at a light or fan, the follow-up is 'Any sparks, buzzing or burning smell? Is the light off?'"
+  - "s11: urgent was left false after a fire-truck-list hit, and stain growth and the outlet still being in use were not asked. Fix: set urgent when the 911 text goes out; for a dry stain, ask whether it has grown after each rain."
+  - "s15: 'Has anyone worked on the roof before?' was not asked, so his three roofing-cement patches are missing; the card also drops 'never redone' and which rooms. Fix: add a worked-on question for tile_underlayment and leak_repair."
+
