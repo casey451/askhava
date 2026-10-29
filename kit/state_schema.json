@@ -1,0 +1,445 @@
+{
+  "$comment": "Shape of kit/state.json on claude/kit-state, checked by scripts/check_state.py at runner start (D-486). Unknown keys are kept, never rejected (D-121). Subset of JSON Schema: type, enum, required, properties, items, additionalProperties (as a schema), pattern, minLength.",
+  "type": "object",
+  "required": [
+    "schema",
+    "tasks"
+  ],
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "enum": [
+        1
+      ]
+    },
+    "phase": {
+      "type": "string"
+    },
+    "current": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "backup_runner": {
+      "type": "string",
+      "enum": [
+        "on",
+        "off"
+      ]
+    },
+    "build_hold": {
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
+    },
+    "runner_sha": {
+      "type": "string"
+    },
+    "starter": {
+      "type": "string",
+      "enum": [
+        "actions",
+        "routine",
+        "manual"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lease": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "task",
+        "session",
+        "expires"
+      ],
+      "properties": {
+        "task": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expires": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        }
+      }
+    },
+    "main_red": {
+      "type": [
+        "object",
+        "boolean",
+        "null"
+      ],
+      "required": [
+        "check",
+        "sha"
+      ],
+      "properties": {
+        "check": {
+          "type": "string",
+          "enum": [
+            "tree",
+            "nightly",
+            "smoke",
+            "Ci",
+            "Twin",
+            "Ally"
+          ]
+        },
+        "sha": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "revert_sha": {
+          "type": "string"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "QUEUED",
+              "IN_PROGRESS",
+              "MERGE_PENDING",
+              "DONE",
+              "BLOCKED",
+              "RETRY_AFTER_RESET",
+              "RETRY_LATER",
+              "WAITING_FOR_OWNER",
+              "SKIPPED"
+            ]
+          },
+          "attempts": {
+            "type": "integer"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "reviewed_sha": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "review_lease": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "merged_sha": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "attempt",
+                "model",
+                "model_evidence_count",
+                "head_sha",
+                "pr",
+                "checks",
+                "reviewer_model",
+                "path_check_ok",
+                "started_at",
+                "ended_at",
+                "result"
+              ],
+              "properties": {
+                "attempt": {
+                  "type": "integer"
+                },
+                "model": {
+                  "type": "string"
+                },
+                "model_evidence_count": {
+                  "type": "integer"
+                },
+                "head_sha": {
+                  "type": "string"
+                },
+                "pr": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "checks": {
+                  "type": [
+                    "array",
+                    "null"
+                  ]
+                },
+                "reviewer_model": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "path_check_ok": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "started_at": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "ended_at": {
+                  "type": "string"
+                },
+                "result": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deviations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "rule",
+          "decision",
+          "expiry",
+          "owner"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rule": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decision": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expiry": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "properties": {
+        "by_task": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "ledger",
+            "quota_cmd"
+          ]
+        },
+        "windows": {
+          "type": "object",
+          "properties": {
+            "five_hour": {
+              "type": "object",
+              "required": [
+                "start",
+                "tokens"
+              ],
+              "properties": {
+                "start": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tokens": {
+                  "type": "integer"
+                }
+              }
+            },
+            "week": {
+              "type": "object",
+              "required": [
+                "start",
+                "tokens"
+              ],
+              "properties": {
+                "start": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tokens": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "limit_hit": {
+          "type": "object",
+          "required": [
+            "task",
+            "reset_at"
+          ],
+          "properties": {
+            "task": {
+              "type": "string"
+            },
+            "reset_at": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "owner_answers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "inbox_processed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stage_proofs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "evidence"
+        ],
+        "properties": {
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "smoke_runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "sha",
+          "ok",
+          "at"
+        ],
+        "properties": {
+          "sha": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "at": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ci_flags": {
+      "type": "object"
+    },
+    "pacing": {
+      "type": "object",
+      "properties": {
+        "last": {
+          "type": "string"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "claim",
+            "wait",
+            "defer"
+          ]
+        },
+        "waiting_until": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "projected_finish": {
+          "type": "string"
+        },
+        "remaining_estimate": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

@@ -10,7 +10,7 @@ The whole codebase is maintained by AI. There is no human programmer to ask. Eve
 
 | You are | Started by | Your instructions | You may change |
 |---|---|---|---|
-| **Runner** | the Actions runner (`backup-runner.yml`, as the Claude app) or, as safety net, the scheduled routine; both run `python3 -m runner` once T174 lands (D-483) | `BUILD_BRIEF.md` sections 2, 7, 16 and Appendix A | `kit/state.json`, `STATUS.md`, `PROGRESS.md`, `outbox/` on `claude/kit-state`; nothing on `main` |
+| **Runner** | the Actions runner (`backup-runner.yml`, as the Claude app) or, as safety net, the scheduled routine; both run `python3 -m runner` once D-486 lands (D-483) | `BUILD_BRIEF.md` sections 2, 7, 16 and Appendix A | `kit/state.json`, `STATUS.md`, `PROGRESS.md`, `outbox/` on `claude/kit-state`; nothing on `main` |
 | **Worker** | the runner, for one task | `kit/prompts/T###.md` and only the files it lists | the task's owned paths and the shared paths, on `claude/task/T###-<slug>` |
 | **Reviewer** | the runner, after a worker | the diff and the task's spec files only | nothing; you report findings |
 | **Audit** | a task of type `audit` | its prompt | its report file |
@@ -43,6 +43,7 @@ If you are not sure which you are, you are a plan-change session with no plan ch
 | What attacks the design must survive | `docs/threat-model.md` |
 | How to write code and comments so the next session understands it | `docs/code-docs.md`; each crate's `CLAUDE.md` |
 | How customer-facing words must sound | `docs/voice.md`, `docs/copy/copy-panel.md`, `docs/ai_smell.yaml` |
+| The expertise behind a module (Rust patterns, Postgres operations, texting law and carrier rules, Stripe, accessibility, email delivery, what contractors want, the operating frameworks) | `docs/brains/` (index in `docs/brains/README.md`); your task prompt names the ones to read |
 | The look of every page | `docs/design/DESIGN_SPEC.md` |
 | The task graph and your task's place in it | `kit/tasks.json`; `python3 scripts/validate_tasks.py` |
 | What is done, blocked, waiting | `kit/state.json`, `STATUS.md` on `claude/kit-state`; `python3 scripts/progress.py` |
@@ -64,7 +65,7 @@ If you are not sure which you are, you are a plan-change session with no plan ch
 
 ## 5. Doing a build task
 
-1. Read the requirement lines and the `TD-` entries your prompt names, and the crate's `CLAUDE.md`. Read the cited source lines only to settle a doubt.
+1. Read the requirement lines and the `TD-` entries your prompt names, the crate's `CLAUDE.md`, and the `docs/brains/` files your prompt lists; cite the brain principle you applied in the pull request when a design choice rests on it. Read the cited source lines only to settle a doubt.
 2. Write the tests first, from the `TD-` entries (behaviour, boundary, failure, invariant), each naming its IDs in a doc comment. Run them; they fail.
 3. Write the smallest code that passes, inside your owned files. Functions under 50 lines. Only `api` is `pub`. Money through `payments`; vault plaintext through `privacy::api`; every state change writes an audit row; every outside action carries an idempotency key.
 4. Document as you go (`docs/code-docs.md`): `//!` at the top of every file, `///` on every public item, requirement IDs on rule code, the crate's `CLAUDE.md` updated.

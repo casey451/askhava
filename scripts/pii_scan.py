@@ -7,6 +7,14 @@ Fake data only (BUILD_BRIEF.md:66; D-109). Flags, outside sources/:
   name     a labelled name field (first_name, homeowner_name, ...) holding a full
            name that is not on the fake-name list
   key      a string shaped like a vendor key, token or private key
+  email    an email address outside example.com, example.org and the reserved
+           .test, .example and .invalid domains (PRIV-019), other than Ask Hava's
+           own role addresses, vendor test sinks and the listed placeholders
+  image    an image under tests/ or docs/design/ whose EXIF carries GPS or camera
+           device fields (make, model, serial, lens, owner); read with the
+           standard library so Ci needs no imaging library
+A file that could not be scanned (over the size limit) fails the run unless it
+is on SKIP_ALLOWED with a reason (D-485).
 Findings print as path:line:rule with the match redacted. Exit 1 on any finding.
 
 Usage: python3 scripts/pii_scan.py [--root REPO_ROOT]
@@ -16,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import struct
 import subprocess
 import sys
 from collections.abc import Iterable, Iterator
@@ -64,6 +73,30 @@ KEY_PATTERNS = {
 }
 
 
+# Email (PRIV-019, D-485): only reserved example domains, Ask Hava's own role addresses,
+# vendor test sinks and instruction placeholders. A real person's address never passes.
+EMAIL = re.compile(r"(?<![\w.+-])([A-Za-z0-9._%+-]+)@((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})(?![\w-])")
+EXAMPLE_DOMAINS = ("example.com", "example.org")
+RESERVED_TLDS = ("test", "example", "invalid")
+OWN_DOMAINS = ("askhava.com",)  # role addresses such as help@ and jobs@notify. (SEC-025)
+SERVICE_DOMAINS = ("users.noreply.github.com",)  # GitHub's no-reply commit identities, never a person's inbox
+VENDOR_TEST_SINKS = frozenset({"delivered@resend.dev", "bounced@resend.dev", "complained@resend.dev"})
+PLACEHOLDER_EMAILS = frozenset({"askhava.quotes@gmail.com"})  # docs/pilot/hand-run-test.md: "for example"
+PLACEHOLDER_LOCAL = re.compile(r"^you(?:\+[a-z0-9]+)?$")  # "you+poola@gmail.com" in the dry-run guide
+FILE_EXTENSIONS = frozenset({"jpg", "jpeg", "png", "webp", "heic", "gif", "svg", "avif", "woff2", "css", "js", "ts"})
+
+# Image metadata (PRIV-014, PRIV-019, D-485).
+IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp", ".heic")
+IMAGE_ROOTS = ("tests/", "docs/design/")
+GPS_IFD_TAG = 0x8825
+EXIF_IFD_TAG = 0x8769
+DEVICE_TAGS = frozenset({0x010F, 0x0110, 0xA430, 0xA431, 0xA433, 0xA434, 0xA435})  # make, model, owner, serials, lens
+EXIF_MARKERS = (b"Exif\x00\x00", b"eXIf", b"EXIF")
+MAX_IMAGE_BYTES = 64_000_000
+
+# Files too large to scan pass only when listed here with a reason (D-485). Empty today.
+SKIP_ALLOWED: dict[str, str] = {}
+
 Finding = tuple[str, int, str]
 
 
@@ -104,13 +137,84 @@ def _key_findings(line: str) -> Iterator[str]:
                 yield label
 
 
+def email_allowed(local: str, domain: str) -> bool:
+    """True for a reserved example domain, Ask Hava's own domain, a vendor sink or a placeholder."""
+    domain = domain.lower()
+    address = f"{local.lower()}@{domain}"
+    tld = domain.rsplit(".", 1)[-1]
+    if tld in FILE_EXTENSIONS or tld in RESERVED_TLDS:
+        return True  # "plaster@2x.jpg" is a file name, not an address
+    if any(domain == d or domain.endswith(f".{d}") for d in EXAMPLE_DOMAINS + OWN_DOMAINS + SERVICE_DOMAINS):
+        return True
+    if address in VENDOR_TEST_SINKS or address in PLACEHOLDER_EMAILS:
+        return True
+    return domain == "gmail.com" and bool(PLACEHOLDER_LOCAL.match(local.lower()))
+
+
+def _email_findings(line: str) -> Iterator[str]:
+    for match in EMAIL.finditer(line):
+        if not email_allowed(match.group(1), match.group(2)):
+            yield "email"
+
+
 def scan_text(path: str, text: str) -> list[Finding]:
     """Findings for one file's text as (path, line number, rule)."""
     found: list[Finding] = []
+    checks = (_phone_findings, _address_findings, _name_findings, _key_findings, _email_findings)
     for number, line in enumerate(text.splitlines(), start=1):
-        hits = [r for check in (_phone_findings, _address_findings, _name_findings, _key_findings) for r in check(line)]
+        hits = [r for check in checks for r in check(line)]
         found.extend((path, number, rule) for rule in dict.fromkeys(hits))
     return found
+
+
+def _tiff_entries(data: bytes, start: int, offset: int, endian: str) -> list[tuple[int, int]]:
+    """(tag, value-offset field) pairs of one IFD, or [] when the IFD does not parse."""
+    pos = start + offset
+    if offset < 8 or pos + 2 > len(data):
+        return []
+    (count,) = struct.unpack_from(f"{endian}H", data, pos)
+    if count == 0 or count > 512 or pos + 2 + count * 12 > len(data):
+        return []
+    entries = []
+    for i in range(count):
+        tag, _kind, _num, value = struct.unpack_from(f"{endian}HHII", data, pos + 2 + i * 12)
+        entries.append((tag, value))
+    return entries
+
+
+def tiff_rules(data: bytes, start: int) -> set[str]:
+    """Metadata rules broken by the TIFF block at `start` (IFD0 and its Exif sub-IFD)."""
+    head = data[start : start + 8]
+    if len(head) < 8 or head[:4] not in (b"II*\x00", b"MM\x00*"):
+        return set()
+    endian = "<" if head[:2] == b"II" else ">"
+    (ifd0,) = struct.unpack_from(f"{endian}I", head, 4)
+    entries = _tiff_entries(data, start, ifd0, endian)
+    sub = next((v for t, v in entries if t == EXIF_IFD_TAG), None)
+    if sub is not None:
+        entries += _tiff_entries(data, start, sub, endian)
+    tags = {t for t, _ in entries}
+    found = {"image-gps"} if GPS_IFD_TAG in tags else set()
+    return found | ({"image-device"} if tags & DEVICE_TAGS else set())
+
+
+def image_metadata_rules(data: bytes) -> set[str]:
+    """GPS or device metadata in a JPEG APP1, PNG eXIf, WebP EXIF or HEIC Exif block, or XMP GPS."""
+    found: set[str] = set()
+    for marker in EXIF_MARKERS:
+        pos = data.find(marker)
+        while pos != -1:
+            body = pos + len(marker)
+            for start in (body, body + 4, body + 6, body + 10):  # WebP size field and optional Exif header
+                found |= tiff_rules(data, start)
+            pos = data.find(marker, pos + 1)
+    if b"exif:GPSLatitude" in data or b"exif:GPSLongitude" in data:
+        found.add("image-gps")
+    return found
+
+
+def is_scanned_image(rel: str) -> bool:
+    return rel.lower().endswith(IMAGE_EXTENSIONS) and rel.startswith(IMAGE_ROOTS)
 
 
 def tracked_files(root: Path) -> list[str]:
@@ -134,12 +238,25 @@ def scan_files(root: Path, paths: Iterable[str], skipped: list[str] | None = Non
         file = root / rel
         if not file.is_file():
             continue
-        if file.stat().st_size > MAX_BYTES:
+        size = file.stat().st_size
+        if is_scanned_image(rel):
+            data = file.read_bytes()[:MAX_IMAGE_BYTES]
+            found.extend((rel, 0, rule) for rule in sorted(image_metadata_rules(data)))
+            found.extend(scan_text(rel, data[:MAX_BYTES].decode("utf-8", errors="replace")))
+            if size > MAX_IMAGE_BYTES and skipped is not None:
+                skipped.append(f"{rel} (over {MAX_IMAGE_BYTES} bytes)")
+            continue
+        if size > MAX_BYTES:
             if skipped is not None:
                 skipped.append(f"{rel} (over {MAX_BYTES} bytes)")
             continue
         found.extend(scan_text(rel, file.read_text(encoding="utf-8", errors="replace")))
     return found
+
+
+def unallowed(skipped: list[str]) -> list[str]:
+    """Skipped files not on SKIP_ALLOWED; each fails the run (D-485)."""
+    return [item for item in skipped if item.split(" (", 1)[0] not in SKIP_ALLOWED]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -151,10 +268,12 @@ def main(argv: list[str] | None = None) -> int:
     findings = scan_files(root, tracked_files(root), skipped)
     for path, line, rule in findings:
         print(f"{path}:{line}: {rule} (match redacted)")
+    failing = unallowed(skipped)
     for item in skipped:
-        print(f"skipped, not scanned: {item}")
-    print(f"pii_scan: {len(findings)} finding(s), {len(skipped)} file(s) skipped")
-    return 1 if findings else 0
+        verdict = "fails, not on SKIP_ALLOWED" if item in failing else "allow-listed"
+        print(f"skipped, not scanned: {item} ({verdict})")
+    print(f"pii_scan: {len(findings)} finding(s), {len(skipped)} file(s) skipped, {len(failing)} not allow-listed")
+    return 1 if findings or failing else 0
 
 
 if __name__ == "__main__":

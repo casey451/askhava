@@ -1,6 +1,6 @@
 # Ask Hava threat model
 
-Written in kit step K4 (`BUILD_BRIEF.md:598`). The checklist is OWASP ASVS Level 2 (`BUILD_BRIEF.md:293`). This model is reviewed by Opus at K4 and again in the final audit (SEC-022; `BUILD_BRIEF.md:382`). **Review status:** written by the K4 worker; the K4 fresh-eyes review is the runner's step (`BUILD_BRIEF.md:249`) and is not recorded here until it has happened.
+Written in kit step K4 (`BUILD_BRIEF.md:598`). The checklist is OWASP ASVS Level 2 (`BUILD_BRIEF.md:293`). This model is reviewed by Opus at K4 and again in the final audit (SEC-022; `BUILD_BRIEF.md:382`). **Review status:** written by the K4 worker; the K4 fresh-eyes review (`BUILD_BRIEF.md:249`) is the October 28, 2026 pre-build audit's independent Opus security review against ASVS 5.0 L2 (`docs/audit/prebuild-audit-2026-10-28.md`, section 5; D-480), whose findings are the requirements cited below and TB12 and the rows S14 to S16, T16, I25 and D11, added in plan change P-1.
 
 The architecture it models is `docs/architecture.md`. Requirement IDs (for example `PRIV-005`) are in `docs/spec/`; `D-###` entries are in `docs/decisions.md`. ASVS references are section numbers of **ASVS 5.0.0** (D-099), for example `V6.6` (out-of-band authentication). The section and requirement numbers (and the levels of 3.3.3, 6.3.3, 6.6.1, 13.3.1 and 14.2.1) were read in this session from the chapter files under `5.0/en/` in the OWASP/ASVS GitHub repository (master branch, whose frontispiece reads "Version 5.0.0, May 2025"), fetched October 27, 2026. They are re-checked against the tagged 5.0.0 release in the final audit. Citations are `path:LINE`.
 
@@ -38,12 +38,13 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | TB3 | `web`/`worker` → vendor APIs | Twilio, Verify, Stripe, Resend, Lob, license sources |
 | TB4 | `ai` → Claude API | Scrubbed text out, schema fields back |
 | TB5 | App → PostgreSQL | App role vs migration role; vault ciphertext vs key held in the app |
-| TB6 | App → object storage | Off-database stream, nightly export |
+| TB6 | App → object storage | Off-database stream, nightly export, app-encrypted photos (PRIV-023) |
 | TB7 | Test project ↔ live project | Separate keys, data, numbers and webhooks (SEC-003) |
 | TB8 | Build environment ↔ secrets and live systems | Cloud sessions, GitHub Actions, deny rules (`BUILD_BRIEF.md:300`–`BUILD_BRIEF.md:306`) |
 | TB9 | Phone network ↔ Twilio | Caller ID and SMS sender spoofing, SIM swap |
 | TB10 | Module ↔ module inside the app | Vault plaintext readers (D-093); money only through `payments` |
 | TB11 | App → email provider → business and owner inboxes, and replies coming back | Cards, picks, release and account notices, alert emails, signed action links; replies are untrusted |
+| TB12 | Internet mail → email provider's inbound route → `privacy` | Business replies, help emails and email opt-outs arrive through the provider's signed inbound webhook into `privacy::api::read_inbound_email()`; sender, body and attachments are untrusted (PRIV-026) |
 
 ## 4. Threats and mitigations
 
@@ -64,6 +65,9 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | S11 | A forged email reply ("CONFIRM 1042", "HOLD") acts for a business | TB11 | An email reply never performs any action; it gets only the automatic reply and, with question or charge words, goes to Casey (BIZ-038, BIZ-032) | V2.3 | — |
 | S12 | Someone reading a shared business inbox confirms a pick (and charges the card) | TB11 | Confirm from an email needs a Verify code to that person's own phone unless a session is live; a "This inbox is shared" switch makes every Confirm need a fresh code even inside a session; roles still apply (SEC-004, SEC-027, PICK-033, D-333) | V6.6 | A shared inbox with a live session on a shared office computer and the switch off |
 | S13 | An attacker adds a backup notice address to receive cards, picks and the release | TB1 | A backup address is added only from a signed-in session of that person or the owner, gets nothing until verified, the main address is told, the change is audit-logged, and releases reach it only for the owner or a "Confirm and billing" member (BIZ-043, SEC-024, D-329) | V6.3, V8.2 | Equals a business session takeover (S6) |
+| S14 | A forged Resend or Lob webhook fakes a delivery, bounce, complaint or letter event, or a replayed Twilio status or voice callback is processed twice | TB2 | Every inbound webhook is signature-checked before any module sees it, Resend with its Svix signature and a 5-minute tolerance and Lob with its signature; Twilio status callbacks dedupe on (MessageSid, MessageStatus) and voice requests on (CallSid, step); `webhook_event` rows kept at least as long as the consent log (SEC-039) | V4.1, V12.3 | A leaked signing secret (see I8) |
+| S15 | A caller brute-forces a masked-line PIN on a shared pool number, or spoofs caller ID to hear the CALL-005 read-back of first name and street | TB9 | At most 3 PIN attempts per call and 6 per calling number per pool number per day, then the call ends and one alert is raised; the read-back is given only on STIR/SHAKEN A-level attestation, otherwise PIN routing only (CALL-025) | V6.3, V6.6 | R4, narrowed |
+| S16 | A spoofed inbound email (forged From, failed DMARC) acts for a business or homeowner or changes their data | TB12 | Inbound email reaches the app only through the provider's signed webhook; SPF, DKIM and DMARC results are recorded with each message; a sender that fails them may only opt out and never acts on or changes data; an email reply never performs an action (PRIV-026, BIZ-038) | V4.1, V2.3 | — |
 
 ### Tampering
 
@@ -84,6 +88,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | T13 | A mail scanner, link preview or prefetch opens an action link in a business or homeowner email before the person does, using it up or performing the action (for example a Hold or a Confirm) | TB11 | Opening a link (GET) only shows its page and never acts, uses the link up or shortens its life; the action is a POST from the page's button with a CSRF token, idempotent so a double submit acts once; tokens of at least 128 bits stored hashed, never logged, pages sent with no referrer (SEC-026, SEC-009, SEC-012, D-333, D-351) | V3.5, V7.2 | — |
 | T14 | A business's card is charged without its own press of "Confirm and pay" (a background charge, a replayed callback, a double press, or a texted CONFIRM) | TB1, TB2 | No off-session charge exists in V1 and no code path charges without a press on the Confirm page in a signed-in or Verify-code session with a CSRF token (FEE-014, FEE-036); one idempotency key per press, reused on repeat (FEE-016); a texted CONFIRM only returns the link (PICK-033); stripe-mock tests assert no `off_session` request (TD-FEE-25, D-365) | V2.3, V3.3 | — |
 | T15 | A code path releases a homeowner's contact details, or treats a job as paid, without a verified payment (a forged or unsigned webhook, a redirect to a success page, a bug in a new handler) | TB2 | The release reads contact fields only with a `ReleaseProof`, a type only `payments` can create from a signature-checked Stripe event for a succeeded charge or a no-fee decision; a trybuild compile-fail test proves no other crate can build one; job and pick statuses are exhaustive enums (SEC-030, SEC-031, D-453) | V2.3, V8.3 | — |
+| T16 | A crafted photo exploits a native-code image decoder (HEIC or another format) or exhausts memory in the process that holds the vault keys | TB1 | Decoding with explicit limits (8,000 px per side, 40 megapixels, 256 MiB) behind a decode semaphore and a timed `spawn_blocking`, a per-route body limit, primary frame only; HEIC is not decoded in the app at launch and gets a plain reply asking for a JPEG or PNG (PRIV-025, D-480) | V5.1, V5.2 | A flaw in the pure-Rust JPEG, PNG or WebP decoders (dependency audits, T10) |
 
 ### Repudiation
 
@@ -121,6 +126,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | I22 | Photos sent to cards before zero retention show a face, a child, a house number or a plate (D-432) | TB1, TB10 | Metadata stripped first (PRIV-014); an on-server check (no outside AI) blurs or drops flagged parts; the homeowner sees and can remove each photo before the card goes (INT-044, CARD-014); picture-text media deleted from the texting provider once stored | V14.2 | A check misses something the homeowner also misses; R4 |
 | I23 | An AI-written question or card adds a diagnosis, a price, a business name or a contact detail, or misstates her request (D-430) | TB4 | AI-019 code checks on every output with fallback to fixed templates or her own words; the final CARD-008 gate; the homeowner approves the card she is shown (INT-041); quote summaries stay off (PICK-003) | V14.2 | A subtle misstatement she approves |
 | I24 | The concept-image provider receives personal data (D-433) | TB4 | Only the written project file, already scrubbed, never photos; switch off until the provider terms are recorded (INT-046) | V14.2 | Provider's own compliance |
+| I25 | Business replies and help emails leave homeowner details in a mailbox outside the vault with no retention limit | TB12 | The raw body is stored only in `privacy.message_body` under the TXT-020 cut; the mailbox keeps nothing beyond 7 days; matching uses a per-purpose HMAC email blind index (PRIV-026) | V14.2 | The provider's own retention (its terms recorded at the account checkpoint) |
 
 ### Denial of service
 
@@ -136,6 +142,7 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | D8 | The masked-call product is a beta with no service level and fails or is withdrawn mid-job | TB9 | Masked calls are built on standard programmable voice (incoming-call webhook, dial out with the pool number), never Twilio Proxy (CALL-021, D-296); a line that can't connect still leaves the who's-calling and missed-call texts, the quote page and email (TXT-027, TXT-030, TXT-034) | V14.2 | Carrier outages stay outside Ask Hava's control |
 | D9 | Business emails bounce, land in spam or the email provider is down, hiding a pick | TB11 | No call backs up email (BIZ-039, D-344), so: a 4-business-hour Confirm window with a reminder every business hour, each with the Hold link (D-380), the homeowner told the end time and given the other quotes on a lapse (PICK-019, PICK-037, PICK-045, PICK-046); a sample card at sign-up with spam-folder steps and "reply OK, star, add to contacts", a sample pick sent with Do Not Disturb or Sleep on to check that the phone alerts (D-380), a backup address and up to two open-cards emails a day with a waiting pick first (BIZ-042, BIZ-043, CARD-022); one extra business hour when a pick's emails all bounced (PICK-019); bounces mark the address unverified with a banner and a line at every sign-in (BIZ-040); the free tier's limit pushes to Casey at 70% of the daily or 80% of the monthly limit, and above 90% only non-urgent emails wait, nothing dropped (OPS-004, OPS-038, D-381); email failure rates alert in the portal (OPS-004); SPF, DKIM and DMARC alignment (SEC-025) | V16.5 | — |
 | D10 | An emergency job card sits unread in an inbox at night, so no business quotes in time | TB11 | Emergency cards and picks carry an "EMERGENCY" subject; at night they go only to people with "Emergency emails at any hour" on, and a business counts as after-hours only after a person who can confirm answered Yes to "Did your phone alert you?" on a test emergency email; the homeowner is told the request goes by email, gets a "no quote yet" text after 60 minutes at any hour with the call-a-company-you-know and 911 lines, and on a lapse gets the other quotes at once (CARD-021, BIZ-007, INT-033, PICK-046, D-323, D-324, D-346) | V16.5 | A phone that stops alerting later (mail app settings change) |
+| D11 | Toll fraud and SMS or voice pumping through the homeowner-portal sign-in or forwarded links: an attacker makes Ask Hava send Verify codes or voice calls to costly numbers, or enumerates which numbers have a request | TB1, TB3 | Verify sends capped at 5 per destination per day and 3 voice calls per destination per day, 10 per job per day; no voice code between 9 p.m. and 8 a.m. local time unless asked from that phone's own session; sign-in sends a code only to a number with a homeowner record and answers identically either way; a global daily Verify count over the set threshold stops sends and raises a High alert (PICK-055) | V2.4, V6.3 | The threshold is tuned from pilot volumes |
 
 ### Elevation of privilege
 
@@ -156,8 +163,8 @@ STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of serv
 | V1 Encoding and Sanitization | T1, T2, E4 |
 | V2 Validation and Business Logic | SEC-010; T4, T5; D1, D2 |
 | V3 Web Frontend Security | SEC-009, SEC-012, SEC-013; `__Host-` cookies (D-099) |
-| V4 API and Web Service | S1, T8, D3 |
-| V5 File Handling | T9 |
+| V4 API and Web Service | S1, S14, S16, T8, D3 (SEC-039, PRIV-026) |
+| V5 File Handling | T9, T16 (PRIV-025) |
 | V6 Authentication | SEC-004, SEC-005, SEC-007, SEC-008, PICK-013; deviations R1, R2 |
 | V7 Session Management | SEC-004, SEC-005, SEC-008, SEC-009 (rotation on login) |
 | V8 Authorization | SEC-006, SEC-019; I3, I6, E1 |

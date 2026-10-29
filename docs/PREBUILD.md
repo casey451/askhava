@@ -150,7 +150,8 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | 2 | Pause the build runner while the build is held (section 6) | Casey | to do | "Ask Hava build runner" shows Paused; the old "(hourly)" one is deleted |
 | 2a | Audit decisions E-1 to E-5 (`docs/for-casey-review.md`, top) | Casey | to do | Each answered in a GitHub issue or chat; decisions logged |
 | 2b | Ruleset taps (E-2): `Governance` required, Actions source, up-to-date branches, `claude/kit-state` ruleset | Casey | to do | Ruleset JSON shows them |
-| 2c | T174 (runner live entry point, red-`main` drill, stage exits) and P-1 (prompt text and budgets, task splits, validator checks) | Claude | to do | Both merged green; `docs/build-readiness.md` section 4 items 6 and 7 done |
+| 2c | D-485 to D-490: the plan cleanup, the live runner with pacing, the expertise files, the Rust skeleton trial, the build-loop optimizations and the adopted brain proposals (`docs/audit/process-review-2026-10-29.md`) | Claude | done when the build-optimization PR merges | Merged green; `docs/build-readiness.md` section 4 items 6, 7, 7a and 7b done |
+| 2e | `claude setup-token` into the `CLAUDE_CODE_OAUTH_TOKEN` secret, then one rehearsal cycle under the Actions runner; the plan's real usage limits written into `kit/pacing.json` from that run | Casey (token), then Claude | to do | A cycle runs from code under the Actions runner; `kit/pacing.json` budgets are no longer placeholders |
 | 2d | Re-issue `docs/build-readiness.md` as READY | Claude | waiting on 2a to 2c and 14 | Every Critical and High risk in `docs/risk-register.md` closed or accepted |
 | 3 | Open a free Twilio account; send the short Twilio question (`docs/for-casey-review.md` top, D-424) | Casey | to do | Case number saved |
 | 4 | Twilio's written answer | outside | waiting on item 3 | Answer saved; doesn't block the build |

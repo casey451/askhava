@@ -8,7 +8,14 @@ no two tasks that can run in either order own the same path; each task fits
 its size budget; models are valid full IDs; money, privacy, security and
 recovery tasks (and every harness task) have an Opus reviewer; reads, decisions
 and citations resolve; and the owner gates sit where BUILD_BRIEF.md section 6
-puts them. Prints counts; exits 1 on any error.
+puts them. Plan change P-1 (D-485) adds: build and harness tasks name tests or an
+acceptance line (V1); every "killed by" test of a named mutant in
+docs/test-design.md section 4 is owned by an ancestor of the task that writes the
+mutant (V3); the coverage, twin and end-to-end harness come before the code they
+guard (V4); a goal never just repeats its title (V5); the owner of a cargo-mutants
+rules file has an Opus reviewer (V6); a task reads the spec file of every
+requirement it names (V7); and migration numbers rise in the runner's serial order
+(V9). Prints counts; exits 1 on any error.
 
 Usage: python3 scripts/validate_tasks.py [--root REPO_ROOT] [--tasks PATH]
 """
@@ -143,6 +150,8 @@ ALLOWED_SHARED = frozenset(
     | {f"app/{m}/src/lib.rs" for m in CRATE_MODULES}  # hand-written module list, one `mod` line per task (D-481, D-484)
     | {f"app/{m}/src/api.rs" for m in CRATE_MODULES}  # each task adds its own public functions (D-484)
     | {f"tests/{layer}/Cargo.toml" for layer in TEST_CRATES}
+    | {f"app/{m}/sqlx.toml" for m in CRATE_MODULES}  # query-macro type overrides, added by a module's first database task (D-488)
+    | {f"tests/{layer}/sqlx.toml" for layer in TEST_CRATES}
 )
 JOURNEYS = ("J1", "J2", "J3", "J4")
 GATE_KINDS = (
@@ -168,12 +177,32 @@ GATE_WAITS = {
 CONDITIONAL_GATE = "real-texts-casey-phone"
 NO_DEPENDENTS = ("stage-0.5-go", "first-live-charge")
 TWILIO_SANDBOX_PATH = "app/adapters/src/twilio_sms.rs"
-MAX_OWNS = 14
-MAX_FILES = 14
-MAX_LINES = 800
-MAX_CONTEXT_PCT = 20
-MAX_REQUIREMENTS = 25
+MAX_OWNS = 10  # P-1 (D-485): one session's work; was 14 (D-119)
+MAX_FILES = 10
+MAX_DIR_FILES = 14  # a cleanup or harness task owning a directory; the runner holds its diff to budget.files
+MAX_LINES = 600  # was 800 (D-119)
+MAX_CONTEXT_PCT = 20  # derived from bytes by scripts/gen_prompts.py (D-485)
+# A harness task edits existing tooling it must read whole (its owned files count in full), so it may use
+# up to 30%; every other task stays at 20% (D-485).
+MAX_HARNESS_CONTEXT_PCT = 30
+MAX_REQUIREMENTS = 12  # was 25 (D-119)
 MAX_TESTS = 6
+# Harness, docs, audit and cleanup work keeps the D-119 limits; the P-1 limits above bind build tasks,
+# the ones a single worker session writes application code for (D-485).
+NON_BUILD_LIMITS = {"owns": 14, "files": 14, "lines": 800, "requirements": 25}
+OPTIONAL_KEYS: dict[str, type] = {"acceptance": str, "gate": dict}
+# cargo-mutants targets (docs/test-design.md section 4): their owners need an Opus reviewer (V6).
+MUTANT_RULE_MODULES = ("payments", "catalog", "licensing", "quotes", "messaging", "intake")
+MUTANTS_FILE = "tests/mutation/mutants.toml"
+COVERAGE_FLOOR = "tests/coverage_floor.json"
+COVERED_CODE = ("app/privacy/", "app/licensing/", "app/payments/")
+TWIN_GATE = "twin/gate.py"
+TWIN_WORKFLOW = ".github/workflows/twin.yml"
+E2E_HARNESS = (".github/workflows/a11y.yml", "tests/e2e/playwright.config.ts")
+MIGRATION = re.compile(r"^migrations/(?P<number>\d{4})_[a-z0-9_]+\.sql$")
+TD_RANGE = re.compile(r"(TD-[A-Z0-9]+-)(\d{2}) to TD-[A-Z0-9]+-(\d{2})")
+TD_TOKEN = re.compile(r"TD-[A-Z0-9]+-\d{2}")
+MUTANT_OVERRIDE = re.compile(r"killed by (?P<td>TD-[A-Z0-9]+-\d{2}), owned by (?P<task>T\d{3})")
 
 REQUIRED_KEYS: dict[str, type | tuple[type, ...]] = {
     "id": str,
@@ -221,6 +250,11 @@ def check_shape(task: Task) -> list[str]:
         f"{where(task)}: '{key}' missing or not {kind}"
         for key, kind in REQUIRED_KEYS.items()
         if not isinstance(task.get(key), kind) or isinstance(task.get(key), bool)
+    ]
+    errors += [
+        f"{where(task)}: '{key}' must be {kind.__name__}"
+        for key, kind in OPTIONAL_KEYS.items()
+        if key in task and not isinstance(task[key], kind)
     ]
     for key in (
         "deps",
@@ -335,12 +369,15 @@ def check_size(task: Task) -> list[str]:
     if not all(isinstance(v, int) and not isinstance(v, bool) for v in (files, lines, ctx)):
         return [f"{where(task)}: budget needs integer files, lines and context_pct"]
     assert isinstance(files, int) and isinstance(lines, int) and isinstance(ctx, int)
+    has_dir = any(p.endswith("/") for p in task["owns"])
+    build = task["type"] == "build"
+    max_files = MAX_FILES if build else NON_BUILD_LIMITS["files"]
     limits = (
-        (len(task["owns"]), MAX_OWNS, "owned paths"),
-        (files, MAX_FILES, "budget files"),
-        (lines, MAX_LINES, "budget lines"),
-        (ctx, MAX_CONTEXT_PCT, "budget context_pct"),
-        (len(task["requirements"]), MAX_REQUIREMENTS, "requirements"),
+        (len(task["owns"]), MAX_OWNS if build else NON_BUILD_LIMITS["owns"], "owned paths"),
+        (files, MAX_DIR_FILES if has_dir else max_files, "budget files"),
+        (lines, MAX_LINES if build else NON_BUILD_LIMITS["lines"], "budget lines"),
+        (ctx, MAX_HARNESS_CONTEXT_PCT if task["type"] == "harness" else MAX_CONTEXT_PCT, "budget context_pct"),
+        (len(task["requirements"]), MAX_REQUIREMENTS if build else NON_BUILD_LIMITS["requirements"], "requirements"),
         (len(task["tests"]), MAX_TESTS, "tests"),
     )
     errors += [
@@ -348,7 +385,6 @@ def check_size(task: Task) -> list[str]:
         for value, limit, name in limits
         if value > limit
     ]
-    has_dir = any(p.endswith("/") for p in task["owns"])
     if task["type"] != "gate" and not has_dir and files != len(task["owns"]):
         errors.append(
             f"{where(task)}: budget files {files} does not match"
@@ -393,6 +429,31 @@ def check_coverage_fields(task: Task) -> list[str]:
     return []
 
 
+def check_done_defined(task: Task) -> list[str]:
+    """V1: a build or harness task names its tests or says in 'acceptance' what done means."""
+    if task["type"] not in ("build", "harness") or task["tests"]:
+        return []
+    if str(task.get("acceptance", "")).strip():
+        return []
+    return [f"{where(task)}: a {task['type']} task with no tests needs an 'acceptance' line"]
+
+
+def check_goal(task: Task) -> list[str]:
+    """V5: the goal says what done looks like; a copy of the title says nothing."""
+    if task["goal"].strip() == task["title"].strip():
+        return [f"{where(task)}: goal repeats the title; write what done looks like"]
+    return []
+
+
+def check_rules_reviewer(task: Task) -> list[str]:
+    """V6: the owner of a cargo-mutants rules file has an Opus reviewer."""
+    targets = [f"app/{m}/src/rules.rs" for m in MUTANT_RULE_MODULES]
+    owned = [t for t in targets if any(overlaps(t, p) for p in task["owns"])]
+    if owned and task["type"] != "gate" and task["reviewer_model"] != OPUS:
+        return [f"{where(task)}: owns {owned[0]}, a cargo-mutants target, and needs an Opus reviewer"]
+    return []
+
+
 def check_task(task: Task) -> list[str]:
     """All per-task checks; the shape check runs first because the rest rely on it."""
     errors = check_shape(task)
@@ -405,6 +466,9 @@ def check_task(task: Task) -> list[str]:
         check_size,
         check_gate_fields,
         check_coverage_fields,
+        check_done_defined,
+        check_goal,
+        check_rules_reviewer,
     ):
         errors += check(task)
     return errors
@@ -590,6 +654,135 @@ def check_references(root: Path, graph: Graph) -> list[str]:
     return errors
 
 
+def check_spec_reads(graph: Graph, req_files: dict[str, str]) -> list[str]:
+    """V7: a task reads the spec file of every requirement it names."""
+    return [
+        f"{where(task)}: names {req} but does not read {req_files[req]}"
+        for task in graph.tasks
+        for req in task["requirements"]
+        if req in req_files and req_files[req] not in task["reads"]
+    ]
+
+
+def expand_tds(cell: str) -> list[str]:
+    """TD IDs in a table cell, with 'TD-CON-01 to TD-CON-06' expanded."""
+    found: list[str] = []
+    for prefix, start, end in TD_RANGE.findall(cell):
+        found += [f"{prefix}{n:02d}" for n in range(int(start), int(end) + 1)]
+    return found + [t for t in TD_TOKEN.findall(TD_RANGE.sub("", cell)) if t not in found]
+
+
+def mutant_rows(root: Path) -> list[tuple[str, str, str]]:
+    """(rule, mutants cell, killed-by cell) for each row of docs/test-design.md section 4."""
+    path = root / TEST_DESIGN
+    if not path.is_file():
+        return []
+    rows: list[tuple[str, str, str]] = []
+    in_section = False
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("## "):
+            in_section = line.startswith("## 4.")
+        if in_section and line.startswith("| **"):
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if len(cells) >= 3:
+                rule = re.sub(r"\(.*?\)", "", cells[0]).replace("*", "").strip().lower()
+                rows.append((rule, cells[1], cells[2]))
+    return rows
+
+
+def killer_problem(graph: Graph, td: str, mutant_task: str) -> str | None:
+    owners = [t["id"] for t in graph.tasks if td in t["tests"]]
+    allowed = graph.ancestors.get(mutant_task, set())
+    if any(o in allowed for o in owners):
+        return None
+    return f"{td} kills a named mutant of {mutant_task} but no ancestor of {mutant_task} owns it (owners: {owners})"
+
+
+def check_mutant_killers(root: Path, graph: Graph) -> list[str]:
+    """V3: every 'killed by' test is owned by an ancestor of the task that writes the mutant."""
+    writers = [t for t in graph.tasks if MUTANTS_FILE in t["owns"]]
+    errors: list[str] = []
+    for rule, mutants, killers in mutant_rows(root):
+        task = next((t for t in writers if rule in t["title"].lower()), None)
+        if task is None:
+            errors.append(f"test-design section 4: no task owning {MUTANTS_FILE} names '{rule}' in its title")
+            continue
+        overrides = {m["td"]: m["task"] for m in MUTANT_OVERRIDE.finditer(mutants)}
+        for td in dict.fromkeys([*expand_tds(killers), *overrides]):
+            owner = overrides.get(td, task["id"])
+            problem = killer_problem(graph, td, owner) if owner in graph.by_id else f"{td}: unknown task {owner}"
+            if problem:
+                errors.append(f"test-design section 4 ({rule}): {problem}")
+    return errors
+
+
+def owners_of(graph: Graph, path: str, harness_only: bool = False) -> list[str]:
+    return [
+        t["id"]
+        for t in graph.tasks
+        if any(overlaps(path, p) for p in t["owns"]) and (t["type"] == "harness" or not harness_only)
+    ]
+
+
+def check_harness_order(graph: Graph) -> list[str]:
+    """V4: the coverage gate precedes vault, licensing and money code; the twin gate precedes twin work;
+    the twin workflow and the end-to-end harness exist."""
+    errors: list[str] = []
+    floors = set(owners_of(graph, COVERAGE_FLOOR, harness_only=True))
+    for task in graph.tasks:
+        guarded = [p for p in task["owns"] if not p.endswith("/") and p.startswith(COVERED_CODE)]
+        if guarded and not floors & graph.ancestors[task["id"]]:
+            errors.append(f"{where(task)}: owns {guarded[0]} but no harness task owning {COVERAGE_FLOOR} comes first")
+    gates = set(owners_of(graph, TWIN_GATE))
+    for task in graph.tasks:
+        if not any(overlaps(p, "twin/") for p in task["owns"]):
+            continue
+        root_gate = task["id"] in gates and not gates & graph.ancestors[task["id"]]
+        if not root_gate and not gates & graph.ancestors[task["id"]]:
+            errors.append(f"{where(task)}: changes twin/ before the task owning {TWIN_GATE}")
+    if not owners_of(graph, TWIN_WORKFLOW):
+        errors.append(f"no task owns {TWIN_WORKFLOW}, so Twin never becomes the gate")
+    e2e = [t for t in graph.tasks if t["type"] == "harness" and all(p in t["owns"] for p in E2E_HARNESS)]
+    if not e2e:
+        errors.append(f"no harness task owns {' and '.join(E2E_HARNESS)} (the e2e and Ally harness)")
+    return errors
+
+
+def serial_order(tasks: list[Task]) -> list[Task]:
+    """The order a one-at-a-time runner meets the tasks: the first task in file order whose deps are done."""
+    done: set[str] = set()
+    order: list[Task] = []
+    left = list(tasks)
+    while left:
+        nxt = next((t for t in left if set(t["deps"]) <= done), None)
+        if nxt is None:
+            break
+        order.append(nxt)
+        done.add(nxt["id"])
+        left.remove(nxt)
+    return order
+
+
+def check_migration_order(graph: Graph) -> list[str]:
+    """V9: migration numbers rise in the runner's serial order, so a later task never adds a lower number."""
+    errors: list[str] = []
+    highest, highest_by = -1, ""
+    for task in serial_order(graph.tasks):
+        for path in task["owns"]:
+            match = MIGRATION.match(path)
+            if not match:
+                continue
+            number = int(match["number"])
+            if number <= highest:
+                errors.append(
+                    f"{where(task)}: migration {path} is numbered at or below {highest:04d}"
+                    f" ({highest_by}), which runs earlier; number migrations by serial position"
+                )
+            else:
+                highest, highest_by = number, task["id"]
+    return errors
+
+
 def gates_by_kind(graph: Graph) -> tuple[dict[str, str], list[str]]:
     kinds: dict[str, str] = {}
     errors: list[str] = []
@@ -739,6 +932,9 @@ def run(root: Path, tasks_path: Path | None = None) -> Report:
     errors += check_ownership(graph) + check_reads(root, graph)
     errors += check_coverage(graph, req_ids, td_ids, withdrawn) + check_references(root, graph)
     errors += check_gate_order(graph) + check_stage_order(graph)
+    req_files = {r.req_id: r.spec_file for r in spec.requirements}
+    errors += check_spec_reads(graph, req_files) + check_mutant_killers(root, graph)
+    errors += check_harness_order(graph) + check_migration_order(graph)
     return Report(tasks, len(req_ids), len(td_ids), errors)
 
 

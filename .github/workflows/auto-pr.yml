@@ -1,11 +1,15 @@
-# Opens a PR for each pushed runner task branch and turns on squash auto-merge.
+# Opens a PR for each pushed runner task branch (REST) and comments the review-gate decision
+# (D-486, D-479). It never enables auto-merge: the runner does that itself after its review, as its own
+# identity, so the merge starts workflows (pull_request.closed starts backup-runner). The decision is
+# runner/verify.py auto_merge_reason, read from main (never from the pushed branch), over the task's
+# reviewed_sha and review lease in kit/state.json on claude/kit-state and the lease on claude/lease.
 # The branch ruleset still enforces the required checks (Ci, Twin, Ally).
 name: auto-pr
 on:
   push:
     branches: ["claude/task/**"]
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 concurrency:
   group: auto-pr-${{ github.ref }}
@@ -19,34 +23,75 @@ jobs:
       GH_REPO: ${{ github.repository }}
       BRANCH: ${{ github.ref_name }}
       REPO: ${{ github.repository }}
+      OWNER: ${{ github.repository_owner }}
+      HEAD_SHA: ${{ github.sha }}
     steps:
-      - name: Open PR and enable auto-merge
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Read main's decision code and the review record
         run: |
           set -euo pipefail
-          task="${BRANCH#claude/task/}"          # e.g. K0-setup
-          id="${task%%-*}"                       # e.g. K0
-          slug="${task#*-}"                      # e.g. setup
+          git fetch --quiet --depth=1 origin main
+          git show FETCH_HEAD:runner/verify.py > "$RUNNER_TEMP/verify_main.py"
+          if git fetch --quiet --depth=1 origin claude/kit-state 2>/dev/null; then
+            git show FETCH_HEAD:kit/state.json > "$RUNNER_TEMP/state.json" 2>/dev/null || echo '{"tasks": []}' > "$RUNNER_TEMP/state.json"
+          else
+            echo '{"tasks": []}' > "$RUNNER_TEMP/state.json"
+          fi
+          if git fetch --quiet --depth=1 origin claude/lease 2>/dev/null; then
+            git show FETCH_HEAD:lease.json > "$RUNNER_TEMP/lease.json" 2>/dev/null || echo '{"lease": null}' > "$RUNNER_TEMP/lease.json"
+          else
+            echo '{"lease": null}' > "$RUNNER_TEMP/lease.json"
+          fi
+      - name: Decide auto-merge
+        id: decide
+        run: |
+          set -euo pipefail
+          reason="$(python3 -I -c '
+          import importlib.util, json, sys
+          spec = importlib.util.spec_from_file_location("verify_main", sys.argv[1])
+          mod = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+          state = json.load(open(sys.argv[2]))
+          lease = json.load(open(sys.argv[3])).get("lease")
+          if not hasattr(mod, "auto_merge_reason"):
+              print("main has no runner review gate yet (runner/verify.py auto_merge_reason)")
+          else:
+              print(mod.auto_merge_reason(state, sys.argv[4], sys.argv[5], lease))
+          ' "$RUNNER_TEMP/verify_main.py" "$RUNNER_TEMP/state.json" "$RUNNER_TEMP/lease.json" "$BRANCH" "$HEAD_SHA")"
+          echo "reason=${reason}" >> "$GITHUB_OUTPUT"
+          echo "decision: ${reason:-auto-merge allowed}"
+      - name: Open the PR (REST)
+        id: pr
+        run: |
+          set -euo pipefail
+          task="${BRANCH#claude/task/}"
+          id="${task%%-*}"
+          slug="${task#*-}"
           if [ "$slug" = "$task" ]; then slug=""; fi
           title="${id}: ${slug//-/ }"
           title="${title%: }"
-          pr="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          pr="$(gh api "repos/${REPO}/pulls?head=${OWNER}:${BRANCH}&state=open" --jq '.[0].number // empty')"
           if [ -z "$pr" ]; then
             body="$(printf 'Opened by auto-pr for runner task %s.\n\nBuild status: https://github.com/%s/blob/claude/kit-state/STATUS.md\n' "$id" "$REPO")"
-            url="$(gh pr create --base main --head "$BRANCH" --title "$title" --body "$body")"
-            pr="${url##*/}"
+            pr="$(gh api "repos/${REPO}/pulls" -f title="$title" -f head="$BRANCH" -f base=main -f body="$body" --jq .number)"
             echo "opened PR #$pr"
           else
             echo "PR #$pr already open"
           fi
-          if gh pr merge --auto --squash "$pr"; then
-            echo "auto-merge enabled on #$pr"
+          echo "number=$pr" >> "$GITHUB_OUTPUT"
+      - name: Comment the review-gate decision (REST)
+        env:
+          PR: ${{ steps.pr.outputs.number }}
+          REASON: ${{ steps.decide.outputs.reason }}
+        run: |
+          set -euo pipefail
+          if [ -n "$REASON" ]; then
+            body="$(printf 'Review gate for %s: no auto-merge (%s). The runner turns on auto-merge only for a head it reviewed under the task lease (D-486).\n' "${HEAD_SHA:0:12}" "$REASON")"
           else
-            state="$(gh pr view "$pr" --json mergeStateStatus -q .mergeStateStatus)"
-            if [ "$state" = "CLEAN" ]; then
-              echo "PR is already CLEAN; squash merging directly"
-              gh pr merge --squash "$pr"
-            else
-              echo "::error::could not enable auto-merge on #$pr (mergeStateStatus: $state)"
-              exit 1
-            fi
+            body="$(printf 'Review gate for %s: reviewed by the runner under the task lease; the runner turns on auto-merge.\n' "${HEAD_SHA:0:12}")"
           fi
+          gh api "repos/${REPO}/issues/${PR}/comments" -f body="$body" > /dev/null
+          echo "${REASON:-review record matches}"

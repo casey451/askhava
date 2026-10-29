@@ -4,7 +4,9 @@ The state is a dict as kept on claude/kit-state:
     {"schema": 1, "lease": {"task", "session", "expires"} | None, "build_hold": str | None,
      "tasks": [{"id", "deps", "status", "attempts", ...}, ...], ...other keys kept as they are}
 Times are UTC ISO strings ending in "Z". Every function returns a new state; nothing mutates
-its argument. `main_red` (a bool) is the one key this runner adds, for "fix main".
+its argument. Keys this runner adds (D-486, kit/state_schema.json): `main_red` (falsy, or the failing
+check, SHA and offending merge: docs/governance.md section 5), `stage_proofs`, `smoke_runs`,
+`deviations`, `usage.by_task`, `runner_sha`/`starter`, and per task `history`, `reviewed_sha`.
 """
 
 from __future__ import annotations
@@ -48,7 +50,9 @@ def iso(moment: datetime) -> str:
 
 
 def parse(stamp: str) -> datetime:
-    return datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    """An ISO time; a stamp without a zone (or a bare date) is read as UTC."""
+    moment = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    return moment if moment.tzinfo else moment.replace(tzinfo=timezone.utc)
 
 
 def entry(state: State, task_id: str) -> Task:
@@ -74,11 +78,19 @@ def with_task(state: State, task_id: str, **fields: Any) -> State:
 
 
 def sync_graph(state: State, graph: list[Task]) -> State:
-    """Add graph tasks (kit/tasks.json) that the state does not hold yet, as QUEUED."""
+    """Add graph tasks (kit/tasks.json) that the state does not hold yet, as QUEUED.
+
+    A task's `stage` is copied too (also onto entries that lack it), because eligibility gates
+    each stage on the previous stage's exit test (docs/governance.md section 6, D-486).
+    """
     out = state
     for task in graph:
-        if not entry(out, task["id"]):
-            out = with_task(out, task["id"], slug=task.get("slug"), type=task.get("type"), deps=list(task["deps"]))
+        found = entry(out, task["id"])
+        if not found:
+            extra = {"stage": task["stage"]} if "stage" in task else {}
+            out = with_task(out, task["id"], slug=task.get("slug"), type=task.get("type"), deps=list(task["deps"]), **extra)
+        elif "stage" in task and "stage" not in found:
+            out = with_task(out, task["id"], stage=task["stage"])
     return out
 
 
@@ -104,7 +116,7 @@ def claim(state: State, task_id: str, session: str, now: datetime) -> State:
             raise LeaseError(f"{task['id']} is MERGE_PENDING; nothing new is claimed")
     if status(state, task_id) not in RETRYABLE:
         raise LeaseError(f"{task_id} is {status(state, task_id)}, not claimable")
-    out = with_task(state, task_id, status=IN_PROGRESS)
+    out = with_task(state, task_id, status=IN_PROGRESS, attempt_started_at=iso(now))
     out["lease"] = _lease_for(task_id, session, now)
     out["current"] = task_id
     return out
@@ -158,21 +170,60 @@ def _ready(state: State, task_id: str, now: datetime) -> bool:
     return after is None or parse(after) <= now
 
 
-def eligible(state: State, now: datetime) -> list[str]:
+def _numeric_stage(stage: Any) -> float | None:
+    try:
+        return float(stage)
+    except (TypeError, ValueError):
+        return None
+
+
+def previous_stage(state: State, stage: Any) -> str | None:
+    """The numeric stage just before `stage` among the state's tasks, or None for the first.
+
+    Stages are compared as numbers; "checkpoint" and "0.5" (gates only) are never a previous stage
+    of a build stage, so stage 6 follows stage 5 (docs/build-readiness.md section 3).
+    """
+    mine = _numeric_stage(stage)
+    if mine is None:
+        return None
+    earlier = {str(t["stage"]) for t in state["tasks"] if (n := _numeric_stage(t.get("stage"))) is not None and n < mine}
+    earlier.discard("0.5")
+    return max(earlier, key=float) if earlier else None
+
+
+def _stage_open(state: State, task: Task, passed: set[str] | None) -> bool:
+    """A task may start only once the previous stage passed scripts/stage_exit.py (D-486, governance 6)."""
+    if passed is None:
+        return True
+    before = previous_stage(state, task.get("stage"))
+    return before is None or before in passed
+
+
+def _fix_main_ids(state: State) -> list[str]:
+    """While main is red only FIX-MAIN is eligible, and only while it can be claimed (governance 5.1)."""
+    fix = entry(state, FIX_MAIN)
+    return [FIX_MAIN] if not fix or fix.get("status", QUEUED) in RETRYABLE else []
+
+
+def eligible(state: State, now: datetime, passed: set[str] | None = None) -> list[str]:
     """IDs claimable now, in state order; a BLOCKED task holds only its dependents.
 
-    While `build_hold` is set (Gate P) the T### build tasks wait; kit tasks do not.
+    While `build_hold` is set (Gate P) the T### build tasks wait; kit tasks do not. With `passed`
+    (the stages whose exit test passed) a task of stage N waits for stage N-1's exit test, not for
+    every task of stage N-1 through a dependency chain (D-486).
     """
     if state.get("main_red"):
-        return [FIX_MAIN]
+        return _fix_main_ids(state)
     done = {t["id"] for t in state["tasks"] if t.get("status") in SATISFIED}
     held = bool(state.get("build_hold"))
     return [
         t["id"]
         for t in state["tasks"]
         if t.get("type") != "gate"
+        and t["id"] != FIX_MAIN
         and not (held and BUILD_TASK.match(t["id"]))
         and set(t.get("deps", [])) <= done
+        and _stage_open(state, t, passed)
         and _ready(state, t["id"], now)
     ]
 
@@ -186,3 +237,13 @@ def next_gate(state: State, skip: tuple[str, ...] = ()) -> Task | None:
                 found: Task = task
                 return found
     return None
+
+
+def open_deviations(state: State, now: datetime) -> list[Task]:
+    """Entries of the open-deviations register (id, rule, decision, expiry, owner) not yet expired."""
+    out: list[Task] = []
+    for dev in state.get("deviations", []):
+        expiry = dev.get("expiry")
+        if not expiry or parse(str(expiry)) > now:
+            out.append(dev)
+    return out

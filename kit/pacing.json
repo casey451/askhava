@@ -1,0 +1,26 @@
+{
+  "note": "Pacing for the runner (scripts/pacing.py, D-486). The two budgets are PLACEHOLDERS: the plan's real limits are not published as token counts and Casey has not read them yet. They are in weighted tokens (see weights), sized from K9's measured tasks (a Sonnet worker plus an Opus review is about 0.5M to 1M weighted tokens). Replace them with measured figures once a usage limit has been hit and its reset recorded in state.usage.limit_hit, or once a quota command (PACING_QUOTA_CMD) reports utilisation, which then wins over this ledger. The runner sets PACING_QUOTA_CMD to quota_cmd_default when the variable is unset; scripts/quota_probe.py reads the session's own plan usage and is verified at the D-486 rehearsal (D-486).",
+  "budget_source": "placeholder",
+  "budget_tokens_five_hour": 8000000,
+  "budget_tokens_week": 150000000,
+  "headroom": 0.1,
+  "bytes_per_token": 4,
+  "turn_factor": 3.0,
+  "model_multiplier": {
+    "haiku": 1.0,
+    "sonnet": 1.3,
+    "opus": 1.6
+  },
+  "calibrate_after": 3,
+  "weights": {
+    "input_tokens": 1.0,
+    "output_tokens": 1.0,
+    "cache_creation_input_tokens": 1.0,
+    "cache_read_input_tokens": 0.1
+  },
+  "window_hours": {
+    "five_hour": 5,
+    "week": 168
+  },
+  "quota_cmd_default": "python3 scripts/quota_probe.py"
+}

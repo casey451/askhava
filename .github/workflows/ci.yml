@@ -81,6 +81,26 @@ jobs:
             fi
           done
 
+      - name: What this change touches (compile only when code changed, D-489)
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          # The nightly (called with the caller's event name, schedule or workflow_dispatch) and every run on main
+          # compile everything. A branch run compiles the Rust
+          # workspace and the npm tree only when the diff against main touches them; the skip guard above has
+          # already failed the run if a compiled input was deleted, so a docs-only change cannot hide one.
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "rust=true" >> "$GITHUB_OUTPUT"; echo "npm=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base="$(git merge-base origin/main HEAD)"
+          files="$(git diff --no-renames --name-only "$base" HEAD)"
+          rust=false; npm=false
+          echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures)/|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          echo "$files" | grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)' && npm=true
+          echo "rust=$rust" >> "$GITHUB_OUTPUT"; echo "npm=$npm" >> "$GITHUB_OUTPUT"
+          echo "rust=$rust npm=$npm"
+
       - name: Rust source rules (no allow without reason, no wildcard status arms, no TODO or dbg)
         run: |
           python3 scripts/check_rust_rules.py
@@ -90,19 +110,21 @@ jobs:
           python3 scripts/check_crates.py
 
       - name: Rust format, lint and tests (once the workspace exists, D-453)
+        if: steps.changes.outputs.rust == 'true'
         run: |
           if [ -f Cargo.toml ]; then
             rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
             cargo fmt --all --check
             cargo clippy --workspace --all-targets --locked -- -D warnings -F clippy::allow_attributes_without_reason
-            # Built alone: the binaries' dependency graph, which enforces the layer boundary (D-481).
-            cargo build -p server --locked
+            # The binaries' own dependency graph builds with the lockfile (D-481, D-488).
+            cargo build -p askhava-server --locked
             cargo test --workspace --locked
           else
             echo "rust checks skipped: no Cargo workspace yet"
           fi
 
       - name: Rust dependency audit (cargo-audit, cargo-deny)
+        if: steps.changes.outputs.rust == 'true'
         run: |
           if [ -f Cargo.lock ]; then
             cargo install --locked cargo-audit@0.22.2 cargo-deny@0.20.2
@@ -113,6 +135,7 @@ jobs:
           fi
 
       - name: TypeScript checks and npm audit
+        if: steps.changes.outputs.npm == 'true'
         run: |
           if [ -f package-lock.json ]; then
             npm ci --ignore-scripts
