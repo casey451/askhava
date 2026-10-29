@@ -115,6 +115,9 @@ jobs:
       issues: write
       id-token: write
       actions: write
+      # The runner reads check runs (a task's PR checks, the false-red test of D-498); without this the
+      # job's token gets 403 "Resource not accessible by integration" (D-501).
+      checks: read
     steps:
       # persist-credentials: false so pushes go out as the Claude GitHub App,
       # not as GITHUB_TOKEN.
