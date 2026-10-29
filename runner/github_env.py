@@ -66,8 +66,21 @@ ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
 
 def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
     """subprocess.run without a shell; returns (exit code, stdout, stderr)."""
-    done = subprocess.run(args, input=stdin, capture_output=True, text=True, cwd=cwd, timeout=600, check=False)
+    done = subprocess.run(args, input=stdin, capture_output=True, text=True, cwd=cwd, timeout=600, check=False, env=_env_for(args))
     return done.returncode, done.stdout, done.stderr
+
+
+def _env_for(args: list[str]) -> dict[str, str] | None:
+    """Check-run reads use the job's own token (D-502).
+
+    Inside the Claude Code action, GH_TOKEN is the Claude GitHub App's token, which has no Checks
+    permission, so `commits/<sha>/check-runs` answers 403. The workflow passes the job token (which has
+    `checks: read`) as RUNNER_CHECKS_TOKEN; it is used only for those reads and never put in argv.
+    """
+    token = os.environ.get("RUNNER_CHECKS_TOKEN", "")
+    if token and args[:2] == ["gh", "api"] and "/check-runs" in args[-1]:
+        return dict(os.environ, GH_TOKEN=token)
+    return None
 
 
 def parse_inbox_file(text: str) -> tuple[str, str]:
