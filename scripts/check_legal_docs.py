@@ -173,7 +173,8 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "removed and any faces, house numbers, license plates or readable text blurred. Only "
             "after you pick a business, and it confirms (and pays its introduction fee, when one "
             "is due), does Ask Hava give that one business your first name and the job address, "
-            "plus your email if you chose to share it.",
+            "plus your email if you chose to share it and your photos at full size, with location "
+            "data removed.",
         ),
         NO_PHONE,
         TWILIO_LINE,
