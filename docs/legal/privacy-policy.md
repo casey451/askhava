@@ -27,7 +27,11 @@ To run your request: send a description of the job to local businesses, show you
 
 ## 4. Who sees what, and when
 
+### When you pick a business
+
 When you send a request, Ask Hava sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. If you send photos, those businesses also see them, with location data removed and any faces, house numbers, license plates or readable text blurred. Only after you pick a business, and it confirms (and pays its introduction fee, when one is due), does Ask Hava give that one business your first name and the job address, plus your email if you chose to share it and your photos at full size, with location data removed. Ask Hava never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.
+
+### Who sees what at each step
 
 | Who | What they see | When |
 |---|---|---|
@@ -43,7 +47,7 @@ Your number is never shared. Your first name and address go only to the business
 
 The business you pick may use your details only for your job and follow-up about it. Our business terms forbid marketing lists and resale.
 
-**Vendors** (under contract, only to run Ask Hava): texting and calls (Twilio), email (Resend), payments (Stripe), hosting (Railway), error monitoring (Sentry), letters for business identity checks (Lob), and, only once it is switched on, automated text reading (Anthropic; see section 6).
+**Vendors** (under contract, only to run Ask Hava): texting and calls (Twilio), email (Resend), payments (Stripe), hosting (Railway), error monitoring (Sentry), letters for business identity checks (Lob), website delivery and security (Cloudflare), and, only once it is switched on, automated text reading (Anthropic; see section 6).
 
 **Legal demands.** We'll tell you about a legal demand for your data unless the law forbids it.
 
@@ -52,6 +56,8 @@ The business you pick may use your details only for your job and follow-up about
 You choose to text us: your first text, or giving us your mobile number in the chat on askhava.com and typing the code we send to it, is your OK to get automated texts about your own request, and we text you only about that request. We keep the time of that first message and the version of our first reply as proof. Quote updates come by text unless you switch to email, or both, on your quote page; if you give an email for updates, we use it only for your request and never share it with businesses unless you choose email contact when you pick. Every update email has an unsubscribe link. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time.
 
 You can also opt out by emailing help@askhava.com, replying to any Ask Hava email, using the help form on askhava.com, or switching texts off on your quote page. Every opt-out goes on one list at once and stops all texts and automated calls from Ask Hava to that number. To use Ask Hava by text again, text START.
+
+Your phone number and your texting permission are never shared with any business or third party, and your texts are never used for marketing.
 
 No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with any third parties.
 

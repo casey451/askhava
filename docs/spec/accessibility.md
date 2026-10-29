@@ -16,7 +16,7 @@ Prefix: `A11Y` · Modules: `site`, `portals`, `messaging`, `calls` · Format and
 - **A11Y-012** No form asks again for something the user already entered. Source: `BUILD_BRIEF.md:398`.
 - **A11Y-013** Sign-in needs no memory or puzzle test, and pasting and autofill work. Source: `BUILD_BRIEF.md:399`.
 - **A11Y-014** New quotes arriving are announced politely with `aria-live`, and focus moves to the result heading after a pick. Source: `BUILD_BRIEF.md:400`.
-- **A11Y-015** Time limits exist only for pick codes, sign-in links and owner sessions; each warns before expiring, offers a one-step way to get a new code or extend, and keeps what was entered. Source: `BUILD_BRIEF.md:402`, `BUILD_BRIEF.md:403`, `BUILD_BRIEF.md:404`.
+- **A11Y-015** Time limits exist only for pick codes, sign-in links, the sign-in, Confirm and identity codes (SEC-004, BIZ-002), the 5-minute fresh-code windows (SEC-038, SEC-043), owner sessions and the owner's 30-minute idle timeout (SEC-043); each warns before expiring, offers a one-step way to get a new code or extend, and keeps what was entered (D-491). Source: `BUILD_BRIEF.md:402`, `BUILD_BRIEF.md:403`, `BUILD_BRIEF.md:404`.
 - **A11Y-016** Quote windows are shown as plain text, never as countdown timers. Source: `BUILD_BRIEF.md:405`.
 - **A11Y-017** Help is in the same place on every page. Source: `BUILD_BRIEF.md:411`.
 - **A11Y-018** The site-wide status banner and every status message that needs no immediate action (saved, sent, a new quote) use `role="status"`, and a message that needs immediate attention (an error that stops the action, a code or session about to expire) uses `role="alert"` (D-485). Source: `BUILD_BRIEF.md:412`.

@@ -272,7 +272,7 @@ def test_run_tests_block_maps_each_test_layer() -> None:
     block = gp.run_tests_block(fake_task(owns=owns))
     assert "cargo test -p askhava-fake tests::fee_tiers" in block
     assert "cargo test -p askhava-integration --test outbox" in block
-    assert "npx playwright test tests/e2e/pick_flow.spec.ts" in block
+    assert "npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/pick_flow.spec.ts" in block
     assert "npx playwright test --config tests/a11y/playwright.config.ts tests/a11y/pick_forms.spec.ts" in block
     assert "python3 -m pytest tests/docs/test_terms.py" in block
     assert "forge" not in block and "rules.rs" not in block

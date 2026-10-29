@@ -57,6 +57,7 @@ WINDOW_TOKENS = 200_000
 BYTES_PER_TOKEN = 4
 DECISION_QUESTION_CHARS = 200
 DECISION_CHOICE_CHARS = 600
+SUPERSEDED_FILE = "kit/superseded_decisions.json"
 PASTED_READS = ("docs/spec/", "docs/test-design.md", "docs/decisions.md", "docs/brains/")
 BRAINS_DIR = "docs/brains/"
 BRAINS_NOTE = "none (this task lists no brain under its reads)."
@@ -118,6 +119,7 @@ class Sources:
     tests: dict[str, str] = field(default_factory=dict)
     journeys: dict[str, str] = field(default_factory=dict)
     decisions: dict[str, str] = field(default_factory=dict)
+    superseded: dict[str, str] = field(default_factory=dict)
     lines: dict[str, list[str] | None] = field(default_factory=dict)
 
 
@@ -141,6 +143,9 @@ def load_sources(root: Path) -> Sources:
             match = re.match(r"^- \*\*(D-\d{3})\*\* (.*)$", line)
             if match:
                 src.decisions[match.group(1)] = match.group(2)
+    extra_path = root / SUPERSEDED_FILE
+    extra = json.loads(extra_path.read_text(encoding="utf-8")).get("superseded", {}) if extra_path.is_file() else {}
+    src.superseded = superseded_map(src.decisions, extra)
     return src
 
 
@@ -214,13 +219,45 @@ def indent(text: str) -> str:
     return "\n".join(f"  {line}" if line else "" for line in text.splitlines())
 
 
+SUPERSEDED_PATTERNS = (
+    re.compile(r"\b(D-\d{3}) (?:is |was |now )?(?:withdrawn|superseded|replaced|reversed)(?: by (D-\d{3}))?"),
+    re.compile(r"\b(?:withdraws|supersedes|replaces|reverses) (D-\d{3})"),
+)
+
+
+def superseded_map(decisions: dict[str, str], extra: dict[str, str] | None = None) -> dict[str, str]:
+    """old decision -> the decision that withdrew, superseded, replaced or reversed it.
+
+    Read from the decisions' own words (the two sentence shapes above) and from kit/superseded_decisions.json,
+    which lists the pairs reviewers found written in other words (D-491). A later entry wins.
+    """
+    found: dict[str, str] = {}
+    for new_id, text in decisions.items():
+        for pattern in SUPERSEDED_PATTERNS:
+            for match in pattern.finditer(text):
+                old = match.group(1)
+                by = match.group(2) if match.lastindex and match.lastindex >= 2 and match.group(2) else new_id
+                if old != by:
+                    found[old] = by
+    found.update(extra or {})
+    return found
+
+
 def paste_decisions(src: Sources, ids: list[str]) -> str:
+    """Each decision's excerpt; a superseded one is marked and its successor is pasted too (D-491)."""
     if not ids:
         return NONE_NOTE
     out = []
+    shown = list(ids)
     for did in ids:
+        by = src.superseded.get(did)
+        if by and by not in shown:
+            shown.append(by)
+    for did in shown:
         text = src.decisions.get(did, "(not found in docs/decisions.md)")
-        out.append(f"- **{did}** {decision_excerpt(text)}")
+        by = src.superseded.get(did)
+        mark = f" **(superseded by {by}; history only, build {by})**" if by else ""
+        out.append(f"- **{did}**{mark} {decision_excerpt(text)}")
     return "\n".join(out)
 
 
@@ -310,11 +347,12 @@ def test_command(path: str) -> str | None:
         return f"cargo test -p askhava-{crate['crate']} tests::{crate['name']}"
     layer = re.match(r"^tests/(?P<layer>integration|security|recovery|fixtures)/tests/(?P<name>[a-z0-9_]+)\.rs$", path)
     if layer:
-        return f"cargo test -p askhava-{layer['layer']} --test {layer['name']}"
+        package = "askhava-recovery-tests" if layer["layer"] == "recovery" else f"askhava-{layer['layer']}"
+        return f"cargo test -p {package} --test {layer['name']}"
     if re.match(r"^tests/a11y/.+\.spec\.ts$", path):
         return f"npx playwright test --config tests/a11y/playwright.config.ts {path}"
     if re.match(r"^tests/.+\.spec\.ts$", path):
-        return f"npx playwright test {path}"
+        return f"npx playwright test --config tests/e2e/playwright.config.ts {path}"
     if re.match(r"^tests/.+\.py$", path) and Path(path).name.startswith("test_"):
         return f"python3 -m pytest {path} -q -p no:cacheprovider"
     return None
@@ -329,7 +367,8 @@ def run_tests_block(task: dict[str, Any]) -> str:
 
 
 def owns_copy(task: dict[str, Any]) -> bool:
-    return any(COPY_PATH.search(p) for p in task["owns"])
+    """A task writes customer words when it owns a copy path or is flagged `copy` (it adds template keys, D-491)."""
+    return bool(task.get("copy")) or any(COPY_PATH.search(p) for p in task["owns"])
 
 
 def render(template: Template, task: dict[str, Any], src: Sources | None = None) -> str:

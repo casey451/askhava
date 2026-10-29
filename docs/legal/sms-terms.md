@@ -39,7 +39,7 @@ Message and data rates may apply. Ask Hava charges you nothing. Canadian numbers
 
 Text HELP (or INFO, or AYUDA in Spanish) at any time, even after opting out. The reply:
 
-> Ask Hava (Ask Hava LLC), Lake Havasu City: Tell us what's wrong in one text. The Ask Hava owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent. Help: askhava.com/help or help@askhava.com. Can't open links? Reply LIST to get your quotes by text. This number is text-only. If anyone is in danger, call 911. Reply STOP to opt out. Msg & data rates may apply.
+> Ask Hava (Ask Hava LLC), Lake Havasu City: Tell us what's wrong in one text. The Ask Hava owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent. This number is text-only. If anyone is in danger, call 911. Help: askhava.com/help or help@askhava.com. Can't open links? Reply LIST to get your quotes by text. Canadian numbers may pay roaming charges. Reply STOP to opt out. Msg & data rates may apply.
 
 ## 6. Stopping texts
 

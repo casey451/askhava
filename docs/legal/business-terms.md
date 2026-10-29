@@ -25,6 +25,7 @@ Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedu
 ## 3. Job requests and quotes
 
 - Job requests come by email (and by text only if Ask Hava offers business texting and you choose it). Ask Hava never places recorded or automated calls to you. The Ask Hava Business Email Notice Terms explain the emails.
+- Ask Hava never buys, imports, rents or resells requests from another site or list. Every job card comes from a homeowner who contacted Ask Hava directly by text or web chat.
 - Each job card is anonymous: no homeowner name, phone, email or street address. Every card says how many businesses got it.
 - You quote once. No bidding rounds, no paid placement.
 - You may quote for 24 hours after your card is sent. A quote must not contain a phone number, a link, an email address or "call me" wording; such a quote bounces back to you.

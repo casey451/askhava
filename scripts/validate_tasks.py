@@ -151,6 +151,8 @@ ALLOWED_SHARED = frozenset(
     | {f"app/{m}/src/api.rs" for m in CRATE_MODULES}  # each task adds its own public functions (D-484)
     | {f"tests/{layer}/Cargo.toml" for layer in TEST_CRATES}
     | {f"app/{m}/sqlx.toml" for m in CRATE_MODULES}  # query-macro type overrides, added by a module's first database task (D-488)
+    | {f"app/{m}/src/status.rs" for m in CRATE_MODULES}  # the crate's status enums; each task adds its own (SEC-031, D-491)
+    | {"app/messaging/templates/en.json", "app/messaging/templates/es.json"}  # every texting task adds only its own keys (D-491)
     | {f"tests/{layer}/sqlx.toml" for layer in TEST_CRATES}
 )
 JOURNEYS = ("J1", "J2", "J3", "J4")
