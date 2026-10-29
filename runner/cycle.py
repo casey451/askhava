@@ -5,7 +5,7 @@ from __future__ import annotations
 import copy
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -100,6 +100,32 @@ class Config:
     stage_gate: Callable[[State], set[str]] | None = None  # stages whose exit test passed (D-486)
     pacer: Callable[[State, dict[str, Any], datetime], tuple[str, str | None, State]] | None = None  # scripts/pacing.py
     on_usage: Callable[[State, dict[str, Any], datetime], State] | None = None  # usage windows (scripts/pacing.py)
+    owner_paths: tuple[str, ...] = ()  # .github/CODEOWNERS entries: a PR touching one waits for Casey (D-511)
+
+
+# Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
+# (UTC-7, no daylight saving), so its PR is ready while he is awake and never holds the serial build
+# overnight; at night the runner takes the next task that merges on its own (D-511).
+OWNER_HOURS = (6, 19)
+ARIZONA = timezone(timedelta(hours=-7))
+
+
+def needs_owner(task: dict[str, Any], owner_paths: tuple[str, ...]) -> bool:
+    """True when the task owns a path in .github/CODEOWNERS (a directory entry ends with "/")."""
+    owns = [str(o) for o in task.get("owns", [])]
+    return any(o.startswith(p) if p.endswith("/") else o == p for o in owns for p in owner_paths)
+
+
+def owner_hours(now: datetime) -> bool:
+    return OWNER_HOURS[0] <= now.astimezone(ARIZONA).hour < OWNER_HOURS[1]
+
+
+def _by_day(cfg: Config, ids: list[str], now: datetime) -> list[str]:
+    """Outside owner hours, drop the tasks whose PR needs Casey's review (D-511)."""
+    if not cfg.owner_paths or owner_hours(now):
+        return ids
+    graph = {t["id"]: t for t in cfg.graph}
+    return [i for i in ids if not needs_owner(graph.get(i, {}), cfg.owner_paths)]
 
 
 def attempt_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -> str:
@@ -432,7 +458,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     opened = _open_gate_p(cfg, state) or _next_gate(cfg, env, state)
     if opened is not None:
         return "gate_open" if env.push_state(opened, base) else "lost_race"
-    ids = st.eligible(state, now, _passed(cfg, state))
+    ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state)), now)
     if not ids:
         if state != base and not env.push_state(state, base):
             return "lost_race"
