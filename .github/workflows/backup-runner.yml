@@ -1,8 +1,11 @@
 # The Actions runner (primary since D-483): runs `python3 -m runner` (D-486) through the Claude Code
 # GitHub Action (subscription token, not pay-per-use) with RUNNER_STARTER=actions, so every state
 # commit names this starter. Off unless kit/state.json on claude/kit-state has "backup_runner": "on"
-# AND the secret CLAUDE_CODE_OAUTH_TOKEN is set. Starts hourly, by hand, and on every PR merged into
-# main, so the next task starts at once instead of at the next hourly tick (BUILD_BRIEF.md:213).
+# AND the secret CLAUDE_CODE_OAUTH_TOKEN is set. Starts the moment a task's checks finish (the
+# Governance run is the last required check, and the task's auto-merge lands seconds later), on every
+# PR merged into main by a person, by hand, and hourly as a safety net; a cycle that clears a red main
+# or a false red starts the next one at once (D-500). So the next task starts within minutes of the
+# last one finishing, never on a fixed clock (BUILD_BRIEF.md:213).
 # The concurrency group keeps two starts from overlapping; the lease on claude/lease is the real lock.
 name: backup-runner
 on:
@@ -11,6 +14,9 @@ on:
   workflow_dispatch:
   pull_request:
     types: [closed]
+  workflow_run:
+    workflows: [governance]
+    types: [completed]
 permissions:
   contents: read
 concurrency:
@@ -19,10 +25,13 @@ concurrency:
 jobs:
   gate:
     name: gate
-    if: github.event_name != 'pull_request' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
+    if: >-
+      (github.event_name != 'pull_request' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'))
+      && (github.event_name != 'workflow_run' || startsWith(github.event.workflow_run.head_branch, 'claude/task/'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: read
     outputs:
       run: ${{ steps.check.outputs.run }}
     steps:
@@ -53,6 +62,25 @@ jobs:
             exit 0
           fi
           echo "run=true" >> "$GITHUB_OUTPUT"
+      - name: A task's checks finished - wait briefly for its auto-merge (D-500)
+        if: github.event_name == 'workflow_run' && steps.check.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          set -u
+          # A failed check goes straight to the runner (it records the failure and retries the task).
+          # A green one is merged by auto-merge within seconds; give it up to five minutes, then run
+          # anyway (the runner reports merge_pending and the next event picks it up).
+          if [ "$CONCLUSION" != "success" ]; then echo "checks ${CONCLUSION}: run now"; exit 0; fi
+          for _ in $(seq 1 20); do
+            state="$(gh api "repos/${GITHUB_REPOSITORY}/pulls?head=${GITHUB_REPOSITORY_OWNER}:${BRANCH}&state=all&per_page=1" \
+              --jq '.[0] | if .merged_at then "merged" else .state end' 2>/dev/null || echo unknown)"
+            [ "$state" = "open" ] || { echo "PR ${state}: run now"; exit 0; }
+            sleep 15
+          done
+          echo "PR still open after five minutes: run anyway"
   backup:
     name: backup
     needs: gate
@@ -82,6 +110,7 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
+      actions: write
     steps:
       # persist-credentials: false so pushes go out as the Claude GitHub App,
       # not as GITHUB_TOKEN.
@@ -90,6 +119,8 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: false
+      - name: Note when this job started (for the chaining step)
+        run: echo "JOB_START=$(date -u +%Y-%m-%dT%H:%M:%S)" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -122,3 +153,23 @@ jobs:
             8. Report the runner's output lines and stop.
 
             Never break section 2. Never claim a test passed unless you ran it here.
+      - name: Start the next cycle at once when this one cleared the way (D-500)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -u
+          # Results after which the next cycle has work right away; every other result waits for an
+          # event (a task's checks finishing, a merge) or the hourly tick.
+          git fetch --quiet --depth=1 origin claude/kit-state 2>/dev/null || exit 0
+          again="$(git show FETCH_HEAD:kit/runner_log.jsonl 2>/dev/null | python3 -c '
+          import json, sys, os, datetime
+          start = os.environ["JOB_START"]
+          now = [json.loads(l) for l in sys.stdin if l.strip()]
+          mine = [r for r in now if r.get("at", "") >= start]
+          go = {"false_red_cleared", "main_cleared", "main_red", "lost_race"}
+          print("yes" if any(r.get("result") in go for r in mine) else "no")
+          ' 2>/dev/null || echo no)"
+          echo "chain: ${again}"
+          if [ "$again" = "yes" ]; then gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY"; fi
+
