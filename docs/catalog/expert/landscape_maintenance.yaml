@@ -376,7 +376,7 @@ job_types:
         ask_when: "Backyard lawn, a gate is mentioned, or the homeowner is away part of the year"
         text_en: "How will the crew get into the yard on service day?"
         text_es: "¿Cómo va a entrar el equipo al patio el día del servicio?"
-        options_en: ["Gate is open or unlocked", "Gate has a lock or code", "Someone lets them in", "Front yard only"]
+        options_en: ["Gate is open, no lock","Gate has a lock or code", "Someone lets them in", "Front yard only"]
         options_es: ["La puerta está abierta o sin llave", "La puerta tiene candado o código", "Alguien les abre", "Solo el frente"]
         card_field: true
         why: "A locked gate costs a wasted trip and changes scheduling. [judgment]"
