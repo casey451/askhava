@@ -1,0 +1,631 @@
+# Ask Hava expert layer: dryer_vent_cleaning (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set dryer_vent_cleaning and trade_kb/trades/dryer_vent_cleaning.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The category has one job type, "dryer vent cleaning", so the four cleaning kb job types all map to it.
+#   kb reroute_or_replace maps to the refused name "rerouting or replacing a vent". That card is never sent
+#   to dryer-vent businesses: it routes to handyman as "dryer vent reroute" (LIC-028). Its quote_format
+#   says firm only because the checker ties every row to this category's format; the handyman category
+#   quotes in range, and its own expert file (handyman.yaml, dryer_vent_reroute) sets that card.
+# - The bank question where_vent offers Side wall, Roof, Not sure where. The kb's q1 also has "Under the
+#   home or through the floor", which manufactured homes need (scenario s06). Suggest adding that option.
+# - The bank has no run-length or gas-or-electric question (kb q3 and q5), and the AI may ask only one
+#   follow-up. Run length is the strongest price driver after the exit, so it is the follow-up most job
+#   types lean on. Adding run_length to the bank would free the follow-up for the dryer spot or fuel.
+# - Photo p4_laundry_wide is a kb photo but not in the question set's photos list. Several job types use
+#   it; consider adding it to the set.
+# - fire_dept_triggers hold only D-436 list items (smoke or fire, gas smell or hiss, CO alarm, sparking or
+#   burning outlet). A burning smell from the dryer with no smoke is not clearly on the list; it is left
+#   off and needs a decision.
+# - Whether Lake Havasu City needs a permit for a dryer vent reroute is unverified: the city permit page
+#   names neither dryer vents nor exhaust ducts and says its list is not complete.
+# - The IRC M1502 text was read from the 2021 Seattle and Ohio adoptions of the model code. Lake Havasu
+#   City adopted 2024 IRC amendments; the 2024 M1502 text and any city amendment to it were not read.
+# - No new_job_type was needed: the kb ids cover the one category job type and the refused job.
+schema: 1
+category: dryer_vent_cleaning
+question_set: dryer_vent_cleaning
+kb_trade: dryer_vent_cleaning
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (R-63 Appliances: install and repair appliances, not gas, electrical or plumbing lines; R-45 Sheet Metal includes duct work; R-62 Minor Home Improvements)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14) under $1,000 with no permit; (D) never covers fuel gas work)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "[S17] Lake Havasu City Building Permits: permit-required and no-permit lists (neither names dryer vents; the guide says it does not include every project); adopted 2024 IRC, mechanical and fuel gas code amendments"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_business_license
+    title: "Lake Havasu City Business License: businesses and individuals conducting business within city limits need a city business license"
+    url: "https://www.lhcaz.gov/business-license"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: irc_m1502
+    title: "2021 Seattle Residential Code ch. 15, Section M1502 (IRC model text): ends at least 3 ft from openings, backdraft damper, no screens at the termination, 4 in smooth-wall metal duct, transition duct one listed piece up to 8 ft and not concealed, 35 ft limit less fittings (a 4 in mitered 90-degree elbow counts 5 ft), label when longer, no domestic booster fans"
+    url: "https://seattle.gov/documents/Departments/SDCI/Codes/SeattleResidentialCode/2021SRCChapter15.pdf"
+    checked: "2026-10-29"
+    kind: code_standard
+  - id: doe_dryer_vent
+    title: "US DOE Building America Solution Center, Proper Clothes Dryer Venting (citing IRC M1502: rigid or semi-rigid metal, 35 ft less 5 ft per 90-degree bend, no screws into the duct, no screen at the end, avoid roof terminations, professional cleaning at least once a year)"
+    url: "https://basc.pnnl.gov/resource-guides/proper-clothes-dryer-venting"
+    checked: "2026-10-29"
+    kind: other
+  - id: cpsc_5022
+    title: "U.S. CPSC Publication 5022, Overheated Clothes Dryers Can Cause Fires: lint builds up in the dryer or exhaust duct; flexible plastic or foil duct traps lint more easily, replace with rigid or semi-rigid metal; damp clothes or longer drying can mean the screen or duct is blocked"
+    url: "https://www.cpsc.gov/s3fs-public/5022.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: cpsc_dryer_report
+    title: "U.S. CPSC, Final Report on Electric and Gas Clothes Dryers (2000): lint buildup in the airflow system the largest known contributing factor; duct or vent the most frequent fire location in the fires studied (old data)"
+    url: "https://www.cpsc.gov/s3fs-public/clothes_1.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nfpa_dryer
+    title: "NFPA Clothes Dryers and Washing Machines fact sheet (energy.gov copy): about 17,700 home fires in 2006, 92% dryers in 2003-2006, failure to clean the leading factor at 29% (old data)"
+    url: "https://www.energy.gov/sites/default/files/2016/06/f32/NFPA_DryerFactSheet.pdf"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: csia_dryer
+    title: "Chimney Safety Institute of America, clothes dryer safety: annual dryer exhaust inspection; drying taking about twice as long points to a restricted vent; nesting material in the vent; C-DET is its dryer exhaust technician credential"
+    url: "https://www.csia.org/blog/clothes-dryer-safety-tips-a-homeowners-guide-to-a-safer-more-efficient-dryer-home"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: whirlpool_install
+    title: "Whirlpool dryer dimension and installation guide W10189310: 4 in heavy metal exhaust, no plastic or metal foil vent; flexible metal only where it can be reached to clean; about 5.5 in behind the dryer; hood at least 12 in above the ground and any object; louvered or box hood"
+    url: "https://www.whirlpool.com/content/dam/global/documents/200804/dimension-guide-W10189310-D-WH.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: hud_3280_708
+    title: "24 CFR 3280.708(a) Manufactured home construction standards, exhaust duct system: dryers exhaust to the outside; the duct shall not end beneath the manufactured home; no screws into the duct"
+    url: "https://www.law.cornell.edu/cfr/text/24/3280.708"
+    checked: "2026-10-29"
+    kind: statute
+  - id: usfws_nests
+    title: "U.S. Fish and Wildlife Service, depredation FAQ (2024): no permit to destroy an inactive nest (no eggs or chicks); a permit is required for an active nest; European starlings, rock pigeons and house sparrows are not protected under the MBTA"
+    url: "https://fws.gov/sites/default/files/documents/2024-09/3-200-13-depredation-frequently-asked-questions.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: angi_dryer_cost
+    title: "Angi cost guide, dryer vent cleaning: average about $140, range about $75 to $325; second-floor or roof vents cost more for access equipment; vent size, access and debris drive the range"
+    url: "https://www.angi.com/research/dryer-vent-cleaning/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: valley_dryer_cpl
+    title: "The Valley Marketing Group (marketing vendor), dryer vent cleaning Google Ads cost per lead 2026: non-brand search about $45 to $80 per lead, Local Services Ads home-services average about $53, blended $50 to $75; tickets about $100 to $200; air duct bundles $300 to $500 or more"
+    url: "https://thevalleymarketinggroup.com/blog/dryer-vent-cleaning-google-ads-cost-per-lead-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: hcp_thumbtack
+    title: "Housecall Pro (field-service software vendor): how Thumbtack works (pros report $10 to over $100 per lead by trade and market; customers contact several pros)"
+    url: "https://www.housecallpro.com/resources/what-is-thumbtack-how-it-works/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: nws_monsoon
+    title: "National Weather Service Tucson, Monsoon Safety: the monsoon runs June 15 to September 30"
+    url: "https://www.weather.gov/twc/MonsoonSafety"
+    checked: "2026-10-29"
+    kind: regulator
+
+trade_brief:
+  price_drivers:
+    - driver: "Where the vent comes out: a low side wall, a second-story wall, the roof, or under a manufactured home"
+      why: "A ground-level wall cover is the base job; second-floor and roof vents cost more because of the ladders and access gear, and under-home exits mean crawling behind skirting."
+      source: angi_dryer_cost
+    - driver: "Run length and bends between the dryer and the outside cover"
+      why: "Code caps the duct at 35 ft less an allowance for each bend, so long runs with elbows take more rod sections and time to clear; the run-length follow-up supplies it."
+      source: irc_m1502
+    - driver: "Roof type and stories on a roof exit (tile, shingle, foam, metal)"
+      why: "Concrete and clay tile can crack underfoot and a two-story tile roof is the hardest version to staff; some cleaners clean a roof vent from inside only. [judgment]"
+      source: null
+    - driver: "How much is in the duct: normal lint, years of buildup, a nest, or a stuck cover"
+      why: "Debris is one of the main things that moves the price; nest removal and packed lint add time."
+      source: angi_dryer_cost
+    - driver: "Getting to the dryer: garage, laundry room, stacked unit in a closet, upstairs, gas or electric"
+      why: "Pulling a stacked pair or a gas dryer out of a tight closet takes longer, and some cleaners will not move a gas dryer at all. [judgment]"
+      source: null
+    - driver: "Duct condition behind the dryer: foil or plastic hose, crushed, or pulled loose"
+      why: "Manufacturers call for heavy metal duct, not foil or plastic; a cleaner may quote the cleaning only and leave replacement, which routes to handyman here."
+      source: whirlpool_install
+    - driver: "Number of dryers on one request (vacation rentals, duplexes)"
+      why: "Each dryer is its own run and its own exit; most cleaners price per vent with a small break for more than one at the same address. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Foil or plastic accordion hose behind the dryer, crushed against the wall"
+      how_a_pro_spots_it: "Silver foil or white vinyl ribbing and a flattened bend in the behind-the-dryer photo"
+      question_or_photo: p2_behind_dryer
+      source: cpsc_5022
+    - condition: "A screen or cage over the outside cover packed with lint"
+      how_a_pro_spots_it: "Mesh or a wire cage on the cover in the outside photo; code bars screens at the duct end"
+      question_or_photo: p1_outside_vent
+      source: irc_m1502
+    - condition: "A long run that climbs through the attic to the roof, with lint packed at the cap"
+      how_a_pro_spots_it: "Roof exit, laundry in the middle of the house, run over 25 feet, lint strands at the cap in the roof photo"
+      question_or_photo: fu_run_length
+      source: doe_dryer_vent
+    - condition: "Duct that ends under a manufactured home instead of outside the skirting"
+      how_a_pro_spots_it: "Vent goes through the floor and the homeowner cannot find an exit on the skirting; federal rules bar ending the duct under the home"
+      question_or_photo: fu_under_home_end
+      source: hud_3280_708
+    - condition: "An active nest with eggs or chicks"
+      how_a_pro_spots_it: "Birds going in and out or chirping; a permit is needed to destroy an active nest of a protected species, while starlings and house sparrows are not protected"
+      question_or_photo: fu_what_living
+      source: usfws_nests
+    - condition: "Duct split or disconnected inside the attic, wall or garage ceiling"
+      how_a_pro_spots_it: "Lint on the garage ceiling or around the dryer, very little air at the outside cover, a duct that goes up into the ceiling in the wide photo"
+      question_or_photo: p4_laundry_wide
+      source: null
+    - condition: "Cover too low or blocked by an AC unit, plants or a fence"
+      how_a_pro_spots_it: "Cover close to the gravel or behind a condenser in the outside photo; manufacturers want the hood at least 12 in above the ground and any object"
+      question_or_photo: p1_outside_vent
+      source: whirlpool_install
+    - condition: "Gas connector behind the dryer that the cleaner will not disconnect"
+      how_a_pro_spots_it: "Yellow or steel flexible gas line in the behind-the-dryer photo; gas connection work is outside any handyman exemption and outside R-63"
+      question_or_photo: p2_behind_dryer
+      source: ars_32_1121
+  misdiagnosis_checks:
+    - sounds_like: "dryer_not_drying (dryer takes forever)"
+      might_be: "a fault in the dryer itself (no heat, drum not turning, grinding), a different category"
+      one_question: fu_dryer_heat
+      if_other_route_to: {category: appliance_repair, job_type: "dryer"}
+      source: null
+    - sounds_like: "standard_vent_cleaning (hose behind the dryer is crushed or torn)"
+      might_be: "reroute_or_replace, refused here"
+      one_question: fu_clean_or_replace
+      if_other_route_to: {category: handyman, job_type: "dryer vent reroute"}
+      source: null
+    - sounds_like: "dryer vent cleaning (clean the ducts in the house)"
+      might_be: "heating and cooling duct work, a different category"
+      one_question: fu_which_ducts
+      if_other_route_to: {category: hvac_repair, job_type: "duct repair"}
+      source: null
+    - sounds_like: "blockage_bird_nest (something living in the vent)"
+      might_be: "bees or wasps nesting in the vent, a pest job"
+      one_question: fu_what_living
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+    - sounds_like: "long_or_roof_vent (manufactured home, vent goes through the floor)"
+      might_be: "a duct that ends under the home, which is a reroute rather than a cleaning"
+      one_question: fu_under_home_end
+      if_other_route_to: {category: handyman, job_type: "dryer vent reroute"}
+      source: hud_3280_708
+    - sounds_like: "dryer vent cleaning (move the vent while redoing the laundry room)"
+      might_be: "reroute_or_replace, refused here"
+      one_question: fu_clean_or_replace
+      if_other_route_to: {category: handyman, job_type: "dryer vent reroute"}
+      source: null
+  photo_reading:
+    - photo_id: p1_outside_vent
+      reads: ["Cover type: single flap, louvers, cage or screen", "Lint, nest material or birds at the cover", "Height off the ground", "Plants, a fence or an AC unit in front of it", "Cover cracked, flap missing or stuck open"]
+      neutral_wording: "Photo shows a louvered wall cover about 2 feet off the gravel with gray lint around the flaps."
+    - photo_id: p2_behind_dryer
+      reads: ["Duct type: rigid metal, ribbed metal, foil or white plastic", "Kinks or a flattened bend", "Gas connector or power cord in view", "Gap between the dryer and the wall", "Stacked or side-by-side unit"]
+      neutral_wording: "Photo shows a silver foil hose bent flat behind the dryer and a yellow gas line beside it."
+    - photo_id: p3_roof_vent
+      reads: ["Roof surface: concrete or clay tile, shingle, foam, metal", "Cap style and whether it has a flap or a screen", "Lint or nest material at the cap", "Steep or low slope; one or two stories"]
+      neutral_wording: "Photo from the yard shows a small metal cap on a tile roof with lint strands at the opening."
+    - photo_id: p4_laundry_wide
+      reads: ["Laundry in the garage, a closet or an inside room", "Duct going into the wall, floor or ceiling", "Lint on the floor, wall or ceiling near the dryer", "Room to pull the dryer out"]
+      neutral_wording: "Photo shows a side-by-side washer and dryer in the garage with the duct going up into the ceiling."
+  local_factors:
+    - fact: "Monsoon season runs June 15 to September 30"
+      effect: "Wind and dust blow debris into wall covers and can keep a flap from closing, which lets birds in [judgment]"
+      source: nws_monsoon
+    - fact: "Many Havasu homes put the laundry in the garage or on an inside wall"
+      effect: "Long runs that climb through the attic to the roof are common, so run length and roof type come up on many cards [judgment]"
+      source: null
+    - fact: "Concrete and clay tile roofs are common"
+      effect: "Roof-exit cards on tile go to businesses that walk tile, and some cleaners clean those runs from the dryer end only [judgment]"
+      source: null
+    - fact: "Manufactured home dryer ducts must exhaust to the outside and must not end under the home"
+      effect: "Under-home vents in parks are common; the card says where the duct ends, if known, because a duct ending under the home is reroute work"
+      source: hud_3280_708
+    - fact: "Seasonal residents and vacant second homes sit empty for months"
+      effect: "Birds nest in wall covers while no one runs the dryer; nest requests cluster in spring when owners return [judgment]"
+      source: null
+    - fact: "Vacation rentals run dryers between every guest stay"
+      effect: "Owners ask for several dryers at once before the spring and summer seasons [judgment]"
+      source: null
+    - fact: "Summer roof surfaces get very hot from June to September"
+      effect: "Roof-exit jobs get booked for early mornings, which narrows the open slots [judgment]"
+      source: null
+    - fact: "The city permit lists name neither dryer vents nor exhaust ducts, and the list says it is not complete"
+      effect: "Cleaning an existing vent is not construction and is not treated as permit work [judgment]; whether a reroute needs a permit is unverified, so reroute cards go to handyman with that question open"
+      source: lhc_permits
+    - fact: "Businesses working inside Lake Havasu City limits need a city business license; no ROC class covers cleaning a dryer vent"
+      effect: "Cards go to businesses with no ROC check (LIC-028); Ask Hava does not check the city license"
+      source: lhc_business_license
+  seasonality:
+    busy: "October to November, before winter visitors settle in and around fire-prevention reminders, and February to April, before the rental season [judgment]"
+    slow: "July to August, when roof work is hard and many second homes are empty [judgment]"
+    source: null
+
+job_types:
+  - id: standard_vent_cleaning
+    label: "Standard dryer vent cleaning (wall exit, short run)"
+    bank_job_type: "dryer vent cleaning"
+    recurring: false
+    homeowner_phrasings: ["clean my dryer vent", "annual dryer vent cleaning", "lint all over the outside vent", "dryer vent on the side of the house", "limpiar el ducto de la secadora"]
+    must_know:
+      - fact: "Where the vent comes out, and how high off the ground"
+        bank_question: where_vent
+        follow_up: null
+        photo: p1_outside_vent
+        why_it_moves_price: "A low wall cover is the base price; a high or second-story wall needs a tall ladder."
+        skip_if: "Homeowner said where, or the outside photo shows it"
+      - fact: "Number of stories"
+        bank_question: stories
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets ladder height and often run length. [judgment]"
+        skip_if: "Homeowner gave the stories"
+      - fact: "Run length from the dryer to the outside cover"
+        bank_question: null
+        follow_up: fu_run_length
+        photo: p4_laundry_wide
+        why_it_moves_price: "Longer runs with bends take more rod sections and more time; code caps the run at 35 ft less bends. [src:irc_m1502]"
+        skip_if: "Dryer sits against the outside wall where the cover is"
+      - fact: "Where the dryer sits and how easy it is to pull out"
+        bank_question: null
+        follow_up: fu_dryer_spot
+        photo: p2_behind_dryer
+        why_it_moves_price: "A stacked unit in a closet or an upstairs laundry adds time at the dryer end. [judgment]"
+        skip_if: "Wide laundry photo shows it"
+      - fact: "What shows at the outside cover: lint, a stuck flap, a screen"
+        bank_question: null
+        follow_up: null
+        photo: p1_outside_vent
+        why_it_moves_price: "A screen packed with lint or a cracked cover may add a part; code bars screens at the duct end. [src:irc_m1502]"
+        skip_if: "No outside photo; the business asks on the call"
+    allowed_follow_ups:
+      - id: fu_run_length
+        ask_when: "No run length given and the dryer is not on the same wall as the outside cover"
+        text_en: "About how far is the dryer from where the vent comes out?"
+        text_es: "¿Más o menos a qué distancia está la secadora de donde sale el ducto?"
+        options_en: ["Under 10 feet", "10 to 25 feet", "Over 25 feet"]
+        options_es: ["Menos de 10 pies", "10 a 25 pies", "Más de 25 pies"]
+        card_field: true
+        why: "Run length sets the rods, time and price more than anything after the exit; it is the kb's q3, missing from the bank. [judgment]"
+      - id: fu_dryer_spot
+        ask_when: "Short wall run already known and the homeowner did not say where the dryer sits"
+        text_en: "Where does the dryer sit?"
+        text_es: "¿Dónde está la secadora?"
+        options_en: ["Garage", "Laundry room or closet, side by side", "Stacked on the washer in a closet", "Upstairs"]
+        options_es: ["En la cochera", "En el cuarto de lavado o un clóset, lado a lado", "Encima de la lavadora en un clóset", "En el piso de arriba"]
+        card_field: true
+        why: "A stacked closet unit or an upstairs laundry changes how long the dryer end takes. [judgment]"
+      - id: fu_clean_or_replace
+        ask_when: "Homeowner mentions a crushed, torn, loose or old hose, a new laundry spot, or moving the vent"
+        text_en: "Do you want the vent cleaned as it is, or part of it replaced or moved?"
+        text_es: "¿Quiere que limpien el ducto como está, o que cambien o muevan una parte?"
+        options_en: ["Cleaned as it is", "Replace a crushed or torn hose", "Move the vent to a new spot", "Cleaned and a hose replaced"]
+        options_es: ["Limpiarlo como está", "Cambiar una manguera aplastada o rota", "Mover el ducto a otro lugar", "Limpiarlo y cambiar una manguera"]
+        card_field: true
+        why: "Cleaning stays here; replacing or moving routes to handyman as dryer vent reroute (LIC-028). [judgment]"
+      - id: fu_which_ducts
+        ask_when: "Homeowner says ducts, air ducts or vents in the house, or asks for more than the dryer"
+        text_en: "Is this the one vent from the dryer to the outside, or the heating and cooling ducts in the house too?"
+        text_es: "¿Es solo el ducto de la secadora hacia afuera, o también los ductos de aire de la casa?"
+        options_en: ["Just the dryer vent", "The house air ducts too", "Only the house air ducts"]
+        options_es: ["Solo el ducto de la secadora", "También los ductos de aire de la casa", "Solo los ductos de aire de la casa"]
+        card_field: true
+        why: "House air ducts are HVAC work and go out as a second card. [judgment]"
+    photos_priority: [p1_outside_vent, p2_behind_dryer, p4_laundry_wide]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames at the dryer or the vent", "Gas smell or hiss near a gas dryer", "CO alarm sounding", "Sparking or burning outlet behind the dryer"]
+      urgent_capable_triggers: []
+      regular: "Every cleaning request"
+    scope_line_en: "Clean the dryer vent; side wall exit about 2 feet off the ground, 1 story, run under 10 feet; electric dryer in the garage."
+    scope_line_es: "Limpiar el ducto de la secadora; sale por la pared de lado a unos 2 pies del suelo, 1 piso, menos de 10 pies; secadora eléctrica en la cochera."
+    quote_format: firm
+    business_fills: ["price for the cleaning", "what is included (pull-out at the dryer, outside cover, haul-away of lint)", "earliest day"]
+    card_template: |
+      REQ-<id> | Dryer-vent cleaning | <town>, <general area> | <house / condo / townhome / manufactured home / vacation rental>
+      <one scope line: clean the vent, exit, stories, run length>
+      Exit: <side wall, height if seen / not sure>. Stories: <1 / 2 or more>. Run: <under 10 / 10 to 25 / over 25 feet / not said>.
+      Dryer: <garage / laundry room / stacked in a closet / upstairs>, <gas / electric / not said>. Slower than usual: <yes / no>.
+      Photos: <n> (<neutral description: cover type, lint, duct behind the dryer>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Lint buildup is a fire hazard.", "Don't run the dryer until it's cleaned.", "A cleaning runs about a hundred and fifty.", "That foil hose is against code.", "You should get this done every year."]
+
+  - id: long_or_roof_vent
+    label: "Long run, roof exit or under-home vent cleaning"
+    bank_job_type: "dryer vent cleaning"
+    recurring: false
+    homeowner_phrasings: ["dryer vent goes out the roof", "2 story dryer vent", "laundry room in the middle of the house", "vent goes under the mobile home", "el ducto sale por el techo"]
+    must_know:
+      - fact: "Exit: roof, high wall, or under the home"
+        bank_question: where_vent
+        follow_up: null
+        photo: p3_roof_vent
+        why_it_moves_price: "Roof and second-floor vents cost more for access gear; under-home exits mean work behind the skirting. [src:angi_dryer_cost]"
+        skip_if: "Homeowner said where"
+      - fact: "Roof type and stories"
+        bank_question: stories
+        follow_up: fu_roof_type
+        photo: p3_roof_vent
+        why_it_moves_price: "Tile on a two-story is the hardest version to staff; some businesses clean those from the dryer end only. [judgment]"
+        skip_if: "Roof photo shows the surface, or the exit is not on the roof"
+      - fact: "Run length"
+        bank_question: null
+        follow_up: fu_run_length
+        photo: p4_laundry_wide
+        why_it_moves_price: "Runs near or past the 35 ft code limit take more rod sections and time. [src:irc_m1502]"
+        skip_if: "Homeowner gave a distance"
+      - fact: "Where an under-home duct ends"
+        bank_question: null
+        follow_up: fu_under_home_end
+        photo: null
+        why_it_moves_price: "A duct that ends under the home cannot be cleaned to an outside cover and turns into reroute work. [src:hud_3280_708]"
+        skip_if: "Not a manufactured home and the vent does not go through the floor"
+      - fact: "Gas or electric"
+        bank_question: null
+        follow_up: fu_dryer_fuel
+        photo: p2_behind_dryer
+        why_it_moves_price: "Some cleaners will not move a gas dryer, and gas connection work is never handyman work. [src:ars_32_1121]"
+        skip_if: "Behind-the-dryer photo shows a gas line or only a power cord"
+    allowed_follow_ups:
+      - id: fu_roof_type
+        ask_when: "Vent exits the roof and no roof photo was sent"
+        text_en: "What kind of roof is the vent on?"
+        text_es: "¿De qué tipo es el techo donde está el ducto?"
+        options_en: ["Tile", "Shingle", "Flat or foam", "Metal"]
+        options_es: ["De teja", "De tejas de asfalto", "Plano o de espuma", "De lámina de metal"]
+        card_field: true
+        why: "Roof surface decides who can walk it and how long the roof end takes. [judgment]"
+      - fu_run_length
+      - id: fu_under_home_end
+        ask_when: "Manufactured home, or the vent goes down through the floor"
+        text_en: "Under the home, does the vent go out through the skirting to the open air, or does it end under the home?"
+        text_es: "Debajo de la casa, ¿el ducto sale por el faldón al aire libre, o termina debajo de la casa?"
+        options_en: ["Goes out through the skirting", "Ends under the home", "Can't see under the home"]
+        options_es: ["Sale por el faldón", "Termina debajo de la casa", "No puedo ver debajo de la casa"]
+        card_field: true
+        why: "Federal rules bar a dryer duct from ending under a manufactured home; one that does is reroute work, not a cleaning."
+      - id: fu_dryer_fuel
+        ask_when: "Gas or electric unknown and no behind-the-dryer photo"
+        text_en: "Is the dryer gas or electric?"
+        text_es: "¿La secadora es de gas o eléctrica?"
+        options_en: ["Electric", "Gas"]
+        options_es: ["Eléctrica", "De gas"]
+        card_field: true
+        why: "Tells the business whether it will move a gas dryer; work on the gas connection is never handyman work."
+    photos_priority: [p3_roof_vent, p2_behind_dryer, p4_laundry_wide]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames at the dryer or the vent", "Gas smell or hiss near a gas dryer", "CO alarm sounding", "Sparking or burning outlet behind the dryer"]
+      urgent_capable_triggers: []
+      regular: "Every long-run, roof or under-home cleaning"
+    scope_line_en: "Clean a roof-exit dryer vent; 2 stories, concrete tile roof, run about 10 to 25 feet through the attic; gas dryer upstairs."
+    scope_line_es: "Limpiar un ducto de secadora que sale por el techo; 2 pisos, techo de teja de concreto, de 10 a 25 pies por el ático; secadora de gas en el piso de arriba."
+    quote_format: firm
+    business_fills: ["price for the cleaning", "whether you clean from the roof or from the dryer end", "what is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Dryer-vent cleaning | <town>, <general area> | <kind of place>
+      <one scope line: exit, stories, roof type or under-home, run length>
+      Exit: <roof / high wall / under the home>. Stories: <1 / 2 or more>. Roof: <tile / shingle / flat or foam / metal / not said / n/a>.
+      Run: <under 10 / 10 to 25 / over 25 feet / not said>. Under the home: <out through skirting / ends under home / can't see / n/a>. Dryer: <gas / electric / not said>, <where it sits>.
+      Photos: <n> (<neutral description>) or <no photo of the vent available>. Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Roof vents always clog worse.", "That run is too long for code.", "Expect to pay extra for a tile roof.", "The duct has to be rerouted.", "Climb up and check the cap first."]
+
+  - id: blockage_bird_nest
+    label: "Bird nest or blockage at the vent cover"
+    bank_job_type: "dryer vent cleaning"
+    recurring: false
+    homeowner_phrasings: ["birds in my dryer vent", "bird nest in the vent", "vent flap stuck shut", "dryer vent clogged", "nido de pájaros en el ducto"]
+    must_know:
+      - fact: "What is at the vent: birds coming and going, an old nest, bees or wasps, an animal, or a stuck flap"
+        bank_question: null
+        follow_up: fu_what_living
+        photo: p1_outside_vent
+        why_it_moves_price: "An active nest may need waiting or a permit, bees go to pest control, and a stuck flap is a short stop. [src:usfws_nests]"
+        skip_if: "Homeowner already said which"
+      - fact: "Where the vent comes out and how high"
+        bank_question: where_vent
+        follow_up: null
+        photo: p3_roof_vent
+        why_it_moves_price: "A nest in a roof cap means roof access; a low wall cover is reachable from the ground. [src:angi_dryer_cost]"
+        skip_if: "Photo shows it"
+      - fact: "Number of stories"
+        bank_question: stories
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Ladder height for a high wall cover. [judgment]"
+        skip_if: "Given"
+      - fact: "Cover condition after the nest: flap torn off, cage, screen"
+        bank_question: null
+        follow_up: null
+        photo: p1_outside_vent
+        why_it_moves_price: "A damaged cover usually gets swapped in the same visit, which adds a part. [judgment]"
+        skip_if: "No outside photo"
+    allowed_follow_ups:
+      - id: fu_what_living
+        ask_when: "Homeowner mentions birds, a nest, buzzing, an animal or something stuck at the vent without saying what"
+        text_en: "What have you seen at the vent?"
+        text_es: "¿Qué ha visto en el ducto?"
+        options_en: ["Birds going in and out or chirping", "Old nest, no birds lately", "Bees or wasps", "Mice or another animal", "Flap stuck, nothing living seen"]
+        options_es: ["Pájaros que entran y salen o se oyen", "Nido viejo, sin pájaros últimamente", "Abejas o avispas", "Ratones u otro animal", "La tapa está atorada, no se ve nada vivo"]
+        card_field: true
+        why: "An active nest is a different visit than an old one, and bees or wasps are a pest job. [src:usfws_nests]"
+      - fu_roof_type
+      - fu_run_length
+    photos_priority: [p1_outside_vent, p3_roof_vent]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames at the dryer or the vent"]
+      urgent_capable_triggers: ["A bird or animal is trapped inside the duct"]
+      regular: "Nest or a stuck cover, nothing trapped"
+    scope_line_en: "Nest material at the side wall dryer vent with birds going in and out; 1 story, cover about 4 feet up; electric dryer."
+    scope_line_es: "Material de nido en el ducto de la secadora en la pared de lado, con pájaros que entran y salen; 1 piso, la tapa a unos 4 pies; secadora eléctrica."
+    quote_format: firm
+    business_fills: ["price to clear the vent and clean the run", "whether a new cover is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Dryer-vent cleaning | <town>, <general area> | <kind of place>
+      <one scope line: what is at the vent, where, height>
+      Seen: <birds coming and going / old nest / bees or wasps / animal / stuck flap>. Exit: <side wall / roof>. Stories: <1 / 2 or more>.
+      Cover: <neutral, from photo: flap, louvers, cage, damage> or <no photo>. Access to the cover: <open / side gate / fenced equipment area / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Pull the nest out with a hanger.", "Those are starlings, you can just remove them.", "Put a screen over the vent.", "Birds in the vent can start a fire.", "Nest removal costs about fifty more."]
+
+  - id: dryer_not_drying
+    label: "Dryer slow to dry; vent check and cleaning only (no appliance repair)"
+    bank_job_type: "dryer vent cleaning"
+    recurring: false
+    homeowner_phrasings: ["dryer takes forever", "takes 2 cycles to dry towels", "clothes still damp", "dryer gets hot but clothes wet", "la secadora no seca"]
+    must_know:
+      - fact: "What the dryer does: hot but damp, no heat, drum not turning, or just slow"
+        bank_question: symptom
+        follow_up: fu_dryer_heat
+        photo: null
+        why_it_moves_price: "Hot but damp fits a vent visit; no heat, a drum that won't turn or grinding is an appliance repair. [src:cpsc_5022]"
+        skip_if: "Homeowner's words already say which"
+      - fact: "Where the vent comes out"
+        bank_question: where_vent
+        follow_up: null
+        photo: p1_outside_vent
+        why_it_moves_price: "Exit sets the access work like any other cleaning. [src:angi_dryer_cost]"
+        skip_if: "Answered"
+      - fact: "Run length"
+        bank_question: null
+        follow_up: fu_run_length
+        photo: p4_laundry_wide
+        why_it_moves_price: "A long run with bends is the usual setting for slow drying, and it takes longer to clear. [src:doe_dryer_vent]"
+        skip_if: "Distance given"
+      - fact: "Hose behind the dryer"
+        bank_question: null
+        follow_up: null
+        photo: p2_behind_dryer
+        why_it_moves_price: "A crushed foil hose is a common find; replacing it is reroute work, so the card notes it as seen. [src:cpsc_5022]"
+        skip_if: "No photo; the business checks on site"
+    allowed_follow_ups:
+      - id: fu_dryer_heat
+        ask_when: "Slow or damp drying with no detail on heat, noise or the drum"
+        text_en: "When the dryer runs, how do the clothes come out?"
+        text_es: "Cuando la secadora funciona, ¿cómo sale la ropa?"
+        options_en: ["Hot but still damp", "Cool and damp, no heat", "Drum doesn't turn or it grinds", "Dry, but it takes two cycles"]
+        options_es: ["Caliente pero húmeda", "Fría y húmeda, no calienta", "El tambor no gira o hace ruido fuerte", "Seca, pero tarda dos ciclos"]
+        card_field: true
+        why: "No heat or a drum that won't turn is the dryer, not the vent, and routes to appliance repair. [judgment]"
+      - fu_run_length
+      - fu_dryer_fuel
+      - fu_which_ducts
+    photos_priority: [p2_behind_dryer, p1_outside_vent, p4_laundry_wide]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames at the dryer or the vent", "Gas smell or hiss near a gas dryer", "CO alarm sounding", "Sparking or burning outlet behind the dryer"]
+      urgent_capable_triggers: []
+      regular: "Slow drying"
+    scope_line_en: "Vent check and cleaning; dryer takes two cycles, clothes come out hot but damp; side wall exit in the garage, run 10 to 25 feet."
+    scope_line_es: "Revisar y limpiar el ducto; la secadora tarda dos ciclos, la ropa sale caliente pero húmeda; sale por la pared de la cochera, de 10 a 25 pies."
+    quote_format: firm
+    business_fills: ["price for the vent cleaning", "whether an airflow check is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Dryer-vent cleaning | <town>, <general area> | <kind of place>
+      <one scope line: vent check and cleaning, what the dryer does>
+      Clothes come out: <hot but damp / dry after two cycles>. Exit: <side wall / roof / under the home / not sure>. Stories: <1 / 2 or more>.
+      Run: <under 10 / 10 to 25 / over 25 feet / not said>. Dryer: <gas / electric / not said>. Hose behind dryer: <neutral, from photo> or <not seen>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the vent, not the dryer.", "Your heating element is fine.", "A clogged vent can burn the house down.", "Clean the lint screen first and see.", "This should fix the drying."]
+
+  - id: reroute_or_replace
+    label: "Move, reroute or replace the vent (refused here; routes to handyman as dryer vent reroute)"
+    bank_job_type: "rerouting or replacing a vent"
+    recurring: false
+    homeowner_phrasings: ["move my dryer vent", "reroute the dryer vent", "replace the dryer vent hose", "crushed vent behind the dryer", "mover ducto de secadora"]
+    must_know:
+      - fact: "What work is wanted: replace a hose, move the vent, or clean and replace"
+        bank_question: null
+        follow_up: fu_clean_or_replace
+        photo: p2_behind_dryer
+        why_it_moves_price: "Decides whether this is a handyman reroute card, a cleaning card here, or both. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Gas or electric"
+        bank_question: null
+        follow_up: fu_dryer_fuel
+        photo: p2_behind_dryer
+        why_it_moves_price: "Work that touches a gas connection is never handyman work, at any price. [src:ars_32_1121]"
+        skip_if: "Photo shows the connection"
+      - fact: "Where the vent leaves the house now, and where the new spot is"
+        bank_question: where_vent
+        follow_up: null
+        photo: p4_laundry_wide
+        why_it_moves_price: "A new hole through a block wall or the roof can take the job past handyman limits; the card records it and does not decide. [src:ars_32_1121]"
+        skip_if: "Wide photo shows both"
+    allowed_follow_ups:
+      - fu_clean_or_replace
+      - fu_dryer_fuel
+    photos_priority: [p2_behind_dryer, p4_laundry_wide]
+    urgency:
+      fire_dept_triggers: ["Gas smell or hiss near a gas dryer", "Smoke or flames at the dryer or the vent"]
+      urgent_capable_triggers: []
+      regular: "Every reroute or replace request"
+    scope_line_en: "Move the dryer vent to the opposite laundry wall and hook up a new duct; electric dryer; current exit is the side wall."
+    scope_line_es: "Mover el ducto de la secadora a la pared de enfrente del cuarto de lavado y conectar un ducto nuevo; secadora eléctrica; ahora sale por la pared de lado."
+    quote_format: firm
+    business_fills: ["none here: the card goes to handyman as dryer vent reroute and is quoted in that category's format"]
+    card_template: |
+      REQ-<id> | Handyman: dryer vent reroute | <town>, <general area> | <kind of place>
+      <one scope line: move, reroute or replace, where now, where to>
+      Wants: <replace hose / move vent / clean and replace>. Exit now: <side wall / roof / under the home / not sure>. New spot: <homeowner's words> or <n/a>.
+      Dryer: <gas / electric / not said>. Duct seen: <neutral, from photo> or <not seen>. Cleaning of the old run also asked: <yes / no>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A handyman can do that.", "You'll need a permit for that.", "Moving a vent is a small job.", "Just use a longer foil hose.", "Disconnect the gas line before they come."]
+
+business_side:
+  how_they_get_customers: ["Google Local Services Ads and search ads", "Google Maps listing and reviews", "Yearly reminder texts or cards to past customers", "Realtors, home inspectors and property managers who flag dirty vents", "Add-on to chimney sweeping or air duct cleaning", "Nextdoor and local Facebook groups [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google non-brand search ads (dryer vent cleaning)"
+      figure: "About $45 to $80 per lead, from a marketing-vendor article"
+      source: valley_dryer_cpl
+      unverified: false
+    - channel: "Google Local Services Ads (home services average)"
+      figure: "About $53 per lead; the vendor says dryer vent cleaning often lands at or below that; blended with search about $50 to $75"
+      source: valley_dryer_cpl
+      unverified: false
+    - channel: "Thumbtack (all trades)"
+      figure: "Pros report about $10 to over $100 per lead depending on trade and market; customers contact several pros"
+      source: hcp_thumbtack
+      unverified: false
+    - channel: "Typical ticket the lead has to pay for"
+      figure: "National average about $140 per cleaning (range about $75 to $325); vendor puts standard tickets at $100 to $200"
+      source: angi_dryer_cost
+      unverified: false
+    - channel: "Lake Havasu City dryer-vent cleaners specifically"
+      figure: "No local figures found; a small market with few cleaners may see lower ad costs than national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead that three other cleaners also bought", "Price shoppers who only want a number over the phone", "Jobs that turn out to be a broken dryer, not the vent", "Monthly fees whether or not jobs come", "Roof jobs sent with no word on stories or roof type"]
+  what_makes_a_lead_worth_paying_for: ["Exit, stories and run length on the card", "Photos of the outside cover and behind the dryer", "Gas or electric stated", "Pay only when picked, nothing monthly", "A fee that fits a cleaning ticket, usually the $25 tier"]
+  their_words: ["dryer vent", "exhaust duct", "transition duct", "foil", "semi-rigid", "rigid", "termination", "hood", "vent cap", "louvers", "bird guard", "run", "elbows", "rods", "brush", "airflow reading", "pull-out", "stack", "roof exit", "C-DET"]
+  signup_objections:
+    - objection: "My ticket is about $120. Why would I pay a fee on that?"
+      answer: "The fee is set by quote size: $25 under $500, so a dryer vent cleaning is almost always the $25 tier. You pay it only when the homeowner picks your quote and you confirm. Nothing to join, nothing monthly."
+    - objection: "I can't give a firm price without seeing the run."
+      answer: "Cards carry the exit, stories, run length when she knows it, and photos of the outside cover and behind the dryer when she can take them. Quote a firm price for what the card shows and say in your notes what would change it."
+    - objection: "I don't do roof vents."
+      answer: "Dryer vent cleaning is one job type here, so wall and roof cards both come. Every card says where the vent exits. Skip the ones you don't take; skipping costs nothing."
+    - objection: "Will you send me jobs to move or replace vents?"
+      answer: "No. Moving and replacing vents go to the handyman category as dryer vent reroute. If you do that work too, you can choose that job type there."
+    - objection: "Half these calls turn out to be a broken dryer."
+      answer: "The intake asks how the clothes come out. No heat, a drum that won't turn or grinding goes to appliance repair, not to you."
+    - objection: "Do I need a license to sign up?"
+      answer: "No state contractor license covers cleaning a dryer vent, so none is asked for. Lake Havasu City has its own business license for businesses working inside city limits."
+    - objection: "What about gas dryers?"
+      answer: "The card says gas or electric when the homeowner knows. Say in your quote whether you move gas dryers. Gas connection work goes only to licensed businesses."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town and answers to the questions a cleaner asks. Names and addresses go only to the business the homeowner picks."
+    - objection: "Will you rank me against other cleaners?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, review links and notes. Ask Hava never sorts, rates or scores a business."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+  quote_tips_for_card: ["Give one firm price for the job on the card", "Say what is included: pull-out, outside cover, roof end if any", "Say whether you clean roof runs from the roof or from the dryer end", "Price a new cover or bird guard as its own line", "Say whether you move gas dryers", "Give your earliest day"]
