@@ -778,3 +778,13 @@ def test_drill_three_excused_smoke_reds_on_one_head_turn_main_red(tmp_path: Path
     env.smoke_green, env.checks_green = False, True
     assert [cycle.run_cycle(cfg, env, NOW) for _ in range(3)] == ["smoke_env", "smoke_env", "smoke_env"]
     assert cycle.run_cycle(cfg, env, NOW) == "main_red" and env.store["main_red"]["check"] == "smoke"
+
+
+def test_drill_a_handed_off_fix_main_reaches_the_session_as_handed_off(tmp_path: Path) -> None:
+    """D-501: in a live session the worker is the session itself, so a claimed FIX-MAIN must come back
+    as `handed_off`; reporting `fix_main` made the session stop with the revert never worked."""
+    env, cfg = FakeEnv(lambda t, m, log: cycle.WorkerResult("handed_off", [], [])), config([make_task("T001")], tmp_path)
+    env.smoke_green = False
+    assert cycle.run_cycle(cfg, env, NOW) == "main_red"
+    assert cycle.run_cycle(cfg, env, NOW) == "handed_off"
+    assert st.status(env.store, st.FIX_MAIN) == st.IN_PROGRESS

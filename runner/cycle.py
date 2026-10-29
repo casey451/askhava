@@ -456,7 +456,9 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     if not env.push_state(claimed, base):
         return "lost_race"
     done = _work(cfg, env, claimed, task, now)
-    return "fix_main" if task["id"] == st.FIX_MAIN and done != "lost_race" else done
+    # A handed-off FIX-MAIN must reach the session as `handed_off`, or the session stops and the claimed
+    # revert is never worked (D-501); only a finished FIX-MAIN cycle reports `fix_main`.
+    return "fix_main" if task["id"] == st.FIX_MAIN and done not in ("lost_race", "handed_off") else done
 
 
 def _task_def(cfg: Config, state: State, tid: str) -> dict[str, Any]:
