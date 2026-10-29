@@ -380,8 +380,13 @@ def test_merge_main_keeps_runner_files_and_makes_a_two_parent_merge(repo: dict[s
     (seed / "README.md").write_text("fake repo v2\n")
     git(seed, "commit", "-qam", "main moves")
     git(seed, "push", "-q", "origin", "main")
-    assert env.merge_main() == "merged" and origin_file(repo, "claude/kit-state", "README.md") == "fake repo v2"
+    env.write_cycle_log({"result": "idle", "log": []})
+    (seed / "README.md").write_text("fake repo v3\n")
+    git(seed, "commit", "-qam", "main moves again")
+    git(seed, "push", "-q", "origin", "main")
+    assert env.merge_main() == "merged" and origin_file(repo, "claude/kit-state", "README.md") == "fake repo v3"
     assert origin_file(repo, "claude/kit-state", "PROGRESS.md") == "# Progress"
+    assert json.loads(origin_file(repo, "claude/kit-state", "kit/runner_log.jsonl"))["result"] == "idle"  # D-499
 
 
 class AutoMergeRunner(FakeRunner):
@@ -439,3 +444,13 @@ def test_status_and_progress_carry_the_pacing_line(repo: dict[str, Path], tmp_pa
     assert "K10 estimated 180k tokens; claimed" in origin_file(repo, "claude/kit-state", "PROGRESS.md")
     status = origin_file(repo, "claude/kit-state", "STATUS.md")
     assert "## Pacing" in status and "projected finish 2026-12-01T00:00:00Z" in status and "resets 2026-11-01T17:00:00Z" in status
+
+
+def test_cycle_log_is_appended_on_the_state_branch(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-499: every cycle leaves its report line in kit/runner_log.jsonl so an unattended run can be read."""
+    env = make_env(repo["a"], tmp_path)
+    env.read_state()
+    env.write_cycle_log({"result": "idle", "log": ["smoke on abc: exit 0"]})
+    env.write_cycle_log({"result": "smoke_env", "log": []})
+    lines = origin_file(repo, "claude/kit-state", "kit/runner_log.jsonl").splitlines()
+    assert [json.loads(line)["result"] for line in lines] == ["idle", "smoke_env"] and "at" in json.loads(lines[0])
