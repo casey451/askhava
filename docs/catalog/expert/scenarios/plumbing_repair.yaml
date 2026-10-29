@@ -1,0 +1,434 @@
+category: plumbing_repair
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: plumbing_repair_s01
+    kind: vague
+    persona: "60s, texts from his phone between errands, short and a little rude, says 'the plumbing'"
+    opening_message: "got a plumbing problem. can someone come look at it"
+    photo: "none"
+    hidden_facts:
+      - "water drips from the cold-side shutoff valve under the kitchen sink, about a drip every few seconds"
+      - "the valve handle is old and will not turn when he tried it last month"
+      - "home is a manufactured home"
+      - "cabinet floor under the sink feels soft and has a dark stain"
+      - "the drip started about two weeks ago and a pot catches it"
+    homeowner_behavior: "answers one thing per reply; never volunteers the valve or the soft cabinet; says 'under the sink' only when asked where the water shows up; gets short and impatient after 4 questions"
+    traps:
+      - "hidden: the shutoff valve will not close, so a plumber cannot isolate the sink without shutting the whole house, only said if asked about shutting the water off"
+      - "hidden: manufactured home with a soft cabinet floor, only said when asked about the home or floor type"
+    expected:
+      category: plumbing_repair
+      job_type: leak_slow
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["drip under kitchen sink", "shutoff valve handle will not turn", "manufactured home", "soft stained cabinet floor", "started about two weeks ago"]
+      must_not_be_on_card: ["bad valve", "needs replacing", "any price", "any cause"]
+      max_questions: 5
+      notes: "Opening has no fixture, no location and no symptom. The shutoff-valve-will-not-close fact changes the visit (whole-house shutoff, possible valve replacement) and the manufactured-home floor changes access and repair. The assistant must not guess it is the valve."
+
+  - id: plumbing_repair_s02
+    kind: wrong_terminology
+    persona: "40s, busy parent, texts fast with typos, uses trade words wrong"
+    opening_message: "my sewer line is clogd. kitchen side wont drain at all, standing water in the sink, been like that since last nite"
+    photo: "kitchen sink full of gray water with a dish rack beside it"
+    hidden_facts:
+      - "only the kitchen sink is affected; both bathrooms, the tub and the washer drain normally"
+      - "a garbage disposal is installed and it hums when switched on but nothing drains"
+      - "the dishwasher is connected to the disposal and has not been run since it clogged"
+      - "she tried a plunger and a bottle of drain cleaner this morning"
+      - "single-story home on a concrete slab"
+    homeowner_behavior: "answers in short bursts; will repeat 'sewer line' if the assistant seems to doubt her; answers a direct question about other drains right away"
+    traps:
+      - "wrong term: 'sewer line' for a single kitchen drain, card must describe one clogged sink drain, not a main line"
+      - "hidden: disposal hums and does not clear, and she poured drain cleaner, a plumber would want to know about the chemical before opening the trap, only said if asked what she already tried"
+    expected:
+      category: plumbing_repair
+      job_type: clogged_drain
+      bank_job_type: "drain clearing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["kitchen sink only", "other drains work", "garbage disposal hums", "drain cleaner used this morning", "concrete slab"]
+      must_not_be_on_card: ["sewer line clog", "main line", "grease", "any price"]
+      max_questions: 5
+      notes: "The word sewer would route a careless intake to main_line_backup. Asking whether anything else drains badly separates the two. Drain cleaner already in the line is a hidden detail that matters for the person opening it."
+
+  - id: plumbing_repair_s03
+    kind: wrong_self_diagnosis
+    persona: "50s homeowner who watches repair videos, confident, texts in full sentences with some typos"
+    opening_message: "I need someone to fix my toilet. it gurgles and burbles every time my washing machine drains. I think the toilet wax ring or the vent in it is shot"
+    photo: "none"
+    hidden_facts:
+      - "toilet is in the hall bathroom nearest the laundry room"
+      - "the gurgle happens only when the washer is in its drain cycle"
+      - "the tub in the same bathroom has also made a glug sound twice this week"
+      - "no water has come up out of anything yet"
+      - "there is a capped pipe in the front yard near the sidewalk side of the house"
+      - "home was built in the 1980s and there are mature trees near the front"
+      - "the toilet itself flushes and does not leak"
+    homeowner_behavior: "pushes the toilet theory; answers 'does anything else do it' honestly when asked about other drains; mentions the yard pipe only if asked about the yard or outside"
+    traps:
+      - "wrong self-diagnosis: he asks for toilet repair, the pattern (gurgling when the washer drains, tub glugging) is a shared-line problem and the card must be a drain backup job"
+      - "hidden: capped pipe in the front yard (cleanout), 1980s home with mature trees, only said if asked about outside access or the age of the home"
+    expected:
+      category: plumbing_repair
+      job_type: main_line_backup
+      bank_job_type: "drain clearing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["toilet gurgles when washer drains", "tub also glugs", "nothing has backed up yet", "capped pipe in front yard", "built in the 1980s"]
+      must_not_be_on_card: ["toilet repair", "wax ring", "vent problem", "tree roots", "any price"]
+      max_questions: 5
+      notes: "Homeowner's own diagnosis (toilet) is wrong and he is confident. Card must carry his observations, not his theory, and the job type must be the drain backup, not toilet_issue. Not urgent yet because nothing has overflowed, but a business should see it as a developing backup."
+
+  - id: plumbing_repair_s04
+    kind: wrong_self_diagnosis
+    persona: "30s renter-turned-owner, writes in lowercase, no punctuation"
+    opening_message: "need a plumber my washing machine wont drain, water just sits in the drum. i think the drain pipe in the wall is clogged"
+    photo: "front-load washer door open with standing water visible in the drum and a display showing a code reading OE"
+    hidden_facts:
+      - "front-load washer about 6 years old"
+      - "display shows error code OE"
+      - "he poured a bucket of water down the wall standpipe and it drained fine"
+      - "washer is in a laundry closet in the hallway"
+      - "a pair of socks went missing last month"
+    homeowner_behavior: "assumes it is the house drain; answers the bucket-test question if asked what he tried; shrugs off the code until the photo question points at the display"
+    traps:
+      - "wrong self-diagnosis: the wall drain takes water fine, so the request belongs with appliance repair, not plumbing"
+      - "hidden: error code OE and the socks, only given if asked about the display or about anything else that happened"
+    expected:
+      category: appliance_repair
+      job_type: washer
+      bank_job_type: "washer"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["front-load washer", "about 6 years old", "water stays in the drum", "display code OE", "wall drain takes a bucket of water"]
+      must_not_be_on_card: ["pump failure", "clogged pump", "any price", "any cause"]
+      max_questions: 5
+      notes: "Different-category case: the plumbing opening is wrong, the standpipe test shows the house drain works. The assistant must not diagnose the pump; it routes the card to appliance repair with the facts. Appliance washer job type id is washer in trade_kb/appliance_repair."
+
+  - id: plumbing_repair_s05
+    kind: misleading_photo
+    persona: "late 30s, texts calmly, sends photos first and words after"
+    opening_message: "toilet is leaking at the base, floor keeps getting wet. pic attached"
+    photo: "bathroom floor with a wet patch around the toilet base, a folded towel on the floor, and the edge of a bathtub with a visible gap along its caulk line"
+    hidden_facts:
+      - "the floor is only wet after someone takes a shower"
+      - "the toilet base is dry when nobody has showered for a day"
+      - "toilet has not been touched or flushed more than usual"
+      - "bathroom is on the ground floor of a home on a concrete slab"
+      - "vinyl plank floor near the tub edge is starting to lift at the seams"
+    homeowner_behavior: "describes only what the photo shows; answers the timing question truthfully if asked when the floor gets wet; does not connect the shower to the water"
+    traps:
+      - "misleading photo: the photo frames the toilet, the water pattern (only after showers) points elsewhere, card must record the timing without saying the toilet is fine or bad"
+      - "hidden: vinyl plank lifting near the tub, only said if asked about the floor condition"
+    expected:
+      category: plumbing_repair
+      job_type: toilet_issue
+      bank_job_type: "toilet repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wet floor around toilet base", "wet only after showers", "dry otherwise", "concrete slab", "vinyl plank lifting near tub"]
+      must_not_be_on_card: ["wax ring", "tub caulk", "shower leak", "any cause", "any price"]
+      max_questions: 5
+      notes: "The request and photo both say toilet. The assistant should ask when the floor gets wet and put the shower timing on the card so the plumber can see it without the assistant stating a cause. Job type follows the homeowner's words (toilet leaking at base); the timing fact is the point."
+
+  - id: plumbing_repair_s06
+    kind: no_photo
+    persona: "50s, at work all day, wants a faucet swapped, will not send photos"
+    opening_message: "I need my kitchen faucet replaced. already bought the new one. cant send pics im at work, just text me"
+    photo: "none"
+    hidden_facts:
+      - "new faucet is a single-handle pull-down model, bought online"
+      - "the sink has three holes in the countertop"
+      - "the new faucet needs one hole, or three with a plate that did not come in the box"
+      - "countertop is granite"
+      - "the old shutoff valves under the sink have not been turned in many years"
+      - "faucet is not leaking, he is replacing it for looks"
+    homeowner_behavior: "declines photos politely twice; answers questions about the countertop and the sink only when asked; says 'whatever it takes' when asked about the valves"
+    traps:
+      - "hidden: three-hole sink with a one-hole faucet and a granite top, a plate may be needed and drilling is not an option, only said if asked about the sink holes or the countertop"
+      - "hidden: old shutoff valves that may not close, only said if asked about the valves or shutting water off"
+    expected:
+      category: plumbing_repair
+      job_type: fixture_replace
+      bank_job_type: "faucet replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["homeowner already has the new faucet", "single-handle pull-down", "sink has three holes", "granite countertop", "old shutoff valves not recently turned"]
+      must_not_be_on_card: ["any price", "needs a deck plate", "cannot be done"]
+      max_questions: 4
+      notes: "No photo allowed. The hole count and the granite are the facts that change the quote, and the homeowner will not volunteer them. The assistant must accept no photos after one honest ask and still get the card complete by text."
+
+  - id: plumbing_repair_s07
+    kind: elderly
+    persona: "80s widow, types with one finger, long gaps, calls the meter 'the water clock', asks if she is talking to a real person"
+    opening_message: "My daughter said to text this. the water bill came and it is three times what it always is. the city lady said I maybe have a leak. I dont know where"
+    photo: "none"
+    hidden_facts:
+      - "water bill went from about a normal amount to three times normal over the last two months"
+      - "the toilet in the back bathroom runs a little all the time and she jiggles the handle"
+      - "she checked nothing else"
+      - "there is a green wet patch in the front yard near the meter box"
+      - "the house is a 1970s home, single story, on a concrete slab"
+      - "she lives alone and needs the visit in the morning because she does not like driving or going out later"
+    homeowner_behavior: "answers slowly and sometimes about another thing; mentions the running toilet only when asked if anything in the house runs or sounds like water; the wet yard patch only when asked about the yard; needs plain short questions"
+    traps:
+      - "hidden: toilet runs all the time and a wet green patch near the meter, two separate possible sources, only said if asked about the house sounds and about the yard"
+      - "elderly: do not use words like meter test, slab leak, or shutoff; accept her words"
+    expected:
+      category: plumbing_repair
+      job_type: high_water_bill
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["water bill about three times normal for two months", "back bathroom toilet runs all the time", "wet green patch in front yard near meter", "1970s single-story slab home", "mornings only"]
+      must_not_be_on_card: ["slab leak", "toilet is the cause", "any price", "any cause"]
+      max_questions: 5
+      notes: "Two plausible sources (toilet, yard line) and a homeowner who volunteers little and tires fast. The assistant must keep questions short, plain and one at a time, and list both facts without choosing."
+
+  - id: plumbing_repair_s08
+    kind: tenant
+    persona: "20s renter, texts in lowercase with emojis-free short lines, nervous about the landlord"
+    opening_message: "hi im renting and my shower wont drain. my landlord said to get a quote and send it to him"
+    photo: "shower stall with about two inches of standing water over the drain"
+    hidden_facts:
+      - "renter, not the owner; the landlord lives out of state"
+      - "the landlord told him by text he will approve and pay once he sees a quote"
+      - "he poured a full bottle of drain opener into the shower drain last night"
+      - "the water has been standing since last night"
+      - "unit is the upstairs half of a duplex"
+      - "the sink in the same bathroom drains slowly"
+      - "he is home evenings and weekends only, nobody is home during the day"
+    homeowner_behavior: "worried about getting in trouble; answers who approves the work when asked; mentions the drain opener only if asked what he already tried; gives access hours when asked about being home"
+    traps:
+      - "hidden: drain opener poured, standing water with the chemical in it, only said if asked what he tried"
+      - "hidden: upstairs duplex unit and the bathroom sink is slow too, a shared or larger problem, only said if asked about other drains"
+      - "tenant: the card must say the renter is the contact and the landlord approves, without a landlord name, number or email"
+    expected:
+      category: plumbing_repair
+      job_type: clogged_drain
+      bank_job_type: "drain clearing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter, landlord approves the quote", "shower drain will not drain", "drain opener poured in last night", "upstairs half of a duplex", "bathroom sink also slow", "home evenings and weekends"]
+      must_not_be_on_card: ["landlord name", "landlord contact", "any price", "any cause"]
+      max_questions: 5
+      notes: "Tenant has to be recorded as contact and the landlord as approver. The chemical in standing water and the slow sink in the same bathroom both change what a plumber brings and prices. Do not collect the landlord's contact details."
+
+  - id: plumbing_repair_s09
+    kind: spanish
+    persona: "40s, Spanish speaker, texts in Spanish with no accent marks and run-on sentences"
+    opening_message: "Hola buenas tardes tengo una fuga debajo del fregadero de la cocina gotea todo el dia ya puse una cubeta y la tengo que vaciar dos veces al dia no se si me pueden ayudar"
+    photo: "open cabinet under a kitchen sink with a plastic bucket catching water, white plastic drain pipe visible, cabinet floor dark and swollen"
+    hidden_facts:
+      - "water drips from the white plastic drain pipe under the sink, not from the faucet"
+      - "the bucket fills about twice a day"
+      - "the valves under the sink turn and she has not closed them"
+      - "the home is a manufactured home"
+      - "the particleboard floor of the cabinet is swollen and soft"
+      - "the leak started about a week ago"
+    homeowner_behavior: "answers in Spanish; if the assistant replies in English she goes quiet; answers a direct question about the home type or the floor honestly; thanks the assistant often"
+    traps:
+      - "must reply in Spanish and keep the card readable for a plumber in English"
+      - "hidden: manufactured home and swollen cabinet floor, only said if asked about the home type or the cabinet"
+    expected:
+      category: plumbing_repair
+      job_type: leak_slow
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["drip under kitchen sink from white plastic drain pipe", "bucket fills about twice a day", "manufactured home", "cabinet floor swollen and soft", "started about a week ago"]
+      must_not_be_on_card: ["loose nut", "bad seal", "any price", "any cause"]
+      max_questions: 5
+      notes: "Spanish all the way through. The water is slow but constant, so it is not an active-water urgent job. Manufactured home and a soft cabinet floor raise the repair scope and are never volunteered. Keep the facts in plain Spanish questions, not English menu words."
+
+  - id: plumbing_repair_s10
+    kind: panicked_non_emergency
+    persona: "30s, mother of two, all caps and exclamation points, typing fast"
+    opening_message: "HELP!!! TOILET OVERFLOWED ALL OVER THE BATHROOM FLOOR AND ITS SEWAGE!!! I DONT KNOW WHAT TO DO IM SCARED SOMETHING IS WRONG WITH THE WHOLE HOUSE"
+    photo: "bathroom floor with a thin layer of water around a toilet, bowl full, a plunger on the floor"
+    hidden_facts:
+      - "only the hall bathroom toilet overflowed, one time, about twenty minutes ago"
+      - "the water has stopped rising and no more is coming out"
+      - "she plunged it and it flushed once, then the bowl filled again"
+      - "no other drain in the house is slow or backing up"
+      - "the kids are home and use this bathroom"
+      - "there is a second bathroom they can use"
+      - "home is on a concrete slab"
+    homeowner_behavior: "repeats she is scared; calms enough to answer short questions; says 'the whole house' until asked directly whether anything else is backing up"
+    traps:
+      - "panic: the assistant must not give advice (no 'stop using it', no 'shut the valve'); it only asks and records"
+      - "hidden: nothing else is backing up, a single-toilet clog, not the whole house, only said if asked about other drains"
+    expected:
+      category: plumbing_repair
+      job_type: clogged_drain
+      bank_job_type: "drain clearing"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["hall bathroom toilet overflowed once with sewage on the floor", "water has stopped", "plunged once and it refilled", "no other drains affected", "concrete slab"]
+      must_not_be_on_card: ["whole house", "main line", "any advice", "any price"]
+      max_questions: 4
+      notes: "All caps and scared, but nothing on the 911 list. Sewage on the floor with kids home goes out as urgent to businesses. The assistant must stay calm, give no instruction, and not write 'whole house' from her panic."
+
+  - id: plumbing_repair_s11
+    kind: calm_real_emergency
+    persona: "60s, easygoing, writes full polite sentences, buries the important part"
+    opening_message: "Hi, hoping to get a quote for a dripping valve under my bathroom sink, it has been slow for a month. Oh by the way there is a faint gas smell in the garage near the water heater since yesterday, probably nothing. Anyway about the sink"
+    photo: "shutoff valve under a bathroom sink with a water bead hanging from the stem"
+    hidden_facts:
+      - "slow drip from the shutoff valve stem under the bathroom vanity, about one drop a minute"
+      - "faint gas smell in the garage, close to the gas water heater, started yesterday"
+      - "the smell is faint but she notices it each time she walks past"
+      - "the gas water heater and a furnace closet are in the garage"
+      - "she has not called the gas company"
+      - "home is a 1990s single story on a concrete slab"
+    homeowner_behavior: "keeps steering back to the sink; brushes off the gas smell as nothing; answers sink questions fully and gas questions briefly"
+    traps:
+      - "the gas smell is on the fire-truck list even though she calls it probably nothing, the fixed 911 text must go out and the sink card still gets written"
+      - "no diagnosis or advice beyond the fixed text; the assistant must not say the smell is the water heater"
+    expected:
+      category: plumbing_repair
+      job_type: leak_slow
+      bank_job_type: "leak repair"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["slow drip at bathroom sink shutoff valve for a month", "faint gas smell in garage near the water heater since yesterday", "1990s slab home"]
+      must_not_be_on_card: ["gas leak", "water heater is leaking gas", "any advice", "any price"]
+      max_questions: 4
+      notes: "Gas smell mentioned in passing next to a routine drip. The 911 text must be sent by code on the gas mention, and the plumbing card continues with the sink job. Gas line work itself is a refused, licensed-only job in this category, but the card is the sink drip."
+
+  - id: plumbing_repair_s12
+    kind: two_trades
+    persona: "40s, planning a house change, writes organized texts with a list"
+    opening_message: "I want to move my washer and dryer from the hallway closet into the garage. Need new water and drain lines out there and also a 240 outlet for the dryer"
+    photo: "none"
+    hidden_facts:
+      - "house is a single-story home on a concrete slab"
+      - "the garage wall is about 30 feet from the current laundry closet"
+      - "the existing washer drain runs inside the hallway wall"
+      - "the dryer is electric, no gas"
+      - "the electrical panel is on the outside wall of the garage"
+      - "the garage floor has no drain"
+      - "he wants it done before the end of the month because a relative is moving in"
+    homeowner_behavior: "answers each question completely; mentions the slab only when asked about the floor; mentions the dryer outlet as his own request not as a separate job until asked"
+    traps:
+      - "two trades: plumbing for the supply and drain, electrical for the 240 volt dryer outlet, the plumbing card goes first because it sets the layout"
+      - "hidden: concrete slab, 30 foot run, garage has no floor drain, only said if asked about the floor or the distance; trenching and tie-in to the existing drain change the quote a lot"
+    expected:
+      category: plumbing_repair
+      job_type: fixture_add_move
+      bank_job_type: "faucet replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["move washer from hall closet to garage", "new water supply and drain lines", "slab home", "about 30 feet", "no floor drain in garage", "needed by end of month"]
+      must_not_be_on_card: ["any price", "permit required", "trench through the slab"]
+      max_questions: 5
+      notes: "Plumbing card first, a second electrical card for the 240 volt dryer outlet (electric dryer, panel on the garage wall). The plumbing-specific job type in the bank list is not an exact match for a laundry move; the kb id is fixture_add_move. Slab and distance are not volunteered and move the scope."
+
+  - id: plumbing_repair_s13
+    kind: outside_area
+    persona: "50s, lives across the river, texts casually"
+    opening_message: "hey I'm in Parker, kitchen faucet drips constantly and the handle is loose. anyone who can come fix it"
+    photo: "none"
+    hidden_facts:
+      - "the home is in Parker, Arizona"
+      - "kitchen faucet drips from the spout and the handle wobbles"
+      - "faucet is about 12 years old"
+      - "single-handle faucet"
+    homeowner_behavior: "answers briefly; says Parker up front and again if asked for the ZIP; gets annoyed if asked many questions before being told about coverage"
+    traps:
+      - "outside service area: the ZIP or town check should answer before any trade question is asked"
+    expected:
+      category: plumbing_repair
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any quote promise", "any referral to a business outside Lake Havasu City"]
+      max_questions: 1
+      notes: "Parker is outside Lake Havasu City. The assistant should ask or check ZIP first and say the service is not available there, before trade questions. Category stays plumbing_repair; no job card is written."
+
+  - id: plumbing_repair_s14
+    kind: no_businesses
+    persona: "60s, practical, pays attention to insurance paperwork"
+    opening_message: "my insurance says I have to replace the gray plastic pipes in my house or they wont renew. its polybutylene. need a quote to repipe the whole house"
+    photo: "water supply pipe running along a wall in a utility closet, gray plastic, with a brass fitting at the end"
+    hidden_facts:
+      - "house built in 1985, single story, about 1,600 square feet"
+      - "two bathrooms and a kitchen"
+      - "slab foundation"
+      - "the gray pipe is visible at the water heater and under the kitchen sink"
+      - "insurer deadline is in about 45 days"
+      - "walls are drywall with textured paint, no wall papering"
+    homeowner_behavior: "organized, answers every question with numbers; says the insurance letter in plain words"
+    traps:
+      - "hidden: slab foundation and square footage change a repipe quote a lot, only said if asked"
+      - "no businesses: test harness simulates zero plumbing coverage, card must state the trade has no businesses yet"
+    expected:
+      category: plumbing_repair
+      job_type: repipe
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["repipe whole house", "gray polybutylene pipe", "built 1985 single story about 1,600 sq ft", "two bathrooms", "slab foundation", "insurance deadline about 45 days"]
+      must_not_be_on_card: ["any price", "pipe will fail"]
+      max_questions: 5
+      notes: "Right job type and a clear card, but the harness has no plumbing businesses signed up. The card should say plainly that no business is available yet, with the homeowner approval step still shown. Repipe is not listed in the bank job types, the nearest bank name is leak repair."
+
+  - id: plumbing_repair_s15
+    kind: wrong_terminology
+    persona: "50s, direct, texts in short lines, mixes up the parts"
+    opening_message: "water heater is shot. theres a wet spot at the bottom of it and a little puddle. need a new one installed, can you send a plumber"
+    photo: "gas water heater in a garage corner with a damp ring on the concrete at its base and a copper line above it"
+    hidden_facts:
+      - "gas water heater, 40 gallon, about 12 years old"
+      - "it is in the garage, in a corner next to the furnace closet"
+      - "the wet spot has been there about two days and the puddle is a few inches wide"
+      - "there is still hot water in the house"
+      - "he has not looked at the pipe on the side of the tank"
+      - "he wants it replaced, not repaired, and has no preference on brand"
+    homeowner_behavior: "assumes replacement, not repair; answers brand and size questions from the label if asked; says 'just replace it' if the assistant asks about the leak location"
+    traps:
+      - "licensed-only job: water heater replacement is a refused handyman job in this category and goes to licensed R-37 plumbers only; the card must say licensed only"
+      - "wrong terminology and diagnosis: 'shot' and 'wet at the bottom' do not say what is leaking, the card must record the wet spot as observed"
+      - "hidden: gas unit in the garage, 12 years old, 40 gallon, only said if asked about fuel type and the label"
+    expected:
+      category: plumbing_repair
+      job_type: leak_slow
+      bank_job_type: "water heater replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wet spot and small puddle at the base of the water heater for about two days", "gas, 40 gallon, about 12 years old", "in the garage", "still has hot water", "homeowner wants replacement", "licensed plumber only"]
+      must_not_be_on_card: ["tank is rusted through", "must be replaced", "any price", "any cause", "handyman"]
+      max_questions: 5
+      notes: "Refused job type: water heater replacement is licensed only (R-37), never handyman. No gas smell is mentioned, so fire_dept_text stays false. The nearest plumbing kb id is leak_slow since the plumbing file has no water heater id; the water heater trade file holds the real water heater types. Wet spot is observed, the cause is not stated."
+
+  - id: plumbing_repair_s16
+    kind: vague
+    persona: "mid 30s, new to the house, texts in questions"
+    opening_message: "is it normal for part of the floor in the hallway to feel warm? and i swear i hear water running at night"
+    photo: "none"
+    hidden_facts:
+      - "a spot on the hallway floor near the bedroom door is warm to bare feet"
+      - "hot water seems to run out faster than before"
+      - "the sound is a faint hiss or run of water at night, heard from the hallway"
+      - "water bill went up last month"
+      - "single-story home on a concrete slab built in the 1980s"
+      - "a rug lies over the warm spot and is slightly damp"
+    homeowner_behavior: "asks questions back instead of describing; answers a direct question about the bill or the rug when asked"
+    traps:
+      - "hidden: damp rug and a higher bill, confirm active leakage, only said if asked about the rug or the bill"
+      - "do not say slab leak or reassure; the assistant never diagnoses"
+    expected:
+      category: plumbing_repair
+      job_type: slab_leak
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["warm spot on hallway floor", "sound of running water at night", "water bill higher last month", "damp rug over the spot", "1980s slab home"]
+      must_not_be_on_card: ["slab leak", "pipe has burst", "it is normal", "any price"]
+      max_questions: 5
+      notes: "Question-shaped opening with no job named. A warm floor spot plus running-water sound maps to slab_leak triggers, but the assistant must not say so or reassure the homeowner it is normal."

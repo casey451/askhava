@@ -1,0 +1,139 @@
+# Ask Hava expert layer: shape of docs/catalog/expert/<category>.yaml (schema 1).
+#
+# One file per enabled category in docs/catalog/categories.yaml. The file extends the
+# category's question set (docs/catalog/question_bank.yaml) and its trade brief
+# (docs/catalog/trade_kb/trades/<kb_trade>.yaml). Checked by scripts/check_expert.py.
+#
+# WHO READS IT
+#   The intake AI, per request, through the assembly in PROMPT_ASSEMBLY.md (T156, T163).
+#   The AI may ask at most ONE follow-up from allowed_follow_ups (AI-019). It never diagnoses,
+#   prices, judges safety or urgency, names a cause or recommends a business, so nothing in
+#   this file may ask it to. The test harness (scenarios/, judges/) and the build's own
+#   intake tests also read it.
+#
+# WORDING RULES (every string a homeowner or business might read: follow-up text and
+#   options, scope line, card template, business answers)
+#   - Plain words, short sentences, reading grade 6 to 8. "Not sure" is added by the app.
+#   - Never: vetted, pre-screened, leads, lead generation, exclusive, best, recommended,
+#     background-checked, trusted, top-rated, #1, referral network, "connect you with",
+#     concierge, commission (WORD-003, WORD-019 to WORD-023, trade_kb/foundation/schema.yaml).
+#   - Nothing on the AI-smell list (docs/ai_smell.yaml): no em dashes, no exclamation marks,
+#     no brochure words.
+#   - No cause words to a homeowner ("probably", "likely", "sounds like", "the problem is",
+#     "you need a new"), no dollar figures, no safety or health advice (D-436).
+#   - Fake data only. Request IDs look like REQ-0142; areas are general ("north side").
+#   - Anything not backed by a cited source ends with " [judgment]".
+#
+# FIELD REFERENCE
+
+schema: 1
+category: plumbing_repair           # id from categories.yaml (file name = <category>.yaml)
+question_set: plumbing_repair       # set id in question_bank.yaml (same as category today)
+kb_trade: plumbing                  # trade_kb/trades/<slug>.yaml this file extends
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:                            # every source used below; cite by id as [src:roc_r4_9_103]
+  - id: roc_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute                   # statute | regulator | code_standard | manufacturer |
+                                    # trade_association | trade_publication | forum | other
+
+trade_brief:                        # the estimator's view of the whole category
+  price_drivers:                    # ranked, most price impact first; 4 to 8 items
+    - driver: "Whether water is running now (emergency call vs scheduled)"
+      why: "After-hours and same-day calls carry a higher trip rate. [judgment]"
+      source: null                  # a source id, or null when [judgment]
+  hidden_conditions:                # what blows up a quote after the pro arrives; 3 to 8
+    - condition: "Corroded shutoff valve that breaks when turned"
+      how_a_pro_spots_it: "Age of home, visible green or white crust on the angle stop in a photo"
+      question_or_photo: "p2_under_sink"     # the bank question id, follow-up id or photo id that surfaces it, or null
+      source: null
+  misdiagnosis_checks:              # "sounds like X but might be Y"; 2 to 8 per category
+    - sounds_like: "toilet repair"           # category job type, or kb job type id
+      might_be: "main_line_backup"           # kb job type id in this or another trade
+      one_question: "fu_gurgle_other_drains" # an allowed_follow_up id (below) that tells them apart
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}   # categories.yaml names
+      source: null
+  photo_reading:                    # what the pro reads off each requested photo
+    - photo_id: p3_pipe_material    # id from the kb file's photos_to_request
+      reads: ["Pipe color and material (gray plastic, copper, PEX)", "Crust or green on fittings"]
+      neutral_wording: "Gray plastic supply line under the sink, white crust at the valve."
+  local_factors:                    # Havasu-specific facts that change scoping; cite
+    - fact: "Lake Havasu City water hardness is about 19 grains per gallon"
+      effect: "Scale shortens valve and cartridge life; pros ask about softeners"
+      source: lhc_ccr
+  seasonality:
+    busy: "June to September (heat, more vacation-rental turnover)"
+    slow: "January to February"
+    source: null
+
+job_types:                          # one entry per kb job type the category can route (coarse
+                                    # category job types may cover several); every kb job type
+                                    # that maps to this category appears once
+  - id: leak_slow                   # kb job type id (or a new id when no kb file existed)
+    label: "Slow drip or leak under a sink, behind a toilet, at a valve"
+    bank_job_type: "leak repair"    # the categories.yaml job type routing uses
+    recurring: false
+    homeowner_phrasings: ["drip under the sink", "faucet won't stop dripping", "wet cabinet"]
+    must_know:                      # the 2 to 5 facts a pro needs to quote without calling, ranked
+      - fact: "Where the water shows (supply side, drain side, fixture body)"
+        bank_question: leak_where   # question id in the question set, or null
+        follow_up: null             # allowed_follow_up id, when no bank question covers it
+        photo: p2_under_sink        # photo id, or null
+        why_it_moves_price: "Supply-side parts are cheap; drain or fixture-body leaks mean a new part or fixture. [judgment]"
+        skip_if: "Photo shows the leak point"
+    allowed_follow_ups:             # the AI picks AT MOST ONE per request (AI-019); 1 to 4 items.
+                                    # Define each follow-up once; another job type shares it by listing
+                                    # its id as a plain string (e.g. "- fu_gurgle_other_drains").
+      - id: fu_gurgle_other_drains
+        ask_when: "Homeowner mentions a toilet that gurgles or bubbles"
+        text_en: "Does any other drain in the house gurgle or back up at the same time?"
+        text_es: "¿Algún otro desagüe de la casa hace ruido o se regresa al mismo tiempo?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true            # the answer goes on the card
+        why: "Separates a toilet-only fault from a main-line backup, which is a different job. [judgment]"
+    photos_priority: [p2_under_sink, p1_leak_spot]   # up to 3 kb photo ids, best first
+    urgency:
+      fire_dept_triggers: []        # only items on the D-436 list; usually empty
+      urgent_capable_triggers: ["Water can't be shut off", "Water reaching floor or ceiling"]
+      regular: "Drip is contained in a bucket or the valve is off"
+    scope_line_en: "Slow leak under the kitchen sink at the shutoff valve, water is off."
+    scope_line_es: "Fuga lenta bajo el fregadero de la cocina en la llave de paso, el agua está cerrada."
+    quote_format: diagnostic_visit  # must equal the category's format, or its job_type_formats entry
+    business_fills: ["visit fee", "earliest visit", "what the visit covers"]   # per quote format
+    card_template: |                # the shape the AI writes the card in; placeholders in <angle brackets>
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line>
+      Water now: <on/off/can't shut off>. Shows at: <where>. Floor: <slab/crawl/manufactured>.
+      Photos: <count> (<what they show, neutral>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's probably the cartridge.", "That's usually a cheap fix.", "Turn off the main and open a tap."]
+
+business_side:                      # for the sign-up AI, the recruiting posts and the hand-run test
+  how_they_get_customers: ["Google Maps and reviews", "repeat and referral", "home-service lead sites"]
+  customer_acquisition_benchmarks:  # what a new customer costs them now; cite or mark UNVERIFIED
+    - channel: "Home-service lead marketplaces (per shared lead, plumbing)"
+      figure: "about $20 to $80 per shared lead; 3 to 5 pros get the same lead"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Shared leads", "Fake or test leads", "Paying for tire-kickers"]
+  what_makes_a_lead_worth_paying_for: ["Scope and photos up front", "Only pay when picked", "Real town, real timing"]
+  their_words: ["service call", "trip charge", "rough-in", "trim-out", "angle stop", "supply line"]
+  signup_objections:                # the question a business asks and the plain answer (wording rules apply)
+    - objection: "Why would I pay $25 when I can get the job myself?"
+      answer: "You pay only when the homeowner picks your quote. Nothing to join, nothing per month. The fee is set by job size: $25, $75 or $199."
+  quote_tips_for_card: ["Say if the fee covers the fix or a visit", "Give the earliest day you can come"]
+
+# Allowed values
+#   quote_format: range | monthly | tiers | firm | diagnostic_visit
+#   sources[].kind: statute | regulator | code_standard | manufacturer | trade_association |
+#                   trade_publication | forum | other
+# Limits (checked)
+#   trade_brief.price_drivers 4-8; hidden_conditions 3-8; misdiagnosis_checks 2-8
+#   job_types[].must_know 2-5; allowed_follow_ups 1-4; photos_priority 0-3; never_say 2-6
+#   Every bank_question, photo, bank_job_type, kb job type id and follow_up id must exist.
+#   source: null is allowed in hidden_conditions and misdiagnosis_checks (trade reasoning);
+#   elsewhere a row with no source says [judgment] or sets unverified: true.

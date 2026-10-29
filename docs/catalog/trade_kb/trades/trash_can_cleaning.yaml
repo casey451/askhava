@@ -1,0 +1,434 @@
+# Written by Claude (expert layer, Oct 29 2026), not part of the Grok delivery (D-431). AI research, not legal advice.
+# Ask Hava trade knowledge file: trash_can_cleaning. Schema: foundation/schema.yaml (v2). Items marked [judgment] are not
+# from a cited source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: trash_can_cleaning
+display_name: Trash-can cleaning
+summary: >
+  Washing and deodorizing the trash and recycling carts that sit at the curb, on a monthly or every-three-months
+  plan or as a one-time wash. Some businesses also wash extra bins, HOA or business dumpsters, and the pad where
+  bins are kept. Cleaning only: Republic Services collects the trash in Lake Havasu City and owns the carts.
+  Most washers come on the home's trash pickup day, after the truck empties the bins, so the pickup day goes on
+  the card. Ask Hava collects bin count, how often, condition and pickup day, then sends an anonymous job card.
+job_types:
+- id: recurring_wash
+  label: Recurring bin washing (monthly or every three months)
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'no'
+- id: one_time_wash
+  label: One-time bin washing
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'no'
+- id: extra_bins_commercial
+  label: Extra bins, HOA or business dumpsters
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: deodorize_only
+  label: Deodorize only (no full wash)
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'no'
+- id: bin_area_wash
+  label: Bin pad or enclosure wash (add-on)
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+triggers_en:
+- phrase: trash can cleaning
+  job_type: null
+- phrase: trashcan cleaning
+  job_type: null
+- phrase: bin cleaning
+  job_type: null
+- phrase: bin washing
+  job_type: null
+- phrase: garbage can wash
+  job_type: null
+- phrase: clean my trash cans
+  job_type: null
+- phrase: wash my bins
+  job_type: null
+- phrase: trash can cleaner
+  job_type: null
+- phrase: recycle bin cleaning
+  job_type: null
+- phrase: monthly bin wash
+  job_type: recurring_wash
+- phrase: clean my cans every month
+  job_type: recurring_wash
+- phrase: quarterly trash can cleaning
+  job_type: recurring_wash
+- phrase: every 3 months bin cleaning
+  job_type: recurring_wash
+- phrase: bin service plan
+  job_type: recurring_wash
+- phrase: one time trash can wash
+  job_type: one_time_wash
+- phrase: just once clean the cans
+  job_type: one_time_wash
+- phrase: trash can smells
+  job_type: one_time_wash
+- phrase: stinky trash can
+  job_type: one_time_wash
+- phrase: garbage can stinks
+  job_type: one_time_wash
+- phrase: maggots in trash can
+  job_type: one_time_wash
+- phrase: magots in my bin
+  job_type: one_time_wash
+- phrase: flies in garbage can
+  job_type: one_time_wash
+- phrase: garbage cans are gross
+  job_type: one_time_wash
+- phrase: sanitize garbage bins
+  job_type: one_time_wash
+- phrase: dumpster cleaning
+  job_type: extra_bins_commercial
+- phrase: commercial dumpster wash
+  job_type: extra_bins_commercial
+- phrase: hoa dumpster cleaning
+  job_type: extra_bins_commercial
+- phrase: extra trash cans
+  job_type: extra_bins_commercial
+- phrase: 4 bins
+  job_type: extra_bins_commercial
+- phrase: deodorize trash can
+  job_type: deodorize_only
+- phrase: trash can deodorizer
+  job_type: deodorize_only
+- phrase: just make it not smell
+  job_type: deodorize_only
+- phrase: odor spray for bins
+  job_type: deodorize_only
+- phrase: wash where the trash cans sit
+  job_type: bin_area_wash
+- phrase: trash enclosure cleaning
+  job_type: bin_area_wash
+- phrase: bin pad stained
+  job_type: bin_area_wash
+triggers_es:
+- phrase: lavar botes de basura
+  job_type: null
+- phrase: limpiar el bote de basura
+  job_type: null
+- phrase: lavado de botes
+  job_type: null
+- phrase: limpieza de contenedores de basura
+  job_type: null
+- phrase: botes de basura sucios
+  job_type: null
+- phrase: limpieza de botes cada mes
+  job_type: recurring_wash
+- phrase: lavar los botes cada tres meses
+  job_type: recurring_wash
+- phrase: el bote de basura huele mal
+  job_type: one_time_wash
+- phrase: gusanos en el bote de basura
+  job_type: one_time_wash
+- phrase: moscas en el bote
+  job_type: one_time_wash
+- phrase: lavar el dumpster
+  job_type: extra_bins_commercial
+- phrase: quitar el olor del bote
+  job_type: deodorize_only
+- phrase: desodorizar botes
+  job_type: deodorize_only
+questions:
+- id: q1_bins
+  text: How many bins?
+  options:
+  - '1'
+  - '2'
+  - 3 or more
+  - Dumpster (HOA or business)
+  ask_if: always
+  changes_price: 'yes'
+  why: Most bin washers quote per bin, so the count sets the price. [judgment]
+- id: q2_how_often
+  text: How often?
+  options:
+  - Once
+  - Monthly
+  - Every three months
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Businesses often offer monthly, every-three-months and one-time plans at different per-wash rates. [T-bin_news][judgment]
+- id: q3_condition
+  text: How are the bins right now?
+  options:
+  - Normal use
+  - Strong smell
+  - Maggots or flies
+  - Not cleaned in a long time
+  - Not sure
+  ask_if: job_type in [recurring_wash, one_time_wash, extra_bins_commercial, bin_area_wash]
+  changes_price: 'yes'
+  why: A first wash on a very dirty bin can take longer than a plan wash. [judgment]
+- id: q4_dumpster
+  text: What size dumpster?
+  options:
+  - Small (2 to 3 yards)
+  - Large (4 yards or more)
+  - More than one
+  - Not sure
+  ask_if: job_type == extra_bins_commercial or q1_bins == "Dumpster (HOA or business)"
+  changes_price: 'yes'
+  why: Dumpsters take more water, time and truck space than home carts. [judgment]
+- id: q5_pickup_day
+  text: What is your trash pickup day?
+  options:
+  - Monday
+  - Tuesday
+  - Wednesday
+  - Thursday
+  - Friday
+  - Not sure
+  ask_if: always
+  changes_price: 'no'
+  why: Washers plan routes around pickup day so the bins are empty. Homeowners can look up their day on the city's trash
+    page. [T-lhc_trash][T-bin_news]
+- id: q6_curb_access
+  text: Can the bins stay at the curb after pickup on wash day?
+  options:
+  - 'Yes'
+  - No, someone brings them in
+  - Vacation rental or second home
+  - Not sure
+  ask_if: job_type in [recurring_wash, one_time_wash, deodorize_only, bin_area_wash]
+  changes_price: 'no'
+  why: The washer needs the bins where the truck can reach them after pickup. [judgment]
+quote_without_visit_needs:
+- Number of bins, or dumpster size [judgment]
+- One-time, monthly or every three months [judgment]
+- Trash pickup day [T-lhc_trash][judgment]
+- Bin condition (smell, maggots, long time since last wash) [judgment]
+- Whether the bins can stay at the curb after pickup [judgment]
+site_visit_usually_needed:
+- HOA or business dumpsters with locked enclosures or tight access [judgment]
+- Bin pad or enclosure wash with heavy stains [judgment]
+photos_to_request:
+- id: p1_bins_curb
+  ask: A photo of the bins together, lids closed, where they sit on pickup day.
+  for_job_types:
+  - recurring_wash
+  - one_time_wash
+  - extra_bins_commercial
+  - deodorize_only
+- id: p2_inside_bin
+  ask: A photo looking inside one bin after it has been emptied.
+  for_job_types:
+  - recurring_wash
+  - one_time_wash
+  - deodorize_only
+- id: p3_dumpster
+  ask: A photo of the dumpster and the space around it.
+  for_job_types:
+  - extra_bins_commercial
+- id: p4_bin_area
+  ask: A photo of the spot where the bins are kept between pickups.
+  for_job_types:
+  - bin_area_wash
+  - one_time_wash
+  - recurring_wash
+photo_cues:
+- photo_id: p1_bins_curb
+  look_for:
+  - Number of bins and lid colors
+  - Room for a truck to park near the curb
+  - Cracked lids or missing wheels
+  neutral_wording_example: Photo shows 2 carts at the curb, one with a cracked lid.
+- photo_id: p2_inside_bin
+  look_for:
+  - Residue at the bottom
+  - Visible maggots or flies
+  - Stuck-on bags or liquid
+  neutral_wording_example: Photo shows dark residue at the bottom of the cart and some flies.
+- photo_id: p3_dumpster
+  look_for:
+  - Dumpster size label
+  - Gate, lock or enclosure walls
+  - Drain or wash nearby
+  neutral_wording_example: Photo shows one dumpster inside a block enclosure with a metal gate.
+- photo_id: p4_bin_area
+  look_for:
+  - Surface (concrete, pavers, gravel)
+  - Stains on the pad or walls
+  - Distance from the street
+  neutral_wording_example: Photo shows a concrete pad beside the garage with dark stains.
+photo_red_flags:
+- flag: Smoke or flames from a bin or dumpster
+  safety_step_ref: es_trash_can_cleaning_1
+- flag: Cracked or broken cart body (carts belong to Republic Services; cart questions go to the hauler)
+  safety_step_ref: null
+- flag: Needles, sharp objects or loose chemicals in the bin
+  safety_step_ref: null
+emergency_signals:
+- id: es_trash_can_cleaning_1
+  signal: Smoke or fire in a bin or dumpster
+  emergency: 'yes'
+  safety_step: Not used by the app. Ask Hava sends only the fixed INT-004 911 text for smoke or fire. [judgment]
+  source: INT-004 (D-436)
+  then_route_to: none
+  note: 'Routing: none until the 911 text is sent and the homeowner says they are safe.'
+- id: es_trash_can_cleaning_2
+  signal: Smelly bin, maggots or flies
+  emergency: 'no'
+  safety_step: No safety step. Not an emergency. [judgment]
+  source: '[judgment]'
+  then_route_to: trash_can_cleaning
+safety_step:
+- when: Smoke or fire in a bin or dumpster
+  step: Ask Hava sends only the fixed INT-004 911 text. No other safety wording is used. [judgment]
+  source: INT-004 (D-436)
+license_classes:
+- job_type:
+  - recurring_wash
+  - one_time_wash
+  - extra_bins_commercial
+  - deodorize_only
+  - bin_area_wash
+  work: Bin, dumpster and bin pad washing
+  classes:
+  - none
+  citation: foundation az_license_master section 5 (cleaning trades, no ROC class) [judgment]
+  other_agency: Lake Havasu City storm water rules (City Code Ch. 8.28) cover what reaches storm drains and washes
+    [T-lhc_storm]. City business and transaction privilege tax licensing may apply [judgment; not verified].
+  notes: No ROC license applies to washing bins; it is not construction [judgment]. Wash water handling is the
+    business's own matter; the city defines an illicit discharge as any discharge to the storm system that is not
+    entirely stormwater [T-lhc_storm].
+handyman_ok:
+  allowed_examples:
+  - Bin washing is not construction, so the handyman rule does not come into play [judgment]
+  not_allowed_examples:
+  - Building or rebuilding a block bin enclosure that needs a permit [judgment]
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000; the work is casual or minor; no local building permit is
+    needed; it is not part of a larger job and not split into small contracts to dodge the limit; and any ad says
+    ''not a licensed contractor''. Never covers work connected to natural gas, propane or other fuel gas, or
+    hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+  note: The catalog does not send these cards to handyman businesses (categories.yaml handyman_allowed false).
+local_notes:
+- 'Republic Services provides refuse and recycling service in Lake Havasu City. Carts stay with the home and remain
+  the property of Republic Services; residents should not paint or deface them. Source: [T-lhc_trash].'
+- 'Residents find their pickup day with the city''s online "Find your day of trash pickup" map. Source: [T-lhc_trash].'
+- 'Carts go out the night before pickup, within 3 feet of the street (not in it) with 4 feet of clearance. Collection
+  runs 5 am to 6 pm, so a washer may not know the exact time the truck comes. Source: [T-lhc_trash]; timing note
+  [judgment].'
+- 'No pickup on Thanksgiving, Christmas or New Year''s Day; collection moves one day later after those holidays, so a
+  wash day may move too. Source: [T-lhc_trash]; wash-day note [judgment].'
+- 'A 2021 news report said the city is split into five zones, one per weekday, from the south side on Monday to the
+  north side on Friday, and that about 6,700 homes got a new day that year. Routes may have changed since. Source:
+  [T-lhc_routes].'
+- 'Residents can get an extra trash or recycling cart for a monthly fee, so 3 or more carts is common. Source:
+  [T-lhc_trash]; "common" is [judgment].'
+- 'Vacation rentals: trash stays in proper containers and out of public view no more than 12 hours before collection
+  (City Code Ch. 5.20), so rental bins may need to go back in after a wash. Source: [T-lhc_vr]; wash note [judgment].'
+- Summer heat (June to September) speeds up odor and flies in bins, so monthly plans are popular in summer [judgment].
+- 'Monsoon season runs June 15 to September 30; wind and dust storms can tip bins and blow dust into them. Season
+  dates: [T-nws_monsoon]; bin note [judgment].'
+- 'City water is hard (about 19 grains per gallon, range 18 to 20), which can leave white spots on dark carts.
+  Hardness: [LHC-CCR]; spot note [judgment].'
+- Seasonal residents and vacant second homes may have no one to set bins out on wash day [judgment].
+- Some HOAs have rules on where bins are kept between pickups [judgment].
+- Mobile home and RV parks often use shared dumpsters rather than home carts [judgment].
+- 'The city storm system includes gutters, storm drains, open channels and washes, and storm runoff flows to the lake
+  untreated. Source: [T-lhc_storm].'
+sample_card: |
+  REQ-0187 | Trash-can cleaning | Lake Havasu City, south side
+  2 carts (trash and recycling), monthly plan, pickup day Tuesday.
+  Strong smell and some flies in the trash cart. Carts can stay at the curb after pickup. 2 photos.
+test_messages:
+- id: trash_can_cleaning_t01
+  message: bins
+  trade: trash_can_cleaning
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: q2_how_often
+  ideal_first_question: Do you want them washed once, monthly, or every three months?
+  note: One-word message; how often picks the job type.
+- id: trash_can_cleaning_t02
+  message: my garbage can stinks so bad can someone wash it
+  trade: trash_can_cleaning
+  job_type: one_time_wash
+  emergency: 'no'
+  first_question_id: q1_bins
+  ideal_first_question: How many bins?
+  note: ''
+- id: trash_can_cleaning_t03
+  message: need my bins cleaned every month, pickup is wednesday
+  trade: trash_can_cleaning
+  job_type: recurring_wash
+  emergency: 'no'
+  first_question_id: q1_bins
+  ideal_first_question: How many bins?
+  note: Pickup day already given; skip q5_pickup_day.
+- id: trash_can_cleaning_t04
+  message: quiero que laven los botes de basura cada mes
+  trade: trash_can_cleaning
+  job_type: recurring_wash
+  emergency: 'no'
+  first_question_id: q1_bins
+  ideal_first_question: ¿Cuántos botes?
+  note: Spanish.
+- id: trash_can_cleaning_t05
+  message: magots in the trash can its 110 out
+  trade: trash_can_cleaning
+  job_type: one_time_wash
+  emergency: 'no'
+  first_question_id: q1_bins
+  ideal_first_question: How many bins?
+  note: Not an emergency; condition already given.
+- id: trash_can_cleaning_t06
+  message: need someone to haul away an old couch and a bunch of trash bags
+  trade: junk_removal
+  job_type: furniture_items
+  emergency: 'no'
+  first_question_id: q1_volume
+  ideal_first_question: How much stuff?
+  note: Wrong trade; hauling, not bin washing.
+- id: trash_can_cleaning_t07
+  message: flies all over the backyard not just by the trash can
+  trade: pest_control
+  job_type: general_pest
+  emergency: 'no'
+  first_question_id: pest_type
+  ideal_first_question: What pest is it?
+  note: Wrong trade; flies across the yard go to pest control.
+- id: trash_can_cleaning_t08
+  message: hoa wants the dumpster washed plus the enclosure, 2 dumpsters
+  trade: trash_can_cleaning
+  job_type: extra_bins_commercial
+  emergency: 'no'
+  first_question_id: q4_dumpster
+  ideal_first_question: What size are the dumpsters?
+  note: Mixed; enclosure is the bin_area_wash add-on.
+- id: trash_can_cleaning_t09
+  message: just deodorize the cans at my rental after pickup, no full wash
+  trade: trash_can_cleaning
+  job_type: deodorize_only
+  emergency: 'no'
+  first_question_id: q1_bins
+  ideal_first_question: How many bins?
+  note: Vacation rental; q6_curb_access matters.
+- id: trash_can_cleaning_t10
+  message: trash can is smoking i think someone dumped hot coals in it
+  trade: trash_can_cleaning
+  job_type: one_time_wash
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: Send the INT-004 911 text first.
+  note: Smoke or fire is on the 911 list.
+sources:
+- '[T-lhc_trash] Lake Havasu City, Trash and Recycling (Republic Services, pickup-day map, set-out rules, holidays,
+  carts) https://www.lhcaz.gov/357/Trash-Recycling and https://www.lhcaz.gov/water-sewer-trash/trash-recycling'
+- '[T-lhc_routes] Today''s News-Herald (reprinted on aaronline.com), Routes set to change with increase in Havasu
+  residents and trash volume (about 2021) https://www.aaronline.com/?p=44345'
+- '[T-lhc_vr] Lake Havasu City, Vacation Rentals (City Code Ch. 5.20) https://www.lhcaz.gov/vacation-rentals'
+- '[T-lhc_storm] Lake Havasu City, Storm Water Management (illicit discharge, MS4, City Code Ch. 8.28)
+  https://www.lhcaz.gov/public-works/storm-water-management'
+- '[T-nws_monsoon] National Weather Service Tucson, Monsoon Safety (season June 15 to September 30)
+  https://www.weather.gov/twc/MonsoonSafety'
+- '[LHC-CCR] Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 gpg, range 18 to 20)
+  https://www.lhcaz.gov/DocumentCenter/View/3233'
+- '[T-bin_news] Journal-News, Garbage can cleaning business offers solution for smelly, rodent-attracting bins
+  (scheduled on pickup day; monthly, quarterly or one-time plans) https://www.journal-news.com/news/garbage-can-cleaning-business-offers-solution-for-smelly-rodent-attracting-bins/VHzEjJPDlWddGpstA20MYL'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'
+- foundation/az_license_master.md section 5 (cleaning trades, no ROC class) [judgment]

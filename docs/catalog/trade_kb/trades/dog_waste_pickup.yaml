@@ -1,0 +1,365 @@
+# Written by Claude (expert layer, Oct 29 2026), not part of the Grok delivery (D-431). AI research, not legal advice.
+# Ask Hava trade knowledge file: dog_waste_pickup. Schema: foundation/schema.yaml (v2). Items marked [judgment] are not
+# from a cited source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: dog_waste_pickup
+display_name: "Dog waste pickup"
+summary: >
+  Pickup of dog waste from home yards, dog runs and shared spaces. Most requests are ongoing weekly or twice-a-week
+  service, quoted by the month. Others are a one-time cleanup of a yard that has built up, often before a sale, after
+  a tenant moves out, or when owners come back for the winter [judgment]. Some HOAs, apartment sites and RV parks want
+  pet stations emptied and common areas picked up [judgment]. Ask Hava collects the number of dogs, the yard size and
+  ground, how long since the last cleanup and where the waste should go, then sends an anonymous job card. No state
+  contractor license applies to this work [judgment].
+job_types:
+  - id: weekly_pickup
+    label: "Ongoing pickup (weekly, twice a week or every other week)"
+    site_visit_usually_needed: "no"
+  - id: one_time_cleanup
+    label: "One-time cleanup of a built-up yard"
+    site_visit_usually_needed: "sometimes"
+  - id: multi_dog_large_yard
+    label: "Three or more dogs, or a large yard or lot"
+    site_visit_usually_needed: "sometimes"
+  - id: commercial_hoa
+    label: "HOA, apartment or RV park common area and pet stations"
+    site_visit_usually_needed: "yes"
+  - id: turf_deodorize
+    label: "Deodorizing artificial turf or dog areas (add-on to pickup)"
+    site_visit_usually_needed: "no"
+triggers_en:
+  - phrase: "pooper scooper"
+    job_type: null
+  - phrase: "poop scooper"
+    job_type: null
+  - phrase: "poop scoop"
+    job_type: null
+  - phrase: "poopscooping"
+    job_type: null
+  - phrase: "dog poop"
+    job_type: null
+  - phrase: "dog pooo"
+    job_type: null
+  - phrase: "dog poo"
+    job_type: null
+  - phrase: "dog doo"
+    job_type: null
+  - phrase: "doggy doo"
+    job_type: null
+  - phrase: "pick up dog poop"
+    job_type: null
+  - phrase: "pet waste removal"
+    job_type: null
+  - phrase: "dog waste"
+    job_type: null
+  - phrase: "scoop the yard"
+    job_type: null
+  - phrase: "dog run cleaning"
+    job_type: null
+  - phrase: "poop service"
+    job_type: weekly_pickup
+  - phrase: "weekly poop pickup"
+    job_type: weekly_pickup
+  - phrase: "weekly scooping"
+    job_type: weekly_pickup
+  - phrase: "twice a week poop pickup"
+    job_type: weekly_pickup
+  - phrase: "someone to pick up after my dogs every week"
+    job_type: weekly_pickup
+  - phrase: "yard full of dog poop"
+    job_type: one_time_cleanup
+  - phrase: "one time poop cleanup"
+    job_type: one_time_cleanup
+  - phrase: "havent picked up in months"
+    job_type: one_time_cleanup
+  - phrase: "tenant left dog poop"
+    job_type: one_time_cleanup
+  - phrase: "move out dog mess"
+    job_type: one_time_cleanup
+  - phrase: "clean up the yard before we sell"
+    job_type: one_time_cleanup
+  - phrase: "3 dogs"
+    job_type: multi_dog_large_yard
+  - phrase: "lots of dogs"
+    job_type: multi_dog_large_yard
+  - phrase: "big yard with dogs"
+    job_type: multi_dog_large_yard
+  - phrase: "acre lot dogs"
+    job_type: multi_dog_large_yard
+  - phrase: "hoa dog stations"
+    job_type: commercial_hoa
+  - phrase: "pet waste stations"
+    job_type: commercial_hoa
+  - phrase: "doggie bag station"
+    job_type: commercial_hoa
+  - phrase: "common area dog poop"
+    job_type: commercial_hoa
+  - phrase: "apartment dog area"
+    job_type: commercial_hoa
+  - phrase: "rv park dog area"
+    job_type: commercial_hoa
+  - phrase: "turf smells like pee"
+    job_type: turf_deodorize
+  - phrase: "deodorize artificial turf"
+    job_type: turf_deodorize
+  - phrase: "dog urine smell in yard"
+    job_type: turf_deodorize
+triggers_es:
+  - phrase: "recoger popó de perro"
+    job_type: null
+  - phrase: "recoger caca de perro"
+    job_type: null
+  - phrase: "excremento de perro"
+    job_type: null
+  - phrase: "limpiar el patio de los perros"
+    job_type: null
+  - phrase: "popó de perro cada semana"
+    job_type: weekly_pickup
+  - phrase: "servicio semanal para recoger popó"
+    job_type: weekly_pickup
+  - phrase: "el patio está lleno de popó"
+    job_type: one_time_cleanup
+  - phrase: "limpieza de una sola vez"
+    job_type: one_time_cleanup
+  - phrase: "tengo muchos perros"
+    job_type: multi_dog_large_yard
+  - phrase: "terreno grande con perros"
+    job_type: multi_dog_large_yard
+  - phrase: "estaciones de bolsas para perros"
+    job_type: commercial_hoa
+  - phrase: "área común de la asociación"
+    job_type: commercial_hoa
+  - phrase: "olor a orina en el pasto artificial"
+    job_type: turf_deodorize
+questions:
+  - id: q1_service_kind
+    text: "What do you need?"
+    options: ["Weekly pickup", "Twice a week", "Every other week", "One-time cleanup", "HOA or common area", "Not sure"]
+    ask_if: "always"
+    changes_price: "yes"
+    why: "How often a business comes sets the monthly quote, and a one-time cleanup is quoted on its own. [judgment]"
+  - id: q2_dogs
+    text: "How many dogs use the yard?"
+    options: ["1", "2", "3", "4 or more"]
+    ask_if: "job_type != commercial_hoa"
+    changes_price: "yes"
+    why: "More dogs means more waste each visit; many services quote by the number of dogs. [judgment]"
+  - id: q3_last_cleaned
+    text: "About when was the yard last picked up?"
+    options: ["In the last week", "2 to 4 weeks ago", "1 to 3 months ago", "Longer than that", "Not sure"]
+    ask_if: "job_type != commercial_hoa"
+    changes_price: "yes"
+    why: "A yard with weeks of buildup takes longer on the first visit. [judgment]"
+  - id: q4_area_size
+    text: "About how big is the area the dogs use?"
+    options: ["Small (side yard or dog run)", "Medium (typical back yard)", "Large (big lot, over about a quarter acre)", "Front and back yards", "Not sure"]
+    ask_if: "job_type != commercial_hoa"
+    changes_price: "yes"
+    why: "A bigger area takes longer to walk and check. [judgment]"
+  - id: q5_ground
+    text: "What is the ground like where the dogs go?"
+    options: ["Rock or gravel", "Grass", "Artificial turf", "Dirt", "A mix", "Not sure"]
+    ask_if: "always"
+    changes_price: "yes"
+    why: "Rock and gravel yards can take longer to pick up than grass or turf. [judgment]"
+  - id: q6_disposal
+    text: "Where should the waste go?"
+    options: ["Bagged in my trash can", "Hauled away by the business", "Either is fine"]
+    ask_if: "always"
+    changes_price: "yes"
+    why: "Some services leave bags in the homeowner's trash can and some haul them away for a different price. [judgment]"
+  - id: q7_common_area
+    text: "How many pet stations or dog areas are there?"
+    options: ["1 or 2", "3 to 5", "6 or more", "Not sure"]
+    ask_if: "job_type == commercial_hoa"
+    changes_price: "yes"
+    why: "The number of stations and areas sets the time on site for a common-area account. [judgment]"
+quote_without_visit_needs:
+  - "Number of dogs [judgment]"
+  - "How often (weekly, twice a week, every other week, or one time) [judgment]"
+  - "Rough yard size and which yards (front, back, side) [judgment]"
+  - "Ground type: rock, grass, artificial turf or dirt [judgment]"
+  - "How long since the last cleanup, or a photo of the yard today [judgment]"
+  - "Where the waste goes (homeowner trash can or hauled away) [judgment]"
+  - "How the business gets into the yard and whether dogs are out during the visit (gate codes are given only on the call, never on the card) [judgment]"
+site_visit_usually_needed:
+  - "commercial_hoa: common areas and stations are usually walked before a quote [judgment]"
+  - "one_time_cleanup with months of buildup over a large lot [judgment]"
+photos_to_request:
+  - id: p1_yard_overview
+    ask: "A wide photo of the yard where the dogs go, in daylight."
+    for_job_types: [all]
+  - id: p2_gate_access
+    ask: "A photo of the gate or way into the yard, with no codes or house numbers showing."
+    for_job_types: [weekly_pickup, one_time_cleanup, multi_dog_large_yard, turf_deodorize]
+  - id: p3_heaviest_spot
+    ask: "A photo of the spot with the most buildup."
+    for_job_types: [one_time_cleanup, multi_dog_large_yard]
+  - id: p4_turf_area
+    ask: "A photo of the artificial turf or dog run area."
+    for_job_types: [turf_deodorize, weekly_pickup]
+  - id: p5_common_area
+    ask: "A photo of the common area or one of the pet stations."
+    for_job_types: [commercial_hoa]
+photo_cues:
+  - photo_id: p1_yard_overview
+    look_for: ["Rough size of the yard", "Ground type (rock, grass, turf, dirt)", "Plants, cactus or shrubs dogs go under", "Amount of waste visible"]
+    neutral_wording_example: "Photo shows a medium back yard with gravel and a small turf patch; waste visible in several spots."
+  - photo_id: p2_gate_access
+    look_for: ["Side gate or walkway into the yard", "Lock or latch on the gate", "Steps or slope on the way in"]
+    neutral_wording_example: "Photo shows a side gate with a latch and a gravel walkway."
+  - photo_id: p3_heaviest_spot
+    look_for: ["How much buildup is in one area", "Whether the spot is on rock, turf or dirt"]
+    neutral_wording_example: "Photo shows heavy buildup along the back wall on gravel."
+  - photo_id: p4_turf_area
+    look_for: ["Size of the turf or dog run", "Stains or discolored spots on turf"]
+    neutral_wording_example: "Photo shows an artificial turf area about the size of a small patio with darker spots near one corner."
+  - photo_id: p5_common_area
+    look_for: ["Pet station with bag holder and can", "Size of the grass or rock area", "Signs or fencing around the area"]
+    neutral_wording_example: "Photo shows a pet station with a bag holder and trash can next to a gravel strip."
+photo_red_flags:
+  - flag: "Photo shows a gate code, lockbox, house number, plate or a person's face (privacy: ask for a cropped or new photo)"
+    safety_step_ref: null
+  - flag: "Standing sewage or a septic overflow in the yard (not dog waste pickup; may be a septic or plumbing request) [judgment]"
+    safety_step_ref: null
+  - flag: "Dead animal or wildlife in the yard (not dog waste pickup; a different service may fit) [judgment]"
+    safety_step_ref: null
+emergency_signals:
+  - id: es_dog_waste_pickup_1
+    signal: "Routine pickup or cleanup request"
+    emergency: "no"
+    safety_step: "No special safety step; normal job card."
+    source: "none"
+    then_route_to: dog_waste_pickup
+  - id: es_dog_waste_pickup_2
+    signal: "Notice from the HOA or city about a yard, or guests or buyers coming soon"
+    emergency: "no"
+    safety_step: "No special safety step; normal job card."
+    source: "none"
+    then_route_to: dog_waste_pickup
+    note: "Not an emergency. The card may say the homeowner wants a visit soon. [judgment]"
+safety_step: []
+license_classes:
+  - job_type: [weekly_pickup, one_time_cleanup, multi_dog_large_yard, commercial_hoa]
+    work: "Picking up and bagging dog waste"
+    classes: ["none"]
+    citation: "No ROC class in A.A.C. R4-9-103 covers waste pickup; it is not construction work [judgment] [S2]"
+    other_agency: "Lake Havasu City business license; some businesses also need a privilege tax license [T-lhc_bizlic]"
+    notes: "Ask Hava does not check city licenses. A business can confirm its own city license with Lake Havasu City."
+  - job_type: [turf_deodorize]
+    work: "Deodorizing turf or dog areas with a ready-to-use product"
+    classes: ["none"]
+    citation: "A.R.S. 3-3611(A)(3): pest-management licensing does not apply to persons using a nonrestricted, ready-to-use disinfectant, sanitizer or deodorizer [T-ars_3611]"
+    other_agency: "none"
+    notes: "Spraying a yard for fleas, ticks or other pests is pest management; that request goes to pest_control [judgment] [S9]."
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: "Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit, is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)), and ads say 'not a licensed contractor'. Source: A.R.S. 32-1121(A)(14) and (D) [S4]"
+  note: "Dog waste pickup is not construction work, so the handyman exemption does not come into play [judgment]. The category does not send cards to handyman businesses (handyman_allowed: false in docs/catalog/categories.yaml)."
+local_notes:
+  - "Lake Havasu City Code 6.20.050 makes it a civil offense not to remove dog waste left on someone else's property, or to let waste pile up or spread so it can be seen or smelled from outside the property. Some requests may follow a neighbor, HOA or city notice. Ask Hava gives no legal advice. Source: [T-lhc_title6]"
+  - "City code 6.20.010 says dog owners in city parks must clean up after their dogs; HOA and park-style common areas often have pet stations [T-lhc_title6] [judgment]."
+  - "Summer heat runs June to September; many services work early in the morning then, and odor and flies may be stronger [judgment]."
+  - "Monsoon season officially runs June 15 to September 30. Storms and dust can leave yards muddy or covered in dirt for a while [T-nws_monsoon] [judgment]."
+  - "Many yards are rock or gravel with little grass, and more homes have artificial turf dog areas [judgment]."
+  - "Seasonal residents and second homes: some owners want a cleanup before they arrive or after renters leave, and a pause while away [judgment]."
+  - "HOAs, manufactured-home parks and RV parks may want common-area accounts with several pet stations [judgment]."
+  - "The CDC says dog poop can carry germs that make people and animals sick, and should be picked up even in your own yard. Ask Hava does not give health advice; this is background only. Source: [T-cdc_dogs]"
+  - "Pet waste washed off by storms can reach waterways; a regional stormwater study found pet waste was a source of about a quarter of the bacteria in stream samples (Kansas City area, not Lake Havasu). Background only. Source: [T-marc_petwaste]"
+  - "Where bagged dog waste may go (city trash cans, haul-away) was not checked with Lake Havasu City solid waste rules; businesses handle this [open question]."
+sample_card: |
+  REQ-0142 | Dog waste pickup | Lake Havasu City, south side
+  2 dogs, medium back yard, gravel with a small artificial turf patch. Wants weekly pickup.
+  Last picked up about a month ago. Bags can go in the homeowner's trash can. 2 photos.
+test_messages:
+  - id: dog_waste_pickup_t01
+    message: "need someone to pick up dog poop every week"
+    trade: dog_waste_pickup
+    job_type: weekly_pickup
+    emergency: "no"
+    first_question_id: q2_dogs
+    ideal_first_question: "How many dogs use the yard?"
+    note: ""
+  - id: dog_waste_pickup_t02
+    message: "poop"
+    trade: dog_waste_pickup
+    job_type: unknown
+    emergency: "no"
+    first_question_id: q1_service_kind
+    ideal_first_question: "What do you need?"
+    note: "job_type unknown = too vague; the first question picks the job type."
+  - id: dog_waste_pickup_t03
+    message: "backyard is covered, havent cleaned since spring. 2 dogs"
+    trade: dog_waste_pickup
+    job_type: one_time_cleanup
+    emergency: "no"
+    first_question_id: q1_service_kind
+    ideal_first_question: "Do you want a one-time cleanup, or ongoing pickup after that?"
+    note: ""
+  - id: dog_waste_pickup_t04
+    message: "necesito que recojan el popó de mis perros cada semana"
+    trade: dog_waste_pickup
+    job_type: weekly_pickup
+    emergency: "no"
+    first_question_id: q2_dogs
+    ideal_first_question: "¿Cuántos perros usan el patio?"
+    note: ""
+  - id: dog_waste_pickup_t05
+    message: "weekly poop scoop and can you deodorize the fake grass too"
+    trade: dog_waste_pickup
+    job_type: weekly_pickup
+    emergency: "no"
+    first_question_id: q2_dogs
+    ideal_first_question: "How many dogs use the yard?"
+    note: "Mixed: weekly pickup plus the turf_deodorize add-on on the same card."
+  - id: dog_waste_pickup_t06
+    message: "dog peed all over the carpet and the house reeks"
+    trade: carpet_cleaning
+    job_type: pet_odor
+    emergency: "no"
+    first_question_id: q2_rooms
+    ideal_first_question: "How many rooms or areas?"
+    note: "Wrong trade: indoor pet stains go to carpet_cleaning."
+  - id: dog_waste_pickup_t07
+    message: "fleas all over the yard from the dogs, need it sprayed"
+    trade: pest_control
+    job_type: bed_bugs_other
+    emergency: "no"
+    first_question_id: pest_type
+    ideal_first_question: "What pest is it?"
+    note: "Wrong trade: yard spraying for fleas is pest management."
+  - id: dog_waste_pickup_t08
+    message: "our HOA needs the dog stations emptied and the common area picked up twice a week"
+    trade: dog_waste_pickup
+    job_type: commercial_hoa
+    emergency: "no"
+    first_question_id: q7_common_area
+    ideal_first_question: "How many pet stations or dog areas are there?"
+    note: ""
+  - id: dog_waste_pickup_t09
+    message: "tenant moved out and left dog mess all over the back of the rental"
+    trade: dog_waste_pickup
+    job_type: one_time_cleanup
+    emergency: "no"
+    first_question_id: q4_area_size
+    ideal_first_question: "About how big is the area the dogs used?"
+    note: ""
+  - id: dog_waste_pickup_t10
+    message: "4 dogs on half an acre, want twice a week service"
+    trade: dog_waste_pickup
+    job_type: multi_dog_large_yard
+    emergency: "no"
+    first_question_id: q3_last_cleaned
+    ideal_first_question: "About when was the yard last picked up?"
+    note: ""
+sources:
+  - "[S2] A.A.C. R4-9-103 Residential contractor license classifications (Cornell LII copy) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+  - "[S4] A.R.S. 32-1121 Persons not required to be licensed (handyman (A)(14), fuel gas and fire safety (D)) https://www.azleg.gov/ars/32/01121.htm"
+  - "[S9] A.R.S. 3-3611, 3-3612, 3-3614, 3-3615 (pest management licensing; see foundation/sources_foundation.md)"
+  - "[T-ars_3611] A.R.S. 3-3611 License and registration exemptions (A)(3) ready-to-use disinfectant, sanitizer or deodorizer https://www.azleg.gov/ars/3/03611.htm"
+  - "[T-lhc_title6] Lake Havasu City Code Title 6, Animals, sections 6.20.010 and 6.20.050 (PDF linked from the city Animals and Pets page) https://www.lhcaz.gov/DocumentCenter/View/790"
+  - "[T-lhc_animals] Lake Havasu City, Animals and Pets page https://www.lhcaz.gov/284/Animals-Pets"
+  - "[T-lhc_bizlic] Lake Havasu City, Business License (business license; some businesses also need a privilege tax license) https://www.lhcaz.gov/175/Business-License"
+  - "[T-cdc_dogs] CDC Healthy Pets, Dogs (dog poop can carry germs; pick up even in your own yard) https://cdc.gov/healthy-pets/about/dogs.html"
+  - "[T-marc_petwaste] Mid-America Regional Council, pet waste fact sheet in the EPA nonpoint source toolbox https://cfpub.epa.gov/npstbx/files/marc_petwaste.pdf"
+  - "[T-nws_monsoon] National Weather Service Flagstaff, Monsoon information (officially June 15 to September 30) https://www.weather.gov/fgz/monsooninfo"

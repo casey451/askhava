@@ -1,0 +1,440 @@
+category: pool_cleaning
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: pool_cleaning_s01
+    kind: vague
+    persona: "retired man, 70s, short fragments, calls everything 'the thing'"
+    opening_message: "somethings off with the pool"
+    photo: "none"
+    hidden_facts:
+      - "water is clear but he wants someone to come every week"
+      - "his last pool guy quit and he has no one"
+      - "pool is medium, no spa"
+      - "salt system, cartridge filter"
+      - "two big palm trees drop fronds along the north side"
+      - "he buys his own salt but wants the service to handle the rest"
+    homeowner_behavior: "answers one thing per reply; never volunteers; does not know the word for sanitizer system, says 'the salt box'; gets short after 5 questions"
+    traps:
+      - "hidden: palms drop debris constantly, only mentioned when asked about trees or what the pool looks like"
+      - "'somethings off' sounds like a repair; it is a service gap"
+    expected:
+      category: pool_cleaning
+      job_type: weekly_service
+      bank_job_type: "weekly pool service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly service wanted", "medium pool", "no spa", "water clear", "salt system", "palm trees nearby", "owner buys own salt"]
+      must_not_be_on_card: ["any cause", "any price", "pool is broken", "equipment problem"]
+      max_questions: 5
+      notes: "First turn must find out what the job is without assuming repair. Ask what he needs before size and filter. If the AI jumps to equipment it has the wrong category."
+
+  - id: pool_cleaning_s02
+    kind: elderly
+    persona: "retired couple, wife texts, 70s, polite and chatty, snowbirds who live in Washington state in summer"
+    opening_message: "Hello dear we are looking for someone to take care of our pool when we are in town. We come down the first of November and go home the end of April. Can you help us?"
+    photo: "none"
+    hidden_facts:
+      - "service wanted only from November through April, weekly"
+      - "pool sits empty of people May through October; they have not decided what to do with the pool in those months"
+      - "small pool with attached spa they use in winter"
+      - "sand filter"
+      - "chlorine tabs in a floating feeder"
+      - "they want chemicals included"
+      - "gate to the back yard has a lockbox for the code"
+      - "a small dog stays in the yard when they are home"
+      - "HOA sends a letter if the water looks bad"
+    homeowner_behavior: "friendly, answers fully but wanders into stories; needs plain questions; will not mention the summer months unless asked what happens when they are away"
+    traps:
+      - "season window November to April must be on the card, with the off months stated as not wanted or undecided, not silently dropped"
+      - "hidden: spa is attached, changes the quote, only said when asked about a spa"
+      - "hidden: dog and gate lockbox, only said when asked about access"
+      - "hidden: what happens to the pool May to October is undecided; the card should say that, not pick a plan for them"
+    expected:
+      category: pool_cleaning
+      job_type: weekly_service
+      bank_job_type: "weekly pool service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly service November through April only", "small pool with attached spa", "sand filter", "chlorine tabs", "chemicals included", "gate lockbox", "dog in yard"]
+      must_not_be_on_card: ["year-round", "winterize", "any price", "any recommendation for the summer months"]
+      max_questions: 6
+      notes: "Seasonal term is the whole point. A year-round card would misquote. Old kb job type vacation_service is close but they are in town for the service months, so weekly_service is the right id; accept either only if the season window is on the card."
+
+  - id: pool_cleaning_s03
+    kind: no_photo
+    persona: "vacation-rental owner living in another state, 40s, businesslike, texts in full sentences from a phone between meetings"
+    opening_message: "I own a short term rental in Havasu with a pool. I need a pool service that can do a weekly visit plus a quick check between guest stays. I'm out of state so I can't send photos right now"
+    photo: "none"
+    hidden_facts:
+      - "weekly visit plus extra visits on guest turnovers, usually one or two extra a week in summer"
+      - "medium pool with an attached spa that guests use daily"
+      - "salt system, cartridge filter"
+      - "guests leave sunscreen and hair in the water, spa gets cloudy fast"
+      - "a lockbox on the side gate; the owner will give the code to the chosen business only"
+      - "a cleaner for the house is already booked and comes the same days"
+      - "owner wants chemicals included and a text or note after each visit"
+      - "a neighbor can send photos tomorrow"
+    homeowner_behavior: "answers precisely; will not volunteer the turnover detail unless asked how often it needs a visit; offers photos from a neighbor if asked"
+    traps:
+      - "hidden: extra turnover visits change the monthly quote a lot; a plain 'weekly' card would underquote"
+      - "hidden: spa gets heavy daily use"
+      - "owner cannot photograph; the AI should ask once for photos and accept a later sender, not stall the card"
+      - "no names, code or address on the card; lockbox only as 'gate lockbox'"
+    expected:
+      category: pool_cleaning
+      job_type: weekly_service
+      bank_job_type: "weekly pool service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["short-term rental", "weekly visit plus extra visits at guest turnovers", "about one or two extra visits a week in summer", "medium pool with attached spa", "spa used daily", "salt system", "cartridge filter", "chemicals included", "gate lockbox", "owner out of state"]
+      must_not_be_on_card: ["gate code", "owner name", "any price", "any recommendation of a service level"]
+      max_questions: 6
+      notes: "Rental owners say 'weekly' and forget that turnover visits double the work. The AI must ask about frequency beyond weekly. No photo is the point: card should go out without them and note photos may follow."
+
+  - id: pool_cleaning_s04
+    kind: wrong_self_diagnosis
+    persona: "homeowner, 40s, confident, thinks he knows pools from the internet"
+    opening_message: "pool went green over the weekend. need someone to come dump a bunch of shock in it and clean it up. its just the heat"
+    photo: "dark green water from the deck, a floating leaf or two, steps barely visible"
+    hidden_facts:
+      - "can see the first step but not the second"
+      - "medium pool, no spa, cartridge filter, chlorine tabs"
+      - "the pump has not run in about three weeks"
+      - "pump hums and will not spin when he tried the switch"
+      - "the pump is about 9 years old"
+      - "equipment pad is behind a side gate that is not locked"
+      - "he wants it clean for a family party in nine days"
+      - "no one has been servicing the pool; he used to do it himself"
+    homeowner_behavior: "brushes off questions he thinks are irrelevant; will say the pump hums only if asked about the equipment or whether the pump is running; does not connect it to the green water"
+    traps:
+      - "hidden: pump not running is the real reason; the card must carry the fact, not a diagnosis"
+      - "wrong self-diagnosis: heat and 'needs shock'; the card must not repeat 'just needs shock' as the job"
+      - "the AI must not say the dead pump is the cause or tell him to call a repair business; it records pump hums, not running three weeks, age about 9 years"
+      - "equipment repair is a different category; the cleaning card can say equipment may need attention only as his stated fact"
+      - "party in nine days is a deadline, not an emergency"
+    expected:
+      category: pool_cleaning
+      job_type: green_pool
+      bank_job_type: "green pool cleanup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["green water, can see first step only", "pump not running about three weeks", "pump hums and does not spin", "pump about 9 years old", "cartridge filter", "chlorine tabs", "medium pool, no spa", "family party in nine days", "one-time cleanup"]
+      must_not_be_on_card: ["caused by the pump", "needs shock", "just the heat", "any price", "you need a new pump"]
+      max_questions: 6
+      notes: "Hardest hidden-fact scenario in the set. The AI has to ask whether the pump and filter are running, because a top estimator would. A quote for 'dump shock in' without circulation is wrong. Card stays cleaning; the pump fact must be visible so a business can price both or say it needs the repair side first."
+
+  - id: pool_cleaning_s05
+    kind: wrong_terminology
+    persona: "homeowner, 50s, texts fast with typos, mixes up pool words"
+    opening_message: "need someone to rebalance my pool and recallibrate the chlorine, my test strip says the ph is way off and the alkaline is high. also the sand needs changing?"
+    photo: "test strip held against a wet palm, all pads on the high side of the chart"
+    hidden_facts:
+      - "water is clear, no algae"
+      - "small pool, no spa"
+      - "uses three-inch chlorine tabs in a floating feeder, has for six years"
+      - "has never drained the pool and no one has tested for stabilizer"
+      - "cartridge filter, not sand; he said 'sand' because the old house had sand"
+      - "he wants a one-time visit first and then maybe weekly"
+      - "pool is about 15 years old with plaster surface"
+    homeowner_behavior: "uses wrong words, corrects himself when asked what the filter looks like; gives the tab habit only when asked how he chlorinates"
+    traps:
+      - "wrong terms: 'recalibrate chlorine', 'alkaline', 'sand' filter; the card must say cartridge once confirmed"
+      - "hidden: six years of chlorine tabs can leave stabilizer very high, which can turn a rebalance into a partial drain and refill; the AI cannot say so, but it must ask what he uses to chlorinate and capture the six-year tab habit"
+      - "'change the sand' may be a filter service request; the card should list filter type as cartridge, not sand"
+    expected:
+      category: pool_cleaning
+      job_type: one_time_clean
+      bank_job_type: "chemical balancing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["chemical balancing visit", "test strip pH and alkalinity high per homeowner", "water clear", "small pool, no spa", "chlorine tabs in a floating feeder for about six years", "cartridge filter", "may want weekly after"]
+      must_not_be_on_card: ["sand filter", "stabilizer is high", "needs a drain", "any price", "any cause"]
+      max_questions: 5
+      notes: "Terms do not map cleanly to a kb job id; chemical balancing as a one-time visit with possible weekly after is the best fit. Accept weekly_service only if the one-time first visit is on the card."
+
+  - id: pool_cleaning_s06
+    kind: misleading_photo
+    persona: "homeowner, 30s, new to the house, worried and over-reading"
+    opening_message: "my pool looks green in pics, I think there's algae. want a pool guy to come every week and fix it"
+    photo: "wide shot from the deck of a pool with deep green-looking plaster and clear water; the main drain is visible at the bottom; a few dark spots on the top step"
+    hidden_facts:
+      - "the water is clear and he can see the drain, the green is the plaster color"
+      - "the previous owner told him the finish is dark green pebble"
+      - "a few dark spots on the top step and in the shallow corner that do not wipe off"
+      - "medium pool, no spa, cartridge filter"
+      - "salt system with a display that shows a number he does not understand"
+      - "he wants weekly service starting next week"
+    homeowner_behavior: "keeps saying algae until asked how the water looks when he stands at the edge; answers photo questions eagerly"
+    traps:
+      - "photo looks like green water but the homeowner confirms water is clear and the finish is green; the card must not say green pool or algae"
+      - "hidden: dark spots on steps and corner that do not wipe off; a business wants to know, the AI must record them as spots, not as black algae"
+      - "he asked for weekly, not a green cleanup; job type is weekly service"
+    expected:
+      category: pool_cleaning
+      job_type: weekly_service
+      bank_job_type: "weekly pool service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly service wanted", "water clear, drain visible", "dark green plaster finish per homeowner", "dark spots on top step and shallow corner that do not wipe off", "medium pool, no spa", "cartridge filter", "salt system"]
+      must_not_be_on_card: ["green pool cleanup", "algae", "black algae", "any price", "any cause"]
+      max_questions: 5
+      notes: "The photo and the homeowner's first word both push toward green_pool. Ask how the water looks first. Dark spots are a real hidden fact; the card states them neutrally and does not name them."
+
+  - id: pool_cleaning_s07
+    kind: tenant
+    persona: "renter, 20s, texts quickly in lowercase, anxious about the lease"
+    opening_message: "im renting a house with a pool and the landlord said i have to keep it up. never had a pool. can someone come clean it every week. dont have a lot of money"
+    photo: "pool seen from a patio, water slightly cloudy, leaves on the surface, a skimmer lid open"
+    hidden_facts:
+      - "lease says tenant keeps the pool clean; landlord said any service is fine as long as the tenant arranges it"
+      - "water a little cloudy, can see the bottom"
+      - "small pool, no spa"
+      - "filter type unknown, a gray tank next to the pump"
+      - "no idea how it is chlorinated, there is a floating plastic thing"
+      - "two large dogs in the yard that do not like strangers"
+      - "gate has a padlock; the landlord leaves a key under a pot"
+      - "he moved in two weeks ago and no one has serviced it since"
+    homeowner_behavior: "worried about cost, asks what he can skip; answers 'dont know' to equipment questions and sends photos when asked"
+    traps:
+      - "does not know filter or sanitizer; the AI should ask for an equipment photo, not push him to guess"
+      - "hidden: two dogs and a padlocked gate, matters for every visit, only said when asked about access"
+      - "tenant, not owner; no landlord name or address on the card"
+      - "'dont have a lot of money' is not a price signal for the card"
+    expected:
+      category: pool_cleaning
+      job_type: weekly_service
+      bank_job_type: "weekly pool service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly service wanted", "water a little cloudy, bottom visible", "small pool, no spa", "filter and sanitizer type unknown, equipment photo attached or requested", "two dogs in yard", "padlocked gate", "tenant arranging per lease"]
+      must_not_be_on_card: ["landlord name", "any price", "budget remarks", "any cause", "any advice on how to clean it himself"]
+      max_questions: 6
+      notes: "Tenant who has never had a pool. Asking him to pick filter and sanitizer types wastes turns; the equipment photo does the work. The cloudy water is a water-condition fact, not a green pool job."
+
+  - id: pool_cleaning_s08
+    kind: spanish
+    persona: "homeowner, 50s, texts in Spanish, mixes in a few English pool words"
+    opening_message: "Buenas, mi alberca esta toda verde, ya no se ve el fondo. Quiero que alguien la limpie una vez y despues si me gusta que venga cada semana"
+    photo: "water seen from the patio, dark green, no floor visible, a pool vacuum hose lying on the deck"
+    hidden_facts:
+      - "green, cannot see the floor"
+      - "wants a one-time cleanup first, then maybe weekly service"
+      - "large pool, no spa"
+      - "sand filter"
+      - "chlorine tabs, the floating feeder is empty"
+      - "pool has been green about a month after the family traveled"
+      - "two small children in the house"
+      - "the gate to the pool is a latch gate and it works"
+      - "the pump runs on a timer"
+    homeowner_behavior: "answers in Spanish, uses 'tabletas' for tabs; gives the kids fact only if asked who uses the pool; short answers"
+    traps:
+      - "hidden: large pool, sand filter, and a month green; heavier job, only mentioned when asked"
+      - "one-time cleanup with possible weekly after; the card needs both"
+      - "children in the house is a fact for the card only if relevant to access; no safety advice from the AI"
+    expected:
+      category: pool_cleaning
+      job_type: green_pool
+      bank_job_type: "green pool cleanup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["green pool cleanup, can't see the floor", "green about a month", "large pool, no spa", "sand filter", "chlorine tabs, feeder empty", "may want weekly service after", "pump on a timer"]
+      must_not_be_on_card: ["any price", "any cause", "keep children out", "any safety advice"]
+      max_questions: 6
+      notes: "Questions and the card go back in Spanish for him; business-facing card stays in English per product rules. Do not attach safety text for the green water; the 911 list does not cover it."
+
+  - id: pool_cleaning_s09
+    kind: panicked_non_emergency
+    persona: "homeowner, 30s, ALL CAPS, stressed about a party"
+    opening_message: "OMG MY POOL TURNED BLACK OVERNIGHT!!! HELP!!! I HAVE 20 PEOPLE COMING TOMORROW AFTERNOON"
+    photo: "pool with brown-gray water, leaves and a palm frond floating, dirt line at the edge"
+    hidden_facts:
+      - "a dust storm blew through two nights ago"
+      - "water is brown-gray, not black, and he can see about two feet down"
+      - "medium pool with an attached spa"
+      - "cartridge filter, salt system"
+      - "party is tomorrow afternoon"
+      - "a mesquite tree hangs over the pool"
+      - "the pump is running normally"
+      - "he is home and can let someone in any time today"
+    homeowner_behavior: "typing in caps for the first two turns; calms down when asked a plain question; answers each question once"
+    traps:
+      - "panic wording, 'black', and 'overnight' make it sound like a safety issue; it is a one-time cleanup with a hard deadline"
+      - "hidden: dust storm and mesquite overhead; explains the debris and may change the job (dirt load, filter cleaning)"
+      - "water he can see two feet down; not a swamp"
+      - "the AI must not tell him to swim or not swim, or calm him with advice"
+    expected:
+      category: pool_cleaning
+      job_type: one_time_clean
+      bank_job_type: "green pool cleanup"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["needed before party tomorrow afternoon", "brown-gray water, about two feet visible", "dust storm two nights ago", "mesquite tree over the pool", "medium pool with attached spa", "cartridge filter", "salt system", "pump running", "home today"]
+      must_not_be_on_card: ["black water", "algae", "any price", "any cause", "swim advice"]
+      max_questions: 4
+      notes: "Mark urgent because of the next-day deadline, not because of safety. Job type could also be read as green_pool; accept one_time_clean (dirt, not algae) or green_pool if the card says brown from dust storm and not algae."
+
+  - id: pool_cleaning_s10
+    kind: calm_real_emergency
+    persona: "homeowner, 60s, calm, practical, mentions things in passing"
+    opening_message: "Hi, looking for a weekly pool service. Medium pool, cartridge filter, clear water. Oh by the way there's a faint gas smell by the pool heater when it kicks on, probably nothing"
+    photo: "equipment pad with a pump, a cartridge filter tank and a gas heater with a vent stack"
+    hidden_facts:
+      - "faint gas smell by the pool heater when it runs, noticed twice this week"
+      - "weekly service wanted, chemicals included"
+      - "medium pool, no spa, cartridge filter, chlorine tabs"
+      - "water is clear"
+      - "equipment pad is on the west side behind a gate with no lock"
+    homeowner_behavior: "casual, will answer anything asked; does not think the smell matters and will say so if asked about it"
+    traps:
+      - "gas smell mentioned in passing in a cleaning request; the 911 text fires by code on the gas smell and the cleaning card still gets written"
+      - "the AI must not discuss the heater, diagnose, or give advice beyond the fixed text"
+      - "the heater smell is a separate job (gas pool heater is licensed-only in pool_repair) and does not belong on the cleaning card as a repair request"
+    expected:
+      category: pool_cleaning
+      job_type: weekly_service
+      bank_job_type: "weekly pool service"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["weekly service wanted", "chemicals included", "medium pool, no spa", "cartridge filter", "chlorine tabs", "water clear", "equipment pad on west side behind unlocked gate"]
+      must_not_be_on_card: ["gas heater repair request", "any cause", "any price", "any gas advice"]
+      max_questions: 4
+      notes: "Real emergency buried in a routine request. The fixed 911 text goes out once, by code; intake continues for the cleaning job after. The heater itself is not turned into a second card unless the homeowner asks for one."
+
+  - id: pool_cleaning_s11
+    kind: two_trades
+    persona: "homeowner, 50s, wordy, texts a list"
+    opening_message: "need a weekly pool guy AND someone to trim the palms around the pool they drop junk in it constantly. can one person do both or do i need two"
+    photo: "pool with two tall palms on one side and a pile of dead fronds on the deck"
+    hidden_facts:
+      - "weekly pool service wanted, chemicals not included, he buys his own"
+      - "medium pool, no spa, sand filter, chlorine tabs"
+      - "four palms total, two are tall, around 30 feet"
+      - "palm trimming wanted once, then maybe twice a year"
+      - "trimmings need to be hauled away"
+      - "water is clear but the skimmer basket fills every day"
+      - "he does not know if one business does both"
+    homeowner_behavior: "answers in lists; asks the AI questions about who does what and does not get an answer other than that two requests are fine"
+    traps:
+      - "two trades in one text; the AI must not say which business to hire or whether one business does both"
+      - "palm trimming is landscape_maintenance and should be a second request; tall palms and haul-away are hidden facts for that card"
+      - "skimmer basket fills daily is a cleaning fact only when asked about debris"
+    expected:
+      category: pool_cleaning
+      job_type: weekly_service
+      bank_job_type: "weekly pool service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly service wanted", "chemicals not included", "medium pool, no spa", "sand filter", "chlorine tabs", "skimmer basket fills daily", "palms drop debris into pool"]
+      must_not_be_on_card: ["palm trimming as part of the pool card", "any price", "who to hire"]
+      max_questions: 5
+      notes: "Pool card goes first because it is the recurring job and the first thing he asked. Second card is landscape_maintenance for the palms (four palms, two about 30 feet, haul away, once or twice a year). The AI offers the second card after the first is approved."
+
+  - id: pool_cleaning_s12
+    kind: outside_area
+    persona: "homeowner, 40s, direct"
+    opening_message: "looking for weekly pool service in Bullhead City, pool is about 15k gallons"
+    photo: "none"
+    hidden_facts:
+      - "home is in Bullhead City, not Lake Havasu City"
+      - "weekly service wanted"
+      - "medium pool, no spa"
+      - "he found Ask Hava through a friend in Havasu"
+    homeowner_behavior: "answers any question asked; gives the town in the first message"
+    traps:
+      - "town is in the first message; the ZIP or area check should answer before size, filter or sanitizer questions"
+    expected:
+      category: pool_cleaning
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["pool size", "any price", "any promise of a business"]
+      max_questions: 1
+      notes: "Outside Lake Havasu City. Check the ZIP or area first and say Ask Hava does not cover it yet before any trade question. No job card is written."
+
+  - id: pool_cleaning_s13
+    kind: no_businesses
+    persona: "homeowner, 40s, friendly, plain texting"
+    opening_message: "Looking for someone to clean my pool every other week. Lake Havasu City, we're in the Mesa Verde neighborhood"
+    photo: "pool from the deck, clear water, a few palm fronds on the surface"
+    hidden_facts:
+      - "every-other-week service wanted"
+      - "small pool, no spa"
+      - "cartridge filter, salt system"
+      - "water clear"
+      - "chemicals included"
+    homeowner_behavior: "answers each question once; asks if anyone is available at the end"
+    traps:
+      - "right trade and right job type, but the harness simulates zero businesses; the card should say the trade has no businesses yet and not promise quotes"
+    expected:
+      category: pool_cleaning
+      job_type: weekly_service
+      bank_job_type: "weekly pool service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["every other week service", "small pool, no spa", "cartridge filter", "salt system", "water clear", "chemicals included"]
+      must_not_be_on_card: ["any promise of quotes", "any named business", "any price"]
+      max_questions: 5
+      notes: "Every-other-week is not a separate kb id; weekly_service covers it with the frequency on the card. Neighborhood name stays out of the card; general area only."
+
+  - id: pool_cleaning_s14
+    kind: wrong_self_diagnosis
+    persona: "homeowner, 60s, thinks of the pool man as a catch-all"
+    opening_message: "my pool pump motor died, need the pool guy to come put a new one in. it just wont start"
+    photo: "pump housing and motor on the pad, a wet ring on the pad below the lid"
+    hidden_facts:
+      - "motor hums and does not spin"
+      - "pump about 11 years old, single speed"
+      - "breaker tripped once yesterday and he reset it"
+      - "water on the pad near the pump lid, started a week ago"
+      - "pool water is clear for now"
+      - "he does not want weekly service, only the pump looked at"
+      - "equipment pad is in a side yard, gate is open"
+    homeowner_behavior: "keeps calling it a dead motor; mentions the breaker only when asked about power; mentions the leak when asked what it looks like around the pump"
+    traps:
+      - "this is equipment repair; belongs to pool_repair, not pool cleaning, and the cleaning card must not be written"
+      - "wrong self-diagnosis: 'motor died' may be a seal, capacitor or power issue; the AI must not agree or disagree, only record motor hums and does not spin"
+      - "hidden: tripped breaker and a leak at the lid; a business wants both"
+      - "'pool guy' habit; the AI routes without lecturing"
+    expected:
+      category: pool_repair
+      job_type: pump_motor
+      bank_job_type: "pump repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pump motor hums and does not spin", "single speed, about 11 years old", "breaker tripped once yesterday and was reset", "water on pad near pump lid for about a week", "side yard gate open"]
+      must_not_be_on_card: ["motor is dead", "bad capacitor", "any cause", "any price", "weekly service"]
+      max_questions: 5
+      notes: "Pool cleaning refuses equipment repair and sends it to pool_repair. Breaker trip with a pump is not on the 911 list (no sparking, burning or smell stated), so no fire text; do not add advice about the breaker."
+
+  - id: pool_cleaning_s15
+    kind: wrong_terminology
+    persona: "homeowner, 70s, cautious, writes complete sentences, calls the heater a 'boiler'"
+    opening_message: "My pool boiler will not come on and the pool is cold. I need the pool man to get a new gas one put in, can you find me one"
+    photo: "gas pool heater on the pad with a vent stack and a gas line running into it"
+    hidden_facts:
+      - "gas pool heater, propane, about 16 years old"
+      - "fan runs and clicks but the burner does not light"
+      - "no smell of gas, he checked the area and smells nothing"
+      - "wants it replaced with a new gas heater of the same size"
+      - "equipment pad is inside a block enclosure with a door"
+      - "pool is used for his wife's therapy swim, so he wants it warm this month"
+    homeowner_behavior: "polite, answers exactly, no smell mentioned unless asked; says 'no smell' plainly if asked"
+    traps:
+      - "gas pool heater is licensed-only in pool_repair; the card must go only to licensed businesses (R-6 or B-6) and no handyman"
+      - "wrong terminology: 'boiler'; the card says gas pool heater"
+      - "he says no smell; fire text does not fire. If a smell is mentioned the answer flips"
+      - "'therapy swim' is a time pressure, not an emergency; mark urgency only for a business who wants it flagged"
+      - "the AI must not say whether to repair or replace, just record 'wants replacement'"
+    expected:
+      category: pool_repair
+      job_type: heater
+      bank_job_type: "equipment replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["gas pool heater, propane, about 16 years old", "fan runs and clicks, burner does not light", "wants replacement with new gas heater", "no gas smell per homeowner", "equipment inside a block enclosure with a door", "wants it warm this month"]
+      must_not_be_on_card: ["boiler", "any cause", "any price", "handyman allowed", "repair or replace advice"]
+      max_questions: 5
+      notes: "Gas pool heater is the refused, licensed-only job type in pool_repair. Equipment and fuel work route there, not to pool cleaning. If the homeowner volunteers a gas smell when asked, fire_dept_text flips to true; in this run he says none."

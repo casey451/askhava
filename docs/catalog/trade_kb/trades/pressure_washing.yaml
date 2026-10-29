@@ -1,0 +1,493 @@
+# Written by Claude (expert layer, Oct 29 2026), not part of the Grok delivery (D-431). AI research, not legal advice.
+# Ask Hava trade knowledge file: pressure_washing. Schema: foundation/schema.yaml (v2). Items marked [judgment] are
+# not from a cited source; [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, ranks or supervises work.
+trade: pressure_washing
+display_name: Pressure washing
+summary: >-
+  Pressure washing and soft washing of outdoor surfaces: driveways and garage floors, patios and pool decks, house
+  walls (stucco, block, siding and eaves), roofs, fences and block walls, and private docks or boat ramps.
+  Businesses quote a firm price from the surface, the size, the stains and the number of stories [judgment].
+  Lake Havasu City water is hard (about 19 grains per gallon), so white or orange sprinkler marks on walls and
+  concrete are common requests [judgment]. Sealing, staining or painting after a wash is not part of this category
+  and goes to painting (R-34). The asphalt roofing trade group says not to use a power washer on asphalt shingle
+  roofs, so roof jobs carry extra questions [T-arma_algae].
+job_types:
+- id: driveway_garage
+  label: Driveway, garage floor or sidewalk
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: patio_pool_deck
+  label: Patio, pavers or pool deck
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: house_wash
+  label: House exterior wash (soft wash of stucco, siding, eaves)
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: roof_wash
+  label: Roof wash (tile, shingle, foam or metal)
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: fence_wall
+  label: Fence or block wall
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: dock_ramp
+  label: Private dock or boat ramp
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: seal_paint_route
+  label: Sealing, staining or painting after a wash (route to painting)
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+triggers_en:
+- phrase: power washing
+  job_type: null
+- phrase: pressure wash
+  job_type: null
+- phrase: powerwash
+  job_type: null
+- phrase: preasure washing
+  job_type: null
+- phrase: pressure washer guy
+  job_type: null
+- phrase: wash my driveway
+  job_type: driveway_garage
+- phrase: driveway cleaning
+  job_type: driveway_garage
+- phrase: oil stain on driveway
+  job_type: driveway_garage
+- phrase: oil stains in the garage
+  job_type: driveway_garage
+- phrase: garage floor cleaning
+  job_type: driveway_garage
+- phrase: clean the sidewalk
+  job_type: driveway_garage
+- phrase: rust stains on concrete
+  job_type: driveway_garage
+- phrase: tire marks
+  job_type: driveway_garage
+- phrase: patio cleaning
+  job_type: patio_pool_deck
+- phrase: pool deck cleaning
+  job_type: patio_pool_deck
+- phrase: clean my pavers
+  job_type: patio_pool_deck
+- phrase: cool deck dirty
+  job_type: patio_pool_deck
+- phrase: house wash
+  job_type: house_wash
+- phrase: soft wash
+  job_type: house_wash
+- phrase: softwash
+  job_type: house_wash
+- phrase: wash the stucco
+  job_type: house_wash
+- phrase: clean outside of house
+  job_type: house_wash
+- phrase: wash the eaves
+  job_type: house_wash
+- phrase: sprinkler stains on wall
+  job_type: house_wash
+- phrase: hard water stains on house
+  job_type: house_wash
+- phrase: roof cleaning
+  job_type: roof_wash
+- phrase: wash tile roof
+  job_type: roof_wash
+- phrase: clean my roof
+  job_type: roof_wash
+- phrase: block wall cleaning
+  job_type: fence_wall
+- phrase: wash my fence
+  job_type: fence_wall
+- phrase: white crust on block wall
+  job_type: fence_wall
+- phrase: dock cleaning
+  job_type: dock_ramp
+- phrase: wash my dock
+  job_type: dock_ramp
+- phrase: boat ramp slippery
+  job_type: dock_ramp
+- phrase: seal my pavers
+  job_type: seal_paint_route
+- phrase: seal the driveway
+  job_type: seal_paint_route
+- phrase: stain the fence after
+  job_type: seal_paint_route
+- phrase: paint after washing
+  job_type: seal_paint_route
+triggers_es:
+- phrase: lavado a presión
+  job_type: null
+- phrase: hidrolavado
+  job_type: null
+- phrase: lavar con presión
+  job_type: null
+- phrase: lavar la entrada de carros
+  job_type: driveway_garage
+- phrase: manchas de aceite
+  job_type: driveway_garage
+- phrase: lavar la cochera
+  job_type: driveway_garage
+- phrase: lavar el patio
+  job_type: patio_pool_deck
+- phrase: lavar alrededor de la alberca
+  job_type: patio_pool_deck
+- phrase: lavar la casa por fuera
+  job_type: house_wash
+- phrase: lavar el techo
+  job_type: roof_wash
+- phrase: lavar la barda
+  job_type: fence_wall
+- phrase: lavar el muelle
+  job_type: dock_ramp
+- phrase: sellar adoquines
+  job_type: seal_paint_route
+questions:
+- id: q1_surface
+  text: What needs washing?
+  options:
+  - Driveway or garage
+  - Patio or pool deck
+  - House walls
+  - Roof
+  - Wall, fence or dock
+  - Several areas
+  ask_if: always
+  changes_price: 'yes'
+  why: The surface sets the method, the equipment and the time. [judgment]
+- id: q2_area_size
+  text: About how big is the area?
+  options:
+  - Small (1 car or less)
+  - Medium (2 to 3 cars)
+  - Large (more than 3 cars)
+  - Not sure
+  ask_if: q1_surface in ['Driveway or garage', 'Patio or pool deck', 'Wall, fence or dock', 'Several areas']
+  changes_price: 'yes'
+  why: Flat work is quoted by area, and car-size bands are easy to picture. [judgment]
+- id: q3_home_size
+  text: About how big is the home?
+  options:
+  - Under 1,500 sq ft
+  - 1,500 to 2,500 sq ft
+  - Over 2,500 sq ft
+  - Not sure
+  ask_if: q1_surface in ['House walls', 'Roof', 'Several areas']
+  changes_price: 'yes'
+  why: House and roof washes are quoted by the size of the home. [judgment]
+- id: q4_stories
+  text: How many stories?
+  options:
+  - '1'
+  - 2 or more
+  - Not sure
+  ask_if: q1_surface in ['House walls', 'Roof', 'Several areas']
+  changes_price: 'yes'
+  why: Second stories and roofs need ladders, poles or more hose and more time. [judgment]
+- id: q5_stains
+  text: Any stains that need extra work?
+  options:
+  - Oil or grease
+  - Orange or white sprinkler marks
+  - Rust
+  - Green or black growth
+  - No, just dirt
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Stain treatment is often a separate step or add-on in a quote. [judgment]
+- id: q6_material
+  text: What is the surface made of?
+  options:
+  - Plain concrete
+  - Pavers or stone
+  - Painted or coated concrete
+  - Stucco or block
+  - Wood or composite
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Coated, painted and wood surfaces take lower pressure and more care. [judgment]
+- id: q7_water
+  text: Is there a working outdoor faucet the business can use?
+  options:
+  - 'Yes'
+  - No, the water is off or the home is empty
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: With no water on site, the business brings its own, which can add to the quote. [judgment]
+quote_without_visit_needs:
+- Which surfaces, and roughly how big (car-size bands or home size) [judgment]
+- Number of stories for house and roof washes [judgment]
+- Surface material (plain concrete, pavers, coated, stucco, wood) [judgment]
+- Stain types (oil, sprinkler marks, rust, green or black growth) [judgment]
+- Whether an outdoor faucet works [judgment]
+- A wide photo of each area and a close photo of the worst stain [judgment]
+site_visit_usually_needed:
+- Roof washes, where the business may want to see the roof type and access first [judgment]
+- Very large lots, long driveways or several areas at once [judgment]
+- Docks or ramps that are hard to reach from land [judgment]
+- Older paint or coatings that may lift during a wash [judgment]
+photos_to_request:
+- id: p1_whole_area
+  ask: A wide photo of the whole area you want washed.
+  for_job_types:
+  - all
+- id: p2_worst_stain
+  ask: A close photo of the worst stain or mark.
+  for_job_types:
+  - driveway_garage
+  - patio_pool_deck
+  - house_wash
+  - fence_wall
+  - dock_ramp
+- id: p3_house_front
+  ask: A photo of the front of the house from the street, showing the whole height.
+  for_job_types:
+  - house_wash
+  - roof_wash
+- id: p4_roof
+  ask: A photo of the roof from the ground or a window, if you can do it safely from where you stand.
+  for_job_types:
+  - roof_wash
+- id: p5_faucet
+  ask: A photo of the outdoor faucet nearest the area.
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: p1_whole_area
+  look_for:
+  - Size of the area (car spaces, length of wall)
+  - Surface type (plain concrete, pavers, coated or painted)
+  - Plants, pool or open water next to the area
+  - Street gutter or drain near the area
+  neutral_wording_example: Two-car driveway, plain concrete, street gutter at the bottom edge.
+- photo_id: p2_worst_stain
+  look_for:
+  - Stain color and size (dark, orange, white, green or black)
+  - Whether the stain is on bare concrete, coating or paint
+  neutral_wording_example: Dark stain about 3 ft wide in the center of the garage floor.
+- photo_id: p3_house_front
+  look_for:
+  - Number of stories
+  - Wall material (stucco, block, siding)
+  - Eaves and overhangs
+  - Power lines near the house
+  neutral_wording_example: Single-story stucco home, tile roof, service line at the left corner.
+- photo_id: p4_roof
+  look_for:
+  - Roof type (tile, shingle, foam, metal)
+  - Pitch and height
+  - Visible broken or missing pieces
+  neutral_wording_example: Concrete tile roof, low pitch, dark streaks on the north side.
+- photo_id: p5_faucet
+  look_for:
+  - Faucet location and distance to the area
+  - Faucet handle present
+  neutral_wording_example: Hose faucet on the garage wall, about 20 ft from the driveway.
+photo_red_flags:
+- flag: Power line down on the ground or across the yard
+  safety_step_ref: es_pressure_washing_1
+- flag: Overhead service line close to walls or roof edge
+  safety_step_ref: null
+- flag: Cracked, lifted or sunken concrete or pavers (repair goes to pavers_concrete)
+  safety_step_ref: null
+- flag: Broken, slipped or missing roof tiles (repair goes to roofing)
+  safety_step_ref: null
+- flag: Peeling or flaking paint on walls or a coated floor
+  safety_step_ref: null
+- flag: Soft, split or missing boards on a dock or fence (repair goes to boat_dock or handyman)
+  safety_step_ref: null
+emergency_signals:
+- id: es_pressure_washing_1
+  signal: Downed power line near the house, yard or dock
+  emergency: 'yes'
+  safety_step: Stay away from downed power lines. Never touch them. If you see a downed line or other damaged equipment,
+    call 911 right away.
+  source: '[S25]'
+  then_route_to: none
+  note: The app uses its one fixed 911 text for a downed power line (D-436). No card until everyone is safe. [judgment]
+- id: es_pressure_washing_2
+  signal: Routine washing request
+  emergency: 'no'
+  safety_step: No special safety step; normal job card.
+  source: none
+  then_route_to: pressure_washing
+safety_step:
+- when: Downed power line
+  step: Stay away from downed power lines. Never touch them. If you see a downed line or other damaged equipment, call
+    911 right away.
+  source: '[S25]'
+intake_notes_judgment:
+- One message often names two or three areas; "Several areas" plus one photo per area keeps the card clear. [judgment]
+- Sealing, staining or painting after a wash is a separate painting card (catalog refused list). [judgment]
+- Washing a boat goes to boat_dock (detailing); washing solar panels goes to gutter_solar_cleaning. [judgment]
+license_classes:
+- job_type:
+  - driveway_garage
+  - patio_pool_deck
+  - house_wash
+  - fence_wall
+  - dock_ramp
+  work: Washing outdoor surfaces
+  classes:
+  - none
+  citation: foundation az_license_master section 5 (cleaning trades) [judgment]; A.A.C. R4-9-103 [S2]
+  other_agency: City business and transaction privilege tax licensing may apply [judgment; not checked on lhcaz.gov]
+  notes: No ROC class was found for washing; cleaning is not listed in the R4-9-103 scopes [judgment]. Whether
+    a for-hire soft wash that uses a registered algaecide or mildewcide counts as pest management under the AZ
+    Dept of Agriculture (A.R.S. 3-3615 business license) is an [open question] [S9].
+- job_type:
+  - roof_wash
+  work: Roof washing
+  classes:
+  - none for washing [judgment]
+  - R-42 Roofing for repair, coatings or tile work
+  citation: A.A.C. R4-9-103 [S2] (R-42 scope includes "roof insulation or coatings on or above the roof deck")
+  other_agency: none found
+  notes: '[open question] R-42 covers roof coatings and repair, not cleaning. A wash-only roof job reads as no ROC
+    class [judgment], but a roof wash sold together with a coating or tile repair is R-42 work. The asphalt roofing
+    trade group says not to use a power washer on asphalt shingle roofs [T-arma_algae]. Broken tiles go to roofing.'
+- job_type:
+  - seal_paint_route
+  work: Sealing, staining, coating or painting
+  classes:
+  - R-34 Painting and Wall Covering
+  - CR-34 (dual)
+  citation: A.A.C. R4-9-103 [S2] (R-34 scope includes "liquid floor and wall coatings"); R4-9-104 [S3]
+  other_agency: none
+  notes: Catalog routes sealing or painting to painting as R-34 work (categories.yaml, pressure_washing refused list).
+    Concrete coatings also appear under R-8 [S2]. Concrete repair goes to pavers_concrete (R-9, R-21).
+handyman_ok:
+  allowed_examples:
+  - Washing a driveway, patio, house, wall, fence or dock (cleaning, not construction) [judgment]
+  not_allowed_examples:
+  - Roof coating sold with a roof wash (R-42) [judgment]
+  - Sealing or painting jobs over $1,000 or tied to a larger job (R-34) [S4]
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting labor,
+    materials and everything else, is under $1,000; the work is casual or minor; no local building permit is needed;
+    it is not part of a larger job and not split into small contracts to dodge the limit; and any ad says ''not a
+    licensed contractor''. Never covers work connected to natural gas, propane or other fuel gas, or hardwired or
+    interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+  note: The catalog sets handyman_allowed false and construction_type false for this category, so the $1,000 handyman
+    limit does not apply to washing jobs here. Ask Hava never tells a homeowner a business is licensed. [judgment]
+local_notes:
+- 'Hard water: about 19 grains per gallon (range 18 to 20), and white or orange marks where sprinklers hit
+  stucco, block and concrete are common requests [judgment]. Source: Lake Havasu City 2025 Annual Drinking Water Quality Report
+  [T-lhc_water_quality].'
+- 'Lake Havasu City storm drains, gutters and washes carry water to Lake Havasu untreated, and the city treats any
+  discharge to that system that is not made up entirely of stormwater as an illicit discharge. Businesses may ask
+  where wash water will go. Source: [T-lhc_stormwater]; wash-water practice: [T-sd_powerwash].'
+- Heat June to September; many businesses work early in the morning, and some jobs move to cooler months. [judgment]
+- Monsoon July to September brings dust and mud on walls, patios and pool decks; post-storm washes are common. [judgment]
+- Some HOAs set rules for wall and house colors; a wash needs no HOA approval in most cases, but a paint or stain
+  change may. [judgment]
+- Seasonal residents and vacant second homes may have the water shut off; q7_water and photos let a business quote
+  while the owner is away. [judgment]
+- Many manufactured homes have metal or vinyl siding and skirting; businesses may ask about siding type. [judgment]
+- Lakefront homes may have private docks and ramps; boat washing goes to boat_dock, and dock repair goes to boat_dock.
+  [judgment]
+- Cool-deck style coated pool decks are common around Havasu pools; q6_material flags coated surfaces. [judgment]
+sample_card: 'REQ-0142 | Pressure washing | Lake Havasu City, south side
+
+  Driveway and garage floor, 2 to 3 car size, plain concrete. Oil stain in garage, orange sprinkler marks along the
+  edge.
+
+  Outdoor faucet works. 3 photos.
+
+  '
+test_messages:
+- id: pressure_washing_t01
+  message: power washing
+  trade: pressure_washing
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: q1_surface
+  ideal_first_question: What needs washing?
+  note: One-word style message; the first question picks the job type.
+- id: pressure_washing_t02
+  message: need driveway and garage floor done, big oil stain where the truck parks
+  trade: pressure_washing
+  job_type: driveway_garage
+  emergency: 'no'
+  first_question_id: q2_area_size
+  ideal_first_question: About how big is the area?
+  note: Surface is known from the message, so skip q1_surface.
+- id: pressure_washing_t03
+  message: lavado a presión de la entrada y el patio
+  trade: pressure_washing
+  job_type: driveway_garage
+  emergency: 'no'
+  first_question_id: q2_area_size
+  ideal_first_question: ¿Más o menos qué tamaño tiene el área?
+  note: Two areas; answer q1_surface as Several areas if asked.
+- id: pressure_washing_t04
+  message: soft wash 2 story stucco house, white sprinkler marks on the back wall
+  trade: pressure_washing
+  job_type: house_wash
+  emergency: 'no'
+  first_question_id: q3_home_size
+  ideal_first_question: About how big is the home?
+  note: ''
+- id: pressure_washing_t05
+  message: can you wash my pavers and then seal them
+  trade: pressure_washing
+  job_type: patio_pool_deck
+  emergency: 'no'
+  first_question_id: q2_area_size
+  ideal_first_question: About how big is the area?
+  note: Mixed. The wash is a pressure_washing card; the sealing is a separate painting card (refused list).
+- id: pressure_washing_t06
+  message: paint my block wall after you wash it
+  trade: painting
+  job_type: block_wall
+  emergency: 'no'
+  first_question_id: q1_where
+  ideal_first_question: What needs paint?
+  note: Wrong trade for the paint part; the wash can be its own fence_wall card.
+- id: pressure_washing_t07
+  message: pressure wash my solar panels
+  trade: gutter_solar_cleaning
+  job_type: solar_wash
+  emergency: 'no'
+  first_question_id: q1_what
+  ideal_first_question: What do you need?
+  note: Solar panel washing belongs to gutter_solar_cleaning.
+- id: pressure_washing_t08
+  message: wash my dock before we list the house, green slippery stuff on the ramp
+  trade: pressure_washing
+  job_type: dock_ramp
+  emergency: 'no'
+  first_question_id: q2_area_size
+  ideal_first_question: About how big is the area?
+  note: ''
+- id: pressure_washing_t09
+  message: tile roof wash, a few tiles look broken
+  trade: pressure_washing
+  job_type: roof_wash
+  emergency: 'no'
+  first_question_id: q3_home_size
+  ideal_first_question: About how big is the home?
+  note: Mixed. Broken tiles are a separate roofing card (tile_repair).
+- id: pressure_washing_t10
+  message: house looks gross outside after the monsoon, need it cleaned up
+  trade: pressure_washing
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: q1_surface
+  ideal_first_question: What needs washing?
+  note: Vague; could be walls, patio or several areas.
+sources:
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] A.A.C. R4-9-104 Dual license classifications (LII mirror) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety and fuel gas) https://www.azleg.gov/ars/32/01121.htm'
+- '[S9] A.R.S. 3-3611, 3-3614, 3-3615 (AZ Dept of Agriculture pest management licensing) https://www.azleg.gov/ars/3/03615.htm'
+- '[S25] UES, During a Storm or Service Outage (downed lines) https://www.uesaz.com/outage-preparation/'
+- '[T-lhc_water_quality] Lake Havasu City 2025 Annual Drinking Water Quality Report (total hardness 19 grains per gallon, range 18-20) https://www.lhcaz.gov/DocumentCenter/View/3233'
+- '[T-lhc_stormwater] Lake Havasu City Public Works, Storm Water Management (illicit discharge, system flows to Lake Havasu untreated) https://www.lhcaz.gov/public-works/storm-water-management'
+- '[T-sd_powerwash] City of San Diego, Storm Water BMPs for power washing (sweep first, protect drains, contain wash water) https://www.sandiego.gov/sites/default/files/storm-water-bmp-power-washing-update.pdf'
+- '[T-arma_algae] Asphalt Roofing Manufacturers Association, Algae Discoloration (do not use a power washer on asphalt roofs) https://www.asphaltroofing.org/algae-discoloration/'
+- '[categories] docs/catalog/categories.yaml, pressure_washing row (sealing or painting routed to painting, R-34)'
