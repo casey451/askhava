@@ -462,5 +462,5 @@ def test_fix_main_handoff_carries_its_goal_as_the_prompt() -> None:
 
     fix = {"goal": "Fix main. First option: git revert"}
     assert entry._prompt_for(fix, "FIX-MAIN") == fix["goal"]
-    assert entry._prompt_for({"goal": "x"}, "T001") == "kit/prompts/T001.md"
+    assert entry._prompt_for({"goal": "x"}, "T002") == "kit/prompts/T002.md"
     assert entry._prompt_for({}, "T999") == "kit/prompts/T999.md"
