@@ -56,9 +56,10 @@ Runner = Callable[[list[str], str | None, Path], tuple[int, str, str]]
 STATE_FILE = "kit/state.json"
 LEASE_FILE = "lease.json"
 NIGHTLY_FILE = "kit/nightly.json"
+RUNNER_LOG = "kit/runner_log.jsonl"  # one JSON line per cycle, the last 200 kept (D-499)
 ANSWERS_FILE = "kit/owner_answers.jsonl"
 PUSH_RETRIES = 3
-RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
+RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
 HEARTBEAT_SECONDS = 60
 ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
 
@@ -321,6 +322,23 @@ class GitHubEnv:
                 return
             writes = {f"inbox/done/{f}": self._show(self.state_head, f"inbox/{f}") or "" for f in present}
             commit = self._commit(self.state_head, writes, [f"inbox/{f}" for f in present], self._trailers("inbox read"))
+            code, _, _ = self._run(["git", "push", "--porcelain", "origin", f"{commit}:refs/heads/{self.state_ref}"], None, self.root)
+            if code == 0:
+                self.state_head = commit
+                return
+            self.state_head = self._fetch(self.state_ref)
+
+    def write_cycle_log(self, report: dict[str, Any]) -> None:
+        """Append the cycle's report (result, log lines, changes) to kit/runner_log.jsonl on
+        claude/kit-state, keeping the last 200 lines, so a cycle run where nobody watches the
+        session's output (the Actions runner) can still be read afterwards (D-499)."""
+        if self.dry_run:
+            return
+        line = json.dumps({"at": self.clock().isoformat(timespec="seconds"), **report}, sort_keys=True)
+        for _ in range(PUSH_RETRIES):
+            old = (self._show(self.state_head, RUNNER_LOG) or "").splitlines()
+            text = "\n".join([*old[-199:], line]) + "\n"
+            commit = self._commit(self.state_head, {RUNNER_LOG: text}, [], self._trailers("cycle log"))
             code, _, _ = self._run(["git", "push", "--porcelain", "origin", f"{commit}:refs/heads/{self.state_ref}"], None, self.root)
             if code == 0:
                 self.state_head = commit
