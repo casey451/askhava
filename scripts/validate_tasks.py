@@ -137,6 +137,7 @@ ALLOWED_SHARED = frozenset(
         "docs/decisions.md",
         "docs/for-casey-review.md",
         "app/server/src/main.rs",
+        "app/server/src/bin/worker.rs",  # the claim loop (T013) and the SIGTERM drain (T019) edit the worker binary T009 created (D-491)
         "Cargo.toml",
         "Cargo.lock",
         ".sqlx/",

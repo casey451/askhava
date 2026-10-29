@@ -2,7 +2,7 @@
  "items": {
   "BUILD_BRIEF.md": "b655e7e0a11fbf2128dbcc9fbc338490664150df7d0db1e16fff104ab65e65a9",
   "CLAUDE.md": "5f3fa3df88049abb225b56e3da6d62cbd4e8232a5e29e4b692e2ccb4bc2f353c",
-  "docs/architecture.md#3": "48b3dc07e96e205b770eafa9e783b9c54abaaeaec3c3eb64a3787fba8bea7502",
+  "docs/architecture.md#3": "cc4ff017816214642a181894c7de03d9f728ea1bf1f68c35f7740e583f476ab2",
   "docs/architecture.md#4": "7e91e998af692e306f9ecb696a36c03c7da107a6865a4e9996ed035bd88ace43",
   "docs/architecture.md#5": "252f076ebcfff2cef83e58b162417e20e3ae5162ef91c78a126c1f5a9a635aa9",
   "docs/architecture.md#6": "2b0c32af1a70faf30397ec4a4ba508812bef2f19d58dc2b636aeaf0dfbb502ac",
@@ -35,14 +35,14 @@
   "docs/spec/terms.md": "eaedd349e76fb2bf413cf799f715386a116340fd7d85a3de78667ee00fde2695",
   "docs/spec/website.md": "6be52a451c01e8fad5a35c0ac5650249fe617bf37551485b3ac29e88e52eff3d",
   "docs/spec/wording.md": "1532bd8c077740559e8903e0c77c155fa41b753672c9c4a956e0f5a579b93233",
-  "docs/test-design.md": "4683cd40e2c9f21effe2f51366a811c6456831a6914c99eb893e5a2081331266",
+  "docs/test-design.md": "7ea695a240bad5c2f0ad5bf72202eb7efb7851c68ccabd0b14fdc756abd0f393",
   "docs/threat-model.md": "ac3d1f653e3f5b8053acc4d7141f7ec3f7241f5f3aa60e65e34cfe0328a161aa",
   "kit/allowed_crates.txt": "7137719c07fc37b2f067a455222ec148883a283ef25566d91e4bf1e48ac90cd0",
   "kit/layers.json": "c6fe672de2fc2debb822254c356a2b172fcab214b26eb7dcc870bd3c26860063",
   "kit/prompts/TEMPLATE.md": "42fb9a407d2fbd90bde0e68e37cba6e4bd4c1b4dcb4929a658064b887262eabd",
   "kit/sources.sha256": "ed9f15e377d96323a9d46609e0e78d93d4378e6b1ea9c7d6e2f66926317d863d",
   "kit/superseded_decisions.json": "46f2a21b7d2eef92732aeb481e659f5375ccbd05ed928340e5cec981767ebc3a",
-  "kit/tasks.json": "a5398b6c9189925a0b14af6cb98497390c6629aa03a42df86d7fbeb7044a6fd4",
+  "kit/tasks.json": "8b96a9e20c65b0eca6e8f46f04bb87f71aa31320fd48b82e68b7d5032b19fa55",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
   "scripts/check_catalog.py": "f515ad48bb327f1c39e32b4ba70327e8b349e6fcd286c54f6da1c0f474b9782b",
   "scripts/check_code_docs.py": "cb5df5710797e221ae5d5a5b2daa9d6c3612e9bca1ccd24f07ea07b34e470fbd",
@@ -53,7 +53,7 @@
   "scripts/check_pr_change.py": "832ad1b0061651ffafff8405d7b86febdb9de46ae74271b365b68f53f6681caa",
   "scripts/check_rust_rules.py": "a5ee3399265c523ce6c6e7c611ad534b9b7400d09d310d49dd8cd760b40e96ca",
   "scripts/check_state.py": "a822d1a4ccc220dde844753c835ed51699d48522bbb6c30690ed4870e4f517bc",
-  "scripts/gen_prompts.py": "b674125378c6a0fcbf975ab44a938c3dc325ce7728d8acf7a60da358226b4f4f",
+  "scripts/gen_prompts.py": "c1c03ddbcb20feadd6de02e474682243b7ba0c6a98f66f16f82b753f8a85fb5e",
   "scripts/pacing.py": "fe5615e7411ab47fcb3258ca58a634e3379e7ae119a4a59f77460bf80adae66e",
   "scripts/pii_scan.py": "5fa8c202440d83c0645ac7013c72f36621562c9ad38c19aa52c67772edcdc3b6",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
@@ -61,7 +61,7 @@
   "scripts/smoke.sh": "f8800be6e6bd07d73239ee3af236e81707c9cfc4c5fe67d7f0c223466a816e90",
   "scripts/stage_exit.py": "4017f49a6bdbd289b41c7a260a8d1916e4826ac389eca51860a39c093fc6c46c",
   "scripts/trace_spec.py": "6c36de51fd4faef8eabfaa5be73db88c7c5aae5fb36f495474c25e244f3b0049",
-  "scripts/validate_tasks.py": "3fc7858a50d4d6720855193195aae4eed6647d4bd2a3962886cb566ce70b2c48"
+  "scripts/validate_tasks.py": "338142ca63cc4d14a783b5a82b93f628f8c795ad299c4a4247c73dd118424719"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1

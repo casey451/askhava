@@ -345,6 +345,9 @@ def test_command(path: str) -> str | None:
     crate = re.match(r"^app/(?P<crate>[a-z_]+)/src/tests/(?P<name>[a-z0-9_]+)\.rs$", path)
     if crate and crate["name"] != "mod":
         return f"cargo test -p askhava-{crate['crate']} tests::{crate['name']}"
+    crate_test = re.match(r"^app/(?P<crate>[a-z_]+)/tests/(?P<name>[a-z0-9_]+)\.rs$", path)
+    if crate_test:  # a crate's own integration test, such as the rules_bridge contract test (D-491)
+        return f"cargo test -p askhava-{crate_test['crate']} --test {crate_test['name']}"
     layer = re.match(r"^tests/(?P<layer>integration|security|recovery|fixtures)/tests/(?P<name>[a-z0-9_]+)\.rs$", path)
     if layer:
         package = "askhava-recovery-tests" if layer["layer"] == "recovery" else f"askhava-{layer['layer']}"
