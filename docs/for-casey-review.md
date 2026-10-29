@@ -1094,3 +1094,11 @@ ChatGPT found the test's weak spot: a business saying "it would have been worth 
 - **Privacy.** Homeowner details are deleted from the sheet and inbox 90 days after the test.
 
 In the build: the scorecard adds the same measures, the crowding flag shows quotes per win, and the home page waits for 50 requests before showing any numbers. All trades stay open, as you decided; the pushed trades are the ones judged.
+
+## Dry run with fake businesses (D-469, October 28)
+
+You wanted everything proven before going live. Two new files:
+- **`docs/pilot/hand-run-tracker.xlsx`**: the test's spreadsheet, ready to upload to Google Sheets. Blue cells are yours to type; everything else fills in, including the scorecard with green, amber and red lines. It comes loaded with fake businesses, homeowners, quotes and payments so you can see it working; one step clears them.
+- **`docs/pilot/dry-run.md`**: a 90-minute rehearsal. Your personal Gmail plays every fake business and homeowner with "+" addresses, and Stripe's test mode takes fake card payments. Six scenarios cover sign-ups, a pick and payment, a too-big handyman quote, a late quote, a job nobody covers, a homeowner who doesn't pick, and a business that won't pay.
+
+The software build already has its own fake test setup (stand-in Twilio, Stripe and email, plus the twin), so this rehearses the hand-run test only.
