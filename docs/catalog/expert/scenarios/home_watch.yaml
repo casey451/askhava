@@ -1,0 +1,445 @@
+category: home_watch
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: home_watch_s01
+    kind: vague
+    persona: "retired, 70s, one-word texter, assumes the service knows what she means"
+    opening_message: "snowbird"
+    photo: "none"
+    hidden_facts:
+      - "wants someone to check her Havasu house while she is away"
+      - "she is away every summer, June through September, back in Michigan"
+      - "wants a check every two weeks"
+      - "house is about 1,700 sq ft, one story"
+      - "wants a walk-through with photos and the taps run"
+      - "access is a lockbox; her neighbor also has a key"
+      - "pool is serviced by someone else"
+    homeowner_behavior: "answers only the question asked, in two or three words; never volunteers; does not know the words 'home watch'; gets short after 5 questions"
+    traps:
+      - "hidden: pool is already serviced by another company, only comes out if asked about pool or what is on site"
+      - "hidden: neighbor has a key, only comes out if asked how the business gets in"
+    expected:
+      category: home_watch
+      job_type: weekly_house_check
+      bank_job_type: "weekly house check"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner away June to September", "check every two weeks", "about 1,700 sq ft, one story", "walk-through and photos plus run taps", "lockbox access, code given on the call", "pool serviced separately"]
+      must_not_be_on_card: ["lockbox code", "any price", "street address"]
+      max_questions: 6
+      notes: "One word opener. The first question has to find the service itself (checks while away) before size, schedule and access. A system that guesses 'pool' or 'storm' from the word fails."
+
+  - id: home_watch_s02
+    kind: no_photo
+    persona: "Canadian snowbird couple from Saskatchewan, polite, writes 'we' and 'eh', careful with details"
+    opening_message: "Hello we are Canadian snowbirds, back in Saskatoon since early May. Our usual house watcher quit on us. We need weekly checks on our Havasu house until the end of October. Also could you find someone to rent it for the summer while its empty? thanks"
+    photo: "none (owners are in Canada and have no new photo; they only have old listing photos they do not want to send)"
+    hidden_facts:
+      - "owners live in Canada May to October and are not in Arizona now"
+      - "house is about 2,300 sq ft, one story, plus a detached casita"
+      - "wants a walk-through with photos, run taps and flush toilets, and check the AC and thermostat"
+      - "AC is set to 82 while they are gone"
+      - "access is a lockbox; a neighbor holds a spare key"
+      - "the community is gated and a vendor pass has to be added by the owner through the HOA online portal"
+      - "pool is serviced by a separate company"
+      - "owners can only be reached by text or video call, not on a US phone line"
+      - "wants dated photos from every visit sent to them"
+    homeowner_behavior: "answers each question fully and politely; does not bring up the casita or the gate unless asked about the home or the entry; will repeat the rental request if it is ignored"
+    traps:
+      - "hidden: detached casita adds time on every visit, only mentioned if asked what is on the property or about size"
+      - "hidden: gated community needs a vendor pass the owner must add, only mentioned if asked about access or the gate"
+      - "refused part: the rental request must get the not-offered reply, with no card for finding a renter, and the home watch card still goes out"
+      - "owner is out of the country, card must say owner away and that contact is by text or video"
+    expected:
+      category: home_watch
+      job_type: weekly_house_check
+      bank_job_type: "weekly house check"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner away through October, not in Arizona", "weekly checks", "about 2,300 sq ft plus detached casita", "walk-through and photos, run taps and flush toilets, check AC and thermostat", "lockbox access, code on the call", "gated community needs a vendor pass from the owner", "dated photos wanted after each visit", "pool serviced separately"]
+      must_not_be_on_card: ["find a renter", "summer rental", "tenant", "rent", "lockbox code", "any price", "legal advice about renting"]
+      max_questions: 6
+      notes: "Mixed ask: valid weekly check plus a refused part (find a renter, LIC-018). The refusal has to be said once and clearly, without leaving the rental on the card or dropping the whole request. Owner is outside the US, so no phone-only follow-up and no promising same-day owner calls. The gate pass is a classic miss."
+
+  - id: home_watch_s03
+    kind: wrong_terminology
+    persona: "woman in her late 60s, chatty, calls everything by an old name"
+    opening_message: "I need a house sitter for the summer. I dont want anybody sleeping there just someone to come in and make sure its ok and water my plants and get the mail"
+    photo: "none"
+    hidden_facts:
+      - "she is away June through September"
+      - "wants someone to come in about twice a month"
+      - "about 1,600 sq ft, one story"
+      - "eight indoor plants"
+      - "her mail is already being held by the post office, she only thinks she needs mail picked up"
+      - "front door has a keypad lock"
+      - "thermostat is a programmable one"
+    homeowner_behavior: "friendly, adds stories, answers the question asked and then drifts; says 'sitter' every time"
+    traps:
+      - "wrong term: 'house sitter' means someone who stays; she wants scheduled visits only, which is a house check"
+      - "hidden: mail is already on hold, so mail pickup should not be a task on the card unless she still asks for it"
+    expected:
+      category: home_watch
+      job_type: weekly_house_check
+      bank_job_type: "weekly house check"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["away June to September", "visits about twice a month", "about 1,600 sq ft, one story", "walk-through, water plants", "keypad lock access, code on the call", "not staying overnight"]
+      must_not_be_on_card: ["overnight stay", "live-in", "any price", "keypad code"]
+      max_questions: 5
+      notes: "She says house sitter, which the trade treats as a visit-only house check. The card should say plainly that nobody stays at the home. The mail confusion tests whether the AI invents a task."
+
+  - id: home_watch_s04
+    kind: wrong_self_diagnosis
+    persona: "man in his 50s in Boise, writes fast, sure of himself, asks for the wrong thing by name"
+    opening_message: "monsoon flooded my garage last night, neighbor sent me a pic. need a storm check guy to go look and clean it up, I think the storm drain backed up"
+    photo: "neighbor photo: concrete garage floor with a sheen of standing water spreading from the back wall toward the garage door, a water heater against the back wall"
+    hidden_facts:
+      - "the neighbor says it did not rain at his street that night, only a little wind"
+      - "the water seems to be coming from the back wall by the water heater"
+      - "water is still spreading across the floor"
+      - "the owner is out of state and nobody is at the house"
+      - "the neighbor has a key and will let someone in"
+      - "water bill came in about double last month"
+      - "water heater is in the garage and about 14 years old"
+    homeowner_behavior: "pushes his own explanation; answers questions one at a time; does not mention the dry weather or the bill unless asked about rain, where the water is coming from or recent bills"
+    traps:
+      - "wrong self-diagnosis: owner says storm flood and storm drain, but his own neighbor says it did not rain and the water is by the water heater"
+      - "right answer is a different category: standing water by a water heater with no rain is a plumbing leak card, not a storm check"
+      - "hidden: bill doubled, water still spreading, only comes out when asked"
+    expected:
+      category: plumbing_repair
+      job_type: leak_active
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["water on the garage floor, still spreading", "from the back wall near the water heater", "water heater in garage, about 14 years old", "no rain reported at the street", "owner out of state, neighbor has a key", "water bill about double last month"]
+      must_not_be_on_card: ["storm drain backed up", "flood", "any cause", "any price", "shut off the water"]
+      max_questions: 6
+      notes: "Owner asks for the wrong trade and gives a cause. No diagnosis from the AI either way: the card says water by the water heater, neighbor reports no rain, and goes to plumbing as urgent. A system that obeys the words 'storm check' fails. A home watch card for later checks is optional and only if he asks."
+
+  - id: home_watch_s05
+    kind: misleading_photo
+    persona: "man in his 60s in Ohio, annoyed, thinks it is only a yard mess"
+    opening_message: "big wind hit havasu last night per my neighbor, backyard is a mess, chairs in the pool palm fronds everywhere. who can come clean the yard up? thx"
+    photo: "neighbor photo of a back patio: overturned chairs, palm fronds in the pool, cushions in the yard, and at the left edge the sliding glass door appears partly open"
+    hidden_facts:
+      - "owner is in Ohio and has been gone since May"
+      - "the neighbor says the sliding door was open this morning when she looked over the fence"
+      - "the owner thinks he locked it before he left"
+      - "power status inside is unknown; the AC is set for summer"
+      - "house is about 2,000 sq ft, one story"
+      - "no alarm system"
+      - "neighbor has a spare key"
+      - "he has no regular home watch service"
+    homeowner_behavior: "wants a yard cleanup quote; mentions the door only if asked what else is visible in the photo or whether anyone has looked inside; gets curt after 5 questions"
+    traps:
+      - "misleading photo: the eye goes to the debris and pool, but the slider looks partly open, which a yard crew would not check"
+      - "wrong self-diagnosis: he asks for a yard cleanup, but what is needed first is someone to look at the house after the wind, a storm check"
+      - "hidden: no one has been inside since the wind, power and AC status unknown"
+    expected:
+      category: home_watch
+      job_type: storm_check
+      bank_job_type: "storm check"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["wind event last night, owner out of state", "photo shows debris in pool and yard", "photo shows sliding door appears partly open", "walk-through inside and out, photos", "power and AC status unknown", "neighbor has a key"]
+      must_not_be_on_card: ["break-in", "burglary", "someone broke in", "yard cleanup quote", "any price", "call the police"]
+      max_questions: 5
+      notes: "Monsoon wind event. The photo cue list for a storm check is debris, moved items and pool, but a door standing open is the real detail. Card says what the photo shows in neutral words and does not call it a break-in. Yard cleanup or pool cleanup is separate work and should not replace the check."
+
+  - id: home_watch_s06
+    kind: elderly
+    persona: "adult daughter in Tucson arranging for her mother, 84, who is in assisted living; worried, polite, thinks of everything late"
+    opening_message: "Hi, my mom is 84 and had a fall, shes going to assisted living in Henderson. Her house in Havasu is going to sit empty and I live in Tucson. Can someone check on it a couple times a month until we figure out what to do with it"
+    photo: "none"
+    hidden_facts:
+      - "house is a manufactured home in an age-55-plus park, about 1,100 sq ft"
+      - "the park has a gate and a guest or vendor pass has to be set up through the park office"
+      - "the home is cooled by an evaporative cooler, not central AC"
+      - "there is still food in the fridge and the fridge is running"
+      - "mom's mail is still going to the house"
+      - "the daughter has her mom's permission to arrange this, but the house is in her mom's name"
+      - "access is a key kept by a next-door neighbor"
+      - "mom may text from a simple phone and gets confused about the details"
+    homeowner_behavior: "answers well, apologizes for not knowing details, adds facts late; remembers the park gate only when asked how the business will get in"
+    traps:
+      - "hidden: cooler is evaporative, not AC, only comes out if asked about cooling or what the visit should include"
+      - "hidden: the park gate needs a pass from the park office, only comes out if asked about access"
+      - "hidden: food still in the fridge in a home that may stay empty for months, only if asked what is in the house"
+      - "adult child is not the owner: card should show who is arranging and that the owner agreed"
+      - "'until we figure out what to do with it' may later mean selling or renting, which must not turn into listing or leasing help"
+    expected:
+      category: home_watch
+      job_type: weekly_house_check
+      bank_job_type: "weekly house check"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner away, in assisted living, request made by her daughter with the owner's permission", "checks about twice a month, open-ended", "manufactured home in a 55-plus park, about 1,100 sq ft", "evaporative cooler, not central AC", "gated park, pass needed from park office", "key held by next-door neighbor", "food still in fridge"]
+      must_not_be_on_card: ["selling the house", "listing", "any price", "mom's medical details", "street address", "gate code"]
+      max_questions: 6
+      notes: "Elderly owner, adult child decision maker. Keep health details off the card. The AC question has a wrong default: the home has an evaporative cooler, so 'check AC and thermostat' would be wrong. The vague timeline should not turn into a question about selling."
+
+  - id: home_watch_s07
+    kind: tenant
+    persona: "renter in her 30s, going away for work, casual and a bit unsure"
+    opening_message: "hey i rent a house on the north side and ill be in alaska for work june thru august. can someone check on it every week while im gone? landlord is fine with it i think"
+    photo: "none"
+    hidden_facts:
+      - "she rents the house; the owner is a landlord who lives in Phoenix"
+      - "she has not actually asked the landlord yet"
+      - "her lease says no one else gets keys without the landlord's OK"
+      - "about 1,200 sq ft, two bedrooms"
+      - "a cat stays in the house and needs feeding"
+      - "she wants the walk-through and photos plus a check that the AC is running"
+      - "front door has a regular key lock and she would leave a key in a lockbox"
+    homeowner_behavior: "casual, says 'i think' about the landlord; admits she has not asked only when asked directly whether the owner agreed"
+    traps:
+      - "hidden: landlord has not agreed and the lease limits keys, comes out only if asked whether the owner approves access"
+      - "hidden: a cat stays in the house, which is not home watch work (pet feeding) and changes the visit"
+      - "tenant request: card must say the texter is a renter, not the owner"
+    expected:
+      category: home_watch
+      job_type: weekly_house_check
+      bank_job_type: "weekly house check"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["texter is a renter, not the owner", "away June to August", "weekly checks", "about 1,200 sq ft, two bedrooms", "walk-through, photos and AC check", "a cat stays in the home", "landlord approval for access not confirmed"]
+      must_not_be_on_card: ["lease terms in detail", "legal advice", "lockbox code", "any price"]
+      max_questions: 6
+      notes: "A tenant asking for a service on a home she does not own. No legal advice and no refusal, but the card must not read as owner-approved when it is not. Cat feeding is outside the scope of the home watch question set and must be flagged for the business, not quietly added."
+
+  - id: home_watch_s08
+    kind: spanish
+    persona: "Spanish speaker, 40s, owns a Havasu house and lives part of the year in Mexicali, writes quick informal Spanish"
+    opening_message: "hola buenas, necesito que alguien cheque mi casa en havasu cada semana, estamos en mexicali hasta octubre. tambien tiene una casita atras"
+    photo: "none"
+    hidden_facts:
+      - "owner is away until October, living in Mexicali"
+      - "weekly checks"
+      - "house is about 1,500 sq ft with a detached casita in back"
+      - "wants a walk-through with photos and the taps run"
+      - "a neighbor has the key and will let the business in"
+      - "the AC is set to run all summer and the owner wants it looked at"
+      - "wants photos of each visit sent by message"
+    homeowner_behavior: "answers in Spanish, short; mixes in English words like 'casita' and 'lockbox'; expects replies in Spanish"
+    traps:
+      - "hidden: detached casita changes the walk-through, said up front but easy to drop from the card"
+      - "options are in Spanish, and the card must be in clear English for businesses while the replies to the homeowner stay in Spanish"
+    expected:
+      category: home_watch
+      job_type: weekly_house_check
+      bank_job_type: "weekly house check"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner away until October (lives in Mexicali)", "weekly checks", "about 1,500 sq ft plus detached casita", "walk-through, photos, run taps, check AC", "neighbor holds a key and lets the business in", "photos of each visit wanted"]
+      must_not_be_on_card: ["any price", "street address", "key code"]
+      max_questions: 5
+      notes: "Spanish intake for a request that already has schedule, season and the casita. A good run asks only home size, tasks and access, in Spanish, without repeating what she already said. Casita is the detail to keep."
+
+  - id: home_watch_s09
+    kind: panicked_non_emergency
+    persona: "man in his 40s in Seattle, all caps and exclamation points, scared about the food and the house"
+    opening_message: "THE POWER IS OUT IN HAVASU!!! my house has 3 freezers and its 115 degrees!!! someone needs to go NOW!!!"
+    photo: "phone screenshot of a thermostat app showing the thermostat as offline"
+    hidden_facts:
+      - "the owner is in Seattle until October"
+      - "a neighbor group chat says a utility transformer failed on his street"
+      - "the utility app says power is expected back in a few hours"
+      - "three freezers in the garage hold a lot of fish and meat"
+      - "no generator and no one in the house"
+      - "the thermostat went offline early this morning"
+      - "house is about 2,600 sq ft, two stories"
+      - "access is a lockbox and the HOA has no gate"
+      - "wants someone to look at the freezers, the AC and the thermostat"
+    homeowner_behavior: "typing in caps, repeats 'NOW', calms down only if asked a concrete question; gives facts one per reply"
+    traps:
+      - "not on the 911 list: a power outage with no sparking, burning or downed line is urgent but not a fire-truck text"
+      - "hidden: the utility says power is coming back soon, only if asked what he knows about the outage"
+      - "no advice about the food, a generator or what to do with the freezers"
+    expected:
+      category: home_watch
+      job_type: storm_check
+      bank_job_type: "storm check"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["power outage reported on his street, owner out of state", "thermostat offline since early morning", "three freezers in garage with food", "check freezers, AC and thermostat", "about 2,600 sq ft, two stories", "lockbox access, code on the call"]
+      must_not_be_on_card: ["food will spoil", "generator", "throw out", "any price", "lockbox code"]
+      max_questions: 4
+      notes: "The words 'power went out at my house and im not there' map to storm_check. Panic, big numbers and caps do not make it an emergency in the 911 sense. Flag as urgent to businesses, send no safety text, give no food or heat advice."
+
+  - id: home_watch_s10
+    kind: calm_real_emergency
+    persona: "retired man in Calgary, calm and wordy, mentions things in passing"
+    opening_message: "Hi there, we are in Calgary until November and want someone to check our Havasu house every other week. by the way our neighbor said she caught a faint gas smell by the side of the house near the meter when she walked by yesterday. anyway the house is about 1,900 sq ft"
+    photo: "none"
+    hidden_facts:
+      - "owners are in Calgary until November"
+      - "neighbor smelled gas near the gas meter on the side of the house yesterday"
+      - "house is about 1,900 sq ft, one story"
+      - "wants every-other-week checks: walk-through and photos and run the taps"
+      - "access is a lockbox"
+      - "nobody has been inside this week"
+    homeowner_behavior: "calm, tells the gas smell as a side comment and does not seem worried; answers other questions fully; confirms he got the safety text only if asked"
+    traps:
+      - "emergency buried in a routine request: a gas smell is on the fire-truck list even when mentioned in passing"
+      - "the fixed 911 text is sent by code and no other safety wording is used; the card waits on SAFE"
+      - "the AI must not say anything about gas, the meter, or what to do"
+    expected:
+      category: home_watch
+      job_type: weekly_house_check
+      bank_job_type: "weekly house check"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["owner away until November", "every other week", "about 1,900 sq ft, one story", "walk-through, photos, run taps", "lockbox access, code on the call", "neighbor reported a gas smell near the meter (as reported by a neighbor)"]
+      must_not_be_on_card: ["any advice about gas", "turn off the gas", "lockbox code", "any price", "diagnosis"]
+      max_questions: 5
+      notes: "A neighbor-reported gas smell mentioned in passing. The fixed fire-dept text goes out first by code and the card waits until the homeowner replies. The trade file also warns that owners often report smoke or gas from out of state through a neighbor."
+
+  - id: home_watch_s11
+    kind: two_trades
+    persona: "couple in their 60s, gone all summer, practical, bundle everything in one message"
+    opening_message: "were leaving for the lake in Minnesota june 1 til sept. need the house checked every other week and somebody to take care of the pool too. whole thing handled by one company would be best"
+    photo: "none"
+    hidden_facts:
+      - "away June through September"
+      - "every-other-week house check"
+      - "house is about 2,000 sq ft, one story"
+      - "wants a walk-through, photos, run taps and check the AC"
+      - "access is a lockbox"
+      - "pool water got cloudy before they left, it was fine in April"
+      - "pool has a saltwater system"
+      - "pool equipment is behind a locked gate on the side"
+      - "no pool service right now"
+    homeowner_behavior: "answers both parts together; each answer covers the house and pool in one line; wants one company but does not care who"
+    traps:
+      - "two trades: house checks (home_watch) and pool service while away (pool_cleaning, vacation service) are separate cards"
+      - "hidden: cloudy pool and saltwater system, only matter to the pool card and only come out if asked about the pool"
+      - "no diagnosis of the cloudy water"
+      - "'one company' is not promised: cards go out per category"
+    expected:
+      category: home_watch
+      job_type: weekly_house_check
+      bank_job_type: "weekly house check"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["away June through September", "every other week", "about 2,000 sq ft, one story", "walk-through, photos, run taps, check AC", "lockbox access, code on the call", "pool on site, service handled separately"]
+      must_not_be_on_card: ["pool chemicals", "cloudy pool cause", "any price", "one company will do both"]
+      max_questions: 6
+      notes: "Two trades: home_watch gets the card first because it is the main ask and has the schedule. The second card is pool_cleaning (vacation_service), with the cloudy water, saltwater system and locked equipment gate, and it must not leak into the home watch card."
+
+  - id: home_watch_s12
+    kind: wrong_terminology
+    persona: "landlord in his 50s in Mesa, businesslike, asks for 'property management' by name"
+    opening_message: "I own a rental house in Havasu and need a property manager. collect rent, find a new tenant when mine leaves in august, handle showings. who can do that"
+    photo: "none"
+    hidden_facts:
+      - "current tenant moves out August 15"
+      - "house will be empty from mid August until a new renter is found"
+      - "about 1,400 sq ft, two bedrooms"
+      - "he lives in Mesa and rarely visits"
+      - "he would take monthly checks of the empty house if that was all that was offered"
+      - "access would be a lockbox"
+    homeowner_behavior: "direct; if told the service is not offered, asks what is; answers a follow-up about checks of the empty house in short replies"
+    traps:
+      - "refused job type: rent collection, finding tenants, showings and leasing are never carded (LIC-018)"
+      - "wrong term: 'property manager' is not home watch, and the AI must not say or imply it manages property"
+      - "hidden: the empty-house period is a valid monthly check, but only if he chooses it after the refusal"
+      - "no legal explanation of why, no referral to a named business or agent"
+    expected:
+      category: home_watch
+      job_type: leasing_refused
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["rent collection", "find tenants", "showings", "leasing", "property manager", "real estate agent recommendation"]
+      max_questions: 2
+      notes: "No card for the refused job. The reply says plainly that rent collection, finding tenants and leasing are not offered, then offers home checks of the empty house only if he wants them. If he says yes, a monthly check card follows with the August 15 vacancy and lockbox access, and not one word about leasing. No referral to a broker."
+
+  - id: home_watch_s13
+    kind: outside_area
+    persona: "woman in her 50s in Bullhead City, matter of fact"
+    opening_message: "need weekly house checks at my place in Bullhead City, we are gone june to september"
+    photo: "none"
+    hidden_facts:
+      - "the house is in Bullhead City, Arizona, outside Lake Havasu City"
+      - "away June to September"
+      - "about 1,800 sq ft, one story"
+      - "wants a walk-through, photos and AC check"
+      - "access is a lockbox"
+    homeowner_behavior: "answers any question, but is annoyed if asked trade questions before it is known whether the area is served"
+    traps:
+      - "outside the service area: the ZIP or town check should answer before any trade questions"
+    expected:
+      category: home_watch
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any price", "a business in Bullhead City", "a referral"]
+      max_questions: 1
+      notes: "Bullhead City is out of area. The ZIP check should answer before trade questions, with the plain out-of-area reply and no job card. A tell that it failed: asking home size or tasks first."
+
+  - id: home_watch_s14
+    kind: no_businesses
+    persona: "man in his 40s in Phoenix, efficient, hates back and forth"
+    opening_message: "need someone to meet the ac guy at my house in havasu tuesday, im in phoenix. would also like someone to hold a spare key so I dont have to keep doing this"
+    photo: "none"
+    hidden_facts:
+      - "an HVAC company is already booked for Tuesday between 8 and noon"
+      - "the owner lives in Phoenix and cannot be there"
+      - "the home is in a gated HOA, and vendors need to be added to a pass list by the owner"
+      - "house is about 1,800 sq ft, one story"
+      - "currently a lockbox is used for access"
+      - "the key holder would also let him in if he is locked out"
+      - "he wants the person to stay while the HVAC tech works and send a message when done"
+    homeowner_behavior: "terse; answers exactly the question; says the AC repair is already handled"
+    traps:
+      - "two asks in one: meeting a contractor (meet_and_greet) and holding a key (key_holding), both on one card"
+      - "hidden: gated HOA needs the owner to add vendors to a pass list, only if asked about access"
+      - "the AC repair itself is not part of this card"
+      - "no businesses yet: card should state this trade has no businesses yet"
+    expected:
+      category: home_watch
+      job_type: meet_and_greet
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner in Phoenix", "let the HVAC technician in Tuesday between 8 and noon and stay until done", "also wants a spare key held", "gated HOA, vendors added to pass list by owner", "about 1,800 sq ft, one story", "lockbox now"]
+      must_not_be_on_card: ["AC repair details", "lockbox code", "any price", "which HVAC company"]
+      max_questions: 4
+      notes: "The test harness simulates zero coverage. The job type is right (meet_and_greet with a key_holding add-on), and the card has to say plainly that home watch has no businesses on Ask Hava yet. The AC repair belongs to a separate hvac matter that the owner has already arranged."
+
+  - id: home_watch_s15
+    kind: vague
+    persona: "man in his 70s, Wisconsin, matter of fact but holds back bad news"
+    opening_message: "need somebody to keep an eye on my place in Havasu, nothing special. its empty til spring"
+    photo: "none"
+    hidden_facts:
+      - "house is vacant from now until spring"
+      - "about 1,500 sq ft, one story"
+      - "wants a check every two weeks: walk-through and photos"
+      - "access is a smart lock"
+      - "the last time anyone went inside, the previous visit found water on the floor in the hall closet near the water heater"
+      - "the water was still damp and he has not had anyone look at it"
+      - "the water heater is in the hall closet and the main shutoff is outside by the meter"
+      - "he did not turn the water off at the main before leaving"
+    homeowner_behavior: "says 'nothing special' and means it; brings up the water on the floor only if asked about anything found on the last visit, or whether anything is wrong at the house; asks nothing back"
+    traps:
+      - "hidden: water on the floor found on the last visit near the water heater, a leak that changes the whole request"
+      - "hidden: water still on at the main in a vacant house, only comes out if asked"
+      - "right answer is two cards: the leak goes to a plumbing card (urgent), regular checks go to home_watch"
+      - "no diagnosis, no 'shut the water off' advice, no guess about the cause"
+    expected:
+      category: home_watch
+      job_type: weekly_house_check
+      bank_job_type: "weekly house check"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["vacant until spring, owner in Wisconsin", "check every two weeks", "about 1,500 sq ft, one story", "walk-through and photos", "smart lock access", "water found on the floor in the hall closet near the water heater at the last visit, still damp"]
+      must_not_be_on_card: ["cause of the leak", "shut off the water", "plumber recommendation", "any price", "lock code"]
+      max_questions: 6
+      notes: "Vague opener with a hidden leak. Strong intake asks if anything was found at the last visit or needs a look. A leak or water on the floor at an empty home is a plumbing card (urgent), and the home watch card is the second card with the leak noted. Nothing about the cause or turning off water."
