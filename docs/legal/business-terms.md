@@ -49,7 +49,7 @@ Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedu
 - **No introduction fee** for a home inspection, or a termite report, for a home sale, purchase or refinance. The Confirm page says "No introduction fee for this job."
 - **Ongoing services:** a price with a period (weekly, monthly and so on) counts as 4 months of that price, and the fee is never more than $75.
 - The fee is set from the chosen quote when the homeowner chooses, charged when you confirm, and never changed by the final bill.
-- **Tax included.** No tax is ever added on top.
+- **Tax included.** Any tax Ask Hava owes on the fee is included in it. No tax is ever added on top.
 - Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens. One free first win per business.
 - Repeat picks from the same homeowner are free for 180 days after the job closes.
 - **Price lock:** a business that joined in the first 90 days after launch pays no more than the fee amounts in effect on its join date for 6 months. After that, fees follow the published schedule, and a change needs your OK first. A new fee never applies until you accept it.
