@@ -154,13 +154,19 @@ def record_proof(args: argparse.Namespace, env: GitHubEnv) -> str:
     return "proof_recorded" if env.push_state(dict(state, stage_proofs=proofs), state) else "lost_race"
 
 
+def _prompt_for(task: dict[str, Any], tid: str) -> str:
+    """The prompt file, or for FIX-MAIN (which has no file under kit/prompts) its goal text itself (D-501)."""
+    path = str(task.get("prompt", f"kit/prompts/{tid}.md"))
+    return path if (ROOT / path).is_file() or not task.get("goal") else str(task["goal"])
+
+
 def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
     """Tell the session what it was handed, and remember the session for --after."""
     state = env.last_state or {}
     tid = str((state.get("lease") or {}).get("task", ""))
     task = {**st.entry(state, tid), **next((t for t in cfg.graph if t["id"] == tid), {})}
     info = {
-        "session": cfg.session, "task": tid, "branch": env.branch_for(tid), "prompt": task.get("prompt", f"kit/prompts/{tid}.md"),
+        "session": cfg.session, "task": tid, "branch": env.branch_for(tid), "prompt": _prompt_for(task, tid),
         "model": cycle.attempt_model(task, int(task.get("attempts", 0)), cfg.models) if task.get("model") else None,
         "reviewer_model": task.get("reviewer_model"), "last_failure": task.get("last_failure"), "goal": task.get("goal"),
     }
