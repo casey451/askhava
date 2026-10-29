@@ -1110,3 +1110,14 @@ Bottom line: no law found blocks the paid test, as long as Ask Hava stays a neut
 - **Before launch:** starting a web chat is no longer by itself consent to texts; typing a mobile number and its code is. The privacy policy's breach line now follows the law. The business terms say any tax owed is included. The security program now explains how the FTC Safeguards Rule applies and lists where data lives.
 
 Your call, when you're ready: ask Arizona's Department of Revenue for a private ruling on whether the fee is taxable (the report's advice), or keep researching it yourself as you'd planned. Until then, 8.6% of every fee is set aside.
+
+## Making sure the code comes out right (D-472, October 28)
+
+Every change the build makes must pass three automatic checks before it can join the main code: Ci (tests, strict code rules, security and privacy scans), Twin (the independent rule checker) and Ally (accessibility). GitHub enforces this; nobody, including the build, can skip it. Each change also gets a separate reviewer that sees only the change and the spec, and two full fresh audits come near the end.
+
+I ran the build runner's rehearsal (fake GitHub, fake workers, the real task list) and checked when each safety check switches on. Three fixes:
+- **Coverage checking now starts before the money code is written.** It was scheduled about halfway through, after the fee code and after the 95% floors were set, so those floors would have gone unchecked for a while.
+- **The deliberate-bug tests now run every night.** They break the 4-month rule, the fee tiers and the license filter on purpose and make sure the tests catch it. Before, they were checked once and never again.
+- **Answering "no" to "May Ask Hava text your own phone?" no longer freezes the build.** Before, only "yes" let it continue. A new small task fixes that.
+
+With the fixes, the rehearsal reaches "Finished" with only your planned stops, and a task that keeps failing holds up only the tasks that need it.
