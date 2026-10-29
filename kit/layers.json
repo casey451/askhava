@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "note": "The dependency layer table of docs/architecture.md section 4 in machine-readable form (D-479). T009's architecture test reads this file, not the document, so the oracle cannot move with the prose. Changes only in a harness task or a plan change with a decision entry.",
+ "note": "The dependency layer table of docs/architecture.md section 4 in machine-readable form (D-479). T175's architecture test reads this file, not the document, so the oracle cannot move with the prose. Changes only in a harness task or a plan change with a decision entry. payments calls privacy so that the release-proof minter can compile (D-488).",
  "layers": [
   [
    "core"
@@ -61,6 +61,7 @@
   ],
   "payments": [
    "adapters",
+   "privacy",
    "catalog",
    "ops"
   ],

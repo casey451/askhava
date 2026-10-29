@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterable
 from typing import Any
 
@@ -109,3 +110,62 @@ def checks_state(pr: dict[str, Any]) -> str:
         if wanted in states:
             return wanted
     return "green"
+
+
+USAGE_FIELDS = ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
+
+
+def usage_in_transcript(lines: Iterable[str]) -> dict[str, int]:
+    """Token totals from `message.usage` of a session transcript, for usage.by_task (BUILD_BRIEF.md:510)."""
+    totals = dict.fromkeys(USAGE_FIELDS, 0)
+    for line in lines:
+        try:
+            record = json.loads(line)
+        except ValueError:
+            continue
+        message = record.get("message") if isinstance(record, dict) else None
+        usage = message.get("usage") if isinstance(message, dict) else None
+        if isinstance(usage, dict):
+            for key in USAGE_FIELDS:
+                value = usage.get(key)
+                totals[key] += value if isinstance(value, int) else 0
+    return totals
+
+
+TASK_BRANCH = re.compile(r"^claude/task/(FIX-MAIN|[A-Za-z]+\d+[A-Za-z]?)(?:-[A-Za-z0-9._-]*)?$")
+LIVE_STATUSES = ("IN_PROGRESS", "MERGE_PENDING")
+
+
+def task_id_from_branch(branch: str) -> str:
+    """`claude/task/T012-quote-page` -> `T012`; '' for a branch that is not a task branch."""
+    found = TASK_BRANCH.match(branch)
+    return found.group(1) if found else ""
+
+
+def auto_merge_reason(state: dict[str, Any], branch: str, head_sha: str, lease: dict[str, Any] | None = None) -> str:
+    """Why auto-pr must not enable auto-merge on this push; '' when it may (D-486, D-479).
+
+    The runner writes `reviewed_sha` and `review_lease` (the lease it held) on the task in
+    kit/state.json before it pushes a task branch. Auto-merge needs both to name this branch's
+    task and this exact head, the task still in flight, and no other task holding the lease.
+    """
+    tid = task_id_from_branch(branch)
+    if not tid:
+        return f"{branch} is not a runner task branch"
+    task = next((t for t in state.get("tasks", []) if t.get("id") == tid), None)
+    if task is None:
+        return f"{tid} is not in kit/state.json"
+    if task.get("reviewed_sha") != head_sha:
+        return f"no runner review record for {head_sha[:12] or 'this head'} (reviewed_sha {str(task.get('reviewed_sha'))[:12]})"
+    if (task.get("review_lease") or {}).get("task") != tid:
+        return f"the review record for {tid} was not written under its lease"
+    if task.get("status") not in LIVE_STATUSES:
+        return f"{tid} is {task.get('status')}, not in flight"
+    if lease and lease.get("task") not in (None, tid):
+        return f"the lease is held by {lease.get('task')}"
+    return ""
+
+
+def auto_merge_allowed(state: dict[str, Any], branch: str, head_sha: str, lease: dict[str, Any] | None = None) -> bool:
+    """True only when auto_merge_reason finds nothing (the auto-pr workflow's decision)."""
+    return auto_merge_reason(state, branch, head_sha, lease) == ""

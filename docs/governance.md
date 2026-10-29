@@ -27,7 +27,7 @@ A rule enforced only by a document is a rule a tired session can skip. The matri
 | No real personal data in the tree | `Ci` PII scan |
 | `main` takes only pull requests with the required checks green; no force-push, no deletion | GitHub ruleset `protect-main` (verified by the runner at K0, `ruleset_verified` in `kit/state.json`). **Open (E-2):** `Governance` added as required, the Actions source on every check, up-to-date branches, a `claude/kit-state` ruleset |
 | The rules a pull request is checked against come from `main`, not from the branch | `Governance` check (`.github/workflows/governance.yml`, `workflow_run`) runs `main`'s `check_plan_lock.py` and `check_pr_change.py` against the head |
-| A task branch changes only what its task owns; protected paths only in a harness task | `Governance` and `Ci` (`scripts/check_pr_change.py`, rule 1, `--no-renames`); the runner (`runner/verify.py`) once it runs live (T174) |
+| A task branch changes only what its task owns; protected paths only in a harness task | `Governance` and `Ci` (`scripts/check_pr_change.py`, rule 1, `--no-renames`); the runner (`runner/verify.py`) once it runs live (D-486) |
 | The blueprint changes only with a decision entry and a lock rewrite; on a task branch only a harness task or the owner of a changed locked file may rewrite the lock | `Governance` and `Ci` (`scripts/check_plan_lock.py`, `scripts/check_pr_change.py`, rule 3) |
 | A plan change from a non-task branch names its decision | `Governance` and `Ci` (`Plan-Change: D-###` trailer, rule 5). **Reader** for authorship until Claude has its own GitHub identity (E-1) |
 | A requirement line changes only with a decision naming its ID; an ID is never removed | `Governance` and `Ci` (rules 3 and 4) |
@@ -44,15 +44,15 @@ A rule enforced only by a document is a rule a tired session can skip. The matri
 | The end-to-end journeys and the accessibility suite are required checks | `Ci` e2e job and `Ally` from T173 |
 | The twin is a hard-failing oracle | `Twin` from T172 (stand-alone twin) and T074 (against the app's rules) |
 | Every Rust file and public item is documented; rule code names its requirement IDs; `CLAUDE.md` stays under 200 lines | `Ci` (`scripts/check_code_docs.py`) |
-| The model named in the task is the model that ran; a task is DONE only when its PR merged green and `main`'s tree equals the tested head | Runner code (`runner/verify.py`). **Reader** until the runner has a live entry point (T174) |
-| A push to a task branch gets auto-merge only after the runner's review | **Reader** until `auto-pr` checks `reviewed_sha` on `claude/kit-state` (T174) |
+| The model named in the task is the model that ran; a task is DONE only when its PR merged green and `main`'s tree equals the tested head | Runner code (`runner/verify.py`, `runner/cycle.py`; `python3 -m runner`, D-486) |
+| A push to a task branch gets auto-merge only after the runner's review | `auto-pr.yml` reads `reviewed_sha` and the review lease from `claude/kit-state` and `claude/lease` with `runner/verify.py` from `main`; the runner alone turns auto-merge on (D-486) |
 | The full suite runs on `main` nightly and its result is on record | `nightly-main` writes `kit/nightly.json` to `claude/kit-state` |
 | An owner gate clears only on a short, unnegated reply carrying its phrase; a comment performed through a GitHub App is never an owner answer | `runner/outbox.py`; `inbox.yml`. **Reader** for a session posting as the owner through other means until E-1 |
 | Live keys, live hosts, `main`, force-push, `claude/kit-state` deletion, issue comments, statuses, check runs and rulesets are unreachable from a session | Deny rules in `.claude/settings.json` (pattern rules; a session that edits a protected file could widen them, which the path rule catches) |
-| "Fix main": revert, never patch over; `main_red` clears only on a verified green run | **Reader** until section 5 is implemented in the runner (T174) |
-| One task in flight; nothing claimed while MERGE_PENDING; a lease is honoured | Runner code. **Reader** until T174 |
+| "Fix main": revert, never patch over; `main_red` clears only on a verified green run | Runner code (`runner/cycle.py`: FIX-MAIN task, `smoke_runs`, `main_red_history`; drills in `tests/test_failure_drills.py`, D-486) |
+| One task in flight; nothing claimed while MERGE_PENDING; a lease is honoured | Runner code: the lease ref `claude/lease` pushed atomically with the state (D-486) |
 | The conflict rule (changes file wins on what, brief on how) | **Reader**, tightened in section 4 |
-| Progress is counted in verified requirements | `scripts/progress.py`; pasted into STATUS.md by the runner (T174) |
+| Progress is counted in verified requirements | `scripts/progress.py --markdown`, written into STATUS.md on every state commit (D-486) |
 
 ## 3. Decisions: how a choice becomes binding
 

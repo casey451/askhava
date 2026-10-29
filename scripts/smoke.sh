@@ -56,8 +56,8 @@ if [ -f Cargo.toml ]; then
   export SQLX_OFFLINE=true  # compile against the committed .sqlx/ data, as Ci does (D-481)
   cargo fmt --all --check
   cargo clippy --workspace --all-targets --locked -- -D warnings -F clippy::allow_attributes_without_reason
-  # Built alone, only each crate's api is public: the one build that enforces the layer boundary (D-481).
-  cargo build -p server --locked
+  # The binaries' own dependency graph builds with the lockfile (D-481, D-488).
+  cargo build -p askhava-server --locked
   if command -v sqlx >/dev/null 2>&1 && [ -n "${DATABASE_URL:-}" ]; then
     sqlx migrate run
     cargo sqlx prepare --workspace --check -- --all-targets --all-features
