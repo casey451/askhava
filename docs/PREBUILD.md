@@ -150,6 +150,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | 6 | Stripe's written answer | outside | waiting on item 5 | Answer saved; auto-confirm stays hidden until it says yes |
 | 7 | Save dated screenshots of today's askhava.com | Casey | to do | Screenshots in your files |
 | 8 | Hand-run test setup: the rules tab, test inbox, request form, sign-up form, sheet, tracking links (`docs/pilot/hand-run-test.md` sections 3 and 4) | Casey | to do | The rules tab is filled in; both forms submit into the sheet; one test request and one test sign-up arrive |
+| 8b | Dry run with fake businesses and homeowners: six scenarios, Stripe test mode, then reset (`docs/pilot/dry-run.md`, D-469) | Casey | to do | All six scenarios pass their checks; the tracker is cleared and set for week 1 |
 | 8a | Start the LLC and EIN, then a live Stripe account with $25, $75 and $199 payment links, and an 8.6% set-aside (playbook section 9) | Casey | to do | Payment links work by the end of week 3 of the test |
 | 9 | Find the Havasu Facebook groups (about an hour, logged in on your phone): community, recommendations, buy and sell, trades and business-owner groups; note member counts and posting rules; message each admin | Casey | to do | A list of 8 or more groups, with each admin's answer |
 | 10 | Line up practice requests from people you know (counted as Seeded, not as demand) and 3 to 5 property managers, rental hosts or realtors (Partner) | Casey | to do | Names on your list (not in the repo) |
