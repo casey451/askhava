@@ -1,0 +1,531 @@
+{
+ "normal": {
+  "about": "Pilot-to-launch in Lake Havasu City, 5 requests a day, normal vendor reliability",
+  "overrides": {}
+ },
+ "normal_fixed": {
+  "about": "Pilot-to-launch in Lake Havasu City, 5 requests a day, normal vendor reliability - WITH the v9.3 fixes",
+  "overrides": {
+   "app": {
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ },
+ "busy": {
+  "about": "16 requests a day (about 5 booked jobs a day), summer HVAC-heavy",
+  "overrides": {
+   "requests_per_day": 16,
+   "trade_mix": {
+    "plumbing": 0.2,
+    "hvac": 0.5,
+    "electrical": 0.12,
+    "handyman": 0.1,
+    "pool": 0.08
+   }
+  }
+ },
+ "busy_fixed": {
+  "about": "16 requests a day (about 5 booked jobs a day), summer HVAC-heavy - WITH the v9.3 fixes",
+  "overrides": {
+   "requests_per_day": 16,
+   "trade_mix": {
+    "plumbing": 0.2,
+    "hvac": 0.5,
+    "electrical": 0.12,
+    "handyman": 0.1,
+    "pool": 0.08
+   },
+   "app": {
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ },
+ "vendor_chaos": {
+  "about": "Vendors misbehave: 5% texts fail, delays, 20% duplicate and 30% delayed webhooks, a Stripe outage, an AI outage, ROC CAPTCHAs",
+  "overrides": {
+   "vendors": {
+    "sms_fail_prob": 0.05,
+    "sms_delay_prob": 0.05,
+    "webhook_dup_prob": 0.2,
+    "webhook_delay_prob": 0.3,
+    "roc_captcha_prob": 0.3,
+    "webhook_loss_prob": 0.03
+   },
+   "events": [
+    {
+     "day": 20,
+     "type": "stripe_outage",
+     "hours": 6
+    },
+    {
+     "day": 25,
+     "type": "ai_outage",
+     "hours": 4
+    }
+   ]
+  }
+ },
+ "vendor_chaos_fixed": {
+  "about": "Vendors misbehave: 5% texts fail, delays, 20% duplicate and 30% delayed webhooks, a Stripe outage, an AI outage, ROC CAPTCHAs - WITH the v9.3 fixes",
+  "overrides": {
+   "vendors": {
+    "sms_fail_prob": 0.05,
+    "sms_delay_prob": 0.05,
+    "webhook_dup_prob": 0.2,
+    "webhook_delay_prob": 0.3,
+    "roc_captcha_prob": 0.3,
+    "webhook_loss_prob": 0.03
+   },
+   "events": [
+    {
+     "day": 20,
+     "type": "stripe_outage",
+     "hours": 6
+    },
+    {
+     "day": 25,
+     "type": "ai_outage",
+     "hours": 4
+    }
+   ],
+   "app": {
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ },
+ "adversarial": {
+  "about": "Bad actors: oversharers, prompt injection, forwarded links, fee bypassers, fraud sign-ups, impatient duplicates",
+  "overrides": {
+   "homeowner_personas": {
+    "normal": 0.3,
+    "impatient": 0.15,
+    "oversharer": 0.2,
+    "forwarder": 0.15,
+    "injector": 0.1,
+    "no_links": 0.1
+   },
+   "fraud_signups": 6,
+   "contractor_personas": {
+    "responsive": 0.3,
+    "bypasser": 0.3,
+    "link_averse": 0.2,
+    "no_show": 0.1,
+    "stop_texter": 0.1
+   }
+  }
+ },
+ "adversarial_fixed": {
+  "about": "Bad actors: oversharers, prompt injection, forwarded links, fee bypassers, fraud sign-ups, impatient duplicates - WITH the v9.3 fixes",
+  "overrides": {
+   "homeowner_personas": {
+    "normal": 0.3,
+    "impatient": 0.15,
+    "oversharer": 0.2,
+    "forwarder": 0.15,
+    "injector": 0.1,
+    "no_links": 0.1
+   },
+   "fraud_signups": 6,
+   "contractor_personas": {
+    "responsive": 0.3,
+    "bypasser": 0.3,
+    "link_averse": 0.2,
+    "no_show": 0.1,
+    "stop_texter": 0.1
+   },
+   "app": {
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ },
+ "owner_away": {
+  "about": "Casey unavailable days 20-34 (illness or training)",
+  "overrides": {
+   "owner": {
+    "away_from_day": 20,
+    "away_to_day": 34
+   }
+  }
+ },
+ "owner_away_fixed": {
+  "about": "Casey unavailable days 20-34 (illness or training) - WITH the v9.3 fixes",
+  "overrides": {
+   "owner": {
+    "away_from_day": 20,
+    "away_to_day": 34
+   },
+   "app": {
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ },
+ "texting_suspended": {
+  "about": "The texting provider suspends the number on day 30",
+  "overrides": {
+   "events": [
+    {
+     "day": 30,
+     "type": "texting_suspended"
+    }
+   ]
+  }
+ },
+ "texting_suspended_fixed": {
+  "about": "The texting provider suspends the number on day 30 - WITH the v9.3 fixes",
+  "overrides": {
+   "events": [
+    {
+     "day": 30,
+     "type": "texting_suspended"
+    }
+   ],
+   "app": {
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ },
+ "disputes_wave": {
+  "about": "A wave of card disputes on day 40 (10% of charges)",
+  "overrides": {
+   "events": [
+    {
+     "day": 40,
+     "type": "disputes",
+     "share": 0.1
+    }
+   ]
+  }
+ },
+ "disputes_wave_fixed": {
+  "about": "A wave of card disputes on day 40 (10% of charges) - WITH the v9.3 fixes",
+  "overrides": {
+   "events": [
+    {
+     "day": 40,
+     "type": "disputes",
+     "share": 0.1
+    }
+   ],
+   "app": {
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ },
+ "shortcut_summary": {
+  "about": "A tempting shortcut: the weekly AI summary includes recent job descriptions",
+  "overrides": {
+   "app": {
+    "summary_includes_examples": true
+   },
+   "homeowner_personas": {
+    "normal": 0.7,
+    "oversharer": 0.3
+   }
+  }
+ },
+ "shortcut_summary_fixed": {
+  "about": "A tempting shortcut: the weekly AI summary includes recent job descriptions - WITH the v9.3 fixes",
+  "overrides": {
+   "app": {
+    "summary_includes_examples": true,
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   },
+   "homeowner_personas": {
+    "normal": 0.7,
+    "oversharer": 0.3
+   }
+  }
+ },
+ "races": {
+  "about": "Same-minute collisions: every event snaps to the minute and ties run in random order (16 requests a day)",
+  "overrides": {
+   "race_mode": true,
+   "requests_per_day": 16
+  }
+ },
+ "races_fixed": {
+  "about": "Same-minute collisions: every event snaps to the minute and ties run in random order (16 requests a day) - WITH the v9.3 fixes",
+  "overrides": {
+   "race_mode": true,
+   "requests_per_day": 16,
+   "app": {
+    "summary_includes_examples": true,
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ },
+ "db_restore": {
+  "about": "A bad change on day 30 at 10 a.m. is found at 1 p.m.; the database is restored to 10 a.m. (3 hours lost). Stripe and Twilio keep everything.",
+  "overrides": {
+   "events": [
+    {
+     "day": 30,
+     "type": "db_restore",
+     "hour": 10,
+     "lost_hours": 3,
+     "signup_in_window": true
+    }
+   ],
+   "requests_per_day": 8
+  }
+ },
+ "db_restore_fixed": {
+  "about": "A bad change on day 30 at 10 a.m. is found at 1 p.m.; the database is restored to 10 a.m. (3 hours lost). Stripe and Twilio keep everything. - WITH the v9.3 fixes",
+  "overrides": {
+   "events": [
+    {
+     "day": 30,
+     "type": "db_restore",
+     "hour": 10,
+     "lost_hours": 3,
+     "signup_in_window": true
+    }
+   ],
+   "requests_per_day": 8,
+   "app": {
+    "summary_includes_examples": true,
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ },
+ "crowded_fixed": {
+  "about": "Crowded market: 15 businesses per trade, every qualified one that opted in gets each job card - WITH the v9.3 fixes",
+  "overrides": {
+   "contractors_per_trade_town": 15,
+   "app": {
+    "fixes": {
+     "spanish_templates": true,
+     "retry_critical_texts": true,
+     "email_fallback": true,
+     "conservative_emergency": true,
+     "dup_ignore_trade_2h": true,
+     "ai_scrub": true,
+     "double_photo_screen": true,
+     "page_code": true,
+     "card_deadline": true,
+     "license_check_at_pick": true,
+     "job_pin": true,
+     "summary_counts_only": true,
+     "portal_today": true,
+     "idem_per_attempt": true,
+     "refund_attempts_hours_apart": 3,
+     "hardening": true,
+     "owner_checklist": true,
+     "v93": true
+    },
+    "license_recheck_mode": "twice_daily",
+    "license_recheck_days": 2
+   }
+  }
+ }
+}

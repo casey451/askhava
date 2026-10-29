@@ -191,3 +191,14 @@ def test_skipped_file_fails_unless_allow_listed(
     monkeypatch.setattr(pii_scan, "SKIP_ALLOWED", {"big.txt": "fixture too large to scan, reviewed"})
     assert pii_scan.main(["--root", str(tmp_path)]) == 0
     assert "allow-listed" in capsys.readouterr().out
+
+
+def test_twin_generator_literals_pass_only_in_their_own_file() -> None:
+    line = "text += f\" I'm at 412 Palo Verde " + "Dr\"; phone = \"+1928" + "0000000\""
+    assert pii_scan.scan_text("twin/twin.py", line) == []
+    assert {rule for _, _, rule in pii_scan.scan_text("twin/app.py", line)} == {"address", "phone"}
+
+
+def test_twin_file_still_flags_other_real_looking_data() -> None:
+    line = "contact_phone = \"+1928" + "7001234\""
+    assert [rule for _, _, rule in pii_scan.scan_text("twin/twin.py", line)] == ["phone"]
