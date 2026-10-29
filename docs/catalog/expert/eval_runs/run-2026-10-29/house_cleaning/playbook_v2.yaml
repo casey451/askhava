@@ -162,3 +162,143 @@ results:
       Needed: not said.
     facts_in_card_not_stated: []
     # Miss, logged: the oven was never asked about (no extras follow-up was in the top two). Bedrooms skipped under rule 1.
+
+  - scenario_id: house_cleaning_s05
+    transcript:
+      - {who: homeowner, text: "Looking for a cleaning lady every other week for a 3 bedroom 2 bath. no pics, my phone is old and doesnt do pictures"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "Any pets in the home? 1 Yes 2 No", step: question}
+      - {who: homeowner, text: "yes, one small dog, house-trained terrier"}
+      - {who: intake, text: "When was the home last cleaned top to bottom? 1 Within the last month 2 1 to 6 months ago 3 Over 6 months ago 4 Never by a cleaner", step: follow_up}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "Who uses the home: 1 We live here full time 2 Empty part of the year 3 Rented to long-term tenants 4 Rented to vacation guests", step: follow_up}
+      - {who: homeowner, text: "1, i am home"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Kitchen?", step: photo}
+      - {who: homeowner, text: "no pics, my phone cant"}
+    questions_asked: 6
+    follow_ups_used: [fu_last_clean, fu_occupancy]
+    skipped_bank_questions: [bedrooms_and_bathrooms_answered_by_words, how_often_answered_by_words]
+    routing: {category: house_cleaning, job_type: recurring, bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | House cleaning | Lake Havasu City, area not said | not said
+      Cleaning every other week for a 3 bed 2 bath house; one small house-trained dog.
+      Size: 3 bedrooms / 2 bath. How often: every two weeks. Pets: yes, 1 small dog (house-trained).
+      Last full clean: not said. Home: lived in full time. Extras: not said.
+      Photos: 0 (homeowner's phone cannot send photos). Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: []
+    # Miss, logged: the casita is never raised. No bank or follow-up question asks about other buildings.
+
+  - scenario_id: house_cleaning_s06
+    transcript:
+      - {who: homeowner, text: "Hello I am looking for a girl to help me with the house once a week. My daughter says to use this. I cant bend down much anymore"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city, the older part"}
+      - {who: intake, text: "Is this for house cleaning?", step: read}
+      - {who: homeowner, text: "yes"}
+      - {who: intake, text: "How many bathrooms? 1 2 3 or more", step: question}
+      - {who: homeowner, text: "1"}
+      - {who: intake, text: "Any pets in the home? 1 Yes 2 No", step: question}
+      - {who: homeowner, text: "yes, one small dog, it barks at strangers"}
+      - {who: intake, text: "When was the home last cleaned top to bottom? 1 Within the last month 2 1 to 6 months ago 3 Over 6 months ago 4 Never by a cleaner", step: follow_up}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "Who uses the home: 1 We live here full time 2 Empty part of the year 3 Rented to long-term tenants 4 Rented to vacation guests", step: follow_up}
+      - {who: homeowner, text: "1 i live here"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Kitchen?", step: photo}
+      - {who: homeowner, text: "no pictures, i cannot"}
+    questions_asked: 6
+    follow_ups_used: [fu_last_clean, fu_occupancy]
+    skipped_bank_questions: [bedrooms, how_often_answered_by_words]
+    routing: {category: house_cleaning, job_type: recurring, bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | House cleaning | Lake Havasu City, older part of town | not said
+      Weekly house cleaning for a small 1 bath home; one small dog.
+      Size: bedrooms not said / 1 bath. How often: weekly. Pets: yes, 1 small dog (barks at strangers).
+      Last full clean: not said. Home: lives there full time. Extras: not said.
+      Photos: 0. Homeowner adds: help with the house once a week.
+      Needed: not said.
+    facts_in_card_not_stated: []
+    # Miss, logged: homeowner at home during the clean, oxygen tubing and walker, and laundry or dishes are never asked.
+
+  - scenario_id: house_cleaning_s07
+    transcript:
+      - {who: homeowner, text: "i need a move out clean for my apt. landlord said its gotta be done and passed inspection by friday 10am or he keeps my deposit. i move out thurs. can someone do it wed or thurs"}
+      - {who: intake, text: "What town is the apartment in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "How many bathrooms? 1 2 3 or more", step: question}
+      - {who: homeowner, text: "1"}
+      - {who: intake, text: "On cleaning day, will the home be empty, have some furniture left, or still be full of belongings? 1 Empty 2 Some furniture left 3 Still full of belongings", step: follow_up}
+      - {who: homeowner, text: "empty, everything out thurs by noon"}
+      - {who: intake, text: "Anything extra on the list? 1 Inside the oven 2 Inside the fridge 3 Inside cabinets 4 Inside windows 5 Laundry or bed linens 6 None of these", step: follow_up}
+      - {who: homeowner, text: "inside the oven and inside the fridge"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Main living area?", step: photo}
+      - {who: homeowner, text: "nothing to show there, its empty"}
+      - {who: intake, text: "Kitchen, please.", step: photo}
+      - {who: homeowner, text: "[photo: greasy stovetop, grease on the oven door glass]"}
+      - {who: intake, text: "Main bathroom, please.", step: photo}
+      - {who: homeowner, text: "[photo: soap scum on the tub]"}
+    questions_asked: 6
+    follow_ups_used: [fu_empty, fu_extras]
+    skipped_bank_questions: [bedrooms, service_answered_by_words, timing_answered_by_words]
+    routing: {category: house_cleaning, job_type: move_out, bank_job_type: "move-out cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0107 | House cleaning | Lake Havasu City, area not said | apartment
+      Move-out clean of an empty 1 bath apartment; out by Thursday; landlord inspects Friday 10 am.
+      Size: bedrooms not said / 1 bath. On cleaning day: empty. Power and water: not said.
+      Whose move: leaving a rental. Extras: inside oven, inside fridge. Pets lived here: not said.
+      Photos: 2 (kitchen: greasy stovetop, grease on the oven door glass; bathroom: soap scum on the tub).
+      Homeowner adds: landlord inspects Friday 10 am or keeps the deposit; needs it done Wed or Thu.
+      Needed: Wed or Thu; landlord inspection Fri 10 am.
+    facts_in_card_not_stated: []
+    # Miss, logged: the landlord's list (blinds, baseboards, carpet cleaning with receipt) and the key are never asked.
+
+  - scenario_id: house_cleaning_s08
+    transcript:
+      - {who: homeowner, text: "Hola buenas, necesito limpieza de mi casa. acabamos de terminar los pisos nuevos y hay polvo en todo. es de 4 recamaras"}
+      - {who: intake, text: "¿En qué ciudad está la casa?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "¿Cuántos baños tiene? 1 2 3 o más", step: question}
+      - {who: homeowner, text: "3"}
+      - {who: intake, text: "¿Dónde está el polvo: solo en las superficies, o también en las rejillas, los ventiladores de techo y adentro de los gabinetes? 1 Solo en las superficies 2 También rejillas y ventiladores 3 También adentro de los gabinetes 4 Todo esto", step: follow_up}
+      - {who: homeowner, text: "4"}
+      - {who: intake, text: "¿Quedó algo de la obra además del polvo, como gotas de pintura, cinta o etiquetas, o una capa opaca en el piso nuevo? 1 Gotas o manchas de pintura 2 Cinta o etiquetas 3 Capa opaca en el piso o azulejo nuevo 4 Nada además del polvo 5 Más de una de estas", step: follow_up}
+      - {who: homeowner, text: "5, pintura en los rodapiés y una capa blanca en el piso de azulejo"}
+      - {who: intake, text: "¿Cuándo lo necesita? 1 Hoy 2 Esta semana 3 Flexible 4 Para una fecha", step: question}
+      - {who: homeowner, text: "4, antes de que lleguen los muebles, en 10 días"}
+      - {who: intake, text: "Una foto o dos ayudan a cotizar. No pasa nada si no manda. ¿Sala, por favor?", step: photo}
+      - {who: homeowner, text: "[photo: living room, fine pale dust on shelves, paint spatter at a wall base, hazy white film on new tile]"}
+      - {who: intake, text: "¿Algún otro cuarto con problema?", step: photo}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "¿Cocina, por favor?", step: photo}
+      - {who: homeowner, text: "no"}
+    questions_asked: 7
+    follow_ups_used: [fu_dust_where, fu_work_left]
+    skipped_bank_questions: [bedrooms_answered_by_words, service_answered_by_words]
+    routing: {category: house_cleaning, job_type: post_construction, bank_job_type: "deep cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | House cleaning | Lake Havasu City, area not said | not said
+      After-remodel dust clean of a 4 bedroom house; new tile floors just finished; dust in vents, fans and cabinets.
+      Size: 4 bedrooms / 3 bath. Dust: all of these (surfaces, vents and fans, inside cabinets). Left from the work: paint drips on baseboards and frames; hazy white film on new tile.
+      On cleaning day: not said. Power and water: not said.
+      Photos: 1 (living room: fine pale dust on shelves and sills; paint spatter at a wall base; hazy white film on new floor tile).
+      Homeowner adds: new floors just finished; dust everywhere; furniture arrives in 10 days.
+      Needed: by a date, about 10 days (before furniture arrives).
+    facts_in_card_not_stated: []
+    # Spanish intake; card in English. Miss, logged: no pets question (not in post-construction must_know), no cause named.

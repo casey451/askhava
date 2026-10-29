@@ -440,8 +440,9 @@ scenarios:
       routing_correct: true
       fire_dept_correct: true
       facts_not_stated:
-      - "'floor edges': she said the bugs came out 'por las ventanas de la sala' (living room windows)"
+      - "'window frames and floor edges': she said the bugs came out 'por las ventanas de la sala' (living room windows)"
       - "'under the front window': neither her words nor the photo say front"
+      - "'garage stem wall': she said 'pared de la cochera' (garage wall)"
       questions_asked: 5
       stopped_before_card: null
       panel_notes:
@@ -810,7 +811,7 @@ summary_by_variant:
     routing_correct_share: 0.688
     fire_dept_correct_share: 1.0
     trap_caught_share: 0.25
-    facts_not_stated_count: 3
+    facts_not_stated_count: 5
   baseline_none:
     median_quotable: 2.0
     quotable_share: 1.0
