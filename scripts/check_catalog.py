@@ -11,6 +11,10 @@ Also checks the license map (LIC-043, LIC-044, D-392) and the intake question ba
 Checks each category's job types (LIC-001) against the license map's per-job-type scope:
 every job type of an enabled licensed category has a license that covers it (CARD-001), and
 a subclassification receives only job types within its scope (LIC-035, D-058, D-504).
+Loads the matching worked examples M01 to M16 (D-110) and fails on a missing, duplicated or
+malformed one, on a name the catalog or license map lacks, and on an expected outcome that breaks
+a necessary card condition (CARD-001, LIC-013, LIC-017, LIC-019, LIC-021, LIC-022, LIC-035,
+LIC-038, LIC-043).
 Prints one line per example; exits 1 on any error.
 
 Usage: python3 scripts/check_catalog.py [--root REPO_ROOT]
@@ -36,7 +40,20 @@ CATEGORIES_FILE = Path("docs/catalog/categories.yaml")
 EXAMPLES_FILE = Path("docs/catalog/worked_examples.yaml")
 LICENSE_MAP_FILE = Path("docs/catalog/license_map.yaml")
 QUESTION_BANK_FILE = Path("docs/catalog/question_bank.yaml")
-ALL_FILES = (CATEGORIES_FILE, EXAMPLES_FILE, LICENSE_MAP_FILE, QUESTION_BANK_FILE)
+MATCHING_FILE = Path("docs/catalog/matching_examples.yaml")  # D-110
+ALL_FILES = (CATEGORIES_FILE, EXAMPLES_FILE, LICENSE_MAP_FILE, QUESTION_BANK_FILE, MATCHING_FILE)
+MATCHING_IDS = tuple(f"M{n:02d}" for n in range(1, 17))  # D-110: docs/test-design.md 7.2
+MATCH_ID = re.compile(r"^M\d{2}$")
+MATCH_OUTCOMES = frozenset({"card", "no_card", "refused_at_intake"})
+MATCH_KEYS: dict[str, tuple[str, ...]] = {
+    "job": ("category", "candidates", "town", "table"),
+    "business": ("roc", "agencies", "handyman", "city_list", "ticked", "towns"),
+    "expected": ("outcome", "rules", "map_covers"),
+}
+MATCH_LISTS = (("job", "candidates"), ("business", "roc"), ("business", "agencies"),
+               ("business", "ticked"), ("business", "towns"), ("expected", "rules"))
+MATCH_NON_EMPTY = frozenset({"candidates", "towns", "rules"})
+REQUIREMENT_ID = re.compile(r"^[A-Z]+-\d{3}$")
 TRIP_FEE_TIERS = (25, 75)  # FEE-004, D-399: $25 by default, never above $75
 QUESTIONS_MIN, QUESTIONS_MAX = 3, 8  # LIC-040, D-394, D-431
 QUOTE_FORMATS = frozenset({"range", "monthly", "tiers", "firm", "diagnostic_visit"})  # PICK-053
@@ -744,6 +761,182 @@ def check_question_bank(
                 errors.append(f"question bank: safety prompt {prompt.get('id')} names {set_id}")
     return errors
 
+def match_shape(ex: dict[str, Any]) -> list[str]:
+    """D-110: every block and field of a matching example is present and of the right type."""
+    errors: list[str] = []
+    for part, keys in MATCH_KEYS.items():
+        block = ex.get(part)
+        if not isinstance(block, dict):
+            errors.append(f"{part} must be a mapping")
+        elif missing := [key for key in keys if key not in block]:
+            errors.append(f"{part} is missing {', '.join(missing)}")
+    if errors:
+        return errors
+    for part, key in MATCH_LISTS:
+        value = ex[part][key]
+        if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
+            errors.append(f"{part}.{key} must be a list of names")
+        elif key in MATCH_NON_EMPTY and not value:
+            errors.append(f"{part}.{key} must not be empty")
+    for key in ("category", "town", "table"):
+        if not isinstance(ex["job"][key], str) or not ex["job"][key]:
+            errors.append(f"job.{key} must be a name")
+    for key in ("handyman", "city_list"):
+        if not isinstance(ex["business"][key], bool):
+            errors.append(f"business.{key} must be true or false")
+    exp = ex["expected"]
+    if exp["outcome"] not in MATCH_OUTCOMES:
+        errors.append(f"expected.outcome must be one of {sorted(MATCH_OUTCOMES)}")
+    if exp["map_covers"] not in (True, False, None):
+        errors.append("expected.map_covers must be true, false or null")
+    if "condition" in exp and (not isinstance(exp["condition"], str) or not exp["condition"]):
+        errors.append("expected.condition must be text")
+    if not errors and not all(REQUIREMENT_ID.match(r) for r in exp["rules"]):
+        errors.append("expected.rules must be requirement IDs such as LIC-035")
+    return errors
+
+
+def license_rows(lmap: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """LIC-043: the license map's ROC class rows by class and agency rows by license name."""
+    rows = {str(row.get("class")): row for row in lmap.get("classes", [])}
+    rows.update({str(row.get("license")): row for row in lmap.get("agencies", [])})
+    return rows
+
+
+def row_grants(
+    name: str, rows: dict[str, dict[str, Any]], cats: dict[str, dict[str, Any]], seen: frozenset[str]
+) -> set[tuple[str, str]]:
+    """LIC-043: every (category, job type) a class or agency gets, directly or through includes.
+
+    An agency's record-category jobs (LIC-012: termites, pre-emergent weed control) count as
+    granted, as in `mapped_jobs` (D-504); the examples do not model the record category (D-506).
+    """
+    row = rows.get(name) or {}
+    needed = [str(job) for job in row.get("record_category_needed") or {}]
+    pairs = {
+        (str(cat_id), job)
+        for cat_id, grant in (row.get("job_types") or {}).items()
+        if str(cat_id) in cats
+        for job in [*granted_jobs(grant, cats[str(cat_id)]), *needed]
+        if job in job_names(cats[str(cat_id)])
+    }
+    for inc in row.get("includes", []):
+        if str(inc) not in seen:
+            pairs |= row_grants(str(inc), rows, cats, seen | {str(inc)})
+    return pairs
+
+
+def covers(names: list[str], ex: dict[str, Any], rows: dict[str, Any], cats: dict[str, Any]) -> bool:
+    """CARD-001, LIC-035: the named licenses together cover every candidate job type."""
+    pairs: set[tuple[str, str]] = set()
+    for name in names:
+        pairs |= row_grants(name, rows, cats, frozenset({name}))
+    cat_id = ex["job"]["category"]
+    return all((cat_id, job) in pairs for job in ex["job"]["candidates"])
+
+
+def match_refs(ex: dict[str, Any], cat: dict[str, Any], rows: dict[str, Any]) -> list[str]:
+    """D-110: job types, ROC classes and agencies use the catalog's and license map's names."""
+    known = job_names(cat)
+    errors = [
+        f"{part}.{key} {name!r} is not a {cat['id']} job type"
+        for part, key in (("job", "candidates"), ("business", "ticked"))
+        for name in ex[part][key]
+        if name not in known
+    ]
+    errors.extend(
+        f"business.{key} {name!r} is not in the license map"
+        for key, field_ in (("roc", "class"), ("agencies", "license"))
+        for name in ex["business"][key]
+        if field_ not in rows.get(name, {})
+    )
+    return errors
+
+
+def card_problems(ex: dict[str, Any], cat: dict[str, Any], covered: bool | None, rows: dict[str, Any],
+                  cats: dict[str, Any]) -> list[str]:
+    """CARD-001, LIC-013, LIC-019, LIC-021, LIC-022, LIC-038: conditions every card needs."""
+    job, biz = ex["job"], ex["business"]
+    problems: list[str] = []
+    if job["town"] not in biz["towns"]:
+        problems.append("a card to a business that does not serve the job's town (CARD-001)")
+    if not set(biz["ticked"]) & set(job["candidates"]):
+        problems.append("a card to a business that ticked none of the candidates (CARD-001)")
+    refused = {str(r.get("job")) for r in cat.get("refused", [])}
+    if biz["handyman"]:
+        if not cat["handyman_allowed"] or refused & set(job["candidates"]):
+            problems.append("a card to a handyman for work handymen never get (LIC-021, LIC-022)")
+        if not ex["expected"].get("condition"):
+            problems.append("a handyman card without its $1,000 condition (LIC-019)")
+        if not biz["city_list"]:
+            problems.append("a handyman card to a business not on the city list (LIC-038)")
+    elif cat["license"]["kind"] == "none":
+        if not biz["city_list"]:
+            problems.append("a no-license card to a business not on the city list")
+    elif covered is not True:
+        problems.append("a card the license map does not cover for every candidate (CARD-001)")
+    dual = cat["license"]["kind"] == "roc_and_state_agency" and not biz["handyman"]
+    if dual and not covers(biz["agencies"], ex, rows, cats):
+        problems.append("a card without the category's agency license too (LIC-013)")
+    return problems
+
+
+def match_logic(
+    ex: dict[str, Any], cat: dict[str, Any], rows: dict[str, Any], cats: dict[str, Any]
+) -> list[str]:
+    """D-110: the expected outcome agrees with the license map and the necessary card rules."""
+    biz, exp = ex["business"], ex["expected"]
+    names = [*biz["roc"], *biz["agencies"]]
+    covered = covers(names, ex, rows, cats) if names else None
+    problems: list[str] = []
+    if covered != exp["map_covers"]:
+        problems.append(f"map_covers is {exp['map_covers']}, the license map gives {covered}")
+    at_intake = {str(r.get("job")) for r in cat.get("refused", []) if r.get("routed_to") == "none"}
+    if bool(at_intake & set(ex["job"]["candidates"])) != (exp["outcome"] == "refused_at_intake"):
+        problems.append("refused_at_intake exactly when a candidate is refused for everyone (LIC-017)")
+    if exp["outcome"] == "card":
+        problems.extend(card_problems(ex, cat, covered, rows, cats))
+    return problems
+
+
+def check_match(ex: object, cats: dict[str, dict[str, Any]], rows: dict[str, Any]) -> list[str]:
+    """D-110: one matching example's shape, names and expected outcome."""
+    if not isinstance(ex, dict):
+        return ["matching example is not a mapping"]
+    ex_id = str(ex.get("id"))
+    if not MATCH_ID.match(ex_id):
+        return [f"{ex_id}: matching example id must be M and two digits"]
+    problems = match_shape(ex)
+    if not problems:
+        cat = cats.get(ex["job"]["category"])
+        if cat is None:  # an off category keeps its examples: switching it off needs nothing
+            problems = [f"job.category {ex['job']['category']!r} is not a catalog category"]
+        else:
+            problems = match_refs(ex, cat, rows) or match_logic(ex, cat, rows, cats)
+    return [f"{ex_id}: {p}" for p in problems]
+
+
+def check_matching(
+    data: dict[str, Any], cats: dict[str, dict[str, Any]], lmap: dict[str, Any]
+) -> Report:
+    """D-110: M01 to M16 are each present once and well formed (TD-LIC-02's oracle)."""
+    report = Report()
+    examples = data.get("examples")
+    if not isinstance(examples, list):
+        report.errors.append("matching_examples.yaml: examples must be a list (D-110)")
+        return report
+    ids = [str(ex.get("id")) if isinstance(ex, dict) else "?" for ex in examples]
+    report.errors.extend(f"{i}: duplicate matching example id" for i in sorted(set(ids)) if ids.count(i) > 1)
+    report.errors.extend(f"{i}: matching example missing (D-110)" for i in MATCHING_IDS if i not in ids)
+    rows = license_rows(lmap)
+    for ex in examples:
+        problems = check_match(ex, cats, rows)
+        report.errors.extend(problems)
+        if isinstance(ex, dict):
+            outcome = (ex.get("expected") or {}).get("outcome")
+            report.lines.append(f"{'FAIL' if problems else 'ok':4} {ex.get('id')} matching: {outcome}")
+    return report
+
 
 def load(root: Path, rel: Path) -> dict[str, Any]:
     data = yaml.safe_load((root / rel).read_text(encoding="utf-8"))
@@ -771,6 +964,9 @@ def run(root: Path) -> Report:
     report.errors.extend(check_license_scope(lmap, cats))
     bank = load(root, QUESTION_BANK_FILE)
     report.errors.extend(check_question_bank(bank, cats, root))
+    matching = check_matching(load(root, MATCHING_FILE), cats, lmap)
+    report.errors.extend(matching.errors)
+    report.lines.extend(matching.lines)
     report.lines.append(
         f"License map: {len(lmap.get('classes', []))} classes; question sets: "
         f"{len(bank.get('sets', {}))}"
@@ -780,6 +976,7 @@ def run(root: Path) -> Report:
         f"Categories: {len(cats)} ({enabled} on, {len(cats) - enabled} off)"
     )
     report.lines.append(f"Worked examples: {len(examples.lines)}")
+    report.lines.append(f"Matching examples: {len(matching.lines)}")
     return report
 
 
