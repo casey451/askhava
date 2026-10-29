@@ -27,13 +27,13 @@ To run your request: send a description of the job to local businesses, show you
 
 ## 4. Who sees what, and when
 
-When you send a request, Ask Hava sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. Only after you pick a business, and it confirms and pays its introduction fee, does Ask Hava give that one business your first name and the job address, plus your email if you chose to share it. Ask Hava never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.
+When you send a request, Ask Hava sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. If you send photos, those businesses also see them, with location data removed and any faces, house numbers, license plates or readable text blurred. Only after you pick a business, and it confirms (and pays its introduction fee, when one is due), does Ask Hava give that one business your first name and the job address, plus your email if you chose to share it. Ask Hava never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.
 
 | Who | What they see | When |
 |---|---|---|
-| Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions | When the request goes out |
+| Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions; any photos you sent, with location data removed and faces, house numbers, license plates or readable text blurred | When the request goes out |
 | Anyone on askhava.com | Your feedback, with your first name and town, only if you ticked the box allowing it | After your job is done |
-| The one business you pick | Your first name and the job address, plus your email if you chose to share it | Only after you pick it, ask us to share them, and it confirms and pays its introduction fee |
+| The one business you pick | Your first name and the job address, plus your email if you chose to share it | Only after you pick it, ask us to share them, and it confirms (and pays its introduction fee, when one is due) |
 | Businesses that get your job card | The job card you saw, your answers and the photos you kept, with no name, phone, email or street address | When the card goes out |
 | No business, ever | Your phone number | Never. Calls go through a masked Ask Hava number |
 | Vendors that run Ask Hava for us | Only what each needs to do its job | While providing the service, under their data-processing terms |
@@ -61,7 +61,7 @@ Ask Hava never sells or rents lists of people, phone numbers or texting consent.
 
 *(Use the first paragraph while AI is switched off. Switch to the second, with the change dated, only on the day AI is switched on. Add the zero-retention sentence once that agreement is signed; before then use "The AI provider doesn't use that text to train its AI and deletes it within <days> days.", using the provider's recorded terms (AI-008, AI-018).)*
 
-**While AI is off:** Our texts are automated and come from templates, and no AI reads your messages right now.
+**While AI is off:** Our texts are automated. When it's switched on, an AI service helps word our questions and write your job card from your request, after our software removes names, phone numbers, emails and street numbers. You see the card before it goes.
 
 **While AI is on:** To sort your request and help word our questions, an AI service from Anthropic reads your job description after our software removes names, phone numbers, emails and street numbers. It also writes your job card, which you see before it goes out. The AI never sees your contact details, never gives prices or diagnoses, and never makes decisions about money or who gets your details. Under our zero-retention agreement the AI provider doesn't keep that text or train on it.
 

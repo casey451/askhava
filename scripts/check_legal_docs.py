@@ -144,8 +144,9 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         (
             "FEE-015",
             "I authorize Ask Hava LLC to save this card with Stripe for introduction fees. I'm "
-            "charged only when I press Confirm and pay for a homeowner's choice of my quote, and "
-            "the fee is shown before I press it: $25, $75 or $199 by job size, ongoing services "
+            "charged only when I press Confirm and pay for a homeowner's choice of my quote, or "
+            "when a homeowner picks a quote I set to auto-confirm, and the fee is shown before I "
+            "press it or set it: $25, $75 or $199 by job size, ongoing services "
             "counted at 4 months and capped at $75. First win free if I join in the first 90 days "
             "or within 90 days after my trade opens. Refunds per the Terms. I can remove this "
             "card at any time.",
@@ -168,9 +169,11 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
             "TERMS-025",
             "When you send a request, Ask Hava sends a description of the job, with your name, "
             "phone number, email and street address removed, to local businesses that do that kind "
-            "of work. Only after you pick a business, and it confirms and pays its introduction "
-            "fee, does Ask Hava give that one business your first name and the job address, plus "
-            "your email if you chose to share it.",
+            "of work. If you send photos, those businesses also see them, with location data "
+            "removed and any faces, house numbers, license plates or readable text blurred. Only "
+            "after you pick a business, and it confirms (and pays its introduction fee, when one "
+            "is due), does Ask Hava give that one business your first name and the job address, "
+            "plus your email if you chose to share it.",
         ),
         NO_PHONE,
         TWILIO_LINE,
@@ -178,8 +181,9 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         ("WORD-007", "Your number is never shared"),
         (
             "AI-018",
-            "Our texts are automated and come from templates, and no AI reads your messages "
-            "right now.",
+            "Our texts are automated. When it's switched on, an AI service helps word our "
+            "questions and write your job card from your request, after our software removes "
+            "names, phone numbers, emails and street numbers. You see the card before it goes.",
         ),
         (
             "AI-018",

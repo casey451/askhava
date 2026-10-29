@@ -58,6 +58,14 @@ def test_crate_not_in_architecture_fails(tmp_path: Path) -> None:
     assert any("not named in docs/architecture.md" in p for p in ccd.run(root))
 
 
+def test_module_named_the_way_architecture_names_it_passes(tmp_path: Path) -> None:
+    root = fake_repo(tmp_path)
+    (root / "docs/architecture.md").write_text("| `payments` | fees |\n", encoding="utf-8")
+    assert ccd.run(root) == []
+    (root / "docs/architecture.md").write_text("app/\n  payments/   fees\n", encoding="utf-8")
+    assert ccd.run(root) == []
+
+
 def test_rust_file_without_module_comment_fails(tmp_path: Path) -> None:
     root = fake_repo(tmp_path)
     (root / "app/payments/src/tiers.rs").write_text("pub fn y() {}\n", encoding="utf-8")

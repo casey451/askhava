@@ -27,7 +27,7 @@ We don't recommend, rank or rate any business, and we don't price, schedule, sup
 2. **We send a description of the job,** without your name, phone number, email or street address, to local businesses that do that kind of work and have signed up.
 3. **Businesses quote in their own words.** Your quote page shows every eligible quote, numbered in the order received; the number is arrival order, not a ranking. We never change a quote's amount or words. A quote is "eligible" when it follows our rules: no contact details in it, the business still holds any license the job needs, a handyman quote stays under Arizona's handyman limit, and it arrived inside the quote window.
 4. **You choose one quote,** or none. Choosing is free, and you don't have to choose.
-5. **The business confirms and pays its introduction fee.** Only then does Ask Hava give that one business your first name and the job address, as you asked when you picked, plus your email if you chose to share it.
+5. **The business confirms, and pays its introduction fee when one is due.** Only then does Ask Hava give that one business your first name and the job address, as you asked when you picked, plus your email if you chose to share it.
 6. **The business contacts you** through a masked Ask Hava number, between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job), and you two set the time. Ask Hava doesn't schedule anything. Ask Hava never gives your number to any business. If a business asks for it on the call, that's your choice.
 7. If the business doesn't confirm in time, or it falls through, you can choose another quote.
 

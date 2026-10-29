@@ -61,7 +61,7 @@ Card details are entered in Stripe's card form on the Confirm page and are held 
 
 By pressing "Confirm and pay" (and, if you tick "Save this card for next time", by saving it), you accept this authorization:
 
-> I authorize Ask Hava LLC to save this card with Stripe for introduction fees. I'm charged only when I press Confirm and pay for a homeowner's choice of my quote, and the fee is shown before I press it: $25, $75 or $199 by job size, ongoing services counted at 4 months and capped at $75. First win free if I join in the first 90 days or within 90 days after my trade opens. Refunds per the Terms. I can remove this card at any time.
+> I authorize Ask Hava LLC to save this card with Stripe for introduction fees. I'm charged only when I press Confirm and pay for a homeowner's choice of my quote, or when a homeowner picks a quote I set to auto-confirm, and the fee is shown before I press it or set it: $25, $75 or $199 by job size, ongoing services counted at 4 months and capped at $75. First win free if I join in the first 90 days or within 90 days after my trade opens. Refunds per the Terms. I can remove this card at any time.
 
 Ask Hava never charges a card without your press of "Confirm and pay", and never retries a charge on its own. The one exception is optional and yours to choose: once Ask Hava offers it, you may tick "Auto-confirm and pay if picked" on a quote, which accepts this authorization for that quote only:
 

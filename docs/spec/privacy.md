@@ -2,12 +2,12 @@
 
 Prefix: `PRIV` · Modules: `privacy` · Format and checks: [index.md](index.md)
 
-- **PRIV-001** Homeowner names, phone numbers, emails, addresses, on-site contacts and original photos are stored only in the contact vault, and every other record refers to them by ID. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:81`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:85`.
+- **PRIV-001** Homeowner names, phone numbers, emails, addresses, on-site contacts and original photos are stored only in the contact vault, and every other record refers to them by ID; a card photo (CARD-014) is a separate, screened copy and not a vault field (D-477). Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:81`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:85`.
 - **PRIV-002** Vault fields are encrypted field by field with AES-GCM under a key kept separate from the database credentials. Source: `BUILD_BRIEF.md:348`.
 - **PRIV-003** Every vault read is audit-logged. Source: `BUILD_BRIEF.md:349`.
-- **PRIV-004** Only the messaging and release code can read the vault. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:85`.
-- **PRIV-005** No homeowner contact detail leaves the vault except to the business on a confirmed, paid pick (or a recorded free win). Source: `BUILD_BRIEF.md:151`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:225`.
-- **PRIV-006** Job cards, logs, dashboards and AI prompts never contain vault fields. Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:81`.
+- **PRIV-004** Plaintext vault reads go only through `privacy.api`, each audit-logged with its purpose, by the readers D-093 lists (`messaging`, `picks` for the release, `calls`, the `portals` homeowner and owner realms, and `privacy` itself); `quotes` reads only card photos (CARD-014) for the card email and the business job page, never a contact field (D-093, D-477). Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:85`.
+- **PRIV-005** No homeowner contact detail leaves the vault except to the business on a confirmed, paid pick (or one with a recorded $0 fee decision: a free first win, a repeat customer under FEE-013 or a fee-free job type under FEE-045, D-477). Source: `BUILD_BRIEF.md:151`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:225`.
+- **PRIV-006** Job cards, logs, dashboards and AI prompts never contain vault fields; a job card may carry card photos (CARD-013, CARD-014), which are not vault fields (D-477). Source: `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:81`.
 - **PRIV-007** Homeowner contact details are purged 180 days after the job closes, unless a dispute or complaint is open, except the phone number, which stays encrypted with its consent and opt-out records for the consent-log period and is used only for them (D-013, D-079). Source: `BUILD_BRIEF.md:354`, `BUILD_BRIEF.md:356`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:183`.
 - **PRIV-008** Job text is kept with contact details removed, for 3 years (D-013). Source: `BUILD_BRIEF.md:355`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:437`.
 - **PRIV-009** Photos are deleted 30 days after the job closes (D-013). Source: `BUILD_BRIEF.md:358`.

@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 .mypy_cache/
 .pytest_cache/
+# Build output (D-476): never committed, never scanned
+/target/
+node_modules/
+test-results/
+playwright-report/
+*.profraw
