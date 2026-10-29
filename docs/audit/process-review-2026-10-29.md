@@ -23,9 +23,9 @@ One task per cycle. A cycle: a runner session starts, reads state, claims a task
 
 ## 3. What was examined and left alone
 
-- **One task at a time.** The validator proves no two concurrent tasks own a file, so two workers could run in parallel, but the shared paths (`Cargo.lock`, `lib.rs`, `api.rs`, `decisions.md`, `architecture.md`) would collide on nearly every pair. The merge trigger (change 1) buys most of the same throughput with none of the conflict risk. Revisit only if the measured cycle time after T174 is still above 90 minutes.
+- **One task at a time.** The validator proves no two concurrent tasks own a file, so two workers could run in parallel, but the shared paths (`Cargo.lock`, `lib.rs`, `api.rs`, `decisions.md`, `architecture.md`) would collide on nearly every pair. The merge trigger (change 1) buys most of the same throughput with none of the conflict risk. Revisit only if the measured cycle time under D-486 is still above 90 minutes.
 - **The model mix** (114 Opus, 50 Sonnet, 2 Haiku after D-483). Opus writes the money, privacy, security and recovery code and reviews all of it; the rest is Sonnet. The first three measured tasks set the pace; nothing to change before that.
-- **The retry ladder** (same model once more, then Opus once, then BLOCKED). Sound; the per-attempt history that T174 adds makes it auditable.
+- **The retry ladder** (same model once more, then Opus once, then BLOCKED). Sound; the per-attempt history of D-486 makes it auditable.
 - **The hand-run test before Gate P (D-455).** Casey chose proof before building, with a stated reason; the build's cost is plan usage, not money, but a "change the plan" result would still invalidate finished tasks. Kept. The option of starting stage 1 (the twin and catalog, which no test result changes) during the test is recorded in section 5 for Casey, not taken.
 - **Nightly, twin and accessibility runs.** Cheap and load-bearing.
 
@@ -33,7 +33,7 @@ One task per cycle. A cycle: a runner session starts, reads state, claims a task
 
 | Mode | Where it shows | Mitigation now | Owner |
 |---|---|---|---|
-| The Actions runner and the routine both start a cycle | Two sessions, one lease | The loser exits in under a minute; T174 records the starter; the routine is paused once the Actions runner has run three clean cycles | T174 report → Casey pauses the routine |
+| The Actions runner and the routine both start a cycle | Two sessions, one lease | The loser exits in under a minute; the runner records the starter (D-486); the routine is paused once the Actions runner has run three clean cycles | Claude reports after three cycles → Casey pauses the routine |
 | A worker's cold `target/` | Every session compiles from scratch (5 to 10 minutes of wall time, no tokens) | Accepted; a shared cache across ephemeral sessions is not worth its complexity | — |
 | The first Rust tasks hit a pin that no longer resolves | T009 | The skeleton trial resolves every pin today and records the lock | D-488 |
 | Casey's three hands-on steps not done when the build starts | The Actions runner has no token; checks run from the branch | `docs/build-readiness.md` section 4 blocks READY on them | Casey |

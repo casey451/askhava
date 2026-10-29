@@ -1,6 +1,9 @@
 """The runner's real outside world: git plus the GitHub REST API through `gh api` (D-486, BUILD_BRIEF.md:205-292).
 
-GraphQL is blocked from sessions (BUILD_BRIEF.md:255), so every GitHub call here is REST.
+GraphQL is blocked from sessions (BUILD_BRIEF.md:255), so every GitHub call here is REST, with one
+fallback: `enable_auto_merge` tries the ccr REST route first and, only if that route is absent, `gh pr
+merge --auto`, which GitHub serves over GraphQL; under the Actions runner that fallback is reachable,
+in a session it fails closed and the cycle reports it.
 
 Where things live:
   - `claude/kit-state`: kit/state.json, STATUS.md, PROGRESS.md, outbox/, inbox/, kit/nightly.json and

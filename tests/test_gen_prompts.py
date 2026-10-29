@@ -227,7 +227,7 @@ DESIGN_TEXT = (
     "## 7. Catalog\n\n| ID | Kind | Layer | Covers | Cases |\n|---|---|---|---|---|\n"
     "| TD-REQ-01 | E | U | REQ-001 | 8:59:59 refused, 9:00:00 accepted |\n"
 )
-DECISION_TEXT = "# Decisions\n\n- **D-001** Question: fake? Choice: " + "x" * 600 + "\n"
+DECISION_TEXT = "# Decisions\n\n- **D-001** Question: " + "q" * 300 + " Choice: " + "x" * 900 + "\n"
 
 
 def sourced_repo(tmp_path: Path, task: dict[str, Any]) -> Path:
@@ -253,8 +253,9 @@ def test_prompt_pastes_requirements_tests_journeys_decisions_and_cites(tmp_path:
     assert "**REQ-001** The fake rule holds at 9:00 sharp. (`docs/spec/fake.md:5`)" in text
     assert "**TD-REQ-01** (kind E; layers U; covers REQ-001): 8:59:59 refused, 9:00:00 accepted" in text
     assert "1. A fake step." in text and "Every journey ends with the fake closing checks." in text
-    assert "- **D-001** Question: fake? Choice: " + "x" * (gp.DECISION_CHARS - 25) in text
-    assert "x" * 500 not in text
+    excerpt = "- **D-001** Question: " + "q" * (gp.DECISION_QUESTION_CHARS - len("Question: ")) + " … Choice: " + "x" * (gp.DECISION_CHOICE_CHARS - 1) + " …\n"
+    assert excerpt in text  # the question is cut to its limit, the choice itself is kept (its leading space counts)
+    assert "x" * gp.DECISION_CHOICE_CHARS not in text  # the choice is cut at its limit
     assert "- `src.md:1`: The cited source line." in text
 
 

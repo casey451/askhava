@@ -8,7 +8,7 @@ loads whole documents to find its slice (plan change P-1, D-485):
   through scripts/trace_spec.py), with its file and line;
 - the full row of every test-design entry it names, and the text of any
   journey (J1 to J4) from docs/test-design.md section 5;
-- the first 400 characters of every decision it names;
+- the question (200 characters) and the choice (600 characters from "Choice:") of every decision it names;
 - the exact text of every cited source line;
 - a "Run your tests" block built from the task's owned test files.
 
@@ -55,7 +55,8 @@ NONE_NOTE = "none for this task"
 INTRO = "_intro"  # the section 5 paragraph before the journeys: setup and the closing checks
 WINDOW_TOKENS = 200_000
 BYTES_PER_TOKEN = 4
-DECISION_CHARS = 400
+DECISION_QUESTION_CHARS = 200
+DECISION_CHOICE_CHARS = 600
 PASTED_READS = ("docs/spec/", "docs/test-design.md", "docs/decisions.md", "docs/brains/")
 BRAINS_DIR = "docs/brains/"
 BRAINS_NOTE = "none (this task lists no brain under its reads)."
@@ -83,7 +84,7 @@ REQUIRED_KEYS = (
     "prompt",
 )
 BUDGET_KEYS = ("files", "lines", "context_pct")
-TESTS_DONE = "The commands under \"Run your tests\" pass, and every test entry named above has a test carrying its marker."
+TESTS_DONE = "The commands under \"Run your tests\" pass, and every test entry named above has, in a file you own, a test carrying its marker for the cases that fall to your requirements (an entry shared with another task is completed by that task's cases)."
 NO_TESTS_DONE = "This task names no test entries: done means its acceptance line holds and the commands under \"Run your tests\" pass."
 NO_TEST_FILES = "This task owns no test file. Run `bash scripts/smoke.sh` and whatever its acceptance line names."
 COPY_PATH = re.compile(r"(^|/)(templates|static)/|^docs/(copy|legal)/")
@@ -219,9 +220,21 @@ def paste_decisions(src: Sources, ids: list[str]) -> str:
     out = []
     for did in ids:
         text = src.decisions.get(did, "(not found in docs/decisions.md)")
-        cut = text if len(text) <= DECISION_CHARS else text[:DECISION_CHARS].rstrip() + " …"
-        out.append(f"- **{did}** {cut}")
+        out.append(f"- **{did}** {decision_excerpt(text)}")
     return "\n".join(out)
+
+
+def _cut(text: str, limit: int) -> str:
+    return text if len(text) <= limit else text[:limit].rstrip() + " …"
+
+
+def decision_excerpt(text: str) -> str:
+    """The question's opening and the choice itself: a worker needs what was decided, not only why it was asked."""
+    marker = "Choice:"
+    if marker not in text:
+        return _cut(text, DECISION_QUESTION_CHARS + DECISION_CHOICE_CHARS)
+    question, choice = text.split(marker, 1)
+    return f"{_cut(question.strip(), DECISION_QUESTION_CHARS)} {marker}{_cut(choice, DECISION_CHOICE_CHARS)}"
 
 
 def cited_line(src: Sources, cite: str) -> str:
@@ -262,7 +275,7 @@ def brain_excerpt(text: str, req_ids: list[str]) -> str:
     out: list[str] = []
     for heading, lines in brain_sections(text):
         lower = heading.lower()
-        if "checklist" in lower:
+        if "checklist" in lower and "casey" not in lower:  # the review checklist, not a hands-on list for Casey
             out.append(f"### {heading}")
             out.extend(line for line in lines if line.strip())
         elif pattern and "sources" not in lower:
@@ -282,8 +295,10 @@ def paste_brains(root: Path, task: dict[str, Any]) -> str:
     for path in brains:
         target = root / path
         if not target.is_file():
-            continue
+            raise SystemExit(f"{task['id']}: brain {path} does not exist")
         excerpt = brain_excerpt(target.read_text(encoding="utf-8"), task["requirements"])
+        if not excerpt:
+            raise SystemExit(f"{task['id']}: brain {path} has no checklist and no line naming this task's requirements")
         parts.append(f"From `{path}` (cite its tags in the PR; read other sections only when a design choice needs them):\n\n{excerpt}")
     return "\n\n".join(parts) or BRAINS_NOTE
 

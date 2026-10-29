@@ -6,7 +6,7 @@ from Claude Code's credentials file, never printed) and prints the shape scripts
 
     {"five_hour": {"utilization": 0.42, "resets_at": "..."}, "week": {"utilization": 0.18, "resets_at": "..."}}
 
-Utilisation is 0..1. On any failure it prints nothing and exits 1, so the runner falls back to its
+Utilisation is printed as 0..1 from the endpoint's percent. On any failure it prints nothing and exits 1, so the runner falls back to its
 own ledger (state.usage.source = "ledger"). **Unverified until the D-486 rehearsal:** the endpoint,
 header and field names below are the ones Claude Code and the public usage monitors use as of
 2026; if the rehearsal shows a different shape, fix this file, not pacing.py. It never touches a
@@ -63,9 +63,9 @@ def to_pacing_shape(raw: dict) -> dict | None:
         window = raw.get(theirs)
         if not isinstance(window, dict) or "utilization" not in window:
             return None
-        utilisation = float(window["utilization"])
-        if utilisation > 1.0:  # the endpoint reports percent
-            utilisation /= 100.0
+        # The endpoint reports percent (0 to 100), as Claude Code's /usage shows it; divide always, so a
+        # reading of 1 means 1%, never a full window. The rehearsal confirms the unit (D-486).
+        utilisation = float(window["utilization"]) / 100.0
         out[ours] = {"utilization": utilisation, "resets_at": window.get("resets_at")}
     return out
 

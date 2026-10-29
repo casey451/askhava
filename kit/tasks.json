@@ -449,7 +449,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -710,7 +710,7 @@
    "id": "T009",
    "slug": "app-skeleton",
    "title": "App skeleton: Cargo workspace, one crate per module, server and worker binaries, lints and policy files",
-   "goal": "The server and worker binaries start on an empty app from one Cargo workspace with the pinned toolchain, `unsafe_code` forbidden, clippy's 50-line and nesting limits, the cargo-deny policy and `[workspace.lints]` denying `missing_docs` with `missing_errors_doc` and `missing_panics_doc` on; `cargo build -p server --locked`, clippy with warnings denied and `cargo fmt --check` pass, and `app/core/CLAUDE.md` and `app/server/CLAUDE.md` follow `docs/code-docs.md` (D-453, D-473). Follow the skeleton trial (D-488): members `app/*` and `tests/integration` only, reqwest and sqlx with `default-features = false` (sqlx adds `sqlx-toml`), a logged `excessive-nesting-threshold`, `rustls` and `toml` with their decision entries, both wildcard denies in every `status.rs`, and `-p askhava-server` everywhere.",
+   "goal": "The server and worker binaries start on an empty app from one Cargo workspace with the pinned toolchain, `unsafe_code` forbidden, clippy's 50-line and nesting limits, the cargo-deny policy and `[workspace.lints]` denying `missing_docs` with `missing_errors_doc` and `missing_panics_doc` on; `cargo build -p askhava-server --locked`, clippy with warnings denied and `cargo fmt --check` pass, and `app/core/CLAUDE.md` and `app/server/CLAUDE.md` follow `docs/code-docs.md` (D-453, D-473). Follow the skeleton trial (D-488): members `app/*` and `tests/integration` only, reqwest and sqlx with `default-features = false` (sqlx adds `sqlx-toml`), a logged `excessive-nesting-threshold`, `rustls` and `toml` with their decision entries, both wildcard denies in every `status.rs`, and `-p askhava-server` everywhere.",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -739,7 +739,6 @@
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
-    "docs/spec/fees.md",
     "docs/spec/security.md",
     "kit/allowed_crates.txt",
     "kit/layers.json",
@@ -750,9 +749,7 @@
    "requirements": [
     "SEC-029"
    ],
-   "tests": [
-    "TD-SEC-10"
-   ],
+   "tests": [],
    "decisions": [
     "D-090",
     "D-091",
@@ -772,7 +769,8 @@
     "Ally"
    ],
    "branch": "claude/task/T009-app-skeleton",
-   "prompt": "kit/prompts/T009.md"
+   "prompt": "kit/prompts/T009.md",
+   "acceptance": "`bash scripts/smoke.sh` is green with the workspace in place: `cargo build -p askhava-server --locked`, clippy with warnings denied, `cargo fmt --check`, cargo-audit and cargo-deny all pass on the empty crates; the lint set rejects a planted 54-line function, a 5-deep nesting and an `unsafe` block (shown in the PR text, then removed); T175's architecture test is the test of record for TD-SEC-10."
   },
   {
    "id": "T175",
@@ -1061,7 +1059,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -1255,7 +1253,7 @@
    "budget": {
     "files": 8,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -1323,7 +1321,7 @@
    "budget": {
     "files": 8,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -1563,7 +1561,7 @@
    "budget": {
     "files": 8,
     "lines": 400,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -1895,7 +1893,7 @@
    "budget": {
     "files": 9,
     "lines": 550,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -2566,7 +2564,7 @@
    "budget": {
     "files": 3,
     "lines": 250,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -2644,7 +2642,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -2839,7 +2837,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -3121,7 +3119,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -3284,7 +3282,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -3359,7 +3357,7 @@
    "budget": {
     "files": 3,
     "lines": 550,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -3616,7 +3614,7 @@
    "budget": {
     "files": 2,
     "lines": 250,
-    "context_pct": 12
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -4582,7 +4580,7 @@
    "id": "T169",
    "slug": "ci-rust-playwright",
    "title": "CI for the Rust workspace: pinned Postgres service, cache, coverage floors, sqlx prepare check, one boundary build",
-   "goal": "Ci pins the Postgres service image by digest, caches the Cargo registry and target with Swatinem/rust-cache pinned by commit SHA (keyed on Cargo.lock and the toolchain, CARGO_INCREMENTAL=0, dev profile debug = line-tables-only), installs cargo-audit, cargo-deny, sqlx-cli and cargo-llvm-cov from pinned prebuilt binaries, runs `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features` so stale offline query data fails, measures branch coverage in its own parallel job on a nightly pinned by date against tests/coverage_floor.json (this task writes the file with the measured total and the 95% floors for app/payments, app/catalog fee rules, app/privacy and app/licensing, FEE-034, PRIV-022, LIC-033), fails any PR that lowers a floor, and keeps `cargo build -p server --locked` as the one boundary build (no per-crate clippy runs) (D-453, D-479, D-481). Acceptance: a PR that lowers coverage by one line in app/privacy turns Ci red, a deliberately stale .sqlx entry turns Ci red, and a warm-cache run finishes in 15 minutes or less (all shown in the task report). Per the skeleton trial (D-488): `cargo build -p askhava-server --locked`; `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features`; cargo-audit and cargo-deny from their musl release tarballs with pinned SHA-256s; clippy before the build in the same job; and a check that the cache keeps `target/tests/trybuild`, without which a cold pass runs 12 to 15 minutes on 2 vCPU.",
+   "goal": "Ci pins the Postgres service image by digest, caches the Cargo registry and target with Swatinem/rust-cache pinned by commit SHA (keyed on Cargo.lock and the toolchain, CARGO_INCREMENTAL=0, dev profile debug = line-tables-only), installs cargo-audit, cargo-deny, sqlx-cli and cargo-llvm-cov from pinned prebuilt binaries, runs `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features` so stale offline query data fails, measures branch coverage in its own parallel job on a nightly pinned by date against tests/coverage_floor.json (this task writes the file with the measured total and the 95% floors for app/payments, app/catalog fee rules, app/privacy and app/licensing, FEE-034, PRIV-022, LIC-033), fails any PR that lowers a floor, and keeps `cargo build -p askhava-server --locked` as the one boundary build (no per-crate clippy runs) (D-453, D-479, D-481). Acceptance: a PR that lowers coverage by one line in app/privacy turns Ci red, a deliberately stale .sqlx entry turns Ci red, and a warm-cache run finishes in 15 minutes or less (all shown in the task report). Per the skeleton trial (D-488): `cargo build -p askhava-server --locked`; `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features`; cargo-audit and cargo-deny from their musl release tarballs with pinned SHA-256s; clippy before the build in the same job; and a check that the cache keeps `target/tests/trybuild`, without which a cold pass runs 12 to 15 minutes on 2 vCPU.",
    "type": "harness",
    "phase": 1,
    "stage": "2",
@@ -4628,7 +4626,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 19
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -4859,7 +4857,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -5316,7 +5314,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -5461,7 +5459,7 @@
    "id": "T062",
    "slug": "payments-charge",
    "title": "payments: Confirm-and-pay charge with a key per attempt, Stripe outage and the decline window",
-   "goal": "A charge runs only from the business's Confirm press, with a new idempotency key per attempt and the FEE-017 check first; when Stripe is unreachable the pick is released after 4 hours and the next quote offered; a decline opens the card-fix window; and charges are paused while safe mode or the charging switch says so (FEE-016 to FEE-020, FEE-037, FEE-038, FEE-041).",
+   "goal": "A charge runs only from the business's Confirm press, with a new idempotency key per attempt and the FEE-017 check first; when Stripe is unreachable the pick is released after 4 hours and the next quote offered; a decline opens the card-fix window; and charges are paused while safe mode or the charging switch says so (FEE-016 to FEE-020, FEE-037, FEE-038, FEE-041); the pick owns one PaymentIntent that every attempt confirms (FEE-047).",
    "type": "build",
    "phase": 1,
    "stage": "3",
@@ -5598,7 +5596,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -5947,7 +5945,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -6019,7 +6017,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -6532,7 +6530,7 @@
    "id": "T074",
    "slug": "twin-link-app",
    "title": "Twin: run the gate against the app's rules modules",
-   "goal": "The twin uses the app's fee, matching, quiet-hours and lifecycle rules through the rules_bridge binary (JSON in, JSON out), so Twin checks app/ (docs/test-design.md section 2, D-453). twin.yml installs the pinned Rust toolchain and runs `cargo build -p server --bin rules_bridge --locked` from the PR's commit before the gate, and a JSON-schema contract test covers the bridge on both sides (D-481).",
+   "goal": "The twin uses the app's fee, matching, quiet-hours and lifecycle rules through the rules_bridge binary (JSON in, JSON out), so Twin checks app/ (docs/test-design.md section 2, D-453). twin.yml installs the pinned Rust toolchain and runs `cargo build -p askhava-server --bin rules_bridge --locked` from the PR's commit before the gate, and a JSON-schema contract test covers the bridge on both sides (D-481).",
    "type": "harness",
    "phase": 1,
    "stage": "3",
@@ -6579,7 +6577,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 10
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -7047,7 +7045,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -7127,7 +7125,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -8010,7 +8008,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -8531,7 +8529,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 18
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -8667,9 +8665,7 @@
     "docs/spec/quiet-hours.md",
     "docs/spec/security.md",
     "docs/spec/accessibility.md",
-    "docs/design/DESIGN_SPEC.md",
     "docs/brains/accessibility-forms.md",
-    "docs/brains/payments-stripe.md",
     "docs/brains/rust-production.md",
     "docs/brains/sms-compliance.md"
    ],
@@ -10055,7 +10051,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -10148,7 +10144,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -10681,7 +10677,7 @@
    "budget": {
     "files": 3,
     "lines": 650,
-    "context_pct": 9
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -11323,7 +11319,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -11398,7 +11394,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 3
+    "context_pct": 4
    },
    "checks": [
     "Ci",
@@ -12360,7 +12356,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -12468,7 +12464,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -13856,7 +13852,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 11
    },
    "checks": [
     "Ci",

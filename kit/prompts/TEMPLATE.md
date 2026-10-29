@@ -42,7 +42,7 @@ Tests that must pass (each test-design entry in full, from `docs/test-design.md`
 
 ${tests}
 
-Decisions (`docs/decisions.md`, the first 400 characters of each):
+Decisions (`docs/decisions.md`: the question's opening and the choice of each):
 
 ${decisions}
 
