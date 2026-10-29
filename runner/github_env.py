@@ -80,7 +80,28 @@ def _env_for(args: list[str]) -> dict[str, str] | None:
     token = os.environ.get("RUNNER_CHECKS_TOKEN", "")
     if token and args[:2] == ["gh", "api"] and "/check-runs" in args[-1]:
         return dict(os.environ, GH_TOKEN=token)
-    return None
+    return _push_env(args)
+
+
+def _push_env(args: list[str]) -> dict[str, str] | None:
+    """Task-branch pushes use RUNNER_PUSH_TOKEN when it is set (D-509).
+
+    The Claude App's token cannot create or update files under `.github/workflows/`, so a task that
+    owns one (T056, T074, T138, T169, T172, T173) could never be pushed. The workflow passes a
+    repository-scoped token with Contents and Workflows write as RUNNER_PUSH_TOKEN; it reaches git
+    through a credential helper reading the environment, so it is never in argv or a config file, and
+    the action's own auth header is reset for this one command.
+    """
+    if not os.environ.get("RUNNER_PUSH_TOKEN") or args[:2] != ["git", "push"]:
+        return None
+    if not any(a.startswith("https://github.com/") for a in args):
+        return None
+    helper = '!f() { echo username=x-access-token; echo "password=$RUNNER_PUSH_TOKEN"; }; f'
+    pairs = [("http.https://github.com/.extraheader", ""), ("credential.helper", ""), ("credential.helper", helper)]
+    env = dict(os.environ, GIT_CONFIG_COUNT=str(len(pairs)))
+    for i, (key, value) in enumerate(pairs):
+        env[f"GIT_CONFIG_KEY_{i}"], env[f"GIT_CONFIG_VALUE_{i}"] = key, value
+    return env
 
 
 def parse_inbox_file(text: str) -> tuple[str, str]:
@@ -540,9 +561,11 @@ class GitHubEnv:
     def push_branch(self, branch: str, head_sha: str) -> bool:
         if self.dry_run:
             return True
-        code, _, err = self._run(["git", "push", "--porcelain", "origin", f"{head_sha}:refs/heads/{branch}"], None, self.root)
+        remote = f"https://github.com/{self.repo}.git" if os.environ.get("RUNNER_PUSH_TOKEN") else "origin"
+        code, out, err = self._run(["git", "push", "--porcelain", remote, f"{head_sha}:refs/heads/{branch}"], None, self.root)
         if code != 0:
-            self.log.append(f"branch push rejected: {err.strip()[:200]}")
+            # --porcelain puts the rejection reason on stdout; stderr only says "failed to push" (D-509).
+            self.log.append(f"branch push rejected: {(out.strip() + ' ' + err.strip()).strip()[:400]}")
         return code == 0
 
     def collect_result(

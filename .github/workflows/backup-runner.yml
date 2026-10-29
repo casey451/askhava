@@ -146,6 +146,8 @@ jobs:
           # The action replaces GH_TOKEN with the Claude App's token, which cannot read check runs;
           # the runner uses this job token (checks: read) for those reads only (D-502).
           RUNNER_CHECKS_TOKEN: ${{ github.token }}
+          # Task-branch pushes only: the Claude App cannot push workflow files (D-509). Empty if unset.
+          RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The session's own turns in the job log (private repository; secrets stay masked), so a session
@@ -179,6 +181,7 @@ jobs:
           RUNNER_STARTER: actions
           GH_TOKEN: ${{ github.token }}
           RUNNER_CHECKS_TOKEN: ${{ github.token }}
+          RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
         run: |
           set -u
           # A session that claimed a task but ended without `--after` would hold the lease for three hours.
