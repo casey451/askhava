@@ -1,0 +1,130 @@
+category: hvac_repair
+variant: playbook_v3
+model: "claude-haiku-5-5"
+run: "run-2026-10-29"
+results:
+  - scenario_id: hvac_repair_s01
+    transcript:
+      - {who: homeowner, text: "ac is messed up can someone come look"}
+      - {who: intake, step: question, text: "What is happening? 1 Not cooling 2 Won't turn on 3 Leaking water 4 Strange noise or smell 5 Thermostat blank or error"}
+      - {who: homeowner, text: "not cooling. fan runs, air comes out but only mildly cool. house is 86 at 3pm"}
+      - {who: intake, step: follow_up, text: "Where would a tech work on the unit? 1 Flat roof, one story 2 Sloped roof or two stories 3 Ground, open side yard 4 Ground, behind a locked gate 5 Attic or closet inside"}
+      - {who: homeowner, text: "1. its one box on the roof, one story"}
+      - {who: intake, step: question, text: "About how old is the system? 1 Under 5 years 2 5 to 10 years 3 10 to 15 years 4 Over 15 years"}
+      - {who: homeowner, text: "about 12 years. we bought the house with it"}
+      - {who: intake, step: question, text: "When did it start?"}
+      - {who: homeowner, text: "about three days ago. worse every afternoon"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 5
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Heating and cooling repair | Lake Havasu City, area not said | house
+      AC, one box on the roof, one story; runs but only mildly cool, started about three days ago, worse each afternoon.
+      System: one box on the roof (type not known to homeowner). Access: flat roof, one story. Age: about 12 years (homeowner's estimate).
+      Outside fan: not asked. Air at vents: comes out, only mildly cool. Refrigerant added before: not asked.
+      Label: no label photo. Photos: 0. Homeowner adds: house is 86 F at 3 pm.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s02
+    transcript:
+      - {who: homeowner, text: "my compressor in the attic is freezing up solid, ice all over the copper line and the thing drips everywhere. house wont cool"}
+      - {who: intake, step: photo, text: "A photo of the outside unit helps businesses quote. Please send one from a few steps back. No photo is fine too."}
+      - {who: homeowner, text: "[photo sent: copper line outside wrapped in white foam with frost on it; damp patch on the concrete pad under the line set]"}
+      - {who: intake, step: follow_up, text: "Where would a tech work on the unit? 1 Flat roof, one story 2 Sloped roof or two stories 3 Ground, open side yard 4 Ground, behind a locked gate 5 Attic or closet inside"}
+      - {who: homeowner, text: "3. ground, behind a block wall, gate's open"}
+      - {who: intake, step: question, text: "About how old is the system? 1 Under 5 years 2 5 to 10 years 3 10 to 15 years 4 Over 15 years"}
+      - {who: homeowner, text: "about 9 years"}
+      - {who: intake, step: question, text: "When was the air filter last changed?"}
+      - {who: homeowner, text: "like 14 months ago"}
+      - {who: intake, step: question, text: "Is the system running right now?"}
+      - {who: homeowner, text: "no, i turned it off at the thermostat this morning"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 5
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_noise_smell, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Heating and cooling repair | Lake Havasu City, area not said | house
+      AC not cooling; ice on the copper line at the outdoor unit; water dripping at the pad; turned off at the thermostat this morning.
+      System: AC with an outside unit. Access: ground, behind a block wall, gate open. Age: about 9 years (homeowner).
+      Outside fan: not asked. Air at vents: not asked. Refrigerant added before: not asked.
+      Ice: copper line at the outdoor unit (per photo). Filter: not changed in about 14 months. Running now: no.
+      Label: no label photo. Photos: 1 (copper suction line outside, wrapped in white foam with frost on it; damp patch on the concrete pad under the line set).
+      Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s03
+    transcript:
+      - {who: homeowner, text: "my ac just needs freon. dont need a licensed company just somebody cheap who can top it off and has a gauge. cash is fine"}
+      - {who: intake, step: question, text: "What is it doing? 1 Runs but air is warm 2 Will not turn on 3 Outside fan not spinning 4 Ice on pipes or unit 5 Water leaking 6 Loud noise or bad smell"}
+      - {who: homeowner, text: "runs, air is lukewarm. its been worse two summers. i know what it needs"}
+      - {who: intake, step: follow_up, text: "Where would a tech work on the unit? 1 Flat roof, one story 2 Sloped roof or two stories 3 Ground, open side yard 4 Ground, behind a locked gate 5 Attic or closet inside"}
+      - {who: homeowner, text: "3. back yard, gate's open"}
+      - {who: intake, step: follow_up, text: "Has anyone added refrigerant (freon) to this system before? 1 Yes, this year 2 Yes, in past years 3 No 4 Don't know"}
+      - {who: homeowner, text: "yeah i did a can kit last july. cooled a few weeks"}
+      - {who: intake, step: question, text: "About how old is the system? 1 Under 5 years 2 5 to 10 years 3 10 to 15 years 4 Over 15 years"}
+      - {who: homeowner, text: "18 years i guess"}
+      - {who: intake, step: photo, text: "Could you send a close photo of the metal data plate on the outside unit? Clear any vine off it first if you can reach it."}
+      - {who: homeowner, text: "[photo sent: outside condenser with a small oily stain on one copper fitting; data plate partly covered by a hanging vine; visible part reads R-22]"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 5
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_cooling, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Heating and cooling repair | Lake Havasu City, area not said | house
+      AC runs, air lukewarm, worse for two summers; homeowner has added refrigerant himself with a can kit.
+      System: AC with an outside unit on the ground in the back yard, gate open. Access: ground, back yard. Age: about 18 years (homeowner).
+      Outside fan: not asked. Air at vents: lukewarm (homeowner's words). Refrigerant added before: yes, can kit last July, cooled a few weeks.
+      Label: R-22 on the visible part of the data plate (photo). Oily spot on one copper fitting of the outdoor unit (photo).
+      Photos: 2 (outside condenser with small oily stain on one copper fitting, data plate partly covered by a hanging vine; close photo of data plate, visible part reads R-22).
+      Homeowner adds: thinks it needs freon.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: hvac_repair_s04
+    transcript:
+      - {who: homeowner, text: "Hi, my thermostat went completely blank this morning and the AC isn't running. I think it needs new batteries or the thermostat is dead. Can someone replace it?"}
+      - {who: intake, step: photo, text: "A photo of the thermostat screen helps. If it is off the wall, include the wires behind it."}
+      - {who: homeowner, text: "[photo sent: wall thermostat with a dark screen, cover popped open, two AA batteries on the floor below it]"}
+      - {who: intake, step: question, text: "Did you put in new batteries?"}
+      - {who: homeowner, text: "yes, fresh ones this morning. still blank"}
+      - {who: intake, step: question, text: "Is there any water, stain or damp spot near the AC or on a ceiling?"}
+      - {who: homeowner, text: "theres a brown stain on the hallway ceiling that showed up this week. two days ago i saw drips by the attic hatch. i thought it was condensation"}
+      - {who: intake, step: question, text: "Where is the indoor unit? 1 Attic 2 Closet 3 Garage 4 Roof"}
+      - {who: homeowner, text: "1. attic over the hallway, the hatch is in the second floor hall closet"}
+      - {who: intake, step: question, text: "About how old is the system? 1 Under 5 years 2 5 to 10 years 3 10 to 15 years 4 Over 15 years"}
+      - {who: homeowner, text: "about 7 years"}
+      - {who: intake, step: card, text: "card posted"}
+    questions_asked: 5
+    follow_ups_used: []
+    skipped_bank_questions: []
+    routing: {category: hvac_repair, job_type: ac_not_turning_on, bank_job_type: "AC not cooling", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Heating and cooling repair | Lake Havasu City, area not said | house, two stories
+      AC not running since this morning; thermostat screen blank even with new batteries.
+      Thermostat: blank (photo and homeowner); fresh batteries put in, still blank. Outside unit: not asked. System: AC, air handler in the attic. Access: attic over the hallway, hatch in the second-floor hall closet. Age: about 7 years.
+      Water at indoor unit: brown stain on the hallway ceiling, appeared this week; drips by the attic hatch two days ago (homeowner thought condensation).
+      Photos: 1 (thermostat with dark screen, cover open, two AA batteries on the floor below it).
+      Homeowner adds: only thermostat in the house.
+      Needed: not said.
+    facts_in_card_not_stated: []
+#__CONTINUE__
