@@ -56,7 +56,26 @@
     "tests/integration/Cargo.toml",
     "tests/security/Cargo.toml",
     "tests/recovery/Cargo.toml",
-    "tests/fixtures/Cargo.toml"
+    "tests/fixtures/Cargo.toml",
+    "app/core/CLAUDE.md",
+    "app/ops/CLAUDE.md",
+    "app/adapters/CLAUDE.md",
+    "app/catalog/CLAUDE.md",
+    "app/privacy/CLAUDE.md",
+    "app/ai/CLAUDE.md",
+    "app/messaging/CLAUDE.md",
+    "app/payments/CLAUDE.md",
+    "app/licensing/CLAUDE.md",
+    "app/businesses/CLAUDE.md",
+    "app/jobs/CLAUDE.md",
+    "app/calls/CLAUDE.md",
+    "app/quotes/CLAUDE.md",
+    "app/picks/CLAUDE.md",
+    "app/intake/CLAUDE.md",
+    "app/recovery/CLAUDE.md",
+    "app/portals/CLAUDE.md",
+    "app/site/CLAUDE.md",
+    "app/server/CLAUDE.md"
   ],
   "kit_outputs": [
     "kit/prompts/",
@@ -583,7 +602,7 @@
       "id": "T009",
       "slug": "app-skeleton",
       "title": "App skeleton: Cargo workspace, one crate per module, server and worker binaries, module-boundary architecture test",
-      "goal": "The server and worker start on an empty app; the workspace, toolchain, clippy limits, cargo-deny policy and the integration test crate exist (T168 adds the other test layers); an architecture test reads every crate's Cargo.toml and SQL and fails on an upward crate dependency, a dependency not in the architecture table and a cross-schema key (D-453).",
+      "goal": "The server and worker start on an empty app; the workspace, toolchain, clippy limits, cargo-deny policy and the integration test crate exist (T168 adds the other test layers); an architecture test reads every crate's Cargo.toml and SQL and fails on an upward crate dependency, a dependency not in the architecture table and a cross-schema key (D-453). The workspace `[workspace.lints]` deny `missing_docs` and turn on clippy's `missing_errors_doc` and `missing_panics_doc`, and `app/core/CLAUDE.md` and `app/server/CLAUDE.md` follow `docs/code-docs.md` (D-473).",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -613,7 +632,8 @@
       "reads": [
         "docs/architecture.md",
         "docs/spec/fees.md",
-        "docs/spec/security.md"
+        "docs/spec/security.md",
+        "docs/code-docs.md"
       ],
       "requirements": [
         "FEE-032",
@@ -626,7 +646,8 @@
       "decisions": [
         "D-090",
         "D-091",
-        "D-453"
+        "D-453",
+        "D-473"
       ],
       "cites": [],
       "budget": {
@@ -8739,7 +8760,7 @@
       "id": "T125",
       "slug": "phase1-audit",
       "title": "Fresh Opus audit of the whole codebase against the spec, security and accessibility",
-      "goal": "Fresh Opus audit of the whole codebase against the spec, security and accessibility",
+      "goal": "Fresh Opus audit of the whole codebase against the spec, security and accessibility The audit also checks the code against `docs/code-docs.md`: every crate's `CLAUDE.md` matches what the code does, its change recipes work as written, and no rule lives in code without its requirement ID (D-473).",
       "type": "audit",
       "phase": 1,
       "stage": "5",
@@ -8760,11 +8781,14 @@
         "docs/audits/phase1-audit.md"
       ],
       "reads": [
-        "docs/architecture.md"
+        "docs/architecture.md",
+        "docs/code-docs.md"
       ],
       "requirements": [],
       "tests": [],
-      "decisions": [],
+      "decisions": [
+        "D-473"
+      ],
       "cites": [
         "sources/02_build_plan/Build_Plan.md:236"
       ],
@@ -9551,7 +9575,7 @@
       "id": "T140",
       "slug": "final-audit",
       "title": "Fresh Opus audit: no open Critical or High findings",
-      "goal": "Fresh Opus audit: no open Critical or High findings",
+      "goal": "Fresh Opus audit: no open Critical or High findings The audit also checks the code against `docs/code-docs.md`: every crate's `CLAUDE.md` matches what the code does, its change recipes work as written, and no rule lives in code without its requirement ID (D-473).",
       "type": "audit",
       "phase": 2,
       "stage": "6",
@@ -9572,13 +9596,16 @@
       ],
       "reads": [
         "docs/architecture.md",
-        "docs/spec/security.md"
+        "docs/spec/security.md",
+        "docs/code-docs.md"
       ],
       "requirements": [
         "SEC-022"
       ],
       "tests": [],
-      "decisions": [],
+      "decisions": [
+        "D-473"
+      ],
       "cites": [
         "BUILD_BRIEF.md:197",
         "BUILD_BRIEF.md:53"
@@ -9600,7 +9627,7 @@
       "id": "T141",
       "slug": "handover-pack",
       "title": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist",
-      "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist",
+      "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist `docs/README.md` is the start-here map for a session that has never seen the code: one line per folder and document, and the common changes (fees, categories and job types, text templates, settings and switches, legal pages) with the files, spec lines and tests each one touches (docs/code-docs.md, D-473).",
       "type": "docs",
       "phase": 2,
       "stage": "6",
@@ -9619,19 +9646,24 @@
         "docs/owner-guide.md",
         "docs/runbook.md",
         "docs/account-checklist.md",
-        "docs/handover.md"
+        "docs/handover.md",
+        "docs/README.md"
       ],
-      "reads": [],
+      "reads": [
+        "docs/code-docs.md"
+      ],
       "requirements": [],
       "tests": [],
-      "decisions": [],
+      "decisions": [
+        "D-473"
+      ],
       "cites": [
         "BUILD_BRIEF.md:523",
         "BUILD_BRIEF.md:529"
       ],
       "budget": {
-        "files": 4,
-        "lines": 400,
+        "files": 5,
+        "lines": 550,
         "context_pct": 10
       },
       "checks": [
@@ -9641,6 +9673,52 @@
       ],
       "branch": "claude/task/T141-handover-pack",
       "prompt": "kit/prompts/T141.md"
+    },
+    {
+      "id": "T171",
+      "slug": "cold-start-drill",
+      "title": "Cold-start drill: a session that knows nothing makes three real changes from the docs alone",
+      "goal": "A fresh session on Sonnet, given only the repository and the root `CLAUDE.md` (no task prompt, no history), makes three typical changes on a throwaway branch that is never merged: raise the $75 tier's top from $1,500 to $1,600 with its tests and spec line; add a job type to one category with its questions, license rule and tests; and reword one English text with its Spanish template. It records in `docs/audits/cold-start-drill.md` every place it had to guess, search widely or ask, and how long each change took. Every gap is then fixed in the docs it names (a crate `CLAUDE.md`, `docs/README.md` or `docs/architecture.md`), and the root `CLAUDE.md` gains a short 'Changing the code after the build' section pointing to `docs/README.md` and `docs/code-docs.md`, staying under 200 lines (docs/code-docs.md section 8, D-473).",
+      "type": "audit",
+      "phase": 2,
+      "stage": "6",
+      "module": null,
+      "deps": [
+        "T141"
+      ],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "docs"
+      ],
+      "owns": [
+        "docs/audits/cold-start-drill.md",
+        "CLAUDE.md",
+        "docs/README.md"
+      ],
+      "reads": [
+        "docs/code-docs.md",
+        "docs/architecture.md"
+      ],
+      "requirements": [],
+      "tests": [],
+      "decisions": [
+        "D-473"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 3,
+        "lines": 300,
+        "context_pct": 12
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T171-cold-start-drill",
+      "prompt": "kit/prompts/T171.md"
     },
     {
       "id": "T142",
@@ -9664,7 +9742,8 @@
         "T139",
         "T140",
         "T141",
-        "T166"
+        "T166",
+        "T171"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",

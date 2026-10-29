@@ -135,6 +135,7 @@ ALLOWED_SHARED = frozenset(
         "package-lock.json",
     }
     | {f"app/{m}/Cargo.toml" for m in CRATE_MODULES}
+    | {f"app/{m}/CLAUDE.md" for m in CRATE_MODULES}  # crate docs any task updates (D-473)
     | {f"tests/{layer}/Cargo.toml" for layer in TEST_CRATES}
 )
 JOURNEYS = ("J1", "J2", "J3", "J4")
