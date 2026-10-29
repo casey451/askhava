@@ -439,3 +439,13 @@ def test_status_and_progress_carry_the_pacing_line(repo: dict[str, Path], tmp_pa
     assert "K10 estimated 180k tokens; claimed" in origin_file(repo, "claude/kit-state", "PROGRESS.md")
     status = origin_file(repo, "claude/kit-state", "STATUS.md")
     assert "## Pacing" in status and "projected finish 2026-12-01T00:00:00Z" in status and "resets 2026-11-01T17:00:00Z" in status
+
+
+def test_cycle_log_is_appended_on_the_state_branch(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-499: every cycle leaves its report line in kit/runner_log.jsonl so an unattended run can be read."""
+    env = make_env(repo["a"], tmp_path)
+    env.read_state()
+    env.write_cycle_log({"result": "idle", "log": ["smoke on abc: exit 0"]})
+    env.write_cycle_log({"result": "smoke_env", "log": []})
+    lines = origin_file(repo, "claude/kit-state", "kit/runner_log.jsonl").splitlines()
+    assert [json.loads(line)["result"] for line in lines] == ["idle", "smoke_env"] and "at" in json.loads(lines[0])

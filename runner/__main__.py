@@ -192,6 +192,7 @@ def main(argv: list[str] | None = None) -> int:
                                   "changed": cycle_diff(env), "log": env.log}
         if result == "handed_off":
             report["handoff"] = write_handoff(cfg, env)
+        env.write_cycle_log({k: v for k, v in report.items() if k != "handoff"})
     print(f"runner: {result}" + (" (dry run)" if args.dry_run else ""))
     print(json.dumps(report, sort_keys=True))
     return 2 if result == "state_invalid" else 0
