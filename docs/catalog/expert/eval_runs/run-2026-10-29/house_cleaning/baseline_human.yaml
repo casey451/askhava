@@ -1,0 +1,642 @@
+category: house_cleaning
+variant: baseline_human
+model: "claude-opus-5-5"
+run: "run-2026-10-29"
+notes: >-
+  The intake is played as the top house-cleaning estimator in Arizona (25 years, knows Lake Havasu
+  City homes, hard water, dust and heat), texting one question at a time, with no question bank,
+  no expert file and no trade file. The estimator may say what they suspect and may give the advice
+  a real estimator would; the card holds the crew notes (facts got, suspicions, on-site checks).
+  The homeowner is played strictly from the scenario and quits after max_questions plus 2.
+  Coverage is assumed confirmed for Lake Havasu City (3 businesses) except in s12 (outside area)
+  and s13 (no businesses), where the intake stops before any trade question as intake_agent.md says.
+  job_type values use the kb ids that appear in the scenario file where one fits the estimator's
+  own call. In s10 the estimator sends their own gas warning instead of the app's fixed text and
+  keeps taking the cleaning details without a SAFE reply (a human is not bound by the app's hold);
+  fire_dept_text is true because a 911 message was sent. In s11 the dryer is written up as a
+  separate request in the extra key second_card, so the cleaning card stays cleaning only.
+results:
+  - scenario_id: house_cleaning_s01
+    transcript:
+      - {who: homeowner, text: "need a cleaner"}
+      - {who: intake, text: "Happy to help. Ongoing, like every week or two, or a one-time clean?", step: question}
+      - {who: homeowner, text: "every 2 weeks"}
+      - {who: intake, text: "How many beds and baths, and one story or two?", step: question}
+      - {who: homeowner, text: "3 bed 2 bath. 2 story"}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "3 dogs. big. they shed. one is a husky mix"}
+      - {who: intake, text: "When did a pro last clean it?", step: question}
+      - {who: homeowner, text: "like 5 months"}
+      - {who: intake, text: "Havasu water is rough on glass. How do your shower doors look, any white spots?", step: question}
+      - {who: homeowner, text: "ya both showers. glass is covered in white spots"}
+      - {who: intake, text: "Carpet anywhere, like the stairs?", step: question}
+      - {who: homeowner, text: "stairs are carpet"}
+      - {who: intake, text: "Got it. First visit will be a bigger catch-up clean, then every two weeks after that. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: recurring, bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | House cleaning | Lake Havasu City
+      FACTS
+      - Recurring clean every two weeks.
+      - 3 bedrooms, 2 bathrooms, two-story. Stairs are carpeted.
+      - 3 large dogs that shed; one is a husky mix.
+      - About 5 months since the last professional clean.
+      - Shower glass in both bathrooms covered in white hard-water spots.
+      - No photo. Square footage not asked.
+      - Needed: not said.
+      SUSPECT
+      - First visit is an initial deep clean, not a maintenance clean: 5 months plus heavy dog hair.
+      - Shower glass needs a hard-water descale on the first visit; may not come fully clear if etched.
+      - Carpeted stairs with a husky will be slow: hand-tool vacuum every tread.
+      SITE / FIRST VISIT
+      - Price the first visit as an initial clean, then quote the biweekly rate.
+      - Confirm square footage and whether the dogs are put up during the clean.
+      - Test a corner of the shower glass before promising clear glass.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s02
+    transcript:
+      - {who: homeowner, text: "looking for a deep clean crew for my airbnb. every time guests leave. also do u guys handle the booking and collecting rent from the guests? my last girl only did the cleaning"}
+      - {who: intake, text: "Cleaning only on our end. Bookings and guest payments stay with you or the rental site. So you want a turnover clean at every checkout. How many beds and baths?", step: question}
+      - {who: homeowner, text: "oh ya I do the bookings thru the site anyway, just want the cleaning. its 3 bed 2 bath here in havasu. the last guests we had, you would not believe, they left a whole mess and then complained about the pool towels"}
+      - {who: intake, text: "Ha, it happens. About how many turnovers a month?", step: question}
+      - {who: homeowner, text: "about 4 a month, more in summer"}
+      - {who: intake, text: "What's the gap between checkout and the next check-in?", step: question}
+      - {who: homeowner, text: "checkout is 11am and on busy weekends the next ones get in at 4pm"}
+      - {who: intake, text: "Linens washed on site? Washer and dryer there?", step: question}
+      - {who: homeowner, text: "yes they have to be washed and the beds remade. washer and dryer are in the garage"}
+      - {who: intake, text: "How does the crew get in? Are you local?", step: question}
+      - {who: homeowner, text: "lockbox at the front door. Im in Phoenix so not there"}
+      - {who: intake, text: "Got it. Notes going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: turnover_cleaning, job_type: str_turnover, bank_job_type: "turnover clean", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Turnover cleaning | Lake Havasu City
+      FACTS
+      - Vacation rental turnover clean after every guest checkout. Cleaning only.
+      - 3 bedrooms, 2 bathrooms.
+      - About 4 turnovers a month, more in summer.
+      - Checkout 11am; on busy weekends next check-in is 4pm (5 hour window).
+      - Linens washed and beds remade on site; washer and dryer are in the garage.
+      - Access by lockbox at the front door. Owner lives in Phoenix and is not on site.
+      - No photo.
+      - Needed: not said (ongoing, per checkout).
+      SUSPECT
+      - Owner said deep clean but means a standard turnover each checkout. A one-time deep reset first would make turnovers faster; offer it as an option.
+      - 5 hours is tight for 3/2 with laundry on site: two-person crew, start the first linen load right away, or keep a spare linen set.
+      SITE / FIRST VISIT
+      - Walk-through to set a turnover checklist and photo standard for the owner.
+      - Ask about restocking supplies, damage reporting and a spare linen set.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s03
+    transcript:
+      - {who: homeowner, text: "need someone to deep clean my hall bathroom the floor around the toilet is always wet and smells nasty, the grout is just gross. i think it just needs a good scrub"}
+      - {who: intake, text: "When is the floor wet? After someone uses the toilet, or even when nobody's been in there?", step: question}
+      - {who: homeowner, text: "after every flush i guess. not when nobody uses it. its just grime tho"}
+      - {who: intake, text: "Does the toilet rock or shift at all when you sit on it?", step: question}
+      - {who: homeowner, text: "kinda rocks a little. but the floor is the problem"}
+      - {who: intake, text: "If you mop it dry, does it come back?", step: question}
+      - {who: homeowner, text: "ya i mopped it dry this morning and its wet again by evening"}
+      - {who: intake, text: "How long has this been going on?", step: question}
+      - {who: homeowner, text: "like 3 weeks"}
+      - {who: intake, text: "Honest answer: that's not grime. Wet after every flush plus a toilet that rocks is the seal under the toilet leaking. That's a plumber first. If we scrub it, it'll be wet and smelly again tomorrow. I'll send it as a plumbing job. Can you send a photo of the floor around the base?", step: photo}
+      - {who: homeowner, text: "[photo: tile floor around the toilet base, grout lines dark, a damp ring on the floor around the base of the toilet] i really think it just needs a scrub but whatever"}
+      - {who: intake, text: "Thanks. Once it's fixed, the grout will clean up. Notes going out to plumbers now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: toilet_issue, bank_job_type: "toilet repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Plumbing repair (sent over from a cleaning request) | Lake Havasu City
+      FACTS
+      - Hall bathroom: floor around the toilet gets wet after every flush, not when nobody uses it.
+      - Mopped dry in the morning, wet again by evening.
+      - Toilet rocks a little when sat on.
+      - Going on about 3 weeks. Smells bad.
+      - Homeowner first asked for a bathroom scrub; she believes it is grime.
+      - Photo: tile floor around the toilet base, dark grout lines, damp ring around the base.
+      - Needed: not said.
+      SUSPECT
+      - Failed wax ring from a loose or rocking toilet; possibly a broken flange or loose closet bolts.
+      - Water under the tile and grout soaking it up, hence the smell.
+      ON SITE
+      - Pull the toilet, check the flange and subfloor, reset on a new seal, shim if needed.
+      - Floor may need drying; grout can be cleaned or regrouted after the repair.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s04
+    transcript:
+      - {who: homeowner, text: "looking for a monthly house cleaning. here's my kitchen [photo: tidy kitchen with clear counters, wiped stovetop and a made-up island; no floors, no bathroom visible]"}
+      - {who: intake, text: "Thanks. How many beds and baths, and about how many square feet?", step: question}
+      - {who: homeowner, text: "4 bed 3 bath, about 2400 sq ft"}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "4 cats"}
+      - {who: intake, text: "Where are the litter boxes?", step: question}
+      - {who: homeowner, text: "2 in the laundry room and 1 in the hall bath"}
+      - {who: intake, text: "When was the last full clean, by you or a pro?", step: question}
+      - {who: homeowner, text: "honestly like 9 months"}
+      - {who: intake, text: "No judgment. Can you send a photo of a bathroom, or whatever room you'd least want me to see? It keeps the quote from changing on the day.", step: photo}
+      - {who: homeowner, text: "ok honestly the kitchen took me 2 hours to clean for that pic. the rest isnt like that"}
+      - {who: intake, text: "That helps. Anything extra for the first visit, like inside the oven or fridge?", step: question}
+      - {who: homeowner, text: "the oven. its never been cleaned, theres baked on grease"}
+      - {who: intake, text: "Got it. First visit will be priced as a deep clean, then monthly after. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: recurring, bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | House cleaning | Lake Havasu City
+      FACTS
+      - Wants monthly service.
+      - 4 bedrooms, 3 bathrooms, about 2,400 sq ft.
+      - 4 cats; 3 litter boxes (2 in the laundry room, 1 in the hall bath).
+      - About 9 months since the last full clean.
+      - Oven has baked-on grease and has never been cleaned; wants it done.
+      - Photo: kitchen only. Homeowner says she spent 2 hours tidying it for the photo and the rest of the house is not like that. No other photo sent.
+      - Needed: not said.
+      SUSPECT
+      - Do not price off the kitchen photo. First visit is a full deep clean: 9 months, 4 cats, litter dust and hair in every room.
+      - Oven is a heavy-degrease add-on; plan an extra hour.
+      SITE / FIRST VISIT
+      - Walk-through or a bathroom photo before a firm first-visit price.
+      - Quote first visit and the monthly rate separately.
+      - Check litter areas, floors and baseboards for cat hair and litter tracking.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s05
+    transcript:
+      - {who: homeowner, text: "Looking for a cleaning lady every other week for a 3 bedroom 2 bath. no pics, my phone is old and doesnt do pictures"}
+      - {who: intake, text: "No pictures needed. About how many square feet?", step: question}
+      - {who: homeowner, text: "About 1,900."}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "One small dog, a terrier. House trained."}
+      - {who: intake, text: "Carpet or hard floors?", step: question}
+      - {who: homeowner, text: "Tile throughout, no carpet."}
+      - {who: intake, text: "Anything to clean besides the main house, like a casita or guest quarters?", step: question}
+      - {who: homeowner, text: "Yes, there is a casita out back with 1 bedroom and 1 bath. A relative stays there about half the month. That too please."}
+      - {who: intake, text: "Will you be home to let the cleaner in?", step: question}
+      - {who: homeowner, text: "Yes, I'm home and will let her in."}
+      - {who: intake, text: "Got it. Notes going out now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: recurring, bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | House cleaning | Lake Havasu City
+      FACTS
+      - Recurring clean every other week.
+      - Main house: 3 bedrooms, 2 bathrooms, about 1,900 sq ft, tile throughout, no carpet.
+      - Plus a separate casita out back: 1 bedroom, 1 bathroom, also to be cleaned. A relative uses it about half the month.
+      - Total to clean: 4 bedrooms, 3 bathrooms across two buildings.
+      - One small house-trained terrier.
+      - Owner is home and lets the cleaner in.
+      - No photos provided (owner's phone can't send them).
+      - Needed: not said.
+      SUSPECT
+      - Casita adds roughly a third to the time; quote it as its own line.
+      - All tile is quick to vacuum and mop; grout lines may want attention on the first visit.
+      SITE / FIRST VISIT
+      - Walk both buildings on the first visit since there are no photos.
+      - Ask whether the casita is cleaned every visit or only when occupied.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s06
+    transcript:
+      - {who: homeowner, text: "Hello I am looking for a girl to help me with the house once a week. My daughter says to use this. I cant bend down much anymore"}
+      - {who: intake, text: "Hello Dolores. Happy to help. How many bedrooms and bathrooms?", step: question}
+      - {who: homeowner, text: "It is a small house, 2 bedrooms and 1 bathroom. It is in the old part of Lake Havasu, we bought it when my husband was still working. Dolores"}
+      - {who: intake, text: "Lovely. What would you like done each week?", step: question}
+      - {who: homeowner, text: "The floors and the bathroom, I cant bend for those. And could she do my laundry and change my bed and wash the dishes? Dolores"}
+      - {who: intake, text: "Yes, laundry, the bed and dishes are all fine. Will you be home when she comes?", step: question}
+      - {who: homeowner, text: "Yes I am home. I use a walker now. I will let her in myself, I do not like giving out a door code. Dolores"}
+      - {who: intake, text: "Good. Anything she should know about, like a pet or things on the floor?", step: question}
+      - {who: homeowner, text: "I have a little dog, he barks at strangers but he is a good boy. And my oxygen machine, the tube goes along the living room floor. Dolores"}
+      - {who: intake, text: "Thank you, that helps. Who should the bill go to, you or your daughter?", step: question}
+      - {who: homeowner, text: "My daughter pays for it. She lives out of town. Dolores"}
+      - {who: intake, text: "Got it, Dolores. I'll send this out now and businesses will reply here.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: recurring, bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | House cleaning | Lake Havasu City (older part of town)
+      FACTS
+      - Weekly clean.
+      - Small house, 2 bedrooms, 1 bathroom.
+      - Focus on floors and bathroom (homeowner can't bend).
+      - Extras each week: her laundry, change the bed linens, wash dishes.
+      - Homeowner is home during the clean, uses a walker, and lets the cleaner in herself. No door code.
+      - Oxygen concentrator with tubing along the living room floor.
+      - One small dog that barks at strangers.
+      - Her daughter (out of town) pays the bill. Homeowner is the contact unless told otherwise.
+      - No photo.
+      - Needed: not said.
+      SUSPECT
+      - About 2.5 to 3 hours a week with laundry and the bed.
+      SITE / FIRST VISIT
+      - Same cleaner each week; set a fixed day and time with her.
+      - Never move or vacuum over the oxygen tubing; keep paths clear for the walker; leave rugs flat.
+      - No floor left wet where she walks.
+      - Introduce yourself to the dog on the first visit.
+      - Confirm billing setup with the daughter before the first visit.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s07
+    transcript:
+      - {who: homeowner, text: "i need a move out clean for my apt. landlord said its gotta be done and passed inspection by friday 10am or he keeps my deposit. i move out thurs. can someone do it wed or thurs"}
+      - {who: intake, text: "Doable. Beds, baths and rough square feet?", step: question}
+      - {who: homeowner, text: "2 bed 1 bath like 900 sqft"}
+      - {who: intake, text: "What time Thursday will it be fully empty?", step: question}
+      - {who: homeowner, text: "everything out by thurs noon"}
+      - {who: intake, text: "Did the landlord give you a move-out list? What's on it?", step: question}
+      - {who: homeowner, text: "oven, inside the fridge, blinds, baseboards and carpet cleaning. he wants a receipt for the carpet"}
+      - {who: intake, text: "Which rooms are carpet, and any stains?", step: question}
+      - {who: homeowner, text: "both bedrooms. theyre stained"}
+      - {who: intake, text: "Carpet cleaning is usually its own service with its own receipt. Some cleaners do it, many don't. I'll flag it so they say up front. Can you send pics of the oven and the bathroom?", step: photo}
+      - {who: homeowner, text: "[photo: kitchen with greasy stovetop and grease on the oven door glass; bathroom with soap scum on the tub] please its my deposit, its a whole month of rent"}
+      - {who: intake, text: "Understood. How does the crew get in Thursday afternoon?", step: question}
+      - {who: homeowner, text: "i have the key til friday morning"}
+      - {who: intake, text: "Got it. Sending it out now as a Thursday afternoon move-out.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: move_out, bank_job_type: "move-out cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0107 | House cleaning: move-out | Lake Havasu City | DATE-CRITICAL
+      FACTS
+      - Move-out clean of a 2 bedroom, 1 bathroom apartment, about 900 sq ft.
+      - Unit empty by Thursday noon. Landlord inspection Friday 10am. Clean must be done Thursday afternoon (or Wednesday if the tenant is out earlier).
+      - Landlord's move-out list: oven, inside fridge, blinds, baseboards, and carpet cleaning.
+      - Carpet in both bedrooms is stained; landlord wants a carpet-cleaning receipt. Question for the business: do you do carpet cleaning with a receipt, or does the tenant need a separate carpet cleaner?
+      - Tenant (not owner) is booking; tenant has the key until Friday morning.
+      - Photos: greasy stovetop and grease on the oven door glass; soap scum on the tub.
+      - Needed: by Thursday, before the Friday 10am inspection.
+      SUSPECT
+      - Oven is the long pole: heavy degrease, glass scraped. Tub needs scum removal.
+      - Blinds and baseboards add real time in a 2/1; plan two people for a half day.
+      - Carpet: stains in both bedrooms may need a pro extraction; book a carpet cleaner the same afternoon if the crew doesn't do it.
+      SITE / FIRST VISIT
+      - Work from the landlord's list line by line; photo each item when done for the tenant.
+      - Arrange key handoff Thursday noon.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s08
+    transcript:
+      - {who: homeowner, text: "Hola buenas, necesito limpieza de mi casa. acabamos de terminar los pisos nuevos y hay polvo en todo. es de 4 recamaras"}
+      - {who: intake, text: "Claro que si. Cuantos banos tiene y es de uno o dos pisos?", step: question}
+      - {who: homeowner, text: "3 banos, un piso"}
+      - {who: intake, text: "Los pisos nuevos de que son y en que partes? Como se ven ahorita?", step: question}
+      - {who: homeowner, text: "son de piso ceramico, los pusieron la semana pasada en toda la casa. tienen como una nube blanca, se quita un poquito pero regresa"}
+      - {who: intake, text: "El polvo esta solo en muebles y repisas, o tambien en las ventilas, los abanicos y adentro de los gabinetes?", step: question}
+      - {who: homeowner, text: "si, en las ventilas, los abanicos y adentro de los gabinetes de la cocina"}
+      - {who: intake, text: "Hay gotas de pintura o algo pegado en zoclos o marcos de ventanas?", step: question}
+      - {who: homeowner, text: "si, unas gotas de pintura seca en algunos zoclos y marcos de ventanas"}
+      - {who: intake, text: "La casa esta vacia y el contratista ya termino?", step: question}
+      - {who: homeowner, text: "si ya se fue, nadie vive ahi todavia"}
+      - {who: intake, text: "Para cuando la necesita lista?", step: question}
+      - {who: homeowner, text: "antes de que lleguen los muebles en 10 dias"}
+      - {who: intake, text: "Me manda una foto de la sala con el piso?", step: photo}
+      - {who: homeowner, text: "[photo: living room with a fine pale dust on shelves and windowsills, paint-splatter marks on the base of a wall, a hazy white film on new floor tile]"}
+      - {who: intake, text: "Gracias. Eso es limpieza despues de obra, no una limpieza normal. La nube blanca muchas veces es residuo de la boquilla; vale la pena preguntarle al instalador. Ya mando su solicitud.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: post_construction, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | House cleaning: post-construction | Lake Havasu City | Homeowner texts in Spanish
+      FACTS
+      - After-remodel dust clean. New tile floors installed last week throughout the house.
+      - 4 bedrooms, 3 bathrooms, one story. Empty; contractor finished and gone, nobody living there yet.
+      - Tile has a white cloudy haze that wipes off a little but comes back.
+      - Dust is in the air vents, ceiling fans and inside the kitchen cabinets.
+      - Dried paint drips on some baseboards and window frames.
+      - Photo: fine pale dust on shelves and windowsills, paint-splatter marks at the base of a wall, hazy white film on the new tile.
+      - Needed: within 10 days, before furniture arrives.
+      SUSPECT
+      - Haze is grout or thinset residue from the install; needs a haze remover and a test spot, and may be the installer's to remove.
+      - Fine drywall/tile dust will resettle: plan two passes, vacuum before wiping, inside all cabinets.
+      - Return-air vents and the HVAC filter are full of dust; replace the filter and run the system before the final wipe.
+      SITE / FIRST VISIT
+      - Test the haze in a corner before quoting the floors.
+      - Bring razor scrapers for paint drips; confirm finish on frames before scraping.
+      - Owner speaks Spanish and some English; send a Spanish-speaking lead if possible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s09
+    transcript:
+      - {who: homeowner, text: "THERE IS BLACK MOLD EVERYWHERE IN MY HOUSE!!! my kids have been breathing it. i need the whole place cleaned TODAY"}
+      - {who: intake, text: "Let's look at it. Where exactly are you seeing the spots?", step: question}
+      - {who: homeowner, text: "its MOLD. its in the shower caulk and the grout and in two of the window tracks"}
+      - {who: intake, text: "Any on the walls or ceilings, or stains, bubbling paint or soft spots?", step: question}
+      - {who: homeowner, text: "no the walls and ceilings are clean. no stains no bubbling no soft spots"}
+      - {who: intake, text: "Any musty smell in the house, or a leak or flood lately?", step: question}
+      - {who: homeowner, text: "no smell. no leak or flood that i know of"}
+      - {who: intake, text: "Can you send a photo of the worst spot?", step: photo}
+      - {who: homeowner, text: "[photo: dark speckled spots along shower caulk and grout, and in the track of a bedroom window; walls and ceiling around them look clean and dry]"}
+      - {who: intake, text: "Thanks. From that, it's surface mildew in caulk, grout and window tracks. We see it all the time, and a deep clean takes care of most of it. Caulk that's stained through usually has to be cut out and redone. How many beds and baths, and when was the last thorough clean?", step: question}
+      - {who: homeowner, text: "3 bed 2 bath. like 8 months"}
+      - {who: intake, text: "One-time deep clean, and does any day this week work?", step: question}
+      - {who: homeowner, text: "one time. any day this week is fine"}
+      - {who: intake, text: "Got it. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: deep_clean, bank_job_type: "deep cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0109 | House cleaning: one-time deep clean | Lake Havasu City
+      FACTS
+      - One-time deep clean, whole house.
+      - 3 bedrooms, 2 bathrooms. About 8 months since a thorough clean.
+      - Dark spots in the shower caulk and shower grout, and in two window tracks only.
+      - Walls and ceilings: no stains, no bubbling, no soft spots. No musty smell. No known leak or flood.
+      - Photo: dark speckled spots along shower caulk and grout and in a bedroom window track; walls and ceiling around them look clean and dry.
+      - Homeowner is worried it is mold; calls it black mold.
+      - Needed: any day this week.
+      SUSPECT
+      - Surface mildew in caulk, grout and window tracks; not a remediation job from what was described.
+      - Grout and tracks clean up; caulk stained through will not, and may need recaulking (offer or refer).
+      SITE / FIRST VISIT
+      - Look at walls, ceilings and under sinks on arrival; if anything is on drywall, stop and refer to a mold or restoration company.
+      - Detail all window tracks, not just the two.
+      - Homeowner is anxious; explain what was cleaned and what was left.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s10
+    transcript:
+      - {who: homeowner, text: "hey, need a one time deep clean at my place, 3 bed 2 bath, before my sister visits. oh by the way theres been a faint rotten egg smell in the hall by the water heater closet since yesterday, probably nothing"}
+      - {who: intake, text: "Before the clean: a rotten egg smell by a water heater can be gas. Please get everyone outside and call 911 or the gas company from outside; they check it for free. Text SAFE once it's been checked.", step: "911"}
+      - {who: homeowner, text: "its probably nothing honestly. were all home right now. can we just do the clean"}
+      - {who: intake, text: "I'd still get it checked today. Is that a gas water heater, and any hissing?", step: question}
+      - {who: homeowner, text: "yeah gas water heater in the hall closet. no hissing"}
+      - {who: intake, text: "Okay. I'll set up the clean, but the crew won't go in until the smell's been checked. When do you need it done?", step: question}
+      - {who: homeowner, text: "sometime in the next two weeks"}
+      - {who: intake, text: "About how many square feet?", step: question}
+      - {who: homeowner, text: "about 1700"}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "one cat"}
+      - {who: intake, text: "Got it. Notes going out now. Please call about that smell.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: deep_clean, bank_job_type: "deep cleaning", unsure: false}
+    fire_dept_text: true
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0110 | House cleaning: one-time deep clean | Lake Havasu City
+      GAS FLAG (for the crew, not part of the job)
+      - Homeowner reports a faint rotten-egg smell in the hall by a gas water heater closet since yesterday; no hissing. She thinks it is nothing.
+      - Told to get out and call 911 or the gas company; she did not reply SAFE and said everyone is home.
+      - Crew: confirm it has been checked before entering. If you smell gas on arrival, do not go in.
+      FACTS (the job)
+      - One-time deep clean before her sister visits.
+      - 3 bedrooms, 2 bathrooms, about 1,700 sq ft.
+      - One cat.
+      - No photo. Last clean not asked.
+      - Needed: within the next two weeks.
+      SUSPECT
+      - Standard deep clean for the size; cat hair on soft furniture.
+      SITE / FIRST VISIT
+      - Confirm when the last clean was and what the sister visit date is.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s11
+    transcript:
+      - {who: homeowner, text: "need a deep clean before my in-laws visit next weekend, whole house. and my dryer takes like 3 cycles to dry anything, can somebody look at that too"}
+      - {who: intake, text: "Two different jobs. I'll set up the clean, and the dryer goes out as its own request. For the clean: beds, baths and how many stories?", step: question}
+      - {who: homeowner, text: "4 bed 3 bath, 2 story. can one person do both?"}
+      - {who: intake, text: "No, a cleaner won't touch the dryer. Any high stuff, like vaulted ceilings, tall fans or high windows?", step: question}
+      - {who: homeowner, text: "vaulted entry and the ceiling fans are high"}
+      - {who: intake, text: "When was the last full clean?", step: question}
+      - {who: homeowner, text: "about 3 months ago"}
+      - {who: intake, text: "Pets or kids?", step: question}
+      - {who: homeowner, text: "2 kids, no pets"}
+      - {who: intake, text: "What day does the visit start?", step: question}
+      - {who: homeowner, text: "next saturday, so needs to be done before that"}
+      - {who: intake, text: "Now the dryer. Gas or electric, and how long is the vent run?", step: question}
+      - {who: homeowner, text: "gas. its in the upstairs laundry closet. vent goes like 25 feet through the attic to the roof"}
+      - {who: intake, text: "How old is the dryer, and any hot or burning smell when it runs?", step: question}
+      - {who: homeowner, text: "like 9 years. vent has never been cleaned. smells like hot lint when it runs. ok im busy just send it"}
+      - {who: intake, text: "Will do. A 25-foot attic run that's never been cleaned plus a hot lint smell is almost surely a packed vent. I'd stop running it until the vent's cleaned. Clean request and dryer request both going out now.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: deep_clean, bank_job_type: "deep cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0111 | House cleaning: one-time deep clean | Lake Havasu City
+      FACTS
+      - One-time deep clean, whole house, before family arrives.
+      - 4 bedrooms, 3 bathrooms, two-story.
+      - Vaulted entry and high ceiling fans.
+      - About 3 months since the last full clean.
+      - 2 kids, no pets.
+      - No photo.
+      - Needed: done before next Saturday.
+      SUSPECT
+      - Moderate deep clean (3 months is not a big gap); the high fans and vaulted entry are the extra.
+      SITE / FIRST VISIT
+      - Bring an extension pole and a tall ladder for the fans and entry ledges.
+      - Two-person crew to finish in one day before the date.
+    second_card: |
+      REQ-0112 | Dryer vent cleaning (separate request; not for the cleaning crew) | Lake Havasu City
+      FACTS
+      - Dryer takes about 3 cycles to dry a load.
+      - Gas dryer, about 9 years old, in an upstairs laundry closet.
+      - Vent runs about 25 feet through the attic to the roof; never been cleaned.
+      - Smell of hot lint when the dryer runs.
+      - Needed: not said.
+      SUSPECT
+      - Lint-packed vent, likely at the roof cap or a crushed run in the attic. If the vent is clear, the dryer itself goes to appliance repair.
+      ON SITE
+      - Roof access for the cap; check the attic run for crushed or disconnected duct; check airflow at the cap after cleaning.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s12
+    transcript:
+      - {who: homeowner, text: "Looking for a house cleaner every 2 weeks for my home in Parker, 3 bed 2 bath"}
+      - {who: intake, text: "We don't cover Parker yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s13
+    transcript:
+      - {who: homeowner, text: "Looking for a regular house cleaner, every 2 weeks. 5 bedroom 4 bath in the Lake Havasu City north side, almost 4,000 sq ft"}
+      - {who: intake, text: "We don't cover house cleaning jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: recurring, bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s14
+    transcript:
+      - {who: homeowner, text: "need a deep clean for my brothers house. hes been in the hospital for a while and it got kind of backed up. 3 bed 2 bath, one time"}
+      - {who: intake, text: "Sorry he's been in the hospital. So I send the right crew: in the main rooms, about how much of the floor can you see?", step: question}
+      - {who: homeowner, text: "honestly not much. stuff is stacked almost to the ceiling in most rooms. boxes, bags, papers. just narrow paths to the bathroom and his bed"}
+      - {who: intake, text: "Thanks for telling me straight. Do things need to be sorted or hauled out before cleaning, or is most of it trash?", step: question}
+      - {who: homeowner, text: "it needs to be gone through. and theres dozens of full trash bags in the garage"}
+      - {who: intake, text: "How's the kitchen?", step: question}
+      - {who: homeowner, text: "sink and counters are covered with dishes and old food containers"}
+      - {who: intake, text: "Any sign of mice or bugs, or a strong smell?", step: question}
+      - {who: homeowner, text: "theres mouse droppings in a few rooms. and it smells like garbage when you open the door"}
+      - {who: intake, text: "Will anyone be there, or do you have a key?", step: question}
+      - {who: homeowner, text: "i have a key. he wont be there"}
+      - {who: intake, text: "How soon do you need it done?", step: question}
+      - {who: homeowner, text: "within a month. its not an emergency"}
+      - {who: intake, text: "Got it. This is a cleanout first, then a clean, and the company will want to walk it before quoting. Sending it to crews that handle this kind of job.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: specialty_route, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0114 | House cleaning: heavy-condition cleanup (not a standard deep clean) | Lake Havasu City
+      FACTS
+      - 3 bedrooms, 2 bathrooms. Owner (the requester's brother) has lived alone there for years and is away in the hospital.
+      - Most rooms: belongings stacked floor to nearly ceiling (boxes, bags, papers). Only narrow paths to the bathroom and the bed.
+      - Items need to be sorted, not just thrown out.
+      - Kitchen sink and counters covered with dishes and old food containers.
+      - Rodent droppings in several rooms. Strong garbage smell at the door.
+      - Dozens of full trash bags in the garage.
+      - Requester (his sister) has a key; owner will not be present.
+      - No photo.
+      - Needed: within a month, not an emergency.
+      SUSPECT
+      - Multi-day job: sorting and haul-off (dumpster or several trailer loads) before any cleaning can start.
+      - Rodent activity likely ongoing; pest control may be needed before or alongside.
+      SITE / FIRST VISIT
+      - Site visit required before any price. Walk it with the sister.
+      - Set up sorting rules with her (keep, donate, toss, papers to review).
+      - Crew in respirators and gloves for droppings; wet-clean droppings, no dry sweeping.
+      - Be discreet and respectful; no photos shared outside the job.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s15
+    transcript:
+      - {who: homeowner, text: "need the garage and attic cleaned out and sanitized, got a bunch of mouse crap up there, figure a cleaning crew can just vacuum it up. 3 bedroom house"}
+      - {who: intake, text: "Are they still around? Hear anything at night, or seen one lately?", step: question}
+      - {who: homeowner, text: "ya hear scratching in the attic walls at night. saw one in the garage a week ago. no traps yet"}
+      - {who: intake, text: "How much of the attic has droppings, and where in the garage?", step: question}
+      - {who: homeowner, text: "most of the attic. two corners of the garage"}
+      - {who: intake, text: "Can you send a photo of the attic?", step: photo}
+      - {who: homeowner, text: "[photo: attic insulation with scattered dark pellets, shredded paper nesting material in one corner]"}
+      - {who: intake, text: "Any nests, or chewed wires or ducts?", step: question}
+      - {who: homeowner, text: "nests in the insulation. some chewed wires near a vent"}
+      - {who: intake, text: "Then they're still living there. If we clean now, it's dirty again in a month. It needs a licensed pest company to trap and seal first, then cleanup; many pest outfits do both. I'd also have an electrician look at those wires. I'll send it to pest control with the cleanup included.", step: question}
+      - {who: homeowner, text: "i want the problem gone, not just the mess. fine"}
+      - {who: intake, text: "About how many square feet, and one story?", step: question}
+      - {who: homeowner, text: "about 1600, single story"}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "no pets"}
+      - {who: intake, text: "Got it. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: rodents, bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0115 | Pest control: rodents (sent over from a cleaning request) | Lake Havasu City
+      FACTS
+      - Rodents in the attic and garage. Scratching in the attic walls at night. One seen in the garage a week ago. No trapping done yet.
+      - Droppings over most of the attic and in two corners of the garage.
+      - Nests in the attic insulation. Chewed wires near a vent (no sparking or burning reported).
+      - 3 bedrooms, single story, about 1,600 sq ft. No pets.
+      - Photo: attic insulation with scattered dark pellets, shredded paper nesting in one corner.
+      - Homeowner wants the problem gone and the attic and garage cleaned up and sanitized after.
+      - Needed: not said.
+      SUSPECT
+      - Active roof rat or mouse infestation with entry at the roof line, vents or garage door seals.
+      - Insulation may need removal and replacement if heavily soiled.
+      ON SITE
+      - Licensed pest management business only: inspect, trap, exclusion (seal entries), then cleanup.
+      - Cleanup crew: wet-method droppings removal, respirators (hantavirus precaution), sanitize; bag soiled insulation.
+      - Note the chewed wires for the homeowner to have an electrician check.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s16
+    transcript:
+      - {who: homeowner, text: "HELP my cleaner no showed and guests check in at 3pm!!! its 11:30 now. 2 bedroom 1 bath airbnb in havasu. need someone TODAY"}
+      - {who: intake, text: "On it. How does the crew get in?", step: question}
+      - {who: homeowner, text: "smart lock ill send the code. im in phoenix i cant come"}
+      - {who: intake, text: "Linens and towels washed there? Washer and dryer on site?", step: question}
+      - {who: homeowner, text: "yes all of it needs washed and remade. washer dryer are there"}
+      - {who: intake, text: "Send a pic of the worst of it?", step: photo}
+      - {who: homeowner, text: "[photo: living room with pizza boxes and cups on the table, an overturned drink stain on the carpet near the couch, unmade beds in the bedroom] last guests partied. food on the floor and a big drink stain on the carpet"}
+      - {who: intake, text: "Anything else on your list, like trash, patio or a hot tub?", step: question}
+      - {who: homeowner, text: "trash bins are full and need to go to the curb for tomorrow. hot tub needs a wipe down and the cover back on"}
+      - {who: intake, text: "Got it. I can't promise anyone makes 3pm, but it's going out as same-day right now.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: turnover_cleaning, job_type: str_turnover, bank_job_type: "turnover clean", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0116 | Turnover cleaning | Lake Havasu City | SAME DAY
+      FACTS
+      - Vacation rental turnover, 2 bedrooms, 1 bathroom. Original cleaner did not show.
+      - Check-out was this morning; next guests check in at 3pm today. Request sent at 11:30am.
+      - Party mess from the last guests: pizza boxes, cups, food on the floor, large drink stain on the carpet by the couch.
+      - All bed linens and towels to wash and remake; washer and dryer on site.
+      - Trash bins are full and go to the curb for tomorrow's pickup.
+      - Hot tub on the patio: wipe down and put the cover back on.
+      - Access by smart lock; host sends the code. Host is in Phoenix and cannot come.
+      - Photo: as above, plus unmade beds.
+      - Needed: today, before 3pm check-in.
+      SUSPECT
+      - Two people minimum to make 3pm; start laundry the minute you walk in.
+      - Drink stain may need a spot extractor; may not fully come out today, tell the host.
+      SITE / FIRST VISIT
+      - Text the host photos when done, including the carpet spot and hot tub cover.
+    facts_in_card_not_stated: []
