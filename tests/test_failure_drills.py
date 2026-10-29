@@ -67,6 +67,17 @@ class FakeEnv:
         self.pushes += 1
         return True
 
+    def update_state(self, transform: Callable[[st.State], st.State | None]) -> st.State | None:
+        """GitHubEnv.update_state over the fake store: read fresh, transform, push; five tries (D-515)."""
+        for _ in range(5):
+            fresh = self.read_state()
+            new = transform(copy.deepcopy(fresh))
+            if new is None:
+                return None
+            if new == fresh or self.push_state(new, fresh):
+                return new
+        return None
+
     def read_inbox(self) -> list[tuple[str, str, str]]:
         return list(self.inbox)
 
@@ -801,3 +812,179 @@ def test_drill_a_rejected_branch_push_blocks_the_task_and_frees_the_lease(tmp_pa
     assert t1["status"] == st.BLOCKED and "push rejected" in t1["reason"]
     assert env.store["lease"] is None
     assert st.eligible(env.store, NOW) == ["T002"]
+
+
+# ---- D-515 drills: safe writes (update_state) for renew and the final lease release
+
+
+def _rival_records_inbox(env: FakeEnv, tmp_path: Path, at: datetime) -> None:
+    """A second session's cycle while the lease is live: it records an inbox answer and exits lease_live."""
+    env.inbox = [("6-1", "T127", "hello")]
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path, "rival"), env, at) == "lease_live"
+
+
+def test_drill_a_rival_write_before_the_final_release_keeps_both_writes(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    real_push = env.push_branch
+
+    def push_then_rival(branch: str, head: str) -> bool:
+        _rival_records_inbox(env, tmp_path, NOW + timedelta(minutes=1))
+        return real_push(branch, head)
+
+    env.push_branch = push_then_rival  # type: ignore[method-assign]  # reason: a rival writes mid-finish
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    assert st.status(env.store, "T001") == st.MERGE_PENDING and env.store["lease"] is None
+    assert st.entry(env.store, "T001")["reviewed_sha"] == "good0001"
+    assert env.store["owner_answers"][0]["note"] == "hello" and env.store["inbox_processed"] == ["6-1"]
+
+
+def test_drill_the_final_release_gives_up_when_the_lease_moved_on(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+
+    def lease_taken(branch: str, head: str) -> bool:
+        env.store = st.with_lease(env.store, "1", {"task": "T001", "session": "other", "expires": "2026-11-01T18:00:00Z"})
+        return True
+
+    env.push_branch = lease_taken  # type: ignore[method-assign]  # reason: another session holds the lease now
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+    assert env.store["lease"]["session"] == "other" and st.status(env.store, "T001") == st.IN_PROGRESS
+
+
+def test_drill_heartbeat_renews_on_the_fresh_state_after_a_rival_write(tmp_path: Path) -> None:
+    env = FakeEnv()
+    clock = {"now": NOW}
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        _rival_records_inbox(env, tmp_path, NOW + timedelta(minutes=10))
+        clock["now"] = NOW + timedelta(minutes=31)
+        heartbeat()
+        assert env.store["lease"]["expires"] == "2026-11-01T15:31:00Z"
+        return good(task, model)
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    assert env.store["owner_answers"][0]["note"] == "hello" and env.store["lease"] is None
+
+
+def test_drill_heartbeat_leaves_a_lost_lease_alone(tmp_path: Path) -> None:
+    env = FakeEnv()
+    clock = {"now": NOW}
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        env.store = st.with_lease(env.store, "1", {"task": "T001", "session": "other", "expires": "2026-11-01T18:00:00Z"})
+        clock["now"] = NOW + timedelta(minutes=31)
+        pushes = env.pushes
+        heartbeat()
+        assert env.pushes == pushes and env.store["lease"]["session"] == "other"
+        return good(task, model)
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+
+
+STALL = NOW + timedelta(hours=3, minutes=1)  # the runner stalled past the lease's three hours
+
+
+def _released_and_reclaimed(env: FakeEnv) -> None:
+    """Another session's cycle after the stall: the expired lease is released and T001 claimed again."""
+    env.store = st.claim(st.release_expired(env.store, STALL), "T001", "s2", STALL)
+
+
+def _ends_lost_with_nothing_written(env: FakeEnv) -> None:
+    assert env.store["lease"]["session"] == "s2" and st.status(env.store, "T001") == st.IN_PROGRESS
+    assert "reviewed_sha" not in st.entry(env.store, "T001") and env.branch_pushes == [] and env.auto_merges == []
+
+
+def test_drill_a_stalled_worker_whose_lease_was_reclaimed_writes_nothing(tmp_path: Path) -> None:
+    """D-515 review, blocking: the lease expired during a stall and another session claimed the task;
+    our worker then finishes without a heartbeat in between. No review record, no branch push."""
+    env = FakeEnv()
+    clock = {"now": NOW}
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        _released_and_reclaimed(env)
+        clock["now"] = STALL + timedelta(minutes=5)
+        return reviewed(task, model, head="late0001")
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: a worker that stalls and then finishes
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+    _ends_lost_with_nothing_written(env)
+
+
+def test_drill_a_heartbeat_after_the_lease_was_reclaimed_ends_lost_with_no_push(tmp_path: Path) -> None:
+    env = FakeEnv()
+    clock = {"now": NOW}
+    pushes: list[int] = []
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        _released_and_reclaimed(env)
+        clock["now"] = STALL + timedelta(minutes=5)
+        pushes.append(env.pushes)
+        heartbeat()
+        heartbeat()  # once lost, later beats do nothing
+        return reviewed(task, model, head="late0001")
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+    assert env.pushes == pushes[0]
+    _ends_lost_with_nothing_written(env)
+
+
+def test_drill_a_heartbeat_never_raises_when_the_state_cannot_be_read(tmp_path: Path) -> None:
+    """D-515 review, medium: a failed read inside the renewal must not crash the runner mid-worker."""
+    env = FakeEnv()
+    clock = {"now": NOW}
+
+    real = env.update_state
+
+    def unreadable(transform: Callable[[st.State], st.State | None]) -> st.State | None:
+        raise RuntimeError("kit/state.json not found on claude/kit-state")
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        env.update_state = unreadable  # type: ignore[method-assign]  # reason: a fetch that fails
+        clock["now"] = NOW + timedelta(minutes=31)
+        heartbeat()  # must not raise, and must not count as a lost lease
+        env.update_state = real  # type: ignore[method-assign]  # reason: the fetch works again
+        return reviewed(task, model, head="good0001")
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    assert env.branch_pushes == [("claude/task/T001-x", "good0001")]
+
+
+def test_drill_one_transient_renewal_failure_then_a_good_beat_submits_normally(tmp_path: Path) -> None:
+    """D-515: a fetch blip must never cost the attempt or a three-hour lease hold; the next beat renews."""
+    env = FakeEnv()
+    clock = {"now": NOW}
+    real = env.update_state
+    blips = {"left": 1}
+
+    def flaky(transform: Callable[[st.State], st.State | None]) -> st.State | None:
+        if blips["left"]:
+            blips["left"] -= 1
+            return None  # what GitHubEnv.update_state returns after every try failed to read or push
+        return real(transform)
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        clock["now"] = NOW + timedelta(minutes=31)
+        heartbeat()
+        assert env.store["lease"]["expires"] == "2026-11-01T15:00:00Z"  # not renewed yet, not lost either
+        clock["now"] = NOW + timedelta(minutes=32)
+        heartbeat()
+        assert env.store["lease"]["expires"] == "2026-11-01T15:32:00Z"
+        return reviewed(task, model, head="good0001")
+
+    env.update_state = flaky  # type: ignore[method-assign]  # reason: one renewal that fails transiently
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.MERGE_PENDING and t1["reviewed_sha"] == "good0001" and env.store["lease"] is None
+    assert env.branch_pushes == [("claude/task/T001-x", "good0001")]

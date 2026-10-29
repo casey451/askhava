@@ -2,7 +2,8 @@
 # (D-486, D-479). It never enables auto-merge: the runner does that itself after its review, as its own
 # identity, so the merge starts workflows (pull_request.closed starts backup-runner). The decision is
 # runner/verify.py auto_merge_reason, read from main (never from the pushed branch), over the task's
-# reviewed_sha and review lease in kit/state.json on claude/kit-state and the lease on claude/lease.
+# reviewed_sha and review lease in kit/state.json on claude/kit-state and the lease on claude/lease
+# (the lane map `leases` when lease.json has one, else the single `lease`; verify accepts both, D-515).
 # The branch ruleset still enforces the required checks (Ci, Twin, Ally).
 name: auto-pr
 on:
@@ -55,7 +56,8 @@ jobs:
           mod = importlib.util.module_from_spec(spec)
           spec.loader.exec_module(mod)
           state = json.load(open(sys.argv[2]))
-          lease = json.load(open(sys.argv[3])).get("lease")
+          doc = json.load(open(sys.argv[3]))
+          lease = doc.get("leases") or doc.get("lease")
           if not hasattr(mod, "auto_merge_reason"):
               print("main has no runner review gate yet (runner/verify.py auto_merge_reason)")
           else:

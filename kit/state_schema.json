@@ -77,6 +77,44 @@
         }
       }
     },
+    "lanes": {
+      "type": "integer"
+    },
+    "leases": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "required": [
+          "task",
+          "session",
+          "expires"
+        ],
+        "properties": {
+          "task": {
+            "type": "string",
+            "minLength": 1
+          },
+          "session": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expires": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+          },
+          "lane": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
     "main_red": {
       "type": [
         "object",

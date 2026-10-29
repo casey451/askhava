@@ -142,12 +142,32 @@ def task_id_from_branch(branch: str) -> str:
     return found.group(1) if found else ""
 
 
+LEASE_KEYS = ("task", "session", "expires")
+
+
+def lane_lease(lease: dict[str, Any] | None, lane: str) -> dict[str, Any] | None:
+    """The lease that decides for a lane, from either format auto-pr may pass (D-515).
+
+    `lease` is a single lease (the old `lease` of lease.json, which is lane "1") or the `leases`
+    map {lane: lease | None}. A single lease is taken as it is, whatever the lane, so a caller that
+    still passes the old shape decides exactly as before D-515.
+    """
+    if not lease:
+        return None
+    if any(key in lease for key in LEASE_KEYS):
+        return lease
+    found = lease.get(lane)
+    return found if isinstance(found, dict) else None
+
+
 def auto_merge_reason(state: dict[str, Any], branch: str, head_sha: str, lease: dict[str, Any] | None = None) -> str:
     """Why auto-pr must not enable auto-merge on this push; '' when it may (D-486, D-479).
 
     The runner writes `reviewed_sha` and `review_lease` (the lease it held) on the task in
     kit/state.json before it pushes a task branch. Auto-merge needs both to name this branch's
-    task and this exact head, the task still in flight, and no other task holding the lease.
+    task and this exact head, the task still in flight, and no other task holding the task's lane
+    lease: the lane named in `review_lease` (lane "1" when it names none), read from `lease`, which
+    is either a single lease or the lane map (lane_lease, D-515).
     """
     tid = task_id_from_branch(branch)
     if not tid:
@@ -157,12 +177,14 @@ def auto_merge_reason(state: dict[str, Any], branch: str, head_sha: str, lease: 
         return f"{tid} is not in kit/state.json"
     if task.get("reviewed_sha") != head_sha:
         return f"no runner review record for {head_sha[:12] or 'this head'} (reviewed_sha {str(task.get('reviewed_sha'))[:12]})"
-    if (task.get("review_lease") or {}).get("task") != tid:
+    review_lease = task.get("review_lease") or {}
+    if review_lease.get("task") != tid:
         return f"the review record for {tid} was not written under its lease"
     if task.get("status") not in LIVE_STATUSES:
         return f"{tid} is {task.get('status')}, not in flight"
-    if lease and lease.get("task") not in (None, tid):
-        return f"the lease is held by {lease.get('task')}"
+    held = lane_lease(lease, str(review_lease.get("lane") or "1"))
+    if held and held.get("task") not in (None, tid):
+        return f"the lease is held by {held.get('task')}"
     return ""
 
 
