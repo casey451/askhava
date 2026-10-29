@@ -367,7 +367,7 @@ def check_scenarios(problems: Problems, root: Path, cats: dict[str, Any], kb: di
                 if not sc.get(key):
                     problems.add(rel, f"{sid}: needs {key}")
             exp = sc.get("expected") or {}
-            if kind not in ("outside_area", "no_businesses", "two_trades") and exp.get("job_type") not in job_ids and exp.get("category") == cid:
+            if kind not in ("outside_area", "no_businesses", "two_trades") and exp.get("job_type") is not None and exp.get("job_type") not in job_ids and exp.get("category") == cid:
                 problems.add(rel, f"{sid}: expected.job_type '{exp.get('job_type')}' is not in the expert file")
             if exp.get("category") and exp["category"] not in cats:
                 problems.add(rel, f"{sid}: expected.category '{exp['category']}' unknown")

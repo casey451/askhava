@@ -372,7 +372,7 @@ job_types:
         ask_when: "Owner is away, out of state, or a rental, and access was not described"
         text_en: "How will the business get to the pool?"
         text_es: "¿Cómo va a llegar el negocio a la alberca?"
-        options_en: ["Through a gate that is unlocked", "Through a gate with a lock or lockbox", "Someone at the home lets them in"]
+        options_en: ["Through a gate with no lock", "Through a gate with a lock or lockbox", "Someone at the home lets them in"]
         options_es: ["Por una puerta sin llave", "Por una puerta con candado o caja de llave", "Alguien en la casa les abre"]
         card_field: true
         why: "Route techs plan stops around gates; no codes go on the card, only the kind of access. [judgment]"
@@ -397,7 +397,7 @@ job_types:
     card_template: |
       REQ-<id> | Weekly pool cleaning | <town>, <general area> | <house / rental / HOA community>
       <one scope line: season, size, spa, access>
-      Months: <all year / while away / while here / a few weeks>. Access: <unlocked gate / locked gate or lockbox / someone lets them in>. House check too: <yes, separate card / no>.
+      Months: <all year / while away / while here / a few weeks>. Access: <gate with no lock / locked gate or lockbox / someone lets them in>. House check too: <yes, separate card / no>.
       Pool: <size band>, spa <yes / no>, water <clear / cloudy / green>. Chemicals: <included / homeowner buys>. Trees or palms: <over / close by / none / not said>.
       Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
       Needed: <timing answer>.

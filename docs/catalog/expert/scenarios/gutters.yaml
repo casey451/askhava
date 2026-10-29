@@ -121,7 +121,7 @@ scenarios:
       - "no photo: the AI should ask once, accept the no, and not ask again"
     expected:
       category: gutters
-      job_type: gutter_repair_route
+      job_type: gutter_install
       bank_job_type: "gutter install"
       fire_dept_text: false
       urgent: false
@@ -154,7 +154,7 @@ scenarios:
       - "reply must stay in Spanish; card fields should be readable by English-speaking businesses"
     expected:
       category: gutters
-      job_type: solar_wash
+      job_type: null   # solar panel washing has no category job type; see gutters.yaml NOTES FOR REVIEW
       bank_job_type: null
       fire_dept_text: false
       urgent: false
@@ -248,7 +248,7 @@ scenarios:
       - "the signed deposit is not a card fact; the AI must not repeat the salesman's price"
     expected:
       category: gutters
-      job_type: gutter_repair_route
+      job_type: gutter_install
       bank_job_type: "gutter install"
       fire_dept_text: false
       urgent: false
@@ -371,7 +371,7 @@ scenarios:
       - "the AI must not present the paint as part of the gutter quote"
     expected:
       category: gutters
-      job_type: gutter_repair_route
+      job_type: gutter_install
       bank_job_type: "gutter install"
       fire_dept_text: false
       urgent: false

@@ -272,7 +272,7 @@ results:
     card: |
       REQ-0109 | Yard maintenance | Lake Havasu City | house
       One-time cleanup of the front and side yard, about 1,500 sq ft: weeds, a pile of dead palm fronds and wooden pallets, trash bags.
-      Mostly: mix. Yard: medium (about 1,500 sq ft, front and side). Haul away: yes, all of it. Weeds: not said. Slope: not said. Notice deadline: none (listing photos Saturday morning).
+      Mostly: mix. Yard: medium (about 1,500 sq ft, front and side). Haul away: yes, all of it. Weeds: not said. Slope: not said. Notice deadline: not said (listing photos Saturday morning).
       Photos: 1 (front and side gravel, patches of tall dry weeds, a pile of dead palm fronds and old wooden pallets against the side fence, two full trash cans). Homeowner adds: wants it as soon as possible; will pay extra.
       Needed: by a date, Saturday morning (listing photos).
     facts_in_card_not_stated: []
@@ -341,7 +341,7 @@ results:
       - {who: intake, step: coverage, text: "We don't cover Parker yet."}
     questions_asked: 0
     follow_up_used: null
-    skipped_bank_questions: [service, how_often, yard_size, haul_away]
+    skipped_bank_questions: []
     routing: {category: landscape_maintenance, job_type: null, bank_job_type: null, unsure: false}
     fire_dept_text: false
     urgent: false
@@ -355,10 +355,67 @@ results:
       - {who: intake, step: coverage, text: "We don't cover yard maintenance jobs yet. We've noted your request so we can add businesses."}
     questions_asked: 0
     follow_up_used: null
-    skipped_bank_questions: [service, how_often, yard_size, haul_away]
+    skipped_bank_questions: []
     routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
     fire_dept_text: false
     urgent: false
     stopped_before_card: no_businesses
     card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s14
+    transcript:
+      - {who: homeowner, text: "I need my gravel yard sprayed for weeds before winter. last year my gardener did it but he quit. pre-emergent, front and back. he used the sprayer"}
+      - {who: intake, step: read, text: "Pre-emergent weed spraying is a pest control request, not yard work. I can't take it here, so it goes to pest control."}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: weed_control, bank_job_type: "pre-emergent weed control", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: routed_elsewhere
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s15
+    transcript:
+      - {who: homeowner, text: "WATER IS EVERYWHERE!! my sprinkler pipe or whatever it is is gushing in the front and its flooding all the gravel!! its running toward the garage!! i turned off the timer and it didnt stop"}
+      - {who: intake, step: read, text: "This sounds like a leaking water line, not yard work. It goes to plumbing repair, so I can't take it here."}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: leak_active, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: routed_elsewhere
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s16
+    transcript:
+      - {who: homeowner, text: "need my palms skinned and haircut b4 monsoon wind takes em out. 3 of em front. whos does that"}
+      - {who: intake, step: question, text: "How often? 1 Once 2 Weekly 3 Every two weeks 4 Monthly"}
+      - {who: homeowner, text: "one time. no regular service"}
+      - {who: intake, step: question, text: "Should everything be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "yes, the dead fronds and seed pods, haul it all off"}
+      - {who: intake, step: follow_up, text: "Are any of the branches or fronds close to an overhead power line? 1 Yes 2 No"}
+      - {who: homeowner, text: "yes, one palm is close to the wire to the house"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] three tall fan palms with dead brown fronds hanging down the trunks, one palm's fronds close to a utility wire"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 5
+    follow_up_used: fu_near_wires
+    skipped_bank_questions: [service]
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "trimming", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0116 | Yard maintenance | Lake Havasu City | house
+      One-time trim of three front palms: remove dead fronds and seed pods, haul away.
+      Trim: palms (3). Tallest: not said. Near overhead line: yes (one palm close to the wire to the house). How often: once. Haul away: yes.
+      Photos: 1 (three tall fan palms with dead brown fronds hanging down the trunks; one palm's fronds near a utility wire). Homeowner adds: needs them done before monsoon.
+      Needed: not said.
     facts_in_card_not_stated: []
