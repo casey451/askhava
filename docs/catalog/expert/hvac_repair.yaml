@@ -10,8 +10,10 @@
 #   hvac_replacement, or deciding it routes as "full system replacement".
 # - Left out from evaporative_coolers.yaml: cooler_replacement, cooler_new_install, cooler_remove_convert.
 #   Neither HVAC category has a job type for replacing, adding or removing a swamp cooler.
-# - new_job_type: swamp_cooler_repair and swamp_cooler_service. The hvac kb file has no swamp cooler job type;
-#   both route as "evaporative (swamp) cooler repair". Labels and must-knows draw on evaporative_coolers.yaml.
+# - new_job_type: cooler_not_cooling, cooler_not_running, cooler_leak, cooler_startup. The hvac kb file has no
+#   swamp cooler job type, so these reuse the evaporative_coolers.yaml ids (matching the scenario file) and all
+#   route as "evaporative (swamp) cooler repair". Folded in: cooler_smell into cooler_not_cooling, cooler_overflow
+#   into cooler_leak, cooler_winterize and cooler_pads into cooler_startup.
 # - ac_not_turning_on, ac_leaking_water, ac_noise_smell, mini_split_repair and ac_maintenance map to
 #   "AC not cooling" because the category has no closer job type. Effect: R-39R Air Conditioning and
 #   Refrigeration holders see them (license_map.yaml), which fits the work.
@@ -161,7 +163,7 @@ trade_brief:
       source: lhc_ccr
   misdiagnosis_checks:
     - sounds_like: "AC not cooling"
-      might_be: "swamp_cooler_repair"
+      might_be: "cooler_not_cooling"
       one_question: system_type
       if_other_route_to: {category: hvac_repair, job_type: "evaporative (swamp) cooler repair"}
       source: null
@@ -916,31 +918,31 @@ job_types:
       Needed: <timing answer>.
     never_say: ["Your ducts are leaking.", "You need bigger ducts.", "Close the vents in the other rooms.", "Duct cleaning helps with allergies."]
 
-  - id: swamp_cooler_repair
+  - id: cooler_not_cooling
     new_job_type: true
-    label: "Swamp cooler not cooling, not running, leaking, overflowing, smelling or noisy"
+    label: "Swamp cooler runs but the air is not cool, feels humid, or smells"
     bank_job_type: "evaporative (swamp) cooler repair"
     recurring: false
-    homeowner_phrasings: ["swamp cooler not cooling", "swamper", "cooler pump not pumping", "cooler leaking", "cooler overflowing", "el cooler no enfría"]
+    homeowner_phrasings: ["swamp cooler not cooling", "swamper", "cooler feels humid", "cooler smells musty", "el cooler no enfría"]
     must_know:
-      - fact: "Where the cooler sits"
+      - fact: "That it is a swamp cooler and not refrigerated AC, and where it sits"
         bank_question: system_type
         follow_up: fu_cooler_where
         photo: p2_whole_unit
-        why_it_moves_price: "Roof coolers need ladder and roof time; window and ground units are faster. [judgment]"
+        why_it_moves_price: "Roof coolers need ladder and roof time; window and ground units are faster; refrigerated AC is a different visit. [judgment]"
         skip_if: "Whole-cooler photo sent"
-      - fact: "What the cooler is doing"
+      - fact: "What the cooler is doing, including smell or dry pads"
         bank_question: symptom
         follow_up: fu_cooler_doing
         photo: null
-        why_it_moves_price: "Dry pads, a dead motor, a leak and a smell each send different parts. [judgment]"
+        why_it_moves_price: "Dry pads, a smell and plain warm air each send different parts. [judgment]"
         skip_if: "Homeowner's words say which"
-      - fact: "For a leak: when it shows and whether water comes inside"
+      - fact: "When the pads were last changed and the cooler last cleaned"
         bank_question: null
-        follow_up: fu_leak_when
-        photo: p5_leak_area
-        why_it_moves_price: "Water after rain at the cooler vent can be the roof jack, a roofing job. [judgment]"
-        skip_if: "Not a leak"
+        follow_up: fu_cooler_last_service
+        photo: p2_whole_unit
+        why_it_moves_price: "Old scaled pads and a dirty pan add parts and cleaning time; city water near 19 grains per gallon scales them fast [src:lhc_ccr]."
+        skip_if: "Homeowner said"
       - fact: "Size and age from the label"
         bank_question: age
         follow_up: null
@@ -952,10 +954,10 @@ job_types:
         ask_when: "Swamp cooler request and the location is not known"
         text_en: "Where is the swamp cooler?"
         text_es: "¿Dónde está el enfriador evaporativo?"
-        options_en: ["On the roof", "On the ground by a wall", "In a window", "Portable, on a patio"]
-        options_es: ["En el techo", "En el suelo junto a una pared", "En una ventana", "Portátil, en el patio"]
+        options_en: ["On a flat roof", "On a sloped roof", "On the ground by a wall", "In a window", "Portable, on a patio"]
+        options_es: ["En un techo plano", "En un techo inclinado", "En el suelo junto a una pared", "En una ventana", "Portátil, en el patio"]
         card_field: true
-        why: "Location sets access and which businesses service it. [judgment]"
+        why: "Location and roof pitch set access and which businesses service it. [judgment]"
       - id: fu_cooler_doing
         ask_when: "Swamp cooler problem without saying what it does"
         text_en: "What is the cooler doing?"
@@ -964,26 +966,139 @@ job_types:
         options_es: ["Funciona, pero el aire no sale fresco", "No funciona nada", "El ventilador gira, los pads siguen secos", "Gotea o se desborda", "Mal olor", "Ruido o vibración"]
         card_field: true
         why: "Each answer tells the business which parts to bring. [judgment]"
-      - fu_leak_when
-    photos_priority: [p2_whole_unit, p5_leak_area, p1_data_plate]
+      - id: fu_cooler_last_service
+        ask_when: "Cooler not cooling or smells, and no service history given"
+        text_en: "When were the pads last changed, or the cooler last cleaned?"
+        text_es: "¿Cuándo se cambiaron los pads o se limpió el enfriador por última vez?"
+        options_en: ["This year", "Last year", "Longer ago", "Don't know"]
+        options_es: ["Este año", "El año pasado", "Hace más tiempo", "No sé"]
+        card_field: true
+        why: "Pad age and cleaning set the parts list and visit length. [judgment]"
+    photos_priority: [p2_whole_unit, p1_data_plate]
     urgency:
-      fire_dept_triggers: ["Burning smell or smoke from the cooler motor or switch"]
-      urgent_capable_triggers: ["Cooler is the only cooling and the homeowner reports the inside temperature over 90 F", "Water coming through a ceiling"]
-      regular: "Home also has refrigerated AC, or the leak stays on the roof"
-    scope_line_en: "Roof swamp cooler fan runs but the pads stay dry; it is the only cooling in the home; one story."
-    scope_line_es: "El ventilador del enfriador del techo funciona pero los pads siguen secos; es el único enfriamiento de la casa; un piso."
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["No other cooling in the home and the homeowner reports the inside temperature over 90 F", "Homeowner says an older adult, a baby or someone with a medical need is at home"]
+      regular: "Home also has refrigerated AC that works"
+    scope_line_en: "Roof swamp cooler runs but the air feels humid and smells musty since last week; pitched roof, ladder needed."
+    scope_line_es: "El enfriador del techo funciona pero el aire se siente húmedo y huele a encerrado desde la semana pasada; techo inclinado, se necesita escalera."
     quote_format: diagnostic_visit
     business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
     card_template: |
       REQ-<id> | Heating and cooling repair (swamp cooler) | <town>, <general area> | <kind of place>
-      <one scope line: where the cooler sits, what it does>
-      Cooler: <roof / ground / window / portable>. Doing: <answer>. Leak shows: <when it runs / after rain / all the time / n/a>.
+      <one scope line: swamp cooler, where it sits, what it does, since when>
+      Cooler: <flat roof / sloped roof / ground / window / portable>. Doing: <answer>. Pads changed or cleaned: <answer>.
       Other cooling in the home: <refrigerated AC / none / not said>. Label: <size and date as read> or <no label photo>.
       Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
       Needed: <timing answer>.
-    never_say: ["It's the pump.", "Swamp coolers don't work when it's humid.", "Clean the float and it'll stop overflowing.", "Coolers are cheap to replace."]
+    never_say: ["Swamp coolers don't work when it's humid.", "That smell is mildew.", "You need new pads.", "Coolers are cheap to replace."]
 
-  - id: swamp_cooler_service
+  - id: cooler_not_running
+    new_job_type: true
+    label: "Swamp cooler motor, fan or pump will not run (includes pads staying dry)"
+    bank_job_type: "evaporative (swamp) cooler repair"
+    recurring: false
+    homeowner_phrasings: ["cooler not working", "cooler motor dead", "cooler pump not pumping", "pads dry", "cooler belt broke", "el cooler no prende"]
+    must_know:
+      - fact: "What runs and what does not: fan, pump, or nothing"
+        bank_question: symptom
+        follow_up: fu_cooler_doing
+        photo: null
+        why_it_moves_price: "A dead motor, a dead pump and a broken belt are different parts and different times. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Where the cooler sits"
+        bank_question: system_type
+        follow_up: fu_cooler_where
+        photo: p2_whole_unit
+        why_it_moves_price: "Roof work takes longer than a ground or window unit. [judgment]"
+        skip_if: "Whole-cooler photo sent"
+      - fact: "What the wall switch or thermostat shows"
+        bank_question: null
+        follow_up: null
+        photo: p4_thermostat
+        why_it_moves_price: "Switch settings tell the tech whether to start at the control or the cooler. [judgment]"
+        skip_if: "No switch photo; not asked"
+      - fact: "Size and age from the label"
+        bank_question: age
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "Motor and pump parts are sized by the cooler. [judgment]"
+        skip_if: "Label photo sent"
+    allowed_follow_ups:
+      - fu_cooler_doing
+      - fu_cooler_where
+    photos_priority: [p2_whole_unit, p1_data_plate, p4_thermostat]
+    urgency:
+      fire_dept_triggers: ["Burning smell or smoke from the cooler motor or switch"]
+      urgent_capable_triggers: ["No other cooling in the home and the homeowner reports the inside temperature over 90 F", "Homeowner says an older adult, a baby or someone with a medical need is at home"]
+      regular: "Home also has refrigerated AC that works"
+    scope_line_en: "Roof swamp cooler fan runs but the pads stay dry; no other cooling in the home; one story, flat roof."
+    scope_line_es: "El ventilador del enfriador del techo funciona pero los pads siguen secos; no hay otro enfriamiento en la casa; un piso, techo plano."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair (swamp cooler) | <town>, <general area> | <kind of place>
+      <one scope line: what runs and what does not, where the cooler sits>
+      Doing: <nothing runs / fan runs, pads dry / other>. Cooler: <flat roof / sloped roof / ground / window / portable>. Switch: <as seen or not sent>.
+      Other cooling in the home: <refrigerated AC / none / not said>. Label: <size and date as read> or <no label photo>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the pump.", "The motor burned out.", "Check the belt yourself.", "A new pump is about forty dollars."]
+
+  - id: cooler_leak
+    new_job_type: true
+    label: "Swamp cooler leaking or overflowing onto the roof, a wall or a ceiling"
+    bank_job_type: "evaporative (swamp) cooler repair"
+    recurring: false
+    homeowner_phrasings: ["cooler leaking", "cooler overflowing", "water running off roof from cooler", "ceiling wet by cooler duct", "el cooler gotea"]
+    must_know:
+      - fact: "Where the water shows: on the roof or wall only, or inside the home"
+        bank_question: null
+        follow_up: fu_cooler_water_where
+        photo: p5_leak_area
+        why_it_moves_price: "Water inside means a ceiling or duct check on top of the cooler work. [judgment]"
+        skip_if: "Leak photo shows it"
+      - fact: "Whether it shows when the cooler runs or after rain"
+        bank_question: null
+        follow_up: fu_leak_when
+        photo: null
+        why_it_moves_price: "Water after rain at the cooler vent can be the roof jack, a roofing job. [judgment]"
+        skip_if: "Water stays on the roof"
+      - fact: "Where the cooler sits"
+        bank_question: system_type
+        follow_up: fu_cooler_where
+        photo: p2_whole_unit
+        why_it_moves_price: "Sets access and time. [judgment]"
+        skip_if: "Whole-cooler photo sent"
+    allowed_follow_ups:
+      - id: fu_cooler_water_where
+        ask_when: "Cooler leak or overflow reported without saying where the water goes"
+        text_en: "Where does the water go: does it stay on the roof or wall, or does it come inside?"
+        text_es: "¿A dónde va el agua: se queda en el techo o la pared, o entra a la casa?"
+        options_en: ["Stays on the roof or wall", "Comes inside at a vent or ceiling", "Both"]
+        options_es: ["Se queda en el techo o la pared", "Entra por una rejilla o el techo", "Las dos"]
+        card_field: true
+        why: "Water inside adds a ceiling check and may need a roofer too. [judgment]"
+      - fu_leak_when
+      - fu_cooler_where
+    photos_priority: [p5_leak_area, p2_whole_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water coming through a ceiling", "Water reaching lights, outlets or wiring"]
+      regular: "Water stays on the roof or runs down an outside wall"
+    scope_line_en: "Roof swamp cooler overflowing and water running down the back wall; nothing coming inside."
+    scope_line_es: "El enfriador del techo se desborda y el agua corre por la pared de atrás; no entra nada a la casa."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Heating and cooling repair (swamp cooler) | <town>, <general area> | <kind of place>
+      <one scope line: leak or overflow, where the water goes>
+      Water: <stays outside / comes inside / both>. Shows: <when it runs / after rain / both / all the time>. Cooler: <flat roof / sloped roof / ground / window>.
+      Label: <size and date as read> or <no label photo>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The float is stuck.", "Bend the float arm down.", "Your pan is rusted through.", "That's just overflow, nothing to worry about."]
+
+  - id: cooler_startup
     new_job_type: true
     label: "Swamp cooler spring start-up, fall shut-down, or new pads"
     bank_job_type: "evaporative (swamp) cooler repair"
@@ -1038,7 +1153,7 @@ job_types:
     card_template: |
       REQ-<id> | Heating and cooling repair (swamp cooler) | <town>, <general area> | <kind of place>
       <one scope line: which service, where the cooler sits>
-      Service: <start-up / start-up and pads / pads only / shut-down>. Cooler: <roof / ground / window / portable>. Pads: <thin fiber / thick block / not sure>.
+      Service: <start-up / start-up and pads / pads only / shut-down>. Cooler: <flat roof / sloped roof / ground / window / portable>. Pads: <thin fiber / thick block / not sure>.
       Label: <size as read> or <no label photo>. Someone local for access: <yes / no / not said>.
       Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
       Needed: <timing answer>.
