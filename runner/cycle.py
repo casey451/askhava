@@ -312,7 +312,8 @@ def _red_main_step(cfg: Config, env: Env, state: State, now: datetime) -> tuple[
         if not sha:
             return state, ""
         return set_main_red(state, cfg, "nightly", sha, offending_merge(state), now), "main_red"
-    if _false_smoke_red(state) and env.main_checks_green(str(state["main_red"]["sha"])) is True:
+    red_sha = str(state["main_red"].get("sha", ""))
+    if _false_smoke_red(state) and _smoke_env_strikes(state, red_sha) < SMOKE_ENV_STRIKES and env.main_checks_green(red_sha) is True:
         return clear_false_red(state, now), "false_red_cleared"
     if st.status(state, st.FIX_MAIN) != st.DONE:
         return state, ""
@@ -329,13 +330,20 @@ def _false_smoke_red(state: State) -> bool:
 def clear_false_red(state: State, now: datetime) -> State:
     """Withdraw a smoke-set main_red that the head's own checks contradict: no revert, no blame (D-498).
 
-    The first Actions cycle under the OAuth token marked main red because the smoke test failed in a
+    The third Actions cycle under the OAuth token marked main red because the smoke test failed in a
     runner image without the test's prerequisites while Ci, Twin and Ally were green on the same
     commit; FIX-MAIN would have reverted an unrelated, older merge."""
     red = dict(state["main_red"], cleared_at=st.iso(now), false_red=True)
     out = dict(state, main_red=None, main_red_history=[*state.get("main_red_history", []), red])
     out = st.with_task(out, st.FIX_MAIN, status=st.SKIPPED, reason="false red: the head's checks were green (D-498)")
     return _note_smoke_env(out, str(red.get("sha", "")), now)
+
+
+SMOKE_ENV_STRIKES = 3  # smoke reds on one head that green checks excuse before the red is believed (D-498)
+
+
+def _smoke_env_strikes(state: State, head: str) -> int:
+    return sum(1 for n in state.get("smoke_env_problems", []) if n.get("sha") == head)
 
 
 def _note_smoke_env(state: State, head: str, now: datetime) -> State:
@@ -432,10 +440,11 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     if ids[0] != st.FIX_MAIN:
         state, ok, head = _smoke(state, env, now, "start routine")  # BUILD_BRIEF.md:240
         if not ok:
-            if env.main_checks_green(head) is True:
+            if env.main_checks_green(head) is True and _smoke_env_strikes(state, head) < SMOKE_ENV_STRIKES:
                 # Ci, Twin and Ally passed on this very commit: the smoke failed in the runner's own
                 # environment (a missing tool or database), not on main. Record it and stop; nothing is
-                # claimed and main is not blamed (D-498).
+                # claimed and main is not blamed (D-498). Three strikes on the same head and the red
+                # is believed after all: two green branches can still break main together.
                 state = _note_smoke_env(state, head, now)
                 return "smoke_env" if state == base or env.push_state(state, base) else "lost_race"
             red = set_main_red(state, cfg, "smoke", head, offending_merge(state), now)

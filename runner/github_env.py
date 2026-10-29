@@ -380,8 +380,9 @@ class GitHubEnv:
             self.log.append(f"check-runs on {sha[:12]} unreadable: {exc}")
             return None
         latest: dict[str, str] = {}
-        for run in sorted(runs, key=lambda r: str(r.get("completed_at") or "")):
-            latest[str(run.get("name"))] = str(run.get("conclusion") or "")
+        for run in sorted(runs, key=lambda r: str(r.get("started_at") or "")):
+            done = run.get("status") == "completed"
+            latest[str(run.get("name"))] = str(run.get("conclusion") or "") if done else "running"
         verdicts = [latest.get(name) for name in verify.REQUIRED_CHECKS]
         if any(v in ("failure", "cancelled", "timed_out") for v in verdicts):
             return False

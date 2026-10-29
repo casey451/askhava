@@ -74,6 +74,7 @@ jobs:
           --health-cmd "pg_isready -U askhava_ci"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
+      CI: "true"
       DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
       SQLX_OFFLINE: "true"
     permissions:

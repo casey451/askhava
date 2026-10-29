@@ -770,3 +770,11 @@ def test_drill_a_false_smoke_red_is_withdrawn_before_fix_main_runs(tmp_path: Pat
     assert env.store.get("main_red") is None and env.store["main_red_history"][-1]["false_red"] is True
     assert st.status(env.store, st.FIX_MAIN) == st.SKIPPED and env.runs == []
     assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING and env.runs[0][0] == "T001"
+
+
+def test_drill_three_excused_smoke_reds_on_one_head_turn_main_red(tmp_path: Path) -> None:
+    """D-498: green checks excuse a smoke red twice; the third on the same head is believed."""
+    env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
+    env.smoke_green, env.checks_green = False, True
+    assert [cycle.run_cycle(cfg, env, NOW) for _ in range(3)] == ["smoke_env", "smoke_env", "smoke_env"]
+    assert cycle.run_cycle(cfg, env, NOW) == "main_red" and env.store["main_red"]["check"] == "smoke"
