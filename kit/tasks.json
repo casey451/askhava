@@ -530,6 +530,56 @@
       "prompt": "kit/prompts/T008.md"
     },
     {
+      "id": "T170",
+      "slug": "conditional-gate-answers",
+      "title": "runner: a conditional owner gate clears on 'yes' or 'no'",
+      "goal": "The real-texts gate (T130, gate.conditional true) clears on either 'yes' or 'no': the answer is recorded on the gate and passed to its dependent task, so 'no' means T131 uses Twilio's test credentials and magic numbers only and lists what it could not check, and the gate's message says 'no' is a fine answer. Today only 'yes' clears it, so a 'no' would hold T131 and everything after it forever (found by the paper rehearsal, D-472). Other gates keep their exact phrases.",
+      "type": "harness",
+      "phase": 1,
+      "stage": "1",
+      "module": null,
+      "deps": [
+        "T008"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "harness"
+      ],
+      "owns": [
+        "runner/outbox.py",
+        "tests/test_runner_logic.py"
+      ],
+      "reads": [
+        "BUILD_BRIEF.md",
+        "kit/tasks.json",
+        "runner/cycle.py",
+        "runner/state.py"
+      ],
+      "requirements": [],
+      "tests": [],
+      "decisions": [
+        "D-472"
+      ],
+      "cites": [
+        "BUILD_BRIEF.md:190",
+        "BUILD_BRIEF.md:550"
+      ],
+      "budget": {
+        "files": 2,
+        "lines": 150,
+        "context_pct": 10
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T170-conditional-gate-answers",
+      "prompt": "kit/prompts/T170.md"
+    },
+    {
       "id": "T009",
       "slug": "app-skeleton",
       "title": "App skeleton: Cargo workspace, one crate per module, server and worker binaries, module-boundary architecture test",
@@ -3462,6 +3512,60 @@
       "prompt": "kit/prompts/T053.md"
     },
     {
+      "id": "T169",
+      "slug": "ci-rust-playwright",
+      "title": "CI for the Rust workspace: pinned Postgres service, coverage floors, Playwright and axe in Ally, eslint, prebuilt audit tools, TypeScript build in the image",
+      "goal": "Ci pins the Postgres service image by digest, measures branch coverage against tests/coverage_floor.json, runs eslint and installs cargo-audit and cargo-deny from pinned prebuilt binaries, checks `cargo sqlx prepare --workspace --check` so stale offline query data fails, and runs `cargo clippy -p <crate>` for each app crate alone; Ally runs the Playwright accessibility suite; the Dockerfile's build stage runs `npm ci` and `tsc` so compiled browser scripts ship in the image (D-453).",
+      "type": "harness",
+      "phase": 1,
+      "stage": "2",
+      "module": "adapters",
+      "deps": [
+        "T053",
+        "T019",
+        "T020"
+      ],
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "reviewer_model": "claude-opus-5-5",
+      "review_areas": [
+        "harness",
+        "security"
+      ],
+      "owns": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/a11y.yml",
+        "Dockerfile"
+      ],
+      "reads": [
+        "docs/architecture.md",
+        "docs/test-design.md",
+        "BUILD_BRIEF.md"
+      ],
+      "requirements": [
+        "SEC-021",
+        "SEC-029"
+      ],
+      "tests": [],
+      "decisions": [
+        "D-453",
+        "D-472"
+      ],
+      "cites": [],
+      "budget": {
+        "files": 3,
+        "lines": 300,
+        "context_pct": 10
+      },
+      "checks": [
+        "Ci",
+        "Twin",
+        "Ally"
+      ],
+      "branch": "claude/task/T169-ci-rust-playwright",
+      "prompt": "kit/prompts/T169.md"
+    },
+    {
       "id": "T054",
       "slug": "picks-code",
       "title": "picks: pick code (6 digits, 10 minutes, 5 tries, cooldown) and text picks",
@@ -3631,7 +3735,7 @@
       "id": "T056",
       "slug": "mutants-stage2",
       "title": "Named mutants: license filter, consent and opt-out, quiet hours; coverage floors",
-      "goal": "Every named mutant in docs/test-design.md section 4 for stage 2 rules turns its tests red; floors raised to 95% for licensing and privacy.",
+      "goal": "Every named mutant in docs/test-design.md section 4 for stage 2 rules turns its tests red; floors raised to 95% for licensing and privacy. nightly-main runs cargo-mutants over every named mutant in tests/mutation/mutants.toml and fails on any that survives (BUILD_BRIEF.md:472).",
       "type": "harness",
       "phase": 1,
       "stage": "2",
@@ -3642,7 +3746,8 @@
         "T050",
         "T029",
         "T027",
-        "T023"
+        "T023",
+        "T169"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -3654,7 +3759,8 @@
       ],
       "owns": [
         "tests/mutation/mutants.toml",
-        "tests/coverage_floor.json"
+        "tests/coverage_floor.json",
+        ".github/workflows/nightly-main.yml"
       ],
       "reads": [
         "docs/architecture.md",
@@ -3670,12 +3776,13 @@
         "TD-LIC-13"
       ],
       "decisions": [
-        "D-108"
+        "D-108",
+        "D-472"
       ],
       "cites": [],
       "budget": {
-        "files": 2,
-        "lines": 250,
+        "files": 3,
+        "lines": 300,
         "context_pct": 10
       },
       "checks": [
@@ -4788,7 +4895,8 @@
       "deps": [
         "T058",
         "T061",
-        "T071"
+        "T071",
+        "T169"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -4812,7 +4920,8 @@
       ],
       "tests": [],
       "decisions": [
-        "D-108"
+        "D-108",
+        "D-472"
       ],
       "cites": [],
       "budget": {
@@ -8711,7 +8820,8 @@
         "T158",
         "T160",
         "T161",
-        "T166"
+        "T166",
+        "T170"
       ],
       "model": "claude-opus-5-5",
       "effort": "medium",
@@ -10780,59 +10890,6 @@
       ],
       "branch": "claude/task/T168-test-layer-crates",
       "prompt": "kit/prompts/T168.md"
-    },
-    {
-      "id": "T169",
-      "slug": "ci-rust-playwright",
-      "title": "CI for the Rust workspace: pinned Postgres service, coverage floors, Playwright and axe in Ally, eslint, prebuilt audit tools, TypeScript build in the image",
-      "goal": "Ci pins the Postgres service image by digest, measures branch coverage against tests/coverage_floor.json, runs eslint and installs cargo-audit and cargo-deny from pinned prebuilt binaries, checks `cargo sqlx prepare --workspace --check` so stale offline query data fails, and runs `cargo clippy -p <crate>` for each app crate alone; Ally runs the Playwright accessibility suite; the Dockerfile's build stage runs `npm ci` and `tsc` so compiled browser scripts ship in the image (D-453).",
-      "type": "harness",
-      "phase": 1,
-      "stage": "2",
-      "module": "adapters",
-      "deps": [
-        "T053",
-        "T019",
-        "T020"
-      ],
-      "model": "claude-opus-5-5",
-      "effort": "medium",
-      "reviewer_model": "claude-opus-5-5",
-      "review_areas": [
-        "harness",
-        "security"
-      ],
-      "owns": [
-        ".github/workflows/ci.yml",
-        ".github/workflows/a11y.yml",
-        "Dockerfile"
-      ],
-      "reads": [
-        "docs/architecture.md",
-        "docs/test-design.md",
-        "BUILD_BRIEF.md"
-      ],
-      "requirements": [
-        "SEC-021",
-        "SEC-029"
-      ],
-      "tests": [],
-      "decisions": [
-        "D-453"
-      ],
-      "cites": [],
-      "budget": {
-        "files": 3,
-        "lines": 300,
-        "context_pct": 10
-      },
-      "checks": [
-        "Ci",
-        "Twin",
-        "Ally"
-      ],
-      "branch": "claude/task/T169-ci-rust-playwright",
-      "prompt": "kit/prompts/T169.md"
     }
   ]
 }

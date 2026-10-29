@@ -158,7 +158,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | 12 | The first 5 to 10 business conversations, with the C1 to C13 questions (playbook section 9) | Casey | to do | Answers noted |
 | 13 | Test decision: go, change the plan first, or stop (playbook section 8) | Casey | waiting on item 11 | You tell Claude which, with the scorecard |
 | 14 | Re-plan pass: apply what the test showed, the held scope cut, and the fees from the paid weeks | Claude | waiting on item 13 | One PR merged green |
-| 15 | Optional: approve or skip the paper rehearsal (section 6) | Casey | to do | You say "run the rehearsal" or "skip it" |
+| 15 | Paper rehearsal of the build runner (section 6) | Claude | done Oct 28 (D-472) | Reached "Finished" with only the expected stops; a failing task blocked only its dependents; three ordering fixes applied |
 | 16 | Optional: add the routine's merge trigger (section 6) | Casey | to do | The routine shows "Pull request closed, merged into main" |
 | 17 | Gate P: reply `approved to build` on GitHub issue #24, only if the scorecard says go including real payments; then resume the runner | Casey | waiting on items 13 and 14 | Reply posted |
 | 18 | Build Phase 1 (stages 1 to 5) | automatic | waiting on item 17 | Account checkpoint issue appears |
@@ -277,7 +277,7 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | Stale lines in `BUILD_BRIEF.md` (Part 2 lists "Arizona TPT license" and "zero retention"; Appendix A says 7 past, the live routine runs at 50 past) | Logged; the decisions (D-412, D-414) win; fix in a docs task, no stop |
 | Older source lines that round 14 reversed (changes file :58, :86, :89, :196, :247, :248; `BUILD_BRIEF.md` :182, :340: photos off cards, heat and water safety lines, tenant line, TPT license, insurance first) | `docs/constitution.md` updated to match; the protected files stay as they are and are superseded by D-417, D-426, D-430, D-432, D-436, D-437, D-444 (D-450) |
 
-**Proposed rehearsal (waiting for your OK; nothing has been run)**
+**Paper rehearsal (run Oct 28 under your "do what you recommend", D-472: passed after three fixes)**
 - **What:** a paper rehearsal. Claude runs the build's own runner code (`runner/cycle.py`) against the real task list with fake GitHub and fake workers, every task passing, then once with one task failing on purpose.
 - **What it proves:** every gate opens in the right order (Gate P, account checkpoint, Stage 0.5, real texts, Finished, Gate B, Gate C, first charge); no task waits on something that never finishes; a blocked task holds only its dependents; the number of cycles to the end.
 - **How long and how much usage:** one session, about 30 to 45 minutes, no worker sessions, a small share of one usage window.
