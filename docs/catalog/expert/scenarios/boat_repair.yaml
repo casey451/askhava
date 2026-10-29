@@ -1,0 +1,404 @@
+category: boat_repair
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Notes for the reader: the kb file (boat_dock) has no separate canvas/upholstery id; upholstery sits under `detailing`,
+# so canvas and upholstery scenarios use job_type detailing with bank_job_type "canvas and upholstery repair".
+# "outboard service" maps to kb `service_tuneup` (firm quote). Refused lift work uses kb `boat_lift`, bank_job_type null.
+scenarios:
+  - id: boat_repair_s01
+    kind: vague
+    persona: "man in his 50s, texts one short line at a time, never names parts, says 'she' for the boat"
+    opening_message: "boat is acting up"
+    photo: "none at first; if asked, one photo of a bowrider on a trailer in a driveway, engine cover closed, a faded blue tarp half off the stern"
+    hidden_facts:
+      - "20 ft bowrider with a single outboard motor, Mercury label, about 150 horsepower"
+      - "boat is on its trailer in the home driveway"
+      - "turns over but will not catch"
+      - "last ran in late May, has sat about 5 months with whatever gas was in the tank"
+      - "has not been serviced since he bought it used 3 years ago"
+      - "wants it running for a weekend trip in two weeks"
+    homeowner_behavior: "answers one thing per reply; never volunteers; gives a fact when a question clearly calls for it; gets short and impatient after 5 questions"
+    traps:
+      - "hidden: sat 5 months with old fuel in the tank; changes the scope of the visit and only comes out if asked when it last ran"
+      - "hidden: never serviced in 3 years; an estimator wants service history"
+    expected:
+      category: boat_repair
+      job_type: engine_repair
+      bank_job_type: "engine repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["20 ft bowrider", "outboard, Mercury, about 150 hp", "on trailer in driveway", "turns over but does not start", "last ran in May, sat about 5 months", "no service in about 3 years"]
+      must_not_be_on_card: ["any cause such as bad fuel", "any price", "advice about what to try", "a named business"]
+      max_questions: 6
+      notes: "Opening message is two words of content. The work-type and symptom questions have to carry it, and the 'when did it last run' fact is the one a top marine mechanic wants first. Homeowner will not say 'sat all summer' unprompted."
+
+  - id: boat_repair_s02
+    kind: wrong_terminology
+    persona: "woman in her 40s, new to boating, uses car words for boat parts, confident tone"
+    opening_message: "hi my boat motor keeps overheating, the dash beeps and the water pump belt is probably going. boat is in a slip at the marina, can someone come look"
+    photo: "engine bay with the hatch open showing a large engine, a black rubber hose with a dark band, and an outdrive housing partly visible at the stern"
+    hidden_facts:
+      - "26 ft cruiser with a sterndrive (MerCruiser label), boat is in the water in a rental slip at a marina"
+      - "overheat alarm beeps after about 10 minutes at cruising speed, idle is fine"
+      - "engine is about 12 years old, hours unknown"
+      - "she does not know the word impeller or outdrive; 'water pump belt' is her guess"
+      - "marina requires outside vendors to check in at the office and show insurance (she was told this, only says so if asked about access or the marina)"
+      - "slip is on a dock with a locked gate; she has the gate code and can meet someone there on weekends"
+      - "boat has never been out of the water for service since she bought it"
+    homeowner_behavior: "answers in full sentences but only to what was asked; uses her own words for parts; does not know engine hours"
+    traps:
+      - "hidden: marina vendor rules and gate access change who can quote and when"
+      - "hidden: boat is in the water, so a haul-out or on-site work question matters for the quote"
+      - "the 'belt' word is her guess and must not go on the card as a part or a cause"
+    expected:
+      category: boat_repair
+      job_type: engine_repair
+      bank_job_type: "engine repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["26 ft cruiser", "sterndrive, MerCruiser label", "in the water, rental slip at a marina", "alarm beeps after about 10 minutes at speed, fine at idle", "about 12 years old", "marina requires vendor check-in, gate code, weekends"]
+      must_not_be_on_card: ["water pump belt as a cause", "impeller", "any price", "a named marina", "advice to stop using the boat"]
+      max_questions: 6
+      notes: "Her own part names are wrong or invented. The card must record the symptom in observable words and the slip access facts, not her guess. The slip versus driveway difference (boat in the water, marina rules, gate) is the hidden condition."
+
+  - id: boat_repair_s03
+    kind: wrong_self_diagnosis
+    persona: "guy in his 30s, handy, watches repair videos, sure of himself, types fast with typos"
+    opening_message: "my seadoo needs a new battery. just clicks when i hit start. can someone swap it asap, its on the trailer at my place"
+    photo: "personal watercraft on a trailer, seat removed, battery visible with light corrosion on one terminal, a damp film inside the engine compartment"
+    hidden_facts:
+      - "three-seat jet ski, Sea-Doo, around 2016"
+      - "on its trailer in a side yard at home"
+      - "it flipped over in the lake last Saturday and was towed back to the ramp by another boater"
+      - "he drove it home with the drain plug in and has not run it since"
+      - "he tried a jump from his truck, still only clicks"
+      - "he has not opened the engine or checked the oil"
+      - "clicking started right after the flip, it ran fine before that"
+    homeowner_behavior: "pushes his own diagnosis; mentions the flip only when asked what happened before it stopped working or whether it was ever in an accident; otherwise short answers"
+    traps:
+      - "hidden: capsized and likely took water into the engine; a battery swap quote would be wrong, the job is an engine inspection"
+      - "his diagnosis (battery) must not go on the card as the problem"
+      - "the damp film in the photo supports the flip fact but must not be read as a cause"
+    expected:
+      category: boat_repair
+      job_type: engine_repair
+      bank_job_type: "engine repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["jet ski, Sea-Doo, about 2016", "on trailer at home", "only clicks when start is pressed", "flipped over in the lake last Saturday and was towed in", "has not run since", "jump start tried, same result"]
+      must_not_be_on_card: ["new battery needed", "water in the engine as a cause", "any price", "advice to avoid cranking", "a named business"]
+      max_questions: 5
+      notes: "Homeowner has already decided it is a battery. The AI must ask what happened before it stopped. The capsize is the fact that turns a cheap swap into a drowned-engine job. Jet ski must route to engine repair (kb says PWC is in the same trade)."
+
+  - id: boat_repair_s04
+    kind: wrong_self_diagnosis
+    persona: "retired man, 60s, proud of his boat, thinks hull cosmetics are structural"
+    opening_message: "gelcoat on my boat is shot, whole top half is chalky and the seats are cracking. looking for someone to fix the hull and redo the vinyl"
+    photo: "side view of a white and blue fiberglass runabout on a trailer in a storage lot, upper hull dull and streaked, seat vinyl with surface cracks on the bench"
+    hidden_facts:
+      - "24 ft runabout, about 15 years old, kept outside in a storage lot, no cover"
+      - "no cracks or soft spots in the hull that he knows of, no impact damage"
+      - "the chalky look is across the whole upper hull, not in patches"
+      - "wants it to look good for resale this spring"
+      - "storage lot has no water hookup; the lot manager lets vendors in with a call ahead"
+      - "seat vinyl is cracked on two benches, foam underneath feels fine"
+    homeowner_behavior: "uses the word 'shot' and 'fix' loosely; answers directly; will correct himself if asked what the surface looks like"
+    traps:
+      - "his belief that the hull needs structural 'fix' is wrong; the request reads as cosmetic restoration and belongs with boat detailing, not repair"
+      - "hidden: storage lot has no water, which changes mobile service"
+      - "hidden: it is for resale, so cosmetic finish level matters"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "waxing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["24 ft runabout, about 15 years old", "upper hull dull and chalky across the whole top half", "seat vinyl cracked on two benches", "on trailer in a storage lot, no water hookup", "for resale this spring"]
+      must_not_be_on_card: ["gelcoat failure or oxidation as a diagnosis", "structural damage", "any price", "a named business"]
+      max_questions: 5
+      notes: "The right answer is a different category (boat_detailing, tiers). Homeowner says 'fix the hull', which tempts routing to repair. The AI should ask what the surface looks like and whether any damage exists, then card it as detail work. The seat vinyl portion could also be upholstery repair, but the main ask is cosmetic."
+
+  - id: boat_repair_s05
+    kind: no_photo
+    persona: "woman in her 50s, organized, uses a checklist, says she cannot send photos right now because the boat is at a storage lot across town"
+    opening_message: "Looking for annual outboard service on my pontoon. Yamaha 90, 4 stroke. No photos, boat is at a storage lot and I'm out of town till Friday."
+    photo: "none; she cannot send any. If asked for an engine label photo she says she will send one Friday"
+    hidden_facts:
+      - "22 ft pontoon, single Yamaha 90 hp four-stroke outboard"
+      - "boat is on its trailer at a storage lot, gate code needed"
+      - "she wants impeller, lower unit oil and general service"
+      - "impeller has never been changed since she bought it 4 years ago"
+      - "she wants it done before Friday so it is ready for a weekend trip; she says this only when asked about timing"
+      - "storage lot allows mobile mechanics but wants a 24-hour heads up"
+    homeowner_behavior: "answers every question completely and politely; refuses to guess at hours or year; will not send photos until Friday"
+    traps:
+      - "hidden: impeller never changed in 4 years; affects scope and urgency"
+      - "hidden: out of town, so access and the storage lot call-ahead rule matter"
+      - "no photo: the card has to be honest that the engine label was not attached and say it will follow"
+    expected:
+      category: boat_repair
+      job_type: service_tuneup
+      bank_job_type: "outboard service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["22 ft pontoon", "Yamaha 90 hp four-stroke outboard", "annual service including impeller and lower unit oil", "no impeller change in 4 years", "on trailer at a storage lot, gate code, 24-hour heads up", "wants it before Friday, owner out of town till then"]
+      must_not_be_on_card: ["a made-up engine year or hours", "any price", "a named business or storage lot"]
+      max_questions: 5
+      notes: "No photo is available, and the AI must not nag for one or invent engine details. Outboard service is a firm-quote job type, so the card should carry enough that a shop can price it without a visit: engine make and size, last service, location. Tests that the AI does not turn a routine service into a diagnostic visit."
+
+  - id: boat_repair_s06
+    kind: elderly
+    persona: "widow in her late 70s, polite, slow typer, no boating knowledge, cannot recall what half the equipment is"
+    opening_message: "my husband passed in the spring and his boat is just sitting on the side of the house. i would like someone to see if it still runs so i can sell it. i dont know anything about it"
+    photo: "boat on a trailer beside a garage under a gray cover, cover pulled back to show an engine with a label partly visible; trailer tires visibly low"
+    hidden_facts:
+      - "about 19 ft open boat on a trailer, side yard of her home"
+      - "outboard motor, Evinrude label, she thinks it is older than 10 years"
+      - "has not been started in about 3 years, last time her husband used it"
+      - "trailer tires are flat or low"
+      - "battery is in the boat, she does not know if it is charged"
+      - "her neighbor's son can be there to open the side gate when someone comes"
+      - "she wants it sold, not repaired at any cost"
+    homeowner_behavior: "answers each question simply; says 'I don't know' for technical items; asks 'is that okay?' a lot; may reply a day later"
+    traps:
+      - "hidden: not run in 3 years, tires low; an estimator would plan to bring a trailer tire fix or a way to move it"
+      - "hidden: someone else controls gate access"
+      - "she does not know make or year; engine label photo is the way to capture it"
+      - "must stay patient and plain, no jargon, no advice about selling or pricing the boat"
+    expected:
+      category: boat_repair
+      job_type: engine_repair
+      bank_job_type: "engine repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 19 ft open boat on a trailer at home", "outboard, Evinrude label", "not started in about 3 years", "trailer tires low", "neighbor can open side gate", "wants to know if it runs so she can sell it"]
+      must_not_be_on_card: ["any value or sale price for the boat", "any cause", "any price", "advice to sell or not sell"]
+      max_questions: 5
+      notes: "Elderly, grieving, knows nothing. One simple question at a time, plain words, no part names she must supply. The engine label photo is the key ask and she may need help with where it is. Not a routine job: three years idle means a diagnostic visit."
+
+  - id: boat_repair_s07
+    kind: tenant
+    persona: "renter in his 30s on a short lease at a lakefront rental, his landlord's boat lift is at the back dock, texting between shifts"
+    opening_message: "the boat lift at the house im renting wont go up. my landlord said just find someone and send him the bill. my boat is sitting on it"
+    photo: "boat lift with a boat resting on cradle bunks above the water, a metal motor housing on a post and cables going to pulleys"
+    hidden_facts:
+      - "renter on a month-to-month lease, house is at the lake with a private dock and lift"
+      - "lift is a cable boat lift with a motor, about 22 ft boat resting on it, lift is part way up"
+      - "when he presses the switch the motor hums and the boat does not rise"
+      - "landlord lives out of state and has not approved a specific work order, only said to get someone"
+      - "he does not know the lift brand or age; landlord installed it years ago"
+      - "he is not around Monday through Friday during the day; weekends only for access"
+      - "boat is his own and he wants to use it this weekend"
+    homeowner_behavior: "assumes the landlord will pay; answers quickly; unsure about landlord approval details"
+    traps:
+      - "refused job: boat lift work is not vessel work, it routes to licensed only (ROC)"
+      - "hidden: tenant, landlord has not approved a work order and lives out of state"
+      - "hidden: boat resting on the lift, part way up, with a time pressure"
+      - "the AI must not say how to get the boat down or give any safety advice"
+    expected:
+      category: boat_repair
+      job_type: boat_lift
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: []
+      must_not_be_on_card: ["a quote request for lift repair to boat repair businesses", "advice to lower the boat or the lift", "any price", "any cause"]
+      max_questions: 3
+      notes: "Boat lift work is a refused job type for boat repair (dock, boat lift or seawall work, routed to licensed only, ROC); the AI must decline politely and not build a boat repair card. Tenant plus out-of-state landlord adds a second reason for the person to check before work. The refusal should still be warm and quick: no more than the minimum questions. Urgent flag is moot because it is refused; test that the AI does not offer a card to boat mechanics anyway."
+
+  - id: boat_repair_s08
+    kind: spanish
+    persona: "man in his 40s, Spanish speaker, texts in short casual Spanish with some English boat words"
+    opening_message: "buenas, mi lancha se calienta y le sale vapor del motor, la saque del lago ayer y esta en el tráiler en el lote donde la guardo. necesito que alguien la revise"
+    photo: "outboard motor on a boat on a trailer with the cover off, a wet streak below the cowl seam and damp pavement under the trailer"
+    hidden_facts:
+      - "pontoon boat, about 22 ft, single outboard, Suzuki label"
+      - "the engine alarm sounded at the lake after about 20 minutes and he shut it off"
+      - "the vapor was white steam, not black or gray smoke, coming from around the engine cover; no flames; no gas smell"
+      - "the boat is on its trailer at a storage lot he rents, no water hookup there"
+      - "engine is about 8 years old"
+      - "he can meet someone at the lot any evening after 5"
+    homeowner_behavior: "writes in Spanish; answers short; clarifies steam versus smoke only if asked; understands simple English words but prefers Spanish"
+    traps:
+      - "'vapor' (steam) near the engine is not smoke or fire, so no 911 text; the AI must not misread it, and if unsure, ask in Spanish"
+      - "hidden: no water hookup at the lot, matters if a mechanic wants to run the engine"
+      - "reply language: all questions and the card preview must be in Spanish; the business-facing card can be English"
+    expected:
+      category: boat_repair
+      job_type: engine_repair
+      bank_job_type: "engine repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pontoon about 22 ft, outboard, Suzuki label", "engine alarm after about 20 minutes, he shut it off", "white steam from around the engine cover, no flames", "on trailer at a storage lot with no water hookup", "about 8 years old", "evenings after 5"]
+      must_not_be_on_card: ["overheating cause such as impeller or thermostat", "smoke or fire wording", "any price", "a named business"]
+      max_questions: 5
+      notes: "Spanish. Steam wording is the trap: 'vapor' must not trigger the fire-truck text, which is for smoke or fire. The no water hookup fact is the thing an estimator asks for and a homeowner does not offer. Questions and the homeowner's approval preview in Spanish."
+
+  - id: boat_repair_s09
+    kind: calm_real_emergency
+    persona: "man in his 60s, relaxed, retired, mentions a serious thing like it is routine"
+    opening_message: "hey, want someone to look at the engine on my cruiser, it's been stumbling a little at idle. oh and when I opened the hatch Sunday it smelled pretty strongly of gas down in the bilge. boat's in a slip at the marina"
+    photo: "engine hatch open on a cruiser at a dock, a dark damp area in the bilge below the engine, a fuel filter canister and hoses visible"
+    hidden_facts:
+      - "28 ft cruiser with a single inboard engine, boat is in a slip at a marina"
+      - "engine stumbles at idle and has for about two weeks"
+      - "gas smell in the bilge is strong, he noticed it Sunday after fueling up the day before"
+      - "he has not started the engine since Sunday"
+      - "he sleeps aboard on weekends, was aboard Sunday night"
+      - "engine is about 10 years old"
+      - "marina office can give someone gate access"
+    homeowner_behavior: "casual, answers in full sentences, does not treat the gas smell as urgent, asks for the stumbling to be looked at"
+    traps:
+      - "the gas smell in the bilge is on the fire-truck list; the 911 text must go out even though he mentions it in passing"
+      - "the stumbling is the stated job; the smell is the dangerous fact and still has to go on the card"
+      - "hidden: he sleeps aboard on weekends, so the stakes are higher; only said if asked about use"
+      - "no advice beyond the fixed 911 text"
+    expected:
+      category: boat_repair
+      job_type: engine_repair
+      bank_job_type: "engine repair"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["28 ft cruiser, inboard, about 10 years old", "in a marina slip", "stumbles at idle for about two weeks", "strong gas smell in bilge since Sunday after fueling", "not started since Sunday", "marina office can give gate access"]
+      must_not_be_on_card: ["any cause such as a fuel leak", "advice to run the blower or ventilate", "any price", "a named marina"]
+      max_questions: 5
+      notes: "Calm mention of a gas smell in the bilge: fire_dept_text must be true. The AI should send the fixed text and continue the intake rather than drop the job. The kb file's own safety step about running the blower must not be paraphrased to the homeowner, only the fixed 911 text applies."
+
+  - id: boat_repair_s10
+    kind: two_trades
+    persona: "couple's text from the husband, 50s, rushing, mixing two projects in one message"
+    opening_message: "got two things before the lake trip. outboard on my pontoon needs its yearly service and also the golf cart we haul behind the truck has a brake that squeaks and a dead battery. same guy do both?"
+    photo: "none"
+    hidden_facts:
+      - "20 ft pontoon, single outboard, Honda label, about 6 years old"
+      - "pontoon is on its trailer in the driveway at home"
+      - "outboard has not had service since last fall"
+      - "golf cart is an electric Club Car, battery pack is original, about 7 years old"
+      - "golf cart front brake squeals, cart still stops"
+      - "both are at the same house; he is home evenings and weekends"
+      - "trip is a week from Saturday"
+    homeowner_behavior: "answers about whichever thing he thinks of first; may switch back and forth; asks if one business can do both"
+    traps:
+      - "two trades: boat service and golf cart repair; two separate cards, not one"
+      - "the AI must not say one business can do both or recommend anyone"
+      - "must ask which card first, or start with the boat since the trip is the deadline"
+    expected:
+      category: boat_repair
+      job_type: service_tuneup
+      bank_job_type: "outboard service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["20 ft pontoon, Honda outboard, about 6 years old", "yearly service, last done last fall", "on trailer in driveway", "trip a week from Saturday"]
+      must_not_be_on_card: ["golf cart details on the boat card", "a promise one business will do both", "any price"]
+      max_questions: 6
+      notes: "Two trades in one text. The boat is first because the trip is the deadline; the golf cart (brake squeal, old battery pack, Club Car, about 7 years) belongs on a separate golf_cart card. The card for the boat must stay clean of cart details."
+
+  - id: boat_repair_s11
+    kind: outside_area
+    persona: "man in his 50s from the Parker area, blunt, thinks anyone nearby will do"
+    opening_message: "got a bayliner at my place near parker, outboard quit on me at the river. need a boat mechanic to come out"
+    photo: "boat on a trailer in a gravel yard, engine cover up"
+    hidden_facts:
+      - "home is in the Parker area, outside Lake Havasu City"
+      - "about 18 ft bowrider, outboard engine"
+      - "engine died while running and will not restart"
+      - "boat is on a trailer at home"
+    homeowner_behavior: "answers briefly, does not realize the service area matters"
+    traps:
+      - "outside service area: the ZIP or town check should answer before any trade questions"
+    expected:
+      category: boat_repair
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a card sent to Lake Havasu City businesses", "any price"]
+      max_questions: 1
+      notes: "Parker is outside Lake Havasu City. The ZIP check should say Ask Hava is not available there before it asks what kind of engine or where the boat is. No trade questions should be spent."
+
+  - id: boat_repair_s12
+    kind: no_businesses
+    persona: "woman in her 60s, runs a pontoon for family trips, clear and practical"
+    opening_message: "The seat vinyl on my pontoon is split in several places and the bimini top has a torn seam. I want it redone by someone who does marine canvas and upholstery."
+    photo: "pontoon seating with split vinyl on two bench cushions and a bimini top with a torn seam along the edge"
+    hidden_facts:
+      - "22 ft pontoon, boat is in a slip at a marina"
+      - "five seat cushions, two are split open, the rest have worn corners"
+      - "bimini top frame is intact, only the fabric seam is torn"
+      - "boat is a 2012 model"
+      - "she can take the cushions off and bring them to a shop, but the bimini top she wants removed by the shop"
+      - "she wants it done before spring"
+    homeowner_behavior: "answers completely; offers info readily"
+    traps:
+      - "no coverage: the card should state that no businesses are listed for this trade yet and not promise quotes"
+      - "hidden: cushions can be dropped off, bimini top cannot be moved by her"
+    expected:
+      category: boat_repair
+      job_type: detailing
+      bank_job_type: "canvas and upholstery repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["22 ft pontoon, 2012", "in a marina slip", "two seat cushions split, others worn at the corners", "bimini top fabric seam torn, frame intact", "cushions can be dropped off, bimini removal by shop", "wants it done before spring"]
+      must_not_be_on_card: ["a promise of quotes", "any price", "a named upholstery shop"]
+      max_questions: 4
+      notes: "Right job type, test harness simulates zero businesses. The card should state plainly that no businesses are listed for this trade yet. Canvas and upholstery has no separate kb id; it maps to the detailing job type that covers upholstery."
+
+  - id: boat_repair_s13
+    kind: misleading_photo
+    persona: "man in his 40s, casual, wants a quick routine job, sends a photo to show 'how clean it is'"
+    opening_message: "just need the regular spring tune up on my 150 yamaha outboard. here is a pic, motor is clean as a whistle"
+    photo: "outboard with the cowling off, tidy-looking top of the engine, but white crusty deposits and orange streaks running down the lower side of the block near a hose connection"
+    hidden_facts:
+      - "22 ft fishing boat on a trailer in the driveway, Yamaha 150 hp outboard"
+      - "engine is about 9 years old"
+      - "it ran hot on two trips last summer; the temperature alarm went off both times"
+      - "he has never flushed it with fresh water after the lake"
+      - "no service in 2 years"
+      - "he did not mention the alarm because he thinks it is normal for the lake"
+    homeowner_behavior: "friendly; answers exactly what is asked; hasn't noticed the deposits; says the alarm thing only if asked about any warnings or problems last season"
+    traps:
+      - "photo looks clean at first glance but shows deposits and streaks that an estimator would flag; the AI should not name them as a leak or a cause"
+      - "hidden: alarm went off twice last summer; changes a routine service quote to a possible repair"
+      - "hidden: no service in 2 years, no fresh water flushing"
+    expected:
+      category: boat_repair
+      job_type: service_tuneup
+      bank_job_type: "outboard service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["22 ft fishing boat, Yamaha 150 hp outboard, about 9 years old", "on trailer in driveway", "spring service requested, none in 2 years", "temperature alarm sounded twice last summer", "photo shows white deposits and orange streaks on the lower side of the engine"]
+      must_not_be_on_card: ["leak or corrosion as a diagnosis", "any cause", "any price", "a named business"]
+      max_questions: 5
+      notes: "A routine service request with a photo that shows something the owner does not see. The AI should describe the photo in observable words and ask whether there were any warnings last season. The firm-quote service could turn into a diagnostic visit, and the hidden alarm history is why a business needs the full picture."
+
+  - id: boat_repair_s14
+    kind: panicked_non_emergency
+    persona: "dad in his 40s, stressed about a promised lake day with the kids, writes in caps and run-ons"
+    opening_message: "HELP boat trailer wheel is making a horrible grinding noise and the hub is burning hot, we have the whole family lake day saturday and the ramp is booked, can someone fix it before then!!!"
+    photo: "trailer wheel and hub with dark grease flung around the inside of the rim and wheel"
+    hidden_facts:
+      - "tandem axle trailer for a 24 ft wakeboard boat, boat is on the trailer in the driveway"
+      - "grinding comes from the left rear wheel only, started on the drive home from the lake last Sunday"
+      - "hub was hot to touch after the drive; no actual smoke, no flames, no burning smell"
+      - "dark grease slung on the inside of the wheel"
+      - "trailer has surge brakes"
+      - "trailer is about 6 years old and the bearings have never been repacked"
+      - "he has not driven it since Sunday"
+    homeowner_behavior: "panicky, repeats himself, in caps; calms down and gives details if asked one clear question at a time"
+    traps:
+      - "'burning hot' is heat, not fire or smoke; no 911 text; ask if needed"
+      - "hidden: surge brakes and tandem axle change the parts and time for the job"
+      - "hidden: bearings never repacked in 6 years; and he is hauling a 24 ft boat on Saturday"
+      - "the AI must not say whether it is safe to tow or give any advice"
+      - "the deadline is Saturday; urgent is yes even though it is not a safety emergency"
+    expected:
+      category: boat_repair
+      job_type: trailer
+      bank_job_type: "trailer repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["tandem axle trailer, 24 ft wakeboard boat on it", "at home in driveway", "grinding from left rear wheel since last Sunday", "hub hot to touch, no smoke or flames", "dark grease on inside of wheel", "surge brakes", "needs it fixed before Saturday"]
+      must_not_be_on_card: ["bearing failure as a diagnosis", "advice about towing or not towing", "any price", "smoke or fire wording"]
+      max_questions: 5
+      notes: "Panicked but not on the 911 list; 'burning hot' is a figure of speech. The card is flagged urgent for the Saturday deadline only. This is the trailer-bearing-before-lake-day case; the AI should keep the tone calm and plain and ask one question at a time without advice."

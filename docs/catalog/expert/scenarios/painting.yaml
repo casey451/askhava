@@ -1,0 +1,431 @@
+category: painting
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: painting_s01
+    kind: vague
+    persona: "Man in his 50s, texts one short line at a time, no punctuation, busy at work"
+    opening_message: "need the house painted"
+    photo: "none"
+    hidden_facts:
+      - "inside only, whole house: 3 bedrooms, living room, hallway, 2 baths"
+      - "house was built in 1974"
+      - "ceilings have a rough sprayed texture (the old popcorn kind) and he wants them painted too, not scraped"
+      - "walls are in decent shape, a few nail holes and one dent from a door handle in the hall"
+      - "he has not picked colors, wants everything one neutral color"
+      - "he would rather the painter supply the paint"
+    homeowner_behavior: "answers one thing per reply; never volunteers; gives a fact when a question clearly calls for it; says 'idk' to anything about color or technical words; gets short after 5 questions"
+    traps:
+      - "hidden: built 1974 (pre-1978), only says it if asked about the age of the home"
+      - "hidden: textured ceilings in a 1974 house; he does not know it matters and will say 'just bumpy' if asked about ceilings"
+      - "hidden: inside vs outside is never stated; 'the house' could mean either"
+    expected:
+      category: painting
+      job_type: interior_rooms
+      bank_job_type: "interior painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["inside rooms, whole house, 3 bedrooms living room hallway 2 baths", "ceilings textured and to be painted", "home built 1974", "painter supplies paint", "color change with minor nail holes and one dent"]
+      must_not_be_on_card: ["asbestos", "lead", "price or range", "any advice about testing or scraping"]
+      max_questions: 6
+      notes: "Two words of detail. A good flow has to find out inside vs outside, size, ceilings, and home age without a long interrogation. The 1974 year and the textured ceilings are the facts a top estimator would want and he will not offer them."
+
+  - id: painting_s02
+    kind: wrong_terminology
+    persona: "Woman in her 40s, texts in long run-on messages, a little rushed, uses 'adobe' for any tan house"
+    opening_message: "hi i need my adobe house resealed and repainted on the outside, the color is totally faded on the sun side and its chalky when i touch it. here's a pic of the west wall"
+    photo: "wide shot of a tan two-story house, west wall, color uneven and faded near the upper windows; fine dark lines are visible only near one window corner"
+    hidden_facts:
+      - "the house is stucco, not adobe; cement-colored stucco over block, built about 1996"
+      - "two stories, about 2,400 sq ft, whole outside including garage door trim and fascia"
+      - "stucco has hairline cracks at several window corners and one long diagonal crack across the west wall of the second story, about 6 feet"
+      - "last painted about 11 years ago, she thinks with a thick rubbery coating"
+      - "she is in an HOA that has an approved color palette and requires an architectural committee approval before any exterior color is used"
+      - "she has not submitted a color yet and the committee meets once a month"
+      - "she would like the painter to supply paint"
+      - "side yard on the east is narrow with a block wall close to the house"
+    homeowner_behavior: "writes run-on messages; answers what is asked but wanders; mentions the HOA only if asked about restrictions, approvals or colors; says 'there might be some little cracks' only when asked about cracks; will send a close-up if asked"
+    traps:
+      - "wrong word: calls it adobe and 'resealed'; the card should say stucco exterior repaint without making a claim about what it needs"
+      - "hidden: stucco cracks, only found if asked about cracks or condition, or if a close-up is requested"
+      - "hidden: HOA color approval needed before work; changes scheduling and what colors are allowed"
+      - "hidden: two stories and tight east side change access and lift needs"
+      - "hidden: old thick coating, which changes prep"
+    expected:
+      category: painting
+      job_type: exterior_stucco
+      bank_job_type: "exterior painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["whole outside stucco repaint, two stories", "hairline cracks at window corners and one long crack on the west wall second story", "HOA requires color approval; not yet submitted", "faded and chalky on the sun side", "built about 1996", "painter supplies paint"]
+      must_not_be_on_card: ["adobe", "any cause for the fading", "elastomeric or any product recommendation", "price or range", "advice about the cracks"]
+      max_questions: 6
+      notes: "The word adobe and 'resealed' should not leak onto the card as fact. The photo only hints at one crack; the long diagonal crack and the HOA rule appear only if the AI asks about surface condition and restrictions. A strong flow asks for a close-up of the cracks and asks whether an HOA or other rule limits colors."
+
+  - id: painting_s03
+    kind: wrong_self_diagnosis
+    persona: "Man in his 60s, handy, confident, texts in full sentences with a few typos"
+    opening_message: "Want my kitchen cabinets painted white. They're solid oak so they should take paint fine, just need a good painter who knows how to do cabinets. Dont want anything sprayed in the house tho"
+    photo: "kitchen wide shot, dark brown cabinets with a uniform wood-grain pattern and a glossy finish; no close-up of any door edge"
+    hidden_facts:
+      - "the door and drawer fronts are laminate (a plastic-type wrapped skin over a pressed core), not solid oak; the frames and boxes are real wood"
+      - "two door fronts beside the dishwasher have edges where the skin is lifting and curling"
+      - "26 door fronts and 9 drawer fronts, kitchen only, plus a small island"
+      - "he is keeping the existing hinges and pulls"
+      - "he wants it done in the house without spraying inside, and the garage is available to use as a work area"
+      - "cabinets are about 18 years old"
+      - "he will supply the paint, he already bought a white"
+    homeowner_behavior: "states his belief as fact; will answer 'solid oak' to any wood question; says the real truth about the edges only when asked specifically about the condition of the door edges or surfaces; reluctant to take more photos but will if asked"
+    traps:
+      - "wrong self-diagnosis: calls them solid oak; the doors are laminate and peeling at two edges"
+      - "hidden: laminate doors change prep, bonding and often whether painting is viable; a top painter asks what the doors are made of and for an edge close-up"
+      - "hidden: no spraying indoors, garage as work space"
+      - "hidden: homeowner already bought the paint, which a painter may not want to use"
+    expected:
+      category: painting
+      job_type: cabinets_paint
+      bank_job_type: "cabinet painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["kitchen cabinets, 26 doors, 9 drawer fronts, small island", "homeowner says solid oak; doors may be laminate, two edges lifting (as reported)", "wants white, currently dark brown", "no spraying inside; garage available", "keeping existing hinges and pulls", "homeowner has bought the paint"]
+      must_not_be_on_card: ["solid oak stated as fact", "will paint fine", "primer or product advice", "price or range", "diagnosis of why the edges are lifting"]
+      max_questions: 6
+      notes: "His own diagnosis is wrong. The card must carry both what he believes and what he later reports, as his words, without the AI deciding. A close-up of a door edge and an open question about the door material and condition are the high-value asks. He buys his own paint, which matters for the quote."
+
+  - id: painting_s04
+    kind: misleading_photo
+    persona: "Woman in her 30s, texts fast with emojis and lowercase, very visual"
+    opening_message: "i want my living room to look like this!! 😍 how much to paint it this color. (sending a pinterest screenshot)"
+    photo: "a Pinterest screenshot of a living room with deep green walls, white trim and a tall window; it is not the homeowner's own room and has a watermark and heart icons"
+    hidden_facts:
+      - "the screenshot is inspiration only; it is not her room"
+      - "her living room is open to the dining room and hallway, about 24 by 18 feet in total open space"
+      - "ceiling is vaulted, about 17 feet at the peak, with a fan hanging from it"
+      - "current walls are a light beige with a slightly rough orange-peel texture, last painted when she bought the house 6 years ago"
+      - "she wants the deep green only on the living room walls and the rest left beige, but has not decided where the color stops in the open space"
+      - "trim is white and she wants it left alone"
+      - "house built in 2008"
+      - "she has no paint picked out and wants help choosing the exact green"
+      - "she has not taken a photo of her own room yet but can"
+    homeowner_behavior: "excited; answers with emojis; assumes the screenshot answers everything; sends her own room photo only when asked for one; gets vague on measurements ('big')"
+    traps:
+      - "misleading photo: the picture is a Pinterest screenshot, not her room; the card must label it inspiration and still ask for photos of her actual room"
+      - "hidden: vaulted ceiling of about 17 feet means scaffold or tall ladder work"
+      - "hidden: open floor plan with an undecided color break line"
+      - "hidden: going from light beige to a deep green is a big color change, a painter will want to know"
+      - "hidden: she wants help choosing the exact color, so exact match to the screenshot is not a given"
+      - "design: inspiration picture should travel on the card with the homeowner's own words about the look"
+    expected:
+      category: painting
+      job_type: interior_rooms
+      bank_job_type: "interior painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["inside living room repaint, open to dining and hallway", "inspiration image attached, not her room", "wants deep green on living room walls, white trim left alone", "vaulted ceiling about 17 feet", "current walls light beige", "needs help choosing the color", "photos of her actual room"]
+      must_not_be_on_card: ["a named paint color or brand", "a promise to match the screenshot", "price or range", "the screenshot described as her room"]
+      max_questions: 6
+      notes: "The screenshot is a design reference and must stay labelled as inspiration, not as the job site. The AI should ask for photos of the real room and ceiling. The vaulted ceiling and the undecided color break line only come out if asked about ceiling height and where the color stops."
+
+  - id: painting_s05
+    kind: wrong_self_diagnosis
+    persona: "Man in his 60s, practical, texts clearly, a little dismissive about the problem"
+    opening_message: "got a brown stain on the living room ceiling from an old roof leak. just need it painted over, stain blocker and a coat of ceiling paint. whats the cheapest way"
+    photo: "ceiling photo with a tan-brown irregular ring about 3 feet across and a slight sag at the lower edge; the ceiling is white and textured"
+    hidden_facts:
+      - "the stain appeared after the monsoon storms this past summer and the ring has grown after each rain"
+      - "the roof over that room is a concrete tile roof, about 22 years old"
+      - "nobody has had a roofer look at it"
+      - "he thinks it is an old leak that is done; the ceiling felt damp to the touch after the last rain in October"
+      - "no water-using fixtures or bathroom are above that room, it is a single-story house with an attic"
+      - "the stain is near an AC duct vent in the ceiling"
+      - "one small spot of dark specks has started near the edge of the ring"
+    homeowner_behavior: "insists it is old and finished; answers factually when asked specific questions such as when it appeared, whether it changes after rain, what the roof is; does not volunteer the dampness unless asked if it is wet or has grown"
+    traps:
+      - "wrong self-diagnosis: calls it an old finished leak; facts say it grows after rain and was damp recently"
+      - "right answer is a different category: roof_repair first; painting comes after the leak is fixed"
+      - "hidden: damp ceiling, growing ring, dark specks, tile roof age; changes the roofer's visit and the painter's wait"
+      - "AI must not say it is a roof leak, must not say 'do not paint yet' as advice; it routes and writes the facts"
+    expected:
+      category: roof_repair
+      job_type: leak_repair
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["brown stain on living room ceiling, about 3 feet, growing after rain", "stain first appeared this summer's storms", "ceiling felt damp after last rain in October", "concrete tile roof about 22 years old", "no roofer has looked at it", "homeowner also wants the ceiling painted afterward"]
+      must_not_be_on_card: ["the cause as fact", "mold", "paint over it", "price or range"]
+      max_questions: 5
+      notes: "He asks only for paint, but the facts point at a roof first. The right outcome is a roof_repair card that also notes painting is wanted after. The AI must reach this by asking when it appeared and whether it changes with rain, and must not diagnose or advise. If the facts had shown an upstairs bathroom instead, the answer would be plumbing_repair."
+
+  - id: painting_s06
+    kind: two_trades
+    persona: "Woman in her 40s, texts in short bursts, a bit stressed, two-story house"
+    opening_message: "the ceiling in my downstairs hallway has a big yellow ring and the paint is bubbling. i just want it repainted before my in-laws come in 2 weeks. its right under the upstairs bathroom"
+    photo: "hallway ceiling with a yellow-brown ring about 2 feet across, bubbled and flaking paint at the center, white wall below"
+    hidden_facts:
+      - "the upstairs bathroom has a shower and tub; the ring is directly under the tub side"
+      - "the ceiling spot gets a bit wetter after someone takes a shower, she noticed this last week"
+      - "the bathroom floor tile grout beside the tub has been cracked for a while"
+      - "no plumber or roofer has looked at it"
+      - "house is about 2,000 sq ft and was built in 2001"
+      - "she wants only the hallway ceiling and the upper wall repainted, about 12 feet of hallway"
+      - "in-laws arrive on the first Saturday of next month"
+    homeowner_behavior: "stressed about the visit; only talks about paint; says it gets wetter after showers only if asked whether it changes with water use or when it gets wetter"
+    traps:
+      - "two trades: ceiling water damage tied to the upstairs bathroom is a plumbing_repair first, painting second"
+      - "hidden: wetter after showers, cracked grout beside the tub; changes who should come first"
+      - "AI must not diagnose it as a shower leak; it records her observation as her words"
+      - "timing: she has a hard date, which matters to both trades but is not an emergency"
+    expected:
+      category: plumbing_repair
+      job_type: leak_slow
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["downstairs hallway ceiling stain and bubbling paint, right under the upstairs bathroom tub side", "spot gets wetter after showers per homeowner", "cracked grout beside the tub", "no plumber or roofer has looked", "ceiling repaint wanted afterward before a visit in 2 weeks"]
+      must_not_be_on_card: ["the shower pan or grout as the cause", "stop using the shower", "price or range", "mold"]
+      max_questions: 5
+      notes: "She asks for paint but the facts point to plumbing_repair first, then painting. The second trade (painting) is wanted afterward and the card should say so. The AI must not give advice like stop using the shower; it is not on the fire list. Urgency is a date, not a risk."
+
+  - id: painting_s07
+    kind: tenant
+    persona: "Man in his late 20s renting a condo, texts casually, practical, short on time"
+    opening_message: "im moving out of my rental on the 8th and landlord said walls need to be touched up and the accent wall repainted white or i lose deposit. need someone quick"
+    photo: "bedroom wall painted deep purple with several scuffs and nail holes, a white wall next to it with a few dark marks"
+    hidden_facts:
+      - "he rents a 2 bedroom condo in Lake Havasu City, about 950 sq ft"
+      - "one bedroom accent wall is painted dark purple (he painted it himself, not approved)"
+      - "about 15 nail holes and several scuffs and crayon marks around the condo, mostly the hallway and second bedroom"
+      - "the property manager sent the move-out list but he has not got a written ok for a painter to be in the unit"
+      - "he is paying, not the landlord; the landlord told him to use a painter"
+      - "move-out date is the 8th, 9 days away"
+      - "building was built in 1985"
+      - "the landlord has the paint color, flat white, in a spare can in the unit closet"
+    homeowner_behavior: "casual; does not think about permission; says he has a can of landlord paint only when asked who supplies paint; gives the move-out date upfront; gives the access issue only if asked about access or approval"
+    traps:
+      - "tenant: not the owner; needs the owner or property manager to allow the work and access; card should say renter and who approves"
+      - "hidden: dark purple accent wall needs more than a touch-up, he thinks it is a touch-up"
+      - "hidden: hard deadline of 9 days"
+      - "hidden: paint supplied by landlord in the unit"
+    expected:
+      category: painting
+      job_type: touch_up
+      bank_job_type: "interior painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter, move-out on the 8th", "one accent wall dark purple to be repainted white", "about 15 nail holes, scuffs and crayon marks in hallway and second bedroom", "2 bedroom condo about 950 sq ft", "landlord's paint is in the unit", "needs the owner or property manager to allow access"]
+      must_not_be_on_card: ["will get his deposit back", "legal advice about the lease", "price or range"]
+      max_questions: 5
+      notes: "Looks like a simple touch-up but the dark accent wall is more than that and the deadline is tight. A renter is the requester, so the card must show who approves access. The AI should not give lease or deposit advice."
+
+  - id: painting_s08
+    kind: elderly
+    persona: "Woman in her late 70s, widow, types slowly with typos and capital letters in odd places, polite, formal, and signs her texts"
+    opening_message: "Hello. I am hoping someone can come and paint my bathroom and hall. The paint in the bathroom is coming off in sheets above the shower. Thank you, Margaret"
+    photo: "bathroom wall above the shower with paint curling off in large flakes, bare gray patches underneath; photo is a bit dark"
+    hidden_facts:
+      - "house built in 1969"
+      - "the bathroom has no window and the exhaust fan stopped working years ago"
+      - "the hallway is about 25 feet long and looks dingy, with scuffs at hand height and a yellow tint near the ceiling from years of a smoker in the house"
+      - "she lives alone and cannot move furniture or climb a ladder"
+      - "her grandson can come to help move things on a weekend"
+      - "she wants it done in light colors, white or cream"
+      - "ceilings are painted and flat, she does not want them done"
+      - "she would like the painter to bring the paint"
+      - "she does not use text for photos easily but a neighbor helped send the one picture"
+    homeowner_behavior: "polite and formal; short replies; apologizes for mistakes; will answer one question at a time; needs plain words; does not volunteer the fan or the smoke staining unless asked about the room or the hallway"
+    traps:
+      - "hidden: built 1969 with peeling paint; a painter will want to know about the home age"
+      - "hidden: no working exhaust fan in a windowless bathroom (do not state a cause)"
+      - "hidden: yellow nicotine-type staining in hallway, changes prep and primer"
+      - "hidden: she cannot move furniture; changes the scope and who helps"
+      - "elderly: patience with confused words; no jargon in questions"
+    expected:
+      category: painting
+      job_type: interior_rooms
+      bank_job_type: "interior painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["bathroom and hallway walls, paint peeling in sheets above the shower", "house built in 1969", "bathroom has no window and the exhaust fan does not work", "hallway about 25 feet with yellow staining and scuffs", "client cannot move furniture, grandson can help on weekends", "light colors, painter supplies paint", "ceilings not included"]
+      must_not_be_on_card: ["lead", "moisture or humidity as the cause", "mold", "price or range", "advice"]
+      max_questions: 6
+      notes: "The AI must keep questions short and plain and stay patient. The facts that matter are the 1969 build year, the dead fan, the yellow staining and that she cannot move furniture; she gives none of them unprompted. The AI must not name lead or moisture as a cause."
+
+  - id: painting_s09
+    kind: spanish
+    persona: "Man in his 40s, Spanish speaker, texts in short Spanish messages with some missing accents and one misspelling, practical"
+    opening_message: "Buenas tardes, quiero pintar la barda de bloque de mi patio de atras, esta toda manchada y se le cae la pintura. Es como de 6 pies de alto. Les mando foto"
+    photo: "block wall with a gray-white powdery crust along the bottom two rows of block, paint peeling in patches higher up, a gravel yard beside it"
+    hidden_facts:
+      - "the wall is about 150 feet long, around three sides of the back yard"
+      - "he wants to paint only the inside face of the wall (the yard side)"
+      - "a white powdery deposit shows along the bottom of the blocks and paint peels above it"
+      - "one section is shared with a neighbor and he has not talked to them about it"
+      - "no HOA"
+      - "the wall is the same tan color as the house and he wants to keep the same color"
+      - "he has a sprinkler line that wets the base of the wall"
+      - "he wants the painter to bring the paint"
+      - "built around 1990"
+    homeowner_behavior: "answers in Spanish; does not use English; answers one question at a time; mentions the sprinkler only if asked about water near the wall; mentions the shared section only if asked who else is affected or about the neighbors; sends photo when asked"
+    traps:
+      - "hidden: powdery deposit at the base and peeling paint above it; a painter's prep estimate depends on it (AI must not name efflorescence or moisture as a cause)"
+      - "hidden: sprinklers hit the wall base"
+      - "hidden: one section is shared with a neighbor"
+      - "language: card must be in English for businesses while the conversation stays in Spanish"
+    expected:
+      category: painting
+      job_type: block_wall
+      bank_job_type: "exterior painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["block wall around the back yard, about 150 feet, 6 feet tall, inside face only", "white powdery deposit along the bottom blocks, paint peeling higher up", "sprinkler water reaches the base of the wall", "one section is shared with a neighbor, not yet discussed", "keep the same tan color as the house", "painter supplies paint"]
+      must_not_be_on_card: ["efflorescence", "moisture or salt as the cause", "price or range", "advice about the sprinkler"]
+      max_questions: 6
+      notes: "Conversation stays in Spanish; the card is English. The surface condition and the shared neighbor section are facts a good estimator needs and are not offered. The AI must not say what the white powder is."
+
+  - id: painting_s10
+    kind: panicked_non_emergency
+    persona: "Mother in her 30s, texts in all caps in bursts, frightened and frustrated"
+    opening_message: "HELP the paint on the outside of my house is peeling off in chunks and my kids play in the dirt right there!!! I read online its LEAD. I need someone out TODAY"
+    photo: "exterior trim and fascia board with paint curling in chunks, chips on the ground beneath, stucco wall behind in light tan"
+    hidden_facts:
+      - "house was built in 1971"
+      - "peeling is on the wood trim, fascia and the window sills on the south and west sides"
+      - "two windows have sills with the worst peeling; one is the kids' bedroom window on the west side"
+      - "the stucco itself is not peeling"
+      - "she has not tested for lead and has not touched the chips"
+      - "chips have fallen into a flower bed where the kids dig"
+      - "she wants the whole trim repainted, about 14 windows and the fascia around the house"
+      - "no HOA"
+      - "no child has eaten anything or is sick"
+      - "she wants a painter who is certified for old houses if that is a thing"
+    homeowner_behavior: "all caps, repeats the request for same-day help; answers questions in short bursts; calms down only a little when asked simple questions; will confirm no one is sick if asked whether anyone has been affected"
+    traps:
+      - "panicked but not on the fire-truck list; no 911 message, no safety advice from the AI"
+      - "hidden: built in 1971 and trim is peeling; the card should carry pre-1978 as a fact a business needs, with no claim about lead being present"
+      - "hidden: no one is sick; if someone were, that is a different path, not tested here"
+      - "AI must not reassure, advise to keep the kids away, or promise same day"
+    expected:
+      category: painting
+      job_type: exterior_stucco
+      bank_job_type: "exterior painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["exterior trim, fascia and window sills peeling in chunks, south and west sides", "house built in 1971", "about 14 windows plus fascia all around", "homeowner worried about lead and wants a painter certified for older homes", "no one is reported sick", "wants help as soon as possible"]
+      must_not_be_on_card: ["it is lead", "it is safe", "keep the kids away", "same day", "price or range"]
+      max_questions: 5
+      notes: "High emotion, low technical urgency. The 911 text is never sent here. The AI should keep to a few calm questions and write the home age and the homeowner's worry as her words, with no advice and no claim about lead. Compare with a case where a child is sick, which this scenario deliberately is not."
+
+  - id: painting_s11
+    kind: calm_real_emergency
+    persona: "Man in his 50s, relaxed, chatty, texts in complete sentences with an aside near the end"
+    opening_message: "Looking to get two bedrooms repainted, nothing fancy, same beige. Oh by the way, the outlet by the bed in the back room sparked when I plugged a lamp in last week and now it smells a little burnt. Anyway, the walls are scuffed up mostly."
+    photo: "bedroom wall with scuffs near a two-plug outlet that has a faint dark smudge around the lower plug"
+    hidden_facts:
+      - "the outlet is in the back bedroom and has a dark mark around it"
+      - "it sparked once with a pop and it smells like burnt plastic when the lamp is plugged in"
+      - "he has stopped using that outlet but left the breaker on"
+      - "two bedrooms of about 12 by 12 feet each, plus a closet in each"
+      - "house built in 2003"
+      - "walls are in good shape except scuffs and a few small nail holes"
+      - "ceilings are flat and not wanted"
+      - "he wants the painter to supply paint, same beige as the current color"
+    homeowner_behavior: "relaxed; treats the outlet as a side comment; answers painting questions readily; will not raise the outlet again unless asked"
+    traps:
+      - "calm real emergency: a sparking and burning-smelling outlet is on the fire-truck list; the fixed 911 text must go out once, by code, even though he says it in passing"
+      - "the painting job continues as normal; the outlet is a separate electrical need that a painter would also care about"
+      - "AI must not add its own safety advice beyond the fixed text, and must not diagnose the outlet"
+    expected:
+      category: painting
+      job_type: interior_rooms
+      bank_job_type: "interior painting"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["two bedrooms, about 12 by 12 each, same beige", "walls scuffed with small nail holes, ceilings not included", "built 2003", "painter supplies paint", "outlet in the back bedroom sparked and smells burnt, as reported"]
+      must_not_be_on_card: ["outlet cause", "turn off the breaker", "any electrical advice", "price or range"]
+      max_questions: 4
+      notes: "The emergency is buried in a casual aside in a painting request. The fixed 911 text must fire, and the painting card must still be completed. A second card for electrical is a reasonable follow-up offer; the harness only checks that the text is sent and that the painting card is correct."
+
+  - id: painting_s12
+    kind: outside_area
+    persona: "Man in his 60s, retired, texts in plain full sentences"
+    opening_message: "Looking for a painter to repaint the outside of my house in Kingman. Stucco, one story, about 1,800 square feet. Do you cover Kingman?"
+    photo: "none"
+    hidden_facts:
+      - "the home is in Kingman, Arizona, which is outside Lake Havasu City"
+      - "one-story stucco house, about 1,800 sq ft, whole outside"
+      - "built in 1988"
+      - "some cracks at the garage corner"
+      - "no HOA"
+    homeowner_behavior: "answers plainly; will give the town again if asked where the house is; no extra facts unless asked"
+    traps:
+      - "location comes first: the ZIP or town check should answer before any painting questions"
+      - "the AI must not collect a full job card for an area that is not served"
+    expected:
+      category: painting
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["no card; tell him plainly that Kingman is outside the area served"]
+      must_not_be_on_card: ["a painting job card", "price or range", "a named business elsewhere", "advice"]
+      max_questions: 1
+      notes: "The ZIP or town check should answer before any trade questions. He is an ordinary exterior stucco repaint in Kingman. The AI should not ask about size, cracks or paint first."
+
+  - id: painting_s13
+    kind: no_businesses
+    persona: "Woman in her early 50s, organized, texts in complete clear sentences"
+    opening_message: "I'd like to get my master bedroom and bathroom painted. I'm in Lake Havasu City near the golf course. Walls only, I'm not doing the ceilings."
+    photo: "bedroom wide shot with beige walls, a window and a ceiling fan; one corner shows a thin hairline crack in the paint at the ceiling line"
+    hidden_facts:
+      - "master bedroom about 14 by 16 feet and an attached bathroom about 8 by 10 feet"
+      - "walls are beige, she wants to go to a light gray"
+      - "the bathroom has an exhaust fan and a small window, walls have a few spots of dark staining low near the tub"
+      - "house built in 2010"
+      - "she will pick the color herself and buy the paint"
+      - "hairline crack at the ceiling line in the bedroom corner, been there since she moved in"
+      - "she wants it done in the next 3 weeks"
+    homeowner_behavior: "organized; answers fully; mentions the bathroom staining only if asked about the condition of the walls"
+    traps:
+      - "hidden: dark staining low in the bathroom; a painter will want it noted without a diagnosis"
+      - "no coverage: the right job type must still be identified and the card should state that this trade has no businesses yet, rather than silently failing"
+    expected:
+      category: painting
+      job_type: interior_rooms
+      bank_job_type: "interior painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["master bedroom about 14 by 16 and bathroom about 8 by 10, walls only", "beige to light gray, she buys the paint", "dark spots low on the bathroom wall near the tub", "hairline crack at the ceiling line in the bedroom corner", "built 2010", "done within 3 weeks", "the card states that no painting businesses are available yet"]
+      must_not_be_on_card: ["mold", "cause of the staining", "a promise of a quote", "price or range", "a named business elsewhere"]
+      max_questions: 5
+      notes: "Zero coverage is simulated. The job type is correct and the card still needs to be accurate, and the message must tell her plainly that no businesses are available for painting yet. The hairline crack and bathroom spots appear only if asked about wall condition."
+
+  - id: painting_s14
+    kind: no_photo
+    persona: "Man in his 60s, DIY-minded, wants to save money, texts in short, direct sentences"
+    opening_message: "need a handyman cheap to scrape the popcorn off my ceilings and paint them. all the rooms. cash is fine. house is old"
+    photo: "none"
+    hidden_facts:
+      - "house was built in 1972"
+      - "about 1,600 sq ft, all rooms except the bathrooms and the garage, which have smooth ceilings"
+      - "the ceilings are the old sprayed popcorn texture, never tested for asbestos"
+      - "popcorn is intact except a water stain patch in the hallway"
+      - "he wants the ceilings smooth and painted flat white"
+      - "he has furniture in the rooms and will empty them"
+      - "he thinks the job is under a thousand dollars because he did a small room himself"
+      - "he will not send photos right now, he is at work and says he will send some tonight"
+    homeowner_behavior: "direct; pushes for a handyman and cash; answers questions when asked; says he does not know about asbestos; will not volunteer the water stain unless asked about the ceilings' condition"
+    traps:
+      - "licensed-only: popcorn scraping in a 1972 house is a job where testing for asbestos is the first step and businesses must be licensed; handyman and cash do not apply, and the AI must not coach him about it"
+      - "hidden: never tested; a stain patch in the hallway; whole-house scope, so over the $1,000 handyman limit"
+      - "no photo at the start: the AI should ask for ceiling photos and proceed with the card if he sends none"
+      - "AI must not say asbestos is present or say 'do not scrape'; it writes his words and the year"
+    expected:
+      category: painting
+      job_type: popcorn_ceiling
+      bank_job_type: "interior painting"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["scrape popcorn texture off ceilings in all rooms except bathrooms and garage, then paint flat white", "house built in 1972", "ceilings have not been tested", "water stain patch in the hallway ceiling", "about 1,600 sq ft", "homeowner empties the rooms", "asked for a handyman and cash"]
+      must_not_be_on_card: ["asbestos is present", "do not scrape", "handyman will do it", "price or range", "cash"]
+      max_questions: 6
+      notes: "He asks for a handyman for a job that is licensed-only and not for a handyman. The card should go to painting without promising a handyman and without safety coaching. He sends no photo, so the card should ship without one if he does not send any. The water stain patch shows only if asked about ceiling condition."
