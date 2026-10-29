@@ -197,7 +197,8 @@
   "app/portals/askama.toml",
   "app/site/askama.toml",
   "app/server/askama.toml",
-  "app/server/src/bin/worker.rs"
+  "app/server/src/bin/worker.rs",
+  "app/core/src/settings.rs"
  ],
  "kit_outputs": [
   "kit/prompts/",
@@ -240,7 +241,6 @@
     "docs/catalog/license_map.yaml"
    ],
    "reads": [
-    "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/job-cards.md",
     "docs/spec/licensing.md"
@@ -258,7 +258,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -649,7 +649,7 @@
    "budget": {
     "files": 9,
     "lines": 500,
-    "context_pct": 19
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -664,7 +664,7 @@
    "id": "T008",
    "slug": "cleanup-stage1",
    "title": "Stage 1 cleanup: dead code, duplicates, docs up to date",
-   "goal": "Cleanup after stage 1 (BUILD_BRIEF.md:488): dead-code scan, duplicate check, docs brought up to date; it also makes `scripts/check_catalog.py` meet TD-LIC-23 on the real question bank (moved from T177, whose Rust loader case is TD-LIC-24, D-491).",
+   "goal": "Cleanup after stage 1 (BUILD_BRIEF.md:488): dead-code scan, duplicate check, docs brought up to date; TD-LIC-23's cases, including the more-than-3-photos case, are already in `tests/test_check_catalog.py` and are T177's (D-493).",
    "type": "cleanup",
    "phase": 1,
    "stage": "1",
@@ -691,9 +691,7 @@
     "docs/catalog/question_bank.yaml"
    ],
    "requirements": [],
-   "tests": [
-    "TD-LIC-23"
-   ],
+   "tests": [],
    "decisions": [],
    "cites": [
     "BUILD_BRIEF.md:488"
@@ -701,7 +699,7 @@
    "budget": {
     "files": 1,
     "lines": 150,
-    "context_pct": 20
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -710,7 +708,7 @@
    ],
    "branch": "claude/task/T008-cleanup-stage1",
    "prompt": "kit/prompts/T008.md",
-   "acceptance": "`python3 scripts/check_catalog.py` and every stage-1 test pass, including `python3 -m pytest tests/test_check_catalog.py -q -p no:cacheprovider` with a case for each TD-LIC-23 failure (the test file is protected: a missing case is reported for a harness task, never written here, and the script is fixed until the existing cases pass); the stage-1 exit row in `docs/build-readiness.md` section 3 is recorded as passed in the task report; no TODO, dead code or stale doc line remains in the stage's files."
+   "acceptance": "`python3 scripts/check_catalog.py` and every stage-1 test pass, including `python3 -m pytest tests/test_check_catalog.py -q -p no:cacheprovider`; the stage-1 exit row in `docs/build-readiness.md` section 3 is recorded as passed in the task report; no TODO, dead code or stale doc line remains in the stage's files (D-493)."
   },
   {
    "id": "T170",
@@ -1060,7 +1058,7 @@
    "id": "T011",
    "slug": "core-settings-clock",
    "title": "core: validated settings, clock and Arizona business clock, scrubbed logging",
-   "goal": "`core` gives every crate validated settings (the app refuses to start on a missing value, a live key in a test environment, a test key in live, or a vendor account identifier off that environment's allow-list), an injectable clock with Arizona time and the 8 a.m. to 8 p.m. business clock, and logging that carries request IDs and route templates only, with Sentry's default PII off and contact fields held as `Redacted<String>` (JOB-007, PRIV-016, PRIV-017, PRIV-028, SEC-001 to SEC-003, SEC-036). Each log event is one line of JSON with `message` and `level` at the top level (`flatten_event(true)`) (PRIV-016, D-492).",
+   "goal": "`core` gives every crate validated settings (the app refuses to start on a missing value, a live key in a test environment, a test key in live, or a vendor account identifier off that environment's allow-list), an injectable clock with Arizona time and the 8 a.m. to 8 p.m. business clock, and logging that carries request IDs and route templates only, with Sentry's default PII off and contact fields held as `Redacted<String>` (JOB-007, PRIV-016, PRIV-017, PRIV-028, SEC-001 to SEC-003, SEC-036). Each log event is one line of JSON with `message` and `level` at the top level (`flatten_event(true)`) (PRIV-016, D-492). `app/core/src/settings.rs` is a shared path: this task creates it, and each later task adds its own `ASKHAVA_*` keys (SEC-040's client-IP header, `ID_SECRET`, the masked pool, the vendor base URLs, the webhook secrets, the vault keys) to the typed settings, so the parser still refuses unknown keys (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -1835,17 +1833,66 @@
    "prompt": "kit/prompts/T021.md"
   },
   {
+   "id": "T233",
+   "slug": "catalog-job-type-kinds",
+   "title": "catalog: the repair, replace and install kind on the five split categories, with its check",
+   "goal": "This task adds a `kind: repair | replace | install` field to each job type of the plumbing repair, heating and cooling, electrical, roof repair and painting categories in `docs/catalog/categories.yaml`, splitting job types into repair, replace and new-install ones where the license rule allows, and a matching check in `scripts/check_catalog.py`: a job type of those five categories without a kind, or one of those categories with no repair kind, fails, so TD-LIC-16 has its oracle (LIC-041). `categories.yaml` and `check_catalog.py` are locked in `kit/plan.lock`: this task's PR rewrites the lock with `python3 scripts/check_plan_lock.py --write` together with its `docs/decisions.md` entry. `tests/test_check_catalog.py` is protected: a missing case is reported for a harness task, never written here. Split from T177, whose context would otherwise pass 20%. (D-493)",
+   "type": "build",
+   "phase": 1,
+   "stage": "2",
+   "module": "catalog",
+   "deps": [
+    "T008"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing"
+   ],
+   "owns": [
+    "docs/catalog/categories.yaml",
+    "scripts/check_catalog.py"
+   ],
+   "reads": [
+    "docs/spec/licensing.md",
+    "docs/catalog/license_map.yaml"
+   ],
+   "requirements": [
+    "LIC-041"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-493"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T233-catalog-job-type-kinds",
+   "prompt": "kit/prompts/T233.md",
+   "acceptance": "`python3 scripts/check_catalog.py` passes on the real catalog, and fails on a planted job type of one of the five split categories with no `kind` and on one of those categories with no repair kind; `python3 -m pytest tests/test_check_catalog.py -q -p no:cacheprovider` passes (D-493)."
+  },
+  {
    "id": "T177",
    "slug": "catalog-question-bank-load",
    "title": "catalog: load the question bank and the repair, replace and new-install job types, with the no-warranty rule",
-   "goal": "`catalog` loads each category's versioned question set from `docs/catalog/question_bank.yaml` (3 to 8 questions, both languages, card fields multiple choice only) and the repair, replace and new-install job types of the five split categories, and refuses to load any category, job type or offer that covers a home warranty, protection plan or guarantee (LIC-040 to LIC-042).",
+   "goal": "`catalog` loads each category's versioned question set from `docs/catalog/question_bank.yaml` (3 to 8 questions, both languages, card fields multiple choice only) and the repair, replace and new-install job types of the five split categories, and refuses to load any category, job type or offer that covers a home warranty, protection plan or guarantee (LIC-040 to LIC-042). The `kind` field (repair, replace or install) on the five split categories' job types is T233's, which runs first; this task loads it (LIC-041, D-493).",
    "type": "build",
    "phase": 1,
    "stage": "2",
    "module": "catalog",
    "deps": [
     "T015",
-    "T021"
+    "T021",
+    "T233"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -1862,7 +1909,6 @@
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/licensing.md",
-    "docs/catalog/categories.yaml",
     "docs/catalog/question_bank.yaml"
    ],
    "requirements": [
@@ -1883,7 +1929,7 @@
    "budget": {
     "files": 3,
     "lines": 250,
-    "context_pct": 20
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -2167,7 +2213,7 @@
    "id": "T024",
    "slug": "ai-adapter",
    "title": "ai: strict schemas, no tools, instruction versions, stand-in by configuration",
-   "goal": "`ai` sends only `ScrubbedText` through the adapter with versioned instructions and no tools, accepts only schema-validated fixed fields (discarding anything else), and screens every AI-written text for restricted content, URLs and length before use, falling back to the fixed template (AI-005, AI-006, AI-010, AI-015, AI-021). The adapter calls only `/v1/messages` and `/v1/messages/count_tokens` (AI-001); the Rust types and the request's `output_config` come from `app/ai/schemas/intake_reading.json` (T167's) and a test fails on any difference (AI-022); each call has a 20-second timeout and retries only on the AI-023 codes, any other failure returning the AI-off result and the key and spend errors raising an owner alert (AI-023); the model ID is a setting stored with each call record beside the instruction version and request ID (AI-024); the scrubbed text goes inside one fixed XML tag with the tag name escaped inside it (AI-025); enums are trimmed, lowercased and checked against the catalog (AI-005) (D-492). The carrier-restricted word list of CARD-010 lives in `catalog` (`app/catalog/src/restricted_words.rs`, this task's, exported through `catalog::api`, a shared path), so `ai` screens with it here and `quotes` (T185) reads the same list; `ai/src/lib.rs` is a shared path this task creates (D-492).",
+   "goal": "`ai` sends only `ScrubbedText` through the adapter with versioned instructions and no tools, accepts only schema-validated fixed fields (discarding anything else), and screens every AI-written text for restricted content, URLs and length before use, falling back to the fixed template (AI-005, AI-006, AI-010, AI-015, AI-021). The adapter calls only `/v1/messages` and `/v1/messages/count_tokens` (AI-001); the Rust types and the request's `output_config` come from `schemas/intake_reading.json` (T167's, D-493) and a test fails on any difference (AI-022); each call has a 20-second timeout and retries only on the AI-023 codes, any other failure returning the AI-off result and the key and spend errors raising an owner alert (AI-023); the model ID is a setting stored with each call record beside the instruction version and request ID (AI-024); the scrubbed text goes inside one fixed XML tag with the tag name escaped inside it (AI-025); enums are trimmed, lowercased and checked against the catalog (AI-005) (D-492). The carrier-restricted word list of CARD-010 lives in `catalog` (`app/catalog/src/restricted_words.rs`, this task's, exported through `catalog::api`, a shared path), so `ai` screens with it here and `quotes` (T185) reads the same list; `ai/src/lib.rs` is a shared path this task creates (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -2204,7 +2250,7 @@
     "docs/brains/sms-compliance.md",
     "docs/spec/job-cards.md",
     "docs/brains/ai-intake.md",
-    "app/ai/schemas/intake_reading.json"
+    "schemas/intake_reading.json"
    ],
    "requirements": [
     "AI-005",
@@ -2593,7 +2639,7 @@
    "id": "T029",
    "slug": "messaging-optout",
    "title": "messaging: sole-word opt-out in English and Spanish, one confirmation, no text after",
-   "goal": "A text that is only an opt-out word (English or Spanish, any case) or contains a listed revocation phrase opts the number out of every text at once with exactly one confirmation within 5 minutes; nothing else goes to it until START, 21610 failures are never retried, every revocation channel feeds one suppression list, and the provider's Advanced Opt-Out matches the app's words (CON-008 to CON-011, CON-013 to CON-017, CON-030, CON-032, CON-035). The provider's Advanced Opt-Out settings are the committed file `app/messaging/provider_optout.json`: START and UNSTOP the only re-subscribe words, STOP, END, QUIT, UNSUBSCRIBE, PARAR, ALTO, CANCELAR and BAJA opt-out words, and the CON-009 wording and its Spanish counterpart as the provider's replies; the provider sends the Spanish confirmation for the Spanish words and the app sends none (CON-030); the fake Twilio's matching behavior is T167's (D-492).",
+   "goal": "A text that is only an opt-out word (English or Spanish, any case) or contains a listed revocation phrase opts the number out of every text at once with exactly one confirmation within 5 minutes; nothing else goes to it until START, 21610 failures are never retried, every revocation channel feeds one suppression list, and the provider's Advanced Opt-Out matches the app's words (CON-008 to CON-011, CON-013 to CON-017, CON-030, CON-032, CON-035). The provider's Advanced Opt-Out settings are T167's committed file `stand_ins/provider_optout.json` (read here, not owned): START and UNSTOP the only re-subscribe words, exactly CON-030's twelve opt-out words (stop, stopall, unsubscribe, cancel, end, revoke, optout, quit, parar, alto, cancelar and baja), and the CON-009 wording and its Spanish counterpart as the provider's replies; a test checks the app's own opt-out and re-subscribe word lists equal the file's (D-493); the provider sends the Spanish confirmation for the Spanish words and the app sends none (CON-030); the fake Twilio's matching behavior is T167's (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -2616,8 +2662,7 @@
     "app/messaging/src/tests/prop_optout_props.rs",
     "tests/integration/tests/optout_flow.rs",
     "migrations/0044_messaging_optout.sql",
-    "app/messaging/src/models.rs",
-    "app/messaging/provider_optout.json"
+    "app/messaging/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -2625,7 +2670,8 @@
     "docs/spec/consent.md",
     "docs/brains/email-deliverability.md",
     "docs/brains/rust-production.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "stand_ins/provider_optout.json"
    ],
    "requirements": [
     "CON-008",
@@ -2659,7 +2705,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 7,
     "lines": 500,
     "context_pct": 14
    },
@@ -3070,7 +3116,7 @@
    "id": "T035",
    "slug": "licensing-handyman",
    "title": "licensing: handyman limit, gas and permit block, split-job check, certification",
-   "goal": "Handyman quotes for construction work of $1,000 or more (top of any range) are refused with the limit explained, gas, hardwired smoke-alarm, sprinkler and permit-type jobs never reach a handyman whatever the AI says, the split-job check blocks a second job at the same address within 30 days, and every handyman quote carries the certification box and the disclaimer line (AI-012, LIC-019 to LIC-025, LIC-036).",
+   "goal": "Handyman quotes for construction work of $1,000 or more (top of any range) are refused with the limit explained, gas, hardwired smoke-alarm, sprinkler and permit-type jobs never reach a handyman whatever the AI says, the split-job check blocks a second job at the same address within 30 days, and every handyman quote carries the certification box and the disclaimer line (AI-012, LIC-019 to LIC-025, LIC-036). The gas keyword list of AI-012 is this task's new catalog file `docs/catalog/gas_keywords.yaml` (English and Spanish words, at least AI-012's list), read by the handyman rule; catalog files are locked in `kit/plan.lock`, so this task's PR adds it to the lock with `python3 scripts/check_plan_lock.py --write` and its `docs/decisions.md` entry (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -3088,7 +3134,8 @@
     "app/licensing/src/handyman.rs",
     "app/licensing/src/rules.rs",
     "app/licensing/src/tests/handyman.rs",
-    "app/licensing/src/tests/prop_handyman_never_gas.rs"
+    "app/licensing/src/tests/prop_handyman_never_gas.rs",
+    "docs/catalog/gas_keywords.yaml"
    ],
    "reads": [
     "docs/architecture.md",
@@ -3125,7 +3172,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 500,
     "context_pct": 15
    },
@@ -3332,7 +3379,7 @@
    "id": "T038",
    "slug": "intake-consent",
    "title": "intake: consent by the first text on every path and the consent text",
-   "goal": "The first message to any new number is the exact CON-031 consent text (in Spanish when CON-026 says so), after the INT-004 text on a 911-list match; it asks for no reply, carries no fee line, links the Terms and privacy policy, and any later reply is handled as part of the conversation (CON-001 to CON-004, CON-026, CON-027, CON-031). Its migration `intake_tables` creates the intake tables later intake tasks fill (`intake.conversation`, `intake.intake_answer`, `intake.emergency_event`, `intake.recruiting_demand`, architecture section 3) with the consent columns, and `models.rs` holds their row types; T039, T040 and T043 extend `models.rs` (D-492).",
+   "goal": "The first message to any new number is the exact CON-031 consent text (in Spanish when CON-026 says so), after the INT-004 text on a 911-list match; it asks for no reply, carries no fee line, links the Terms and privacy policy, and any later reply is handled as part of the conversation (CON-001 to CON-004, CON-026, CON-027, CON-031). Its migration `intake_tables` creates the intake tables later intake tasks fill (`intake.homeowner`, `intake.property`, `intake.consent_record`, `intake.conversation`, `intake.intake_answer`, `intake.emergency_event`, `intake.recruiting_demand`, architecture section 3; the first three added by D-493) with the consent columns, and `models.rs` holds their row types; T039, T040 and T043 extend `models.rs` (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -3451,7 +3498,8 @@
    "owns": [
     "app/intake/src/service.rs",
     "tests/integration/tests/consent_records.rs",
-    "migrations/0054_intake_terms_acceptance.sql"
+    "migrations/0054_intake_terms_acceptance.sql",
+    "app/intake/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -3487,7 +3535,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 300,
     "context_pct": 14
    },
@@ -3607,7 +3655,7 @@
    "id": "T040",
    "slug": "intake-conversation",
    "title": "intake: what opens a request, duplicates, word answers",
-   "goal": "A message opens a job only when it is more than two words or holds an emergency keyword and is not a cancel-like message; one active job exists per homeowner, property and trade; a follow-up within the INT-010 window joins the open job; answers count only for open jobs and match exactly; the name and address come last; two trades start two jobs; and an under-18 sender gets the INT-038 reply (INT-007 to INT-012, INT-027, INT-032, INT-038); INT-032's SPLIT offer needs the license match and is T184's (D-491).",
+   "goal": "A message opens a job only when it is more than two words or holds an emergency keyword and is not a cancel-like message; one active job exists per homeowner, property and trade; a follow-up within the INT-010 window joins the open job (the after-2-hours same-trade rule is T042's, D-493); answers count only for open jobs and match exactly; the name and address come last; an ALSO reply's second job is opened through this task's job-opening path (the two-trade detection and reply are T042's, D-493); and an under-18 sender gets the INT-038 reply (INT-007 to INT-012, INT-027, INT-032, INT-038); INT-032's SPLIT offer needs the license match and is T184's (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -3663,7 +3711,6 @@
     "D-226",
     "D-238",
     "D-242",
-    "D-246",
     "D-385",
     "D-393"
    ],
@@ -3860,7 +3907,7 @@
    "budget": {
     "files": 4,
     "lines": 250,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -3874,7 +3921,7 @@
    "id": "T042",
    "slug": "intake-trade-matching",
    "title": "intake: trade question, word answers and the keyword second opinion",
-   "goal": "Each request is read twice with the keyword rules as an independent opinion; when the trade is in doubt a numbered trade question offering every distinct trade (up to three) is asked, word answers are matched as whole words, a re-ask repeats the options, and two unusable answers apply the D-103 fallback so intake moves on (AI-011, INT-012, INT-013, INT-015).",
+   "goal": "Each request is read twice with the keyword rules as an independent opinion; when the trade is in doubt a numbered trade question offering every distinct trade (up to three) is asked, word answers are matched as whole words, a re-ask repeats the options, and two unusable answers apply the D-103 fallback so intake moves on (AI-011, INT-012, INT-013, INT-015). With the keyword reading built here, this task also applies INT-010's after-2-hours rule (a same-trade message joins only when at least half its words appear in the job's scrubbed description) and INT-032's two-trade detection with the \"That's 2 jobs\" reply and ALSO (or TAMBIÉN) starting the second job (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -3912,11 +3959,14 @@
     "CARD-001",
     "INT-012",
     "INT-013",
-    "INT-015"
+    "INT-015",
+    "INT-010",
+    "INT-032"
    ],
    "tests": [
     "TD-INT-03",
-    "TD-INT-04"
+    "TD-INT-04",
+    "TD-INT-35"
    ],
    "decisions": [
     "D-102",
@@ -4116,7 +4166,8 @@
     "CARD-003"
    ],
    "tests": [
-    "TD-LIC-02"
+    "TD-LIC-02",
+    "TD-LIC-26"
    ],
    "decisions": [
     "D-110",
@@ -4277,7 +4328,7 @@
    "id": "T185",
    "slug": "quotes-card-lines",
    "title": "quotes: carrier-restricted content, the Spanish tag and the 'Sent to N businesses' line",
-   "goal": "The final gate also removes carrier-restricted phrases (the list T024 put in `catalog`, read through `catalog::api`, D-492) and logs each removal without the text; \"Homeowner prefers Spanish\" shows only to businesses that speak Spanish and no one can filter jobs by language; and every card says \"Sent to <N> businesses.\" counted from accepted notices (CARD-010, CARD-012, CARD-019); a card for a fee-free job type (the catalog's `fee_free_job_types`) says \"No introduction fee for this job.\" (FEE-045, TD-CARD-07, moved from TD-FEE-28, D-491).",
+   "goal": "The final gate also removes carrier-restricted phrases (the list T024 put in `catalog`, read through `catalog::api`, D-492) and logs each removal without the text; \"Homeowner prefers Spanish\" shows only to businesses that speak Spanish and no one can filter jobs by language; and every card says \"Sent to <N> businesses.\", N being an input the caller passes (the provider-accepted count is T147's, CARD-019) (CARD-010, CARD-012, CARD-019); a card for a fee-free job type (the catalog's `fee_free_job_types`) says \"No introduction fee for this job.\" (FEE-045, TD-CARD-07, moved from TD-FEE-28, D-491). (D-493)",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -4339,7 +4390,7 @@
    "id": "T046",
    "slug": "quotes-intake",
    "title": "quotes: quote window, quote fields, bounces and the all-quotes-in trigger",
-   "goal": "Each business may quote for 24 hours after its own card was actually sent; a quote stores its category's format and amounts (hourly quotes with hours, read back to text quoters), the business can see its card as homeowners do, and a quote with a phone number, link or contact wording bounces (PICK-001, PICK-002, PICK-005 to PICK-007). When every card's 24-hour window has ended on a Quotes ready job with no pick, `quotes` calls `jobs::api::all_windows_ended(job, quoted, sent)` (T032's), which sends the TXT-042 text and closes a job with no choosable quote left (JOB-025's every-window-ended half) (D-491). `quotes` keeps no fee code: the fee preview on the quote form is T148's, through `payments::api` (FEE-043, D-491).",
+   "goal": "Each business may quote for 24 hours after its own card was actually sent; a quote stores its category's format and amounts (hourly quotes with hours) with a confirmed flag, no quote reaches the homeowner before the business confirms it, and a quote with a phone number, link or contact wording bounces (PICK-001, PICK-002, PICK-007); the business's preview of its card is T186's (PICK-005) and the read-back screen T148's (PICK-006) (D-493). When every card's 24-hour window has ended on a Quotes ready job with no pick, `quotes` calls `jobs::api::all_windows_ended(job, quoted, sent)` (T032's), which sends the TXT-042 text and closes a job with no choosable quote left (JOB-025's every-window-ended half) (D-491). `quotes` keeps no fee code: the fee preview on the quote form is T148's, through `payments::api` (FEE-043, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -4376,8 +4427,6 @@
    "requirements": [
     "PICK-001",
     "PICK-002",
-    "PICK-005",
-    "PICK-006",
     "PICK-007",
     "TXT-042",
     "JOB-025"
@@ -4386,7 +4435,6 @@
     "TD-PICK-01",
     "TD-PICK-02",
     "TD-PICK-03",
-    "TD-PICK-22",
     "TD-FEE-27",
     "TD-JOB-03"
    ],
@@ -4419,7 +4467,7 @@
    "id": "T186",
    "slug": "quotes-original-wording-card",
    "title": "quotes: original wording beside any summary, quote facts, and the business lines on each quote card",
-   "goal": "The business's original wording is always stored and shown, an AI summary that adds any claim is rejected, every quote card shows the required quote facts in order in the homeowner's language, and each card shows the business name, license numbers with their record lines and review links (PICK-003, PICK-004, PICK-040, PICK-041). The Google and Yelp review links appear once T165 stores them; this task renders the quote facts and leaves the link slot to T165, which adds the PICK-041 link case to its tests (D-491).",
+   "goal": "The business's original wording is always stored and shown, an AI summary that adds any claim is rejected, every quote card shows the required quote facts in order in the homeowner's language, and each card shows the business name, license numbers with their record lines and review links (PICK-003, PICK-004, PICK-040, PICK-041). The Google and Yelp review links appear once T165 stores them; this task renders the quote facts and leaves the link slot to T165, which adds the PICK-041 link case to its tests (D-491). The business sees its own quote card exactly as homeowners do (PICK-005), and each card of a business that ticked the after-hours box (BIZ-007, T041's data) shows \"Gets emergency requests at night\" with the card order unchanged (PICK-044) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -4451,11 +4499,14 @@
     "PICK-003",
     "PICK-004",
     "PICK-040",
-    "PICK-041"
+    "PICK-041",
+    "PICK-005",
+    "PICK-044"
    ],
    "tests": [
     "TD-PICK-18",
-    "TD-PICK-29"
+    "TD-PICK-29",
+    "TD-PICK-44"
    ],
    "decisions": [
     "D-233",
@@ -4536,19 +4587,15 @@
     "D-226",
     "D-236",
     "D-239",
-    "D-241",
     "D-290",
     "D-292",
     "D-293",
     "D-294",
     "D-295",
-    "D-338",
     "D-339",
     "D-324",
-    "D-340",
     "D-358",
     "D-368",
-    "D-397",
     "D-406",
     "D-420"
    ],
@@ -4556,7 +4603,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 15
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -4571,7 +4618,7 @@
    "id": "T048",
    "slug": "intake-timeouts",
    "title": "intake: 24-hour reminder, 72-hour close, AI outage message, everyone hears back",
-   "goal": "An Intake job with no reply gets one reminder at 24 hours and closes at 72 hours with the INT-019 text; while the AI is down the homeowner gets \"we have your message\" once and the reading retries every 30 minutes; and every new request hears back within 24 hours by text, email or a call-back alert to Casey (INT-019, INT-021, INT-023). Intake's inbound handler also routes LIST and LISTA to `quotes::api`'s LIST lines (T047) and texts them back (TD-INT-08, D-491). While the AI is down or a call fails, that step runs at once on the AI-off path, with no hold and no 30-minute retry (INT-021, D-492).",
+   "goal": "An Intake job with no reply gets one reminder at 24 hours and closes at 72 hours with the INT-019 text; and every new request hears back within 24 hours by text, email or a call-back alert to Casey (INT-019, INT-021, INT-023). Intake's inbound handler also routes LIST and LISTA to `quotes::api`'s LIST lines (T047) and texts them back (TD-INT-08, D-491). While the AI is down or a call fails, that step runs at once on the AI-off path, with no hold and no 30-minute retry (INT-021, D-492, D-493).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -4845,7 +4892,7 @@
    "id": "T052",
    "slug": "quote-page",
    "title": "portals: the homeowner quote page (token, arrival order, no contact details)",
-   "goal": "The homeowner's quote page, reached by an unguessable salted 128-bit token that stops working 30 days after close, shows every eligible quote numbered in arrival order with the WORD-005 lines, adds quotes as they arrive with a Pick button from the first one, marks an ineligible business's quote \"no longer available\", and shows no names, phones or addresses (PICK-008 to PICK-012, WORD-005, SEC-037). Every quote-page line other tasks' rows used to check is this task's (TD-PICK-38): the no-ranking top line, \"#1 means first received, not first choice.\", no rating, review or hire count, no summary element while AI quote summaries are off, the LIST line, and the CON-028 \"still open\" line after an opt-out; a cross-site POST to the quote page is refused (TD-PICK-05) (D-491). New quotes are added by `app/portals/static/quote_page.ts` (compiled by `tsc`), which polls the page's own quote list, writes one short summary line per batch into the status region (A11Y-033) and leaves the page fully usable without JavaScript (D-492).",
+   "goal": "The homeowner's quote page, reached by an unguessable salted 128-bit token that stops working 30 days after close, shows every eligible quote numbered in arrival order with the WORD-005 lines, adds quotes as they arrive with a Pick button from the first one, marks an ineligible business's quote \"no longer available\", and shows no names, phones or addresses (PICK-008 to PICK-012, WORD-005, SEC-037). Every quote-page line other tasks' rows used to check is this task's (TD-PICK-38): the no-ranking top line, \"#1 means first received, not first choice.\", no rating, review or hire count, no summary element while AI quote summaries are off, the LIST line, and the CON-028 \"still open\" line after an opt-out; a cross-site POST to the quote page is refused (TD-PICK-05) (D-491). New quotes are added by `app/portals/static/quote_page.ts` (compiled by `tsc`), which polls the page's own quote list, writes one short summary line per batch into the status region (A11Y-033) and leaves the page fully usable without JavaScript (D-492). Each Pick button has the line \"or reply <n> YES\" beside it (PICK-015, D-247, D-446, TD-PICK-04) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -5108,7 +5155,7 @@
     "BUILD_BRIEF.md:476",
     "docs/test-design.md:31",
     "docs/test-design.md:33",
-    "docs/test-design.md:74"
+    "docs/test-design.md:75"
    ],
    "budget": {
     "files": 5,
@@ -5182,7 +5229,9 @@
     "TD-PICK-07",
     "TD-PICK-14",
     "TD-CON-12",
-    "TD-PICK-40"
+    "TD-PICK-40",
+    "TD-TERMS-10",
+    "TD-PICK-06"
    ],
    "decisions": [
     "D-015",
@@ -5306,7 +5355,8 @@
     "TD-PICK-28",
     "TD-PICK-30",
     "TD-A11Y-02",
-    "TD-PICK-33"
+    "TD-PICK-33",
+    "TD-PICK-24"
    ],
    "decisions": [
     "D-212",
@@ -5379,7 +5429,6 @@
    ],
    "requirements": [
     "PICK-018",
-    "PICK-042",
     "A11Y-010",
     "A11Y-011",
     "A11Y-012",
@@ -5391,7 +5440,6 @@
    ],
    "tests": [
     "TD-PICK-19",
-    "TD-PICK-24",
     "TD-PICK-06"
    ],
    "decisions": [
@@ -5646,7 +5694,6 @@
     "OPS-038",
     "SEC-050",
     "SEC-051",
-    "BIZ-055",
     "A11Y-034",
     "SEC-028"
    ],
@@ -5655,7 +5702,8 @@
     "TD-OPS-14",
     "TD-SEC-27",
     "TD-A11Y-02",
-    "TD-BIZ-26"
+    "TD-BIZ-26",
+    "TD-CON-28"
    ],
    "decisions": [
     "D-308",
@@ -6137,7 +6185,8 @@
     "FEE-037",
     "FEE-038",
     "FEE-041",
-    "FEE-047"
+    "FEE-047",
+    "FEE-048"
    ],
    "tests": [
     "TD-FEE-11",
@@ -6229,7 +6278,6 @@
     "TD-SEC-27",
     "TD-FEE-25",
     "TD-FEE-38",
-    "TD-PICK-08",
     "TD-FEE-32"
    ],
    "decisions": [
@@ -6309,7 +6357,8 @@
     "TD-FEE-25",
     "TD-FEE-37",
     "TD-FEE-40",
-    "TD-SEC-31"
+    "TD-SEC-31",
+    "TD-PICK-08"
    ],
    "decisions": [
     "D-491",
@@ -6335,7 +6384,7 @@
    "id": "T063",
    "slug": "picks-confirm-window",
    "title": "picks: Confirm within 4 business hours, license at pick and at Confirm",
-   "goal": "After a pick the business has 4 business hours (a setting) from the pick notice to confirm; its license and account are re-checked at the pick with the one live lookup and again at Confirm; a recurring pick shows how its fee was set; a late answer is told the pick expired; and the notice goes to the owner and every \"Confirm and billing\" member (PICK-019, PICK-020, PICK-033 to PICK-035, PICK-037). The pick notice email goes through T094's email pipeline as a `core.task` event a `messaging` handler sends; the reminder emails are T197's (D-491).",
+   "goal": "After a pick the business has 4 business hours (a setting) from the pick notice to confirm; its license and account are re-checked at the pick with the one live lookup and again at Confirm; a recurring pick shows how its fee was set; a late answer is told the pick expired; and the notice goes to the owner and every \"Confirm and billing\" member (PICK-019, PICK-020, PICK-033 to PICK-035, PICK-037). The pick notice email goes through T094's email pipeline as a `core.task` event a `messaging` handler sends; the reminder emails are T197's (D-491). The pick notice's \"Hold for 2 more hours\" link is T148's (BIZ-038), its \"Can't take it\" link T214's (PICK-050), and the page scoping that lets only the owner and \"Confirm and billing\" people complete a Confirm is T084's (TD-PICK-15) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "3",
@@ -6606,7 +6655,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -6761,7 +6810,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -7230,8 +7279,8 @@
   {
    "id": "T073",
    "slug": "mutants-stage3",
-   "title": "Named mutants: the 4-month rule and the fee tiers; money coverage floor",
-   "goal": "Breaking the 4-month rule or a tier edge on purpose turns tests red (BUILD_BRIEF.md:472). Also the 'license check at pick skipped' mutant, killed by TD-PICK-09 (moved from T056, D-479).",
+   "title": "Named mutants: the 4-month rule, the fee tiers and the card and summary gates; money coverage floor",
+   "goal": "Breaking the 4-month rule or a tier edge on purpose turns tests red (BUILD_BRIEF.md:472). Also the 'license check at pick skipped' mutant, killed by TD-PICK-09 (moved from T056, D-479). It also writes three named mutants (D-493): a card sent that the homeowner wasn't shown (killed by TD-AI-17, T208), an AI summary shown with the setting off (killed by TD-PICK-29, T186) and a fee-free job type charged (killed by TD-FEE-28, T058).",
    "type": "harness",
    "phase": 1,
    "stage": "3",
@@ -7467,7 +7516,8 @@
     "CALL-021"
    ],
    "tests": [
-    "TD-CALL-01"
+    "TD-CALL-01",
+    "TD-CON-28"
    ],
    "decisions": [
     "D-077",
@@ -7479,7 +7529,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -7695,7 +7745,7 @@
    "id": "T080",
    "slug": "calls-voice",
    "title": "calls: relay-friendly bridging, identity call, code call",
-   "goal": "The masked line works with 711 relay (spoken prompts, long PIN waits); the homeowner's code call happens only on her tap, opens \"This is Ask Hava LLC\" with the main number as callback, speaks slowly and repeats the code; no business can text a homeowner on Ask Hava's number; no announcement plays on a bridged call; and the safety voice call stays off unless every CALL-022 condition is met (`intake` and `messaging` cannot call `calls`, so intake enqueues a `core.task` safety-call event (this task adds the enqueue to `app/intake/src/emergency.rs`, T039's, D-492) that a `calls` handler in `voice.rs` places, D-491) (CALL-013 to CALL-016, CALL-019, CALL-022, CALL-023); a safety voice call answered by a person acknowledges its critical alert through `ops::api` and lists it in the digest, and `calls::api` offers the bridge that rings Casey's phone and connects him to the homeowner with the Ask Hava number shown (OPS-028); the owner-portal button that starts it is T108's (D-491).",
+   "goal": "The masked line works with 711 relay (spoken prompts, long PIN waits); the homeowner's code call happens only on her tap, opens \"This is Ask Hava LLC\" with the main number as callback, speaks slowly and repeats the code; no business can text a homeowner on Ask Hava's number; no announcement plays on a bridged call; and the safety voice call stays off unless every CALL-022 condition is met (`intake` and `messaging` cannot call `calls`, so intake enqueues a `core.task` safety-call event (this task adds the enqueue to `app/intake/src/emergency.rs`, T039's, D-492) that a `calls` handler in `voice.rs` places, D-491) (CALL-013 to CALL-016, CALL-019, CALL-022, CALL-023); a safety voice call answered by a person acknowledges its critical alert through `ops::api` and lists it in the digest, and `calls::api` offers the bridge that rings Casey's phone and connects him to the homeowner with the Ask Hava number shown (OPS-028); the owner-portal button that starts it is T108's (D-491). The PIN prompt's 10-second wait with one repeat (CALL-013) and the calling-side-only PIN prompt and read-back (CALL-023) are changed in `app/calls/src/routing.rs` (T077's, extended here) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7712,7 +7762,8 @@
    "owns": [
     "app/calls/src/voice.rs",
     "tests/integration/tests/voice_calls.rs",
-    "app/intake/src/emergency.rs"
+    "app/intake/src/emergency.rs",
+    "app/calls/src/routing.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -7748,7 +7799,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 400,
     "context_pct": 13
    },
@@ -7765,7 +7816,7 @@
    "id": "T081",
    "slug": "businesses-signup-identity",
    "title": "businesses: sign-up, identity chain from public records, activation",
-   "goal": "Sign-up creates a Stripe customer with no card, starts from the category list, asks the optional source question, and checks identity by the chain (Verify text to the record phone, then the record email, then a letter); a business activates automatically only when the code and the license or city-list match pass with no flag, and a needs-review sign-up is told its status (BIZ-001 to BIZ-003, BIZ-016, BIZ-019 to BIZ-021, BIZ-053); sign-up hands the FEE-011 free-win entity keys (ROC number, city-list entity, identity-code contact, city-list owner name) to `payments::api` (T061); the \"About us\" line (BIZ-022) is stored in `about_us.rs` and screened there with the PICK-007 contact and channel rules and the WORD-003 claims list, since `businesses` cannot call `quotes`; the verified-email check before activation (BIZ-040) is added to `identity.rs` by T196, which builds the verification (D-491). Each business terms acceptance stores the TERMS-033 record: document, version, SHA-256 of the published text, language, channel (business sign-up or Confirm page), the assent line shown, time and the business-person ID (D-492).",
+   "goal": "Sign-up creates a Stripe customer with no card, starts from the category list, asks the optional source question, and checks identity by the chain (Verify text to the record phone, then the record email, then a letter); a business activates automatically only when the code and the license or city-list match pass with no flag, and a needs-review sign-up is told its status (BIZ-001 to BIZ-003, BIZ-016, BIZ-019 to BIZ-021, BIZ-053); sign-up hands the FEE-011 free-win entity keys (ROC number, city-list entity, identity-code contact, city-list owner name) to `payments::api` (T061); the \"About us\" line (BIZ-022) is stored in `about_us.rs` and screened there with the PICK-007 contact and channel rules and the WORD-003 claims list, since `businesses` cannot call `quotes`; the verified-email check before activation (BIZ-040) is added to `identity.rs` by T196, which builds the verification (D-491). Each business terms acceptance stores the TERMS-033 record: document, version, SHA-256 of the published text, language, channel (business sign-up; the Confirm-page record is T232's, D-493), the assent line shown, time and the business-person ID (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7839,7 +7890,6 @@
     "D-313",
     "D-344",
     "D-366",
-    "D-376",
     "D-457",
     "D-417",
     "D-492"
@@ -7863,7 +7913,7 @@
    "id": "T193",
    "slug": "businesses-signup-screens",
    "title": "businesses: sign-up screens for someone else filling in, the masked record contact, the review target, the fee summary and the done screen",
-   "goal": "Anyone may fill in the form but the code goes only to the record contact; the masked contact and its kind show before a code is sent; a needs-review sign-up gets a decision target of 4 days; the plain-words fee summary sits above the Terms link; and the done screen gives the trade's business count (BIZ-024, BIZ-026, BIZ-027, BIZ-030, BIZ-031). The sign-up screens are the portals page `business_signup.html` with its route `business_signup.rs`, which reads the open-jobs count of BIZ-031 through `quotes::api` (`businesses` cannot call `quotes`, D-491).",
+   "goal": "Anyone may fill in the form but the code goes only to the record contact; the masked contact and its kind show before a code is sent; a needs-review sign-up gets a decision target of 4 days; the plain-words fee summary sits above the Terms link; and the done screen gives the trade's business count (BIZ-024, BIZ-026, BIZ-027, BIZ-030, BIZ-031). The sign-up screens are the portals page `business_signup.html` with its route `business_signup.rs`, which reads the open-jobs count of BIZ-031 through `quotes::api` (`businesses` cannot call `quotes`, D-491). The sign-up screens show the WEB-024 notice line that follows the business-texting switch (D-493). This task's migration stores the \"That number is old\" waiting-on-record status that resumes the sign-up when the next daily list shows a new contact (BIZ-026) and the sent-once flag of BIZ-031's email (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -7884,7 +7934,8 @@
     "app/businesses/src/signup.rs",
     "tests/integration/tests/signup_screens.rs",
     "app/portals/templates/business_signup.html",
-    "app/portals/src/business_signup.rs"
+    "app/portals/src/business_signup.rs",
+    "migrations/0120_businesses_signup_resume.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -7893,7 +7944,8 @@
     "docs/brains/contractor-lead-experience.md",
     "docs/brains/email-deliverability.md",
     "docs/brains/rust-production.md",
-    "docs/spec/licensing.md"
+    "docs/spec/licensing.md",
+    "docs/spec/website.md"
    ],
    "requirements": [
     "BIZ-024",
@@ -7901,7 +7953,8 @@
     "BIZ-027",
     "BIZ-030",
     "BIZ-031",
-    "LIC-047"
+    "LIC-047",
+    "WEB-024"
    ],
    "tests": [
     "TD-BIZ-07",
@@ -7936,7 +7989,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 350,
     "context_pct": 15
    },
@@ -8044,7 +8097,7 @@
    "id": "T083",
    "slug": "businesses-complaints",
    "title": "businesses: complaint replies, 3 in 90 days pause, alerts",
-   "goal": "A complaint gets the BIZ-011 reply with the ROC link, is offered to the business with a 5-day reply window and no homeowner detail through `businesses::api` (the portal view and reply box are T195's, D-492), is listed for Casey once the box closes, and only 3 complaints in 90 days pause a business; the owner is emailed when another phone links a phone (BIZ-011, BIZ-012, BIZ-029, BIZ-033); the Confirm half of BIZ-033 is T197's (D-491).",
+   "goal": "A complaint gets the BIZ-011 reply with the ROC link, is offered to the business with a 5-day reply window and no homeowner detail through `businesses::api` (the portal view and reply box are T195's, D-492), is listed for Casey once the box closes, and only 3 complaints in 90 days pause a business; the owner is emailed when another phone links a phone (BIZ-011, BIZ-012, BIZ-029, BIZ-033); this task sends only that owner email: the Confirm half of BIZ-033 is T197's (D-491), and the Approve gate and the text when the business chose text are T148's (TD-BIZ-16, D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8484,7 +8537,7 @@
    "id": "T087",
    "slug": "portals-homeowner-portal",
    "title": "portals: homeowner portal (phone and code), own data, no forbidden fields",
-   "goal": "The homeowner portal signs in with phone and texted code (Verify sends capped), lets her review and change her properties, language and texts setting through realm-checked vault reads, and never collects SSNs, driver's licenses or tax ID images (PRIV-012, PRIV-021, PICK-055, SEC-046); encrypted backups are T109's and the 95% floor T056's (D-491). The portal offers \"Download my data\" (her requests, quotes, messages and consent records still held), and a delete or copy request by email or the help form is acted on only after a Verify code to the number on file, answered within 30 days (PRIV-031, D-492).",
+   "goal": "The homeowner portal signs in with phone and texted code (the Verify send caps are T089's, PICK-055, D-493), lets her review and change her properties, language and texts setting through realm-checked vault reads, and never collects SSNs, driver's licenses or tax ID images (PRIV-012, PRIV-021, SEC-046); encrypted backups are T109's and the 95% floor T056's (D-491). The portal offers \"Download my data\" (her requests, quotes, messages and consent records still held), and a delete or copy request is acted on only after a Verify code to the number on file, answered within 30 days (PRIV-031, D-492); the same rule for a request by email or the help form is T200's (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8521,16 +8574,15 @@
     "PRIV-012",
     "PRIV-021",
     "SEC-046",
-    "PICK-055",
     "A11Y-032",
     "PRIV-031"
    ],
    "tests": [
     "TD-SEC-25",
-    "TD-PICK-36",
     "TD-A11Y-02",
     "TD-PRIV-05",
-    "TD-PRIV-15"
+    "TD-PRIV-15",
+    "TD-CON-28"
    ],
    "decisions": [
     "D-480",
@@ -8749,7 +8801,7 @@
    "id": "T091",
    "slug": "quotes-card-photos",
    "title": "quotes: photos on cards only after zero retention and all three screens",
-   "goal": "A card photo is a screened copy made only after the format and size checks, metadata stripping and re-encoding and the homeowner's confirmation that it shows no person and no house number, and, once AI photo screening is on after zero retention, both AI checks with their face, plate and text detection; card emails link to the photo route and never carry image bytes, and no photo reaches an AI before zero retention (AI-016, CARD-013, CARD-014, PRIV-027; CARD-014 as reworded by D-491).",
+   "goal": "A card photo is a screened copy made only after the format and size checks, metadata stripping and re-encoding and the homeowner's confirmation that it shows no person and no house number, and, once AI photo screening is on after zero retention, both AI checks with their face, plate and text detection; no photo reaches an AI before zero retention (AI-016, CARD-013, CARD-014; CARD-014 as reworded by D-491); the card email's link-only rule (PRIV-027) is T147's (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8781,11 +8833,9 @@
    "requirements": [
     "AI-016",
     "CARD-013",
-    "CARD-014",
-    "PRIV-027"
+    "CARD-014"
    ],
    "tests": [
-    "TD-PRIV-12",
     "TD-AI-11",
     "TD-CARD-04",
     "TD-PRIV-08"
@@ -8946,14 +8996,16 @@
    "id": "T095",
    "slug": "picks-email-code",
    "title": "picks: pick code by email when texting is off; '2 YES' from an opted-out phone",
-   "goal": "When Ask Hava can't text the homeowner, the pick code goes by email to an address she gave in her own conversation with the PICK-013 limits, and a \"<number> YES\" from an opted-out phone picks without a text back once the Terms line was sent (PICK-029, PICK-030). It also adds the TXT-018 channel choice to the quote page (`quote_page.rs`, `quote_page.html`, T052's, extended here): \"Get updates by email instead\" and \"by text and email\", the one-tap confirm email and the bounce back to text with a quote-page note; the choice is stored in T094's `messaging` table through `messaging::api` (TD-TXT-23, D-491).",
+   "goal": "When Ask Hava can't text the homeowner, the pick code goes by email to an address she gave in her own conversation with the PICK-013 limits, and a \"<number> YES\" from an opted-out phone picks without a text back once the Terms line was sent (PICK-029, PICK-030). It also adds the TXT-018 channel choice to the quote page (`quote_page.rs`, `quote_page.html`, T052's, extended here): \"Get updates by email instead\" and \"by text and email\", the one-tap confirm email and the bounce back to text with a quote-page note; the choice is stored in T094's `messaging` table through `messaging::api` (TD-TXT-23, D-491). The homeowner's page (`quote_page.html`) also shows the approved card (INT-041, T208's) and holds every quote, its license lines, the card, the WORD-002 statement and the free line (TXT-040); the review links are T165's (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "picks",
    "deps": [
     "T094",
-    "T075"
+    "T075",
+    "T208",
+    "T213"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -8976,16 +9028,20 @@
     "docs/brains/rust-production.md",
     "docs/brains/sms-compliance.md",
     "docs/spec/messaging.md",
-    "docs/spec/consent.md"
+    "docs/spec/consent.md",
+    "docs/spec/intake.md"
    ],
    "requirements": [
     "PICK-029",
     "PICK-030",
-    "TXT-018"
+    "TXT-018",
+    "INT-041",
+    "TXT-040"
    ],
    "tests": [
     "TD-PICK-13",
-    "TD-TXT-23"
+    "TD-TXT-23",
+    "TD-INT-36"
    ],
    "decisions": [
     "D-050",
@@ -9010,7 +9066,7 @@
    "id": "T096",
    "slug": "messaging-web-email-mode",
    "title": "messaging: web-and-email mode, number suspension, one configured number",
-   "goal": "The homeowner-texting switch (web-and-email mode) and a suspended number move homeowner updates to email and the quote page, no second number is ever used, people with no email go on Casey's call list, emergencies still raise critical alerts and safety messages, and every step can be finished without a text (TXT-021 to TXT-024, TXT-034); the answered-call acknowledgement and the owner bridge are T080's (OPS-028, D-491). On a suspended number the safety voice call goes through the `core.task` event T080's `calls` handler places (TD-TXT-12, TD-TXT-16, D-491).",
+   "goal": "The homeowner-texting switch (web-and-email mode) and a suspended number move homeowner updates to email and the quote page, no second number is ever used, people with no email go on Casey's call list, emergencies still raise critical alerts and safety messages, and every step can be finished without a text (TXT-021 to TXT-024, TXT-034); the answered-call acknowledgement and the owner bridge are T080's (OPS-028, D-491). On a suspended number the safety voice call goes through the `core.task` event T080's `calls` handler places (TD-TXT-12, TD-TXT-16, D-491). Answering check-ins from emailed buttons (TXT-034) is T231's (D-493). The toll-free fallback's code rule (configured only with a recorded refusal and Casey's go, homeowner templates only, refused for a suspended number) is this task's half of CON-033; the campaign document is T113's (TD-CON-16, D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9044,7 +9100,8 @@
     "TXT-022",
     "TXT-023",
     "TXT-024",
-    "TXT-034"
+    "TXT-034",
+    "CON-033"
    ],
    "tests": [
     "TD-TXT-08",
@@ -9085,7 +9142,7 @@
    "id": "T097",
    "slug": "jobs-followups",
    "title": "jobs: day-3 and day-14 check-ins, PROBLEM flags, private feedback request",
-   "goal": "Connected jobs get the day-3 and day-14 check-ins with LATER, ONGOING and OTHER handled, PROBLEM replies get the TXT-029 text and are listed for Casey (or pushed with a safety word) with no fee change, and only after Done is one private feedback request sent, never shown on quote cards (JOB-016, JOB-017, JOB-028, TXT-029). Ticked feedback is left off askhava.com only for the four JOB-017 reasons, each removal logged; no feedback from the owner, a relative or a business is shown (D-492).",
+   "goal": "Connected jobs get the day-3 and day-14 check-ins with LATER, ONGOING and OTHER handled, PROBLEM replies get the TXT-029 text and are listed for Casey (or pushed with a safety word) with no fee change, and only after Done is one private feedback request sent, linking to the feedback page (JOB-016, JOB-028, TXT-029); the feedback page, its share box, its storage and the JOB-017 display rules are T230's (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9111,7 +9168,6 @@
    ],
    "requirements": [
     "JOB-016",
-    "JOB-017",
     "TXT-029",
     "JOB-028"
    ],
@@ -9149,10 +9205,122 @@
    "copy": true
   },
   {
+   "id": "T230",
+   "slug": "feedback-page",
+   "title": "portals: the private feedback page and its storage",
+   "goal": "The private feedback request (T097's) links to a portals page (`feedback.rs`, `feedback.html`) where the homeowner writes feedback to Ask Hava with one unticked box, \"Ask Hava may show what I wrote on askhava.com with my first name and town\", asked of everyone with no reward; this task's migration stores the feedback, the share tick and any removal with its reason; only ticked feedback may appear on askhava.com and no ticked feedback is left out for being negative; ticked feedback is left off only for the four JOB-017 reasons, each removal logged; no feedback from the owner, a relative of the owner or a business is shown; no page says the shown feedback is all the feedback received (JOB-017). (D-493)",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T097",
+    "T084"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "migrations/0139_jobs_feedback.sql",
+    "app/portals/src/feedback.rs",
+    "app/portals/templates/feedback.html",
+    "tests/e2e/feedback.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md"
+   ],
+   "requirements": [
+    "JOB-017"
+   ],
+   "tests": [
+    "TD-JOB-10"
+   ],
+   "decisions": [
+    "D-493"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 400,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T230-feedback-page",
+   "prompt": "kit/prompts/T230.md",
+   "copy": true
+  },
+  {
+   "id": "T231",
+   "slug": "checkin-email-page",
+   "title": "portals: the homeowner check-in email buttons and answer page",
+   "goal": "In web-and-email mode the day-3 and day-14 check-ins (T097's) go by email, composed by `app/messaging/src/checkin_email.rs` from a `core.task` event through T094's pipeline, with one button per answer; each button opens a portals answer page (`checkin.rs`, `checkin.html`) that shows the answer first, and only the page's POST with a CSRF token records it, so a GET (a mail scanner's, twice) changes nothing (TXT-034's emailed-buttons clause, SEC-026). (D-493)",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T097",
+    "T094",
+    "T199"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/checkin.rs",
+    "app/portals/templates/checkin.html",
+    "app/messaging/src/checkin_email.rs",
+    "tests/e2e/checkin.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "TXT-034"
+   ],
+   "tests": [
+    "TD-TXT-31"
+   ],
+   "decisions": [
+    "D-493"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 400,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T231-checkin-email-page",
+   "prompt": "kit/prompts/T231.md",
+   "copy": true
+  },
+  {
    "id": "T098",
    "slug": "e2e-j1-homeowner",
    "title": "Journey J1 (homeowner) and its variants, keyboard-only, with closing checks",
-   "goal": "Journey J1 runs end to end in Playwright against the app and the stand-ins, with its variants, again keyboard-only with axe at three widths, and ends with the closing checks: no duplicate message or charge, the ledger reconciled, an audit row per status change and no sentinel detail outside the vault (A11Y-005, A11Y-021). This is the stage-4 slice of J1: the steps whose features exist by now. The web-chat variant and the steps that need INT-043's order, INT-039, the INT-044 photo check, INT-041/TXT-018, PICK-053 and PICK-049 are T222's (D-491).",
+   "goal": "Journey J1 runs end to end in Playwright against the app and the stand-ins, with its variants, again keyboard-only with axe at three widths, and ends with the closing checks: no duplicate message or charge, the ledger reconciled, an audit row per status change and no sentinel detail outside the vault (A11Y-005, A11Y-021). This is the stage-4 slice of J1: the steps whose features exist by now. The web-chat variant and the steps that need INT-043's order, INT-039, the INT-044 photo check, INT-041/TXT-018, PICK-053 and PICK-049, BIZ-052's review links and the T230 feedback page are T222's (D-491, D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9206,7 +9374,7 @@
    "id": "T099",
    "slug": "e2e-j2-business",
    "title": "Journey J2 (business) and its variants, keyboard-only, with closing checks",
-   "goal": "Journey J2 (business sign-up through Confirm, charge and statement) and its variants run end to end in Playwright against the stand-ins, again keyboard-only with axe at three widths, ending with the closing checks (A11Y-005, A11Y-021). Across J2 the fake voice provider records no call to a business phone except masked calls a person placed (the J2 half of TD-BIZ-22's and TD-BIZ-25's sweeps; the J1 half is T222's, D-491, D-492). This is the stage-4 slice of J2; the steps that need BIZ-052's links, PICK-053's formats and PICK-050's 'Can't take it' are T222's (D-491).",
+   "goal": "Journey J2 (business sign-up through Confirm, charge and statement) and its variants run end to end in Playwright against the stand-ins, again keyboard-only with axe at three widths, ending with the closing checks (A11Y-005, A11Y-021). Across J2 the fake voice provider records no call to a business phone except masked calls a person placed (the J2 half of TD-BIZ-22's and TD-BIZ-25's sweeps; the J1 half is T222's, D-491, D-492). This is the stage-4 slice of J2; the steps that need BIZ-052's links, PICK-053's formats, PICK-052's job note and PICK-050's 'Can't take it' are T222's (D-491, D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9265,7 +9433,7 @@
    "id": "T147",
    "slug": "business-notices-email",
    "title": "messaging and businesses: business notices by chosen channel and the business-texting switch",
-   "goal": "Every business notice goes by the business's chosen channels, email by default and text only while the business-texting switch is on, never carrying homeowner details by text; job cards go to the owner and every \"Cards and quotes\" member; texts that fail fall back to email and the portal; and quiet hours hold each business notice as a whole, email and any text together (TXT-014, TXT-035 to TXT-037, BIZ-019, BIZ-036, BIZ-037, CARD-020, QH-005); `messaging` never calls `businesses`: the enqueuing module (`quotes` for cards, in `app/quotes/src/card_notices.rs` owned here; `picks` for pick and release notices; `businesses` for account notices; `picks`' `money_notices.rs` for the payments notices, T062 and T068) resolves the recipients and channels through `businesses::api::notice_addresses` and puts them in the event payload as opaque address IDs, and `messaging` sends to what it is given (T220 created that lookup; this task extends it with each person's channel choice, and T149 extends it with the backup addresses, D-491, D-492). The card notices' provider acceptance feeds `quotes`' sent count through `card_notices.rs`, so the cards-out text's N and the job page count leave out a business whose every notice hard-bounces (TD-TXT-22, D-491).",
+   "goal": "Every business notice goes by the business's chosen channels, email by default and text only while the business-texting switch is on, never carrying homeowner details by text; job cards go to the owner and every \"Cards and quotes\" member; texts that fail fall back to email and the portal; and quiet hours hold each business notice as a whole, email and any text together (TXT-014, TXT-035 to TXT-037, BIZ-019, BIZ-036, BIZ-037, CARD-020, QH-005); `messaging` never calls `businesses`: the enqueuing module (`quotes` for cards, in `app/quotes/src/card_notices.rs` owned here; `picks` for pick and release notices; `businesses` for account notices; `picks`' `money_notices.rs` for the payments notices, T062 and T068) resolves the recipients and channels through `businesses::api::notice_addresses` and puts them in the event payload as opaque address IDs, and `messaging` sends to what it is given (T220 created that lookup; this task extends it with each person's channel choice, and T149 extends it with the backup addresses, D-491, D-492). The card notices' provider acceptance feeds `quotes`' sent count through `card_notices.rs`, so the cards-out text's N and the job page count leave out a business whose every notice hard-bounces (TD-TXT-22, D-491). Card emails carry no image bytes, only a link to the signed-in job page (PRIV-027's card-email clause, TD-PRIV-12) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9286,7 +9454,7 @@
    "owns": [
     "app/messaging/src/business_notices.rs",
     "app/businesses/src/channel_preference.rs",
-    "migrations/0140_business_notices.sql",
+    "migrations/0141_business_notices.sql",
     "tests/integration/tests/business_notices.rs",
     "app/quotes/src/card_notices.rs"
    ],
@@ -9304,7 +9472,8 @@
     "docs/brains/email-deliverability.md",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "docs/spec/privacy.md"
    ],
    "requirements": [
     "TXT-014",
@@ -9316,15 +9485,17 @@
     "BIZ-037",
     "CARD-020",
     "QH-005",
-    "TXT-045"
+    "TXT-045",
+    "CARD-019",
+    "PRIV-027"
    ],
    "tests": [
     "TD-TXT-17",
     "TD-TXT-18",
     "TD-BIZ-14",
     "TD-TXT-27",
-    "TD-BIZ-06",
-    "TD-TXT-22"
+    "TD-TXT-22",
+    "TD-PRIV-12"
    ],
    "decisions": [
     "D-303",
@@ -9358,7 +9529,7 @@
    "id": "T196",
    "slug": "businesses-notice-email",
    "title": "businesses: verified notice email, sender rules and the address-change protections",
-   "goal": "A business notice address is verified before it gets anything and activation in `identity.rs` waits for the verified sign-up email (BIZ-040), a change is allowed only from a signed-in owner session, tells the old address and is audit-logged; every business email comes from the authenticated askhava.com sending subdomain; and the welcome email goes before the first card (BIZ-036, BIZ-040, BIZ-041, CON-020, SEC-024, SEC-025, WEB-024). The notice-address and channel page is the portals route `notice_settings.rs` with `notice_settings.html`: it lists the verified addresses, shows the unverified banner, offers only email while business texting is off and lets only the owner change the preference (TD-BIZ-13); the business-page copy of WEB-024 is T102's (D-492). Changing a notice address needs a Verify code from the last 5 minutes (SEC-038, TD-SEC-17, D-492).",
+   "goal": "A business notice address is verified before it gets anything and activation in `identity.rs` waits for the verified sign-up email (BIZ-040), a change is allowed only from a signed-in owner session, tells the old address and is audit-logged; every business email comes from the authenticated askhava.com sending subdomain; and the welcome email goes before the first card (BIZ-036, BIZ-040, BIZ-041, CON-020, SEC-024, SEC-025). The notice-address and channel page is the portals route `notice_settings.rs` with `notice_settings.html`: it lists the verified addresses, shows the unverified banner, offers only email while business texting is off and lets only the owner change the preference (TD-BIZ-13); WEB-024's business-page line is T202's and its sign-up line T193's (D-493). Changing a notice address needs a Verify code from the last 5 minutes (SEC-038, TD-SEC-17, D-492).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9381,7 +9552,7 @@
     "app/businesses/src/email_verification.rs",
     "tests/integration/tests/email_verification.rs",
     "tests/security/tests/notice_addresses.rs",
-    "migrations/0141_businesses_email_verification.sql",
+    "migrations/0142_businesses_email_verification.sql",
     "app/businesses/src/identity.rs",
     "app/portals/src/notice_settings.rs",
     "app/portals/templates/notice_settings.html"
@@ -9407,7 +9578,8 @@
     "CON-020",
     "SEC-024",
     "SEC-025",
-    "SEC-038"
+    "SEC-038",
+    "BIZ-055"
    ],
    "tests": [
     "TD-BIZ-13",
@@ -9445,7 +9617,7 @@
    "id": "T148",
    "slug": "business-actions-pick-call",
    "title": "portals: secure email action links for every former text keyword, signed Hold links and the email sender rules",
-   "goal": "Every action a business once did by text keyword has a signed, single-purpose email link to a portal page that shows what it will do first; an email reply never acts; Hold works without a session; the Confirm-and-pay page itself is T224's; the quote form (`business_actions.html`) shows the fee a quote would carry, with its basis, before submit, computed by `payments::api` (FEE-043, TD-PICK-37; `quotes` keeps no fee code, D-491); and the action pages and emails meet the A11Y-023 and A11Y-024 rows (BIZ-028, BIZ-032 to BIZ-034, BIZ-038, CALL-011, SEC-025, A11Y-023, A11Y-024). \"Ask about a charge\" enqueues the `core.task` event `help_request_opened` (business, charge and job IDs only); T151's handler opens the help request from it (TD-BIZ-15, TD-OPS-11, D-492). The quote form also carries PICK-040's quote facts, the \"Same as last time\" pre-fill and the optional \"minutes this quote took\" field, whose column this task's migration adds to the `quotes` quote table for the scorecard (OPS-047, T158) (TD-PICK-37, D-492).",
+   "goal": "Every action a business once did by text keyword has a signed, single-purpose email link to a portal page that shows what it will do first; an email reply never acts; Hold works without a session; the Confirm-and-pay page itself is T224's; the quote form (`business_actions.html`) shows the fee a quote would carry, with its basis, before submit, computed by `payments::api` (FEE-043, TD-PICK-37; `quotes` keeps no fee code, D-491); and the action pages and emails meet the A11Y-023 and A11Y-024 rows (BIZ-028, BIZ-032, BIZ-033, BIZ-038, CALL-011, SEC-025, A11Y-023, A11Y-024). \"Ask about a charge\" enqueues the `core.task` event `help_request_opened` (business, charge and job IDs only); T151's handler opens the help request from it (TD-BIZ-15, TD-OPS-11, D-492). The quote form also carries PICK-040's quote facts, the \"Same as last time\" pre-fill and the optional \"minutes this quote took\" field, whose column this task's migration adds to the `quotes` quote table for the scorecard (OPS-047, T158) (TD-PICK-37, D-492). The Away page applies T190's BIZ-034 rule; PICK-006's read-back screen for a text quote is built here on the quote form (TD-PICK-22) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9475,7 +9647,7 @@
     "app/portals/src/action_links.rs",
     "tests/integration/tests/business_actions.rs",
     "tests/security/tests/action_links.rs",
-    "migrations/0142_quotes_quote_minutes.sql"
+    "migrations/0143_quotes_quote_minutes.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9496,7 +9668,6 @@
     "BIZ-028",
     "BIZ-032",
     "BIZ-033",
-    "BIZ-034",
     "BIZ-038",
     "CALL-011",
     "SEC-025",
@@ -9504,15 +9675,16 @@
     "A11Y-024",
     "PICK-039",
     "FEE-043",
-    "PICK-040"
+    "PICK-040",
+    "PICK-006"
    ],
    "tests": [
     "TD-BIZ-15",
     "TD-BIZ-16",
     "TD-SEC-09",
-    "TD-CALL-05",
     "TD-PICK-37",
-    "TD-BIZ-08"
+    "TD-BIZ-08",
+    "TD-PICK-22"
    ],
    "decisions": [
     "D-309",
@@ -9579,7 +9751,7 @@
    "owns": [
     "app/picks/src/confirm_reminders.rs",
     "tests/integration/tests/confirm_reminders.rs",
-    "migrations/0143_picks_confirm_reminder.sql",
+    "migrations/0144_picks_confirm_reminder.sql",
     "app/picks/src/confirm.rs"
    ],
    "reads": [
@@ -9647,7 +9819,7 @@
    "id": "T149",
    "slug": "business-email-reliability",
    "title": "businesses: sign-up deliverability check with a sample card, and the backup notice address",
-   "goal": "After email verification sign-up sends a fake sample card from the real sender and walks the person through the inbox, spam and alert steps for their mail app without blocking activation; and a verified backup notice address can be added only from that person's or the owner's session (BIZ-042, BIZ-043). Each mail-app step is written in `docs/copy/mail-app-steps.md` with the maker's help-page address and the date it was checked, and the screens read it; the backup address reaches every notice by extending `businesses::api::notice_addresses` (T220's), the one lookup the enqueuing modules (`quotes`' card notices, T147; `picks`' pick and release notices, T063 and T069) call before handing `messaging` opaque address IDs (so the release purpose returns a backup only for an owner or a \"Confirm and billing\" person); the test emergency email is T150's (D-491). Adding or changing a backup address needs a Verify code from the last 5 minutes (SEC-038, TD-SEC-17, D-492).",
+   "goal": "After email verification sign-up sends a fake sample card from the real sender and walks the person through the inbox, spam and alert steps for their mail app without blocking activation; and a verified backup notice address can be added only from that person's or the owner's session (BIZ-042, BIZ-043). Each mail-app step is written in `docs/copy/mail-app-steps.md` with the maker's help-page address and the date it was checked, and the screens read it; the backup address reaches every notice by extending `businesses::api::notice_addresses` (T220's), the one lookup the enqueuing modules (`quotes`' card notices, T147; `picks`' pick and release notices, T063 and T069) call before handing `messaging` opaque address IDs (so the release purpose returns a backup only for an owner or a \"Confirm and billing\" person); the test emergency email is T150's (D-491). Adding or changing a backup address needs a Verify code from the last 5 minutes (SEC-038, TD-SEC-17, D-492). The \"Send a sample pick\" step is shown the first time an owner or \"Confirm and billing\" person opens a real job card, in the job-card page route `app/portals/src/business_actions.rs` (T148's, extended here) (TD-BIZ-28, D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9667,12 +9839,13 @@
    "owns": [
     "app/businesses/src/deliverability_check.rs",
     "app/businesses/src/backup_address.rs",
-    "migrations/0144_email_reliability.sql",
+    "migrations/0145_email_reliability.sql",
     "tests/integration/tests/deliverability_check.rs",
     "tests/security/tests/backup_address.rs",
     "app/portals/src/email_check.rs",
     "app/portals/templates/email_check.html",
-    "docs/copy/mail-app-steps.md"
+    "docs/copy/mail-app-steps.md",
+    "app/portals/src/business_actions.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9712,7 +9885,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 9,
     "lines": 400,
     "context_pct": 19
    },
@@ -9757,7 +9930,7 @@
     "tests/integration/tests/missed_cards.rs",
     "tests/integration/tests/notice_log.rs",
     "app/picks/src/open_cards_email.rs",
-    "migrations/0145_messaging_notice_log.sql"
+    "migrations/0146_messaging_notice_log.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9837,7 +10010,7 @@
    "owns": [
     "app/picks/src/emergency_emails.rs",
     "app/quotes/src/emergency_card_notice.rs",
-    "migrations/0146_emergency_emails.sql",
+    "migrations/0147_emergency_emails.sql",
     "tests/integration/tests/emergency_card_email.rs",
     "app/businesses/src/emergency_switch.rs",
     "app/portals/templates/emergency_test_email.html",
@@ -9900,7 +10073,7 @@
    "id": "T199",
    "slug": "portals-no-business-calls-safe-links",
    "title": "portals: no automated call to a business, voice codes only on the homeowner's tap, the homeowner-calls contact card, and scanner-safe links with the shared-inbox switch",
-   "goal": "The quote form's route (`business_actions.rs`) records its first opening through T198's `messaging::api` call (OPS-037, D-491). No Verify voice call ever reaches a business phone and identity codes go by text, email or letter; the homeowner's voice code call happens only on her tap and opens \"This is Ask Hava LLC\"; businesses get the \"Ask Hava homeowner calls\" contact card; and opening any email link only shows its page, a POST with a CSRF token acting, with a \"This inbox is shared\" switch requiring a fresh code; the switch and the current contact-card list are on the portal home (`business_home.html`) and the contact-card offer on the sign-up done screen (`business_signup.html`), both extended here; the welcome email's offer of the card is a link to the portal's card download, added to the welcome email's template keys here (TD-BIZ-22) (D-491) (BIZ-002, BIZ-026, BIZ-039, BIZ-046, SEC-004, SEC-008, SEC-026, SEC-027, PICK-013, TXT-038, CALL-014, CALL-015). The Confirm page's fresh-code check (SEC-027) is added to `confirm_pay.rs` (T224's), and the shared-inbox switch and current pool list are rendered from `business_portal.rs` (T085's), both extended here (D-492).",
+   "goal": "The quote form's route (`business_actions.rs`) records its first opening through T198's `messaging::api` call (OPS-037, D-491). No Verify voice call ever reaches a business phone and identity codes go by text, email or letter; the homeowner's voice code call happens only on her tap and opens \"This is Ask Hava LLC\"; businesses get the \"Ask Hava homeowner calls\" contact card; and opening any email link only shows its page, a POST with a CSRF token acting, with a \"This inbox is shared\" switch requiring a fresh code; the switch and the current contact-card list are on the portal home (`business_home.html`) and the contact-card offer on the sign-up done screen (`business_signup.html`), both extended here; the welcome email's offer of the card is a link to the portal's card download, added to the welcome email's composer `app/businesses/src/consent.rs` (T082's, extended here) and its own template keys (TD-BIZ-22, D-493) (D-491) (BIZ-002, BIZ-026, BIZ-039, BIZ-046, SEC-004, SEC-008, SEC-026, SEC-027, PICK-013, TXT-038, CALL-014, CALL-015). The Confirm page's fresh-code check (SEC-027) is T232's, which owns `confirm_pay.rs` after this task (D-493), and the shared-inbox switch and current pool list are rendered from `business_portal.rs` (T085's), both extended here (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9926,11 +10099,11 @@
     "app/portals/templates/contact_card.vcf",
     "tests/integration/tests/no_business_calls.rs",
     "tests/security/tests/link_scanners.rs",
-    "migrations/0147_portals_shared_inbox.sql",
+    "migrations/0148_portals_shared_inbox.sql",
     "app/portals/templates/business_home.html",
     "app/portals/templates/business_signup.html",
-    "app/portals/src/confirm_pay.rs",
-    "app/portals/src/business_portal.rs"
+    "app/portals/src/business_portal.rs",
+    "app/businesses/src/consent.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10020,7 +10193,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0172_help_requests.sql",
+    "migrations/0175_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -10084,7 +10257,7 @@
    "id": "T200",
    "slug": "help-page-get-help-form",
    "title": "ops and portals: the owner help page with its screened reply box, and the business Get help form",
-   "goal": "The owner help page lists open help requests with a 300-character reply box screened like a quote, and businesses send help through the portal's Get help form, which opens one request (BIZ-047, CON-034, OPS-036). The \"Get help\" link goes in the shared layout (`app/site/templates/base.html`) every portal page extends, and the site help page's owner-message form (`help.html`) is wired to the same help-request endpoint here (D-491).",
+   "goal": "The owner help page lists open help requests with a 300-character reply box screened like a quote, and businesses send help through the portal's Get help form, which opens one request (BIZ-047, CON-034, OPS-036). The \"Get help\" link goes in the shared layout (`app/site/templates/base.html`) every portal page extends, and the site help page's owner-message form (`help.html`) is wired to the same help-request endpoint here (D-491). A delete or copy request that arrives by email or the help form is acted on only after a Verify code to the number on file and answered within 30 days (PRIV-031, D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10134,12 +10307,14 @@
    "requirements": [
     "BIZ-047",
     "CON-034",
-    "OPS-036"
+    "OPS-036",
+    "PRIV-031"
    ],
    "tests": [
     "TD-BIZ-23",
     "TD-OPS-23",
-    "TD-CON-22"
+    "TD-CON-22",
+    "TD-PRIV-16"
    ],
    "decisions": [
     "D-348",
@@ -10268,7 +10443,10 @@
     "T215",
     "T191",
     "T162",
-    "T228"
+    "T228",
+    "T232",
+    "T230",
+    "T231"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -10313,7 +10491,7 @@
    "id": "T101",
    "slug": "site-base",
    "title": "site: base layout in the design spec's look, works without JavaScript, help in one place",
-   "goal": "The site's base layout (`app/site/templates/base.html`, the shared template T051 created, restyled here, plus the stylesheet and routes; this task extends the minimal `app/site/Cargo.toml` and `src/lib.rs` T051 created, D-492) renders every page server-side without JavaScript in the design spec's plaster-and-brass look, with one `h1`, landmarks, a skip link, `lang` on page and passages and help in the same place on every page (A11Y-003, A11Y-004, A11Y-017, WEB-001, A11Y-026, A11Y-029, A11Y-030).",
+   "goal": "The site's base layout (`app/site/templates/base.html`, the shared template T051 created, restyled here, plus the stylesheet and routes; this task extends the minimal `app/site/Cargo.toml` and `src/lib.rs` T051 created, D-492) renders every page server-side without JavaScript in the design spec's plaster-and-brass look, with one `h1`, landmarks, a skip link, `lang` on page and passages and help in the same place on every page (A11Y-003, A11Y-004, A11Y-017, WEB-001, A11Y-026, A11Y-029, A11Y-030). The base layout carries the WEB-007 status banner, hidden by default, so every page has it (TD-WEB-01's banner case) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10353,11 +10531,13 @@
     "WEB-001",
     "A11Y-026",
     "A11Y-029",
-    "A11Y-030"
+    "A11Y-030",
+    "WEB-007"
    ],
    "tests": [
     "TD-A11Y-01",
-    "TD-A11Y-02"
+    "TD-A11Y-02",
+    "TD-WEB-01"
    ],
    "decisions": [
     "D-384",
@@ -10454,7 +10634,7 @@
    "id": "T102",
    "slug": "site-pages",
    "title": "site: home and how-it-works pages with the footer, tagline, launch offer and status banner",
-   "goal": "The home and how-it-works pages render without JavaScript in the design spec's look, with the not-a-contractor statement and the \"Homeowners\" footer column, the tagline \"Local quotes. Your choice.\", the launch-offer line, the hidden status banner, web chat always offered, the homeowner \"Who runs Ask Hava\" block and old directory URLs answered with an Ask Hava page, and the how-it-works page in Spanish too (`es_how_it_works.html`, WEB-026) (WEB-001, WEB-003 to WEB-005, WEB-007, WEB-009, WEB-012, WEB-022, WORD-002); the home-page numbers (WEB-028) are computed through `payments::api` and `ops::api` (site calls `intake`, `catalog`, `ops`, `payments` and `businesses`, D-491) and tested in `tests/integration/tests/home_numbers.rs` (TD-JOB-04).",
+   "goal": "The home and how-it-works pages render without JavaScript in the design spec's look, with the not-a-contractor statement and the \"Homeowners\" footer column, the tagline \"Local quotes. Your choice.\", the launch-offer line, web chat always offered, the homeowner \"Who runs Ask Hava\" block and old directory URLs answered with an Ask Hava page, and the how-it-works page in Spanish too (`es_how_it_works.html`, WEB-026) (WEB-001, WEB-003 to WEB-005, WEB-009, WEB-012, WEB-022, WORD-002); the home-page numbers (WEB-028) are computed through `payments::api` and `ops::api` (site calls `intake`, `catalog`, `ops`, `payments` and `businesses`, D-491) and tested in `tests/integration/tests/home_numbers.rs` (TD-JOB-04). The status banner (WEB-007) is in T101's base layout, and WEB-024's business-page line is T202's (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10491,21 +10671,18 @@
     "WEB-003",
     "WEB-004",
     "WEB-005",
-    "WEB-007",
     "WEB-009",
     "WEB-012",
     "WEB-022",
     "WORD-002",
     "WEB-026",
-    "WEB-028",
-    "WEB-024"
+    "WEB-028"
    ],
    "tests": [
     "TD-WEB-01",
     "TD-WEB-07",
     "TD-WEB-09",
     "TD-JOB-04",
-    "TD-WEB-05",
     "TD-TXT-15"
    ],
    "decisions": [
@@ -10625,20 +10802,22 @@
    "id": "T202",
    "slug": "site-spanish-business-lines",
    "title": "site: Spanish pages, the business page blocks and the required-lines docs test",
-   "goal": "The Spanish pages exist with the consent draft above the English and the Spanish key terms; the business page shows a sample card per open trade, the city-license guide and the \"Who runs Ask Hava\" block, in Spanish too; the business help page (`business_help.html`) holds the WEB-020 safety tip for people working alone; and a docs test finds each required line (quote-page lines, insurance line, privacy lines, independent-business line) on every page that needs it (WEB-002, WEB-006, WEB-019 to WEB-021, WORD-005 to WORD-007, WORD-013, WORD-014).",
+   "goal": "The Spanish pages exist with the Spanish key terms (the Spanish consent draft above the English consent text is T103's request page, WEB-006, D-493); the business page shows a sample card per open trade, the city-license guide and the \"Who runs Ask Hava\" block, in Spanish too; the business help page (`business_help.html`) holds the WEB-020 safety tip for people working alone; and a docs test finds each required line (quote-page lines, insurance line, privacy lines, independent-business line) on every page that needs it (WEB-002, WEB-019 to WEB-021, WORD-013). The business page also carries, in English and Spanish, the WEB-024 notice line that follows the business-texting switch, the WEB-025 Hava-name answer, both WORD-017 lines, the WORD-002 business statement, every number and offer from the spec (WEB-018), the BIZ-030 \"How you're charged\" summary and the REC-009 pricing copy (four months, capped at $75, the $150-a-month pool example in the $75 row); the Spanish business sign-up is `app/portals/templates/es_business_signup.html` (WEB-019); the required-lines checks of the quote page and quote cards (WORD-005 to WORD-007, WORD-014) are T052's page and T203's scan (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "site",
    "deps": [
     "T101",
-    "T201"
+    "T201",
+    "T165"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "compliance"
+    "compliance",
+    "security"
    ],
    "owns": [
     "app/site/src/pages.rs",
@@ -10646,7 +10825,8 @@
     "tests/docs/test_required_lines.py",
     "app/site/templates/business.html",
     "app/site/templates/es_business.html",
-    "app/site/templates/business_help.html"
+    "app/site/templates/business_help.html",
+    "app/portals/templates/es_business_signup.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10656,27 +10836,31 @@
     "docs/design/DESIGN_SPEC.md",
     "docs/brains/accessibility-forms.md",
     "docs/brains/contractor-lead-experience.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/recurring.md",
+    "docs/spec/businesses.md"
    ],
    "requirements": [
     "WEB-002",
-    "WEB-006",
     "WEB-019",
     "WEB-020",
     "WEB-021",
-    "WORD-005",
-    "WORD-006",
-    "WORD-007",
     "WORD-013",
-    "WORD-014"
+    "WEB-024",
+    "WEB-025",
+    "WORD-017",
+    "WORD-002",
+    "WEB-018",
+    "BIZ-030",
+    "REC-009"
    ],
    "tests": [
     "TD-WORD-02",
     "TD-WEB-03",
-    "TD-WEB-04",
     "TD-WEB-05",
     "TD-WEB-01",
-    "TD-WEB-07"
+    "TD-WEB-07",
+    "TD-WEB-06"
    ],
    "decisions": [
     "D-180",
@@ -10698,9 +10882,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 250,
-    "context_pct": 15
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -10714,8 +10898,8 @@
   {
    "id": "T103",
    "slug": "site-web-chat",
-   "title": "site: web chat with the consent text first, starting the chat is the opt-in, a typed number verified by code first",
-   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492).",
+   "title": "site: web chat with the consent text first, typing a verified mobile number is the opt-in",
+   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492). The request page shows the full consent text (WEB-014's request-page clause; the legal pages are T221's) (D-493). This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). The WEB-006 Spanish consent draft sits above the English consent text on the request page (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10737,7 +10921,8 @@
     "tests/e2e/web_chat.spec.ts",
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
-    "tests/integration/tests/web_chat.rs"
+    "tests/integration/tests/web_chat.rs",
+    "migrations/0169_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10762,7 +10947,9 @@
     "AI-021",
     "A11Y-035",
     "INT-043",
-    "AI-026"
+    "AI-026",
+    "WEB-014",
+    "WEB-006"
    ],
    "tests": [
     "TD-CON-10",
@@ -10775,7 +10962,6 @@
    "decisions": [
     "D-051",
     "D-132",
-    "D-419",
     "D-457",
     "D-470",
     "D-480",
@@ -10784,7 +10970,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 500,
     "context_pct": 16
    },
@@ -10816,7 +11002,10 @@
     "T164",
     "T214",
     "T103",
-    "T165"
+    "T165",
+    "T232",
+    "T230",
+    "T231"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -10956,7 +11145,7 @@
    "id": "T203",
    "slug": "wording-statements-scan",
    "title": "Wording scan: the required statements, business copy lines and no pest advertising",
-   "goal": "A docs test finds the long not-a-contractor statement and its short form wherever WORD-002 and TERMS-004 put them, the job-card and pick lines, the business copy lines, the fee summary and the Hava-name answer, no owner's name anywhere, no page, ad or banner advertising pest control, and no business copy that calls the fee anything but an introduction fee (`tests/docs/test_introduction_fee_wording.py`, WORD-026; the exact consent text is T161's CON-031 check, D-491) (WEB-010, WEB-015, WEB-018, WEB-025, WORD-002, WORD-017, WORD-021, WORD-026, CARD-020, PICK-017, TERMS-004, BIZ-030).",
+   "goal": "A docs test finds the long not-a-contractor statement and its short form wherever WORD-002 and TERMS-004 put them, the job-card and pick lines, the business copy lines, the fee summary and the Hava-name answer, no owner's name anywhere, no page, ad or banner advertising pest control, and no business copy that calls the fee anything but an introduction fee (`tests/docs/test_introduction_fee_wording.py`, WORD-026; the exact consent text is T161's CON-031 check, D-491) (WEB-010, WEB-015, WORD-006, WORD-007, WORD-014, WORD-021, WORD-026, CARD-020, PICK-017, TERMS-004); the business-page lines it scans (WEB-018, WEB-025, WORD-002, WORD-017, BIZ-030) are written by T202, and it adds the insurance, privacy and independent-business line cases of TD-WORD-02 (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10990,24 +11179,22 @@
    "requirements": [
     "WEB-010",
     "WEB-015",
-    "WEB-018",
-    "WEB-025",
-    "WORD-002",
-    "WORD-017",
     "WORD-021",
     "CARD-020",
     "PICK-017",
     "TERMS-004",
-    "BIZ-030",
-    "WORD-026"
+    "WORD-026",
+    "WORD-006",
+    "WORD-007",
+    "WORD-014"
    ],
    "tests": [
     "TD-WEB-03",
     "TD-WORD-04",
-    "TD-WEB-06",
     "TD-WORD-05",
     "TD-WORD-10",
-    "TD-LIC-18"
+    "TD-LIC-18",
+    "TD-WORD-02"
    ],
    "decisions": [
     "D-172",
@@ -11024,7 +11211,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 14
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -11038,7 +11225,7 @@
    "id": "T105",
    "slug": "ops-alerts-safe-mode",
    "title": "ops: High and critical alerts, safe mode after 24 hours, pause checks",
-   "goal": "Casey is alerted on the delivery-rate, safety, dispute and coverage conditions, one delivery alert at a time with automatic acknowledgement at 97%; owner pause switches are checked by every action; and safe mode pauses only charges and releases when a pushed High alert is unacknowledged for 24 hours, each paused item going ahead after the FEE-017 check when it ends (OPS-001 to OPS-006, OPS-023 to OPS-025). `ops` reads nothing above it: `messaging` reports delivery counts by calling `ops::api::record_delivery_counts` and `businesses` its active-business counts by `ops::api::record_business_counts`, both added here to `ops`' `api.rs` and called here from `messaging`'s delivery handler (`handlers.rs`) and `businesses`' status changes (`service.rs`); the pause-check property test lives in the integration crate, which sees every action (D-491); the email-limit push itself is T204's (TD-OPS-13, D-491).",
+   "goal": "Casey is alerted on the delivery-rate, safety, dispute and coverage conditions, one delivery alert at a time with automatic acknowledgement at 97%; owner pause switches are checked by every action; and safe mode pauses only charges and releases when a pushed High alert is unacknowledged for 24 hours, each paused item going ahead after the FEE-017 check when it ends (OPS-001 to OPS-006, OPS-023 to OPS-025). `ops` reads nothing above it: `messaging` reports delivery counts by calling `ops::api::record_delivery_counts` and `businesses` its active-business counts by `ops::api::record_business_counts`, both added here to `ops`' `api.rs` and called here from `messaging`'s delivery handler (`handlers.rs`) and `businesses`' status changes (`service.rs`); the pause-check property test lives in the integration crate, which sees every action, in `tests/integration/tests/safe_mode.rs` (D-491, D-493); `jobs` reports each trade's requests per calendar month by calling `ops::api::record_request_counts` from `app/jobs/src/request_counts.rs`, owned here, so OPS-006 sees which trades had a request (D-493); the email-limit push itself is T204's (TD-OPS-13, D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -11058,13 +11245,13 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0170_ops_alerts_safe_mode.sql",
+    "migrations/0173_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
-    "tests/integration/tests/prop_pause_checked.rs",
     "app/payments/src/safe_mode_check.rs",
     "app/picks/src/safe_mode_check.rs",
     "app/messaging/src/handlers.rs",
-    "app/businesses/src/service.rs"
+    "app/businesses/src/service.rs",
+    "app/jobs/src/request_counts.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -11074,7 +11261,8 @@
     "docs/spec/security.md",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
-    "docs/brains/deploy-operations.md"
+    "docs/brains/deploy-operations.md",
+    "docs/spec/fees.md"
    ],
    "requirements": [
     "OPS-001",
@@ -11085,13 +11273,13 @@
     "OPS-006",
     "OPS-023",
     "OPS-024",
-    "OPS-025"
+    "OPS-025",
+    "FEE-038"
    ],
    "tests": [
     "TD-OPS-01",
     "TD-OPS-06",
     "TD-FEE-20",
-    "TD-SEC-09",
     "TD-LIC-21"
    ],
    "decisions": [
@@ -11150,7 +11338,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0171_ops_owner_digest.sql",
+    "migrations/0174_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html"
@@ -11217,7 +11405,7 @@
    "budget": {
     "files": 8,
     "lines": 400,
-    "context_pct": 16
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -11232,7 +11420,7 @@
    "id": "T106",
    "slug": "ops-health",
    "title": "ops: /healthz, health page figures, monthly spot-check",
-   "goal": "The app answers `/healthz` for the uptime monitor, the owner portal shows the OPS-008 health figures, and it offers the monthly spot-check of 10 random job cards (OPS-007 to OPS-009). The `/healthz` probe is `app/server/src/healthz.rs` (the server binary checks the process, the database and the worker heartbeat, which is the age of the newest `core.task` lease or finish, so no new table is needed; `ops` holds no route, D-491); the health page with its figures is a portals page reading each module's `api` (the last-backup figure reads `recovery::api` and waits for T109, so T106 shows it as 'not yet recorded' until then). `web` and `worker` exit non-zero when their own liveness check has failed for 3 minutes (a setting) so the host's On Failure policy restarts them (OPS-049), and the health page shows each required secret as present, parsed and environment-matched, never its value, length or hash (OPS-008) (D-492).",
+   "goal": "The app answers `/healthz` for the uptime monitor, the owner portal shows the OPS-008 health figures, and it offers the monthly spot-check of 10 random job cards (OPS-007 to OPS-009). The `/healthz` probe is `app/server/src/healthz.rs` (the server binary checks the process, the database and the worker heartbeat, which is the age of the newest `core.task` lease or finish, so no new table is needed; `ops` holds no route, D-491); the health page with its figures is a portals page reading each module's `api` (the last-backup figure reads `ops::api`, where `recovery` records each backup and restore result; T109 adds that record and replaces this task's 'not yet recorded' placeholder, D-493). `web` and `worker` exit non-zero when their own liveness check has failed for 3 minutes (a setting) so the host's On Failure policy restarts them (OPS-049), and the health page shows each required secret as present, parsed and environment-matched, never its value, length or hash (OPS-008) (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -11500,7 +11688,7 @@
    "id": "T109",
    "slug": "recovery-backup-export",
    "title": "recovery: backup checks and the nightly encrypted export",
-   "goal": "`recovery` makes the nightly encrypted export to separate storage under its own key, kept 30 days with versioning and object lock, runs the monthly test restore with its result in the digest and a High alert on failure, and leaves the key inventory to T117; the restore result line is added to `digest_flags.rs` (T204's, extended here, D-491) (OPS-013, PRIV-018, PRIV-024, PRIV-029). The export is `pg_dump -Fc`; every restore runs `scripts/bootstrap_roles.sql` first, then `pg_restore --single-transaction`, with the ownership and append-only grant check (OPS-051), and the storage provider is Backblaze B2 (PRIV-029) (D-492).",
+   "goal": "`recovery` makes the nightly encrypted export to separate storage under its own key, kept 30 days with versioning and object lock, runs the monthly test restore with a High alert on failure, and leaves the key inventory to T117; `recovery` records each backup and restore result through `ops::api` (a function added here), and `portals` reads them from `ops`: the restore result line in `digest_flags.rs` (T204's) and the last-backup figure in `health_page.rs` (T106's), both extended here (D-491, D-493) (OPS-013, PRIV-018, PRIV-024, PRIV-029). The export is `pg_dump -Fc`; every restore runs `scripts/bootstrap_roles.sql` first, then `pg_restore --single-transaction`, with the ownership and append-only grant check (OPS-051), and the storage provider is Backblaze B2 (PRIV-029) (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -11508,7 +11696,8 @@
    "deps": [
     "T100",
     "T204",
-    "T151"
+    "T151",
+    "T106"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -11524,9 +11713,10 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0178_recovery_backup_export.sql",
+    "migrations/0181_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
-    "app/portals/src/digest_flags.rs"
+    "app/portals/src/digest_flags.rs",
+    "app/portals/src/health_page.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -11560,7 +11750,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 9,
     "lines": 450,
     "context_pct": 14
    },
@@ -11594,7 +11784,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0179_recovery_replay.sql",
+    "migrations/0182_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs"
    ],
    "reads": [
@@ -11667,9 +11857,7 @@
     "OPS-019"
    ],
    "tests": [
-    "TD-OPS-04",
-    "TD-OPS-08",
-    "TD-OPS-09"
+    "TD-OPS-04"
    ],
    "decisions": [
     "D-156",
@@ -11680,7 +11868,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -11737,7 +11925,6 @@
     "TERMS-009",
     "TERMS-011",
     "TERMS-013",
-    "TERMS-014",
     "TERMS-015",
     "TERMS-016",
     "TERMS-018",
@@ -11851,7 +12038,6 @@
     "TERMS-011",
     "TERMS-012",
     "TERMS-013",
-    "TERMS-014",
     "TERMS-015",
     "TERMS-018",
     "TERMS-020",
@@ -11945,7 +12131,6 @@
     "TERMS-009",
     "TERMS-011",
     "TERMS-013",
-    "TERMS-014",
     "TERMS-015",
     "TERMS-018",
     "CON-033",
@@ -11976,7 +12161,7 @@
    "budget": {
     "files": 2,
     "lines": 250,
-    "context_pct": 6
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -12056,7 +12241,8 @@
    "stage": "5",
    "module": "payments",
    "deps": [
-    "T113"
+    "T113",
+    "T202"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12526,7 +12712,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -12540,7 +12726,7 @@
    "id": "T122",
    "slug": "account-checklist",
    "title": "docs/account-checklist.md: Part 1 test accounts, Part 2 business accounts",
-   "goal": "`docs/account-checklist.md` lists the Part 1 test accounts and the Part 2 business accounts, the key inventory, every OPS-042 hardware-key and break-glass item before any live key, and the OPS-043 release record Casey signs after an independent security review, and a docs test checks each item is there (PRIV-024, OPS-042, OPS-043). The checklist also holds the OPS-048 ADOR ruling-request item, the Railway usage email alert with no hard limit (OPS-042), the protected `release` branch (OPS-043), and the AI provider's flagged-content retention period and Console spend limit recorded before the AI switch first goes on (AI-008) (D-492).",
+   "goal": "`docs/account-checklist.md` lists the Part 1 test accounts and the Part 2 business accounts, the key inventory, every OPS-042 hardware-key and break-glass item before any live key, and the OPS-043 release record Casey signs after an independent security review, and a docs test checks each item is there (PRIV-024, OPS-042, OPS-043). The checklist also holds the OPS-048 ADOR ruling-request item, the Railway usage email alert with no hard limit (OPS-042), the protected `release` branch (OPS-043), and the AI provider's flagged-content retention period and Console spend limit recorded before the AI switch first goes on (AI-008) (D-492). The checklist also says the texting campaign is registered only once the full site is live and after Casey has sent the written eligibility question and filed the answer, and keeps business texting off unless that answer is yes (TERMS-014, TD-WEB-12) (D-493).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -12582,7 +12768,8 @@
     "SEC-050",
     "OPS-044",
     "CON-032",
-    "OPS-048"
+    "OPS-048",
+    "TERMS-014"
    ],
    "tests": [
     "TD-PRIV-09",
@@ -12610,7 +12797,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 5
+    "context_pct": 6
    },
    "checks": [
     "Ci",
@@ -13146,7 +13333,7 @@
    "id": "T133",
    "slug": "sandbox-resend-lob",
    "title": "Resend and Lob test mode behind the adapters",
-   "goal": "The Resend and Lob test-mode clients sit behind their adapters with signed webhooks (Svix for Resend) and the signed inbound-email route into `privacy`, and the identity chain's email and letter steps and the email fallback for failed texts pass against them (BIZ-001 to BIZ-003, BIZ-016, TXT-014, TXT-015, SEC-039, PRIV-026). The fake Resend gains the suppression-list endpoints (list, and delete for one address), and the BIZ-056 re-verification calls the adapter's suppression removal (T176's) before writing its audit row; BIZ-056 moved here from T149 because the fake endpoint must exist first and T149 runs before this task (TD-BIZ-36, D-492).",
+   "goal": "The Resend and Lob test-mode clients sit behind their adapters with signed webhooks (Svix for Resend) and the signed inbound-email route into `privacy`, and the identity chain's email and letter steps and the email fallback for failed texts pass against them (BIZ-001 to BIZ-003, BIZ-016, TXT-014, TXT-015, SEC-039, PRIV-026). The fake Resend gains the suppression-list endpoints (list, and delete for one address), and the BIZ-056 re-verification calls the adapter's suppression removal (T176's) before writing its audit row; BIZ-056 moved here from T149 because the fake endpoint must exist first and T149 runs before this task (TD-BIZ-36, D-492). The call is added to `app/businesses/src/email_verification.rs` (T196's, extended here) and tested in `tests/integration/tests/email_reverify.rs` (D-493).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -13167,7 +13354,9 @@
     "stand_ins/resend.py",
     "app/adapters/src/email.rs",
     "tests/contract/test_sandbox_t133.py",
-    "stand_ins/lob.py"
+    "stand_ins/lob.py",
+    "app/businesses/src/email_verification.rs",
+    "tests/integration/tests/email_reverify.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13210,7 +13399,7 @@
     "BUILD_BRIEF.md:191"
    ],
    "budget": {
-    "files": 6,
+    "files": 8,
     "lines": 400,
     "context_pct": 14
    },
@@ -13331,7 +13520,6 @@
     "SEC-052"
    ],
    "tests": [
-    "TD-SEC-23",
     "TD-OPS-25"
    ],
    "decisions": [
@@ -13358,7 +13546,7 @@
    "id": "T136",
    "slug": "e2e-test-site",
    "title": "Run J1 to J4 on the Railway test site and record the results",
-   "goal": "J1 to J4 run against the Railway test site with every vendor in its sandbox and fake data only, and each journey's result, with any failure fixed or filed as a task, is recorded in `docs/phase2/e2e-test-site.md`. J4's outage steps stay on the stand-ins; J1 to J3 run on the test site; the task records results and files gaps in `docs/for-casey-review.md`, it fixes nothing itself (D-491).",
+   "goal": "J1 to J4 run against the Railway test site with every vendor in its sandbox and fake data only, and each journey's result, with any failure filed as a task, is recorded in `docs/phase2/e2e-test-site.md`. J4's outage steps stay on the stand-ins; J1 to J3 run on the test site; the task records results and files gaps in `docs/for-casey-review.md`, it fixes nothing itself (D-491). (D-493)",
    "type": "docs",
    "phase": 2,
    "stage": "6",
@@ -13401,7 +13589,7 @@
    ],
    "branch": "claude/task/T136-e2e-test-site",
    "prompt": "kit/prompts/T136.md",
-   "acceptance": "`docs/phase2/e2e-test-site.md` records, for each of J1 to J3, the test-site variant that was run: the release binary has no test-control router, so no clock is advanced (timers shortened only through settings), delivered messages and charges are read from the vendors' sandbox records (their IDs recorded), and steps that need the stand-ins are marked as covered by the `Ci` run instead; J4 is recorded from its stand-in run; every failure is fixed or filed (D-491)."
+   "acceptance": "`docs/phase2/e2e-test-site.md` records, for each of J1 to J3, the test-site variant that was run: the release binary has no test-control router, so no clock is advanced (timers shortened only through settings), delivered messages and charges are read from the vendors' sandbox records (their IDs recorded), and steps that need the stand-ins are marked as covered by the `Ci` run instead; J4 is recorded from its stand-in run; every failure is filed, none fixed here (D-491, D-493)."
   },
   {
    "id": "T137",
@@ -13674,9 +13862,7 @@
     "OPS-042",
     "OPS-043"
    ],
-   "tests": [
-    "TD-OPS-20"
-   ],
+   "tests": [],
    "decisions": [
     "D-473",
     "D-480",
@@ -14036,7 +14222,7 @@
   {
    "id": "T154",
    "slug": "intake-golden-sets",
-   "title": "catalog: write docs/catalog/intake_golden.yaml, about 20 fake sample requests per launch-open trade with the expected trade, job type and questions, and a test that loads it, before any routing code",
+   "title": "catalog: write docs/catalog/intake_golden.yaml, about 10 fake sample requests per launch-open trade with the expected trade, job type and questions, and a test that loads it, before any routing code",
    "goal": "`docs/catalog/intake_golden.yaml` holds about 10 fake sample requests per launch-open trade (37 trades, so about 370 rows; the set grows in the re-plan if OPS-040's run needs more), each with the expected trade, job type and questions, and a test loads it and checks every row against the catalog before any routing code exists (INT-040). At least a quarter of each trade's golden rows are in Spanish, and the loader test fails below that (OPS-053, D-492).",
    "type": "build",
    "phase": 1,
@@ -14117,7 +14303,7 @@
     "app/portals/templates/capability_setup.html",
     "tests/integration/tests/capability_setup.rs",
     "app/quotes/src/capability_match.rs",
-    "migrations/0148_businesses_capability.sql",
+    "migrations/0150_businesses_capability.sql",
     "app/portals/templates/business_signup.html",
     "tests/e2e/capability_setup.spec.ts",
     "app/portals/src/business_signup.rs",
@@ -14230,7 +14416,7 @@
    "id": "T156",
    "slug": "intake-question-bank",
    "title": "intake: the question bank's set one question at a time and routing confidence",
-   "goal": "Intake asks the request's question set one at a time in the INT-043 order with numbered answers and \"Not sure\", rewording within AI-019 only while AI is on, never more than 8; routing confidence decides when the trade and job-type questions are asked and when a job goes out as \"Job type not certain\" (INT-039, INT-040, CARD-007). The skip threshold is unset until a recorded real-model run (AI-027) sets it, so until then the AI skips no question (INT-039, D-492).",
+   "goal": "Intake asks the request's question set one at a time in the INT-043 order with numbered answers and \"Not sure\", rewording within AI-019 only while AI is on, never more than 8; routing confidence decides when the trade and job-type questions are asked and when a job goes out as \"Job type not certain\" (INT-039, INT-040, CARD-007). The skip threshold is unset until a recorded real-model run (AI-027) sets it, so until then the AI skips no question (INT-039, D-492). `app/intake/src/golden_run.rs` runs the golden set (`docs/catalog/intake_golden.yaml`) whenever the catalog version changes and stores each run's share in this task's migration (`intake.golden_result`), which T210's monthly report reads through `intake::api` (OPS-040, D-493).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -14238,7 +14424,9 @@
    "deps": [
     "T183",
     "T154",
-    "T163"
+    "T163",
+    "T044",
+    "T184"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14250,7 +14438,9 @@
     "app/intake/src/question_bank.rs",
     "app/intake/src/routing_confidence.rs",
     "app/intake/src/tests/question_bank.rs",
-    "tests/integration/tests/routing_confidence.rs"
+    "tests/integration/tests/routing_confidence.rs",
+    "app/intake/src/golden_run.rs",
+    "migrations/0083_intake_golden_result.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14263,12 +14453,14 @@
     "docs/spec/messaging.md",
     "docs/brains/accessibility-forms.md",
     "docs/brains/rust-production.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "docs/spec/ops-recovery.md"
    ],
    "requirements": [
     "INT-039",
     "INT-040",
-    "CARD-007"
+    "CARD-007",
+    "OPS-040"
    ],
    "tests": [
     "TD-INT-21",
@@ -14286,7 +14478,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 6,
     "lines": 450,
     "context_pct": 18
    },
@@ -14375,7 +14567,7 @@
    "id": "T157",
    "slug": "picks-backup-autoconfirm",
    "title": "picks: the homeowner's backup choice at the pick",
-   "goal": "At the pick the homeowner may choose a backup quote, offered automatically if the first business lapses or can't take it, and a lapse with no backup sends her the other quotes (PICK-046, PICK-047); the backup selector sits on the quote page's pick review step (`pick_review.html`, `pick_flow.rs`), which this task extends, and the lapse in `confirm_reminders.rs` (T197's, extended here) moves the pick to the backup at once (D-491). The PICK-020 ineligibility re-check at Confirm moves the pick to the backup in `confirm.rs` (T063's, extended here); the other triggers call `picks::api::backup_choice`: 'Can't take it' (T214), leaving Ask Hava (T228), and the payments paths (a fee limit FEE-041 and Stripe unreachable FEE-018, T062; a card not fixed in time FEE-020, T195), each through `picks`' handler on the payments event (D-492).",
+   "goal": "At the pick the homeowner may choose a backup quote, offered automatically if the first business lapses or can't take it, and a lapse with no backup sends her the other quotes (PICK-046, PICK-047); the backup selector sits on the quote page's pick review step (`pick_review.html`, `pick_flow.rs`), which this task extends, and the lapse in `confirm_reminders.rs` (T197's, extended here) moves the pick to the backup at once (D-491). The PICK-020 ineligibility re-check at Confirm moves the pick to the backup in `confirm.rs` (T063's, extended here); the other triggers call `picks::api::backup_choice`: 'Can't take it' (T214), leaving Ask Hava (T228), and the payments paths (a fee limit FEE-041 and Stripe unreachable FEE-018, T062; a card not fixed in time FEE-020, T062, D-493), each through `picks`' handler on the payments event (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -14395,7 +14587,7 @@
    "owns": [
     "app/picks/src/backup_choice.rs",
     "tests/integration/tests/backup_choice.rs",
-    "migrations/0151_picks_backup_choice.sql",
+    "migrations/0153_picks_backup_choice.sql",
     "app/portals/templates/pick_review.html",
     "app/portals/src/pick_flow.rs",
     "app/picks/src/confirm_reminders.rs",
@@ -14467,7 +14659,7 @@
     "tests/integration/tests/auto_confirm.rs",
     "app/picks/src/tests/prop_no_other_off_session_charge.rs",
     "app/payments/src/off_session.rs",
-    "migrations/0152_quotes_auto_confirm.sql",
+    "migrations/0154_quotes_auto_confirm.sql",
     "app/portals/templates/business_actions.html",
     "app/quotes/src/auto_confirm_box.rs",
     "app/portals/src/business_actions.rs"
@@ -14502,7 +14694,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 18
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -14517,7 +14709,7 @@
    "id": "T158",
    "slug": "owner-scorecard-money",
    "title": "ops: the owner's pilot scorecard page with go and stop lines, and the masked-call answered share",
-   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492).",
+   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492). This task's migration adds `ops.not_a_fit_answer` (job, business, trade, reason, time) for PICK-057's monthly count and `ops.minutes_entry` for OPS-039's weekly minutes entry (architecture section 3) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14544,7 +14736,8 @@
     "app/portals/src/not_a_fit.rs",
     "app/quotes/src/job_page.rs",
     "app/portals/src/business_actions.rs",
-    "app/portals/templates/business_actions.html"
+    "app/portals/templates/business_actions.html",
+    "migrations/0195_portals_scorecard_inputs.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14579,7 +14772,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 9,
+    "files": 10,
     "lines": 400,
     "context_pct": 14
    },
@@ -14596,7 +14789,7 @@
    "id": "T210",
    "slug": "intake-report-money-view",
    "title": "ops and payments: the monthly intake accuracy report and the money view's sales-tax set-aside and expenses",
-   "goal": "The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share; and the money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (OPS-040, FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration; architecture section 3 names it, D-491). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from `payments::api` (`app/payments/src/money_view.rs` computes the figures); the intake report's words sit in `intake_report.html` (D-492).",
+   "goal": "The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share; and the money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (OPS-040, FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration; architecture section 3 names it, D-491). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from `payments::api` (`app/payments/src/money_view.rs` computes the figures); the intake report's words sit in `intake_report.html` (D-492). The golden-set share comes from the stored runs T156 makes (`intake::api`) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14620,7 +14813,7 @@
     "tests/integration/tests/intake_report.rs",
     "app/payments/src/tests/money_view.rs",
     "app/portals/templates/money_view.html",
-    "migrations/0193_payments_expenses.sql",
+    "migrations/0196_payments_expenses.sql",
     "app/portals/src/money_view.rs",
     "app/portals/templates/intake_report.html"
    ],
@@ -14870,7 +15063,7 @@
    "id": "T212",
    "slug": "intake-photo-asks-preview",
    "title": "intake: photo asks with on-server checks and preview, inspiration pictures and the labeled concept image",
-   "goal": "Intake asks for the job type's photos after the trade questions, fetches picture texts from allowed hosts only, strips metadata and checks each photo on Ask Hava's own server, shows the homeowner each one before the card goes, and for design categories takes inspiration pictures and offers a labeled concept image only while its switch is on (the switch stays off until the account checkpoint chooses the adapter; this task builds the switch-on path against the stand-in adapter, 3 change rounds, the label and the project file only, and tests it in TD-INT-28; T137 runs it against the live adapter, D-492) (INT-044 to INT-046, SEC-041, PRIV-015; the photo ask and upload page say \"Please leave people, house numbers and license plates out of photos.\" and a picture text's media is deleted from the texting provider once stored, D-491). Picture-link fetching and the concept-image call live in `privacy` (which calls `adapters`); the upload page is a portals page; the photo and concept-image slots on the business job page are filled here: `quotes::job_page` (`job_page.rs`) supplies the data only and the page is rendered by the portals route `business_actions.rs` with `business_actions.html` (T148's), both extended here (D-491, D-492).",
+   "goal": "Intake asks for the job type's photos after the trade questions, fetches picture texts from allowed hosts only, strips metadata and checks each photo on Ask Hava's own server, shows the homeowner each one before the card goes, and for design categories takes inspiration pictures and offers a labeled concept image only while its switch is on (the switch stays off until the account checkpoint chooses the adapter; this task builds the switch-on path against the stand-in adapter, 3 change rounds, the label and the project file only, and tests it in TD-INT-28; T137 runs it against the live adapter, D-492) (INT-044 to INT-046, SEC-041, PRIV-015; the photo ask and upload page say \"Please leave people, house numbers and license plates out of photos.\" and a picture text's media is deleted from the texting provider once stored, D-491). Picture-link fetching and the concept-image call live in `privacy` (which calls `adapters`); the upload page is a portals page; the photo and concept-image slots on the business job page are filled here: `quotes::job_page` (`job_page.rs`) supplies the data only and the page is rendered by the portals route `business_actions.rs` with `business_actions.html` (T148's), both extended here (D-491, D-492). The photo and design steps are placed in the conversation's step order in `app/intake/src/conversation.rs` (T040's and T103's, extended here, before T162 replaces the step sequence), and the design cases are tested in `tests/integration/tests/intake_photos.rs` with the photo cases (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -14893,13 +15086,13 @@
     "app/intake/src/photos.rs",
     "app/intake/src/design.rs",
     "tests/integration/tests/intake_photos.rs",
-    "tests/integration/tests/design_intake.rs",
     "app/privacy/src/media_fetch.rs",
     "app/portals/templates/photo_upload.html",
     "app/portals/src/photo_upload.rs",
     "app/quotes/src/job_page.rs",
     "app/portals/src/business_actions.rs",
-    "app/portals/templates/business_actions.html"
+    "app/portals/templates/business_actions.html",
+    "app/intake/src/conversation.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14953,7 +15146,7 @@
    "id": "T163",
    "slug": "ai-written-card",
    "title": "ai: the AI-019 limits on AI-written questions, cards and project files with code checks and fallbacks",
-   "goal": "AI-written questions, job cards and project files pass code checks on every output (no price, cause, diagnosis, business name or contact detail, no added claim) and fall back to the fixed templates or the homeowner's own words; AI output is content-screened and capped in cost (AI-019, AI-021). The cause-word check also covers the Spanish words AI-019 lists (D-492).",
+   "goal": "AI-written questions, job cards and project files pass code checks on every output (no price, cause, diagnosis, business name or contact detail, no added claim) and fall back to the fixed templates or the homeowner's own words; AI output is content-screened and capped in cost (AI-019, AI-021). The cause-word check also covers the Spanish words AI-019 lists (D-492). The WORD-022 phrase list the checks use is `app/ai/data/word_022_phrases.json`, owned here and kept equal to `scripts/trace_spec.py`'s list by `tests/docs/test_word_022_phrases.py`; business names are passed in by the caller, since `ai` cannot call `businesses` (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -14972,7 +15165,9 @@
    "owns": [
     "app/ai/src/writer.rs",
     "app/ai/src/output_checks.rs",
-    "app/ai/src/tests/prop_ai_output_limits.rs"
+    "app/ai/src/tests/prop_ai_output_limits.rs",
+    "app/ai/data/word_022_phrases.json",
+    "tests/docs/test_word_022_phrases.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15000,7 +15195,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 5,
     "lines": 450,
     "context_pct": 13
    },
@@ -15109,7 +15304,7 @@
     "app/quotes/src/edit_withdraw.rs",
     "tests/integration/tests/quote_formats.rs",
     "tests/integration/tests/quote_notes.rs",
-    "migrations/0155_quotes_formats.sql",
+    "migrations/0157_quotes_formats.sql",
     "app/portals/templates/business_actions.html",
     "app/portals/src/business_actions.rs",
     "app/portals/templates/quote_page.html",
@@ -15164,7 +15359,7 @@
    "id": "T214",
    "slug": "picks-share-box-cant-take",
    "title": "picks: the homeowner's share box at the pick and the 'Can't take it' link",
-   "goal": "The pick review step shows the required share box, unticked at first (pressing Pick unticked shows an error and picks nothing), and logs its tick; no consent, sharing, charge or feedback box on any page starts ticked (PICK-049, D-492); the pick notice and Confirm step carry a \"Can't take it\" link that ends the pick at once with no fee (PICK-049, PICK-050); the introduction-fee wording scan (WORD-026) is T203's; the share box goes on the pick review step (`pick_review.html`, `pick_flow.rs`) and the \"Can't take it\" link on the business action page (`business_actions.html`, `business_actions.rs`) and on the Confirm review step (`confirm_pay.html`, `confirm_pay.rs`, T224's), all extended here; the Confirm page also records its first opening through T198's `messaging::api` call (OPS-037) (D-491).",
+   "goal": "The pick review step shows the required share box, unticked at first (pressing Pick unticked shows an error and picks nothing), and logs its tick; no consent, sharing, charge or feedback box on any page starts ticked (PICK-049, D-492); the pick notice carries a \"Can't take it\" link that ends the pick at once with no fee (PICK-050), added to the pick notice composer `app/picks/src/confirm.rs` (T063's, extended here, D-493); the introduction-fee wording scan (WORD-026) is T203's; the share box goes on the pick review step (`pick_review.html`, `pick_flow.rs`) and the \"Can't take it\" action page on `business_actions.html` and `business_actions.rs`, extended here (D-491); the Confirm review step's link, the Confirm-page terms acceptance and the accepted-quote email are T232's (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -15191,13 +15386,12 @@
     "app/picks/src/share_consent.rs",
     "app/picks/src/cant_take.rs",
     "tests/integration/tests/share_and_cant_take.rs",
-    "migrations/0156_picks_share_box.sql",
+    "migrations/0158_picks_share_box.sql",
     "app/portals/templates/pick_review.html",
     "app/portals/src/pick_flow.rs",
     "app/portals/templates/business_actions.html",
     "app/portals/src/business_actions.rs",
-    "app/portals/templates/confirm_pay.html",
-    "app/portals/src/confirm_pay.rs"
+    "app/picks/src/confirm.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15216,7 +15410,8 @@
    ],
    "tests": [
     "TD-PICK-34",
-    "TD-PICK-19"
+    "TD-PICK-19",
+    "TD-PICK-43"
    ],
    "decisions": [
     "D-443",
@@ -15226,7 +15421,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 10,
+    "files": 9,
     "lines": 350,
     "context_pct": 16
    },
@@ -15237,6 +15432,77 @@
    ],
    "branch": "claude/task/T214-picks-share-box-cant-take",
    "prompt": "kit/prompts/T214.md",
+   "copy": true
+  },
+  {
+   "id": "T232",
+   "slug": "confirm-step-terms-accepted-quote",
+   "title": "portals and messaging: the Confirm step's 'Can't take it' link and terms record, and the accepted-quote email",
+   "goal": "The Confirm review step (`confirm_pay.html`, `confirm_pay.rs`, T224's, extended here) carries the \"Can't take it\" link that ends the pick at once with no fee (PICK-050) and records its first opening through T198's `messaging::api` call (OPS-037); a Confirm-page press stores one business-terms acceptance with channel \"Confirm page\" and the pick ID through `intake::api` (T181's store, TERMS-033); after a Confirm the homeowner gets the accepted quote (type, amount, quote facts and the business's own words) by email when an email is on file, composed by `app/messaging/src/accepted_quote_email.rs` from a `core.task` event through T094's pipeline, offering \"Add Ask Hava to your contacts\" (PICK-042, PICK-054's email half), and the quote page (`quote_page.html`, extended here) shows the accepted quote until its token expires (PICK-042). Split from T214, which would otherwise own 11 files. (D-493) With \"This inbox is shared\" marked, a Confirm inside a live session needs a fresh Verify code to that person's phone (SEC-027's Confirm-page check, moved from T199) (D-493).",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T214",
+    "T224",
+    "T181",
+    "T094",
+    "T198"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy",
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/portals/templates/confirm_pay.html",
+    "app/portals/src/confirm_pay.rs",
+    "app/portals/templates/quote_page.html",
+    "app/messaging/src/accepted_quote_email.rs",
+    "tests/integration/tests/accepted_quote_email.rs",
+    "tests/e2e/confirm_cant_take.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/terms.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "PICK-042",
+    "PICK-054",
+    "PICK-050",
+    "TERMS-033",
+    "SEC-027"
+   ],
+   "tests": [
+    "TD-PICK-42",
+    "TD-TERMS-11",
+    "TD-PICK-43",
+    "TD-SEC-32"
+   ],
+   "decisions": [
+    "D-493"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 400,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T232-confirm-step-terms-accepted-quote",
+   "prompt": "kit/prompts/T232.md",
    "copy": true
   },
   {
@@ -15266,7 +15532,7 @@
    "owns": [
     "app/businesses/src/links.rs",
     "tests/integration/tests/business_links.rs",
-    "migrations/0157_businesses_links.sql",
+    "migrations/0160_businesses_links.sql",
     "app/quotes/src/quote_card.rs",
     "app/portals/templates/business_signup.html",
     "app/portals/src/business_signup.rs"
@@ -15341,7 +15607,8 @@
     "app/quotes/src/business_left.rs",
     "app/picks/src/business_left.rs",
     "app/portals/src/business_left.rs",
-    "migrations/0158_businesses_leaving.sql"
+    "migrations/0161_businesses_leaving.sql",
+    "app/portals/templates/business_leave.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15362,7 +15629,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 400,
     "context_pct": 12
    },
@@ -15575,7 +15842,7 @@
    "id": "T167",
    "slug": "stand-ins-http",
    "title": "Stand-ins served over HTTP at the vendors' URL shapes, so the Rust adapters use one client for stand-in, sandbox and live",
-   "goal": "One standard-library HTTP server exposes every stand-in at its vendor's paths (Twilio Messages and Verify, Stripe, Resend, Lob, the stand-in AI) with the same signatures, errors and idempotency behavior; the existing contract tests also run over HTTP (D-453). The Twilio stand-in records each message's derived key and offers a sent-log query and a voice-session stand-in, so OPS-017's 'nothing sent twice' check and the recovery drills can run against it (D-491). The stand-in AI is fixed to match AI-010: this task writes the committed schema `app/ai/schemas/intake_reading.json` (the AI-010 fields with a 0-to-1 confidence for trade and for job type and nothing else), and `stand_ins/ai.py` drops its `rental` field, returns the two confidences and validates its output against that schema (AI-022, D-492). The fake Twilio also follows the provider opt-out settings T029 commits: no YES in its re-subscribe words (OPT_IN is START and UNSTOP), PARAR, ALTO, CANCELAR and BAJA as opt-out words, and a reply per keyword taken from that file (D-492). It also accepts inbound picture texts (NumMedia and media URLs) and serves a Media DELETE endpoint that removes the stored media, so the picture-text cases can run (D-492).",
+   "goal": "One standard-library HTTP server exposes every stand-in at its vendor's paths (Twilio Messages and Verify, Stripe, Resend, Lob, the stand-in AI) with the same signatures, errors and idempotency behavior; the existing contract tests also run over HTTP (D-453). The Twilio stand-in records each message's derived key and offers a sent-log query and a voice-session stand-in, so OPS-017's 'nothing sent twice' check and the recovery drills can run against it (D-491). The stand-in AI is fixed to match AI-010: this task writes the committed schema `schemas/intake_reading.json` (at the repository root, outside any crate, since `app/ai/Cargo.toml` does not exist until T024, D-493) (the AI-010 fields with a 0-to-1 confidence for trade and for job type and nothing else), and `stand_ins/ai.py` drops its `rental` field, returns the two confidences and validates its output against that schema (AI-022, D-492). This task also writes the provider's Advanced Opt-Out settings as `stand_ins/provider_optout.json` (outside any crate, D-493): START and UNSTOP the only re-subscribe words (no YES), exactly CON-030's twelve opt-out words (stop, stopall, unsubscribe, cancel, end, revoke, optout, quit, parar, alto, cancelar and baja) and the CON-009 reply in English and Spanish; the fake Twilio reads that file for its keyword matching and its reply per keyword (D-492, D-493). It also accepts inbound picture texts (NumMedia and media URLs) and serves a Media DELETE endpoint that removes the stored media, so the picture-text cases can run (D-492). `stand_ins/ai.py` also gains fault modes selected by a request header (a 500, a 504, a 529, a 429 with and without `retry-after`, a `refusal` stop and a `max_tokens` stop) and planted outputs selected the same way (a carrier-restricted word, a URL, 600 characters), so TD-AI-14 and TD-AI-10 run against the stand-in (D-493).",
    "type": "harness",
    "phase": 1,
    "stage": "1",
@@ -15595,7 +15862,9 @@
     "tests/contract/test_stand_in_server.py",
     "stand_ins/twilio.py",
     "stand_ins/ai.py",
-    "app/ai/schemas/intake_reading.json"
+    "schemas/intake_reading.json",
+    "tests/contract/test_stand_in_ai_contract.py",
+    "stand_ins/provider_optout.json"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15626,7 +15895,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 500,
     "context_pct": 16
    },
@@ -15701,7 +15970,7 @@
    "id": "T218",
    "slug": "brain-phrase-scans",
    "title": "Wording and template scans from the brains: sales phrases, non-transactional invitations and text segments",
-   "goal": "A docs test fails any business page, template or document that uses a lead-selling phrase (\"ready to hire\", \"serious homeowners\", \"qualified\", \"pre-qualified\", \"high-intent\", a promise of jobs) or a win rate not computed from the ledger; a template test fails any notice holding a recruiting, referral, discount, survey, new-feature or social-media invitation from the list in docs/ai_smell.yaml; and a docs test over the template files reports every template's encoding and segment count and fails when the English consent text needs UCS-2 or more than 2 segments, or when any template grows past the segment count recorded beside it (TXT-044) (WORD-030, TXT-046, TXT-044).",
+   "goal": "A docs test fails any business page, template or document that uses a lead-selling phrase (\"ready to hire\", \"serious homeowners\", \"qualified\", \"pre-qualified\", \"high-intent\", a promise of jobs) or a win rate not computed from the ledger; a template test fails any notice holding a recruiting, referral, discount, survey, new-feature or social-media invitation from the list in docs/ai_smell.yaml; and a docs test over the template files reports every template's encoding and segment count and fails when the English consent text needs UCS-2 or more than 2 segments, or when any template grows past the segment count recorded beside it (TXT-044) (WORD-030, TXT-046, TXT-044). Turning Spanish conversations on without the campaign note and sample recorded is refused in code (TXT-043's code half; the campaign document is T113's, TD-TXT-26) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15735,7 +16004,8 @@
    "requirements": [
     "WORD-030",
     "TXT-046",
-    "TXT-044"
+    "TXT-044",
+    "TXT-043"
    ],
    "tests": [
     "TD-WORD-30",

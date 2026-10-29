@@ -144,6 +144,7 @@ ALLOWED_SHARED = frozenset(
         "package.json",
         "package-lock.json",
         "kit/plan.lock",  # the blueprint fingerprint, rewritten by any PR that changes a locked file (D-479)
+        "app/core/src/settings.rs",  # typed settings: T011 creates it, each later task adds its own keys (D-493)
     }
     | {f"app/{m}/Cargo.toml" for m in CRATE_MODULES}
     | {f"app/{m}/CLAUDE.md" for m in CRATE_MODULES}  # crate docs any task updates (D-473)
@@ -649,6 +650,39 @@ def check_row_cases_have_a_builder(root: Path, graph: Graph) -> list[str]:
     return errors
 
 
+def check_crate_exists_before_its_files(graph: Graph) -> list[str]:
+    """V12 (D-493): a path under `app/<crate>/` is owned only by the crate's manifest owner or a task after it.
+
+    The workspace lists `members = ["app/*"]`, so a directory under `app/` with no `Cargo.toml` fails
+    every cargo command for every task that runs until the manifest arrives. The fifth cold read found
+    a harness task placing data files under two crates that did not exist yet.
+    """
+    manifest_owners: dict[str, set[str]] = {}
+    for task in graph.tasks:
+        for path in task["owns"]:
+            m = re.fullmatch(r"app/([a-z_]+)/Cargo\.toml", path)
+            if m:
+                manifest_owners.setdefault(m.group(1), set()).add(task["id"])
+    errors = []
+    for task in graph.tasks:
+        for path in task["owns"]:
+            m = re.match(r"app/([a-z_]+)/", path)
+            if not m or path.endswith("Cargo.toml"):
+                continue
+            crate = m.group(1)
+            owners = manifest_owners.get(crate, set())
+            if not owners:
+                if crate in CRATE_MODULES:
+                    errors.append(f"{where(task)}: owns {path} but no task owns app/{crate}/Cargo.toml (V12)")
+                continue
+            if task["id"] in owners or owners & graph.ancestors[task["id"]]:
+                continue
+            errors.append(
+                f"{where(task)}: owns {path} before {sorted(owners)} create app/{crate}/Cargo.toml (cargo fails on the manifest-less member; V12)"
+            )
+    return errors
+
+
 def check_coverage(
     graph: Graph, req_ids: set[str], td_ids: set[str], withdrawn: set[str] = frozenset()
 ) -> list[str]:
@@ -983,7 +1017,7 @@ def run(root: Path, tasks_path: Path | None = None) -> Report:
     req_files = {r.req_id: r.spec_file for r in spec.requirements}
     errors += check_spec_reads(graph, req_files) + check_mutant_killers(root, graph)
     errors += check_harness_order(graph) + check_migration_order(graph)
-    errors += check_row_cases_have_a_builder(root, graph)
+    errors += check_row_cases_have_a_builder(root, graph) + check_crate_exists_before_its_files(graph)
     return Report(tasks, len(req_ids), len(td_ids), errors)
 
 

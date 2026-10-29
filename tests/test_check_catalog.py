@@ -539,6 +539,17 @@ def test_round_13_checks_are_enforced(
     assert any(expected in e for e in errors), errors
 
 
+def test_more_than_three_photos_fails(tmp_path: Path) -> None:
+    """TD-LIC-23; LIC-040, INT-044 (D-432, D-493): a question set asking for more than 3 photos fails."""
+    errors = errors_after(
+        tmp_path,
+        "question_bank.yaml",
+        "kb_trade: flooring\n    photos: [p1, p2, p3]",
+        "kb_trade: flooring\n    photos: [p1, p2, p3, p4]",
+    )
+    assert any("more than 3 photos (INT-044)" in e for e in errors), errors
+
+
 def test_round_13_quote_types() -> None:
     """FEE-004, FEE-043 to FEE-045 (D-399, D-403): hourly, setup charges, fee-free jobs."""
     cats, _ = check_catalog.check_categories(

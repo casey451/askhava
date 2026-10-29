@@ -28,6 +28,11 @@
 | x2 (fourth pass, T173 to T085) | 38 | 24 | 3 | 14 | 7 |
 | x3 (fourth pass, T162 to T142) | 37 | 21 | 2 | 8 | 11 |
 | **Total, four passes** | | **454** | **78** | **204** | **150** |
+| y1 (fifth pass, T154 to T048) | 37 | 19 | 4 | 10 | 5 |
+| y2 (fifth pass, T052 to T080) | 37 | 24 | 2 | 8 | 14 |
+| y3 (fifth pass, T081 to T104) | 37 | 23 | 5 | 5 | 13 |
+| y4 (fifth pass, T203 to T141) | 34 | 22 | 1 | 13 | 8 |
+| **Total, five passes** | | **542** | **90** | **240** | **190** |
 
 A blocker is a task the worker could not finish as written; the plan's own validators (`validate_tasks.py`, `trace_spec.py`, `gen_prompts.py --check`) were green throughout, because none of these defects is visible to a structural check.
 
@@ -149,6 +154,10 @@ Three reviewers re-read the 137 prompts the second round changed and found 75 mo
 ## 5a. The fourth pass and the V11 rule
 
 Three reviewers cold-read all 113 prompts the third round had changed and found 69 more (8 blockers), still of the same two shapes. The recurring one, a test case on a task that cannot write it, is now a validator rule: V11 in `scripts/validate_tasks.py` fails any test row whose case for requirement R sits on a task that does not own R, has no ancestor owning R and shares the row with no task owning R. Run against the tree before the fourth repair, V11 flagged 106 rows the three human passes had not reached; the fourth repair (D-492) resolved every flag by moving or splitting rows, so this defect shape can no longer enter the graph silently. The other recurring shape (a task told to change a page, template or struct another task owns) remains a reading matter: the runner's fresh-eyes reviewer reads each prompt before the diff, and risk R-20 says when a further pass runs. Blockers per pass: 63, 11, 7, 8. The fourth repair's other changes are in D-492: the `app/site` crate exists from T051, the carrier-restricted word list moves to `catalog`, the intake tables are created by T038, the provider's opt-out configuration file is T029's, the business job page is rendered by `portals`, `businesses::api::notice_addresses` has a creator, the Stripe webhook's security rules sit on the task that owns the route, and the shared-path sentence in every prompt names the template, status, askama, worker and prompt paths D-491 made shared.
+
+## 5b. The fifth pass
+
+Four reviewers cold-read the 145 prompts the fourth repair changed and found 88 more (12 blockers). One shape was new and is a build-stopper in its own right: a harness task placed two data files under `app/ai/` and `app/messaging/` before those crates had a `Cargo.toml`, and with `members = ["app/*"]` every cargo command between those tasks would have failed. It is now validator rule V12: no task owns a path under `app/<crate>/` unless it, or an ancestor, owns that crate's manifest. The rest were the two known shapes, which grow rarer each pass but do not reach zero: the reviewers now mostly find cases on tasks whose layer or order cannot reach them (TD-CON-20's email, form and portal channels on the texting task; the terms acceptance on a task without the Confirm page; the feedback page and the check-in email with no owner at all), stale decisions pasted without the superseded mark (eight more pairs), and goals naming a later task's work as if present. The fifth repair is D-493. Blockers per pass: 63, 11, 7, 8, 12; the fifth pass's count is higher than the fourth's because it read only changed prompts, where the density of fresh edits is highest. The runner's fresh-eyes reviewer reads each prompt before the diff, and risk R-20 says when a further pass runs.
 
 ## 6. Left for the re-plan after the hand-run test
 
