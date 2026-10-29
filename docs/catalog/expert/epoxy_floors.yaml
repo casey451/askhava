@@ -1,0 +1,372 @@
+# Ask Hava expert layer: epoxy_floors (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set epoxy_floors and trade_kb/trades/flooring.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The kb_trade (flooring.yaml) has no epoxy or concrete-coating job type. The one entry here,
+#   garage_floor_epoxy, is new_job_type: true, with the same id as painting.yaml's garage_floor_epoxy so it
+#   matches scenarios/epoxy_floors.yaml. Its questions and photo cues come from painting.yaml's entry
+#   (q1_where "Garage floor", q3_prep surface condition, q5_home_age, p4 "Garage floor surface for coatings").
+# - Left out, all seven flooring.yaml job types: tile_install, lvp_laminate, hardwood, carpet_install,
+#   floor_repair, old_floor_removal, shower_tile. No enabled category routes them (epoxy_floors has the one
+#   job type "garage floor epoxy"). A flooring category would need its own expert file.
+# - Photos: photos_priority may use only flooring.yaml ids, and none of them is a garage-floor photo. The
+#   closest are p1 (each room, wide shot: read as the whole garage floor from the big door), p3 (close-up of
+#   damage: cracks, peeling, stains, white powder) and p4 (edge of current floor at a doorway: shows whether
+#   a coating or sealer layer is there). painting.yaml's p4 "Garage floor surface for coatings" is the true
+#   fit. p4 is also not in the bank's photo list ([p1, p2, p3]); p2 (doorway transitions and stairs) is
+#   room-oriented but does show the step at the house door. Suggest pointing this set at painting.yaml's
+#   photos or adding a garage-floor photo to flooring.yaml.
+# - The bank set asks size, cracks and finish only. It has no question for what is on the floor now (bare,
+#   clear sealer, old coating, new concrete), oil stains, contents to move, or owner versus renter. The
+#   first three ride on follow-ups here; only one may be asked per request, so a bank question
+#   "What's on the floor now?" (the fu_floor_now wording) would lift every card. Owner versus renter has no
+#   question at all: the card carries it only when she says it (scenario s07). Casey to decide.
+# - Concrete crack repair (a sunk side or lip) and pool deck or patio coatings belong with pavers_hardscape,
+#   which has no matching job type name (paver patio, walkway, irrigation install). Those misdiagnosis rows
+#   use if_other_route_to: null and say so; scenarios s11 and s12 expect bank_job_type null for the same
+#   reason. Suggest adding "concrete repair" and "pool deck coating" job types to pavers_hardscape.
+# - A gas or rotten-egg smell in the garage (gas water heater, dryer line) is on the D-436 fire-truck list,
+#   so it is the one fire_dept_trigger (scenario s10). A chemical smell from a fresh coating is not.
+# - A fresh coating that stays tacky or bubbles is an urgent_capable fact only (scenario s09); the category
+#   has after_hours_emergency: false, so no night routing follows from it.
+# - Lead: EPA RRP covers paid work that disturbs paint in pre-1978 housing above 6 sq ft inside. Whether an
+#   attached garage floor coat counts is not settled here [judgment]; the bank has no home-age question for
+#   this set (painting.yaml has q5_home_age). Casey may want home age on painted-floor cards.
+# - Hard water (about 19 grains per gallon, cited in plumbing_repair.yaml) is left out of local_factors: it
+#   does not change how an epoxy job is scoped.
+schema: 1
+category: epoxy_floors
+question_set: epoxy_floors
+kb_trade: flooring
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (R-8 Floor Covering lists concrete coatings and surface prep; R-34 Painting and Wall Covering lists liquid floor and wall coatings)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "[S3] A.A.C. R4-9-104 Dual license classifications (CR-8 Floor Covering, CR-34 Painting and Wall Covering)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14): under $1,000 in all, casual or minor, no permit)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "[S17] Lake Havasu City Building Permits: 'Paint' and 'Floor Covering' are on the no-permit list"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: rustoleum_epoxyshield
+    title: "Rust-Oleum EpoxyShield garage floor kit instructions: cure new concrete 28 days; water that beads means a sealer is present; X-cut tape test, remove old paint if more than a quarter lifts; 2 by 2 ft plastic sheet moisture test; apply at 60 to 85 F air; remove oil with degreaser; 3 days before vehicles; not for direct sunlight"
+    url: "https://www.rustoleum.com/-/media/22968DF36DBC46339544F2C410DA8140.ashx"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: stonhard_new_concrete
+    title: "Stonhard: new concrete needs at least 28 days and up to 60 before coating; relative humidity probe testing is the most reliable slab moisture test"
+    url: "https://stonhard.com/blog/how-soon-can-you-epoxy-coat-new-concrete"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: thumbtack_epoxy_cost
+    title: "Thumbtack cost guide, epoxy garage floor: price per square foot falls on larger floors; grinding, oil removal, old-coating removal, crack and pit filling and decorative chips add cost; at least a two-day job"
+    url: "https://www.thumbtack.com/p/epoxy-garage-floor-cost"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: epa_rrp
+    title: "EPA Lead Renovation, Repair and Painting Program: paid work disturbing paint in pre-1978 housing needs a certified firm; exempt at 6 sq ft or less per room inside, 20 sq ft outside"
+    url: "https://www.epa.gov/lead/renovation-repair-and-painting-program-contractors"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (Arizona monsoon officially June 15 to September 30)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: climate_normals
+    title: "U.S. Climate Data, Lake Havasu City 1991-2020 normals (average highs June 105 F, July 109 F, August 108 F; October 88 F, November 74 F; March 77 F, April 85 F)"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: graphed_epoxy_ads
+    title: "Graphed (marketing vendor): Google Ads for epoxy flooring, cost per lead typically $40 to $150 by market density"
+    url: "https://www.graphed.com/blog/google-ads-for-epoxy-flooring"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: leadgen_flooring
+    title: "Leadgen Economy (marketing vendor): flooring lead costs 2026 (Angi/HomeAdvisor $15-$40 per lead shared with 3-4 contractors; Thumbtack $10-$30 per quote opportunity; Google LSA $20-$50; specialty flooring $25-$75 shared)"
+    url: "https://www.leadgen-economy.com/blog/flooring-lead-generation-contractors-complete-guide/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Floor area: 1-car, 2-car, 3-car or a deep RV or boat bay"
+      why: "Material and labor scale with square feet, and the price per square foot drops on larger floors; the bank's size question and the wide photo settle it."
+      source: thumbtack_epoxy_cost
+    - driver: "What is on the floor now: bare concrete, a clear builder sealer, or an old paint or coating"
+      why: "An old coating that lifts must come off and a sealer must be ground through before anything bonds; that is the biggest swing in prep labor."
+      source: rustoleum_epoxyshield
+    - driver: "Cracks, pits, seams between pours and their size or offset"
+      why: "Filling cracks and pits adds material and hours; a sunk side or lip is concrete work before any coating. [judgment] on the offset point"
+      source: thumbtack_epoxy_cost
+    - driver: "System and look: solid color, light flake, full flake, metallic, topcoat"
+      why: "Decorative chips and tinted coats add material and steps; full flake coverage uses far more chip than a light sprinkle."
+      source: thumbtack_epoxy_cost
+    - driver: "Oil and grease soaked into the concrete where cars park"
+      why: "Oil must be removed before coating; years of drips may need repeated cleaning or cutting out the stained top layer. [judgment] on the second half"
+      source: rustoleum_epoxyshield
+    - driver: "Moisture in the slab (white powder, damp under mats, bubbling in one band)"
+      why: "Moisture lifts coatings; a pro may test, add a moisture-blocking primer, or decline the job, so the quote may be a range to confirm on site."
+      source: stonhard_new_concrete
+    - driver: "Contents to move and anything bolted to the floor"
+      why: "A packed garage, a chest freezer or a bolted rack adds a crew hour or a separate clearing job, and anchor holes need patching. [judgment]"
+      source: null
+    - driver: "Extras: cove edge up the wall, stem wall, a step at the house door, a floor drain"
+      why: "Each is hand work at an edge, priced by the linear foot or by the piece. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Clear builder sealer or curing compound on a floor the homeowner calls bare"
+      how_a_pro_spots_it: "Newer home, floor looks wet or shiny in spots; water beads on it instead of soaking in"
+      question_or_photo: fu_floor_now
+      source: rustoleum_epoxyshield
+    - condition: "Old do-it-yourself coating that is only loosely stuck"
+      how_a_pro_spots_it: "Peeling in sheets along the tire paths, curled edges; the edge photo shows a layer over the concrete"
+      question_or_photo: p4
+      source: rustoleum_epoxyshield
+    - condition: "Moisture coming up through the slab or in from outside a wall"
+      how_a_pro_spots_it: "White powder at the base of a wall, bubbles in one band, damp concrete under mats, a pattern after storms or watering"
+      question_or_photo: fu_comes_back
+      source: rustoleum_epoxyshield
+    - condition: "Concrete poured in the last few weeks"
+      how_a_pro_spots_it: "New-build home or a fresh pour; the homeowner says the house is new"
+      question_or_photo: fu_floor_now
+      source: stonhard_new_concrete
+    - condition: "Oil soaked deep where a car or truck has parked for years"
+      how_a_pro_spots_it: "Large dark patches in each parking spot in the wide photo; a long-time workshop or car hobby"
+      question_or_photo: p1
+      source: null
+    - condition: "A crack with one side higher, or a gap at a seam between separate pours"
+      how_a_pro_spots_it: "A lip you can catch a shoe on, a straight gap about pencil width between bays; the close-up photo with a shoe for scale"
+      question_or_photo: fu_crack_level
+      source: null
+    - condition: "Racks, lifts or gym equipment bolted to the slab"
+      how_a_pro_spots_it: "Anchor bolts at the base of shelving or a rack in the photo; the homeowner mentions a pallet rack or squat rack"
+      question_or_photo: fu_garage_contents
+      source: null
+    - condition: "Old floor paint in a home built before 1978"
+      how_a_pro_spots_it: "Painted floor and an older home; grinding paint off may bring federal lead-safe work rules into the job [judgment]"
+      question_or_photo: p4
+      source: epa_rrp
+  misdiagnosis_checks:
+    - sounds_like: "interior painting ('paint the garage floor', 'just repaint it')"
+      might_be: "garage_floor_epoxy with an old coating to remove; R-34 painters receive these cards too"
+      one_question: fu_floor_now
+      if_other_route_to: {category: epoxy_floors, job_type: "garage floor epoxy"}
+      source: aac_r4_9_103
+    - sounds_like: "garage floor epoxy (fix the crack, then coat)"
+      might_be: "crack_repair (pavers_concrete trade): a sunk or offset slab is concrete work first; pavers_hardscape has no crack-repair job type yet, so the card notes the coating as the next step"
+      one_question: fu_crack_level
+      if_other_route_to: null
+      source: null
+    - sounds_like: "garage floor epoxy ('mold coming up through the floor', bubbling in one area)"
+      might_be: "garage_floor_epoxy with water reaching the slab from outside (planter, downspout, drip line); same job, but the pattern changes prep and whether a business will quote"
+      one_question: fu_comes_back
+      if_other_route_to: {category: epoxy_floors, job_type: "garage floor epoxy"}
+      source: null
+    - sounds_like: "garage floor epoxy (pool deck, patio or driveway coating)"
+      might_be: "pool_deck or coating_stain (pavers_concrete trade): outdoor concrete coating; pavers_hardscape has no matching job type name yet"
+      one_question: size
+      if_other_route_to: null
+      source: null
+    - sounds_like: "garage floor epoxy ('make it look nice', heavy oil, wants it clean for a sale)"
+      might_be: "driveway_garage (pressure_washing trade): cleaning only, no coating"
+      one_question: finish
+      if_other_route_to: {category: pressure_washing, job_type: "driveway"}
+      source: null
+    - sounds_like: "garage floor epoxy (a kit went down days ago and is still tacky or bubbling)"
+      might_be: "garage_floor_epoxy as removal and redo of a failed fresh coating; same job type, flagged urgent"
+      one_question: fu_floor_now
+      if_other_route_to: {category: epoxy_floors, job_type: "garage floor epoxy"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Number of bays and rough size", "Bare, shiny or coated surface", "Oil patches in the parking spots", "Contents along the walls, anything bolted down", "Floor drain, water heater or gas dryer line at the edges", "Sun reaching the floor through the big door"]
+      neutral_wording: "Two-car garage from the big door, bare gray concrete, dark stains in both parking spots, shelves along the left wall."
+    - photo_id: p2
+      reads: ["Step up to the house door", "Threshold at the big door and how the floor meets the driveway", "Stem wall height for a cove edge"]
+      neutral_wording: "One step up to the house door; a short concrete wall runs along the base of the side walls."
+    - photo_id: p3
+      reads: ["Crack width and whether one side sits higher (shoe for scale)", "Old coating lifting in curls or sheets", "White powder at a wall base", "Bubbles or soft, sticky spots in a fresh coat", "Chips at control joints"]
+      neutral_wording: "Hairline crack from the big door to the middle; gray coating lifting in curled pieces along both tire paths."
+    - photo_id: p4
+      reads: ["A coating or paint layer over the concrete and how thick it is", "Shine of a clear sealer at the edge", "Bare concrete under a broken bubble"]
+      neutral_wording: "Edge at the house door shows a thin gray layer over bare concrete."
+  local_factors:
+    - fact: "Average highs are 105 to 109 F from June through August"
+      effect: "Coating labels set air and floor temperature limits (one kit says 60 to 85 F air), so summer jobs start at dawn or wait for fall, and a hot closed garage shortens working time"
+      source: climate_normals
+    - fact: "The monsoon runs June 15 to September 30"
+      effect: "Storm water against garage walls and through downspouts is when white powder and bubbling show up; pros ask when the problem appears"
+      source: nws_monsoon
+    - fact: "Lake Havasu City needs no building permit for paint or floor covering"
+      effect: "No permit line on the card, and no permit fee in the quote"
+      source: lhc_permits
+    - fact: "One kit maker says its coating is not meant for areas in direct sunlight"
+      effect: "West- and south-facing garages with the door open get hard afternoon sun; pros ask about it and may quote a different topcoat [judgment] on the second half"
+      source: rustoleum_epoxyshield
+    - fact: "Most homes sit on slabs over rocky or caliche soil, and many garages hold boats, golf carts or RVs"
+      effect: "Deep RV bays change square footage; boat and trailer drips add stains; a slab crack that keeps widening is concrete work [judgment]"
+      source: null
+    - fact: "Seasonal residents and second-home owners are away for months"
+      effect: "Jobs are often done while the owner is gone, so who opens the garage goes on the card [judgment]"
+      source: null
+    - fact: "Many homes were built in the 1970s"
+      effect: "Old painted garage floors in pre-1978 homes may raise lead-safe work rules when ground off [judgment]"
+      source: null
+  seasonality:
+    busy: "October to May, when it is cool enough to coat and seasonal residents are back; spring home sales [judgment]"
+    slow: "July and August heat [judgment]"
+    source: null
+
+job_types:
+  - id: garage_floor_epoxy
+    new_job_type: true
+    label: "Garage floor epoxy or coating (new coat on bare concrete, recoat, or remove and redo)"
+    bank_job_type: "garage floor epoxy"
+    recurring: false
+    homeowner_phrasings: ["epoxy the garage", "garage floor coating", "flake floor", "paint the garage floor", "garage floor is peeling", "make the garage floor look nice", "epóxico en la cochera", "piso de cochera"]
+    must_know:
+      - fact: "Size of the floor"
+        bank_question: size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Square feet set material and labor, and larger floors price lower per square foot."
+        skip_if: "Homeowner gave the bay count or dimensions"
+      - fact: "What is on the floor now: bare, oil-stained, clear sealer, old coating, mats, or new concrete"
+        bank_question: null
+        follow_up: fu_floor_now
+        photo: p4
+        why_it_moves_price: "Removing an old coating or grinding through a sealer is the largest prep swing; new concrete may mean waiting weeks. [judgment] on ranking"
+        skip_if: "Her words or the photo already show the surface"
+      - fact: "Cracks and whether any are wide or offset"
+        bank_question: cracks
+        follow_up: fu_crack_level
+        photo: p3
+        why_it_moves_price: "Hairline cracks are filled as part of prep; a wide gap or a lip is concrete repair first. [judgment]"
+        skip_if: "Close-up photo shows the cracks with something for scale"
+      - fact: "Finish and look: solid, flake coverage, metallic, color, cove edge"
+        bank_question: finish
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Chips, extra coats and a cove edge add material and hand work; inspiration pictures and the concept image carry the look."
+        skip_if: "Homeowner named the finish and color"
+      - fact: "Whether damp spots, powder or bubbling come and go"
+        bank_question: null
+        follow_up: fu_comes_back
+        photo: p3
+        why_it_moves_price: "A moisture pattern can add testing and a moisture-blocking primer, or change whether a business quotes at all. [judgment]"
+        skip_if: "No damp, powder, bubbling or one-area peeling mentioned"
+    allowed_follow_ups:
+      - id: fu_floor_now
+        ask_when: "No photo of her own floor, or her words do not say whether the floor is bare, sealed, stained or already coated"
+        text_en: "What is on the floor now?"
+        text_es: "¿Qué tiene el piso ahorita?"
+        options_en: ["Bare concrete, fairly clean", "Bare concrete with oil or grease stains", "A clear sealer or shiny finish", "Old paint or coating", "Mats, carpet or tile", "New concrete, poured in the last 2 months"]
+        options_es: ["Concreto sin nada, bastante limpio", "Concreto sin nada con manchas de aceite o grasa", "Un sellador transparente o acabado brillante", "Pintura o recubrimiento viejo", "Tapetes, alfombra o loseta", "Concreto nuevo, de menos de 2 meses"]
+        card_field: true
+        why: "Sealer, old coating, oil and fresh concrete each change prep, and homeowners rarely mention them unless asked."
+      - id: fu_crack_level
+        ask_when: "Homeowner mentions a crack, seam, gap, lip or sunk area and no close-up photo shows it"
+        text_en: "Is any crack wider than a pencil, or is one side higher than the other?"
+        text_es: "¿Alguna grieta es más ancha que un lápiz, o un lado está más alto que el otro?"
+        options_en: ["Only thin hairline cracks", "Wider than a pencil", "One side higher than the other"]
+        options_es: ["Solo grietas finitas", "Más ancha que un lápiz", "Un lado más alto que el otro"]
+        card_field: true
+        why: "Separates crack filling inside a coating job from concrete repair that comes first. [judgment]"
+      - id: fu_comes_back
+        ask_when: "Homeowner mentions white powder, damp spots, bubbling or peeling in one area, or what she calls mold"
+        text_en: "Does it come and go, like after rain, storms or watering nearby?"
+        text_es: "¿Aparece y se quita, por ejemplo después de lluvia, tormentas o riego cerca?"
+        options_en: ["After rain or summer storms", "After watering nearby", "It stays the same all year", "Only noticed it once"]
+        options_es: ["Después de lluvia o tormentas de verano", "Después de regar cerca", "Sigue igual todo el año", "Solo lo noté una vez"]
+        card_field: true
+        why: "A pattern tied to storms or watering is the fact a coating pro wants before quoting a floor with moisture signs; the card states it without naming a cause. [judgment]"
+      - id: fu_garage_contents
+        ask_when: "Her words or photo do not say whether the garage will be empty, or the photo shows a full garage"
+        text_en: "Will the garage be empty for the work, or will things need moving?"
+        text_es: "¿La cochera va a estar vacía para el trabajo, o hay que mover cosas?"
+        options_en: ["Empty, or I will clear it", "Some things to move", "Full, and I can't move it", "Racks or equipment bolted to the floor"]
+        options_es: ["Vacía, o yo la vacío", "Hay algunas cosas que mover", "Llena, y yo no puedo moverla", "Repisas o equipo atornillado al piso"]
+        card_field: true
+        why: "Moving contents and unbolting racks add crew time, and the garage is out of use for days. [judgment]"
+    photos_priority: [p1, p3, p4]
+    urgency:
+      fire_dept_triggers: ["Gas or rotten-egg smell in the garage, near a gas water heater or dryer line"]
+      urgent_capable_triggers: ["A coating put down in the last few days is still tacky or bubbling and the garage can't be used"]
+      regular: "Any planned coating, recoat or remove-and-redo job"
+    scope_line_en: "Flake coating for a 2-car garage, bare concrete with oil stains where the cars park, two hairline cracks."
+    scope_line_es: "Recubrimiento con hojuelas para una cochera de 2 carros, concreto sin nada con manchas de aceite donde se estacionan, dos grietas finitas."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (prep, crack filling, coats, flake, topcoat, cove edge)", "earliest start day and how many days the garage is out of use", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Epoxy floors | <town>, <general area> | <house / townhome / manufactured home>; <owner / renter, owner approval: yes / not yet / not said>
+      <one scope line: size, what is on the floor now, finish wanted>
+      Size: <1-car / 2-car / 3-car or larger>, about <dimensions if given>. Floor now: <bare / oil stains / clear sealer / old coating and its condition / mats / new concrete, weeks since poured>. Cracks: <none / hairline / wider than a pencil / one side higher>; seams, drain, step: <as said>. Comes and goes: <after storms / after watering / same all year / not asked>. Contents: <empty / some to move / full, homeowner can't move it / bolted to floor>.
+      Look: <solid / light flake / full flake / metallic / open to ideas>, color <as said>, cove edge: <yes / no / not said>. Inspiration pictures: <n, not her floor>. Concept image: <attached, labeled AI-generated, not exact, may not be feasible / none>.
+      Photos of her floor: <n> (<neutral description of each>) or <none sent>. Access: <who opens the garage, if said>. Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That white powder is just efflorescence, not mold.", "You'll have to grind off the old paint first.", "Polyaspartic holds up better than epoxy in this heat.", "It's not dangerous, just open the garage door.", "Epoxy runs about four dollars a square foot.", "This picture is what your floor will look like."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing, reviews and before-and-after photos", "Facebook and Instagram posts of finished floors, local Facebook groups [judgment]", "Google search ads and Local Services Ads", "Home-service lead marketplaces (Angi, HomeAdvisor, Thumbtack)", "Word of mouth from neighbors who saw a finished garage with the door open [judgment]", "Painters and flooring shops adding coatings to jobs they already have [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google search ads (epoxy flooring)"
+      figure: "About $40 to $150 per lead depending on market density (marketing-vendor figure)"
+      source: graphed_epoxy_ads
+      unverified: false
+    - channel: "Angi and HomeAdvisor (flooring overall)"
+      figure: "About $15 to $40 per lead, shared with 3 to 4 contractors (marketing-vendor figure)"
+      source: leadgen_flooring
+      unverified: false
+    - channel: "Specialty flooring shared leads (epoxy grouped here)"
+      figure: "About $25 to $75 per shared lead, 15 to 25 percent booking rate (marketing-vendor figure)"
+      source: leadgen_flooring
+      unverified: false
+    - channel: "Thumbtack (flooring)"
+      figure: "About $10 to $30 per quote opportunity (marketing-vendor figure)"
+      source: leadgen_flooring
+      unverified: false
+    - channel: "Google Local Services Ads (flooring)"
+      figure: "About $20 to $50 per lead (marketing-vendor figure)"
+      source: leadgen_flooring
+      unverified: false
+    - channel: "Lake Havasu City epoxy and coating businesses specifically"
+      figure: "No local figures found; few local coating crews may mean lower ad prices than national figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead 3 or 4 other installers also bought", "Price shoppers who want a per-square-foot number by text and nothing else", "Homeowners comparing a pro system with a hardware-store kit price", "No photo, so a wasted drive to see an oil-soaked or peeling floor", "Monthly fees whether or not jobs come"]
+  what_makes_a_lead_worth_paying_for: ["Size, what is on the floor now and the finish wanted, up front", "Photos of her own floor, not just a picture she likes", "Moisture signs and old coatings flagged before the visit", "Pay only when picked, nothing monthly", "A real date and whether the garage will be empty"]
+  their_words: ["grind", "diamond grind", "shot blast", "CSP", "moisture test", "moisture vapor primer", "basecoat", "topcoat", "full broadcast", "partial broadcast", "flake", "chip", "metallic", "polyaspartic", "polyurea", "cove base", "stem wall", "control joint", "crack chase", "hot tire pickup", "efflorescence", "degrease", "one-day floor"]
+  signup_objections:
+    - objection: "I can't quote a floor without testing it for moisture."
+      answer: "You don't have to. Quote a low and high price and mark it 'to be confirmed on site'. Cards say what is on the floor now, any white powder or bubbling and when it shows up, and most come with photos."
+    - objection: "Homeowners just want a price per square foot."
+      answer: "The card gives size, prep facts and the finish she wants, so you can quote the job, not a number per foot. She sees each quote in your own words, including what it covers."
+    - objection: "Will I be compared to a hardware-store kit?"
+      answer: "No. Ask Hava shows only quotes from licensed businesses, in the order they came in. We never sort, rate or score a business."
+    - objection: "I'm a painter with R-34. Do I get these?"
+      answer: "Yes. Epoxy floor cards go to R-8 and R-34 holders, the matching dual classes and B or B-3 general contractors. You choose whether you want them at sign-up."
+    - objection: "Why pay a fee when I get calls from my truck signs?"
+      answer: "You pay only when the homeowner picks your quote and you confirm. Nothing to join and nothing per month. The fee is set by job size: $25, $75 or $199."
+    - objection: "What is the concept picture? I don't want to be held to it."
+      answer: "Some cards carry a picture an AI made from her written notes, never from her photos. It is labeled on the image and beside it: AI-generated, not exact, may not be feasible. Your quote says what you will do."
+    - objection: "What if she cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Can a handyman get these jobs cheaper?"
+      answer: "No. This job type goes only to licensed businesses. Handymen don't receive epoxy floor cards."
+  quote_tips_for_card: ["Say what prep the range includes and what would push it to the high end", "Say how many days the garage is out of use and when cars can park", "If old coating or a sealer must come off, say whether removal is in the price", "If you need a photo of something else, say which, like the edge at the house door or the worst crack", "Give your earliest start day"]
