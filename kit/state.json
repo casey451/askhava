@@ -2,7 +2,7 @@
   "schema": 1,
   "phase": "kit",
   "current": "GATE-P",
-  "backup_runner": "off",
+  "backup_runner": "on",
   "ruleset_verified": true,
   "lease": null,
   "tasks": [
