@@ -1,0 +1,927 @@
+# Ask Hava expert layer: water_treatment (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set water_treatment and trade_kb/trades/water_treatment.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+# Ask Hava never says what treatment a home should have and makes no health claim about tap water. If asked,
+# the card notes the question and the city's water quality report is the only place it points.
+#
+# NOTES FOR REVIEW
+# - All 9 kb job types are kept. The category has 3 job types, none of them repair or service, so coarse
+#   mappings: softener_new, softener_repair, softener_replace, whole_house_filter, remove_bypass, water_test
+#   and loop_install all map to "softener install"; ro_new and ro_service map to "RO system". A "softener or RO
+#   service" job type would route repair cards more cleanly (the scenario file already expects a null bank
+#   job type on softener repairs for this reason).
+# - water_test under "softener install" is a poor fit. R-54 covers installing and repairing equipment, not lab
+#   testing; a water-test card reaches the same R-54 businesses, who usually offer an in-home hardness test.
+#   A homeowner who wants a certified lab report may need a different route [judgment].
+# - misting_system is new_job_type: the category routes "misting system" and the kb has no misting id. It
+#   covers both new installs and repairs (the bank's new_or_repair question splits them). The kb has no
+#   patio or pump photo, so photos_priority is empty; adding p5_patio (patio cover, wall, nearest outlet and
+#   hose bib) and p6_mist_pump to the kb file would help.
+# - Misting is in two license scopes: R-54 lists "misting systems" and R-21 item 11 lists "residential outdoor
+#   misting systems ... not more than 1000 PSI" (A.A.C. R4-9-103). This category routes R-54 only, so R-21
+#   landscape and hardscape businesses never see misting cards. Decide whether misting cards also reach R-21.
+# - loop_install: R-54 allows piping only "as required" for the equipment; new loop or drain piping beyond that
+#   may be R-37 plumbing work (kb note, [judgment]). R-37 plumbers do not get these cards because the
+#   category routes R-54 only.
+# - No Arizona or Lake Havasu City rule on softener brine discharge (outside, to a septic tank) was found;
+#   those lines say [judgment].
+# - The bank set has no household-size, ownership or water-provider question; fu_household_size,
+#   fu_own_or_rent and fu_water_provider carry that weight and are candidates for the bank.
+# - kb test t09 (drip irrigation clogged with white crust) belongs to landscaping. No misdiagnosis check is
+#   written for it because no follow-up separates it cleanly; the bank system question has no drip answer.
+# - No water-treatment lead-cost data was found. Benchmarks below use plumbing figures as a proxy and one 2003
+#   dealer trade article; all Lake Havasu figures are unverified.
+schema: 1
+category: water_treatment
+question_set: water_treatment
+kb_trade: water_treatment
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor classifications [S2] (R-54 Water Conditioning Equipment: trenching, piping, shutoffs and controls under 25 volts as required to install and repair water conditioning equipment, misting systems, exchange tanks and indirect waste pipe for brine, backwash and rinse water; R-21 item 11: residential outdoor misting systems up to 1000 PSI)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104 Dual contractor classifications [S3] (CR-54 Water Conditioning Equipment)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits [S17]: water softeners and R.O. systems on the no-permit list; added or relocated plumbing fixtures and water re-pipes need a permit; misting systems not listed"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City Water Quality Report for 2025, published June 2026 (hardness 19 grains per gallon, range 18 to 20; TDS average 753 ppm, range 702 to 787; sodium 150 ppm; arsenic treated to a 4.1 ppb running average)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233/Water-Quality-Report-PDF"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_water
+    title: "Lake Havasu City Water Division [S19]: water from wells tied to the Colorado River aquifer; treatment removes arsenic, manganese and iron; pressure regulator required, pressure entering a home below 60 PSI"
+    url: "https://www.lhcaz.gov/288/Water"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epcor_lh
+    title: "EPCOR Water Arizona, 2025 Lake Havasu system water quality report (hardness 6 to 8 grains per gallon; serves mainly unincorporated Mohave County north of the city plus a small group inside city limits)"
+    url: "https://www.epcor.com/content/dam/epcor/documents/water-quality-reports/2025-havasu-water-quality-reports.pdf"
+    checked: "2026-10-29"
+    kind: other
+  - id: ua_water_wise
+    title: "University of Arizona Cooperative Extension, Water Wise water-saving tips (softeners use about 15 to 120 gallons per 1,000 softened; bypass the kitchen faucet and outside faucets; RO sends 2 to 20 gallons to the drain per gallon made; a misting system uses about 2 gallons a minute per 1,000 sq ft of patio)"
+    url: "https://extension.arizona.edu/programs/cochise-county-water-wise/water-saving-tips"
+    checked: "2026-10-29"
+    kind: other
+  - id: mdh_pou
+    title: "Minnesota Department of Health, point-of-use water treatment fact sheet (RO waste line enters the sewer through an approved air gap; parts: sediment and carbon pre-filters, membrane, storage tank)"
+    url: "https://www.health.mn.gov/communities/environment/water/docs/factsheet/pointofuse.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ams_pumps
+    title: "Advanced Misting Systems (manufacturer), What misting pump should I choose: low pressure under 150 PSI, often on a garden hose; mid pressure about 300 PSI; high pressure about 1000 PSI"
+    url: "https://www.advancedmistingsystems.com/blog/what-misting-pump-should-i-choose/"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: aermist_hard_water
+    title: "aerMist (manufacturer), effects of hard water on misting systems: calcium clogs high-pressure nozzles and builds up in the pump; filters and scale inhibitors help"
+    url: "https://aermist.com/blog/effects-of-hard-water-on-misting-systems"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: aermist_troubleshoot
+    title: "aerMist (manufacturer), how to troubleshoot a misting system: dripping or clogged nozzles, pump not building pressure, leaks, damage from running dry"
+    url: "https://aermist.com/blog/how-to-troubleshoot-a-misting-system"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: pipeline_plumbing_leads
+    title: "Pipeline (marketing vendor): lead costs for plumbing contractors, 2026 (Angi $65 to $150 per lead, Thumbtack $35 to $85, Google Local Services Ads about $57 per lead, Google Ads about $76 per lead)"
+    url: "https://pipelineon.com/blog/best-lead-generation-platforms-plumbing-contractors-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: valley_angi_2026
+    title: "The Valley Marketing Group (marketing vendor): Angi and HomeAdvisor cost per lead by trade, 2026 (plumbing $20 to $85; standard leads sold to 3 to 8 contractors at once)"
+    url: "https://thevalleymarketinggroup.com/blog/homeadvisor-angi-cost-per-lead-contractors-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: wwd_dealer_leads
+    title: "Water and Wastes Digest (2003), Lead generation for water equipment dealers (about $40 per in-home appointment at a 33% close rate; average dealer spends 4.7% of sales on advertising)"
+    url: "https://www.wwdmag.com/utility-management/article/10918005/lead-generation"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Whether a softener loop, a drain and an outlet are already at the spot"
+      why: "A ready loop with a standpipe and outlet is a drop-in swap; no loop means new piping and a drain run, which can be a different license and a much bigger job. [judgment]"
+      source: null
+    - driver: "New install, replace an old unit, or repair and service"
+      why: "An install or replacement prices equipment plus labor; a repair is a service call plus parts. The bank's new_or_repair question settles it. [judgment]"
+      source: null
+    - driver: "Which system and how big: softener grain capacity for the household, RO with or without a fridge line, misting line length and pump"
+      why: "Equipment size is most of an install price; household size and water hardness set the softener size. [judgment]"
+      source: null
+    - driver: "Water source: city water (about 19 grains), EPCOR (6 to 8 grains) or a private well"
+      why: "Hardness sets softener size and salt use; a well usually needs a test before anyone quotes."
+      source: lhc_ccr
+    - driver: "For RO: sink top material and whether there is a spare hole for the drinking faucet"
+      why: "Drilling granite or quartz adds time and risk; a soap dispenser hole or spare sprayer hole avoids it. [judgment]"
+      source: null
+    - driver: "For misting: hose hookup (low pressure) or a pump system (about 1000 PSI)"
+      why: "A high-pressure pump system needs a pump, power and metal or high-pressure line; a low-pressure kit runs off a garden hose."
+      source: ams_pumps
+    - driver: "Who owns the old unit (owned, rented from a water company, landlord's) and whether it is hauled away"
+      why: "A rented unit may have to go back to its company; removal and haul-away add time; a landlord must approve. [judgment]"
+      source: null
+    - driver: "Brand and model on the label, for repairs and filter changes"
+      why: "Parts and filter cartridges are brand-specific; a label photo lets the business bring the right parts on the first trip. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "No softener loop, or no drain or outlet near the loop"
+      how_a_pro_spots_it: "Loop photo shows a bare wall, or the homeowner says no pipes; a newer production home with the water heater in a closet"
+      question_or_photo: loop
+      source: null
+    - condition: "The unit is rented from a water company or owned by a landlord"
+      how_a_pro_spots_it: "Company sticker on the tank in the photo; the homeowner rents the house or pays a monthly bill for the softener"
+      question_or_photo: fu_own_or_rent
+      source: null
+    - condition: "Bypass valve left in bypass after other plumbing or water heater work"
+      how_a_pro_spots_it: "Hard water came back right after other work; handle position in the unit photo"
+      question_or_photo: fu_recent_change
+      source: null
+    - condition: "Shutoff, bypass and RO feed valves crusted with scale that will not turn or that snap"
+      how_a_pro_spots_it: "White or green crust on valves and fittings in the photo; older unit on city water at about 19 grains"
+      question_or_photo: p3_under_sink
+      source: lhc_ccr
+    - condition: "Softener drain line running outside into a planter or yard, or into a septic tank"
+      how_a_pro_spots_it: "Drain hose leaving through the garage wall in the unit photo; outlying lot on septic"
+      question_or_photo: p1_unit
+      source: null
+    - condition: "Stone counter with no spare hole for an RO drinking faucet"
+      how_a_pro_spots_it: "Sink-top photo shows one faucet hole and no soap dispenser; granite or quartz edge"
+      question_or_photo: fu_spare_hole
+      source: null
+    - condition: "Equipment outside in the sun, with a cracked or faded tank or a cooked control head"
+      how_a_pro_spots_it: "Unit photo shows it on a side yard slab or against an outside wall; common on older and manufactured homes [judgment]"
+      question_or_photo: p1_unit
+      source: null
+    - condition: "No outlet on or near the patio for a misting pump"
+      how_a_pro_spots_it: "The homeowner says the nearest outlet is inside or across the house; a pump system needs power the misting business may not run"
+      question_or_photo: fu_mist_power
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "softener install (softener leaking, needs replacing)"
+      might_be: "slab_leak or leak_slow in plumbing, with the softener only where the wet spot shows"
+      one_question: fu_softener_doing
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "softener install (white spots on glass and fixtures)"
+      might_be: "hard_water glass cleaning, a different category"
+      one_question: fu_treat_or_clean
+      if_other_route_to: {category: window_cleaning, job_type: "hard-water removal"}
+      source: null
+    - sounds_like: "softener_replace (homeowner says the softener died)"
+      might_be: "softener_repair (bypass left on, salt, a reset after a power outage)"
+      one_question: fu_recent_change
+      if_other_route_to: {category: water_treatment, job_type: "softener install"}
+      source: null
+    - sounds_like: "ro_service (drinking water tastes bad)"
+      might_be: "whole_house_filter, when the taste is at every tap and not only the RO faucet"
+      one_question: fu_taste_where
+      if_other_route_to: {category: water_treatment, job_type: "softener install"}
+      source: null
+    - sounds_like: "misting system (new install with a pump)"
+      might_be: "new outdoor outlet or circuit, a separate electrical card"
+      one_question: fu_mist_power
+      if_other_route_to: {category: electrical, job_type: "new circuit"}
+      source: null
+  photo_reading:
+    - photo_id: p1_unit
+      reads: ["Control head make and style (Fleck, Clack, Autotrol style or a dealer brand)", "Display lit or blank, error shown", "Salt level, crust, or water standing high in the brine tank", "Bypass handle position", "Drain line to a standpipe, laundry box or outside wall", "Rust, cracks or sun fading on the tanks", "Company sticker on the tank", "Wet floor and where it is"]
+      neutral_wording: "Two-tank softener in the garage with a lit display; brine tank lid off, salt about half full; drain hose runs to a white standpipe."
+    - photo_id: p2_loop
+      reads: ["Two capped pipes in the wall (loop stubs) or none", "Distance to the water heater", "Standpipe, laundry box or floor drain nearby", "Outlet within cord reach", "Pipe material (copper, PEX, CPVC)"]
+      neutral_wording: "Two capped copper pipes in the garage wall beside the water heater; outlet about 3 feet away; no drain in view."
+    - photo_id: p3_under_sink
+      reads: ["Room for an RO tank on one side", "Cold supply valve and its condition", "Drain pipe and a disposal", "Existing RO canisters and their color", "Damp cabinet floor or a towel", "Spare hole or soap dispenser on the sink top", "Counter material at the edge"]
+      neutral_wording: "Disposal on the left, open space on the right; white crust on the cold valve; stone counter with one faucet hole and a soap dispenser."
+    - photo_id: p4_label
+      reads: ["Brand, model and serial", "Grain capacity (for example 32,000 or 48,000)", "Install or manufacture date", "RO filter stage labels"]
+      neutral_wording: "Label shows a 48,000 grain softener; date on the label is worn."
+  local_factors:
+    - fact: "City water averages about 19 grains per gallon hardness (range 18 to 20) and 753 ppm TDS"
+      effect: "Softeners and RO are common; scale crusts valves and fittings, and pros size softeners for this hardness"
+      source: lhc_ccr
+    - fact: "EPCOR's Lake Havasu system reports 6 to 8 grains per gallon and serves mostly unincorporated areas north of the city"
+      effect: "The same softener question needs the water provider before a business can size it"
+      source: epcor_lh
+    - fact: "City water comes from wells tied to the Colorado River aquifer and is treated for arsenic, manganese and iron"
+      effect: "Homeowners ask about arsenic and taste; Ask Hava makes no health claim and points to the city report [judgment]"
+      source: lhc_water
+    - fact: "City water has about 150 ppm sodium before any softener"
+      effect: "Homeowners ask about salt in softened water; the card notes the question and Ask Hava gives no health answer [judgment]"
+      source: lhc_ccr
+    - fact: "Lake Havasu City lists water softeners and RO systems as no-permit work; added plumbing fixtures and re-pipes need a permit"
+      effect: "A like-for-like swap on a loop needs no permit; new loop piping may be permit-type plumbing work [judgment on where a loop falls]"
+      source: lhc_permits
+    - fact: "The city requires a pressure regulator and under 60 PSI entering the home"
+      effect: "Matters to RO and softener specs and to misting pumps fed from house pressure [judgment]"
+      source: lhc_water
+    - fact: "Softeners use about 15 to 120 gallons to regenerate per 1,000 gallons softened; the extension suggests leaving the kitchen faucet and outside faucets off the softener"
+      effect: "Pros ask whether the loop feeds outside hose bibs and the kitchen cold tap; it changes the plumbing and the unit size"
+      source: ua_water_wise
+    - fact: "A misting system uses about 2 gallons a minute per 1,000 sq ft of patio, and hard water clogs high-pressure nozzles"
+      effect: "Misting businesses ask about patio size and often quote a filter or scale inhibitor on the feed"
+      source: aermist_hard_water
+  seasonality:
+    busy: "Misting: March to June, before and into the heat. Softeners and RO: steady, with a bump from home sales and seasonal residents returning in October and November [judgment]"
+    slow: "Misting: November to February. Softeners: midsummer, when seasonal homes sit empty [judgment]"
+    source: null
+
+job_types:
+  - id: softener_new
+    label: "Install a new water softener where none is now"
+    bank_job_type: "softener install"
+    recurring: false
+    homeowner_phrasings: ["want a water softener", "hard water", "white spots on everything", "new house needs a softener", "suavizador de agua"]
+    must_know:
+      - fact: "Whether a softener loop is already in the wall"
+        bank_question: loop
+        follow_up: null
+        photo: p2_loop
+        why_it_moves_price: "A loop makes it a drop-in install; no loop means new piping and possibly a plumber. [judgment]"
+        skip_if: "Loop photo sent"
+      - fact: "Whether a drain and an outlet are near the spot"
+        bank_question: null
+        follow_up: fu_drain_outlet
+        photo: p2_loop
+        why_it_moves_price: "No drain means running a drain line; no outlet means a long cord or an electrician. [judgment]"
+        skip_if: "Loop photo shows both"
+      - fact: "How many people live in the home"
+        bank_question: null
+        follow_up: fu_household_size
+        photo: null
+        why_it_moves_price: "Household size and hardness set the grain capacity, which sets the unit price. [judgment]"
+        skip_if: "Homeowner gave the household size"
+      - fact: "Water provider: city, EPCOR or well"
+        bank_question: null
+        follow_up: fu_water_provider
+        photo: null
+        why_it_moves_price: "City water is about 19 grains and EPCOR 6 to 8; a well usually needs a test first."
+        skip_if: "Homeowner named the town and it is inside city water service [judgment]"
+    allowed_follow_ups:
+      - id: fu_treat_or_clean
+        ask_when: "Homeowner mentions spots or crust on glass, faucets or the shower and does not say she wants equipment"
+        text_en: "Are you looking for equipment to treat the water, or cleaning of the spots that are there now?"
+        text_es: "¿Busca un equipo para tratar el agua, o limpiar las manchas que ya están?"
+        options_en: ["Equipment to treat the water", "Cleaning the spots now", "Both"]
+        options_es: ["Un equipo para tratar el agua", "Limpiar las manchas ahora", "Las dos cosas"]
+        card_field: true
+        why: "Cleaning spots off glass is window cleaning work, a different category; equipment stays here. [judgment]"
+      - id: fu_drain_outlet
+        ask_when: "No loop photo, and the homeowner did not say what is near the spot"
+        text_en: "Near where the softener would go, is there a drain and an outlet?"
+        text_es: "¿Cerca de donde iría el suavizador, hay un desagüe y un enchufe?"
+        options_en: ["Both", "Drain only", "Outlet only", "Neither"]
+        options_es: ["Los dos", "Solo desagüe", "Solo enchufe", "Ninguno"]
+        card_field: true
+        why: "A softener needs a drain for the rinse water and power for the control; missing either adds work. [judgment]"
+      - id: fu_household_size
+        ask_when: "New or replacement softener and the homeowner did not say how many people live there"
+        text_en: "How many people live in the home?"
+        text_es: "¿Cuántas personas viven en la casa?"
+        options_en: ["1 or 2", "3 or 4", "5 or more"]
+        options_es: ["1 o 2", "3 o 4", "5 o más"]
+        card_field: true
+        why: "The first number a softener estimator writes down after hardness. [judgment]"
+      - id: fu_water_provider
+        ask_when: "The town or area leaves the water provider unclear, or she mentions a well"
+        text_en: "Who provides your water?"
+        text_es: "¿Quién le da el servicio de agua?"
+        options_en: ["Lake Havasu City", "EPCOR", "Private well", "Other"]
+        options_es: ["Lake Havasu City", "EPCOR", "Pozo privado", "Otro"]
+        card_field: true
+        why: "Hardness differs a lot between the city and EPCOR; a well changes the job."
+    photos_priority: [p2_loop]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All new installs"
+    scope_line_en: "New water softener for the garage; two capped pipes in the wall by the water heater; city water, 4 people."
+    scope_line_es: "Suavizador de agua nuevo para la cochera; dos tubos tapados en la pared junto al calentador; agua de la ciudad, 4 personas."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (unit size, piping, drain run)", "earliest day"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: new softener, where it would go>
+      Loop: <pipes there / no pipes / not sure>. Drain and outlet at the spot: <both / drain only / outlet only / neither>.
+      Water: <city / EPCOR / well / not said>. People in the home: <count band>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You definitely need a softener with water this hard.", "A softener will protect your water heater.", "Get a 48,000 grain unit.", "Softeners run a couple thousand installed.", "Salt-free systems don't really work."]
+
+  - id: softener_repair
+    label: "Softener not working: not using salt, water high in the salt tank, beeping or error, leaking, hard water back"
+    bank_job_type: "softener install"
+    recurring: false
+    homeowner_phrasings: ["softener not using salt", "softener beeping", "brine tank full of water", "spots are back", "water thing in the garage isn't working", "el suavizador no sirve"]
+    must_know:
+      - fact: "What the softener is doing"
+        bank_question: new_or_repair
+        follow_up: fu_softener_doing
+        photo: p1_unit
+        why_it_moves_price: "A reset or salt visit is short; a leaking tank or failed control means parts or a new unit. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "What the salt tank looks like inside"
+        bank_question: null
+        follow_up: fu_salt_tank
+        photo: p1_unit
+        why_it_moves_price: "Tells the business whether to plan a service visit or bring parts, without naming a cause. [judgment]"
+        skip_if: "Unit photo shows inside the salt tank and she said how the salt feels"
+      - fact: "Brand, model and age"
+        bank_question: null
+        follow_up: null
+        photo: p4_label
+        why_it_moves_price: "Control heads take brand-specific parts; an old unit may get a replace quote too. [judgment]"
+        skip_if: "Label photo sent or homeowner gave the brand"
+      - fact: "Whether anything changed when it started (plumbing work, power outage)"
+        bank_question: null
+        follow_up: fu_recent_change
+        photo: null
+        why_it_moves_price: "Work nearby or an outage often turns a feared replacement into a short visit. [judgment]"
+        skip_if: "Homeowner said nothing changed"
+      - fact: "Who owns the unit"
+        bank_question: null
+        follow_up: fu_own_or_rent
+        photo: p1_unit
+        why_it_moves_price: "A rented unit may be serviced only by its company; a landlord must approve and pay. [judgment]"
+        skip_if: "Homeowner owns the house and bought the unit"
+    allowed_follow_ups:
+      - id: fu_softener_doing
+        ask_when: "Homeowner says the softener has a problem without saying what it does, or mentions water on the floor"
+        text_en: "What have you noticed with the softener?"
+        text_es: "¿Qué ha notado con el suavizador?"
+        options_en: ["Hard water or spots are back", "Beeping or an error on the screen", "Leaking from the unit or a hose", "Floor wet around it, unit looks dry", "Runs or drains all the time"]
+        options_es: ["Volvió el agua dura o las manchas", "Pita o sale un error en la pantalla", "Gotea del equipo o de una manguera", "El piso está mojado alrededor y el equipo se ve seco", "Corre o drena todo el tiempo"]
+        card_field: true
+        why: "Separates softener work from a plumbing leak that only shows by the softener, without naming either. [judgment]"
+      - id: fu_salt_tank
+        ask_when: "Softener repair and no photo of the inside of the salt tank"
+        text_en: "When you lift the salt tank lid, what do you see?"
+        text_es: "Cuando levanta la tapa del tanque de sal, ¿qué ve?"
+        options_en: ["Loose salt, about normal", "Salt looks full but feels hard", "Little or no salt", "Water standing high"]
+        options_es: ["Sal suelta, como siempre", "Se ve llena pero se siente dura", "Poca o nada de sal", "Agua muy alta"]
+        card_field: true
+        why: "These are the first things a softener tech asks on the phone. [judgment]"
+      - id: fu_recent_change
+        ask_when: "Hard water came back, or the homeowner says the unit died, and she did not say when it started"
+        text_en: "Did anything happen around when it started, like plumbing work or a power outage?"
+        text_es: "¿Pasó algo cuando empezó, como un trabajo de plomería o un apagón?"
+        options_en: ["Plumbing or water heater work", "Power outage", "Nothing I know of"]
+        options_es: ["Trabajo de plomería o del calentador", "Un apagón", "Nada que yo sepa"]
+        card_field: true
+        why: "Recent work or an outage changes what the business plans to bring. [judgment]"
+      - id: fu_own_or_rent
+        ask_when: "Repair, replacement or removal, and ownership is unclear (renter, monthly bill, company sticker)"
+        text_en: "Who owns the softener?"
+        text_es: "¿De quién es el suavizador?"
+        options_en: ["We own it", "Rented from a water company", "The landlord owns it"]
+        options_es: ["Es nuestro", "Es rentado de una compañía de agua", "Es del dueño de la casa"]
+        card_field: true
+        why: "Ownership decides who may work on it and who approves the quote. [judgment]"
+    photos_priority: [p1_unit, p4_label]
+    urgency:
+      fire_dept_triggers: ["Smoke or a burning smell from the control head or its plug-in transformer"]
+      urgent_capable_triggers: ["Water leaking from the unit or a hose and it will not stop", "Water on the floor reaching an outlet or cord"]
+      regular: "Hard water back, beeping, salt not going down, no active leak"
+    scope_line_en: "Garage softener, hard water spots back for 3 weeks; salt looks full on top but feels hard; no leak, no error."
+    scope_line_es: "Suavizador en la cochera, volvieron las manchas de agua dura hace 3 semanas; la sal se ve llena pero se siente dura; sin fugas ni errores."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what the low end covers (visit, reset, service)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: what the softener is doing, since when>
+      Noticed: <hard water back / beeping or error / leaking / floor wet, unit dry / runs all the time>. Salt tank: <loose / hard / low / water high>.
+      Unit: <brand, size, age from photo or her words>. Owner: <homeowner / water company rental / landlord, approval needed>. Changed recently: <plumbing work / outage / nothing>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's a salt bridge.", "Your softener is on bypass.", "Just add salt.", "Turn the bypass handle.", "The resin is shot, you'll want a new one.", "A service call runs about a hundred."]
+
+  - id: softener_replace
+    label: "Replace an old softener on an existing loop"
+    bank_job_type: "softener install"
+    recurring: false
+    homeowner_phrasings: ["replace my softener", "old softener", "softener is 15 years old", "softener quote", "cambiar el suavizador"]
+    must_know:
+      - fact: "The old unit: size, age, condition"
+        bank_question: null
+        follow_up: null
+        photo: p4_label
+        why_it_moves_price: "Grain size and age set the replacement size and whether an old head can be reused. [judgment]"
+        skip_if: "Label or unit photo sent"
+      - fact: "Loop, drain and outlet as they are now"
+        bank_question: loop
+        follow_up: fu_drain_outlet
+        photo: p1_unit
+        why_it_moves_price: "A clean loop and standpipe keep it a swap; a drain hose out the wall or no outlet adds work. [judgment]"
+        skip_if: "Unit photo shows the drain and outlet"
+      - fact: "Who owns the old unit"
+        bank_question: null
+        follow_up: fu_own_or_rent
+        photo: p1_unit
+        why_it_moves_price: "A rented unit goes back to its company; a landlord must approve. [judgment]"
+        skip_if: "Homeowner said she bought it"
+      - fact: "Whether it has actually stopped working, or is only old"
+        bank_question: new_or_repair
+        follow_up: fu_recent_change
+        photo: null
+        why_it_moves_price: "A unit that stopped right after other work may need a visit, not a new unit; the business decides. [judgment]"
+        skip_if: "Homeowner wants a newer unit and the old one works"
+    allowed_follow_ups:
+      - fu_own_or_rent
+      - fu_drain_outlet
+      - fu_household_size
+      - fu_recent_change
+    photos_priority: [p1_unit, p4_label, p2_loop]
+    urgency:
+      fire_dept_triggers: ["Smoke or a burning smell from the control head or its plug-in transformer"]
+      urgent_capable_triggers: ["Old tank leaking and the water will not stop"]
+      regular: "Planned replacement"
+    scope_line_en: "Replace a 15-year-old 48,000 grain softener on the existing garage loop; rust at the base of the tank; city water."
+    scope_line_es: "Cambiar un suavizador de 48,000 granos de 15 años en la conexión de la cochera; óxido en la base del tanque; agua de la ciudad."
+    quote_format: range
+    business_fills: ["low and high end of the range", "whether removal and haul-away are included", "earliest day"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: replace softener, size and age, on the loop>
+      Old unit: <brand, grain size, age, condition from photo>. Owner: <homeowner / water company rental / landlord>.
+      Drain and outlet: <standpipe / laundry box / out the wall / none>, <outlet near / none>. People in the home: <count band>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You should go bigger this time.", "Rental units are a rip-off.", "That old one can't be fixed.", "A swap like that is about fifteen hundred."]
+
+  - id: ro_new
+    label: "Install an RO drinking water system under the kitchen sink"
+    bank_job_type: "RO system"
+    recurring: false
+    homeowner_phrasings: ["reverse osmosis under the sink", "drinking water system", "RO system", "filter faucet", "ósmosis inversa"]
+    must_know:
+      - fact: "Room under the sink, disposal, cold valve condition"
+        bank_question: null
+        follow_up: null
+        photo: p3_under_sink
+        why_it_moves_price: "A disposal changes the drain tie-in and a crusted valve gets replaced in the same visit. [judgment]"
+        skip_if: "Under-sink photo sent"
+      - fact: "A spare hole for the drinking faucet"
+        bank_question: null
+        follow_up: fu_spare_hole
+        photo: p3_under_sink
+        why_it_moves_price: "No spare hole means drilling the sink or counter. [judgment]"
+        skip_if: "Sink-top photo shows a soap dispenser or spare hole"
+      - fact: "Counter material"
+        bank_question: null
+        follow_up: fu_counter
+        photo: p3_under_sink
+        why_it_moves_price: "Drilling stone takes a special bit and more time than laminate. [judgment]"
+        skip_if: "There is a spare hole, or the photo shows the counter"
+      - fact: "Whether the RO also feeds the fridge or ice maker"
+        bank_question: null
+        follow_up: fu_fridge_line
+        photo: null
+        why_it_moves_price: "A fridge line adds tubing, a run behind cabinets and sometimes a pump. [judgment]"
+        skip_if: "Homeowner said only the sink"
+    allowed_follow_ups:
+      - id: fu_spare_hole
+        ask_when: "New RO and no sink-top photo"
+        text_en: "Is there a spare hole on the sink or counter, like a soap dispenser or sprayer hole?"
+        text_es: "¿Hay un orificio libre en el fregadero o la cubierta, como el del jabón o el rociador?"
+        options_en: ["Yes, a spare or soap dispenser hole", "No spare hole"]
+        options_es: ["Sí, uno libre o el del jabón", "No hay orificio libre"]
+        card_field: true
+        why: "The drinking faucet needs a hole; using an existing one avoids drilling. [judgment]"
+      - id: fu_counter
+        ask_when: "New RO, no spare hole or not sure, and no photo of the counter"
+        text_en: "What is the counter made of?"
+        text_es: "¿De qué material es la cubierta?"
+        options_en: ["Granite, quartz or other stone", "Tile", "Laminate or solid surface"]
+        options_es: ["Granito, cuarzo u otra piedra", "Azulejo", "Laminado o superficie sólida"]
+        card_field: true
+        why: "Counter material sets drilling time and risk. [judgment]"
+      - id: fu_fridge_line
+        ask_when: "New RO and the homeowner did not mention the fridge or ice maker"
+        text_en: "Should the RO water also go to the fridge or ice maker?"
+        text_es: "¿El agua de ósmosis también debe ir al refrigerador o a la máquina de hielo?"
+        options_en: ["Yes", "No, just the sink"]
+        options_es: ["Sí", "No, solo el fregadero"]
+        card_field: true
+        why: "A fridge line is a second run and a separate price line. [judgment]"
+    photos_priority: [p3_under_sink]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All new RO installs"
+    scope_line_en: "New under-sink RO for the kitchen; disposal on the left, room on the right; granite counter with a soap dispenser hole."
+    scope_line_es: "Ósmosis inversa nueva bajo el fregadero de la cocina; triturador a la izquierda, espacio a la derecha; cubierta de granito con orificio para jabón."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (drilling stone, fridge line)", "earliest day"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: new RO, where, what is under the sink>
+      Under sink: <room, disposal, valve condition from photo>. Spare hole: <yes / soap dispenser / none>. Counter: <stone / tile / laminate>.
+      Fridge or ice maker line: <yes / no>. Language: <Spanish preferred, if so>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["RO water is healthier.", "Your tap water isn't safe to drink.", "Don't drill granite yourself.", "A basic RO is a few hundred installed."]
+
+  - id: ro_service
+    label: "RO filter change, slow flow, leak, drip at the drinking faucet, taste change"
+    bank_job_type: "RO system"
+    recurring: false
+    homeowner_phrasings: ["RO filters due", "RO tank slow", "little faucet drips", "drinking water tastes funny", "cambiar filtros del agua"]
+    must_know:
+      - fact: "What the RO is doing"
+        bank_question: new_or_repair
+        follow_up: fu_ro_doing
+        photo: p3_under_sink
+        why_it_moves_price: "A filter change is a set price; a leak or a slow tank adds parts and time. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Brand and model, or what the filters look like"
+        bank_question: null
+        follow_up: null
+        photo: p4_label
+        why_it_moves_price: "Cartridges are brand-specific; the right kit on the first trip. [judgment]"
+        skip_if: "Label or under-sink photo shows it"
+      - fact: "When the filters were last changed"
+        bank_question: null
+        follow_up: fu_filter_age
+        photo: null
+        why_it_moves_price: "Long-overdue filters often mean a membrane too, a bigger part. [judgment]"
+        skip_if: "Homeowner gave the date"
+      - fact: "Whether anything is wet under the sink"
+        bank_question: null
+        follow_up: fu_wet_cabinet
+        photo: p3_under_sink
+        why_it_moves_price: "A wet cabinet adds fittings or valve work and tells the business to bring them. [judgment]"
+        skip_if: "Photo shows a dry cabinet"
+    allowed_follow_ups:
+      - id: fu_ro_doing
+        ask_when: "Homeowner mentions the RO or drinking faucet without saying what is wrong"
+        text_en: "What is the drinking water system doing?"
+        text_es: "¿Qué pasa con el sistema de agua para tomar?"
+        options_en: ["Due for a filter change", "Slow or weak flow", "Taste or smell changed", "Dripping or leaking", "Runs to the drain all the time"]
+        options_es: ["Toca cambiar filtros", "Sale lento o débil", "Cambió el sabor o el olor", "Gotea o tiene fuga", "Se va al desagüe todo el tiempo"]
+        card_field: true
+        why: "Five answers, five different visits. [judgment]"
+      - id: fu_filter_age
+        ask_when: "RO service and no date for the last filter change"
+        text_en: "About when were the filters last changed?"
+        text_es: "¿Más o menos cuándo se cambiaron los filtros por última vez?"
+        options_en: ["Within a year", "1 to 2 years ago", "Over 2 years ago", "Never changed"]
+        options_es: ["Hace menos de un año", "Hace 1 a 2 años", "Hace más de 2 años", "Nunca se han cambiado"]
+        card_field: true
+        why: "Age of the filters sets the parts list. [judgment]"
+      - id: fu_wet_cabinet
+        ask_when: "Drip, leak or taste complaint and no under-sink photo"
+        text_en: "Is anything wet under the sink right now?"
+        text_es: "¿Hay algo mojado bajo el fregadero ahora?"
+        options_en: ["Dry", "A damp spot", "Water dripping"]
+        options_es: ["Seco", "Una parte húmeda", "Gotea agua"]
+        card_field: true
+        why: "A leak changes what the business brings and how soon they come. [judgment]"
+      - id: fu_taste_where
+        ask_when: "Homeowner mentions a taste or smell"
+        text_en: "Is the taste only at the small drinking faucet, or at every tap?"
+        text_es: "¿El sabor está solo en la llave pequeña de agua para tomar, o en todas las llaves?"
+        options_en: ["Only the drinking faucet", "Every tap"]
+        options_es: ["Solo en la llave para tomar", "En todas las llaves"]
+        card_field: true
+        why: "Every tap points away from the RO toward whole-house equipment. [judgment]"
+    photos_priority: [p3_under_sink, p4_label]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water dripping under the sink and it will not stop"]
+      regular: "Filter change, slow flow, taste change, contained drip"
+    scope_line_en: "Under-sink RO about 7 years old; filters about 4 years old; drinking faucet drips; damp spot in the cabinet."
+    scope_line_es: "Ósmosis bajo el fregadero de unos 7 años; filtros de unos 4 años; gotea la llave para tomar; una parte húmeda en el gabinete."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what the low end covers (filter set, visit)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: what the RO is doing, age if known>
+      Doing: <filters due / slow / taste changed / dripping / runs to drain>. Filters last changed: <band>. Taste at: <drinking faucet only / every tap / n/a>.
+      Under sink: <dry / damp / dripping>; <valve and fitting condition from photo>. Access: <who can let the business in, photos later if offered>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The membrane is bad.", "Your water isn't safe until the filters are changed.", "Turn off that valve under the sink.", "Filter changes are about a hundred."]
+
+  - id: whole_house_filter
+    label: "Whole-house filter or salt-free conditioner"
+    bank_job_type: "softener install"
+    recurring: false
+    homeowner_phrasings: ["whole house filter", "salt free softener", "water conditioner", "no-salt descaler", "carbon filter for the house", "filtro para toda la casa"]
+    must_know:
+      - fact: "What kind of system she wants"
+        bank_question: system
+        follow_up: fu_filter_kind
+        photo: null
+        why_it_moves_price: "A salt-free conditioner, a carbon tank and a sediment filter are different equipment at different prices. [judgment]"
+        skip_if: "Homeowner named it"
+      - fact: "Where it would go: on a loop, on the main line, outside"
+        bank_question: null
+        follow_up: fu_where_install
+        photo: p2_loop
+        why_it_moves_price: "A loop is ready; cutting into the main line is more plumbing. [judgment]"
+        skip_if: "Loop photo sent"
+      - fact: "Water provider"
+        bank_question: null
+        follow_up: fu_water_provider
+        photo: null
+        why_it_moves_price: "City, EPCOR and well water differ, and a well may need a test first."
+        skip_if: "Town makes it clear [judgment]"
+    allowed_follow_ups:
+      - id: fu_filter_kind
+        ask_when: "Homeowner asks for a filter or conditioner without naming the kind"
+        text_en: "What are you looking for?"
+        text_es: "¿Qué busca?"
+        options_en: ["Salt-free conditioner", "Whole-house carbon or chlorine filter", "Sediment filter", "Open to what the business suggests"]
+        options_es: ["Acondicionador sin sal", "Filtro de carbón o de cloro para toda la casa", "Filtro de sedimentos", "Lo que sugiera el negocio"]
+        card_field: true
+        why: "Each is different equipment; the homeowner's own words go on the card. [judgment]"
+      - id: fu_where_install
+        ask_when: "Whole-house equipment or loop work and no loop photo"
+        text_en: "Where would it go?"
+        text_es: "¿Dónde iría?"
+        options_en: ["Garage, pipes already there for a softener", "Garage, no pipes for one", "Outside the home", "Somewhere else"]
+        options_es: ["En la cochera, ya hay tubos para suavizador", "En la cochera, no hay tubos", "Afuera de la casa", "En otro lugar"]
+        card_field: true
+        why: "Sets whether the install is a drop-in or a cut into the main line. [judgment]"
+      - fu_water_provider
+    photos_priority: [p2_loop, p1_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All whole-house filter requests"
+    scope_line_en: "Salt-free whole-house conditioner wanted, not a salt softener; main line comes into the garage, no softener pipes; city water."
+    scope_line_es: "Quiere un acondicionador sin sal para toda la casa, no un suavizador de sal; la línea principal entra por la cochera, no hay tubos para suavizador; agua de la ciudad."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (main-line tie-in, size)", "earliest day"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: what she wants, in her words>
+      Kind: <salt-free conditioner / carbon or chlorine / sediment / open>. Goes: <loop in garage / main line in garage / outside / other>.
+      Water: <city / EPCOR / well>. Also mentioned: <water heater or tankless note, her words, if any>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A conditioner will stop the scale in your tankless.", "Magnet systems don't work.", "You really want a salt softener.", "Those run about two thousand."]
+
+  - id: remove_bypass
+    label: "Remove a softener or put it on bypass"
+    bank_job_type: "softener install"
+    recurring: false
+    homeowner_phrasings: ["remove softener", "take out the water softener", "bypass the softener", "quitar el suavizador"]
+    must_know:
+      - fact: "Who owns the unit"
+        bank_question: null
+        follow_up: fu_own_or_rent
+        photo: p1_unit
+        why_it_moves_price: "A rented unit is usually picked up by its company; an owned unit is hauled away for a fee. [judgment]"
+        skip_if: "Homeowner said she bought it"
+      - fact: "What should be left after removal"
+        bank_question: null
+        follow_up: fu_after_removal
+        photo: p1_unit
+        why_it_moves_price: "Joining the pipes straight through is fittings and labor; leaving it on bypass is a short visit. [judgment]"
+        skip_if: "Homeowner said which"
+    allowed_follow_ups:
+      - fu_own_or_rent
+      - id: fu_after_removal
+        ask_when: "Removal or bypass and the homeowner did not say what should be left"
+        text_en: "What would you like done with it?"
+        text_es: "¿Qué quiere que se haga con él?"
+        options_en: ["Remove it and join the pipes", "Remove it and leave the pipes ready for a new unit", "Leave it in place, on bypass"]
+        options_es: ["Quitarlo y unir los tubos", "Quitarlo y dejar los tubos listos para uno nuevo", "Dejarlo en su lugar, en bypass"]
+        card_field: true
+        why: "Three different jobs to a softener business. [judgment]"
+    photos_priority: [p1_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Unit leaking and the water will not stop"]
+      regular: "Planned removal or bypass"
+    scope_line_en: "Remove the garage softener and join the pipes; homeowner owns the unit; haul-away wanted."
+    scope_line_es: "Quitar el suavizador de la cochera y unir los tubos; el equipo es del dueño; quiere que se lo lleven."
+    quote_format: range
+    business_fills: ["low and high end of the range", "whether haul-away is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: remove or bypass, where>
+      Owner: <homeowner / water company rental / landlord>. After: <pipes joined / ready for new unit / bypass only>.
+      Other work mentioned: <her words, if any, for a separate card>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Just turn the bypass knob.", "Your water heater will scale up without it.", "The rental company has to take it back free.", "Removal is about a hundred."]
+
+  - id: water_test
+    label: "Water test for hardness or other things"
+    bank_job_type: "softener install"
+    recurring: false
+    homeowner_phrasings: ["test my water", "how hard is my water", "water test", "is my water safe", "hacer prueba del agua"]
+    must_know:
+      - fact: "What the test should cover"
+        bank_question: null
+        follow_up: fu_test_what
+        photo: null
+        why_it_moves_price: "A hardness and TDS check is often done on site; a wider lab panel with a written report is a separate fee. [judgment]"
+        skip_if: "Homeowner listed what she wants tested"
+      - fact: "Water provider"
+        bank_question: null
+        follow_up: fu_water_provider
+        photo: null
+        why_it_moves_price: "Well water usually gets a wider test; city and EPCOR publish yearly reports. [judgment]"
+        skip_if: "Town makes it clear [judgment]"
+    allowed_follow_ups:
+      - id: fu_test_what
+        ask_when: "Water test requested and the homeowner did not say what to test"
+        text_en: "What would you like the test to cover?"
+        text_es: "¿Qué quiere que cubra la prueba?"
+        options_en: ["Hardness", "Hardness and dissolved solids (TDS)", "A wider lab test with a written report"]
+        options_es: ["Dureza", "Dureza y sólidos disueltos (TDS)", "Una prueba de laboratorio más amplia con reporte por escrito"]
+        card_field: true
+        why: "Sets whether this is a short visit or a lab test. [judgment]"
+      - fu_water_provider
+    photos_priority: []
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All water test requests"
+    scope_line_en: "Water test for hardness and dissolved solids before choosing a softener; written report wanted; city water."
+    scope_line_es: "Prueba de agua de dureza y sólidos disueltos antes de escoger un suavizador; quiere reporte por escrito; agua de la ciudad."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what the test covers and whether a written report is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: test wanted, what for>
+      Test: <hardness / hardness and TDS / wider lab test>. Written report: <wanted / not said>. Water: <city / EPCOR / well>.
+      Photos: <n>. Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your water is safe to drink.", "Havasu water has too much arsenic.", "You'll need a softener after the test.", "Tests are free from most dealers."]
+
+  - id: loop_install
+    label: "Add a softener loop or drain line (plumbing changes)"
+    bank_job_type: "softener install"
+    recurring: false
+    homeowner_phrasings: ["softener loop", "no softener loop", "add a drain for the softener", "pipes for a softener"]
+    must_know:
+      - fact: "Where the loop would go and what is there now"
+        bank_question: loop
+        follow_up: fu_where_install
+        photo: p2_loop
+        why_it_moves_price: "Distance from the main line sets the pipe run; a slab or finished wall adds work. [judgment]"
+        skip_if: "Loop photo sent"
+      - fact: "Drain and outlet near the spot"
+        bank_question: null
+        follow_up: fu_drain_outlet
+        photo: p2_loop
+        why_it_moves_price: "A drain run across a garage is its own line item. [judgment]"
+        skip_if: "Photo shows both"
+    allowed_follow_ups:
+      - fu_where_install
+      - fu_drain_outlet
+    photos_priority: [p2_loop]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All loop and drain work"
+    scope_line_en: "Add a softener loop and drain near the garage water heater; no pipes there now; nearest floor drain across the garage."
+    scope_line_es: "Agregar conexión y desagüe para suavizador junto al calentador en la cochera; no hay tubos ahora; el desagüe más cercano está al otro lado de la cochera."
+    quote_format: range
+    business_fills: ["low and high end of the range", "whether the softener install is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: loop or drain wanted, where>
+      Spot: <garage with pipes / garage no pipes / outside / other>. Drain and outlet: <both / drain only / outlet only / neither>.
+      Softener too: <yes, new unit / has one / not said>. Floor: <slab / other, if said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That needs a plumber and a permit.", "You'll have to cut the slab.", "Just run the drain outside.", "Loops are about a thousand."]
+
+  - id: misting_system
+    new_job_type: true
+    label: "Patio misting system: new install or repair"
+    bank_job_type: "misting system"
+    recurring: false
+    homeowner_phrasings: ["misting system for the patio", "misters", "patio misters dripping", "mister pump won't start", "sistema de nebulización"]
+    must_know:
+      - fact: "New install or repair, and for a repair what it is doing"
+        bank_question: new_or_repair
+        follow_up: fu_mist_doing
+        photo: null
+        why_it_moves_price: "A new system prices line, nozzles and pump; a repair is a visit plus nozzles or pump parts. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Size of the area: length of the patio edge"
+        bank_question: null
+        follow_up: fu_patio_size
+        photo: null
+        why_it_moves_price: "Line length and nozzle count drive a new install price. [judgment]"
+        skip_if: "Homeowner gave dimensions"
+      - fact: "Hose hookup or pump system"
+        bank_question: null
+        follow_up: fu_mist_feed
+        photo: null
+        why_it_moves_price: "A 1000 PSI pump system is a different install from a hose kit under 150 PSI."
+        skip_if: "Homeowner said which"
+      - fact: "Power at the patio for a pump"
+        bank_question: null
+        follow_up: fu_mist_power
+        photo: null
+        why_it_moves_price: "No outlet means an electrician first, on a separate card. [judgment]"
+        skip_if: "Hose system or the homeowner said there is an outlet"
+    allowed_follow_ups:
+      - id: fu_mist_doing
+        ask_when: "Misting repair and the homeowner did not say what it is doing"
+        text_en: "What is the misting system doing?"
+        text_es: "¿Qué pasa con el sistema de nebulización?"
+        options_en: ["Nozzles drip or spit", "Some nozzles don't mist", "Pump runs but little or no mist", "Pump won't start", "Leaking at a line or fitting"]
+        options_es: ["Las boquillas gotean o escupen", "Algunas boquillas no rocían", "La bomba corre pero sale poco o nada", "La bomba no arranca", "Fuga en una línea o conexión"]
+        card_field: true
+        why: "Nozzles, pump and line leaks are different parts and different visits."
+      - id: fu_patio_size
+        ask_when: "New misting install and no size given"
+        text_en: "About how long is the edge where the misters would go?"
+        text_es: "¿Más o menos qué tan largo es el borde donde irían los nebulizadores?"
+        options_en: ["Under 20 feet", "20 to 40 feet", "Over 40 feet"]
+        options_es: ["Menos de 20 pies", "20 a 40 pies", "Más de 40 pies"]
+        card_field: true
+        why: "Line length is the first number a misting installer asks for. [judgment]"
+      - id: fu_mist_feed
+        ask_when: "Misting request and the homeowner did not say hose or pump"
+        text_en: "Does the system hook to a garden hose, or does it have its own pump?"
+        text_es: "¿El sistema se conecta a una manguera, o tiene su propia bomba?"
+        options_en: ["Garden hose hookup", "Has its own pump", "Nothing there yet"]
+        options_es: ["Se conecta a una manguera", "Tiene su propia bomba", "Todavía no hay nada"]
+        card_field: true
+        why: "Low-pressure hose kits and high-pressure pump systems are priced and built differently."
+      - id: fu_mist_power
+        ask_when: "Pump system wanted or in place, and power at the patio not mentioned"
+        text_en: "Is there an outlet on the patio or within a few feet?"
+        text_es: "¿Hay un enchufe en el patio o a unos pocos pies?"
+        options_en: ["Yes, on the patio", "Nearest one is inside or across the house", "No outlet outside"]
+        options_es: ["Sí, en el patio", "El más cercano está adentro o al otro lado de la casa", "No hay enchufe afuera"]
+        card_field: true
+        why: "A new outdoor outlet is electrical work and a separate card. [judgment]"
+    photos_priority: []
+    urgency:
+      fire_dept_triggers: ["Smoke or a burning smell from the misting pump or its outlet"]
+      urgent_capable_triggers: []
+      regular: "All misting requests"
+    scope_line_en: "New misting line along a covered patio about 20 by 14 feet, beams about 10 feet up; hose bib on the wall nearby; no patio outlet."
+    scope_line_es: "Línea de nebulización nueva en un patio techado de unos 20 por 14 pies, vigas a unos 10 pies; llave de manguera en la pared cerca; no hay enchufe en el patio."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (pump, line material, length)", "earliest day"]
+    card_template: |
+      REQ-<id> | Water treatment | <town>, <general area> | <kind of place>
+      <one scope line: new or repair, where, size>
+      Job: <new / repair: what it does>. Edge length: <band or dimensions>. Feed: <hose / own pump / nothing yet>. Water source: <hose bib location, if said>.
+      Power at patio: <outlet on patio / nearest inside or far / none>. Mount: <patio cover beams / eave / freestanding, her words>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Hard water is clogging your nozzles.", "Go with a high-pressure system.", "Soak the nozzles in vinegar.", "A patio system runs about a thousand."]
+
+business_side:
+  how_they_get_customers: ["Free in-home water tests and demos [judgment]", "Google Maps listing and reviews", "Repeat service and salt or filter delivery routes [judgment]", "Referrals from plumbers, realtors and home inspectors [judgment]", "Home shows, mailers and local Facebook groups [judgment]", "Home-service lead marketplaces"]
+  customer_acquisition_benchmarks:
+    - channel: "Angi and HomeAdvisor shared leads (plumbing, the closest trade with data)"
+      figure: "About $20 to $85 per lead (one vendor) and $65 to $150 (another); standard leads go to 3 to 8 contractors at once. No water-treatment figure found."
+      source: valley_angi_2026
+      unverified: false
+    - channel: "Google Local Services Ads and Google search ads (plumbing proxy)"
+      figure: "About $57 per lead on Local Services Ads and about $76 per lead on search ads"
+      source: pipeline_plumbing_leads
+      unverified: false
+    - channel: "Water equipment dealer in-home appointments (2003 trade article)"
+      figure: "About $40 per appointment at a 33% close rate, so roughly $120 per sale; average dealer spent 4.7% of sales on advertising. Old figures."
+      source: wwd_dealer_leads
+      unverified: false
+    - channel: "Lake Havasu City water treatment businesses specifically"
+      figure: "No local figures found; a small market with very hard water may cost less per customer than national figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead 3 to 8 other companies also bought", "Homeowners who only want a price over the phone", "Salt-delivery or one-filter requests sold as install jobs [judgment]", "Monthly fees whether or not jobs come", "Being ranked or reviewed by the site itself"]
+  what_makes_a_lead_worth_paying_for: ["Loop, drain and outlet known before the first call", "Ownership known (owned, rental, landlord)", "Photos of the unit, label or under the sink", "Water provider stated", "Pay only when picked, nothing monthly"]
+  their_words: ["loop", "bypass", "brine tank", "resin tank", "control head", "valve", "grain capacity", "regen", "salt bridge", "injector", "standpipe", "air gap faucet", "drain saddle", "membrane", "pre-filters", "TDS", "mist line", "nozzles", "high-pressure pump"]
+  signup_objections:
+    - objection: "I sell after an in-home water test. I don't quote off a text."
+      answer: "Quote a range and say what puts a job at the high end. The card already tells you the loop, drain, outlet, water provider and household size, so the range can be close. Your quote can say the final price comes after your test."
+    - objection: "Why pay $75 or $199 when I can run my own free water test ads?"
+      answer: "You pay only when the homeowner picks your quote and you confirm. The fee is set by job size: $25, $75 or $199. Nothing to join, nothing monthly."
+    - objection: "Are these shared with every dealer in town?"
+      answer: "Every business that does this work and chose this job type gets the card. Only the business the homeowner picks pays, and only that business gets her contact details."
+    - objection: "Will you rank me or push the cheapest quote?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license number and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "I only do service and filter changes, not new installs."
+      answer: "You pick the job types you want at sign-up and change them any time. Repair and filter cards say so on the first line."
+    - objection: "Half the softener calls I get are rental units another company owns."
+      answer: "The card says who owns the unit when the homeowner knows: owned, rented from a water company, or the landlord's."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "I do misting too, but I hold R-21, not R-54."
+      answer: "Misting cards go to R-54 license holders today. We are reviewing whether R-21 holders should get them too, since R-21 also covers residential outdoor misting."
+  quote_tips_for_card: ["Say whether the range includes the equipment or labor only", "Say whether removal and haul-away of the old unit are included", "State the grain size or RO model you would quote, so the homeowner can compare", "For misting, say whether a pump, filter and line material are included", "Give your earliest day"]

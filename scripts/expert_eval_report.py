@@ -17,7 +17,7 @@ from typing import Any
 
 import yaml
 
-VARIANTS = ("playbook", "baseline_none", "baseline_human")
+VARIANTS = ("playbook", "baseline_none", "baseline_human", "playbook_v2")
 HIGH_VOLUME = {"plumbing_repair", "hvac_repair", "electrical", "pool_cleaning", "house_cleaning", "pest_control", "landscape_maintenance"}
 
 
@@ -122,14 +122,14 @@ def main(argv: list[str] | None = None) -> int:
         comp = (data.get("compliance") or {}).get("violations") or []
         ok, fails = passes(category, stats["playbook"], len(comp))
         passed += ok
-        p, n, h = stats["playbook"], stats["baseline_none"], stats["baseline_human"]
+        p, n, h, v2 = stats["playbook"], stats["baseline_none"], stats["baseline_human"], stats["playbook_v2"]
         for v in VARIANTS:
             totals[v].append(stats[v])
         rows.append(
             f"| {category} | {p['scenarios']} | {pct(p['quotable_share'])} | {num(p['median_questions'])} | {pct(p['routing_correct_share'])} | "
             f"{pct(p['fire_dept_correct_share'])} | {pct(p['trap_caught_share'])} | {len(comp)} | "
             f"{pct(n['quotable_share'])} / {num(n['median_questions'])} | {pct(h['quotable_share'])} / {num(h['median_questions'])} | "
-            f"{beats(p, n, True)} / {beats(p, h, False)} | {'pass' if ok else 'FAIL: ' + '; '.join(fails)} |"
+            f"{beats(p, n, True)} / {beats(p, h, False)} | {pct(v2['quotable_share'])} / {num(v2['median_questions'])} / {pct(v2['trap_caught_share'])} | {'pass' if ok else 'FAIL: ' + '; '.join(fails)} |"
         )
         for item in data.get("where_playbook_lost_to_human") or []:
             losses.append(f"- {category}: {item}")
@@ -142,8 +142,8 @@ def main(argv: list[str] | None = None) -> int:
         "",
         f"**Categories judged: {len(categories)}. Passing the bar: {passed}.**",
         "",
-        "| Category | Scenarios | Quotable (playbook) | Median questions | Routing | 911 flag | Traps caught | Compliance violations | No-playbook baseline: quotable / questions | Human estimator: quotable / questions | Beats no-playbook / meets human | Result |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Category | Scenarios | Quotable (playbook) | Median questions | Routing | 911 flag | Traps caught | Compliance violations | No-playbook baseline: quotable / questions | Human estimator: quotable / questions | Beats no-playbook / meets human | Proposed rules (v2): quotable / questions / traps | Result |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
         *rows,
         "",
         "## Where the playbook lost to the human estimator (fixes to propose)",
@@ -166,6 +166,7 @@ def main(argv: list[str] | None = None) -> int:
             f"- Playbook: quotable {pct(agg['playbook']['quotable_share'])}, median questions {num(agg['playbook']['median_questions'])}",
             f"- No-playbook baseline: quotable {pct(agg['baseline_none']['quotable_share'])}, median questions {num(agg['baseline_none']['median_questions'])}",
             f"- Human estimator: quotable {pct(agg['baseline_human']['quotable_share'])}, median questions {num(agg['baseline_human']['median_questions'])}",
+            f"- Playbook with the three proposed rule changes (v2, where run): quotable {pct(agg['playbook_v2']['quotable_share'])}, median questions {num(agg['playbook_v2']['median_questions'])}",
             "",
         ]
     (root / args.out).write_text("\n".join(out), encoding="utf-8")

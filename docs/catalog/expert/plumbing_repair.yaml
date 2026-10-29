@@ -277,6 +277,7 @@ job_types:
         options_es: ["Todo el tiempo", "Solo cuando corre", "Solo cuando drena"]
         card_field: true
         why: "Separates a supply-side part from a drain-side part without naming either. [judgment]"
+      - fu_where_exactly
       - id: fu_stain_when
         ask_when: "Homeowner reports a stain or drip from a ceiling"
         text_en: "Does the ceiling spot grow when it rains, or when someone uses the bathroom or shower above it?"
@@ -634,7 +635,7 @@ job_types:
       REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
       <one scope line: what is added or moved, where>
       Distance from existing lines: <same wall / next room / across the house / not sure>. Floor: <slab / crawl space / manufactured>.
-      Permit-type work: yes (added or relocated fixture). Fixture: <on site / business supplies / not said>.
+      Fixture: <on site / business supplies / not said>. Permit: <only if she mentioned one, else leave off>.
       Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
       Needed: <timing answer>.
     never_say: ["You'll have to cut the slab.", "That's a big job.", "A handyman can do that.", "Figure a couple thousand."]
@@ -685,7 +686,7 @@ job_types:
       REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
       <one scope line: re-pipe quote, pipe seen, size>
       Pipe in sight: <neutral, from photo>. Size: <baths, stories, square feet if given>. Floor: <slab / crawl space / manufactured>.
-      Permit-type work: yes. Leaks so far: <homeowner's count, if given>.
+      Leaks so far: <homeowner's count, if given>.
       Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
       Needed: <timing answer>.
     never_say: ["Polybutylene always fails.", "You need PEX.", "Re-pipes run eight to twelve thousand.", "Insurance won't cover you with those pipes."]

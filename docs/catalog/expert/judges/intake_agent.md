@@ -4,6 +4,8 @@ You are running Ask Hava's intake over a set of test scenarios and writing the r
 
 ## Load
 
+Use only file tools (Read, Write) in this task. Never call a scheduling, reminder, notification or messaging tool.
+
 From the repo root:
 1. `docs/catalog/expert/PROMPT_ASSEMBLY.md` section 2: the standing rules. These are the intake's rules.
 2. `docs/catalog/categories.yaml`: the list of categories with job types and refused jobs (for the Read step).

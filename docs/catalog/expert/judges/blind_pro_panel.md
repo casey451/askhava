@@ -7,7 +7,7 @@ You judge how well three intakes scoped the same jobs. You have never seen Ask H
 - `docs/catalog/expert/scenarios/<category>.yaml`: for each scenario, the hidden facts, traps and expected outcome.
 - `docs/catalog/expert/eval_runs/<run>/<category>/playbook.yaml`, `baseline_none.yaml`, `baseline_human.yaml`.
 
-For each scenario, shuffle the three variants into labels A, B, C (write the mapping in the output, then score by label so the labels do not bias you).
+For each scenario, shuffle the variants into labels A, B, C (and D when a `playbook_v2.yaml` file exists in the folder; include it like the others). Write the mapping in the output, then score by label so the labels do not bias you. Use only file tools (Read, Write); never call a scheduling, reminder or messaging tool.
 
 ## The panel
 
@@ -21,7 +21,7 @@ Score as three people, each in the trade the category belongs to, and record eac
 
 ```yaml
 - scenario_id: <id>
-  labels: {A: playbook, B: baseline_none, C: baseline_human}   # the shuffle you used
+  labels: {A: playbook, B: baseline_none, C: baseline_human, D: playbook_v2}   # the shuffle you used; D only when playbook_v2 exists
   scores:
     A:
       quotable: 0            # 0 = no, I'd have to call; 1 = maybe, one call; 2 = yes, with a visit-fee or range quote; 3 = yes, firm from the card
@@ -61,6 +61,7 @@ summary_by_variant:
   playbook: {median_quotable: 2, quotable_share: 0.92, median_questions: 4, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 0.9, facts_not_stated_count: 0}
   baseline_none: {...}
   baseline_human: {...}
+  playbook_v2: {...}   # when present
 where_playbook_lost_to_human: ["..."]   # the specific facts or questions the human got and the playbook missed, as fixes to propose
 ```
 
