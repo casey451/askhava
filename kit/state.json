@@ -610,7 +610,7 @@
    "deps": [
     "T003"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "twin-gate-into-repo",
    "type": "harness",
@@ -641,20 +641,81 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 152,
      "head_sha": "f578f6e67b89656fdb00f12b8e904f1a40823e6f",
-     "pr": null,
-     "checks": null,
+     "pr": 78,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-29T22:40:09Z",
      "ended_at": "2026-10-29T23:18:37Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "auto_merge": {
     "enabled": true,
     "why": "auto-merge on #78 (gh pr merge)",
     "head": "f578f6e67b89656fdb00f12b8e904f1a40823e6f"
-   }
+   },
+   "merged_sha": "189cfe54c7167066187fb259fd321c15056b020f",
+   "merged_at": "2026-10-29T23:40:06Z",
+   "files": [
+    ".github/workflows/twin.yml",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "kit/plan.lock",
+    "scripts/pii_scan.py",
+    "tests/test_pii_scan.py",
+    "tests/twin/test_gate.py",
+    "twin/app.py",
+    "twin/gate.py",
+    "twin/review_tests.py",
+    "twin/templates_es.json",
+    "twin/twin.py",
+    "twin/twin_config.json",
+    "twin/twin_scenarios.json",
+    "twin/vendors.py",
+    "twin/waivers.json"
+   ]
   },
   {
    "id": "T005",
@@ -3707,7 +3768,7 @@
    }
   }
  },
- "updated_at": "2026-10-29T23:18:44Z",
+ "updated_at": "2026-10-29T23:41:26Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -3805,7 +3866,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f578f6e67b89656fdb00f12b8e904f1a40823e6f",
+ "runner_sha": "189cfe54c7167066187fb259fd321c15056b020f",
  "starter": "actions",
  "smoke_runs": [
   {
