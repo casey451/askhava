@@ -1,0 +1,95 @@
+category: pool_repair
+variant: playbook
+model: "Claude Haiku 5.5 (claude-haiku-5-5)"
+run: "run-2026-10-29"
+results:
+  - scenario_id: pool_repair_s01
+    transcript:
+      - {who: homeowner, text: "somethings wrong with the pool thing"}
+      - {who: intake, text: "What's going wrong with the pool? 1 Pump won't run 2 Pump is loud 3 Filter or pressure problem 4 Losing water 5 Heater not working 6 Other equipment", step: question}
+      - {who: homeowner, text: "the motor box hums when the timer kicks on but nothing turns. been off about 3 days"}
+      - {who: intake, text: "Does a breaker or GFCI trip when the equipment turns on? 1 Yes 2 No 3 Haven't checked", step: follow_up}
+      - {who: homeowner, text: "yes. tripped twice this week"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "pentair i think"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "today if you can. pad is behind the side gate and its locked, im home most days"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the equipment pad from a few feet back?", step: photo}
+      - {who: homeowner, text: "ok sending one"}
+    questions_asked: 5
+    follow_up_used: fu_breaker_trips
+    skipped_bank_questions: [pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Pool and spa repair | Lake Havasu City, central | pool
+      Pool pump hums when the timer starts but does not turn; pool off about 3 days.
+      Pump: hums, nothing turns. Breaker or GFCI trips: yes, twice this week. Wants: not said.
+      Equipment: Pentair (homeowner's words). Pool: size not said, water not said.
+      Photos: 1 (equipment pad from the side: pump, tank, small gray box). Homeowner adds: pad behind side gate, locked; home most days.
+      Needed: Today.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s02
+    transcript:
+      - {who: homeowner, text: "my pool furnace wont fire up. its the gas one on the side of the house. want it warm for thanksgiving, grandkids coming"}
+      - {who: intake, text: "What's going wrong with the pool? 1 Pump won't run 2 Pump is loud 3 Filter or pressure problem 4 Losing water 5 Heater not working 6 Other equipment", step: question}
+      - {who: homeowner, text: "heater wont light. clicks a few times when i call for heat then nothing. pump runs fine, water flows"}
+      - {who: intake, text: "Is the heater gas or electric? 1 Natural gas 2 Propane 3 Electric heat pump", step: follow_up}
+      - {who: homeowner, text: "natural gas i think. gas line comes in from the house"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "dont know the brand, its on the plate. about 14 years old i'd guess"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "by thanksgiving"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the heater cabinet and its data plate?", step: photo}
+      - {who: homeowner, text: "[photo sent]"}
+    questions_asked: 5
+    follow_up_used: fu_heater_fuel
+    skipped_bank_questions: [pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: heater, bank_job_type: "gas pool heater", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Pool and spa repair | Lake Havasu City, north side | pool
+      Gas pool heater on the side of the house clicks but nothing lights. Pump runs and water flows.
+      Fuel: natural gas. Does: clicks a few times, no light. Code: not said.
+      Heater: brand not known, about 14 years old (homeowner's guess). Wants: not said.
+      Photos: 1 (heater cabinet with data plate partly visible, rust staining along the bottom edge, gray pipe entering the side). Homeowner adds: none.
+      Needed: By Thanksgiving.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s03
+    transcript:
+      - {who: homeowner, text: "pool went totally green while we were up north. need someone to shock it and clean it asap, guessing the chlorine ran out"}
+      - {who: intake, text: "What's going wrong with the pool? 1 Pump won't run 2 Pump is loud 3 Filter or pressure problem 4 Losing water 5 Heater not working 6 Other equipment", step: question}
+      - {who: homeowner, text: "pump wont run i guess. nothing when the timer should start it, no sound at all. we've been gone about 5 weeks"}
+      - {who: intake, text: "Does a breaker or GFCI trip when the equipment turns on? 1 Yes 2 No 3 Haven't checked", step: follow_up}
+      - {who: homeowner, text: "havent looked at the breaker. the one in the garage panel is sitting in the middle"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "hayward i think, variable speed, maybe 6 years"}
+      - {who: intake, text: "About how big is the pool? 1 Small (under 10000 gallons) 2 Medium (10000 to 20000 gallons) 3 Large (over 20000 gallons)", step: question}
+      - {who: homeowner, text: "about 15000 gallons. salt system, not tablets"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "asap"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the equipment pad from about 6 feet back?", step: photo}
+      - {who: homeowner, text: "[2 photos sent]"}
+    questions_asked: 6
+    follow_up_used: fu_breaker_trips
+    skipped_bank_questions: [pool_or_spa, surface, water]
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Pool and spa repair | Lake Havasu City, central | pool
+      Pump not running: no sound when the timer should start it. Pool water green.
+      Pump: nothing, no sound. Breaker or GFCI trips: not checked; garage panel breaker sitting in the middle position. Wants: not said.
+      Equipment: Hayward, variable speed, about 6 years old (homeowner's words). Pool: medium (about 15000 gallons), salt system, water green.
+      Photos: 2 (green pool with leaves on the surface; equipment pad with a dry, dusty pump lid). Homeowner adds: away about 5 weeks; wants it cleaned as soon as possible.
+      Needed: Today.
+    facts_in_card_not_stated: []
+
+# __END__

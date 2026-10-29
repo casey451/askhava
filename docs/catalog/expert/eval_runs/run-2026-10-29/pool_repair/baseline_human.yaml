@@ -1,0 +1,610 @@
+category: pool_repair
+variant: baseline_human
+model: "claude-opus-5-5"
+run: "run-2026-10-29"
+notes: >-
+  The intake is played as the best pool and spa repair estimator in Arizona (25 years, knows Lake
+  Havasu heat, hard water and equipment pads), texting one question at a time, with no question bank,
+  no expert file and no trade file. The estimator may say what they suspect and may give the advice a
+  real estimator would; the judge notes it, it does not count against this variant. The card holds the
+  crew notes (facts got, suspicions, on-site checks). The homeowner is played strictly from the scenario:
+  hidden facts only when a question clearly calls for them, "not sure" for anything outside them, busy
+  after max_questions plus 2. Coverage is assumed confirmed for Lake Havasu City except in s13 (outside
+  area) and s14 (no businesses), where the intake stops before any trade question as intake_agent.md
+  says. questions_asked counts every question and photo ask the estimator sent (not the coverage line,
+  not the gas-smell message, not the closing line). job_type values use the kb ids named in the
+  scenario file where they fit the estimator's own call.
+results:
+  - scenario_id: pool_repair_s01
+    transcript:
+      - {who: homeowner, text: "somethings wrong with the pool thing"}
+      - {who: intake, text: "Happy to help. What is it doing? Not running, making noise, leaking, or the water looks off?", step: question}
+      - {who: homeowner, text: "the motor box hums when the timer comes on. the end dont turn"}
+      - {who: intake, text: "Sounds like the pump motor. Leave it off at the timer for now so it doesn't cook itself. How long has the pool been off?", step: question}
+      - {who: homeowner, text: "bout 3 days"}
+      - {who: intake, text: "Has the breaker for the pool tripped at all?", step: question}
+      - {who: homeowner, text: "tripped twice this week"}
+      - {who: intake, text: "What does the label on the motor say? Brand, and one speed or two?", step: question}
+      - {who: homeowner, text: "pentair. says 2 speed"}
+      - {who: intake, text: "About how old is it?", step: question}
+      - {who: homeowner, text: "8 yrs maybe"}
+      - {who: intake, text: "Last one. How does the tech get to the equipment? Gate locked?", step: question}
+      - {who: homeowner, text: "side gate is locked. im home most days. just send somebody"}
+      - {who: intake, text: "Will do. Notes going out now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Pool and spa repair | Lake Havasu City | SOON (pool off)
+      FACTS
+      - Pump motor hums when the timer kicks on; shaft does not turn.
+      - Pool has been off about 3 days.
+      - Pool breaker tripped twice this week.
+      - Pentair, two-speed, about 8 years old.
+      - Equipment is behind a locked side gate; homeowner is home most days.
+      - Told homeowner to leave it off at the timer.
+      - No photo. Water condition not asked.
+      - Needed: not said.
+      SUSPECT
+      - Hum with no spin: failed start capacitor or seized shaft/bearings. Two breaker trips point at locked-rotor current or a shorting winding, so the motor may be done, not just the capacitor.
+      ON SITE
+      - Call ahead so he can open the gate.
+      - Spin the shaft by hand with power off; test the start capacitor; check amp draw and the motor windings to ground.
+      - Check the wiring at the timer and the breaker itself before condemning the motor.
+      - Bring a capacitor and price a motor swap; at 8 years, also price a variable-speed pump.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s02
+    transcript:
+      - {who: homeowner, text: "my pool furnace wont fire up. its the gas one on the side of the house. want it warm for thanksgiving, grandkids coming"}
+      - {who: intake, text: "Sounds like the pool heater, we can do that. Natural gas or propane?", step: question}
+      - {who: homeowner, text: "natural gas. comes off the house, the pipe that feeds it runs into the side of it"}
+      - {who: intake, text: "When it calls for heat, what does it do? Clicks, fan runs, anything on the display?", step: question}
+      - {who: homeowner, text: "it clicks a few times and then nothing lights. no code on the display, nothing"}
+      - {who: intake, text: "Is the pool pump running and water moving when it tries?", step: question}
+      - {who: homeowner, text: "yep pump runs normal and the water is flowing fine"}
+      - {who: intake, text: "Any gas smell or hissing around it?", step: question}
+      - {who: homeowner, text: "no smell, no hissing, nothing like that"}
+      - {who: intake, text: "About how old is the heater?", step: question}
+      - {who: homeowner, text: "about 14 years now"}
+      - {who: intake, text: "Can you send a pic of the heater, with the label plate if you can get it?", step: photo}
+      - {who: homeowner, text: "[photo: heater cabinet with a data plate partly visible, light rust staining along the bottom edge of the cabinet, a gray pipe entering the side] best I could do"}
+      - {who: intake, text: "That works. Gas heaters go to licensed pool contractors only. Notes going out, plenty of time before Thanksgiving.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: heater, bank_job_type: "gas pool heater", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Pool and spa repair | Lake Havasu City | LICENSED ONLY (R-6 or B-6), gas heater
+      FACTS
+      - Gas pool heater (homeowner calls it the pool furnace), natural gas.
+      - When it calls for heat it clicks a few times, then nothing lights. No code on the display.
+      - Pool pump runs normally and water flows.
+      - No gas smell, no hissing.
+      - About 14 years old.
+      - Heater is on the side of the house.
+      - Photo: heater cabinet, data plate partly visible, light rust staining along the bottom edge, gray gas pipe entering the side.
+      - Needed: warm for Thanksgiving (grandkids visiting).
+      SUSPECT
+      - Clicks with no light: ignition side (igniter or spark/pilot assembly, gas valve not opening) or a safety in the chain (pressure switch, high limit) opening during the try. No code on a unit that should throw one could also mean a control board fault.
+      - 14 years with rust at the base: check the heat exchanger and burner tray; this may turn into a replace-vs-repair talk.
+      ON SITE
+      - Read the model from the plate; check gas pressure at the valve, igniter, flame sense, pressure switch and limits.
+      - Inspect the burner tray and cabinet base for rust-through.
+      - Price both repair and a replacement heater so he can decide before Thanksgiving.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s03
+    transcript:
+      - {who: homeowner, text: "pool went totally green while we were up north. need someone to shock it and clean it asap, guessing the chlorine ran out"}
+      - {who: intake, text: "We can get that handled. Before anyone shocks it: is the pump running? Take a look at the equipment when the timer says it should be on.", step: question}
+      - {who: homeowner, text: "fine. no its not running. no sound at all"}
+      - {who: intake, text: "No sound at all usually means no power. Check the breakers at the pad and in the garage. Is any of them not fully on?", step: question}
+      - {who: homeowner, text: "the panel by the pool looks normal. one breaker in the garage subpanel is sitting in the middle"}
+      - {who: intake, text: "That's a tripped breaker. Leave it where it is so the tech can see why it tripped. What's the pump? Brand on the motor and about how old?", step: question}
+      - {who: homeowner, text: "hayward. variable speed. about 6 years"}
+      - {who: intake, text: "Salt system or chlorine tablets?", step: question}
+      - {who: homeowner, text: "salt system"}
+      - {who: intake, text: "How long were you away, and was the timer set to run while you were gone?", step: question}
+      - {who: homeowner, text: "about 5 weeks. timer was set to run every day"}
+      - {who: intake, text: "Roughly how big is the pool, and is there a spa on it?", step: question}
+      - {who: homeowner, text: "about 15000 gallons, plaster. theres an attached spa, its green too"}
+      - {who: intake, text: "Send me a pic of the pool and one of the equipment?", step: photo}
+      - {who: homeowner, text: "[photo 1: wide shot of a green pool with leaves on the surface] [photo 2: equipment pad, pump lid looks dry and dusty] so can i get the cleanup quote"}
+      - {who: intake, text: "Yes. It's two jobs: get the pump running first, then the green cleanup once water is moving. Shocking it with no circulation won't hold. I'll put both on the notes.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Pool and spa repair | Lake Havasu City | SOON (no circulation, green)
+      FACTS
+      - Pump not running, no sound at all when the timer says it should be on.
+      - Owners were away about 5 weeks; timer set to run daily.
+      - Panel at the pad looks normal; one breaker in the garage subpanel is in the middle (tripped) position. Told to leave it for the tech.
+      - Hayward variable-speed pump, about 6 years old.
+      - Salt system.
+      - About 15000 gallons, plaster, attached spa on the same equipment. Pool and spa are both green.
+      - Photos: green pool with leaves on the surface; equipment pad with the pump lid dry and dusty.
+      - Homeowner asked for shock and cleanup; told repair comes first, cleanup after. Second job: green-pool cleanup for a cleaning company once circulation is back.
+      - Needed: asap (homeowner's word).
+      SUSPECT
+      - Something tripped that breaker while they were gone: failed VS drive, a shorted motor, water in the motor or junction box, or a monsoon storm surge. Pump ran dry at some point is possible (dusty lid).
+      - Salt cell made no chlorine without flow, which is why it went green; the cell and flow switch may need a look too.
+      ON SITE
+      - Before resetting: check the circuit for a short to ground (motor, drive, wiring, light circuit if shared).
+      - Reset, check the VS drive display for fault codes, prime the pump, check the lid O-ring and basket.
+      - Check the salt cell and flow switch once running.
+      - Hand the cleanup to the cleaning side: about 15000 gallons plus the spa, plaster, salt pool.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s04
+    transcript:
+      - {who: homeowner, text: "my pool keeps dropping. its july in havasu so im 99% sure its just evaporation but my husband wants it checked. can someone look"}
+      - {who: intake, text: "Sure. About how much does it drop in a day?", step: question}
+      - {who: homeowner, text: "about an inch a day. even on the cooler nights. probably evaporation"}
+      - {who: intake, text: "Does it drop about the same with the pump off as with it running?", step: question}
+      - {who: homeowner, text: "about the same either way"}
+      - {who: intake, text: "If you let it go, does the level stop dropping at some point? Where?", step: question}
+      - {who: homeowner, text: "it stops around the middle of the skimmer opening"}
+      - {who: intake, text: "Do you have an auto-fill? Has it been running more, or the water bill gone up?", step: question}
+      - {who: homeowner, text: "yes the auto fill runs a lot. and the water bill went up"}
+      - {who: intake, text: "Any wet spot in the yard or around the equipment that doesn't dry out?", step: question}
+      - {who: homeowner, text: "theres a damp patch on the gravel by the equipment pad that never dries"}
+      - {who: intake, text: "How old is the pool, and is there a spa with a spillover?", step: question}
+      - {who: homeowner, text: "about 25 years. plaster. spa with a spillover"}
+      - {who: intake, text: "Any cover on the pool?", step: question}
+      - {who: homeowner, text: "no cover. still think its evaporation"}
+      - {who: intake, text: "Could be some, but an inch a day uncovered is on the high side even for July here, and a spot that never dries plus the level stopping at the skimmer are worth a leak check. Notes going out.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: leak, bank_job_type: "pool leak", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Pool and spa repair | Lake Havasu City
+      FACTS
+      - Level drops about 1 inch a day, even on cooler nights.
+      - Drop is about the same with the pump on or off.
+      - Left alone, the level stops at about the middle of the skimmer opening.
+      - Auto-fill has been running a lot; water bill went up.
+      - Damp patch on the gravel near the equipment pad that never dries.
+      - Pool about 25 years old, plaster, attached spa with spillover. No cover.
+      - Homeowner believes it is evaporation; husband wants it checked. Estimator told her an inch a day is on the high side and worth a leak check.
+      - No photo.
+      - Needed: not said.
+      SUSPECT
+      - Stops at mid-skimmer: skimmer body, skimmer throat to plaster joint, or the skimmer suction line.
+      - Damp gravel at the pad: a leak in pad plumbing or valves, a buried line near the pad, or the auto-fill supply line itself.
+      - Same loss pump on or off makes a pressure-side-only leak less likely.
+      ON SITE
+      - Leak detection: dye test the skimmer throat and body, light niche, returns, spillover and spa; pressure test the skimmer and suction lines.
+      - Dig/probe the damp spot; check pad unions and valves; check the auto-fill valve and its supply line for a leak or overfill.
+      - Shut the auto-fill off for a 24-hour bucket test baseline so the real loss rate is known.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s05
+    transcript:
+      - {who: homeowner, text: "pump is leaking all over the pad, pic attached. i think i need a whole new pump [photo: wet ground and a wet pump base on the equipment pad, with a sprinkler riser and a drip line running just behind the pump]"}
+      - {who: intake, text: "Got the pic. When do you find the pad wet? Morning, all day, only while the pump runs?", step: question}
+      - {who: homeowner, text: "early mornings mostly"}
+      - {who: intake, text: "I see a sprinkler riser right behind it. Do the yard sprinklers run early morning? And is the pump dry when they're off?", step: question}
+      - {who: homeowner, text: "yeah they run early. pump lid and fittings are dry when the sprinklers are off"}
+      - {who: intake, text: "Then the water may be the sprinkler, not the pump. So what's the pump doing that makes you want a new one? Noise, not priming, not running?", step: question}
+      - {who: homeowner, text: "loud grinding from the motor. getting louder the last 2 weeks"}
+      - {who: intake, text: "What's on the motor label? Brand, speed and about how old?", step: question}
+      - {who: homeowner, text: "jandy single speed, about 10 years"}
+      - {who: intake, text: "Grinding on a 10-year motor is usually bearings. Want it priced as a repair, a replacement, or both?", step: question}
+      - {who: homeowner, text: "both"}
+      - {who: intake, text: "Will do. Notes going out.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Pool and spa repair | Lake Havasu City
+      FACTS
+      - Pump motor makes a loud grinding sound, getting louder over the last 2 weeks.
+      - Pad is wet mostly early mornings, when the yard sprinklers run. Pump lid and fittings are dry when the sprinklers are off.
+      - Jandy single-speed pump, about 10 years old.
+      - Wants quotes for both repair and replacement.
+      - Photo: wet ground and wet pump base on the pad, sprinkler riser and drip line just behind the pump.
+      - Needed: not said.
+      SUSPECT
+      - Motor bearings. A sprinkler spraying the motor every morning can wash water into the bearings and speed this up.
+      - The wet pad is likely sprinkler overspray, not a pump leak; confirm.
+      ON SITE
+      - Listen and spin the shaft; check for bearing play; check the shaft seal while the motor is apart.
+      - Look for a real leak with the sprinklers off; point out the sprinkler head hitting the pad.
+      - Two prices: bearing job or motor swap, and a full pump replacement. A replacement will likely have to be variable speed under current federal pool pump rules; check before quoting single-speed.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s06
+    transcript:
+      - {who: homeowner, text: "salt system on my pool says check cell, cant send pics my phone is old. also lots of white crusty stuff on the tile"}
+      - {who: intake, text: "No pics needed. What brand is the salt system and about how old? It's on the label of the control box or the cell.", step: question}
+      - {who: homeowner, text: "hayward. about 4 yrs"}
+      - {who: intake, text: "Besides check cell, is the low salt light on, or any other light?", step: question}
+      - {who: homeowner, text: "just check cell. low salt not lit"}
+      - {who: intake, text: "Have you tested the water lately? What does chlorine read?", step: question}
+      - {who: homeowner, text: "store strips say almost zero"}
+      - {who: intake, text: "Where is the white crust, just the tile line or other spots too?", step: question}
+      - {who: homeowner, text: "tile line and the waterfall edge"}
+      - {who: intake, text: "About how big is the pool?", step: question}
+      - {who: homeowner, text: "about 12000 gallons"}
+      - {who: intake, text: "Water still clear?", step: question}
+      - {who: homeowner, text: "clear for now"}
+      - {who: intake, text: "Thanks. With our hard water that light usually means the cell needs a look or a cleaning. Notes going out.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: salt_system, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Pool and spa repair | Lake Havasu City
+      FACTS
+      - Salt system display says check cell; low-salt light is not lit.
+      - Hayward salt system, about 4 years old (from the label).
+      - Store test strips read chlorine near zero.
+      - White crust on the tile line and the waterfall edge.
+      - About 12000 gallons. Water still clear for now.
+      - No photos: homeowner's phone cannot send pictures. Texts only.
+      - Needed: not said.
+      SUSPECT
+      - Scaled cell from hard Havasu water, or a cell near end of life at 4 years. Near-zero chlorine fits either.
+      - Tile and waterfall crust point at high calcium and pH; same water that scales the cell.
+      ON SITE
+      - Pull and inspect the cell; acid wash if scaled; check cell hours and output in the diagnostic menu.
+      - Test salt, pH, alkalinity, calcium hardness and CYA; balance to slow scaling.
+      - Bring a replacement cell price in case the plates are worn.
+      - Tile crust is a separate add-on: offer a tile cleaning or bead-blast price.
+      - Get the cell model off the label on site (he can read it but was not asked).
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s07
+    transcript:
+      - {who: homeowner, text: "Hello. The light in my pool does not come on anymore and the little switch by the back door keeps clicking off. My late husband took care of all this"}
+      - {who: intake, text: "Hello, we can help with that. When the little switch clicks off, what is it exactly? Is it a small button on an outlet that pops out?", step: question}
+      - {who: homeowner, text: "Yes. It is a little button on the outlet by the back patio. It pops every time I turn the light switch on. I am sorry, I do not know the names of these things."}
+      - {who: intake, text: "That's exactly what I needed. Please leave the light switch off until someone looks at it. Does the pool pump still run, just the light is out?", step: question}
+      - {who: homeowner, text: "Yes, the pump and the timer run fine. It is only the light."}
+      - {who: intake, text: "About how old is the house? Do you know if the light was ever replaced?", step: question}
+      - {who: homeowner, text: "The house was built in the 1990s. I believe the light is the original one."}
+      - {who: intake, text: "Who would be there to let the technician in, and what days work?", step: question}
+      - {who: homeowner, text: "My son would meet them. He can only come on a weekend. The equipment is on the other side of the house and I cannot get over there easily."}
+      - {who: intake, text: "Is there a date you'd like it working by?", step: question}
+      - {who: homeowner, text: "My grandchildren visit in two weeks. I do not swim at night myself."}
+      - {who: intake, text: "Thank you. No pictures needed. I'll send this out and a weekend visit will be asked for.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: automation_electrical, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Pool and spa repair | Lake Havasu City
+      FACTS
+      - Pool light does not come on.
+      - Reset button on an outlet by the back patio pops every time the light switch is turned on.
+      - Pump and timer run fine; only the light is affected.
+      - Home built in the 1990s; light believed original.
+      - Her son meets the tech, weekends only. Equipment is on the far side of the house; she cannot get there easily.
+      - Elderly homeowner; plain words, no trade terms. Told to leave the light switch off.
+      - No photo.
+      - Needed: within two weeks (grandchildren visiting).
+      SUSPECT
+      - Ground fault on the light circuit: water inside the light housing, a failed lens gasket, or a damaged cord. Original 1990s light, so the fixture is likely at end of life.
+      - Outlet itself failing is less likely since it trips only with the light on.
+      ON SITE
+      - Line-voltage work near water: licensed pool or electrical contractor only.
+      - Pull the light, look for water in the lens, check the cord and the deck junction box; insulation test the cord.
+      - Price a new light (likely LED) with cord, and a cord replacement if the conduit allows.
+      - Schedule on a weekend with her son.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s08
+    transcript:
+      - {who: homeowner, text: "hi im renting a house in the north area and the pool filter tank is leaking at the bottom. landlord said to get a quote and send it to him"}
+      - {who: intake, text: "Can do. Can you send a pic of the filter and where it's dripping?", step: photo}
+      - {who: homeowner, text: "[photo: filter tank sitting on the pad with a wet stain and a drip at the base, a pressure gauge on top] here"}
+      - {who: intake, text: "Thanks. What's the gauge on top reading, and how long has it read that?", step: question}
+      - {who: homeowner, text: "its in the red, about 35. been like that since 4 days ago"}
+      - {who: intake, text: "How fast is the drip?", step: question}
+      - {who: homeowner, text: "steady, about one drop a second"}
+      - {who: intake, text: "Do you know what kind of filter it is? Sand, cartridge or DE?", step: question}
+      - {who: homeowner, text: "landlord said its the sand kind. im not sure myself"}
+      - {who: intake, text: "Who approves the work, and when can someone get in to look?", step: question}
+      - {who: homeowner, text: "the landlord has to approve, i cant approve anything. im home after 5 on weekdays or weekends. i can pass the quote to him"}
+      - {who: intake, text: "Got it. High pressure plus a drip at the base, the tech will look at both. Quote goes to you to pass on.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: filter, bank_job_type: "filter repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Pool and spa repair | Lake Havasu City (north area)
+      FACTS
+      - Filter tank drips at the base, steady, about one drop a second.
+      - Pressure gauge reads about 35 psi, in the red, for the last 4 days.
+      - Sand filter per the landlord; tenant not sure herself. Brand and age not asked (tenant would not know).
+      - Requester is a tenant. Landlord must approve before any work; she will relay the quote to him.
+      - Access: after 5 p.m. weekdays, or weekends.
+      - Photo: filter tank on the pad with a wet stain and a drip at the base, pressure gauge on top.
+      - Needed: not said.
+      SUSPECT
+      - Drip at the base: drain cap or its O-ring, a cracked bottom/bulkhead, or a hairline crack in an old tank.
+      - 35 psi: dirty or calcified sand that needs a backwash or a sand change, or a closed or blocked return. High pressure on a cracking tank is a reason not to wait.
+      ON SITE
+      - Confirm filter type and read the tank label for age.
+      - Check the drain cap, base and tank for cracks; check the gauge is accurate.
+      - Backwash and see if pressure drops; check return valves and lines.
+      - Quote both a drain-cap or valve fix and a tank replacement; written quote for the landlord.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s09
+    transcript:
+      - {who: homeowner, text: "buenas tardes, la bomba de la alberca hace mucho ruido y esta goteando un poco, ya tiene 2 dias asi. necesito cotizacion por favor"}
+      - {who: intake, text: "Buenas tardes. Con gusto. Me puede mandar una foto de la bomba y de donde gotea?", step: photo}
+      - {who: homeowner, text: "[foto: equipment pad showing two small motors side by side, one bigger and one smaller, a few drops of water on the concrete under the bigger one] aqui esta"}
+      - {who: intake, text: "Gracias. Veo dos motores. Cual hace el ruido, el grande o el chico?", step: question}
+      - {who: homeowner, text: "el grande, el que dice Pentair. el chico es para la limpieza del piso de la alberca"}
+      - {who: intake, text: "De donde sale el agua exactamente? Del frente, donde la tapa se junta con el tubo, o de abajo del motor?", step: question}
+      - {who: homeowner, text: "del frente donde se junta la tapa con el tubo. una gota cada pocos segundos"}
+      - {who: intake, text: "Cuantos anos tiene la bomba grande mas o menos? Es de una velocidad?", step: question}
+      - {who: homeowner, text: "como 9 anos. si, de una velocidad"}
+      - {who: intake, text: "Prefiere repararla o cambiarla por una nueva?", step: question}
+      - {who: homeowner, text: "repararla si no sale muy caro. si necesita una nueva esta bien"}
+      - {who: intake, text: "Hay alguien en casa para abrir? El porton tiene llave?", step: question}
+      - {who: homeowner, text: "siempre hay alguien en casa. el porton no tiene llave"}
+      - {who: intake, text: "Perfecto. Mando la informacion ahora.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Pool and spa repair | Lake Havasu City | Language: Spanish
+      FACTS
+      - Two pumps on the pad: main circulation pump (bigger, Pentair label) and a smaller booster for the in-floor cleaning system.
+      - The main (bigger) pump is the loud one, for 2 days.
+      - Drip at the front of the main pump where the lid and the pipe meet, about one drop every few seconds.
+      - Main pump: Pentair, single speed, about 9 years old.
+      - Wants it repaired if the cost is reasonable; open to a new pump if needed.
+      - Someone home all day; gate unlocked.
+      - Photo: two motors side by side, one bigger and one smaller, a few drops of water on the concrete under the bigger one.
+      - Homeowner texts in Spanish; send a Spanish-speaking contact or a Spanish quote.
+      - Needed: not said.
+      SUSPECT
+      - A leak at the suction inlet fitting or lid can pull air while running: noisy, cavitating pump that drips when off. Bearings at 9 years are the other candidate for the noise.
+      ON SITE
+      - Confirm which unit before quoting: the main pump, not the in-floor booster.
+      - Check the basket for air, the lid O-ring, the threaded inlet fitting, and the bearings.
+      - Price: lid O-ring or inlet fitting repair, bearings/motor, and a full pump. A full replacement will likely have to be variable speed under current federal pool pump rules.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s10
+    transcript:
+      - {who: homeowner, text: "OMG THE POOL FILTER JUST BLEW UP WATER EVERYWHERE!!! party in 2 hours HELP I NEED SOMEONE NOW"}
+      - {who: intake, text: "Okay, one thing at a time. Is the pump off now?", step: question}
+      - {who: homeowner, text: "yes its off at the switch. nobody hurt, nobody was in the pool"}
+      - {who: intake, text: "Good. Where did the water come out? The valve on top, the tank seam, or a pipe?", step: question}
+      - {who: homeowner, text: "sprayed out around the top valve when the pump started up. it had been sitting off a week"}
+      - {who: intake, text: "What kind of filter is it and about how old? Any white powder around it?", step: question}
+      - {who: homeowner, text: "DE i think, theres white powder around the valve. about 7 years old"}
+      - {who: intake, text: "Did you see the pressure gauge before it sprayed?", step: question}
+      - {who: homeowner, text: "it was at 35 right before"}
+      - {who: intake, text: "Can you send a pic of the filter?", step: photo}
+      - {who: homeowner, text: "[photo: round filter tank with a wet pad around it, water pooled on the concrete, multiport valve on top]"}
+      - {who: intake, text: "The pool is fine to sit without the pump for a day; leave it off. Is today or tomorrow okay for someone to come out?", step: question}
+      - {who: homeowner, text: "today or tomorrow is fine. party is outside, the pool can just sit. water is lower now but its still usable"}
+      - {who: intake, text: "Got it. Notes going out marked today or tomorrow.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: filter, bank_job_type: "filter repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Pool and spa repair | Lake Havasu City | TODAY OR TOMORROW
+      FACTS
+      - Water sprayed out around the top valve of the filter when the pump started after sitting off a week.
+      - Gauge read about 35 psi right before it sprayed.
+      - DE filter (white powder around the valve), about 7 years old.
+      - Pump now off at the switch. Nobody hurt, nobody in the pool.
+      - Pool water level lower now, still usable.
+      - Photo: round filter tank, wet pad with water pooled on the concrete, multiport valve on top.
+      - Told to leave the pump off.
+      - Needed: today or tomorrow. Pool can sit; party is outside.
+      SUSPECT
+      - Multiport valve: blown spider gasket, lid O-ring, or a cracked valve body or lid, pushed by high pressure at startup.
+      - 35 psi on a DE filter: grids loaded or the DE caked after sitting, maybe trapped air or a closed return.
+      ON SITE
+      - Check the tank clamp band and lid first before pressurizing.
+      - Inspect the multiport lid, spider gasket and body; check the air relief and gauge.
+      - Pull and clean the grids, recharge DE; check returns are open.
+      - Bring a spider gasket, lid O-ring and price a multiport valve.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s11
+    transcript:
+      - {who: homeowner, text: "pool pump has been getting louder the last couple weeks, would like a quote on fixing it. oh and by the way theres a faint rotten egg smell by the pool heater when it kicks on, no big deal"}
+      - {who: intake, text: "Before the pump: a rotten egg smell at a gas heater needs checking today, even faint. Don't let the heater run, stay away from it, and call 911 or the gas company from outside. Text SAFE once you're clear of it.", step: "911"}
+      - {who: homeowner, text: "its faint, no big deal. but ok SAFE. about the pump though"}
+      - {who: intake, text: "Thanks. How long have you noticed the smell, and is that heater natural gas or propane?", step: question}
+      - {who: homeowner, text: "about 3 days, right at the heater cabinet when it cycles on. natural gas"}
+      - {who: intake, text: "Now the pump. Brand, one speed or two, and about how old?", step: question}
+      - {who: homeowner, text: "hayward two-speed, about 11 years"}
+      - {who: intake, text: "Is it louder on one speed than the other?", step: question}
+      - {who: homeowner, text: "louder on high"}
+      - {who: intake, text: "How old is the heater?", step: question}
+      - {who: homeowner, text: "about 10 years"}
+      - {who: intake, text: "Send me a pic of the pump and the heater?", step: photo}
+      - {who: homeowner, text: "[photo: pump and motor on the pad, a gas heater cabinet to the left of the pump] just want the pump quote for now"}
+      - {who: intake, text: "Understood, pump notes going out. Please still have the gas company check that heater before it runs again; gas work is licensed only.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: true
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0111 | Pool and spa repair | Lake Havasu City | GAS FLAG
+      GAS FLAG
+      - Faint rotten egg smell right at the pool heater cabinet when the heater cycles on, for about 3 days. Homeowner calls it no big deal.
+      - Natural gas heater, about 10 years old, next to the pump.
+      - Told to keep the heater off and call 911 or the gas company from outside; he replied SAFE. Has not said the gas company checked it.
+      - Any heater or gas work: licensed R-6 or B-6 only. Tech: carry a gas detector and do not fire the heater.
+      FACTS (the job he asked for)
+      - Pump getting louder over the last couple of weeks, louder on high speed.
+      - Hayward two-speed pump, about 11 years old.
+      - Wants the pump quote only for now.
+      - Photo: pump and motor on the pad, gas heater cabinet to the left of the pump.
+      - Needed: not said.
+      SUSPECT
+      - Pump: motor bearings at 11 years, louder on high.
+      - Heater smell: a gas leak at the valve or fittings, or delayed ignition. Not ours to diagnose without a gas check.
+      ON SITE
+      - Confirm the heater smell was checked before working at the pad; if not, stop and have him call the gas company.
+      - Pump: check bearings and shaft seal; price a motor swap and a variable-speed pump.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s12
+    transcript:
+      - {who: homeowner, text: "need a new variable speed pump put in, mine is dead. and the new one needs a 240 circuit at the pad apparently, and i want the old pool timer box gone. who does all that"}
+      - {who: intake, text: "Can do the pump. What's the old one, brand and age, and what does it do now, hum or nothing?", step: question}
+      - {who: homeowner, text: "It's a Pentair single speed, about 13 years old. The motor hums and does not start."}
+      - {who: intake, text: "Do you already have the new pump, or do you want the installer to supply it?", step: question}
+      - {who: homeowner, text: "I already bought it online. It's in a box in the garage."}
+      - {who: intake, text: "How long has the pool been off?", step: question}
+      - {who: homeowner, text: "Four days now. Water is still clear."}
+      - {who: intake, text: "Where does power to the pad come from now? Panel location, how far, any open breaker slots?", step: question}
+      - {who: homeowner, text: "The wiring runs in conduit from the garage subpanel to the timer box, about 25 feet. The subpanel has two open breaker slots."}
+      - {who: intake, text: "Has anyone looked at the 240 circuit yet, or is that from the dealer?", step: question}
+      - {who: homeowner, text: "A pump dealer told me about it. Nobody has looked at it yet."}
+      - {who: intake, text: "Send me a pic of the pad, the timer box and the subpanel?", step: photo}
+      - {who: homeowner, text: "[photo: old pump on the pad, a gray timer box on the wall with a conduit running up, and a nearby open breaker subpanel in the garage]"}
+      - {who: intake, text: "Thanks. The pump swap is pool work. A new circuit is electrician work unless the pool company holds that license too, so I'll write it as two notes. Your existing circuit may already be 240; the tech will check.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: equipment_replace, bank_job_type: "equipment replacement", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0112 | Pool and spa repair | Lake Havasu City | SOON (pool off)
+      FACTS
+      - Old pump: Pentair single speed, about 13 years old; motor hums and does not start.
+      - Owner already bought a new variable-speed pump online; it is boxed in the garage. Install only, customer-supplied.
+      - Pool off 4 days; water still clear.
+      - Existing wiring: conduit from the garage subpanel to the timer box at the pad, about 25 feet. Subpanel has two open breaker slots.
+      - Owner wants the old timer box removed.
+      - Owner was told by a pump dealer the new pump needs a 240 circuit; nobody has looked at it yet.
+      - Photo: old pump on the pad, gray timer box on the wall with conduit running up, open breaker subpanel in the garage.
+      - Needed: not said.
+      SUSPECT
+      - A 13-year single-speed is often already on 230V; the VS pump may run on the existing circuit, and a new circuit may not be needed.
+      - Removing the timer box still needs a disconnect at the pad and GFCI protection for the pump; the VS pump's own timer replaces the mechanical one.
+      ON SITE
+      - Measure voltage and check wire size and breaker at the subpanel before quoting any new circuit.
+      - Confirm the new pump's model, voltage and plumbing size; plan unions and fittings.
+      - Labor-only quote; state who warranties customer-supplied equipment.
+      - If new wiring or a new circuit is needed, that part goes to the electrical card.
+
+      REQ-0112-E | Electrical (separate card) | Lake Havasu City
+      - Possible new 240V circuit from the garage subpanel to the pool pad for a new variable-speed pump; existing conduit run about 25 feet; two open breaker slots.
+      - Owner also wants the old timer box removed; keep a disconnect and GFCI protection at the pad.
+      - Nobody has confirmed a new circuit is needed; check the existing circuit first.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s13
+    transcript:
+      - {who: homeowner, text: "my pool pump in bullhead city wont turn on, do you guys come out here"}
+      - {who: intake, text: "We don't cover Bullhead City yet.", step: coverage}
+      - {who: homeowner, text: "no worries. you think you'll ever cover bullhead?"}
+      - {who: intake, text: "I can't say. Right now it's Lake Havasu City only.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s14
+    transcript:
+      - {who: homeowner, text: "our hot tub stopped heating, it's a stand-alone one on the patio, about 6 years old. can you get quotes"}
+      - {who: intake, text: "We don't cover pool and spa repair jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: spa_hot_tub, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s15
+    transcript:
+      - {who: homeowner, text: "hi can someone take care of my pool every week? just bought the house and idk anything about pools"}
+      - {who: intake, text: "Congrats on the house. You want a weekly pool person, skim, brush and chemicals? Or is something broken?", step: question}
+      - {who: homeowner, text: "just weekly. skim brush chemicals. nothing broken"}
+      - {who: intake, text: "About how big is the pool?", step: question}
+      - {who: homeowner, text: "about 10000 gallons i think"}
+      - {who: intake, text: "Plaster or pebble, and is there a spa attached?", step: question}
+      - {who: homeowner, text: "plaster. small spa attached"}
+      - {who: intake, text: "Do you want chemicals included in the monthly price?", step: question}
+      - {who: homeowner, text: "yes included"}
+      - {who: intake, text: "Send me a pic of the pool and the equipment?", step: photo}
+      - {who: homeowner, text: "[photo: wide view of a backyard pool, clear water, a few leaves on the surface, equipment pad visible in the background with all equipment in place]"}
+      - {who: intake, text: "Looks good. That's a weekly cleaning job, not a repair, so it goes to the pool service companies. Notes going out.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0115 | Weekly pool cleaning | Lake Havasu City
+      FACTS
+      - Weekly service wanted: skim, brush, chemicals. Nothing broken.
+      - About 10000 gallons, plaster, small attached spa.
+      - Chemicals included in the monthly price.
+      - New homeowner, new to pools.
+      - Photo: clear water with a few leaves, equipment pad in the background with all equipment in place.
+      - Needed: not said.
+      SUSPECT
+      - Nothing wrong. New owner: unknown chemical history from the sellers.
+      ON SITE
+      - First visit: full water test including CYA and calcium; find out salt or chlorine feeder.
+      - Clean the filter and look the equipment over so she has a baseline.
+      - Quote monthly with chemicals included, pool plus spa.
+    facts_in_card_not_stated: []

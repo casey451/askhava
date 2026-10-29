@@ -1,0 +1,572 @@
+# Ask Hava expert layer: estate_cleanout (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set estate_cleanout and trade_kb/trades/junk_removal.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The junk_removal kb file serves three categories: estate_cleanout (this file), donation_pickup and the
+#   disabled junk_removal category. Mapped here: cleanout ("whole-house cleanout"), plus demo_small and
+#   hazmat_route, kept under "whole-house cleanout" for the case where a tear-down (hot tub, shed, playset)
+#   or a garage of chemicals, paint and propane is part of clearing a property. A tear-down or chemical haul
+#   on its own is junk haul-away (disabled, LIC-005): the misdiagnosis checks route it to junk_removal, and
+#   the homeowner gets the no-coverage reply (scenario s15).
+# - Left out: furniture_items (donation_pickup "furniture donation pickup"); appliances, yard_debris and
+#   construction_debris (junk haul-away, disabled). Appliances inside a cleanout ride on fu_hard_items and
+#   photo p2, so the card still names fridges, freezers and AC units.
+# - new_job_type: cleanout_sort carries "sorting for donation". Each kb id may appear once, so cleanout
+#   carries "whole-house cleanout". Scenarios s06, s08 and s14 name job_type cleanout with bank_job_type
+#   "sorting for donation"; routing should read cleanout_sort for those.
+# - Bank gaps: no question for appliances and hazards (the top hidden cost), none for outbuildings or a
+#   storage unit, and none for gate, HOA or park rules. The size answers have no "garage or shed only"
+#   option (tenant scenario s07). fu_hard_items, fu_other_spaces and fu_access_rules cover these; a bank
+#   hazards question would be stronger because only one follow-up may be asked.
+# - Estate sales and liquidation (selling the contents) are not offered by any category. The card states
+#   the clearing and sorting she wants, not the sales words she used.
+# - Open: Lake Havasu City Code ch. 8.04 (trash franchise) was not read. The changes file (7.1 item 13)
+#   treats estate cleanouts as not refuse collection; that reading is unverified against the code text.
+schema: 1
+category: estate_cleanout
+question_set: estate_cleanout
+kb_trade: junk_removal
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: lhc_hhw
+    title: "[T-lhc_hhw] Lake Havasu City, Household Hazardous Waste: landfill charges by weight, cash only; two Republic Services hazardous waste collection days a year; dried latex paint goes in regular trash; six free bulk curbside pickups a year, four items each, single-family homes in city limits; a local dealer takes household propane cylinders of 5 gallons or smaller; sharps and needles guidance"
+    url: "https://www.lhcaz.gov/232/Hazardous-Waste"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_608_disposal
+    title: "[T-epa_608] US EPA, Stationary Refrigeration Safe Disposal Requirements (fridges, freezers and window AC units enter the waste stream charged; the final person in the disposal chain makes sure refrigerant is recovered, or keeps a signed statement naming who recovered it; stickers are not accepted)"
+    url: "https://www.epa.gov/section608/stationary-refrigeration-safe-disposal-requirements"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_asbestos
+    title: "[T-epa_asb] US EPA, Protect Your Family from Exposures to Asbestos (flooring and its backing, pipe and furnace insulation; fibers release when disturbed; you cannot tell by looking)"
+    url: "https://www.epa.gov/asbestos/protect-your-family-exposures-asbestos"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed ((A)(14) handyman exemption under $1,000 with no permit; (D) never covers work connected to natural gas, propane or other fuel gas)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (R-57 Wrecking, no explosives; R-11 Electrical; R-37 Plumbing, water and gas piping; B-10 Pre-Manufactured Spas and Hot Tubs)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_14_3711
+    title: "A.R.S. 14-3711 Powers of personal representatives (same power over title to estate property as an absolute owner, in trust for creditors and others interested in the estate, without court order)"
+    url: "https://www.azleg.gov/ars/14/03711.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: icd_chs
+    title: "Institute for Challenging Disorganization, Clutter-Hoarding Scale quick version, 2026 (five levels by exits and hallways, pests, room function, sanitation and medicines; protective gear rises from optional to full; an observation tool, not a diagnosis)"
+    url: "https://www.challengingdisorganization.org/wp-content/uploads/2026/03/2026-03-04-C-HS-EN-Quick-Version.pdf"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: homeadvisor_estate
+    title: "HomeAdvisor, How Much Does an Estate Clean-Out Cost (more items raise labor; sorting papers and assets adds cost; electronics, paint and bulbs carry disposal fees; fridges and freezers need refrigerant handling; stairs cost more; large jobs may need a dumpster; one day or several)"
+    url: "https://www.homeadvisor.com/cost/cleaning-services/estate-cleanout"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: azsp_weather
+    title: "Arizona State Parks, Lake Havasu State Park weather: average highs 93 F May, 103 F June, 108 F July, 106 F August, 100 F September; monsoon June to September with afternoon storms and strong wind"
+    url: "https://azstateparks.com/lake-havasu/explore/weather"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: hcp_junk_leads
+    title: "Housecall Pro (field-service software vendor), Junk removal leads: Google Local Services Ads about $38 to $90 per lead, Google search ads about $35 to $150, lead marketplaces about $15 to $60 per shared lead (citing 2026 vendor benchmarks)"
+    url: "https://www.housecallpro.com/resources/junk-removal-leads/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: webtonic_junk_ads
+    title: "Webtonic (marketing vendor), Junk Removal and Dumpster Rental Google Ads Statistics 2026 (LocaliQ 2025 storage subcategory as a stand-in: about $120 per lead; average junk job about $241, range $133 to $372, from an Angi survey)"
+    url: "https://www.webtonic.io/blog/junk-removal-and-dumpster-rental-google-ads-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "How much is going: rooms, plus the garage, sheds, casita, attic and any storage unit"
+      why: "Volume sets loads, crew size and days; more items mean more labor, and a packed garage can match the house."
+      source: homeadvisor_estate
+    - driver: "How deep the sort is: haul it all, sort for donation, or search for papers and keepsakes"
+      why: "Sorting papers and assets adds cost, and a keep, donate and toss sort runs slower than a straight load-out."
+      source: homeadvisor_estate
+    - driver: "How full and in what shape: furniture and belongings, stacked high, narrow paths, pests or odor"
+      why: "Blocked halls, pests and poor sanitation call for protective gear and a slower, larger crew; a photo of the one clear room hides it."
+      source: icd_chs
+    - driver: "Weight and where it goes: landfill, donation runs, scrap and recycling stops"
+      why: "The city landfill charges by weight and takes cash only, so heavy loads and extra stops move the range."
+      source: lhc_hhw
+    - driver: "Special items: fridges, freezers and AC units, paint and chemicals, propane, a hot tub or shed to remove"
+      why: "Refrigerant must be recovered before final disposal, chemicals go to collection days, and tear-downs or hookups add labor or another trade."
+      source: epa_608_disposal
+    - driver: "Access: stairs, long carries, narrow gates, gated parks and HOA rules on trucks, trailers and dumpsters"
+      why: "Stairs and hard-to-reach spots cost more; a no-dumpster or no-trailer rule means more trips."
+      source: homeadvisor_estate
+    - driver: "Deadline: sale closing, listing date, lease end, move to care"
+      why: "A close date limits which days a crew can offer and can turn a two-day job into one long day with more hands. [judgment]"
+      source: null
+    - driver: "Who is on site to decide: the owner, family, a neighbor with a key, or nobody"
+      why: "A crew that works from a list and sends photos for approval spends more time than one with the decider standing there. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "The other rooms, closets and attic are far fuller than the photo or the opening message says"
+      how_a_pro_spots_it: "The photo is one room shot from the doorway; a hallway of boxes shows at the edge; a long-time owner; 'just a truck load' for a 3-bedroom house"
+      question_or_photo: fu_room_condition
+      source: null
+    - condition: "A garage, shed, casita, Arizona room, attic or storage unit across town nobody mentioned"
+      how_a_pro_spots_it: "Garage door or a shed roof in the wide photo; the size answer says 'A whole house' with no garage"
+      question_or_photo: fu_other_spaces
+      source: null
+    - condition: "Fridges, freezers or window AC units, often still full of food"
+      how_a_pro_spots_it: "Appliance photo; chest freezer on a porch or in the garage; the house has been empty for months"
+      question_or_photo: fu_hard_items
+      source: epa_608_disposal
+    - condition: "Paint, pool chemicals, pesticide, fuel cans and propane tanks in the garage or shed"
+      how_a_pro_spots_it: "Shelves of cans and jugs in the garage photo; a pool or grill on the property"
+      question_or_photo: fu_hard_items
+      source: lhc_hhw
+    - condition: "A hot tub wired to a wall box, or a gas dryer or range still connected"
+      how_a_pro_spots_it: "Conduit or a disconnect box near the tub; a flex gas line behind the dryer in the appliance photo"
+      question_or_photo: p3
+      source: ars_32_1121
+    - condition: "Rodent droppings, a strong odor or a mold smell in part of the house"
+      how_a_pro_spots_it: "Only the requester can say; stacked kitchens and back rooms; a house shut up through a summer"
+      question_or_photo: fu_room_condition
+      source: icd_chs
+    - condition: "The requester cannot authorize the clearing: a tenant clearing the owner's things, heirs who disagree, or the person still lives there and has not agreed"
+      how_a_pro_spots_it: "Words like 'landlord left it', 'my siblings', 'mom doesn't want to'; requester is not on the deed"
+      question_or_photo: fu_whose_items
+      source: ars_14_3711
+    - condition: "A locked safe, firearms, medicines, needles or old floor tile and pipe wrap the crew should not disturb"
+      how_a_pro_spots_it: "Tall steel box in a closet; pill bottles on counters; old vinyl tile or wrapped pipes in a garage photo"
+      question_or_photo: null
+      source: epa_asbestos
+  misdiagnosis_checks:
+    - sounds_like: "whole-house cleanout (a couch and some other stuff, all usable)"
+      might_be: "furniture_items, a different category"
+      one_question: size
+      if_other_route_to: {category: donation_pickup, job_type: "furniture donation pickup"}
+      source: null
+    - sounds_like: "whole-house cleanout (only an old hot tub, shed or playset to remove)"
+      might_be: "demo_small on its own, junk haul-away in a disabled category: the homeowner gets the no-coverage reply"
+      one_question: size
+      if_other_route_to: {category: junk_removal, job_type: "junk haul-away"}
+      source: aac_r4_9_103
+    - sounds_like: "whole-house cleanout (only paint and chemicals in the garage)"
+      might_be: "hazmat_route on its own, junk haul-away in a disabled category"
+      one_question: fu_hazard_kind
+      if_other_route_to: {category: junk_removal, job_type: "junk haul-away"}
+      source: lhc_hhw
+    - sounds_like: "sorting for donation (dad is moving in with us, the kept things come too)"
+      might_be: "a move of the kept items to another home, a second request"
+      one_question: fu_kept_items_go
+      if_other_route_to: {category: local_moving, job_type: "in-town move"}
+      source: null
+    - sounds_like: "whole-house cleanout (mice in the kitchen, still running around)"
+      might_be: "live pests, a second request for pest control"
+      one_question: fu_room_condition
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: icd_chs
+    - sounds_like: "whole-house cleanout (take the gas dryer and cap the line)"
+      might_be: "gas disconnect, licensed-only work in another category; the cleanout itself stays here"
+      one_question: fu_connected
+      if_other_route_to: {category: plumbing_repair, job_type: "gas line work"}
+      source: ars_32_1121
+    - sounds_like: "whole-house cleanout (then a deep clean and the carpets before the tenant moves in)"
+      might_be: "two requests: the clearing here, the cleaning after it in house cleaning"
+      one_question: size
+      if_other_route_to: {category: house_cleaning, job_type: "deep cleaning"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["How full each room is and how high things are stacked", "Whether a path runs through or rooms are blocked", "Furniture count and size", "Scale against a door or person", "Hallways or doorways with more piled behind", "Cans, jugs or propane on garage shelves", "Old vinyl floor tile or wrapped pipes"]
+      neutral_wording: "Living room with furniture along the walls and a clear path; hallway behind it stacked with boxes to about shoulder height."
+    - photo_id: p2
+      reads: ["Fridge, freezer or window AC unit, and whether it is still plugged in", "Food inside a chest freezer", "Gas flex line or water line at the back of a dryer, range or fridge", "Washer and dryer still hooked up"]
+      neutral_wording: "Chest freezer in the garage, lid closed, cord plugged in; a gas dryer against the wall with a yellow flex line at the back."
+    - photo_id: p3
+      reads: ["Hot tub size and whether it holds water", "Conduit, cord or wall disconnect box", "Gas line to a heater or fire pit", "Shed size, material and whether it is anchored to a slab", "Gate or path width to the street"]
+      neutral_wording: "Covered hot tub on a concrete pad, gray conduit runs up the side into a box on the wall; side gate looks about 4 feet wide."
+  local_factors:
+    - fact: "The Lake Havasu City landfill charges by weight and takes cash only"
+      effect: "Whole-house loads are heavy, so crews price dump weight into the range and say what is excluded"
+      source: lhc_hhw
+    - fact: "Republic Services gives single-family homes in city limits six free bulk curbside pickups a year, four items each"
+      effect: "That covers a few pieces, not a house, which is why heirs and sellers text for a crew"
+      source: lhc_hhw
+    - fact: "Household hazardous waste is collected on two days a year; dried latex paint can go in regular trash; small household propane cylinders are taken locally"
+      effect: "A crew may leave chemicals and propane for a collection day or charge to handle them; the card should list them"
+      source: lhc_hhw
+    - fact: "Fridges, freezers and window AC units need refrigerant recovered before final disposal, and the disposer may ask for a signed statement"
+      effect: "Crews that scrap appliances charge for recovery or a recycler stop; full freezers add cleanup"
+      source: epa_608_disposal
+    - fact: "Average highs are 103 F in June, 108 F in July and 106 F in August"
+      effect: "Summer crews start at dawn and stop early; garages, sheds and attics get far hotter, so summer jobs run more days"
+      source: azsp_weather
+    - fact: "Many owners are seasonal or out of state, and heirs often live in other states"
+      effect: "The requester is often not on site; access, a key holder and photo updates belong on the card [judgment]"
+      source: null
+    - fact: "Many homes are manufactured homes in 55-plus or gated parks with rules on work hours, truck parking and dumpsters"
+      effect: "Park rules can rule out a dumpster or trailer on the lot and set the work days [judgment]"
+      source: null
+    - fact: "Homes often hold boats, trailers, golf carts, pools and hot tubs"
+      effect: "The card says which of these are part of the job and which are not [judgment]"
+      source: null
+  seasonality:
+    busy: "October to April, when seasonal residents arrive and leave and more homes are listed; end of every month for lease ends [judgment]"
+    slow: "July and August, heat limits crew hours [judgment]"
+    source: null
+
+job_types:
+  - id: cleanout
+    label: "Whole-house or large cleanout (estate, move to care, sale, rental or tenant leftovers)"
+    bank_job_type: "whole-house cleanout"
+    recurring: false
+    homeowner_phrasings: ["dad passed need the whole house cleared", "estate cleanout", "empty the house before closing", "tenant left junk", "vaciar la casa de mi mamá"]
+    must_know:
+      - fact: "How much: a few rooms, the whole house, or house and garage"
+        bank_question: size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Volume sets loads, crew and days, the base of any range. [judgment]"
+        skip_if: "Her words give the rooms and garage"
+      - fact: "Other spaces: garage, shed, casita, attic, storage unit"
+        bank_question: null
+        follow_up: fu_other_spaces
+        photo: p1
+        why_it_moves_price: "An unmentioned shed or storage unit can add a load or a day. [judgment]"
+        skip_if: "Size answer was 'House and garage' and she said there is nothing else"
+      - fact: "How full the rooms are, and any sign of pests or odor"
+        bank_question: null
+        follow_up: fu_room_condition
+        photo: p1
+        why_it_moves_price: "Stacked rooms, narrow paths and pests mean protective gear and more crew hours. [src:icd_chs]"
+        skip_if: "Photos show several rooms clearly"
+      - fact: "Appliances, chemicals, propane, hot tub or shed"
+        bank_question: null
+        follow_up: fu_hard_items
+        photo: p2
+        why_it_moves_price: "Each needs its own handling, a fee or another trade. [judgment]"
+        skip_if: "She already listed them or said none"
+      - fact: "Deadline and its reason"
+        bank_question: timing
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A close date sets crew size and which days work. [judgment]"
+        skip_if: "Her words give the date"
+    allowed_follow_ups:
+      - id: fu_other_spaces
+        ask_when: "She described the house but not the garage, sheds, attic or another place with his or her things"
+        text_en: "Besides the house, is there anything else to clear, like a garage, shed, casita, attic or storage unit?"
+        text_es: "Además de la casa, ¿hay algo más que vaciar, como cochera, bodega, casita, ático o un almacén?"
+        options_en: ["Garage", "Shed, casita or Arizona room", "Attic", "Storage unit somewhere else", "More than one of these", "None of these"]
+        options_es: ["Cochera", "Bodega, casita o cuarto Arizona", "Ático", "Almacén en otro lugar", "Más de uno", "Ninguno"]
+        card_field: true
+        why: "Outbuildings and storage units are the volume homeowners leave out most. [judgment]"
+      - id: fu_room_condition
+        ask_when: "She sent one photo or none, or her words hint at a lot (lived there decades, it's a lot, can't get in some rooms)"
+        text_en: "How do the rest of the rooms look?"
+        text_es: "¿Cómo están los demás cuartos?"
+        options_en: ["Furniture and normal belongings", "Boxes or piles stacked high", "Narrow paths, some rooms hard to get into", "Signs of mice, rats or bugs", "More than one of these"]
+        options_es: ["Muebles y cosas normales", "Cajas o montones muy altos", "Pasillos angostos, cuesta entrar a algunos cuartos", "Señales de ratones, ratas o insectos", "Más de una de estas"]
+        card_field: true
+        why: "Room condition sets crew, gear and days, and a single photo hides it. [src:icd_chs]"
+      - id: fu_hard_items
+        ask_when: "She has not said whether there are appliances, chemicals, propane, a hot tub or a shed to remove"
+        text_en: "Are any of these at the place: a fridge, freezer or AC unit, paint or chemicals, propane tanks, or a hot tub or shed to remove?"
+        text_es: "¿Hay algo de esto en el lugar: refrigerador, congelador o aire acondicionado, pintura o químicos, tanques de gas propano, o un jacuzzi o bodega que quitar?"
+        options_en: ["Fridge, freezer or AC unit", "Paint or chemicals", "Propane tanks or fuel cans", "Hot tub or shed to remove", "More than one of these", "None of these"]
+        options_es: ["Refrigerador, congelador o aire", "Pintura o químicos", "Tanques de propano o gasolina", "Jacuzzi o bodega que quitar", "Más de uno", "Ninguno"]
+        card_field: true
+        why: "Each of these changes the handling, the disposal stop or the trade, and homeowners rarely list them. [src:epa_608_disposal]"
+      - id: fu_whose_items
+        ask_when: "Her words suggest she may not own the home or the items (renting, landlord, sibling, mom still lives there)"
+        text_en: "Are you the owner, or clearing it for someone else?"
+        text_es: "¿Usted es el dueño, o lo está vaciando para alguien más?"
+        options_en: ["I own the home and the things", "Family or the estate, I'm handling it", "I rent; the things are the owner's", "Other"]
+        options_es: ["Soy dueño de la casa y las cosas", "Familia o herencia, yo me encargo", "Rento; las cosas son del dueño", "Otro"]
+        card_field: true
+        why: "A business needs to know who can say yes before it hauls anything away. [judgment]"
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell at the property"]
+      urgent_capable_triggers: ["Sale closing or lease ending within 2 weeks", "Buyer's inspection or walk-through date set this week"]
+      regular: "Deadline a month or more out, or no deadline"
+    scope_line_en: "Whole-house cleanout, 3-bedroom single-story house plus a packed two-car garage; usable items to donation; empty by end of November."
+    scope_line_es: "Vaciar toda la casa, casa de 3 recámaras de un piso más una cochera para dos carros llena; las cosas útiles se donan; vacía para fin de noviembre."
+    quote_format: range
+    business_fills: ["low and high price", "what the range assumes (loads, crew, days, dump and donation runs, items left out)", "earliest start date and days needed"]
+    card_template: |
+      REQ-<id> | Estate cleanout | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what is cleared, size, donation or not, deadline>
+      Size: <a few rooms / whole house / house and garage>. Also: <garage, shed, casita, attic, storage unit / none said>. Rooms: <furniture and belongings / stacked high / narrow paths / pest signs>.
+      Special items: <fridge, freezer or AC / paint or chemicals / propane / hot tub or shed / none said>. Donation sort: <yes / no>. Requester: <owner / family or estate / renter, items are the owner's>.
+      Photos: <n> (<neutral description of each>) or none. Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer and the reason for the date, if given>.
+    never_say: ["That's about two truckloads.", "Estate cleanouts usually run a few thousand.", "Those propane tanks are fine if they're empty.", "This sounds like a hoarding situation.", "If the landlord left it, you can throw it out.", "Keep the papers until probate closes."]
+
+  - id: cleanout_sort
+    new_job_type: true
+    label: "Sort a home's contents for donation, keepers and haul-away (downsizing, move to care, after a loss)"
+    bank_job_type: "sorting for donation"
+    recurring: false
+    homeowner_phrasings: ["help sorting her clothes so the good things go to charity", "downsizing to assisted living", "what's good goes to the church", "separar cosas para donar", "family wants to keep a few things"]
+    must_know:
+      - fact: "How much is being sorted: a few rooms, the whole house, or house and garage"
+        bank_question: size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Sorting time grows with every closet and drawer, more than a straight load-out. [src:homeadvisor_estate]"
+        skip_if: "Her words name the rooms"
+      - fact: "What is set aside and who marks it"
+        bank_question: null
+        follow_up: fu_set_aside
+        photo: null
+        why_it_moves_price: "A family member marking first saves crew time; a crew searching for papers and jewelry adds hours. [src:homeadvisor_estate]"
+        skip_if: "She said who decides and what is kept"
+      - fact: "Whether usable items go to donation"
+        bank_question: donation
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Donation runs add stops; charities turn some pieces away, which adds a dump trip. [judgment]"
+        skip_if: "Her words already say donate"
+      - fact: "Where the kept things go"
+        bank_question: null
+        follow_up: fu_kept_items_go
+        photo: null
+        why_it_moves_price: "Moving kept items to another home is a second job with its own truck time. [judgment]"
+        skip_if: "She is staying in the home"
+      - fact: "Gate, HOA or park rules on work hours, trucks and dumpsters"
+        bank_question: timing
+        follow_up: fu_access_rules
+        photo: null
+        why_it_moves_price: "No dumpster or no trailer on the lot means more trips; weekday-only hours stretch the schedule. [judgment]"
+        skip_if: "Single-family home on a public street"
+    allowed_follow_ups:
+      - id: fu_set_aside
+        ask_when: "A sort is wanted and she has not said what is kept or who decides"
+        text_en: "Is anything to be set aside for the family, like papers, photos, jewelry or keepsakes?"
+        text_es: "¿Hay algo que apartar para la familia, como papeles, fotos, joyas o recuerdos?"
+        options_en: ["Yes, family will mark it first", "Yes, the crew should watch for papers and valuables", "No, everything left can go"]
+        options_es: ["Sí, la familia lo marca antes", "Sí, el equipo debe buscar papeles y cosas de valor", "No, todo lo que quede se puede ir"]
+        card_field: true
+        why: "Who sorts the keepers is the biggest swing in sorting hours. [src:homeadvisor_estate]"
+      - id: fu_kept_items_go
+        ask_when: "Some things are kept and she has not said where they go"
+        text_en: "Where do the things being kept go?"
+        text_es: "¿A dónde van las cosas que se quedan?"
+        options_en: ["They stay in the home", "Family picks them up", "The crew takes them to another home"]
+        options_es: ["Se quedan en la casa", "La familia las recoge", "El equipo las lleva a otra casa"]
+        card_field: true
+        why: "A drop at another home is moving work and may be a second request. [judgment]"
+      - id: fu_access_rules
+        ask_when: "The home is a condo, manufactured home, 55-plus park or gated street, or she mentions a gate or HOA"
+        text_en: "Does the community have a gate or rules for work trucks, trailers or dumpsters?"
+        text_es: "¿La comunidad tiene portón o reglas para camiones, remolques o contenedores de trabajo?"
+        options_en: ["Yes, a gate or posted rules", "HOA, rules not known", "No gate or rules"]
+        options_es: ["Sí, portón o reglas", "Hay asociación, no sé las reglas", "No hay portón ni reglas"]
+        card_field: true
+        why: "Park and HOA rules set the work days and whether a dumpster or trailer can sit on the lot. [judgment]"
+      - fu_hard_items
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell at the property"]
+      urgent_capable_triggers: ["Move to care or lease ending within 2 weeks"]
+      regular: "Most sorting requests, including those with no deadline"
+    scope_line_en: "Sort a single-wide manufactured home and carport shed for donation; daughter marks what stays first; move date end of next month."
+    scope_line_es: "Separar para donar las cosas de una casa móvil sencilla y la bodega del carport; la hija marca primero lo que se queda; se muda a fin del próximo mes."
+    quote_format: range
+    business_fills: ["low and high price", "what the range assumes (sort days, crew, donation and dump runs)", "earliest start date and days needed"]
+    card_template: |
+      REQ-<id> | Estate cleanout, sorting for donation | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what is sorted, who marks keepers, deadline>
+      Size: <a few rooms / whole house / house and garage>. Set aside: <family marks first / crew watches for papers and valuables / nothing>. Kept items: <stay / family picks up / to another home>.
+      Donation: <yes / no>. Community rules: <gate or posted rules / HOA, not known / none>. Special items: <list / none said>.
+      Photos: <n> (<neutral description>) or none. Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer and the reason for the date, if given>.
+    never_say: ["Most charities will take all of that.", "You'll want to keep the paperwork for taxes.", "That's a one-day job.", "Sorting usually costs extra, figure a few hundred.", "Take your time, there's no rush on grief."]
+
+  - id: demo_small
+    label: "Remove a hot tub, shed, playset or deck as part of a property cleanout"
+    bank_job_type: "whole-house cleanout"
+    recurring: false
+    homeowner_phrasings: ["and the old hot tub out back has to go", "tear down the shed while you're at it", "hot tub just unplugs", "quitar el jacuzzi"]
+    must_know:
+      - fact: "What it is and how big (hot tub seats, shed size, playset, deck)"
+        bank_question: null
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Size and material set cut-up time and weight at the landfill. [judgment]"
+        skip_if: "Photo shows it with something for scale"
+      - fact: "Whether it is still hooked to power, gas or water, or holds water"
+        bank_question: null
+        follow_up: fu_connected
+        photo: p3
+        why_it_moves_price: "Wired and gas disconnects are licensed trades, so the crew waits on or adds another business. [src:aac_r4_9_103]"
+        skip_if: "Photo shows no wiring, line or water"
+      - fact: "Path from it to where a truck can park"
+        bank_question: null
+        follow_up: fu_gate_width
+        photo: p3
+        why_it_moves_price: "A narrow gate means cutting it into pieces on site instead of rolling it out whole. [judgment]"
+        skip_if: "Photo shows the gate or path"
+      - fact: "Whether the pad or base stays or goes"
+        bank_question: null
+        follow_up: fu_pad_stays
+        photo: null
+        why_it_moves_price: "Breaking out a concrete pad is a much bigger job than lifting a tub off it. [judgment]"
+        skip_if: "Wood deck or playset on dirt"
+    allowed_follow_ups:
+      - id: fu_connected
+        ask_when: "A hot tub, gas appliance, fire pit or wired shed is part of the job and the photo does not show its hookups"
+        text_en: "Is it still hooked up to anything, or holding water?"
+        text_es: "¿Todavía está conectado a algo, o tiene agua?"
+        options_en: ["Wired to a box on the wall", "Plugged into an outlet", "Gas line", "Still has water in it", "More than one of these", "Not hooked up, empty"]
+        options_es: ["Conectado a una caja en la pared", "Enchufado", "Línea de gas", "Todavía tiene agua", "Más de uno", "Desconectado y vacío"]
+        card_field: true
+        why: "Electrical and gas disconnects are licensed work (R-11, R-37) and never handyman work for gas. [src:ars_32_1121]"
+      - id: fu_gate_width
+        ask_when: "A hot tub or shed sits in a back or side yard and no photo shows the way out"
+        text_en: "About how wide is the narrowest spot between it and where a truck can park?"
+        text_es: "¿Más o menos qué tan ancho es el paso más angosto entre eso y donde se estaciona un camión?"
+        options_en: ["Over 6 feet", "4 to 6 feet", "Under 4 feet", "Only through the house"]
+        options_es: ["Más de 6 pies", "De 4 a 6 pies", "Menos de 4 pies", "Solo por dentro de la casa"]
+        card_field: true
+        why: "Gate width decides whole removal or cutting it up on site. [judgment]"
+      - id: fu_pad_stays
+        ask_when: "A hot tub or shed sits on a concrete pad"
+        text_en: "Should the concrete pad under it stay or go too?"
+        text_es: "¿La base de concreto de abajo se queda o también se quita?"
+        options_en: ["Pad stays", "Pad goes too"]
+        options_es: ["La base se queda", "También se quita la base"]
+        card_field: true
+        why: "Pad removal changes the crew, tools and weight. [judgment]"
+    photos_priority: [p3, p1]
+    urgency:
+      fire_dept_triggers: ["Gas smell near a hot tub heater, fire pit or appliance being removed"]
+      urgent_capable_triggers: []
+      regular: "All tear-downs within a cleanout"
+    scope_line_en: "Remove a 6-person hot tub on a concrete pad as part of a house cleanout; wired to a wall box; side gate about 4 feet wide."
+    scope_line_es: "Quitar un jacuzzi para 6 personas sobre base de concreto como parte de vaciar la casa; conectado a una caja en la pared; portón lateral de unos 4 pies."
+    quote_format: range
+    business_fills: ["low and high price", "what the range assumes (cut-up on site, pad left or removed, disconnect done by others)", "earliest date"]
+    card_template: |
+      REQ-<id> | Estate cleanout | <town>, <general area> | <kind of place>
+      <one scope line: what to remove, its size, part of which cleanout>
+      Item: <hot tub, seats / shed, size and material / playset / deck>. Hooked up: <wired to box / plugged in / gas line / holds water / none>.
+      Narrowest path: <over 6 ft / 4 to 6 ft / under 4 ft / through the house>. Pad: <stays / goes / n/a>. Rest of the cleanout: <size answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It just unplugs, so the crew can drag it out.", "Any handyman can disconnect that.", "Shut off the breaker and it's safe.", "Hot tub removal runs about five hundred.", "Drain it into the yard before they come."]
+
+  - id: hazmat_route
+    label: "Paint, pool chemicals, pesticide, fuel and propane found in a cleanout"
+    bank_job_type: "whole-house cleanout"
+    recurring: false
+    homeowner_phrasings: ["bunch of old paint and pool chemicals in the garage", "propane tanks out back", "dad's shed full of cans", "pintura vieja y químicos"]
+    must_know:
+      - fact: "Which kinds: paint, pool or garden chemicals, fuel, propane, batteries or oil, medicines or needles"
+        bank_question: null
+        follow_up: fu_hazard_kind
+        photo: p1
+        why_it_moves_price: "Each kind goes to a different stop or a collection day, and some crews will not take them. [src:lhc_hhw]"
+        skip_if: "She listed them"
+      - fact: "Whether the containers are closed and labeled, or rusted, open or leaking"
+        bank_question: null
+        follow_up: fu_containers_state
+        photo: p1
+        why_it_moves_price: "Unlabeled or leaking containers need more handling, and some haulers turn them down. [judgment]"
+        skip_if: "Photo shows the shelves clearly"
+      - fact: "How much of it there is: a shelf, a wall, a full shed"
+        bank_question: size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "A few cans ride with the load; a shed of chemicals is its own trip. [judgment]"
+        skip_if: "Photo shows it"
+    allowed_follow_ups:
+      - id: fu_hazard_kind
+        ask_when: "She mentions chemicals, cans, tanks or the garage or shed shelves without saying what they are"
+        text_en: "Which of these are there?"
+        text_es: "¿Cuáles de estas cosas hay?"
+        options_en: ["Paint cans", "Pool or garden chemicals", "Propane tanks or fuel cans", "Car batteries or motor oil", "Medicines or needles", "More than one of these"]
+        options_es: ["Botes de pintura", "Químicos de alberca o jardín", "Tanques de propano o gasolina", "Baterías de carro o aceite", "Medicinas o agujas", "Más de una"]
+        card_field: true
+        why: "The city sends paint, chemicals, propane and sharps to different places, so each kind changes the plan. [src:lhc_hhw]"
+      - id: fu_containers_state
+        ask_when: "Chemicals or fuel are part of the job and no photo shows them"
+        text_en: "Are the containers closed and labeled, or are some rusted, open or leaking?"
+        text_es: "¿Los envases están cerrados y con etiqueta, o algunos están oxidados, abiertos o goteando?"
+        options_en: ["Closed and labeled", "Some rusted, open or unlabeled", "Some leaking"]
+        options_es: ["Cerrados y con etiqueta", "Algunos oxidados, abiertos o sin etiqueta", "Algunos gotean"]
+        card_field: true
+        why: "Container condition decides whether a hauler can carry them at all. [judgment]"
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell, or a tank hissing"]
+      urgent_capable_triggers: ["Container leaking onto the floor"]
+      regular: "Closed containers stored in a garage or shed"
+    scope_line_en: "Garage cleanout with about 20 old paint cans, pool chemicals and 2 propane tanks; containers closed and labeled."
+    scope_line_es: "Vaciar la cochera con unos 20 botes de pintura vieja, químicos de alberca y 2 tanques de propano; envases cerrados y con etiqueta."
+    quote_format: range
+    business_fills: ["low and high price", "what you take and what you leave for a collection day", "earliest date"]
+    card_template: |
+      REQ-<id> | Estate cleanout | <town>, <general area> | <kind of place>
+      <one scope line: what is there, where, how much>
+      Kinds: <paint / pool or garden chemicals / propane or fuel / batteries or oil / medicines or needles>. Containers: <closed and labeled / rusted, open or unlabeled / leaking>.
+      Amount: <a shelf / a wall / a full shed>. Rest of the cleanout: <size answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those tanks are empty, so they're safe.", "Just pour it out and let it dry.", "Pool chemicals can go in the trash.", "Wait for the city collection day.", "Disposal for that runs about a hundred."]
+
+business_side:
+  how_they_get_customers: ["Realtors, estate attorneys and property managers passing their name along [judgment]", "Senior-living staff and move managers [judgment]", "Google Maps listing and reviews", "Google Local Services Ads and search ads", "Thumbtack, Angi and Yelp", "Local Facebook groups, truck and trailer signage [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google Local Services Ads (junk removal)"
+      figure: "About $38 to $90 per lead (marketing-software vendor citing 2026 benchmarks)"
+      source: hcp_junk_leads
+      unverified: false
+    - channel: "Google search ads (junk removal)"
+      figure: "About $35 to $150 per lead, higher in busy markets (marketing-software vendor)"
+      source: hcp_junk_leads
+      unverified: false
+    - channel: "Lead marketplaces (Angi, HomeAdvisor, Thumbtack as a group)"
+      figure: "About $15 to $60 per lead, shared with other haulers (marketing-software vendor)"
+      source: hcp_junk_leads
+      unverified: false
+    - channel: "Google search ads, storage subcategory as a stand-in"
+      figure: "About $120 per lead; average junk job about $241, so ad cost can eat half a small job (marketing vendor citing LocaliQ 2025 and an Angi survey)"
+      source: webtonic_junk_ads
+      unverified: false
+    - channel: "Lake Havasu City cleanout crews specifically"
+      figure: "No local figures found; whole-house jobs are larger than the average junk job, so a lead's share of the job is smaller"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["The same request sold to several haulers at once", "No photos and 'just a truck load' for a full house", "Paying for people who only want a free estimate to show the family", "Monthly fees in slow summer months", "Showing up to find a locked shed, no key and nobody who can say yes", "Being ranked or reviewed by the site"]
+  what_makes_a_lead_worth_paying_for: ["Rooms, outbuildings and how full they are, before the first call", "Appliances, chemicals, propane and hot tubs named up front", "Who is asking and who can say yes", "A real deadline and the reason for it", "Pay only when picked, nothing monthly, no share of the job"]
+  their_words: ["cleanout", "load", "trailer load", "dump run", "donation run", "keep, donate, toss", "set-aside", "broom clean", "walk-through", "dump fee", "minimum", "PPE", "estate", "heirs", "realtor deadline"]
+  signup_objections:
+    - objection: "Whole houses need a walk-through. I can't quote from a text."
+      answer: "Quote a range and say what it assumes. If you want a walk-through first, say so and give your earliest day. Cards list rooms, outbuildings, how full it is, special items and photos when she sends them."
+    - objection: "Why pay a fee on a job I could find myself?"
+      answer: "You pay only when the homeowner picks your quote. Nothing to join and nothing monthly. The fee is set by job size: $25, $75 or $199."
+    - objection: "Families fight over what stays. I don't want to be in the middle."
+      answer: "Each card says who is asking: the owner, family or the estate, or a renter. You decide whether to quote. Ask Hava does not decide who owns what."
+    - objection: "Will I get single couches and dump runs?"
+      answer: "Junk haul-away is not open on Ask Hava right now. Estate cleanout cards are large clearings and sorting for donation. Single pieces going to charity are donation pickup, a separate job type you can choose or skip."
+    - objection: "I don't do hot tubs, gas appliances or chemicals."
+      answer: "You don't have to. Cards name hot tubs, gas appliances, chemicals and propane up front. Quote the rest and say what you leave out. Gas and wired disconnects go only to licensed trades."
+    - objection: "The owner lives out of state. Who signs off?"
+      answer: "The card says when the requester can't be there and how a crew can get in. Her name and contact go to the business she picks, so you settle sign-off and payment with her."
+    - objection: "What if she cancels after I pay?"
+      answer: "If you haven't spoken with her yet, the fee is refunded."
+    - objection: "Will you rank me against other crews?"
+      answer: "No. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "How do I know the request is real?"
+      answer: "Each request comes from a texted phone number we check, with a town, a size, a deadline and answers to the questions a crew asks. Her name and address go only to the business she picks."
+    - objection: "I only want whole houses, not sorting jobs."
+      answer: "Pick the job types you want at sign-up and change them any time. Whole-house cleanout and sorting for donation are separate."
+  quote_tips_for_card: ["Say what the range assumes: loads, crew size, days, and dump and donation runs", "Say how you handle fridges, freezers and AC units, and what you won't take, like paint, propane or chemicals", "Say whether a walk-through comes first and your earliest day for it", "Say what done means: empty, or broom clean", "Say whether you send photos when the work is done, for owners who can't be there"]
