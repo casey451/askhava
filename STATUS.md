@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-29T19:52:35Z by runner 36b13e66ddf4 (actions).
+Updated 2026-10-29T20:17:34Z by runner 3df6359df503 (actions).
 
 **Requirements verified:** 0 of 725 (0.0%) · partial 16 · unstarted 709
 **Tasks merged (throughput only):** 3 of 221
@@ -46,7 +46,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 13 of 15 done
 
 ## Running
-- T172 (lease until 2026-10-29T22:49:35Z)
+- T172 (lease until 2026-10-29T23:17:34Z)
 
 ## Needs attention
 - nothing
