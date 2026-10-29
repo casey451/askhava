@@ -66,6 +66,10 @@ def test_template_text_is_read_and_business_paths_use_business_limit(tmp_path: P
     assert problems == ["app/site/templates/business/page.html · text 1: claim word 'best' (say the fact instead)"]
 
 
+def test_a_price_starts_a_new_sentence() -> None:
+    assert cc.sentences("Fees by job size. $25 under $500. $75 above.") == ["Fees by job size.", "$25 under $500.", "$75 above."]
+
+
 def test_syllables_and_grade_are_sane() -> None:
     assert cc.syllables("quote") == 1
     assert cc.syllables("business") >= 2

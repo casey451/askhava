@@ -194,7 +194,7 @@ categories:
     review: "Changes file 7.1 item 4 (no license). Attorney may confirm."
 
   - id: landscape_maintenance
-    name: Yard and landscape maintenance
+    name: Yard maintenance
     group: yard/outdoor
     enabled: true
     launch_open: true

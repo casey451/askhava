@@ -36,7 +36,7 @@ SUPERLATIVES = re.compile(
     re.IGNORECASE,
 )
 HEADING = re.compile(r"^## (?P<name>.+?) \((?P<tags>[a-z, ]+)\)\s*$")
-SENTENCE_END = re.compile(r"(?<=[.?!])\s+(?=[A-Z0-9\"“(])")
+SENTENCE_END = re.compile(r"(?<=[.?!])\s+(?=[A-Z0-9$\"“(])")
 WORD = re.compile(r"[A-Za-z0-9$][A-Za-z0-9$'’,.-]*")
 
 
@@ -91,7 +91,8 @@ def check_block(block: Block) -> list[str]:
         level = grade(block.text)
         limit = MAX_GRADE[block.audience]
         if level > limit:
-            problems.append(f"{block.where}: reading grade {level:.1f} (limit {limit:.0f} for {block.audience}s)")
+            readers = "businesses" if block.audience == "business" else "homeowners"
+            problems.append(f"{block.where}: reading grade {level:.1f} (limit {limit:.0f} for {readers})")
     return problems
 
 
