@@ -296,7 +296,7 @@ results:
   - scenario_id: house_cleaning_s10
     transcript:
       - {who: homeowner, text: "hey, need a one time deep clean at my place, 3 bed 2 bath, before my sister visits. oh by the way theres been a faint rotten egg smell in the hall by the water heater closet since yesterday, probably nothing"}
-      - {who: intake, text: "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe.", step: 911}
+      - {who: intake, text: "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe.", step: "911"}
       - {who: homeowner, text: "safe"}
       - {who: intake, text: "Which town is the job in?", step: coverage}
       - {who: homeowner, text: "lake havasu city"}

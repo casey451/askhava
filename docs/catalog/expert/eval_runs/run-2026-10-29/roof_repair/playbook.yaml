@@ -1,0 +1,168 @@
+category: roof_repair
+variant: playbook
+model: "Haiku 5.5 (claude-haiku-5-5)"
+run: "run-2026-10-29"
+results:
+
+  - scenario_id: roof_repair_s01
+    transcript:
+      - {who: homeowner, text: "somethings wrong with the top of the house. can someone look"}
+      - {who: intake, text: "Which town and ZIP is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city 86403"}
+      - {who: intake, text: "Is this about the roof, or something else up top like a gutter or vent?", step: question}
+      - {who: homeowner, text: "the roof"}
+      - {who: intake, text: "What kind of roof is it? 1 Tile 2 Shingle 3 Flat or foam 4 Metal", step: question}
+      - {who: homeowner, text: "concrete tile"}
+      - {who: intake, text: "What's the problem? 1 Leak inside 2 Broken or slipped tiles 3 Storm damage 4 Want a full new roof", step: question}
+      - {who: homeowner, text: "3 tiles slid down over the back patio after the last wind"}
+      - {who: intake, text: "How many stories? 1 One 2 Two or more", step: question}
+      - {who: homeowner, text: "1"}
+      - {who: intake, text: "About how big is the home? 1 Under 1,500 sq ft 2 1,500 to 2,500 sq ft 3 Over 2,500 sq ft", step: question}
+      - {who: homeowner, text: "2"}
+      - {who: intake, text: "Do you have spare tiles left over, for example stacked by the house or in the garage? 1 Yes 2 No", step: follow_up}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "3"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "no pics, i dont have a ladder"}
+    questions_asked: 8
+    follow_up_used: fu_spare_tiles
+    skipped_bank_questions: [leak_where]
+    routing: {category: roof_repair, job_type: tile_repair, bank_job_type: "tile replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Roof repair | Lake Havasu City, general area not said | house
+      Three tiles slid down over the back patio after the last wind; concrete tile roof, one story.
+      Roof: tile concrete, 1 story, about 2,000 sq ft, age not said.
+      Tiles: 1 to 5 slipped. Spares on site: not sure. Water inside: not said.
+      Photos: 0. Homeowner adds: none.
+      Needed: flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s02
+    transcript:
+      - {who: homeowner, text: "hey my shingles are cracked and some of them slid off the roof, the clay looking ones. need someone to put them back and seal the roof"}
+      - {who: intake, text: "Which town and ZIP is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu 86403"}
+      - {who: intake, text: "What kind of roof is it? 1 Tile 2 Shingle 3 Flat or foam 4 Metal", step: question}
+      - {who: homeowner, text: "concrete tile, not shingle, not clay"}
+      - {who: intake, text: "What's the problem? 1 Leak inside 2 Broken or slipped tiles 3 Storm damage 4 Want a full new roof", step: question}
+      - {who: homeowner, text: "2 cracked and about 4 slipped out of line near the ridge"}
+      - {who: intake, text: "How many stories? 1 One 2 Two or more", step: question}
+      - {who: homeowner, text: "two stories. the front is steep"}
+      - {who: intake, text: "About how big is the home? 1 Under 1,500 sq ft 2 1,500 to 2,500 sq ft 3 Over 2,500 sq ft", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "Do you have spare tiles left over, for example stacked by the house or in the garage? 1 Yes 2 No", step: follow_up}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "2"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo] ground shot of a tan concrete tile roof, two tiles sitting crooked near the ridge"}
+    questions_asked: 7
+    follow_up_used: fu_spare_tiles
+    skipped_bank_questions: [leak_where]
+    routing: {category: roof_repair, job_type: tile_repair, bank_job_type: "tile replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Roof repair | Lake Havasu City, general area not said | house
+      Two cracked and about four slipped tiles near the ridge; two-story home with a steep front.
+      Roof: tile concrete, 2 stories, about size not said, age not said.
+      Tiles: 6 to 20 (2 cracked, about 4 slipped). Spares on site: no. Water inside: not said.
+      Photos: 1 (ground shot of a tan concrete tile roof, two tiles crooked near the ridge). Homeowner adds: wants the roof sealed so it does not leak.
+      Needed: this week.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s03
+    transcript:
+      - {who: homeowner, text: "I have a roof leak in the upstairs hall ceiling. brown ring about the size of a dinner plate. need a roofer out here asap before the next rain"}
+      - {who: intake, text: "Which town and ZIP is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city 86404"}
+      - {who: intake, text: "What kind of roof is it? 1 Tile 2 Shingle 3 Flat or foam 4 Metal", step: question}
+      - {who: homeowner, text: "concrete tile. no leaks in the roof history though"}
+      - {who: intake, text: "How many stories? 1 One 2 Two or more", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "When does the wet spot show up? 1 When it rains 2 When the AC or cooler runs 3 When a bathroom or sink above is used 4 Any time, no pattern", step: follow_up}
+      - {who: homeowner, text: "no rain in about 5 weeks. it got bigger last week. the upstairs bath is right above it"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "1"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo] hall ceiling with a brown ring stain, no drip"}
+    questions_asked: 5
+    follow_up_used: fu_when_wet
+    skipped_bank_questions: [problem, leak_where]
+    routing: {category: plumbing_repair, job_type: leak_slow, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Plumbing repair | Lake Havasu City, general area not said | house
+      Brown ring stain about the size of a dinner plate on the upstairs hall ceiling, under the upstairs bathroom; got bigger last week.
+      Drips: when the upstairs bathroom is used. Shows at: upstairs hall ceiling. Valve: not tried. Rain: none in about 5 weeks.
+      Photos: 1 (hall ceiling with a brown ring stain, no drip). Homeowner adds: none.
+      Needed: today.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s04
+    transcript:
+      - {who: homeowner, text: "My roof is shot and needs to be replaced. Every time it rains the water comes in the living room by the skylight. I want quotes for a whole new roof."}
+      - {who: intake, text: "Which town and ZIP is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city 86403"}
+      - {who: intake, text: "What kind of roof is it? 1 Tile 2 Shingle 3 Flat or foam 4 Metal", step: question}
+      - {who: homeowner, text: "tile"}
+      - {who: intake, text: "About how old is the roof? 1 Under 10 years 2 10 to 20 years 3 Over 20 years", step: follow_up}
+      - {who: homeowner, text: "about 12 years. and there are no other stains anywhere in the house that i know of"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "3"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo] ceiling around the skylight well, faint brown ring on the drywall"}
+    questions_asked: 4
+    follow_up_used: fu_roof_age
+    skipped_bank_questions: [problem, leak_where, stories, home_size]
+    routing: {category: roof_repair, job_type: flashing_skylight, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Roof repair | Lake Havasu City, general area not said | house
+      Water comes into the living room by the skylight when it rains; faint brown ring on the ceiling drywall.
+      Spot: skylight. Wet when: rain. Roof: tile, stories not said, age about 12 years. Shows in: living room.
+      Photos: 1 (ceiling around the skylight well, faint brown ring on the drywall). Homeowner adds: says the roof is shot and asked for a whole new roof quote.
+      Needed: flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s05
+    transcript:
+      - {who: homeowner, text: "got a leak in the back bedroom when it rains. sent a pic of the roof, tiles look messed up on the front"}
+      - {who: intake, text: "Which town and ZIP is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city 86403"}
+      - {who: intake, text: "What kind of roof is over the back bedroom that leaks? 1 Tile 2 Shingle 3 Flat or foam 4 Metal", step: question}
+      - {who: homeowner, text: "oh the back is flat, i forgot. white coating with foam under it i think"}
+      - {who: intake, text: "How many stories? 1 One 2 Two or more", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "About how old is the roof over that room? 1 Under 10 years 2 10 to 20 years 3 Over 20 years", step: follow_up}
+      - {who: homeowner, text: "the back part is about 12 years old. front is older"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "2"}
+      - {who: intake, text: "Could you send a photo from the ground of the flat back section over the bedroom? No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[photo] flat back section, white coating, blisters, one yellow spot showing, shallow puddle near the edge"}
+    questions_asked: 5
+    follow_up_used: fu_roof_age
+    skipped_bank_questions: [problem, leak_where]
+    routing: {category: roof_repair, job_type: leak_repair, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Roof repair | Lake Havasu City, general area not said | house
+      Leak in the back bedroom when it rains; the roof over that room is a flat white-coated section.
+      Roof: flat foam or coated, stories not said, about size not said, age about 12 years for the back section.
+      Shows in: one room. Now: only when it rains. Wet when: rain.
+      Photos: 2 (front roof: three tiles slipped near the eave; back flat section: white coating with blisters, one yellow spot, shallow puddle near the edge). Homeowner adds: thinks the front tiles look messed up.
+      Needed: this week.
+    facts_in_card_not_stated: []
+
+# @@NEXT@@
