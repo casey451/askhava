@@ -39,7 +39,7 @@ The "after" column is the spec text. Spanish follows once the English is settled
 | Last reminder (PICK-037) | "Ask Hava: Last reminder: confirm job <n> by <time>, or the homeowner may choose another quote." | "Ask Hava: Last reminder: job 1042 has 1 hour to confirm. After 2:15 p.m. the homeowner can choose another quote." |
 | When the fee is owed (BIZ-030) | "It's a fixed introduction fee, never a share of the job, and it doesn't depend on the work being done or paid for." (kept) | Added first: "You pay one fixed fee when you confirm a pick: $25, $75 or $199 by job size. It's not a share of the job. If you call twice inside the homeowner's window and can't reach them, the refund rule gives the fee back without you asking." |
 | Missed cards (BIZ-044) | "Ask Hava: Last month: 6 job requests, 2 quoted, 4 ended without a quote. ..." | "Ask Hava: Last month you got 6 job requests and quoted 2. 4 closed before you quoted. If our emails land in Spam or Promotions, this 1-minute fix moves them to your inbox: <link>. Or add a second address: <link>." |
-| Another quote picked (PICK-026) | "The homeowner picked another quote for job 1042. ..." | "Job 1042 went to another business this time. 4 businesses quoted; the picked quote was lower than yours. No action needed. Thanks for quoting." |
+| Another quote picked (PICK-026) | "The homeowner picked another quote for job 1042. ..." | "Ask Hava: Job 1042 went to another business this time. 4 businesses quoted; the picked quote was lower than yours. No action needed. Thanks for quoting." |
 
 The HELP reply (CON-018) is unchanged: carriers need its contact details, and the legal-document check uses its reply-time sentence.
 

@@ -39,7 +39,7 @@ The full table is `docs/sources.md:38`–`docs/sources.md:53`. The ones most lik
 | Price lock 12 months for early joiners (D-197) | **6 months** | D-465, `docs/decisions.md:629` |
 | v9.3 host Render by default (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:66`) | Railway Pro if its Backups tab shows point-in-time recovery, otherwise Render | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:72` |
 | v9.3 backup person (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:429`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:464`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:704`) | None for now; safe mode after 24 hours without Casey | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:73` |
-| v9.3: describe the model to Twilio support before registering (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:253`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:696`) | No pre-clearance request; register only when the full site is live | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:160`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:173` |
+| v9.3: describe the model to Twilio support before registering (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:253`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:696`) | Superseded: Casey sends the written eligibility question first, and registers only after Twilio's answer and once the full site is live (TERMS-014, D-305, D-477) | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:160`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:173` |
 | "Insurance on file: Yes/No" (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:48`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:64`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:144`) | "Insurance (business-reported): Yes/No" | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:190`; `BUILD_BRIEF.md:452` |
 | Gate A owner approval (`sources/02_build_plan/Kit_Plan_Before_Coding.md:39`) and owner approvals of K2b and K3 | Gate A removed; K2b and K3 decided by Claude and logged | `BUILD_BRIEF.md:533`, `BUILD_BRIEF.md:538` |
 | Required checks `ci`, `twin`, `security`, `a11y` | `Ci`, `Twin`, `Ally` (security runs inside `Ci`) — a *how* item, so the brief wins | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:296`; `BUILD_BRIEF.md:259` |
@@ -100,7 +100,7 @@ The full table is `docs/sources.md:38`–`docs/sources.md:53`. The ones most lik
 **The legal gate.** Every item in changes-file §7 is built in; items marked **gate** must also be cleared before any business signs, any live charge or any real homeowner request. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:155`) Every item in changes-file §3, §7 and §7.1 is required. (`BUILD_BRIEF.md:431`)
 
 Gate items and other pre-launch requirements:
-- **Business consent:** sign-up checkbox with written E-SIGN consent to job-card texts and automated calls; version and timestamp stored. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:181`)
+- **Business consent:** sign-up checkbox with written E-SIGN consent to job-card emails (and texts only while business texting is on, TXT-035); no consent to automated calls is asked for, because Ask Hava never calls businesses (D-344, D-477); version and timestamp stored. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:181`)
 - **Business setup:** LLC via a commercial registered agent with a Maricopa County address; Lake Havasu City business license (home-occupation if run from home; never publish the home address); USPTO search for "Ask Hava" and "Hava" in Classes 35 and 42 before brand spending. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:226`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:229`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:254`)
 - **Recruiting:** mostly self-serve from hand-written, disclosed Facebook group posts; a few visits; never texts or calls (BIZ-048, D-456, `docs/decisions.md:620`). D-181's in-person launch-week sign-ups are superseded.
 - **Insurance:** later, after the business is fully working (Casey, D-426, `docs/decisions.md:575`); the changes file's "before Gate C" line (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:247`) is superseded by that decision.
@@ -113,7 +113,7 @@ Gate items and other pre-launch requirements:
 - Each category stores its license rule: none (city license list plus identity chain), ROC class, or other state agency. Adding a category is a settings change. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:35`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:39`)
 - ROC classes are checked from the ROC's daily lists plus a live lookup at each pick. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:38`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:65`)
 - ROC and city lists are for verification only, never recruiting. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:250`)
-- License class comes from the state record at sign-up, never typed by the business. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:115`)
+- License class comes from the state record at sign-up, never typed by the business, except a pest-management license, which the business attests with its number (LIC-047, D-417, D-477). (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:115`)
 - Eligibility is re-checked at the pick and again at Confirm. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:222`)
 - A misread license page never changes a verified status; lookups never guess. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:130`, `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:194`)
 - A category that isn't confirmed stays switched off; the AI never guesses. (`sources/02_build_plan/Build_Plan.md:34`)
@@ -143,8 +143,8 @@ Gate items and other pre-launch requirements:
 - "Your number is never shared" plus "Your first name and address go only to the business you pick." (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:191`)
 - License line: "ROC #___ showed Active on the ROC website when we checked on [date]. Check it yourself." (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:192`)
 - Key terms (fee, STOP/HELP, privacy) also appear in Spanish wherever Spanish copy markets the service. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:195`)
-- Stripe account described as "local service marketplace: introduction fees charged to service businesses." (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:224`)
-- Terms include the independent-business statement and a warranty disclaimer, and limit liability to fees paid. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:247`)
+- Stripe account described as "Quote-request service for homeowners. The business the homeowner chooses pays a set introduction fee." (WORD-015, D-377, D-477; the old "local service marketplace" wording is superseded) (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:224`)
+- Terms include the independent-business statement and a warranty disclaimer, and limit liability to $100 for homeowners (TERMS-004, D-375, D-477). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:247`)
 - A receipt is emailed for every charge, and the charge description names the request number. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:252`)
 
 ## 7. Privacy
@@ -155,7 +155,7 @@ Gate items and other pre-launch requirements:
 4. The build's Claude plan and the app's zero-retention Console organization stay separate accounts. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:307`)
 5. The `ai` module never sees unscrubbed text. (`BUILD_BRIEF.md:133`)
 6. The weekly AI summary takes counts only, never free text. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:294`)
-7. **Contact vault:** no homeowner contact detail leaves the vault except on a confirmed, paid pick. (`BUILD_BRIEF.md:151`) Details are released only after Stripe confirms payment (or a free win is recorded), and the homeowner's phone number is never given to the business. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:218`–`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:225`)
+7. **Contact vault:** no homeowner contact detail leaves the vault except on a confirmed, paid pick. (`BUILD_BRIEF.md:151`) Details are released only after Stripe confirms payment (or a $0 fee decision is recorded: a free first win, a repeat customer under FEE-013 or a fee-free job type under FEE-045, D-477), and the homeowner's phone number is never given to the business. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:218`–`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:225`)
 8. **Privacy policy** must include the no-sharing statement, the CalOPPA plus CTIA contents, and the AI zero-retention disclosure; it never says numbers or opt-ins are shared, sold or transferred. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:180`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:214`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:221`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:176`)
 9. **Photos:** location data stripped; optional; "avoid photos of people"; not sent to the AI unless needed. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:222`)
 10. Never collect SSNs, driver's licenses or tax ID images. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:223`; `BUILD_BRIEF.md:361`)
@@ -165,7 +165,7 @@ Gate items and other pre-launch requirements:
 
 **Consent**
 - The full consent text is the first message to any new number, on every path; the only exceptions are the safety text (D-008), the business sign-up reply (D-132) and the bare-HELP reply (D-131). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:113`; `BUILD_BRIEF.md:445`)
-- The first text also says the business you pick pays a small fee. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:81`) Since fix round 12 the wording is "a set fee of $25 to $199, by quote size", never "small fee" (CON-003, D-371, `docs/decisions.md:501`).
+- Superseded: the first text carries no fee line (CON-003, D-419, D-477); the fee line is in the first-quote text and on the quote page. The old rule was: the first text also says the business you pick pays a small fee. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:81`) Since fix round 12 the wording is "a set fee of $25 to $199, by quote size", never "small fee" (CON-003, D-371, `docs/decisions.md:501`).
 - Emergencies: the safety text goes **before** the consent text. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:86`) A plain keyword list runs before the AI at intake, on every message. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:290`)
 - Only people who contacted us or signed up are texted; never tenants or on-site contacts. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:258`)
 - Business consent by sign-up checkbox (E-SIGN) with version and timestamp. (`BUILD_BRIEF.md:448`)
@@ -173,7 +173,7 @@ Gate items and other pre-launch requirements:
 - Consent, opt-in wording version, STOP/HELP/START events and message logs kept 5 years after the last message to a number. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:183`; `BUILD_BRIEF.md:447`)
 
 **Opt-out**
-- A text that is only *stop, quit, end, revoke, opt out, cancel* or *unsubscribe* (any case), or Spanish *parar, alto, cancelar, baja*, opts out of all texts; honored at once; the reply says "To use Ask Hava again, text START." (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:158`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:114`; `BUILD_BRIEF.md:443`)
+- A text that is only *stop, stopall, quit, end, revoke, opt out, optout, cancel* or *unsubscribe* (any case, D-477), or Spanish *parar, alto, cancelar, baja*, opts out of all texts; honored at once; the reply says "To use Ask Hava again, text START." (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:158`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:114`; `BUILD_BRIEF.md:443`)
 - A message that merely contains "stop" is not an opt-out. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:188`)
 - One confirmation only. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:261`)
 - A STOP returner who texts again is treated as a new request. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:95`)
@@ -263,7 +263,7 @@ From the AI legal-research memos (Memo 1 Part V.B and R-14, Memo 4 Part F), adop
 5. No scheduling of work, multi-trade bundling or materials selection.
 6. No percentage fees and no fee tied to the final bill.
 7. No requests from outside sources without disclosure; no buying or selling of request data.
-8. No inspection tied to a home sale, purchase or refinance (LIC-015, RESPA section 8, D-376).
+8. No introduction fee on any inspection tied to a home sale, purchase or refinance: it is a fee-free job type (LIC-015, FEE-045, RESPA section 8, D-376, D-403, D-477).
 9. Pest control only for businesses that attest to a Department of Agriculture license, with every pest card saying it isn't independently verified (LIC-012, LIC-047, LIC-048; Casey's D-417, `docs/decisions.md:559`, replaces the written-answer hold).
 10. No recruiting texts or calls to businesses (BIZ-048, A.R.S. 44-1282 and 44-1272, D-374, `docs/decisions.md:504`).
 11. No town outside Arizona (INT-022, D-382, `docs/decisions.md:512`).

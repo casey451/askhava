@@ -89,7 +89,7 @@ def test_every_draft_starts_with_the_note() -> None:
         ),
         (
             "privacy-policy.md",
-            "no AI reads your messages right now.",
+            "You see the card before it goes.",
             "The AI never writes anything.",
             "missing AI-018 wording",
         ),
