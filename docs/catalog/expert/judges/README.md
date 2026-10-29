@@ -36,3 +36,7 @@ A category that cannot reach the bar is listed with the reason and the proposed 
 ## Honesty about what this proves
 
 The homeowner is played by a model from a script. That tests whether the playbook asks the right things and writes a quotable card; it does not test real people's patience or real photos. The hand-run test (`docs/pilot/hand-run-test.md`) is where real businesses say whether a card is quotable; `improvement_loop.md` feeds that back.
+
+## Known fault in this harness, and the first fix
+
+In run-2026-10-29 one agent played both the homeowner and the intake, so it held the scenario's hidden facts while writing the card. Judges found hidden facts on cards that no message carried (hvac v3 s03, s04, s07, s09; pool repair playbook s10). The C6 counts for every variant include this leakage. Fix before the next run: two agents per scenario, a homeowner agent that holds `hidden_facts` and answers only what is asked, and an intake agent that sees only the messages and the files the plan gives it. The run prompts stay as written; the orchestration changes.
