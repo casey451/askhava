@@ -583,13 +583,24 @@ def finish(
         if not env.push_state(reviewed, state):
             return "lost_race"
         if not env.push_branch(res.branch, res.head_sha):
-            return "push_failed"  # lease stays; on expiry the task returns to the queue (BUILD_BRIEF.md:271)
+            return _push_failed(env, reviewed, tid)
         merged = _auto_merge(reviewed, env, tid, res.head_sha)
         state, final = reviewed, st.with_task(final, tid, **review, auto_merge=st.entry(merged, tid)["auto_merge"])
     final["lease"] = None
     if not env.push_state(final, state):
         return "lost_race"
     return str(st.entry(final, tid)["status"])
+
+
+def _push_failed(env: Env, state: State, tid: str) -> str:
+    """A rejected branch push is a credential or permission problem, not the worker's: retrying would
+    spend a whole attempt to fail the same way. The task is BLOCKED with the reason (only its dependents
+    wait), the lease is released at once and the build moves on; a person fixes the cause and re-queues
+    the task (D-513)."""
+    reason = "branch push rejected; fix the push credential, then set the task back to QUEUED"
+    blocked = st.with_task(state, tid, status=st.BLOCKED, reason=reason)
+    blocked["lease"] = None
+    return "push_failed" if env.push_state(blocked, state) else "lost_race"
 
 
 def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], WorkerResult]) -> str:
