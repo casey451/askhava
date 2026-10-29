@@ -47,16 +47,6 @@ sources:
     url: "https://www.azleg.gov/ars/44/01612.htm"
     checked: "2026-10-29"
     kind: statute
-  - id: ars_44_1613
-    title: "[S37] A.R.S. 44-1613 Unlawful moving practices (no refusing to deliver or unload, no threatening a carrier's lien; ads must state all fees and the real extent of loss or damage coverage)"
-    url: "https://www.azleg.gov/ars/44/01613.htm"
-    checked: "2026-10-29"
-    kind: statute
-  - id: ars_44_1614
-    title: "A.R.S. 44-1614 Delivery and unloading; exemption (services not in the contract need the consumer's written acknowledgment of the fee before they are done)"
-    url: "https://www.azleg.gov/ars/44/01614.htm"
-    checked: "2026-10-29"
-    kind: statute
   - id: fmcsa_rr
     title: "FMCSA, Your Rights and Responsibilities When You Move (federal rules apply to moves from one state to another, not between two points in the same state; released value no more than 60 cents per pound per article; broker arranges, mover transports)"
     url: "https://www.fmcsa.dot.gov/sites/fmcsa.dot.gov/files/2023-10/FMCSA_R%26R_Handbook_Web_v1.pdf"
@@ -290,7 +280,7 @@ job_types:
         options_en: ["All to a new home", "Some to a new home, some given away or hauled off", "None of it goes to a new home"]
         options_es: ["Todo a una casa nueva", "Una parte a casa nueva, otra se regala o se tira", "Nada va a una casa nueva"]
         card_field: true
-        why: "Moving law covers goods taken to a place the consumer chooses, not disposal; a no answer is a cleanout or donation job."
+        why: "Moving law covers goods taken to a place the consumer chooses, not disposal; a no answer is a cleanout or donation job. [src:ars_44_1611]"
     photos_priority: [p1, p2, p3]
     urgency:
       fire_dept_triggers: ["Gas smell after a gas dryer, range or grill was unhooked"]
@@ -348,7 +338,7 @@ job_types:
         options_en: ["Both in Arizona", "One is in another state"]
         options_es: ["Los dos en Arizona", "Uno está en otro estado"]
         card_field: true
-        why: "Ask Hava refuses any move that starts or ends outside Arizona, and close towns like Needles and Laughlin are across the line."
+        why: "Ask Hava refuses any move that starts or ends outside Arizona, and close towns like Needles and Laughlin are across the line. [src:ah_lic_017]"
       - fu_heavy_items
       - fu_other_end
       - fu_packing
@@ -460,7 +450,7 @@ job_types:
         bank_question: null
         follow_up: fu_connected
         photo: p2
-        why_it_moves_price: "Unbolting adds time, and a wired hot tub or gas appliance needs a licensed disconnect first, which a mover does not do."
+        why_it_moves_price: "Unbolting adds time, and a wired hot tub or gas appliance needs a licensed disconnect first, which a mover does not do. [src:ars_32_1121] [src:aac_r4_9_103]"
         skip_if: "Photo shows it free-standing"
       - fact: "Stairs, slope or tight turns on the path at both ends"
         bank_question: stairs
@@ -477,7 +467,7 @@ job_types:
         options_en: ["Free-standing", "Bolted to the floor", "Wired in", "Hooked to gas or water"]
         options_es: ["Suelto", "Atornillado al piso", "Conectado a la electricidad", "Conectado al gas o al agua"]
         card_field: true
-        why: "Gas work is never handyman or mover work in Arizona; the card states the fact and the business decides."
+        why: "Gas work is never handyman or mover work in Arizona; the card states the fact and the business decides. [src:ars_32_1121]"
       - fu_other_end
     photos_priority: [p2, p3]
     urgency:
@@ -634,4 +624,4 @@ business_side:
       answer: "No. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
     - objection: "How do I know the homeowner is real?"
       answer: "Each request comes from a texted phone number we check, with a town, a date and answers to the questions a mover asks. Her name and address go only to the business she picks."
-  quote_tips_for_card: ["Say what the range assumes: crew size, truck size, hours and any minimum", "Say whether drive time is in the range", "Say whether you take the piano, safe or pool table on the card, or that you don't", "Give your earliest date and start time", "Arizona's in-state mover law expects a signed contract with the total estimated price before work starts; your quote here is the range, and your own contract still comes from you"]
+  quote_tips_for_card: ["Say what the range assumes: crew size, truck size, hours and any minimum", "Say whether drive time is in the range", "Say whether you take the piano, safe or pool table on the card, or that you don't", "Give your earliest date and start time", "Arizona's in-state mover law expects a signed contract with the total estimated price before work starts; your quote here is the range, and your own contract still comes from you (A.R.S. 44-1612) [src:ars_44_1612]"]
