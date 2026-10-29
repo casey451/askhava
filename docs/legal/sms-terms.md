@@ -11,7 +11,7 @@ Ask Hava is a quote-request service; the business the homeowner chooses pays Ask
 
 ## 2. How you agree
 
-Texting Ask Hava, or starting a chat on askhava.com, is your OK to get automated texts about your own request. You don't need to reply to agree. Our first reply says:
+Texting Ask Hava, or giving us your mobile number in the chat on askhava.com and typing the code we send to it, is your OK to get automated texts about your own request. You don't need to reply to agree. Our first reply says:
 
 > Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy
 

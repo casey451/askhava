@@ -1102,3 +1102,11 @@ You wanted everything proven before going live. Two new files:
 - **`docs/pilot/dry-run.md`**: a 90-minute rehearsal. Your personal Gmail plays every fake business and homeowner with "+" addresses, and Stripe's test mode takes fake card payments. Six scenarios cover sign-ups, a pick and payment, a too-big handyman quote, a late quote, a job nobody covers, a homeowner who doesn't pick, and a business that won't pay.
 
 The software build already has its own fake test setup (stand-in Twilio, Stripe and email, plus the twin), so this rehearses the hand-run test only.
+
+## ChatGPT's legal research (D-470, October 28)
+
+Bottom line: no law found blocks the paid test, as long as Ask Hava stays a neutral introduction service. A fixed introduction fee is likely lawful in Arizona, but nothing settles it outright; sales tax on the fee is likely not owed, but also unsettled. What changed:
+- **Before the paid weeks** (playbook section 9, checklist item 8a): a one-page **paid-pilot terms** (`docs/pilot/paid-pilot-terms.md`) that every business accepts on a form before it gets a paid-week card; a short **pilot privacy notice** (`docs/pilot/pilot-privacy-notice.md`) linked from the request form, describing only what the test really uses; an unsubscribe footer with a postal address on every job card; the **Lake Havasu City business license** by week 4 at the latest; refund wording that fits email-only contact; and permit-heavy work going only to licensed businesses, with no splitting of a project to fit the handyman limit.
+- **Before launch:** starting a web chat is no longer by itself consent to texts; typing a mobile number and its code is. The privacy policy's breach line now follows the law. The business terms say any tax owed is included. The security program now explains how the FTC Safeguards Rule applies and lists where data lives.
+
+Your call, when you're ready: ask Arizona's Department of Revenue for a private ruling on whether the fee is taxable (the report's advice), or keep researching it yourself as you'd planned. Until then, 8.6% of every fee is set aside.

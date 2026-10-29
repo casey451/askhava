@@ -37,6 +37,19 @@ Each review lists the main risks and checks each control below still works. The 
 8. **Testing:** security tests on every change (SEC-019, SEC-020); dependency and static scans (SEC-021); a vulnerability scan before launch (SEC-023).
 9. **Backups and recovery:** nightly encrypted export with a monthly test restore (OPS-013).
 
+## 4a. Does the FTC Safeguards Rule apply? (reviewed yearly)
+
+Ask Hava closely matches the rule's "finder" example (16 C.F.R. 314.2(h)(2)(xiii)), so it is treated as a financial institution. Whether a homeowner with one request is a "customer" with a continuing relationship is unclear, so this program follows the rule anyway. With fewer than 5,000 consumers' information, 16 C.F.R. 314.6 removes only four requirements: the written risk assessment's details (314.4(b)(1)), continuous monitoring or yearly penetration tests and twice-yearly vulnerability scans (314.4(d)(2)), the written incident-response plan (314.4(h)) and the yearly report (314.4(i)). Every other part of 314.4 still applies. Ask Hava keeps the risk assessment, the incident plan and the yearly report anyway; those are voluntary controls kept as policy. This review is repeated yearly and whenever the service changes.
+
+## 4b. Data inventory
+
+| System | What it holds | Who can see it | How long | Main control |
+|---|---|---|---|---|
+| Hand-run test: Google Forms and Sheet | Requests; first name, job address and email | Owner only | Names, addresses and emails deleted 90 days after the test | Two-step sign-in; sharing off |
+| Hand-run test: Gmail | Requests, quotes, business emails | Owner only | Same | Two-step sign-in; no forwarding; AI features off |
+| Stripe | Business payments; card data held by Stripe | Owner sees payment details, not card numbers | Financial-record schedule | Two-step sign-in |
+| Live service: database and contact vault | As in the privacy policy | The app's vault readers only (architecture section 8) | As in the privacy policy | Field encryption; audit log |
+
 ## 5. Vendors
 
 | Provider | What it does | Checked |
@@ -49,7 +62,7 @@ Each review lists the main risks and checks each control below still works. The 
 | Lob | Identity letters | Same |
 | Anthropic | AI reading (only once switched on) | Same, plus the zero-retention agreement or the recorded API terms (AI-008) |
 
-Each provider gets only what it needs. A new provider is added to this list before it receives any data.
+Each provider gets only what it needs. A new provider is added to this list before it receives any data. Before a provider handles customer information, Ask Hava checks it can keep the information safe, uses terms that require it to do so where the Safeguards Rule applies, and reviews it again yearly based on how sensitive the information is. Google is added for the hand-run test.
 
 ## 6. Training
 
