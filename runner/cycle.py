@@ -531,25 +531,30 @@ def _work(cfg: Config, env: Env, claimed: State, task: dict[str, Any], now: date
     tid = task["id"]
     entry = st.entry(claimed, tid)
     model = attempt_model(task, int(entry.get("attempts", 0)), cfg.models)
-    current = {"state": claimed}
-
+    current: dict[str, Any] = {"state": claimed, "lost": False}
     lane = st.lane_of(claimed, tid) or st.LANE_ONE
 
     def heartbeat() -> None:
-        """Renew when due, on the fresh state (update_state); a lease lost meanwhile is left alone."""
+        """Renew when due, on the fresh state (update_state). It never raises: a renewal that fails in
+        any way (LeaseError, None after every try, any other error) marks the lease lost, and the
+        attempt then ends as lost_race with nothing pushed (D-515)."""
         moment = cfg.clock()
-        if not st.renewal_due(current["state"], moment):
+        if current["lost"] or not st.renewal_due(current["state"], moment):
             return
         try:
             renewed = env.update_state(lambda fresh: st.renew(fresh, tid, cfg.session, moment, lane))
-        except st.LeaseError:
-            return
-        if renewed is not None:
+        except Exception:  # noqa: BLE001  # reason: a heartbeat must never crash the worker loop (D-515)
+            renewed = None
+        if renewed is None:
+            current["lost"] = True
+        else:
             current["state"] = renewed
 
     res = env.run_worker(task, model, str(entry.get("last_failure", "")), heartbeat)
     if res.outcome == "handed_off":
         return "handed_off"  # the session works the task and calls `python3 -m runner --after`
+    if current["lost"]:
+        return "lost_race"  # the lease may belong to another session now: write nothing (D-515)
     return finish(cfg, env, current["state"], task, res, model, now)
 
 
@@ -594,18 +599,35 @@ def finish(
     history = [*st.entry(state, tid).get("history", []), dict(record, result=st.status(final, tid))]
     final = _record_usage(st.with_task(final, tid, history=history), tid, model, res, now, cfg)
     if st.status(final, tid) == st.MERGE_PENDING:
-        review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(st.lease_in(state, lane)), "branch": res.branch}
-        reviewed = st.with_task(state, tid, **review)
-        if not env.push_state(reviewed, state):
-            return "lost_race"
+        reviewed = env.update_state(_review_record(tid, lane, cfg, res))
+        if reviewed is None:
+            return "lost_race"  # no review record, no branch push: the lease is not this session's (D-515)
         if not env.push_branch(res.branch, res.head_sha):
             return _push_failed(env, reviewed, tid, lane)
         merged = _auto_merge(reviewed, env, tid, res.head_sha)
-        state, final = reviewed, st.with_task(final, tid, **review, auto_merge=st.entry(merged, tid)["auto_merge"])
+        review = {k: st.entry(reviewed, tid)[k] for k in ("reviewed_sha", "review_lease", "branch")}
+        final = st.with_task(_ours_onto(state, final, reviewed), tid, **review, auto_merge=st.entry(merged, tid)["auto_merge"])
+        state = reviewed
     final = st.with_lease(final, lane, None)
     if env.update_state(_release_onto(state, final, (tid, lane, cfg.session))) is None:
         return "lost_race"
     return str(st.entry(final, tid)["status"])
+
+
+def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult) -> Callable[[State], State | None]:
+    """The transform for the review record (update_state, D-515): `reviewed_sha`, the lease held and the
+    branch go on the task only while, on the fresh state, this session holds the task's lane lease (live)
+    and the task is IN_PROGRESS; otherwise nothing is written, so auto-merge can never accept a head
+    reviewed under a lease another session has since taken."""
+
+    def apply(fresh: State) -> State | None:
+        held = st.live_lease(fresh, cfg.clock(), lane) or {}
+        if held.get("task") != tid or held.get("session") != cfg.session or st.status(fresh, tid) != st.IN_PROGRESS:
+            return None
+        review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(held), "branch": res.branch}
+        return st.with_task(fresh, tid, **review)
+
+    return apply
 
 
 def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Callable[[State], State | None]:
@@ -614,7 +636,9 @@ def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Ca
     On an unchanged state it is `final` itself. When another writer moved the state meanwhile (an
     inbox record, a graph sync), it applies only what finish changed (the keys and task entries that
     differ from `base`) onto the fresh state, and only while this session still holds the task's
-    lane lease and the task's status is still the one finish started from; otherwise it gives up."""
+    lane lease and the task's status is still the one finish started from; otherwise it gives up.
+    What it applies replaces whole values (see _ours_onto): this task's own entry and the top-level
+    keys finish touched (`usage`, `pacing`), nothing else."""
     tid, lane, session = holder
 
     def apply(fresh: State) -> State | None:
@@ -629,7 +653,12 @@ def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Ca
 
 
 def _ours_onto(base: State, ours: State, fresh: State) -> State:
-    """`fresh` with every top-level key and task entry that `ours` changed from `base` taken from `ours`."""
+    """`fresh` with every top-level key and task entry that `ours` changed from `base` taken from `ours`.
+
+    Replacement is whole, not field by field: a changed task entry replaces the fresh entry entirely,
+    and a changed top-level key (in finish: `usage`, and `pacing` if it moved) replaces the fresh value.
+    finish changes only its own task's entry and those keys, so another writer's tasks and keys stay;
+    the lease keys are never taken from `ours` (the caller sets the lane itself)."""
     out = copy.deepcopy(fresh)
     for key in (set(base) | set(ours)) - {"tasks", "lease", "leases"}:
         if key in ours and ours[key] != base.get(key):

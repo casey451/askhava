@@ -884,3 +884,73 @@ def test_drill_heartbeat_leaves_a_lost_lease_alone(tmp_path: Path) -> None:
     env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
     cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
     assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+
+
+STALL = NOW + timedelta(hours=3, minutes=1)  # the runner stalled past the lease's three hours
+
+
+def _released_and_reclaimed(env: FakeEnv) -> None:
+    """Another session's cycle after the stall: the expired lease is released and T001 claimed again."""
+    env.store = st.claim(st.release_expired(env.store, STALL), "T001", "s2", STALL)
+
+
+def _ends_lost_with_nothing_written(env: FakeEnv) -> None:
+    assert env.store["lease"]["session"] == "s2" and st.status(env.store, "T001") == st.IN_PROGRESS
+    assert "reviewed_sha" not in st.entry(env.store, "T001") and env.branch_pushes == [] and env.auto_merges == []
+
+
+def test_drill_a_stalled_worker_whose_lease_was_reclaimed_writes_nothing(tmp_path: Path) -> None:
+    """D-515 review, blocking: the lease expired during a stall and another session claimed the task;
+    our worker then finishes without a heartbeat in between. No review record, no branch push."""
+    env = FakeEnv()
+    clock = {"now": NOW}
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        _released_and_reclaimed(env)
+        clock["now"] = STALL + timedelta(minutes=5)
+        return reviewed(task, model, head="late0001")
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: a worker that stalls and then finishes
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+    _ends_lost_with_nothing_written(env)
+
+
+def test_drill_a_heartbeat_after_the_lease_was_reclaimed_ends_lost_with_no_push(tmp_path: Path) -> None:
+    env = FakeEnv()
+    clock = {"now": NOW}
+    pushes: list[int] = []
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        _released_and_reclaimed(env)
+        clock["now"] = STALL + timedelta(minutes=5)
+        pushes.append(env.pushes)
+        heartbeat()
+        heartbeat()  # once lost, later beats do nothing
+        return reviewed(task, model, head="late0001")
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+    assert env.pushes == pushes[0]
+    _ends_lost_with_nothing_written(env)
+
+
+def test_drill_a_heartbeat_never_raises_when_the_state_cannot_be_read(tmp_path: Path) -> None:
+    """D-515 review, medium: a failed read inside the renewal must not crash the runner mid-worker."""
+    env = FakeEnv()
+    clock = {"now": NOW}
+
+    def unreadable(transform: Callable[[st.State], st.State | None]) -> st.State | None:
+        raise RuntimeError("kit/state.json not found on claude/kit-state")
+
+    def run(task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> cycle.WorkerResult:
+        env.update_state = unreadable  # type: ignore[method-assign]  # reason: a fetch that fails
+        clock["now"] = NOW + timedelta(minutes=31)
+        heartbeat()
+        return good(task, model)
+
+    env.run_worker = run  # type: ignore[method-assign]  # reason: call the heartbeat the way a worker loop does
+    cfg = config([make_task("T001")], tmp_path, clock=lambda: clock["now"])
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+    assert env.store["lease"]["session"] == "s1" and env.branch_pushes == []

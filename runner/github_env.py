@@ -64,6 +64,7 @@ RUNNER_LOG = "kit/runner_log.jsonl"  # one JSON line per cycle, the last 200 kep
 ANSWERS_FILE = "kit/owner_answers.jsonl"
 PUSH_RETRIES = 3
 UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-515)
+UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError)  # a failed read or push: one lost try
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
 HEARTBEAT_SECONDS = 60
 ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
@@ -309,18 +310,47 @@ class GitHubEnv:
         do not collide again in step. `transform` gets a fresh copy each time and must re-check its own
         preconditions on it; None from it stops at once. Returns the state pushed (the fresh state when
         the transform changed nothing, with nothing pushed) or None.
+
+        A failed read or push (a fetch or git error) counts as a lost try, never escapes. Unless it
+        pushes, it puts the refs it read from back as they were (state and lease heads, blob, last
+        state), so a later push_state against an older base is still rejected as a lost race; an
+        exception from `transform` (LeaseError) is raised after that restore.
         """
-        for attempt in range(UPDATE_ATTEMPTS):
+        saved = (self.state_head, self.lease_head, self.state_blob, self.last_state)
+        keep = False
+        try:
+            for attempt in range(UPDATE_ATTEMPTS):
+                if attempt:
+                    self.sleep(random.uniform(0.5, 2.0) * attempt)
+                done, result = self._update_once(transform, attempt)
+                if done:
+                    keep = result is not None
+                    return result
+            return None
+        finally:
+            if not keep:
+                self.state_head, self.lease_head, self.state_blob, self.last_state = saved
+
+    def _update_once(self, transform: Callable[[State], State | None], attempt: int) -> tuple[bool, State | None]:
+        """One update_state try: (True, pushed state or None) when finished, (False, None) to try again."""
+        try:
             fresh = self.read_state()
-            new = transform(json.loads(json.dumps(fresh)))
-            if new is None:
-                return None
-            if new == fresh or self.push_state(new, fresh):
-                return new
-            self.log.append(f"update_state: lost race {attempt + 1} of {UPDATE_ATTEMPTS}")
-            if attempt + 1 < UPDATE_ATTEMPTS:
-                self.sleep(random.uniform(0.5, 2.0) * (attempt + 1))
-        return None
+        except UPDATE_ERRORS as exc:
+            self.log.append(f"update_state: read failed on try {attempt + 1} of {UPDATE_ATTEMPTS}: {str(exc)[:200]}")
+            return False, None
+        new = transform(json.loads(json.dumps(fresh)))
+        if new is None:
+            return True, None
+        if new == fresh:
+            return True, fresh
+        try:
+            if self.push_state(new, fresh):
+                return True, new
+        except UPDATE_ERRORS as exc:
+            self.log.append(f"update_state: push failed on try {attempt + 1} of {UPDATE_ATTEMPTS}: {str(exc)[:200]}")
+            return False, None
+        self.log.append(f"update_state: lost race {attempt + 1} of {UPDATE_ATTEMPTS}")
+        return False, None
 
     def _push_atomic(self, state_commit: str, lease_commit: str) -> bool:
         if self.dry_run:

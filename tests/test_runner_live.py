@@ -583,3 +583,51 @@ def test_renew_command_renews_on_the_fresh_state(repo: dict[str, Path], tmp_path
     assert doc["lease"]["expires"] == "2026-11-01T15:31:00Z" and doc["leases"]["1"] == dict(doc["lease"], lane="1")
     stranger = cycle.Config([TASK], MODELS, [], [], env.outbox_dir, "nobody", lambda: later)
     assert entry.renew(stranger, env).startswith("renew_refused")
+
+
+def test_update_state_survives_a_failed_read_and_restores_the_heads(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-515 review, medium: a fetch or read failure is a lost try, never an exception."""
+    env = make_env(repo["a"], tmp_path)
+    env.read_state()
+    heads = (env.state_head, env.lease_head)
+    waits: list[float] = []
+    env.sleep = waits.append  # no real waiting in tests
+    env.state_ref = "claude/missing"  # kit/state.json not found: read_state raises RuntimeError
+    assert env.update_state(lambda fresh: dict(fresh, mine=True)) is None
+    assert len(waits) == 4 and (env.state_head, env.lease_head) == heads
+    assert sum("read failed" in line for line in env.log) == 5
+
+
+def test_update_state_gives_up_without_moving_the_base_a_stale_push_needs(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-515 review, blocking: after update_state gives up or its transform raises, the heads are back
+    where they were, so a push against the older base is still rejected as a lost race."""
+    env, rival = claimed_on_origin(repo, tmp_path), make_env(repo["b"], tmp_path, "b")
+    stale = env.read_state()
+    theirs = rival.read_state()
+    assert rival.push_state(st.with_task(theirs, "K11"), theirs)
+    assert env.update_state(lambda fresh: None) is None
+    with pytest.raises(st.LeaseError):
+        env.update_state(lambda fresh: st.renew(fresh, "K10", "nobody", NOW))
+    assert env.push_state(st.with_task(stale, "K10", note="stale"), stale) is False
+
+
+def test_drill_finish_after_the_lease_was_reclaimed_writes_no_review_and_pushes_no_branch(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-515 review, blocking, over real git: the runner stalls past three hours, another session releases
+    the lease and claims the task again, the heartbeat's renewal fails, then the worker finishes."""
+    env, rival = claimed_on_origin(repo, tmp_path), make_env(repo["b"], tmp_path, "b")
+    stale = env.read_state()
+    later = NOW + timedelta(hours=3, minutes=1)
+    theirs = rival.read_state()
+    assert rival.push_state(st.claim(st.release_expired(theirs, later), "K10", "session-b", later), theirs)
+    with pytest.raises(st.LeaseError):  # what the heartbeat's renewal meets
+        env.update_state(lambda fresh: st.renew(fresh, "K10", "session-a", later))
+    head = worker_commit(repo["a"], TASK["branch"], "docs/k10/note.md")
+    res = cycle.WorkerResult("submitted", ["docs/k10/note.md"], [MODELS["sonnet"]], branch=TASK["branch"], head_sha=head,
+                             reviewer_evidence=[MODELS["opus"]])
+    cfg = cycle.Config([TASK], MODELS, [], [], env.outbox_dir, "session-a", lambda: later)
+    env.enable_auto_merge = lambda b, h: (_ for _ in ()).throw(AssertionError("no auto-merge"))  # type: ignore[method-assign]  # reason: must not be reached
+    assert cycle.finish(cfg, env, stale, TASK, res, MODELS["sonnet"], later) == "lost_race"
+    state = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    assert "reviewed_sha" not in st.entry(state, "K10")
+    assert json.loads(origin_file(repo, "claude/lease", "lease.json"))["lease"]["session"] == "session-b"
+    assert git(repo["origin"], "branch", "--list", TASK["branch"]) == ""
