@@ -1,0 +1,479 @@
+# Written by Claude (expert layer, Oct 29 2026), not part of the Grok delivery (D-431). AI research, not legal advice.
+# Ask Hava trade knowledge file: dryer_vent_cleaning. Schema: foundation/schema.yaml (v2). Items marked [judgment] are
+# not from a cited source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: dryer_vent_cleaning
+display_name: Dryer-vent cleaning
+summary: >
+  Cleaning the duct that carries air and lint from a clothes dryer to the outside of the home, from the dryer
+  connection to the vent cover on a wall, the roof or under a manufactured home. Jobs include a standard cleaning,
+  long or roof-exit runs, clearing a bird nest or other blockage at the vent, and a vent check when the dryer is slow
+  to dry. Cleaning only: repairing the dryer itself goes to appliance repair, and moving, rerouting or replacing the
+  vent is refused here and goes to handyman as "dryer vent reroute" (LIC-028). Ask Hava collects where the vent comes
+  out, stories, run length, what the homeowner sees at the vent and gas or electric, then sends an anonymous job card.
+  Businesses quote a firm price in their own words.
+job_types:
+- id: standard_vent_cleaning
+  label: Standard dryer vent cleaning (wall exit, short run)
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'no'
+- id: long_or_roof_vent
+  label: Long run or roof-exit vent cleaning
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: blockage_bird_nest
+  label: Bird nest or blockage removal at the vent
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: dryer_not_drying
+  label: Dryer slow to dry, vent check and cleaning only (no appliance repair)
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: reroute_or_replace
+  label: Move, reroute or replace the vent (refused here, route to handyman "dryer vent reroute")
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+triggers_en:
+- phrase: dryer vent cleaning
+  job_type: null
+- phrase: clean my dryer vent
+  job_type: null
+- phrase: dryer vent
+  job_type: null
+- phrase: drier vent
+  job_type: null
+- phrase: dryer duct cleaning
+  job_type: null
+- phrase: lint in the vent
+  job_type: null
+- phrase: vent cleaning for the dryer
+  job_type: null
+- phrase: dryer vent cleaned
+  job_type: standard_vent_cleaning
+- phrase: annual dryer vent cleaning
+  job_type: standard_vent_cleaning
+- phrase: lint built up outside by the vent
+  job_type: standard_vent_cleaning
+- phrase: dryer vent on the side of the house
+  job_type: standard_vent_cleaning
+- phrase: dryer vent goes out the roof
+  job_type: long_or_roof_vent
+- phrase: roof dryer vent
+  job_type: long_or_roof_vent
+- phrase: dryer vent on roof
+  job_type: long_or_roof_vent
+- phrase: long dryer vent
+  job_type: long_or_roof_vent
+- phrase: 2 story dryer vent
+  job_type: long_or_roof_vent
+- phrase: laundry room in the middle of the house
+  job_type: long_or_roof_vent
+- phrase: bird nest in dryer vent
+  job_type: blockage_bird_nest
+- phrase: birds in my dryer vent
+  job_type: blockage_bird_nest
+- phrase: brids nesting in the vent
+  job_type: blockage_bird_nest
+- phrase: dryer vent clogged
+  job_type: blockage_bird_nest
+- phrase: dryer vent blocked
+  job_type: blockage_bird_nest
+- phrase: vent flap stuck shut
+  job_type: blockage_bird_nest
+- phrase: something stuck in dryer vent
+  job_type: blockage_bird_nest
+- phrase: dryer not drying
+  job_type: dryer_not_drying
+- phrase: dryer takes forever
+  job_type: dryer_not_drying
+- phrase: clothes still wet after drying
+  job_type: dryer_not_drying
+- phrase: takes 2 cycles to dry
+  job_type: dryer_not_drying
+- phrase: dryer takes two loads to dry towels
+  job_type: dryer_not_drying
+- phrase: dryer realy slow
+  job_type: dryer_not_drying
+- phrase: dryer gets super hot but clothes wet
+  job_type: dryer_not_drying
+- phrase: move my dryer vent
+  job_type: reroute_or_replace
+- phrase: reroute dryer vent
+  job_type: reroute_or_replace
+- phrase: replace dryer vent hose
+  job_type: reroute_or_replace
+- phrase: new dryer vent
+  job_type: reroute_or_replace
+- phrase: dryer vent fell off the wall
+  job_type: reroute_or_replace
+- phrase: crushed dryer vent behind dryer
+  job_type: reroute_or_replace
+triggers_es:
+- phrase: limpiar el ducto de la secadora
+  job_type: null
+- phrase: limpieza de ducto de secadora
+  job_type: null
+- phrase: ducto de la secadora
+  job_type: null
+- phrase: limpiar la ventila de la secadora
+  job_type: null
+- phrase: pelusa en el ducto
+  job_type: standard_vent_cleaning
+- phrase: el ducto sale por el techo
+  job_type: long_or_roof_vent
+- phrase: nido de pájaros en el ducto
+  job_type: blockage_bird_nest
+- phrase: ducto de la secadora tapado
+  job_type: blockage_bird_nest
+- phrase: la secadora no seca
+  job_type: dryer_not_drying
+- phrase: la secadora tarda mucho
+  job_type: dryer_not_drying
+- phrase: mover ducto de secadora
+  job_type: reroute_or_replace
+- phrase: cambiar el ducto de la secadora
+  job_type: reroute_or_replace
+questions:
+- id: q1_vent_exit
+  text: Where does the vent come out?
+  options:
+  - Side wall
+  - Roof
+  - Under the home or through the floor
+  - Not sure where
+  ask_if: job_type != reroute_or_replace
+  changes_price: 'yes'
+  why: A roof exit means roof access and more time than a wall exit; a floor exit means work under the home.
+    [judgment]
+- id: q2_stories
+  text: How many stories?
+  options:
+  - '1'
+  - 2 or more
+  ask_if: job_type != reroute_or_replace
+  changes_price: 'yes'
+  why: Two-story homes often mean a taller ladder or a longer run. [judgment]
+- id: q3_run_length
+  text: About how far is the dryer from where the vent comes out?
+  options:
+  - Under 10 feet
+  - 10 to 25 feet
+  - Over 25 feet
+  - Not sure
+  ask_if: job_type != reroute_or_replace
+  changes_price: 'yes'
+  why: Longer runs with more bends take more time and tools to clean. [judgment]
+- id: q4_seen_at_vent
+  text: What do you see at the outside vent?
+  options:
+  - Birds or a nest
+  - Lint around the cover
+  - Flap stuck or cover broken
+  - Nothing unusual
+  - Not sure
+  ask_if: job_type != reroute_or_replace
+  changes_price: 'yes'
+  why: Clearing a nest or a stuck cover can add time; a broken cover may need a part. [judgment]
+- id: q5_fuel
+  text: Is the dryer gas or electric?
+  options:
+  - Electric
+  - Gas
+  - Not sure
+  ask_if: job_type != reroute_or_replace
+  changes_price: 'yes'
+  why: Some businesses handle a gas dryer differently when they pull it out to reach the duct; any gas connection
+    work is never handyman work [S4]. Price effect is [judgment].
+- id: q6_symptom
+  text: Is the dryer taking longer than usual?
+  options:
+  - 'Yes'
+  - 'No'
+  - Not sure
+  ask_if: job_type not in [dryer_not_drying, reroute_or_replace]
+  changes_price: 'no'
+  why: Helps the business know what the homeowner is noticing; it does not by itself set the price. [judgment]
+quote_without_visit_needs:
+- Where the vent comes out (wall, roof, under the home) [judgment]
+- Number of stories [judgment]
+- Rough distance from the dryer to the vent exit [judgment]
+- What the homeowner sees at the outside vent (nest, lint, stuck flap) [judgment]
+- Gas or electric dryer [judgment]
+- A photo of the outside vent cover, and of the roof vent cap if it exits the roof [judgment]
+site_visit_usually_needed:
+- Roof exit on a tile roof or a steep roof [judgment]
+- Vent run that cannot be traced, or the homeowner does not know where it comes out [judgment]
+- Vent under a manufactured home or behind skirting [judgment]
+- Reroute or replace jobs (routed to handyman, not quoted here) [judgment]
+photos_to_request:
+- id: p1_outside_vent
+  ask: A photo of the vent cover on the outside of the house, close enough to see the flap.
+  for_job_types:
+  - standard_vent_cleaning
+  - long_or_roof_vent
+  - blockage_bird_nest
+  - dryer_not_drying
+- id: p2_behind_dryer
+  ask: A photo behind the dryer showing the duct where it connects to the dryer and the wall.
+  for_job_types:
+  - standard_vent_cleaning
+  - long_or_roof_vent
+  - dryer_not_drying
+  - reroute_or_replace
+- id: p3_roof_vent
+  ask: A photo of the vent on the roof, taken from the ground or a window. Please don't go on the roof.
+  for_job_types:
+  - long_or_roof_vent
+  - blockage_bird_nest
+- id: p4_laundry_wide
+  ask: A wide photo of the laundry area showing the dryer and the wall behind it.
+  for_job_types:
+  - long_or_roof_vent
+  - dryer_not_drying
+  - reroute_or_replace
+photo_cues:
+- photo_id: p1_outside_vent
+  look_for:
+  - Vent cover type (flap, louvers, cage)
+  - Lint, nest material or birds at the cover
+  - Height off the ground
+  - Plants, fences or AC units in front of the vent
+  neutral_wording_example: Photo shows a wall vent about 2 feet off the ground with lint around the flap.
+- photo_id: p2_behind_dryer
+  look_for:
+  - Duct type (rigid metal, flexible metal, foil or plastic)
+  - Kinks or crushed sections
+  - Gas connector or electric cord in view
+  - Space between the dryer and the wall
+  neutral_wording_example: Photo shows a flexible foil duct bent behind the dryer, about 4 inches from the wall.
+- photo_id: p3_roof_vent
+  look_for:
+  - Roof type (tile, shingle, flat or foam)
+  - Vent cap style
+  - Nest material or debris at the cap
+  neutral_wording_example: Photo shows a vent cap on a tile roof with what looks like nest material at the opening.
+- photo_id: p4_laundry_wide
+  look_for:
+  - Laundry location (garage, closet, inside room)
+  - Where the duct enters the wall, floor or ceiling
+  - Stacked or side-by-side units
+  neutral_wording_example: Photo shows a side-by-side washer and dryer in the garage with the duct going into the
+    ceiling.
+photo_red_flags:
+- flag: Smoke or flames at the dryer or the vent
+  safety_step_ref: es_dryer_vent_cleaning_1
+- flag: Scorch marks or melted plug at the dryer outlet
+  safety_step_ref: es_dryer_vent_cleaning_3
+- flag: Plastic or foil duct, crushed or pulled loose (note it on the card; replacing it routes to handyman)
+  safety_step_ref: null
+- flag: Gas connector in the photo (any gas connection work is never handyman work [S4])
+  safety_step_ref: null
+- flag: Live birds or eggs in the nest (note it on the card for the business)
+  safety_step_ref: null
+- flag: House number, mail with a name or a gate code visible (crop before the card goes out)
+  safety_step_ref: null
+emergency_signals:
+- id: es_dryer_vent_cleaning_1
+  signal: Smoke or fire at the dryer or the vent
+  emergency: 'yes'
+  safety_step: Not used by the app. Ask Hava sends only the fixed INT-004 911 text for smoke or fire. [judgment]
+  source: INT-004 (D-436)
+  then_route_to: none
+  note: 'Routing: none until the 911 text is sent and the homeowner says they are safe.'
+- id: es_dryer_vent_cleaning_2
+  signal: Gas smell near a gas dryer, or a CO alarm sounding
+  emergency: 'yes'
+  safety_step: Not used by the app. Ask Hava sends only the fixed INT-004 911 text for gas smell or a CO alarm.
+    [judgment]
+  source: INT-004 (D-436)
+  then_route_to: none
+  note: 'Routing: none until the 911 text is sent and the homeowner says they are safe.'
+- id: es_dryer_vent_cleaning_3
+  signal: Sparking or smoking outlet behind the dryer
+  emergency: 'yes'
+  safety_step: Not used by the app. Ask Hava sends only the fixed INT-004 911 text for a sparking outlet. [judgment]
+  source: INT-004 (D-436)
+  then_route_to: none
+  note: 'Routing: none until the 911 text is sent; later work goes to electrical.'
+- id: es_dryer_vent_cleaning_4
+  signal: Slow drying, lint at the vent, birds or a nest, stuck flap
+  emergency: 'no'
+  safety_step: ''
+  source: '[judgment]'
+  then_route_to: dryer_vent_cleaning
+  note: Not an emergency. Normal intake. [judgment]
+safety_step:
+- when: Smoke or fire, gas smell, CO alarm, or a sparking outlet
+  step: Ask Hava sends only the fixed INT-004 911 text. No other safety wording is used. [judgment]
+  source: INT-004 (D-436)
+license_classes:
+- job_type:
+  - standard_vent_cleaning
+  - long_or_roof_vent
+  - blockage_bird_nest
+  - dryer_not_drying
+  work: Cleaning an existing dryer vent and clearing the vent cover
+  classes:
+  - none
+  citation: foundation az_license_master section 5 (cleaning trades, no ROC class) [judgment]; LIC-028
+  other_agency: City business and transaction privilege tax licensing may apply [judgment; not verified].
+  notes: No ROC license applies to cleaning an existing vent; it is not construction [judgment]. Catalog rule LIC-028
+    says dryer-vent cleaning needs no license. Repairing the dryer itself is appliance repair (R-63 covers installing
+    and repairing appliances but not gas, electrical or plumbing lines [S2]).
+- job_type:
+  - reroute_or_replace
+  work: Moving, rerouting or replacing a dryer vent (refused here)
+  classes:
+  - R-62 Minor Home Improvements [judgment]
+  - B-3 General Remodeling and Repair [judgment]
+  - R-45 Sheet Metal (includes ductwork) [judgment]
+  - R-42 Roofing for a new roof opening [judgment]
+  citation: A.A.C. R4-9-103 [S2] for class scopes; fit to vent work is [judgment]; routing per LIC-028
+  other_agency: none
+  notes: Not quoted in this category. Routes to the handyman category as "dryer vent reroute" when the whole job is
+    under $1,000 and needs no permit (A.R.S. 32-1121(A)(14) [S4]). Bigger jobs, new roof or wall openings, or any job
+    that needs a permit go to a licensed contractor. Whether Lake Havasu City requires a permit for a dryer vent
+    reroute is [unverified]; check the city permit list [S17]. Any gas connection work is never handyman work
+    (32-1121(D)) [S4].
+handyman_ok:
+  allowed_examples:
+  - Vent cleaning is not construction, so the handyman rule does not come into play [judgment]
+  - A small vent reroute or duct swap under $1,000 total with no permit (handyman category, "dryer vent reroute")
+    [judgment; LIC-028]
+  not_allowed_examples:
+  - Disconnecting or reconnecting a gas dryer's gas line (32-1121(D)) [S4]
+  - A new roof opening or any vent job that needs a city permit [judgment]
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000; the work is casual or minor; no local building permit is
+    needed; it is not part of a larger job and not split into small contracts to dodge the limit; and any ad says
+    ''not a licensed contractor''. Never covers work connected to natural gas, propane or other fuel gas, or
+    hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+  note: The catalog does not send cleaning cards to handyman businesses (categories.yaml handyman_allowed false).
+    Reroute and replace requests are refused here and routed to the handyman category (LIC-028).
+local_notes:
+- 'Background for staff, not homeowner text: an NFPA fact sheet estimated 17,700 U.S. home structure fires involving
+  clothes dryers or washing machines in 2006 (15 civilian deaths, 360 injuries); dryers made up 92% of these in
+  2003-2006, and the most common factor listed was "failure to clean" (29%). Data is old. Source: [T-nfpa_dryer].'
+- 'Background for staff, not homeowner text: a CPSC staff report estimated 15,500 fires associated with clothes dryers
+  in 1996 and named lint buildup in the airflow system as the largest known contributing factor; in 79 fires it
+  looked into, the duct or vent system was the most frequent location. Data is old. Source: [T-cpsc_dryer].'
+- Many Havasu homes have the laundry in the garage or on an inside wall, so vent runs to the roof are common
+  [judgment].
+- Summer heat runs June to September; garages and roofs get very hot, so roof-exit jobs may be booked for mornings
+  [judgment].
+- 'Monsoon season runs June 15 to September 30; wind and dust can push dust and debris into vent covers. Season dates:
+  [T-nws_monsoon]; vent note [judgment].'
+- Fine desert dust plus lint can pile up at the outside cover and keep the flap from closing [judgment].
+- Tile roofs are common in Havasu; roof-exit vents on tile may need a business that walks tile roofs [judgment].
+- 'City water is hard (about 19 grains per gallon, range 18 to 20). That matters for washers, not dryer vents; washer
+  problems go to appliance_repair. Hardness: [LHC-CCR]; routing note [judgment].'
+- Seasonal residents and vacant second homes may sit empty for months, and birds may nest in vent covers while no one
+  is home [judgment].
+- Vacation rentals run the dryer often between guests, so owners may ask for a cleaning between seasons [judgment].
+- Manufactured homes may vent through the floor or out the skirting, so the business may need to reach under the
+  home [judgment].
+- Some HOAs have rules on visible exterior changes; that matters for a new or moved vent, not for cleaning [judgment].
+- Dryers in RVs and boats go to rv_services or boat_dock, not this category [judgment].
+sample_card: |
+  REQ-0214 | Dryer-vent cleaning | Lake Havasu City, north side
+  Electric dryer in the garage, vent exits the roof, 1 story, run about 10 to 25 feet.
+  Lint around the roof vent cap; dryer taking longer than usual. 3 photos.
+test_messages:
+- id: dryer_vent_cleaning_t01
+  message: dryer vent
+  trade: dryer_vent_cleaning
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: q1_vent_exit
+  ideal_first_question: Where does the vent come out?
+  note: One-word style message; the answers pick the job type.
+- id: dryer_vent_cleaning_t02
+  message: need the dryer vent cleaned it goes out the roof, 2 story house
+  trade: dryer_vent_cleaning
+  job_type: long_or_roof_vent
+  emergency: 'no'
+  first_question_id: q3_run_length
+  ideal_first_question: About how far is the dryer from where the vent comes out?
+  note: Exit and stories already given; skip q1 and q2.
+- id: dryer_vent_cleaning_t03
+  message: dryer takes like 2 cycles to dry towels now
+  trade: dryer_vent_cleaning
+  job_type: dryer_not_drying
+  emergency: 'no'
+  first_question_id: q1_vent_exit
+  ideal_first_question: Where does the vent come out?
+  note: Vague. Vent check only; if the homeowner says no heat, error code or drum not turning, route to
+    appliance_repair.
+- id: dryer_vent_cleaning_t04
+  message: necesito que limpien el ducto de la secadora
+  trade: dryer_vent_cleaning
+  job_type: standard_vent_cleaning
+  emergency: 'no'
+  first_question_id: q1_vent_exit
+  ideal_first_question: ¿Por dónde sale el ducto?
+  note: Spanish.
+- id: dryer_vent_cleaning_t05
+  message: brids keep going in and out of my dryer vent on the side of the house
+  trade: dryer_vent_cleaning
+  job_type: blockage_bird_nest
+  emergency: 'no'
+  first_question_id: q2_stories
+  ideal_first_question: How many stories?
+  note: Wall exit and nest already given; skip q1 and q4.
+- id: dryer_vent_cleaning_t06
+  message: dryer drum wont spin and theres a grinding noise
+  trade: appliance_repair
+  job_type: dryer
+  emergency: 'no'
+  first_question_id: q2_fuel
+  ideal_first_question: Is it gas or electric?
+  note: Wrong trade; the dryer itself, not the vent.
+- id: dryer_vent_cleaning_t07
+  message: need my dryer vent moved to the other wall, redoing the laundry room
+  trade: handyman
+  job_type: minor_repairs_list
+  emergency: 'no'
+  first_question_id: q1_scope_size
+  ideal_first_question: How many things do you need done?
+  note: Caught by the reroute_or_replace trigger here; refused in this category and routed to handyman as "dryer vent
+    reroute" (LIC-028). Larger or permit jobs go to a licensed contractor.
+- id: dryer_vent_cleaning_t08
+  message: smoke coming out of the dryer vent outside
+  trade: dryer_vent_cleaning
+  job_type: unknown
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: Send the INT-004 911 text first.
+  note: Smoke or fire is on the 911 list.
+- id: dryer_vent_cleaning_t09
+  message: clean the dryer vent and the ac air ducts too
+  trade: dryer_vent_cleaning
+  job_type: standard_vent_cleaning
+  emergency: 'no'
+  first_question_id: q1_vent_exit
+  ideal_first_question: Where does the dryer vent come out?
+  note: Mixed; AC duct cleaning is a second card to hvac (ductwork_airflow).
+- id: dryer_vent_cleaning_t10
+  message: secadora
+  trade: dryer_vent_cleaning
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: q1_vent_exit
+  ideal_first_question: ¿Por dónde sale el ducto?
+  note: One-word Spanish; could also be appliance repair. If the answer is about the dryer itself, route to
+    appliance_repair.
+sources:
+- '[T-nfpa_dryer] NFPA, Clothes Dryers and Washing Machines Fact Sheet (One-Stop Data Shop; 2006 estimates, 92% dryers
+  in 2003-2006, failure to clean 29%) https://www.energy.gov/sites/default/files/2016/06/f32/NFPA_DryerFactSheet.pdf'
+- '[T-cpsc_dryer] U.S. CPSC, Final Report on Electric and Gas Clothes Dryers (Clothes Dryer Project, 2000; 15,500
+  fires in 1996, lint as largest known contributing factor) https://www.cpsc.gov/s3fs-public/clothes_1.pdf'
+- '[T-nws_monsoon] National Weather Service Tucson, Monsoon Safety (season June 15 to September 30)
+  https://www.weather.gov/twc/MonsoonSafety'
+- '[LHC-CCR] Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 gpg, range 18 to 20)
+  https://www.lhcaz.gov/DocumentCenter/View/3233'
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'
+- '[S17] Lake Havasu City Building Permits (permit-required and no-permit lists) https://www.lhcaz.gov/229/Building-Permits'
+- INT-004 (D-436) Ask Hava fixed 911 text for the fire-truck list
+- LIC-028 (docs/spec/licensing.md) dryer-vent cleaning needs no license; reroute or replace is handyman work under the
+  $1,000 cap
+- foundation/az_license_master.md section 5 (cleaning trades, no ROC class) [judgment]

@@ -1,0 +1,650 @@
+# Ask Hava expert layer: hvac_replacement (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set hvac_replacement and trade_kb/trades/hvac.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The hvac kb file also serves hvac_repair. Only its replacement-type job types are here:
+#   ac_replacement, package_unit_replacement, mini_split_install. All other hvac kb job types
+#   (ac_not_cooling, ac_not_turning_on, ac_leaking_water, ac_noise_smell, heat_not_working,
+#   heat_pump_issue, mini_split_repair, ac_maintenance, thermostat_issue, ductwork_airflow)
+#   belong to hvac_repair and are left out on purpose.
+# - new_job_type condenser_replacement: the kb's ac_replacement covers "whole system or the
+#   outdoor unit" in one id, but the category routes two job types. ac_replacement carries
+#   "full system replacement"; the outdoor-unit-only change-out gets its own id so
+#   "condenser replacement" has a home.
+# - new_job_type cooler_to_central_ac: a home with a swamp cooler or no cooling that wants
+#   refrigerated central air. The bank's system_type question already offers "Swamp cooler"
+#   and "Nothing yet", and these quotes differ sharply (ducts, roof, electrical). It overlaps
+#   evaporative_coolers.yaml cooler_remove_convert, which hvac_repair routes; review which
+#   category should own the conversion.
+# - mini_split_install routes to "full system replacement" because the category has no
+#   "new install" job type. A category job type "mini-split install" may be cleaner.
+# - Furnace-only replacement has no kb job type and no category job type here; it falls to
+#   hvac_repair "furnace repair" through fu_fix_or_replace, or to full system replacement.
+# - photos_priority uses kb photos p6_minisplit_spot and p8_panel, which the question bank's
+#   3-photo list for this set does not include. Consider adding them to the set.
+schema: 1
+category: hvac_replacement
+question_set: hvac_replacement
+kb_trade: hvac
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (S2): R-39 installs and repairs comfort air conditioning incl. heating; may add a new circuit to the existing panel or sub-panel; excludes a new service panel or sub-panel; R-42 may lift HVAC equipment for roofing"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104 Dual contractor license classifications (S3): CR-39, CR-79"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed (S4): handyman exemption (A)(14) and the fuel-gas carve-out (D)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits (S17): no permit to repair or replace existing air conditioners without increasing unit weight, capacity, location or ampacity; 2024 I-codes and 2023 NEC adopted"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_41_4047
+    title: "A.R.S. 41-4047 Unlawful acts, manufactured homes (alterations only by a licensed or certified person)"
+    url: "https://www.azleg.gov/ars/41/04047.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: epa_r22
+    title: "US EPA Homeowners and Consumers FAQ on the HCFC-22 phaseout (no new R-22 made or imported since Jan 1, 2020; existing systems may still be serviced; no drop-in replacements)"
+    url: "https://www.epa.gov/ods-phaseout/homeowners-and-consumers-frequently-asked-questions"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_tt_actions
+    title: "US EPA Technology Transitions regulatory actions (Oct 2023 rule restricting higher-GWP HFCs from Jan 1, 2025; Dec 2023 rule on installing pre-2025 residential AC and heat pump equipment; May 2026 final rule FR 2026-10387)"
+    url: "https://www.epa.gov/climate-hfcs-reduction/regulatory-actions-technology-transitions"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: achr_410a_deadline
+    title: "ACHR News, EPA removes R-410A installation deadline (May 2026 rule: equipment made or imported before Jan 1, 2025 may be installed until supplies run out)"
+    url: "https://www.achrnews.com/articles/166226-epa-removes-r-410a-installation-deadline"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: doe_cac_2023
+    title: "US DOE 2023 Central Air Conditioner and Heat Pump Standards FAQ (Southwest split AC under 45,000 Btu/h: 14.3 SEER2 plus EER2, by date of installation; heat pumps national 14.3 SEER2 split)"
+    url: "https://www1.eere.energy.gov/buildings/appliance_standards/pdfs/2023_CAC_Standards_FAQ_10-5-2022_Final.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: pima_sizing
+    title: "Pima County HVAC Sizing Requirements (cites IRC M1401.3: equipment sized per ACCA Manual S based on Manual J)"
+    url: "https://www.pima.gov/1153/HVAC-Sizing-Requirements"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_608
+    title: "US EPA Section 608 technician certification (S38), required to handle refrigerant"
+    url: "https://www.epa.gov/section608"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: irs_25c
+    title: "IRS Energy Efficient Home Improvement Credit (allowed for property placed in service from Jan 1, 2023 and before Dec 31, 2025)"
+    url: "https://www.irs.gov/credits-deductions/energy-efficient-home-improvement-credit"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_climate
+    title: "US Climate Data, Lake Havasu City 1991-2020 normals (average high 105 F June, 109 F July, 108 F August)"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: smartac_cac
+    title: "SmartAC (vendor blog), The real cost of acquiring an HVAC customer in 2026 (cites SearchLight Digital and BlueGrid Media figures)"
+    url: "https://www.smartac.com/blog/the-real-cost-of-acquiring-an-hvac-customer-in-2026"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: webtonic_hvac
+    title: "Webtonic (marketing vendor), HVAC digital marketing statistics 2026 (LSA cost per lead; replacement vs repair page conversion)"
+    url: "https://www.webtonic.io/blog/hvac-digital-marketing-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "What is being replaced: outdoor unit only, a full split system, a rooftop package unit, or a new install where there was none"
+      why: "Each step adds equipment and labor; a new install adds ducts, a line set, a pad or curb and a circuit. [judgment]"
+      source: null
+    - driver: "Size of the home (tonnage) and the efficiency level of the new equipment"
+      why: "Tonnage sets the equipment price; new split AC installed in the Southwest must meet at least 14.3 SEER2 and an EER2 floor, so the old efficiency level cannot be reinstalled."
+      source: doe_cac_2023
+    - driver: "Where the unit sits: flat roof, sloped roof, two stories up, ground, attic or closet"
+      why: "A rooftop package unit usually needs a crane and a curb adapter; an attic air handler adds hours in summer heat. [judgment]"
+      source: null
+    - driver: "Same kind, size and spot, or a change (bigger, smaller, heat pump, new spot)"
+      why: "Lake Havasu City needs no permit for a replacement that keeps unit weight, capacity, location and ampacity; any change needs a permit, and a size change calls for a load calculation."
+      source: lhc_permits
+    - driver: "Refrigerant on the old unit (R-22, R-410A) and on the new one (R-410A from older stock, R-454B or R-32)"
+      why: "There is no drop-in for R-22, so an R-22 system usually means matching the inside coil and often the line set; the refrigerant change also moves equipment prices and supply."
+      source: epa_r22
+    - driver: "How the home heats: heat pump, gas furnace or gas pack, electric heat strips"
+      why: "Gas means a gas connection and a flue; heat strips add amps; a heat pump changes the outdoor unit and the thermostat. [judgment]"
+      source: null
+    - driver: "Ducts and electrical: duct condition and size, disconnect, breaker and wire size, panel space"
+      why: "Ducts that are crushed, leaky or undersized, or a panel with no room, turn a change-out into a bigger job or a second trade. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Old R-22 inside coil or air handler left in place behind a new outdoor unit"
+      how_a_pro_spots_it: "Refrigerant on the outdoor data plate reads R-22; the indoor unit label shows the same age"
+      question_or_photo: p1_data_plate
+      source: epa_r22
+    - condition: "Panel full, too small, or an old brand that an electrician must replace; R-39 may add a circuit but not a new panel or sub-panel"
+      how_a_pro_spots_it: "Panel photo with the door open: main breaker size, open spaces, brand label"
+      question_or_photo: p8_panel
+      source: aac_r4_9_103
+    - condition: "Roof curb does not fit the new package unit, or the roof under the old unit is soft or leaking"
+      how_a_pro_spots_it: "Whole-unit photo shows the curb, rust at the base, patched roof around it; home age"
+      question_or_photo: p2_whole_unit
+      source: null
+    - condition: "Ducts in a hot attic that are crushed, torn, rodent-chewed or too small for the new system"
+      how_a_pro_spots_it: "Indoor unit photo shows the plenum and duct connections; home age; swamp-cooler ducts in a conversion"
+      question_or_photo: p3_indoor_unit
+      source: null
+    - condition: "Size or spot change that triggers a permit and a load calculation"
+      how_a_pro_spots_it: "Homeowner wants a bigger unit, a heat pump with a different footprint, or the unit moved"
+      question_or_photo: fu_like_for_like
+      source: lhc_permits
+    - condition: "Manufactured home, where alterations must be done by a licensed or certified person and duct layouts differ"
+      how_a_pro_spots_it: "Kind of place on the card; a ground package unit with a crossover duct under the home"
+      question_or_photo: fu_home_type
+      source: ars_41_4047
+    - condition: "Line set buried in a wall or slab, too long, or with sun-rotted insulation"
+      how_a_pro_spots_it: "Whole-unit photo shows where the copper lines enter the house and the state of the foam"
+      question_or_photo: p2_whole_unit
+      source: null
+    - condition: "Attic air handler with a rusted drain pan, soft platform or no secondary drain"
+      how_a_pro_spots_it: "Indoor unit photo: rust, water stains, the pan under the unit"
+      question_or_photo: p3_indoor_unit
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "full system replacement (AC stopped or blows warm)"
+      might_be: "ac_not_cooling"
+      one_question: fu_fix_or_replace
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "condenser replacement"
+      might_be: "ac_replacement (outdoor and indoor units together, common when the old system runs R-22)"
+      one_question: fu_what_to_replace
+      if_other_route_to: {category: hvac_replacement, job_type: "full system replacement"}
+      source: epa_r22
+    - sounds_like: "full system replacement (new ducts)"
+      might_be: "ductwork_airflow"
+      one_question: fu_what_to_replace
+      if_other_route_to: {category: hvac_repair, job_type: "duct repair"}
+      source: null
+    - sounds_like: "full system replacement (the unit on the roof)"
+      might_be: "evaporative cooler replacement, a different trade file"
+      one_question: system_type
+      if_other_route_to: {category: hvac_repair, job_type: "evaporative (swamp) cooler repair"}
+      source: null
+    - sounds_like: "full system replacement (new heater or furnace)"
+      might_be: "heat_not_working"
+      one_question: fu_fix_or_replace
+      if_other_route_to: {category: hvac_repair, job_type: "furnace repair"}
+      source: null
+    - sounds_like: "full system replacement (new AC for the garage or casita)"
+      might_be: "mini_split_install"
+      one_question: fu_mini_rooms
+      if_other_route_to: {category: hvac_replacement, job_type: "full system replacement"}
+      source: null
+  photo_reading:
+    - photo_id: p1_data_plate
+      reads: ["Brand, model and serial (build year)", "Refrigerant type (R-22, R-410A, R-454B, R-32)", "Tonnage hint in the model number", "MCA and max breaker amps", "Heat pump or AC only"]
+      neutral_wording: "Data plate readable: refrigerant R-22 shown, model number suggests 3 tons, serial suggests about a 2006 build."
+    - photo_id: p2_whole_unit
+      reads: ["Package unit, split condenser or heat pump", "Roof curb and roof around it", "Disconnect box and whip", "Line set path and insulation", "Gas line to a gas pack", "Pad or stand on the ground"]
+      neutral_wording: "Package unit on a flat roof on a metal curb; gas pipe runs to the unit; roof coating around the curb looks patched."
+    - photo_id: p3_indoor_unit
+      reads: ["Air handler or gas furnace", "Indoor label and age", "Drain pan, rust, water stains", "Plenum and duct connections", "Closet or attic and how much room around it"]
+      neutral_wording: "Air handler in a hall closet; label shows the same brand as the outside unit; rust stain on the pan."
+    - photo_id: p8_panel
+      reads: ["Main breaker size", "Open spaces", "Panel brand", "Existing AC breaker size"]
+      neutral_wording: "Panel label reads 125 amps; two open spaces at the bottom; a 40 amp double breaker is marked AC."
+    - photo_id: p6_minisplit_spot
+      reads: ["Wall type (block, stucco, frame)", "Outdoor spot and surface", "Line set path and distance", "Outlet or panel nearby"]
+      neutral_wording: "Garage back wall is block; outdoor spot is gravel about 10 feet away on the other side of the wall."
+  local_factors:
+    - fact: "Average highs are about 105 F in June, 109 F in July and 108 F in August (1991 to 2020 normals)"
+      effect: "A stopped system in summer turns a planned change-out into a next-day install; equipment runs long hours in high outdoor heat"
+      source: lhc_climate
+    - fact: "Lake Havasu City needs no permit to replace an existing AC without increasing unit weight, capacity, location or ampacity; the city has adopted the 2024 I-codes and the 2023 NEC"
+      effect: "Like-for-like quotes skip the permit; a size, heat-pump footprint or location change carries a permit and inspection"
+      source: lhc_permits
+    - fact: "New split AC installed in the Southwest region since Jan 1, 2023 must meet at least 14.3 SEER2 (under 45,000 Btu/h) and an EER2 floor"
+      effect: "An old 10 or 13 SEER system is replaced with newer-standard equipment, which shapes every quote"
+      source: doe_cac_2023
+    - fact: "EPA's May 2026 rule lets residential AC and heat pump equipment made or imported before Jan 1, 2025 be installed until supplies run out"
+      effect: "Quotes may offer R-410A stock or newer R-454B or R-32 equipment; the refrigerant belongs on the quote"
+      source: achr_410a_deadline
+    - fact: "Manufactured home alterations must be done by a licensed or certified person"
+      effect: "Businesses want the home type on the card; ground package units with crossover ducts are common in parks [judgment]"
+      source: ars_41_4047
+    - fact: "The federal 25C credit covered property placed in service before Dec 31, 2025"
+      effect: "Homeowners may still ask about it; the card never mentions credits or rebates"
+      source: irs_25c
+    - fact: "Many homes use rooftop package units or gas packs, and many older homes are swamp-cooled"
+      effect: "Crane and curb-adapter questions and cooler-to-AC conversions come up more here than in most markets [judgment]"
+      source: null
+    - fact: "Second homes sit empty in summer; owners request replacements from out of town"
+      effect: "The card should say whether someone local can let a tech in; never collect lockbox or gate codes [judgment]"
+      source: null
+    - fact: "Bullhead City, Kingman and unincorporated Mohave County may have different permit rules for replacements"
+      effect: "Do not assume the Lake Havasu City no-permit rule applies outside the city"
+      source: null
+      unverified: true
+  seasonality:
+    busy: "May to September, with the first 105 F week bringing a rush of stopped-system replacements; planned replacements cluster in March to April and October [judgment]"
+    slow: "November to February [judgment]"
+    source: null
+
+job_types:
+  - id: ac_replacement
+    label: "Replace a whole split system (outdoor unit plus air handler or furnace), including a switch to a heat pump"
+    bank_job_type: "full system replacement"
+    recurring: false
+    homeowner_phrasings: ["new ac unit", "replace the whole system", "ac is old need new", "quote for new hvac", "upgrade to heat pump", "r22 unit replace"]
+    must_know:
+      - fact: "What is there now and which parts to replace"
+        bank_question: system_type
+        follow_up: fu_what_to_replace
+        photo: p1_data_plate
+        why_it_moves_price: "Outdoor only, both units, or ducts too are three different equipment lists. [judgment]"
+        skip_if: "Homeowner said the whole system"
+      - fact: "Home size and stories"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets tonnage, which sets the equipment price; the business confirms with its own load calculation. [judgment]"
+        skip_if: "Never skipped; stories is a separate bank question"
+      - fact: "Same kind, size and spot, or a change"
+        bank_question: null
+        follow_up: fu_like_for_like
+        photo: null
+        why_it_moves_price: "A change in weight, capacity, location or ampacity needs a Lake Havasu City permit."
+        skip_if: "Homeowner said same size, same spot"
+      - fact: "Refrigerant and age of the current system"
+        bank_question: null
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "R-22 has no drop-in replacement, so line set and coil reuse depend on it. [judgment]"
+        skip_if: "No photo possible; the card says so"
+      - fact: "How the home heats now"
+        bank_question: null
+        follow_up: fu_heat_source
+        photo: p3_indoor_unit
+        why_it_moves_price: "Gas furnace, heat strips or heat pump each change the indoor unit and hookups. [judgment]"
+        skip_if: "Indoor photo shows a gas furnace, or the homeowner said heat pump"
+    allowed_follow_ups:
+      - id: fu_fix_or_replace
+        ask_when: "Her words could mean a repair (it stopped, it blows warm, the heater quit) and she did not say she wants a new system"
+        text_en: "Are you asking for quotes on a new system, or for someone to look at the one you have first?"
+        text_es: "¿Busca cotizaciones de un sistema nuevo, o que alguien revise primero el que tiene?"
+        options_en: ["Quotes on a new system", "Look at it first", "Both, I want options"]
+        options_es: ["Cotizaciones de un sistema nuevo", "Que lo revisen primero", "Las dos, quiero opciones"]
+        card_field: true
+        why: "Her choice, never ours. Look-first is a repair visit in hvac_repair with a different quote format. [judgment]"
+      - id: fu_what_to_replace
+        ask_when: "Split system (outside unit plus inside unit) and she did not say which parts to replace"
+        text_en: "Which parts do you want quoted: the outside unit only, the outside and inside units together, or the ducts only?"
+        text_es: "¿Qué partes quiere cotizar: solo la unidad de afuera, la de afuera y la de adentro juntas, o solo los ductos?"
+        options_en: ["Outside unit only", "Outside and inside units", "Ducts only", "Open to quotes on either unit option"]
+        options_es: ["Solo la unidad de afuera", "La de afuera y la de adentro", "Solo los ductos", "Acepto cotizaciones de cualquiera de las dos"]
+        card_field: true
+        why: "Separates condenser replacement, full system replacement and duct work, which route differently. [judgment]"
+      - id: fu_like_for_like
+        ask_when: "Any replacement where she did not say whether size, kind or spot changes"
+        text_en: "Do you want the same kind and size of system in the same spot, or a change?"
+        text_es: "¿Quiere el mismo tipo y tamaño de sistema en el mismo lugar, o un cambio?"
+        options_en: ["Same kind, size and spot", "Switch to a heat pump", "Bigger or smaller", "Move it to a new spot", "Not decided"]
+        options_es: ["Mismo tipo, tamaño y lugar", "Cambiar a bomba de calor", "Más grande o más chico", "Moverlo a otro lugar", "No lo he decidido"]
+        card_field: true
+        why: "Lake Havasu City needs a permit when unit weight, capacity, location or ampacity change; the business prices the permit in."
+      - id: fu_heat_source
+        ask_when: "She did not say how the home heats and no indoor photo shows it"
+        text_en: "How does the home heat now?"
+        text_es: "¿Cómo se calienta la casa ahora?"
+        options_en: ["Same system (heat pump)", "Gas furnace or gas pack", "Electric heat in the unit", "Wall or baseboard heaters", "No heat"]
+        options_es: ["El mismo sistema (bomba de calor)", "Calentón de gas o unidad de gas", "Calor eléctrico en la unidad", "Calentadores de pared o zoclo", "No tiene calefacción"]
+        card_field: true
+        why: "Gas adds a gas connection and flue; heat strips add amps; each changes the equipment list. [judgment]"
+    photos_priority: [p1_data_plate, p3_indoor_unit, p2_whole_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Current system has stopped and the home has no cooling in summer"]
+      regular: "Old system still running; planning a replacement"
+    scope_line_en: "Replace the whole split system, outside unit and hall-closet air handler; R-22 on the label; 1,600 sq ft, one story."
+    scope_line_es: "Cambiar todo el sistema dividido, la unidad de afuera y la manejadora de aire del clóset del pasillo; R-22 en la etiqueta; 1,600 pies², un piso."
+    quote_format: range
+    business_fills: ["price range", "equipment brand, size and refrigerant", "what is included (permit, line set, pad, thermostat, haul-away)", "earliest install day"]
+    card_template: |
+      REQ-<id> | Heating and cooling replacement | <town>, <general area> | <kind of place>
+      <one scope line: what to replace, what is there now, size>
+      Now: <central AC / heat pump / package unit>. Replace: <outside only / outside and inside / ducts only>. Change: <same kind and spot / heat pump / size / new spot / not decided>.
+      Home: <size band>, <stories>. Units at: <roof / ground / attic or closet>. Heat: <heat pump / gas / electric / wall heaters / none>.
+      Data plate: <brand, refrigerant, build year, neutral, from photo> or <no photo>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your system is too old to fix.", "R-22 units have to be replaced now.", "A new 3-ton system runs about nine thousand.", "You need a bigger unit.", "Heat pumps are cheaper to run here.", "You'll still get a tax credit for this."]
+
+  - id: condenser_replacement
+    new_job_type: true
+    label: "Replace only the outdoor unit (condenser or heat pump) of a split system"
+    bank_job_type: "condenser replacement"
+    recurring: false
+    homeowner_phrasings: ["change out condenser", "replace the outside unit", "new compressor unit", "outside ac unit died"]
+    must_know:
+      - fact: "That only the outdoor unit is to be replaced"
+        bank_question: system_type
+        follow_up: fu_what_to_replace
+        photo: p2_whole_unit
+        why_it_moves_price: "An outdoor-only quote has to match the existing inside coil; if it cannot, the job becomes a full system. [judgment]"
+        skip_if: "Homeowner said outside unit only"
+      - fact: "Refrigerant and age of both the outdoor and indoor units"
+        bank_question: null
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "There is no drop-in for R-22; an R-22 indoor coil cannot simply be kept with newer-refrigerant equipment."
+        skip_if: "No photo possible; the card says so"
+      - fact: "Whether the current unit still runs"
+        bank_question: null
+        follow_up: fu_running_now
+        photo: null
+        why_it_moves_price: "A stopped unit in summer is a next-day install with a stocked unit, scheduled differently. [judgment]"
+        skip_if: "Her words already say it stopped or still runs"
+      - fact: "Home size"
+        bank_question: home_size
+        follow_up: null
+        photo: p1_data_plate
+        why_it_moves_price: "Confirms whether the current tonnage stays; a capacity change needs a city permit. [judgment]"
+        skip_if: "Never skipped"
+    allowed_follow_ups:
+      - fu_what_to_replace
+      - id: fu_running_now
+        ask_when: "She wants a unit replaced and did not say whether the current one still cools"
+        text_en: "Is the system you have still cooling, or has it stopped?"
+        text_es: "¿El sistema que tiene todavía enfría, o ya dejó de funcionar?"
+        options_en: ["Still cooling", "Running but not keeping up", "Stopped"]
+        options_es: ["Todavía enfría", "Prende pero no alcanza a enfriar", "Dejó de funcionar"]
+        card_field: true
+        why: "Sets timing and stock: a stopped unit in summer heat is a next-day install request. [judgment]"
+      - fu_like_for_like
+      - fu_fix_or_replace
+    photos_priority: [p1_data_plate, p3_indoor_unit, p2_whole_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Current unit has stopped and the home has no cooling in summer"]
+      regular: "Unit still runs; planning a change-out"
+    scope_line_en: "Replace the outdoor unit only on a ground split system; it stopped yesterday; label shows R-410A, about 2012 build."
+    scope_line_es: "Cambiar solo la unidad de afuera de un sistema dividido en el suelo; dejó de funcionar ayer; la etiqueta dice R-410A, de alrededor de 2012."
+    quote_format: range
+    business_fills: ["price range", "equipment brand, size and refrigerant", "whether the inside coil is included or matched", "earliest install day"]
+    card_template: |
+      REQ-<id> | Heating and cooling replacement | <town>, <general area> | <kind of place>
+      <one scope line: outdoor unit only, running or stopped, label>
+      Replace: <outside only / open to outside and inside>. Running now: <still cooling / not keeping up / stopped>. Change: <same size and spot / heat pump / size / not decided>.
+      Outdoor plate: <brand, refrigerant, build year, from photo>. Indoor unit: <neutral, from photo> or <no photo>. Home: <size band>, <stories>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the compressor.", "You can keep your old coil.", "Just replace the outside unit, it's cheaper.", "A condenser swap runs about four thousand."]
+
+  - id: package_unit_replacement
+    label: "Replace a rooftop or ground package unit (cooling and heat in one box, may need a crane and curb adapter)"
+    bank_job_type: "full system replacement"
+    recurring: false
+    homeowner_phrasings: ["rooftop unit", "roof top ac replacement", "package unit", "gas pack replace", "crane for ac"]
+    must_know:
+      - fact: "Where the unit sits and roof type"
+        bank_question: unit_location
+        follow_up: null
+        photo: p2_whole_unit
+        why_it_moves_price: "Roof units usually need a crane, and the curb may need an adapter; ground package units do not. [judgment]"
+        skip_if: "Answered"
+      - fact: "Gas or electric heat in the unit"
+        bank_question: null
+        follow_up: fu_heat_source
+        photo: p1_data_plate
+        why_it_moves_price: "A gas pack needs the gas connection redone and a different unit than a heat pump package. [judgment]"
+        skip_if: "Data plate or her words say gas pack or heat pump"
+      - fact: "Where a crane or truck can set up"
+        bank_question: null
+        follow_up: fu_crane_access
+        photo: null
+        why_it_moves_price: "Crane size and setup time depend on how far the unit sits from the street. [judgment]"
+        skip_if: "Ground unit"
+      - fact: "Home size and stories"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets tonnage; two stories adds crane reach. [judgment]"
+        skip_if: "Never skipped"
+    allowed_follow_ups:
+      - id: fu_crane_access
+        ask_when: "Unit is on the roof and she did not say which side of the house"
+        text_en: "Can a truck park close to the side of the house where the roof unit sits?"
+        text_es: "¿Puede estacionarse un camión cerca del lado de la casa donde está la unidad del techo?"
+        options_en: ["Yes, street or driveway side", "Side yard behind a wall or gate", "Over the back of the house"]
+        options_es: ["Sí, del lado de la calle o la entrada", "Patio lateral detrás de una barda o reja", "Del lado de atrás de la casa"]
+        card_field: true
+        why: "Crane reach decides crane size and setup time. [judgment]"
+      - fu_heat_source
+      - fu_like_for_like
+      - id: fu_home_type
+        ask_when: "Kind of place is not clear from her words"
+        text_en: "Is the home a site-built house, a manufactured home, or a condo or townhome?"
+        text_es: "¿La casa es construida en sitio, una casa manufacturada, o un condominio o casa adosada?"
+        options_en: ["Site-built house", "Manufactured home", "Condo or townhome"]
+        options_es: ["Casa construida en sitio", "Casa manufacturada", "Condominio o casa adosada"]
+        card_field: true
+        why: "Manufactured home alterations must be done by a licensed or certified person, and duct layouts differ; condos may have HOA rules on roof equipment. [judgment]"
+    photos_priority: [p2_whole_unit, p1_data_plate]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Unit has stopped and the home has no cooling in summer"]
+      regular: "Unit still running; planning a replacement"
+    scope_line_en: "Replace the rooftop gas pack on a flat roof; street-side; 1,800 sq ft, one story; label shows R-22."
+    scope_line_es: "Cambiar la unidad de gas del techo plano; del lado de la calle; 1,800 pies², un piso; la etiqueta dice R-22."
+    quote_format: range
+    business_fills: ["price range", "equipment brand, size and refrigerant", "what is included (crane, curb adapter, gas hookup, permit, haul-away)", "earliest install day"]
+    card_template: |
+      REQ-<id> | Heating and cooling replacement | <town>, <general area> | <kind of place>
+      <one scope line: package unit, roof or ground, heat type>
+      Unit at: <flat roof / sloped roof / ground>. Heat: <gas pack / heat pump / electric>. Truck access: <street side / side yard / back of house>.
+      Home: <size band>, <stories>. Change: <same kind and spot / heat pump / size / not decided>.
+      Data plate: <brand, refrigerant, build year, from photo> or <no photo>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You'll need a crane, that's extra.", "Your roof needs work before the new unit.", "Switch to a split system instead.", "Gas packs cost more to run."]
+
+  - id: mini_split_install
+    label: "Install a new ductless mini-split (garage, casita, shop, add-on room, or several rooms)"
+    bank_job_type: "full system replacement"
+    recurring: false
+    homeowner_phrasings: ["mini split install", "ductless for garage", "minisplit", "wall unit ac for casita", "ac for my shop"]
+    must_know:
+      - fact: "How many rooms or spaces to cool"
+        bank_question: null
+        follow_up: fu_mini_rooms
+        photo: null
+        why_it_moves_price: "Each indoor head adds equipment, a line set and labor. [judgment]"
+        skip_if: "Homeowner named the rooms"
+      - fact: "Distance between the indoor spot and the outdoor spot"
+        bank_question: null
+        follow_up: fu_mini_distance
+        photo: p6_minisplit_spot
+        why_it_moves_price: "Line-set length, wall type and cover sets labor hours. [judgment]"
+        skip_if: "Spot photo shows both sides"
+      - fact: "Panel space for a new circuit"
+        bank_question: null
+        follow_up: null
+        photo: p8_panel
+        why_it_moves_price: "R-39 may add a circuit to the existing panel; a full panel means an electrician and a second quote."
+        skip_if: "Panel photo sent"
+      - fact: "Space size and insulation"
+        bank_question: home_size
+        follow_up: fu_space_insulated
+        photo: null
+        why_it_moves_price: "An open garage or shop needs more capacity than a finished room of the same size. [judgment]"
+        skip_if: "Her words say finished room and size"
+    allowed_follow_ups:
+      - id: fu_mini_rooms
+        ask_when: "Mini-split or new AC for part of the home, and the number of rooms is not given"
+        text_en: "How many rooms or spaces should the mini-split cool?"
+        text_es: "¿Cuántos cuartos o espacios debe enfriar el minisplit?"
+        options_en: ["One room or garage", "Two rooms", "Three or more rooms", "The whole house"]
+        options_es: ["Un cuarto o la cochera", "Dos cuartos", "Tres cuartos o más", "Toda la casa"]
+        card_field: true
+        why: "Sets the number of indoor heads and separates a one-room install from whole-house work. [judgment]"
+      - id: fu_mini_distance
+        ask_when: "No spot photo, or it does not show both sides of the wall"
+        text_en: "About how far is the inside spot from where the outside unit would sit?"
+        text_es: "¿Más o menos a qué distancia está el lugar de adentro del lugar donde iría la unidad de afuera?"
+        options_en: ["Back to back through one wall", "Under 15 feet", "15 to 30 feet", "More than 30 feet"]
+        options_es: ["Uno detrás del otro en la misma pared", "Menos de 15 pies", "15 a 30 pies", "Más de 30 pies"]
+        card_field: true
+        why: "Line-set length is the biggest labor variable on a single-head install. [judgment]"
+      - id: fu_space_insulated
+        ask_when: "Garage, shop or casita and insulation is not mentioned"
+        text_en: "Is the space finished and insulated, like a bedroom, or more like an open garage or shop?"
+        text_es: "¿El espacio está terminado y con aislamiento, como una recámara, o es más como una cochera o taller abierto?"
+        options_en: ["Finished and insulated", "Garage or shop with some insulation", "No insulation"]
+        options_es: ["Terminado y con aislamiento", "Cochera o taller con algo de aislamiento", "Sin aislamiento"]
+        card_field: true
+        why: "Insulation sets the size of unit a business quotes. [judgment]"
+    photos_priority: [p6_minisplit_spot, p8_panel]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All new mini-split installs"
+    scope_line_en: "New single-room mini-split for a two-car garage; block wall; outdoor spot about 10 feet away; some insulation."
+    scope_line_es: "Minisplit nuevo de un cuarto para una cochera de dos autos; pared de block; la unidad de afuera a unos 10 pies; algo de aislamiento."
+    quote_format: range
+    business_fills: ["price range", "equipment brand, size and number of heads", "whether the circuit and permit are included", "earliest install day"]
+    card_template: |
+      REQ-<id> | Heating and cooling replacement | <town>, <general area> | <kind of place>
+      <one scope line: new mini-split, which space, size>
+      Rooms: <one / two / three or more / whole house>. Distance inside to outside: <back to back / under 15 ft / 15 to 30 ft / over 30 ft>. Space: <finished / some insulation / none>.
+      Wall: <block / stucco / frame, from photo>. Panel: <neutral, from photo> or <no photo>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A 12,000 BTU unit is enough for that.", "You can install it yourself and have someone charge it.", "Your panel can handle it.", "Mini-splits run about three thousand a head."]
+
+  - id: cooler_to_central_ac
+    new_job_type: true
+    label: "Add refrigerated central air where there is a swamp cooler or no cooling now"
+    bank_job_type: "full system replacement"
+    recurring: false
+    homeowner_phrasings: ["switch from swamp cooler to ac", "get rid of the cooler and put in real ac", "house has no ac", "want refrigerated air"]
+    must_know:
+      - fact: "What cools the home now"
+        bank_question: system_type
+        follow_up: null
+        photo: p2_whole_unit
+        why_it_moves_price: "A swamp cooler or nothing means new equipment, a line set or package curb, a circuit and often ducts. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether there are ducts, and what kind"
+        bank_question: null
+        follow_up: fu_ducts
+        photo: p3_indoor_unit
+        why_it_moves_price: "Cooler ducts are often too few or too small for refrigerated air; no ducts means a full duct system or mini-splits. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Whether the cooler comes off"
+        bank_question: null
+        follow_up: fu_cooler_stays
+        photo: null
+        why_it_moves_price: "Removal adds roof patching and capping the cooler duct. [judgment]"
+        skip_if: "No cooler now"
+      - fact: "Home size, stories and where the new unit would go"
+        bank_question: home_size
+        follow_up: null
+        photo: p8_panel
+        why_it_moves_price: "Tonnage, unit spot and panel capacity set the size of the job; a new location needs a city permit."
+        skip_if: "Never skipped"
+    allowed_follow_ups:
+      - id: fu_ducts
+        ask_when: "Home has a swamp cooler or no cooling, and ducts are not mentioned"
+        text_en: "Does the home have ducts in the ceiling now?"
+        text_es: "¿La casa tiene ductos en el techo ahora?"
+        options_en: ["Yes, from a swamp cooler", "Yes, from an old AC or furnace", "No ducts"]
+        options_es: ["Sí, del enfriador evaporativo", "Sí, de un aire o calentón viejo", "No tiene ductos"]
+        card_field: true
+        why: "Duct reuse, redesign or a full new duct system are three different price ranges. [judgment]"
+      - id: fu_cooler_stays
+        ask_when: "There is a swamp cooler and she did not say whether it stays"
+        text_en: "Should the swamp cooler come off as part of this job, or stay in place?"
+        text_es: "¿Quiere que quiten el enfriador evaporativo como parte del trabajo, o que se quede?"
+        options_en: ["Take it off", "Keep it too", "Not decided"]
+        options_es: ["Quitarlo", "Dejarlo también", "No lo he decidido"]
+        card_field: true
+        why: "Removal and roof patching are a line item, and the business may need a roofer. [judgment]"
+      - fu_home_type
+      - fu_heat_source
+    photos_priority: [p2_whole_unit, p8_panel, p3_indoor_unit]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All conversions"
+    scope_line_en: "Add central refrigerated air to a 1,400 sq ft one-story home that has a roof swamp cooler and cooler ducts; cooler to come off."
+    scope_line_es: "Agregar aire refrigerado central a una casa de un piso de 1,400 pies² que tiene enfriador evaporativo en el techo y sus ductos; quitar el enfriador."
+    quote_format: range
+    business_fills: ["price range", "equipment type, size and refrigerant", "what is included (ducts, circuit, cooler removal, roof patch, permit)", "earliest install day"]
+    card_template: |
+      REQ-<id> | Heating and cooling replacement | <town>, <general area> | <kind of place>
+      <one scope line: add central air, what is there now, size>
+      Now: <swamp cooler / nothing>. Ducts: <cooler ducts / old AC or furnace ducts / none>. Cooler: <take off / keep / not decided / none>.
+      Home: <size band>, <stories>. Heat: <gas / electric / wall heaters / none>. Panel: <neutral, from photo> or <no photo>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your cooler ducts won't work.", "You'll need a new panel.", "Mini-splits would be cheaper.", "Expect around twelve thousand for that."]
+
+business_side:
+  how_they_get_customers: ["Repeat service customers whose old system they already maintain", "Google Maps listing and reviews", "Google Local Services Ads and search ads", "Home-service lead marketplaces", "Builder and realtor word of mouth, truck signs, local Facebook groups [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Angi shared leads (HVAC, per booked job)"
+      figure: "About $542 per booked job; one lead goes to 3 to 8 contractors (BlueGrid Media figure, via a vendor blog)"
+      source: smartac_cac
+      unverified: false
+    - channel: "Thumbtack (HVAC, per booked job)"
+      figure: "About $260 per booked job (BlueGrid Media figure, via a vendor blog)"
+      source: smartac_cac
+      unverified: false
+    - channel: "Google Local Services Ads (HVAC)"
+      figure: "About $190 per new customer (SearchLight Digital, Feb 2026); about $39 to $59 per lead (PipelineOn, via a marketing vendor)"
+      source: smartac_cac
+      unverified: false
+    - channel: "Blended, all channels (HVAC)"
+      figure: "About $296 to $350 per new customer across 816 contractors (SearchLight Digital, via a vendor blog)"
+      source: smartac_cac
+      unverified: false
+    - channel: "Replacement versus repair web pages"
+      figure: "Replacement pages convert about 3 to 6 percent versus 10 to 15 percent for emergency repair, with a 2 to 3 week decision cycle (marketing vendor, no primary source given)"
+      source: webtonic_hvac
+      unverified: true
+    - channel: "Lake Havasu City HVAC shops specifically"
+      figure: "No local figures found"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a replacement lead that 4 other shops also bought", "Homeowners who only want a price by phone for a system nobody has seen", "Tire-kickers collecting bids for an insurance claim or a home sale", "Monthly fees whether or not a job comes", "Being ranked or reviewed by the lead site"]
+  what_makes_a_lead_worth_paying_for: ["Data plate photo with the refrigerant and age readable", "Home size, stories and unit location up front", "Like-for-like or a change stated, so they know about the permit", "Only pay when the homeowner picks them", "Real timing: stopped in July versus planning for spring"]
+  their_words: ["change-out", "like-for-like", "tonnage", "SEER2", "matched system", "AHRI", "line set", "pad", "curb adapter", "crane lift", "gas pack", "air handler", "coil", "disconnect", "whip", "Manual J", "R-410A", "R-454B", "A2L"]
+  signup_objections:
+    - objection: "I don't quote a replacement without a load calc and a look at the ducts."
+      answer: "Quote a range and say what your visit confirms. The card gives home size, stories, unit location, the data plate and whether she wants the same size or a change. You can narrow the price once you are on site."
+    - objection: "What does it cost me on a replacement?"
+      answer: "The fee is set by job size. Almost every replacement quote is over $1,500, so it is usually $199. You pay it only when the homeowner picks your quote and you confirm. Nothing to join, nothing per month."
+    - objection: "I'm already paying for shared replacement calls that go nowhere."
+      answer: "Here nobody pays to see a card. You quote in your own words, and you pay only if she picks you. No other business gets her contact details."
+    - objection: "Homeowners just collect three bids and pick the cheapest."
+      answer: "She sees every quote in the order it came in, with each business's name, license numbers and review links. Ask Hava never sorts or ranks them. A quote that lists brand, size, refrigerant and what is included gives her more than a price."
+    - objection: "Do I need a particular license to get these cards?"
+      answer: "Cards go only to businesses whose Arizona contractor license covers the work, such as R-39. You choose the job types you want at sign-up and can change them any time."
+    - objection: "I only do change-outs, not new ducts or mini-splits."
+      answer: "Pick the job types you want. You get cards only for those."
+    - objection: "What if she picks me and then backs out?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Will you push financing or brands on my customers?"
+      answer: "No. Ask Hava never mentions brands, prices or financing to the homeowner. Your quote is in your words."
+  quote_tips_for_card: ["List brand, tonnage, SEER2 and refrigerant", "Say what the range includes: permit, line set, pad or curb, thermostat, crane, haul-away", "Say what your visit confirms before the final price", "Give your earliest install day", "If you need a photo of the indoor unit or panel, say which"]
