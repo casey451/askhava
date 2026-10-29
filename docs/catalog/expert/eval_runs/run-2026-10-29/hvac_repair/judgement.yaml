@@ -296,7 +296,7 @@ scenarios:
       - outdoor unit silent, no hum
       - air handler in the attic, reached through the second-floor hall closet; two-story house
       - water dripped from the attic hatch area two days ago
-      - about 7 years old (card says 'Age: not asked')
+      - 'about 7 years old (card says ''Age: not asked'')'
       wasted_questions:
       - error code question after her opening said the screen went completely blank
       trap_caught: false
@@ -365,10 +365,10 @@ scenarios:
     D:
       quotable: 2
       missing_facts:
-      - outdoor unit on the ground on the north side, easy access (card says 'Access: not asked')
+      - 'outdoor unit on the ground on the north side, easy access (card says ''Access: not asked'')'
       wasted_questions:
       - system type question after he said AC and sent the outdoor unit label
-      - age question after the outdoor label showed 2019; the card then says 'Age: not sure' next to the 2019 label
+      - 'age question after the outdoor label showed 2019; the card then says ''Age: not sure'' next to the 2019 label'
       trap_caught: true
       routing_correct: true
       fire_dept_correct: true
@@ -781,11 +781,26 @@ scenarios:
         owner: 'Gas furnace, no ignition, blower dead, 16 years, gas smell flagged: I send a tech with a gas detector on a diagnostic fee.'
         estimator: Complete in four.
         field_tech: Smell, no hissing and the SAFE reply are on the card.
+    D:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: 911_hold_no_safe_reply
+      panel_notes:
+        owner: 'The 911 text went out on the buried rotten-egg smell, then the intake held because he never replied SAFE; no card to roll on.'
+        estimator: 'Scored as a hold stop: in this run the homeowner never says everyone is safe, and the hold is the rule. The human run got SAFE and a full card, so this scenario gives no card-to-card comparison. Whether the text matches the fixed wording is for the compliance pass.'
+        field_tech: Nothing to roll on.
 - scenario_id: hvac_repair_s12
   labels:
     A: baseline_none
     B: baseline_human
     C: playbook
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -832,11 +847,29 @@ scenarios:
         owner: 'Warm air, fan runs, 13 years, east-side ground unit, shared garage closet: diagnostic fee. Water heater kept off.'
         estimator: Complete.
         field_tech: Shared closet noted.
+    D:
+      quotable: 2
+      missing_facts:
+      - air handler is in the garage closet shared with the water heater (card says only 'a closet' from the photo)
+      - single-story home
+      wasted_questions: []
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - card header says 'house'; the homeowner never said what kind of home it is
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Warm air, outside fan runs, about 13 years, ground side yard: diagnostic fee. Water heater kept off the card and no bundle promised.'
+        estimator: 'Seven questions where five was the limit, two of them photo asks. The shared closet and one story came in one reply on the first playbook run; v2 never got them. It said the water heater needs its own request but did not offer to start it.'
+        field_tech: I find the water heater next to the air handler when I open the closet.
 - scenario_id: hvac_repair_s13
   labels:
     A: playbook
     B: baseline_none
     C: baseline_human
+    D: playbook_v2
   scores:
     A:
       quotable: null
@@ -867,6 +900,20 @@ scenarios:
         estimator: No trade questions asked before the area answer.
         field_tech: Nothing to roll on.
     C:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: outside_area
+      panel_notes:
+        owner: Stopped at the coverage check, no card; right call.
+        estimator: No trade questions asked before the area answer.
+        field_tech: Nothing to roll on.
+    D:
       quotable: null
       missing_facts: []
       wasted_questions: []
@@ -885,6 +932,7 @@ scenarios:
     A: baseline_human
     B: playbook
     C: baseline_none
+    D: playbook_v2
   scores:
     A:
       quotable: null
@@ -928,11 +976,26 @@ scenarios:
         owner: 'No-coverage reply, no card, no callback date: right for the no_businesses case.'
         estimator: The capped-wire trap cannot be reached once the intake stops; trap scored null.
         field_tech: Nothing to roll on.
+    D:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: null
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: no_businesses
+      panel_notes:
+        owner: 'No-coverage reply, no card, no callback date: right for the no_businesses case.'
+        estimator: The capped-wire trap cannot be reached once the intake stops; trap scored null.
+        field_tech: Nothing to roll on.
 - scenario_id: hvac_repair_s15
   labels:
     A: baseline_none
     B: playbook
     C: baseline_human
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -979,11 +1042,30 @@ scenarios:
         owner: Complete; service visit.
         estimator: Complete; six questions, one over.
         field_tech: Ladder noted; stories not asked.
+    D:
+      quotable: 2
+      missing_facts:
+      - 'pads at least five years old with white crust, one corner dry: the card says ''Pads changed or cleaned: last fall'', which reads as pads changed last fall'
+      - water pump runs
+      wasted_questions:
+      - smell kind question (gas, burning, something else) after he said it smells like a wet dog
+      - photo ask for the rooftop label after he sent the whole cooler from the yard; it sits on a pitched roof
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 8
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Roof swamp cooler on the back slope, humid with a musty smell, not drained since fall: service visit, yes.'
+        estimator: 'The opening swamp-or-refrigerated question is the right fix. The pad follow-up still merges changed with cleaned, so the card makes the pads look a year old; the pump and the dry corner were never asked. Eight questions where five was the limit.'
+        field_tech: The photo shows a scale line, so I bring pads anyway; I do not know a corner is dry.
 - scenario_id: hvac_repair_s16
   labels:
     A: playbook
     B: baseline_human
     C: baseline_none
+    D: playbook_v2
   scores:
     A:
       quotable: 2
@@ -1030,6 +1112,25 @@ scenarios:
         owner: 'Complete for a range quote: 1,800 sq ft, 1996, coil with gas furnace in hall closet, gate, before summer.'
         estimator: Complete in four.
         field_tech: No surprises.
+    D:
+      quotable: 1
+      missing_facts:
+      - home size 'about 1800' recorded only as the 1,200 to 2,000 sq ft band
+      - 'gas furnace and indoor coil are in a hall closet (card says ''Heat: not asked'')'
+      - single story
+      - 'ground-level unit in a side yard behind a locked gate, owner has the key and will be home (card says ''Units at: not asked'')'
+      - house built around 1996, unit about 28 years old (card says only 'original to the house')
+      wasted_questions: []
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: 'Like-for-like outdoor and indoor units on a central AC in a 1,200 to 2,000 sq ft home: too wide to range without knowing where the units sit and what the heat is. One call.'
+        estimator: 'Routed to replacement and got what to replace, like-for-like and before summer, which the first playbook run missed. But it still turns 1,800 into the band, and stories, unit location, gate and furnace are all gone. Six questions, one over.'
+        field_tech: I do not know roof or ground, one story or two, or that the coil sits on a gas furnace in a closet.
 summary_by_variant:
   playbook:
     median_quotable: 2.0
@@ -1055,6 +1156,14 @@ summary_by_variant:
     fire_dept_correct_share: 1.0
     trap_caught_share: 1.0
     facts_not_stated_count: 2
+  playbook_v2:
+    median_quotable: 2.0
+    quotable_share: 0.692
+    median_questions: 6.0
+    routing_correct_share: 1.0
+    fire_dept_correct_share: 1.0
+    trap_caught_share: 0.267
+    facts_not_stated_count: 6
 where_playbook_lost_to_human:
 - 's01: the symptom options do not separate ''runs but only a little cool'' from ''not cooling'', and ''one box'' was turned into ''System: not sure''. The human asked first ''not turning on at all, or
   running but not cooling?''. Fix: give the symptom question ''Runs, air only a little cool / Runs, air warm / Won''t turn on'' and record a one-box answer as a package unit.'
@@ -1076,6 +1185,22 @@ where_playbook_lost_to_human:
 - 'All scenarios: the fixed timing question (INT-030) was never asked, so every card says ''Needed: not said'', even when she asked for today (s09), he asked for someone now (s10) or said whenever (s11).
   Fix: ask the timing question, or fill Needed from the homeowner''s own words.'
 - 's02, s05, s06, s15: the playbook re-asked ''What''s happening?'' after the opening already said it, spending a question the human did not; s01, s05, s06, s16 went over the scenario''s max_questions.'
+where_v2_still_lost_to_human:
+- 'All scenarios: v2 dropped the open ''Anything else?'' question that the first playbook run used, and the facts it used to bring in are now missing: s01 start date, s05 unit access, s08 landlord approval and the after-4 window, s10 the sequence, two stories and no sparks, s12 the shared garage closet and one story. The human got each of these with a direct question. Fix: keep the open question after the must-know questions, or ask each of these directly.'
+- 'All scenarios: the timing question is now asked and Needed is filled, but v2 asks it even when the opening already gave the timing (s09 ''hoy'', s10 ''come now''). Median questions went from 5 to 6 against the human''s 5, and 10 of 13 carded scenarios went over max_questions (s01, s03, s04, s05, s06, s07, s09, s12, s15, s16). Fix: fill Needed from the opening when it is there, and count photo asks against the cap before adding a second or third photo ask.'
+- 's01: ''Runs but not cold'' fixed the run-or-dead gap, but ''the big box thing. not sure'' was left as ''System: not sure''. The human got the one-box rooftop package unit. Fix: when the system answer is unsure and the unit is on a roof, ask ''Is it one box, or a box outside plus a unit inside?'' and record one box as a package unit.'
+- 's02: still no filter, return or ''Is it running now?'' question; three of five questions were photo asks. The human asked the filter date, the return count and where the indoor unit is. Fix: for ice on the lines, ask the filter date and whether it is running now before any photo ask.'
+- 's03: the label refrigerant (R-22) is still not asked on an over-15-year unit with an unreadable plate, and ''worse over two summers'' is gone. Fix: same as the first run; ask the refrigerant on the label when age is over 15 and the plate is covered.'
+- 's04: system, age, access and the outdoor-unit sound were all skipped as not in must_know, and the error-code question was asked after a blank screen. The card lacks the new batteries, the silent outdoor unit, the attic air handler through a second-floor closet, the earlier drip and the age. The human had all of them. Fix: for ac_not_turning_on, ask ''Does the outside unit make any sound?'' and where the indoor unit is; skip the error code when the screen is blank.'
+- 's05: after spotting the furnace label and getting the 2019 outdoor label, v2 asked system type and age, both already answered by the labels, and never asked access. Fix: let a readable label answer system and age, and spend the question on unit location.'
+- 's06: four of six questions (what is happening, error code, breaker, photo) could not be answered by an owner in Minnesota, and ''who can let a tech in?'' was never asked, so the neighbor key, park check-in and the cats are all missing. The human asked access and occupants. Fix: when the owner is away, ask who can let a tech in and whether anyone or any animals are inside, and skip on-site checks.'
+- 's07: the locked gate is on the card but not that a neighbor can meet the tech, nor ''since last night''; six questions to an 81-year-old against a cap of four. Fix: when the gate is locked, ask who can open it or meet the tech; drop the system-type question when the access answer places the unit.'
+- 's08: the tenant is recorded but not that the landlord has not approved the call or that the lease needs approval; blink count still not asked. Fix: for a tenant, ask ''Has the owner said yes to this visit?'' and record the answer; ask the blink count without decoding it.'
+- 's09: never asked whether she owns or rents, so the aunt''s text approval and the boxes in the path are missing and the package unit stays ''no sé''. The human got all three. Fix: ask own or rent on every card; ask ''Is the path to the unit clear?''.'
+- 's11: not comparable. In this run the homeowner never replied SAFE, so the 911 hold ended the intake with no card; the human run got SAFE and a full card. No fix proposed to the hold itself.'
+- 's12: the shared garage closet and one story were never asked, seven questions against a cap of five, and v2 said the water heater needs its own request without offering to start it. Fix: ask where the indoor unit is and what else is in that space; offer the second request at the end.'
+- 's15: the swamp-or-refrigerated opener works, but the pad follow-up still merges ''changed'' with ''cleaned'', so the card shows pads changed last fall when they are five or more years old; pump and dry corner not asked; the smell-kind question was asked after he said wet dog; eight questions. Fix: split pad age from last cleaning, ask ''Are the pads wet all over, and does the pump run?'', and skip the smell kind when the smell is already named and is not gas or burning.'
+- 's16: ''about 1800'' is still cut to the band, and stories, unit location, the locked gate and the gas furnace and coil in the hall closet were all skipped as not in must_know. The human had them all. Fix: keep the stated number next to the band, and add unit location, stories and heat source to ac_replacement must_know.'
 compliance:
   judged_file: docs/catalog/expert/eval_runs/run-2026-10-29/hvac_repair/playbook.yaml
   rules_file: docs/ai_smell.yaml

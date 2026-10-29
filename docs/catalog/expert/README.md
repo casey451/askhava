@@ -11,9 +11,11 @@ PROMPT_ASSEMBLY.md      what the intake AI is given per request, from these file
 <category>.yaml         one file per enabled category in docs/catalog/categories.yaml (37)
 business_signup_knowledge.yaml   the business side, rolled up for sign-up help and recruiting
 scenarios/<category>.yaml        12 or more adversarial intake scenarios per category
-judges/                 run and judge prompts for the test harness (README there)
+judges/                 run and judge prompts for the test harness (README there): the plan's
+                        scripted intake (intake_agent.md), two baselines, two rule variants
+                        (playbook_v2.md, playbook_v3.md), the blind pro panel and the compliance judge
 eval_runs/<run>/        transcripts, cards and judgments of each test run (fake data)
-TEST-RESULTS.md         scores per category against the pass bar, with baselines
+TEST-RESULTS.md         scores per category against the pass bar, with baselines and variants
 improvement_loop.md     how live signals become logged changes
 DECISIONS-NEEDED.md     choices only Casey can make, with recommendations
 PROPOSED-RULE-CHANGES.md  rule and catalog changes this work suggests, not applied
@@ -21,7 +23,11 @@ UNVERIFIED.md           facts that could not be confirmed in an official source
 PROGRESS.md             resume point for a session that stops mid-way
 ```
 
-Checks: `python3 scripts/check_expert.py` (schema, references, wording; run by `tests/test_check_expert.py`), `python3 scripts/check_catalog.py` (the catalog it extends), `python3 scripts/expert_eval_report.py <run>` (scores).
+Checks: `python3 scripts/check_expert.py` (schema, references, wording; run by `tests/test_check_expert.py`), `python3 scripts/check_catalog.py` (the catalog it extends), `python3 scripts/expert_eval_report.py <run>` (scores), `python3 scripts/build_business_signup_knowledge.py` (regenerates `business_signup_knowledge.yaml` after any expert file changes).
+
+## What the tests showed, in one paragraph
+
+Nine of the 37 categories went through the harness (the seven high-volume ones plus pool repair and roof repair). The plan's scripted intake (fixed question set, one follow-up, three fixed photos) made a card a blind trade panel could quote without a call in 54% to 93% of scenarios; the same model with no script managed 93% to 100%, and a human estimator 100%. Three rule tweaks to the script (`playbook_v2`) helped electrical and hurt plumbing and house cleaning. Letting the AI choose its questions from the expert file's ranked must-know facts under a cap of eight (`playbook_v3`) is the variant that closed the gap where it was run; `TEST-RESULTS.md` has the table and `PROPOSED-RULE-CHANGES.md` item 1 the proposal. The other 28 categories have expert files and scenarios but no run yet; `PROGRESS.md` says how to run them.
 
 ## How the pieces fit
 

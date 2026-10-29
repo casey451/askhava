@@ -454,12 +454,30 @@ scenarios:
         owner: Distance and attached garage are there now, but I still cannot range a welder circuit without the amperage and the panel size. I would call.
         estimator: 'One follow-up went on the run, which helped. The danger question and the timing question did nothing while main size, panel space, wall finish and other planned loads went unasked. ''EV: n/a'' is still written.'
         field_tech: A full 100 amp panel and finished drywall on a 60 foot run would make me re-quote on site.
+    E:
+      quotable: 2
+      missing_facts:
+      - "welder needs 50 amp 240 volt (he thinks); amperage never asked"
+      wasted_questions:
+      - "'When do you need this?' (answer: not sure; he had already said he wants the quote tonight)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - "attached garage (he never said attached)"
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Range pending the panel photo after 6. Main size, run, wall finish and the EV plan are all there."
+        estimator: "The welder's amperage was never asked, and it sets the wire size on a 60 foot run. 'Attached' is still written though he never said it. Seven questions for a five-question job."
+        field_tech: "Finished drywall and a nearly full 100 amp panel tell me to plan a sub-panel option. I would confirm the welder nameplate on site."
 - scenario_id: electrical_s06
   labels:
     A: playbook
     B: baseline_none
     C: baseline_human
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: 1
@@ -528,12 +546,27 @@ scenarios:
         owner: Six hardwired, linked, chirping alarms. I can quote a visit fee. The access day is not on the card, so setting up the visit with her is still on me.
         estimator: Hardwired and the count are fixed from v1. Age decides whether this is a set replacement and it was not asked; neither was ceiling height. Six questions for a five-question cap.
         field_tech: The vaulted living room needs a tall ladder I would not bring.
+    E:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 8
+      stopped_before_card: null
+      panel_notes:
+        owner: "Six hardwired linked alarms, about 12 years old, ceiling heights and Saturday with the grandson. I can quote the visit and likely a set replacement."
+        estimator: "Complete, and 'Alarms: not asked' replaces v1's invented 'either'. Eight questions to a woman in her 80s on a five-question job, the most of any card. 'Needed: Saturday' turns the access day into a need-by date she never gave."
+        field_tech: "Tall ladder for the vaulted room, Saturday with the grandson. No surprises."
 - scenario_id: electrical_s07
   labels:
     A: baseline_none
     B: baseline_human
     C: playbook
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: 2
@@ -605,12 +638,28 @@ scenarios:
         owner: Dead outlets, renter, landlord pays, a reset already tried, the panel key with the neighbor. Service-call fee.
         estimator: Better than v1 on the reset and the key. Bank job type is 'breaker trips', not the expected 'outlet repair'. The card says the lights work and that the button outlet will not reset, and he said neither; the second reads like a cause.
         field_tech: I would not know the panel may be shared with the other half, which matters for which breakers I can touch.
+    E:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: false
+      fire_dept_correct: true
+      facts_not_stated:
+      - "'Won't reset: not found' (a default; he never said he looked for one, only that he reset a closet breaker once)"
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Renter, landlord out of state pays, neighbor has the panel key, home evenings. Service-call fee."
+        estimator: "Every must-know fact is there, including the reset he tried and the possibly shared panel. The landlord question repeated his opener, though it drew 'out of state'. Bank job type is 'breaker trips', not the expected 'outlet repair' that v1 had right."
+        field_tech: "I know to set up the key with the neighbor and that a breaker reset did nothing. No surprises."
 - scenario_id: electrical_s08
   labels:
     A: baseline_human
     B: playbook
     C: baseline_none
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: 2
@@ -682,12 +731,27 @@ scenarios:
         owner: Kitchen breaker will not hold, manufactured home, needed today, urgent set. Same-day visit fee. The card is Spanish only; the human's card was bilingual and the scenario asks for bilingual-safe terms.
         estimator: The menu repeat from v1 is gone. Still nothing on what was running, the fridge state or where the panel is. The card writes outlets and lights out and the rest of the house fine, which she was never asked.
         field_tech: I would look for the panel indoors. I would not know the microwave was the last load.
+    E:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Kitchen out, breaker will not hold, fridge warming, panel outside by the back door. Same-day visit fee."
+        estimator: "Complete, with the exact 1976 and the husband after 5 from her own words. The timing question repeated her 'urgente', though it drew the husband. Seven questions for a five-question job."
+        field_tech: "Panel outside by the back door, microwave was the last load, manufactured home. No surprises."
 - scenario_id: electrical_s09
   labels:
     A: playbook
     B: baseline_human
     C: baseline_none
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: 1
@@ -760,12 +824,28 @@ scenarios:
         owner: Whole house, two seconds, on dryer start, no danger, 1981. Visit fee for a service-side check.
         estimator: The danger answer is on the card now. The recent dryer-outlet work is the question I would ask first and it was not asked; a neighbors-power question went on a two-second dip instead. Seven questions for five.
         field_tech: I would not know an electrician worked on the dryer outlet last year.
+    E:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - "'electric dryer' (she said a thick four-prong cord, never electric)"
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Whole house dims about two seconds on the dryer, danger answer on the card, recent dryer-outlet work. Visit fee, not same day."
+        estimator: "Complete. 'When does it happen' repeated her opener but drew the duration and the microwave. 'Electric' is inferred from the cord. Seven questions for a five-question job."
+        field_tech: "I would look at last year's dryer-outlet work and the original panel. No surprises."
 - scenario_id: electrical_s10
   labels:
     A: baseline_none
     B: playbook
     C: baseline_human
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: 2
@@ -828,12 +908,30 @@ scenarios:
         owner: The fixed 911 text went and the intake held for SAFE, which he never sent. No card, so no business hears about a warm outlet he is still using every night.
         estimator: Scored null under the 911-hold rule (the scenario never says everyone is safe). The 911 trap and the no-advice trap are caught; the card traps (outlet leads, fan scope) were never reached. The human got the outlet, the photo and the fan scope on one card.
         field_tech: Nothing to do.
+    E:
+      quotable: 2
+      missing_facts:
+      - "dark ring at the lower slot (outlet photo never requested)"
+      - "fan goes on an existing light fixture with a single switch"
+      wasted_questions:
+      - "'When do you need this?' (answer: not sure, the fan can wait)"
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Burning outlet leads the card, the 911 text went, and it is still in use. Same-day visit fee. Fan scoped to a 12 foot vaulted ceiling."
+        estimator: "Heater wattage, the warm cover and the ceiling height are there now. The outlet photo was skipped, so the dark ring is missing, and nobody asked whether the fan goes on an existing fixture and switch."
+        field_tech: "I bring the tall ladder. I would not know whether there is a fan-rated box or an existing fixture to work from."
 - scenario_id: electrical_s11
   labels:
     A: baseline_human
     B: baseline_none
     C: playbook
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: 2
@@ -912,12 +1010,29 @@ scenarios:
         owner: I still cannot tell if this is my job or the AC tech's, and with no hum-then-trip detail I would call.
         estimator: Five questions and three did nothing. Nothing on what the outdoor unit does, its age or how many resets, and no second card. The only gain over v1 is that the two invented facts are gone.
         field_tech: I show up to a locked compressor. The AC tech should have had the second card.
+    E:
+      quotable: 2
+      missing_facts:
+      - "AC about 14 years old, 3 ton (never asked)"
+      - "no separate hvac_repair card (the AC request is one line on the electrical card)"
+      wasted_questions: []
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Breaker goes seconds after the outdoor unit hums, 90 inside with a 70-year-old at home. Same-day visit."
+        estimator: "Hum-then-trip, three resets and no recent work are there, all from his words. AC age and tonnage never asked. The AC request is one line on my card, so no AC business gets a card of its own."
+        field_tech: "If it is the compressor side, the AC tech was never sent a card to meet me there."
 - scenario_id: electrical_s12
   labels:
     A: playbook
     B: baseline_none
     C: baseline_human
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: null
@@ -962,6 +1077,20 @@ scenarios:
         estimator: Nothing to price; the stop was for the expected reason.
         field_tech: Nothing to do.
     D:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: outside_area
+      panel_notes:
+        owner: Stopped at the town check, which is correct. No card.
+        estimator: Nothing to price; the stop was for the expected reason.
+        field_tech: Nothing to do.
+    E:
       quotable: null
       missing_facts: []
       wasted_questions: []
@@ -981,6 +1110,7 @@ scenarios:
     B: baseline_human
     C: playbook
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: null
@@ -1038,12 +1168,27 @@ scenarios:
         owner: Stopped with the no-businesses message, which is correct. No card, no promise.
         estimator: Nothing to price; the stop was for the expected reason.
         field_tech: Nothing to do.
+    E:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: no_businesses
+      panel_notes:
+        owner: Stopped with the no-businesses message, which is correct. No card, no promise.
+        estimator: Nothing to price; the stop was for the expected reason.
+        field_tech: Nothing to do.
 - scenario_id: electrical_s14
   labels:
     A: baseline_human
     B: playbook
     C: baseline_none
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: 2
@@ -1108,12 +1253,30 @@ scenarios:
         owner: 100 to 200 amp with the load reason, the year and the panel photo. I can give a range.
         estimator: The service wire is the scope risk and the allowed follow-up cannot reach it. The card drops the 'licensed electricians only' line v1 carried, though the intake told him. Seven questions for five.
         field_tech: I would not know the service entrance may need the utility.
+    E:
+      quotable: 2
+      missing_facts:
+      - "'Licensed electricians only' line not on the card (said only in the closing message)"
+      wasted_questions:
+      - "'Do you want to keep the same size service, or go up in amps?': his opener said 100 to 200 amp"
+      - "'When do you need this?' (answer: not sure)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Panel upgrade range: load reason, meter and panel together in the garage, service wire question, 1985."
+        estimator: "Good card, and no handyman, $800 or cash on it. The size question repeated his opener and timing came back not sure. The 'Licensed electricians only' line v1 printed is gone."
+        field_tech: "The service wire may need the utility, and that is on the card. No surprises."
 - scenario_id: electrical_s15
   labels:
     A: playbook
     B: baseline_human
     C: baseline_none
     D: playbook_v2
+    E: playbook_v3
   scores:
     A:
       quotable: 2
@@ -1187,6 +1350,23 @@ scenarios:
         owner: Electric Whirlpool, spins, no heat. I can quote a diagnostic fee.
         estimator: Gas or electric is fixed from v1. Three photo asks took the place of the questions that mattered. v1 got the age and the two-or-three cycles by asking what it is doing; v2 has neither, and nobody asked what was checked.
         field_tech: I would not know the vent was never looked at.
+    E:
+      quotable: 2
+      missing_facts:
+      - "home built 2008"
+      wasted_questions:
+      - "'When do you need this?' (answer: not sure)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - "'Breaker: no.' (she said the breaker is on; the slot reads like a verdict)"
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Electric Whirlpool, about 9 years, warm but not hot, two or three cycles, outlet tested live. Diagnostic fee."
+        estimator: "Gas or electric, what was checked and the vent were all asked, and the error-code question is gone. 'Breaker: no' contradicts her 'breaker is on'. Home age not asked; timing came back not sure."
+        field_tech: "Vent not checked is on the card, so I look behind the dryer first."
 summary_by_variant:
   playbook:
     median_quotable: 2
@@ -1220,6 +1400,16 @@ summary_by_variant:
     fire_dept_correct_share: 1.0
     trap_caught_share: 0.267
     facts_not_stated_count: 18
+  # playbook_v3: quotable_share 13/13 (s12, s13 null). median_questions over all 15 scenarios with the two stops at 0;
+  # over the 13 cards only it is 7. routing 14/15 (s07 bank type). traps 13/15 (s10, s11 false).
+  playbook_v3:
+    median_quotable: 2
+    quotable_share: 1.0
+    median_questions: 6
+    routing_correct_share: 0.933
+    fire_dept_correct_share: 1.0
+    trap_caught_share: 0.867
+    facts_not_stated_count: 6
 where_playbook_lost_to_human:
 - 's01 flicker_dim: the human asked when it started and how often (storm onset, once an hour); the playbook card says ''When: not said''. Fire fu_flicker_when for dimming in one area too, or add an onset question to flicker_dim.'
 - 's01, s09: the danger answer (''no'') is taken but not written on the card. Add a ''Now: nothing sparking, hot, buzzing or smoking'' line to the flicker_dim and every other card template, as outlet_switch already has.'
@@ -1253,6 +1443,29 @@ where_v2_still_lost_to_human:
 - 's11: no question on what the outdoor unit does, its age and size, the reset count or who is home, and still no hvac_repair second card. Same fix as v1: add the second card when a breaker trips on AC start, and ask fu_trip_when even when ''when the AC starts'' is given.'
 - 's14: the service-wire rating is unreachable (fu_service_drop asks only overhead or underground), and the card drops the ''Licensed electricians only'' line v1 carried. Change fu_service_drop to ask about the service wire and meter, and print the licensed-only line on panel_upgrade cards.'
 - 's15: v1 asked ''what is it doing'' and got the age, warm-not-hot and two or three cycles; v2 skipped that question and age for three photo asks, so the card is thinner than v1. The human also asked what had been checked (outlet live, breaker on) and the vent. Keep ''what is it doing'' and age on dryer, and add ''what has been checked''.'
+where_v3_lost_to_human:
+- "s01: panel location (garage) never asked, and the danger answer 'no' was dropped from the card again. Print a 'Now: nothing sparking, hot, buzzing or smoking' line whenever the danger question is answered."
+- "s02: outside wall and old garage door seal not asked; the human's card told the tech to bring a WR GFCI and in-use cover. Ask 'Is the outlet on an outside wall?' for garage and yard GFCI trips."
+- "s05: welder amperage never asked; the human got 50 amp, which sets the wire size on a 60 foot run. Ask the nameplate amps on any new_circuit for a named machine."
+- "s07: bank job type 'breaker trips' (from the expert file's partial_power mapping); expected and the human: 'outlet repair'. Map dead outlets with working lights to outlet repair."
+- "s10: no outlet photo (the dark ring) and no existing-fixture question for the fan; the human got both. The kb rule 'skip the device photo when it is hot' blocked the photo; on burning_sparks ask for it after the 911 text and SAFE."
+- "s11: AC age and tonnage not asked, and the AC request went as one line on the electrical card, not a separate hvac_repair card. playbook_v3.md rule 6 causes this; change it to produce the second card."
+- "s14: 'Licensed electricians only' not printed on the card; v1 printed it. Put it in the panel_upgrade card template."
+- "Re-asks: 8 questions repeated what the opener already said (s02 device, s04 count, s07 landlord, s08 timing, s09 when, s10 what is plugged in, s11 when, s14 size). The human asked for the missing detail directly ('how long do they dim', 'how many watts'). Rewrite the misdiagnosis checks to ask the detail, not the fact already given."
+- "Length: over the scenario cap on 11 of 13 cards (s06 at 8 for an elderly homeowner on a five-question job); the timing question came back 'not sure' on 7 cards. Count timing toward the stop rule and skip it unless the job has a date driver."
+- "Card slots still write things she did not say: 'Trips: one appliance' (s03), 'Won't reset: not found' (s07), 'Breaker: no' (s15), plus inferences 'attached' (s05), 'electric' (s09), 'for about a second and come back' (s01). Empty slots must read 'not asked' or 'not said'."
+where_v3_beat_playbook:
+- "Quotable on 13 of 13 cards against v1's 7 of 13; traps surfaced on 13 of 15 against 4 of 15; facts not stated 6 against 9."
+- "s01: asked onset and frequency (two weeks ago after the monsoon storm, once an hour); v1 wrote 'When: not said'."
+- "s02: asked what is plugged in and how the garage is fed (freezer full of meat, detached 40 ft from the house), so urgent has a stated basis; v1 invented 'right away when reset'."
+- "s03: asked how long and who did the kitchen work (a year, worse in summer; previous owner's remodel)."
+- "s05: skipped the danger and count questions and asked main size, wall finish and other planned loads; no 'EV: n/a' default."
+- "s06: asked hardwired or battery, alarm age, ceiling height and access (12 years, 9 ft and vaulted, grandson Saturday); the supply slot says not asked instead of v1's 'either'."
+- "s07, s08: got the reset already tried, the neighbor's panel key and a maybe-shared panel; what was running, the warm fridge and the outside panel. The husband after 5 now comes from her words."
+- "s09: asked recent dryer-outlet work, panel age and whether the dryer is still in use, and the danger 'no' is on the card."
+- "s10, s11: got the 1500 watt heater and the 12 ft vaulted ceiling; got hum-then-trip, three resets and who is home from his words, and named the AC request."
+- "s15: asked gas or electric, what was checked (outlet live, breaker on) and the vent; dropped the error-code question."
+- "Exact build years kept as typed (1969, 1974, 1976, 1979), and no photo re-ask in s04."
 compliance:
   violations:
   - scenario_id: electrical_s02
@@ -1322,3 +1535,92 @@ compliance:
   - C9 scanned every intake message against docs/ai_smell.yaml words and patterns; the fixed 911 text (INT-004) is exempt. No hits.
   - 'C1 to C5, C7, C8, C12: no hits. s10 sent the fixed 911 text and no other safety words; no false 911 elsewhere.'
   - 's10 danger question after he reported a burning smell is not counted under C11: the bank never skips it and it asks about now.'
+compliance_v3:
+  violations:
+  - scenario_id: electrical_s01
+    code: C3
+    where: intake message 7
+    text: Do not remove any covers.
+  - scenario_id: electrical_s01
+    code: C6
+    where: card line 2
+    text: Lights dim for about a second in the two back bedrooms and come back
+  - scenario_id: electrical_s02
+    code: C11
+    where: intake message 2
+    text: Is it a breaker in the panel that won't reset, or an outlet with test and reset buttons? 1 Breaker in the panel 2 Outlet with buttons 3 Not found
+  - scenario_id: electrical_s03
+    code: C3
+    where: intake message 4
+    text: Do not remove any covers.
+  - scenario_id: electrical_s03
+    code: C6
+    where: card line 3
+    text: 'Trips: one appliance (microwave and toaster oven run together).'
+  - scenario_id: electrical_s04
+    code: C11
+    where: intake message 5
+    text: How many devices? 1 Just this one 2 Two to four 3 Five or more
+  - scenario_id: electrical_s05
+    code: C6
+    where: card line 2
+    text: New 240-volt outlet for a welder and two regular outlets in the attached garage.
+  - scenario_id: electrical_s07
+    code: C11
+    where: intake message 4
+    text: Did the landlord agree to this?
+  - scenario_id: electrical_s07
+    code: C6
+    where: card line 3
+    text: 'Won''t reset: not found'
+  - scenario_id: electrical_s08
+    code: C3
+    where: intake message 5
+    text: No quite ninguna tapa.
+  - scenario_id: electrical_s08
+    code: C11
+    where: intake message 8
+    text: ¿Cuándo lo necesita? 1 Hoy 2 Esta semana 3 Flexible 4 En una fecha
+  - scenario_id: electrical_s09
+    code: C11
+    where: intake message 3
+    text: 'When does it happen: when the AC or a big item starts, in wind or storms, at random, or all the time?'
+  - scenario_id: electrical_s09
+    code: C6
+    where: card line 2
+    text: when the electric dryer starts
+  - scenario_id: electrical_s10
+    code: C11
+    where: intake message 5
+    text: What is plugged into that outlet?
+  - scenario_id: electrical_s11
+    code: C11
+    where: intake message 3
+    text: 'When does it trip: when the AC starts, when one appliance runs, when it rains, at random, or right away when reset?'
+  - scenario_id: electrical_s11
+    code: C3
+    where: intake message 5
+    text: Do not remove any covers.
+  - scenario_id: electrical_s14
+    code: C11
+    where: intake message 3
+    text: Do you want to keep the same size service, or go up in amps? 1 Keep the same size 2 Go up in amps 3 Whatever fits what I'm adding
+  - scenario_id: electrical_s15
+    code: C1
+    where: intake message 2
+    text: This sounds like a dryer repair, so I'll continue it as an appliance request.
+  - scenario_id: electrical_s15
+    code: C6
+    where: card line 4
+    text: 'Breaker: no.'
+  count: 19
+  clean_scenarios: 3
+  notes:
+  - 'Intake messages are numbered with the town question included, as in the v1 block. The town question and the town line on the card are not judged, per the task.'
+  - 'C10 not applicable: playbook_v3 has no follow-up list or one-follow-up cap (follow_ups_used is [] in every result), so docs/catalog/expert/electrical.yaml was not opened.'
+  - 'C11 counts a question whose ask the opener or an earlier answer already gave, even when the reply added detail (s07 out of state, s08 husband after 5, s09 two seconds and the microwave, s10 1500 watts, s11 hum-then-trip). The fix is to ask the missing detail directly. Not counted, following the v1 block: s07 and s08 ''what is out'' (they split outlets from lights). Not counted: s15 ''Which fits it'', because her reply (warm, never hot) contradicted her opener''s ''no heat''.'
+  - 'C3 ''Do not remove any covers'' / ''No quite ninguna tapa'' is a safety instruction outside the 911 text. It comes from the trade_kb p1_panel photo wording, which the playbook_v2 run file already flags for Casey to decide. If Casey approves it as fixed wording, drop those 4 and the count is 15.'
+  - 'C1: ''sounds like'' is on the AI-019 list. Here it frames a routing decision, not a cause, but it tells her the job is not the outlet she named. Use v1''s wording: ''This goes to appliance repair businesses, not electrical.'''
+  - 'C9: every intake message checked against docs/ai_smell.yaml words and patterns; no hits. The s10 911 text matches the fixed INT-004 wording exactly (same as v1), was sent only in s10, and was not paraphrased. No false 911 elsewhere (s03, s04, s06, s09, s11 danger answers were no or warm-only).'
+  - 'C2, C4, C5, C7, C8, C12: no hits. s05 ''Ask Hava doesn''t give prices'' gives no figure; s14 ''Panel work goes only to licensed electricians'' makes no license claim beyond routing.'
+  - 'Borderline, not counted: s06 ''Needed: Saturday'' restates the grandson''s access day as a need-by date; s10 skipped the device photo under a kb safety rule (no words to the homeowner, but it cost the dark ring on the card).'
