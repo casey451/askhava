@@ -38,6 +38,9 @@ LOCKED_FILES = (
     "kit/tasks.json",
     "kit/prompts/TEMPLATE.md",
     "kit/sources.sha256",
+    "kit/superseded_decisions.json",  # rewrites what every prompt tells a worker about a decision (D-491)
+    "kit/layers.json",
+    "kit/allowed_crates.txt",
 )
 LOCKED_GLOBS = ("docs/spec/*.md", "scripts/*.py", "scripts/*.sh", "docs/catalog/*.yaml")
 

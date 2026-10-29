@@ -35,7 +35,7 @@ local_database() {
   export DATABASE_URL="postgres://askhava_ci:${pass}@localhost:5432/askhava_ci"
   # The two application roles the migrations grant to (D-092, D-491): created here and in Ci, never by a
   # migration. askhava_ci is a member of both so tests can SET ROLE to either.
-  for role in askhava_app askhava_migrate; do
+  for role in askhava_app askhava_migrator; do
     sudo -n -u postgres psql -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
       || sudo -n -u postgres psql -qc "CREATE ROLE ${role} NOLOGIN"
     sudo -n -u postgres psql -qc "GRANT ${role} TO askhava_ci" >/dev/null

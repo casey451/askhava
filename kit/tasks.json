@@ -272,7 +272,7 @@
    "id": "T003",
    "slug": "matching-examples",
    "title": "docs/catalog/matching_examples.yaml (M01-M16) checked by scripts/check_catalog.py",
-   "goal": "K5 follow-up 2: an oracle for matching written before any routing code and before the twin's license table. The M01 to M16 rows use the catalog's job-type names (map the table's names to them).",
+   "goal": "K5 follow-up 2: an oracle for matching written before any routing code and before the twin's license table. The M01 to M16 rows use the catalog's job-type names (map the table's names to them). Open `docs/catalog/license_map.yaml` only to confirm a subclass's scope.",
    "type": "build",
    "phase": 1,
    "stage": "1",
@@ -294,11 +294,9 @@
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
-    "docs/spec/job-cards.md",
     "docs/spec/licensing.md",
     "docs/test-design.md",
-    "docs/catalog/categories.yaml",
-    "docs/catalog/license_map.yaml"
+    "docs/spec/job-cards.md"
    ],
    "requirements": [
     "CARD-001",
@@ -321,7 +319,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 20
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -938,7 +936,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 17
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -1117,7 +1115,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -1178,7 +1176,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 18
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -2705,7 +2703,7 @@
    "budget": {
     "files": 2,
     "lines": 250,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -2959,7 +2957,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 11
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -3476,7 +3474,7 @@
    "id": "T039",
    "slug": "intake-emergency",
    "title": "intake: emergency stems on every message, safety text, urgent or regular",
-   "goal": "The emergency keyword list runs by word stem on every inbound message before anything else; a 911-list match gets the INT-004 text within 5 minutes and no card until the homeowner replies safe; then she chooses emergency or regular (with the night count of emergency businesses), the urgency question is always asked, and an emergency job's cards go out before its remaining questions (INT-002 to INT-006, INT-024 to INT-026, INT-029, INT-030, INT-033, INT-037).",
+   "goal": "The emergency keyword list runs by word stem on every inbound message before anything else; a 911-list match gets the INT-004 text within 5 minutes and no card until the homeowner replies safe; then she chooses emergency or regular (with the night count of emergency businesses), the urgency question is always asked, and an emergency job's cards go out before its remaining questions (INT-002 to INT-006, INT-024 to INT-026, INT-029, INT-030, INT-033, INT-037). The night count (INT-033) is computed in `emergency_count.rs` from a `businesses::api` function that T041 provides with the after-hours tick only; T150 later refines that function with the per-person switch and the test-email Yes, without touching intake (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -3495,7 +3493,8 @@
     "app/intake/src/emergency.rs",
     "app/intake/src/service.rs",
     "app/intake/src/tests/emergency.rs",
-    "tests/integration/tests/emergency_flow.rs"
+    "tests/integration/tests/emergency_flow.rs",
+    "app/intake/src/emergency_count.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -3526,7 +3525,8 @@
     "TD-INT-10",
     "TD-INT-13",
     "TD-INT-16",
-    "TD-INT-12"
+    "TD-INT-12",
+    "TD-INT-15"
    ],
    "decisions": [
     "D-054",
@@ -3558,7 +3558,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 550,
     "context_pct": 16
    },
@@ -4928,7 +4928,7 @@
    "id": "T169",
    "slug": "ci-rust-playwright",
    "title": "CI for the Rust workspace: pinned Postgres service, cache, coverage floors, sqlx prepare check, one boundary build",
-   "goal": "Ci pins the Postgres service image by digest, caches the Cargo registry and target with Swatinem/rust-cache pinned by commit SHA (keyed on Cargo.lock and the toolchain, CARGO_INCREMENTAL=0, dev profile debug = line-tables-only), installs cargo-audit, cargo-deny, sqlx-cli and cargo-llvm-cov from pinned prebuilt binaries, runs `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features` so stale offline query data fails, measures branch coverage in its own parallel job on a nightly pinned by date against tests/coverage_floor.json (this task writes the file with the measured total and the 95% floors for app/payments, app/catalog fee rules, app/privacy and app/licensing, FEE-034, PRIV-022, LIC-033), fails any PR that lowers a floor, and keeps `cargo build -p askhava-server --locked` as the one boundary build (no per-crate clippy runs) (D-453, D-479, D-481). Acceptance: a PR that lowers coverage by one line in app/core (which has code by now; `app/privacy` is empty until T022) turns Ci red, a deliberately stale .sqlx entry turns Ci red, and a warm-cache run finishes in 15 minutes or less (all shown in the task report). Per the skeleton trial (D-488): `cargo build -p askhava-server --locked`; `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features`; cargo-audit and cargo-deny from their musl release tarballs with pinned SHA-256s; clippy before the build in the same job; and a check that the cache keeps `target/tests/trybuild`, without which a cold pass runs 12 to 15 minutes on 2 vCPU.",
+   "goal": "Ci pins the Postgres service image by digest, caches the Cargo registry and target with Swatinem/rust-cache pinned by commit SHA (keyed on Cargo.lock and the toolchain, CARGO_INCREMENTAL=0, dev profile debug = line-tables-only), installs cargo-audit, cargo-deny, sqlx-cli and cargo-llvm-cov from pinned prebuilt binaries, runs `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features` so stale offline query data fails, measures branch coverage in its own parallel job on a nightly pinned by date against tests/coverage_floor.json (this task writes the file with the measured total and the 95% floors for app/payments, app/catalog fee rules, app/privacy and app/licensing), fails any PR that lowers a floor, and keeps `cargo build -p askhava-server --locked` as the one boundary build (no per-crate clippy runs) (D-453, D-479, D-481). Acceptance: a PR that lowers coverage by one line in app/core (which has code by now; `app/privacy` is empty until T022) turns Ci red, a deliberately stale .sqlx entry turns Ci red, and a warm-cache run finishes in 15 minutes or less (all shown in the task report). Per the skeleton trial (D-488): `cargo build -p askhava-server --locked`; `sqlx migrate run` then `cargo sqlx prepare --workspace --check -- --all-targets --all-features`; cargo-audit and cargo-deny from their musl release tarballs with pinned SHA-256s; clippy before the build in the same job; and a check that the cache keeps `target/tests/trybuild`, without which a cold pass runs 12 to 15 minutes on 2 vCPU. `Ci` keeps the role step (creating `askhava_app` and `askhava_migrator` before `sqlx migrate run`), and after T012 lands runs `scripts/bootstrap_roles.sql` instead (D-491).",
    "type": "harness",
    "phase": 1,
    "stage": "2",
@@ -6083,7 +6083,8 @@
    ],
    "tests": [
     "TD-SEC-18",
-    "TD-SEC-27"
+    "TD-SEC-27",
+    "TD-FEE-25"
    ],
    "decisions": [
     "D-270",
@@ -6096,7 +6097,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 15
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -6147,13 +6148,17 @@
     "docs/brains/rust-production.md"
    ],
    "requirements": [
-    "PICK-021"
+    "PICK-021",
+    "FEE-047",
+    "FEE-014"
    ],
    "tests": [
     "TD-FEE-25"
    ],
    "decisions": [
-    "D-491"
+    "D-491",
+    "D-365",
+    "D-490"
    ],
    "cites": [],
    "budget": {
@@ -6661,7 +6666,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -8765,14 +8770,17 @@
     "docs/spec/quotes-pick.md",
     "docs/brains/payments-stripe.md",
     "docs/brains/rust-production.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "docs/spec/messaging.md"
    ],
    "requirements": [
     "PICK-029",
-    "PICK-030"
+    "PICK-030",
+    "TXT-018"
    ],
    "tests": [
-    "TD-PICK-13"
+    "TD-PICK-13",
+    "TD-TXT-23"
    ],
    "decisions": [
     "D-050",
@@ -9584,7 +9592,7 @@
    "id": "T150",
    "slug": "business-calls-link-hardening",
    "title": "picks and quotes: EMERGENCY card and pick emails with the emergency-email switch and its test email",
-   "goal": "Emergency job cards and picks go by email with the EMERGENCY subject and first line, at night only to people with \"Emergency emails at any hour\" on, whose switch needs a passed test emergency email renewed every 90 days; a business without that stops counting for after-hours coverage (CARD-021, BIZ-007, BIZ-042, INT-033); the INT-033 night count of emergency businesses, which counts only businesses with a person whose emergency emails are on with a current Yes, is `app/intake/src/emergency_count.rs`, which T039's flow calls (D-491).",
+   "goal": "Emergency job cards and picks go by email with the EMERGENCY subject and first line, at night only to people with \"Emergency emails at any hour\" on, whose switch needs a passed test emergency email renewed every 90 days; a business without that stops counting for after-hours coverage (CARD-021, BIZ-007, BIZ-042, INT-033); the INT-033 night count of emergency businesses, which counts only businesses with a person whose emergency emails are on with a current Yes, is `app/intake/src/emergency_count.rs`, which T039's flow calls (D-491). The night count itself is T039's; this task changes only `businesses::api`'s count source (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9608,8 +9616,7 @@
     "migrations/0144_emergency_emails.sql",
     "tests/integration/tests/emergency_card_email.rs",
     "app/businesses/src/emergency_switch.rs",
-    "app/portals/templates/emergency_test_email.html",
-    "app/intake/src/emergency_count.rs"
+    "app/portals/templates/emergency_test_email.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9633,13 +9640,11 @@
    "requirements": [
     "CARD-021",
     "BIZ-007",
-    "BIZ-042",
-    "INT-033"
+    "BIZ-042"
    ],
    "tests": [
     "TD-CARD-09",
-    "TD-BIZ-24",
-    "TD-INT-15"
+    "TD-BIZ-24"
    ],
    "decisions": [
     "D-323",
@@ -9652,7 +9657,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 6,
     "lines": 400,
     "context_pct": 19
    },
@@ -9845,7 +9850,7 @@
    "id": "T200",
    "slug": "help-page-get-help-form",
    "title": "ops and portals: the owner help page with its screened reply box, and the business Get help form",
-   "goal": "The owner help page lists open help requests with a 300-character reply box screened like a quote, and businesses send help through the portal's Get help form, which opens one request (BIZ-047, CON-034, OPS-036). The \"Get help\" link goes in the shared layout (`app/site/templates/base.html`) every portal page extends, and the site help page's owner-message form (`help.html`, WEB-008) is wired to the same help-request endpoint here (D-491).",
+   "goal": "The owner help page lists open help requests with a 300-character reply box screened like a quote, and businesses send help through the portal's Get help form, which opens one request (BIZ-047, CON-034, OPS-036). The \"Get help\" link goes in the shared layout (`app/site/templates/base.html`) every portal page extends, and the site help page's owner-message form (`help.html`) is wired to the same help-request endpoint here (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10189,7 +10194,7 @@
    "budget": {
     "files": 7,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -13102,7 +13107,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 10
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -13885,7 +13890,7 @@
    "id": "T208",
    "slug": "intake-card-approval-email-updates",
    "title": "intake: the homeowner's card approval step and email updates offered on the quote page",
-   "goal": "The homeowner sees the job card by link and approves it with SEND before it goes; and the quote page offers email updates with a one-tap email confirm, texts staying the default (INT-041, CARD-007, TXT-018).",
+   "goal": "The homeowner sees the job card by link and approves it with SEND before it goes; and the quote page offers email updates with a one-tap email confirm, texts staying the default (INT-041, CARD-007, TXT-018). The email side of TXT-018 (the one-tap confirm link, the bounce fallback) is T095's; this task records the homeowner's channel choice (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -13925,8 +13930,7 @@
     "TXT-018"
    ],
    "tests": [
-    "TD-INT-23",
-    "TD-TXT-23"
+    "TD-INT-23"
    ],
    "decisions": [
     "D-394",
