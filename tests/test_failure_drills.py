@@ -788,3 +788,16 @@ def test_drill_a_handed_off_fix_main_reaches_the_session_as_handed_off(tmp_path:
     assert cycle.run_cycle(cfg, env, NOW) == "main_red"
     assert cycle.run_cycle(cfg, env, NOW) == "handed_off"
     assert st.status(env.store, st.FIX_MAIN) == st.IN_PROGRESS
+
+
+def test_drill_a_rejected_branch_push_blocks_the_task_and_frees_the_lease(tmp_path: Path) -> None:
+    """D-513: a push rejected for credentials must not hold the lease for three hours or burn retries;
+    the task is BLOCKED with the reason and the build moves on to the next eligible task."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001"), make_task("T002")], tmp_path)
+    env.push_branch = lambda branch, head: False  # type: ignore[method-assign]  # reason: a rejected push
+    assert cycle.run_cycle(cfg, env, NOW) == "push_failed"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.BLOCKED and "push rejected" in t1["reason"]
+    assert env.store["lease"] is None
+    assert st.eligible(env.store, NOW) == ["T002"]
