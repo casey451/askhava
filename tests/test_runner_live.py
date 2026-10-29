@@ -454,3 +454,13 @@ def test_cycle_log_is_appended_on_the_state_branch(repo: dict[str, Path], tmp_pa
     env.write_cycle_log({"result": "smoke_env", "log": []})
     lines = origin_file(repo, "claude/kit-state", "kit/runner_log.jsonl").splitlines()
     assert [json.loads(line)["result"] for line in lines] == ["idle", "smoke_env"] and "at" in json.loads(lines[0])
+
+
+def test_fix_main_handoff_carries_its_goal_as_the_prompt() -> None:
+    """D-501: FIX-MAIN has no prompt file, so the handoff hands the session the goal text itself."""
+    from runner import __main__ as entry
+
+    fix = {"goal": "Fix main. First option: git revert"}
+    assert entry._prompt_for(fix, "FIX-MAIN") == fix["goal"]
+    assert entry._prompt_for({"goal": "x"}, "T002") == "kit/prompts/T002.md"
+    assert entry._prompt_for({}, "T999") == "kit/prompts/T999.md"

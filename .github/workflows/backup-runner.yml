@@ -115,6 +115,9 @@ jobs:
       issues: write
       id-token: write
       actions: write
+      # The runner reads check runs (a task's PR checks, the false-red test of D-498); without this the
+      # job's token gets 403 "Resource not accessible by integration" (D-501).
+      checks: read
     steps:
       # persist-credentials: false so pushes go out as the Claude GitHub App,
       # not as GITHUB_TOKEN.
@@ -149,7 +152,7 @@ jobs:
             Do exactly this:
             1. Run `python3 -m runner` (RUNNER_STARTER=actions is already set). It prints a result line and a JSON line.
             2. If the result is anything but `handed_off`, stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
-            3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models. Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists; commit to the local branch; do not push it.
+            3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models. Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists (when `prompt` is not a file path, as for FIX-MAIN, it is the prompt text itself: follow it, revert first); commit to the local branch; do not push it.
             4. Run the fresh-eyes reviewer subagent on the reviewer model over the diff and the task's spec files; findings go back to the worker once.
             5. Run `python3 -m runner --after --worker-agent <worker agent id> --reviewer-agent <reviewer agent id>` (add `--outcome tests_failed --log "<summary>"` if the work failed, `--outcome usage_limit` at a usage limit).
             6. While the task runs longer than 30 minutes, run `python3 -m runner --renew` every 30 minutes.
