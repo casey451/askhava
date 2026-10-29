@@ -1,0 +1,719 @@
+# Ask Hava expert layer: car_detailing (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set car_detailing and trade_kb/trades/car_detailing.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - All six kb job types are kept. ceramic_paint_correction routes as "exterior detail" and
+#   odor_pet_hair as "interior detail" (the scenario file expects the same). No new_job_type was
+#   needed: every category job type has a kb match.
+# - The bank set has no condition question (kb q4_condition) and no paint-work question (kb q5_paint).
+#   fu_condition and fu_paint_work fill the gap, but condition moves every interior quote; Casey may
+#   want it added to the bank so it is always asked rather than spending the one follow-up.
+# - The bank photo list is [p1_vehicle_wide, p3_worst_area, p5_parking_spot]. p2_interior and
+#   p4_paint_closeup are named in photos_priority for interior, odor and paint jobs; suggest the app
+#   order photos by job type.
+# - The bank water question asks about water and power, not shade. fu_shade covers paint work.
+# - The bank's service option "Roof cleaning and sealing (RV)" overlaps the kb note that RV roof
+#   repair or resealing goes to rv_services, which no enabled category takes. Kept under
+#   "RV detailing"; fu_roof_why puts stains or drips on the card as a plain observation so a
+#   business that does not do roof sealing can pass. Casey to decide where roof coating belongs.
+# - Body or paint-shop work (peeling clear coat, dents, deep scratches) has no enabled category.
+# - Boats go to boat_detailing. No golf cart category is enabled, so carts stay here if asked.
+schema: 1
+category: car_detailing
+question_set: car_detailing
+kb_trade: car_detailing
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: ars_32_1101
+    title: "A.R.S. 32-1101 Definitions: a contractor builds, alters, repairs or demolishes buildings, structures or other improvements (vehicles are not named)"
+    url: "https://www.azleg.gov/ars/32/01101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed [S4] (handyman exemption (A)(14); fuel-gas and fire-safety carve-outs (D))"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_business_license
+    title: "Lake Havasu City Business License: businesses and individuals conducting business within city limits need a city business license; some also need a privilege tax license"
+    url: "https://www.lhcaz.gov/business-license"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (total hardness 19 grains per gallon, range 18 to 20; TDS 753 ppm, range 702 to 787)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_stormwater
+    title: "Lake Havasu City stormwater fact sheet: wash vehicles at home on an unpaved surface, not the driveway; never put illicit discharges into a storm drain, wash or ditch; or use a commercial wash that recycles water (no mobile-detailer rule stated)"
+    url: "https://www.lhcaz.gov/docs/default-source/department-documents/stormwaterfactsheet.pdf?sfvrsn=4"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: adwr_monsoon
+    title: "Arizona Department of Water Resources: monsoon season runs June 15 to September 30 (NWS dates since 2008); storms bring dust storms, lightning and flash floods"
+    url: "https://www.azwater.gov/news/articles/2024-05-28"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: climate_normals
+    title: "US Climate Data: Lake Havasu City 1991-2020 normals (average highs 105 F June, 109 F July, 108 F August, 101 F September; 63 to 64 F December and January)"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: gtechniq_csl
+    title: "Gtechniq Crystal Serum Light application notes (retailer page): do not apply in direct sunlight; work only between 5 C and 25 C (41 to 77 F); keep the car indoors at least 12 hours after"
+    url: "https://theragcompany.com/products/gtechniq-crystal-serum-light"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: autofinesse_sun
+    title: "Auto Finesse (detailing product maker): washing in direct sunlight; hot panels shorten product working time and minerals spot faster; early mornings and evenings in summer"
+    url: "https://www.autofinesse.com/blogs/car-detailing-guides/can-you-wash-a-car-in-direct-sunlight"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: simplegreen_rv_roof
+    title: "Simple Green (cleaner maker): cleaning an RV rubber roof; many makers say avoid abrasive cleaners, petroleum distillates, citrus cleaners and mineral oils; check caulking and seals"
+    url: "https://simplegreen.com/cleaning-tips/automotive/rv-rubber-roof/"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: mobiletechrx_rv
+    title: "Mobile Tech RX (detailing equipment vendor): RV detailing prices; exterior work priced per foot, interiors by the hour; roof, bug and tar and slide-outs as add-ons; heavy sun damage needs compounding"
+    url: "https://www.mobiletechrx.com/resources/rv-detailing-prices/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: hcp_detailing_ads
+    title: "Housecall Pro (field-service software vendor): car detailing advertising; spending about $40 to $60 to book a job fits margins on an average $350 detail"
+    url: "https://www.housecallpro.com/resources/car-auto-detailing-advertising-ads/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: clicksgeek_detailing
+    title: "ClicksGeek (ad agency): Google Ads for auto detailing; high-intent terms such as 'car detailing near me' clear $5 to $15 a click; no cost-per-lead figure"
+    url: "https://clicksgeek.com/google-ads-auto-detailing/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: leadcapture_thumbtack
+    title: "LeadCapture (marketing vendor): Thumbtack lead cost; leads start around $10 and run to $100 or more by service; no detailing-specific figure"
+    url: "https://leadcapture.io/blog/thumbtack-lead-cost/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Vehicle type and size: car, two-row SUV or truck, three-row van, side-by-side, or RV and trailer by the foot"
+      why: "Most RV and trailer exterior work is priced per foot and interiors by the hour, so length and class set the base; the bank's vehicle and rv_length questions settle it."
+      source: mobiletechrx_rv
+    - driver: "Inside condition: normal use, sand, heavy pet hair, set-in smoke, spills soaked into the padding"
+      why: "Woven-in dog hair and smoke in the headliner can double or triple interior hours compared with a kept-up car; this is where most interior quotes go wrong. [judgment]"
+      source: null
+    - driver: "Paint work wanted: wash and wax, machine polish (one step or more), or a ceramic coating"
+      why: "A wash and wax is a couple of hours; polish and coating work runs from most of a day to several days and needs indoor or shaded cure time. [judgment]"
+      source: null
+    - driver: "Finish condition on RVs and older trucks: chalky, streaked or sun-faded"
+      why: "Heavy sun damage on an RV needs compounding, priced well above a wash, and polishing cannot fix paint that is peeling."
+      source: mobiletechrx_rv
+    - driver: "What is on site: water, power, shade or a garage"
+      why: "A mobile rig with no spigot or outlet must bring a water tank and a generator, and full sun in summer pushes the work to early morning. [judgment]"
+      source: null
+    - driver: "RV extras: roof cleaning, number of slide-outs, bugs on the front cap"
+      why: "Roof work and bug and tar removal are per-foot add-ons and slide-outs a flat add-on each."
+      source: mobiletechrx_rv
+    - driver: "Hard-water spots on glass and paint"
+      why: "City water runs about 19 grains per gallon, so dried spots often need a polish step, and many detailers bring filtered water."
+      source: lhc_ccr
+    - driver: "How many vehicles in one visit"
+      why: "A second vehicle at the same stop saves the drive and setup, so many detailers price it lower than a separate trip. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Pet hair woven into the rear carpet, cargo liner or seat seams that the front-seat photo does not show"
+      how_a_pro_spots_it: "Asks for the worst spot, not the front seat; the answer on where most of the hair is"
+      question_or_photo: fu_hair_where
+      source: null
+    - condition: "Smoke smell set into the headliner and seat foam, with a brown film on the glass"
+      how_a_pro_spots_it: "Used vehicle with a smoking previous owner; the smell answer; haze on the inside of the windshield in the interior photo"
+      question_or_photo: fu_smell_what
+      source: null
+    - condition: "A spill (milk, food, drink) soaked through the carpet into the padding"
+      how_a_pro_spots_it: "Sour smell that came back after a surface clean; the stain close-up"
+      question_or_photo: p3_worst_area
+      source: null
+    - condition: "Paint that is peeling or flaking, which no polish or coating will fix"
+      how_a_pro_spots_it: "Lighter, flaky patch on the roof or hood edge in the daylight paint photo; the paint-look answer"
+      question_or_photo: fu_paint_look
+      source: null
+    - condition: "No water or power at a storage lot space, or lot and park rules on hours and runoff"
+      how_a_pro_spots_it: "The bank's where and water answers, then the lot-rules answer; the city asks that wash water stay out of storm drains and washes"
+      question_or_photo: fu_lot_rules
+      source: lhc_stormwater
+    - condition: "Rodent droppings or a nest in a stored RV, trailer or seldom-driven car"
+      how_a_pro_spots_it: "Droppings or chewed material in the interior photo; a musty smell after months in storage"
+      question_or_photo: p2_interior
+      source: null
+    - condition: "Stains or drips inside an RV that the owner calls a roof job, with cracked sealant at vents or seams"
+      how_a_pro_spots_it: "The roof answer says stains or drips inside; caulk cracks in a roof photo. Roof cleaners also check caulking and seals while they work."
+      question_or_photo: fu_roof_why
+      source: simplegreen_rv_roof
+    - condition: "Hard-water spots etched into glass and paint after sprinkler overspray or washing in the sun"
+      how_a_pro_spots_it: "White spots on glass in the worst-spot photo; the extras answer"
+      question_or_photo: fu_extras
+      source: lhc_ccr
+  misdiagnosis_checks:
+    - sounds_like: "exterior detail (owner asks for a wash)"
+      might_be: "ceramic_paint_correction: dull, chalky or marked paint that a wash will not change"
+      one_question: fu_paint_look
+      if_other_route_to: {category: car_detailing, job_type: "exterior detail"}
+      source: null
+    - sounds_like: "interior detail (smoke smell in a used vehicle)"
+      might_be: "odor_pet_hair: set-in smoke from a previous owner, a longer process than a clean"
+      one_question: fu_smell_what
+      if_other_route_to: {category: car_detailing, job_type: "interior detail"}
+      source: null
+    - sounds_like: "interior detail (bad or musty smell)"
+      might_be: "rodent droppings or a nest in a stored vehicle or RV (pest_control trade file)"
+      one_question: fu_smell_what
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+    - sounds_like: "RV detailing (roof cleaning and sealing)"
+      might_be: "an RV roof or vent leak repair (kb rv_services), which no enabled category takes; the wash and roof cleaning stay here with the stain stated as seen"
+      one_question: fu_roof_why
+      if_other_route_to: {category: car_detailing, job_type: "RV detailing"}
+      source: null
+    - sounds_like: "full detail (pontoon or boat, 'detail it like a car')"
+      might_be: "boat detailing (kb boat_dock detailing); her own words usually settle it before any question"
+      one_question: vehicle
+      if_other_route_to: {category: boat_detailing, job_type: "hull cleaning"}
+      source: null
+    - sounds_like: "exterior detail (peeling paint, deep scratches, dents)"
+      might_be: "body or paint-shop work, which no enabled category takes"
+      one_question: fu_paint_look
+      if_other_route_to: {}
+      source: null
+  photo_reading:
+    - photo_id: p1_vehicle_wide
+      reads: ["Vehicle type and size; RV class and length", "Slide-outs, ladder, bike racks", "Dust, mud or black streaks", "Dull or chalky paint", "License plate or VIN in the frame (crop before the card goes out)"]
+      neutral_wording: "Side view of a white fifth wheel with dark streaks below the roof line and two slide-outs."
+    - photo_id: p2_interior
+      reads: ["Seat material (cloth, leather or vinyl)", "Rows of seats", "Pet hair on seats and floor", "Items left inside", "Droppings or chewed material", "Haze on the inside of the glass"]
+      neutral_wording: "Cloth seats with light-colored hair across the back seat and floor."
+    - photo_id: p3_worst_area
+      reads: ["Stain size and color", "Caked mud or sand", "White spots on glass or paint", "Hair woven into carpet"]
+      neutral_wording: "Dark stain about the size of a hand on the driver seat."
+    - photo_id: p4_paint_closeup
+      reads: ["Fine circular marks in sunlight", "Scratches", "Chalky or faded areas", "Peeling or flaking patches", "Bird droppings or tree sap marks"]
+      neutral_wording: "Hood in sunlight shows fine circular marks; a lighter, flaky patch about the size of a hand on the roof edge."
+    - photo_id: p5_parking_spot
+      reads: ["Driveway, gravel lot space or RV pad", "Spigot or outlet in view", "Shade, carport or garage", "Room to walk around the vehicle", "Paved or unpaved ground"]
+      neutral_wording: "RV on a gravel lot space between other RVs; no spigot or outlet in view."
+  local_factors:
+    - fact: "City water hardness averages about 19 grains per gallon, range 18 to 20, with TDS about 753 ppm"
+      effect: "Tap water that dries on paint or glass leaves white spots, so many detailers bring filtered or deionized water and ask about water spots [judgment on the detailer response]"
+      source: lhc_ccr
+    - fact: "Average highs run 101 to 109 F from June through September"
+      effect: "Panels get too hot to work in full sun by mid-morning; mobile detailers start at dawn or need shade, and the card should say whether shade or a garage is there"
+      source: climate_normals
+    - fact: "Coating makers say not to apply in direct sunlight and to work between about 41 and 77 F, then keep the vehicle indoors about 12 hours"
+      effect: "Summer coating jobs need a garage, an early start or the shop's own bay; this is why the garage and shade answer matters for paint work"
+      source: gtechniq_csl
+    - fact: "Hot panels shorten the working time of wash products and minerals spot faster"
+      effect: "Pros plan summer washes for early morning or evening"
+      source: autofinesse_sun
+    - fact: "The city asks residents washing at home to wash on an unpaved surface and keep wash water out of storm drains and washes; it names no rule for mobile detailers"
+      effect: "Storage lots, RV parks and HOAs may set their own washing rules; the card states what the homeowner knows"
+      source: lhc_stormwater
+    - fact: "Monsoon season runs June 15 to September 30 and brings dust storms"
+      effect: "Vehicles and RVs get coated after storms; a wash booked before a storm may need redoing, so some detailers ask about flexible dates [judgment on detailer practice]"
+      source: adwr_monsoon
+    - fact: "Seasonal residents store RVs, trailers, side-by-sides and cars at storage lots or vacant second homes for months"
+      effect: "Cleaning before arrival or before storage is common, someone else may hold the key, and stored units can have dust, droppings or a musty smell [judgment]"
+      source: null
+    - fact: "No ROC license class covers vehicle detailing; contracting covers buildings and structures"
+      effect: "Any detailer may receive these cards; Lake Havasu City still requires a city business license for business done in city limits"
+      source: ars_32_1101
+    - fact: "Side-by-sides and lifted trucks come back from desert trails caked in mud and dust"
+      effect: "Heavy mud adds pre-rinse time and water use, and the business wants to know before it fills its tank [judgment]"
+      source: null
+  seasonality:
+    busy: "October to April, with peaks when seasonal residents arrive in the fall and before they store vehicles and leave in spring; holiday weekends [judgment]"
+    slow: "July and August midday heat; work shifts to dawn and garages [judgment]"
+    source: null
+
+job_types:
+  - id: interior_detail
+    label: "Interior detail (vacuum, seats, carpets, dash, glass)"
+    bank_job_type: "interior detail"
+    recurring: false
+    homeowner_phrasings: ["clean my car inside", "shampoo the seats", "stains on my seats", "vacuum and wipe it down", "limpiar el interior del carro"]
+    must_know:
+      - fact: "Inside condition: normal use, sand, pet hair, a smell or stains"
+        bank_question: null
+        follow_up: fu_condition
+        photo: p3_worst_area
+        why_it_moves_price: "Hair, smells and soaked-in spills add hours that a plain 'clean the inside' hides. [judgment]"
+        skip_if: "Homeowner already described the condition"
+      - fact: "Vehicle type and rows of seats"
+        bank_question: vehicle
+        follow_up: fu_rows
+        photo: p2_interior
+        why_it_moves_price: "A third row or a full-size cab adds seat and carpet area. [judgment]"
+        skip_if: "Vehicle is a car, or the photo shows the rows"
+      - fact: "Seat material"
+        bank_question: null
+        follow_up: fu_seats
+        photo: p2_interior
+        why_it_moves_price: "Cloth gets shampoo and extraction with dry time; leather gets cleaned and conditioned. [judgment]"
+        skip_if: "Interior photo shows the seats"
+      - fact: "Where it is parked and whether power is there"
+        bank_question: water
+        follow_up: null
+        photo: p5_parking_spot
+        why_it_moves_price: "Vacuums and extractors need an outlet or a generator. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_condition
+        ask_when: "Homeowner wants the inside done and has not said what shape it is in"
+        text_en: "How is the inside right now?"
+        text_es: "¿Cómo está el interior ahorita?"
+        options_en: ["Normal use", "Heavy dirt or sand", "Lots of pet hair", "Smoke or other smell", "Stains or spills"]
+        options_es: ["Uso normal", "Mucha tierra o arena", "Mucho pelo de mascota", "Olor a humo u otro olor", "Manchas o algo derramado"]
+        card_field: true
+        why: "Condition is the biggest swing in interior hours and the bank does not ask it. [judgment]"
+      - id: fu_seats
+        ask_when: "Inside work and no interior photo shows the seats"
+        text_en: "Are the seats cloth or leather?"
+        text_es: "¿Los asientos son de tela o de piel?"
+        options_en: ["Cloth", "Leather or vinyl", "Some of each"]
+        options_es: ["Tela", "Piel o vinil", "De los dos"]
+        card_field: true
+        why: "Cloth and leather take different methods, products and dry time. [judgment]"
+      - id: fu_rows
+        ask_when: "Vehicle is a truck, SUV or van and the rows of seats are not known"
+        text_en: "How many rows of seats does it have?"
+        text_es: "¿Cuántas filas de asientos tiene?"
+        options_en: ["One row", "Two rows", "Three rows or more"]
+        options_es: ["Una fila", "Dos filas", "Tres filas o más"]
+        card_field: true
+        why: "Rows set seat and carpet area, which most interior price sheets go by. [judgment]"
+      - fu_smell_what
+    photos_priority: [p2_interior, p3_worst_area, p1_vehicle_wide]
+    urgency:
+      fire_dept_triggers: ["Propane or gas smell inside an RV or trailer", "Smoke or flames coming from the vehicle now"]
+      urgent_capable_triggers: []
+      regular: "All interior requests, including ones needed by a set date"
+    scope_line_en: "Interior detail on a three-row minivan; cloth seats, crumbs on the floor, sour spill smell under the second row."
+    scope_line_es: "Detallado interior de una minivan de tres filas; asientos de tela, migajas en el piso, olor agrio de algo derramado bajo la segunda fila."
+    quote_format: tiers
+    business_fills: ["up to 3 packages, each with a price", "what each package includes", "hours on site and whether you need power", "earliest day"]
+    card_template: |
+      REQ-<id> | Car, truck and RV detailing | <town>, <general area> | <home / storage lot / RV park>
+      <one scope line: vehicle, inside only, main condition>
+      Vehicle: <type, rows of seats>. Seats: <cloth / leather or vinyl / mixed>. Condition: <normal / dirt or sand / pet hair / smell / stains>.
+      Site: <where parked>. Water and power: <yes / no / water only>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That stain won't come out.", "An ozone treatment will fix the smell.", "Interiors run about a hundred and fifty.", "Try vinegar on it first."]
+
+  - id: exterior_detail
+    label: "Exterior detail (hand wash, wax or sealant, wheels, trim)"
+    bank_job_type: "exterior detail"
+    recurring: false
+    homeowner_phrasings: ["wash and wax", "hand wash at my house", "water spots on my truck", "headlight restoration", "lavar la troca"]
+    must_know:
+      - fact: "Vehicle type and size"
+        bank_question: vehicle
+        follow_up: null
+        photo: p1_vehicle_wide
+        why_it_moves_price: "Size sets wash, wax and wheel time. [judgment]"
+        skip_if: "Answered"
+      - fact: "How the paint looks in daylight"
+        bank_question: null
+        follow_up: fu_paint_look
+        photo: p4_paint_closeup
+        why_it_moves_price: "Sound paint is a wash and wax; dull, chalky or marked paint turns it into polish work. [judgment]"
+        skip_if: "Daylight paint photo sent"
+      - fact: "How dirty the outside is"
+        bank_question: null
+        follow_up: fu_mud
+        photo: p1_vehicle_wide
+        why_it_moves_price: "Caked trail mud adds pre-rinse time and water. [judgment]"
+        skip_if: "Wide photo shows it"
+      - fact: "Water, power and shade where it is parked"
+        bank_question: water
+        follow_up: fu_shade
+        photo: p5_parking_spot
+        why_it_moves_price: "No spigot means bringing a tank; full sun in summer means a dawn start. [judgment]"
+        skip_if: "Parking-spot photo shows it"
+      - fact: "Extras: cloudy headlights, hard-water spots, bugs or tar"
+        bank_question: null
+        follow_up: fu_extras
+        photo: p3_worst_area
+        why_it_moves_price: "Each is a set add-on on most detail price sheets. [judgment]"
+        skip_if: "Homeowner listed what she wants"
+    allowed_follow_ups:
+      - id: fu_paint_look
+        ask_when: "Outside work and no daylight paint photo, or the homeowner mentions dull, faded or scratched paint"
+        text_en: "In daylight, how does the paint look?"
+        text_es: "Con luz del día, ¿cómo se ve la pintura?"
+        options_en: ["Shiny, just dirty", "Dull or chalky", "Fine swirls or light scratches", "Peeling or flaking in spots"]
+        options_es: ["Brillosa, solo sucia", "Opaca o como gis", "Rayitas finas o rayones leves", "Se está pelando en partes"]
+        card_field: true
+        why: "Separates a wash and wax from polish work, and flags peeling paint that detailers may pass on. [judgment]"
+      - id: fu_mud
+        ask_when: "Outside work and the homeowner has not said how dirty it is"
+        text_en: "How dirty is the outside?"
+        text_es: "¿Qué tan sucio está por fuera?"
+        options_en: ["Normal dust", "Heavy dust or bugs", "Caked mud from trails"]
+        options_es: ["Polvo normal", "Mucho polvo o insectos", "Lodo pegado de las brechas"]
+        card_field: true
+        why: "Trail mud changes water use and time on site. [judgment]"
+      - id: fu_shade
+        ask_when: "Outside or paint work and the homeowner has not said whether there is shade or a garage"
+        text_en: "Where it is parked, is there a garage or shade?"
+        text_es: "Donde está estacionado, ¿hay garaje o sombra?"
+        options_en: ["Garage", "Carport or shade", "Full sun"]
+        options_es: ["Garaje", "Techo abierto o sombra", "Pleno sol"]
+        card_field: true
+        why: "Hot panels spot and coatings should not go on in direct sun, so shade sets the time of day."
+      - id: fu_extras
+        ask_when: "Outside work and the homeowner has not named extras"
+        text_en: "Anything extra on the outside?"
+        text_es: "¿Algo extra por fuera?"
+        options_en: ["Cloudy headlights", "White water spots on glass or paint", "Bugs or tar", "Wheels and tires deep clean", "None of these"]
+        options_es: ["Faros opacos", "Manchas blancas de agua en vidrios o pintura", "Insectos o chapopote", "Limpieza a fondo de rines y llantas", "Nada de esto"]
+        card_field: true
+        why: "Extras are priced one by one, and hard-water spots are common here. [judgment]"
+    photos_priority: [p1_vehicle_wide, p4_paint_closeup, p5_parking_spot]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames coming from the vehicle now"]
+      urgent_capable_triggers: []
+      regular: "All exterior requests"
+    scope_line_en: "Hand wash and wax on a full-size pickup at home; dusty, paint shiny; spigot in the driveway, full sun."
+    scope_line_es: "Lavado a mano y cera para una troca grande en casa; con polvo, pintura brillosa; llave de agua en la entrada, pleno sol."
+    quote_format: tiers
+    business_fills: ["up to 3 packages, each with a price", "what each package includes (wash, wax or sealant, wheels, glass)", "whether you bring your own water", "earliest day and start time"]
+    card_template: |
+      REQ-<id> | Car, truck and RV detailing | <town>, <general area> | <home / storage lot / RV park>
+      <one scope line: vehicle, outside only, what she wants>
+      Vehicle: <type and size>. Paint in daylight: <shiny / dull or chalky / swirls / peeling in spots>. Dirt: <dust / heavy dust or bugs / trail mud>.
+      Extras: <headlights / water spots / bugs or tar / wheels / none>. Site: <where>. Water and power: <yes / no / water only>. Shade: <garage / shade / full sun>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your paint is oxidized.", "That needs a ceramic coating.", "A wash and wax runs about eighty.", "Wash it in the evening so it won't spot."]
+
+  - id: full_detail
+    label: "Full detail (inside and out)"
+    bank_job_type: "full detail"
+    recurring: false
+    homeowner_phrasings: ["full detail", "inside and out", "clean it top to bottom", "razor detail", "detallado completo"]
+    must_know:
+      - fact: "Vehicle type, and how many vehicles"
+        bank_question: vehicle
+        follow_up: fu_how_many
+        photo: p1_vehicle_wide
+        why_it_moves_price: "Size sets the base, and a second vehicle at the same stop changes the plan for the day. [judgment]"
+        skip_if: "Homeowner named one vehicle"
+      - fact: "Inside condition"
+        bank_question: null
+        follow_up: fu_condition
+        photo: p3_worst_area
+        why_it_moves_price: "Hair, smells and stains move the interior half more than anything else. [judgment]"
+        skip_if: "Homeowner described it"
+      - fact: "Outside dirt level"
+        bank_question: null
+        follow_up: fu_mud
+        photo: p1_vehicle_wide
+        why_it_moves_price: "Trail mud on a side-by-side or lifted truck adds rinse time and water. [judgment]"
+        skip_if: "Wide photo shows it"
+      - fact: "Seat material"
+        bank_question: null
+        follow_up: fu_seats
+        photo: p2_interior
+        why_it_moves_price: "Cloth needs extraction and dry time; leather needs conditioning. [judgment]"
+        skip_if: "Interior photo shows the seats"
+      - fact: "Where it is parked, with water and power"
+        bank_question: where
+        follow_up: null
+        photo: p5_parking_spot
+        why_it_moves_price: "A full detail away from a spigot and outlet means a tank and generator. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - fu_condition
+      - fu_mud
+      - fu_seats
+      - id: fu_how_many
+        ask_when: "Homeowner mentions more than one vehicle, or a vehicle and a trailer or side-by-side"
+        text_en: "How many vehicles should the business plan for on this visit?"
+        text_es: "¿Para cuántos vehículos debe planear el negocio en esta visita?"
+        options_en: ["One", "Two", "Three or more"]
+        options_es: ["Uno", "Dos", "Tres o más"]
+        card_field: true
+        why: "Lets the business plan the day and price the vehicles together. [judgment]"
+    photos_priority: [p1_vehicle_wide, p3_worst_area, p2_interior]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames coming from the vehicle now"]
+      urgent_capable_triggers: []
+      regular: "All full-detail requests"
+    scope_line_en: "Full detail, inside and out, on a mid-size SUV; dog hair on cloth seats, dusty outside; driveway at home with a spigot."
+    scope_line_es: "Detallado completo, por dentro y por fuera, de una SUV mediana; pelo de perro en asientos de tela, polvo por fuera; entrada de la casa con llave de agua."
+    quote_format: tiers
+    business_fills: ["up to 3 packages, each with a price", "what each package includes inside and out", "price for each added vehicle, if more than one", "hours on site and earliest day"]
+    card_template: |
+      REQ-<id> | Car, truck and RV detailing | <town>, <general area> | <home / storage lot / RV park>
+      <one scope line: vehicle or vehicles, inside and out, main condition>
+      Vehicles: <count and type>. Seats: <cloth / leather or vinyl / mixed>. Inside: <normal / dirt or sand / pet hair / smell / stains>. Outside: <dust / heavy dust / trail mud>.
+      Site: <where parked>. Water and power: <yes / no / water only>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That'll take all day.", "Full details usually run a few hundred.", "Hose the mud off before they come.", "The sand is scratching your paint."]
+
+  - id: rv_large_vehicle
+    label: "RV, trailer or other large vehicle detailing"
+    bank_job_type: "RV detailing"
+    recurring: false
+    homeowner_phrasings: ["rv wash", "motorhome wash and wax", "5th wheel wash", "oxidized rv", "clean the rv roof", "lavar la casa rodante"]
+    must_know:
+      - fact: "Type and length"
+        bank_question: rv_length
+        follow_up: null
+        photo: p1_vehicle_wide
+        why_it_moves_price: "Most RV exterior work is priced by the foot. [src:mobiletechrx_rv]"
+        skip_if: "Homeowner gave the length"
+      - fact: "What she wants: wash, wax, roof, inside, or a mix"
+        bank_question: service
+        follow_up: fu_roof_why
+        photo: null
+        why_it_moves_price: "Roof work is a per-foot add-on, and stains inside change who will take the roof part. [src:mobiletechrx_rv]"
+        skip_if: "Roof not wanted"
+      - fact: "How the finish looks in daylight"
+        bank_question: null
+        follow_up: fu_paint_look
+        photo: p4_paint_closeup
+        why_it_moves_price: "A chalky or streaked finish needs compounding, priced well above a wash and wax. [src:mobiletechrx_rv]"
+        skip_if: "Daylight close-up sent"
+      - fact: "Number of slide-outs"
+        bank_question: null
+        follow_up: fu_slides
+        photo: p1_vehicle_wide
+        why_it_moves_price: "Slide-outs and their toppers are priced as a flat add-on each. [src:mobiletechrx_rv]"
+        skip_if: "Photo shows them, or it is a small trailer with none"
+      - fact: "Water and power at the space, and lot or park rules"
+        bank_question: water
+        follow_up: fu_lot_rules
+        photo: p5_parking_spot
+        why_it_moves_price: "A 35-foot wash with no spigot means hauling a lot of water; set hours or a no-runoff rule change the method. [judgment]"
+        skip_if: "Parked at home and the homeowner gave water and power"
+    allowed_follow_ups:
+      - id: fu_slides
+        ask_when: "RV, fifth wheel or travel trailer and the slide-outs are not known"
+        text_en: "How many slide-outs does it have?"
+        text_es: "¿Cuántas extensiones (slide-outs) tiene?"
+        options_en: ["None", "One", "Two", "Three or more"]
+        options_es: ["Ninguna", "Una", "Dos", "Tres o más"]
+        card_field: true
+        why: "Each slide-out adds time and is priced on its own. [judgment]"
+      - id: fu_lot_rules
+        ask_when: "Parked at a storage lot or RV park"
+        text_en: "Does the lot or park have rules on washing, like set hours or no water running off?"
+        text_es: "¿El lote o el parque tiene reglas para lavar, como horarios o que no escurra el agua?"
+        options_en: ["Set hours", "No runoff or no washing", "No rules I know of"]
+        options_es: ["Horario fijo", "Sin escurrimiento o no se permite lavar", "No sé de ninguna regla"]
+        card_field: true
+        why: "Lot rules decide whether a mobile wash can happen there and how; the city asks that wash water stay out of storm drains and washes."
+      - id: fu_roof_why
+        ask_when: "Homeowner wants the RV roof cleaned or sealed"
+        text_en: "For the roof, is this routine cleaning, or have you seen stains or drips inside?"
+        text_es: "Para el techo, ¿es limpieza de rutina, o ha visto manchas o goteras adentro?"
+        options_en: ["Routine cleaning", "Stains or drips inside", "Both"]
+        options_es: ["Limpieza de rutina", "Manchas o goteras adentro", "Las dos"]
+        card_field: true
+        why: "Stains inside are repair territory some detailers do not take; stating them lets each business decide. [judgment]"
+      - fu_paint_look
+    photos_priority: [p1_vehicle_wide, p4_paint_closeup, p5_parking_spot]
+    urgency:
+      fire_dept_triggers: ["Propane or gas smell inside the RV or trailer", "Smoke or flames coming from the vehicle now"]
+      urgent_capable_triggers: []
+      regular: "All RV and trailer requests, including ones before a trip or storage date"
+    scope_line_en: "Wash and wax on a 34 ft fifth wheel with two slide-outs at a storage lot; no water or power at the space."
+    scope_line_es: "Lavado y cera para un quinta rueda de 34 pies con dos extensiones en un lote de almacenaje; no hay agua ni luz en el espacio."
+    quote_format: tiers
+    business_fills: ["up to 3 packages, each with a price (per foot or total)", "what each package includes (wash, wax, roof, slide-outs)", "whether you bring water and power", "earliest day and start time"]
+    card_template: |
+      REQ-<id> | Car, truck and RV detailing | <town>, <general area> | <home / storage lot / RV park>
+      <one scope line: RV type, length, what she wants done>
+      RV: <type>, <length>. Slide-outs: <count>. Finish in daylight: <shiny / dull or chalky / streaks / peeling>. Roof: <routine cleaning / stains or drips inside noted / not wanted>.
+      Site: <where>. Water and power: <yes / no / water only>. Lot or park rules: <set hours / no runoff or no washing / none known>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your roof is leaking at the vent.", "That's oxidation, it needs compounding.", "RVs run about twenty dollars a foot.", "Have the roof resealed before monsoon.", "Use a rubber roof cleaner, not citrus."]
+
+  - id: ceramic_paint_correction
+    label: "Ceramic coating or paint correction (polish out swirls)"
+    bank_job_type: "exterior detail"
+    recurring: false
+    homeowner_phrasings: ["ceramic coating", "paint correction", "buff out swirls", "polish my paint", "recubrimiento cerámico"]
+    must_know:
+      - fact: "What paint work: polish, coating or both"
+        bank_question: null
+        follow_up: fu_paint_work
+        photo: null
+        why_it_moves_price: "Polish and coating are separate steps; both together can take several days. [judgment]"
+        skip_if: "Homeowner said which"
+      - fact: "How the paint looks in daylight"
+        bank_question: null
+        follow_up: fu_paint_look
+        photo: p4_paint_closeup
+        why_it_moves_price: "Swirls and haze set how many polish steps; peeling paint cannot be coated. [judgment]"
+        skip_if: "Daylight close-up sent"
+      - fact: "Vehicle size and age"
+        bank_question: vehicle
+        follow_up: fu_vehicle_age
+        photo: p1_vehicle_wide
+        why_it_moves_price: "New paint may need only a light prep before coating; older paint needs more correction. [judgment]"
+        skip_if: "Homeowner said it is new or gave the year"
+      - fact: "Garage or shade for the work and the cure"
+        bank_question: where
+        follow_up: fu_shade
+        photo: p5_parking_spot
+        why_it_moves_price: "Coating makers say no direct sun, about 41 to 77 F, and indoors about 12 hours after, so no garage may mean the shop's bay. [src:gtechniq_csl]"
+        skip_if: "Homeowner said garage"
+    allowed_follow_ups:
+      - id: fu_paint_work
+        ask_when: "Homeowner asks for paint work without saying polish, coating or both"
+        text_en: "What paint work do you want: polish out swirls or light scratches, a ceramic coating, or both?"
+        text_es: "¿Qué trabajo de pintura quiere: pulir rayitas o rayones leves, un recubrimiento cerámico, o los dos?"
+        options_en: ["Polish only", "Ceramic coating only", "Both"]
+        options_es: ["Solo pulir", "Solo recubrimiento cerámico", "Los dos"]
+        card_field: true
+        why: "Three different jobs with very different hours. [judgment]"
+      - id: fu_vehicle_age
+        ask_when: "Paint work and the homeowner has not said how old the vehicle is"
+        text_en: "About how old is the vehicle?"
+        text_es: "¿Más o menos qué edad tiene el vehículo?"
+        options_en: ["Under 1 year", "1 to 5 years", "Over 5 years"]
+        options_es: ["Menos de 1 año", "1 a 5 años", "Más de 5 años"]
+        card_field: true
+        why: "Age is the first clue to how much prep the paint needs. [judgment]"
+      - fu_paint_look
+      - fu_shade
+    photos_priority: [p4_paint_closeup, p1_vehicle_wide, p5_parking_spot]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All paint and coating requests"
+    scope_line_en: "Ceramic coating on a new black full-size pickup, no polish wanted; garage at home with water and power."
+    scope_line_es: "Recubrimiento cerámico para una troca grande negra nueva, sin pulido; garaje en casa con agua y luz."
+    quote_format: tiers
+    business_fills: ["up to 3 packages, each with a price (for example coating only, polish and coating)", "what each package includes and how many days", "what you would check on arrival", "where the work is done and earliest start"]
+    card_template: |
+      REQ-<id> | Car, truck and RV detailing | <town>, <general area> | <home / storage lot / RV park>
+      <one scope line: vehicle, paint work wanted>
+      Vehicle: <type, color, age>. Wants: <polish only / coating only / both>. Paint in daylight: <shiny / dull or chalky / swirls / peeling in spots>.
+      Site: <where>. Garage or shade: <garage / shade / full sun>. Water and power: <yes / no / water only>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You need paint correction before a coating.", "That coating lasts five years.", "Coatings run about a thousand.", "Those are just swirl marks.", "That's clear coat failure."]
+
+  - id: odor_pet_hair
+    label: "Odor, smoke smell or heavy pet hair"
+    bank_job_type: "interior detail"
+    recurring: false
+    homeowner_phrasings: ["dog hair everywhere", "car smells like smoke", "spilled milk in my car", "smells like something died", "pelo de perro en el carro"]
+    must_know:
+      - fact: "What the smell is from, if she knows"
+        bank_question: null
+        follow_up: fu_smell_what
+        photo: p3_worst_area
+        why_it_moves_price: "Set-in smoke, a soaked spill and pet odor take different processes and time; droppings are a pest job first. [judgment]"
+        skip_if: "Homeowner named the source"
+      - fact: "Where the pet hair is and how much"
+        bank_question: null
+        follow_up: fu_hair_where
+        photo: p3_worst_area
+        why_it_moves_price: "Hair woven into rear carpet and cargo liners can take hours on its own. [judgment]"
+        skip_if: "No pet hair mentioned, or the worst-spot photo shows it"
+      - fact: "Seat material"
+        bank_question: null
+        follow_up: fu_seats
+        photo: p2_interior
+        why_it_moves_price: "Hair and smoke sink into cloth far more than leather. [judgment]"
+        skip_if: "Interior photo shows the seats"
+      - fact: "Vehicle type and size"
+        bank_question: vehicle
+        follow_up: null
+        photo: p1_vehicle_wide
+        why_it_moves_price: "More seats and carpet mean more hair and more surface holding the smell. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_smell_what
+        ask_when: "Homeowner mentions a smell without saying what it is from"
+        text_en: "Do you know what the smell is from?"
+        text_es: "¿Sabe de qué es el olor?"
+        options_en: ["Smoking", "Pets", "A spill (food, milk or a drink)", "Musty or damp", "Droppings or chewed bits"]
+        options_es: ["Cigarro", "Mascotas", "Algo derramado (comida, leche o bebida)", "Humedad o encierro", "Excremento o pedacitos mordidos"]
+        card_field: true
+        why: "Each source is a different process; droppings point to a pest job first. [judgment]"
+      - id: fu_hair_where
+        ask_when: "Homeowner mentions pet hair and no worst-spot photo shows where"
+        text_en: "Where is most of the pet hair?"
+        text_es: "¿Dónde está la mayor parte del pelo de mascota?"
+        options_en: ["Front seats", "Back seats", "Cargo area", "All over"]
+        options_es: ["Asientos de adelante", "Asientos de atrás", "Área de carga", "Por todos lados"]
+        card_field: true
+        why: "The front seat is often vacuumed already; the rear and cargo area are where the hours go. [judgment]"
+      - fu_seats
+    photos_priority: [p3_worst_area, p2_interior, p1_vehicle_wide]
+    urgency:
+      fire_dept_triggers: ["Propane or gas smell inside an RV or trailer", "Smoke or flames coming from the vehicle now"]
+      urgent_capable_triggers: []
+      regular: "Old smoke smell, pet hair, spills, including ones needed by a set date"
+    scope_line_en: "Interior only on a mid-size SUV; heavy dog hair in the back seat and cargo area, old smoke smell in the seats and headliner."
+    scope_line_es: "Solo interior de una SUV mediana; mucho pelo de perro en el asiento de atrás y el área de carga, olor a cigarro viejo en asientos y techo interior."
+    quote_format: tiers
+    business_fills: ["up to 3 packages, each with a price", "what each package does for hair and smell", "hours on site, or whether you take it to your shop", "earliest day"]
+    card_template: |
+      REQ-<id> | Car, truck and RV detailing | <town>, <general area> | <home / storage lot / RV park>
+      <one scope line: vehicle, smell or hair, where in the vehicle>
+      Smell from: <smoking / pets / spill / musty / droppings / not known>. Pet hair: <front / back / cargo / all over / none>. Seats: <cloth / leather or vinyl / mixed>.
+      Vehicle: <type>. Site: <where parked>. Water and power: <yes / no / water only>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It'll need an ozone machine.", "That smell will never fully come out.", "Odor removal runs about two hundred.", "Spray it with enzyme cleaner first.", "Sounds like a dead mouse."]
+
+business_side:
+  how_they_get_customers: ["Google Business Profile and reviews", "Before-and-after posts on Instagram and Facebook, and local Facebook groups", "Repeat customers on maintenance washes", "Word of mouth at RV parks, storage lots and dealerships [judgment]", "Search ads and marketplaces such as Thumbtack and Yelp"]
+  customer_acquisition_benchmarks:
+    - channel: "Google search ads, high-intent detailing terms"
+      figure: "About $5 to $15 per click for terms like 'car detailing near me'; the agency gives no cost per lead"
+      source: clicksgeek_detailing
+      unverified: false
+    - channel: "Ads in general, cost to book one detail"
+      figure: "About $40 to $60 to book a job on an average $350 detail; a software vendor's margin rule of thumb, not a measured average"
+      source: hcp_detailing_ads
+      unverified: false
+    - channel: "Thumbtack, all trades"
+      figure: "About $10 to over $100 per lead by service and customer; no detailing-specific figure found"
+      source: leadcapture_thumbtack
+      unverified: false
+    - channel: "Lake Havasu City detailers specifically"
+      figure: "No local figures found; a small market with seasonal demand may run below national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a contact that four other detailers also bought", "People who want a price for 'a detail' with no vehicle or condition", "Monthly fees whether or not jobs come", "Price shoppers comparing a full detail with a gas-station wash", "Being rated or ranked by the site itself"]
+  what_makes_a_lead_worth_paying_for: ["Vehicle, size and condition stated up front, with photos", "Water, power and shade at the spot known before driving out", "Pay only when picked, nothing monthly", "A real date and place", "Lot or park rules stated for storage-lot and RV park jobs"]
+  their_words: ["maintenance wash", "one-step polish", "two-step correction", "decon", "clay bar", "extraction", "ozone", "sealant", "ceramic", "DI water", "spot-free rinse", "per foot", "slide toppers", "front cap"]
+  signup_objections:
+    - objection: "A $25 fee on an $80 wash doesn't work for me."
+      answer: "Any quote under $500 carries the $25 fee, and only when the homeowner picks you. You choose your job types, so you can take full details, RVs and coatings and skip quick washes."
+    - objection: "I can't price a coating or correction without seeing the paint."
+      answer: "Quote up to three packages and say in each one what you would check when you arrive. The card asks for a daylight photo of the paint and how she says it looks."
+    - objection: "Other sites charge me for people who never answer."
+      answer: "Here you pay nothing to see a card or to quote. The fee is charged only when the homeowner picks your quote and you confirm. If you haven't spoken with her yet and she cancels, the fee is refunded."
+    - objection: "I'm mobile. How do I know there's water and power?"
+      answer: "Each card says where the vehicle is parked and whether water and power are there. For storage lots and RV parks it also says any washing rules she knows of."
+    - objection: "Will you rank me against other detailers?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "Is there a monthly fee or a contract?"
+      answer: "No. Nothing to join and nothing monthly. The fee is $25, $75 or $199 by quote size, charged only when you are picked."
+    - objection: "Do I need a contractor license for this?"
+      answer: "No contractor license applies to detailing. Lake Havasu City requires a city business license for business done inside city limits."
+    - objection: "I only do cars, not RVs."
+      answer: "You pick the job types you want at sign-up and can change them any time. You get cards only for those."
+  quote_tips_for_card: ["Name each package plainly and list what it includes", "Say whether you bring your own water and power", "Give hours on site and the earliest day", "For coatings, say what you would check on arrival and where the work is done", "In summer, say what time of day you would start"]
