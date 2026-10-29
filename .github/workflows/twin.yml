@@ -1,6 +1,6 @@
 # Required check "Twin" (ruleset protect-main). Job name must stay exactly "Twin".
-# INFORMATIONAL until K5 makes the twin hard-failing: today this only smoke-runs
-# the existing read-only twin (stdlib only, under a second) on a copy.
+# Runs the hard-failing twin gate (D-107, docs/twin-warnings.md section 6): every *_fixed scenario,
+# seeds 1-5, fails on any instance not waived by twin/waivers.json. Standard library only.
 name: twin
 on:
   push:
@@ -17,8 +17,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Twin smoke run (copy, read-only)
-        run: |
-          cp -r sources/01_spec/hhq_twin "$RUNNER_TEMP/hhq_twin"
-          cd "$RUNNER_TEMP/hhq_twin"
-          python3 twin.py normal_fixed 1
+      - name: Twin gate
+        run: PYTHONHASHSEED=0 python3 twin/gate.py --report "$RUNNER_TEMP/twin-report.json"
+      - name: Upload the gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twin-report
+          path: ${{ runner.temp }}/twin-report.json
+          if-no-files-found: ignore
