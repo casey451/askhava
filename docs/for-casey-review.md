@@ -1121,3 +1121,12 @@ I ran the build runner's rehearsal (fake GitHub, fake workers, the real task lis
 - **Answering "no" to "May Ask Hava text your own phone?" no longer freezes the build.** Before, only "yes" let it continue. A new small task fixes that.
 
 With the fixes, the rehearsal reaches "Finished" with only your planned stops, and a task that keeps failing holds up only the tasks that need it.
+
+## Code that a new AI can pick up cold (D-473, October 28)
+
+You asked for the code to be documented well enough that an AI that has never seen it can understand and change it. The plan already kept the architecture and decision files current with every change, but nothing required the code itself to be explained, and nothing tested it. Now:
+- **A guide in every part of the code.** Each of the 19 modules (fees, texting, privacy and so on) has its own short guide file: what it does, which rules it enforces, what must never break and which test guards it, and step-by-step recipes for common changes. Claude Code reads it on its own when it works in that folder.
+- **Comments everywhere they help.** Every code file starts with a note on what it does and which rules it implements; every function others use has a description; every rule in the code names its requirement number, so searching "FEE-039" finds the spec, the code and the test together.
+- **Enforced, not hoped for.** A new automatic check fails the build if any of this is missing, the same way a failing test does.
+- **A start-here map** for the whole project, with the common changes (prices, trades, texts, settings, legal pages) and the files each one touches.
+- **A real test at the end.** Before the build is called finished, a fresh AI session with no history makes three real changes (a fee limit, a new job type, a reworded text) using only the docs, and writes down every place it had to guess. Each gap gets fixed before "Finished".

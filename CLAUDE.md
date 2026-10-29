@@ -44,6 +44,7 @@ Short rules loaded into every session. The full rules live elsewhere; read them,
 - Functions under 50 lines; clippy with warnings denied and `cargo fmt --check` clean; `unsafe_code` forbidden; no `#[allow(...)]` without a reason (`BUILD_BRIEF.md:486`–`BUILD_BRIEF.md:487`).
 - No commented-out code, TODOs or unused code on `main` (`BUILD_BRIEF.md:488`).
 - Update `docs/architecture.md` and `docs/decisions.md` in the same PR as the change (`BUILD_BRIEF.md:489`).
+- Document for the next AI session, which knows nothing: follow `docs/code-docs.md` (crate `CLAUDE.md`, `//!` and `///` comments, requirement IDs on rule code); `scripts/check_code_docs.py` fails the build on a gap (D-473).
 - Coverage never drops; money, privacy and licensing code at or above 95% branch coverage (`BUILD_BRIEF.md:481`).
 - This file stays under 200 lines (`BUILD_BRIEF.md:491`).
 
