@@ -1,0 +1,993 @@
+# Ask Hava expert layer: handyman (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set handyman and trade_kb/trades/handyman.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+# Ask Hava never rules on whether a job fits the handyman exemption. The card carries the facts (item count,
+# materials, wiring, gas, permit-type work, size) so code routes it and each business decides whether it may quote.
+#
+# NOTES FOR REVIEW
+# - pressure_wash_minor (kb) is left out: the pressure_washing category (firm quotes) owns that work, and no
+#   handyman category job type fits it. Intake should route "pressure wash the patio" to pressure_washing.
+# - Coarse mappings (the category has 5 job types; the kb has 10): mount_hang and furniture_assembly map to
+#   "shelves" (the bank's "Shelves or mounting" answer); caulk_grout, fixture_swap_plugin and minor_repairs_list
+#   map to "door repair" (weatherstrip and door sweeps, smart locks and doorbells sit at a door; doors are the
+#   most common list item [judgment]). Tub caulk under "door repair" is a poor fit; Casey may want a
+#   "caulk and small fixes" job type. A list's bank job type should follow its largest item; the schema allows one.
+# - dryer_vent_reroute is new_job_type: the category routes "dryer vent reroute" and the kb has no match.
+# - route_elsewhere covers permit-type work only (bank: "wall removal or any permit-type job"). Gas work,
+#   hardwired smoke alarms and fire sprinklers are refused too; they are caught by fu_touches_utility,
+#   fu_alarm_power and fu_dryer_fuel and routed by misdiagnosis_checks to plumbing_repair and electrical.
+# - The bank set has no wiring, gas, water or AC question. fu_touches_utility (the kb's q2) carries most of the
+#   routing weight here and is a candidate to promote into the bank set.
+# - HB 2120 (2025) proposed raising the handyman limit to $3,500. azleg.gov still shows $1,000 in 32-1121 when
+#   checked; bill status could not be read (the status page blocks automated reads). Recheck before launch.
+schema: 1
+category: handyman
+question_set: handyman
+kb_trade: handyman
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed: (A)(14) handyman exemption (whole job under $1,000 counting labor and materials, casual or minor, no local building permit, not part of a larger job or split up, ads say 'not a licensed contractor'); (D) never fire-safety work (hardwired smoke alarms, sprinklers) or work connecting to natural gas, propane or other fuel gas"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor classifications: R-62 Minor Home Improvements (projects $5,000 or less, no structural work), R-61 Carpentry, Remodeling and Repairs ($50,000 or less), B-3 General Remodeling and Repair; all must subcontract electrical, plumbing, AC and boilers; R-14 Fencing; R-10 Drywall; R-7 Carpentry"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "[S17] Lake Havasu City Building Permits: permit required for drywall (beyond patching), wall removal or install, window size change, patio covers, gas lines, added or relocated fixtures, panel work and rewires, retaining walls over 2 ft 6 in with slope or 3 ft without; no permit for minor drywall hole patching, minor non-structural repairs (glass, trim, cabinets, hardware), paint, floor covering, privacy walls up to 6 ft"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_rrp
+    title: "US EPA Renovation, Repair and Painting Program: paid work disturbing paint in pre-1978 homes needs a certified firm; minor repair of 6 sq ft or less per room inside or 20 sq ft or less outside is not covered"
+    url: "https://www.epa.gov/lead/renovation-repair-and-painting-program-contractors"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_41_4047
+    title: "[T-ars_41_4047] A.R.S. 41-4047 Unlawful acts: installing manufactured homes or accessory structures, or altering manufactured homes, without a Department of Housing license"
+    url: "https://www.azleg.gov/ars/41/04047.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_36_1681
+    title: "A.R.S. 36-1681 Pool enclosures: gates self-closing and self-latching, opening outward, latch at least 54 in above ground (with listed exceptions, including homes where all residents are 6 or older)"
+    url: "https://www.azleg.gov/ars/36/01681.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: doe_dryer_vent
+    title: "US DOE Building America Solution Center, Proper Clothes Dryer Venting (citing IRC M1502: 4 in rigid or semi-rigid metal duct, 35 ft max less fittings, no screws into the duct, ends outside, no screen at the end)"
+    url: "https://basc.pnnl.gov/resource-guides/proper-clothes-dryer-venting"
+    checked: "2026-10-29"
+    kind: other
+  - id: cpsc_anchor
+    title: "[T-cpsc_anchor] CPSC Anchor It! campaign on furniture and TV tip-overs; federal furniture tip-over rule effective Sept 1, 2023"
+    url: "https://www.anchorit.gov/"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_climate
+    title: "US Climate Data, Lake Havasu City normals (average highs June 105F, July 109F, August 108F; about 3.8 in of rain a year)"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: az_hb2120
+    title: "Arizona HB 2120 (2025, introduced): would raise the 32-1121 handyman limit from $1,000 to $3,500; status not confirmed"
+    url: "https://www.azleg.gov/legtext/57leg/1r/bills/hb2120p.htm"
+    checked: "2026-10-29"
+    kind: other
+  - id: pipeline_handyman
+    title: "Pipeline (marketing vendor): handyman lead costs (Thumbtack about $10 to $75 per lead, 3 to 4 other pros per lead in one case study; Angi $20 to $120 per lead plus $250 to $600 a month; TaskRabbit 15% service fee; Google LSA handyman $15 to $30 per lead in smaller markets)"
+    url: "https://pipelineon.com/blog/handy-handyman/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: enrich_handyman
+    title: "Enrich Labs (marketing vendor) Handyman Marketing Guide 2026, citing SearchLight: Google LSA general trades about $54 per lead and $233 per paying customer; Google non-branded search about $149 per lead"
+    url: "https://www.enrichlabs.ai/blog/handyman-marketing-complete-guide-2026"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Number of items and whether they fit one visit"
+      why: "Small jobs are priced by the trip and a minimum charge; three tasks in one visit cost far less each than three visits. The bank's count question and the details line set this. [judgment]"
+      source: null
+    - driver: "Whole-job size against the handyman limit: under $1,000 counting labor and materials, not split up"
+      why: "It decides who may quote at all. An unlicensed handyman may take only a casual or minor job under $1,000 with no permit; bigger jobs go to licensed R-62 (to $5,000, no structural), R-61 (to $50,000) or B-3 holders in this category."
+      source: ars_32_1121
+    - driver: "Who supplies the materials"
+      why: "Materials count toward the $1,000 total, and a homeowner with parts in hand gets a labor-only quote; an unaltered plug-in appliance is left out of the total."
+      source: ars_32_1121
+    - driver: "What the item hangs on or fastens to: drywall with studs, concrete block, tile, stucco, a fiberglass tub wall"
+      why: "Block and tile need masonry bits and anchors; a fiberglass tub wall may have no backing at all; each changes time and hardware. [judgment]"
+      source: null
+    - driver: "Height and reach: over 8 ft, vaulted ceilings, above a fireplace or stairs, roof"
+      why: "A tall ladder, a second person or a roof trip adds time and sometimes crew. [judgment]"
+      source: null
+    - driver: "Finish match on patches: wall texture and leftover paint"
+      why: "A smooth patch with paint on hand is a short job; matching knockdown texture and buying paint adds a second trip for dry time. [judgment]"
+      source: null
+    - driver: "Damage behind the small repair (wet drywall, rotted fence post, stripped hinge screws)"
+      why: "The item the homeowner names is often the symptom; what is behind it can double the time or push the job past the limit. [judgment]"
+      source: null
+    - driver: "Pre-1978 home where paint will be cut, sanded or scraped"
+      why: "Paid work disturbing more than 6 sq ft of paint per room inside, or 20 sq ft outside, in a pre-1978 home needs an EPA-certified firm and lead-safe practices."
+      source: epa_rrp
+  hidden_conditions:
+    - condition: "Wet, soft or stained drywall around a 'small hole' (water from a shower, pipe, roof or AC drip)"
+      how_a_pro_spots_it: "Brown ring, bubbled paint or a swollen baseboard in the photo; the hole backs a bathroom or sits under an attic air handler"
+      question_or_photo: fu_wall_wet
+      source: null
+    - condition: "Drywall damage bigger than patching, so it becomes new drywall work, which Lake Havasu City lists as needing a permit"
+      how_a_pro_spots_it: "Damage larger than a dinner plate, sagging ceiling board, or a whole sheet in the photo"
+      question_or_photo: fu_patch_size
+      source: lhc_permits
+    - condition: "Wiring, pipes or a duct in the wall where a TV, shelf or grab bar will be fastened"
+      how_a_pro_spots_it: "Outlets, switches, a vent register or the dryer duct in the wide photo of the wall"
+      question_or_photo: p2
+      source: null
+    - condition: "No solid backing for a heavy or load-bearing item (fiberglass tub insert, hollow block, tile over cement board)"
+      how_a_pro_spots_it: "Molded one-piece tub wall or painted block in the wide photo; the homeowner says the stud finder reads nothing"
+      question_or_photo: fu_mount_surface
+      source: null
+    - condition: "Fence post snapped or rotted at the base, footing cracked, or the wall is a retaining wall"
+      how_a_pro_spots_it: "Panel leaning with a gap at the post base in the photo; ground higher on one side of a block wall; retaining walls over 2 ft 6 in with slope or 3 ft without need a city permit"
+      question_or_photo: fu_fence_what
+      source: lhc_permits
+    - condition: "Hinge screws spinning in the frame, or a door that started rubbing with new wall or floor cracks nearby"
+      how_a_pro_spots_it: "Gap at the top of the latch side and a hinge leaf pulled from the jamb in the photo; cracks near the frame"
+      question_or_photo: fu_cracks_near
+      source: null
+    - condition: "The list grows on site ('while you're here') until the whole job reaches $1,000, or a second visit is really the same job"
+      how_a_pro_spots_it: "Five or more items, a vacation home being readied, or the homeowner mentions more work later"
+      question_or_photo: count
+      source: ars_32_1121
+    - condition: "Dryer vent run that is long, crushed, plastic foil, or ends in the attic or under the house"
+      how_a_pro_spots_it: "Silver foil or white vinyl duct behind the dryer in the photo; vent exit the homeowner can't find; the code-cited limit is 35 ft less fittings, in metal duct"
+      question_or_photo: fu_vent_exit
+      source: doe_dryer_vent
+  misdiagnosis_checks:
+    - sounds_like: "drywall patch"
+      might_be: "leak_slow (plumbing), water behind a wet or soft wall"
+      one_question: fu_wall_wet
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "drywall patch (ceiling stain that grows)"
+      might_be: "leak_repair (roofing), a roof leak in a monsoon storm"
+      one_question: fu_stain_when
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "drywall patch (ceiling drips only while the AC runs)"
+      might_be: "ac_leaking_water (hvac), a different category"
+      one_question: fu_stain_when
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "drywall patch (large area, whole sheet, sagging ceiling)"
+      might_be: "new_drywall (drywall), permit-type work in Lake Havasu City and licensed-only here"
+      one_question: fu_patch_size
+      if_other_route_to: {category: handyman, job_type: "wall removal or any permit-type job"}
+      source: lhc_permits
+    - sounds_like: "minor_repairs_list with a light, fan or outlet on it"
+      might_be: "lighting_fan or outlet_switch (electrical), wiring work outside the handyman exemption's usual reach"
+      one_question: fu_touches_utility
+      if_other_route_to: {category: electrical, job_type: "light fixture"}
+      source: null
+    - sounds_like: "shelves (TV mount with cords hidden in the wall)"
+      might_be: "outlet_switch (electrical), a new outlet behind the TV"
+      one_question: fu_tv_power
+      if_other_route_to: {category: electrical, job_type: "outlet repair"}
+      source: null
+    - sounds_like: "fixture_swap_plugin (chirping smoke alarm)"
+      might_be: "smoke_alarm (electrical), a hardwired alarm, never handyman work"
+      one_question: fu_alarm_power
+      if_other_route_to: {category: electrical, job_type: "hardwired smoke alarm"}
+      source: ars_32_1121
+    - sounds_like: "dryer vent reroute or 'hook up my dryer'"
+      might_be: "connector_valve (gas_lines), a gas dryer connection, never handyman work"
+      one_question: fu_dryer_fuel
+      if_other_route_to: {category: plumbing_repair, job_type: "gas line work"}
+      source: ars_32_1121
+  photo_reading:
+    - photo_id: p1
+      reads: ["Hole size against a tape measure", "Brown ring, bubbled paint, swollen baseboard", "Hinge leaf pulled from the jamb, gap at the latch side", "Post base, footing, leaning panel", "Wall texture (smooth, orange peel, knockdown)", "Yellow gas connector or wires behind a fixture"]
+      neutral_wording: "Hole about 4 inches across at doorknob height; textured wall painted beige; no stain around it."
+    - photo_id: p2
+      reads: ["Wall material (drywall, painted block, tile, stucco, fiberglass tub wall)", "Outlets, switches, vents or ducts near the spot", "Ceiling height and what is below (fireplace, stairs, washer)", "Room size for furniture builds"]
+      neutral_wording: "Hall wall is painted drywall, an outlet about 2 feet left of the spot, standard ceiling."
+    - photo_id: p3
+      reads: ["TV size and mount type (fixed, tilt, full motion)", "Shelf or mirror weight on the box", "Smoke alarm label (battery only or wired connector)", "Doorbell or lock model and power type", "Number of furniture boxes"]
+      neutral_wording: "Box label shows a full-motion TV mount rated for 55 to 75 inch TVs."
+  local_factors:
+    - fact: "The handyman exemption covers a whole job under $1,000 with no permit, never gas or fire-safety work"
+      effect: "Every card must make the item count, materials, wiring and gas facts plain so code can route it and each business can decide if it may quote"
+      source: ars_32_1121
+    - fact: "Lake Havasu City lists minor drywall hole patching, minor non-structural repairs and privacy walls up to 6 ft as no-permit work, and drywall beyond patching, wall removal, window size changes and patio covers as permit work"
+      effect: "Patch size and what the homeowner really wants built decide whether the job can stay with a handyman"
+      source: lhc_permits
+    - fact: "Average summer highs are about 105F to 109F from June to August"
+      effect: "Fence, gate and exterior work is done early in the morning; businesses may quote later start dates in July [judgment]"
+      source: lhc_climate
+    - fact: "Many Havasu homes have painted concrete block walls inside and out, and block yard walls"
+      effect: "Mounting on block needs masonry bits and anchors; a stud finder reads nothing; pros ask what the wall is [judgment]"
+      source: null
+    - fact: "Altering a manufactured home or an add-on attached to it needs an Arizona Department of Housing licensed installer"
+      effect: "The card names a manufactured home so businesses can tell what they may take on"
+      source: ars_41_4047
+    - fact: "Pool enclosure gates must self-close and self-latch with the latch at least 54 in up, with some exceptions"
+      effect: "A gate on a pool fence is quoted with that hardware in mind; the card says whether the gate is part of the pool enclosure"
+      source: ars_36_1681
+    - fact: "Winter visitors and vacation rentals bring 'get the house ready' lists in the fall, and empty homes hide damage until the owner returns"
+      effect: "Lists run long, with a fixed arrival date; the card should carry the date and whether the home is empty [judgment]"
+      source: null
+    - fact: "Many homes date from the 1960s and 1970s"
+      effect: "Pre-1978 paint matters when a patch or repair cuts or sands paint over the EPA small-area limits [judgment]"
+      source: null
+  seasonality:
+    busy: "October to early December (winter visitors and holiday guests) and February to April (spring listings and move-outs); fence and gate calls after summer monsoon wind [judgment]"
+    slow: "Late June to August for outdoor work in the heat [judgment]"
+    source: null
+
+job_types:
+  - id: minor_repairs_list
+    label: "Honey-do list of small fixes"
+    bank_job_type: "door repair"
+    recurring: false
+    homeowner_phrasings: ["need a handyman for some stuff", "honey-do list", "a few small things", "get the house ready before visitors", "necesito alguien para varias cositas"]
+    must_know:
+      - fact: "Each item on the list, itemized, with how many of each"
+        bank_question: count
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Businesses price a list item by item and add one trip; a lumped 'general repairs' line can't be quoted. [judgment]"
+        skip_if: "Homeowner sent a numbered list"
+      - fact: "Whether any item touches wiring, gas, water pipes or the AC"
+        bank_question: null
+        follow_up: fu_touches_utility
+        photo: p1
+        why_it_moves_price: "Gas is never handyman work and a wired light or a faucet is another trade's job; that item may go on its own card. [src:ars_32_1121]"
+        skip_if: "Homeowner already said none of it does, and no photo shows wires or a gas line"
+      - fact: "Who supplies the materials"
+        bank_question: materials
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Materials count toward the $1,000 handyman total and turn a labor quote into a parts-and-labor quote. [src:ars_32_1121]"
+        skip_if: "Answered"
+      - fact: "Any spot on the list that is stained, soft, bubbled or damp"
+        bank_question: null
+        follow_up: fu_stain_or_soft
+        photo: p1
+        why_it_moves_price: "A wet or soft spot is often another trade's job first and changes the visit. [judgment]"
+        skip_if: "Photos show every item clean and dry"
+      - fact: "Anything high up (over 8 ft, vaulted) or outside"
+        bank_question: null
+        follow_up: fu_height
+        photo: p2
+        why_it_moves_price: "Ladder work and outdoor work in the heat add time. [judgment]"
+        skip_if: "Homeowner said all indoors at normal height"
+    allowed_follow_ups:
+      - id: fu_touches_utility
+        ask_when: "Any list or request where the homeowner has not said whether wiring, gas, water or AC is involved"
+        text_en: "Does any of it touch wiring, gas, water pipes or the AC?"
+        text_es: "¿Algo de esto tiene que ver con cables eléctricos, gas, tubería de agua o el aire acondicionado?"
+        options_en: ["None of it", "Wiring (lights, fans, outlets)", "Gas", "Water pipes or fixtures", "AC or vents"]
+        options_es: ["Nada de eso", "Cables (lámparas, ventiladores, contactos)", "Gas", "Tubería o llaves de agua", "Aire acondicionado o ductos"]
+        card_field: true
+        why: "Gas and hardwired smoke alarms are never handyman work; wiring and plumbing items go to licensed trades. This one question does most of the routing for a list. [src:ars_32_1121]"
+      - id: fu_stain_or_soft
+        ask_when: "A list of three or more items, or any wall, ceiling or floor repair, with no photo of the spot"
+        text_en: "Is any spot on your list stained, soft, bubbled or damp?"
+        text_es: "¿Alguna parte de su lista está manchada, blanda, con burbujas o húmeda?"
+        options_en: ["No", "Yes, a wall", "Yes, a ceiling", "Yes, a floor or baseboard"]
+        options_es: ["No", "Sí, una pared", "Sí, el techo", "Sí, el piso o el zoclo"]
+        card_field: true
+        why: "Surfaces a hidden water problem that a homeowner lists as 'patch while he's here'. [judgment]"
+      - id: fu_home_age
+        ask_when: "Work will cut, sand or scrape paint, drywall or ceiling texture, or the home may be manufactured"
+        text_en: "About when was the home built?"
+        text_es: "¿Más o menos cuándo se construyó la casa?"
+        options_en: ["1978 or later", "Before 1978", "Manufactured or mobile home"]
+        options_es: ["1978 o después", "Antes de 1978", "Casa manufacturada o móvil"]
+        card_field: true
+        why: "Pre-1978 paint brings EPA lead-safe rules for larger paint disturbance; manufactured homes have their own installer license for alterations. [src:epa_rrp] [src:ars_41_4047]"
+      - fu_height
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["An outside door won't close or lock", "A fixed date guests or renters arrive"]
+      regular: "Any list with no door or lock problem"
+    scope_line_en: "Three small tasks: hang 2 shelves on drywall, fix a sticking bedroom door, recaulk the tub; homeowner has the parts."
+    scope_line_es: "Tres trabajos chicos: colgar 2 repisas en tablaroca, arreglar una puerta de recámara que se atora, volver a sellar la tina; el dueño tiene las piezas."
+    quote_format: range
+    business_fills: ["low and high price for the whole list, labor and materials", "what the price includes", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: item count, then each item in a few words>
+      Items: <numbered list, one line each>. Materials: <on hand / business supplies / some>.
+      Touches wiring, gas, water or AC: <none / which item and what, in her words>. Stained or soft spots: <none / where>.
+      Height or outside: <normal / tall ladder / outside>. Home built: <1978 or later / before 1978 / manufactured / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's all handyman work.", "One guy can do all of that in a morning.", "That list should come in under a thousand.", "The ceiling fan needs an electrician."]
+
+  - id: mount_hang
+    label: "Mount or hang (TV, shelves, mirrors, art, curtain rods, grab bars)"
+    bank_job_type: "shelves"
+    recurring: false
+    homeowner_phrasings: ["mount my TV", "hang some shelves", "put up a heavy mirror", "grab bars in the tub", "curtain rods", "colgar la tele"]
+    must_know:
+      - fact: "What it hangs on: drywall, block, tile, stucco or a fiberglass tub wall"
+        bank_question: null
+        follow_up: fu_mount_surface
+        photo: p2
+        why_it_moves_price: "Each surface takes different bits, anchors and time; a fiberglass tub wall may have no backing. [judgment]"
+        skip_if: "Wide photo shows the wall plainly"
+      - fact: "How heavy or load-bearing the biggest item is (large TV, loaded book shelves, grab bars)"
+        bank_question: null
+        follow_up: fu_mount_load
+        photo: p3
+        why_it_moves_price: "Heavy and load-bearing items need studs, blocking or masonry anchors and more time. [judgment]"
+        skip_if: "Box label photo shows size and weight"
+      - fact: "For a TV, whether cords go inside the wall"
+        bank_question: null
+        follow_up: fu_tv_power
+        photo: p2
+        why_it_moves_price: "Cords in a cover are handyman work; a new outlet behind the TV is electrical work. [judgment]"
+        skip_if: "Not a TV"
+      - fact: "Height and what is below (above a fireplace, over stairs, vaulted ceiling)"
+        bank_question: null
+        follow_up: fu_height
+        photo: p2
+        why_it_moves_price: "Above a fireplace or over stairs means a tall ladder, a second person and harder stud access. [judgment]"
+        skip_if: "Photo shows a normal wall at normal height"
+      - fact: "How many items and whether the hardware is on hand"
+        bank_question: materials
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Supplied mounts and anchors add parts cost; count sets the hours. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_mount_surface
+        ask_when: "Anything is being mounted or hung and no wide photo of the wall was sent"
+        text_en: "What will it hang on?"
+        text_es: "¿En qué se va a colgar?"
+        options_en: ["Drywall", "Painted block or brick", "Tile", "Stucco outside", "Fiberglass tub or shower wall"]
+        options_es: ["Tablaroca", "Block o ladrillo pintado", "Azulejo", "Estuco por fuera", "Pared de tina o regadera de fibra de vidrio"]
+        card_field: true
+        why: "The surface sets the hardware and the time more than the item does. [judgment]"
+      - id: fu_mount_load
+        ask_when: "Homeowner names shelves, a TV or bars but not size or load"
+        text_en: "Which is the biggest thing going up?"
+        text_es: "¿Qué es lo más grande que se va a colgar?"
+        options_en: ["TV over 55 inches", "Shelves for books or heavy things", "Grab bars", "Light things like art, mirrors or curtain rods"]
+        options_es: ["Tele de más de 55 pulgadas", "Repisas para libros o cosas pesadas", "Barras de apoyo", "Cosas ligeras como cuadros, espejos o barras de cortina"]
+        card_field: true
+        why: "Load decides the anchor method and whether a stud or blocking is needed. [judgment]"
+      - id: fu_tv_power
+        ask_when: "A TV mount is mentioned and the homeowner has not said how the cords will run"
+        text_en: "For the TV cords, do you want them hidden inside the wall, in a cover on the wall, or left as they are?"
+        text_es: "Para los cables de la tele, ¿los quiere escondidos dentro de la pared, en una canaleta sobre la pared, o como están?"
+        options_en: ["Inside the wall", "In a cover on the wall", "Left as they are"]
+        options_es: ["Dentro de la pared", "En una canaleta sobre la pared", "Como están"]
+        card_field: true
+        why: "In-wall power usually means a new outlet behind the TV, which is electrical work for a licensed business. [judgment]"
+      - id: fu_height
+        ask_when: "The spot may be high, above a fireplace or stairs, or outside, and no photo shows it"
+        text_en: "Is any of it high up, above a fireplace or stairs, or outside?"
+        text_es: "¿Algo de esto está alto, arriba de una chimenea o escalera, o afuera?"
+        options_en: ["Indoors at normal height", "Needs a tall ladder (over 8 ft)", "Above a fireplace or stairs", "Outside"]
+        options_es: ["Adentro a la altura normal", "Necesita escalera alta (más de 8 pies)", "Arriba de una chimenea o escalera", "Afuera"]
+        card_field: true
+        why: "Height and what is below set ladder, crew and time. [judgment]"
+    photos_priority: [p2, p3, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["A TV or furniture piece has fallen or is leaning off the wall"]
+      regular: "All planned mounting"
+    scope_line_en: "Mount a 65 inch TV above the fireplace on a full-motion mount the homeowner has; cords in a cover on the wall."
+    scope_line_es: "Montar una tele de 65 pulgadas arriba de la chimenea con un soporte movible que tiene el dueño; cables en canaleta sobre la pared."
+    quote_format: range
+    business_fills: ["low and high price for the job, labor and materials", "what the price includes (anchors, cord cover)", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman | <town>, <general area> | <kind of place>
+      <one scope line: what goes up, how many, where>
+      Wall: <drywall / block / tile / stucco / fiberglass tub wall>. Biggest item: <size or weight, from her words or the box label>.
+      TV cords: <inside the wall / cover on the wall / as they are / n/a>. Height: <normal / tall ladder / above fireplace or stairs / outside>.
+      Hardware on hand: <yes / no / some>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Drywall anchors will hold that fine.", "Suction-cup grab bars aren't safe.", "You'll want an electrician for the outlet.", "TV mounting usually runs about a hundred and fifty."]
+
+  - id: furniture_assembly
+    label: "Furniture or equipment assembly"
+    bank_job_type: "shelves"
+    recurring: false
+    homeowner_phrasings: ["put together IKEA furniture", "assemble a bed frame", "build a desk", "armar muebles", "gym equipment setup"]
+    must_know:
+      - fact: "What pieces and how many boxes"
+        bank_question: count
+        follow_up: fu_assembly_what
+        photo: p3
+        why_it_moves_price: "Assembly is priced by piece and box count; a wardrobe or crib takes far longer than a nightstand. [judgment]"
+        skip_if: "Box photo or a clear list sent"
+      - fact: "Whether any piece should be fastened to the wall once built"
+        bank_question: null
+        follow_up: fu_anchor_wall
+        photo: p2
+        why_it_moves_price: "Wall fastening adds a stud or block anchor step per piece; tall dressers and TV stands come with tip-over kits. [src:cpsc_anchor]"
+        skip_if: "Only low pieces like a bed frame or a table"
+      - fact: "Whether the boxes are in the room where the pieces will stand"
+        bank_question: null
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Carrying heavy boxes upstairs or across the house adds time and a second person. [judgment]"
+        skip_if: "Homeowner said where the boxes are"
+    allowed_follow_ups:
+      - id: fu_assembly_what
+        ask_when: "Homeowner asks for assembly without naming the pieces"
+        text_en: "What needs putting together?"
+        text_es: "¿Qué hay que armar?"
+        options_en: ["Bed or crib", "Dresser, desk or bookshelf", "Wardrobe or closet system", "Outdoor furniture or a playset", "Gym equipment", "Several pieces"]
+        options_es: ["Cama o cuna", "Cómoda, escritorio o librero", "Ropero o sistema de clóset", "Muebles de patio o juegos para niños", "Aparatos de ejercicio", "Varias piezas"]
+        card_field: true
+        why: "Piece type sets assembly time more than anything else. [judgment]"
+      - id: fu_anchor_wall
+        ask_when: "A dresser, bookshelf, wardrobe or TV stand is being built"
+        text_en: "Should any piece be fastened to the wall after it is built?"
+        text_es: "¿Alguna pieza se debe fijar a la pared después de armarla?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Fastening to the wall is a separate step that changes time and hardware. [judgment]"
+    photos_priority: [p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All assembly"
+    scope_line_en: "Assemble a queen bed frame and a 6-drawer dresser, both boxed in the bedroom; dresser to be fastened to the wall."
+    scope_line_es: "Armar una base de cama matrimonial y una cómoda de 6 cajones, en cajas en la recámara; la cómoda se fija a la pared."
+    quote_format: range
+    business_fills: ["low and high price for all pieces", "what the price includes (wall fastening, box haul-away)", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman | <town>, <general area> | <kind of place>
+      <one scope line: pieces, how many boxes, where>
+      Pieces: <list with count>. Fasten to wall: <yes, which / no>. Boxes in the room: <yes / no, where>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That only takes an hour.", "You have to anchor that dresser.", "Assembly is cheap.", "Any handyman can do that."]
+
+  - id: small_drywall_patch
+    label: "Small drywall hole or crack patch"
+    bank_job_type: "drywall patch"
+    recurring: false
+    homeowner_phrasings: ["hole in the wall from the doorknob", "patch nail holes", "mud and tape a hole in the sheetrock", "crack in the wall", "hoyo en la pared"]
+    must_know:
+      - fact: "Size of the biggest hole and how many spots"
+        bank_question: count
+        follow_up: fu_patch_size
+        photo: p1
+        why_it_moves_price: "Nail holes are a quick fill; a fist-size hole needs a backer; anything past patching is new drywall, which the city lists as permit work. [src:lhc_permits]"
+        skip_if: "Photo with a tape measure sent"
+      - fact: "Whether the wall or ceiling around it is wet, soft, stained or bubbling"
+        bank_question: null
+        follow_up: fu_wall_wet
+        photo: p1
+        why_it_moves_price: "A wet or soft wall is a water problem first; patching it now gets redone. [judgment]"
+        skip_if: "Close photo shows clean, dry paint around the hole"
+      - fact: "Wall texture and whether leftover paint is on hand"
+        bank_question: materials
+        follow_up: fu_texture
+        photo: p1
+        why_it_moves_price: "Texture matching and buying paint add a dry-time trip. [judgment]"
+        skip_if: "Homeowner said smooth wall and has the paint"
+      - fact: "For a ceiling spot, whether it changes with rain, the AC or a bathroom above"
+        bank_question: null
+        follow_up: fu_stain_when
+        photo: p2
+        why_it_moves_price: "A ceiling stain that grows points at a roof, AC or plumbing job before any patch. [judgment]"
+        skip_if: "Wall hole, not a ceiling"
+    allowed_follow_ups:
+      - id: fu_patch_size
+        ask_when: "Homeowner names a hole or crack but not its size, and no photo with a tape measure"
+        text_en: "About how big is the biggest hole or damaged spot?"
+        text_es: "¿Más o menos qué tan grande es el hoyo o la parte dañada más grande?"
+        options_en: ["Nail holes or coin size", "Up to a fist", "Up to a dinner plate", "Bigger than a dinner plate"]
+        options_es: ["Hoyitos de clavo o del tamaño de una moneda", "Hasta un puño", "Hasta un plato", "Más grande que un plato"]
+        card_field: true
+        why: "Separates a patch from new drywall work, which Lake Havasu City lists as needing a permit. [src:lhc_permits]"
+      - id: fu_wall_wet
+        ask_when: "Any wall, ceiling, caulk or patch request where the photo shows color around the spot, or no close photo was sent"
+        text_en: "Is the wall or ceiling around it damp, soft, stained or bubbling?"
+        text_es: "¿La pared o el techo alrededor está húmedo, blando, manchado o con burbujas?"
+        options_en: ["No, just the hole", "Stained or bubbling", "Soft or damp to the touch"]
+        options_es: ["No, solo el hoyo", "Manchado o con burbujas", "Blando o húmedo al tocarlo"]
+        card_field: true
+        why: "A soft or stained wall belongs to a plumbing, roof or AC job before a patch. [judgment]"
+      - id: fu_texture
+        ask_when: "Patch request and the homeowner has not said about texture or paint"
+        text_en: "Does the wall have a texture, and do you have leftover paint?"
+        text_es: "¿La pared tiene textura, y tiene pintura que le sobró?"
+        options_en: ["Smooth, have paint", "Smooth, no paint", "Textured, have paint", "Textured, no paint"]
+        options_es: ["Lisa, tengo pintura", "Lisa, no tengo pintura", "Con textura, tengo pintura", "Con textura, no tengo pintura"]
+        card_field: true
+        why: "Finish match is half the time on a small patch. [judgment]"
+      - id: fu_stain_when
+        ask_when: "Homeowner reports a ceiling stain, bubbling or drip"
+        text_en: "Does the spot change when it rains, when the AC runs, or when a bathroom above is used?"
+        text_es: "¿La mancha cambia cuando llueve, cuando el aire acondicionado está prendido, o cuando se usa un baño de arriba?"
+        options_en: ["When it rains", "When the AC runs", "When a bathroom above is used", "Nothing changes it"]
+        options_es: ["Cuando llueve", "Cuando el aire está prendido", "Cuando se usa el baño de arriba", "Nada la cambia"]
+        card_field: true
+        why: "Rain points at the roof, AC running at an AC drip, a bathroom at plumbing; each is a different category. [judgment]"
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water dripping from the spot now"]
+      regular: "Dry hole or crack"
+    scope_line_en: "Patch a fist-size hole at doorknob height in a bedroom wall; knockdown texture, no leftover paint."
+    scope_line_es: "Parchar un hoyo del tamaño de un puño a la altura de la perilla en una pared de recámara; textura tipo knockdown, no tiene pintura."
+    quote_format: range
+    business_fills: ["low and high price for the patch, texture and paint", "whether paint matching is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman | <town>, <general area> | <kind of place>
+      <one scope line: spots, size, wall or ceiling, where>
+      Spots: <count>. Biggest: <nail holes / up to a fist / up to a dinner plate / bigger>. Around it: <just the hole / stained or bubbling / soft or damp>.
+      Finish: <smooth or textured, from photo>. Leftover paint: <yes / no>. Ceiling spot changes: <with rain / with AC / with bathroom above / no / n/a>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That stain is a leak.", "It's just cosmetic.", "That's a ten-minute patch.", "You might have mold back there."]
+
+  - id: caulk_grout
+    label: "Caulk, grout touch-up, weatherstripping"
+    bank_job_type: "door repair"
+    recurring: false
+    homeowner_phrasings: ["recaulk the tub", "regrout the shower", "door sweep so bugs stop coming in", "weatherstrip the front door", "garage door bottom seal"]
+    must_know:
+      - fact: "Where the work is and how much (one tub, a whole shower, every outside door)"
+        bank_question: count
+        follow_up: fu_caulk_where
+        photo: p1
+        why_it_moves_price: "One tub bead is a short job; a full regrout or every door and window is a day. [judgment]"
+        skip_if: "Photo and words make it plain"
+      - fact: "Condition now: worn but solid, cracked, spots that come back, or loose tile"
+        bank_question: null
+        follow_up: fu_caulk_condition
+        photo: p1
+        why_it_moves_price: "Loose or moving tile means the problem is behind the tile, a bigger job than caulk. [judgment]"
+        skip_if: "Close photo shows it"
+      - fact: "Whether the wall next to the tub or shower is soft or damp"
+        bank_question: null
+        follow_up: fu_wall_wet
+        photo: p2
+        why_it_moves_price: "A soft wall behind a shower is water damage, a different visit. [judgment]"
+        skip_if: "Exterior weatherstrip only"
+    allowed_follow_ups:
+      - id: fu_caulk_where
+        ask_when: "Homeowner asks for caulk, grout or weatherstrip without saying where"
+        text_en: "Where is the caulk, grout or seal work?"
+        text_es: "¿Dónde es el trabajo de sellador, boquilla o burlete?"
+        options_en: ["Tub or shower", "Kitchen or bath counters", "Outside doors or windows", "Floor tile", "Garage door bottom seal"]
+        options_es: ["Tina o regadera", "Cubiertas de cocina o baño", "Puertas o ventanas de afuera", "Piso de azulejo", "Sello de abajo de la puerta de la cochera"]
+        card_field: true
+        why: "Each spot is a different material and time. [judgment]"
+      - id: fu_caulk_condition
+        ask_when: "Tub, shower or floor tile work and no close photo"
+        text_en: "What does it look like now?"
+        text_es: "¿Cómo se ve ahora?"
+        options_en: ["Old or stained but solid", "Cracked or has gaps", "Dark spots that keep coming back", "Tiles loose or moving"]
+        options_es: ["Viejo o manchado pero firme", "Agrietado o con huecos", "Manchas oscuras que siempre regresan", "Azulejos flojos o que se mueven"]
+        card_field: true
+        why: "Loose tile or spots that return change the job from a recaulk to a repair. [judgment]"
+      - fu_wall_wet
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All caulk, grout and weatherstrip"
+    scope_line_en: "Remove and replace the caulk around a hall bathtub; old caulk is dark in the corners; wall around it is firm."
+    scope_line_es: "Quitar y poner sellador nuevo alrededor de la tina del baño del pasillo; el sellador viejo está oscuro en las esquinas; la pared está firme."
+    quote_format: range
+    business_fills: ["low and high price", "what is included (removal of old caulk or grout)", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman | <town>, <general area> | <kind of place>
+      <one scope line: what, where, how much>
+      Where: <tub or shower / counters / outside doors or windows / floor tile / garage door seal>. Now: <old but solid / cracked / spots come back / tiles loose>.
+      Wall next to it: <firm / soft or damp / n/a>. Materials: <on hand / business supplies>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's mold.", "The tile needs to come off.", "Just use a silicone kit from the store.", "That's a cheap job."]
+
+  - id: door_drawer_adjust
+    label: "Sticking door, loose hinge, drawer slide, cabinet hardware"
+    bank_job_type: "door repair"
+    recurring: false
+    homeowner_phrasings: ["door sticks", "door won't latch", "cabinet door hanging off", "drawer broken", "screen door off its track", "puerta atorada"]
+    must_know:
+      - fact: "What the door or drawer is doing"
+        bank_question: what
+        follow_up: fu_door_what
+        photo: p1
+        why_it_moves_price: "An adjustment, a hinge or strike repair and a new door are three different prices. [judgment]"
+        skip_if: "Homeowner's words say it plainly"
+      - fact: "What kind of door (inside, outside, sliding patio or screen, cabinet)"
+        bank_question: null
+        follow_up: fu_door_type
+        photo: p2
+        why_it_moves_price: "Exterior and sliding doors need different parts and often a second person. [judgment]"
+        skip_if: "Photo shows it"
+      - fact: "Whether it started slowly or suddenly, with new cracks nearby"
+        bank_question: null
+        follow_up: fu_cracks_near
+        photo: p2
+        why_it_moves_price: "A door that shifted with new wall or floor cracks is more than a hinge job. [judgment]"
+        skip_if: "Cabinet or drawer only"
+      - fact: "Whether a new door or hardware is on hand"
+        bank_question: materials
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Sourcing a door or a matching slide adds a trip. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_door_what
+        ask_when: "Homeowner says a door or drawer has a problem without saying what it does"
+        text_en: "What is the door or drawer doing?"
+        text_es: "¿Qué hace la puerta o el cajón?"
+        options_en: ["Rubs or sticks", "Won't latch or lock", "Hanging loose, hinge pulled out", "Drawer or slide off its track", "Want it replaced"]
+        options_es: ["Roza o se atora", "No cierra o no pone llave", "Floja, la bisagra se salió", "El cajón o la corredera se salió", "Quiero cambiarla"]
+        card_field: true
+        why: "Each answer is a different job and price to a carpenter. [judgment]"
+      - id: fu_door_type
+        ask_when: "The kind of door is not clear from her words or a photo"
+        text_en: "What kind of door is it?"
+        text_es: "¿Qué tipo de puerta es?"
+        options_en: ["Inside door", "Front or back door", "Sliding patio or screen door", "Cabinet door or drawer"]
+        options_es: ["Puerta de adentro", "Puerta de enfrente o de atrás", "Puerta corrediza de patio o de malla", "Puerta de gabinete o cajón"]
+        card_field: true
+        why: "Sets parts, weight and crew. [judgment]"
+      - id: fu_cracks_near
+        ask_when: "An inside or outside door started rubbing or won't latch and no hinge damage is in the photo"
+        text_en: "Did it start slowly, and are there any new cracks in the wall or floor near the door?"
+        text_es: "¿Empezó poco a poco, y hay grietas nuevas en la pared o el piso cerca de la puerta?"
+        options_en: ["Started slowly, no cracks", "Started slowly, new cracks nearby", "Happened suddenly"]
+        options_es: ["Empezó poco a poco, sin grietas", "Empezó poco a poco, con grietas nuevas cerca", "Pasó de repente"]
+        card_field: true
+        why: "New cracks with a shifting door point past a hinge job, so the business may want to see it first. [judgment]"
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["An outside door won't close or lock"]
+      regular: "Inside doors, cabinets and drawers"
+    scope_line_en: "Bedroom door rubs the frame and won't stay shut; started a month ago; homeowner asks about a new door."
+    scope_line_es: "La puerta de la recámara roza el marco y no se queda cerrada; empezó hace un mes; el dueño pregunta por una puerta nueva."
+    quote_format: range
+    business_fills: ["low and high price for the repair or the replacement", "what the price includes", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman | <town>, <general area> | <kind of place>
+      <one scope line: which door or drawer, what it does, what she asks for>
+      Doing: <rubs / won't latch / hanging loose / off track / replace>. Type: <inside / front or back / sliding or screen / cabinet>.
+      Started: <slowly / suddenly>. New cracks nearby: <yes / no / n/a>. Parts on hand: <yes / no>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The door is warped.", "The hinge screws are stripped.", "Your house is settling.", "You don't need a new door."]
+
+  - id: fixture_swap_plugin
+    label: "Swap plug-in or battery items (smart lock, doorbell camera, battery smoke alarm)"
+    bank_job_type: "door repair"
+    recurring: false
+    homeowner_phrasings: ["install my Ring doorbell", "put in a smart lock", "smoke detector keeps chirping", "change the smoke alarm battery up high"]
+    must_know:
+      - fact: "For a smoke alarm, whether it is battery only or wired to the house"
+        bank_question: null
+        follow_up: fu_alarm_power
+        photo: p3
+        why_it_moves_price: "A hardwired or linked alarm is fire-safety work, never handyman work; it goes to electrical. [src:ars_32_1121]"
+        skip_if: "Not a smoke alarm"
+      - fact: "How the new device gets power (batteries, plug, or house wiring)"
+        bank_question: null
+        follow_up: fu_device_power
+        photo: p3
+        why_it_moves_price: "Battery and plug-in installs are short; wired doorbells or locks bring in low-voltage or electrical work. [judgment]"
+        skip_if: "Box label photo shows it"
+      - fact: "Height of the item"
+        bank_question: null
+        follow_up: fu_height
+        photo: p2
+        why_it_moves_price: "A 12 ft hallway ceiling needs a tall ladder. [judgment]"
+        skip_if: "Normal height"
+    allowed_follow_ups:
+      - id: fu_alarm_power
+        ask_when: "A smoke or CO alarm is chirping or being replaced"
+        text_en: "Is the smoke alarm battery only, or does it have wires going into the ceiling?"
+        text_es: "¿La alarma de humo es solo de pila, o tiene cables que entran al techo?"
+        options_en: ["Battery only", "Has wires into the ceiling"]
+        options_es: ["Solo de pila", "Tiene cables que entran al techo"]
+        card_field: true
+        why: "Hardwired or interconnected alarms are fire-safety work outside the handyman exemption. [src:ars_32_1121]"
+      - id: fu_device_power
+        ask_when: "A doorbell camera, smart lock or similar device is being installed"
+        text_en: "How does the new device get power?"
+        text_es: "¿Cómo recibe corriente el aparato nuevo?"
+        options_en: ["Batteries", "Plugs into an outlet", "Wires to the old doorbell or house wiring"]
+        options_es: ["Pilas", "Se conecta a un contacto", "Cables al timbre viejo o a la corriente de la casa"]
+        card_field: true
+        why: "Wired installs may belong to a camera or alarm business (R-67) or an electrician. [src:aac_r4_9_103]"
+      - fu_height
+    photos_priority: [p3, p2]
+    urgency:
+      fire_dept_triggers: ["Smoke or CO alarm sounding, not a single chirp"]
+      urgent_capable_triggers: ["Smoke alarm chirping and out of reach"]
+      regular: "Planned device installs"
+    scope_line_en: "Battery smoke alarm chirps once a minute on a 12 ft hallway ceiling; no smoke; homeowner has a new alarm."
+    scope_line_es: "La alarma de humo de pila suena una vez por minuto en el techo del pasillo de 12 pies; no hay humo; el dueño tiene una alarma nueva."
+    quote_format: range
+    business_fills: ["low and high price", "whether the device or battery is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman | <town>, <general area> | <kind of place>
+      <one scope line: what device, where, what it does now>
+      Device: <smoke alarm / doorbell camera / smart lock / other>. Power: <battery / plug-in / wired>. Height: <normal / tall ladder>.
+      Device on hand: <yes / no>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the battery.", "Pull the alarm off the ceiling.", "Wired doorbells are easy.", "That chirp is nothing to worry about."]
+
+  - id: exterior_minor
+    label: "Minor exterior fixes (fence board, gate latch, house numbers, screens)"
+    bank_job_type: "fence repair"
+    recurring: false
+    homeowner_phrasings: ["fence panel blew down", "gate won't close", "gate latch broke", "fence boards loose", "window screen torn", "se cayó la cerca"]
+    must_know:
+      - fact: "What part is damaged: boards, gate or latch, a post or whole section, block wall, retaining wall"
+        bank_question: what
+        follow_up: fu_fence_what
+        photo: p1
+        why_it_moves_price: "Boards and latches are short jobs; a snapped post means digging and concrete; a retaining wall over 3 ft is city permit work. [src:lhc_permits]"
+        skip_if: "Photo shows the post base and the damage"
+      - fact: "How long the damaged stretch is"
+        bank_question: count
+        follow_up: fu_fence_length
+        photo: p2
+        why_it_moves_price: "Length sets materials and hours, and a long run can pass the handyman limit. [src:ars_32_1121]"
+        skip_if: "Gate or latch only"
+      - fact: "Whether it is shared with a neighbor or an HOA"
+        bank_question: null
+        follow_up: fu_fence_shared
+        photo: null
+        why_it_moves_price: "Shared and HOA walls need the other owner's yes and sometimes set materials and colors. [judgment]"
+        skip_if: "Gate or screen only"
+      - fact: "Whether the gate or fence is part of a pool enclosure"
+        bank_question: null
+        follow_up: fu_pool_gate
+        photo: p1
+        why_it_moves_price: "A pool enclosure gate takes self-closing, self-latching hardware with the latch at least 54 in up. [src:ars_36_1681]"
+        skip_if: "No pool on the property"
+    allowed_follow_ups:
+      - id: fu_fence_what
+        ask_when: "Fence, gate or wall damage with no photo of the base"
+        text_en: "What part is damaged?"
+        text_es: "¿Qué parte está dañada?"
+        options_en: ["Boards or pickets", "Gate or latch", "A post or a whole section is down", "Block wall cracked or leaning", "Retaining wall (dirt higher on one side)", "Screens or house numbers"]
+        options_es: ["Tablas", "Puerta o pasador", "Un poste o una sección completa se cayó", "Barda de block agrietada o inclinada", "Muro de contención (tierra más alta de un lado)", "Mallas o números de la casa"]
+        card_field: true
+        why: "Separates a board swap from post and footing work and from retaining-wall permit work. [src:lhc_permits]"
+      - id: fu_fence_length
+        ask_when: "Fence or wall damage beyond a gate or latch"
+        text_en: "About how long is the damaged part?"
+        text_es: "¿Más o menos qué tan larga es la parte dañada?"
+        options_en: ["One board or the gate only", "Up to 8 feet", "8 to 20 feet", "More than 20 feet"]
+        options_es: ["Una tabla o solo la puerta", "Hasta 8 pies", "De 8 a 20 pies", "Más de 20 pies"]
+        card_field: true
+        why: "Length is the first number a fence estimator writes down. [judgment]"
+      - id: fu_fence_shared
+        ask_when: "Fence or wall on a property line"
+        text_en: "Is the fence or wall shared with a neighbor or an HOA?"
+        text_es: "¿La cerca o barda es compartida con un vecino o con la asociación (HOA)?"
+        options_en: ["Shared with a neighbor", "HOA wall", "Ours only"]
+        options_es: ["Compartida con un vecino", "Barda de la asociación", "Solo nuestra"]
+        card_field: true
+        why: "Who approves and who pays can change scope before work starts. [judgment]"
+      - id: fu_pool_gate
+        ask_when: "Gate or fence repair at a home with a pool"
+        text_en: "Is this gate or fence part of the fence around the pool?"
+        text_es: "¿Esta puerta o cerca es parte de la cerca alrededor de la alberca?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Pool enclosure gates take specific self-closing and latch hardware. [src:ars_36_1681]"
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Fence or gate open and a pet can get out", "Pool enclosure gate won't close"]
+      regular: "Loose boards, screens, house numbers"
+    scope_line_en: "About 12 ft of wood fence down after wind, end post snapped at the base; side gate drags and latch bent."
+    scope_line_es: "Unos 12 pies de cerca de madera caídos por el viento, el poste de la orilla quebrado en la base; la puerta del lado arrastra y el pasador está doblado."
+    quote_format: range
+    business_fills: ["low and high price, labor and materials", "what is included (post, concrete, haul-away)", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman | <town>, <general area> | <kind of place>
+      <one scope line: what is damaged, how long, what it is made of>
+      Damaged: <boards / gate or latch / post or section / block wall / retaining wall / screens>. Length: <one board / up to 8 ft / 8 to 20 ft / over 20 ft>.
+      Shared: <neighbor / HOA / ours only>. Pool enclosure: <yes / no / no pool>. Materials: <on hand / business supplies>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You'll need a permit for that.", "Your neighbor has to pay half.", "Just a few boards, that's easy.", "The wind did that because the posts rotted."]
+
+  - id: dryer_vent_reroute
+    new_job_type: true
+    label: "Reroute or replace a dryer vent duct"
+    bank_job_type: "dryer vent reroute"
+    recurring: false
+    homeowner_phrasings: ["move my dryer vent", "dryer vent hose is crushed", "vent comes out in the garage", "new laundry spot needs a vent", "mover ducto de secadora"]
+    must_know:
+      - fact: "What is wanted: move or reroute, replace a crushed or torn duct, or only clean it"
+        bank_question: what
+        follow_up: fu_vent_what
+        photo: p1
+        why_it_moves_price: "A reroute is a carpentry and duct job; cleaning only belongs to the dryer vent cleaning category; slow drying may be the dryer itself. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Gas or electric dryer"
+        bank_question: null
+        follow_up: fu_dryer_fuel
+        photo: p1
+        why_it_moves_price: "Moving a gas dryer to reach the vent can mean disconnecting the gas connector, which is never handyman work. [src:ars_32_1121]"
+        skip_if: "Photo shows only an electric cord and outlet"
+      - fact: "Where the vent leaves the house now and how long the run is"
+        bank_question: null
+        follow_up: fu_vent_exit
+        photo: p2
+        why_it_moves_price: "Roof and under-house exits mean more access work; the code-cited limit is 35 ft less bends, in metal duct. [src:doe_dryer_vent]"
+        skip_if: "Wide photo shows the duct path"
+      - fact: "One story or two, and roof access"
+        bank_question: null
+        follow_up: fu_height
+        photo: null
+        why_it_moves_price: "A roof termination on a two-story home needs roof work and a tall ladder. [judgment]"
+        skip_if: "Side-wall exit on one story"
+    allowed_follow_ups:
+      - id: fu_vent_what
+        ask_when: "Homeowner mentions a dryer vent without saying what work is wanted"
+        text_en: "What do you need done with the dryer vent?"
+        text_es: "¿Qué necesita que se haga con el ducto de la secadora?"
+        options_en: ["Move or reroute it", "Replace a crushed or torn duct", "Clean it out only", "Dryer takes too long to dry"]
+        options_es: ["Moverlo o cambiar la ruta", "Cambiar un ducto aplastado o roto", "Solo limpiarlo", "La secadora tarda mucho en secar"]
+        card_field: true
+        why: "Cleaning goes to dryer vent cleaning and slow drying alone may be an appliance repair; only rerouting and replacing stay here. [judgment]"
+      - id: fu_dryer_fuel
+        ask_when: "Any dryer vent or dryer hookup request where the dryer type is not known"
+        text_en: "Is the dryer gas or electric?"
+        text_es: "¿La secadora es de gas o eléctrica?"
+        options_en: ["Electric", "Gas"]
+        options_es: ["Eléctrica", "De gas"]
+        card_field: true
+        why: "Work that connects to gas or propane is never handyman work. [src:ars_32_1121]"
+      - id: fu_vent_exit
+        ask_when: "Reroute or replacement and no photo of the duct path"
+        text_en: "Where does the vent leave the house now?"
+        text_es: "¿Por dónde sale el ducto de la casa ahora?"
+        options_en: ["Side wall", "Roof", "Under the house", "Into the garage or attic", "Can't find where it goes"]
+        options_es: ["Pared de lado", "Techo", "Por debajo de la casa", "A la cochera o al ático", "No encuentro por dónde sale"]
+        card_field: true
+        why: "The exit and the run length set the access work and parts. [src:doe_dryer_vent]"
+      - fu_height
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: ["Burning smell or smoke at the dryer", "Gas smell or hiss near the dryer"]
+      urgent_capable_triggers: []
+      regular: "Planned reroute or duct replacement"
+    scope_line_en: "Reroute the dryer vent from the laundry closet to the side wall; electric dryer; current duct is crushed behind the dryer."
+    scope_line_es: "Cambiar la ruta del ducto de la secadora del clóset de lavado a la pared de lado; secadora eléctrica; el ducto actual está aplastado detrás."
+    quote_format: range
+    business_fills: ["low and high price, labor and duct", "what is included (wall cap, cleaning the old run)", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman | <town>, <general area> | <kind of place>
+      <one scope line: what is wanted, where the vent runs now>
+      Wanted: <reroute / replace duct / clean only / slow drying>. Dryer: <electric / gas>. Exits now: <side wall / roof / under house / garage or attic / not found>.
+      Stories: <one / two>. Duct in sight: <neutral, from photo>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That foil duct is a fire hazard.", "Your vent is too long.", "Any handyman can move a gas dryer.", "Vent reroutes run a couple hundred."]
+
+  - id: route_elsewhere
+    label: "Sounds like handyman but is permit-type work (wall removal, new drywall, window size change, patio cover)"
+    bank_job_type: "wall removal or any permit-type job"
+    recurring: false
+    homeowner_phrasings: ["knock out a wall, small job", "drywall the garage", "make the window bigger", "build a patio cover", "frame a closet"]
+    must_know:
+      - fact: "What is being built, removed or changed, in her words"
+        bank_question: details
+        follow_up: fu_permit_work
+        photo: p2
+        why_it_moves_price: "Wall removal, new drywall, window size changes and patio covers need a Lake Havasu City permit, so the handyman exemption does not apply and only licensed businesses quote. [src:lhc_permits] [src:ars_32_1121]"
+        skip_if: "Homeowner named the work plainly"
+      - fact: "What is in or on the wall or area (switches, outlets, vents, pipes)"
+        bank_question: null
+        follow_up: fu_touches_utility
+        photo: p2
+        why_it_moves_price: "Electrical, plumbing and AC in the way are subcontracted by B-3, R-61 and R-62 holders and add to the job. [src:aac_r4_9_103]"
+        skip_if: "Photo shows a bare wall"
+      - fact: "Home age or manufactured home"
+        bank_question: null
+        follow_up: fu_home_age
+        photo: null
+        why_it_moves_price: "Pre-1978 paint over the EPA limits needs a certified firm; altering a manufactured home needs a Department of Housing installer. [src:epa_rrp] [src:ars_41_4047]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_permit_work
+        ask_when: "The request mentions walls, framing, new drywall, windows or a cover, and the work is not clear"
+        text_en: "Does the job include any of these?"
+        text_es: "¿El trabajo incluye alguna de estas cosas?"
+        options_en: ["Taking out or adding a wall", "New drywall sheets, not just patching", "Making a window bigger or smaller", "A patio cover or carport", "None of these"]
+        options_es: ["Quitar o poner una pared", "Tablaroca nueva, no solo parches", "Hacer una ventana más grande o más chica", "Un techo de patio o cochera", "Ninguna"]
+        card_field: true
+        why: "Each is on Lake Havasu City's permit-required list. [src:lhc_permits]"
+      - fu_touches_utility
+      - fu_home_age
+    photos_priority: [p2, p1]
+    urgency:
+      fire_dept_triggers: ["Gas smell or hiss", "Sparking or burning smell at an outlet or panel"]
+      urgent_capable_triggers: []
+      regular: "All permit-type requests"
+    scope_line_en: "Remove an interior wall about 10 ft long between kitchen and living room; switch, outlet and a ceiling vent on or near it."
+    scope_line_es: "Quitar una pared interior de unos 10 pies entre la cocina y la sala; hay un apagador, un contacto y una rejilla en el techo cerca."
+    quote_format: range
+    business_fills: ["low and high price, or a visit to measure", "whether the permit is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Handyman (licensed only: permit-type work) | <town>, <general area> | <kind of place>
+      <one scope line: what is built, removed or changed, size>
+      Work: <wall / new drywall / window size / patio cover / other, in her words>. In or on it: <switches, outlets, vents, pipes, or none seen>.
+      Home built: <1978 or later / before 1978 / manufactured / not said>. Homeowner's own claims: <for example "not load bearing", marked as hers>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That wall isn't load bearing.", "You'll need a permit and an engineer.", "A handyman can't do that.", "Taking out a wall runs a few thousand."]
+
+business_side:
+  how_they_get_customers: ["Word of mouth, neighbors and repeat customers", "Local Facebook groups and Nextdoor posts [judgment]", "Google Maps listing and reviews", "Thumbtack, Angi and TaskRabbit", "Realtors and property managers sending punch lists [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Thumbtack (handyman)"
+      figure: "About $10 to $75 per lead; in one case study 3 to 4 other pros got the same lead (marketing-vendor figures)"
+      source: pipeline_handyman
+      unverified: false
+    - channel: "Angi (handyman)"
+      figure: "About $20 to $120 per lead plus a $250 to $600 monthly subscription (marketing-vendor figures)"
+      source: pipeline_handyman
+      unverified: false
+    - channel: "TaskRabbit"
+      figure: "A 15% service fee on the task price, with a further fee charged to the client (marketing-vendor figures)"
+      source: pipeline_handyman
+      unverified: false
+    - channel: "Google Local Services Ads (general trades, the nearest row to handyman)"
+      figure: "About $54 per lead and about $233 per paying customer (SearchLight data via a marketing vendor, Feb 2026)"
+      source: enrich_handyman
+      unverified: false
+    - channel: "Google search ads (non-branded)"
+      figure: "About $149 per lead (SearchLight data via a marketing vendor, Jan 2026)"
+      source: enrich_handyman
+      unverified: false
+    - channel: "Lake Havasu City handymen specifically"
+      figure: "No local figures found; most local handymen run on word of mouth and Facebook posts, so their cash cost per customer may be near zero while their time cost is not"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead that three other handymen also bought", "Leads that never answer the phone", "Monthly fees whether or not work comes", "Platforms taking a cut of the job price", "Driving out to look at a 'small job' that turns into a remodel they can't legally take", "Homeowners who want an exact price for 'some stuff' with no list"]
+  what_makes_a_lead_worth_paying_for: ["An itemized list with a photo of each item", "Whether parts are on hand", "Wall type and height stated, so they bring the right anchors and ladder", "Wiring, gas and permit-type items flagged before they quote", "Paid only when picked, with no cut of the job", "A real date, like guests arriving December 1"]
+  their_words: ["punch list", "honey-do", "trip charge", "minimum", "half day", "mud and tape", "knockdown", "orange peel", "toggle bolt", "Tapcon", "stud", "shim", "strike plate", "door sweep", "threshold", "picket", "post and rail", "gate latch", "transition duct", "not a licensed contractor"]
+  signup_objections:
+    - objection: "I don't have a contractor's license. Can I still join?"
+      answer: "Yes, for handyman jobs. You need a Lake Havasu City business license we can match on the city's list. Every quote you send shows the line 'Not a licensed contractor. Only for jobs under $1,000 total with no permit.'"
+    - objection: "What happens if the job turns out bigger than $1,000?"
+      answer: "A handyman quote has to be the full job price under $1,000, labor and materials together. The quote form won't take one at $1,000 or more. Licensed businesses in this category can still quote the bigger job."
+    - objection: "Why pay $25 when I get plenty of work by word of mouth?"
+      answer: "Keep your word of mouth. This is extra work you choose. You pay only when a homeowner picks your quote: $25 when the job is under $500, $75 from $500 up. There is nothing to join and nothing monthly, and no share of the job."
+    - objection: "I don't want to drive out for a five-minute job."
+      answer: "You see the item count, the photos and whether parts are on hand before you quote. Quote what makes the trip worth it, or skip the card. You choose your job types at sign-up and can change them any time."
+    - objection: "Can I quote by the hour?"
+      answer: "Yes. Give your rate and how many hours you expect. It shows as a price range, and for a handyman quote the top of that range must stay under $1,000."
+    - objection: "What is the box I have to tick on every quote?"
+      answer: "You confirm the price is for the whole job, under $1,000, with no permit and no gas, smoke-alarm or sprinkler work. It sits on the same screen as your price."
+    - objection: "The same homeowner wants me back next week. Is that a problem?"
+      answer: "Repeat work is welcome. A second quote at the same address within 30 days is blocked only when it shares a job type with the first or the two together reach $1,000, so one job can't be split into two."
+    - objection: "Will you rank me against other handymen?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "Do I need insurance?"
+      answer: "No. If you have it, you can show it on your quotes, and some homeowners look for it."
+    - objection: "I hold an R-62 or B-3 license. Do I get these cards?"
+      answer: "Yes. Your license covers the handyman job types up to its own project limit, and your quotes aren't held to the $1,000 handyman limit."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+  quote_tips_for_card: ["Say whether the range includes materials", "If you work without a license, keep the top of the range under $1,000 for the whole list", "Say if you will do every item on the list in one visit", "If a wired light, faucet or gas item is on the list, quote only the items you can take and say which", "Give your earliest day, and say if heat pushes outdoor work to mornings", "If you need a photo of the wall or the post base, say so"]
