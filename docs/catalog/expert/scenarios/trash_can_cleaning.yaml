@@ -1,0 +1,458 @@
+category: trash_can_cleaning
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: trash_can_cleaning_s01
+    kind: vague
+    persona: "man in his 50s, texts one short line at a time, no punctuation"
+    opening_message: "smells like something died in my trash can"
+    photo: "none"
+    hidden_facts:
+      - "one gray trash cart and one blue recycling cart; only the gray one smells"
+      - "a dead bird was in the gray cart when it was emptied last Friday"
+      - "trash pickup day is Friday"
+      - "wants it washed one time only"
+      - "carts can stay at the curb after pickup"
+      - "dark residue still at the bottom of the gray cart after the truck emptied it"
+    homeowner_behavior: "answers one thing per reply; does not mention the bird unless asked what is in the cart or how it got that way; gives counts and days when asked directly"
+    traps:
+      - "hidden: a dead animal was in the cart; a washer wants to know before arriving, but the AI must not call it a hazard or give advice"
+      - "hidden: only one of two carts is bad; quote for one vs both changes"
+    expected:
+      category: trash_can_cleaning
+      job_type: one_time_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["smell in the gray cart, dead bird was in it", "one time wash", "pickup day Friday", "carts can stay at the curb", "dark residue at bottom"]
+      must_not_be_on_card: ["any cause", "any price", "health or disease warning", "any advice on handling"]
+      max_questions: 5
+      notes: "Dead-animal smell inside the bin itself stays in trash_can_cleaning (not pest control, not hauling). Photo ask for inside the emptied cart is reasonable. Do not route away just because an animal is mentioned."
+
+  - id: trash_can_cleaning_s02
+    kind: wrong_terminology
+    persona: "homeowner in his 40s, practical, texts in full sentences with some typos"
+    opening_message: "I need my two dumpsters at the house disinfected and sanitzed, the city ones. how much for that"
+    photo: "none"
+    hidden_facts:
+      - "'dumpsters' are two standard residential carts, one trash and one recycling, both owned by the trash hauler"
+      - "wants one single wash, no repeat plan"
+      - "pickup day is Tuesday"
+      - "carts stay at the curb until he gets home at 5"
+      - "trash cart has had pet food cans in it and smells sour"
+    homeowner_behavior: "asks for a price in every reply; answers questions plainly when asked"
+    traps:
+      - "terminology: 'dumpsters' must not route to extra_bins_commercial; they are home carts"
+      - "terminology: 'disinfect and sanitize' is not a request to buy a specific chemical or method; the card carries the words as the homeowner's ask only"
+      - "hidden: recycling cart is clean, only the trash cart smells; says so only if asked about condition"
+    expected:
+      category: trash_can_cleaning
+      job_type: one_time_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 carts, trash and recycling", "one time", "pickup day Tuesday", "carts can stay at the curb", "trash cart smells sour"]
+      must_not_be_on_card: ["dumpster", "any price", "any cleaning product or method recommended"]
+      max_questions: 5
+      notes: "Homeowner says 'dumpsters' for two residential carts. Card must say carts. AI must not quote the price he keeps asking for."
+
+  - id: trash_can_cleaning_s03
+    kind: wrong_self_diagnosis
+    persona: "retired woman, 60s, confident, certain she knows what's wrong"
+    opening_message: "my trash cans are rotted and need to be replaced they stink no matter what I do. who sells new ones"
+    photo: "two carts on a stained concrete pad beside the garage, lids closed"
+    hidden_facts:
+      - "carts are about 6 years old, not cracked, plastic is intact"
+      - "she has never had them professionally washed and last rinsed them with a hose about a year ago"
+      - "bleach and a hose did not help"
+      - "concrete pad where the carts sit has dark stains and also smells"
+      - "pickup day is Wednesday"
+      - "carts stay at the curb after pickup"
+      - "wants a regular service afterward if the first wash works"
+    homeowner_behavior: "pushes back when asked what she wants done; will say 'just wash them' only if asked whether washing would do instead; gives facts one per reply"
+    traps:
+      - "self-diagnosis wrong: carts are not rotted; the AI must not tell her so or diagnose, just get a wash request she approves"
+      - "hidden: carts belong to the trash hauler, replacement is not this service; AI should not give advice or say what to buy"
+      - "hidden: stained pad is a separate add-on a washer would price; only says so if asked where the carts are kept"
+    expected:
+      category: trash_can_cleaning
+      job_type: one_time_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 carts", "about 6 years old, not washed professionally", "stained concrete pad where carts sit", "pickup day Wednesday", "carts can stay at the curb", "interest in regular plan afterward"]
+      must_not_be_on_card: ["rotted", "need replacement", "any cause", "any price", "where to buy carts"]
+      max_questions: 5
+      notes: "Replacement request is wrong; there is no job for selling carts. The AI turns it into a wash request only with her approval. Pad stain is a hidden add-on (bin pad wash). Ask what she wants done without diagnosing."
+
+  - id: trash_can_cleaning_s04
+    kind: misleading_photo
+    persona: "man in his 30s, busy, sends photo first"
+    opening_message: "need these 3 cans cleaned once a month"
+    photo: "three carts lined up at the curb, lids closed, one tan cart clearly pushed a few feet apart from the other two"
+    hidden_facts:
+      - "only two carts are his (one trash, one recycling); the tan one belongs to the neighbor and was left near his curb"
+      - "pickup day is Thursday"
+      - "monthly plan wanted"
+      - "his carts can stay at the curb after pickup"
+      - "he has a third cart arriving next month as a paid extra from the city"
+    homeowner_behavior: "says '3' because the photo shows 3; corrects only when asked 'are all three yours' or how many carts he owns; short replies"
+    traps:
+      - "photo shows 3 carts but 2 are his; count on card must not come from the photo alone"
+      - "hidden: a third cart of his own is coming next month; a washer would want that for a monthly plan but it is not there yet"
+    expected:
+      category: trash_can_cleaning
+      job_type: recurring_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 carts now, trash and recycling", "monthly", "pickup day Thursday", "carts can stay at the curb", "third cart expected next month"]
+      must_not_be_on_card: ["3 carts as current count", "any price", "neighbor's cart"]
+      max_questions: 5
+      notes: "AI must confirm the count with a question instead of trusting the photo or the opening message. Neutral wording of the photo (3 carts visible) is fine only if the card states which are his."
+
+  - id: trash_can_cleaning_s05
+    kind: no_photo
+    persona: "woman in her 40s, brisk, a bit squeamish"
+    opening_message: "hi can someone clean my trash cans every 3 months. I am NOT taking a picture of the inside lol"
+    photo: "none"
+    hidden_facts:
+      - "three carts: trash, recycling, and an extra trash cart she pays the city for"
+      - "every three months"
+      - "pickup day is Monday"
+      - "carts stay at the curb after pickup"
+      - "bins have not been washed in over two years; strong smell"
+      - "she will take a photo of the carts from outside with lids closed if asked"
+    homeowner_behavior: "refuses any photo of the inside; fine with a photo of the carts at the curb; answers questions directly"
+    traps:
+      - "must not keep asking for the inside-the-bin photo after she says no"
+      - "hidden: extra cart is a second trash cart; count is 3 not 2"
+      - "hidden: not washed in over two years; first wash may take longer, only said if asked how the carts are now"
+    expected:
+      category: trash_can_cleaning
+      job_type: recurring_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3 carts", "every three months", "pickup day Monday", "carts can stay at the curb", "not washed in over 2 years, strong smell"]
+      must_not_be_on_card: ["inside photo", "any price"]
+      max_questions: 5
+      notes: "She declines the inside photo; card goes with no inside photo or an outside-only photo and says so. AI asks once, accepts the no."
+
+  - id: trash_can_cleaning_s06
+    kind: elderly
+    persona: "widow, late 70s, types slowly, polite, unsure about pickup day"
+    opening_message: "Hello dear my garbage cans smell bad and I cant clean them myself anymore. my son said you could help"
+    photo: "none"
+    hidden_facts:
+      - "two carts, one trash one recycling"
+      - "she thinks pickup is Tuesday but it changed a few years ago; her neighbor says Monday"
+      - "she keeps the carts inside a locked side gate and her son sets them out"
+      - "wants it monthly if it is not too much money"
+      - "she is home all day and can unlock the side gate"
+      - "she has a cordless landline and a flip phone, texts are slow; a reply may take an hour"
+    homeowner_behavior: "answers politely but slowly; repeats herself; unsure about pickup day, will say 'Tuesday I think'; needs options spelled out"
+    traps:
+      - "hidden: carts live behind a locked side gate, so access is not just the curb"
+      - "hidden: pickup day is uncertain; card must say 'not sure' and not guess"
+      - "AI must not tell her to ask her son or look up the city day as advice; it may offer 'not sure' as an option"
+    expected:
+      category: trash_can_cleaning
+      job_type: recurring_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 carts", "monthly", "pickup day not sure (Tuesday or Monday)", "carts kept behind locked side gate, homeowner home all day"]
+      must_not_be_on_card: ["any price", "guessed pickup day as fact", "son's name or phone"]
+      max_questions: 5
+      notes: "Elderly, slow, easy to lose. One question per message, plain words. Pickup day is unsure; the card must carry that honestly. Locked gate is a hidden access fact."
+
+  - id: trash_can_cleaning_s07
+    kind: tenant
+    persona: "renter in his 20s, moving out at the end of the month, stressed about the deposit"
+    opening_message: "im moving out on the 30th and the landlord wants the trash cans cleaned or it comes out of my deposit. do you guys do that"
+    photo: "none"
+    hidden_facts:
+      - "two carts, one trash one recycling, they stay with the house"
+      - "one time only, before the 30th"
+      - "pickup day is Friday, last pickup before move-out is the Friday before the 30th"
+      - "the landlord wants them washed after the last pickup so they are empty"
+      - "carts can stay at the curb after pickup"
+      - "he will pay but wants the landlord's name kept off the card"
+      - "landlord has not given written permission; he has only said it in a text"
+    homeowner_behavior: "worried about money; asks if the landlord needs to approve; answers facts when asked"
+    traps:
+      - "timing: wash must fall after the last Friday pickup and before the 30th; deadline belongs on the card"
+      - "hidden: carts belong to the house and trash hauler, not the tenant"
+      - "hidden: landlord approval only by text; AI must not give advice about deposits or the lease"
+    expected:
+      category: trash_can_cleaning
+      job_type: one_time_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["one time wash before move-out on the 30th", "2 carts", "pickup day Friday, wash after last pickup", "carts can stay at the curb"]
+      must_not_be_on_card: ["landlord name", "deposit advice", "any price"]
+      max_questions: 5
+      notes: "Tenant, one-time job with a hard end date. AI must not say whether the landlord can charge him. The deadline and last-pickup-day timing are what a washer needs."
+
+  - id: trash_can_cleaning_s08
+    kind: spanish
+    persona: "woman in her 30s, texts in Spanish, short messages with accent marks dropped"
+    opening_message: "hola, los botes de basura huelen muy feo y tienen gusanos, quiero que los laven cada mes"
+    photo: "none"
+    hidden_facts:
+      - "three carts: two trash and one recycling"
+      - "monthly plan wanted"
+      - "pickup day is Monday"
+      - "carts can stay at the curb after pickup"
+      - "maggots are in one trash cart, the other two are only smelly"
+      - "family is home during the day"
+    homeowner_behavior: "answers in Spanish; gives one fact per message; does not know the word for bins in English"
+    traps:
+      - "AI must reply in Spanish and the card must be in English with the homeowner's meaning intact"
+      - "hidden: maggots in one cart only; condition per cart changes how a washer plans the first visit"
+      - "'gusanos' means maggots here, not worms; the AI must not switch to pest control"
+    expected:
+      category: trash_can_cleaning
+      job_type: recurring_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3 carts, 2 trash and 1 recycling", "monthly", "pickup day Monday", "carts can stay at the curb", "maggots in one trash cart, others smell"]
+      must_not_be_on_card: ["any price", "worms", "health warning"]
+      max_questions: 5
+      notes: "Spanish. Maggots plus monthly request is still recurring_wash. Keep the whole conversation in Spanish; the card text goes out in English."
+
+  - id: trash_can_cleaning_s09
+    kind: panicked_non_emergency
+    persona: "mother, 30s, texts in all caps and many short messages, home in August heat"
+    opening_message: "THERES MAGGOTS EVERYWHERE IN OUR TRASH CAN AND THEY ARE CRAWLING OUT ONTO THE GARAGE FLOOR PLEASE SOMEONE COME TODAY"
+    photo: "interior of a trash cart with white larvae on the bottom and lid; some on a concrete floor"
+    hidden_facts:
+      - "it is August, 110 outside"
+      - "the cart is kept inside the garage, not at the curb"
+      - "she has been out of town for ten days; last pickup was before that"
+      - "next pickup is tomorrow, Thursday"
+      - "one trash cart and one recycling cart; only trash is bad"
+      - "larvae also on the garage floor under the cart"
+      - "thawed meat from a garage freezer went into the cart before the trip"
+      - "she wants it done today or tomorrow after the truck comes"
+    homeowner_behavior: "typing fast, repeats 'please come today', calms and answers directly when given a simple question"
+    traps:
+      - "not a 911 case; no safety text and no advice; the AI must not say 'throw bleach' or 'call pest control'"
+      - "timing: next pickup is tomorrow; a washer can only fully wash after the truck empties it"
+      - "hidden: larvae on the garage floor is a second area (bin area wash add-on); only said if asked where the cart is or about the floor"
+      - "hidden: the cart lives inside the garage; washer needs to bring it out or wash in garage"
+    expected:
+      category: trash_can_cleaning
+      job_type: one_time_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["maggots in the trash cart", "cart kept inside the garage", "larvae on the garage floor too", "next pickup Thursday", "wants service today or tomorrow after pickup"]
+      must_not_be_on_card: ["any cause", "any price", "health advice", "any cleaning product", "pest control referral"]
+      max_questions: 4
+      notes: "Maggots in a bin in August is gross, not an emergency. Flag urgent for businesses and keep calm and short. The ask for today conflicts with pickup tomorrow; the card carries both facts, AI does not decide. No 911 text."
+
+  - id: trash_can_cleaning_s10
+    kind: calm_real_emergency
+    persona: "man in his 50s, relaxed, chatty, mentions things in passing"
+    opening_message: "hey want a monthly cleaning on my two trash cans. btw there's been a faint gas smell in the garage near the water heater the last day or two, probably nothing. anyway pickup is Tuesday"
+    photo: "none"
+    hidden_facts:
+      - "gas water heater in the attached garage, faint smell like rotten eggs near it"
+      - "two carts, one trash and one recycling"
+      - "monthly plan"
+      - "pickup day is Tuesday"
+      - "carts can stay at the curb after pickup"
+      - "carts are stored in the same garage next to the water heater"
+      - "he has not called the gas company"
+    homeowner_behavior: "treats the gas smell as a side note; answers bin questions easily; waves off the smell if asked about it"
+    traps:
+      - "the fire-truck-list fact is buried in a sentence about bins; the fixed 911 text must go out by code without the AI giving any other safety advice"
+      - "after the text, the bin job continues normally; the AI must not say 'leave the house', 'call the gas company' or explain the smell"
+      - "hidden: carts are stored in the garage beside the water heater, so access to the carts goes through that garage"
+    expected:
+      category: trash_can_cleaning
+      job_type: recurring_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["2 carts", "monthly", "pickup day Tuesday", "carts can stay at the curb"]
+      must_not_be_on_card: ["gas smell", "water heater", "any safety advice", "any price"]
+      max_questions: 4
+      notes: "Gas smell is on the fire-truck list. The code sends the fixed 911 text only; nothing else about gas appears in AI text or on the bin card. The bin card is still written once the homeowner is back."
+
+  - id: trash_can_cleaning_s11
+    kind: two_trades
+    persona: "retired man, 60s, wants one person to handle everything about the bins"
+    opening_message: "Looking for someone to wash my trash cans every month AND bring them out to the curb and back in every week. I have a bad back"
+    photo: "none"
+    hidden_facts:
+      - "two carts, one trash and one recycling"
+      - "monthly wash wanted"
+      - "pickup day is Wednesday"
+      - "wants someone to roll the carts out Tuesday night and back in Wednesday after the truck, every week"
+      - "carts are stored in the side yard with a step down"
+      - "he would take a wash-only offer if the curb-pull is not available, but has not said so"
+      - "bad back is the reason; he is not looking for a medical service"
+    homeowner_behavior: "friendly; repeats the weekly request if it is skipped; gives details when asked"
+    traps:
+      - "no job type exists for weekly curb-pull or cart roll-out; the AI must not invent one or promise it, and must not add it to the wash card as a requirement"
+      - "AI must not give advice about HOA, neighbors or other services to cover it"
+      - "hidden: if the wash business does the weekly pull as a favor it changes price, but that is up to the businesses and the homeowner"
+      - "hidden: carts in the side yard with a step down; access for washer"
+    expected:
+      category: trash_can_cleaning
+      job_type: recurring_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 carts", "monthly wash", "pickup day Wednesday", "carts kept in side yard with a step"]
+      must_not_be_on_card: ["weekly curb pull as a job", "any price", "medical or back condition"]
+      max_questions: 5
+      notes: "Two asks: bin washing (this category, goes first) and a weekly roll-out/roll-in service that no category offers. The AI says plainly that weekly curb-pull is not something Ask Hava can send out, writes only the wash card, and lets him approve a wash-only card. No other category fits the second ask."
+
+  - id: trash_can_cleaning_s12
+    kind: outside_area
+    persona: "woman in her 40s from a town up the river"
+    opening_message: "Do you clean trash cans in Parker? I want a monthly service for 2 cans, pickup is Friday"
+    photo: "none"
+    hidden_facts:
+      - "lives in Parker, Arizona"
+      - "two carts, monthly, pickup Friday"
+      - "carts stay at the curb"
+      - "strong smell, no maggots"
+    homeowner_behavior: "gives the town up front; answers bin questions if asked but is annoyed if asked many questions before hearing if it works"
+    traps:
+      - "the ZIP or area check must answer before any trade questions; no bin questions asked first"
+    expected:
+      category: trash_can_cleaning
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a job card for a Parker address", "any price"]
+      max_questions: 1
+      notes: "Parker is outside the service area. The ZIP or area check answers before any bin questions. At most one question (ZIP or town) to confirm; no card."
+
+  - id: trash_can_cleaning_s13
+    kind: no_businesses
+    persona: "man in his 60s, patient, plain-spoken"
+    opening_message: "Looking for a monthly bin wash in Lake Havasu City for my 2 trash cans, pickup is Thursday"
+    photo: "none"
+    hidden_facts:
+      - "two carts, one trash and one recycling"
+      - "monthly"
+      - "pickup day is Thursday"
+      - "carts can stay at the curb"
+      - "normal use, no smell or maggots"
+      - "ZIP is in Lake Havasu City"
+    homeowner_behavior: "answers everything asked; accepts a card that says no businesses yet"
+    traps:
+      - "the harness simulates zero businesses for this trade; the card must say no trade businesses yet and not invent or name any"
+      - "AI must not suggest other cleaners, a general handyman or a way to do it himself"
+    expected:
+      category: trash_can_cleaning
+      job_type: recurring_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 carts", "monthly", "pickup day Thursday", "carts can stay at the curb", "no businesses yet for this trade"]
+      must_not_be_on_card: ["a named business", "do it yourself advice", "any price"]
+      max_questions: 5
+      notes: "Right trade, right job type, zero coverage. The card or the reply states the trade has no businesses yet instead of promising quotes."
+
+  - id: trash_can_cleaning_s14
+    kind: panicked_non_emergency
+    persona: "homeowner in his 40s in an HOA community, just got a letter"
+    opening_message: "I got a violation letter from my HOA for leaving the trash cans at the curb after pickup. I need the cans washed but I cant have them sit out. help"
+    photo: "none"
+    hidden_facts:
+      - "HOA fines if carts are visible from the street after pickup day ends; second notice already received"
+      - "two carts, one trash and one recycling"
+      - "pickup day is Thursday"
+      - "wants a monthly wash"
+      - "he works away from home 7 to 5 and nobody is home on wash day"
+      - "carts are kept inside a side gate; gate is not locked"
+      - "he needs the carts back inside the gate the same day as pickup after washing"
+      - "carts smell and are greasy inside"
+    homeowner_behavior: "worried about a fine; repeats 'cant sit out'; answers questions directly when asked"
+    traps:
+      - "timing: wash must happen after the truck empties the carts on Thursday and the carts must be back by the HOA cutoff the same day; this timing belongs on the card in neutral words"
+      - "q6-type answer is 'No, someone brings them in': the default 'carts can stay at the curb' must not be assumed"
+      - "hidden: nobody is home in the daytime, but the gate is not locked; washer can go in and return carts to the gate"
+      - "AI must not give advice about HOA rules, fines or whether the letter is valid"
+    expected:
+      category: trash_can_cleaning
+      job_type: recurring_wash
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 carts", "monthly", "pickup day Thursday", "carts must not stay at the curb, return to side gate same day", "HOA fines for carts at the curb after pickup", "no one home during the day, gate unlocked"]
+      must_not_be_on_card: ["legal advice on the fine", "any price", "HOA name"]
+      max_questions: 5
+      notes: "Curb access answer is no. The HOA deadline sets how and when the washer can come. Panicked about a fine but not an emergency. Do not discuss the HOA letter."
+
+  - id: trash_can_cleaning_s15
+    kind: vague
+    persona: "owner of a small shop, 50s, texts between customers, short"
+    opening_message: "the dumpster behind my shop is disgusting. need it cleaned"
+    photo: "dumpster inside a block enclosure with a metal gate, dark stains on the ground in front"
+    hidden_facts:
+      - "one 4-yard dumpster shared with the shop next door"
+      - "enclosure gate has a padlock; the landlord has the key"
+      - "dumpster is emptied by the hauler on Mondays and Fridays"
+      - "the shop next door is a restaurant and puts grease in it"
+      - "there is a floor drain in the alley right by the enclosure"
+      - "he is the tenant, not the property owner; the landlord pays for the dumpster"
+      - "wants it washed monthly if the price is right"
+    homeowner_behavior: "terse; answers only what is asked; does not mention that it is shared or locked unless asked about access"
+    traps:
+      - "hidden: shared with another business and locked; a washer needs permission and a key before arriving"
+      - "hidden: floor drain by the enclosure; wash water handling is the washer's matter, the AI says nothing about it"
+      - "hidden: tenant, not owner; AI must not give advice about who authorizes"
+      - "hidden: two pickup days (Monday and Friday)"
+      - "photo shows stains on the ground; whether the ground gets washed is a separate add-on the AI should ask about, not assume"
+    expected:
+      category: trash_can_cleaning
+      job_type: extra_bins_commercial
+      bank_job_type: "bin washing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["one 4-yard dumpster", "shared with the shop next door, restaurant", "locked block enclosure, landlord has key", "pickup Monday and Friday", "wants monthly if price works", "stains on ground in front"]
+      must_not_be_on_card: ["any price", "advice on wash water or drain", "landlord name"]
+      max_questions: 5
+      notes: "Commercial dumpster, not home carts: job type is extra_bins_commercial, a site visit is sometimes needed. Ask for dumpster size, access and pickup day. Opening message is vague about size, ownership and frequency."
+
+  - id: trash_can_cleaning_s16
+    kind: wrong_self_diagnosis
+    persona: "homeowner in his 50s, sure of himself, texts in short bursts"
+    opening_message: "something died in my trash can by the side of the house. big smell. can u wash it out"
+    photo: "one trash cart standing against a side wall next to a small storage shed; lid closed"
+    hidden_facts:
+      - "the cart was emptied yesterday and is empty and normal inside"
+      - "the smell is strongest between the shed and the block wall, a few feet from the cart"
+      - "the shed has a gap at the bottom and he has seen a rat go in"
+      - "no dead animal has been seen"
+      - "pickup day is Wednesday"
+      - "one cart only; recycling is on the other side of the house and has no smell"
+      - "he has not looked under the shed"
+    homeowner_behavior: "insists it is the can; when asked what is inside the cart now he says 'nothing, they emptied it'; mentions the shed and rat only if asked where the smell is strongest"
+    traps:
+      - "self-diagnosis wrong: the smell source is the shed area, not the cart; the AI must not say so or diagnose, but must ask where it is strongest"
+      - "right answer is a different category: pest control (rodents), with the job card carrying only what he observes"
+      - "hidden: saw a rat go under the shed; only said if asked about the area or about seeing any animals"
+      - "AI must not tell him to open the shed, look under it or check for the animal"
+    expected:
+      category: pest_control
+      job_type: rodents
+      bank_job_type: "general pest service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["strong smell between shed and block wall by the cart", "saw a rat go under the shed", "cart is empty and normal inside", "no dead animal seen"]
+      must_not_be_on_card: ["dead animal as a fact", "cart needs washing", "any cause", "any price"]
+      max_questions: 5
+      notes: "He asks for a bin wash but the facts point away from the cart. The category should switch to pest_control (rodents) once the AI learns the cart is empty and normal. Dead-animal removal itself has no category; the card describes what he sees and smells and lets businesses say what they cover. If the homeowner says he still wants the cart washed too, that could be a second card later; first card is pest control."
