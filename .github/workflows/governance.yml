@@ -33,9 +33,11 @@ jobs:
           test "$HEAD_REPO" = "$GITHUB_REPOSITORY" || { echo "head from another repository"; exit 1; }
 
       - name: Fetch the head under test into a worktree
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           cd rules
-          git fetch --no-tags origin "$HEAD_SHA"
+          git fetch --no-tags "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" "$HEAD_SHA"
           git worktree add ../head "$HEAD_SHA"
 
       - name: Run main's rules against the head

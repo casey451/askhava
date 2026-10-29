@@ -57,8 +57,10 @@ jobs:
       - name: Plan lock and change rules (docs/governance.md)
         env:
           HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git fetch --no-tags --depth=200 origin main
+          # The checkout keeps no credentials; fetch main with the job token (read-only), masked in logs.
+          git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
           python3 scripts/check_plan_lock.py
           python3 scripts/check_pr_change.py --base origin/main --branch "$HEAD_BRANCH"
 
