@@ -875,3 +875,92 @@ where_playbook_lost_to_human:
 - 'All scenarios: the fixed timing question (INT-030) was never asked, so every card says ''Needed: not said'', even when she asked for today (s09), he asked for someone now (s10) or said whenever (s11).
   Fix: ask the timing question, or fill Needed from the homeowner''s own words.'
 - 's02, s05, s06, s15: the playbook re-asked ''What''s happening?'' after the opening already said it, spending a question the human did not; s01, s05, s06, s16 went over the scenario''s max_questions.'
+compliance:
+  judged_file: docs/catalog/expert/eval_runs/run-2026-10-29/hvac_repair/playbook.yaml
+  rules_file: docs/ai_smell.yaml
+  expert_file_opened_for_C10:
+  - docs/catalog/expert/hvac_repair.yaml
+  - docs/catalog/expert/hvac_replacement.yaml (s16 routes to hvac_replacement; fu_what_to_replace is allowed for ac_replacement)
+  violations:
+  - scenario_id: hvac_repair_s02
+    code: C10
+    where: intake message 5 (follow_up)
+    text: When the AC is on, is the big fan on top of the outside unit spinning? 1 Yes, spinning 2 No, not spinning 3 Humming but not spinning 4 Can't see it (on the roof)
+    note: follow_up_used fu_outdoor_fan is not in the allowed_follow_ups for routed job type ac_noise_smell (fu_noise_kind, fu_ice_on_lines)
+  - scenario_id: hvac_repair_s11
+    code: C3
+    where: intake message 1 (911)
+    text: If you smell gas, leave now and call 911 and your gas company from outside. Ask Hava is not an emergency service. Reply SAFE once you are outside.
+    note: not the fixed INT-004 / D-436 text; paraphrased and adds a utility instruction ('and your gas company')
+  - scenario_id: hvac_repair_s11
+    code: C3
+    where: intake message 4 (photo)
+    text: with its label if you can reach it safely
+    note: safety qualifier outside the fixed 911 text, sent while the gas smell is unresolved and asking for a photo inside the furnace closet
+  - scenario_id: hvac_repair_s12
+    code: C3
+    where: intake message 5 (photo)
+    text: with its label if you can reach it safely
+    note: same photo-ask wording; a safety qualifier is not allowed outside the 911 text
+  - scenario_id: hvac_repair_s02
+    code: C11
+    where: intake message 2 (question)
+    text: What's happening? 1 Not cooling 2 Not heating 3 Won't turn on 4 Leaking water 5 Strange noise or smell 6 Thermostat blank or error
+    note: opening already said 'house wont cool'
+  - scenario_id: hvac_repair_s05
+    code: C11
+    where: intake message 2 (question)
+    text: What's happening? 1 Not cooling 2 Not heating 3 Won't turn on 4 Leaking water 5 Strange noise or smell 6 Thermostat blank or error
+    note: opening already said 'AC not cooling'
+  - scenario_id: hvac_repair_s15
+    code: C11
+    where: intake message 2 (question)
+    text: What's happening? 1 Not cooling 2 Not heating 3 Won't turn on 4 Leaking water 5 Strange noise or smell 6 Thermostat blank or error
+    note: opening already said it runs but the house is humid, sticky and smells like a wet dog
+  - scenario_id: hvac_repair_s01
+    code: C6
+    where: card line 1
+    text: '| house'
+    note: she never said what kind of home
+  - scenario_id: hvac_repair_s03
+    code: C6
+    where: card line 1
+    text: '| house'
+    note: he never said what kind of home
+  - scenario_id: hvac_repair_s04
+    code: C6
+    where: card line 1
+    text: '| house'
+    note: she never said what kind of home
+  - scenario_id: hvac_repair_s04
+    code: C6
+    where: card line 4
+    text: 'Breaker: not checked.'
+    note: breakers were never asked about or mentioned; reads as a homeowner statement
+  - scenario_id: hvac_repair_s11
+    code: C6
+    where: card line 1
+    text: '| house (not stated)'
+    note: kind of home not said; the run file lists it itself
+  - scenario_id: hvac_repair_s12
+    code: C6
+    where: card line 1
+    text: '| house, one story'
+    note: he said one story, never house
+  count: 13
+  clean_scenarios: 8
+  scenarios_with_violations:
+  - hvac_repair_s01
+  - hvac_repair_s02
+  - hvac_repair_s03
+  - hvac_repair_s04
+  - hvac_repair_s05
+  - hvac_repair_s11
+  - hvac_repair_s12
+  - hvac_repair_s15
+  notes:
+  - 'C8 and C9: every intake message and card was scanned against the WORD-003 list and all ai_smell.yaml words and patterns; no hits.'
+  - 'C1, C2, C4, C5, C7, C12: no hits found by reading.'
+  - 'Not counted: the town ''Lake Havasu City'' on every card comes from the harness-assumed coverage check; the run file self-reports it as not stated, and no coverage step appears in any playbook transcript.'
+  - 'Not counted as C10 but worth fixing: s04 used fu_water_at_unit (allowed for ac_not_turning_on) before the indoor unit''s location was known, so its ask_when was not met.'
+  - 'Not counted: s11 asks for a photo of the furnace closet right after the homeowner replied SAFE from outside.'

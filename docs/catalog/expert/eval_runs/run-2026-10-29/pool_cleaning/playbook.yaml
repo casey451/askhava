@@ -1,0 +1,475 @@
+category: pool_cleaning
+variant: playbook
+model: "claude-haiku-5-5"
+run: "run-2026-10-29"
+results:
+  - scenario_id: pool_cleaning_s01
+    transcript:
+      - {who: homeowner, text: "somethings off with the pool"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "What do you need? 1 Weekly service 2 Every two weeks 3 One-time cleanup 4 Green pool cleanup 5 Not sure", step: question}
+      - {who: homeowner, text: "1. my guy quit. need someone every week"}
+      - {who: intake, text: "About how big is the pool? 1 Small 2 Medium 3 Large 4 Not sure", step: question}
+      - {who: homeowner, text: "medium"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "no spa"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green 4 Not sure", step: question}
+      - {who: homeowner, text: "clear"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "i buy the salt box stuff. you do the rest"}
+      - {who: intake, text: "Besides the regular visit, will it need extra visits, like between rental guests? 1 No, just the regular visit 2 Yes, between rental guests 3 Yes, for another reason", step: follow_up}
+      - {who: homeowner, text: "no just the regular. im tired of questions, just send it"}
+    questions_asked: 7
+    follow_up_used: fu_extra_visits
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Weekly pool cleaning | Lake Havasu City, general area not said | house
+      Weekly service for a medium pool, no spa; water clear; homeowner buys the salt, service does the rest.
+      Schedule: weekly, regular visit only. Chemicals: homeowner buys salt, rest included. Chlorine from: salt box (homeowner's words).
+      Pool: medium, spa no, water clear. Trees or palms: not said. Pump: not said.
+      Photos: none. Homeowner adds: "my guy quit. need someone every week."
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s02
+    transcript:
+      - {who: homeowner, text: "Hello dear we are looking for someone to take care of our pool when we are in town. We come down the first of November and go home the end of April. Can you help us?"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city, dear"}
+      - {who: intake, text: "What do you need? 1 Weekly service 2 Every two weeks 3 One-time cleanup 4 Green pool cleanup 5 Not sure", step: question}
+      - {who: homeowner, text: "weekly please dear"}
+      - {who: intake, text: "About how big is the pool? 1 Small 2 Medium 3 Large 4 Not sure", step: question}
+      - {who: homeowner, text: "oh its a small one, not big at all"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "yes, the spa is attached. we use it all winter"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green 4 Not sure", step: question}
+      - {who: homeowner, text: "not sure dear, we are not there, its covered"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "oh yes please include the chemicals"}
+      - {who: intake, text: "Besides the regular visit, will it need extra visits, like between rental guests? 1 No, just the regular visit 2 Yes, between rental guests 3 Yes, for another reason", step: follow_up}
+      - {who: homeowner, text: "no, just the regular visit, weekly"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "flexible, we come down the first of november"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "no photos sorry, we're not there"}
+    questions_asked: 9
+    follow_up_used: fu_extra_visits
+    skipped_bank_questions: [service]
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Weekly pool cleaning | Lake Havasu City, general area not said | house
+      Weekly service for a small pool with an attached spa; chemicals included; November through April only.
+      Months: November 1 through end of April only. May to October: not said. Schedule: weekly, regular visit only.
+      Pool: small, spa yes, water not said. Chemicals: included. Chlorine from: not said. Trees or palms: not said.
+      Photos: none. Homeowner adds: "we come down the first of November and go home the end of April."
+      Needed: flexible (they come down November 1).
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s03
+    transcript:
+      - {who: homeowner, text: "I own a short term rental in Havasu with a pool. I need a pool service that can do a weekly visit plus a quick check between guest stays. I'm out of state so I can't send photos right now"}
+      - {who: intake, text: "About how big is the pool? 1 Small 2 Medium 3 Large 4 Not sure", step: question}
+      - {who: homeowner, text: "medium"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "yes, attached"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green 4 Not sure", step: question}
+      - {who: homeowner, text: "not sure. im not there. my neighbor can check"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "yes, included"}
+      - {who: intake, text: "Besides the regular visit, will it need extra visits, like between rental guests? 1 No, just the regular visit 2 Yes, between rental guests 3 Yes, for another reason", step: follow_up}
+      - {who: homeowner, text: "yes, between guest stays"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "flexible, but before the next guest check-in if you can"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "i cant send photos right now. my neighbor can send some tomorrow"}
+    questions_asked: 7
+    follow_up_used: fu_extra_visits
+    skipped_bank_questions: [service]
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Weekly pool cleaning | Lake Havasu City, general area not said | short-term rental
+      Weekly visit plus extra visits between guest stays; medium pool with attached spa; chemicals included; owner out of state.
+      Schedule: weekly, plus extra visits between guest stays (how many not said). Chemicals: included. Chlorine from: not said.
+      Pool: medium, spa yes, water not said. Trees or palms: not said.
+      Photos: none yet; a neighbor may send some tomorrow. Homeowner adds: "I'm out of state so I can't send photos right now."
+      Needed: flexible, before the next guest check-in if possible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s04
+    transcript:
+      - {who: homeowner, text: "pool went green over the weekend. need someone to come dump a bunch of shock in it and clean it up. its just the heat"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "Is the pool pump running each day right now? 1 Yes, it runs every day 2 It hums or runs but no water moves 3 It isn't running", step: follow_up}
+      - {who: homeowner, text: "its not running. the switch hums and it wont spin. hasnt run in about 3 weeks"}
+      - {who: intake, text: "About how big is the pool? 1 Small 2 Medium 3 Large 4 Not sure", step: question}
+      - {who: homeowner, text: "medium"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "no spa"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "yeah include it, whatever it takes"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "nine days. family party"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[sends photo: dark green water from the deck, a leaf or two, steps barely visible]"}
+    questions_asked: 7
+    follow_up_used: fu_pump_running
+    skipped_bank_questions: [service, water]
+    routing: {category: pool_cleaning, job_type: green_pool, bank_job_type: "green pool cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Weekly pool cleaning | Lake Havasu City, general area not said | house
+      Green pool cleanup for a medium pool, no spa; pump not running for about three weeks; family party in nine days.
+      Can see: photo shows the top step, not the floor. Pump: not running about three weeks; switch hums and does not spin. Chlorine from: not said. Filter: not said.
+      Pool: medium, spa no. Chemicals: included, per homeowner. After this: not said.
+      Photos: 1 (dark green water from the deck, a leaf or two; steps barely visible). Homeowner adds: none.
+      Needed: nine days, for a family party.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s05
+    transcript:
+      - {who: homeowner, text: "need someone to rebalance my pool and recallibrate the chlorine, my test strip says the ph is way off and the alkaline is high. also the sand needs changing?"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "What do you need? 1 Weekly service 2 Every two weeks 3 One-time cleanup 4 Green pool cleanup 5 Not sure", step: question}
+      - {who: homeowner, text: "one time to rebalance first. maybe weekly after"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green 4 Not sure", step: question}
+      - {who: homeowner, text: "clear, no algae"}
+      - {who: intake, text: "About how big is the pool? 1 Small 2 Medium 3 Large 4 Not sure", step: question}
+      - {who: homeowner, text: "small. about 15 years old, plaster"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "no spa"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "yes include chemicals"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "this week"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[sends photo: test strip held against a wet palm, all pads on the high side of the chart]"}
+    questions_asked: 8
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: one_time_clean, bank_job_type: "green pool cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Weekly pool cleaning | Lake Havasu City, general area not said | house
+      One-time chemical rebalance visit, small pool, no spa; water clear; may want weekly after.
+      For: rebalance. Water: clear, no algae, per homeowner. Test strip photo: all pads on the high side of the chart; homeowner says pH and alkalinity are high.
+      Pool: small, spa no, about 15 years old, plaster (per homeowner). Chemicals: included. Chlorine from: not said.
+      Filter: not confirmed; homeowner mentioned a filter change. After this: maybe weekly.
+      Photos: 1 (test strip held against a wet palm; all pads on the high side). Homeowner adds: "need someone to rebalance my pool and recalibrate the chlorine."
+      Needed: this week.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s06
+    transcript:
+      - {who: homeowner, text: "my pool looks green in pics, I think there's algae. want a pool guy to come every week and fix it"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green 4 Not sure", step: question}
+      - {who: homeowner, text: "clear actually. when i stand at the edge i can see the drain at the bottom. the green is what i thought was algae"}
+      - {who: intake, text: "Besides the regular visit, will it need extra visits, like between rental guests? 1 No, just the regular visit 2 Yes, between rental guests 3 Yes, for another reason", step: follow_up}
+      - {who: homeowner, text: "no just weekly"}
+      - {who: intake, text: "About how big is the pool? 1 Small 2 Medium 3 Large 4 Not sure", step: question}
+      - {who: homeowner, text: "medium"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "no spa"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "yes, whatever it takes"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "starting next week"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[sends photo: wide shot from the deck; plaster looks dark green, drain visible at the bottom, a few dark spots on the top step]"}
+    questions_asked: 8
+    follow_up_used: fu_extra_visits
+    skipped_bank_questions: [service]
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Weekly pool cleaning | Lake Havasu City, general area not said | house
+      Weekly service for a medium pool, no spa; water clear; chemicals included; starts next week.
+      Schedule: weekly, regular visit only. Chemicals: included. Chlorine from: not said. Filter: not said.
+      Pool: medium, spa no, water clear, drain visible from the edge. Trees or palms: not said. Pump: not said.
+      Photos: 1 (wide shot from the deck; plaster looks dark green, drain visible at the bottom, a few dark spots on the top step). Homeowner adds: none.
+      Needed: next week.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s07
+    transcript:
+      - {who: homeowner, text: "im renting a house with a pool and the landlord said i have to keep it up. never had a pool. can someone come clean it every week. dont have a lot of money"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu i think"}
+      - {who: intake, text: "About how big is the pool? 1 Small 2 Medium 3 Large 4 Not sure", step: question}
+      - {who: homeowner, text: "small i think, like a little one"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "no spa"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green 4 Not sure", step: question}
+      - {who: homeowner, text: "a little cloudy but you can see the bottom"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "idk what chemicals means for pools. not sure"}
+      - {who: intake, text: "Besides the regular visit, will it need extra visits, like between rental guests? 1 No, just the regular visit 2 Yes, between rental guests 3 Yes, for another reason", step: follow_up}
+      - {who: homeowner, text: "no just weekly. thats what the landlord said"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "asap i guess"}
+      - {who: intake, text: "A photo or two helps businesses quote. Send the pool from the patio, then the pump and filter tank. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[sends 2 photos: pool from the patio, water a little cloudy, leaves on the surface, skimmer lid open; pump pad with a gray tank next to the pump]"}
+    questions_asked: 8
+    follow_up_used: fu_extra_visits
+    skipped_bank_questions: [service]
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Weekly pool cleaning | Lake Havasu City, general area not said | rental
+      Weekly service for a small pool, no spa; water a little cloudy, bottom visible; tenant arranging service.
+      Schedule: weekly, regular visit only. Chemicals: not sure. Chlorine from: not said.
+      Equipment: filter type not said; gray tank next to the pump (photo).
+      Pool: small, spa no, water a little cloudy, bottom visible. Trees or palms: not said.
+      Photos: 2 (pool from the patio, water a little cloudy, leaves on the surface, skimmer lid open; pump pad with a gray tank).
+      Homeowner adds: "im renting, and the landlord said i have to keep it up."
+      Needed: asap.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s08
+    transcript:
+      - {who: homeowner, text: "Buenas, mi alberca esta toda verde, ya no se ve el fondo. Quiero que alguien la limpie una vez y despues si me gusta que venga cada semana"}
+      - {who: intake, text: "¿En qué ciudad o código postal está la casa?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "¿La bomba de la alberca está funcionando cada día ahora? 1 Sí, funciona cada día 2 Zumba o prende pero no mueve agua 3 No está funcionando", step: follow_up}
+      - {who: homeowner, text: "si, con un timer, prende en las mañanas"}
+      - {who: intake, text: "¿Más o menos qué tamaño tiene la alberca? 1 Chica 2 Mediana 3 Grande 4 No sé", step: question}
+      - {who: homeowner, text: "grande"}
+      - {who: intake, text: "¿Tiene spa conectado? 1 Sí 2 No 3 No sé", step: question}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "¿Los químicos deben estar incluidos en el precio? 1 Sí 2 No 3 No sé", step: question}
+      - {who: homeowner, text: "sí, incluidos"}
+      - {who: intake, text: "¿Cuándo lo necesita? 1 Hoy 2 Esta semana 3 Flexible 4 Una fecha 5 No sé", step: question}
+      - {who: homeowner, text: "no sé"}
+      - {who: intake, text: "Una foto ayuda a los negocios a cotizar. Mande una del agua desde el patio. No hay problema si no tiene.", step: photo}
+      - {who: homeowner, text: "[manda foto: agua verde desde el patio, no se ve el piso, una manguera de aspiradora en la terraza]"}
+    questions_asked: 7
+    follow_up_used: fu_pump_running
+    skipped_bank_questions: [service, water]
+    routing: {category: pool_cleaning, job_type: green_pool, bank_job_type: "green pool cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Weekly pool cleaning | Lake Havasu City, general area not said | house
+      Green pool cleanup for a large pool, no spa; floor not visible; pump runs on a timer; maybe regular service after.
+      Can see: floor not visible, per homeowner. Pump: runs on a timer. Chlorine from: not said. Filter: not said.
+      Pool: large, spa no, water green. Chemicals: included. After this: maybe regular service.
+      Photos: 1 (water from the patio, dark green, no floor visible; pool vacuum hose on the deck). Homeowner adds: "mi alberca esta toda verde" (Spanish).
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s09
+    transcript:
+      - {who: homeowner, text: "OMG MY POOL TURNED BLACK OVERNIGHT!!! HELP!!! I HAVE 20 PEOPLE COMING TOMORROW AFTERNOON"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "LAKE HAVASU!!!"}
+      - {who: intake, text: "What do you need? 1 Weekly service 2 Every two weeks 3 One-time cleanup 4 Green pool cleanup 5 Not sure", step: question}
+      - {who: homeowner, text: "a one time cleanup before tomorrow afternoon please"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green 4 Not sure", step: question}
+      - {who: homeowner, text: "brown gray. not black. i can see about 2 feet down"}
+      - {who: intake, text: "About how big is the pool? 1 Small 2 Medium 3 Large 4 Not sure", step: question}
+      - {who: homeowner, text: "medium"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "yes, attached spa"}
+      - {who: intake, text: "Do trees, palms or bushes drop leaves or fronds into the pool? 1 Yes, right over the pool 2 Yes, close by 3 No", step: follow_up}
+      - {who: homeowner, text: "yes. a mesquite hangs right over it and a palm frond is floating in there now"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "tomorrow afternoon, the party"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[sends photo: pool with brown-gray water, leaves and a palm frond floating, dirt line at the edge]"}
+    questions_asked: 8
+    follow_up_used: fu_debris
+    skipped_bank_questions: [chemicals]
+    routing: {category: pool_cleaning, job_type: one_time_clean, bank_job_type: "green pool cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Weekly pool cleaning | Lake Havasu City, general area not said | house
+      One-time cleanup needed before tomorrow afternoon; brown-gray water, about two feet visible; medium pool with attached spa.
+      For: party, about 20 people tomorrow afternoon. Water: brown-gray; can see about two feet down.
+      Trees or palms: mesquite hangs over the pool; a palm frond is floating in it.
+      Pool: medium, spa yes. Pump: not said. Chlorine: not said. Filter: not said. After this: not said.
+      Photos: 1 (pool with brown-gray water, leaves and a palm frond floating, dirt line at the edge). Homeowner adds: none.
+      Needed: tomorrow afternoon.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s10
+    transcript:
+      - {who: homeowner, text: "Hi, looking for a weekly pool service. Medium pool, cartridge filter, clear water. Oh by the way there's a faint gas smell by the pool heater when it kicks on, probably nothing"}
+      - {who: intake, text: "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe.", step: 911}
+      - {who: homeowner, text: "SAFE"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "no spa"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "yes, chemicals included"}
+      - {who: intake, text: "Besides the regular visit, will it need extra visits, like between rental guests? 1 No, just the regular visit 2 Yes, between rental guests 3 Yes, for another reason", step: follow_up}
+      - {who: homeowner, text: "no just weekly"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "flexible, whenever"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[sends photo: equipment pad with a pump and a cartridge filter tank]"}
+    questions_asked: 6
+    follow_up_used: fu_extra_visits
+    skipped_bank_questions: [service, size_band, water]
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: true
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Weekly pool cleaning | Lake Havasu City, general area not said | house
+      Weekly service with chemicals for a medium pool, no spa; cartridge filter; water clear.
+      Schedule: weekly, regular visit only. Chemicals: included. Chlorine from: not said.
+      Pool: medium, spa no, water clear. Trees or palms: not said. Pump: not said.
+      Photos: 1 (equipment pad with a pump and a cartridge filter tank). Homeowner adds: none.
+      Needed: flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s11
+    transcript:
+      - {who: homeowner, text: "need a weekly pool guy AND someone to trim the palms around the pool they drop junk in it constantly. can one person do both or do i need two"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "Palm trimming is a separate request. We'll finish the pool first.", step: read}
+      - {who: intake, text: "About how big is the pool? 1 Small 2 Medium 3 Large 4 Not sure", step: question}
+      - {who: homeowner, text: "medium"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "no spa"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green 4 Not sure", step: question}
+      - {who: homeowner, text: "clear"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No 3 Not sure", step: question}
+      - {who: homeowner, text: "no, i buy my own chemicals"}
+      - {who: intake, text: "Besides the regular visit, will it need extra visits, like between rental guests? 1 No, just the regular visit 2 Yes, between rental guests 3 Yes, for another reason", step: follow_up}
+      - {who: homeowner, text: "no just the weekly. the palms are separate, i get it"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "no rush, flexible"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[sends photo: pool with two tall palms on one side and a pile of dead fronds on the deck]"}
+    questions_asked: 8
+    follow_up_used: fu_extra_visits
+    skipped_bank_questions: [service]
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0111 | Weekly pool cleaning | Lake Havasu City, general area not said | house
+      Weekly service for a medium pool, no spa; water clear; homeowner buys own chemicals.
+      Schedule: weekly, regular visit only. Chemicals: homeowner buys. Chlorine from: not said.
+      Pool: medium, spa no, water clear. Trees or palms: two tall palms beside the pool drop debris into it constantly (per homeowner). Pump: not said. Filter: not said.
+      Photos: 1 (pool with two tall palms on one side; pile of dead fronds on the deck). Homeowner adds: none.
+      Needed: flexible, no rush.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s12
+    transcript:
+      - {who: homeowner, text: "looking for weekly pool service in Bullhead City, pool is about 15k gallons"}
+      - {who: intake, text: "We don't cover Bullhead City yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s13
+    transcript:
+      - {who: homeowner, text: "Looking for someone to clean my pool every other week. Lake Havasu City, we're in the Mesa Verde neighborhood"}
+      - {who: intake, text: "We don't cover pool cleaning jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s14
+    transcript:
+      - {who: homeowner, text: "my pool pump motor died, need the pool guy to come put a new one in. it just wont start"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "When it won't start, what does the pump do? 1 Hums but won't spin 2 Nothing at all 3 Runs but loud 4 Not sure", step: question}
+      - {who: homeowner, text: "it hums, doesnt spin"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other 5 Not sure", step: question}
+      - {who: homeowner, text: "not sure. its the big one on the pad"}
+      - {who: intake, text: "Does a breaker or a GFCI outlet trip when the equipment turns on? 1 Yes, it trips 2 No 3 Haven't checked", step: follow_up}
+      - {who: homeowner, text: "it tripped once yesterday, i reset it"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not urgent, whenever"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[sends photo: pump housing and motor on the pad; wet ring on the pad below the lid]"}
+    questions_asked: 6
+    follow_up_used: fu_breaker_trips
+    skipped_bank_questions: [pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0114 | Pool and spa repair | Lake Havasu City, general area not said | pool
+      Pool pump hums but will not spin; breaker tripped once yesterday and was reset; wet ring on the pad near the pump lid.
+      Pump: hums, does not spin. Breaker or GFCI trips: yes, once yesterday, reset. Wants: replace (homeowner asks for a new one).
+      Equipment: brand not known; pump housing and motor on the pad. Pool: size band not said, water not said.
+      Photos: 1 (pump housing and motor on the pad; wet ring on the pad below the lid). Homeowner adds: none.
+      Needed: flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_cleaning_s15
+    transcript:
+      - {who: homeowner, text: "My pool boiler will not come on and the pool is cold. I need the pool man to get a new gas one put in, can you find me one"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "When you turn the heat on, what happens? 1 Nothing at all 2 Shows an error code 3 Clicks or tries but no heat 4 Runs but the water stays cold", step: follow_up}
+      - {who: homeowner, text: "the fan runs and clicks but the burner does not light"}
+      - {who: intake, text: "What brand is the heater? 1 Pentair 2 Hayward 3 Jandy 4 Other 5 Not sure", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "this month please"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "[sends photo: gas pool heater on the pad, vent stack and a gas line running into it]"}
+    questions_asked: 5
+    follow_up_used: fu_heater_doing
+    skipped_bank_questions: [pool_or_spa, symptom, size_band, surface, water]
+    routing: {category: pool_repair, job_type: heater, bank_job_type: "gas pool heater", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0115 | Pool and spa repair | Lake Havasu City, general area not said | pool
+      Gas pool heater that will not come on; fan runs and clicks, burner does not light; wants a new gas heater.
+      Fuel: gas (natural gas or propane not said). Does: clicks, no heat. Code: not said.
+      Heater: brand not known; photo shows a gas pool heater with a vent stack and gas line. Wants: replace.
+      Pool: size band not said, water not said.
+      Photos: 1 (gas pool heater on the pad with a vent stack and a gas line running into it). Homeowner adds: none.
+      Needed: this month.
+    facts_in_card_not_stated: []

@@ -633,7 +633,7 @@ job_types:
     never_say: ["A light installer can add the outlet.", "Just run an extension cord instead.", "That's a small job, no permit needed.", "An outlet usually runs a couple hundred."]
 
 business_side:
-  how_they_get_customers: ["Repeat customers who rebook every fall [judgment]", "Yard signs on lit homes and neighbors asking [judgment]", "Local Facebook groups and Nextdoor posts [judgment]", "Google search ads and a Google Maps listing", "Thumbtack's holiday lighting category", "Add-on season for pressure-washing, window-cleaning and landscape businesses [judgment]"]
+  how_they_get_customers: ["Repeat customers who rebook every fall [judgment]", "Yard signs on lit homes and neighbors asking [judgment]", "Local Facebook groups and Nextdoor posts [judgment]", "Google search ads and a Google Maps listing", "Thumbtack's holiday lighting category", "Add-on season for pressure-washing, window-cleaning and yard businesses [judgment]"]
   customer_acquisition_benchmarks:
     - channel: "Google search ads for a Christmas light install service"
       figure: "About $69 per lead, 44 leads in 30 days (one freelance marketer's self-reported case, not audited)"
