@@ -59,7 +59,7 @@ sources:
     checked: "2026-10-29"
     kind: regulator
   - id: lhc_water
-    title: "Lake Havasu City Water Division [S19]: water from wells tied to the Colorado River aquifer; treatment removes arsenic, manganese and iron; pressure regulator required, pressure entering a home below 60 PSI"
+    title: "Lake Havasu City Water Division [S19]: source is groundwater wells tied to the Colorado River aquifer; treatment removes arsenic, manganese and iron; pressure regulator required, pressure entering a home below 60 PSI"
     url: "https://www.lhcaz.gov/288/Water"
     checked: "2026-10-29"
     kind: regulator
@@ -214,7 +214,7 @@ trade_brief:
     - fact: "EPCOR's Lake Havasu system reports 6 to 8 grains per gallon and serves mostly unincorporated areas north of the city"
       effect: "The same softener question needs the water provider before a business can size it"
       source: epcor_lh
-    - fact: "City water comes from wells tied to the Colorado River aquifer and is treated for arsenic, manganese and iron"
+    - fact: "City water is pumped by wells tied to the Colorado River aquifer and is treated for arsenic, manganese and iron"
       effect: "Homeowners ask about arsenic and taste; Ask Hava makes no health claim and points to the city report [judgment]"
       source: lhc_water
     - fact: "City water has about 150 ppm sodium before any softener"
@@ -266,7 +266,7 @@ job_types:
         bank_question: null
         follow_up: fu_water_provider
         photo: null
-        why_it_moves_price: "City water is about 19 grains and EPCOR 6 to 8; a well usually needs a test first."
+        why_it_moves_price: "City water is about 19 grains and EPCOR 6 to 8; a well usually needs a test first. [src:lhc_ccr] [src:epcor_lh]"
         skip_if: "Homeowner named the town and it is inside city water service [judgment]"
     allowed_follow_ups:
       - id: fu_treat_or_clean
@@ -300,7 +300,7 @@ job_types:
         options_en: ["Lake Havasu City", "EPCOR", "Private well", "Other"]
         options_es: ["Lake Havasu City", "EPCOR", "Pozo privado", "Otro"]
         card_field: true
-        why: "Hardness differs a lot between the city and EPCOR; a well changes the job."
+        why: "Hardness differs a lot between the city and EPCOR; a well changes the job. [src:lhc_ccr] [src:epcor_lh]"
     photos_priority: [p2_loop]
     urgency:
       fire_dept_triggers: []
@@ -635,7 +635,7 @@ job_types:
         bank_question: null
         follow_up: fu_water_provider
         photo: null
-        why_it_moves_price: "City, EPCOR and well water differ, and a well may need a test first."
+        why_it_moves_price: "City, EPCOR and well water differ, and a well may need a test first. [src:lhc_ccr] [src:epcor_lh]"
         skip_if: "Town makes it clear [judgment]"
     allowed_follow_ups:
       - id: fu_filter_kind
@@ -826,7 +826,7 @@ job_types:
         bank_question: null
         follow_up: fu_mist_feed
         photo: null
-        why_it_moves_price: "A 1000 PSI pump system is a different install from a hose kit under 150 PSI."
+        why_it_moves_price: "A 1000 PSI pump system is a different install from a hose kit under 150 PSI. [src:ams_pumps]"
         skip_if: "Homeowner said which"
       - fact: "Power at the patio for a pump"
         bank_question: null
@@ -842,7 +842,7 @@ job_types:
         options_en: ["Nozzles drip or spit", "Some nozzles don't mist", "Pump runs but little or no mist", "Pump won't start", "Leaking at a line or fitting"]
         options_es: ["Las boquillas gotean o escupen", "Algunas boquillas no rocían", "La bomba corre pero sale poco o nada", "La bomba no arranca", "Fuga en una línea o conexión"]
         card_field: true
-        why: "Nozzles, pump and line leaks are different parts and different visits."
+        why: "Nozzles, pump and line leaks are different parts and different visits. [src:aermist_troubleshoot]"
       - id: fu_patio_size
         ask_when: "New misting install and no size given"
         text_en: "About how long is the edge where the misters would go?"
@@ -858,7 +858,7 @@ job_types:
         options_en: ["Garden hose hookup", "Has its own pump", "Nothing there yet"]
         options_es: ["Se conecta a una manguera", "Tiene su propia bomba", "Todavía no hay nada"]
         card_field: true
-        why: "Low-pressure hose kits and high-pressure pump systems are priced and built differently."
+        why: "Low-pressure hose kits and high-pressure pump systems are priced and built differently. [src:ams_pumps]"
       - id: fu_mist_power
         ask_when: "Pump system wanted or in place, and power at the patio not mentioned"
         text_en: "Is there an outlet on the patio or within a few feet?"

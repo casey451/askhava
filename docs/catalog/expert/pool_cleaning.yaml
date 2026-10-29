@@ -1,0 +1,794 @@
+# Ask Hava expert layer: pool_cleaning (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set pool_cleaning and trade_kb/trades/pool_cleaning.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - Mapping. The category has three job types: "weekly pool service" and "chemical balancing" (recurring,
+#   quoted monthly) and "green pool cleanup" (the only one-time job type, quoted firm). The kb's one-time
+#   jobs therefore all map to "green pool cleanup", because it is the only one-time bucket:
+#     one_time_clean (storm, party, move-in), filter_clean and drain_acid_wash -> "green pool cleanup", firm.
+#   Mapping them to "weekly pool service" would force a monthly period on a one-time job (REC-010).
+#   Suggest the catalog rename "green pool cleanup" to "one-time cleanup" or add "filter clean" and
+#   "drain and refill" as one-time job types; a business that opted only into green pools would
+#   otherwise get filter-clean and drain cards.
+# - The independent scenario file maps one_time_clean to "chemical balancing" in pool_cleaning_s05 (a
+#   one-time rebalance). "chemical balancing" is recurring in categories.yaml, so a one-time rebalance has
+#   no firm-quoted home. Here a one-time rebalance is one_time_clean (firm). Open question for the catalog.
+# - new_job_type chem_only covers "chemical balancing": the kb has no chemical-only job type, but
+#   chemical-only routes (test and dose weekly, homeowner skims) are a common recurring product. [judgment]
+# - Left out: tile_descale (calcium on the tile line, bead blasting). It is specialty surface work with a
+#   site visit usually needed; pool_repair also left the matching kb job type (surface_tile) out, so the
+#   intake has no route for tile scale or replaster. A homeowner who asks for it inside a drain request is
+#   caught by fu_drain_scope and the answer goes on the card.
+# - vacation_service maps to "weekly pool service" (monthly). A request to also check the house routes a
+#   second card to home_watch "weekly house check" via fu_pool_only.
+# - Fire-truck items seen in this trade: smoke or fire from stored pool chemicals and a gas smell at a pool
+#   heater. Both are on the D-436 list; the code sends the 911 text and the cleaning card still goes out.
+#   The kb's other safety steps (missing drain cover, shock in the water) are not used (D-436).
+# - Licensing: cleaning and chemicals need no ROC class in the catalog ("Attorney may confirm"). Over-the-
+#   counter chlorine needs no pest license (A.R.S. 3-3611(A)(5)). Any repair found on a visit is pool_repair.
+schema: 1
+category: pool_cleaning
+question_set: pool_cleaning
+kb_trade: pool_cleaning
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: ars_3_3611
+    title: "[S9] A.R.S. 3-3611(A)(5) Pest license exemptions: persons using an over-the-counter antimicrobial to treat a swimming pool"
+    url: "https://www.azleg.gov/ars/3/03611.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classes (R-6 Swimming Pool Service and Repair: minor repair, excluding potable-water plumbing connections, gas lines, gas chlorine and electrical work past the first disconnect; R-36 Plastering includes pool interior plaster)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14) under $1,000 with no permit; fuel-gas carve-out (D))"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_36_1681
+    title: "A.R.S. 36-1681 Residential pool enclosure (five foot barrier; gates self-closing, self-latching and opening outward; homes where all residents are six or older are exempt)"
+    url: "https://www.azleg.gov/ars/36/01681.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_ccr
+    title: "Lake Havasu City annual drinking water quality report (total hardness average 19 grains per gallon, range 18 to 20; TDS average 753 ppm)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_pool_draining
+    title: "[S20] Lake Havasu City Wastewater Division, 'Draining your pool or spa the right way': drain on your own property, to an adjacent wash, or to the sewer cleanout on the property (call 72 hours ahead, no more than 12 gallons per minute, never into a septic system or the sewer main); the street only as a last option, 8 p.m. to 6 a.m., pH 5.5 to 9; drain when TDS or calcium hardness builds up; backwash water may water salt-tolerant plants"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/1126/Pool-Draining-PDF"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: oha_cya
+    title: "Oregon Health Authority, Cyanuric Acid fact sheet (public pools): CYA comes from stabilized chlorine such as trichlor and dichlor, reduces chlorine's ability to disinfect, and can only be lowered by draining part of the pool; public-pool limit 90 ppm. Not an Arizona rule; used for the chemistry only"
+    url: "https://www.oregon.gov/oha/PH/HEALTHYENVIRONMENTS/RECREATION/POOLSLODGING/Documents/FactSheet6CyanuricAcid.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: hayward_turbocell
+    title: "Hayward (manufacturer): inspect the salt cell about every 3 months or 500 hours; pH and calcium hardness set how often it scales; calcium on the plates lowers chlorine output and shortens cell life"
+    url: "https://www.hayward.com/blog/post/how-to-clean-your-hayward-salt-chlorinator-turbo-cell"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: scottsdale_evap
+    title: "City of Scottsdale Water Conservation: a 400 sq ft pool loses about 19,665 gallons a year to evaporation, about 10.8 inches in June and 2.6 inches in January"
+    url: "https://choosescottsdale.scottsdaleaz.gov/water/water-conservation/homeowners"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: azsp_weather
+    title: "Arizona State Parks, Lake Havasu State Park weather: average highs 103 F June, 108 F July, 106 F August, 65 F January; monsoon June to September with sporadic afternoon storms, heavy winds and rain"
+    url: "https://azstateparks.com/lake-havasu/explore/weather"
+    checked: "2026-10-29"
+    kind: other
+  - id: skimmer_2026
+    title: "Skimmer (pool service software vendor), State of Pool Service 2026 webinar recap: survey of 1,600+ pool pros; a pool marketing firm's figures of about $1,000 to $1,500 a month in digital ads and roughly $255 per new customer; buying an established route typically costs 6 to 12 times the monthly service value"
+    url: "https://www.getskimmer.com/blog/state-of-pool-service-2026-webinar-recap"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: pipeline_pool
+    title: "Pipeline (marketing vendor), pool service marketing: Google Ads pool and spa cost per lead about $45 (LocaliQ 2025); one owner's $150 to acquire a recurring maintenance customer through Google Ads; 80 to 90 percent annual retention on maintenance accounts"
+    url: "https://pipelineon.com/blog/pool-service-marketing/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: webtonic_pool_ads
+    title: "WebTonic (marketing vendor): pool service Google search ads about $35 to $55 per lead; Local Services Ads $22 to $75 per lead (its own table and text disagree)"
+    url: "https://www.webtonic.io/blog/pool-building-google-ads-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Water condition now: clear, cloudy, green with the floor showing, or green with nothing showing"
+      why: "Clear water is a route stop; a pool where the steps vanish takes heavy chemical loads, several visits and filter cleans, and sometimes a drain. [judgment]"
+      source: null
+    - driver: "Chemicals included in the monthly price or bought by the homeowner"
+      why: "Chlorine, acid and salt are the biggest running cost on a summer route, so 'chemicals included' moves the monthly number more than anything but frequency. [judgment]"
+      source: null
+    - driver: "Visit schedule: weekly, every two weeks, or weekly plus extra visits (rental turnovers)"
+      why: "Each extra stop is drive time and labor; a rental with two turnovers a week is close to triple a plain weekly account. [judgment]"
+      source: null
+    - driver: "Pool size and whether a spa is attached"
+      why: "Gallons set the chemical dose; a spa is a second body of water to test, brush and balance, often heavily used. [judgment]"
+      source: null
+    - driver: "Debris load: palms, palo verde, mesquite and wind over the water"
+      why: "Trees over the pool add skimming time and basket emptying every visit, and clog filters faster. [judgment]"
+      source: null
+    - driver: "Stabilizer, hardness or dissolved solids built up so far that only a partial drain fixes it"
+      why: "Stabilizer from chlorine tablets can only be lowered by draining, and Havasu water starts near 19 grains of hardness and 753 ppm dissolved solids, so a rebalance can become a drain-and-refill quote."
+      source: oha_cya
+    - driver: "Filter type and condition: cartridge, DE or sand; when it was last cleaned"
+      why: "A cartridge or DE teardown is a long stop; some routes include it quarterly and others bill it per clean. [judgment]"
+      source: null
+    - driver: "Whether the pump and filter are running"
+      why: "A green pool with a dead pump cannot be cleared with chemicals alone; the cleanup waits on a repair or is quoted with that caveat. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Pump not running or not moving water, behind a green or cloudy pool"
+      how_a_pro_spots_it: "Homeowner says it hums or hasn't run; no water movement at the returns in the photo; vacant home"
+      question_or_photo: fu_pump_running
+      source: null
+    - condition: "Stabilizer very high after years of chlorine tablets, so chlorine stops working and a partial drain is the only way down"
+      how_a_pro_spots_it: "Tablets in a floater or feeder for years, no drain in a long time, green that keeps coming back after shock"
+      question_or_photo: fu_sanitizer
+      source: oha_cya
+    - condition: "Thick calcium scale on the tile line"
+      how_a_pro_spots_it: "White or gray crust in the tile photo; city water near 19 grains per gallon; no drain in years"
+      question_or_photo: p4
+      source: lhc_ccr
+    - condition: "Salt cell scaled with calcium, so chlorine output drops and the pool turns even with salt in it"
+      how_a_pro_spots_it: "Check cell or inspect light on the display; low output setting cranked to the top"
+      question_or_photo: p5
+      source: hayward_turbocell
+    - condition: "Filter packed with dirt or torn cartridges after a dust storm or a green cleanup"
+      how_a_pro_spots_it: "High pressure reading or a dirty, flattened cartridge in the pad photo; storm in the last few days"
+      question_or_photo: p3
+      source: null
+    - condition: "Cracked or missing main drain cover hidden under green water"
+      how_a_pro_spots_it: "Cannot be seen until the water clears; the deep-end floor is not visible in the water photo"
+      question_or_photo: p1
+      source: null
+    - condition: "Gate access: locked gate, lockbox, dogs in the yard, or HOA rules on service hours"
+      how_a_pro_spots_it: "Out-of-state owner, rental, gated community; the card's access answer"
+      question_or_photo: fu_access
+      source: null
+    - condition: "Extra visits between rental guests that a plain 'weekly' request leaves out"
+      how_a_pro_spots_it: "Short-term rental named in her words; spa that guests use daily"
+      question_or_photo: fu_extra_visits
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "green pool cleanup"
+      might_be: "pump_motor (pool_spa_repair): pump not running, so the pool turned"
+      one_question: fu_pump_running
+      if_other_route_to: {category: pool_repair, job_type: "pump repair"}
+      source: null
+    - sounds_like: "chemical balancing (salt pool with low chlorine)"
+      might_be: "salt_system (pool_spa_repair): cell or control fault"
+      one_question: fu_salt_light
+      if_other_route_to: {category: pool_repair, job_type: "equipment replacement"}
+      source: hayward_turbocell
+    - sounds_like: "chemical balancing"
+      might_be: "weekly_service (she also wants skimming, brushing and baskets)"
+      one_question: fu_who_cleans
+      if_other_route_to: {category: pool_cleaning, job_type: "weekly pool service"}
+      source: null
+    - sounds_like: "weekly pool service"
+      might_be: "green_pool first (the water is green today)"
+      one_question: water
+      if_other_route_to: {category: pool_cleaning, job_type: "green pool cleanup"}
+      source: null
+    - sounds_like: "weekly pool service (seasonal owner)"
+      might_be: "home watch for the whole house, a different category"
+      one_question: fu_pool_only
+      if_other_route_to: {category: home_watch, job_type: "weekly house check"}
+      source: null
+    - sounds_like: "green pool cleanup (filter clean)"
+      might_be: "filter (pool_spa_repair): leaking or cracked tank, sand or DE blowing back"
+      one_question: fu_filter_what
+      if_other_route_to: {category: pool_repair, job_type: "filter repair"}
+      source: null
+    - sounds_like: "green pool cleanup (drain and acid wash)"
+      might_be: "surface_tile (pool_spa_repair): new plaster or pebble finish, R-36 or B-5 work with no category today"
+      one_question: fu_drain_scope
+      if_other_route_to: {}
+      source: aac_r4_9_103
+  photo_reading:
+    - photo_id: p1
+      reads: ["Water color", "How deep you can see: floor, steps only, nothing", "Leaves or dirt on the floor", "Dark spots on the plaster", "Water level against the tile"]
+      neutral_wording: "Water is green; the top step shows and the floor does not."
+    - photo_id: p2
+      reads: ["Size and shape", "Attached or raised spa", "Palms, palo verde or mesquite over the water", "Rock yard or desert plants blowing in", "Cover or screen enclosure"]
+      neutral_wording: "Kidney-shaped pool with a raised spa; two palms on the north side lean over the water."
+    - photo_id: p3
+      reads: ["Filter type: cartridge tank, or DE or sand with a valve on top", "Pump and whether it looks wet or dead", "Salt cell, heater, timer or automation panel", "Pressure gauge reading"]
+      neutral_wording: "Equipment pad with a pump, a tall cartridge filter tank and a salt cell on the return line."
+    - photo_id: p4
+      reads: ["White or gray crust on the tile line", "How thick and how far around", "Loose or missing tile"]
+      neutral_wording: "White crust along the tile line, thicker on the west side."
+    - photo_id: p5
+      reads: ["Salt reading", "Check cell or inspect light", "Output setting"]
+      neutral_wording: "Salt system display shows a check cell light and output set to the top."
+  local_factors:
+    - fact: "City water hardness averages about 19 grains per gallon and dissolved solids about 753 ppm"
+      effect: "Tile lines and salt cells scale fast, and pools reach drain-and-refill sooner; pros price cell cleaning and tile work into Havasu routes"
+      source: lhc_ccr
+    - fact: "Lake Havasu City sets where pool water may go: own yard, an adjacent wash, or the sewer cleanout on the property at no more than 12 gallons per minute after a call 72 hours ahead; the street only as a last option, 8 p.m. to 6 a.m."
+      effect: "A drain job is scheduled around the city call and a slow pump rate, often overnight; the business needs to know if there is a cleanout or a wash"
+      source: lhc_pool_draining
+    - fact: "Average highs are about 103 F in June, 108 F in July and 106 F in August"
+      effect: "Chlorine burns off fast and algae grows in days, so weekly is the usual summer minimum and every-two-weeks accounts often turn [judgment]"
+      source: azsp_weather
+    - fact: "Monsoon runs June to September with sporadic afternoon storms and heavy winds"
+      effect: "Dust storms dump dirt and leaves into pools and load filters; one-time storm cleanups spike [judgment]"
+      source: azsp_weather
+    - fact: "Phoenix-area pools lose about 10.8 inches to evaporation in June"
+      effect: "Constant top-off concentrates hardness and dissolved solids; water-level complaints are common and often evaporation [judgment]"
+      source: scottsdale_evap
+    - fact: "Arizona requires a five foot barrier with self-closing, self-latching gates around a home pool unless every resident is six or older"
+      effect: "Techs work through pool gates that must close behind them; access and gate answers matter on the card"
+      source: ars_36_1681
+    - fact: "Many homes are second homes or winter-visitor homes, and short-term rentals are common"
+      effect: "Service-while-away and turnover-visit requests are common; pools found green on return [judgment]"
+      source: null
+    - fact: "Over-the-counter chlorine used to treat a pool needs no pest license, and no ROC class is listed for cleaning only"
+      effect: "Many solo operators run routes with no contractor license; any repair they find goes to a pool repair card [judgment]"
+      source: ars_3_3611
+  seasonality:
+    busy: "March to May (startups, snowbirds setting up service before they leave) and June to September (algae, monsoon cleanups) [judgment]"
+    slow: "November to February; some accounts drop to every two weeks or chemical-only [judgment]"
+    source: null
+
+job_types:
+  - id: weekly_service
+    label: "Ongoing weekly or every-other-week service"
+    bank_job_type: "weekly pool service"
+    recurring: true
+    homeowner_phrasings: ["need a pool guy weekly", "pool guy ghosted me", "someone to do my pool every week", "servicio semanal de alberca"]
+    must_know:
+      - fact: "Visit schedule, including any extra visits"
+        bank_question: service
+        follow_up: fu_extra_visits
+        photo: null
+        why_it_moves_price: "Weekly, every two weeks and weekly-plus-turnovers are three different monthly prices. [judgment]"
+        skip_if: "Homeowner said plain weekly for her own home"
+      - fact: "Chemicals included or not"
+        bank_question: chemicals
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Chemicals are the largest running cost on a summer account. [judgment]"
+        skip_if: "Answered"
+      - fact: "Pool size, spa, and water now"
+        bank_question: size_band
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Gallons and a spa set the dose and the time per stop; green water means a cleanup first. [judgment]"
+        skip_if: "Never; all three are bank questions"
+      - fact: "Debris load from trees and palms"
+        bank_question: null
+        follow_up: fu_debris
+        photo: p2
+        why_it_moves_price: "Trees over the water add minutes every visit. [judgment]"
+        skip_if: "Whole-pool photo sent"
+      - fact: "Filter type and equipment on the pad"
+        bank_question: null
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Filter type sets how long a filter clean takes and whether it is in the monthly price. [judgment]"
+        skip_if: "Homeowner named the filter"
+    allowed_follow_ups:
+      - id: fu_extra_visits
+        ask_when: "Rental, vacation home or heavy use mentioned, or the homeowner said weekly with no other detail"
+        text_en: "Besides the regular visit, will it need extra visits, like between rental guests?"
+        text_es: "Además de la visita regular, ¿necesitará visitas extra, como entre huéspedes de renta?"
+        options_en: ["No, just the regular visit", "Yes, between rental guests", "Yes, for another reason"]
+        options_es: ["No, solo la visita regular", "Sí, entre huéspedes", "Sí, por otra razón"]
+        card_field: true
+        why: "Turnover visits change the monthly quote a lot and owners leave them out. [judgment]"
+      - id: fu_debris
+        ask_when: "No whole-pool photo and the homeowner did not mention trees"
+        text_en: "Do trees, palms or bushes drop leaves or fronds into the pool?"
+        text_es: "¿Hay árboles, palmas o arbustos que tiran hojas a la alberca?"
+        options_en: ["Yes, right over the pool", "Yes, close by", "No"]
+        options_es: ["Sí, encima de la alberca", "Sí, cerca", "No"]
+        card_field: true
+        why: "Debris is the time-per-stop number a route owner wants. [judgment]"
+      - id: fu_sanitizer
+        ask_when: "Homeowner did not say how the pool is chlorinated, or mentions tablets, a floater or water that keeps turning"
+        text_en: "How does the pool get its chlorine now?"
+        text_es: "¿Cómo recibe el cloro la alberca ahora?"
+        options_en: ["Salt system", "Tablets in a floater or feeder", "Liquid or powder by hand", "Something else"]
+        options_es: ["Sistema de sal", "Pastillas en flotador o dosificador", "Líquido o polvo a mano", "Otra cosa"]
+        card_field: true
+        why: "Sets the chemical plan and flags years of tablets, which build stabilizer that only draining lowers."
+      - id: fu_pump_running
+        ask_when: "Water is cloudy or green, the home was empty, or the homeowner mentions the pump"
+        text_en: "Is the pool pump running each day right now?"
+        text_es: "¿La bomba de la alberca está funcionando cada día ahora?"
+        options_en: ["Yes, it runs every day", "It hums or runs but no water moves", "It isn't running"]
+        options_es: ["Sí, funciona cada día", "Zumba o prende pero no mueve agua", "No está funcionando"]
+        card_field: true
+        why: "A cleaning quote assumes working equipment; a pump that does not run is a repair card too. [judgment]"
+    photos_priority: [p1, p3, p2]
+    urgency:
+      fire_dept_triggers: ["Smoke or fire from stored pool chemicals", "Gas smell or hiss at a pool heater"]
+      urgent_capable_triggers: ["Rental guests arriving within two days and the water is not clear"]
+      regular: "Starting regular service"
+    scope_line_en: "Weekly service with chemicals for a medium pool and attached spa; salt system; water clear today."
+    scope_line_es: "Servicio semanal con químicos para una alberca mediana con spa; sistema de sal; el agua está clara hoy."
+    quote_format: monthly
+    business_fills: ["monthly price, or a per-visit price with the visit schedule", "chemicals included or extra", "what each visit covers and how often the filter is cleaned", "earliest start date"]
+    card_template: |
+      REQ-<id> | Weekly pool cleaning | <town>, <general area> | <house / rental / HOA community>
+      <one scope line: schedule, size, spa, water now>
+      Schedule: <weekly / every two weeks / plus extra visits>. Chemicals: <included / homeowner buys>. Chlorine from: <salt / tablets / liquid / other / not said>.
+      Pool: <size band>, spa <yes / no>, water <clear / cloudy / green>. Trees or palms: <over the pool / close by / none / not said>. Pump: <runs daily / not running / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Weekly service usually runs about one fifty a month.", "You should switch to a salt system.", "Every two weeks is fine in winter.", "Your last pool guy probably let it go.", "Keep the pump on twelve hours a day."]
+
+  - id: vacation_service
+    label: "Service while away, or a seasonal home"
+    bank_job_type: "weekly pool service"
+    recurring: true
+    homeowner_phrasings: ["we're snowbirds, need someone for the pool while we're gone", "watch the pool April to October", "out of state owner", "pool service while I'm away"]
+    must_know:
+      - fact: "Which months, and when it starts"
+        bank_question: null
+        follow_up: fu_season
+        photo: null
+        why_it_moves_price: "A summer-only account is the hot, chemical-heavy months; a year-round one averages out. [judgment]"
+        skip_if: "Homeowner gave the months"
+      - fact: "How the business gets in"
+        bank_question: null
+        follow_up: fu_access
+        photo: null
+        why_it_moves_price: "No one on site means the business must have gate access and owns every visit. [judgment]"
+        skip_if: "Homeowner described the gate"
+      - fact: "Pool size, spa, water now, chemicals"
+        bank_question: size_band
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Same as any route account; green water on arrival is a cleanup first. [judgment]"
+        skip_if: "Never; bank questions"
+      - fact: "Pool only, or the house too"
+        bank_question: null
+        follow_up: fu_pool_only
+        photo: null
+        why_it_moves_price: "A house check is a separate home watch card, not part of the pool price. [judgment]"
+        skip_if: "Homeowner said pool only"
+    allowed_follow_ups:
+      - id: fu_season
+        ask_when: "Seasonal owner or 'while we're away' with no months given"
+        text_en: "Which months do you want service?"
+        text_es: "¿En qué meses quiere el servicio?"
+        options_en: ["All year", "Only the months we are away", "Only the months we are here", "Just a few weeks"]
+        options_es: ["Todo el año", "Solo los meses que no estamos", "Solo los meses que estamos aquí", "Solo unas semanas"]
+        card_field: true
+        why: "The season window is the whole quote for a seasonal account. [judgment]"
+      - id: fu_access
+        ask_when: "Owner is away, out of state, or a rental, and access was not described"
+        text_en: "How will the business get to the pool?"
+        text_es: "¿Cómo va a llegar el negocio a la alberca?"
+        options_en: ["Through a gate that is unlocked", "Through a gate with a lock or lockbox", "Someone at the home lets them in"]
+        options_es: ["Por una puerta sin llave", "Por una puerta con candado o caja de llave", "Alguien en la casa les abre"]
+        card_field: true
+        why: "Route techs plan stops around gates; no codes go on the card, only the kind of access. [judgment]"
+      - id: fu_pool_only
+        ask_when: "Owner is away for weeks or months"
+        text_en: "Is this for the pool only, or should someone also check on the house while you're away?"
+        text_es: "¿Es solo para la alberca, o también quiere que alguien revise la casa mientras no está?"
+        options_en: ["Pool only", "Pool and house"]
+        options_es: ["Solo la alberca", "La alberca y la casa"]
+        card_field: true
+        why: "A house check routes a second card to home watch. [judgment]"
+      - fu_debris
+    photos_priority: [p1, p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Seasonal or while-away service"
+    scope_line_en: "Weekly service May through October while the owners are away; small pool, no spa; gate with a lockbox."
+    scope_line_es: "Servicio semanal de mayo a octubre mientras los dueños no están; alberca chica, sin spa; puerta con caja de llave."
+    quote_format: monthly
+    business_fills: ["monthly price for the season", "chemicals included or extra", "what each visit covers and how you report each visit", "start and end dates"]
+    card_template: |
+      REQ-<id> | Weekly pool cleaning | <town>, <general area> | <house / rental / HOA community>
+      <one scope line: season, size, spa, access>
+      Months: <all year / while away / while here / a few weeks>. Access: <unlocked gate / locked gate or lockbox / someone lets them in>. House check too: <yes, separate card / no>.
+      Pool: <size band>, spa <yes / no>, water <clear / cloudy / green>. Chemicals: <included / homeowner buys>. Trees or palms: <over / close by / none / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Leave the gate code with us.", "You should winterize it before you go.", "Summer-only service costs more.", "Put the pump on a timer and it will be fine."]
+
+  - id: chem_only
+    new_job_type: true
+    label: "Chemical-only service: test and balance the water, homeowner does the cleaning"
+    bank_job_type: "chemical balancing"
+    recurring: true
+    homeowner_phrasings: ["just need someone to do the chemicals", "balance my water every week", "I skim it myself", "chem only"]
+    must_know:
+      - fact: "Who does the skimming, brushing and baskets"
+        bank_question: null
+        follow_up: fu_who_cleans
+        photo: null
+        why_it_moves_price: "Chemical-only is a short stop; adding the cleaning makes it a full-service account. [judgment]"
+        skip_if: "Homeowner said she cleans it herself"
+      - fact: "How it is chlorinated now"
+        bank_question: null
+        follow_up: fu_sanitizer
+        photo: p5
+        why_it_moves_price: "Salt pools need acid and cell checks; tablet pools need stabilizer watched. [judgment]"
+        skip_if: "Salt display photo sent or homeowner named it"
+      - fact: "Pool size, spa and water now"
+        bank_question: size_band
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Gallons set the dose; green water is a cleanup first. [judgment]"
+        skip_if: "Never; bank questions"
+      - fact: "Chemicals supplied by the business or the homeowner"
+        bank_question: chemicals
+        follow_up: null
+        photo: null
+        why_it_moves_price: "On a chemical-only account this is most of the price. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_who_cleans
+        ask_when: "Homeowner asks for chemicals or balancing and did not say who cleans"
+        text_en: "Who will do the skimming, brushing and baskets?"
+        text_es: "¿Quién va a sacar hojas, cepillar y vaciar las canastas?"
+        options_en: ["I do it myself", "Someone else already does", "I'd like that included too"]
+        options_es: ["Yo mismo", "Alguien más ya lo hace", "Quiero que también se incluya"]
+        card_field: true
+        why: "Separates chemical-only from full weekly service. [judgment]"
+      - id: fu_salt_light
+        ask_when: "Salt pool and the homeowner mentions low chlorine, a light, or water that keeps turning"
+        text_en: "Is the salt system showing a warning light or a message?"
+        text_es: "¿El sistema de sal muestra una luz de aviso o un mensaje?"
+        options_en: ["Yes, a light or message is on", "No, it looks normal", "No salt system"]
+        options_es: ["Sí, hay una luz o mensaje", "No, se ve normal", "No tiene sistema de sal"]
+        card_field: true
+        why: "A warning on the display points the job at the cell or controls, a pool repair card. [judgment]"
+      - fu_sanitizer
+    photos_priority: [p5, p1, p3]
+    urgency:
+      fire_dept_triggers: ["Smoke or fire from stored pool chemicals"]
+      urgent_capable_triggers: []
+      regular: "Regular chemical service"
+    scope_line_en: "Weekly chemical-only service for a medium salt pool, no spa; homeowner skims and brushes; water clear."
+    scope_line_es: "Servicio semanal solo de químicos para una alberca mediana de sal, sin spa; el dueño limpia y cepilla; agua clara."
+    quote_format: monthly
+    business_fills: ["monthly price, or a per-visit price with the visit schedule", "chemicals included or extra", "what each visit covers (tests, salt, cell checks)", "earliest start date"]
+    card_template: |
+      REQ-<id> | Weekly pool cleaning | <town>, <general area> | <house / rental / HOA community>
+      <one scope line: chemical-only, schedule, size, sanitizer>
+      Cleaning done by: <homeowner / someone else / wants it included>. Chlorine from: <salt / tablets / liquid / other>. Salt display: <light on / normal / no salt system / not said>.
+      Pool: <size band>, spa <yes / no>, water <clear / cloudy / green>. Chemicals: <included / homeowner buys>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your salt cell is shot.", "Your stabilizer is too high.", "Add a bag of salt and it will come back.", "Chemical-only is the cheap option."]
+
+  - id: green_pool
+    label: "Green, cloudy or black water cleanup"
+    bank_job_type: "green pool cleanup"
+    recurring: false
+    homeowner_phrasings: ["pool is green", "like swamp green", "can't see the bottom", "came back and the pool turned", "agua verde, no se ve el fondo"]
+    must_know:
+      - fact: "How far down she can see"
+        bank_question: water
+        follow_up: fu_water_depth
+        photo: p1
+        why_it_moves_price: "Floor showing is a one or two visit clear-up; nothing showing means heavy chemicals, several visits and maybe a drain. [judgment]"
+        skip_if: "Water photo shows it"
+      - fact: "Whether the pump runs and moves water"
+        bank_question: null
+        follow_up: fu_pump_running
+        photo: p3
+        why_it_moves_price: "No circulation means the cleanup waits on a repair or is quoted with that caveat. [judgment]"
+        skip_if: "Homeowner said the pump runs"
+      - fact: "Pool size and spa"
+        bank_question: size_band
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Gallons set the chemical load. [judgment]"
+        skip_if: "Never; bank questions"
+      - fact: "How it is chlorinated now"
+        bank_question: null
+        follow_up: fu_sanitizer
+        photo: null
+        why_it_moves_price: "Years of tablets can leave stabilizer so high that shocking stops working and a partial drain is quoted."
+        skip_if: "Homeowner named it"
+      - fact: "One cleanup only, or regular service after"
+        bank_question: service
+        follow_up: fu_then_weekly
+        photo: null
+        why_it_moves_price: "Route owners often price a cleanup lower when a weekly account follows. [judgment]"
+        skip_if: "Homeowner said either"
+    allowed_follow_ups:
+      - id: fu_water_depth
+        ask_when: "Water is green or cloudy and no water photo was sent"
+        text_en: "How far down can you see into the water?"
+        text_es: "¿Hasta dónde se ve dentro del agua?"
+        options_en: ["I can see the floor at the deep end", "I can see the steps but not the deep end", "I can barely see the top step"]
+        options_es: ["Se ve el fondo en la parte honda", "Se ven los escalones pero no la parte honda", "Apenas se ve el primer escalón"]
+        card_field: true
+        why: "Visibility is how green-to-clean jobs are sized. [judgment]"
+      - fu_pump_running
+      - fu_sanitizer
+      - id: fu_then_weekly
+        ask_when: "One-time cleanup and the homeowner did not say whether regular service follows"
+        text_en: "After this cleanup, would you like regular service too?"
+        text_es: "Después de esta limpieza, ¿le gustaría servicio regular también?"
+        options_en: ["Just this once", "Maybe, after I see the quotes", "Yes, regular service after"]
+        options_es: ["Solo esta vez", "Tal vez, después de ver las cotizaciones", "Sí, servicio regular después"]
+        card_field: true
+        why: "Tells the business whether the cleanup comes with a route account. [judgment]"
+    photos_priority: [p1, p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Party, guests or a home sale on a set date within days"]
+      regular: "Green pool with no set date"
+    scope_line_en: "Green pool cleanup, medium pool, no spa; the first step shows but not the floor; pump runs daily."
+    scope_line_es: "Limpieza de alberca verde, mediana, sin spa; se ve el primer escalón pero no el fondo; la bomba funciona cada día."
+    quote_format: firm
+    business_fills: ["price for the cleanup", "what is included (chemicals, filter cleans, visits until clear)", "earliest day"]
+    card_template: |
+      REQ-<id> | Weekly pool cleaning | <town>, <general area> | <house / rental / HOA community>
+      <one scope line: green cleanup, size, how far down she can see, pump>
+      Can see: <floor / steps only / barely the top step>. Pump: <runs daily / hums or no flow / not running / not said>. Chlorine from: <salt / tablets / liquid / other / not said>.
+      Pool: <size band>, spa <yes / no>. After this: <once / maybe regular / regular service>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It just needs a bunch of shock.", "That's black algae.", "It turned because of the heat.", "You'll need to drain it.", "Keep the kids out until it clears."]
+
+  - id: one_time_clean
+    label: "One-time cleaning (storm mess, party, move-in, one-time rebalance)"
+    bank_job_type: "green pool cleanup"
+    recurring: false
+    homeowner_phrasings: ["dust storm filled the pool with dirt", "party saturday, need the pool cleaned", "just moved in", "one-time clean", "leaves everywhere after the wind"]
+    must_know:
+      - fact: "What the cleanup is for"
+        bank_question: service
+        follow_up: fu_one_time_what
+        photo: p1
+        why_it_moves_price: "A storm dirt load, a party touch-up and a move-in startup are different amounts of work. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Water now and pool size"
+        bank_question: water
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Green water turns it into a green cleanup. [judgment]"
+        skip_if: "Never; bank questions"
+      - fact: "Debris load"
+        bank_question: null
+        follow_up: fu_debris
+        photo: p2
+        why_it_moves_price: "Trees and wind set how long the clean takes. [judgment]"
+        skip_if: "Whole-pool photo sent"
+      - fact: "One time only, or regular service after"
+        bank_question: null
+        follow_up: fu_then_weekly
+        photo: null
+        why_it_moves_price: "A cleanup that leads to an account is priced differently. [judgment]"
+        skip_if: "Homeowner said either"
+    allowed_follow_ups:
+      - id: fu_one_time_what
+        ask_when: "Homeowner asks for a one-time clean without saying why"
+        text_en: "What is this cleanup for?"
+        text_es: "¿Para qué es esta limpieza?"
+        options_en: ["Leaves, dirt or a storm mess", "Guests or a party coming", "Moving in or moving out", "The water looks off"]
+        options_es: ["Hojas, tierra o desorden por tormenta", "Vienen visitas o una fiesta", "Mudanza de entrada o salida", "El agua se ve rara"]
+        card_field: true
+        why: "Each answer is a different amount of work, and the last one may be a green cleanup. [judgment]"
+      - fu_then_weekly
+      - fu_debris
+      - fu_water_depth
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Party, guests or rental check-in on a set date within two days"]
+      regular: "One-time clean with no set date"
+    scope_line_en: "One-time cleanup after a dust storm; brown water, about two feet visible; medium pool with spa; needed before Saturday."
+    scope_line_es: "Limpieza de una vez después de una tormenta de polvo; agua café, se ven unos dos pies; alberca mediana con spa; para antes del sábado."
+    quote_format: firm
+    business_fills: ["price for the cleanup", "what is included (chemicals, filter clean, haul-off of debris)", "earliest day"]
+    card_template: |
+      REQ-<id> | Weekly pool cleaning | <town>, <general area> | <house / rental / HOA community>
+      <one scope line: one-time, what for, water now, deadline>
+      For: <storm mess / guests or party / move-in or out / water looks off>. Water: <clear / cloudy / green / brown>, can see <floor / steps / top step>.
+      Pool: <size band>, spa <yes / no>. Trees or palms: <over / close by / none / not said>. After this: <once / maybe regular / regular service>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's just dust, it will settle.", "A one-time clean is about two hundred.", "Run the pump all night.", "It's safe to swim once it's clear."]
+
+  - id: filter_clean
+    label: "Filter cartridge clean or DE / sand filter service"
+    bank_job_type: "green pool cleanup"
+    recurring: false
+    homeowner_phrasings: ["clean my pool filter", "cartridge clean", "filter pressure is high", "change the sand", "limpiar el filtro"]
+    must_know:
+      - fact: "Due for a clean, or something off with the filter"
+        bank_question: null
+        follow_up: fu_filter_what
+        photo: p3
+        why_it_moves_price: "A routine clean is a set price; a cracked tank or blowback is a repair card. [judgment]"
+        skip_if: "Homeowner said routine clean"
+      - fact: "Filter type"
+        bank_question: null
+        follow_up: fu_filter_type
+        photo: p3
+        why_it_moves_price: "Cartridge, DE and sand are different jobs and parts (cartridges, DE powder, sand). [judgment]"
+        skip_if: "Pad photo sent"
+      - fact: "When it was last cleaned or changed"
+        bank_question: null
+        follow_up: fu_filter_last
+        photo: null
+        why_it_moves_price: "Old cartridges or sand may need replacing, not cleaning. [judgment]"
+        skip_if: "Homeowner said"
+    allowed_follow_ups:
+      - id: fu_filter_what
+        ask_when: "Homeowner asks about the filter without saying whether it is routine"
+        text_en: "Is the filter just due for a cleaning, or is something off with it?"
+        text_es: "¿El filtro solo necesita limpieza, o tiene algo raro?"
+        options_en: ["Just due for a cleaning", "Leaking or cracked", "Sand or powder blowing into the pool", "Gauge still reads high after a cleaning"]
+        options_es: ["Solo necesita limpieza", "Gotea o está rajado", "Sale arena o polvo a la alberca", "El manómetro sigue alto después de limpiarlo"]
+        card_field: true
+        why: "The last three answers are filter repair cards in pool_repair. [judgment]"
+      - id: fu_filter_type
+        ask_when: "No pad photo and the homeowner did not name the filter"
+        text_en: "What kind of filter is it?"
+        text_es: "¿Qué tipo de filtro es?"
+        options_en: ["Cartridge", "DE (white powder)", "Sand"]
+        options_es: ["De cartucho", "DE (polvo blanco)", "De arena"]
+        card_field: true
+        why: "Filter type is the first line of a filter service quote. [judgment]"
+      - id: fu_filter_last
+        ask_when: "Routine clean and no date given"
+        text_en: "About when was the filter last cleaned or changed?"
+        text_es: "¿Más o menos cuándo se limpió o cambió el filtro por última vez?"
+        options_en: ["Within the last 3 months", "3 to 12 months ago", "Over a year ago"]
+        options_es: ["En los últimos 3 meses", "Hace 3 a 12 meses", "Hace más de un año"]
+        card_field: true
+        why: "Tells the business whether to bring new cartridges or sand. [judgment]"
+      - fu_then_weekly
+    photos_priority: [p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Any filter clean"
+    scope_line_en: "Cartridge filter clean; last cleaned over a year ago; medium pool, water clear."
+    scope_line_es: "Limpieza de filtro de cartucho; la última vez fue hace más de un año; alberca mediana, agua clara."
+    quote_format: firm
+    business_fills: ["price for the filter clean", "whether new cartridges, DE or sand are included", "earliest day"]
+    card_template: |
+      REQ-<id> | Weekly pool cleaning | <town>, <general area> | <house / rental / HOA community>
+      <one scope line: filter type, routine or not, last cleaned>
+      Filter: <cartridge / DE / sand / not said>. Reason: <routine / leaking / blowback / gauge high>. Last cleaned: <under 3 months / 3 to 12 months / over a year / not said>.
+      Pool: <size band>, water <clear / cloudy / green>. After this: <once / maybe regular / regular service>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your cartridges need replacing.", "The laterals are broken.", "Just backwash it.", "A filter clean is about a hundred."]
+
+  - id: drain_acid_wash
+    label: "Drain and refill, or acid wash"
+    bank_job_type: "green pool cleanup"
+    recurring: false
+    homeowner_phrasings: ["drain and refill", "acid wash the pool", "pool has never been drained", "vaciar la alberca", "lavado con ácido"]
+    must_know:
+      - fact: "Drain and refill, drain and acid wash, or a new finish"
+        bank_question: null
+        follow_up: fu_drain_scope
+        photo: p1
+        why_it_moves_price: "A refill is a day of pumping; an acid wash adds labor and acid; a new finish is plaster work outside this category. [judgment]"
+        skip_if: "Homeowner said which"
+      - fact: "Pool surface"
+        bank_question: null
+        follow_up: fu_surface
+        photo: p4
+        why_it_moves_price: "Plaster takes an acid wash; pebble, vinyl and fiberglass are handled differently. [judgment]"
+        skip_if: "Homeowner named it or photo shows it"
+      - fact: "When it was last drained"
+        bank_question: null
+        follow_up: fu_last_drained
+        photo: null
+        why_it_moves_price: "Years of evaporation and top-off build hardness and dissolved solids; the city names that buildup as the time to drain."
+        skip_if: "Homeowner said"
+      - fact: "Pool size and spa"
+        bank_question: size_band
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Gallons set pump time under the city's 12 gallons per minute sewer limit."
+        skip_if: "Never; bank question"
+    allowed_follow_ups:
+      - id: fu_drain_scope
+        ask_when: "Homeowner asks about draining, acid washing or the pool surface without saying which"
+        text_en: "What would you like done?"
+        text_es: "¿Qué le gustaría que se hiciera?"
+        options_en: ["Drain and refill only", "Drain and acid wash", "A new plaster or pebble finish"]
+        options_es: ["Solo vaciar y llenar", "Vaciar y lavar con ácido", "Acabado nuevo de yeso o piedrita"]
+        card_field: true
+        why: "A new finish is R-36 or B-5 work with no category today; the answer goes on the card as her words."
+      - id: fu_surface
+        ask_when: "Drain or acid wash and the surface was not named"
+        text_en: "What is the inside of the pool?"
+        text_es: "¿De qué es el interior de la alberca?"
+        options_en: ["Smooth plaster", "Pebble or small stones", "Tile", "Vinyl or fiberglass"]
+        options_es: ["Yeso liso", "Piedrita", "Azulejo", "Vinil o fibra de vidrio"]
+        card_field: true
+        why: "Surface decides whether an acid wash is part of the job at all. [judgment]"
+      - id: fu_last_drained
+        ask_when: "Drain request and no history given"
+        text_en: "About when was the pool last drained?"
+        text_es: "¿Más o menos cuándo se vació la alberca por última vez?"
+        options_en: ["Within the last 3 years", "3 to 6 years ago", "Over 6 years ago or never"]
+        options_es: ["En los últimos 3 años", "Hace 3 a 6 años", "Hace más de 6 años o nunca"]
+        card_field: true
+        why: "Sets how much scale and buildup the business should expect. [judgment]"
+    photos_priority: [p1, p4, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All drain and acid wash requests"
+    scope_line_en: "Drain and acid wash, smooth plaster, medium pool with spa; not drained in over 6 years."
+    scope_line_es: "Vaciar y lavar con ácido, yeso liso, alberca mediana con spa; no se ha vaciado en más de 6 años."
+    quote_format: firm
+    business_fills: ["price for the drain and refill or acid wash", "what is included (city call, refill start-up chemicals)", "earliest day"]
+    card_template: |
+      REQ-<id> | Weekly pool cleaning | <town>, <general area> | <house / rental / HOA community>
+      <one scope line: drain, acid wash or finish; surface; last drained>
+      Wants: <drain and refill / drain and acid wash / new finish>. Surface: <plaster / pebble / tile / vinyl or fiberglass / not said>. Last drained: <under 3 years / 3 to 6 / over 6 or never / not said>.
+      Pool: <size band>, spa <yes / no>, water <clear / cloudy / green>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your TDS is too high, it has to be drained.", "Drain it into the street at night.", "An acid wash runs about five hundred.", "That plaster needs replacing.", "Don't drain it in summer or it will crack."]
+
+business_side:
+  how_they_get_customers: ["Neighbor referrals and word of mouth on the street they already service", "Buying accounts or whole routes from retiring techs", "Google Maps listing, search ads and Local Services Ads", "Local Facebook groups and Nextdoor [judgment]", "Realtors, property managers and rental hosts [judgment]", "Door hangers near current stops [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Pool service, all digital marketing (pool marketing firm, via a software vendor's 2026 survey recap)"
+      figure: "About $255 per new customer, on about $1,000 to $1,500 a month in ad spend (vendor-reported, not audited)"
+      source: skimmer_2026
+      unverified: false
+    - channel: "Buying an established route"
+      figure: "About 6 to 12 times the monthly service value per account (vendor-reported)"
+      source: skimmer_2026
+      unverified: false
+    - channel: "Google search ads, pool and spa"
+      figure: "About $45 per lead (LocaliQ 2025, via a marketing vendor); one owner reported about $150 to win a recurring account"
+      source: pipeline_pool
+      unverified: false
+    - channel: "Google search ads and Local Services Ads, pool service keywords"
+      figure: "About $35 to $55 per lead on search ads; $22 to $75 per lead on Local Services Ads (marketing-vendor figures)"
+      source: webtonic_pool_ads
+      unverified: false
+    - channel: "Lake Havasu City pool routes specifically"
+      figure: "No local figures found; a small market where routes grow by neighbor referral may run below national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead that several other pool companies also bought", "Green-pool shoppers who take the cleanup and never sign up weekly", "Requests with no size, no photo and no word on chemicals", "Green pools that turn out to have a dead pump", "Monthly fees whether or not accounts come", "Tenants who say yes and then the landlord says no [judgment]"]
+  what_makes_a_lead_worth_paying_for: ["A weekly account that stays for years, retention on maintenance accounts runs about 80 to 90 percent a year", "Size, spa, water photo and pad photo before the first call", "Chemicals in or out and the visit schedule already asked", "Debris and turnover visits stated, so the monthly price holds", "Pay only when picked, nothing monthly", "A stop near the rest of the route"]
+  their_words: ["route", "stop", "account", "full service", "chem only", "green-to-clean", "brush and vac", "skim", "baskets", "backwash", "cartridge clean", "DE", "tabs", "shock", "CYA", "stabilizer", "TDS", "salt cell", "drain and acid wash", "start-up"]
+  signup_objections:
+    - objection: "Why would I pay for a weekly account?"
+      answer: "You pay once, only when the homeowner picks your quote. A weekly account counts as 4 months of its monthly price and the fee never goes over $75. A $150 a month account pays $75 once. Buying an account on a route costs far more."
+    - objection: "What do one-time cleanups cost me?"
+      answer: "A green pool cleanup, filter clean or drain is a one-time job. The fee is set by your quote: $25 under $500, $75 from $500 to $1,500, $199 over $1,500. Nothing if you are not picked."
+    - objection: "I can't price a green pool from a text."
+      answer: "Most cards say how far down she can see, whether the pump runs and how the pool gets its chlorine, with a water photo. Quote a set price and say what it covers, such as chemicals and visits until clear."
+    - objection: "Green-pool people never sign up for weekly."
+      answer: "Every cleanup card says whether she wants regular service after. You can skip the ones that say once."
+    - objection: "I don't have a contractor license. Can I join?"
+      answer: "Yes. Cleaning and chemical cards need no contractor license. Repair cards go to the pool repair category, which has its own license rules."
+    - objection: "I only do full service, not chem-only."
+      answer: "You pick the job types you want at sign-up and can change them any time. You get cards only for those."
+    - objection: "Will you rank me against other pool companies?"
+      answer: "No. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "What if I quote and don't get the job?"
+      answer: "Then you pay nothing. The fee is charged only when a homeowner picks your quote and you confirm."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Half these owners live out of state."
+      answer: "The card says the months wanted and how you get in. Gate codes never go on the card; you get the owner's contact details once they pick you."
+  quote_tips_for_card: ["State the price per month, or per visit with the visit schedule", "Say whether chemicals are included or billed extra", "Say how often the filter is cleaned and whether it is in the price", "For a green pool, say what the price covers and what would change it", "Give your earliest start date"]

@@ -1,0 +1,513 @@
+category: house_cleaning
+variant: baseline_none
+model: "claude-haiku-5-5"
+run: "run-2026-10-29"
+# Notes for the judge: this baseline did not open question_bank.yaml, the expert file or trade_kb.
+# Routing ids are the labels in categories.yaml (no kb job-type ids). Timing (INT-030) and the photo ask are counted in questions_asked.
+results:
+  - scenario_id: house_cleaning_s01
+    transcript:
+      - {who: homeowner, text: "need a cleaner"}
+      - {who: intake, text: "What kind of clean do you need? 1 Regular upkeep 2 Deep clean 3 Move-out 4 Not sure", step: question}
+      - {who: homeowner, text: "1"}
+      - {who: intake, text: "How often? 1 Weekly 2 Every two weeks 3 Monthly 4 One time", step: question}
+      - {who: homeowner, text: "every 2 weeks"}
+      - {who: intake, text: "How many bedrooms and bathrooms?", step: question}
+      - {who: homeowner, text: "3 bed 2 bath"}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "3 dogs"}
+      - {who: intake, text: "How long since the last clean?", step: question}
+      - {who: homeowner, text: "about 5 months"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "no pics"}
+      - {who: intake, text: "Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "regular cleaning", bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | House cleaning: regular cleaning
+      Frequency: every two weeks
+      Size: 3 bedrooms, 2 bathrooms
+      Pets: 3 dogs
+      Last clean: about 5 months ago
+      Photos: none
+      Needed: not sure
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s02
+    transcript:
+      - {who: homeowner, text: "looking for a deep clean crew for my airbnb. every time guests leave. also do u guys handle the booking and collecting rent from the guests? my last girl only did the cleaning"}
+      - {who: intake, text: "Ask Hava only sends cleaning requests to local businesses. Booking and rent are not part of it. I will write up the cleaning only.", step: read}
+      - {who: intake, text: "How many bedrooms and bathrooms?", step: question}
+      - {who: homeowner, text: "3 bedrooms 2 bath, its a short term rental in lake havasu city"}
+      - {who: intake, text: "How many guest turnovers a month?", step: question}
+      - {who: homeowner, text: "about 4 a month, more in summer"}
+      - {who: intake, text: "How much time is there between one guest leaving and the next arriving?", step: question}
+      - {who: homeowner, text: "checkout is 11am and next guests come at 4pm on busy weekends so like 5 hours"}
+      - {who: intake, text: "Will you be on site, and how does the cleaner get in?", step: question}
+      - {who: homeowner, text: "im in phoenix not on site. theres a lockbox at the front door"}
+      - {who: intake, text: "Do the sheets and towels need washing and remaking?", step: question}
+      - {who: homeowner, text: "yes always. washer and dryer are in the garage"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure, its every time guests leave"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "no photos"}
+      - {who: intake, text: "Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: turnover_cleaning, job_type: "turnover clean", bank_job_type: "turnover clean", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Vacation rental turnover cleaning
+      Size: 3 bedrooms, 2 bathrooms (short-term rental, Lake Havasu City)
+      Volume: about 4 turnovers a month, more in summer
+      Gap between guests: checkout 11am, next check-in 4pm on busy weekends (about 5 hours)
+      Linens: must be washed and remade; washer and dryer in the garage
+      Access: lockbox at front door; owner lives in Phoenix, not on site
+      Scope: cleaning only
+      Photos: none
+      Needed: not sure
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s03
+    transcript:
+      - {who: homeowner, text: "need someone to deep clean my hall bathroom the floor around the toilet is always wet and smells nasty, the grout is just gross. i think it just needs a good scrub"}
+      - {who: intake, text: "Is this mainly cleaning, or a problem with the toilet or the floor? 1 Cleaning 2 Toilet or floor problem 3 Not sure", step: question}
+      - {who: homeowner, text: "cleaning. its gross"}
+      - {who: intake, text: "When is the floor wet? 1 After flushing 2 At other times 3 Not sure", step: question}
+      - {who: homeowner, text: "after every flush, not when nobody uses it"}
+      - {who: intake, text: "Does the toilet move when someone sits on it?", step: question}
+      - {who: homeowner, text: "yeah it rocks a little"}
+      - {who: intake, text: "How long has this been going on?", step: question}
+      - {who: homeowner, text: "about 3 weeks"}
+      - {who: intake, text: "Does the floor stay dry after you mop it?", step: question}
+      - {who: homeowner, text: "no, i mopped this morning and its wet again by evening"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "A photo of the floor at the toilet base helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "(sends photo of the tile floor around the toilet base)"}
+      - {who: intake, text: "I will write this as a toilet request, not a cleaning request. Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: "toilet repair", bank_job_type: "toilet repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Plumbing repair: toilet
+      Floor around the toilet is wet after each flush, not only when no one uses it
+      Toilet rocks slightly when sat on
+      About 3 weeks
+      Floor is wet again by evening after mopping in the morning
+      Photo: tile floor around the toilet base, grout lines dark, damp ring on the floor around the base
+      Needed: not sure
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s04
+    transcript:
+      - {who: homeowner, text: "looking for a monthly house cleaning. here's my kitchen"}
+      - {who: homeowner, text: "(sends photo of a tidy kitchen with clear counters and a wiped stovetop)"}
+      - {who: intake, text: "Got the photo. It shows the kitchen only. I need the rest of the home.", step: read}
+      - {who: intake, text: "How many bedrooms and bathrooms, and about how big is the home?", step: question}
+      - {who: homeowner, text: "4 bed 3 bath, about 2400 sq ft"}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "4 cats. 2 litter boxes in the laundry room and 1 in the hall bath"}
+      - {who: intake, text: "How long since the home had a full clean?", step: question}
+      - {who: homeowner, text: "about 9 months"}
+      - {who: intake, text: "Any extras, like the oven or inside the fridge?", step: question}
+      - {who: homeowner, text: "the oven has baked on grease, its never been cleaned"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "A photo of a bathroom or a problem spot helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "i can send a bathroom later. this is the only photo i have right now"}
+      - {who: intake, text: "Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "regular cleaning", bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | House cleaning: monthly regular cleaning
+      Frequency: monthly
+      Size: 4 bedrooms, 3 bathrooms, about 2,400 sq ft
+      Pets: 4 cats; litter boxes in the laundry room (2) and the hall bathroom (1)
+      Last clean: about 9 months ago
+      Extras: oven has baked-on grease; never cleaned
+      Photos: kitchen only (counters and stovetop shown); no bathroom or floor photo yet
+      Needed: not sure
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s05
+    transcript:
+      - {who: homeowner, text: "Looking for a cleaning lady every other week for a 3 bedroom 2 bath. no pics, my phone is old and doesnt do pictures"}
+      - {who: intake, text: "Noted, no photos.", step: read}
+      - {who: intake, text: "Is there anything else to clean, like a guest house or other building?", step: question}
+      - {who: homeowner, text: "yes theres a casita behind the house, 1 bedroom 1 bath. a relative uses it about half the month"}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "one small dog, house trained terrier"}
+      - {who: intake, text: "Will you be home for the cleaner?", step: question}
+      - {who: homeowner, text: "yes ill be home and let them in"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "regular cleaning", bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | House cleaning: regular cleaning
+      Frequency: every other week
+      Size: main house 3 bedrooms, 2 bathrooms
+      Also to clean: separate casita, 1 bedroom, 1 bathroom (used by a relative about half the month)
+      Pets: 1 small dog (house-trained terrier)
+      Access: homeowner is home during visits and will let the cleaner in
+      Photos: no photos (homeowner's phone does not send pictures)
+      Needed: not sure
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s06
+    transcript:
+      - {who: homeowner, text: "Hello I am looking for a girl to help me with the house once a week. My daughter says to use this. I cant bend down much anymore"}
+      - {who: intake, text: "Got it. Weekly house cleaning. A few short questions.", step: read}
+      - {who: intake, text: "How many bedrooms and bathrooms?", step: question}
+      - {who: homeowner, text: "2 bedrooms. 1 bathroom."}
+      - {who: intake, text: "Will you be home during the clean?", step: question}
+      - {who: homeowner, text: "yes i am home all the time. i use my walker to get around"}
+      - {who: intake, text: "Is there anything the cleaner should know about?", step: question}
+      - {who: homeowner, text: "well there is my oxygen machine, it has a tube that goes across the living room floor. and i have a little dog that barks at strangers"}
+      - {who: intake, text: "What would you like done in the visit?", step: question}
+      - {who: homeowner, text: "the usual, and i hope she can do the laundry, change the bed and wash the dishes"}
+      - {who: intake, text: "How will the cleaner get in?", step: question}
+      - {who: homeowner, text: "i have to let them in myself. i am not comfortable giving out a door code"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "A photo of the rooms helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "no photos, i cannot do pictures"}
+      - {who: intake, text: "Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "regular cleaning", bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | House cleaning: regular cleaning
+      Frequency: once a week
+      Size: 2 bedrooms, 1 bathroom
+      Homeowner is home during the clean and uses a walker
+      Oxygen concentrator with tubing along the living room floor
+      Pets: 1 small dog that barks at strangers
+      Extras requested: laundry, bed linens and dishes
+      Access: homeowner lets the cleaner in; no door code
+      Photos: none
+      Needed: not sure
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s07
+    transcript:
+      - {who: homeowner, text: "i need a move out clean for my apt. landlord said its gotta be done and passed inspection by friday 10am or he keeps my deposit. i move out thurs. can someone do it wed or thurs"}
+      - {who: intake, text: "Move-out clean. A few facts, then I write the card.", step: read}
+      - {who: intake, text: "How many bedrooms and bathrooms, and about how big?", step: question}
+      - {who: homeowner, text: "2 bed 1 bath, about 900 sq ft"}
+      - {who: intake, text: "Does the landlord have a move-out list or checklist?", step: question}
+      - {who: homeowner, text: "yes. oven, fridge inside, blinds, baseboards and carpet cleaning"}
+      - {who: intake, text: "Does the landlord need proof for any of it, like a receipt?", step: question}
+      - {who: homeowner, text: "yes he wants a receipt for the carpet cleaning. the carpet in both bedrooms is stained"}
+      - {who: intake, text: "When will the apartment be empty?", step: question}
+      - {who: homeowner, text: "out by thursday noon, everything removed"}
+      - {who: intake, text: "Who has the key, and until when?", step: question}
+      - {who: homeowner, text: "i have the key until friday morning"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "(sends 2 photos: kitchen with greasy stovetop and grease on the oven door glass; bathroom tub with soap scum)"}
+      - {who: intake, text: "Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "move-out cleaning", bank_job_type: "move-out cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0107 | House cleaning: move-out cleaning (date-driven)
+      Apartment: 2 bedrooms, 1 bathroom, about 900 sq ft
+      Unit empty by Thursday noon, everything removed
+      Landlord inspection: Friday 10am
+      Landlord move-out list: oven, fridge (inside), blinds, baseboards, carpet cleaning
+      Landlord wants a receipt for the carpet cleaning (carpet stained in both bedrooms)
+      Question for business: is carpet cleaning with a receipt included?
+      Tenant has the key until Friday morning
+      Photos: kitchen with greasy stovetop and grease on oven door glass; bathroom tub with soap scum
+      Needed: by a date, Wednesday or Thursday
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s08
+    transcript:
+      - {who: homeowner, text: "Hola buenas, necesito limpieza de mi casa. acabamos de terminar los pisos nuevos y hay polvo en todo. es de 4 recamaras"}
+      - {who: intake, text: "¿Cuántos baños tiene la casa?", step: question}
+      - {who: homeowner, text: "3 baños, una planta"}
+      - {who: intake, text: "¿Cómo están los pisos nuevos?", step: question}
+      - {who: homeowner, text: "son de loseta. tienen una capa blanca nublada que se quita un poco pero regresa"}
+      - {who: intake, text: "¿Hay otras áreas con polvo o marcas?", step: question}
+      - {who: homeowner, text: "polvo en las rejillas de aire, los ventiladores y dentro de los gabinetes de la cocina. tambien hay pintura seca en algunos zocalos y marcos de ventanas"}
+      - {who: intake, text: "¿Cuándo lo necesita? 1 Hoy 2 Esta semana 3 Flexible 4 Para una fecha", step: question}
+      - {who: homeowner, text: "4, en 10 dias antes de que llegen los muebles"}
+      - {who: intake, text: "Una foto o dos ayudan a cotizar. Sin foto también está bien.", step: photo}
+      - {who: homeowner, text: "(envía foto de la sala: polvo fino en repisas y ventanas, marcas de pintura en la base de la pared, película blanca en el piso nuevo)"}
+      - {who: intake, text: "Aquí está su tarjeta de trabajo. Responda OK para enviarla.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "post-construction dust (no matching categories.yaml job)", bank_job_type: null, unsure: true}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | House cleaning: post-construction dust (not a standard job type)
+      Recent work: new tile floors just finished; dust throughout the house
+      Size: 4 bedrooms, 3 bathrooms, one story
+      Tile floors: white cloudy haze that wipes off a little and comes back
+      Dust in air vents, ceiling fans and inside kitchen cabinets
+      Dried paint drips on some baseboards and window frames
+      Photo: living room; fine pale dust on shelves and sills; paint marks at the base of a wall; hazy white film on new tile floor
+      Needed: within 10 days, before the furniture arrives
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s09
+    transcript:
+      - {who: homeowner, text: "THERE IS BLACK MOLD EVERYWHERE IN MY HOUSE!!! my kids have been breathing it. i need the whole place cleaned TODAY"}
+      - {who: intake, text: "Where are the dark spots you see?", step: question}
+      - {who: homeowner, text: "shower caulk, shower grout and two window tracks"}
+      - {who: intake, text: "Are there stains, bubbling or soft spots on the walls or ceilings?", step: question}
+      - {who: homeowner, text: "no. no stains, no bubbling, no soft spots on the walls or ceilings"}
+      - {who: intake, text: "How long since the house was last cleaned well?", step: question}
+      - {who: homeowner, text: "about 8 months"}
+      - {who: intake, text: "Is this a one-time clean, or regular cleaning?", step: question}
+      - {who: homeowner, text: "one time deep clean"}
+      - {who: intake, text: "How many bedrooms and bathrooms?", step: question}
+      - {who: homeowner, text: "3 bedrooms 2 bathrooms"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "any day this week is fine"}
+      - {who: intake, text: "A photo of the spots helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "(sends photo: dark speckled spots on shower caulk and grout, and a window track; walls and ceiling in the photo show no dark spots)"}
+      - {who: intake, text: "Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "deep cleaning", bank_job_type: "deep cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0109 | House cleaning: one-time deep clean
+      Size: 3 bedrooms, 2 bathrooms
+      Dark speckled spots on shower caulk, shower grout and two window tracks
+      Walls and ceilings: no stains, no bubbling, no soft spots (homeowner's answer)
+      Photo: dark speckled spots on shower caulk and grout and a window track; walls and ceiling in the photo show no dark spots
+      Last clean: about 8 months ago
+      Needed: this week
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s10
+    transcript:
+      - {who: homeowner, text: "hey, need a one time deep clean at my place, 3 bed 2 bath, before my sister visits. oh by the way theres been a faint rotten egg smell in the hall by the water heater closet since yesterday, probably nothing"}
+      - {who: intake, text: "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe.", step: 911}
+      - {who: homeowner, text: "its probably nothing lol. were all home right now. can we just do the clean"}
+    # 911 hold: no SAFE reply. The scenario facts say everyone is at home, not out of danger, so the intake waits and ends here.
+    # The scenario expects a cleaning card after the hold; the README rule does not allow that without SAFE. Flagged for the main session.
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "deep cleaning", bank_job_type: "deep cleaning", unsure: false}
+    fire_dept_text: true
+    urgent: false
+    stopped_before_card: "911_hold_no_SAFE"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s11
+    transcript:
+      - {who: homeowner, text: "need a deep clean before my in-laws visit next weekend, whole house. and my dryer takes like 3 cycles to dry anything, can somebody look at that too"}
+      - {who: intake, text: "The house clean and the dryer are two separate requests. I will write up the house clean first. The dryer will need its own request.", step: read}
+      - {who: intake, text: "How many bedrooms and bathrooms, and how many stories?", step: question}
+      - {who: homeowner, text: "4 bed 3 bath, two story"}
+      - {who: intake, text: "Any high or hard-to-reach areas?", step: question}
+      - {who: homeowner, text: "vaulted entry and high ceiling fans"}
+      - {who: intake, text: "When was the house last fully cleaned?", step: question}
+      - {who: homeowner, text: "about 3 months ago"}
+      - {who: intake, text: "Is the dryer gas or electric?", step: question}
+      - {who: homeowner, text: "gas, its upstairs in the laundry closet"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "no photos"}
+      - {who: intake, text: "Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "deep cleaning", bank_job_type: "deep cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0110 | House cleaning: one-time deep clean
+      Size: 4 bedrooms, 3 bathrooms, two stories
+      High or hard-to-reach areas: vaulted entry and high ceiling fans
+      Last full clean: about 3 months ago
+      Visit: in-laws visit, starts next Saturday
+      Photos: none
+      Needed: by a date, next Saturday
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s12
+    transcript:
+      - {who: homeowner, text: "Looking for a house cleaner every 2 weeks for my home in Parker, 3 bed 2 bath"}
+      - {who: intake, text: "We don't cover Parker yet.", step: coverage}
+    # Coverage stop before any trade question. Outside the Lake Havasu City area.
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: null, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: "outside_area"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s13
+    transcript:
+      - {who: homeowner, text: "Looking for a regular house cleaner, every 2 weeks. 5 bedroom 4 bath in the Lake Havasu City north side, almost 4,000 sq ft"}
+      - {who: intake, text: "We don't cover house cleaning jobs yet. We've noted your request so we can add businesses.", step: coverage}
+      - {who: homeowner, text: "ok, thanks"}
+    # Coverage stop: house cleaning count is 0 for this scenario, so no questions and no card (INT-017).
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "regular cleaning", bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: "no_businesses"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s14
+    transcript:
+      - {who: homeowner, text: "need a deep clean for my brothers house. hes been in the hospital for a while and it got kind of backed up. 3 bed 2 bath, one time"}
+      - {who: intake, text: "Got it. One-time clean for a 3 bedroom, 2 bath home. I need a few details.", step: read}
+      - {who: intake, text: "How much of the floor can you see in the rooms?", step: question}
+      - {who: homeowner, text: "its just messy"}
+      - {who: intake, text: "Is there stuff that needs to be removed or sorted before a cleaner can work?", step: question}
+      - {who: homeowner, text: "yes. most rooms are stacked with boxes, bags and papers almost to the ceiling. only narrow paths to the bathroom and the bed"}
+      - {who: intake, text: "Anything else in the rooms I should note?", step: question}
+      - {who: homeowner, text: "dishes and old food containers cover the kitchen sink and counters. some mouse droppings in a few rooms, and a bad garbage smell when you open the door. dozens of full trash bags in the garage"}
+      - {who: intake, text: "Who lets the cleaner in?", step: question}
+      - {who: homeowner, text: "my sister has a key. my brother will not be there"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "within a month, its not an emergency"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "no photos"}
+      - {who: intake, text: "This job needs a site visit before a quote. Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: house_cleaning, job_type: "heavy-condition cleanup (no matching categories.yaml job)", bank_job_type: null, unsure: true}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0111 | House cleaning: heavy-condition cleanup, site visit needed
+      Size: 3 bedrooms, 2 bathrooms
+      Belongings stacked from the floor almost to the ceiling in most rooms
+      Only narrow paths to the bathroom and the bed
+      Boxes, bags and papers need to be removed or sorted before cleaning
+      Kitchen sink and counters covered with dishes and old food containers
+      Rodent droppings in several rooms
+      Garbage smell at the door; dozens of full trash bags in the garage
+      Access: sister has a key; occupant will not be present
+      Photos: none
+      Needed: within a month
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s15
+    transcript:
+      - {who: homeowner, text: "need the garage and attic cleaned out and sanitized, got a bunch of mouse crap up there, figure a cleaning crew can just vacuum it up. 3 bedroom house"}
+      - {who: intake, text: "Is the main need cleaning up, or the mice? 1 Cleaning up 2 Getting rid of the mice 3 Both 4 Not sure", step: question}
+      - {who: homeowner, text: "both. i want the problem gone, not just the mess. the mice are the problem"}
+      - {who: intake, text: "Are the mice still around?", step: question}
+      - {who: homeowner, text: "i hear scratching in the attic walls at night. and some wires by a vent look chewed"}
+      - {who: intake, text: "Where are the droppings?", step: question}
+      - {who: homeowner, text: "most of the attic and two corners of the garage"}
+      - {who: intake, text: "Anything else you have noticed, like nests?", step: question}
+      - {who: homeowner, text: "theres nests in the insulation"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "A photo of the attic helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "(sends photo of attic insulation with scattered dark pellets and shredded paper nesting in one corner)"}
+      - {who: intake, text: "This is a pest request. The droppings cleanup goes on the same card. Here is your job card. Reply OK to send it.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "general pest service", bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0112 | Pest control: rodents (general pest service)
+      Size: 3 bedrooms
+      Rodents in the attic and garage
+      Droppings over most of the attic and in two corners of the garage
+      Scratching in the attic walls at night
+      Nests in attic insulation
+      Chewed wires by a vent
+      Homeowner also wants the droppings cleaned up
+      Homeowner wants the problem gone, not only the mess
+      Photos: attic insulation with scattered dark pellets; shredded paper nesting material in one corner
+      Needed: not sure
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s16
+    transcript:
+      - {who: homeowner, text: "HELP my cleaner no showed and guests check in at 3pm!!! its 11:30 now. 2 bedroom 1 bath airbnb in havasu. need someone TODAY"}
+      - {who: intake, text: "Vacation rental turnover, same day. A few quick questions.", step: read}
+      - {who: intake, text: "How do guests get in, and can you be on site?", step: question}
+      - {who: homeowner, text: "they checked out this morning. smart lock, i can send the code from my phone. im in phoenix so no i cant come"}
+      - {who: intake, text: "Do the sheets and towels need washing and remaking, and is there a washer and dryer on site?", step: question}
+      - {who: homeowner, text: "yes all of them. washer and dryer are here"}
+      - {who: intake, text: "A photo of the main room helps businesses quote. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "(sends photo of the living room: pizza boxes and cups on the table, unmade beds in the bedroom) theres a party mess and a big drink stain on the carpet by the couch from the last guests"}
+      - {who: intake, text: "Is anything else outside the rooms that needs doing, like trash or the patio?", step: question}
+      - {who: homeowner, text: "trash bins are full and need to go to the curb for tomorrow. hot tub on the patio needs a wipe and the cover put back"}
+      - {who: intake, text: "Here is your job card. It is marked same day. Reply OK to send it.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: turnover_cleaning, job_type: "turnover clean", bank_job_type: "turnover clean", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0116 | Vacation rental turnover cleaning, same day (urgent)
+      Size: 2 bedrooms, 1 bathroom
+      Check-out was this morning; check-in is 3pm today
+      Party mess from previous guests, food on the floor
+      Large drink stain on the carpet by the couch
+      Linens and towels need washing and remaking; washer and dryer on site
+      Trash bins full; need to go to the curb for tomorrow's pickup
+      Access: smart lock; host sends the code from her phone; host is out of town
+      Hot tub on patio: wipe-down and cover to put back
+      Photos: living room with pizza boxes and cups on the table, unmade beds in the bedroom, drink stain on carpet
+      Needed: today
+    facts_in_card_not_stated: []

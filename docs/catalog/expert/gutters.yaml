@@ -1,0 +1,588 @@
+# Ask Hava expert layer: gutters (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set gutters and trade_kb/trades/gutter_solar_cleaning.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The kb file is mostly cleaning (gutters, solar panels, roof debris, bird guards). The category has only
+#   "gutter install" and "gutter repair" (R-45, handyman_allowed false). Mapping used here:
+#   gutter_clean and roof_debris -> "gutter repair" (cleaning only, said on the card); gutter_repair_route ->
+#   "gutter repair"; new_job_type gutter_install -> "gutter install" (the kb's gutter_repair_route covers both
+#   repair and install; install is split out here because it scopes and prices differently).
+# - Left out, with no route: solar_wash (solar panel washing; no category job type anywhere), critter_guard
+#   (bird mesh around panels; the kb puts it under R-11 / CR-11 and no enabled category takes it), and
+#   solar_repair_route (cracked panel or panel wiring; R-11 per the kb, no solar category, and electrical has
+#   no solar job type). Scenario gutters_s05 expects job_type solar_wash, which this file does not define,
+#   so the checker prints one scenario line for it. Casey may want a "solar panel washing" job type in an
+#   unlicensed cleaning category (window_cleaning businesses often do it).
+# - Cleaning needs no ROC license (A.R.S. 32-1101 does not list cleaning), but routing cleaning to "gutter
+#   repair" sends those cards only to R-45 businesses. Unlicensed gutter cleaners cannot get them. A "gutter
+#   cleaning" job type in an unlicensed category would fit the work better.
+# - Fascia: R-45 Sheet Metal names gutters, leaders, flashings and cornices, not fascia board. R-42 Roofing
+#   allows fascia replacement up to 24 linear feet; R-3 names fascia panels for awnings and patio covers.
+#   A soft or missing fascia is put on the card (fu_board_condition) so the gutter business can quote or
+#   decline; there is no clean category for fascia carpentry today.
+# - The scenario writer used gutter_repair_route for install requests (s04, s08, s12); this file routes those
+#   to gutter_install. Both ids exist, so the checker passes, but the scenario expectations should be updated.
+# - Bank photo p1 asks for "panels from the ground or a drone". For gutters a wide shot of the roof edge
+#   from the ground would help more. p1 is used only for roof_debris here.
+# - The bank set has no roof-type question (kb q4). Roof type is carried as follow-up fu_roof_type, but only
+#   one follow-up is allowed per request; adding roof type to the bank would free the follow-up.
+# - quote_format is firm for the whole category. The kb says gutter repair "sometimes" needs a visit and
+#   install often does (measuring). Businesses can write "after a look" in a firm quote; Casey may want
+#   diagnostic_visit for "gutter repair" in job_type_formats.
+# - Gutters and downspouts appear on neither Lake Havasu City permit list (S17); permit need is [unverified].
+schema: 1
+category: gutters
+question_set: gutters
+kb_trade: gutter_solar_cleaning
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications [S2]: R-45 Sheet Metal installs and repairs sheet metal, cornices, flashings, gutters, leaders, pans, duct work, skylights, metal roofing; R-42 Roofing may replace fascia up to 24 linear feet; R-3 names fascia panels for awnings and patio covers"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1101
+    title: "A.R.S. 32-1101 Definitions (contractor: construct, alter, repair, add to, subtract from, improve, move, wreck or demolish; cleaning is not listed)"
+    url: "https://www.azleg.gov/ars/32/01101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed [S4] (handyman exemption (A)(14): whole job under $1,000, casual or minor, no permit, not part of a larger job, ads say 'not a licensed contractor')"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_34_204
+    title: "A.A.C. R4-34-204 Manufactured housing installer license classes [S11] (I-10C and I-10D install accessory structures attached to manufactured homes; gutters not named)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-34-204"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits [S17]: permit and no-permit lists; replacing roof covering needs no permit, replacing roof sheathing does; gutters, downspouts and fascia are on neither list"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_weather_2014
+    title: "Lake Havasu City 2014 weather summary (official station 4.69 inches for the year, about average; September 1.78 inches and August 1.56 inches wettest; very active monsoon; gusts over 50 mph rarely recorded)"
+    url: "https://www.lhcaz.gov/docs/default-source/department-documents/2014-weather-summary.pdf?sfvrsn=4"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_weather_2015
+    title: "Lake Havasu City 2015 weather summary (average 4.14 inches across five stations; most active months January, March, June and October)"
+    url: "https://www.lhcaz.gov/docs/default-source/department-documents/weather-summary-for-2015.pdf?sfvrsn=0"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Phoenix, Monsoon Awareness: season June 15 to September 30; outflow winds 50 mph or greater; downbursts; torrential rain"
+    url: "https://weather.gov/psr/monsoonawarenessweek"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_stormwater
+    title: "Lake Havasu City Storm Water Management: gutters, storm drains and washes discharge mostly untreated to Lake Havasu; any discharge not entirely stormwater is an illicit discharge"
+    url: "https://www.lhcaz.gov/public-works/storm-water-management"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ues_safety
+    title: "UniSource Energy Services Electrical Safety Tips [S24]: keep tools, materials and body at least 15 feet from overhead lines; customers keep foliage 15 feet from service lines"
+    url: "https://www.uesaz.com/electric-safety/"
+    checked: "2026-10-29"
+    kind: other
+  - id: pipeline_gutters
+    title: "Pipeline (marketing vendor): gutter installation 2026 (seamless aluminum priced per linear foot installed; 5-inch K-style residential default, 6-inch carries about 67 percent more; downspout spacing; standalone gutter cost per appointment $80 to $250 via Google Ads, Modernize or organic, no source given)"
+    url: "https://pipelineon.com/blog/roofing-gutter-installation/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: servicetitan_gutter
+    title: "ServiceTitan (software vendor): gutter contractors pay about $10 to $75 per lead, citing Inquirly; channels include Google Business Profile, Local Services Ads, Facebook lead ads, PPC, directories, referrals"
+    url: "https://servicetitan.com/blog/gutter-leads"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: valley_angi
+    title: "The Valley Marketing Group (marketing vendor): standard Angi leads sold to 3 to 8 contractors at once; general contracting and remodeling $40 to $100 or more per lead"
+    url: "https://thevalleymarketinggroup.com/blog/homeadvisor-angi-cost-per-lead-contractors-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Linear feet of gutter and the number of downspouts"
+      why: "Gutter work is priced by the running foot plus each downspout and corner, so the bank's length answer is the first number an estimator writes down."
+      source: pipeline_gutters
+    - driver: "Height and ladder room: one story or two, and whether a pool, block wall, slope or fence blocks the ladder"
+      why: "A second story or no level ground means taller ladders, roof access or a lift, and more crew time. [judgment]"
+      source: null
+    - driver: "Roof type at the edge (tile, flat or foam, shingle, metal)"
+      why: "Tile can crack under foot and changes how hangers attach; a flat roof drains through wall openings, a different setup. [judgment]"
+      source: null
+    - driver: "Condition of the fascia board, or no fascia at all (open rafter ends)"
+      why: "Soft or missing board means wood repair or special brackets before a gutter can hang, and R-45 does not list fascia work. [judgment]"
+      source: aac_r4_9_103
+    - driver: "New where there are none, tear off and replace, repair a section, or covers on existing gutters"
+      why: "Tear-off adds removal and haul-away; a short repair carries a minimum trip; covers are a separate product per foot. [judgment]"
+      source: null
+    - driver: "Size, style and color (5-inch or 6-inch K-style, half-round, stock or matched color)"
+      why: "6-inch carries about two-thirds more water than 5-inch and costs more per foot; off-stock colors may need special coil. [judgment on color]"
+      source: pipeline_gutters
+    - driver: "For cleaning: how packed the gutters are and whether debris is hauled away"
+      why: "Dry leaves blow out fast; packed dirt, palm bits or plants growing in the gutter take hand work and bagging. [judgment]"
+      source: null
+    - driver: "Where the downspouts drain (splash block, extension, buried pipe)"
+      why: "Tying into or clearing a buried drain pipe is extra labor and sometimes digging. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Fascia board soft, cracked or missing behind a gutter that pulled away"
+      how_a_pro_spots_it: "Gutter hanging with screws or spikes pulled out; dark or crumbly wood in a close-up; open rafter tails with no board"
+      question_or_photo: fu_board_condition
+      source: null
+    - condition: "Downspout feeds a buried drain pipe that is cracked or full of dirt"
+      how_a_pro_spots_it: "Downspout ends in a pipe at grade in the close-up photo; water backs up out of the downspout seam"
+      question_or_photo: p3
+      source: null
+    - condition: "No room to set a ladder (pool deck, block wall or fence close to the house, steep or rocky slope)"
+      how_a_pro_spots_it: "The homeowner sent only the easy front side; back of the house faces a pool or a wall"
+      question_or_photo: fu_ladder_room
+      source: null
+    - condition: "Overhead service line running over the gutter or carport edge"
+      how_a_pro_spots_it: "A line from the pole lands near the corner in the gutter photo; the utility says to keep tools 15 feet from overhead lines"
+      question_or_photo: fu_overhead_line
+      source: ues_safety
+    - condition: "A roof leak behind what the homeowner calls a gutter leak"
+      how_a_pro_spots_it: "Stain on a ceiling or inside wall a few feet in from the edge; slipped tiles above it"
+      question_or_photo: fu_inside_stain
+      source: null
+    - condition: "Old sectional gutters with many seams, where one leaking seam means more to come"
+      how_a_pro_spots_it: "Seams every 10 feet or so and rust or sealant at joints in the gutter photo"
+      question_or_photo: p2
+      source: null
+    - condition: "Tile roof edge where gutter hangers sit under the first row of tile"
+      how_a_pro_spots_it: "Tile overhangs the gutter in the photo; the hangers cannot be seen"
+      question_or_photo: fu_roof_type
+      source: null
+    - condition: "HOA rules on gutter color or style"
+      how_a_pro_spots_it: "Kind of place on the card says HOA, or the homeowner mentions approval"
+      question_or_photo: null
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "gutter repair (gutter leaking into the garage or house)"
+      might_be: "leak_repair (roofing kb), a roof leak near the edge"
+      one_question: fu_inside_stain
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "gutter_clean (gutters overflowing)"
+      might_be: "gutter_repair_route (sag, low spot or a downspout that is too small or blocked)"
+      one_question: fu_full_or_clear
+      if_other_route_to: {category: gutters, job_type: "gutter repair"}
+      source: null
+    - sounds_like: "roof_debris (fronds and debris after a windstorm)"
+      might_be: "storm_damage or tile_repair (roofing kb), broken or slipped tiles under the debris"
+      one_question: fu_tiles_broken
+      if_other_route_to: {category: roof_repair, job_type: "tile replacement"}
+      source: null
+    - sounds_like: "gutter install (a salesman said I need gutter guards)"
+      might_be: "covers on gutters that already exist, not a new system"
+      one_question: fu_install_what
+      if_other_route_to: {category: gutters, job_type: "gutter install"}
+      source: null
+    - sounds_like: "gutter_clean (roof drain or scupper plugged on a flat roof)"
+      might_be: "flat-roof drain opening, which some gutter businesses do not take"
+      one_question: fu_drain_kind
+      if_other_route_to: {category: gutters, job_type: "gutter repair"}
+      source: null
+  photo_reading:
+    - photo_id: p2
+      reads: ["Gutter style (K-style or half-round) and color", "Seams along the run or one long piece", "Sag, gaps or brackets pulled out", "Debris or plants in the gutter", "Roof type at the edge", "Service line near the corner"]
+      neutral_wording: "White K-style gutter along the front, pulled away about 2 inches at the left end; concrete tile roof above."
+    - photo_id: p3
+      reads: ["Condition of the fascia board", "Downspout elbow or bottom piece missing or crushed", "Downspout ending in a buried pipe", "Rust or sealant at seams"]
+      neutral_wording: "Downspout bottom piece is crushed; it ends in a plastic pipe at ground level."
+    - photo_id: p1
+      reads: ["How much debris is on the roof", "Fronds in valleys and at the edge", "Tiles that look out of line"]
+      neutral_wording: "Palm fronds and leaves across the back half of a tile roof, some in the valley."
+  local_factors:
+    - fact: "Lake Havasu City gets about 4 to 5 inches of rain in a typical year"
+      effect: "Many homes have gutters only over doors, patios or one side, so runs are short and repair calls follow storms [judgment on gutter coverage]"
+      source: lhc_weather_2014
+    - fact: "Monsoon season runs June 15 to September 30, with outflow winds of 50 mph or more and heavy short rain"
+      effect: "Gutters pulled off, downspouts knocked loose and fronds on the roof come in bursts after storms [judgment on job mix]"
+      source: nws_monsoon
+    - fact: "Rain also comes in winter months (January and March were among the most active in 2015)"
+      effect: "A smaller second run of overflow and cleaning calls in winter [judgment]"
+      source: lhc_weather_2015
+    - fact: "City gutters, storm drains and washes flow mostly untreated to the lake; any discharge not entirely stormwater is illicit"
+      effect: "Cleaners bag gutter debris instead of washing it into the street, which adds haul-away time [judgment on effect]"
+      source: lhc_stormwater
+    - fact: "Tile roofs and palm trees are common"
+      effect: "Tile changes access and hanger choice; palm bits pack gutters harder than leaves [judgment]"
+      source: null
+    - fact: "Second homes sit empty for months"
+      effect: "Debris builds up and damage is found on return; the owner may not be on site, so access and gate details matter [judgment]"
+      source: null
+    - fact: "Gutters on a manufactured home: accessory structures attached to one go to Department of Housing installers (I-10C, I-10D); gutters are not named"
+      effect: "Whether a gutter on a manufactured home is R-45 work or installer work is [judgment]; the card states the kind of place"
+      source: aac_r4_34_204
+    - fact: "Gutters and downspouts are on neither Lake Havasu City permit list"
+      effect: "Whether a new gutter system needs a permit is not stated; businesses decide [judgment]"
+      source: lhc_permits
+  seasonality:
+    busy: "July to October, after monsoon storms, and a shorter run in winter rain months [judgment]"
+    slow: "April to early June, dry and before the monsoon [judgment]"
+    source: null
+
+job_types:
+  - id: gutter_clean
+    label: "Gutter, downspout or roof-drain cleaning (cleaning only, no repair)"
+    bank_job_type: "gutter repair"
+    recurring: false
+    homeowner_phrasings: ["clean my gutters", "gutters overflowing", "downspout clogged", "leaves in the gutters", "scupper plugged"]
+    must_know:
+      - fact: "About how many feet of gutter, and how many stories"
+        bank_question: length
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Cleaning is priced by the run and the ladder height. [judgment]"
+        skip_if: "Homeowner gave both"
+      - fact: "What is in the gutters, or whether they are clear and still spill over"
+        bank_question: null
+        follow_up: fu_full_or_clear
+        photo: p2
+        why_it_moves_price: "Packed dirt or plants take hand work; a clear gutter that spills is a repair job, not a cleaning. [judgment]"
+        skip_if: "Photo shows inside the gutter"
+      - fact: "Roof type at the edge"
+        bank_question: null
+        follow_up: fu_roof_type
+        photo: p2
+        why_it_moves_price: "Tile edges are worked from a ladder, not by walking the roof; flat roofs drain through wall openings. [judgment]"
+        skip_if: "Photo shows the roof edge"
+      - fact: "Whether a service line runs over the gutters"
+        bank_question: stories
+        follow_up: fu_overhead_line
+        photo: p2
+        why_it_moves_price: "Crews keep ladders and poles 15 feet from overhead lines, which changes the setup at that corner."
+        skip_if: "Photo shows the corners clearly"
+    allowed_follow_ups:
+      - id: fu_full_or_clear
+        ask_when: "Homeowner says the gutters overflow or need cleaning and no photo shows inside them"
+        text_en: "When you look at the gutters, are they full of debris, or clear with water still spilling over?"
+        text_es: "Cuando ve las canaletas, ¿están llenas de basura, o limpias y aun así el agua se desborda?"
+        options_en: ["Full of leaves, dirt or palm bits", "Plants growing in them", "Clear, but water spills over", "Can't see inside"]
+        options_es: ["Llenas de hojas, tierra o palma", "Con plantas creciendo", "Limpias, pero el agua se desborda", "No se ve adentro"]
+        card_field: true
+        why: "Separates a cleaning from a slope or downspout repair without naming either. [judgment]"
+      - id: fu_roof_type
+        ask_when: "Roof type not said and not clear in a photo"
+        text_en: "What is the roof made of?"
+        text_es: "¿De qué material es el techo?"
+        options_en: ["Tile", "Flat or foam", "Shingle", "Metal"]
+        options_es: ["Teja", "Plano o de espuma", "Tejamanil (shingle)", "Metal"]
+        card_field: true
+        why: "Tile and flat roofs change access and hangers more than anything but height. [judgment]"
+      - id: fu_drain_kind
+        ask_when: "Homeowner mentions a flat roof, a roof drain, a scupper or a pipe through a wall"
+        text_en: "Is this a gutter along the roof edge, or an opening in a low wall around a flat roof?"
+        text_es: "¿Es una canaleta en la orilla del techo, o una abertura en un muro bajo alrededor de un techo plano?"
+        options_en: ["A gutter along the roof edge", "An opening in a low wall on a flat roof", "Both"]
+        options_es: ["Una canaleta en la orilla del techo", "Una abertura en un muro bajo de techo plano", "Las dos"]
+        card_field: true
+        why: "Flat-roof drain openings mean roof access and some gutter businesses skip them; the card says which. [judgment]"
+      - id: fu_overhead_line
+        ask_when: "Cleaning or debris job and no photo shows the corners where a service line could land"
+        text_en: "Does a power, phone or cable line run over or close to the gutters?"
+        text_es: "¿Pasa algún cable de luz, teléfono o cable cerca o por encima de las canaletas?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "The utility tells people to keep tools and ladders 15 feet from overhead lines, so a business plans that corner differently."
+    photos_priority: [p2, p3]
+    urgency:
+      fire_dept_triggers: ["Power line down on the roof, carport or ground"]
+      urgent_capable_triggers: ["Water spilling into a doorway, garage or patio when it rains, with rain forecast"]
+      regular: "Routine cleaning"
+    scope_line_en: "Clean about 100 feet of gutter on a one-story tile-roof home; gutters packed with palm bits and dirt."
+    scope_line_es: "Limpiar unos 100 pies de canaleta en una casa de un piso con techo de teja; canaletas llenas de palma y tierra."
+    quote_format: firm
+    business_fills: ["price to clean", "whether debris is hauled away", "earliest day"]
+    card_template: |
+      REQ-<id> | Gutters (cleaning only) | <town>, <general area> | <kind of place>
+      <one scope line: about how many feet, what is in them>
+      Length: <bank answer>. Stories: <1 / 2 or more>. Roof: <tile / flat or foam / shingle / metal / not said>.
+      Gutters: <full of debris / plants growing / clear but spill over>. Line over gutters: <yes / no / not said>. Access: <gate, dog, owner home or not>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Clogged gutters will ruin your foundation.", "Gutter cleaning usually runs about a hundred dollars.", "Stay off the roof and let a pro do it.", "That's probably just leaves.", "Get a gutter guard so this doesn't happen again."]
+
+  - id: roof_debris
+    label: "Roof debris and valley cleanup (fronds, leaves, branches), cleaning only"
+    bank_job_type: "gutter repair"
+    recurring: false
+    homeowner_phrasings: ["palm fronds all over the roof", "leaves on the roof", "debris in the roof valleys", "branch on the roof after the wind"]
+    must_know:
+      - fact: "Roof type"
+        bank_question: null
+        follow_up: fu_roof_type
+        photo: p1
+        why_it_moves_price: "Tile cannot be walked freely; crews work from ladders or poles, which takes longer. [judgment]"
+        skip_if: "Photo shows the roof"
+      - fact: "Size of the debris: leaves and small bits, or whole fronds and branches"
+        bank_question: null
+        follow_up: fu_debris_size
+        photo: p1
+        why_it_moves_price: "Whole fronds and branches need cutting and more trips down the ladder. [judgment]"
+        skip_if: "Photo shows it"
+      - fact: "Whether the business hauls the debris away"
+        bank_question: null
+        follow_up: fu_haul_away
+        photo: null
+        why_it_moves_price: "Haul-away adds a dump run and fees; leaving it bagged does not. [judgment]"
+        skip_if: "Homeowner said"
+      - fact: "Stories"
+        bank_question: stories
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A second story changes the ladder and the time. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - fu_roof_type
+      - id: fu_debris_size
+        ask_when: "Homeowner reports debris on the roof without saying what kind"
+        text_en: "Is it scattered leaves and small bits, or whole palm fronds and branches?"
+        text_es: "¿Son hojas y pedazos chicos, o pencas de palma y ramas enteras?"
+        options_en: ["Leaves and small bits", "Whole fronds or branches", "Both"]
+        options_es: ["Hojas y pedazos chicos", "Pencas o ramas enteras", "Las dos"]
+        card_field: true
+        why: "Whole fronds and branches are a different amount of work. [judgment]"
+      - id: fu_haul_away
+        ask_when: "Debris or cleaning job and the homeowner did not say what happens to the debris"
+        text_en: "Should the business haul the debris away, or leave it bagged or piled for you?"
+        text_es: "¿Quiere que el negocio se lleve la basura, o que la deje en bolsas o amontonada?"
+        options_en: ["Haul it away", "Leave it bagged or piled"]
+        options_es: ["Que se la lleve", "Que la deje en bolsas o amontonada"]
+        card_field: true
+        why: "Haul-away is a separate line in most cleaning quotes. [judgment]"
+      - id: fu_tiles_broken
+        ask_when: "Debris came down in wind or a storm, on a tile roof"
+        text_en: "Can you see any roof tiles that are broken, slipped or missing?"
+        text_es: "¿Se ven tejas rotas, movidas o que faltan?"
+        options_en: ["Yes", "No", "Can't see the roof"]
+        options_es: ["Sí", "No", "No se ve el techo"]
+        card_field: true
+        why: "Broken or slipped tile is roofing work, a different category; the card should say so before a cleaner climbs up. [judgment]"
+    photos_priority: [p1, p3, p2]
+    urgency:
+      fire_dept_triggers: ["Power line down on the roof, carport or ground"]
+      urgent_capable_triggers: ["Branch on the roof after a storm with rain forecast"]
+      regular: "Leaves and fronds with no damage seen"
+    scope_line_en: "Clear palm fronds and leaves off a one-story tile roof after a windstorm; haul debris away."
+    scope_line_es: "Quitar pencas de palma y hojas de un techo de teja de un piso después de un ventarrón; llevarse la basura."
+    quote_format: firm
+    business_fills: ["price to clear the roof", "whether haul-away is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Gutters (roof debris, cleaning only) | <town>, <general area> | <kind of place>
+      <one scope line: what is on the roof, where>
+      Roof: <tile / flat or foam / shingle / metal>. Stories: <1 / 2 or more>. Debris: <leaves / whole fronds or branches / both>.
+      Tiles seen broken or slipped: <yes / no / can't see>. Haul away: <yes / leave bagged / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The wind cracked your tiles.", "Don't walk on a tile roof.", "That's a quick job.", "You should trim that palm so this stops."]
+
+  - id: gutter_repair_route
+    label: "Gutter or downspout repair: pulled away, sagging, leaking seam, bent or missing downspout"
+    bank_job_type: "gutter repair"
+    recurring: false
+    homeowner_phrasings: ["gutter fell", "gutter pulled off the fascia", "gutter leaking at the seam", "downspout bent", "the edge thing came down"]
+    must_know:
+      - fact: "What the gutter is doing: pulling away or hanging, sagging, leaking at a seam or corner, or a downspout bent or missing a piece"
+        bank_question: service
+        follow_up: fu_gutter_what
+        photo: p3
+        why_it_moves_price: "A rehang, a reslope, a reseal and a downspout piece are four different jobs and parts lists. [judgment]"
+        skip_if: "Homeowner's words or a photo already say which"
+      - fact: "How much is affected (feet of gutter) and how many stories"
+        bank_question: length
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "A short section is a minimum-trip repair; a long run that is failing is a replacement conversation. [judgment]"
+        skip_if: "Homeowner gave the length"
+      - fact: "Condition of the board the gutter hangs from"
+        bank_question: null
+        follow_up: fu_board_condition
+        photo: p3
+        why_it_moves_price: "Soft or missing fascia must be fixed before the gutter can hold, and R-45 does not list fascia work. [judgment]"
+        skip_if: "Close-up photo shows solid wood, or the job is a downspout only"
+      - fact: "Ladder room on the side that needs work"
+        bank_question: stories
+        follow_up: fu_ladder_room
+        photo: p2
+        why_it_moves_price: "A pool, wall or slope under the gutter can mean roof access or a lift. [judgment]"
+        skip_if: "One story with open ground in the photo"
+      - fact: "Whether water shows inside the house or garage"
+        bank_question: null
+        follow_up: fu_inside_stain
+        photo: null
+        why_it_moves_price: "An inside stain points at a roof leak, a different category, and the gutter business would want to know before quoting. [judgment]"
+        skip_if: "Homeowner did not mention a leak inside"
+    allowed_follow_ups:
+      - id: fu_gutter_what
+        ask_when: "Homeowner reports a gutter problem without saying what it is doing"
+        text_en: "What is the gutter doing: pulling away or hanging down, sagging in the middle, leaking at a seam or corner, or a downspout bent or loose?"
+        text_es: "¿Qué pasa con la canaleta: se está despegando o cuelga, se hunde en medio, gotea en una unión o esquina, o la bajante está doblada o floja?"
+        options_en: ["Pulling away or hanging down", "Sagging in the middle", "Leaking at a seam or corner", "Downspout bent, loose or missing a piece"]
+        options_es: ["Se despega o cuelga", "Se hunde en medio", "Gotea en una unión o esquina", "Bajante doblada, floja o le falta una pieza"]
+        card_field: true
+        why: "The four answers are four different repairs to a gutter business. [judgment]"
+      - id: fu_board_condition
+        ask_when: "Gutter pulled away or hanging, or new gutters wanted, and no close-up photo of the roof edge"
+        text_en: "Is the board at the roof edge where the gutter hangs solid, or soft, cracked or missing in spots?"
+        text_es: "¿La tabla de la orilla del techo donde va la canaleta está firme, o está blanda, rajada o falta en partes?"
+        options_en: ["Looks solid", "Soft or cracked in spots", "No board there, open rafter ends", "Can't tell"]
+        options_es: ["Se ve firme", "Blanda o rajada en partes", "No hay tabla, se ven las vigas", "No sé"]
+        card_field: true
+        why: "Fascia condition is the most common surprise on a rehang or a new install. [judgment]"
+      - id: fu_inside_stain
+        ask_when: "Homeowner says a gutter leaks into the house, garage or patio, or mentions a stain"
+        text_en: "Is there a water stain or drip on a ceiling or inside wall?"
+        text_es: "¿Hay una mancha de agua o goteo en un techo o pared de adentro?"
+        options_en: ["Yes, on a ceiling", "Yes, on an inside wall", "No, only outside"]
+        options_es: ["Sí, en un techo", "Sí, en una pared de adentro", "No, solo afuera"]
+        card_field: true
+        why: "Water inside points at the roof, a different category; water only outside stays a gutter job. [judgment]"
+      - id: fu_ladder_room
+        ask_when: "Two stories, a back or side wall, or a pool or wall mentioned, and no photo of that side"
+        text_en: "Is there open, level ground to set a ladder along each side that needs work?"
+        text_es: "¿Hay suelo plano y libre para poner una escalera en cada lado donde se va a trabajar?"
+        options_en: ["Yes, on every side", "A pool, wall or fence is in the way", "Slope, rocks or plants are in the way"]
+        options_es: ["Sí, en cada lado", "Una alberca, muro o cerca estorba", "Una pendiente, rocas o plantas estorban"]
+        card_field: true
+        why: "Ladder room decides the crew, the equipment and the time. [judgment]"
+    photos_priority: [p3, p2]
+    urgency:
+      fire_dept_triggers: ["Power line down on the roof, carport or ground"]
+      urgent_capable_triggers: ["Gutter or downspout hanging over a doorway or walkway", "Rain falling or forecast and water pouring against the house at a missing downspout"]
+      regular: "Sag, seam drip or bent downspout with no rain coming"
+    scope_line_en: "About 20 feet of gutter hanging loose on the west side of a one-story tile-roof home; board behind it feels soft."
+    scope_line_es: "Unos 20 pies de canaleta colgando en el lado oeste de una casa de un piso con techo de teja; la tabla de atrás se siente blanda."
+    quote_format: firm
+    business_fills: ["price for the repair", "what is included (parts, sealing, haul-away)", "earliest day"]
+    card_template: |
+      REQ-<id> | Gutter repair | <town>, <general area> | <kind of place>
+      <one scope line: what the gutter is doing, where, how many feet>
+      Doing: <pulling away / sagging / seam leak / downspout bent or missing>. Stories: <1 / 2 or more>. Roof: <tile / flat or foam / shingle / metal / from photo>.
+      Board at the edge: <solid / soft or cracked / none / can't tell>. Ladder room: <open / pool, wall or fence / slope>. Water inside: <yes, where / no>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The fascia is rotted.", "The wind did that.", "A handyman can put that back up.", "Your foundation will be fine.", "That's a cheap fix."]
+
+  - id: gutter_install
+    new_job_type: true
+    label: "New gutters, replace old gutters, or covers on existing gutters"
+    bank_job_type: "gutter install"
+    recurring: false
+    homeowner_phrasings: ["new gutters", "no gutters on the house", "replace my old gutters", "gutter guards", "gutters over the front door"]
+    must_know:
+      - fact: "New where there are none, replacing old gutters, or covers on existing gutters"
+        bank_question: service
+        follow_up: fu_install_what
+        photo: p2
+        why_it_moves_price: "Tear-off adds removal; covers are a different product; new runs need downspout locations planned. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "About how many feet, which sides, and stories"
+        bank_question: length
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Gutters are priced by the running foot plus downspouts and corners."
+        skip_if: "Homeowner gave the length and sides"
+      - fact: "Condition of the board at the roof edge, or no board"
+        bank_question: null
+        follow_up: fu_board_condition
+        photo: p3
+        why_it_moves_price: "Open rafter ends or soft fascia need special brackets or wood work first. [judgment]"
+        skip_if: "Close-up photo shows the edge"
+      - fact: "Where the water should drain"
+        bank_question: null
+        follow_up: fu_downspout_where
+        photo: null
+        why_it_moves_price: "Downspout count and any buried pipe change the parts and the labor. [judgment]"
+        skip_if: "Homeowner said where"
+      - fact: "Ladder room along the sides"
+        bank_question: stories
+        follow_up: fu_ladder_room
+        photo: p2
+        why_it_moves_price: "A pool, wall or slope under the edge can mean roof access or a lift. [judgment]"
+        skip_if: "One story with open ground in the photo"
+    allowed_follow_ups:
+      - id: fu_install_what
+        ask_when: "Homeowner asks for new gutters or gutter guards and did not say whether gutters are there now"
+        text_en: "Is this new gutters where there are none, replacing old gutters, or covers on gutters you already have?"
+        text_es: "¿Son canaletas nuevas donde no hay, cambiar canaletas viejas, o cubiertas para las canaletas que ya tiene?"
+        options_en: ["New where there are none", "Replace old gutters", "Covers or guards on existing gutters"]
+        options_es: ["Nuevas donde no hay", "Cambiar las viejas", "Cubiertas o protectores para las que ya tiene"]
+        card_field: true
+        why: "Three different quotes for the same words 'new gutters'. [judgment]"
+      - fu_board_condition
+      - fu_ladder_room
+      - id: fu_downspout_where
+        ask_when: "New or replacement gutters and no drain spot mentioned"
+        text_en: "Where would you like the water from the downspouts to go?"
+        text_es: "¿A dónde le gustaría que vaya el agua de las bajantes?"
+        options_en: ["Driveway or walkway", "Gravel or yard", "Into a pipe in the ground", "Open to ideas"]
+        options_es: ["A la entrada o andador", "A la grava o el patio", "A un tubo en el suelo", "Abierto a ideas"]
+        card_field: true
+        why: "Downspout placement sets how many are needed and whether any pipe work is added. [judgment]"
+    photos_priority: [p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All install and replacement work"
+    scope_line_en: "New gutters on the front of a one-story tile-roof home, about 45 feet; no fascia board on that side."
+    scope_line_es: "Canaletas nuevas en el frente de una casa de un piso con techo de teja, unos 45 pies; no hay tabla de fascia en ese lado."
+    quote_format: firm
+    business_fills: ["price for the install", "size, style and color offered", "what is included (downspouts, tear-off, haul-away)", "earliest day"]
+    card_template: |
+      REQ-<id> | Gutter install | <town>, <general area> | <kind of place, HOA if said>
+      <one scope line: new, replace or covers; which sides; about how many feet>
+      Install: <new where none / replace old / covers on existing>. Length: <bank answer>. Stories: <1 / 2 or more>. Roof: <type, from words or photo>.
+      Board at the edge: <solid / soft or cracked / none, open rafters / can't tell>. Water to: <driveway / gravel / pipe in ground / open>. Ladder room: <open / pool, wall or fence / slope>. Color: <her words or not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You need 6-inch gutters here.", "Gutter guards aren't worth it.", "That salesman's price was too high.", "New gutters run about ten dollars a foot.", "Your HOA will approve that."]
+
+business_side:
+  how_they_get_customers: ["Google Business Profile and reviews", "Referrals from roofers, painters and home builders [judgment]", "Repeat and word of mouth", "Google Local Services Ads and search ads", "Facebook lead ads and local Facebook groups", "Home-service lead marketplaces and directories"]
+  customer_acquisition_benchmarks:
+    - channel: "Gutter contractors, all paid channels (national)"
+      figure: "About $10 to $75 per lead, per a software vendor citing Inquirly"
+      source: servicetitan_gutter
+      unverified: false
+    - channel: "Standalone gutter companies, Google Ads, Modernize or organic (national)"
+      figure: "About $80 to $250 per booked appointment; marketing-vendor figure with no source given"
+      source: pipeline_gutters
+      unverified: false
+    - channel: "Angi standard leads (all trades)"
+      figure: "Sold to 3 to 8 contractors at once; general contracting and remodeling about $40 to $100 or more per lead; no gutter-specific figure"
+      source: valley_angi
+      unverified: false
+    - channel: "Lake Havasu City gutter businesses specifically"
+      figure: "No local figures found; few homes have full gutter systems, so jobs are smaller and a costly lead eats more of the margin"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead that several other gutter companies also bought", "Tiny jobs (one downspout piece) sold at the same price as a full install", "Homeowners who want a price by phone without a photo", "Monthly fees whether or not work comes", "Fake numbers and people just shopping"]
+  what_makes_a_lead_worth_paying_for: ["Linear feet, stories and roof type on the card", "Photos of the run and a close-up of the edge", "Fascia condition and ladder room stated before the drive", "Pay only when picked, nothing monthly", "Real town and real timing"]
+  their_words: ["K-style", "half-round", "5-inch", "6-inch", "one-piece run", "sectional", "hangers", "hidden hangers", "end caps", "miters", "outlets", "downspout", "elbows", "leaders", "extensions", "splash block", "fascia", "rafter tails", "drip edge", "scupper", "conductor head", "gutter guards", "coil", "pitch"]
+  signup_objections:
+    - objection: "Why pay $25 when I can get gutter work myself?"
+      answer: "You pay only when the homeowner picks your quote and you confirm. There is nothing to join and nothing monthly. The fee is set by job size: $25, $75 or $199."
+    - objection: "I can't quote gutters without measuring."
+      answer: "Quote from the card if you can, or quote a price and say it is firm after you look. Most cards come with feet, stories, roof type, photos and the condition of the board at the edge."
+    - objection: "Most of my calls are small repairs. Is that worth a fee?"
+      answer: "The fee goes by job size, so a small repair carries the smallest fee. You pick the job types you want and can change them any time."
+    - objection: "Do you send cleaning jobs?"
+      answer: "Yes. Cleaning requests come under gutter repair for now and the card says cleaning only. Turn off gutter repair if you only want installs."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town, photos and answers to the questions a gutter business asks. Names and addresses go only to the business the homeowner picks."
+    - objection: "Will you rank me against other gutter companies?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license number and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "Do I need a license to get these?"
+      answer: "Gutter cards go only to businesses whose Arizona ROC license covers gutters. That class is R-45 Sheet Metal."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+  quote_tips_for_card: ["Say whether the price is firm or firm after a look at the edge", "Name the size, style and colors you offer", "Say if downspouts, tear-off and haul-away are included", "If the board at the edge needs work, say whether you do it or who should", "Give your earliest day"]

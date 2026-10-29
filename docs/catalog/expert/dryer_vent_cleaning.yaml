@@ -299,7 +299,7 @@ job_types:
         ask_when: "Short wall run already known and the homeowner did not say where the dryer sits"
         text_en: "Where does the dryer sit?"
         text_es: "¿Dónde está la secadora?"
-        options_en: ["Garage", "Laundry room or closet, side by side", "Stacked on the washer in a closet", "Upstairs"]
+        options_en: ["Garage", "Laundry room or closet, next to the washer", "Stacked on the washer in a closet", "Upstairs"]
         options_es: ["En la cochera", "En el cuarto de lavado o un clóset, lado a lado", "Encima de la lavadora en un clóset", "En el piso de arriba"]
         card_field: true
         why: "A stacked closet unit or an upstairs laundry changes how long the dryer end takes. [judgment]"
@@ -313,7 +313,7 @@ job_types:
         why: "Cleaning stays here; replacing or moving routes to handyman as dryer vent reroute (LIC-028). [judgment]"
       - id: fu_which_ducts
         ask_when: "Homeowner says ducts, air ducts or vents in the house, or asks for more than the dryer"
-        text_en: "Is this the one vent from the dryer to the outside, or the heating and cooling ducts in the house too?"
+        text_en: "Is this only the dryer vent that goes outside, or the heating and cooling ducts in the house too?"
         text_es: "¿Es solo el ducto de la secadora hacia afuera, o también los ductos de aire de la casa?"
         options_en: ["Just the dryer vent", "The house air ducts too", "Only the house air ducts"]
         options_es: ["Solo el ducto de la secadora", "También los ductos de aire de la casa", "Solo los ductos de aire de la casa"]
