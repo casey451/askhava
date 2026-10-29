@@ -9,7 +9,8 @@
 # doesn't cover, whatever it ticks (CARD-001).
 #
 # ROC subclassifications (R-37R, R-39R) are read from the subclassification named on the
-# state record (LIC-035). Commercial-only classes receive no home job types (LIC-044).
+# state record (LIC-035). Each subclassification row names its "scope"; every job type it
+# maps must carry one of those tags in scope_tags below (D-058, D-392, D-504). Commercial-only classes receive no home job types (LIC-044).
 # Project limits from A.A.C. R4-9-103 are enforced on quotes (LIC-045).
 
 version: 1
@@ -57,21 +58,25 @@ classes:
   - class: R-37R Plumbing
     name: "Plumbing (R-37R subclassification)"
     source: aac_r4_9_103
+    scope: [plumbing]
     job_types:
       plumbing_repair: {all: true, also: [water heater replacement]}
   - class: R-37R Sewers, Drains and Pipe Laying
     name: "Sewers, Drains and Pipe Laying (R-37R subclassification, closed to new applications)"
     source: aac_r4_9_103
+    scope: [drain]
     job_types:
       plumbing_repair: {only: [drain clearing]}
   - class: R-37R Gas Piping
     name: "Gas Piping (R-37R subclassification, closed to new applications)"
     source: aac_r4_9_103
+    scope: [gas]
     job_types:
       plumbing_repair: {only: [gas line work]}
   - class: R-37R Swimming Pool Plumbing and Equipment
     name: "Swimming Pool Plumbing and Equipment (R-37R subclassification, closed to new applications)"
     source: aac_r4_9_103
+    scope: [pool plumbing]
     job_types:
       pool_repair: {only: [pump repair, filter repair, pool leak, equipment replacement]}
   - class: R-39
@@ -83,22 +88,26 @@ classes:
   - class: R-39R Air Conditioning and Refrigeration
     name: "Air Conditioning and Refrigeration (R-39R subclassification)"
     source: aac_r4_9_103
+    scope: [cooling]
     job_types:
       hvac_repair: {only: [AC not cooling, thermostat, duct repair]}
       hvac_replacement: {all: true}
   - class: R-39R Warm Air Heating, Evaporative Cooling and Ventilating
     name: "Warm Air Heating, Evaporative Cooling and Ventilating (R-39R subclassification, closed to new applications)"
     source: aac_r4_9_103
+    scope: [heating, evaporative cooling]
     job_types:
       hvac_repair: {only: [furnace repair, evaporative (swamp) cooler repair, duct repair]}
   - class: R-39R Evaporative Cooling and Ventilators
     name: "Evaporative Cooling and Ventilators (R-39R subclassification, closed to new applications)"
     source: aac_r4_9_103
+    scope: [evaporative cooling]
     job_types:
       hvac_repair: {only: [evaporative (swamp) cooler repair]}
   - class: R-39R Temperature Control Systems
     name: "Temperature Control Systems (R-39R subclassification, closed to new applications)"
     source: aac_r4_9_103
+    scope: [temperature control]
     job_types:
       hvac_repair: {only: [thermostat]}
   - class: R-11
@@ -262,6 +271,36 @@ classes:
   - {class: KB-2, name: "Dual Residential and Small Commercial", source: aac_r4_9_104, includes: [B]}
   - {class: KA-5, name: "Dual Swimming Pool Contractor", source: aac_r4_9_104, includes: [B-5]}
   - {class: KA-6, name: "Dual Swimming Pool Contractor, Including Solar", source: aac_r4_9_104, includes: [B-6]}
+
+# ---- Subclassification scopes (LIC-035, D-058, D-504) ----
+# The scope tags of every job type in a category a subclassification row maps. A job type
+# is within a subclassification only if one of its tags is in that row's scope, so
+# R-37R Sewers, Drains and Pipe Laying gets drain job types only and R-39R Air Conditioning
+# and Refrigeration cooling job types only. Every job type of such a category needs a tag.
+
+scope_tags:
+  plumbing_repair:
+    leak repair: [plumbing]
+    toilet repair: [plumbing]
+    drain clearing: [plumbing, drain]
+    faucet replacement: [plumbing]
+    gas line work: [gas]
+    water heater replacement: [plumbing]
+  hvac_repair:
+    AC not cooling: [cooling]
+    thermostat: [cooling, heating, temperature control]
+    duct repair: [cooling, heating]
+    furnace repair: [heating]
+    evaporative (swamp) cooler repair: [evaporative cooling]
+  hvac_replacement:
+    full system replacement: [cooling]
+    condenser replacement: [cooling]
+  pool_repair:
+    pump repair: [pool plumbing]
+    filter repair: [pool plumbing]
+    pool leak: [pool plumbing]
+    equipment replacement: [pool plumbing]
+    gas pool heater: [gas]
 
 # ---- Other state agencies and the city list (LIC-011 to LIC-016) ----
 
