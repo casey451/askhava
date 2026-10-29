@@ -16,7 +16,7 @@ panel: [owner, estimator, field_tech]
 # - trap_caught is true only when every hidden-fact trap in the scenario surfaced on the card (or the stop/911 behavior the trap tests happened).
 scenarios:
   - scenario_id: house_cleaning_s01
-    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    labels: {A: playbook, B: baseline_human, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -60,9 +60,23 @@ scenarios:
           owner: "Can range it. '3 dogs' without size or shedding is thinner than the playbook card."
           estimator: "Combined beds and baths in one question, which is good, but no condition or problem-area question."
           field_tech: "Same surprises as the playbook card: glass and stairs."
+      D:
+        quotable: 1
+        missing_facts: ["3 bedrooms (bedrooms question skipped under rule 1; card says 'bedrooms not said')", "white hard-water spots on shower glass in both bathrooms", "two-story house with carpeted stairs"]
+        wasted_questions: ["Who uses the home? (answer 'we live there'; does not change a biweekly quote)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes:
+          owner: "Two baths, three shedding dogs, 5 months, every two weeks. No bedroom count and no square footage, so I don't know how big the house is. I'd call before I range it."
+          estimator: "The bedrooms question was dropped, and it is a must-have for a recurring price. The second follow-up went to occupancy and got nothing I use. Still no condition or problem-area question, and 8 against a cap of 5."
+          field_tech: "Same surprises: a husky on carpeted stairs and spotted shower glass, and now I don't know how many bedrooms I'm doing."
 
   - scenario_id: house_cleaning_s02
-    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    labels: {A: baseline_none, B: playbook, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -106,9 +120,23 @@ scenarios:
           owner: "Same facts in 5 questions. Per-turn range."
           estimator: "Combined questions (laundry plus washer location, access plus owner local). Nothing wasted."
           field_tech: "Crew notes on staffing the 5-hour window are useful."
+      D:
+        quotable: 2
+        missing_facts: ["lockbox at the front door (access never asked; card says 'Access: not said')", "owner lives in Phoenix and is not on site"]
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'house' in the card header (the homeowner said 'my airbnb', never the home type)"]
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes:
+          owner: "Per-turn range from 3/2, on-site laundry and a 5-hour window. Firm after a look, like the others."
+          estimator: "Cleaning-only handled as a statement, not a question, which is right. The two follow-ups got the window and where the laundry is done. Beds and baths still two questions, 8 against a cap of 5, and nothing asks how the crew gets in."
+          field_tech: "I don't know how I get in or that the owner is three hours away. That's a call before the first turn."
 
   - scenario_id: house_cleaning_s03
-    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    labels: {A: baseline_human, B: baseline_none, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -152,9 +180,23 @@ scenarios:
           owner: "Rocking toilet, wet floor around the base: I can give a visit fee. Thin, but a plumber can price a reset."
           estimator: "Routed right in 4. The option-list follow-up captured one symptom and lost the flush pattern, the duration and the mop-and-return fact."
           field_tech: "No photo, no duration. I don't know how long water has been under the tile."
+      D:
+        quotable: 1
+        missing_facts: ["floor is wet after each flush, not when unused", "toilet rocks slightly", "about 3 weeks", "wet again by evening after mopping dry"]
+        wasted_questions: ["How many bedrooms? (answer 'not sure')", "How many bathrooms? (answer 'not sure')", "When was the home last cleaned top to bottom? (answer 'not sure')", "Is there anything in the home besides normal dirt and dust? (answer 'not sure')", "When do you need this? (answer 'not sure')"]
+        trap_caught: false
+        routing_correct: false
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes:
+          owner: "This goes to cleaners as a hall-bath deep clean, so a plumber never sees it. A cleaner who reads 'floor always wet' around a toilet calls before quoting."
+          estimator: "The read step asked her to pick cleaning or plumbing and took her self-diagnosis. Five questions in a row got 'not sure' and the intake kept going. Nothing asks when the floor is wet. 8 against a cap of 4."
+          field_tech: "I show up with grout brushes to a toilet that leaks on every flush and rocks. The photo of a damp ring at the base is the only warning."
 
   - scenario_id: house_cleaning_s04
-    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    labels: {A: baseline_none, B: baseline_human, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -198,9 +240,23 @@ scenarios:
           owner: "9 months and 4 cats tell me the first visit is big. Range only; the oven add-on surprises me."
           estimator: "No extras question. Two questions spent on beds and baths separately. Photo note is honest about what is not shown."
           field_tech: "Baked-on oven and litter boxes in a bathroom are not on the card."
+      D:
+        quotable: 1
+        missing_facts: ["4 bedrooms (bedrooms question skipped under rule 1)", "about 2,400 sq ft", "oven has baked-on grease and has never been cleaned", "about 9 months since last clean (she said 'about 9'; the card says only 'over 6 months')", "kitchen was tidied for the photo; the rest of the house is not like that"]
+        wasted_questions: ["Who uses the home? (answer '1'; does not change a monthly quote)", "When do you need this? (answer 'not sure')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes:
+          owner: "Three baths, four cats, 9 months, but no bedrooms and no square footage. I can't size it without a call, and the oven is a surprise add-on."
+          estimator: "The bathroom photo ask worked and shows a litter box by the toilet, so the card no longer looks easy. Occupancy took the second follow-up instead of extras, and the card rounds 'about 9' to 'over 6 months'. One over the cap of 6."
+          field_tech: "Litter in two rooms is on the card. The never-cleaned oven is not."
 
   - scenario_id: house_cleaning_s05
-    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    labels: {A: playbook, B: baseline_none, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: 1
@@ -244,9 +300,23 @@ scenarios:
           owner: "Nearly firm: sizes, floors, casita, dog, access. Condition unknown, so a range for the first visit."
           estimator: "Square footage and floor type are what I would have asked. All in 5."
           field_tech: "Tile throughout and two buildings. Clear."
+      D:
+        quotable: 1
+        missing_facts: ["separate casita, 1 bedroom, 1 bathroom, also to be cleaned", "about 1,900 sq ft", "tile floors throughout, no carpet", "owner lets the cleaner in (she said 'i am home'; the card says only 'lived in full time')"]
+        wasted_questions: ["When was the home last cleaned top to bottom? (answer 'not sure')", "When do you need this? (answer 'not sure')", "Kitchen photo ask (her first message already said her phone cannot take pictures)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes:
+          owner: "I'd quote a 3/2 and find a second building on the day. That quote is wrong by about a third."
+          estimator: "Two follow-ups and still no catch-all. Asked for a photo after she said in her first message that her phone can't take them. One over the cap of 5."
+          field_tech: "Surprise casita, floors unknown."
 
   - scenario_id: house_cleaning_s06
-    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    labels: {A: baseline_human, B: playbook, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -290,9 +360,23 @@ scenarios:
           owner: "All the scope and the home details. Range quote."
           estimator: "'Anything the cleaner should know' did the work. One over the 6 cap."
           field_tech: "Oxygen tubing, walker, dog, access: all here."
+      D:
+        quotable: 1
+        missing_facts: ["2 bedrooms (bedrooms question skipped under rule 1)", "homeowner is home during the clean and uses a walker", "oxygen concentrator tubing along the living room floor", "laundry, bed linens and dishes wanted each visit", "she lets the cleaner in herself; no door code"]
+        wasted_questions: ["When was the home last cleaned top to bottom? (answer 'not sure')", "Who uses the home? (answer 'i live here'; already plain from her first message)", "When do you need this? (answer 'not sure')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'small 1 bath home' (she never said the home is small)"]
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes:
+          owner: "A weekly 1-bath with a dog, bedrooms unknown, and then she asks for laundry, the bed and dishes. The weekly price is off; I'd call her or the daughter."
+          estimator: "Asked 'Is this for house cleaning?' after she said help with the house, then number-list questions to a slow one-finger typist; three got nothing. Nothing asked what she wants done or what the cleaner should know."
+          field_tech: "Oxygen tubing on the floor and a walker are not on the card. The barking dog is."
 
   - scenario_id: house_cleaning_s07
-    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    labels: {A: baseline_none, B: playbook, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -336,9 +420,23 @@ scenarios:
           owner: "Everything plus the carpet question for the business. Range quote."
           estimator: "Asked the list and which rooms are carpet. One over the cap."
           field_tech: "Clear on the deadline, list, key and the carpet split."
+      D:
+        quotable: 1
+        missing_facts: ["2 bedrooms (bedrooms question skipped under rule 1)", "landlord's list also has blinds and baseboards", "landlord lists carpet cleaning and wants a receipt", "carpet in both bedrooms is stained", "tenant has the key until Friday morning", "about 900 sq ft"]
+        wasted_questions: ["On cleaning day, will the home be empty...? (the opener already said she moves out Thursday)", "Main living area photo ask (empty apartment; answer 'nothing to show there')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes:
+          owner: "Oven and fridge are on it and the deadline is clean. I still don't know what else the landlord wants or whether carpet is on it, and bedrooms are unknown. With a Friday inspection I call first."
+          estimator: "Timing was correctly skipped. The extras option list caught oven and fridge, but it is not the landlord's sheet, so blinds, baseboards and carpet with a receipt are lost. One over the cap of 5."
+          field_tech: "The grease photo helps. Inspection still fails on the bedroom carpet and the blinds."
 
   - scenario_id: house_cleaning_s08
-    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    labels: {A: baseline_human, B: baseline_none, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -382,9 +480,23 @@ scenarios:
           owner: "Post-construction 4/3, haze and paint from the photo. Range, but 'surfaces only' would make me under-quote."
           estimator: "The dust follow-up was the right question; the scripted homeowner answered against the scenario. Never asked about paint or what was left behind."
           field_tech: "No warning about paint drips on frames or empty house access."
+      D:
+        quotable: 2
+        missing_facts: ["house is empty; contractor finished and gone (card says 'On cleaning day: not said')", "one story", "tile haze wipes off a little but comes back"]
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: false
+        fire_dept_correct: true
+        facts_not_stated: ["paint drips on window 'frames' (she said 'rodapiés', baseboards; the photo shows spatter at a wall base only)"]
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes:
+          owner: "4/3 after a remodel with vents, fans, cabinets, paint on baseboards and a tile haze, 10-day deadline. Range; I look before I commit."
+          estimator: "The two follow-ups, where the dust is and what the work left, did the job, all in Spanish. Bank job type is set to deep cleaning where the scenario expects none, and the card adds window frames she never said. One over the cap of 6."
+          field_tech: "Scrapers and a haze test spot on the truck. I don't know if the house is empty."
 
   - scenario_id: house_cleaning_s09
-    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    labels: {A: playbook, B: baseline_human, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -428,9 +540,23 @@ scenarios:
           owner: "All must-haves. Range."
           estimator: "Two over the cap, but every question earned something."
           field_tech: "Spots located, walls clean, 8 months. Good."
+      D:
+        quotable: 2
+        missing_facts: ["no musty smell", "no known leak or flood"]
+        wasted_questions: ["Kitchen photo ask (answer 'the spots are in the bathroom')", "Any problem area photo ask (the bathroom photo already showed it)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes:
+          owner: "3/2 deep clean, spot locations, clean walls, 8 months. Range."
+          estimator: "Asked where first, which is the key move. Last clean is on the card now in her words. No smell or leak question. Beds and baths still split; 7 against a cap of 5, two of them photo asks that went nowhere."
+          field_tech: "Caulk, grout and tracks, not drywall. I know what I'm walking into."
 
   - scenario_id: house_cleaning_s10
-    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    labels: {A: baseline_none, B: baseline_human, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: null
@@ -474,9 +600,23 @@ scenarios:
           owner: "3/2 deep clean, cat, two weeks. Range."
           estimator: "Fixed 911 text fired first, then a clean card with no gas content. The homeowner's SAFE reply is not supported by the scenario facts."
           field_tech: "Clean card. Square footage would help."
+      D:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: "911_hold"
+        panel_notes:
+          owner: "No card. Held at the 911 text because no SAFE reply came and the facts say everyone is still at home; scored as an expected stop."
+          estimator: "Fixed text fired on the passing mention, and nothing was improvised after the homeowner waved it off."
+          field_tech: "Nothing went out, so nothing to warn me about."
 
   - scenario_id: house_cleaning_s11
-    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    labels: {A: baseline_human, B: playbook, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -520,9 +660,23 @@ scenarios:
           owner: "Size, stories, high areas, last clean. Range."
           estimator: "Asked the hard-to-reach question. Dryer question with no dryer card is waste. Card states a day the homeowner never said."
           field_tech: "Ladder noted."
+      D:
+        quotable: 2
+        missing_facts: ["two-story with a vaulted entry and high ceiling fans"]
+        wasted_questions: ["Anything extra on the list? (answer 'not sure')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes:
+          owner: "4/3, 3 months, next weekend. Range, but I'd under-staff for the high work."
+          estimator: "Within the cap of 5. The second follow-up went to extras and got 'not sure' while stories and high areas went unasked. Told her the dryer is a separate request and 'we'll do the clean first', but kept no dryer facts for it."
+          field_tech: "No ladder warning for a vaulted entry."
 
   - scenario_id: house_cleaning_s12
-    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    labels: {A: playbook, B: baseline_none, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: null
@@ -547,6 +701,17 @@ scenarios:
         stopped_before_card: outside_area
         panel_notes: {owner: "Correct decline, no card.", estimator: "Stopped before any trade question.", field_tech: "Nothing to send."}
       C:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: outside_area
+        panel_notes: {owner: "Correct decline, no card.", estimator: "Stopped before any trade question.", field_tech: "Nothing to send."}
+      D:
         quotable: null
         missing_facts: []
         wasted_questions: []
@@ -559,7 +724,7 @@ scenarios:
         panel_notes: {owner: "Correct decline, no card.", estimator: "Stopped before any trade question.", field_tech: "Nothing to send."}
 
   - scenario_id: house_cleaning_s13
-    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    labels: {A: baseline_none, B: playbook, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: null
@@ -594,9 +759,20 @@ scenarios:
         questions_asked: 0
         stopped_before_card: no_businesses
         panel_notes: {owner: "No-coverage stop; no promise made.", estimator: "No card built, so the 2 dogs, cat and 4,000 sq ft were never captured; the scenario expected a held card.", field_tech: "Nothing to send."}
+      D:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: no_businesses
+        panel_notes: {owner: "No-coverage stop; no promise made.", estimator: "No card built, so the 2 dogs, cat and 4,000 sq ft were never captured; the scenario expected a held card.", field_tech: "Nothing to send."}
 
   - scenario_id: house_cleaning_s14
-    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    labels: {A: baseline_human, B: baseline_none, C: playbook, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -640,9 +816,23 @@ scenarios:
           owner: "'Only paths' tells me something is wrong, but I'd have to call to learn anything else. Bank job type says deep cleaning, so it goes to the wrong businesses."
           estimator: "Asked the right first question, then stopped at 3 of 6. Items, droppings and access fields all read 'not said'. No 'site visit needed' line."
           field_tech: "A deep-clean crew shows up to a hoarding home with droppings and no warning."
+      D:
+        quotable: 2
+        missing_facts: ["belongings stacked floor to nearly ceiling in most rooms (card says only 'stored items')", "kitchen sink and counters covered with dishes and old food", "strong garbage smell", "dozens of full trash bags in the garage", "items have to be sorted or removed first (card says 'Items first: not said')", "site visit needed", "sister has a key; brother will not be present"]
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: false
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes:
+          owner: "Only paths, piles and droppings in several rooms: I know it is a heavy-condition job and I'd quote a walk-through fee, barely. I don't know how I get in or whether to bring a haul-off truck. Bank job type says deep cleaning, so it may land with the wrong businesses."
+          estimator: "Floor visibility and the problem-area list got the core picture in two follow-ups. Stopped at 4 of 6 with items to sort, the kitchen, the garage and access unasked. No 'site visit needed' line."
+          field_tech: "Droppings are flagged. The garage full of trash bags and the kitchen are not."
 
   - scenario_id: house_cleaning_s15
-    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    labels: {A: baseline_none, B: playbook, C: baseline_human, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -686,9 +876,23 @@ scenarios:
           owner: "Everything. Inspection fee and a range for exclusion plus cleanup."
           estimator: "All facts in 6. Card carries respirator and hantavirus notes and electrician advice, which are not facts."
           field_tech: "Ready for trapping, exclusion and cleanup."
+      D:
+        quotable: 2
+        missing_facts: ["scratching in the attic walls at night", "chewed wires near a vent", "nests in the insulation (photo shows nesting material in one corner only)", "droppings over most of the attic and two garage corners", "one rodent seen a week ago, no trapping done"]
+        wasted_questions: ["When do you need this? (answer 'not sure')", "Any other pest sign photo ask (answer 'thats all i have')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes:
+          owner: "Signs most days in the attic and garage, a photo, 1,600 sq ft, cleanup wanted. Inspection fee and a range."
+          estimator: "Routed to rodents correctly. The how-often follow-up shows the activity is ongoing, but nothing asks what he hears or sees, so the wires and the extent are missing. One over the cap of 5."
+          field_tech: "Chewed wires near a vent are a surprise in the attic."
 
   - scenario_id: house_cleaning_s16
-    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    labels: {A: baseline_human, B: playbook, C: baseline_none, D: playbook_v2}
     scores:
       A:
         quotable: 2
@@ -732,13 +936,30 @@ scenarios:
           owner: "All the scope. Price now."
           estimator: "Four questions, nothing wasted."
           field_tech: "Everything on the card."
+      D:
+        quotable: 2
+        missing_facts: ["trash bins full, to the curb for tomorrow's pickup", "smart lock entry, host sends a code", "hot tub wipe-down and cover back on", "food on the floor from the party", "host is in Phoenix and cannot come"]
+        wasted_questions: ["How many turnovers a month? (one same-day job; answer 'once, today')", "How much time is there between check-out and the next check-in? (the opener already said check-in at 3pm and it is 11:30)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'house' in the card header (the homeowner said '2 bedroom 1 bath airbnb', never the home type)"]
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes:
+          owner: "Same-day 2/1 turnover with linens and the party photo. I can price it; the extras come later and I don't know how to get in."
+          estimator: "Timing skipped correctly, but two questions re-asked what the opener said. 6 against a cap of 4 with three and a half hours left. No access or 'anything else' question."
+          field_tech: "No door code, bins left full, hot tub cover off."
 
 summary_by_variant:
   playbook: {median_quotable: 2, quotable_share: 0.71, median_questions: 5, routing_correct_share: 0.88, fire_dept_correct_share: 1.0, trap_caught_share: 0.25, facts_not_stated_count: 2}
   baseline_none: {median_quotable: 2, quotable_share: 1.0, median_questions: 6, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 0.94, facts_not_stated_count: 1}
   baseline_human: {median_quotable: 2, quotable_share: 1.0, median_questions: 6, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 1.0, facts_not_stated_count: 0}
+  playbook_v2: {median_quotable: 2, quotable_share: 0.54, median_questions: 6, routing_correct_share: 0.81, fire_dept_correct_share: 1.0, trap_caught_share: 0.31, facts_not_stated_count: 4}
 # quotable_share = scenarios scored 2 or 3 / scenarios with a numeric score (playbook 10/14; baseline_none 13/13; baseline_human 14/14).
+# playbook_v2: 7/13 (s10 911 hold, s12 outside_area, s13 no_businesses scored null); median_quotable is the 7th of 13 values (six 1s, seven 2s).
 # routing_correct_share and trap_caught_share are over all 16 scenarios.
+# playbook_v2 routing misses: s03 (house_cleaning, expected plumbing_repair), s08 and s14 (bank_job_type 'deep cleaning', scenario expects null).
 where_playbook_lost_to_human:
   - "Bedrooms and bathrooms are asked as two questions (s01, s02, s04, s06, s07, s09, s11). Merge them into one, as both baselines did; s01 and s02 hit 8 questions against a cap of 5."
   - "Timing is re-asked when the opener already gave it (s16 'need someone TODAY') or the job is an ongoing turnover (s02). Skip the timing question when the opener answers it or the job is recurring turnover."
@@ -754,6 +975,24 @@ where_playbook_lost_to_human:
   - "s15: job_type general_pest instead of rodents, and no 'are they still around?' question, so the scratching, nests, chewed wires and extent of droppings are missing."
   - "s16: no 'anything else on the list, like trash, patio or hot tub?' question, so bins to the curb and the hot tub wipe-down are missing."
   - "s02: the card adds 'code given on the call' from the option text; write only what the homeowner said."
+
+where_v2_still_lost_to_human:
+  - "Rule 1 dropped the bedrooms question for recurring and move-out (s01, s04, s06, s07): four cards read 'bedrooms not said', and that alone moved s01 and s04 from 2 to 1. Bedrooms (or square footage) must be a must_know bank question for every house_cleaning job type; ask beds and baths as one question."
+  - "Rule 2's second follow-up went to fu_occupancy on every recurring job (s01, s04, s05, s06) and got nothing a quote uses, while the human's catch-all found the s05 casita, the s06 oxygen tubing, walker and laundry/bed/dishes, and the s04 oven. Replace fu_occupancy with a catch-all ('anything else to clean, like a casita or guest house, or anything the cleaner should know?') as the recurring second follow-up."
+  - "s01: still no condition or problem-area question, so the hard-water shower glass and the two-story house with carpeted stairs are missing. 8 questions against a cap of 5."
+  - "s02 and s16: the turnover bank has no access question, so the lockbox (s02) and smart lock (s16) are missing, along with the owner/host being out of town. Add access to the str_turnover must_know bank."
+  - "s03: the read step asked 'house cleaning, or plumbing?' and accepted 'cleaning', then ran five questions that all got 'not sure'. The human asked when the floor is wet, whether it comes back after mopping and how long. Route on the wet-floor-at-toilet symptom with a 'when is it wet?' question, not a self-diagnosis choice; stop asking bank questions after repeated 'not sure'. Routed to house_cleaning instead of plumbing_repair."
+  - "s04: no extras question (missed the never-cleaned oven), no square footage, and the card rounds 'about 9 months' to 'over 6 months'. Keep the homeowner's number on the card next to the option bucket."
+  - "s05 and s06: photo asked after the homeowner already said she cannot send photos; 'last clean' still spent on 'not sure'. Skip the photo ask when the opener says no photos."
+  - "s06: number-list questions to a slow one-finger typist, plus 'Is this for house cleaning?' after she said help with the house. The human used short plain questions and 'anything the cleaner should know?'."
+  - "s07: fu_extras caught oven and fridge, but the landlord's list was never asked, so blinds, baseboards, carpet cleaning with a receipt, the stained bedroom carpet and the key are missing. fu_empty still re-asks what the opener said. Make 'what is on the landlord's move-out list?' the first move-out follow-up and skip fu_empty when the opener says the tenant moves out."
+  - "s08: much better (vents, fans, cabinets, paint and haze all on the card), but house empty and one story are not asked, bank_job_type is 'deep cleaning' where the scenario expects null, and the card adds 'window frames' she never said."
+  - "s09: no musty-smell or leak question; two photo asks wasted after the bathroom photo showed the spots."
+  - "s11: the second follow-up went to extras ('not sure') instead of stories and high or hard-to-reach areas, so the vaulted entry and high ceiling fans are missing; the dryer was set aside with no facts kept for a second card."
+  - "s14: two follow-ups got only paths, piles and droppings; fu_items_out fell outside the cap, so the floor-to-ceiling stacks, kitchen, trash bags in the garage, items to sort and access (sister has the key, brother absent) are missing, with no 'site visit needed' line. For specialty_route, raise fu_items_out above fu_problem_area or allow a third follow-up, add access, and set bank_job_type null."
+  - "s15: routing fixed (rodents), but no 'are they still around, what do you hear or see?' question, so scratching, nests, chewed wires and the extent of droppings are missing."
+  - "s16: 6 questions against a cap of 4 on a same-day job, two of them re-asking what the opener said (turnovers a month, window). No 'anything else, like trash, patio or hot tub?' question, so bins to the curb and the hot tub are missing. Under time pressure, skip questions the opener answers and spend the slots on access and extras."
+  - "s02 and s16 cards put 'house' in the home-type header field when the homeowner only said 'airbnb'; leave it 'not said'."
 
 compliance:
   checked: "docs/catalog/expert/eval_runs/run-2026-10-29/house_cleaning/playbook.yaml against C1-C12, docs/ai_smell.yaml and docs/catalog/expert/house_cleaning.yaml (opened only after panel scoring, for C10)"
