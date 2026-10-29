@@ -4,7 +4,7 @@
 
 **Source:** `casey451/askhava`, main at commit `823c40c` (PR #37, "consent by texting in, terms at the pick, updates question", D-419 to D-428, merged Oct 28, 2026 18:55 UTC). Requirement IDs in the speaker notes point to `docs/spec/*.md`.
 
-**Consent change:** PR #37 merged before this was finalized, so everything below uses main: the first text in is the consent, the first reply carries the carrier lines and the first question follows as its own text, the homeowner is asked "text, email or both" after the request goes out, and the Terms (including the $100 cap, which stays inside the Terms) are accepted by picking beside "By picking, you agree to the Terms". Spanish conversations are off at launch (D-427).
+**Consent change:** PR #37 merged before this was finalized, so everything below uses main: the first text in is the consent, the first reply carries the carrier lines and the first question follows as its own text, the homeowner was asked "text, email or both" after the request goes out (removed in fix round 15: updates go by text and her quote page offers email, D-460), and the Terms (including the $100 cap, which stays inside the Terms) are accepted by picking beside "By picking, you agree to the Terms". Spanish conversations are off at launch (D-427).
 
 **Labels used on mock screens:**
 - **[exact]** wording is in the spec, word for word.
@@ -124,7 +124,7 @@
 
 **Speaker notes:** INT-041 (D-395, wording changed by D-419). Built from fixed fields, no contact details. Card contents are CARD-007. No AI writes this. This step is the natural place to show Maria the whole card (gap G3) and is also where an AI-written card would be approved by her (slide 39).
 
-### Slide 9: Request sent, and "text, email or both?"
+### Slide 9: Request sent
 
 **Screen (1:53 p.m.):**
 > **Ask Hava [exact template]:** Ask Hava: Your request went to 4 local businesses that take heating and cooling jobs. Not every business answers. Quotes are open until 1:53 p.m. Wednesday, Arizona time. We'll text you when the first one comes in. You can choose as soon as the first quote arrives. If it can't wait, it's fine to call a company you know too. Businesses get requests by email, so the first quote can take a few hours.
@@ -134,7 +134,7 @@
 - Each update email has an unsubscribe link. A bounced address switches her back to text.
 - "4" counts only businesses whose email was accepted. Each business has 24 hours from its own card to quote.
 
-**Speaker notes:** TXT-032 including the two urgent lines (her answer was "Today, it's urgent", chose regular). N per CARD-019 (D-397). Quote window PICK-001. Updates question TXT-018 (D-422); email checked for format only, never verified by a link (gap G7). On an emergency job the question comes after the INT-029 questions.
+**Speaker notes:** TXT-032 including the two urgent lines (her answer was "Today, it's urgent", chose regular). N per CARD-019 (D-397). Quote window PICK-001. Updates by text, email offered on the quote page, TXT-018 (D-422, D-460); email checked for format only, never verified by a link (gap G7). On an emergency job the question comes after the INT-029 questions.
 
 ### Slide 10: Quotes arriving
 

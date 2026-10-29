@@ -9926,8 +9926,8 @@
     {
       "id": "T156",
       "slug": "intake-question-bank",
-      "title": "intake: ask the question bank's set one question at a time (AI-reworded within AI-019 when the switch is on), routing confidence with the trade and job-type questions and \"Job type not certain\", the homeowner's card approval step, and the text-email-or-both updates question with the one-tap email confirm",
-      "goal": "intake: ask the question bank's set one question at a time (AI-reworded within AI-019 when the switch is on), routing confidence with the trade and job-type questions and \"Job type not certain\", the homeowner's card approval step, and the text-email-or-both updates question with the one-tap email confirm",
+      "title": "intake: ask the question bank's set one question at a time (AI-reworded within AI-019 when the switch is on), routing confidence with the trade and job-type questions and \"Job type not certain\", the homeowner's card approval step, and the email updates offered on the quote page, with the one-tap email confirm",
+      "goal": "intake: ask the question bank's set one question at a time (AI-reworded within AI-019 when the switch is on), routing confidence with the trade and job-type questions and \"Job type not certain\", the homeowner's card approval step, and the email updates offered on the quote page, with the one-tap email confirm",
       "type": "build",
       "phase": 1,
       "stage": "2",
@@ -10374,7 +10374,8 @@
       "decisions": [
         "D-432",
         "D-433",
-        "D-446"
+        "D-446",
+        "D-460"
       ],
       "cites": [],
       "budget": {

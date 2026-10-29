@@ -32,6 +32,7 @@ When you send a request, Ask Hava sends a description of the job, with your name
 | Who | What they see | When |
 |---|---|---|
 | Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions | When the request goes out |
+| Anyone on askhava.com | Your feedback, with your first name and town, only if you ticked the box allowing it | After your job is done |
 | The one business you pick | Your first name and the job address, plus your email if you chose to share it | Only after you pick it, ask us to share them, and it confirms and pays its introduction fee |
 | Businesses that get your job card | The job card you saw, your answers and the photos you kept, with no name, phone, email or street address | When the card goes out |
 | No business, ever | Your phone number | Never. Calls go through a masked Ask Hava number |

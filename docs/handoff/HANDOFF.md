@@ -71,7 +71,7 @@ Standard statement: "Ask Hava is not a contractor and does not perform, bid on o
 - **D-419 to D-428 Texting and terms:**
   - Texting in is the consent; there's no "Reply OK".
   - Terms are accepted by tapping Pick, with only "By picking, you agree to the Terms" beside the button. The $100 cap stays inside the Terms.
-  - After a request goes out, ask once: updates by text, email or both.
+  - After a request goes out, ask once: updates by text, email or both. (Replaced in fix round 15: updates go by text, and the quote page offers email, D-460.)
 - **Trademark:** skipped for now.
 - **Insurance:** later, after the business is working.
 - **Spanish:**
@@ -113,7 +113,7 @@ Casey walked through `docs/handoff/walkthrough-storyboard.md` (the 42-slide "how
 9. **Coverage messages.**
    - Tell the homeowner right away how many businesses the request went to ("we're sending this to the 5 window washers signed up with us").
    - Or say right away that we don't cover that trade yet.
-   - When a trade has no businesses, email Casey's AI assistant so he can recruit. Recruiting stays email or in person, never texts or calls.
+   - When a trade has no businesses, email Casey's AI assistant so he can recruit. Recruiting stays email or in person, never texts or calls. (Updated in fix round 15: mostly self-serve from disclosed Facebook group posts plus a few visits, D-456.)
 10. **Re-review everything** in the plan through this lens.
 
 **These reverse earlier rules on purpose. Record each reversal as a decision with Casey's words:**

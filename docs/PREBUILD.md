@@ -232,7 +232,7 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | Account checkpoint | Claude Console workspace (separate from your Claude plan) | Environment secret locked to api.anthropic.com; Railway test variable | Real-AI test on fake data (T137); its API terms are recorded for B5 |
 | Account checkpoint (optional) | Concept-image provider (chosen then) | Environment secret locked to its host; Railway test variable | Concept images for design jobs (INT-046); its terms recorded; switch stays off without it |
 | Account checkpoint | Storage bucket (chosen then, D-094) | Railway test variable | Audit stream and backups |
-| After the build plan is complete | LLC, EIN, city license, TPT path, insurance, Google Workspace, DNS (SPF, DKIM, DMARC) | Not keys | Section 8 |
+| When the hand-run test hits its quote line (D-467) | LLC, EIN, city license, TPT path, Google Workspace, DNS (SPF, DKIM, DMARC); insurance later (D-426) | Not keys | Section 8 |
 | Gate C | Twilio brand and campaign registration, Stripe activation, live keys | Railway live project only, by you | Going live |
 
 **Two encryption checks at the account checkpoint (D-454):** the host you pick encrypts the database, its volumes and its backups at rest (Render documents this; confirm it for Railway in writing), and the Claude Console workspace has zero data retention in force before the AI switch goes on. Decide there too whether to add an outside key service (AWS or Google Cloud KMS); it is optional, about $1 a month for the key, and cleanest on Render Pro.
@@ -267,7 +267,7 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | A task fails | One retry, then Opus; after 3 tries it's BLOCKED, only its dependents wait, and it goes on the end-of-build list |
 | Usage limit | The task waits for the reset; never pay per use |
 | Phase 2 sandbox calls blocked by the deny rules (noted at K0) | The sandbox tasks use the vendor SDKs; if one blocks, it's listed at the end, not asked mid-build |
-| Safety-number verification can't reach city or utility sites | Unverified numbers are left out of texts; never a stop (item 12 in section 3 avoids it) |
+| Safety-number verification can't reach city or utility sites | Unverified numbers are left out of texts; never a stop (the safety-number item was dropped, D-436) |
 | Stale lines in `BUILD_BRIEF.md` (Part 2 lists "Arizona TPT license" and "zero retention"; Appendix A says 7 past, the live routine runs at 50 past) | Logged; the decisions (D-412, D-414) win; fix in a docs task, no stop |
 | Older source lines that round 14 reversed (changes file :58, :86, :89, :196, :247, :248; `BUILD_BRIEF.md` :182, :340: photos off cards, heat and water safety lines, tenant line, TPT license, insurance first) | `docs/constitution.md` updated to match; the protected files stay as they are and are superseded by D-417, D-426, D-430, D-432, D-436, D-437, D-444 (D-450) |
 

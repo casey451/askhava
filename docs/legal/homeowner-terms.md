@@ -52,7 +52,7 @@ Ask Hava is not an emergency service and does not watch messages around the cloc
 
 ## 7. Texts and emails
 
-Our texts are automated. When you text Ask Hava or start a chat on askhava.com, you agree to get automated texts about your own request; you don't need to reply to agree. After your request goes out, we ask once whether you want quote updates by text, email or both; text is the default, and every update links to your private quote page. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time. You can also opt out by emailing help@askhava.com, using the help form, or switching texts off on your quote page. The details are in the Ask Hava SMS Terms.
+Our texts are automated. When you text Ask Hava or start a chat on askhava.com, you agree to get automated texts about your own request; you don't need to reply to agree. Quote updates come by text unless you switch to email, or both, on your quote page, and every update links to your private quote page. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time. You can also opt out by emailing help@askhava.com, using the help form, or switching texts off on your quote page. The details are in the Ask Hava SMS Terms.
 
 ## 8. Electronic signatures
 
