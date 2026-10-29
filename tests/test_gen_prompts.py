@@ -201,14 +201,125 @@ def test_fees_render_and_no_placeholder_left() -> None:
     assert "${" not in text
 
 
-def test_goal_section_omitted_when_equal_to_title() -> None:
-    same = gp.render(Template(TEMPLATE_TEXT), fake_task(goal="Fake thing"))
-    assert "## Goal" not in same
-    assert "## Goal" in gp.render(Template(TEMPLATE_TEXT), fake_task())
+def test_goal_equal_to_title_is_an_error() -> None:
+    with pytest.raises(ValueError, match="goal repeats the title"):
+        gp.render(Template(TEMPLATE_TEXT), fake_task(goal="Fake thing"))
+    assert "## Goal\n\nDo a fake thing." in gp.render(Template(TEMPLATE_TEXT), fake_task())
 
 
 def test_no_tests_changes_definition_of_done() -> None:
-    text = gp.render(Template(TEMPLATE_TEXT), fake_task(tests=[]))
+    text = gp.render(Template(TEMPLATE_TEXT), fake_task(tests=[], acceptance="The fake thing works."))
     assert gp.NO_TESTS_DONE in text
     assert gp.TESTS_DONE not in text
+    assert "Acceptance: The fake thing works." in text
     assert gp.TESTS_DONE in gp.render(Template(TEMPLATE_TEXT), fake_task())
+
+
+# --- P-1 (D-485): pasted sources, test commands, copy steps, derived context ---------------
+
+SPEC_TEXT = (
+    "# Spec: fake\n\nPrefix: `REQ`\n\n"
+    "- **REQ-001** The fake rule holds at 9:00 sharp. Source: `src.md:1`.\n"
+)
+DESIGN_TEXT = (
+    "# Test design\n\n## 5. The four end-to-end journeys\n\nEvery journey ends with the fake closing checks.\n\n"
+    "**J1 Homeowner** (INT).\n1. A fake step.\n\n"
+    "## 7. Catalog\n\n| ID | Kind | Layer | Covers | Cases |\n|---|---|---|---|---|\n"
+    "| TD-REQ-01 | E | U | REQ-001 | 8:59:59 refused, 9:00:00 accepted |\n"
+)
+DECISION_TEXT = "# Decisions\n\n- **D-001** Question: " + "q" * 300 + " Choice: " + "x" * 900 + "\n"
+
+
+def sourced_repo(tmp_path: Path, task: dict[str, Any]) -> Path:
+    root = make_repo(tmp_path, [task])
+    (root / "docs" / "spec").mkdir(parents=True)
+    (root / "docs" / "spec" / "fake.md").write_text(SPEC_TEXT, encoding="utf-8")
+    (root / "docs" / "test-design.md").write_text(DESIGN_TEXT, encoding="utf-8")
+    (root / "docs" / "decisions.md").write_text(DECISION_TEXT, encoding="utf-8")
+    (root / "src.md").write_text("The cited source line.\n", encoding="utf-8")
+    return root
+
+
+def pasted_task() -> dict[str, Any]:
+    return fake_task(
+        requirements=["REQ-001"], tests=["TD-REQ-01", "J1"], decisions=["D-001"], cites=["src.md:1"],
+        reads=["docs/spec/fake.md"],
+    )
+
+
+def test_prompt_pastes_requirements_tests_journeys_decisions_and_cites(tmp_path: Path) -> None:
+    root = sourced_repo(tmp_path, pasted_task())
+    text = gp.render(Template(TEMPLATE_TEXT), pasted_task(), gp.load_sources(root))
+    assert "**REQ-001** The fake rule holds at 9:00 sharp. (`docs/spec/fake.md:5`)" in text
+    assert "**TD-REQ-01** (kind E; layers U; covers REQ-001): 8:59:59 refused, 9:00:00 accepted" in text
+    assert "1. A fake step." in text and "Every journey ends with the fake closing checks." in text
+    excerpt = "- **D-001** Question: " + "q" * (gp.DECISION_QUESTION_CHARS - len("Question: ")) + " … Choice: " + "x" * (gp.DECISION_CHOICE_CHARS - 1) + " …\n"
+    assert excerpt in text  # the question is cut to its limit, the choice itself is kept (its leading space counts)
+    assert "x" * gp.DECISION_CHOICE_CHARS not in text  # the choice is cut at its limit
+    assert "- `src.md:1`: The cited source line." in text
+
+
+def test_run_tests_block_maps_each_test_layer() -> None:
+    owns = [
+        "app/fake/src/rules.rs",
+        "app/fake/src/tests/fee_tiers.rs",
+        "tests/integration/tests/outbox.rs",
+        "tests/security/ui/forge.rs",
+        "tests/e2e/pick_flow.spec.ts",
+        "tests/a11y/pick_forms.spec.ts",
+        "tests/docs/test_terms.py",
+    ]
+    block = gp.run_tests_block(fake_task(owns=owns))
+    assert "cargo test -p askhava-fake tests::fee_tiers" in block
+    assert "cargo test -p askhava-integration --test outbox" in block
+    assert "npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/pick_flow.spec.ts" in block
+    assert "npx playwright test --config tests/a11y/playwright.config.ts tests/a11y/pick_forms.spec.ts" in block
+    assert "python3 -m pytest tests/docs/test_terms.py" in block
+    assert "forge" not in block and "rules.rs" not in block
+    assert gp.run_tests_block(fake_task(owns=["app/fake/src/rules.rs"])) == gp.NO_TEST_FILES
+
+
+def test_copy_steps_only_for_tasks_that_own_copy() -> None:
+    plain = gp.render(Template(TEMPLATE_TEXT), fake_task(owns=["app/fake/src/rules.rs"]))
+    assert gp.COPY_SKIP in plain and gp.COPY_STEPS not in plain
+    for path in ("app/site/templates/home.html", "app/site/static/site.css", "docs/legal/terms.md", "docs/copy/site.md"):
+        text = gp.render(Template(TEMPLATE_TEXT), fake_task(owns=[path]))
+        assert gp.COPY_STEPS in text, path
+    assert "cold read (WORD-028)" in plain
+
+
+def test_definition_of_done_has_no_unverifiable_items() -> None:
+    text = gp.render(Template(TEMPLATE_TEXT), fake_task())
+    assert "`bash scripts/smoke.sh` is green on your branch" in text
+    for gone in ("Required checks pass on your commit", "Coverage does not drop", "A fresh-eyes review of the diff"):
+        assert gone not in text
+    assert "docs/architecture.md` section 2" in text and "docs/code-docs.md" in text
+
+
+def test_context_is_derived_from_bytes_and_written_back(tmp_path: Path) -> None:
+    task = pasted_task()
+    task["owns"] = ["app/fake.rs"]
+    task["reads"] = ["docs/spec/fake.md", "big.md"]
+    root = sourced_repo(tmp_path, task)
+    (root / "big.md").write_text("y" * 400_000, encoding="utf-8")
+    (root / "app").mkdir()
+    (root / "app" / "fake.rs").write_text("z" * 80_000, encoding="utf-8")
+    assert gp.main(["--root", str(root)]) == 0
+    stored = json.loads((root / "kit/tasks.json").read_text(encoding="utf-8"))["tasks"][0]["budget"]["context_pct"]
+    prompt = (root / "kit/prompts/T900.md").read_text(encoding="utf-8")
+    expected = -(-(len(prompt.encode()) + 480_000) * 100 // (4 * 200_000))
+    assert stored == expected and f"{stored}% of the context window" in prompt
+    assert gp.main(["--root", str(root), "--check"]) == 0
+
+
+def test_check_prints_token_estimates_and_notes_drift(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = make_repo(tmp_path, [fake_task()])
+    assert gp.main(["--root", str(root)]) == 0
+    capsys.readouterr()
+    (root / "app").mkdir()
+    (root / "app" / "fake.py").write_text("q" * 200_000, encoding="utf-8")
+    assert gp.main(["--root", str(root), "--check"]) == 0
+    out = capsys.readouterr().out
+    assert "T900: about" in out and "tokens" in out and "regenerate to refresh" in out

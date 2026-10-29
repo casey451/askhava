@@ -1,0 +1,371 @@
+id,message,trade,job_type,emergency,first_question
+appliance_repair_t01,fridge not cold,appliance_repair,fridge,no,Can you send a photo of the model/serial sticker?
+appliance_repair_t02,smell gas behind the stove after I pulled it out to clean,appliance_repair,range_oven,yes,Is it gas or electric?
+appliance_repair_t03,la lavadora no saca el agua,appliance_repair,washer,no,Can you send a photo of the model/serial sticker?
+appliance_repair_t04,dryer takes 3 cycles to dry,appliance_repair,dryer,no,Is it gas or electric?
+appliance_repair_t05,"hook up my gas dryer, i have the hose",appliance_repair,appliance_install,no,Is it gas or electric?
+appliance_repair_t06,dishwasher leaking all over floor wont stop,appliance_repair,dishwasher,no,What is it doing?
+appliance_repair_t07,"over the range microwave install, old one removed",appliance_repair,microwave,no,Can you send a photo of the model/serial sticker?
+appliance_repair_t08,need a 240 outlet for new electric dryer,electrical,new_circuit,no,Is it gas or electric?
+appliance_repair_t09,oven shows F3 code,appliance_repair,range_oven,no,Can you send a photo of the model/serial sticker?
+appliance_repair_t10,water heater making popping noise,water_heater,noise_smell,no,Is it gas or electric?
+boat_dock_t01,"boat won't start, mercruiser, on trailer in driveway",boat_dock,engine_repair,no,How long is the boat?
+boat_dock_t02,need my pontoon detailed and waxed,boat_dock,detailing,no,How long is the boat?
+boat_dock_t03,boat,boat_dock,unknown,no,Is this for a boat or a dock / lift?
+boat_dock_t04,La lancha se calienta y sale vapor,boat_dock,engine_repair,no,What kind of engine?
+boat_dock_t05,"my dock floats are sinking on one side, marina slip",boat_dock,dock_repair,no,What is the dock work?
+boat_dock_t06,want to build a dock behind my house on the lake,boat_dock,dock_new,no,Where is it?
+boat_dock_t07,"felt a buzz in the water by our dock, kids are swimming",boat_dock,dock_electrical,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+boat_dock_t08,golf cart and boat both need batteries,boat_dock,electrical_marine,no,How long is the boat?
+boat_dock_t09,trailer lights dont work and bearing is squeaking,boat_dock,trailer,no,Where is it?
+boat_dock_t10,Necesito que alguien encere mi lancha y limpie la tapicería,boat_dock,detailing,no,How long is the boat?
+cabinets_countertops_t01,cabinet door fell off,cabinets_countertops,cabinet_repair,no,What do you need?
+cabinets_countertops_t02,granite quote for kitchen and island,cabinets_countertops,countertop_install,no,How big is the area?
+cabinets_countertops_t03,cotización de cubierta de cuarzo para la cocina,cabinets_countertops,countertop_install,no,How big is the area?
+cabinets_countertops_t04,new counters and move the gas stove to the island,cabinets_countertops,countertop_install,no,Is the layout changing?
+cabinets_countertops_t05,under sink cabinet floor is rotted and wet,plumbing,leak_slow,no,What do you need?
+cabinets_countertops_t06,reface cabinets white shaker doors,cabinets_countertops,refacing,no,How big is the area?
+cabinets_countertops_t07,chip on granite edge by dishwasher,cabinets_countertops,countertop_repair,no,What do you need?
+cabinets_countertops_t08,"swap bathroom vanity 36 inch, I bought it",cabinets_countertops,vanity,no,Remove and haul away old ones?
+cabinets_countertops_t09,kitchen remodel whole thing,cabinets_countertops,cabinet_install,no,What do you need?
+cabinets_countertops_t10,smell gas after the counter guys left,cabinets_countertops,countertop_install,yes,Does the sink or a cooktop sit in the counter?
+carpet_cleaning_t01,carpets,carpet_cleaning,carpet_clean,no,What needs cleaning?
+carpet_cleaning_t02,3 bedrooms and hall steam cleaned plus sectional couch,carpet_cleaning,carpet_clean,no,Pet stains or odor?
+carpet_cleaning_t03,dog peed everywhere smells so bad,carpet_cleaning,pet_odor,no,How many rooms or areas?
+carpet_cleaning_t04,lavar alfombras de toda la casa,carpet_cleaning,carpet_clean,no,How many rooms or areas?
+carpet_cleaning_t05,water heater leaked and the carpet in the hall is soaked,carpet_cleaning,water_damage_route,depends,Is any carpet wet from a leak or flood right now?
+carpet_cleaning_t06,grout in kitchen is black,carpet_cleaning,tile_grout,no,How many rooms or areas?
+carpet_cleaning_t07,want to replace carpet with lvp,flooring,lvp_laminate,no,What needs cleaning?
+carpet_cleaning_t08,toilet overflow dirty water got on bedroom carpet,carpet_cleaning,water_damage_route,depends,Is any carpet wet from a leak or flood right now?
+carpet_cleaning_t09,area rug wool 8x10 red wine,carpet_cleaning,area_rug,no,What needs cleaning?
+carpet_cleaning_t10,clean carpets in rental between guests next week,carpet_cleaning,carpet_clean,no,How many rooms or areas?
+drywall_t01,hole in wall,drywall,small_patch,no,How big is the damaged area?
+drywall_t02,ceiling is sagging and dripping in the hallway,drywall,ceiling_repair,yes,Was there water? Is the leak fixed?
+drywall_t03,"need a 4x4 section replaced after the water heater leaked, its dry now",drywall,water_damage,no,What does the wall/ceiling surface look like?
+drywall_t04,quitar el techo de palomitas de toda la casa,drywall,popcorn_removal,no,About when was the home built?
+drywall_t05,match knockdown texture where AC guy cut a hole,drywall,texture_match,no,How big is the damaged area?
+drywall_t06,want to finish the garage walls with drywall,drywall,new_drywall,no,How big is the damaged area?
+drywall_t07,crack above the door keeps coming back and door sticks now,drywall,small_patch,no,How big is the damaged area?
+drywall_t08,black spots on bathroom wall and it's soft,plumbing,leak_slow,no,Was there water? Is the leak fixed?
+drywall_t09,tengo un hoyo en la pared de la puerta,drywall,small_patch,no,How big is the damaged area?
+drywall_t10,patch holes from tv mount and paint before I move out,drywall,small_patch,no,Paint after the patch?
+electrical_t01,outlet in bedroom smells like burning plastic,electrical,burning_sparks,yes,(Give safety step first.) Is there any smoke or flame right now?
+electrical_t02,half my house has no power but the other half does,electrical,partial_power,depends,"Have you checked the breaker panel, and did any breaker trip and not reset?"
+electrical_t03,"want to put in 2 ceiling fans, already bought",electrical,lighting_fan,no,"Are there lights or fans in those spots now, and how high are the ceilings?"
+electrical_t04,"house has federal pacific panel, inspector said replace, need quotes",electrical,panel_upgrade,no,Can you send a photo of the panel with the door open and the label inside the door?
+electrical_t05,se bota el breaker cuando prendo el microondas,electrical,breaker_tripping,no,"¿Pasa con un solo breaker, y está el microondas en la cocina?"
+electrical_t06,power line down in my backyard after storm,electrical,whole_home_out,yes,(Give downed-line step first.) Are you and everyone else away from the line?
+electrical_t07,need a plug for a tesla in garage,generator_ev,ev_charger,no,"Is it a wall charger or a 240V outlet, and how far is the garage from the panel?"
+electrical_t08,smoke detectors chirping all over and they're wired,electrical,smoke_alarm,no,"How many alarms are there, and can you send a photo of one?"
+electrical_t09,lights flicker when the ac kicks on and the ac is also making a weird noise,electrical,flicker_dim,no,"Do all the lights flicker, or only some, and when did it start?"
+electrical_t10,REQ-0194 electric stuff,electrical,outlet_switch,no,"What is going on: something not working, something to install, or a burning smell or sparks?"
+evaporative_coolers_t01,need my swamper started up,evaporative_coolers,cooler_startup,no,"Is the cooler on the roof, on the ground by a wall, or in a window?"
+evaporative_coolers_t02,cooler is running but house still 88 and it feels sticky,evaporative_coolers,cooler_not_cooling,depends,"Is anyone at home who is older, very young, or has a medical need for cool air?"
+evaporative_coolers_t03,water dripping out of the vent in the hallway ceiling from cooler,evaporative_coolers,cooler_leak,depends,"Is the water near any lights, outlets or wiring?"
+evaporative_coolers_t04,el cooler no prende y hace mucho calor,evaporative_coolers,cooler_not_running,depends,"¿Hay alguien en casa mayor de edad, un bebé o alguien enfermo?"
+evaporative_coolers_t05,"REQ-0158 winterize cooler + cover, im in minnesota till april",evaporative_coolers,cooler_winterize,no,"Is the cooler on the roof or on the ground, and can someone local let a tech through the gate if needed?"
+evaporative_coolers_t06,pads are all crusty white. how often should i change,evaporative_coolers,cooler_pads,no,Would you like a business to quote new pads? Do you know if they are the thin aspen kind or thick block kind?
+evaporative_coolers_t07,want to get rid of the swamp cooler and get real ac,hvac,ac_replacement,no,"What size is the home, and do you already have ducts for central air?"
+evaporative_coolers_t08,cooler motor smells like burning,evaporative_coolers,cooler_not_running,yes,Please turn the cooler off at its switch. Do you see any smoke?
+evaporative_coolers_t09,swamp coolr overflowing water all down the roof,evaporative_coolers,cooler_overflow,no,"Is the water staying on the roof, or is any coming inside?"
+evaporative_coolers_t10,my portable cooler on the patio stopped blowing,evaporative_coolers,cooler_not_running,no,"What brand is it, and does the fan run at all?"
+flooring_t01,new floors,flooring,lvp_laminate,no,About how much floor?
+flooring_t02,"want to rip out the old linoleum in kitchen, house built 1974",flooring,old_floor_removal,no,About when was the home built?
+flooring_t03,cotización para poner piso laminado en toda la casa,flooring,lvp_laminate,no,What is on the floor now?
+flooring_t04,3 tiles cracked in a line across the living room,flooring,floor_repair,no,About how much floor?
+flooring_t05,"retile shower walls and floor, its leaking behind",flooring,shower_tile,no,About how much floor?
+flooring_t06,carpet has a big wrinkle and seam coming apart,flooring,floor_repair,no,About how much floor?
+flooring_t07,planks by dishwasher swelling and wet,plumbing,leak_slow,no,About how much floor?
+flooring_t08,tile whole house approx 1600 sqft porcelain i bought,flooring,tile_install,no,What is on the floor now?
+flooring_t09,refinish hardwood in bedroom and hall,flooring,hardwood,no,About how much floor?
+flooring_t10,también necesito quitar alfombra y poner loseta,flooring,tile_install,no,About how much floor?
+garage_doors_t01,heard a huge bang in garage and now door wont open,garage_doors,broken_spring,no,"Is a car stuck inside, or is the door open and won't close?"
+garage_doors_t02,garage door is crooked and hanging on one side,garage_doors,off_track,yes,"Is a car stuck inside, or is the door open and won't close?"
+garage_doors_t03,se rompió el resorte de la cochera,garage_doors,broken_spring,no,What size door?
+garage_doors_t04,"opener just clicks, door doesnt move",garage_doors,opener_repair,no,What is going on?
+garage_doors_t05,want new insulated garage door and opener 16x7,garage_doors,door_replace,no,About how old is the opener?
+garage_doors_t06,door reverses every time it closes,garage_doors,opener_repair,no,What is going on?
+garage_doors_t07,need outlet added in garage ceiling for new opener,electrical,outlet_switch,no,What is going on?
+garage_doors_t08,program my new car to the garage,garage_doors,remote_keypad,no,What is going on?
+garage_doors_t09,garage door kinda loud,garage_doors,tune_up,no,Where are the springs?
+garage_doors_t10,backed into garage door panel is bent,garage_doors,panel_repair,no,What size door?
+gas_lines_t01,i smell gas in the kitchen kinda,gas_lines,gas_leak,yes,(Give gas step first.) Are you outside the home now?
+gas_lines_t02,need gas run to my bbq island out back,gas_lines,new_gas_line,no,Do you smell gas or hear hissing right now?
+gas_lines_t03,unisource red tagged my water heater,gas_lines,red_tag_repair,no,Did UniSource leave a tag or paper? A photo of it helps.
+gas_lines_t04,huele a gas afuera cerca del medidor,gas_lines,gas_leak,yes,(Paso de seguridad de gas primero.) ¿Ya está lejos del medidor?
+gas_lines_t05,gas was turned off after the outage how do i relight,gas_lines,gas_restore,no,UniSource says only their field employees may turn gas back on. Would you like their number?
+gas_lines_t06,hit a pipe digging for a fence post smells funny,gas_lines,gas_leak,yes,(Give dig damage step first.) Is everyone away from the spot?
+gas_lines_t07,replace the gas hose behind my dryer and fix the dryer not heating,gas_lines,connector_valve,no,Do you smell gas or hear hissing right now?
+gas_lines_t08,propane tank smell at the cabin,gas_lines,gas_leak,yes,(Give propane step first.) Are you away from the tank and cabin?
+gas_lines_t09,my furnace wont light,hvac,heat_not_working,no,Do you smell gas right now?
+gas_lines_t10,gas for fire pit plus pavers around it,gas_lines,new_gas_line,no,Do you smell gas or hear hissing right now?
+generator_ev_t01,need a plug for my tesla in the garage,generator_ev,ev_charger,no,"Do you already have the charger, or do you want a 240V outlet only?"
+generator_ev_t02,"whole house generator quote, have gas",generator_ev,standby_generator,no,Can you send a photo of your main electrical panel with the door open?
+generator_ev_t03,running my generator in the garage with door open is that ok,generator_ev,transfer_switch,yes,(Give CO step first.) Is the generator off and outside now?
+generator_ev_t04,plugged generator into dryer outlet to run house,generator_ev,transfer_switch,yes,(Give backfeed step first.) Would you like quotes for a safe hookup like a transfer switch or inlet?
+generator_ev_t05,generac wont start red light,generator_ev,generator_service,no,Can you send a photo of the generator's screen and label?
+generator_ev_t06,cargador para carro electrico en la cochera,generator_ev,ev_charger,no,¿Ya tiene el cargador o solo quiere un enchufe de 240?
+generator_ev_t07,smell gas by the generator,gas_lines,gas_leak,yes,(Give gas step first.) Are you away from the area now?
+generator_ev_t08,ev charger keeps tripping breaker and plug looks melted,generator_ev,ev_charger_repair,yes,(Give EV damage step first.) Have you stopped using the charger?
+generator_ev_t09,power out whole street what do i do,electrical,whole_home_out,depends,Have you reported the outage to UniSource at [number removed, see source]?
+generator_ev_t10,need outlet for golf cart charger and a new panel,electrical,panel_upgrade,no,Can you send a photo of your main electrical panel with the door open?
+golf_cart_t01,golf cart clicks but wont go,golf_cart,wont_run,no,What batteries does it have?
+golf_cart_t02,cart,golf_cart,unknown,no,Is the cart electric or gas?
+golf_cart_t03,want lithium batteries in my ezgo and a lift kit,golf_cart,batteries,no,What batteries does it have?
+golf_cart_t04,"Mi carrito de golf no carga, el cargador no prende",golf_cart,charger,no,Is the cart electric or gas?
+golf_cart_t05,battery smoking in the garage while charging!!,golf_cart,batteries,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+golf_cart_t06,"make my cart street legal, lights blinkers mirrors",golf_cart,upgrades,no,Is the cart electric or gas?
+golf_cart_t07,yamaha gas cart wont start,golf_cart,gas_engine,no,What brand and about what year?
+golf_cart_t08,need 240 outlet in garage for charger and cart serviced,golf_cart,service,no,Is the cart electric or gas?
+golf_cart_t09,boat lift motor is dead,boat_dock,boat_lift,no,Is this for a boat or a dock / lift?
+golf_cart_t10,los frenos del carrito no sirven,golf_cart,brakes_tires,no,Is the cart electric or gas?
+gutter_solar_cleaning_t01,solar panels dirty,gutter_solar_cleaning,solar_wash,no,About how many solar panels?
+gutter_solar_cleaning_t02,pigeons living under my solar panels poop everywhere,gutter_solar_cleaning,critter_guard,no,About how many solar panels?
+gutter_solar_cleaning_t03,limpiar paneles solares 20 paneles casa de un piso,gutter_solar_cleaning,solar_wash,no,What is the roof made of?
+gutter_solar_cleaning_t04,gutters overflowing in the storm,gutter_solar_cleaning,gutter_clean,no,How many stories?
+gutter_solar_cleaning_t05,one panel looks cracked and black spot on it,gutter_solar_cleaning,solar_repair_route,no,Do you see any cracked panels or loose wires?
+gutter_solar_cleaning_t06,inverter is buzzing and smells burnt,gutter_solar_cleaning,solar_repair_route,yes,Do you see any cracked panels or loose wires?
+gutter_solar_cleaning_t07,gutter pulled off the fascia,gutter_solar_cleaning,gutter_repair_route,no,How many stories?
+gutter_solar_cleaning_t08,palm fronds all over roof after wind,gutter_solar_cleaning,roof_debris,no,What is the roof made of?
+gutter_solar_cleaning_t09,my roof tile broke when the panel guy walked on it,roofing,tile_repair,no,What is the roof made of?
+gutter_solar_cleaning_t10,clean panels and windows same day?,gutter_solar_cleaning,solar_wash,no,About how many solar panels?
+handyman_t01,need a handyman for some stuff,handyman,minor_repairs_list,no,How many things do you need done?
+handyman_t02,can someone mount a 65in tv above the fireplace and hide the cords in the wall,handyman,mount_hang,no,"Does any of it touch wiring, gas, water pipes or the AC?"
+handyman_t03,"hole in drywall from door knob, also the door doesnt close right",handyman,small_drywall_patch,no,How many things do you need done?
+handyman_t04,"need my gas dryer hooked up in new place, handyman ok?",appliance_repair,appliance_install,no,"Does any of it touch wiring, gas, water pipes or the AC?"
+handyman_t05,Necesito alguien que me arme unos muebles y cuelgue una tele,handyman,furniture_assembly,no,How many things do you need done?
+handyman_t06,outlet in kitchen sparked and now smells burnt can a handyman fix,electrical,burning_sparks,yes,"Does any of it touch wiring, gas, water pipes or the AC?"
+handyman_t07,"want to knock out the wall between kitchen and living room, small job",handyman,route_elsewhere,no,How many things do you need done?
+handyman_t08,smoke detector keeps chirping every minute and its on 12ft ceiling,handyman,fixture_swap_plugin,no,Is any of it high up or outside?
+handyman_t09,"list: ceiling fan swap, 2 faucets, regrout shower, new blinds, fix gate",handyman,minor_repairs_list,no,"Does any of it touch wiring, gas, water pipes or the AC?"
+handyman_t10,tengo un hoyo en la pared del baño y está mojada la pared,plumbing,leak_slow,no,"Does any of it touch wiring, gas, water pipes or the AC?"
+home_inspection_t01,need inspection,home_inspection,buyer_inspection,no,What kind of inspection?
+home_inspection_t02,"buying a 1978 house with pool in havasu, need inspector this week",home_inspection,buyer_inspection,no,About how big is the home?
+home_inspection_t03,necesito inspección para casa móvil que voy a comprar,home_inspection,manufactured_home,no,About how big is the home?
+home_inspection_t04,lender needs a termite report,home_inspection,wdiir,no,What kind of inspection?
+home_inspection_t05,can the inspector tell me if the roof needs replacing and what it costs,home_inspection,buyer_inspection,no,What kind of inspection?
+home_inspection_t06,seeing termite tubes on the garage wall,pest_control,termites,no,What kind of inspection?
+home_inspection_t07,11 month walkthrough on new build,home_inspection,warranty_check,no,About how big is the home?
+home_inspection_t08,sewer scope and inspection for 3br,home_inspection,addons,no,About how old is the home?
+home_inspection_t09,inspector here and CO alarm going off,home_inspection,buyer_inspection,yes,What kind of inspection?
+home_inspection_t10,"selling, want to know problems first",home_inspection,pre_listing,no,About how big is the home?
+house_cleaning_t01,need a cleaner,house_cleaning,recurring,no,What kind of cleaning?
+house_cleaning_t02,airbnb turnover sat 10-3 3br 2ba need someone reliable,house_cleaning,str_turnover,no,How big is the home?
+house_cleaning_t03,limpieza profunda para casa de 4 recámaras,house_cleaning,deep_clean,no,How many bathrooms?
+house_cleaning_t04,moving out end of month need it spotless for deposit,house_cleaning,move_out,no,How big is the home?
+house_cleaning_t05,mixed bleach and toilet cleaner now my throat burns,house_cleaning,deep_clean,yes,What kind of cleaning?
+house_cleaning_t06,toilet backed up and sewage all over bathroom floor need cleaned,plumbing,main_line_backup,depends,What kind of cleaning?
+house_cleaning_t07,cleaning plus can you fix the leaky faucet,house_cleaning,recurring,no,What kind of cleaning?
+house_cleaning_t08,drywall dust everywhere after the remodel,house_cleaning,post_construction,no,How big is the home?
+house_cleaning_t09,guests check in in 3 hours and my cleaner no showed,house_cleaning,str_turnover,no,How big is the home?
+house_cleaning_t10,"clean windows inside and the oven too, small condo",house_cleaning,deep_clean,no,Any extras?
+hvac_t01,somethings wrong w my ac its like 92 in here,hvac,ac_not_cooling,depends,"Is anyone at home who is older, very young, or has a medical need for cool air?"
+hvac_t02,REQ-0142 ac on roof making loud grinding then stopped. need someone today,hvac,ac_noise_smell,no,"What kind of system is it: the big unit on the roof, a ground unit, or a wall unit?"
+hvac_t03,el aire no enfria y mi mama tiene 80 años,hvac,ac_not_cooling,yes,"¿Su mamá se siente confundida, mareada o muy caliente al tacto?"
+hvac_t04,how much for new ac 1800 sqft,hvac,ac_replacement,no,"What kind of system do you have now: roof unit, ground unit, or not sure?"
+hvac_t05,water coming out of ceiling by the air thing in hallway,hvac,ac_leaking_water,depends,"Is the water near any lights, outlets or the electrical panel?"
+hvac_t06,my swamp cooler is leaking on the roof,evaporative_coolers,cooler_leak,no,"Is the water leaking onto the roof only, or coming inside the house?"
+hvac_t07,heater smells like gas when it kicks on,gas_lines,gas_leak,yes,Please leave the house now and call 911 and UniSource at [number removed, see source] from outside. Are you outside?
+hvac_t08,want a mini split in my garage + also my breaker panel is old zinsco is that ok,hvac,mini_split_install,no,"How big is the garage, and is it a one-car, two-car or three-car garage?"
+hvac_t09,"ac tune up b4 summer, 2 units",hvac,ac_maintenance,no,"Are both units on the roof, on the ground, or one of each?"
+hvac_t10,thermastat screen went blank and nothing runs,hvac,thermostat_issue,depends,"Did the screen go blank after a storm or power flicker, and is the AC breaker on? (Just look, no need to touch inside the panel.)"
+junk_removal_t01,junk,junk_removal,furniture_items,no,How much stuff?
+junk_removal_t02,need old couch and mattress gone today,junk_removal,furniture_items,no,Where is it?
+junk_removal_t03,"sacar cosas viejas de la cochera, refrigerador y muebles",junk_removal,cleanout,no,How much stuff?
+junk_removal_t04,take out the old hot tub in the backyard,junk_removal,demo_small,no,Does anything need to be taken apart or torn down?
+junk_removal_t05,tear down the old metal shed,junk_removal,demo_small,no,Does anything need to be taken apart or torn down?
+junk_removal_t06,dad passed need the whole house cleared,junk_removal,cleanout,no,How much stuff?
+junk_removal_t07,bunch of old paint and pool chemicals in garage,junk_removal,hazmat_route,no,"Any paint, chemicals, propane or fridges/AC units?"
+junk_removal_t08,palm tree trimming and haul fronds,tree_trimming,palm_trim,no,How much stuff?
+junk_removal_t09,old ac unit on the ground need it hauled,junk_removal,appliances,no,"Any paint, chemicals, propane or fridges/AC units?"
+junk_removal_t10,pulled fridge out smells like gas behind it,junk_removal,appliances,yes,What kind of items?
+landscaping_irrigation_t01,drip system leaking everywhere and my plants are dying,landscaping_irrigation,drip_repair,no,About how big is the area?
+landscaping_irrigation_t02,need rock,landscaping_irrigation,rock_gravel,no,About how big is the area?
+landscaping_irrigation_t03,Necesito un jardinero para limpiar la yarda y quitar la maleza,landscaping_irrigation,cleanup,no,About how big is the area?
+landscaping_irrigation_t04,sprinkler zone 3 wont turn off water running down the street,landscaping_irrigation,sprinkler_valve,yes,What is happening?
+landscaping_irrigation_t05,yard,landscaping_irrigation,unknown,no,What kind of yard job is it?
+landscaping_irrigation_t06,want new desert landscaping front yard rock + drip + some agaves,landscaping_irrigation,new_system,no,About how big is the area?
+landscaping_irrigation_t07,cut down my palm tree and redo drip,tree_trimming,palm_trim,no,What kind of tree?
+landscaping_irrigation_t08,spray pre emergent before monsoon please,pest_control,weed_control,no,What pest is it?
+landscaping_irrigation_t09,"water bill doubled, something leaking in yard?",landscaping_irrigation,drip_repair,no,What type of watering system?
+landscaping_irrigation_t10,"el timer del riego no prende, quiero uno nuevo",landscaping_irrigation,controller,no,About how big is the area?
+locksmith_t01,locked out,locksmith,home_lockout,depends,"Is a child, pet or anyone who needs help inside?"
+locksmith_t02,my baby is in the car and the keys are inside its so hot,locksmith,car_lockout,yes,"Is a child, pet or anyone who needs help inside?"
+locksmith_t03,me quedé afuera de mi casa,locksmith,home_lockout,depends,"Is a child, pet or anyone who needs help inside?"
+locksmith_t04,just bought the house need all locks rekeyed,locksmith,rekey,no,How many locks?
+locksmith_t05,install a smart lock on front door,locksmith,lock_install,no,What kind of lock?
+locksmith_t06,"someone kicked in my door, frame is broken",windows_doors,door_replace,depends,What do you need?
+locksmith_t07,forgot code to my gun safe,locksmith,safe,no,What kind of lock?
+locksmith_t08,want keypad entry wired to gate and alarm,security_alarm,smart_home,no,What do you need?
+locksmith_t09,key broke off in the deadbolt,locksmith,home_lockout,depends,"Is a child, pet or anyone who needs help inside?"
+locksmith_t10,lock and also a garage door opener remote,locksmith,lock_install,no,What do you need?
+moving_t01,movers?,moving,local_move,no,Where is the move going?
+moving_t02,moving to Bullhead next month 3 bedroom,moving,local_move,no,What help do you need?
+moving_t03,need 2 guys to load a uhaul saturday morning,moving,labor_only,no,How much are you moving?
+moving_t04,mudanza de casa de 2 recámaras dentro de Havasu,moving,local_move,no,Any very heavy items?
+moving_t05,"moving to Needles CA, is that long distance",moving,interstate_move,no,How much are you moving?
+moving_t06,move my gun safe from garage to bedroom,moving,heavy_item,no,Stairs or long walks at either end?
+moving_t07,movers wont unload unless i pay 900 more,moving,local_move,depends,Where is the move going?
+moving_t08,also need my gas dryer disconnected,moving,disconnect_route,no,Where is the move going?
+moving_t09,helper looks dizzy and stopped sweating its 115 out,moving,labor_only,yes,What help do you need?
+moving_t10,move furniture and paint the rooms before we move in,moving,in_home,no,How much are you moving?
+painting_t01,need house painted,painting,interior_rooms,no,What needs paint?
+painting_t02,"outside stucco is peeling bad on the west side, house is from 1972",painting,exterior_stucco,no,How much?
+painting_t03,want the popcorn ceilings scraped off and painted,painting,popcorn_ceiling,no,About when was the home built?
+painting_t04,quiero pintar 2 cuartos y la sala,painting,interior_rooms,no,How much?
+painting_t05,garage floor epoxy with flakes 3 car,painting,garage_floor_epoxy,no,What shape are the surfaces in?
+painting_t06,paint is bubbling on bathroom ceiling and wet,plumbing,leak_slow,no,What shape are the surfaces in?
+painting_t07,"kitchen cabinets painted white, also new handles",painting,cabinets_paint,no,What shape are the surfaces in?
+painting_t08,my toddler was chewing paint chips from the window sill old house,painting,touch_up,yes,About when was the home built?
+painting_t09,repaint the block wall around the yard,painting,block_wall,no,How much?
+painting_t10,rental turnover need touch up paint and patch nail holes before next guests,painting,touch_up,no,How much?
+pavers_concrete_t01,want to extend my patio maybe 12x20 concrete,pavers_concrete,new_patio_walk,no,What material do you want?
+pavers_concrete_t02,pavers by the pool sinking,pavers_concrete,paver_repair,no,About how big?
+pavers_concrete_t03,concrete,pavers_concrete,unknown,no,What is the project?
+pavers_concrete_t04,Quiero una losa para el RV al lado de la casa,pavers_concrete,slab_pad,no,What material do you want?
+pavers_concrete_t05,need RV pad and also gate widened,pavers_concrete,slab_pad,no,What material do you want?
+pavers_concrete_t06,"crack in my driveway is getting bigger, trip hazard",pavers_concrete,crack_repair,no,About how big?
+pavers_concrete_t07,kool deck around pool is peeling,pavers_concrete,pool_deck,no,What material do you want?
+pavers_concrete_t08,Mi cochera tiene grietas y un lado está hundido,pavers_concrete,crack_repair,no,About how big?
+pavers_concrete_t09,need gravel and drip in the front yard,landscaping_irrigation,rock_gravel,no,About how big is the area?
+pavers_concrete_t10,ripped out grass want pavers + fire pit,pavers_concrete,new_patio_walk,no,What material do you want?
+pest_control_t01,found 3 scorpions in the bathroom this week,pest_control,scorpions,no,One time or ongoing service?
+pest_control_t02,bees!!!,pest_control,bees_wasps,no,Where are the bees?
+pest_control_t03,Me picó un alacrán a mi niño de 3 años y está llorando mucho,pest_control,scorpions,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+pest_control_t04,"mud tubes on the garage wall, selling the house need termite letter too",pest_control,termites,no,What did you see?
+pest_control_t05,pigeons under my solar panels making a mess,pest_control,pigeons_birds,no,About how big is the home and yard?
+pest_control_t06,spray pre emergent in my rock yard front and back,pest_control,weed_control,no,What area needs weed control?
+pest_control_t07,bugs,pest_control,unknown,no,What pest is it?
+pest_control_t08,Tengo ratas en el garaje y en la yarda,pest_control,rodents,no,About how big is the home and yard?
+pest_control_t09,bees inside my pool equipment box and also need pump fixed,pest_control,bees_wasps,no,Where are the bees?
+pest_control_t10,swarm attacking my dog in the yard right now,pest_control,bees_wasps,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+plumbing_t01,WATER EVERYWHERE pipe under kitchen sink blew,plumbing,leak_active,yes,"Can you safely reach a shut-off valve under the sink or the main shut-off, and is water near any outlets?"
+plumbing_t02,toilet keeps running all night lol,plumbing,toilet_issue,no,"Is it one toilet, and is any water leaking onto the floor?"
+plumbing_t03,se tapó el baño y sale agua sucia en la regadera,plumbing,main_line_backup,yes,"¿Está saliendo agua sucia en más de un lugar, como la tina, la regadera o el piso?"
+plumbing_t04,water bill was $280 this month normally like 60,plumbing,high_water_bill,no,"Have you seen any wet spots, warm floor spots, or a toilet that keeps running?"
+plumbing_t05,"my house has that gray poly pipe, want quote to repipe 3bd 2ba",plumbing,repipe,no,"Is the home on a slab, a raised floor, or a manufactured home?"
+plumbing_t06,need a new faucet put in i bought it already,plumbing,fixture_replace,no,"Is it a kitchen or bathroom faucet, and can you send a photo of the old one and under the sink?"
+plumbing_t07,no hot water and theres water on the garage floor by the tank,water_heater,tank_leak,depends,"Is the water near any outlets or cords, and is the tank gas or electric?"
+plumbing_t08,water bubbling up from the sidewalk by my meter,plumbing,outdoor_spigot_line,depends,"Is the water coming up in your yard on the house side of the meter, or at the meter box or street?"
+plumbing_t09,REQ-0164 shower drain slow + kitchen sink gurgles,plumbing,main_line_backup,no,"Do other drains, like toilets or the washer, also back up or gurgle?"
+plumbing_t10,hello? need help with house stuff,plumbing,leak_slow,no,"Happy to help. What is going on at the home: a leak, a clog, something to install, or something else?"
+pool_cleaning_t01,need a pool guy weekly. salt pool,pool_cleaning,weekly_service,no,About how big is the pool?
+pool_cleaning_t02,POOL IS GREEN. like swamp green. having people over sat,pool_cleaning,green_pool,no,How does the water look today?
+pool_cleaning_t03,pool,pool_cleaning,unknown,no,What do you need?
+pool_cleaning_t04,Busco alguien que limpie mi alberca cada semana,pool_cleaning,weekly_service,no,About how big is the pool?
+pool_cleaning_t05,"tile has thick white crust, can u blast it off",pool_cleaning,tile_descale,no,About how big is the pool?
+pool_cleaning_t06,"we're snowbirds, need someone to watch pool april to october",pool_cleaning,vacation_service,no,About how big is the pool?
+pool_cleaning_t07,weekly cleaning plus pump is leaking under the lid,pool_cleaning,weekly_service,no,What do you need?
+pool_cleaning_t08,pump motor died need new one,pool_spa_repair,pump_motor,no,Do you want it fixed or are you open to new equipment?
+pool_cleaning_t09,smoke coming out of my chlorine bucket in the garage,pool_cleaning,weekly_service,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+pool_cleaning_t10,"el agua está turbia y verde, no se ve el fondo",pool_cleaning,green_pool,no,About how big is the pool?
+pool_spa_repair_t01,"pool pump is humming but not spinning, hayward i think. 3 photos",pool_spa_repair,pump_motor,no,Do you want it fixed or are you open to new equipment?
+pool_spa_repair_t02,my pool,pool_spa_repair,unknown,no,What part needs help?
+pool_spa_repair_t03,salt thing says check cell and theres white crusty stuff all over the tile,pool_spa_repair,salt_system,no,"What brand is on the label? (A photo also shows the filter type: cartridge, DE or sand.)"
+pool_spa_repair_t04,La bomba de la alberca hace mucho ruido y gotea agua,pool_spa_repair,pump_motor,no,Do you want it fixed or are you open to new equipment?
+pool_spa_repair_t05,kids said they felt a tingle in the pool tonight,pool_spa_repair,automation_electrical,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+pool_spa_repair_t06,"need weekly cleaning AND the heater won't fire, gas heater",pool_spa_repair,heater,no,Is the heater gas or electric?
+pool_spa_repair_t07,"pool loosing about an inch a day, is it evaporation??",pool_spa_repair,leak,no,How fast is the water going down?
+pool_spa_repair_t08,can someone just come skim and add chlorine every week,pool_cleaning,weekly_service,no,What do you need?
+pool_spa_repair_t09,drain cover at the bottom is cracked in half,pool_spa_repair,drain_cover_safety,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+pool_spa_repair_t10,¿Cuánto cuesta repellar la alberca? está muy áspera,pool_spa_repair,surface_tile,no,How big is the surface job?
+roofing_t01,roof leaking into living room right now bucket is filling up,roofing,active_leak,yes,What kind of roof is it?
+roofing_t02,some tiles blew off in the storm last night,roofing,storm_damage,no,What kind of roof is it?
+roofing_t03,how much for a new roof,roofing,reroof,no,What kind of roof is it?
+roofing_t04,flat roof on the back room has water sitting on it and bubbles in the coating,roofing,foam_coating,no,Is water coming in right now?
+roofing_t05,"Tengo una gotera en la recámara cuando llueve, techo de teja",roofing,leak_repair,no,What do you need?
+roofing_t06,"mobile home roof needs recoating, maybe a roof over",roofing,manufactured_home_roof,no,What do you need?
+roofing_t07,water dripping out of the light fixture in the ceiling!!,roofing,active_leak,yes,Is water coming in right now?
+roofing_t08,swamp cooler on roof is leaking and also not cooling,evaporative_coolers,cooler_leak,no,Is water coming in right now?
+roofing_t09,"ceiling stain, not sure if roof or the upstairs bathroom",roofing,leak_repair,no,Is water coming in right now?
+roofing_t10,need gutters cleaned and roof looked at before selling,roofing,roof_inspection,no,What kind of roof is it?
+rv_services_t01,camper roof leaking by the AC,rv_services,roof_leak,no,What kind of RV?
+rv_services_t02,RV,rv_services,unknown,no,What kind of RV?
+rv_services_t03,propane alarm keeps going off in my trailer and smells like gas,rv_services,appliances_propane,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+rv_services_t04,El aire del camper no enfría nada,rv_services,rv_ac,no,What kind of RV?
+rv_services_t05,slide wont come in and we leave tmrw,rv_services,slide_awning,no,What kind of RV?
+rv_services_t06,want 50 amp RV plug installed on side of my house,rv_services,electrical_solar,no,Where can the work happen?
+rv_services_t07,onan generator surges then dies,rv_services,generator,no,What kind of RV?
+rv_services_t08,need RV pad poured,pavers_concrete,slab_pad,no,What material do you want?
+rv_services_t09,"wash and wax our class A, 40 ft",rv_services,wash_detail,no,Where can the work happen?
+rv_services_t10,Mi tráiler tiene una fuga de agua debajo del fregadero,rv_services,plumbing_tanks,no,What kind of RV?
+security_alarm_t01,alarm,security_alarm,burglar_alarm,no,What do you need?
+security_alarm_t02,want 4 cameras and a ring doorbell on the vacation house,security_alarm,cameras,no,Wired or wireless?
+security_alarm_t03,sistema de alarma para mi casa con monitoreo,security_alarm,burglar_alarm,no,"How many doors, windows or cameras?"
+security_alarm_t04,smoke detector chirping on 12ft ceiling,security_alarm,battery_smoke,no,What do you need?
+security_alarm_t05,alarm panel beeping and says trouble,security_alarm,false_alarms,no,Is there an old system in the home now?
+security_alarm_t06,all smoke detectors going off and I smell smoke,security_alarm,fire_alarm,yes,What do you need?
+security_alarm_t07,add hardwired interconnected smoke alarms to the house,security_alarm,fire_alarm,no,"How many doors, windows or cameras?"
+security_alarm_t08,someone is trying to break in right now,security_alarm,burglar_alarm,yes,What do you need?
+security_alarm_t09,cameras plus new locks on all doors,security_alarm,cameras,no,"How many doors, windows or cameras?"
+security_alarm_t10,"old ADT system from last owner, can it be reused",security_alarm,burglar_alarm,no,Is there an old system in the home now?
+septic_t01,need septic pumped,septic,routine_pump,no,Do you know the tank size or number of bedrooms?
+septic_t02,"toilet backing up and its coming up in the shower, we're on septic",septic,backup_emergency,yes,Is sewage coming up inside the house?
+septic_t03,selling house need the septic inspection thing,septic,home_sale_inspection,no,Do you know the tank size or number of bedrooms?
+septic_t04,"Necesito vaciar la fosa séptica, no sé dónde está la tapa",septic,locate_risers,no,Are the tank lids easy to get to?
+septic_t05,septic,septic,unknown,no,What do you need?
+septic_t06,wet smelly spot in back yard over the drain field,septic,repair,no,Is the home inside Lake Havasu City limits or in the county?
+septic_t07,"kitchen sink slow, city sewer",plumbing,clogged_drain,no,What is going on?
+septic_t08,want to get off septic and hook to city sewer,septic,sewer_hookup,no,Is the home inside Lake Havasu City limits or in the county?
+septic_t09,septic lid cracked and my dog almost fell in,septic,repair,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+septic_t10,huele a drenaje en toda la casa,septic,backup_emergency,yes,Is sewage coming up inside the house?
+solar_t01,solar app says 0 for 3 days,solar,system_not_producing,no,"Do you own the system or lease it, and can you send a photo of the inverter?"
+solar_t02,need solar taken off so i can redo my roof,solar,remove_reinstall,no,"About how many panels are there, and what kind of roof is it?"
+solar_t03,how much would solar save me,solar,new_system,no,"A local business can quote a system for your home. Is this for a new system, and do you have a recent UniSource bill showing yearly use?"
+solar_t04,pigeons living under my panels gross,solar,critter_guard,no,"About how many panels are there, and are they on a flat or sloped roof?"
+solar_t05,smoke coming from the solar box on garage wall,solar,system_not_producing,yes,(Give fire step first.) Is everyone out of the home?
+solar_t06,quiero paneles solares para mi casa,solar,new_system,no,"¿Qué tipo de techo tiene: plano, de teja, de tejas asfálticas o de metal?"
+solar_t07,clean my solar panels and gutters,gutter_solar_cleaning,solar_wash,no,"How many panels are there, and is the home one story or two?"
+solar_t08,storm cracked a panel and theres a wire hanging,solar,damage_leak,depends,"(Give damage step first.) Is the wire coming from the panels, or is it a line from the street?"
+solar_t09,add powerwall and maybe a generator,solar,add_battery,no,"Do you already have solar, and do you own it or lease it?"
+solar_t10,leased solar company won't call back can you fix it,solar,system_not_producing,no,Is the system leased? The agreement may say who services it; would you still like quotes from local businesses?
+tree_trimming_t01,"need 3 palms trimmed, tall ones",tree_trimming,palm_trim,no,Is the tree within about 15 feet of a power line?
+tree_trimming_t02,Mesquite branch broke in the storm and is hanging on the wire to the house,tree_trimming,near_power_lines,yes,[safety_step_first] Give the matching safety step first; ask intake questions only after everyone is safe.
+tree_trimming_t03,tree,tree_trimming,unknown,no,Is the tree within about 15 feet of a power line?
+tree_trimming_t04,Quiero cortar dos palmeras y quitar el tocón,tree_trimming,tree_removal,no,Is the tree within about 15 feet of a power line?
+tree_trimming_t05,palo verde is huge over the pool want it thinned,tree_trimming,tree_prune,no,Is the tree within about 15 feet of a power line?
+tree_trimming_t06,bees going in and out of my palm tree like crazy,pest_control,bees_wasps,no,What pest is it?
+tree_trimming_t07,stump grind only plz,tree_trimming,stump,no,Is the tree within about 15 feet of a power line?
+tree_trimming_t08,trim trees and fix sprinklers,tree_trimming,tree_prune,no,Is the tree within about 15 feet of a power line?
+tree_trimming_t09,el árbol se cayó encima de la barda,tree_trimming,storm_damage,no,Is the tree within about 15 feet of a power line?
+tree_trimming_t10,how much to cut down a eucalyptus,tree_trimming,tree_removal,no,Is the tree within about 15 feet of a power line?
+water_heater_t01,no hot water since this morning,water_heater,no_hot_water,no,"Is your water heater gas, propane or electric?"
+water_heater_t02,water heater leaking all over garage floor HELP,water_heater,tank_leak,depends,"Is the water near any outlets or cords, and is the heater gas or electric?"
+water_heater_t03,the pipe on the side of my heater is spraying hot water,water_heater,relief_valve,yes,"Is anyone near the hot water, and can you safely reach the cold water valve on top?"
+water_heater_t04,want to switch to tankless how much,water_heater,convert_tankless,no,"Is your current water heater gas, propane or electric?"
+water_heater_t05,el calentador hace ruido y huele a huevo el agua caliente,water_heater,noise_smell,depends,¿El olor está en el agua caliente o se huele gas en el aire cerca del calentador?
+water_heater_t06,smell gas near water heater in closet,gas_lines,gas_leak,yes,(Give gas safety step first.) Are you outside the home now?
+water_heater_t07,rinnai flashing 11 again,water_heater,tankless_service,no,"Is it a gas tankless, and can you send a photo of the display?"
+water_heater_t08,"back from summer up north, anything I should do before using hot water",water_heater,noise_smell,no,Has the hot water gone unused for two weeks or more?
+water_heater_t09,REQ-0172 hot water runs out after one shower and the softener beeps,water_heater,not_enough_hot,no,"Is your water heater a tank or tankless, and what size is it on the label?"
+water_heater_t10,water heater in my mobile home quit,water_heater,no_hot_water,no,"Is it gas, propane or electric, and can you send a photo of the label?"
+water_treatment_t01,softner not using any salt for weeks,water_treatment,softener_repair,no,Can you send a photo of the top control and the inside of the salt tank?
+water_treatment_t02,how much for RO under kitchen sink,water_treatment,ro_new,no,Can you send a photo under your kitchen sink and one of the sink top?
+water_treatment_t03,white crust on all my faucets and shower glass what do i do,water_treatment,softener_new,no,Do you have a water softener now?
+water_treatment_t04,quiero un suavizador de agua nuevo,water_treatment,softener_new,no,"¿Ya tiene tubos en el garaje para un suavizador, o no hay?"
+water_treatment_t05,softener leaking water all over the garage floor near outlet,water_treatment,softener_repair,yes,"Is the water near the outlet or cord, and can you reach the main water shut-off safely?"
+water_treatment_t06,is my water safe to drink,water_treatment,water_test,no,Would you like a local business to quote a water test? You can also read the city's water quality report.
+water_treatment_t07,RO tank takes forever to fill and faucet drips,water_treatment,ro_service,no,Can you send a photo of the RO system's label or filters?
+water_treatment_t08,need my softener removed and a water heater flush,water_treatment,remove_bypass,no,"Is the softener in the garage on a loop, and would you like a separate card for the water heater?"
+water_treatment_t09,drip irrigation clogged with white stuff,landscaping_irrigation,drip_repair,no,"Is it a drip system in the yard, and how many zones?"
+water_treatment_t10,REQ-0186 water stuff,water_treatment,softener_repair,no,"Is this about a softener, a drinking water filter, or something else?"
+window_cleaning_t01,windows,window_cleaning,regular_wash,no,About how many windows?
+window_cleaning_t02,sprinkler spots all over my back sliding door glass,window_cleaning,hard_water,no,About how many windows?
+window_cleaning_t03,limpiar ventanas por dentro y fuera casa de un piso,window_cleaning,regular_wash,no,About how many windows?
+window_cleaning_t04,2 story house windows plus screens,window_cleaning,high_windows,no,About how many windows?
+window_cleaning_t05,window cleaning but one is cracked,window_cleaning,repair_route,no,About how many windows?
+window_cleaning_t06,windows are foggy inside the glass can you clean that,windows_doors,glass_repair,no,About how many windows?
+window_cleaning_t07,post-monsoon wash for the vacation house,window_cleaning,regular_wash,no,About how many windows?
+window_cleaning_t08,power line came down by my windows during the storm,window_cleaning,regular_wash,yes,About how many windows?
+window_cleaning_t09,solar screens filthy need taken off and washed,window_cleaning,screens_tracks,no,About how many windows?
+window_cleaning_t10,clean windows and gutters,window_cleaning,regular_wash,no,About how many windows?
+windows_doors_t01,sliding door is so hard to open,windows_doors,slider_repair,no,What needs to happen?
+windows_doors_t02,"window got shattered in the storm, cant lock house",windows_doors,glass_repair,no,Is the home open or unlockable right now?
+windows_doors_t03,quiero cambiar todas las ventanas de la casa,windows_doors,window_replace,no,How many windows or doors?
+windows_doors_t04,foggy between glass on 3 windows,windows_doors,glass_repair,no,How many windows or doors?
+windows_doors_t05,want to make the bedroom window bigger,windows_doors,window_replace,no,Same size opening?
+windows_doors_t06,"blinds with cords in kids room, want cordless",windows_doors,film_blinds,no,How many windows or doors?
+windows_doors_t07,front door lock broke and door won't close,locksmith,lock_install,no,Is the home open or unlockable right now?
+windows_doors_t08,security screen door install,windows_doors,security_door,no,How many windows or doors?
+windows_doors_t09,solar screens all windows plus tint on west side,windows_doors,screens,no,How many windows or doors?
+windows_doors_t10,"windows on 1965 house, old wood ones peeling",windows_doors,window_replace,no,How many windows or doors?

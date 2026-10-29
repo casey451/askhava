@@ -1,0 +1,127 @@
+# Ask Hava trade knowledge base: per-trade YAML template (v2, harmonized across all 37 trade files)
+# One file per trade: trades/<trade_slug>.yaml (e.g. trades/hvac.yaml)
+# Field names and shapes below are the canonical v2 shapes. All 37 files in trades/ follow them.
+# Field order: trade, display_name, summary, job_types, triggers_en, triggers_es, questions,
+#   quote_without_visit_needs, site_visit_usually_needed, photos_to_request, photo_cues,
+#   photo_red_flags, emergency_signals, safety_step, intake_notes_judgment (optional),
+#   license_classes, handyman_ok, local_notes, sample_card, test_messages, sources.
+# Fields marked (optional) may be missing; every other field is present in every file.
+# Shared facts (license classes, handyman rule, emergency steps, photo privacy) live in
+# foundation/az_license_master.md, foundation/part1_all_reasons.md, foundation/part3_photo_playbook.md.
+# Cite those with the source IDs in foundation/sources_foundation.md (e.g. "[S3]").
+#
+# ---------------------------------------------------------------------------
+# WORDING RULES (apply to every string value)
+# ---------------------------------------------------------------------------
+# Never use: vetted, pre-screened, pre-vetted, leads, lead generation, exclusive, best,
+#   recommended, background-checked, trusted pros, #1, top-rated, referral network,
+#   "connect you with", concierge.
+# Ask Hava never diagnoses, prices, guarantees, recommends a business, gives repair advice,
+#   or supervises work. Use: "a local business can look at this", "businesses quote in their
+#   own words", "this helps a business quote". Avoid: "you need a new...", "this will cost...",
+#   "the problem is...", "we'll make sure...", "our pros".
+# Photo descriptions are neutral and observable: "visible rust at the base of the tank",
+#   not "your tank is failing".
+# Safety steps: only from official sources (utility, fire dept, NFPA, CPSC, EPA, CDC, NWS,
+#   manufacturer). Quote or closely paraphrase and cite. Never invent a safety step.
+# Reading level: 6th-8th grade. Short sentences. Tappable options of 2-6 choices; always
+#   include "Not sure" where a homeowner could reasonably not know.
+# Privacy: no names, phones, emails, exact addresses, plate numbers, gate codes, lockbox codes.
+#   Use request IDs like REQ-0142 and general areas like "Lake Havasu City, north side".
+# No hard calendar dates in plans (seasons/months for climate are fine: "June-September").
+# Anything not backed by a cited source ends with " [judgment]".
+# ---------------------------------------------------------------------------
+
+trade: hvac                      # slug; one of the 37 trade slugs listed at bottom; file = trades/<slug>.yaml
+display_name: "Heating & cooling"
+summary: >                       # short narrative (3-6 sentences) for the trade
+  ...
+job_types:                       # stable IDs used by triggers, questions, cards, tests
+  - id: ac_not_cooling
+    label: "AC not cooling / blowing warm"
+    site_visit_usually_needed: "yes"      # (optional) yes | no | sometimes
+    handyman_ok: "no"                     # (optional) yes | no | limited (see handyman_ok block)
+# Reserved job_type "unknown": used only in test_messages for one-word / vague messages
+#   ("boat", "cart", "yard", "septic"). The trade is known; the first question picks the job type.
+triggers_en:                     # real phrases, slang, misspellings -> job type
+  - phrase: "ac blowing warm"
+    job_type: ac_not_cooling
+  - phrase: "a/c"                # job_type null = trade-level trigger; pick the job type with the first question
+    job_type: null
+triggers_es:                     # Spanish phrases people actually text (same shape)
+  - phrase: "el aire no enfría"
+    job_type: ac_not_cooling
+questions:                       # ordered by how much the answer changes the price
+  - id: q1_system_type
+    text: "What kind of system do you have?"
+    options: ["Rooftop unit", "Unit on the ground outside", "Swamp cooler", "Mini-split (wall unit)", "Not sure"]
+    ask_if: "always"             # or a condition, e.g. "job_type == ac_not_cooling"
+    changes_price: "yes"         # yes | no
+    why: "System type sets the parts, access and who can work on it. [judgment]"   # (optional)
+quote_without_visit_needs:       # list of strings: what a business needs to quote without a visit
+  - "Photo of outdoor unit data plate (model/serial = age, size) [judgment]"
+site_visit_usually_needed:       # list of strings: jobs that usually need a visit (job ids or short text)
+  - "No cooling with unknown cause [judgment]"
+photos_to_request:
+  - id: p1_data_plate
+    ask: "A close photo of the metal label on the side of the outdoor unit."
+    for_job_types: [ac_not_cooling, ac_replacement]   # list of job ids, or [all]
+photo_cues:                      # what a business looks for in each requested photo
+  - photo_id: p1_data_plate      # or "all" when cues apply to every photo
+    look_for: ["brand", "model and serial", "refrigerant type"]
+    neutral_wording_example: "Data plate shows brand X, refrigerant R-410A."   # (optional)
+photo_red_flags:                 # any of these = pause intake, give the linked safety step if any
+  - flag: "Scorch marks or melted wires at the disconnect"
+    safety_step_ref: es_burning_smell   # emergency_signals id, or null when no emergency applies
+emergency_signals:
+  - id: es_burning_smell
+    signal: "Burning smell, smoke, sparks from the unit or panel"
+    emergency: "yes"             # yes | no | depends (state the condition in note)
+    safety_step: "Exact or close paraphrase of the official step"
+    source: "[S29]"              # S-number from sources_foundation.md or a trade source
+    then_route_to: electrical    # a trade slug from the list below, or "none"
+    note: "Routing: 911 first, then electrical"   # (optional) free text; also (optional) intake_note: [str]
+safety_step:                     # trade-level list of safety steps (same wording as emergency_signals)
+  - when: "Burning smell, smoke or sparks"
+    step: "Exact or close paraphrase of the official step"
+    source: "[S29]"
+intake_notes_judgment:           # (optional) list of strings, all [judgment]
+  - "..."
+license_classes:                 # from foundation/az_license_master.md; do not invent numbers
+  - job_type: [ac_not_cooling, ac_replacement]   # always a list of job ids
+    work: "AC repair and replacement"            # (optional) short label
+    classes: ["R-39 Air Conditioning and Refrigeration, Including Solar", "CR-39 (dual)", "CR-79 (dual)", "CR-58 (dual)"]
+    citation: "A.A.C. R4-9-103 (R- classes) [S2]; R4-9-104 (CR- dual classes) [S3]; R4-9-102 (C- commercial) [S1]"
+    other_agency: "EPA Section 608 technician certification [S38]"   # or "none" / ""
+    notes: "KB-1/KB-2 and B-/B-3 general licenses must subcontract AC work [S2][S3]."
+handyman_ok:                     # A.R.S. 32-1121(A)(14) and (D): see az_license_master.md
+  allowed_examples: ["Replace a swamp cooler pad (under $1,000 total, no permit) [judgment]"]
+  not_allowed_examples: ["Refrigerant work (also needs EPA 608 certification)"]
+  rule_reminder: "Handyman exemption only if total job (labor + materials) under $1,000, no permit needed, not part of a larger job, no gas/propane connection, no fire-safety system work (32-1121(D)), and ads say 'not a licensed contractor'. Source: A.R.S. 32-1121(A)(14) and (D) [S4]"
+  note: "..."                    # (optional); handyman.yaml also has card_tag and gray_areas_judgment
+local_notes:
+  - "Extreme summer heat makes no-AC messages a health issue; see part1 heat steps [S27]"
+sample_card: |                   # 2-4 short lines; no personal details
+  REQ-0142 | Heating & cooling | Lake Havasu City, north side
+  Rooftop package AC, blowing warm since last night. Unit ~12 yrs (data plate photo).
+test_messages:                   # exactly 10 per trade; vague, mixed, wrong-trade, Spanish
+  - id: hvac_t01                 # <slug>_tNN, numbered in file order
+    message: "something's wrong with my ac"
+    trade: hvac                  # the trade the message really belongs to (may be another file)
+    job_type: ac_not_cooling     # a job id in THAT trade's file, or the reserved "unknown"
+    emergency: "no"              # yes | no | depends
+    first_question_id: q1_system_type   # a question id in that trade's file, "safety_step_first", or null (free-text)
+    ideal_first_question: "Is it running but blowing warm, or not turning on at all?"
+    note: ""
+# safety_step_first convention: "[safety_step_first] Give the matching safety step first;
+#   ask intake questions only after everyone is safe."
+sources:                         # IDs from foundation/sources_foundation.md plus any trade-specific
+  - "[S2] A.A.C. R4-9-103"
+
+# Trade slugs (37; use exactly; file = trades/<slug>.yaml):
+# appliance_repair, boat_dock, cabinets_countertops, carpet_cleaning, drywall, electrical,
+# evaporative_coolers, flooring, garage_doors, gas_lines, generator_ev, golf_cart,
+# gutter_solar_cleaning, handyman, home_inspection, house_cleaning, hvac, junk_removal,
+# landscaping_irrigation, locksmith, moving, painting, pavers_concrete, pest_control, plumbing,
+# pool_cleaning, pool_spa_repair, roofing, rv_services, security_alarm, septic, solar,
+# tree_trimming, water_heater, water_treatment, window_cleaning, windows_doors

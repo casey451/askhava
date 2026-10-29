@@ -1,0 +1,330 @@
+# Ask Hava trade knowledge file: window_cleaning
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: window_cleaning
+display_name: Window Cleaning
+summary: Inside and outside window washing, screen and track cleaning, solar-screen removal and cleaning, and hard-water
+  spot removal on glass. No state license applies. Havasu's hard water from sprinklers leaves mineral spots that
+  regular washing may not remove; spot removal is a separate, slower service [judgment]. Ladder work near overhead
+  lines follows the UES 15-foot rule.
+job_types:
+- id: regular_wash
+  label: Window washing inside/outside
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: hard_water
+  label: Hard-water spot removal
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: screens_tracks
+  label: Screens, solar screens and tracks
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: high_windows
+  label: High or 2-story windows
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: repair_route
+  label: Broken glass or screens (route to windows_doors)
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+triggers_en:
+- phrase: window washing
+  job_type: regular_wash
+- phrase: clean my windows
+  job_type: regular_wash
+- phrase: window cleaner
+  job_type: regular_wash
+- phrase: streaky windows
+  job_type: regular_wash
+- phrase: hard water spots
+  job_type: hard_water
+- phrase: sprinkler spots on windows
+  job_type: hard_water
+- phrase: white spots on glass
+  job_type: hard_water
+- phrase: water stains on windows
+  job_type: hard_water
+- phrase: clean screens
+  job_type: screens_tracks
+- phrase: solar screens dirty
+  job_type: screens_tracks
+- phrase: window tracks
+  job_type: screens_tracks
+- phrase: high windows
+  job_type: high_windows
+- phrase: two story windows
+  job_type: high_windows
+- phrase: clerestory
+  job_type: high_windows
+- phrase: broken window
+  job_type: repair_route
+- phrase: torn screen
+  job_type: repair_route
+triggers_es:
+- phrase: limpiar ventanas
+  job_type: regular_wash
+- phrase: lavado de ventanas
+  job_type: regular_wash
+- phrase: limpieza de vidrios
+  job_type: regular_wash
+- phrase: manchas de agua en vidrios
+  job_type: hard_water
+- phrase: manchas blancas
+  job_type: hard_water
+- phrase: mosquiteros
+  job_type: screens_tracks
+- phrase: pantallas solares
+  job_type: screens_tracks
+- phrase: ventana rota
+  job_type: repair_route
+questions:
+- id: q1_count
+  text: About how many windows?
+  options:
+  - Under 10
+  - 10-20
+  - 21-35
+  - 36+
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Window count is how most window cleaners quote.
+- id: q2_sides
+  text: Inside, outside or both?
+  options:
+  - Outside only
+  - Inside and outside
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Inside and outside roughly doubles the work. [judgment]
+- id: q3_stories
+  text: How many stories?
+  options:
+  - 1 story
+  - 2 stories
+  - High windows over 12 ft
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Second-story and high glass need ladders or poles and more time.
+- id: q4_spots
+  text: Do the windows have white hard-water spots?
+  options:
+  - Yes, heavy
+  - Some
+  - 'No'
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Hard-water spot removal is slower than washing.
+- id: q5_screens
+  text: Clean screens or solar screens too?
+  options:
+  - Yes, regular screens
+  - Yes, solar screens
+  - 'No'
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Solar screens often come off and back on, adding time.
+quote_without_visit_needs:
+- Window count
+- Stories
+- Inside/outside
+- Hard-water level
+- Screens
+site_visit_usually_needed:
+- Heavy hard-water etching (test spot first) [judgment]
+- Very large or custom glass
+photos_to_request:
+- id: p1
+  ask: Front of the house
+  for_job_types:
+  - all
+- id: p2
+  ask: Back of the house
+  for_job_types:
+  - all
+- id: p3
+  ask: Close-up of a spotted window
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Count of panes
+  - Sprinkler heads aimed at glass
+  - Power lines near the house
+photo_red_flags:
+- flag: Cracked or broken glass
+  safety_step_ref: null
+- flag: Overhead power line close to windows (ladder safety)
+  safety_step_ref: es_window_cleaning_2
+- flag: Fogged dual-pane glass (seal failure, not dirt; route to windows_doors)
+  safety_step_ref: null
+emergency_signals:
+- id: es_window_cleaning_1
+  signal: Broken glass, home can't be secured
+  emergency: depends
+  note: 'Urgent, not life-safety: card goes out marked time-sensitive. [judgment]'
+  safety_step: No official step on file for this signal. If anyone is hurt or in danger, call 911. [judgment]
+  source: '[judgment]'
+  then_route_to: windows_doors
+- id: es_window_cleaning_2
+  signal: Downed power line near the house
+  emergency: 'yes'
+  safety_step: Stay far away and call 911 and UniSource.
+  source: '[S25]'
+  then_route_to: none
+  note: 'Routing: none (911 / UES first)'
+- id: es_window_cleaning_3
+  signal: Routine washing
+  emergency: 'no'
+  safety_step: Keep 3 points of contact, set the ladder on firm level ground, and extend it 3 ft above the roof
+    edge.
+  source: '[T-osha_ladder]'
+  then_route_to: window_cleaning
+safety_step:
+- when: Ladder use
+  step: Keep 3 points of contact, set the ladder on firm level ground, and extend it 3 ft above the roof edge.
+  source: '[T-osha_ladder]'
+- when: Ladders or poles near overhead power lines
+  step: Keep yourself, ladders and poles at least 15 feet from overhead power lines.
+  source: '[S24]'
+- when: Downed power line
+  step: Stay far away and call 911 and UniSource.
+  source: '[S25]'
+license_classes:
+- job_type:
+  - regular_wash
+  - hard_water
+  - screens_tracks
+  - high_windows
+  classes:
+  - none
+  citation: foundation az_license_master §5 [judgment]
+  other_agency: none
+  notes: No state license is needed for this cleaning work [judgment, per foundation az_license_master §5]. It is
+    not construction under ROC rules.
+- job_type:
+  - repair_route
+  classes:
+  - R-65
+  - R-7
+  citation: A.A.C. R4-9-103 [S2] R-65, R-7
+  other_agency: none
+  notes: 'Glass replacement: ROC R-65 Glazing; window replacement R-7.'
+handyman_ok:
+  allowed_examples:
+  - All window washing (not construction)
+  - Re-screening a few screens under $1,000
+  not_allowed_examples:
+  - Window replacement with a size change (permit)
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+local_notes:
+- Fogging between dual-pane glass is a failed seal; washing will not fix it [judgment].
+- 'Monsoon dust storms (June 15-Sept 30) leave heavy dust on glass. Source: [T-az_monsoon].'
+- Many Havasu homes have solar screens; some cleaners remove and wash them [judgment].
+sample_card: 'REQ-0335 | Window cleaning | Lake Havasu City, east side
+
+  About 22 windows, single story, inside and outside, heavy sprinkler spots on back windows, solar screens on west
+  side.
+
+  3 photos.
+
+  '
+test_messages:
+- id: window_cleaning_t01
+  message: windows
+  trade: window_cleaning
+  job_type: regular_wash
+  emergency: 'no'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+- id: window_cleaning_t02
+  message: sprinkler spots all over my back sliding door glass
+  trade: window_cleaning
+  job_type: hard_water
+  emergency: 'no'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+- id: window_cleaning_t03
+  message: limpiar ventanas por dentro y fuera casa de un piso
+  trade: window_cleaning
+  job_type: regular_wash
+  emergency: 'no'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+- id: window_cleaning_t04
+  message: 2 story house windows plus screens
+  trade: window_cleaning
+  job_type: high_windows
+  emergency: 'no'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+- id: window_cleaning_t05
+  message: window cleaning but one is cracked
+  trade: window_cleaning
+  job_type: repair_route
+  emergency: 'no'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+- id: window_cleaning_t06
+  message: windows are foggy inside the glass can you clean that
+  trade: windows_doors
+  job_type: glass_repair
+  emergency: 'no'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+- id: window_cleaning_t07
+  message: post-monsoon wash for the vacation house
+  trade: window_cleaning
+  job_type: regular_wash
+  emergency: 'no'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+- id: window_cleaning_t08
+  message: power line came down by my windows during the storm
+  trade: window_cleaning
+  job_type: regular_wash
+  emergency: 'yes'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+- id: window_cleaning_t09
+  message: solar screens filthy need taken off and washed
+  trade: window_cleaning
+  job_type: screens_tracks
+  emergency: 'no'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+- id: window_cleaning_t10
+  message: clean windows and gutters
+  trade: window_cleaning
+  job_type: regular_wash
+  emergency: 'no'
+  first_question_id: q1_count
+  ideal_first_question: About how many windows?
+  note: ''
+sources:
+- '[T-osha_ladder] OSHA Portable Ladder Safety QuickCard https://www.osha.gov/sites/default/files/publications/portable_ladder_qc.pdf'
+- '[S24] UES Electrical Safety Tips (15 ft rule, downed lines, Arizona 811) https://www.uesaz.com/electric-safety/'
+- '[S25] UES, During a Storm or Service Outage (downed lines, line on a vehicle) https://www.uesaz.com/outage-preparation/'
+- '[T-az_monsoon] Arizona Emergency Information Network, Dust storms / monsoon (season June 15-Sept 30) https://ein.az.gov/hazards/dust-storms'
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'

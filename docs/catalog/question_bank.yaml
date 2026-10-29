@@ -1,0 +1,423 @@
+# Ask Hava intake question bank (LIC-040, INT-039, D-394). Fake data only.
+#
+# Checked by scripts/check_catalog.py. One versioned set per category that can be switched on:
+# 3 to 8 questions in the order that most improves a business's ability to quote. Every
+# question is a fixed template: an English text and a Spanish draft marked for native-speaker
+# review (TXT-003). With AI off these are asked word for word; with AI on the AI may reword the
+# next one or ask one follow-up from the set's knowledge-base trade, within AI-019 (D-430, D-431).
+#
+#   kb_trade     the trade file in docs/catalog/trade_kb/trades/ this set draws on (expert brief)
+#   photos       up to 3 photo asks, ids from that file's photos_to_request, asked in order
+#                after the questions (INT-044, D-432); English wording from the file, Spanish
+#                drafted before Spanish conversations go on (TXT-039)
+#
+#   id           unique within the set
+#   en, es       the question, English and Spanish draft
+#   options_en, options_es   numbered answers for a multiple-choice question (same count);
+#                "Not sure" ("No sé") is always added by the app (INT-039) and is not listed
+#   card_field   true: the answer goes on the job card (CARD-007); multiple choice only
+#   size_band    true: the answer is a size or budget band compared with a business's
+#                largest-job answer (BIZ-049, CARD-001); options carry the band's dollar floor
+#   ask_if       ask only when an earlier question got one of the listed answer numbers
+#   emergency    true: asked even on a job chosen as an emergency (after the cards go, INT-039)
+#
+# The INT-042 safety prompts were withdrawn (D-436): only the INT-004 911 text exists.
+#
+# A question is added or changed only by a logged catalog change. Source of every set below:
+# a draft from trade practice and the catalog, to be confirmed with 2 or 3 businesses per trade
+# in recruiting ("What do you need to know to quote this without a visit?"); a business that
+# says a question changes its price is logged in that set's confirmed_by list.
+
+version: 1
+as_of: "2026-10-28"
+default_source: "Draft from trade practice and the catalog (D-394); confirm with 2 or 3 businesses per trade in recruiting."
+spanish_status: "Draft; native-speaker review before Spanish goes live (TXT-003)."
+
+sets:
+
+  plumbing_repair:
+    version: 1
+    confirmed_by: []
+    kb_trade: plumbing
+    photos: [p1_leak_spot, p2_under_sink, p3_pipe_material]
+    questions:
+      - {id: fixture, card_field: true, en: "What is it about?", es: "¿De qué se trata?", options_en: [Sink or faucet, Toilet, Shower or tub, Water heater, Pipe or line, Drain or sewer backup], options_es: [Lavabo o llave, Inodoro, Regadera o tina, Calentador de agua, Tubo o línea, Drenaje o desagüe tapado]}
+      - {id: leak_where, card_field: true, en: "Where is the water showing up?", es: "¿Dónde aparece el agua?", options_en: [Under a sink, On the floor, On a wall or ceiling, Outside in the yard, No leak], options_es: [Debajo de un lavabo, En el piso, En una pared o el techo, Afuera en el patio, No hay fuga]}
+      - {id: shut_off, card_field: true, emergency: true, en: "Is the water shut off right now?", es: "¿El agua está cerrada ahora?", options_en: ["Yes", "No", "Can't shut it off"], options_es: ["Sí", "No", "No se puede cerrar"]}
+      - {id: foundation, card_field: true, en: "What kind of floor is the home on?", es: "¿Sobre qué tipo de piso está la casa?", options_en: [Concrete slab, Crawl space, Manufactured home], options_es: [Losa de concreto, Espacio bajo la casa, Casa prefabricada]}
+      - {id: details, card_field: false, en: "Anything else a plumber should know? (Please don't include names or phone numbers.)", es: "¿Algo más que deba saber el plomero? (No incluya nombres ni teléfonos.)"}
+
+  hvac_repair:
+    version: 1
+    confirmed_by: []
+    kb_trade: hvac
+    photos: [p1_data_plate, p2_whole_unit, p3_indoor_unit]
+    questions:
+      - {id: system_type, card_field: true, en: "What kind of system is it?", es: "¿Qué tipo de sistema es?", options_en: [Central AC with an outside unit, Package unit on the roof or ground, Swamp cooler, Mini-split, Furnace or heat pump], options_es: [Aire central con unidad afuera, Unidad paquete en el techo o el suelo, Enfriador evaporativo (swamp cooler), Mini-split, Calefactor o bomba de calor]}
+      - {id: symptom, card_field: true, emergency: true, en: "What's happening?", es: "¿Qué está pasando?", options_en: [Not cooling, Not heating, Won't turn on, Leaking water, Strange noise or smell, Thermostat blank or error], options_es: [No enfría, No calienta, No prende, Gotea agua, Ruido u olor raro, Termostato apagado o con error]}
+      - {id: smell_kind, card_field: true, emergency: true, ask_if: {question: symptom, answers: [5]}, en: "What kind of smell?", es: "¿Qué tipo de olor?", options_en: [Gas or rotten egg, Burning, Something else], options_es: [Gas o huevo podrido, Quemado, Otra cosa]}
+      - {id: age, card_field: true, en: "About how old is the system?", es: "¿Más o menos qué edad tiene el sistema?", options_en: [Under 5 years, 5 to 10 years, 10 to 15 years, Over 15 years], options_es: [Menos de 5 años, 5 a 10 años, 10 a 15 años, Más de 15 años]}
+      - {id: error_code, card_field: true, en: "Is an error code or flashing light showing?", es: "¿Hay un código de error o una luz parpadeando?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+      - {id: details, card_field: false, en: "Anything else? A brand or code helps. (No names or phone numbers.)", es: "¿Algo más? La marca o el código ayudan. (Sin nombres ni teléfonos.)"}
+
+  hvac_replacement:
+    version: 1
+    confirmed_by: []
+    kb_trade: hvac
+    photos: [p1_data_plate, p2_whole_unit, p3_indoor_unit]
+    questions:
+      - {id: system_type, card_field: true, en: "What do you have now?", es: "¿Qué tiene ahora?", options_en: [Central AC with an outside unit, Package unit, Heat pump, Swamp cooler, Nothing yet], options_es: [Aire central con unidad afuera, Unidad paquete, Bomba de calor, Enfriador evaporativo, Nada todavía]}
+      - {id: home_size, card_field: true, size_band: true, en: "About how big is the home?", es: "¿Más o menos qué tamaño tiene la casa?", options_en: ["Under 1,200 sq ft", "1,200 to 2,000 sq ft", "2,000 to 3,000 sq ft", "Over 3,000 sq ft"], options_es: ["Menos de 1,200 pies²", "1,200 a 2,000 pies²", "2,000 a 3,000 pies²", "Más de 3,000 pies²"], band_floor: ["0", "5000.00", "5000.00", "5000.00"]}
+      - {id: unit_location, card_field: true, en: "Where is the unit?", es: "¿Dónde está la unidad?", options_en: [On the roof, On the ground, In the attic or a closet], options_es: [En el techo, En el suelo, En el ático o un clóset]}
+      - {id: stories, card_field: true, en: "How many stories is the home?", es: "¿Cuántos pisos tiene la casa?", options_en: ["1", "2 or more"], options_es: ["1", "2 o más"]}
+
+  electrical:
+    version: 1
+    confirmed_by: []
+    kb_trade: electrical
+    photos: [p1_panel, p2_device, p3_location]
+    questions:
+      - {id: what, card_field: true, en: "What is it about?", es: "¿De qué se trata?", options_en: [Outlet or switch, Breaker keeps tripping, Light or ceiling fan, Panel upgrade, New circuit or outlet, Hardwired smoke alarm], options_es: [Enchufe o apagador, El breaker se bota, Lámpara o ventilador de techo, Cambio de panel, Circuito o enchufe nuevo, Alarma de humo cableada]}
+      - {id: danger, card_field: true, emergency: true, en: "Is anything sparking, hot, buzzing or smoking?", es: "¿Algo echa chispas, está caliente, zumba o echa humo?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+      - {id: count, card_field: true, en: "How many items?", es: "¿Cuántos?", options_en: ["1", "2 to 4", "5 or more"], options_es: ["1", "2 a 4", "5 o más"]}
+      - {id: home_age, card_field: true, en: "About when was the home built?", es: "¿Más o menos cuándo se construyó la casa?", options_en: [Before 1980, 1980 to 2000, After 2000], options_es: [Antes de 1980, 1980 a 2000, Después de 2000]}
+
+  pool_repair:
+    version: 1
+    confirmed_by: []
+    kb_trade: pool_spa_repair
+    photos: [p1, p2, p3]
+    questions:
+      - {id: pool_or_spa, card_field: true, en: "Is it a pool, a spa or both?", es: "¿Es alberca, spa o ambos?", options_en: [Pool, Spa, Both], options_es: [Alberca, Spa, Ambos]}
+      - {id: symptom, card_field: true, en: "What's going wrong?", es: "¿Qué está fallando?", options_en: [Pump won't run, Pump is loud, Filter or pressure problem, Losing water, Heater not working, Other equipment], options_es: [La bomba no funciona, La bomba hace ruido, Problema de filtro o presión, Pierde agua, El calentador no funciona, Otro equipo]}
+      - {id: equipment_brand, card_field: true, en: "What brand is the equipment?", es: "¿De qué marca es el equipo?", options_en: [Pentair, Hayward, Jandy, Other brand], options_es: [Pentair, Hayward, Jandy, Otra marca]}
+      - {id: size_band, card_field: true, en: "About how big is the pool?", es: "¿Más o menos qué tamaño tiene la alberca?", options_en: [Small (under 10000 gallons), Medium (10000 to 20000 gallons), Large (over 20000 gallons)], options_es: [Chica (menos de 10000 galones), Mediana (10000 a 20000 galones), Grande (más de 20000 galones)]}
+      - {id: surface, card_field: true, en: "What's the pool surface?", es: "¿De qué es la superficie?", options_en: [Plaster, Pebble, Tile, Vinyl or fiberglass], options_es: [Yeso, Piedrita, Azulejo, Vinil o fibra de vidrio]}
+      - {id: water, card_field: true, en: "How is the water right now?", es: "¿Cómo está el agua ahora?", options_en: [Clear, Cloudy, Green], options_es: [Clara, Turbia, Verde]}
+
+  handyman:
+    version: 1
+    confirmed_by: []
+    kb_trade: handyman
+    photos: [p1, p2, p3]
+    questions:
+      - {id: what, card_field: true, en: "What needs doing?", es: "¿Qué hay que hacer?", options_en: [Drywall patch, Door repair, Shelves or mounting, Fence repair, Dryer vent reroute, Other small repair], options_es: [Parche de tablaroca, Reparar puerta, Repisas o montar algo, Reparar cerca, Mover ducto de secadora, Otra reparación chica]}
+      - {id: count, card_field: true, en: "How many items or spots?", es: "¿Cuántas cosas o lugares?", options_en: ["1", "2 to 4", "5 or more"], options_es: ["1", "2 a 4", "5 o más"]}
+      - {id: materials, card_field: true, en: "Do you already have the materials?", es: "¿Ya tiene los materiales?", options_en: ["Yes", "No", "Some"], options_es: ["Sí", "No", "Algunos"]}
+      - {id: details, card_field: false, en: "Describe the job in a sentence or two. (No names or phone numbers.)", es: "Describa el trabajo en una o dos frases. (Sin nombres ni teléfonos.)"}
+
+  pool_cleaning:
+    version: 1
+    confirmed_by: []
+    kb_trade: pool_cleaning
+    photos: [p1, p2, p3]
+    questions:
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Weekly service, Every two weeks, One-time cleanup, Green pool cleanup], options_es: [Servicio semanal, Cada dos semanas, Limpieza de una vez, Limpiar alberca verde]}
+      - {id: size_band, card_field: true, en: "About how big is the pool?", es: "¿Más o menos qué tamaño tiene la alberca?", options_en: [Small (under 10000 gallons), Medium (10000 to 20000 gallons), Large (over 20000 gallons)], options_es: [Chica (menos de 10000 galones), Mediana (10000 a 20000 galones), Grande (más de 20000 galones)]}
+      - {id: spa, card_field: true, en: "Is there an attached spa?", es: "¿Tiene spa conectado?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+      - {id: water, card_field: true, en: "How is the water right now?", es: "¿Cómo está el agua ahora?", options_en: [Clear, Cloudy, Green], options_es: [Clara, Turbia, Verde]}
+      - {id: chemicals, card_field: true, en: "Should chemicals be included in the price?", es: "¿Los químicos deben estar incluidos en el precio?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+
+  landscape_maintenance:
+    version: 1
+    confirmed_by: []
+    kb_trade: landscaping_irrigation
+    photos: [p1, p2, p3]
+    questions:
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Mowing, Trimming bushes or trees, Yard cleanup, Gravel raking], options_es: [Cortar pasto, Podar arbustos o árboles, Limpiar el patio, Rastrillar grava]}
+      - {id: how_often, card_field: true, en: "How often?", es: "¿Con qué frecuencia?", options_en: [Once, Weekly, Every two weeks, Monthly], options_es: [Una vez, Cada semana, Cada dos semanas, Cada mes]}
+      - {id: yard_size, card_field: true, en: "About how big is the yard?", es: "¿Más o menos qué tamaño tiene el patio?", options_en: [Small, Medium, Large or a big lot], options_es: [Chico, Mediano, Grande o terreno grande]}
+      - {id: haul_away, card_field: true, en: "Should the trimmings be hauled away?", es: "¿Hay que llevarse los desechos?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+
+  house_cleaning:
+    version: 1
+    confirmed_by: []
+    kb_trade: house_cleaning
+    photos: [p1, p2, p3]
+    questions:
+      - {id: service, card_field: true, en: "What kind of cleaning?", es: "¿Qué tipo de limpieza?", options_en: [Regular, Deep cleaning, Move-out], options_es: [Regular, Limpieza profunda, Al mudarse]}
+      - {id: how_often, card_field: true, ask_if: {question: service, answers: [1]}, en: "How often?", es: "¿Con qué frecuencia?", options_en: [Weekly, Every two weeks, Monthly], options_es: [Cada semana, Cada dos semanas, Cada mes]}
+      - {id: bedrooms, card_field: true, en: "How many bedrooms?", es: "¿Cuántas recámaras?", options_en: ["1 or 2", "3", "4 or more"], options_es: ["1 o 2", "3", "4 o más"]}
+      - {id: bathrooms, card_field: true, en: "How many bathrooms?", es: "¿Cuántos baños?", options_en: ["1", "2", "3 or more"], options_es: ["1", "2", "3 o más"]}
+      - {id: pets, card_field: true, en: "Any pets in the home?", es: "¿Hay mascotas en la casa?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+
+  pest_control:
+    version: 1
+    confirmed_by: []
+    kb_trade: pest_control
+    photos: [p1, p2, p3]
+    questions:
+      - {id: pest, card_field: true, en: "What are you seeing?", es: "¿Qué está viendo?", options_en: [Scorpions, Ants or roaches, Spiders, Termites, Rodents, Weeds (pre-emergent)], options_es: [Alacranes, Hormigas o cucarachas, Arañas, Termitas, Roedores, Hierba mala (preemergente)]}
+      - {id: how_often, card_field: true, en: "One-time or ongoing?", es: "¿Una vez o servicio continuo?", options_en: [One-time, Monthly, Every other month, Quarterly], options_es: [Una vez, Cada mes, Cada dos meses, Cada tres meses]}
+      - {id: where, card_field: true, en: "Where?", es: "¿Dónde?", options_en: [Inside, Outside, Both], options_es: [Adentro, Afuera, Ambos]}
+      - {id: home_size, card_field: true, en: "About how big is the home?", es: "¿Más o menos qué tamaño tiene la casa?", options_en: ["Under 1,500 sq ft", "1,500 to 2,500 sq ft", "Over 2,500 sq ft"], options_es: ["Menos de 1,500 pies²", "1,500 a 2,500 pies²", "Más de 2,500 pies²"]}
+
+  dog_waste_pickup:
+    version: 1
+    confirmed_by: []
+    questions:
+      - {id: dogs, card_field: true, en: "How many dogs?", es: "¿Cuántos perros?", options_en: ["1", "2", "3 or more"], options_es: ["1", "2", "3 o más"]}
+      - {id: how_often, card_field: true, en: "How often?", es: "¿Con qué frecuencia?", options_en: [Once, Weekly, Twice a week], options_es: [Una vez, Cada semana, Dos veces por semana]}
+      - {id: yard_size, card_field: true, en: "About how big is the yard?", es: "¿Más o menos qué tamaño tiene el patio?", options_en: [Small, Medium, Large], options_es: [Chico, Mediano, Grande]}
+
+  trash_can_cleaning:
+    version: 1
+    confirmed_by: []
+    questions:
+      - {id: bins, card_field: true, en: "How many bins?", es: "¿Cuántos botes?", options_en: ["1", "2", "3 or more"], options_es: ["1", "2", "3 o más"]}
+      - {id: how_often, card_field: true, en: "How often?", es: "¿Con qué frecuencia?", options_en: [Once, Monthly, Every three months], options_es: [Una vez, Cada mes, Cada tres meses]}
+      - {id: pickup_day, card_field: true, en: "What is your trash pickup day?", es: "¿Qué día recogen la basura?", options_en: [Monday, Tuesday, Wednesday, Thursday, Friday], options_es: [Lunes, Martes, Miércoles, Jueves, Viernes]}
+
+  turnover_cleaning:
+    version: 1
+    confirmed_by: []
+    kb_trade: house_cleaning
+    photos: [p1, p2, p3]
+    questions:
+      - {id: bedrooms, card_field: true, en: "How many bedrooms?", es: "¿Cuántas recámaras?", options_en: ["1 or 2", "3", "4 or more"], options_es: ["1 o 2", "3", "4 o más"]}
+      - {id: bathrooms, card_field: true, en: "How many bathrooms?", es: "¿Cuántos baños?", options_en: ["1", "2", "3 or more"], options_es: ["1", "2", "3 o más"]}
+      - {id: linens, card_field: true, en: "Should linens be washed and changed?", es: "¿Hay que lavar y cambiar la ropa de cama?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+      - {id: how_often, card_field: true, en: "How often are there turnovers?", es: "¿Cada cuánto hay cambio de huéspedes?", options_en: [Once, A few times a month, Weekly or more, Only in season], options_es: [Una vez, Unas veces al mes, Cada semana o más, Solo en temporada]}
+      - {id: access, card_field: true, en: "How will the business get in?", es: "¿Cómo va a entrar el negocio?", options_en: [Someone lets them in, Lockbox (code given on the call), Smart lock], options_es: [Alguien abre, Caja de llaves (el código se da por teléfono), Cerradura inteligente]}
+
+  car_detailing:
+    version: 1
+    confirmed_by: []
+    questions:
+      - {id: vehicle, card_field: true, en: "What kind of vehicle?", es: "¿Qué tipo de vehículo?", options_en: [Car, Truck or SUV, RV or motorhome, Travel trailer, Side-by-side or UTV], options_es: [Carro, Troca o SUV, Casa rodante, Remolque de viaje, Razer o UTV]}
+      - {id: rv_length, card_field: true, ask_if: {question: vehicle, answers: [3, 4]}, en: "About how long is it?", es: "¿Más o menos qué largo tiene?", options_en: [Under 25 ft, 25 to 35 ft, Over 35 ft], options_es: [Menos de 25 pies, 25 a 35 pies, Más de 35 pies]}
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Interior, Exterior, Both, Roof cleaning and sealing (RV)], options_es: [Interior, Exterior, Ambos, Limpiar y sellar el techo (casa rodante)]}
+      - {id: where, card_field: true, en: "Where is it parked?", es: "¿Dónde está estacionado?", options_en: [At home, Storage lot, RV park or campground], options_es: [En casa, Lote de almacenaje, Parque de casas rodantes o campamento]}
+      - {id: water, card_field: true, en: "Is water and power available there?", es: "¿Hay agua y luz ahí?", options_en: ["Yes", "No", "Water only"], options_es: ["Sí", "No", "Solo agua"]}
+
+  boat_detailing:
+    version: 1
+    confirmed_by: []
+    kb_trade: boat_dock
+    photos: [p1, p2, p3]
+    questions:
+      - {id: length, card_field: true, en: "How long is the boat?", es: "¿Qué largo tiene la lancha?", options_en: [Under 20 ft, 20 to 25 ft, 26 to 30 ft, Over 30 ft], options_es: [Menos de 20 pies, 20 a 25 pies, 26 a 30 pies, Más de 30 pies]}
+      - {id: boat_type, card_field: true, en: "What kind of boat?", es: "¿Qué tipo de lancha?", options_en: [Bowrider or runabout, Pontoon, Wake or ski boat, Cruiser, Personal watercraft], options_es: [Bowrider, Pontón, Lancha de esquí o wake, Crucero, Moto acuática]}
+      - {id: location, card_field: true, en: "Where is it?", es: "¿Dónde está?", options_en: [In the water, On a lift, On a trailer, In storage], options_es: [En el agua, En un elevador, En un remolque, En almacenaje]}
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Hull cleaning, Interior, Wax or polish, Full detail], options_es: [Limpiar el casco, Interior, Cera o pulido, Detallado completo]}
+
+  boat_repair:
+    version: 1
+    confirmed_by: []
+    kb_trade: boat_dock
+    photos: [p1, p2, p3]
+    questions:
+      - {id: work, card_field: true, en: "What is it about?", es: "¿De qué se trata?", options_en: [Engine or drive, Trailer, Canvas or upholstery, Electrical or gauges], options_es: [Motor o transmisión, Remolque, Lona o tapicería, Eléctrico o medidores]}
+      - {id: drive, card_field: true, ask_if: {question: work, answers: [1]}, en: "What kind of engine?", es: "¿Qué tipo de motor?", options_en: [Outboard, Inboard, Sterndrive (I/O), Jet], options_es: [Fuera de borda, Interno, Sterndrive (I/O), Jet]}
+      - {id: make, card_field: true, ask_if: {question: work, answers: [1]}, en: "What make is the engine?", es: "¿De qué marca es el motor?", options_en: [Mercury or MerCruiser, Yamaha, Volvo Penta, Suzuki, Indmar or Ilmor, Other], options_es: [Mercury o MerCruiser, Yamaha, Volvo Penta, Suzuki, Indmar o Ilmor, Otra]}
+      - {id: symptom, card_field: true, emergency: true, en: "What's happening?", es: "¿Qué está pasando?", options_en: [Won't start, Overheating, Rough idle or no power, Electrical problem, Fuel smell, Routine service], options_es: [No arranca, Se calienta, Falla o no tiene fuerza, Problema eléctrico, Huele a gasolina, Servicio de rutina]}
+      - {id: hours_year, card_field: true, ask_if: {question: work, answers: [1]}, en: "About how many hours or how old is the engine?", es: "¿Más o menos cuántas horas o qué edad tiene el motor?", options_en: [Under 300 hours or newer than 5 years, 300 to 1000 hours, Over 1000 hours or older than 15 years], options_es: [Menos de 300 horas o menos de 5 años, 300 a 1000 horas, Más de 1000 horas o más de 15 años]}
+      - {id: location, card_field: true, en: "Where is the boat?", es: "¿Dónde está la lancha?", options_en: [In the water, On a lift, On a trailer, In storage], options_es: [En el agua, En un elevador, En un remolque, En almacenaje]}
+
+  window_cleaning:
+    version: 1
+    confirmed_by: []
+    kb_trade: window_cleaning
+    photos: [p1, p2, p3]
+    questions:
+      - {id: count, card_field: true, en: "About how many windows?", es: "¿Más o menos cuántas ventanas?", options_en: [Under 10, 10 to 20, Over 20], options_es: [Menos de 10, 10 a 20, Más de 20]}
+      - {id: stories, card_field: true, en: "How many stories?", es: "¿Cuántos pisos?", options_en: ["1", "2 or more"], options_es: ["1", "2 o más"]}
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Inside and outside, Outside only, Screens too, Hard-water spots], options_es: [Adentro y afuera, Solo afuera, También las mallas, Manchas de agua dura]}
+
+  pressure_washing:
+    version: 1
+    confirmed_by: []
+    questions:
+      - {id: surface, card_field: true, en: "What needs washing?", es: "¿Qué hay que lavar?", options_en: [Driveway, Patio or deck, House walls, Several areas], options_es: [Entrada de carros, Patio o terraza, Paredes de la casa, Varias áreas]}
+      - {id: size, card_field: true, en: "About how big?", es: "¿Más o menos qué tamaño?", options_en: [Small (1 car), Medium (2 to 3 cars), Large], options_es: [Chico (1 carro), Mediano (2 a 3 carros), Grande]}
+      - {id: stains, card_field: true, en: "Any oil or rust stains?", es: "¿Hay manchas de aceite u óxido?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+
+  solar_screens:
+    version: 1
+    confirmed_by: []
+    kb_trade: windows_doors
+    photos: [p1, p2, p3]
+    questions:
+      - {id: product, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Solar screens, Window film, Repair existing screens], options_es: [Mallas solares, Película para ventanas, Reparar mallas que ya tiene]}
+      - {id: count, card_field: true, en: "About how many windows?", es: "¿Más o menos cuántas ventanas?", options_en: [1 to 5, 6 to 12, Over 12], options_es: [1 a 5, 6 a 12, Más de 12]}
+      - {id: stories, card_field: true, en: "How many stories?", es: "¿Cuántos pisos?", options_en: ["1", "2 or more"], options_es: ["1", "2 o más"]}
+
+  roof_repair:
+    version: 1
+    confirmed_by: []
+    kb_trade: roofing
+    photos: [p1, p2, p3]
+    questions:
+      - {id: roof_type, card_field: true, en: "What kind of roof?", es: "¿Qué tipo de techo?", options_en: [Tile, Shingle, Flat or foam, Metal], options_es: [Teja, Tejamanil, Plano o de espuma, Metal]}
+      - {id: problem, card_field: true, en: "What's the problem?", es: "¿Cuál es el problema?", options_en: [Leak inside, Broken or slipped tiles, Storm damage, Want a full new roof], options_es: [Gotera adentro, Tejas rotas o movidas, Daño por tormenta, Quiere techo nuevo completo]}
+      - {id: leak_where, card_field: true, ask_if: {question: problem, answers: [1]}, en: "Where does the leak show?", es: "¿Dónde se ve la gotera?", options_en: [One room, Several rooms, Garage or patio], options_es: [Un cuarto, Varios cuartos, Cochera o patio]}
+      - {id: stories, card_field: true, en: "How many stories?", es: "¿Cuántos pisos?", options_en: ["1", "2 or more"], options_es: ["1", "2 o más"]}
+      - {id: home_size, card_field: true, size_band: true, en: "About how big is the home?", es: "¿Más o menos qué tamaño tiene la casa?", options_en: ["Under 1,500 sq ft", "1,500 to 2,500 sq ft", "Over 2,500 sq ft"], options_es: ["Menos de 1,500 pies²", "1,500 a 2,500 pies²", "Más de 2,500 pies²"], band_floor: ["0", "0", "1500.00"]}
+
+  painting:
+    version: 1
+    confirmed_by: []
+    kb_trade: painting
+    photos: [p1, p2, p3]
+    questions:
+      - {id: where, card_field: true, en: "What needs painting?", es: "¿Qué hay que pintar?", options_en: [Inside rooms, Outside of the house, Cabinets, Doors or trim only], options_es: [Cuartos adentro, Afuera de la casa, Gabinetes, Solo puertas o molduras]}
+      - {id: size, card_field: true, size_band: true, en: "About how much?", es: "¿Más o menos cuánto?", options_en: [1 room or a small area, 2 to 4 rooms, Whole inside, Whole outside], options_es: [1 cuarto o área chica, 2 a 4 cuartos, Toda la casa por dentro, Toda la casa por fuera], band_floor: ["0", "500.00", "1500.00", "1500.00"]}
+      - {id: paint, card_field: true, en: "Who supplies the paint?", es: "¿Quién pone la pintura?", options_en: [The business, I have it], options_es: [El negocio, Yo la tengo]}
+      - {id: repairs, card_field: true, en: "Any drywall or stucco repair needed first?", es: "¿Hay que reparar tablaroca o estuco primero?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+
+  local_moving:
+    version: 1
+    confirmed_by: []
+    kb_trade: moving
+    photos: [p1, p2, p3]
+    questions:
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Full move with a truck, Loading or unloading help only], options_es: [Mudanza completa con camión, Solo ayuda para cargar o descargar]}
+      - {id: bedrooms, card_field: true, en: "How many bedrooms of stuff?", es: "¿De cuántas recámaras son las cosas?", options_en: [Studio or 1, "2", "3", "4 or more"], options_es: [Estudio o 1, "2", "3", "4 o más"]}
+      - {id: stairs, card_field: true, en: "Any stairs or an elevator?", es: "¿Hay escaleras o elevador?", options_en: [No stairs, Stairs, Elevator], options_es: [Sin escaleras, Escaleras, Elevador]}
+      - {id: distance, card_field: true, en: "How far is the move?", es: "¿Qué tan lejos es la mudanza?", options_en: [Within Lake Havasu City, Under 50 miles, 50 miles or more in Arizona], options_es: [Dentro de Lake Havasu City, Menos de 50 millas, 50 millas o más dentro de Arizona]}
+
+  appliance_repair:
+    version: 1
+    confirmed_by: []
+    kb_trade: appliance_repair
+    photos: [p1, p2, p3]
+    questions:
+      - {id: appliance, card_field: true, en: "Which appliance?", es: "¿Qué aparato?", options_en: [Washer, Dryer, Refrigerator, Dishwasher, Other], options_es: [Lavadora, Secadora, Refrigerador, Lavaplatos, Otro]}
+      - {id: brand, card_field: true, en: "What brand?", es: "¿De qué marca?", options_en: [Whirlpool or Maytag, GE, Samsung, LG, Frigidaire or Electrolux, Other], options_es: [Whirlpool o Maytag, GE, Samsung, LG, Frigidaire o Electrolux, Otra]}
+      - {id: error_code, card_field: true, en: "Is an error code showing?", es: "¿Muestra un código de error?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+      - {id: age, card_field: true, en: "About how old is it?", es: "¿Más o menos qué edad tiene?", options_en: [Under 5 years, 5 to 10 years, Over 10 years], options_es: [Menos de 5 años, 5 a 10 años, Más de 10 años]}
+      - {id: details, card_field: false, en: "What is it doing or not doing? (No names or phone numbers.)", es: "¿Qué hace o qué no hace? (Sin nombres ni teléfonos.)"}
+
+  dryer_vent_cleaning:
+    version: 1
+    confirmed_by: []
+    questions:
+      - {id: where_vent, card_field: true, en: "Where does the vent come out?", es: "¿Por dónde sale el ducto?", options_en: [Side wall, Roof, Not sure where], options_es: [Pared de lado, Techo, No sé dónde]}
+      - {id: stories, card_field: true, en: "How many stories?", es: "¿Cuántos pisos?", options_en: ["1", "2 or more"], options_es: ["1", "2 o más"]}
+      - {id: symptom, card_field: true, en: "Is the dryer taking longer than usual?", es: "¿La secadora tarda más de lo normal?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+
+  holiday_lights:
+    version: 1
+    confirmed_by: []
+    questions:
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Hang lights, Take down lights, Both], options_es: [Colgar luces, Quitar luces, Ambos]}
+      - {id: stories, card_field: true, en: "How many stories?", es: "¿Cuántos pisos?", options_en: ["1", "2 or more"], options_es: ["1", "2 o más"]}
+      - {id: lights, card_field: true, en: "Who supplies the lights?", es: "¿Quién pone las luces?", options_en: [I have them, The business], options_es: [Yo las tengo, El negocio]}
+
+  estate_cleanout:
+    version: 1
+    confirmed_by: []
+    kb_trade: junk_removal
+    photos: [p1, p2, p3]
+    questions:
+      - {id: size, card_field: true, en: "How much needs clearing?", es: "¿Cuánto hay que vaciar?", options_en: [A few rooms, A whole house, House and garage], options_es: [Unos cuartos, Toda la casa, Casa y cochera]}
+      - {id: donation, card_field: true, en: "Should usable items be sorted for donation?", es: "¿Hay que separar cosas para donar?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+      - {id: timing, card_field: true, en: "Is there a deadline, like a sale closing?", es: "¿Hay fecha límite, como el cierre de una venta?", options_en: [Within 2 weeks, Within a month, No deadline], options_es: [En 2 semanas, En un mes, Sin fecha límite]}
+
+  donation_pickup:
+    version: 1
+    confirmed_by: []
+    kb_trade: junk_removal
+    photos: [p1, p2, p3]
+    questions:
+      - {id: items, card_field: true, en: "What items?", es: "¿Qué cosas?", options_en: [1 or 2 large items, A room of furniture, More than a room], options_es: [1 o 2 cosas grandes, Muebles de un cuarto, Más de un cuarto]}
+      - {id: stairs, card_field: true, en: "Any stairs?", es: "¿Hay escaleras?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+      - {id: where_to, card_field: true, en: "Where should it go?", es: "¿A dónde debe ir?", options_en: [Any donation site, I have a place in mind], options_es: [Cualquier lugar de donación, Ya tengo un lugar]}
+
+  septic_pumping:
+    version: 1
+    confirmed_by: []
+    kb_trade: septic
+    photos: [p1, p2, p3]
+    questions:
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Routine pumping, Backup or slow drains now, Tank inspection], options_es: [Bombeo de rutina, Se regresa o drena lento ahora, Inspección del tanque]}
+      - {id: last_pumped, card_field: true, en: "When was it last pumped?", es: "¿Cuándo se bombeó por última vez?", options_en: [Under 3 years, 3 to 5 years, Over 5 years or unknown], options_es: [Menos de 3 años, 3 a 5 años, Más de 5 años o no sé]}
+      - {id: lid, card_field: true, en: "Is the tank lid easy to reach?", es: "¿La tapa del tanque está a la mano?", options_en: ["Yes", "No, it's buried", "Don't know where it is"], options_es: ["Sí", "No, está enterrada", "No sé dónde está"]}
+
+  alarm_systems:
+    version: 1
+    confirmed_by: []
+    kb_trade: security_alarm
+    photos: [p1, p2, p3]
+    questions:
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [New alarm system, Add to an existing system, Monitoring setup only], options_es: [Sistema de alarma nuevo, Agregar a un sistema existente, Solo instalar el monitoreo]}
+      - {id: doors_windows, card_field: true, en: "About how many doors and windows to cover?", es: "¿Más o menos cuántas puertas y ventanas?", options_en: [Under 6, 6 to 12, Over 12], options_es: [Menos de 6, 6 a 12, Más de 12]}
+      - {id: internet, card_field: true, en: "Is there Wi-Fi at the home?", es: "¿Hay Wi-Fi en la casa?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+
+  security_cameras:
+    version: 1
+    confirmed_by: []
+    kb_trade: security_alarm
+    photos: [p1, p2, p3]
+    questions:
+      - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Doorbell camera, Outdoor cameras, Indoor cameras, Fix existing cameras], options_es: [Cámara de timbre, Cámaras afuera, Cámaras adentro, Arreglar cámaras que ya tiene]}
+      - {id: count, card_field: true, en: "How many cameras?", es: "¿Cuántas cámaras?", options_en: ["1", "2 to 4", "5 or more"], options_es: ["1", "2 a 4", "5 o más"]}
+      - {id: have_cameras, card_field: true, en: "Do you already have the cameras?", es: "¿Ya tiene las cámaras?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+
+  home_inspection:
+    version: 1
+    confirmed_by: []
+    kb_trade: home_inspection
+    photos: [p1]
+    questions:
+      - {id: sale, card_field: true, en: "Is this inspection for a home sale, purchase or refinance?", es: "¿Esta inspección es para una venta, compra o refinanciamiento?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+      - {id: kind, card_field: true, en: "What kind of inspection?", es: "¿Qué tipo de inspección?", options_en: [Whole home, Termite (wood-destroying insect) report, One system or area], options_es: [Toda la casa, Reporte de termitas, Un sistema o un área]}
+      - {id: home_size, card_field: true, en: "About how big is the home?", es: "¿Más o menos qué tamaño tiene la casa?", options_en: ["Under 1,500 sq ft", "1,500 to 2,500 sq ft", "Over 2,500 sq ft"], options_es: ["Menos de 1,500 pies²", "1,500 a 2,500 pies²", "Más de 2,500 pies²"]}
+      - {id: extras, card_field: true, en: "Is there a pool or a detached building?", es: "¿Hay alberca o un edificio aparte?", options_en: [Pool, Detached building, Both, Neither], options_es: [Alberca, Edificio aparte, Ambos, Ninguno]}
+
+  home_watch:
+    version: 1
+    confirmed_by: []
+    questions:
+      - {id: schedule, card_field: true, en: "How often should someone check the home?", es: "¿Cada cuánto deben revisar la casa?", options_en: [Weekly, Every two weeks, Monthly, After storms only], options_es: [Cada semana, Cada dos semanas, Cada mes, Solo después de tormentas]}
+      - {id: season, card_field: true, en: "When are you away?", es: "¿Cuándo está fuera?", options_en: [Summer, Winter, Year-round, Off and on], options_es: [Verano, Invierno, Todo el año, A veces]}
+      - {id: tasks, card_field: true, en: "What should the check include?", es: "¿Qué debe incluir la revisión?", options_en: [Walk-through and photos, Run taps and flush toilets, Check the AC and thermostat, Water plants, All of these], options_es: [Recorrido y fotos, Abrir llaves y jalar inodoros, Revisar el aire y el termostato, Regar plantas, Todo esto]}
+      - {id: access, card_field: true, en: "How will the business get in?", es: "¿Cómo va a entrar el negocio?", options_en: [Someone lets them in, Lockbox (code given on the call), Smart lock], options_es: [Alguien abre, Caja de llaves (el código se da por teléfono), Cerradura inteligente]}
+
+  water_treatment:
+    version: 1
+    confirmed_by: []
+    kb_trade: water_treatment
+    photos: [p1_unit, p2_loop, p3_under_sink]
+    questions:
+      - {id: system, card_field: true, en: "Which system?", es: "¿Qué sistema?", options_en: [Water softener, Reverse osmosis (RO), Misting system], options_es: [Suavizador de agua, Ósmosis inversa (RO), Sistema de nebulización]}
+      - {id: new_or_repair, card_field: true, en: "New install or repair?", es: "¿Instalación nueva o reparación?", options_en: [New install, Repair, Replace an old one], options_es: [Instalación nueva, Reparación, Cambiar uno viejo]}
+      - {id: loop, card_field: true, ask_if: {question: system, answers: [1]}, en: "Is there a softener loop (pipe connection) already?", es: "¿Ya hay conexión para suavizador?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
+
+  gutters:
+    version: 1
+    confirmed_by: []
+    kb_trade: gutter_solar_cleaning
+    photos: [p1, p2, p3]
+    questions:
+      - {id: service, card_field: true, en: "Install or repair?", es: "¿Instalar o reparar?", options_en: [New gutters, Repair, Downspouts only], options_es: [Canaletas nuevas, Reparación, Solo bajantes]}
+      - {id: length, card_field: true, en: "About how many feet of gutter?", es: "¿Más o menos cuántos pies de canaleta?", options_en: [Under 50 ft, 50 to 150 ft, Over 150 ft], options_es: [Menos de 50 pies, 50 a 150 pies, Más de 150 pies]}
+      - {id: stories, card_field: true, en: "How many stories?", es: "¿Cuántos pisos?", options_en: ["1", "2 or more"], options_es: ["1", "2 o más"]}
+
+  insulation:
+    version: 1
+    confirmed_by: []
+    questions:
+      - {id: where, card_field: true, en: "Where?", es: "¿Dónde?", options_en: [Attic, Walls, Garage], options_es: [Ático, Paredes, Cochera]}
+      - {id: size, card_field: true, size_band: true, en: "About how many square feet?", es: "¿Más o menos cuántos pies cuadrados?", options_en: ["Under 1,000", "1,000 to 2,000", "Over 2,000"], options_es: ["Menos de 1,000", "1,000 a 2,000", "Más de 2,000"], band_floor: ["0", "1500.00", "1500.00"]}
+      - {id: existing, card_field: true, en: "Add to what's there, or remove and replace?", es: "¿Agregar a lo que hay o quitar y cambiar?", options_en: [Add, Remove and replace], options_es: [Agregar, Quitar y cambiar]}
+
+  pavers_hardscape:
+    version: 1
+    confirmed_by: []
+    kb_trade: pavers_concrete
+    photos: [p1, p2, p3]
+    questions:
+      - {id: project, card_field: true, en: "What's the project?", es: "¿Cuál es el proyecto?", options_en: [Paver patio, Walkway, Drip or sprinkler system, Repair existing], options_es: [Patio de adoquín, Andador, Sistema de goteo o aspersores, Reparar lo que hay]}
+      - {id: size, card_field: true, size_band: true, en: "About how big?", es: "¿Más o menos qué tamaño?", options_en: [Under 200 sq ft, 200 to 500 sq ft, Over 500 sq ft], options_es: [Menos de 200 pies², 200 a 500 pies², Más de 500 pies²], band_floor: ["0", "1500.00", "5000.00"]}
+      - {id: access, card_field: true, en: "Can equipment reach the area?", es: "¿Puede entrar maquinaria al área?", options_en: [Yes through a gate, No hand access only], options_es: [Sí por un portón, No solo a mano]}
+
+  epoxy_floors:
+    version: 1
+    confirmed_by: []
+    kb_trade: flooring
+    photos: [p1, p2, p3]
+    questions:
+      - {id: size, card_field: true, size_band: true, en: "What size garage or area?", es: "¿De qué tamaño es la cochera o el área?", options_en: [1-car, 2-car, 3-car or larger], options_es: [1 carro, 2 carros, 3 carros o más], band_floor: ["0", "1500.00", "1500.00"]}
+      - {id: cracks, card_field: true, en: "Any cracks or old coating to remove?", es: "¿Hay grietas o pintura vieja que quitar?", options_en: [Cracks, Old coating, Both, Neither], options_es: [Grietas, Pintura vieja, Ambos, Ninguno]}
+      - {id: finish, card_field: true, en: "What finish?", es: "¿Qué acabado?", options_en: [Solid color, Flakes, Metallic, Open to ideas], options_es: [Color sólido, Hojuelas, Metálico, Abierto a ideas]}

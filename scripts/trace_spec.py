@@ -3,7 +3,9 @@
 Checks that requirement IDs are unique and use their file's prefix, that every
 requirement cites at least one `path:LINE` whose file exists in the repository
 with a non-blank line at that number, that every named decision (D-###) exists
-in docs/decisions.md, and that no requirement contains a superseded value.
+in docs/decisions.md, that no requirement contains a superseded value, and that
+no requirement's text implies Ask Hava is a contractor (WORD-022) or uses a
+banned description such as "connect you with" (WORD-023).
 Prints counts; exits 1 on any error.
 
 Usage: python3 scripts/trace_spec.py [--root REPO_ROOT]
@@ -32,6 +34,59 @@ SUPERSEDED: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"havasu home quotes", re.IGNORECASE), "old brand"),
     (re.compile(r"\$(?:45|59|149)\b"), "old fee"),
     (re.compile(r"\b(?:2|two) months\b", re.IGNORECASE), "old recurring rule"),
+)
+# WORD-022 (D-360): wording that says or implies Ask Hava hires, dispatches, assigns, sends a
+# worker, schedules, books, subcontracts, manages, warrants, guarantees, prices, bids on or
+# recommends work, or that a business works for or through Ask Hava. One list for the spec
+# check below, the catalog check (scripts/check_catalog.py) and the app's wording scan (T104).
+_NOT_A_CONTRACTOR_PATTERNS: tuple[str, ...] = (
+    (
+        r"\bour (?:pros?|professionals|network|contractors?|plumbers?|electricians?|technicians?"
+        r"|techs?|crews?|businesses|workers|team of)\b"
+    ),
+    r"\byour (?:contractor|pro|plumber|electrician|technician|handyman)\b",
+    (
+        r"\b(?:we|Ask Hava)(?:'ll| will)? (?:dispatch|assign|schedule|book)s? (?:you )?"
+        r"(?:a|an|the|your|someone)\b"
+    ),
+    (
+        r"\bsend(?:s|ing)? (?:you )?(?:a|an) (?:plumber|pro|electrician|technician|tech|handyman"
+        r"|contractor|crew|worker)\b"
+    ),
+    r"\bbook(?:s|ed|ing|ings)?\b",
+    r"\bhir(?:e|es|ed|ing) (?:through|via|with) (?:us|Ask Hava)\b",
+    r"\bthrough (?:Ask Hava|us)\b",
+    (
+        r"\bdispatch(?:es|ed|ing)? (?:a|an|the|your) (?:plumber|pro|business|contractor|technician"
+        r"|crew|worker)\b"
+    ),
+    r"\bassign(?:s|ed|ing|ment|ments)?\b",
+    r"\b(?:we|Ask Hava) (?:found|matched) you\b",
+    r"\bmatch(?:es|ed)? you (?:with|to)\b",
+    r"\bservice[- ]providers?\b",
+    r"\bprovider partners?\b",
+    r"\b(?:our|Ask Hava's|Ask Hava|referral) network\b",
+    r"\bsubcontract\w*",
+    r"\b(?:we|Ask Hava) (?:guarantee|warrant|recommend|manage|negotiate|supervise|inspect)s?\b",
+    r"\bAsk Hava(?:'s)? (?:guarantee|warranty|pros?|plumbers?|contractors?|technicians?)\b",
+    r"\bguaranteed\b",
+    r"\b(?:work|works|working) for (?:us|Ask Hava)\b",
+    r"\bour (?:prices?|rates?|quotes?|estimates?)\b",
+    r"\bhire (?:us|Ask Hava)\b",
+    r"\bnuestr[oa]s? (?:profesionales|red|contratistas|técnicos|plomeros|electricistas)\b",
+    r"\ble enviaremos (?:un|una) (?:plomero|técnico|profesional|contratista|electricista)\b",
+    r"\bsubcontrat\w*",
+    # WORD-023 (D-377): one honest description; never "connect you with" or a referral network.
+    r"\bconnect(?:s|ing)? (?:you|homeowners|customers|people) (?:with|to)\b",
+    r"\breferral (?:network|service)s?\b",
+)
+NOT_A_CONTRACTOR: tuple[tuple[re.Pattern[str], str], ...] = tuple(
+    (re.compile(p, re.IGNORECASE), "implies Ask Hava is a contractor (WORD-022)")
+    for p in _NOT_A_CONTRACTOR_PATTERNS
+)
+# Rules that quote the banned phrases in order to ban them (D-360).
+WORDING_RULE_IDS = frozenset(
+    {"WORD-011", "WORD-020", "WORD-022", "WORD-023", "TERMS-012", "TERMS-026", "TERMS-027"}
 )
 
 
@@ -200,6 +255,18 @@ def check_superseded(reqs: list[Requirement]) -> list[str]:
     ]
 
 
+def check_not_a_contractor(reqs: list[Requirement]) -> list[str]:
+    """WORD-022: no requirement text (before "Source:") implies Ask Hava is a contractor."""
+    return [
+        f"{req.where}: {req.req_id} {label}: {match.group(0)!r}"
+        for req in reqs
+        if req.req_id not in WORDING_RULE_IDS
+        for pat, label in NOT_A_CONTRACTOR
+        for match in [pat.search(req.text)]
+        if match
+    ]
+
+
 def run(root: Path) -> Report:
     """Parse every spec file under root and run all checks."""
     spec_dir = root / SPEC_DIR
@@ -219,6 +286,7 @@ def run(root: Path) -> Report:
     errors += check_citations(root, reqs)
     errors += check_decisions(root, reqs)
     errors += check_superseded(reqs)
+    errors += check_not_a_contractor(reqs)
     return Report(reqs, errors)
 
 

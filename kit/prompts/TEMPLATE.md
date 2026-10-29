@@ -4,15 +4,19 @@ Task ${id} (${type}, phase ${phase}, stage ${stage}). Slug: ${slug}.
 Branch: `${branch}`
 Model: `${model}`, effort ${effort}. Reviewer: `${reviewer_model}` (areas: ${review_areas}).
 
-${goal_section}## Start routine (do this first, every session)
+## Goal
+
+${goal}
+
+${acceptance_section}## Start routine (do this first, every session)
 
 1. Confirm the working folder is the repository root.
 2. Read `BUILD_BRIEF.md` section 2 and section 7, and `CLAUDE.md`. Read `docs/constitution.md` for any rule you are unsure of.
 3. Read `kit/state.json` and the last 30 lines of `PROGRESS.md` (both on `claude/kit-state`, read only) and the last 20 commits on `main`.
-4. Run the smoke test. If `main` is red, stop and report: the only task then is "fix main".
+4. Run the smoke test, `bash scripts/smoke.sh` (it starts a local Postgres and runs the same checks as `Ci`). If `main` is red, stop and report: the only task then is "fix main".
 5. Confirm this task (${id}) matches the next task in `kit/state.json`. If it does not, stop and report.
 6. Create the branch `${branch}` from the latest `main`. Work only on that branch.
-7. Load only the files listed under Scope below.
+7. Load only the files listed under Scope below. For the crate layout (one crate per module, `src/api.rs`, in-crate tests under `src/tests/`, the `askhava-<module>` package names) read `docs/architecture.md` section 2; for how to document code for the next session read `docs/code-docs.md`.
 
 ## Scope
 
@@ -20,57 +24,66 @@ Files you own (change only these, plus the shared paths below):
 
 ${owns}
 
-Files you read (do not change):
+Files you read (do not change). They are pointers: the requirement sentences, test entries, decisions and cited lines this task rests on are pasted below, so open a spec file only to follow a cross-reference.
 
 ${reads}
 
-Shared paths any task may edit: `docs/architecture.md`, `docs/decisions.md`, `docs/for-casey-review.md`, `app/main.py`.
+Shared paths any task may edit: `docs/architecture.md`, `docs/decisions.md`, `docs/for-casey-review.md`, `app/server/src/main.rs` and `app/server/src/lib.rs` (the composition: routes and task handlers), each crate's `src/lib.rs` (one `mod` line for your new file), `src/api.rs` (your public functions) and `src/tests/mod.rs` (one `mod` line for your test file), the workspace `Cargo.toml` and `Cargo.lock`, every crate's `Cargo.toml` (to add an allowed path dependency), every crate's `CLAUDE.md` (its module guide, `docs/code-docs.md`), `.sqlx/` (offline query data from `cargo sqlx prepare --workspace`), `package.json`, `package-lock.json`, every crate's `sqlx.toml` (query-macro type overrides, D-488), `app/messaging/templates/en.json` and `es.json` (add only your own keys, both languages, D-491), every crate's `src/status.rs` (add your own variants and arms), every crate's `askama.toml`, `app/server/src/bin/worker.rs` (register your handler), `app/core/src/settings.rs` (add your own `ASKHAVA_*` keys to the typed settings, D-493), `kit/prompts/` (regenerate with `python3 scripts/gen_prompts.py` when you change a pasted sentence) and `kit/plan.lock` (rewrite it with `python3 scripts/check_plan_lock.py --write` only when your task owns a locked file and changes it, together with a `docs/decisions.md` entry; `docs/governance.md`).
 
-Size budget: at most ${budget_files} files, ${budget_lines} changed lines, ${budget_context}% of the context window. Keep the pull request small.
+Size budget: at most ${budget_files} files, ${budget_lines} changed lines, ${budget_context}% of the context window (computed from the bytes of this prompt, the owned files and the reads). Keep the pull request small.
 
 ## What this task rests on
 
-Requirements:
+Requirements (each sentence as it stands in `docs/spec/`):
 
 ${requirements}
 
-Tests that must pass (test-design entries and journeys from `docs/test-design.md`):
+Tests that must pass (each test-design entry in full, from `docs/test-design.md`):
 
 ${tests}
 
-Decisions (`docs/decisions.md`):
+Decisions (`docs/decisions.md`: the question's opening and the choice of each):
 
 ${decisions}
 
-Source lines (cited; read them, do not guess):
+Source lines (cited, pasted exactly):
 
 ${cites}
+
+Expertise (`docs/brains/`, D-487: the review checklist and the lines that name this task's requirements; a gap or conflict a brain names is a proposal, never a rule for this task):
+
+${brains}
+
+## Run your tests
+
+${run_tests}
 
 ## Rules that cannot bend
 
 - Fake data only in code, tests, fixtures, logs and screenshots. No real names, phones, addresses or photos.
 - Never paste, print, log, commit or store secrets or keys.
 - Never weaken a test to make it pass. A wrong test changes only through a spec change logged in `docs/decisions.md`.
-- Protected paths (`.github/`, `.claude/`, `runner/`, `stand_ins/`, `sources/`, `twin/`, tests you do not own) change only in a `harness` task. This task is type `${type}`.
+- Protected paths (`.github/`, `.claude/`, `runner/`, `stand_ins/`, `sources/`, `twin/`, tests you do not own) change only in a `harness` task. This task is type `${type}`. The locked blueprint (`docs/governance.md` section 1: the brief, the constitution, the spec, the test design, the task graph, the scripts and sections 3 to 6 of `docs/architecture.md`) is never changed to make a task pass; if it is wrong, say so in your report.
 - No sign-ups, purchases, outreach, publishing, live messages, live charges or production deploys. Never use live keys, live phone numbers or the live Railway project.
 - No TODOs, commented-out code or unused code. Functions under 50 lines.
 - Wording: call the fee "introduction fee by job size" every time. Use no ranking or endorsement wording; `docs/constitution.md` lists the banned words. Fees are $$25 / $$75 / $$199; the recurring rule is 4 months; the brand is Ask Hava.
 - If the brief and the changes file conflict, the changes file wins on what and the brief wins on how. Decide, log both lines and your choice in `docs/decisions.md`, and keep going.
 - When your change touches design or behavior, update `docs/architecture.md` and `docs/decisions.md` in the same pull request.
+- Document for the next AI session, which will know nothing about this work (`docs/code-docs.md`): a `//!` comment at the top of every Rust file, a `///` comment on every public item, the requirement IDs on every function that applies a rule, and the crate's `CLAUDE.md` updated (what it owns, rules, never-break invariants, change recipes, tests) whenever you add or change behavior.
 
 ## Definition of done
 
-- Required checks pass on your commit: ${checks}.
-- `ruff check`, `ruff format --check` and `mypy --strict` are clean for the code you changed (where the task has code).
+- `bash scripts/smoke.sh` is green on your branch.
 - ${tests_done}
-- Coverage does not drop; money, privacy and licensing code stays at or above 95% branch coverage.
-- A fresh-eyes review of the diff (reviewer model above) finds nothing open.
+- `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings` and `cargo test` are clean for the Rust you changed; `tsc --strict` and eslint for any TypeScript; `ruff check` for any Python tooling (where the task has code).
+- `python3 scripts/check_code_docs.py` reports 0 problems, and every requirement listed above is named in a file you own.
+- Customer copy: ${copy_done}
 - Only the files you own and the shared paths changed.
 
 ## End routine
 
-1. Run this task's tests, the full suite and the twin.
-2. Run the fresh-eyes review on the change and fix what it finds.
+1. Run the commands under "Run your tests", then `bash scripts/smoke.sh`.
+2. Customer copy (`scripts/check_ai_smell.py`, the cold read (WORD-028) and the copy panel, WORD-029): ${copy_step}
 3. List the files you changed and the commands you ran with their real results. Do not claim a check passed unless a tool run in this repository shows it.
 4. Include a short plain-English note for `PROGRESS.md` in your report (the runner writes it on `claude/kit-state`).
-5. Do not mark this task done. Do not touch `claude/kit-state`. Do not push to `main` and do not force-push. The runner pushes, opens the pull request, and marks the task done only after `Ci`, `Twin` and `Ally` are green on the merged commit.
+5. Do not mark this task done. Do not touch `claude/kit-state`. Do not push to `main` and do not force-push. The runner runs the fresh-eyes review (reviewer above), pushes, opens the pull request, and marks the task done only after ${checks} are green on the merged commit.

@@ -1,0 +1,621 @@
+# Ask Hava trade knowledge file: water_heater
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: water_heater
+display_name: Water heaters (tank and tankless, gas and electric)
+summary: Repair, replacement and new install of tank and tankless water heaters, gas (natural or propane) and electric,
+  plus heat-pump water heaters and expansion tanks. Lake Havasu City water is very hard (about 19 gpg); Rheem says
+  scale builds in a tank unless water is soft (0-5 grains), and Rinnai's tankless water quality guide lists hardness
+  up to 200 mg/L (about 11.7 gpg), below city water [RHEEM-UC][RINNAI-RE][LHC-CCR]. Ask Hava learns fuel type, tank
+  vs tankless, size and age (from the label), location and the symptom, then writes a card. It never says what failed
+  or whether to repair or replace. Gas water heaters are excluded from the handyman exemption (A.R.S. 32-1121(D)(2))
+  [S4].
+job_types:
+- id: no_hot_water
+  label: No hot water at all
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: not_enough_hot
+  label: Hot water runs out fast or not hot enough
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: tank_leak
+  label: Water leaking from or around the tank
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: relief_valve
+  label: Relief valve dripping or pipe from it spraying
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: noise_smell
+  label: Popping or rumbling noise, rotten egg smell in hot water, rusty hot water
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: replace_tank
+  label: Replace a tank water heater like-for-like
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'no'
+- id: convert_tankless
+  label: Switch tank to tankless (or tankless to tank)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: tankless_service
+  label: Tankless error code, descaling flush, service
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+- id: heat_pump_wh
+  label: Heat pump (hybrid) water heater install or repair
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: expansion_tank
+  label: Expansion tank, pressure, recirculation pump
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: pilot_gas
+  label: Pilot won't stay lit, gas valve, venting problem
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'no'
+triggers_en:
+- phrase: no hot water
+  job_type: no_hot_water
+- phrase: water heater not working
+  job_type: no_hot_water
+- phrase: hot water heater broke
+  job_type: no_hot_water
+- phrase: water heater out
+  job_type: no_hot_water
+- phrase: cold showers
+  job_type: no_hot_water
+- phrase: hot water heator
+  job_type: no_hot_water
+- phrase: waterheater
+  job_type: no_hot_water
+- phrase: hot water runs out
+  job_type: not_enough_hot
+- phrase: water only lukewarm
+  job_type: not_enough_hot
+- phrase: not enough hot water
+  job_type: not_enough_hot
+- phrase: water not hot
+  job_type: not_enough_hot
+- phrase: water heater leaking
+  job_type: tank_leak
+- phrase: tank leaking
+  job_type: tank_leak
+- phrase: puddle under water heater
+  job_type: tank_leak
+- phrase: water heater dripping
+  job_type: tank_leak
+- phrase: water around the tank
+  job_type: tank_leak
+- phrase: relief valve leaking
+  job_type: relief_valve
+- phrase: pressure valve dripping
+  job_type: relief_valve
+- phrase: t&p valve
+  job_type: relief_valve
+- phrase: pipe on water heater spraying
+  job_type: relief_valve
+- phrase: pop off valve
+  job_type: relief_valve
+- phrase: water heater popping
+  job_type: noise_smell
+- phrase: water heater rumbling
+  job_type: noise_smell
+- phrase: hot water smells like eggs
+  job_type: noise_smell
+- phrase: rotten egg smell hot water
+  job_type: noise_smell
+- phrase: rusty hot water
+  job_type: noise_smell
+- phrase: anode rod
+  job_type: noise_smell
+- phrase: replace water heater
+  job_type: replace_tank
+- phrase: new water heater
+  job_type: replace_tank
+- phrase: 40 gallon water heater
+  job_type: replace_tank
+- phrase: 50 gal heater
+  job_type: replace_tank
+- phrase: water heater quote
+  job_type: replace_tank
+- phrase: tankless water heater
+  job_type: convert_tankless
+- phrase: switch to tankless
+  job_type: convert_tankless
+- phrase: on demand water heater
+  job_type: convert_tankless
+- phrase: tankles
+  job_type: convert_tankless
+- phrase: tankless error code
+  job_type: tankless_service
+- phrase: flush tankless
+  job_type: tankless_service
+- phrase: descale tankless
+  job_type: tankless_service
+- phrase: rinnai error
+  job_type: tankless_service
+- phrase: navien error
+  job_type: tankless_service
+- phrase: heat pump water heater
+  job_type: heat_pump_wh
+- phrase: hybrid water heater
+  job_type: heat_pump_wh
+- phrase: expansion tank
+  job_type: expansion_tank
+- phrase: recirculating pump
+  job_type: expansion_tank
+- phrase: hot water takes forever
+  job_type: expansion_tank
+- phrase: pilot light out
+  job_type: pilot_gas
+- phrase: pilot wont stay lit
+  job_type: pilot_gas
+- phrase: thermocouple
+  job_type: pilot_gas
+- phrase: water heater flue
+  job_type: pilot_gas
+triggers_es:
+- phrase: no hay agua caliente
+  job_type: no_hot_water
+- phrase: el calentador no sirve
+  job_type: no_hot_water
+- phrase: el boiler no calienta
+  job_type: no_hot_water
+- phrase: se acaba el agua caliente
+  job_type: not_enough_hot
+- phrase: el agua sale tibia
+  job_type: not_enough_hot
+- phrase: el calentador está goteando
+  job_type: tank_leak
+- phrase: fuga en el calentador
+  job_type: tank_leak
+- phrase: la válvula del calentador gotea
+  job_type: relief_valve
+- phrase: el calentador hace ruido
+  job_type: noise_smell
+- phrase: el agua caliente huele a huevo
+  job_type: noise_smell
+- phrase: cambiar el calentador de agua
+  job_type: replace_tank
+- phrase: calentador nuevo
+  job_type: replace_tank
+- phrase: calentador sin tanque
+  job_type: convert_tankless
+- phrase: calentador de paso
+  job_type: convert_tankless
+- phrase: código de error del calentador
+  job_type: tankless_service
+- phrase: se apaga el piloto
+  job_type: pilot_gas
+- phrase: calentón
+  job_type: no_hot_water
+- phrase: boiler
+  job_type: no_hot_water
+questions:
+- id: q1_fuel
+  text: Is your water heater gas, propane or electric?
+  options:
+  - Natural gas
+  - Propane
+  - Electric
+  - Heat pump (hybrid)
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Gas units need gas and venting work; electric need the right circuit. Licensing and handyman rules differ.
+    [S4][judgment]
+- id: q2_type
+  text: Is it a tank or tankless?
+  options:
+  - Tank
+  - Tankless (wall-mounted box)
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Different parts, labor and installers. [judgment]
+- id: q3_problem
+  text: What is happening?
+  options:
+  - No hot water
+  - Not enough hot water
+  - Leaking
+  - Noise or smell
+  - Want to replace or upgrade
+  - Error code
+  ask_if: always
+  changes_price: 'yes'
+  why: Leaks from the tank body vs a fitting are priced very differently; the business decides which. [judgment]
+- id: q4_size_age
+  text: Can you send a photo of the label on the side? It shows the size and the serial number (age).
+  options:
+  - Sent a photo
+  - I know the size
+  - Can't reach the label
+  ask_if: always
+  changes_price: 'yes'
+  why: Size and age shape the quote. Ask Hava may read the build date from the serial if the brand format is known.
+    [RHEEM-SERIAL][BW-SERIAL][AOS-SERIAL]
+- id: q5_location
+  text: Where is it?
+  options:
+  - Garage
+  - Closet inside the home
+  - Attic
+  - Outside or in an exterior closet
+  - Manufactured home compartment
+  ask_if: q3_problem in ['Leaking', 'Want to replace or upgrade'] or job_type in [replace_tank, convert_tankless,
+    heat_pump_wh]
+  changes_price: 'yes'
+  why: Attic and closet installs are harder; manufactured homes need specific approved units. [RINNAI-RE][judgment]
+- id: q6_softener
+  text: Do you have a water softener?
+  options:
+  - 'Yes'
+  - 'No'
+  - Not sure
+  ask_if: q2_type == 'Tankless (wall-mounted box)' or q3_problem == 'Noise or smell'
+  changes_price: 'no'
+  why: Helps the business plan scale service; not a diagnosis. [judgment]
+quote_without_visit_needs:
+- Like-for-like tank replacement with a label photo (fuel, gallons, BTU or watts), location and a photo of the area
+  around the tank including vent and connections [judgment]
+- Tankless descaling flush with model photo [judgment]
+- Expansion tank add with photo of the piping [judgment]
+site_visit_usually_needed:
+- No hot water, leaks, pilot or venting problems (diagnosis) [judgment]
+- Tank-to-tankless conversion (gas line size, venting, electrical) [judgment]
+- Heat pump water heater (space, condensate, electrical) [judgment]
+- Manufactured home installs [ARS-4047][judgment]
+photos_to_request:
+- id: p1_label
+  ask: A clear photo of the label (sticker) on the side of the water heater.
+  for_job_types:
+  - no_hot_water
+  - not_enough_hot
+  - tank_leak
+  - replace_tank
+  - tankless_service
+  - convert_tankless
+  - heat_pump_wh
+  - pilot_gas
+- id: p2_whole
+  ask: A photo of the whole heater, standing back so we can see the pipes on top and the floor.
+  for_job_types:
+  - tank_leak
+  - replace_tank
+  - convert_tankless
+  - expansion_tank
+  - relief_valve
+- id: p3_leak
+  ask: A photo of where you see water, if it's safe to get close.
+  for_job_types:
+  - tank_leak
+  - relief_valve
+- id: p4_vent
+  ask: 'For gas heaters: a photo of the metal pipe going up from the top.'
+  for_job_types:
+  - pilot_gas
+  - replace_tank
+  - convert_tankless
+- id: p5_error
+  ask: 'For tankless: a photo of the display showing the error code.'
+  for_job_types:
+  - tankless_service
+photo_cues:
+- photo_id: p1_label
+  look_for:
+  - 'Fuel: ''Natural Gas'', ''LP/Propane'', or volts/watts for electric [judgment]'
+  - Gallons and BTU/h (gas) or element watts (electric) [judgment]
+  - 'Rheem/Ruud/Richmond: serial starts with MMYY, e.g. 1209D01234 = December 2009 (older format; newer labels may
+    differ, verify) [RHEEM-SERIAL]'
+  - 'Bradford White: first two letters = year then month on a 20-year letter cycle; confirm year range with the
+    model age [BW-SERIAL]'
+  - 'A.O. Smith/State/American: after 2008 serial starts YYWW, e.g. 1719 = week 19 of 2017 [AOS-SERIAL]'
+  - '''Mobile home'' or ''manufactured home'' approved wording on label [RINNAI-RE][judgment]'
+  - Report only the decoded build date, never a remaining life or a 'should replace' statement [judgment]
+  neutral_wording_example: 'Label: Rheem, natural gas, 40 gallons, 36,000 BTU/h; serial suggests built 2012.'
+- photo_id: p2_whole
+  look_for:
+  - Expansion tank on cold line or none [judgment]
+  - Relief valve discharge pipe present and running down to a drain or outside [RHEEM-UC]
+  - Drain pan under tank [judgment]
+  - Rust at fittings or tank base; white scale crust [judgment]
+  - Earthquake/seismic straps [judgment]
+  - Flammable items stored nearby (gas cans, paint) [RHEEM-UC]
+  - 'Supply lines: flex connectors, copper, PEX [judgment]'
+  neutral_wording_example: Tank in garage with drain pan, no expansion tank seen, white crust on cold-water fitting.
+- photo_id: p3_leak
+  look_for:
+  - Water from top fittings vs from under the jacket vs the relief pipe; record only where water is seen [judgment]
+  neutral_wording_example: Water visible on the floor under the tank; top fittings look dry.
+- photo_id: p4_vent
+  look_for:
+  - Vent pipe sections connected, sloped up, not touching anything combustible; soot or scorch marks [judgment]
+  neutral_wording_example: Metal vent pipe on top; dark marks near the top of the heater.
+- photo_id: p5_error
+  look_for:
+  - Brand and error number; record only the number [judgment]
+  neutral_wording_example: Tankless display shows code 11.
+photo_red_flags:
+- flag: Scorch marks, soot or melted parts near the burner or vent
+  safety_step_ref: es_co_scorch
+- flag: Relief valve or its pipe capped, plugged or missing
+  safety_step_ref: es_relief
+- flag: Gasoline, paint thinner or other flammables stored next to a gas heater
+  safety_step_ref: es_flammables
+- flag: Water near outlets, cords or panel
+  safety_step_ref: es_flooded
+emergency_signals:
+- id: es_gas
+  signal: Smell of gas near the water heater
+  emergency: 'yes'
+  safety_step: 'Leave the home or area right away. Do not use a phone, light switch or anything that can make a
+    spark inside. Do not smoke or light a match. If you are outside, do not start a car. Do not try to find the
+    leak. From a safe place, call 911 and the UniSource 24-hour line, [number removed, see source]. Do not go back until UniSource
+    or the fire department says it is safe. Only UniSource may turn gas service back on. The Rheem manual also says:
+    do not try to light any appliance, do not touch any electric switch, do not use any phone in the building.'
+  source: '[UNS-GAS][S22][RHEEM-UC]'
+  then_route_to: gas_lines
+- id: es_co_scorch
+  signal: CO alarm sounding, or headaches/dizziness when near a gas water heater
+  emergency: 'yes'
+  safety_step: If a CO alarm is sounding, do not look for the cause. Get everyone outside to fresh air right away.
+    Call 911 or the fire department from outside. Count heads. Do not go back in until responders say it is safe.
+    Do not use the fuel-burning appliance again until it has been checked.
+  source: '[S26]'
+  then_route_to: water_heater
+- id: es_relief
+  signal: Relief valve spraying hot water, or the heater is overheating (steam, very hot water at taps)
+  emergency: 'yes'
+  safety_step: 'Stay clear of hot water spraying from the relief valve or its pipe; it can scald. Do not cap, plug
+    or block the relief valve or its discharge pipe (the Rheem manual says DO NOT plug the relief valve outlet).
+    If you can safely reach the cold water shut-off on top of the heater, you may close it, and turn off the gas
+    control or the electric breaker for the heater. Rheem''s emergency shutdown: if the heater overheats or the
+    gas supply will not shut off, turn off the manual gas control valve to the appliance. For an electric heater,
+    turn off its breaker. Do not use the heater until a qualified technician checks it.'
+  source: '[RHEEM-UC]'
+  then_route_to: water_heater
+- id: es_flooded
+  signal: Water heater has been under water, or water is near outlets or the panel
+  emergency: 'yes'
+  safety_step: Do not use the water heater if any part of it has been under water. Rheem says to call a qualified
+    service technician to inspect it and replace any part of the control system and gas control that was under water.
+    Keep power off and stay out of water near outlets or the panel (CDC).
+  source: '[RHEEM-UC][S31]'
+  then_route_to: water_heater
+- id: es_flammables
+  signal: Flammable liquids stored near a gas water heater
+  emergency: depends
+  safety_step: Rheem warns flammable vapors can travel and be ignited by the burner. Do not store or use gasoline
+    or other flammable liquids near the heater.
+  source: '[RHEEM-UC]'
+  then_route_to: water_heater
+- id: es_hydrogen
+  signal: Returning to a home after weeks away (snowbirds, rentals)
+  emergency: 'no'
+  safety_step: If the home has not used hot water for about two weeks or more, Rheem warns hydrogen gas can build
+    up in the pipes. Before using electric appliances on the hot water, open the kitchen hot water faucet for several
+    minutes. Do not smoke or use an open flame near the faucet while it runs. An air-escaping sound is a sign hydrogen
+    is coming out.
+  source: '[RHEEM-UC]'
+  then_route_to: water_heater
+- id: es_leak
+  signal: Tank leaking steadily
+  emergency: depends
+  safety_step: If safe, close the cold water shut-off on top of the heater and turn off the gas control or the heater
+    breaker. Keep away from outlets if water is spreading (CDC).
+  source: '[UA-WW][S31][judgment]'
+  then_route_to: water_heater
+safety_step:
+- when: Smell of gas near the water heater
+  step: 'Leave the home or area right away. Do not use a phone, light switch or anything that can make a spark inside.
+    Do not smoke or light a match. If you are outside, do not start a car. Do not try to find the leak. From a safe
+    place, call 911 and the UniSource 24-hour line, [number removed, see source]. Do not go back until UniSource or the fire department
+    says it is safe. Only UniSource may turn gas service back on. The Rheem manual also says: do not try to light
+    any appliance, do not touch any electric switch, do not use any phone in the building.'
+  source: '[UNS-GAS][S22][RHEEM-UC]'
+- when: CO alarm sounding, or headaches/dizziness when near a gas water heater
+  step: If a CO alarm is sounding, do not look for the cause. Get everyone outside to fresh air right away. Call
+    911 or the fire department from outside. Count heads. Do not go back in until responders say it is safe. Do
+    not use the fuel-burning appliance again until it has been checked.
+  source: '[S26]'
+- when: Relief valve spraying hot water, or the heater is overheating (steam, very hot water at taps)
+  step: 'Stay clear of hot water spraying from the relief valve or its pipe; it can scald. Do not cap, plug or block
+    the relief valve or its discharge pipe (the Rheem manual says DO NOT plug the relief valve outlet). If you can
+    safely reach the cold water shut-off on top of the heater, you may close it, and turn off the gas control or
+    the electric breaker for the heater. Rheem''s emergency shutdown: if the heater overheats or the gas supply
+    will not shut off, turn off the manual gas control valve to the appliance. For an electric heater, turn off
+    its breaker. Do not use the heater until a qualified technician checks it.'
+  source: '[RHEEM-UC]'
+- when: Water heater has been under water, or water is near outlets or the panel
+  step: Do not use the water heater if any part of it has been under water. Rheem says to call a qualified service
+    technician to inspect it and replace any part of the control system and gas control that was under water. Keep
+    power off and stay out of water near outlets or the panel (CDC).
+  source: '[RHEEM-UC][S31]'
+license_classes:
+- job_type:
+  - replace_tank
+  classes:
+  - R-37 Plumbing, Including Solar
+  - R-37R Plumbing
+  - CR-37 dual
+  - CR-77 dual (C-77 + R-37)
+  citation: A.A.C. R4-9-103 (R-37 covers water heaters as part of water piping and fixtures); R4-9-104
+  other_agency: 'Gas appliance connection: UniSource restores gas service only if it was shut off [UNS-GAS]'
+  notes: 'Same classes for all job types. C-37 scope expressly includes hot water supply systems and gas appliances
+    [S1]. Electric heater circuit changes: R-11/CR-11 [S2]. R-63 Appliances excludes gas, electrical and plumbing
+    lines [S2].'
+- job_type:
+  - heat_pump_wh
+  classes:
+  - R-37
+  - CR-37
+  - plus R-11/CR-11 for a new circuit
+  citation: R4-9-103; R4-9-104
+  other_agency: null
+  notes: '[judgment] on split of trades; most plumbing contractors subcontract the circuit.'
+- job_type:
+  - convert_tankless
+  classes:
+  - R-37
+  - CR-37
+  - CR-77
+  citation: R4-9-103; R4-9-104
+  other_agency: 'Manufactured homes: A.R.S. 41-4047(5) licensed/certified person; Rinnai says manufactured-home
+    installs must meet 24 CFR 3280 [ARS-4047][RINNAI-RE]'
+  notes: Gas line upsizing is gas piping work (see gas_lines).
+handyman_ok:
+  allowed_examples:
+  - Electric water heater element or thermostat like-for-like, under $1,000 (no permit for replacing an existing
+    water heater in LHC) [S17][S4][judgment]
+  - Draining/flushing an electric tank, under $1,000 [judgment]
+  not_allowed_examples:
+  - 'Any gas or propane water heater work: excluded by A.R.S. 32-1121(D)(2) (fuel gas appliances) [S4]'
+  - Any job $1,000 or more, which includes most replacements [S4]
+  - Tankless conversion, new circuits [judgment]
+  rule_reminder: 'A person without an ROC license may take a job only if ALL are true: total price (labor + materials
+    + everything) is under $1,000; the work is casual, minor or inconsequential; no local building permit is required;
+    it is not part of a larger job or split up to stay under $1,000; and any ad says ''not a licensed contractor''.
+    The exemption never covers work that connects to natural gas, propane or other fuel gas, or fire-safety work
+    such as hardwired/interconnected smoke alarms. Source: A.R.S. 32-1121(A)(14) and (D) [S4]. In Lake Havasu City,
+    check the city permit list: a needed permit removes the exemption [S17].'
+local_notes:
+- City water about 19 gpg hardness; Rheem says scale builds in tanks unless water is 0-5 grains, faster at higher
+  temperatures, and can shorten heater life [LHC-CCR][RHEEM-UC].
+- Rinnai's water-quality table lists total hardness up to 200 mg/L (about 11.7 gpg); city water is about 325 mg/L,
+  so tankless owners often ask about softeners and descaling [RINNAI-RE][LHC-CCR].
+- Rheem says do not install its gas heater where ambient temperature can exceed 125 F; outdoor closets and attics
+  in summer may matter [RHEEM-UC][judgment].
+- CPSC suggests setting water heaters to 120 F to help prevent scalds [CPSC-SCALD].
+- 'Snowbird and seasonal homes: Rheem advises turning the heater off if idle 60+ days and the hydrogen-gas faucet
+  step on return [RHEEM-UC].'
+- Rotten-egg smell in HOT water only is different from a gas smell in the air; if unsure, treat it as gas [UNS-GAS][judgment].
+- Relief valve dripping can be from thermal expansion in a closed system; Rheem says contact the water supplier
+  or local plumbing inspector and never plug the outlet [RHEEM-UC].
+- 'LHC: replacing an existing water heater is on the no-permit list; new gas lines need a permit [S17].'
+- 'Gas service: natural gas by UniSource in town; some outlying homes use propane [UNS-GAS][judgment].'
+sample_card: 'REQ-0171 | Water heater | Lake Havasu City, north
+
+  Gas tank, 50 gal (label photo), garage. Water on floor under tank; top fittings look dry.
+
+  Serial suggests built 2011. Homeowner wants replacement quotes.'
+test_messages:
+- id: water_heater_t01
+  message: no hot water since this morning
+  trade: water_heater
+  job_type: no_hot_water
+  emergency: 'no'
+  first_question_id: q1_fuel
+  ideal_first_question: Is your water heater gas, propane or electric?
+  note: ''
+- id: water_heater_t02
+  message: water heater leaking all over garage floor HELP
+  trade: water_heater
+  job_type: tank_leak
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: Is the water near any outlets or cords, and is the heater gas or electric?
+  note: Give shut-off steps.
+- id: water_heater_t03
+  message: the pipe on the side of my heater is spraying hot water
+  trade: water_heater
+  job_type: relief_valve
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: Is anyone near the hot water, and can you safely reach the cold water valve on top?
+  note: Do not suggest capping.
+- id: water_heater_t04
+  message: want to switch to tankless how much
+  trade: water_heater
+  job_type: convert_tankless
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is your current water heater gas, propane or electric?
+  note: Never price.
+- id: water_heater_t05
+  message: el calentador hace ruido y huele a huevo el agua caliente
+  trade: water_heater
+  job_type: noise_smell
+  emergency: depends
+  first_question_id: null
+  ideal_first_question: ¿El olor está en el agua caliente o se huele gas en el aire cerca del calentador?
+  note: Spanish; separate gas vs water odor.
+- id: water_heater_t06
+  message: smell gas near water heater in closet
+  trade: gas_lines
+  job_type: gas_leak
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: (Give gas safety step first.) Are you outside the home now?
+  note: Emergency; route gas_lines.
+- id: water_heater_t07
+  message: rinnai flashing 11 again
+  trade: water_heater
+  job_type: tankless_service
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is it a gas tankless, and can you send a photo of the display?
+  note: ''
+- id: water_heater_t08
+  message: back from summer up north, anything I should do before using hot water
+  trade: water_heater
+  job_type: noise_smell
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Has the hot water gone unused for two weeks or more?
+  note: Give Rheem hydrogen step; not a job unless they ask.
+- id: water_heater_t09
+  message: REQ-0172 hot water runs out after one shower and the softener beeps
+  trade: water_heater
+  job_type: not_enough_hot
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is your water heater a tank or tankless, and what size is it on the label?
+  note: Mixed; softener → water_treatment second card.
+- id: water_heater_t10
+  message: water heater in my mobile home quit
+  trade: water_heater
+  job_type: no_hot_water
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is it gas, propane or electric, and can you send a photo of the label?
+  note: Manufactured home notes.
+sources:
+- '[S1] (foundation/sources_foundation.md) A.A.C. R4-9-102 Commercial contracting classifications (Cornell LII copy,
+  amended through 23 A.A.R. 2525, eff. 11/5/2017): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102'
+- '[S2] (foundation/sources_foundation.md) A.A.C. R4-9-103 Residential contracting classifications (Cornell LII
+  copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] (foundation/sources_foundation.md) A.A.C. R4-9-104 Dual licensing classifications (Cornell LII copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] (foundation/sources_foundation.md) A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman
+  exemption and (D) fire-safety and fuel-gas carve-outs): https://www.azleg.gov/ars/32/01121.htm'
+- '[ARS-4047] (trade-only source) A.R.S. 41-4047 Unlawful acts (manufactured homes; item 5: alterations only by
+  a licensed or certified person): https://www.azleg.gov/ars/41/04047.htm'
+- '[S17] (foundation/sources_foundation.md) Lake Havasu City Building Division, permit-required and no-permit lists
+  (2024 I-codes, 2023 NEC): https://www.lhcaz.gov/development-permitting/building'
+- '[LHC-CCR] (trade-only source) Lake Havasu City 2025 Annual Drinking Water Quality Report, system AZ0408022 (hardness
+  avg 19 gpg, range 18-20; TDS avg 753 ppm), lhcaz.gov'
+- '[UNS-GAS] (trade-only source) UniSource Energy Services, Natural Gas Safety and Safety Alert insert: https://www.uesaz.com/gas-safety/
+  and https://docs.uesaz.com/wp-content/uploads/Gas-Safety-Insert-Oct-2026.pdf'
+- '[S22] (foundation/sources_foundation.md) UniSource Energy Services contact page (gas emergency: call 911 and
+  [number removed, see source]; outages [number removed, see source]; LHC electric office [number removed, see source]; LHC gas office [number removed, see source]): https://www.uesaz.com/contact/'
+- '[S26] (foundation/sources_foundation.md) CPSC Carbon Monoxide Questions and Answers: https://www.cpsc.gov/Safety-Education/Safety-Education-Centers/Carbon-Monoxide-Information-Center/Carbon-Monoxide-Questions-and-Answers'
+- '[CPSC-SCALD] (trade-only source) CPSC Pub. 5098 Avoiding Tap Water Scalds (set water heater to 120 F): https://www.cpsc.gov/s3fs-public/5098.pdf'
+- '[S31] (foundation/sources_foundation.md) CDC, Protect yourself from electrical hazards after a disaster / Reentering
+  your flooded home (turn off main only if you can reach it from a dry place; never stand in water to switch power):
+  https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-from-electrical-hazards.html'
+- '[RHEEM-UC] (trade-only source) Rheem gas water heater Use & Care manual AP21831 (What to do if you smell gas;
+  hydrogen gas after 2+ weeks unused; emergency shutdown; do not use if any part was under water; do not install
+  where ambient exceeds 125 F): https://files.rheem.com/blobazrheem/wp-content/uploads/sites/2/AP21831-Rev-2-SHEG-TriBrand-UC.pdf'
+- '[RHEEM-SERIAL] (trade-only source) Rheem, How to read a water heater serial number (MMYY + plant letter + sequence,
+  e.g. 1209D01234 = Dec 2009), rheem.com'
+- '[BW-SERIAL] (trade-only source) Bradford White, How old is my water heater? (first two letters = year, month;
+  20-year letter cycle), bradfordwhite.com'
+- '[AOS-SERIAL] (trade-only source) A.O. Smith serial date format (YYWW after 2008, e.g. 1719 = week 19 of 2017)
+  - secondary/industry summary, verify on unit label'
+- '[RINNAI-RE] (trade-only source) Rinnai RE-series tankless Installation and Operation Manual 100000722 (water
+  quality table: total hardness up to 200 mg/L; scale damage tied to water quality; manufactured-home installs must
+  meet 24 CFR 3280): https://media.rinnai.us/salsify_asset/s-4c0f42d2-4a9d-40d2-a189-d4f84bee5509/100000722(02)%20RE%20Installation%20and%20Operation%20Manual.pdf'
+- '[UA-WW] (trade-only source) University of Arizona Cooperative Extension, Water Wise: swamp cooler maintenance,
+  cool rules, softeners, RO, leaks: https://waterwise.arizona.edu/ways-save-water/water-saving-tips/swamp-cooler-maintenance'

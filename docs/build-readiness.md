@@ -1,0 +1,68 @@
+# Build readiness assessment
+
+**Issued:** October 28, 2026, pre-build engineering audit (D-479). **Re-issued at:** each stage boundary, the account checkpoint, and before Gate C (`docs/governance.md` section 10).
+
+## 1. Verdict
+
+**READY TO BUILD** (re-issued October 29, 2026, D-495). Casey decided on October 29 to build first and find the customers with the built product, so the hand-run test is no longer a gate (D-495). Every item in section 4 is done or accepted in writing: the rulesets, the build's own identity, the quota, the live runner, the plan cleanup, the expertise files, the five-pass prompt sweep and the two new validator rules. The risks still open are accepted in D-495 with their resolution criteria unchanged: R-14 closes on the first Actions cycle under Casey's token, R-02 and R-15 are closed by the build's own tasks, and the Medium and Low risks are measured in stage 1. Gate P opens on Casey's `approved to build` reply on issue #24.
+
+The earlier verdict (October 28) read NOT READY for two deliberate reasons, the hand-run test and the open Critical and High risks; the first is dropped by D-495 and the second is resolved or accepted above. The technical blueprint is complete, consistent to the limit the checks can measure, and machine-guarded (section 2).
+
+## 2. Evidence, as of this audit
+
+| Area | Evidence | Result |
+|---|---|---|
+| Inputs frozen | `sha256sum -c kit/sources.sha256`, 104 files | pass |
+| Requirements traceable | `scripts/trace_spec.py`: 674 requirements (664 live, 10 withdrawn), 0 errors | pass |
+| Requirements → tasks → tests | `scripts/validate_tasks.py`: every live requirement, every TD entry (332) and every journey (J1 to J4) owned by a task; withdrawn IDs rejected; 0 errors | pass |
+| Requirements → test design | every live requirement appears in a test-design row or the accessibility table (WORD-029 through TD-OPS-20's docs test is the one process-class item) | pass |
+| Task prompts current | `scripts/gen_prompts.py --check`: 166 prompts, 0 problems | pass |
+| Blueprint locked | `scripts/check_plan_lock.py` | pass |
+| Governance rules from `main` | `.github/workflows/governance.yml` (first run on this PR) | pending E-2 to become required |
+| Per-change rules | `scripts/check_pr_change.py` on this branch | pass |
+| Tooling tests | `pytest tests`: 380 before this audit, plus the 23 added here | pass |
+| Rust path in `Ci` | D-476 spike: fmt, clippy, build, test against Postgres, audit, deny, 12 minutes | pass (1 crate only; see R-01) |
+| Rust design reviewed | Independent review of every pin and the layout; eight design defects found and decided (D-481) | decided on paper, unproven until T009 |
+| Runner rehearsed | K9 (D-171): one task passed end to end, one failed and never merged, one double-triggered and resumed after a simulated usage limit; paper rehearsal D-472 reached "Finished" | pass |
+| Independent review of this audit's own PR | 16 defects found in the audit's changes and fixed (D-484) | pass |
+| Fresh contradiction sweeps | D-477, D-478: 27 conflicts found and fixed by an independent Opus sweep; this audit's five reviewers' findings in `docs/audit/` | see the audit |
+
+## 3. Stage exit tests (milestone completion criteria)
+
+A stage is complete only when every line in its row is true, verified by a tool run recorded in `PROGRESS.md`. The stage's cleanup task prompt names this row, and the runner will not mark the cleanup task DONE without the proof (`docs/governance.md` section 6).
+
+The task list of each stage is the set of tasks whose `stage` value in `kit/tasks.json` equals the row (never a range); `python3 -c "import json;..."` or `scripts/progress.py --json` lists them (D-482).
+
+| Stage (tasks by `stage` value) | Exit test (all must hold) |
+|---|---|
+| **1. Twin and catalog** (11 tasks: T002 to T008, T154, T167, T170, T172) | Twin gate exits non-zero on any non-waived invariant failure (planted failure in T172's report); every worked example in `docs/catalog/worked_examples.yaml` and `matching_examples.yaml` passes `check_catalog.py`; stand-ins answer over HTTP at the vendors' URL shapes with every contract test green; `scripts/progress.py` shows every requirement owned only by stage-1 tasks verified |
+| **2. Core, cards, quote page, pick** (77 tasks: T009 to T057, T152, T153, T156, T163, T168, T169, T173, T175 to T187, T208, T213, T217, T219, T220, T223, T226, T227) | `cargo build -p askhava-server` refuses a planted cross-layer import and the session-proof compile-fail cases (T223) pass; migrations apply from empty in number order; a reduced J1 (T173: J1 steps 1 to 6, text in to the pick by code and the contact choice, with no photo, no review links and no share box, the two quotes seeded through the test-control router, and no payment or call, D-491) runs in Playwright against stand-ins with axe clean at 320/768/1280; coverage floors active in `Ci`; named mutants for license filter, consent, quiet hours all killed; a `timestamptz` round trip through jiff-sqlx; progress: every requirement owned only by stage ≤2 tasks verified |
+| **3. Money** (25 tasks: T058 to T075, T094, T188 to T190, T192, T224, T225) | A planted `ReleaseProof` outside `payments` fails to compile (trybuild, no feature on, T192) and a second `release_mint()` call panics (D-491); Ledger reconciles to the Stripe mock over 1,000 simulated jobs with zero drift (T071); every fee worked example passes as a unit test; cargo-mutants on `payments` and `catalog` rules reports no surviving unequivalent mutant; `Twin` runs against the app's rules through `rules_bridge` and a planted 2-month rule turns it red (T074); progress: stage ≤3 requirements verified |
+| **4. Calls, checks, portals** (47 tasks: T076 to T093, T095 to T100, T147 to T150, T155, T157, T162, T164, T165, T191, T193 to T199, T207, T209, T212, T214, T215, T228) | The stage-4 slices of J1 (through the paid release, the masked call and the day-3 feedback) and J2 (business) green (T098, T099; the full variants are stage 5's T222, D-491); authorization matrix test covers every route; masked call bridged through the fake Twilio with the PIN and the CALL-025 limits; license import and the live-lookup fixture both pass; the stage-2 sentinel scan still clean; progress: stage ≤4 requirements verified |
+| **5. Website, owner tools, documents** (41 tasks: T101 to T123, T125, T126, T151, T158, T161, T166, T200 to T206, T210, T216, T218, T221, T222) | J1 and J2 in full (T222), J3 (operator) and J4 (vendor outage) green; every page passes `Ally` at three widths; `check_legal_docs.py`, `check_copy.py`, `check_ai_smell.py` clean on the built pages; twin chaos run (`python3 -m twin chaos --baseline twin/chaos_baseline.json`, inside T126, D-485) zero new problems against the committed baseline (T074 commits it, D-491); fresh Opus audit (T125) no Critical or High; handover drafts exist (T111, T112, T113, T117, T122, T123); progress: every Phase 1 requirement verified |
+| **Account checkpoint** (T127) | Issue "Your turn: set up accounts" open; `WAITING_FOR_OWNER`; nothing else runs |
+| **Stage 0.5** (T128) | Casey's `go` recorded; the static page set (T116) published at askhava.com with `Ally` green on it; nothing depends on it |
+| **6. Real sandboxes and the test site** (18 tasks: T129 to T144, T159, T171) | Every contract test green against the real sandboxes; J1 to J4 green on the test site (T136); ZAP baseline no High; restore drill with switchover passed (T139); fresh Opus audit (T140) no Critical or High; cold-start drill (T171) recorded with its three changes on a throwaway branch and its documentation gaps merged; the stage-6 cleanup (T142) certifies this row before "Finished" (T143) and Gate B (T144), which follow it (D-491) |
+| **Gate B** (T144) | Casey's click-through completes every J1 step and the business card-entry step with VoiceOver, with no step he could not finish and no violation he reports (the pass bar; D-482) |
+| **7. Go live** (T145, T146) | Every item of OPS-042 and `docs/account-checklist.md` Part 2 ticked; live keys entered by Casey; the real-phone rehearsal completes J1 on his phone end to end (the script is T141's); the reviewed commit named (OPS-043); first live charge approved and reconciled to Stripe |
+
+## 4. Before the first build task (ordered)
+
+| # | Item | Owner | Done when |
+|---|---|---|---|
+| 1 | Merge this audit's PR (D-479, D-480) | Claude | `Ci`, `Twin`, `Ally` green; merged |
+| 2 | Ruleset settings (D-483): `Governance` required, GitHub Actions as the source of all four checks, "Require branches to be up to date", "Require review from Code Owners", a `claude/kit-state` ruleset (no deletion, no force-push): done October 29, 2026 in Casey's browser, verified by the ruleset JSON (D-494); a Repository-admin bypass added for plan-change pull requests Casey authors through a session (D-495) | Claude (done) | Ruleset JSON shows the four checks with the Actions integration, `strict: true` and code-owner review; the kit-state ruleset exists |
+| 3 | The build's own identity (D-483): `claude setup-token` into the `CLAUDE_CODE_OAUTH_TOKEN` secret (done by Casey October 29, 2026, D-494); Casey turned `backup_runner` on October 29, 2026; the first Actions cycle stopped on tool permissions, fixed by allowing the session's tools in `backup-runner.yml` (D-496) | Casey (done) | A session-posted comment on an owner issue produces no inbox file; a cycle runs under the Actions runner |
+| 4 | Model allocation (D-483): done in this PR | — | `validate_tasks.py` green |
+| 5 | The Actions minutes quota read and logged (D-483): done October 29, 2026 from Casey's billing page (3,000 included minutes a month, about 430 used in October; D-494, `kit/pacing.json`) | Claude (done) | Decision entry with the figure and the pacing |
+| 6 | **D-486** runner live: done October 29, 2026 on the build-optimization PR (`python3 -m runner`, the GitHub `Env`, `runner_sha` on state commits, `reviewed_sha` gating of `auto-pr`, auto-merge turned on by the runner, the merge trigger on `backup-runner.yml`, the red-`main` protocol with its drill, `scripts/stage_exit.py`, per-attempt history, the deviations register, `scripts/check_state.py`, the lease on `claude/lease`, pacing with `scripts/pacing.py` and `scripts/quota_probe.py`) | Claude (done) | Drills, runner, pacing and probe tests green; `--dry-run` idle against the live repository. **Open:** one rehearsal cycle under Casey's token (item 3), the real plan limits written into `kit/pacing.json`, and the usage endpoint's shape confirmed by that rehearsal |
+| 7 | **P-1** plan change: done October 29, 2026 on the same PR (D-485): prompts carry requirement, test, decision and cited text with byte-based budgets; 41 tasks split into 83 parts (T175 to T216), T217 added; the validator's new checks; the 26 testability rewrites; the 10 brief lines; photos in object storage; the PII scanner's email and image rules; the threat model's inbound-email boundary | Claude (done) | `validate_tasks.py` 0 errors, `gen_prompts.py --check` 0 problems, `trace_spec.py` clean |
+| 7a | Expertise files `docs/brains/` (D-487) and the 39 requirements adopted from them (D-490, CON-036, TXT-043 to TXT-046, TERMS-029 to TERMS-032, FEE-047 to FEE-053, SEC-049 to SEC-051, A11Y-025 to A11Y-035, BIZ-055 to BIZ-057, OPS-044 to OPS-047, WORD-030, PICK-057; T218 added) | Claude (done) | Every brain principle carries a source URL or `[inferred]`; `trace_spec.py` clean on the new requirements; R-19 open for the packs outside the repository |
+| 7b | Build-loop optimizations (D-489): the merge trigger, compile-only-when-code-changed in `Ci`, the Rust skeleton trial folded into T009, T012, T168 and T169 (D-488) | Claude (done) | `docs/audit/process-review-2026-10-29.md` section 6 holds the measured figures |
+| 7c | Pre-build sweep (D-491): every task prompt cold-read in build order by independent reviewers, five times (542 findings over the five passes, 90 of them tasks a worker could not have finished as written), every one repaired at the graph level; the most frequent defect shape (a test case on a task that cannot write it) is now validator rule V11 (D-492) and the crate-before-manifest shape rule V12 (D-493), and the second edition of the expertise files is folded into the spec (22 new requirements, 29 rewrites, D-492); a second Rust trial of the roles, the worker loop, the rules bridge, the migration checks and the Docker image folded in | Claude (done) | `docs/audit/prebuild-sweep-2026-10-29.md` and `docs/audit/rust-trial-2-2026-10-29.md`; `validate_tasks.py`, `gen_prompts.py --check`, `trace_spec.py` clean |
+| 8 | Hand-run test, re-plan pass, Gate P | Casey | The test is dropped as a gate (D-495); Gate P opens on Casey's `approved to build` reply on issue #24 |
+| 9 | Re-issue this file as READY: done October 29, 2026 (D-495) | Claude (done) | Every Critical and High risk closed or accepted in writing in D-495 |
+
+## 5. What this assessment does not claim
+
+It does not claim the business will work (that is the hand-run test's job), that Twilio or Stripe will say yes, or that the Rust estimates are right. It claims only that, once section 4 is done, every requirement has a task and a test, every rule a machine can check is checked, and a session that drifts from the blueprint cannot merge.

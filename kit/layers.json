@@ -1,0 +1,173 @@
+{
+ "schema": 1,
+ "note": "The dependency layer table of docs/architecture.md section 4 in machine-readable form (D-479). T175's architecture test reads this file, not the document, so the oracle cannot move with the prose. Changes only in a harness task or a plan change with a decision entry. payments calls privacy so that the release-proof minter can compile (D-488). privacy calls adapters for the storage and texting-provider deletes (D-491). site calls ops, payments and businesses for the home-page numbers, the status banner and the business page's waiting count (D-491). ai calls catalog for the open-trade check of AI-005 and the CARD-010 restricted-word list (D-492).",
+ "layers": [
+  [
+   "core"
+  ],
+  [
+   "ops",
+   "adapters"
+  ],
+  [
+   "catalog",
+   "privacy"
+  ],
+  [
+   "ai",
+   "messaging",
+   "payments",
+   "licensing"
+  ],
+  [
+   "businesses",
+   "jobs"
+  ],
+  [
+   "calls",
+   "quotes"
+  ],
+  [
+   "picks"
+  ],
+  [
+   "intake"
+  ],
+  [
+   "recovery",
+   "portals",
+   "site"
+  ]
+ ],
+ "calls": {
+  "ops": [],
+  "adapters": [],
+  "catalog": [
+   "ops"
+  ],
+  "privacy": [
+   "adapters",
+   "ops"
+  ],
+  "ai": [
+   "adapters",
+   "privacy",
+   "catalog",
+   "ops"
+  ],
+  "messaging": [
+   "adapters",
+   "privacy",
+   "catalog",
+   "ops"
+  ],
+  "payments": [
+   "adapters",
+   "privacy",
+   "catalog",
+   "ops"
+  ],
+  "licensing": [
+   "adapters",
+   "catalog",
+   "ops"
+  ],
+  "businesses": [
+   "licensing",
+   "payments",
+   "messaging",
+   "catalog",
+   "adapters",
+   "ops"
+  ],
+  "jobs": [
+   "messaging",
+   "catalog",
+   "ops"
+  ],
+  "calls": [
+   "businesses",
+   "privacy",
+   "messaging",
+   "adapters",
+   "ops"
+  ],
+  "quotes": [
+   "jobs",
+   "businesses",
+   "licensing",
+   "catalog",
+   "ai",
+   "privacy",
+   "messaging",
+   "ops"
+  ],
+  "picks": [
+   "quotes",
+   "jobs",
+   "payments",
+   "calls",
+   "businesses",
+   "licensing",
+   "privacy",
+   "messaging",
+   "adapters",
+   "ops"
+  ],
+  "intake": [
+   "picks",
+   "quotes",
+   "jobs",
+   "businesses",
+   "ai",
+   "privacy",
+   "catalog",
+   "messaging",
+   "ops"
+  ],
+  "recovery": [
+   "core",
+   "ops",
+   "adapters",
+   "catalog",
+   "privacy",
+   "ai",
+   "messaging",
+   "payments",
+   "licensing",
+   "businesses",
+   "jobs",
+   "calls",
+   "quotes",
+   "picks",
+   "intake"
+  ],
+  "portals": [
+   "core",
+   "ops",
+   "adapters",
+   "catalog",
+   "privacy",
+   "ai",
+   "messaging",
+   "payments",
+   "licensing",
+   "businesses",
+   "jobs",
+   "calls",
+   "quotes",
+   "picks",
+   "intake"
+  ],
+  "site": [
+   "intake",
+   "catalog",
+   "ops",
+   "payments",
+   "businesses"
+  ]
+ },
+ "always_allowed": [
+  "core"
+ ]
+}

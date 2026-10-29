@@ -2,12 +2,18 @@
 #
 # Each example is a chosen quote and the introduction fee the business pays when it
 # confirms the pick. scripts/check_catalog.py recomputes every row from the rules below
-# (FEE-001 to FEE-013, REC-002 to REC-005, LIC-019, LIC-020) and fails on any mismatch.
+# (FEE-001 to FEE-013, FEE-039, REC-002 to REC-005, LIC-019, LIC-020) and fails on any mismatch.
+# A recurring quote (one with a period) never pays more than recurring_fee_cap (FEE-039, D-196).
 # FEE-034: the app's fee unit tests are built from these rows.
 #
 # Money is written as quoted strings so no amount is ever read as a float.
 #
-# quote.type      fixed | range | trip_fee (trip fee plus estimate: the category's set tier)
+# quote.type      fixed | range | trip_fee (site visit needed: trip fee plus estimate, the
+#                 category's set tier, $25 by default and never above $75, FEE-004) |
+#                 hourly (rate plus hours_low and hours_high, read as a range, FEE-043; with no
+#                 hours it is a site-visit-needed quote)
+# quote.setup     a one-time setup charge in a recurring quote: never in the fee basis (FEE-044)
+# job_type        a job type listed in the category's fee_free_job_types pays no fee (FEE-045)
 # quote.period    recurring only: weekly | every_two_weeks | monthly | quarterly | yearly.
 #                 A quote with no period is a one-time job at face value, even in a
 #                 recurring category; it must then name one of the category's
@@ -18,7 +24,7 @@
 #                 in a no-license category; never to non-construction work (LIC-019, LIC-020)
 # situation       new_customer | repeat_customer (always $0, FEE-013) |
 #                 free_first_win ($0 charged, tier fee recorded as waived, FEE-012)
-# expected        outcome (charged | refused), fee_basis (null for trip fee or refused),
+# expected        outcome (charged | refused | fee_free), fee_basis (null for trip fee or refused),
 #                 fee (dollars charged), waived (dollars waived by a free first win)
 
 fee_rules:
@@ -27,6 +33,7 @@ fee_rules:
     - {fee: 75, basis_from: "500.00", basis_up_to_and_including: "1500.00"}
     - {fee: 199, basis_above: "1500.00"}
   recurring_months: 4
+  recurring_fee_cap: 75
   monthly_conversion:
     weekly: "x 52 / 12"
     every_two_weeks: "x 26 / 12"
@@ -158,8 +165,8 @@ examples:
     expected: {outcome: charged, fee_basis: "1213.33", fee: 75, waived: 0}
 
   - id: W15
-    description: Quarterly pest service at $125
-    category: pest_control
+    description: Quarterly bin washing at $125 (moved from pest control, off at launch, D-376)
+    category: trash_can_cleaning
     business: qualified
     situation: new_customer
     quote: {type: fixed, amount: "125.00", period: quarterly}
@@ -198,12 +205,12 @@ examples:
     expected: {outcome: charged, fee_basis: "1500.00", fee: 75, waived: 0}
 
   - id: W20
-    description: Turnover cleaning at $400 a month
+    description: Turnover cleaning at $400 a month is over $1,500 but capped at $75 (FEE-039, D-196)
     category: turnover_cleaning
     business: qualified
     situation: new_customer
     quote: {type: fixed, amount: "400.00", period: monthly}
-    expected: {outcome: charged, fee_basis: "1600.00", fee: 199, waived: 0}
+    expected: {outcome: charged, fee_basis: "1600.00", fee: 75, waived: 0}
 
   # ---- Trip fee plus estimate uses the category's set tier (FEE-004) ----
 
@@ -216,12 +223,12 @@ examples:
     expected: {outcome: charged, fee_basis: null, fee: 25, waived: 0}
 
   - id: W22
-    description: Outboard diagnosis, $150 trip fee plus estimate
+    description: Outboard diagnosis, $150 site visit plus estimate, pays the $25 default tier (D-399)
     category: boat_repair
     business: qualified
     situation: new_customer
     quote: {type: trip_fee, amount: "150.00"}
-    expected: {outcome: charged, fee_basis: null, fee: 75, waived: 0}
+    expected: {outcome: charged, fee_basis: null, fee: 25, waived: 0}
 
   # ---- Repeat customer and free first win (FEE-010 to FEE-013) ----
 
@@ -311,3 +318,72 @@ examples:
     situation: new_customer
     quote: {type: fixed, amount: "300.00"}
     expected: {outcome: charged, fee_basis: "300.00", fee: 25, waived: 0}
+
+  # ---- Recurring fee cap: ongoing services never pay more than $75 (FEE-039, D-196) ----
+
+  - id: W33
+    description: Weekly house cleaning at $160 a visit is capped at $75 (REC-011)
+    category: house_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: fixed, amount: "160.00", period: weekly}
+    expected: {outcome: charged, fee_basis: "2773.33", fee: 75, waived: 0}
+
+  # ---- Fix round 13: quote types and fee-free job types (D-399, D-403) ----
+
+  - id: W34
+    description: Range crossing both $500 and $1,500 uses its midpoint, $1,550.00
+    category: roof_repair
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "400.00", high: "2700.00"}
+    expected: {outcome: charged, fee_basis: "1550.00", fee: 199, waived: 0}
+
+  - id: W35
+    description: Hourly quote, $95 an hour for 3 to 5 hours, is the range $285 to $475
+    category: handyman
+    business: qualified
+    situation: new_customer
+    quote: {type: hourly, rate: "95.00", hours_low: "3", hours_high: "5"}
+    expected: {outcome: charged, fee_basis: "380.00", fee: 25, waived: 0}
+
+  - id: W36
+    description: Hourly quote with no estimated hours is a diagnostic-visit quote in a diagnostic_visit category (D-441)
+    category: appliance_repair
+    business: qualified
+    situation: new_customer
+    quote: {type: hourly, rate: "120.00"}
+    expected: {outcome: charged, fee_basis: null, fee: 25, waived: 0}
+
+  - id: W37
+    description: Weekly pool service at $40 plus a $150 setup charge; the setup is not in the basis
+    category: pool_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: fixed, amount: "40.00", period: weekly, setup: "150.00"}
+    expected: {outcome: charged, fee_basis: "693.33", fee: 75, waived: 0}
+
+  - id: W38
+    description: A $0 diagnostic visit pays the set $25; a replacement can't quote a visit fee, it quotes a range (D-399, D-441)
+    category: plumbing_repair
+    business: qualified
+    situation: new_customer
+    quote: {type: trip_fee, amount: "0.00"}
+    expected: {outcome: charged, fee_basis: null, fee: 25, waived: 0}
+
+  - id: W39
+    description: Buyer's home inspection is a fee-free job type (D-403)
+    category: home_inspection
+    job_type: buyer inspection
+    business: qualified
+    situation: new_customer
+    quote: {type: fixed, amount: "450.00"}
+    expected: {outcome: fee_free, fee_basis: "450.00", fee: 0, waived: 0}
+
+  - id: W40
+    description: Hourly handyman quote whose top reaches $1,000 is refused (LIC-019)
+    category: handyman
+    business: qualified
+    situation: new_customer
+    quote: {type: hourly, rate: "100.00", hours_low: "6", hours_high: "10"}
+    expected: {outcome: refused, fee_basis: null, fee: 0, waived: 0}

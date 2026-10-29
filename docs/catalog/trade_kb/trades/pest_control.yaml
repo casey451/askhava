@@ -1,0 +1,537 @@
+# Ask Hava trade knowledge file: pest_control
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: pest_control
+display_name: Pest control
+summary: 'Pest management for homes: general pests (ants, roaches, crickets, spiders), bark scorpions, subterranean
+  termites (treatment and wood-destroying insect inspections for home sales), pre-emergent and post-emergent weed
+  control around homes and rock yards, bees and wasps (including Africanized honey bees), and pigeons, rats and
+  mice (exclusion, trapping, baiting). In Arizona, pest work for hire is licensed by the Arizona Department of Agriculture,
+  Pest Management Division, not the ROC. Ask Hava does not identify pests or say what treatment is needed.'
+job_types:
+- id: general_pest
+  label: General pest (ants, roaches, crickets, spiders) one-time or ongoing
+- id: scorpions
+  label: Scorpions (bark scorpions) treatment or blacklight check
+- id: termites
+  label: Termite treatment (subterranean, drywood)
+  site_visit_usually_needed: 'yes'
+- id: termite_inspection
+  label: Termite / wood-destroying insect inspection (WDIIR) for a home sale
+  site_visit_usually_needed: 'yes'
+- id: weed_control
+  label: Pre-emergent or weed spraying in rock yard
+- id: bees_wasps
+  label: Bees (swarm or hive), wasps, hornets
+  site_visit_usually_needed: 'yes'
+- id: pigeons_birds
+  label: Pigeons or birds (under solar panels, roof, patio)
+- id: rodents
+  label: Rats, mice, pack rats
+  site_visit_usually_needed: 'yes'
+- id: bed_bugs_other
+  label: Bed bugs, fleas, other
+triggers_en:
+- phrase: pest
+  job_type: null
+- phrase: bugs
+  job_type: null
+- phrase: exterminator
+  job_type: null
+- phrase: pest control
+  job_type: null
+- phrase: spray
+  job_type: null
+- phrase: ants
+  job_type: general_pest
+- phrase: roaches
+  job_type: general_pest
+- phrase: cockroach
+  job_type: general_pest
+- phrase: crickets
+  job_type: general_pest
+- phrase: spiders
+  job_type: general_pest
+- phrase: black widow
+  job_type: general_pest
+- phrase: scorpion
+  job_type: scorpions
+- phrase: bark scorpion
+  job_type: scorpions
+- phrase: stung
+  job_type: scorpions
+- phrase: termites
+  job_type: termites
+- phrase: mud tubes
+  job_type: termites
+- phrase: swarmers
+  job_type: termites
+- phrase: flying ants
+  job_type: termites
+- phrase: wood damage
+  job_type: termites
+- phrase: termite inspection
+  job_type: termite_inspection
+- phrase: WDIIR
+  job_type: termite_inspection
+- phrase: weeds
+  job_type: weed_control
+- phrase: pre-emergent
+  job_type: weed_control
+- phrase: pre emergent
+  job_type: weed_control
+- phrase: weed spray
+  job_type: weed_control
+- phrase: bees
+  job_type: bees_wasps
+- phrase: bee swarm
+  job_type: bees_wasps
+- phrase: hive
+  job_type: bees_wasps
+- phrase: wasps
+  job_type: bees_wasps
+- phrase: hornets
+  job_type: bees_wasps
+- phrase: pigeons
+  job_type: pigeons_birds
+- phrase: birds under solar panels
+  job_type: pigeons_birds
+- phrase: rats
+  job_type: rodents
+- phrase: mice
+  job_type: rodents
+- phrase: pack rat
+  job_type: rodents
+- phrase: droppings
+  job_type: rodents
+- phrase: bed bugs
+  job_type: bed_bugs_other
+triggers_es:
+- phrase: plagas
+  job_type: null
+- phrase: fumigar
+  job_type: null
+- phrase: fumigación
+  job_type: null
+- phrase: control de plagas
+  job_type: null
+- phrase: hormigas
+  job_type: general_pest
+- phrase: cucarachas
+  job_type: general_pest
+- phrase: grillos
+  job_type: general_pest
+- phrase: arañas
+  job_type: general_pest
+- phrase: viuda negra
+  job_type: general_pest
+- phrase: alacrán
+  job_type: scorpions
+- phrase: alacranes
+  job_type: scorpions
+- phrase: escorpión
+  job_type: scorpions
+- phrase: me picó un alacrán
+  job_type: scorpions
+- phrase: termitas
+  job_type: termites
+- phrase: comején
+  job_type: termites
+- phrase: hierba mala
+  job_type: weed_control
+- phrase: maleza
+  job_type: weed_control
+- phrase: pre-emergente
+  job_type: weed_control
+- phrase: abejas
+  job_type: bees_wasps
+- phrase: enjambre
+  job_type: bees_wasps
+- phrase: panal
+  job_type: bees_wasps
+- phrase: avispas
+  job_type: bees_wasps
+- phrase: palomas
+  job_type: pigeons_birds
+- phrase: ratas
+  job_type: rodents
+- phrase: ratones
+  job_type: rodents
+- phrase: chinches
+  job_type: bed_bugs_other
+questions:
+- id: pest_type
+  text: What pest is it?
+  options:
+  - Scorpions
+  - Ants, roaches, spiders or crickets
+  - Termites
+  - Termite inspection for home sale
+  - Weeds / pre-emergent
+  - Bees or wasps
+  - Pigeons or birds
+  - Rats or mice
+  - Other / not sure
+  ask_if: always
+  changes_price: 'yes'
+- id: frequency
+  text: One time or ongoing service?
+  options:
+  - One time
+  - Monthly
+  - Every other month / quarterly
+  - Not sure
+  ask_if: pest_type in [Scorpions, Ants, roaches, spiders or crickets, Weeds / pre-emergent]
+  changes_price: 'yes'
+- id: home_size
+  text: About how big is the home and yard?
+  options:
+  - Under 1,500 sq ft home
+  - 1,500-2,500 sq ft
+  - Over 2,500 sq ft
+  - Big lot / acre or more
+  - Not sure
+  ask_if: pest_type not in [Bees or wasps]
+  changes_price: 'yes'
+- id: bee_location
+  text: Where are the bees?
+  options:
+  - Swarm hanging in a ball (tree, bush)
+  - Going in and out of the wall or roof
+  - In a meter box, irrigation box or ground
+  - In a palm or tree
+  - Wasp nest under eave
+  ask_if: pest_type == Bees or wasps
+  changes_price: 'yes'
+- id: termite_signs
+  text: What did you see?
+  options:
+  - Mud tubes on walls or foundation
+  - Flying swarmers inside
+  - Damaged wood
+  - Just want a check / home sale
+  ask_if: pest_type == Termites
+  changes_price: 'yes'
+- id: weed_area
+  text: What area needs weed control?
+  options:
+  - Front rock yard
+  - Back rock yard
+  - Front and back
+  - Around the whole lot
+  - Not sure
+  ask_if: pest_type == Weeds / pre-emergent
+  changes_price: 'yes'
+quote_without_visit_needs:
+- Pest type and where seen
+- Home square footage and lot size
+- One time vs ongoing
+- 'For bees: photo from a safe distance and location'
+- 'For termites: photo of mud tubes or damage'
+- 'For pigeons: photo of solar array and roof, and where they roost'
+- 'For bees: whether live removal is wanted'
+site_visit_usually_needed:
+- termites
+- termite_inspection
+- bees_wasps (in wall)
+- rodents
+photos_to_request:
+- id: p1
+  ask: The pest (photo only if safe, or a dead one)
+  for_job_types:
+  - all
+- id: p2
+  ask: Mud tubes or wood damage
+  for_job_types:
+  - all
+- id: p3
+  ask: Bees from a safe distance only
+  for_job_types:
+  - all
+- id: p4
+  ask: Solar panels with nesting
+  for_job_types:
+  - all
+- id: p5
+  ask: Droppings or chewed items
+  for_job_types:
+  - all
+- id: p6
+  ask: Rock yard areas for weed control
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - 'Bark scorpion: small (about 1.5 inches), thin tail and pincers, a strong climber'
+  - Pencil-width mud tubes on stem walls (subterranean termites)
+  - Bees flying in and out of a wall crack or meter box (established colony)
+  - Debris and droppings under solar panels
+photo_red_flags:
+- flag: Large bee colony near walkways, pool or play area
+  safety_step_ref: null
+- flag: Bees attacking people or pets
+  safety_step_ref: es_bees_stinging_people_or_pets_n
+- flag: Rodent droppings in kitchen or HVAC [judgment]
+  safety_step_ref: null
+- flag: Child or pet stung by scorpion
+  safety_step_ref: es_child_stung_by_a_scorpion
+emergency_signals:
+- id: es_bees_stinging_people_or_pets_n
+  signal: Bees stinging people or pets now
+  emergency: 'yes'
+  safety_step: Run to a car or building; cover your face with your shirt. Do not swat or jump into water or a pool.
+    Call 911 for a serious attack. Scrape stingers out sideways with a card or fingernail.
+  source: USDA ARS Carl Hayden Bee Research Center, Bee Safety - https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/docs/bee-safety/bee-safety/
+  then_route_to: pest_control
+- id: es_child_stung_by_a_scorpion
+  signal: Child stung by a scorpion
+  emergency: 'yes'
+  safety_step: Wash with soap and water and use a cool compress. Call Poison Help [number removed, see source]. Small children
+    are at highest risk; call 911 for jerky body or wild eye movements or trouble breathing.
+  source: Arizona Poison and Drug Information Center (University of Arizona), Scorpions - https://azpoison.com/venom/scorpions
+  then_route_to: pest_control
+- id: es_trouble_breathing_face_swellin
+  signal: Trouble breathing, face swelling after a sting
+  emergency: 'yes'
+  safety_step: Wash with soap and water and use a cool compress. Call Poison Help [number removed, see source]. Small children
+    are at highest risk; call 911 for jerky body or wild eye movements or trouble breathing.
+  source: Arizona Poison and Drug Information Center (University of Arizona), Scorpions - https://azpoison.com/venom/scorpions
+  then_route_to: pest_control
+- id: es_strong_jerky_muscle_movements_
+  signal: Strong jerky muscle movements, roving eyes or drooling after a scorpion sting
+  emergency: 'yes'
+  safety_step: Wash with soap and water and use a cool compress. Call Poison Help [number removed, see source]. Small children
+    are at highest risk; call 911 for jerky body or wild eye movements or trouble breathing.
+  source: Arizona Poison and Drug Information Center (University of Arizona), Scorpions - https://azpoison.com/venom/scorpions
+  then_route_to: pest_control
+- id: es_someone_sick_after_pesticide_e
+  signal: Someone sick after pesticide exposure
+  emergency: 'yes'
+  safety_step: Call Poison Help [number removed, see source], or 911 if someone is having trouble breathing.
+  source: Arizona Poison and Drug Information Center (University of Arizona), Scorpions - https://azpoison.com/venom/scorpions
+  then_route_to: pest_control
+safety_step:
+- when: Bee attack
+  step: Run to a car or building; cover your face with your shirt. Do not swat or jump into water or a pool. Call
+    911 for a serious attack. Scrape stingers out sideways with a card or fingernail.
+  source: USDA ARS Carl Hayden Bee Research Center, Bee Safety - https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/docs/bee-safety/bee-safety/
+- when: Bee colony found
+  step: Leave it alone and keep people and pets away. Do not spray, burn, or throw things at it, and do not try
+    to remove it yourself.
+  source: USDA ARS Carl Hayden Bee Research Center, Bee Safety - https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/docs/bee-safety/bee-safety/
+- when: Scorpion sting
+  step: Wash with soap and water and use a cool compress. Call Poison Help [number removed, see source]. Small children are at
+    highest risk; call 911 for jerky body or wild eye movements or trouble breathing.
+  source: Arizona Poison and Drug Information Center (University of Arizona), Scorpions - https://azpoison.com/venom/scorpions
+- when: Pesticide exposure
+  step: Call Poison Help [number removed, see source], or 911 if someone is having trouble breathing.
+  source: Arizona Poison and Drug Information Center (University of Arizona), Scorpions - https://azpoison.com/venom/scorpions
+license_classes:
+- job_type:
+  - general_pest
+  - scorpions
+  - rodents
+  - pigeons_birds
+  - bed_bugs_other
+  - bees_wasps
+  work: Any pest management for hire (inspect, report, bid, apply) including scorpions, general pests, rodents,
+    birds with pesticides or devices
+  classes:
+  - Arizona Department of Agriculture Pest Management Division business license, a registered qualifying party,
+    and certified applicators. ROC license not needed (A.R.S. 32-1121(A)(8)).
+  citation: A.R.S. 3-3615 Pest management business license; financial security; termite and WDIIR bonds - https://www.azleg.gov/ars/3/03615.htm
+    ; A.R.S. 3-3616 Qualifying party registration - https://www.azleg.gov/ars/3/03616.htm ; A.R.S. 32-1121 Persons
+    not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16), fuel-gas carve-out (D))
+    - https://www.azleg.gov/ars/32/01121.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - general_pest
+  - scorpions
+  - bees_wasps
+  - rodents
+  - pigeons_birds
+  work: General pests, scorpions, bees, rodents, birds
+  classes:
+  - 'Applicator Category 1: Industrial, institutional, structural and health-related'
+  citation: A.R.S. 3-3614 Applicator certification categories - https://www.azleg.gov/ars/3/03614.htm ; A.A.C. R3-8-102
+    Pest management certification category scopes - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-102
+  other_agency: null
+  notes: ''
+- job_type:
+  - termites
+  - termite_inspection
+  work: Termite treatment and wood-destroying insect inspection reports
+  classes:
+  - Category 2 Wood-destroying organism (2a treatment; 2b inspection). Termite businesses must carry a $100,000
+    bond or insurance rider; WDIIR businesses a $100,000 errors and omissions bond or rider.
+  citation: A.R.S. 3-3614 Applicator certification categories - https://www.azleg.gov/ars/3/03614.htm ; A.A.C. R3-8-102
+    Pest management certification category scopes - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-102
+    ; A.R.S. 3-3615 Pest management business license; financial security; termite and WDIIR bonds - https://www.azleg.gov/ars/3/03615.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - weed_control
+  work: Pre-emergent and weed control
+  classes:
+  - Category 3 Ornamental and turf (covers weeds and bare ground). Landscaper exemption does not cover preemergents
+    or sterilants.
+  citation: A.A.C. R3-8-102 Pest management certification category scopes - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-102
+    ; A.R.S. 3-3613 Landscaper herbicide exemption and its limits (preemergents and sterilants excluded) - https://www.azleg.gov/ars/3/03613.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - termites
+  - bed_bugs_other
+  work: Fumigation (tenting)
+  classes:
+  - Category 6 Fumigation
+  citation: A.R.S. 3-3614 Applicator certification categories - https://www.azleg.gov/ars/3/03614.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - general_pest
+  work: Homeowner treating own home
+  classes:
+  - No license needed for non-restricted products on property you own and occupy
+  citation: A.R.S. 3-3611 Pest license and registration exemptions (owner-occupant; OTC antimicrobial to treat a
+    swimming pool) - https://www.azleg.gov/ars/3/03611.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - pigeons_birds
+  work: Pigeon netting or spikes with no pesticide
+  classes:
+  - Unclear whether exclusion-only work counts as pest management [judgment / open question]; any pesticide or trapping
+    device for hire needs the license.
+  citation: A.R.S. 3-3601 Pest management definitions - https://www.azleg.gov/ars/3/03601.htm
+  other_agency: null
+  notes: ''
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: 'Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit,
+    is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)),
+    and ads say ''not a licensed contractor''. Source: A.R.S. 32-1121(A)(14), (C), (D) [S4]; foundation/az_license_master.md
+    section 4.'
+  note: 'No for pest treatment: pest management for hire needs an Arizona Department of Agriculture license (A.R.S.
+    3-3615). The ROC handyman exemption does not apply to pesticide work.'
+local_notes:
+- 'Bark scorpions are the only one of about 30 Arizona scorpion species seen as life-threatening; most stings happen
+  at night in warm months. Source: Arizona Poison and Drug Information Center (University of Arizona), Scorpions
+  - https://azpoison.com/venom/scorpions'
+- 'Arizona subterranean termites (Heterotermes aureus) swarm after monsoon rains, generally July-September. Source:
+  University of Arizona Cooperative Extension AZ1369, Arizona Termites of Economic Importance - https://extension.arizona.edu/sites/extension.arizona.edu/files/pubs/az1369.pdf'
+- 'Africanized honey bees are present in Arizona; colonies nest in walls, meter boxes, irrigation boxes, palm skirts
+  and rock crevices. Source: USDA ARS Carl Hayden Bee Research Center, Bee Safety - https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/docs/bee-safety/bee-safety/'
+- Pigeons nesting under rooftop solar panels is a common request [judgment].
+- Pre-emergent is often applied before winter and monsoon rains [judgment].
+- 'The Pest Management Division keeps license lookups; Ask Hava does not check or vouch for licenses. Source: Arizona
+  Department of Agriculture, Pest Management Division - https://agriculture.az.gov/pestspest-control'
+sample_card: 'REQ-0619 | Scorpions
+
+  Lake Havasu City, north side
+
+  Bark-type scorpions inside the home several times a week. About 2,000 sq ft home. Wants ongoing service.
+
+  Photo of a scorpion attached.'
+test_messages:
+- id: pest_control_t01
+  message: found 3 scorpions in the bathroom this week
+  trade: pest_control
+  job_type: scorpions
+  emergency: 'no'
+  first_question_id: frequency
+  ideal_first_question: One time or ongoing service?
+  note: ''
+- id: pest_control_t02
+  message: bees!!!
+  trade: pest_control
+  job_type: bees_wasps
+  emergency: 'no'
+  first_question_id: bee_location
+  ideal_first_question: Where are the bees?
+  note: ''
+- id: pest_control_t03
+  message: Me picó un alacrán a mi niño de 3 años y está llorando mucho
+  trade: pest_control
+  job_type: scorpions
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: '[safety_step_first] Give the matching safety step first; ask intake questions only after
+    everyone is safe.'
+  note: ''
+- id: pest_control_t04
+  message: mud tubes on the garage wall, selling the house need termite letter too
+  trade: pest_control
+  job_type: termites
+  emergency: 'no'
+  first_question_id: termite_signs
+  ideal_first_question: What did you see?
+  note: ''
+- id: pest_control_t05
+  message: pigeons under my solar panels making a mess
+  trade: pest_control
+  job_type: pigeons_birds
+  emergency: 'no'
+  first_question_id: home_size
+  ideal_first_question: About how big is the home and yard?
+  note: ''
+- id: pest_control_t06
+  message: spray pre emergent in my rock yard front and back
+  trade: pest_control
+  job_type: weed_control
+  emergency: 'no'
+  first_question_id: weed_area
+  ideal_first_question: What area needs weed control?
+  note: ''
+- id: pest_control_t07
+  message: bugs
+  trade: pest_control
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: pest_type
+  ideal_first_question: What pest is it?
+  note: job_type unknown = too vague; the first question picks the job type.
+- id: pest_control_t08
+  message: Tengo ratas en el garaje y en la yarda
+  trade: pest_control
+  job_type: rodents
+  emergency: 'no'
+  first_question_id: home_size
+  ideal_first_question: About how big is the home and yard?
+  note: ''
+- id: pest_control_t09
+  message: bees inside my pool equipment box and also need pump fixed
+  trade: pest_control
+  job_type: bees_wasps
+  emergency: 'no'
+  first_question_id: bee_location
+  ideal_first_question: Where are the bees?
+  note: ''
+- id: pest_control_t10
+  message: swarm attacking my dog in the yard right now
+  trade: pest_control
+  job_type: bees_wasps
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: '[safety_step_first] Give the matching safety step first; ask intake questions only after
+    everyone is safe.'
+  note: ''
+sources:
+- A.R.S. 3-3601 Pest management definitions - https://www.azleg.gov/ars/3/03601.htm
+- A.R.S. 3-3611 Pest license and registration exemptions (owner-occupant; OTC antimicrobial to treat a swimming
+  pool) - https://www.azleg.gov/ars/3/03611.htm
+- A.R.S. 3-3613 Landscaper herbicide exemption and its limits (preemergents and sterilants excluded) - https://www.azleg.gov/ars/3/03613.htm
+- A.R.S. 3-3614 Applicator certification categories - https://www.azleg.gov/ars/3/03614.htm
+- A.R.S. 3-3615 Pest management business license; financial security; termite and WDIIR bonds - https://www.azleg.gov/ars/3/03615.htm
+- A.R.S. 3-3616 Qualifying party registration - https://www.azleg.gov/ars/3/03616.htm
+- A.A.C. R3-8-102 Pest management certification category scopes - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-102
+- Arizona Department of Agriculture, Pest Management Division - https://agriculture.az.gov/pestspest-control
+- A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+  fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+- USDA ARS Carl Hayden Bee Research Center, Bee Safety - https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/docs/bee-safety/bee-safety/
+- Arizona Poison and Drug Information Center (University of Arizona), Scorpions - https://azpoison.com/venom/scorpions
+- University of Arizona Cooperative Extension AZ1369, Arizona Termites of Economic Importance - https://extension.arizona.edu/sites/extension.arizona.edu/files/pubs/az1369.pdf
+- University of Arizona Cooperative Extension AZ1356, Termite Management for Homeowners - https://extension.arizona.edu/sites/extension.arizona.edu/files/pubs/az1356.pdf

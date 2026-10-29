@@ -14,6 +14,7 @@ Each requirement is one line:
 - **Sentence:** one rule a test can check.
 - **Source:** one or more `path:LINE` citations, paths relative to the repository root, line numbers as of the commit that last changed the line. Order of authority: `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md` on what, `BUILD_BRIEF.md` on how, then the v9.3 blueprint, then everything else (`docs/sources.md:22`).
 - Each file starts with a `Prefix:` line naming its ID prefix.
+- **Unused numbers:** TERMS-017 was drafted, moved to WEB-017 and never merged, so it is not used and is never to be reused (D-161).
 
 ## Checks
 
@@ -34,7 +35,7 @@ It prints counts per file, per cited source, and in total.
 | [consent.md](consent.md) | `CON` | Consent, opt-out, HELP, business consent |
 | [quiet-hours.md](quiet-hours.md) | `QH` | Quiet hours |
 | [messaging.md](messaging.md) | `TXT` | Text templates, Spanish, links, retries, outbox |
-| [job-cards.md](job-cards.md) | `CARD` | Matching and job-card content |
+| [job-cards.md](job-cards.md) | `CARD` | Who receives a job card, and job-card content |
 | [quotes-pick.md](quotes-pick.md) | `PICK` | Quotes, quote page, pick, confirm, release |
 | [lifecycle.md](lifecycle.md) | `JOB` | Job statuses, timers, closing |
 | [fees.md](fees.md) | `FEE` | Fees, charges, refunds, ledger |

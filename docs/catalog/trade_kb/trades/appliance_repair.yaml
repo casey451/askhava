@@ -1,0 +1,466 @@
+# Ask Hava trade knowledge file: appliance_repair
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: appliance_repair
+display_name: Appliance Repair
+summary: 'Repair and install of refrigerators, washers, dryers, dishwashers, ranges/ovens, microwaves, ice makers
+  and disposals. ROC R-63 covers installing and repairing appliances but NOT gas, electrical or plumbing lines.
+  Anything that connects to gas or propane is never handyman work (A.R.S. 32-1121(D)(2)). Refrigerant work needs
+  EPA Section 608 certification. The model/serial label is the most useful thing for a quote: fridges usually inside
+  the fresh-food side wall or ceiling; dishwashers on the inside door edge or tub edge; ranges behind the oven door
+  or drawer; top-load washers under the lid; dryers inside the door opening (GE location guide). Havasu hard water
+  is hard on dishwashers, ice makers and washer valves [judgment].'
+job_types:
+- id: fridge
+  label: Refrigerator/freezer not cooling, leaking, ice maker
+  site_visit_usually_needed: 'yes'
+  handyman_ok: limited
+- id: washer
+  label: Washer not draining/spinning/leaking
+  site_visit_usually_needed: 'yes'
+  handyman_ok: limited
+- id: dryer
+  label: Dryer not heating/slow (vent check)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: limited
+- id: dishwasher
+  label: Dishwasher not cleaning/draining/leaking
+  site_visit_usually_needed: 'yes'
+  handyman_ok: limited
+- id: range_oven
+  label: Range/oven/cooktop (electric or gas)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: limited
+- id: microwave
+  label: Microwave (countertop or over-range)
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: appliance_install
+  label: Install new appliance
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: dryer_vent
+  label: Dryer vent cleaning
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+triggers_en:
+- phrase: fridge not cooling
+  job_type: fridge
+- phrase: refrigerator warm
+  job_type: fridge
+- phrase: freezer
+  job_type: fridge
+- phrase: ice maker
+  job_type: fridge
+- phrase: fridge leaking
+  job_type: fridge
+- phrase: washer
+  job_type: washer
+- phrase: washing machine
+  job_type: washer
+- phrase: won't spin
+  job_type: washer
+- phrase: won't drain
+  job_type: washer
+- phrase: dryer not heating
+  job_type: dryer
+- phrase: clothes still wet
+  job_type: dryer
+- phrase: dryer takes forever
+  job_type: dryer
+- phrase: dishwasher
+  job_type: dishwasher
+- phrase: oven
+  job_type: range_oven
+- phrase: stove
+  job_type: range_oven
+- phrase: range
+  job_type: range_oven
+- phrase: burner
+  job_type: range_oven
+- phrase: cooktop
+  job_type: range_oven
+- phrase: microwave
+  job_type: microwave
+- phrase: install washer
+  job_type: appliance_install
+- phrase: hook up
+  job_type: appliance_install
+- phrase: new appliance
+  job_type: appliance_install
+- phrase: deliver and install
+  job_type: appliance_install
+- phrase: dryer vent
+  job_type: dryer_vent
+- phrase: lint
+  job_type: dryer_vent
+triggers_es:
+- phrase: refri
+  job_type: fridge
+- phrase: refrigerador no enfría
+  job_type: fridge
+- phrase: congelador
+  job_type: fridge
+- phrase: máquina de hielo
+  job_type: fridge
+- phrase: lavadora
+  job_type: washer
+- phrase: no centrifuga
+  job_type: washer
+- phrase: no saca el agua
+  job_type: washer
+- phrase: secadora no calienta
+  job_type: dryer
+- phrase: secadora
+  job_type: dryer
+- phrase: lavaplatos
+  job_type: dishwasher
+- phrase: lavavajillas
+  job_type: dishwasher
+- phrase: estufa
+  job_type: range_oven
+- phrase: horno
+  job_type: range_oven
+- phrase: quemador
+  job_type: range_oven
+- phrase: microondas
+  job_type: microwave
+- phrase: conectar
+  job_type: appliance_install
+- phrase: instalar lavadora
+  job_type: appliance_install
+questions:
+- id: q1_appliance
+  text: Which appliance?
+  options:
+  - Refrigerator/freezer
+  - Washer
+  - Dryer
+  - Dishwasher
+  - Range/oven/cooktop
+  - Microwave or other
+  ask_if: always
+  changes_price: 'yes'
+  why: Each appliance type uses different parts and techs.
+- id: q2_fuel
+  text: Is it gas or electric?
+  options:
+  - Electric
+  - Gas or propane
+  - Not sure
+  ask_if: appliance in [Dryer, Range/oven/cooktop]
+  changes_price: 'yes'
+  why: Gas units need gas-qualified licensed techs; gas is never handyman work [S4].
+- id: q3_model
+  text: Can you send a photo of the model/serial sticker?
+  options:
+  - Yes, sending photo
+  - Can't find it
+  - Brand only
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Model and serial numbers let a business check parts before the visit.
+- id: q4_symptom
+  text: What is it doing?
+  options:
+  - Won't turn on
+  - Runs but not cooling/heating
+  - Leaking
+  - Loud noise
+  - Error code
+  - Other
+  ask_if: always
+  changes_price: 'yes'
+  why: Symptoms help a business bring likely parts. [judgment]
+- id: q5_age
+  text: About how old is it?
+  options:
+  - Under 5 years
+  - 5-10 years
+  - Over 10 years
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Age affects parts availability. [judgment]
+- id: q6_warranty
+  text: Is it still under warranty?
+  options:
+  - 'Yes'
+  - 'No'
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: A unit under warranty may have to go to the maker's service network.
+quote_without_visit_needs:
+- Brand, model and serial
+- Symptom and any error code
+- Gas or electric
+- Age
+site_visit_usually_needed:
+- Almost all repairs (diagnostic visit fee is common) [judgment]
+- Gas appliance work
+photos_to_request:
+- id: p1
+  ask: Model/serial label
+  for_job_types:
+  - all
+- id: p2
+  ask: Error code on display
+  for_job_types:
+  - all
+- id: p3
+  ask: Leak area
+  for_job_types:
+  - all
+- id: p4
+  ask: Hookups behind it (cord, gas line, water line, vent)
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - 'Fridge: label inside on the side wall or ceiling of the fresh-food side'
+  - 'Dishwasher: inside edge of the door or tub'
+  - 'Range: behind the oven door or storage drawer'
+  - 'Top-load washer: under the lid or back panel; front-load: door frame'
+  - 'Dryer: inside the door opening'
+photo_red_flags:
+- flag: Gas flex line kinked or old uncoated brass connector [judgment]
+  safety_step_ref: es_appliance_repair_1
+- flag: Scorch marks on cord or outlet
+  safety_step_ref: es_appliance_repair_2
+- flag: Crushed or plastic-foil dryer vent
+  safety_step_ref: null
+- flag: Range not anchored (no anti-tip bracket)
+  safety_step_ref: null
+- flag: Water pooling under dishwasher or fridge
+  safety_step_ref: null
+emergency_signals:
+- id: es_appliance_repair_1
+  signal: Gas smell near range or dryer
+  emergency: 'yes'
+  safety_step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call
+    911 and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+  then_route_to: none
+  note: 'Routing: none (leave, call 911 and UES)'
+- id: es_appliance_repair_2
+  signal: Smoke, burning smell or sparks
+  emergency: 'yes'
+  safety_step: Unplug or shut off the breaker only if safe. If there is fire, get out and call 911.
+  source: '[S29]'
+  then_route_to: appliance_repair
+- id: es_appliance_repair_3
+  signal: CO alarm sounding
+  emergency: 'yes'
+  safety_step: Go outside, call 911, stay outside.
+  source: '[T-nfpa_sounds]'
+  then_route_to: hvac
+- id: es_appliance_repair_4
+  signal: Water leaking onto floor, can't stop it
+  emergency: depends
+  note: 'Urgent, not life-safety: card goes out marked time-sensitive. [judgment]'
+  intake_note:
+  - Turn off the water valve behind the appliance if you can reach it safely [judgment].
+  safety_step: No official step on file for this signal. If anyone is hurt or in danger, call 911. [judgment]
+  source: '[judgment]'
+  then_route_to: plumbing
+- id: es_appliance_repair_5
+  signal: Fridge not cooling with food inside
+  emergency: depends
+  note: 'Urgent, not life-safety: card goes out marked time-sensitive. [judgment]'
+  safety_step: No official step on file for this signal. If anyone is hurt or in danger, call 911. [judgment]
+  source: '[judgment]'
+  then_route_to: appliance_repair
+- id: es_appliance_repair_6
+  signal: Noise, slow cycles
+  emergency: 'no'
+  safety_step: Clean the lint filter every load; failure to clean is the leading cause of dryer fires. Use metal
+    vent duct and have the vent checked.
+  source: '[T-usfa_dryer]'
+  then_route_to: appliance_repair
+safety_step:
+- when: Gas smell
+  step: Leave the home now. Do not flip switches, use a phone or start a car nearby. From a safe place call 911
+    and UniSource at [number removed, see source].
+  source: '[S23][S22]'
+- when: CO alarm (4 beeps, pause, repeat)
+  step: Go outside, call 911, stay outside.
+  source: '[T-nfpa_sounds]'
+- when: Smoke or sparking
+  step: Unplug or shut off the breaker only if safe. If there is fire, get out and call 911.
+  source: '[S29]'
+- when: Dryer
+  step: Clean the lint filter every load; failure to clean is the leading cause of dryer fires. Use metal vent duct
+    and have the vent checked.
+  source: '[T-usfa_dryer]'
+- when: Range
+  step: Every range should have an anti-tip bracket installed so it cannot tip onto a child.
+  source: '[T-cpsc_range]'
+intake_notes_judgment:
+- 'Leak: Turn off the water valve behind the appliance if you can reach it safely [judgment].'
+license_classes:
+- job_type:
+  - fridge
+  - washer
+  - dryer
+  - dishwasher
+  - range_oven
+  - microwave
+  - appliance_install
+  classes:
+  - R-63
+  - CR-63
+  citation: A.A.C. R4-9-103 [S2] R-63; R4-9-104 [S3] CR-63
+  other_agency: none
+  notes: ROC R-63 Appliances (install and repair, but not gas, electrical or plumbing lines) or CR-63. Whether a
+    repair-only service visit on an existing appliance needs an ROC license is [unverified]. Plug-in appliances
+    sold as-is are left out of the $1,000 handyman total (32-1121(A)(14)). Gas appliance connections are never handyman
+    work.
+- job_type:
+  - range_oven
+  - dryer
+  - appliance_install
+  classes:
+  - R-37
+  citation: A.R.S. 32-1121(D)(2) [S4]; A.A.C. R4-9-103 [S2] (R- residential classes)
+  other_agency: none
+  notes: 'Gas connection: licensed contractor only; handyman exemption never applies. Gas piping: R-37 or equivalent.'
+- job_type:
+  - fridge
+  classes:
+  - none
+  citation: EPA Section 608
+  other_agency: US EPA Section 608 technician certification [S38]
+  notes: 'Opening the sealed refrigerant system: EPA Section 608 certified technician; disposal of fridges requires
+    refrigerant recovery.'
+- job_type:
+  - appliance_install
+  classes:
+  - R-11
+  - R-37
+  citation: A.A.C. R4-9-103 [S2] R-11, R-37
+  other_agency: none
+  notes: 'New 240V outlet or circuit: R-11. New water line: R-37.'
+handyman_ok:
+  allowed_examples:
+  - Plugging in and leveling an electric appliance, connecting a washer to existing hoses, dryer vent cleaning (unmodified
+    plug-in appliances are left out of the $1,000 total)
+  not_allowed_examples:
+  - Any gas dryer, range or water heater connection
+  - New circuits or water lines
+  - Refrigerant work without EPA 608
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+local_notes:
+- Hard water (Havasu sits on Colorado River water) causes scale in dishwashers, ice makers and washer inlet screens
+  [judgment].
+- Garage fridges struggle in 115F+ heat [judgment].
+- 'UniSource is the gas utility in Lake Havasu. Source: [S23][S22].'
+- 'Old appliances with refrigerant need recovery before disposal; LHC landfill rules apply. Source: [T-epa_608].'
+sample_card: 'REQ-0272 | Appliance Repair | Lake Havasu City, central
+
+  Refrigerator, side-by-side, about 7 years old. Running but fresh-food side warm. Model label photo attached.
+
+  Electric. No warranty.
+
+  '
+test_messages:
+- id: appliance_repair_t01
+  message: fridge not cold
+  trade: appliance_repair
+  job_type: fridge
+  emergency: 'no'
+  first_question_id: q3_model
+  ideal_first_question: Can you send a photo of the model/serial sticker?
+  note: ''
+- id: appliance_repair_t02
+  message: smell gas behind the stove after I pulled it out to clean
+  trade: appliance_repair
+  job_type: range_oven
+  emergency: 'yes'
+  first_question_id: q2_fuel
+  ideal_first_question: Is it gas or electric?
+  note: ''
+- id: appliance_repair_t03
+  message: la lavadora no saca el agua
+  trade: appliance_repair
+  job_type: washer
+  emergency: 'no'
+  first_question_id: q3_model
+  ideal_first_question: Can you send a photo of the model/serial sticker?
+  note: ''
+- id: appliance_repair_t04
+  message: dryer takes 3 cycles to dry
+  trade: appliance_repair
+  job_type: dryer
+  emergency: 'no'
+  first_question_id: q2_fuel
+  ideal_first_question: Is it gas or electric?
+  note: ''
+- id: appliance_repair_t05
+  message: hook up my gas dryer, i have the hose
+  trade: appliance_repair
+  job_type: appliance_install
+  emergency: 'no'
+  first_question_id: q2_fuel
+  ideal_first_question: Is it gas or electric?
+  note: ''
+- id: appliance_repair_t06
+  message: dishwasher leaking all over floor wont stop
+  trade: appliance_repair
+  job_type: dishwasher
+  emergency: 'no'
+  first_question_id: q4_symptom
+  ideal_first_question: What is it doing?
+  note: ''
+- id: appliance_repair_t07
+  message: over the range microwave install, old one removed
+  trade: appliance_repair
+  job_type: microwave
+  emergency: 'no'
+  first_question_id: q3_model
+  ideal_first_question: Can you send a photo of the model/serial sticker?
+  note: ''
+- id: appliance_repair_t08
+  message: need a 240 outlet for new electric dryer
+  trade: electrical
+  job_type: new_circuit
+  emergency: 'no'
+  first_question_id: q1_problem
+  ideal_first_question: Is it gas or electric?
+  note: ''
+- id: appliance_repair_t09
+  message: oven shows F3 code
+  trade: appliance_repair
+  job_type: range_oven
+  emergency: 'no'
+  first_question_id: q3_model
+  ideal_first_question: Can you send a photo of the model/serial sticker?
+  note: ''
+- id: appliance_repair_t10
+  message: water heater making popping noise
+  trade: water_heater
+  job_type: noise_smell
+  emergency: 'no'
+  first_question_id: q1_fuel
+  ideal_first_question: Is it gas or electric?
+  note: ''
+sources:
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] A.A.C. R4-9-104 Dual license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'
+- '[S23][S22] UniSource Energy Services (UES), Natural Gas Safety Tips (leak signs and steps); 24/7 emergency [number removed, see source]
+  per UES Contact https://www.uesaz.com/news/natural-gas-safety-tips/'
+- '[T-nfpa_sounds] NFPA Fire Prevention Week 2024, Learn the Sounds (smoke/CO alarm beeps) https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Fire-Prevention-Week/2024/FPW24-Learn-the-Sounds.pdf'
+- '[S29] NFPA, Electrical safety in the home https://www.nfpa.org/education-and-research/home-fire-safety/electrical-safety-in-the-home'
+- '[T-usfa_dryer] USFA/FEMA, Clothes Dryer Fire Safety flyer https://www.usfa.fema.gov/downloads/pdf/publications/clothes_dryer_fire_safety_flyer.pdf'
+- '[T-cpsc_range] CPSC, Range Tip-Over safety alert (anti-tip brackets) https://www.cpsc.gov/safety-education/safety-guides/kitchen/range-tipover-safety-alert'
+- '[T-epa_608] EPA Section 608, refrigerant rules; safe disposal of small appliances https://www.epa.gov/section608/stationary-refrigeration-safe-disposal-requirements'
+- '[S38] US EPA, Section 608 Technician Certification (40 CFR 82 Subpart F) https://www.epa.gov/section608/stationary-refrigeration-and-air-conditioning-technician-certification'
+- '[T-ge_model] GE Appliances, Find your model and serial number (label locations by appliance) https://www.geappliances.com/ge/find-model-serial-number/'

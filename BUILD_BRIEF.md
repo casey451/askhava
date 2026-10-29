@@ -98,28 +98,28 @@ twin/                     the digital twin (updated in stage 1)
 
 **Branch names:** all branches Claude pushes start with `claude/`: `claude/kit-state` and `claude/task/T###-<slug>`. Scheduled-task runs push to `claude/` branches by default, so no extra permission is needed.
 
-## 4. Stack (decided; don't reopen)
+## 4. Stack (decided; don't reopen; Rust since D-453)
 
 | Need | Choice | Why |
 |---|---|---|
-| Language | Python 3.12 | The twin and its rules are Python |
-| Web | FastAPI + Jinja2 server-rendered pages; small vanilla JS from the prototype; progressive enhancement (works without JS) | Keeps the prototype's accessible HTML; fewer moving parts |
-| Database | PostgreSQL 16; SQLAlchemy 2; Alembic migrations (forward-only, each tested) | Matches Railway and the cloud VM (Postgres 16 preinstalled) |
+| Language | Rust (stable, pinned in `rust-toolchain.toml`, edition 2024) for all server code; TypeScript only for small browser extras; SQL for schema; Python only for build tooling, the stand-ins and the twin, never in the production path | Casey Oct 28, 2026: "We will use rust" (D-453): the compiler enforces the job statuses, the module boundaries and the paid-pick rule |
+| Web | Axum + Tokio; Askama server-rendered pages (templates checked at compile time, autoescaped); small TypeScript compiled with `tsc` to plain JS; progressive enhancement (works without JS) | Accessible HTML from the server; no front-end framework |
+| Database | PostgreSQL 16; SQLx (queries checked against the schema at compile time, offline data committed); SQL migration files `migrations/0NNN_<slug>.sql` (forward-only, each tested) | Matches Railway and the cloud VM (Postgres 16 preinstalled) |
 | Background jobs and timers | A Postgres job table polled with `SELECT … FOR UPDATE SKIP LOCKED`, plus a scheduler process | No Redis, one data store, survives restarts |
-| Messaging and calls | twilio SDK behind an adapter | Swappable for the stand-in |
-| Payments | stripe SDK; SetupIntent with off-session use; webhooks | Card data never touches our servers (PCI SAQ A) |
-| Email / letters | Resend and Lob, each behind an adapter | — |
-| AI | anthropic SDK, Haiku 5.5, structured output only, behind an adapter | Stand-in during the build |
-| Validation | pydantic v2 | — |
-| Packaging | uv with a committed lock file | Reproducible installs |
-| Tests | pytest, hypothesis (property tests), playwright (Python), axe-core injected into pages, mutmut (mutation tests on money and license rules) | — |
-| Quality | ruff (lint and format), mypy --strict, complexity limits in ruff | — |
-| Security tooling | bandit, pip-audit, gitleaks (secrets), the custom PII scanner, OWASP ZAP baseline scan (Docker) in Phase 2 | — |
-| Monitoring | sentry-sdk with PII scrubbing; `/healthz`; UptimeRobot | — |
-| Deploy | Dockerfile; the app host chosen per changes file §3 (Railway Pro if its Backups tab shows point-in-time recovery, otherwise Render), with a separate test project (Phase 2) and live project (Gate C) | Fully separate projects, keys and data. "Railway" below means whichever host was chosen |
+| Messaging and calls | Twilio REST API through reqwest (rustls) behind an adapter trait | The same HTTP client talks to the stand-in or Twilio |
+| Payments | Stripe REST API through reqwest behind an adapter trait; a saved card is charged only on-session, when the business presses "Confirm and pay" (FEE-014, D-365); webhooks verified with HMAC-SHA256 | Card data never touches our servers (PCI SAQ A) |
+| Email / letters | Resend and Lob REST APIs through reqwest, each behind an adapter trait | — |
+| AI | Claude API through reqwest, Haiku 5.5, structured output only, behind an adapter trait | Stand-in during the build |
+| Validation | serde with `deny_unknown_fields`, and parse-into-type newtypes (a phone, code or amount exists only once it is valid) | — |
+| Packaging | Cargo workspace (one crate per module) with a committed `Cargo.lock`; npm with a committed `package-lock.json` for TypeScript and Playwright | Reproducible builds |
+| Tests | `cargo test` with a real Postgres, proptest (property tests), trybuild (compile-fail proofs), Playwright for TypeScript with axe-core, cargo-mutants (mutation tests on money and license rules); pytest only for the tooling, the document checks and the stand-in contracts | — |
+| Quality | rustfmt, clippy with warnings denied (`too_many_lines` at 50 lines and `excessive_nesting` set in `clippy.toml`; `wildcard_enum_match_arm` denied in the status modules), `unsafe_code = "forbid"` in every crate; `tsc --strict` and eslint for TypeScript | — |
+| Security tooling | cargo-audit (RustSec), cargo-deny (licenses, bans, crates.io only), npm audit, gitleaks (secrets), the custom PII scanner, OWASP ZAP baseline scan (Docker) in Phase 2 | — |
+| Monitoring | tracing with field redaction, the sentry crate with PII scrubbing; `/healthz`; UptimeRobot | — |
+| Deploy | Dockerfile (multi-stage: one server binary and one worker binary); the app host chosen per changes file §3 (Railway Pro if its Backups tab shows point-in-time recovery, otherwise Render), with a separate test project (Phase 2) and live project (Gate C) | Fully separate projects, keys and data. "Railway" below means whichever host was chosen |
 
 - **Versions:** K4 pins exact versions available at that time.
-- **New libraries:** any library not on this list needs a `docs/decisions.md` entry with its purpose, license and a pip-audit result.
+- **New libraries:** any library not on this list needs a `docs/decisions.md` entry with its purpose, license and a cargo-audit (or npm audit) result, and must pass cargo-deny.
 
 ## 5. Architecture (K4 finalizes; these boundaries are fixed)
 
@@ -140,7 +140,7 @@ twin/                     the digital twin (updated in stage 1)
 | `messaging` | Outbox and inbox (never send twice); templates in English and Spanish; quiet hours; opt-out keywords; delivery tracking |
 | `calls` | Masked numbers from a pool, PIN routing, call logs (never recorded) |
 | `portals` | Homeowner page, business portal, owner portal |
-| `site` | Public website built from the prototype |
+| `site` | Public website in the plaster-and-brass look of the design spec, `docs/design/DESIGN_SPEC.md` (WEB-001, D-451) |
 | `ops` | Alerts, pause switches, safe mode, status banner, web-and-email mode, audit log viewer |
 | `recovery` | Backup checks, the restore drill, replay with derived IDs |
 | `adapters` | One interface per vendor; real and stand-in implementations chosen by configuration |
@@ -179,7 +179,7 @@ Phase 1 also produces:
 
 The checklist has two parts:
 - **Part 1, test accounts (no LLC needed):** Railway, Stripe test mode, Twilio trial, Resend, Lob, Sentry, UptimeRobot and a Claude Console workspace.
-- **Part 2, business accounts, needed only for Gate C:** LLC with a Maricopa County registered agent, EIN, Google Workspace, Arizona TPT license, insurance, Twilio brand and campaign registration, Stripe activation and zero retention.
+- **Part 2, business accounts, needed only for Gate C:** LLC with a Maricopa County registered agent, EIN, Google Workspace, the ADOR sales-tax ruling request (no TPT license taken on assumption), insurance, Twilio brand and campaign registration, and Stripe activation; a zero-retention agreement is not needed for Gate C (D-412, D-414).
 
 For each account the checklist gives the exact clicks and says exactly where each test key goes: either a network secret (with the host to lock it to) or a test-project variable on the app host.
 
@@ -205,16 +205,16 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 ## 7. The runner (how the build moves itself)
 
 **Shape:**
-- one scheduled task (Appendix A) runs the **runner**;
+- a scheduled runner runs the **runner** code: the Actions runner first, the Appendix A routine as safety net (D-483);
 - the runner does **one task per session, one session at a time**. There's no parallel building, so there are no state races or merge conflicts;
 - parallelism exists only inside a session, as read-only review subagents.
 
-**What starts a runner session:**
-1. **Primary:** the scheduled task's **GitHub trigger** on `pull_request.closed` where the PR is merged into `main`. Each merge starts the next task.
-2. **Safety net:** the same task's **hourly schedule**. If a runner finds a live lease or nothing eligible, it exits in under a minute.
-3. **Backup:** `.github/workflows/backup-runner.yml` runs hourly through the Claude Code GitHub Action with `CLAUDE_CODE_OAUTH_TOKEN` (subscription, not pay-per-use).
-   - **When it runs:** it exits at once unless `kit/state.json` has `"backup_runner": "on"`. The runner sets that flag (and sends an outbox message saying so) only if the scheduled task fails to start twice in K9 or later.
-   - **Pushes:** it leaves `github_token` unset, so it pushes as the Claude GitHub App, and its pushes start workflows normally.
+**What starts a runner session (D-483 swapped the first and third roles so the build acts under its own GitHub identity):**
+1. **Primary:** `.github/workflows/backup-runner.yml` runs hourly through the Claude Code GitHub Action with `CLAUDE_CODE_OAUTH_TOKEN` (subscription, not pay-per-use). It leaves `github_token` unset, so it pushes and comments as the Claude GitHub App, never as Casey; that is what makes the owner-only inbox filter and the code-owner review real. D-486 sets `"backup_runner": "on"` in `kit/state.json` once the secret exists and the rehearsal has run under it.
+2. **Safety net:** the scheduled task's **hourly schedule** (and its GitHub trigger on `pull_request.closed`, merged into `main`, where it exists). If a runner finds a live lease or nothing eligible, it exits in under a minute. Until D-486 flips the flag, this is the only runner, as before.
+3. Both run the same `runner/` code (D-486); which one started a cycle is recorded in `kit/state.json`.
+   - **Pushes** from the Actions runner start workflows normally, because they come from the App and not from `GITHUB_TOKEN`.
+   - **Both** write `runner_sha` and the starter's name into every state commit (D-486).
 
 **State and lease:**
 - `kit/state.json`, STATUS.md and PROGRESS.md live on the `claude/kit-state` branch;
@@ -251,7 +251,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
    - duplicated logic;
    - dead code and TODOs;
    - secrets or PII;
-   - accessibility regressions.
+   - accessibility regressions; and AI smell (WORD-027, WORD-028, D-452): for any change to words a homeowner or business reads, a second reviewer subagent sees only the finished copy, reads it aloud as the person receiving it would, and flags anything machine-written, using `docs/voice.md`; `scripts/check_ai_smell.py` must also pass.
 
    Findings go back to the worker subagent once.
 5. **Hand in:** push the branch. The push comes from Claude's GitHub identity, so workflows run. The `auto-pr` workflow (triggered `on: push` for `claude/task/**`, `permissions: contents: write, pull-requests: write`) opens a PR and enables squash auto-merge.
@@ -318,8 +318,8 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 - **Cookies:** `Secure`, `HttpOnly`, `SameSite=Lax`, rotated on login. CSRF tokens on every form.
 
 **Inputs and outputs**
-- Every input is validated by a pydantic schema.
-- Jinja autoescaping is always on, and homeowner and business text is always rendered as text, never as HTML.
+- Every input is parsed by serde into a typed struct that rejects unknown fields.
+- Askama autoescaping is always on, and homeowner and business text is always rendered as text, never as HTML.
 - Strict security headers:
   - a CSP with no inline script (nonces where needed);
   - HSTS;
@@ -337,7 +337,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 **Photos**
 - Optional, with size and type limits checked from the file bytes, not the name.
 - Re-encoded, with EXIF and GPS data stripped. Stored privately and served only through short-lived signed links.
-- Never sent to the AI unless needed, and never placed on job cards until zero retention is signed.
+- Placed on job cards from launch once the on-server checks pass and the homeowner has seen them, and sent to the AI only after zero retention is signed (CARD-013, D-432).
 
 **AI safety**
 - The AI receives only scrubbed text and returns only schema-validated fields.
@@ -364,15 +364,15 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 
 **Supply chain:**
 - the lock file is committed;
-- pip-audit and bandit run on every PR;
+- cargo-audit, cargo-deny and npm audit run on every PR;
 - Dependabot alerts are on;
 - the Docker base image is pinned by digest.
 
 **Operations**
-- Sentry with `send_default_pii=False` plus a scrubber.
+- Sentry with default PII off plus a scrubber, and `tracing` fields redacted.
 - Logs carry request IDs only, never phone numbers.
 - An incident runbook that includes Arizona's 45-day breach notice (A.R.S. 18-552).
-- Safe mode pauses charges, releases and outbound texts if Casey hasn't acknowledged a High alert within 24 hours.
+- Safe mode pauses charges and releases, and nothing else (texts keep going), if Casey hasn't acknowledged a High alert that pushed to his phone within 24 hours (OPS-001, D-133).
 
 **Security testing**
 - Unit tests for authorization on every route (who can see what).
@@ -418,7 +418,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 
 **Emails:** real text, not images; a plain-text version; meaningful link text.
 
-**Accessibility statement page:** the conformance target, known limits, and a phone and email contact for help, answered within 2 business days.
+**Accessibility statement page:** the conformance target, known limits, and an email contact for help (no phone line), usually answered within 2 days (A11Y-020, D-379).
 
 **Testing**
 - axe-core on every page and state at 320, 768 and 1280px. Any violation fails the `Ally` check.
@@ -446,7 +446,7 @@ The list below is the minimum, not the whole set:
 - Quiet hours: 8 a.m.–8 p.m. in the stricter of Arizona time and the recipient's area-code zone (urgent safety texts excepted).
 - Consent and opt-out logs kept for 5 years.
 - Business consent by sign-up checkbox (E-SIGN), with version and timestamp.
-- The identity voice call says "This is Ask Hava LLC" and gives a callback number.
+- No voice call ever goes to a business (BIZ-046); the homeowner's code call, placed only on her tap, says "This is Ask Hava LLC" and gives a callback number.
 
 **Wording**
 - "Every eligible quote shown, in the order received." "Insurance (business-reported)."
@@ -458,23 +458,23 @@ The list below is the minimum, not the whole set:
 - Licensing per the category list: pest, alarm, inspection and septic jobs go to licensees only.
 - Handyman cap, split-job check, gas and permit block, and the disclosure line.
 - Junk removal and garage doors are off at launch.
-- The Spanish tag is shown only to businesses that ticked "We speak Spanish." The tenant flag reads "Landlord approval may be needed."
+- The Spanish tag is shown only to businesses that ticked "We speak Spanish." There is no tenant flag (D-437).
 
 **Switches and terms**
 - **Settings switches** (owner portal, logged): fee mode (tiers or flat per job type); texting on or off (web-and-email mode); category on or off.
-- **Terms:** the homeowner terms (OK by text, plus "By choosing, you agree" on the quote page) and the business terms (card authorization, refund rules exactly as coded, non-discrimination, handyman certification) are drafted in Phase 1. A test checks that the refund rules in the terms match the code.
+- **Terms:** the homeowner terms (the first text is the consent, CON-004, D-420; "By picking, you agree to the Terms" beside the Pick button) and the business terms (card authorization, refund rules exactly as coded, non-discrimination, handyman certification) are drafted in Phase 1. A test checks that the refund rules in the terms match the code.
 
 ## 11. Testing strategy
 
 | Layer | What | Gate |
 |---|---|---|
 | Unit and property | Fee calculation from the worked examples (including the $150/month → $600 → $75 case), scrubber, keyword matching, eligibility, quiet hours, state transitions | `Ci` |
-| Mutation | mutmut on `payments`, `catalog` and `licensing`: breaking the 4-month rule or the license filter must turn tests red | `Ci` (nightly full run) |
+| Mutation | cargo-mutants on `payments`, `catalog` and `licensing`: breaking the 4-month rule or the license filter must turn tests red | `Ci` (nightly full run) |
 | Integration | Real Postgres in the session; the job queue; outbox and inbox never double-send | `Ci` |
 | Contract | Each stand-in against the vendor's documented API; in Phase 2, the same tests against real sandboxes | `Ci` and Phase 2 |
 | Twin | The updated twin as the oracle. Any failed check makes the run fail (the old twin exited 0 despite failures); each pre-existing warning is explained in K5 | `Twin` |
 | End to end | The four journeys (homeowner, business, operator, vendor outage) in Playwright | `Ci` |
-| Security | Auth matrix, token isolation, brute force, webhook forgery, replay, PII and secret scan, bandit, pip-audit | `Ci` (security step; also gitleaks) |
+| Security | Auth matrix, token isolation, brute force, webhook forgery, replay, PII and secret scan, cargo-audit, cargo-deny | `Ci` (security step; also gitleaks) |
 | Accessibility | §9 | `Ally` |
 | Recovery | Restore drill with replay, no duplicate sends or charges | Phase 2 |
 
@@ -483,8 +483,8 @@ The list below is the minimum, not the whole set:
 ## 12. Quality rules (no AI-made mess)
 
 - **Task scope:** a task touches only the files it owns. Small PRs.
-- **Code limits:** functions under 50 lines, and complexity limits enforced by ruff.
-- **Strict checks:** `mypy --strict` clean. No `# type: ignore` without a reason comment.
+- **Code limits:** functions under 50 lines, and complexity limits enforced by clippy.
+- **Strict checks:** clippy clean with warnings denied and `cargo fmt --check` clean. No `#[allow(...)]` without a reason comment; no `unsafe`.
 - **No mystery code:** no commented-out code, TODOs or unused code on `main`. A cleanup task runs after every stage.
 - **One source of truth:** `docs/architecture.md` and `docs/decisions.md` are updated in the same PR as the change they describe.
 - **Fixing mistakes:** if something breaks `main`, revert it. Don't patch over it.
@@ -495,7 +495,7 @@ The list below is the minimum, not the whole set:
 **Models**
 - **Haiku 5.5:** running tests and summarizing, scans, formatting, docs upkeep.
 - **Sonnet 5.5:** most code.
-- **Opus 5.5:** spec, architecture, money, privacy, security, recovery, reviews of those, and the final audit.
+- **Opus 5.5:** spec, architecture, money, privacy, security and recovery application code, reviews of all work in those areas, and the final audit; test-only, docs and harness work there runs on Sonnet with an Opus reviewer (D-483).
 - **Fable:** not used.
 - Models are named in each task. The runner's own session uses Sonnet at low effort.
 
@@ -507,7 +507,7 @@ The list below is the minimum, not the whole set:
 **Pacing**
 - At full Max 20x limits, around the clock.
 - At a usage limit, wait for the reset; never pay per use.
-- K9 measures usage per task by model, and the schedule is set from that.
+- The runner's pacer (`scripts/pacing.py`, `kit/pacing.json`) estimates each task's cost from the first three measured tasks, keeps working while the next task fits under the five-hour and weekly limits with 10% headroom, and otherwise waits for the recorded reset (D-486).
 
 ## 14. Environments and configuration
 
@@ -524,7 +524,7 @@ All configuration comes from environment variables validated at startup. The app
 
 - `docs/owner-guide.md`: a plain-English guide to how everything works and the daily and weekly checks.
 - `docs/runbook.md`: outages, safe mode, refunds, disputes, complaints, STOP issues, the restore procedure and the incident and breach steps.
-- How to change prices, add or switch off a category, and turn web-and-email mode on or off.
+- How to change prices, add or switch off a category, and turn web-and-email mode on or off; and `docs/changing-the-live-service.md`, one page on how a fix reaches the live Rust service with no programmer (a Claude Code session on the repository, its pull request and plain summary, Ci, Twin and Ally green, merge, then Deploy on the host), noting that a Claude plan is a standing cost for this (D-467).
 - Restore drill results; the final audit report; test results; the accessibility conformance notes and statement.
 - `docs/account-checklist.md`, with Gate C's live-key checklist.
 
@@ -566,22 +566,22 @@ At **claude.ai/code/routines → New task**:
 - **Connectors:** remove all of them (none needed)
 - **Triggers:**
   1. **GitHub event:** Pull request → closed. Filters: base branch equals `main`; is merged equals `true`.
-  2. **Schedule:** Custom, `7 * * * *` (hourly at 7 past the hour).
+  2. **Schedule:** Custom, `50 * * * *` (hourly at 50 past the hour, D-171).
 
 **Prompt** (paste exactly):
 
 ```
-You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now and follow them exactly.
+You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now. The runner code (runner/) does the cycle; you do only the task it hands you (D-486).
 
-Do exactly one cycle:
-1. Fetch branch claude/kit-state and read kit/state.json. If it does not exist yet, the next task is K0 (Appendix B).
-2. Read new files in inbox/ on claude/kit-state. Each is Casey's answer to an owner issue: record it in kit/state.json, clear that wait, and move the file to inbox/done/. To ask Casey anything, write a file to outbox/ (section 7); never post to GitHub directly.
-3. If any task is MERGE_PENDING: if its PR merged with `Ci`, `Twin` and `Ally` green on its head SHA, and main's squash commit has the same tree as that head, mark it DONE. If it failed, apply the failure rules in section 7. If it is still pending, update STATUS.md if stale and stop; never claim a second task while one is pending.
-4. If the build is at a gate or WAITING_FOR_OWNER with no answer yet, or no task is eligible (BLOCKED tasks hold only their dependents), update STATUS.md if stale and stop.
-5. Run the smoke test on main. If main is red, the next task is "fix main".
-6. Claim the next eligible task with a lease (push to claude/kit-state; if the push is rejected, another runner has it, so stop). Renew the lease every 30 minutes.
-7. Run the task through a worker subagent on the model named in the task, check the model and the changed paths, run the fresh-eyes reviewer subagent, then push claude/task/T###-<slug> so the auto-pr workflow opens the pull request with auto-merge.
-8. Update kit/state.json (MERGE_PENDING), STATUS.md and PROGRESS.md on claude/kit-state, then stop.
+Do exactly this:
+1. Run `RUNNER_STARTER=routine python3 -m runner`. It reads claude/kit-state and claude/lease, records inbox answers, resolves MERGE_PENDING, honours gates, the lease, red main and stage exits, and prints a result line and a JSON line.
+2. If the result is anything but `handed_off` (lease_live, idle, merge_pending, gate_open, fix_main, lost_race, state_invalid, ...), stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
+3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models. Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists; commit to the local branch; do not push it.
+4. Run the fresh-eyes reviewer subagent on the reviewer model over the diff and the task's spec files; findings go back to the worker once.
+5. Run `RUNNER_STARTER=routine python3 -m runner --after --worker-agent <worker agent id> --reviewer-agent <reviewer agent id>` (add `--outcome tests_failed --log "<summary>"` if the work failed, `--outcome usage_limit` at a usage limit). The runner checks paths and models itself, records the review, pushes the branch and sets MERGE_PENDING.
+6. While the task runs longer than 30 minutes, run `RUNNER_STARTER=routine python3 -m runner --renew` every 30 minutes.
+7. Never edit kit/state.json, claude/kit-state or claude/lease yourself, never push to main, never force-push. Only the runner writes outbox/; never post to GitHub directly.
+8. Report the runner's output lines and stop.
 
 Never break section 2. Never claim a test passed unless you ran it here.
 ```

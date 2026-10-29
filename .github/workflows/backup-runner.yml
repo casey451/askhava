@@ -1,11 +1,16 @@
-# Backup runner: runs the same Appendix A cycle through the Claude Code GitHub Action
-# (subscription token, not pay-per-use). Off unless kit/state.json on claude/kit-state
-# has "backup_runner": "on" AND the secret CLAUDE_CODE_OAUTH_TOKEN is set.
+# The Actions runner (primary since D-483): runs `python3 -m runner` (D-486) through the Claude Code
+# GitHub Action (subscription token, not pay-per-use) with RUNNER_STARTER=actions, so every state
+# commit names this starter. Off unless kit/state.json on claude/kit-state has "backup_runner": "on"
+# AND the secret CLAUDE_CODE_OAUTH_TOKEN is set. Starts hourly, by hand, and on every PR merged into
+# main, so the next task starts at once instead of at the next hourly tick (BUILD_BRIEF.md:213).
+# The concurrency group keeps two starts from overlapping; the lease on claude/lease is the real lock.
 name: backup-runner
 on:
   schedule:
     - cron: "37 * * * *"
   workflow_dispatch:
+  pull_request:
+    types: [closed]
 permissions:
   contents: read
 concurrency:
@@ -14,6 +19,7 @@ concurrency:
 jobs:
   gate:
     name: gate
+    if: github.event_name != 'pull_request' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -60,27 +66,28 @@ jobs:
     steps:
       # persist-credentials: false so pushes go out as the Claude GitHub App,
       # not as GITHUB_TOKEN.
-      # TODO(K8/K9): verify the action's allowed tools let the runner cycle do its work.
       - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
           persist-credentials: false
       - uses: anthropics/claude-code-action@v1
+        env:
+          RUNNER_STARTER: actions
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: --model claude-sonnet-5-5
+          claude_args: --model claude-sonnet-5-5 --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
           prompt: |
-            You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now and follow them exactly.
+            You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now. The runner code (runner/) does the cycle; you do only the task it hands you (D-486).
 
-            Do exactly one cycle:
-            1. Fetch branch claude/kit-state and read kit/state.json. If it does not exist yet, the next task is K0 (Appendix B).
-            2. Read new files in inbox/ on claude/kit-state. Each is Casey's answer to an owner issue: record it in kit/state.json, clear that wait, and move the file to inbox/done/. To ask Casey anything, write a file to outbox/ (section 7); never post to GitHub directly.
-            3. If any task is MERGE_PENDING: if its PR merged with `Ci`, `Twin` and `Ally` green on its head SHA, and main's squash commit has the same tree as that head, mark it DONE. If it failed, apply the failure rules in section 7. If it is still pending, update STATUS.md if stale and stop; never claim a second task while one is pending.
-            4. If the build is at a gate or WAITING_FOR_OWNER with no answer yet, or no task is eligible (BLOCKED tasks hold only their dependents), update STATUS.md if stale and stop.
-            5. Run the smoke test on main. If main is red, the next task is "fix main".
-            6. Claim the next eligible task with a lease (push to claude/kit-state; if the push is rejected, another runner has it, so stop). Renew the lease every 30 minutes.
-            7. Run the task through a worker subagent on the model named in the task, check the model and the changed paths, run the fresh-eyes reviewer subagent, then push claude/task/T###-<slug> so the auto-pr workflow opens the pull request with auto-merge.
-            8. Update kit/state.json (MERGE_PENDING), STATUS.md and PROGRESS.md on claude/kit-state, then stop.
+            Do exactly this:
+            1. Run `python3 -m runner` (RUNNER_STARTER=actions is already set). It prints a result line and a JSON line.
+            2. If the result is anything but `handed_off`, stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
+            3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models. Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists; commit to the local branch; do not push it.
+            4. Run the fresh-eyes reviewer subagent on the reviewer model over the diff and the task's spec files; findings go back to the worker once.
+            5. Run `python3 -m runner --after --worker-agent <worker agent id> --reviewer-agent <reviewer agent id>` (add `--outcome tests_failed --log "<summary>"` if the work failed, `--outcome usage_limit` at a usage limit).
+            6. While the task runs longer than 30 minutes, run `python3 -m runner --renew` every 30 minutes.
+            7. Never edit kit/state.json, claude/kit-state or claude/lease yourself, never push to main, never force-push.
+            8. Report the runner's output lines and stop.
 
             Never break section 2. Never claim a test passed unless you ran it here.

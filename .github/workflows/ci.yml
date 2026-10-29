@@ -11,19 +11,46 @@ jobs:
   ci:
     name: "Ci"
     runs-on: ubuntu-latest
+    # Postgres for the Rust integration tests (D-453); T169 pins the image by digest.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
       GITLEAKS_VERSION: "8.28.0"
       GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 200
 
       - name: Sources unchanged (fingerprint)
         run: |
           sha256sum -c --quiet kit/sources.sha256
           test "$(find sources -type f | wc -l)" -eq "$(wc -l < kit/sources.sha256)"
           echo "sources/ matches kit/sources.sha256"
+
+      - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
+        run: |
+          # askhava_ci is the service's superuser and runs the migrations here; the two application roles
+          # exist so GRANTs resolve, and askhava_ci is a member of both so tests can SET ROLE (T012 owns the
+          # Railway bootstrap, scripts/bootstrap_roles.sql, which creates the same roles with LOGIN).
+          for role in askhava_app askhava_migrator; do
+            psql "$DATABASE_URL" -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
+              || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
 
       - name: Secret scan (gitleaks, working tree)
         run: |
@@ -36,27 +63,96 @@ jobs:
 
       - name: PII scan
         run: |
-          echo "skipped: PII scanner arrives in K8"
+          python3 scripts/pii_scan.py
+
+      - name: Plan lock and change rules (docs/governance.md)
+        env:
+          HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The checkout keeps no credentials; fetch main with the job token (read-only), masked in logs.
+          git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
+          python3 scripts/check_plan_lock.py
+          python3 scripts/check_pr_change.py --base origin/main --branch "$HEAD_BRANCH"
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Static security scan (bandit)
+      - name: Unit, contract and drill tests (pytest)
         run: |
-          if [ -d app ]; then
-            python3 -m pip install --quiet bandit==1.8.6
-            python3 -m bandit -r app -ll
+          python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
+          python3 -m pytest tests -q -p no:cacheprovider
+
+      - name: A check that exists on main cannot be skipped by deleting its inputs (D-479)
+        run: |
+          for f in Cargo.toml Cargo.lock package-lock.json rust-toolchain.toml deny.toml tests/coverage_floor.json; do
+            if git cat-file -e "origin/main:$f" 2>/dev/null; then
+              test -f "$f" || { echo "$f exists on main but not here: a required check would be skipped"; exit 1; }
+            fi
+          done
+
+      - name: What this change touches (compile only when code changed, D-489)
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          # The nightly (called with the caller's event name, schedule or workflow_dispatch) and every run on main
+          # compile everything. A branch run compiles the Rust
+          # workspace and the npm tree only when the diff against main touches them; the skip guard above has
+          # already failed the run if a compiled input was deleted, so a docs-only change cannot hide one.
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "rust=true" >> "$GITHUB_OUTPUT"; echo "npm=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base="$(git merge-base origin/main HEAD)"
+          files="$(git diff --no-renames --name-only "$base" HEAD)"
+          rust=false; npm=false
+          echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures)/|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          echo "$files" | grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)' && npm=true
+          echo "rust=$rust" >> "$GITHUB_OUTPUT"; echo "npm=$npm" >> "$GITHUB_OUTPUT"
+          echo "rust=$rust npm=$npm"
+
+      - name: Rust source rules (no allow without reason, no wildcard status arms, no TODO or dbg)
+        run: |
+          python3 scripts/check_rust_rules.py
+
+      - name: Approved crates only (kit/allowed_crates.txt, D-479)
+        run: |
+          python3 scripts/check_crates.py
+
+      - name: Rust format, lint and tests (once the workspace exists, D-453)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          if [ -f Cargo.toml ]; then
+            rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
+            cargo fmt --all --check
+            cargo clippy --workspace --all-targets --locked -- -D warnings -F clippy::allow_attributes_without_reason
+            # The binaries' own dependency graph builds with the lockfile (D-481, D-488).
+            cargo build -p askhava-server --locked
+            cargo test --workspace --locked
           else
-            echo "bandit skipped: no app yet"
+            echo "rust checks skipped: no Cargo workspace yet"
           fi
 
-      - name: Dependency audit (pip-audit)
+      - name: Rust dependency audit (cargo-audit, cargo-deny)
+        if: steps.changes.outputs.rust == 'true'
         run: |
-          if [ -f uv.lock ]; then
-            python3 -m pip install --quiet uv pip-audit==2.9.0
-            uv export --frozen --no-hashes -o "$RUNNER_TEMP/requirements.txt"
-            python3 -m pip_audit -r "$RUNNER_TEMP/requirements.txt" --no-deps --disable-pip
+          if [ -f Cargo.lock ]; then
+            cargo install --locked cargo-audit@0.22.2 cargo-deny@0.20.2
+            cargo audit
+            cargo deny check licenses bans sources advisories
           else
-            echo "pip-audit skipped: no app yet"
+            echo "cargo-audit and cargo-deny skipped: no Cargo.lock yet"
+          fi
+
+      - name: TypeScript checks and npm audit
+        if: steps.changes.outputs.npm == 'true'
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts
+            npx tsc --noEmit
+            if [ -f eslint.config.js ]; then npx eslint .; fi
+            npm audit --audit-level=low
+          else
+            echo "npm checks skipped: no package-lock.json yet"
           fi

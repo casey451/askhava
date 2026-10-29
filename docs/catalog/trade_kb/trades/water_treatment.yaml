@@ -1,0 +1,470 @@
+# Ask Hava trade knowledge file: water_treatment
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: water_treatment
+display_name: Water softeners, RO and filters
+summary: Install, repair, service and removal of water softeners, reverse osmosis (RO) drinking water systems, whole-house
+  filters and conditioners (salt-free systems). Lake Havasu City water averages about 19 grains per gallon hardness
+  and about 753 ppm total dissolved solids, so softeners and RO are common; some outlying areas are on EPCOR or
+  wells [LHC-CCR][EPCOR-LH]. Ask Hava learns the job (new, repair, service, remove), system type, where the loop
+  or plumbing is, and the brand from a photo. It never says what water treatment a home should have or makes health
+  claims about water. Licensed work is ROC R-54 Water Conditioning Equipment or CR-54 (also R-37/CR-37 plumbing)
+  [S2][S3]. LHC lists softeners and RO as no-permit items [S17].
+job_types:
+- id: softener_new
+  label: Install a new water softener
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: softener_repair
+  label: Softener not working, not using salt, salt bridge, error, leaking
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: softener_replace
+  label: Replace an old softener
+  site_visit_usually_needed: 'no'
+  handyman_ok: limited
+- id: ro_new
+  label: Install an RO drinking water system
+  site_visit_usually_needed: 'no'
+  handyman_ok: limited
+- id: ro_service
+  label: RO filter change, slow flow, leak, bad taste
+  site_visit_usually_needed: 'no'
+  handyman_ok: limited
+- id: whole_house_filter
+  label: Whole-house filter or salt-free conditioner
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: remove_bypass
+  label: Remove a softener or put it on bypass
+  site_visit_usually_needed: 'no'
+  handyman_ok: limited
+- id: water_test
+  label: Wants water tested for hardness or other things
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: loop_install
+  label: Add a softener loop or drain line (plumbing changes)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: water softener
+  job_type: softener_new
+- phrase: new softener
+  job_type: softener_new
+- phrase: install softener
+  job_type: softener_new
+- phrase: softner
+  job_type: softener_new
+- phrase: water softner
+  job_type: softener_new
+- phrase: hard water
+  job_type: softener_new
+- phrase: white spots on everything
+  job_type: softener_new
+- phrase: scale on faucets
+  job_type: softener_new
+- phrase: softener not working
+  job_type: softener_repair
+- phrase: softener not using salt
+  job_type: softener_repair
+- phrase: salt bridge
+  job_type: softener_repair
+- phrase: softener beeping
+  job_type: softener_repair
+- phrase: softener leaking
+  job_type: softener_repair
+- phrase: brine tank full of water
+  job_type: softener_repair
+- phrase: softener stuck regenerating
+  job_type: softener_repair
+- phrase: replace softener
+  job_type: softener_replace
+- phrase: old softener
+  job_type: softener_replace
+- phrase: softener quote
+  job_type: softener_replace
+- phrase: reverse osmosis
+  job_type: ro_new
+- phrase: ro system
+  job_type: ro_new
+- phrase: drinking water system
+  job_type: ro_new
+- phrase: r/o
+  job_type: ro_new
+- phrase: reverse osmossis
+  job_type: ro_new
+- phrase: filter faucet
+  job_type: ro_new
+- phrase: ro filter change
+  job_type: ro_service
+- phrase: ro filters
+  job_type: ro_service
+- phrase: ro tank slow
+  job_type: ro_service
+- phrase: ro leaking
+  job_type: ro_service
+- phrase: drinking water tastes bad
+  job_type: ro_service
+- phrase: ro faucet dripping
+  job_type: ro_service
+- phrase: whole house filter
+  job_type: whole_house_filter
+- phrase: salt free softener
+  job_type: whole_house_filter
+- phrase: water conditioner
+  job_type: whole_house_filter
+- phrase: carbon filter
+  job_type: whole_house_filter
+- phrase: remove softener
+  job_type: remove_bypass
+- phrase: bypass softener
+  job_type: remove_bypass
+- phrase: take out water softener
+  job_type: remove_bypass
+- phrase: water test
+  job_type: water_test
+- phrase: test my water
+  job_type: water_test
+- phrase: how hard is my water
+  job_type: water_test
+- phrase: softener loop
+  job_type: loop_install
+- phrase: no softener loop
+  job_type: loop_install
+- phrase: add drain for softener
+  job_type: loop_install
+triggers_es:
+- phrase: suavizador de agua
+  job_type: softener_new
+- phrase: ablandador de agua
+  job_type: softener_new
+- phrase: agua dura
+  job_type: softener_new
+- phrase: manchas blancas en la llave
+  job_type: softener_new
+- phrase: el suavizador no sirve
+  job_type: softener_repair
+- phrase: el suavizador no usa sal
+  job_type: softener_repair
+- phrase: fuga en el suavizador
+  job_type: softener_repair
+- phrase: cambiar el suavizador
+  job_type: softener_replace
+- phrase: ósmosis inversa
+  job_type: ro_new
+- phrase: osmosis
+  job_type: ro_new
+- phrase: filtro de agua para tomar
+  job_type: ro_new
+- phrase: cambiar filtros del agua
+  job_type: ro_service
+- phrase: el agua sabe mal
+  job_type: ro_service
+- phrase: filtro para toda la casa
+  job_type: whole_house_filter
+- phrase: quitar el suavizador
+  job_type: remove_bypass
+- phrase: hacer prueba del agua
+  job_type: water_test
+questions:
+- id: q1_job
+  text: What do you need?
+  options:
+  - New system
+  - Fix my system
+  - Filter change or service
+  - Replace an old system
+  - Remove a system
+  - Water test
+  ask_if: always
+  changes_price: 'yes'
+  why: New installs vs service calls are priced very differently. [judgment]
+- id: q2_type
+  text: What kind of system is it?
+  options:
+  - Water softener (uses salt)
+  - RO under the sink
+  - Whole-house filter
+  - Salt-free conditioner
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Sets parts and who works on it. [judgment]
+- id: q3_loop
+  text: Where would it go, or where is it now?
+  options:
+  - Garage, with pipes already there for a softener
+  - Garage, no pipes for one
+  - Outside the home
+  - Under a sink
+  - Not sure
+  ask_if: q1_job in ['New system', 'Replace an old system'] or job_type == loop_install
+  changes_price: 'yes'
+  why: A ready loop and drain make install simpler; new piping is plumbing work. [judgment]
+- id: q4_brand_age
+  text: Can you send a photo of the control head (top part) or label?
+  options:
+  - Sent a photo
+  - No label
+  - Not sure
+  ask_if: q1_job in ['Fix my system', 'Filter change or service', 'Replace an old system']
+  changes_price: 'yes'
+  why: Brand and model tell a business which parts fit. [judgment]
+- id: q5_home
+  text: Who is the water provider?
+  options:
+  - Lake Havasu City
+  - EPCOR
+  - Private well
+  - Not sure
+  ask_if: q1_job in ['New system', 'Water test']
+  changes_price: 'yes'
+  why: Hardness differs a lot between city water (about 19 gpg) and EPCOR (about 6-8 gpg); wells vary. [LHC-CCR][EPCOR-LH]
+quote_without_visit_needs:
+- Softener replacement with photo of the old unit, the loop pipes and the drain [judgment]
+- Under-sink RO install with photo under the kitchen sink and the counter or sink top (for a faucet hole) [judgment]
+- RO filter changes with brand/model photo [judgment]
+site_visit_usually_needed:
+- New softener where no loop exists (plumbing changes) [judgment]
+- Leaks or repeated problems [judgment]
+- Well water treatment (needs testing) [judgment]
+photos_to_request:
+- id: p1_unit
+  ask: A photo of the softener or filter system, including the top control and the salt tank.
+  for_job_types:
+  - softener_repair
+  - softener_replace
+  - whole_house_filter
+  - remove_bypass
+- id: p2_loop
+  ask: A photo of the pipes where the softener goes (often in the garage near the water heater), and any drain nearby.
+  for_job_types:
+  - softener_new
+  - softener_replace
+  - loop_install
+  - whole_house_filter
+- id: p3_under_sink
+  ask: A photo under your kitchen sink with the doors open, and one of the sink top.
+  for_job_types:
+  - ro_new
+  - ro_service
+- id: p4_label
+  ask: A photo of any label with the brand, model or serial.
+  for_job_types:
+  - softener_repair
+  - ro_service
+  - softener_replace
+photo_cues:
+- photo_id: p1_unit
+  look_for:
+  - Control head brand (e.g. Fleck, Clack, Autotrol, brand-name units) [judgment]
+  - Salt level, crust or 'bridge' visible in brine tank [judgment]
+  - Water standing high in brine tank [judgment]
+  - Bypass valve position, if marked [judgment]
+  - Drain line routed to a drain, standpipe or outside [judgment]
+  neutral_wording_example: Single-tank softener with a Fleck-style control; brine tank looks about half full of
+    water.
+- photo_id: p2_loop
+  look_for:
+  - Existing softener loop stubs in garage wall (two capped pipes) [judgment]
+  - Drain or standpipe nearby; outlet for the control [judgment]
+  neutral_wording_example: Two capped pipes in the garage wall next to the water heater; outlet about 3 ft away.
+- photo_id: p3_under_sink
+  look_for:
+  - Space for RO tank; cold supply valve; drain pipe; disposal; extra faucet hole or soap dispenser [judgment]
+  neutral_wording_example: Room under the sink on the left; soap dispenser hole on sink top.
+- photo_id: p4_label
+  look_for:
+  - Brand/model; grain capacity (e.g. 32,000 or 48,000) [judgment]
+  neutral_wording_example: Label shows a 48,000 grain softener.
+photo_red_flags:
+- flag: Water pooling near the softener's plug-in transformer or a garage outlet
+  safety_step_ref: es_water_electric
+emergency_signals:
+- id: es_leak
+  signal: Softener or RO line leaking fast or spraying
+  emergency: depends
+  safety_step: If water is spraying and you can reach the main shut-off safely, turn it off (UA Cooperative Extension
+    says to know where your main valve is for emergencies). Many softeners also have a bypass valve; the owner's
+    manual shows how to use it.
+  source: '[UA-WW][judgment]'
+  then_route_to: water_treatment
+- id: es_water_electric
+  signal: Water near outlets or cords
+  emergency: 'yes'
+  safety_step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power
+    at the main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep
+    power off until an electrician checks it.
+  source: '[S31]'
+  then_route_to: water_treatment
+safety_step:
+- when: Water near outlets or cords
+  step: If water is near outlets, cords or the electrical panel, do not walk into the water. Turn off power at the
+    main breaker only if you can reach it from a dry place; never switch power while standing in water. Keep power
+    off until an electrician checks it.
+  source: '[S31]'
+license_classes:
+- job_type:
+  - softener_new
+  classes:
+  - R-54 Water Conditioning Equipment
+  - CR-54 Water Conditioning Equipment (dual)
+  - R-37 Plumbing, Including Solar
+  - CR-37
+  citation: 'A.A.C. R4-9-103 (R-54: trenching, piping, fittings, valves and controls under 25 volts to install and
+    repair water conditioning equipment, misting systems, exchange tanks and indirect waste pipe for brine, backwash
+    and rinse water); R4-9-104 (CR-54); C-37 scope includes water conditioning equipment [S1]'
+  other_agency: null
+  notes: Same classes for all job types. R-54 is limited to the work 'required' for the water conditioning equipment,
+    so new loop or drain piping beyond that may be plumbing (R-37) work [S2][judgment].
+- job_type:
+  - loop_install
+  classes:
+  - R-37
+  - R-37R Plumbing
+  - CR-37
+  - CR-54 (if required for the equipment)
+  citation: R4-9-103; R4-9-104
+  other_agency: null
+  notes: '[judgment] on the boundary between R-54 and R-37.'
+handyman_ok:
+  allowed_examples:
+  - RO filter cartridge change, under $1,000 [judgment]
+  - Like-for-like softener swap on an existing loop, under $1,000 total including the unit (LHC lists softeners
+    and RO as no-permit) [S17][S4][judgment]
+  - Adding salt, cleaning a brine tank [judgment]
+  not_allowed_examples:
+  - Any job $1,000 or more (most new softener installs with equipment) [S4]
+  - New loop or drain piping that needs a permit [S17][judgment]
+  - Part of a larger plumbing job [S4]
+  rule_reminder: 'A person without an ROC license may take a job only if ALL are true: total price (labor + materials
+    + everything) is under $1,000; the work is casual, minor or inconsequential; no local building permit is required;
+    it is not part of a larger job or split up to stay under $1,000; and any ad says ''not a licensed contractor''.
+    The exemption never covers work that connects to natural gas, propane or other fuel gas, or fire-safety work
+    such as hardwired/interconnected smoke alarms. Source: A.R.S. 32-1121(A)(14) and (D) [S4]. In Lake Havasu City,
+    check the city permit list: a needed permit removes the exemption [S17].'
+local_notes:
+- 'City water: hardness average about 19 gpg (range 18-20, about 325 mg/L) and TDS about 753 ppm, above the EPA
+  500 ppm secondary (taste/aesthetic) guideline [LHC-CCR].'
+- EPCOR's Lake Havasu system reports about 6-8 gpg; EPCOR's scale calls over 10.5 gpg very hard [EPCOR-LH].
+- 'UA Water Wise: softeners use water to regenerate (about 15-120 gallons per 1,000 gallons treated); options include
+  bypassing outdoor taps and the kitchen faucet, or using potassium chloride [UA-WW].'
+- 'UA Water Wise: RO units can send about 2-20 gallons to the drain per gallon of drinking water [UA-WW].'
+- Many Havasu homes have a softener loop in the garage near the water heater [judgment].
+- Water heater and tankless owners often ask about softeners because of scale; Ask Hava never says a softener will
+  fix or prevent anything [RHEEM-UC][RINNAI-RE][judgment].
+- Never make health claims about tap water; point to the city's water quality report if asked [LHC-CCR][judgment].
+sample_card: 'REQ-0185 | Water treatment | Lake Havasu City, south
+
+  Replace softener on existing garage loop; old unit photo shows 48,000 grain label.
+
+  City water. Homeowner also asks about an under-sink RO.'
+test_messages:
+- id: water_treatment_t01
+  message: softner not using any salt for weeks
+  trade: water_treatment
+  job_type: softener_repair
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Can you send a photo of the top control and the inside of the salt tank?
+  note: ''
+- id: water_treatment_t02
+  message: how much for RO under kitchen sink
+  trade: water_treatment
+  job_type: ro_new
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Can you send a photo under your kitchen sink and one of the sink top?
+  note: Never price.
+- id: water_treatment_t03
+  message: white crust on all my faucets and shower glass what do i do
+  trade: water_treatment
+  job_type: softener_new
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Do you have a water softener now?
+  note: Do not diagnose or advise; offer a card.
+- id: water_treatment_t04
+  message: quiero un suavizador de agua nuevo
+  trade: water_treatment
+  job_type: softener_new
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: ¿Ya tiene tubos en el garaje para un suavizador, o no hay?
+  note: Spanish.
+- id: water_treatment_t05
+  message: softener leaking water all over the garage floor near outlet
+  trade: water_treatment
+  job_type: softener_repair
+  emergency: 'yes'
+  first_question_id: null
+  ideal_first_question: Is the water near the outlet or cord, and can you reach the main water shut-off safely?
+  note: Electric step first.
+- id: water_treatment_t06
+  message: is my water safe to drink
+  trade: water_treatment
+  job_type: water_test
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Would you like a local business to quote a water test? You can also read the city's water
+    quality report.
+  note: No health claims.
+- id: water_treatment_t07
+  message: RO tank takes forever to fill and faucet drips
+  trade: water_treatment
+  job_type: ro_service
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Can you send a photo of the RO system's label or filters?
+  note: ''
+- id: water_treatment_t08
+  message: need my softener removed and a water heater flush
+  trade: water_treatment
+  job_type: remove_bypass
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is the softener in the garage on a loop, and would you like a separate card for the water
+    heater?
+  note: Mixed; second card water_heater.
+- id: water_treatment_t09
+  message: drip irrigation clogged with white stuff
+  trade: landscaping_irrigation
+  job_type: drip_repair
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is it a drip system in the yard, and how many zones?
+  note: Wrong trade.
+- id: water_treatment_t10
+  message: REQ-0186 water stuff
+  trade: water_treatment
+  job_type: softener_repair
+  emergency: 'no'
+  first_question_id: null
+  ideal_first_question: Is this about a softener, a drinking water filter, or something else?
+  note: Vague.
+sources:
+- '[S1] (foundation/sources_foundation.md) A.A.C. R4-9-102 Commercial contracting classifications (Cornell LII copy,
+  amended through 23 A.A.R. 2525, eff. 11/5/2017): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-102'
+- '[S2] (foundation/sources_foundation.md) A.A.C. R4-9-103 Residential contracting classifications (Cornell LII
+  copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] (foundation/sources_foundation.md) A.A.C. R4-9-104 Dual licensing classifications (Cornell LII copy): https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] (foundation/sources_foundation.md) A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman
+  exemption and (D) fire-safety and fuel-gas carve-outs): https://www.azleg.gov/ars/32/01121.htm'
+- '[S17] (foundation/sources_foundation.md) Lake Havasu City Building Division, permit-required and no-permit lists
+  (2024 I-codes, 2023 NEC): https://www.lhcaz.gov/development-permitting/building'
+- '[LHC-CCR] (trade-only source) Lake Havasu City 2025 Annual Drinking Water Quality Report, system AZ0408022 (hardness
+  avg 19 gpg, range 18-20; TDS avg 753 ppm), lhcaz.gov'
+- '[EPCOR-LH] (trade-only source) EPCOR Water Arizona, Lake Havasu system water quality (hardness 6-8 gpg; EPCOR
+  scale >10.5 gpg = very hard), epcor.com'
+- '[UA-WW] (trade-only source) University of Arizona Cooperative Extension, Water Wise: swamp cooler maintenance,
+  cool rules, softeners, RO, leaks: https://waterwise.arizona.edu/ways-save-water/water-saving-tips/swamp-cooler-maintenance'
+- '[S31] (foundation/sources_foundation.md) CDC, Protect yourself from electrical hazards after a disaster / Reentering
+  your flooded home (turn off main only if you can reach it from a dry place; never stand in water to switch power):
+  https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-from-electrical-hazards.html'
+- '[RHEEM-UC] (trade-only source) Rheem gas water heater Use & Care manual AP21831 (What to do if you smell gas;
+  hydrogen gas after 2+ weeks unused; emergency shutdown; do not use if any part was under water; do not install
+  where ambient exceeds 125 F): https://files.rheem.com/blobazrheem/wp-content/uploads/sites/2/AP21831-Rev-2-SHEG-TriBrand-UC.pdf'
+- '[RINNAI-RE] (trade-only source) Rinnai RE-series tankless Installation and Operation Manual 100000722 (water
+  quality table: total hardness up to 200 mg/L; scale damage tied to water quality; manufactured-home installs must
+  meet 24 CFR 3280): https://media.rinnai.us/salsify_asset/s-4c0f42d2-4a9d-40d2-a189-d4f84bee5509/100000722(02)%20RE%20Installation%20and%20Operation%20Manual.pdf'

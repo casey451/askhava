@@ -1,0 +1,184 @@
+# AI smell: words, patterns and design habits that make copy or a page read as machine-made (WORD-027, D-452).
+# scripts/check_ai_smell.py fails on any hit in customer-facing words or pages. docs/voice.md says what to write instead.
+# A hit is fixed by rewriting the line in plain words, never by adding an exemption. Exemptions are only for
+# wording the spec fixes for legal or safety reasons, listed by requirement ID under "exempt_requirements".
+
+schema: 1
+
+# Whole words or phrases, matched case-insensitively at word boundaries ("elevate" also catches "elevated").
+words:
+  # brochure verbs
+  - seamless
+  - effortless
+  - elevate
+  - empower
+  - unlock
+  - streamline
+  - leverage
+  - revolutionize
+  - transform your
+  - supercharge
+  - embark
+  - delve
+  - dive in
+  - deep dive
+  - navigate
+  - harness
+  - unleash
+  - discover the
+  # brochure adjectives
+  - robust
+  - tailored
+  - curated
+  - bespoke
+  - handpicked
+  - hand-picked
+  - premier
+  - ultimate
+  - unparalleled
+  - unmatched
+  - exceptional
+  - world-class
+  - cutting-edge
+  - state-of-the-art
+  - top-notch
+  - next-level
+  - game-changer
+  - game changer
+  - one-stop
+  - holistic
+  - comprehensive
+  - meticulous
+  - crafted
+  - vibrant
+  - nestled
+  - ever-evolving
+  - magic
+  - magical
+  # brochure nouns
+  - journey
+  - landscape
+  - realm
+  - testament
+  - synergy
+  - solution
+  - peace of mind
+  - at your fingertips
+  - the best part
+  # comfort phrases
+  - hassle-free
+  - worry-free
+  - stress-free
+  - rest assured
+  - rest easy
+  - look no further
+  - say goodbye
+  - no more guesswork
+  - we've got you
+  - got you covered
+  # gushing
+  - we're thrilled
+  - we're excited
+  - we're delighted
+  - we'd love to
+  - we're here to help
+  - happy to help
+  - passionate
+  - feel free to
+  - don't hesitate
+  - simply
+  # pro-speak and polish
+  - seasoned
+  - side by side
+  - like a pro
+  - pro-level
+  - all in one place
+  - done right
+  - local experts
+  - trusted local
+  - quick and easy
+  - fast and easy
+  - easy as
+  - a few taps
+  - the hard part
+  - we take care of
+  - so you can focus
+  - what matters
+  - no strings attached
+  - with confidence
+  - hire with
+  - your time is
+  - 100%
+  # throat-clearing
+  - in today's
+  - whether you're
+  - here's the thing
+  - it's worth noting
+  - let's face it
+  - imagine a
+  - the truth is
+  - in a world
+
+# Regular expressions (Python syntax, case-insensitive). Each has a name, the pattern and what to do instead.
+patterns:
+  - name: em dash
+    regex: "—|\\s–\\s|\\s--\\s"
+    fix: Use a period or a comma. People texting don't type dashes.
+  - name: not just X but Y
+    regex: "\\bnot (just|only|merely) [^.?!]{1,40}(,|;)? ?(but|it's|it is)\\b"
+    fix: Say the one thing that is true.
+  - name: it's not X, it's Y
+    regex: "\\b(it's|it is|this is|that's) not [^.?!]{1,40}[,;] ?(it's|it is|this is|that's)\\b"
+    fix: Say what it is.
+  - name: three-beat slogan
+    regex: "(?:^|[.?!]\\s+)(?:[A-Za-z']+\\s?){1,4}[.!]\\s+(?:[A-Za-z']+\\s?){1,4}[.!]\\s+(?:[A-Za-z']+\\s?){1,4}[.!](?:\\s|$)"
+    fix: Write it as one plain sentence ("Text us the job and you'll get quotes from local businesses.").
+  - name: from X to Y range
+    regex: "\\b(everything )?from (a |an |the )?[a-z]+ [a-z]+ to (a |an |the )?[a-z]+ [a-z]+\\b"
+    fix: Name the actual jobs, or leave the list out.
+  - name: exclamation mark
+    regex: "!"
+    fix: A calm period. Excitement reads as a sales pitch.
+  - name: emoji
+    regex: "[\U0001F300-\U0001FAFF☀-⛿✨⭐]"
+    fix: Words only.
+  - name: rhetorical opener
+    regex: "(?:^|[.!]\\s)(need|looking for|tired of|ready to|want) [^.?!]{1,40}\\?"
+    fix: Start with what we do or what happens next.
+  - name: colon reveal
+    regex: "\\b(the result|the best part|the secret|here's how|the difference|the catch)\\s?:"
+    fix: Just say it.
+
+# Page habits that read as generated (checked in .html and .css files only).
+design_patterns:
+  - name: linear gradient
+    regex: "linear-gradient\\("
+    fix: Flat color or a real texture. The two wall-wash lights are radial-gradient only (DESIGN_SPEC section 5).
+    allow_in: ["docs/design/reference/", "app/site/static/site.css"]
+  - name: colored left border accent
+    regex: "border-left\\s*:\\s*[2-9]px"
+    fix: Use spacing or a rule line, not a stripe.
+  - name: badge or pill
+    regex: "class=\"[^\"]*\\b(badge|pill|chip|tag)\\b"
+    fix: Plain text. No labels that look like stickers.
+  - name: icon font or sparkle
+    regex: "(font-awesome|material-icons|lucide|heroicons|sparkle)"
+    fix: Words only. Icons only where a real control needs one.
+
+# Requirements whose exact words are fixed for legal or safety reasons; their quoted text is not scanned.
+exempt_requirements:
+  - INT-004   # the 911 text
+  - INT-037   # the 911 text, Spanish
+  - CON-018   # the HELP reply carriers require
+
+# Rows whose quotes are examples of what someone else types, or lists of banned words, not our copy.
+not_copy_requirements:
+  - INT-012   # examples of homeowner replies ("Yes!")
+  - WORD-026  # lists words business copy must never use ("unlock")
+  - WORD-027  # names the AI-smell examples it bans
+  - WORD-028  # describes the cold read
+
+# Phrases the spec requires verbatim that contain a listed word; each names the requirement that fixes it.
+allowed_phrases:
+  - phrase: "Ask Hava is not a contractor and does not perform, bid on or supervise work"
+    requirement: WORD-002

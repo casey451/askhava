@@ -1,0 +1,415 @@
+# Ask Hava trade knowledge file: pool_cleaning
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: pool_cleaning
+display_name: Pool cleaning
+summary: 'Routine pool and spa service: weekly or every-other-week cleaning (skim, brush, vacuum, empty baskets),
+  water testing and chemical balance, filter cleaning, green-pool cleanups, and acid washes or tile-line descaling.
+  Havasu''s hard water (about 19 grains per gallon) and hot summers drive calcium buildup and fast algae growth.
+  Ask Hava collects pool size, filter type, sanitizer and condition, then sends an anonymous job card.'
+job_types:
+- id: weekly_service
+  label: Ongoing weekly or every-other-week service
+- id: one_time_clean
+  label: One-time cleaning (move-in, party, after storm)
+- id: green_pool
+  label: Green, cloudy or black water cleanup
+- id: filter_clean
+  label: Filter cartridge clean or DE / sand filter service
+- id: tile_descale
+  label: Calcium scale removal on tile line (bead blasting or hand)
+  site_visit_usually_needed: 'yes'
+- id: drain_acid_wash
+  label: Drain and refill or acid wash
+  site_visit_usually_needed: 'yes'
+- id: vacation_service
+  label: Service while away / seasonal home check
+triggers_en:
+- phrase: pool guy
+  job_type: weekly_service
+- phrase: pool service
+  job_type: weekly_service
+- phrase: weekly pool
+  job_type: weekly_service
+- phrase: pool cleaner
+  job_type: null
+- phrase: clean my pool
+  job_type: null
+- phrase: skim
+  job_type: null
+- phrase: vacuum
+  job_type: null
+- phrase: chlorine
+  job_type: null
+- phrase: chemicals
+  job_type: null
+- phrase: balance
+  job_type: null
+- phrase: green pool
+  job_type: green_pool
+- phrase: cloudy
+  job_type: green_pool
+- phrase: algae
+  job_type: green_pool
+- phrase: black algae
+  job_type: green_pool
+- phrase: mustard algae
+  job_type: green_pool
+- phrase: filter clean
+  job_type: filter_clean
+- phrase: cartridge clean
+  job_type: filter_clean
+- phrase: drain and fill
+  job_type: drain_acid_wash
+- phrase: acid wash
+  job_type: drain_acid_wash
+- phrase: calcium
+  job_type: tile_descale
+- phrase: scale
+  job_type: tile_descale
+- phrase: tile cleaning
+  job_type: tile_descale
+- phrase: bead blast
+  job_type: tile_descale
+- phrase: leaves in pool
+  job_type: one_time_clean
+- phrase: dust storm
+  job_type: one_time_clean
+- phrase: monsoon mess
+  job_type: one_time_clean
+triggers_es:
+- phrase: limpieza de alberca
+  job_type: null
+- phrase: limpiar la piscina
+  job_type: null
+- phrase: servicio semanal
+  job_type: weekly_service
+- phrase: el que limpia la alberca
+  job_type: weekly_service
+- phrase: cloro
+  job_type: null
+- phrase: químicos
+  job_type: null
+- phrase: agua verde
+  job_type: green_pool
+- phrase: agua turbia
+  job_type: green_pool
+- phrase: alga
+  job_type: green_pool
+- phrase: limpiar el filtro
+  job_type: filter_clean
+- phrase: vaciar la alberca
+  job_type: drain_acid_wash
+- phrase: lavado con ácido
+  job_type: drain_acid_wash
+- phrase: sarro
+  job_type: tile_descale
+- phrase: calcio
+  job_type: tile_descale
+questions:
+- id: service_type
+  text: What do you need?
+  options:
+  - Weekly service
+  - Every other week
+  - One-time clean
+  - Green or cloudy pool cleanup
+  - Tile scale / acid wash / drain
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+- id: water_condition
+  text: How does the water look today?
+  options:
+  - Clear
+  - A little cloudy
+  - Green but can see the floor
+  - Green, can't see the floor
+  - Black or swampy
+  ask_if: service_type in [One-time clean, Green or cloudy pool cleanup, Weekly service, Every other week]
+  changes_price: 'yes'
+- id: pool_size
+  text: About how big is the pool?
+  options:
+  - Small (under 12,000 gal)
+  - Medium (12,000-20,000 gal)
+  - Large (over 20,000 gal)
+  - Pool plus attached spa
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+- id: filter_type
+  text: What filter do you have?
+  options:
+  - Cartridge
+  - DE
+  - Sand
+  - Not sure - photo
+  ask_if: service_type != Tile scale / acid wash / drain
+  changes_price: 'yes'
+- id: sanitizer
+  text: How is it chlorinated?
+  options:
+  - Salt system
+  - Chlorine tabs / liquid
+  - Other (mineral, ozone, UV)
+  - Not sure
+  ask_if: always
+  changes_price: 'no'
+- id: chemicals_included
+  text: Should chemicals be part of the quote?
+  options:
+  - Yes, include chemicals
+  - No, I buy my own
+  - Either is fine
+  ask_if: service_type in [Weekly service, Every other week]
+  changes_price: 'yes'
+quote_without_visit_needs:
+- Pool size or rough length and width
+- Photo of the water from the deck
+- Photo of filter and equipment pad
+- Service frequency wanted
+- Trees or desert plants dropping debris nearby
+- Gate access / dogs [judgment]
+site_visit_usually_needed:
+- drain_acid_wash
+- tile_descale (to see scale thickness)
+photos_to_request:
+- id: p1
+  ask: Pool water from the deck in daylight
+  for_job_types:
+  - all
+- id: p2
+  ask: Whole pool showing trees or palms nearby
+  for_job_types:
+  - all
+- id: p3
+  ask: Equipment pad and filter
+  for_job_types:
+  - all
+- id: p4
+  ask: Tile line close up
+  for_job_types:
+  - all
+- id: p5
+  ask: Salt system display if any
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Water color and whether the main drain is visible
+  - 'Thick white or gray scale on tile line [judgment: Havasu hard water]'
+  - Palms, palo verde or mesquite dropping debris
+  - Dark spots on plaster that may be black algae [judgment]
+  - Cartridge vs DE vs sand filter
+photo_red_flags:
+- flag: Can't see bottom (drowning hazard; keep kids and pets out) [judgment]
+  safety_step_ref: null
+- flag: Broken or missing drain cover
+  safety_step_ref: es_missing_drain_cover
+- flag: Open or broken pool gate
+  safety_step_ref: null
+- flag: Chemical buckets stored together or leaking
+  safety_step_ref: es_fumes_or_smoke_from_stored_poo
+- flag: Exposed wiring at equipment
+  safety_step_ref: null
+emergency_signals:
+- id: es_child_or_pet_missing_near_a_po
+  signal: Child or pet missing near a pool with murky water
+  emergency: 'yes'
+  safety_step: Call 911 now and check the pool first.
+  source: CPSC Pool Safely, VGBA and layers of protection - https://www.poolsafely.gov/wp-content/uploads/2016/04/vgba.pdf
+  then_route_to: pool_cleaning
+- id: es_fumes_or_smoke_from_stored_poo
+  signal: Fumes or smoke from stored pool chemicals
+  emergency: 'yes'
+  safety_step: Move everyone away to fresh air. Do not mix chemicals or add water to them. Call 911 for a fire or
+    someone who is sick, or Poison Help [number removed, see source].
+  source: CDC, Pool Chemical Safety - https://www.cdc.gov/healthy-swimming/toolkit/pool-chemical-safety.html ; EPA
+    Chemical Safety Alert, Safe storage and handling of swimming pool chemicals - https://www.epa.gov/sites/default/files/2013-11/documents/spalert.pdf
+  then_route_to: pool_cleaning
+- id: es_shock_or_tingle_in_the_water
+  signal: Shock or tingle in the water
+  emergency: 'yes'
+  safety_step: Get out without using a metal ladder; turn off power if someone else is in trouble; call 911; do
+    not jump in.
+  source: CPSC, Don't Swim with Shocks (electrical safety in and around pools, hot tubs and spas) - https://www.cpsc.gov/Safety-Education/Safety-Guides/Sports-Fitness-and-Recreation/Pools-and-Spas
+  then_route_to: pool_cleaning
+- id: es_missing_drain_cover
+  signal: Missing drain cover
+  emergency: 'yes'
+  safety_step: Keep everyone out of the pool until it is replaced.
+  source: CPSC, Pool and Spa Drain Covers FAQ (VGBA) - https://www.cpsc.gov/FAQ/Pool-and-Spa-Drain-Covers
+  then_route_to: pool_cleaning
+safety_step:
+- when: Chemical fumes, spill or smoke
+  step: Move everyone away to fresh air. Do not mix chemicals or add water to them. Call 911 for a fire or someone
+    who is sick, or Poison Help [number removed, see source].
+  source: CDC, Pool Chemical Safety - https://www.cdc.gov/healthy-swimming/toolkit/pool-chemical-safety.html ; EPA
+    Chemical Safety Alert, Safe storage and handling of swimming pool chemicals - https://www.epa.gov/sites/default/files/2013-11/documents/spalert.pdf
+- when: Murky water and a child or pet is missing
+  step: Call 911 now and check the pool first.
+  source: CPSC Pool Safely, VGBA and layers of protection - https://www.poolsafely.gov/wp-content/uploads/2016/04/vgba.pdf
+- when: Shock or tingle in water
+  step: Get out without using a metal ladder; turn off power if someone else is in trouble; call 911; do not jump
+    in.
+  source: CPSC, Don't Swim with Shocks (electrical safety in and around pools, hot tubs and spas) - https://www.cpsc.gov/Safety-Education/Safety-Guides/Sports-Fitness-and-Recreation/Pools-and-Spas
+- when: Missing or broken drain cover
+  step: Keep everyone out of the pool until it is replaced.
+  source: CPSC, Pool and Spa Drain Covers FAQ (VGBA) - https://www.cpsc.gov/FAQ/Pool-and-Spa-Drain-Covers
+license_classes:
+- job_type:
+  - weekly_service
+  - one_time_clean
+  - green_pool
+  - vacation_service
+  work: Cleaning, brushing, vacuuming, adding chemicals, testing water
+  classes:
+  - No ROC license class covers cleaning only [judgment]. Using an over-the-counter antimicrobial (like chlorine)
+    to treat a pool does not need a pest management license.
+  citation: A.R.S. 3-3611 Pest license and registration exemptions (owner-occupant; OTC antimicrobial to treat a
+    swimming pool) - https://www.azleg.gov/ars/3/03611.htm
+  other_agency: null
+  notes: ''
+- job_type:
+  - filter_clean
+  work: Minor equipment repair during service (motor swap, valve, salt cell replacement)
+  classes:
+  - R-6 / CR-6 Swimming Pool Service and Repair, or the handyman exemption if it fits
+  citation: A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+    ; A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+    fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm; A.A.C. R4-9-104 [S3] (CR- dual classes)
+  other_agency: null
+  notes: ''
+- job_type:
+  - drain_acid_wash
+  - tile_descale
+  work: Full replaster or pebble
+  classes:
+  - R-36 Plastering, B-5/B-6 (not R-6)
+  citation: A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+  other_agency: null
+  notes: ''
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: 'Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit,
+    is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)),
+    and ads say ''not a licensed contractor''. Source: A.R.S. 32-1121(A)(14), (C), (D) [S4]; foundation/az_license_master.md
+    section 4.'
+  note: 'Yes for cleaning and chemicals (no ROC license class for that [judgment]). For repairs done during service,
+    A.R.S. 32-1121(A)(14): a person may do ''casual or minor'' work without an ROC license only if the whole job
+    (labor, materials, everything) is under $1,000, no building permit is needed, it is not part of a larger job
+    or split up to get under the limit, and their ads say ''not a licensed contractor''. Per 32-1121(D) the exemption
+    never covers work that connects to natural gas, propane or other fuel gas, or hardwired/interconnected fire-safety
+    devices. Lake Havasu City''s permit list decides whether a permit is needed (https://www.lhcaz.gov/development-permitting/building).'
+local_notes:
+- 'Hard water: about 19 grains per gallon, so scale builds on tile and salt cells. Source: Lake Havasu City annual
+  drinking water quality report (total hardness about 19 grains per gallon, range 18-20) - https://www.lhcaz.gov/DocumentCenter/View/3233'
+- Wind and summer monsoon dust storms can dump dirt and debris into pools [judgment].
+- Many homes are second homes or winter-visitor homes, so 'service while away' requests are common [judgment].
+- 'Draining pools: city rules on where pool water may go were not checked; businesses handle this [judgment / open
+  question].'
+sample_card: 'REQ-0207 | Weekly pool service
+
+  Lake Havasu City, south side
+
+  Medium pool, cartridge filter, salt system. Wants weekly service with chemicals.
+
+  Water clear today. Photos attached.'
+test_messages:
+- id: pool_cleaning_t01
+  message: need a pool guy weekly. salt pool
+  trade: pool_cleaning
+  job_type: weekly_service
+  emergency: 'no'
+  first_question_id: pool_size
+  ideal_first_question: About how big is the pool?
+  note: ''
+- id: pool_cleaning_t02
+  message: POOL IS GREEN. like swamp green. having people over sat
+  trade: pool_cleaning
+  job_type: green_pool
+  emergency: 'no'
+  first_question_id: water_condition
+  ideal_first_question: How does the water look today?
+  note: ''
+- id: pool_cleaning_t03
+  message: pool
+  trade: pool_cleaning
+  job_type: unknown
+  emergency: 'no'
+  first_question_id: service_type
+  ideal_first_question: What do you need?
+  note: job_type unknown = too vague; the first question picks the job type.
+- id: pool_cleaning_t04
+  message: Busco alguien que limpie mi alberca cada semana
+  trade: pool_cleaning
+  job_type: weekly_service
+  emergency: 'no'
+  first_question_id: pool_size
+  ideal_first_question: About how big is the pool?
+  note: ''
+- id: pool_cleaning_t05
+  message: tile has thick white crust, can u blast it off
+  trade: pool_cleaning
+  job_type: tile_descale
+  emergency: 'no'
+  first_question_id: pool_size
+  ideal_first_question: About how big is the pool?
+  note: ''
+- id: pool_cleaning_t06
+  message: we're snowbirds, need someone to watch pool april to october
+  trade: pool_cleaning
+  job_type: vacation_service
+  emergency: 'no'
+  first_question_id: pool_size
+  ideal_first_question: About how big is the pool?
+  note: ''
+- id: pool_cleaning_t07
+  message: weekly cleaning plus pump is leaking under the lid
+  trade: pool_cleaning
+  job_type: weekly_service
+  emergency: 'no'
+  first_question_id: service_type
+  ideal_first_question: What do you need?
+  note: ''
+- id: pool_cleaning_t08
+  message: pump motor died need new one
+  trade: pool_spa_repair
+  job_type: pump_motor
+  emergency: 'no'
+  first_question_id: repair_or_replace
+  ideal_first_question: Do you want it fixed or are you open to new equipment?
+  note: ''
+- id: pool_cleaning_t09
+  message: smoke coming out of my chlorine bucket in the garage
+  trade: pool_cleaning
+  job_type: weekly_service
+  emergency: 'yes'
+  first_question_id: safety_step_first
+  ideal_first_question: '[safety_step_first] Give the matching safety step first; ask intake questions only after
+    everyone is safe.'
+  note: ''
+- id: pool_cleaning_t10
+  message: el agua está turbia y verde, no se ve el fondo
+  trade: pool_cleaning
+  job_type: green_pool
+  emergency: 'no'
+  first_question_id: pool_size
+  ideal_first_question: About how big is the pool?
+  note: ''
+sources:
+- A.R.S. 3-3611 Pest license and registration exemptions (owner-occupant; OTC antimicrobial to treat a swimming
+  pool) - https://www.azleg.gov/ars/3/03611.htm
+- A.A.C. R4-9-103 Residential contractor license classes (Cornell LII copy) - https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103
+- A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), pest (A)(8), gardener (A)(16),
+  fuel-gas carve-out (D)) - https://www.azleg.gov/ars/32/01121.htm
+- CDC, Pool Chemical Safety - https://www.cdc.gov/healthy-swimming/toolkit/pool-chemical-safety.html
+- EPA Chemical Safety Alert, Safe storage and handling of swimming pool chemicals - https://www.epa.gov/sites/default/files/2013-11/documents/spalert.pdf
+- CPSC, Don't Swim with Shocks (electrical safety in and around pools, hot tubs and spas) - https://www.cpsc.gov/Safety-Education/Safety-Guides/Sports-Fitness-and-Recreation/Pools-and-Spas
+- CPSC, Pool and Spa Drain Covers FAQ (VGBA) - https://www.cpsc.gov/FAQ/Pool-and-Spa-Drain-Covers
+- CPSC Pool Safely, VGBA and layers of protection - https://www.poolsafely.gov/wp-content/uploads/2016/04/vgba.pdf
+- Lake Havasu City annual drinking water quality report (total hardness about 19 grains per gallon, range 18-20)
+  - https://www.lhcaz.gov/DocumentCenter/View/3233

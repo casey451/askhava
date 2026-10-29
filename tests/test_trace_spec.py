@@ -126,3 +126,78 @@ def test_repository_spec_is_traceable() -> None:
     report = trace_spec.run(REPO_ROOT)
     assert report.errors == []
     assert len(report.requirements) > 0
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The page says \"Our pros are local.\"",
+        "The text says \"We'll send a plumber tonight.\"",
+        "The card says \"Book now.\"",
+        "The portal shows \"Booked until Friday\".",
+        "The page says \"Hire through us.\"",
+        "The page says \"Businesses work through Ask Hava.\"",
+        "The email says \"Job assigned to you.\"",
+        "The page says \"Our network of service providers.\"",
+        "The terms say \"We guarantee the work.\"",
+        "The text says \"We found you a pro.\"",
+        "The terms say \"Businesses are subcontractors.\"",
+        "The quote page says \"Our price is fair.\"",
+        "El texto dice \"nuestros profesionales\".",
+        "El texto dice \"le enviaremos un plomero\".",
+    ],
+)
+def test_not_a_contractor_wording_fails(tmp_path: Path, text: str) -> None:
+    errors = errors_for(tmp_path, f"- **TST-001** {text} Source: `src.md:3`.\n")
+    assert any("implies Ask Hava is a contractor (WORD-022)" in e for e in errors), errors
+
+
+def test_quote_relay_wording_passes(tmp_path: Path) -> None:
+    body = (
+        "- **TST-001** The page says \"Ask Hava is not a contractor. We pass along your request "
+        "and show you quotes from independent local businesses, as they wrote them. You choose, "
+        "and you hire the business directly.\" and \"Ask Hava sends your request to the "
+        "businesses.\" Source: `src.md:3`.\n"
+    )
+    assert errors_for(tmp_path, body) == []
+
+
+def test_wording_rules_may_quote_banned_phrases(tmp_path: Path) -> None:
+    """The rules that ban the phrases (D-360) quote them without failing the check."""
+    body = '- **WORD-022** No page says "our pros" or "book". Source: `src.md:3`.\n'
+    root = make_repo(tmp_path, body, prefix="WORD")
+    assert trace_spec.run(root).errors == []
+    assert trace_spec.WORDING_RULE_IDS == {
+        "WORD-011",
+        "WORD-020",
+        "WORD-022",
+        "WORD-023",
+        "TERMS-012",
+        "TERMS-026",
+        "TERMS-027",
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The policy says \"We connect you with the business you choose.\"",
+        "The site says \"Ask Hava connects homeowners with local pros.\"",
+        "The trademark says \"consumer referral services\".",
+        "The campaign says \"a referral network\".",
+    ],
+)
+def test_banned_description_fails(tmp_path: Path, text: str) -> None:
+    """WORD-023 (D-377): "connect you with" and referral-network wording fail the check."""
+    errors = errors_for(tmp_path, f"- **TST-001** {text} Source: `src.md:3`.\n")
+    assert any("WORD-022" in e for e in errors), errors
+
+
+def test_honest_description_passes(tmp_path: Path) -> None:
+    """WORD-023 (D-377): the one honest description passes."""
+    body = (
+        "- **TST-001** The site says \"Ask Hava is a quote-request service; the business the "
+        "homeowner chooses pays Ask Hava a set introduction fee.\" and \"isn't connected to "
+        "any business with Hava in its name\". Source: `src.md:3`.\n"
+    )
+    assert errors_for(tmp_path, body) == []

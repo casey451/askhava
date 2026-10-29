@@ -1,0 +1,361 @@
+# Ask Hava trade knowledge file: carpet_cleaning
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: carpet_cleaning
+display_name: Carpet Cleaning
+summary: Carpet, rug and upholstery cleaning, spot and pet-odor treatment, and tile-and-grout cleaning. Most carpet
+  makers' warranties call for periodic hot water extraction by a professional [judgment; check the warranty]. No
+  state license applies. Carpet soaked by a leak, flood or sewage is water-damage restoration (dry within 24-48
+  hours), not routine cleaning.
+job_types:
+- id: carpet_clean
+  label: Wall-to-wall carpet cleaning
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: pet_odor
+  label: Pet stains and odor
+  site_visit_usually_needed: sometimes
+  handyman_ok: 'yes'
+- id: upholstery
+  label: Sofa, chairs, mattress
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: area_rug
+  label: Area rugs
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: tile_grout
+  label: Tile and grout cleaning
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: water_damage_route
+  label: Wet carpet from leak/flood/sewage (route to restoration)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: carpet cleaning
+  job_type: carpet_clean
+- phrase: steam clean carpet
+  job_type: carpet_clean
+- phrase: shampoo carpets
+  job_type: carpet_clean
+- phrase: carpets are dirty
+  job_type: carpet_clean
+- phrase: dog pee
+  job_type: pet_odor
+- phrase: cat urine
+  job_type: pet_odor
+- phrase: pet stains
+  job_type: pet_odor
+- phrase: carpet smells
+  job_type: pet_odor
+- phrase: couch cleaning
+  job_type: upholstery
+- phrase: upholstery
+  job_type: upholstery
+- phrase: sofa stain
+  job_type: upholstery
+- phrase: mattress clean
+  job_type: upholstery
+- phrase: rug cleaning
+  job_type: area_rug
+- phrase: area rug
+  job_type: area_rug
+- phrase: persian rug
+  job_type: area_rug
+- phrase: grout cleaning
+  job_type: tile_grout
+- phrase: tile and grout
+  job_type: tile_grout
+- phrase: dirty grout
+  job_type: tile_grout
+- phrase: carpet is soaked
+  job_type: water_damage_route
+- phrase: wet carpet
+  job_type: water_damage_route
+- phrase: water under carpet
+  job_type: water_damage_route
+- phrase: flooded carpet
+  job_type: water_damage_route
+triggers_es:
+- phrase: limpieza de alfombra
+  job_type: carpet_clean
+- phrase: lavar alfombras
+  job_type: carpet_clean
+- phrase: alfombra sucia
+  job_type: carpet_clean
+- phrase: orina de perro
+  job_type: pet_odor
+- phrase: olor a mascota
+  job_type: pet_odor
+- phrase: lavar sillón
+  job_type: upholstery
+- phrase: limpiar sofá
+  job_type: upholstery
+- phrase: alfombra mojada
+  job_type: water_damage_route
+- phrase: se inundó la alfombra
+  job_type: water_damage_route
+questions:
+- id: q1_what
+  text: What needs cleaning?
+  options:
+  - Carpet
+  - Couch or chairs
+  - Area rug
+  - Tile and grout
+  - Several of these
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Carpet, upholstery, rugs and grout use different tools.
+- id: q2_rooms
+  text: How many rooms or areas?
+  options:
+  - 1-2
+  - 3-4
+  - 5+
+  - Whole house
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Room count is how most cleaners quote.
+- id: q3_pets
+  text: Pet stains or odor?
+  options:
+  - Yes, a few spots
+  - Yes, a lot
+  - 'No'
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Urine treatment adds products and time.
+- id: q4_wet_now
+  text: Is any carpet wet from a leak or flood right now?
+  options:
+  - Yes, clean water
+  - Yes, dirty or sewage water
+  - 'No'
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Wet carpet is restoration work with a 24-48 hour drying window.
+- id: q5_stairs
+  text: Any stairs?
+  options:
+  - 'Yes'
+  - 'No'
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Stairs are slow and often priced per step. [judgment]
+quote_without_visit_needs:
+- Number of rooms or square feet
+- Items (sofa size, rug size)
+- Pet issues
+- Stairs
+site_visit_usually_needed:
+- Heavy pet urine (pad may need replacing)
+- Wet carpet after a leak (moisture check)
+- Delicate or wool rugs [judgment]
+photos_to_request:
+- id: p1
+  ask: Each room of carpet
+  for_job_types:
+  - all
+- id: p2
+  ask: Close-up of worst stains
+  for_job_types:
+  - all
+- id: p3
+  ask: Sofa or rug with tag if visible
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Traffic-lane graying
+  - Stain color and size
+  - Care tag codes on upholstery (W, S, W/S, X)
+photo_red_flags:
+- flag: Water lines or dark wet areas spreading (active leak)
+  safety_step_ref: null
+- flag: Mold growth on carpet or baseboards
+  safety_step_ref: null
+- flag: Sewage residue
+  safety_step_ref: es_carpet_cleaning_1
+emergency_signals:
+- id: es_carpet_cleaning_1
+  signal: Carpet soaked by sewage
+  emergency: depends
+  note: 'Urgent, not life-safety: card goes out marked time-sensitive. [judgment]'
+  safety_step: Wear rubber boots, rubber gloves and goggles during cleanup. Keep children and pets out of the area.
+    Throw out items that can't be cleaned and dried. Dry wet materials within 24-48 hours to limit mold.
+  source: '[S51] [T-epa_mold]'
+  then_route_to: plumbing
+- id: es_carpet_cleaning_2
+  signal: Standing water on carpet near outlets or cords
+  emergency: 'yes'
+  safety_step: Do not walk in standing water if the power may be on. Have power turned off at the main by a qualified
+    person or the utility.
+  source: '[S31]'
+  then_route_to: plumbing
+- id: es_carpet_cleaning_3
+  signal: Carpet wet from clean-water leak
+  emergency: depends
+  note: 'Urgent, not life-safety: card goes out marked time-sensitive. [judgment]'
+  safety_step: Dry wet materials within 24-48 hours to limit mold.
+  source: '[T-epa_mold]'
+  then_route_to: plumbing
+- id: es_carpet_cleaning_4
+  signal: Routine cleaning
+  emergency: 'no'
+  safety_step: No special safety step; normal job card.
+  source: none
+  then_route_to: carpet_cleaning
+safety_step:
+- when: Wet carpet or pad
+  step: Dry wet materials within 24-48 hours to limit mold.
+  source: '[T-epa_mold]'
+- when: Standing water and power may be on
+  step: Do not walk in standing water if the power may be on. Have power turned off at the main by a qualified person
+    or the utility.
+  source: '[S31]'
+- when: Sewage or floodwater on floors
+  step: Wear rubber boots, rubber gloves and goggles during cleanup. Keep children and pets out of the area. Throw
+    out items that can't be cleaned and dried.
+  source: '[S51]'
+license_classes:
+- job_type:
+  - carpet_clean
+  - pet_odor
+  - upholstery
+  - area_rug
+  - tile_grout
+  classes:
+  - none
+  citation: foundation az_license_master §5 [judgment]
+  other_agency: none
+  notes: No state license is needed for this cleaning work [judgment, per foundation az_license_master §5]. It is
+    not construction under ROC rules.
+- job_type:
+  - water_damage_route
+  classes:
+  - R-8
+  citation: A.A.C. R4-9-103 [S2] R-8; [T-iicrc_s500] [industry]
+  other_agency: none
+  notes: 'Water damage drying and pad/carpet replacement: restoration company; carpet re-install falls under ROC
+    R-8 Floor Covering. IICRC S500 is the industry drying standard.'
+handyman_ok:
+  allowed_examples:
+  - Cleaning (not construction)
+  not_allowed_examples:
+  - Replacing carpet and pad over $1,000 (ROC R-8)
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+local_notes:
+- 'Fine desert dust settles into Havasu carpets, especially after monsoon dust storms (season June 15-Sept 30).
+  Source: [T-az_monsoon].'
+- 'Hot, dry air helps carpets dry fast, but leaks under carpet still need fast drying. Source: [T-epa_mold].'
+- Vacation rental owners often book carpet cleaning between seasons [judgment].
+sample_card: 'REQ-0328 | Carpet cleaning | Lake Havasu City, north side
+
+  4 rooms + hallway, 1 flight of stairs, pet urine spots in 2 rooms.
+
+  3 photos.
+
+  '
+test_messages:
+- id: carpet_cleaning_t01
+  message: carpets
+  trade: carpet_cleaning
+  job_type: carpet_clean
+  emergency: 'no'
+  first_question_id: q1_what
+  ideal_first_question: What needs cleaning?
+  note: ''
+- id: carpet_cleaning_t02
+  message: 3 bedrooms and hall steam cleaned plus sectional couch
+  trade: carpet_cleaning
+  job_type: carpet_clean
+  emergency: 'no'
+  first_question_id: q3_pets
+  ideal_first_question: Pet stains or odor?
+  note: ''
+- id: carpet_cleaning_t03
+  message: dog peed everywhere smells so bad
+  trade: carpet_cleaning
+  job_type: pet_odor
+  emergency: 'no'
+  first_question_id: q2_rooms
+  ideal_first_question: How many rooms or areas?
+  note: ''
+- id: carpet_cleaning_t04
+  message: lavar alfombras de toda la casa
+  trade: carpet_cleaning
+  job_type: carpet_clean
+  emergency: 'no'
+  first_question_id: q2_rooms
+  ideal_first_question: How many rooms or areas?
+  note: ''
+- id: carpet_cleaning_t05
+  message: water heater leaked and the carpet in the hall is soaked
+  trade: carpet_cleaning
+  job_type: water_damage_route
+  emergency: depends
+  first_question_id: q4_wet_now
+  ideal_first_question: Is any carpet wet from a leak or flood right now?
+  note: ''
+- id: carpet_cleaning_t06
+  message: grout in kitchen is black
+  trade: carpet_cleaning
+  job_type: tile_grout
+  emergency: 'no'
+  first_question_id: q2_rooms
+  ideal_first_question: How many rooms or areas?
+  note: ''
+- id: carpet_cleaning_t07
+  message: want to replace carpet with lvp
+  trade: flooring
+  job_type: lvp_laminate
+  emergency: 'no'
+  first_question_id: q1_area
+  ideal_first_question: What needs cleaning?
+  note: ''
+- id: carpet_cleaning_t08
+  message: toilet overflow dirty water got on bedroom carpet
+  trade: carpet_cleaning
+  job_type: water_damage_route
+  emergency: depends
+  first_question_id: q4_wet_now
+  ideal_first_question: Is any carpet wet from a leak or flood right now?
+  note: ''
+- id: carpet_cleaning_t09
+  message: area rug wool 8x10 red wine
+  trade: carpet_cleaning
+  job_type: area_rug
+  emergency: 'no'
+  first_question_id: q1_what
+  ideal_first_question: What needs cleaning?
+  note: ''
+- id: carpet_cleaning_t10
+  message: clean carpets in rental between guests next week
+  trade: carpet_cleaning
+  job_type: carpet_clean
+  emergency: 'no'
+  first_question_id: q2_rooms
+  ideal_first_question: How many rooms or areas?
+  note: ''
+sources:
+- '[T-epa_mold] EPA, A Brief Guide to Mold, Moisture and Your Home (dry within 24-48 hours) https://www.epa.gov/mold/brief-guide-mold-moisture-and-your-home'
+- '[S31] CDC, Reentering Your Flooded Home (power and standing water, gas, CO) https://www.cdc.gov/floods/safety/reentering-your-flooded-home-safety.html'
+- '[S51] CDC, Guidelines for Cleaning Safely After a Disaster (protective gear, sewage) https://www.cdc.gov/natural-disasters/safety/'
+- '[T-iicrc_s500] IICRC S500 water damage restoration standard (industry; Category 3 = grossly contaminated, e.g.
+  sewage) https://iicrc.org/s500/'
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[T-az_monsoon] Arizona Emergency Information Network, Dust storms / monsoon (season June 15-Sept 30) https://ein.az.gov/hazards/dust-storms'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'

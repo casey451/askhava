@@ -1,0 +1,20 @@
+# Code owners (D-483, narrowed by D-484): a pull request that changes how the build is governed needs
+# Casey's review once the protect-main ruleset requires code-owner review. Only harness tasks and
+# plan changes touch these paths; ordinary build tasks (including those that change a catalog file,
+# a spec line or a check script their task owns) merge on their own, with the plan lock and a
+# decision entry enforced by Ci and the Governance check instead.
+/.github/                     @casey451
+/.claude/                     @casey451
+/runner/                      @casey451
+/BUILD_BRIEF.md               @casey451
+/docs/constitution.md         @casey451
+/docs/governance.md           @casey451
+/docs/sources.md              @casey451
+/kit/tasks.json               @casey451
+/kit/layers.json              @casey451
+/kit/allowed_crates.txt       @casey451
+/kit/prompts/TEMPLATE.md      @casey451
+/scripts/check_pr_change.py   @casey451
+/scripts/check_plan_lock.py   @casey451
+/scripts/validate_tasks.py    @casey451
+/scripts/trace_spec.py        @casey451

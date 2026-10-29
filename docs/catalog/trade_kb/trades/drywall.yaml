@@ -1,0 +1,379 @@
+# Ask Hava trade knowledge file: drywall
+# Schema: foundation/schema.yaml (v2). Items marked [judgment] are not from a cited source;
+# [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: drywall
+display_name: Drywall
+summary: Drywall patching, water-damage replacement, texture matching (knockdown and orange peel are common in Havasu
+  [judgment]), new walls and ceilings, and popcorn removal. ROC R-10 covers gypsum board, tape, texture and non-load-bearing
+  steel partitions. LHC needs no permit for minor hole patching but does list drywall work and wall removal/installation
+  as permit work. Older textures and joint compound may contain asbestos; EPA says not to sand or scrape suspect
+  material.
+job_types:
+- id: small_patch
+  label: Small holes, cracks, nail pops
+  site_visit_usually_needed: 'no'
+  handyman_ok: 'yes'
+- id: water_damage
+  label: Water-damaged drywall replacement
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: texture_match
+  label: Texture match or retexture
+  site_visit_usually_needed: sometimes
+  handyman_ok: limited
+- id: popcorn_removal
+  label: Popcorn/acoustic ceiling removal (asbestos check)
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: new_drywall
+  label: New walls, garage finish, remodel hang-and-tape
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+- id: ceiling_repair
+  label: Sagging or cracked ceiling
+  site_visit_usually_needed: 'yes'
+  handyman_ok: 'no'
+triggers_en:
+- phrase: hole in wall
+  job_type: small_patch
+- phrase: patch drywall
+  job_type: small_patch
+- phrase: nail pops
+  job_type: small_patch
+- phrase: crack in wall
+  job_type: small_patch
+- phrase: water damage drywall
+  job_type: water_damage
+- phrase: wet drywall
+  job_type: water_damage
+- phrase: cut out drywall
+  job_type: water_damage
+- phrase: after the leak
+  job_type: water_damage
+- phrase: knockdown
+  job_type: texture_match
+- phrase: orange peel
+  job_type: texture_match
+- phrase: match texture
+  job_type: texture_match
+- phrase: retexture
+  job_type: texture_match
+- phrase: popcorn ceiling
+  job_type: popcorn_removal
+- phrase: acoustic ceiling
+  job_type: popcorn_removal
+- phrase: cottage cheese
+  job_type: popcorn_removal
+- phrase: sheetrock
+  job_type: new_drywall
+- phrase: hang drywall
+  job_type: new_drywall
+- phrase: finish garage
+  job_type: new_drywall
+- phrase: new wall
+  job_type: new_drywall
+- phrase: ceiling sagging
+  job_type: ceiling_repair
+- phrase: ceiling crack
+  job_type: ceiling_repair
+- phrase: ceiling falling
+  job_type: ceiling_repair
+triggers_es:
+- phrase: tablaroca
+  job_type: small_patch
+- phrase: sheetrock
+  job_type: small_patch
+- phrase: hoyo en la pared
+  job_type: small_patch
+- phrase: resanar
+  job_type: small_patch
+- phrase: parchar
+  job_type: small_patch
+- phrase: pared mojada
+  job_type: water_damage
+- phrase: daño de agua
+  job_type: water_damage
+- phrase: textura
+  job_type: texture_match
+- phrase: igualar textura
+  job_type: texture_match
+- phrase: techo de palomitas
+  job_type: popcorn_removal
+- phrase: quitar popcorn
+  job_type: popcorn_removal
+- phrase: techo se está cayendo
+  job_type: ceiling_repair
+- phrase: techo pandeado
+  job_type: ceiling_repair
+questions:
+- id: q1_size
+  text: How big is the damaged area?
+  options:
+  - Smaller than a hand
+  - Up to 2 x 2 ft
+  - Bigger than 2 x 2 ft
+  - Whole wall or ceiling
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Patch size decides between a quick patch and a sheet replacement.
+- id: q2_cause_fixed
+  text: Was there water? Is the leak fixed?
+  options:
+  - No water involved
+  - Water, leak is fixed
+  - Water, still leaking
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Wet drywall must dry and the leak must be fixed before patching.
+- id: q3_texture
+  text: What does the wall/ceiling surface look like?
+  options:
+  - Smooth
+  - Light bumpy (orange peel)
+  - Flat splotches (knockdown)
+  - Popcorn
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Matching knockdown or orange peel adds time.
+- id: q4_paint_after
+  text: Paint after the patch?
+  options:
+  - Yes, match the paint
+  - No, I'll paint
+  - Paint the whole wall
+  - Not sure
+  ask_if: always
+  changes_price: 'yes'
+  why: Paint after patching may be a separate trade or added cost.
+- id: q5_home_age
+  text: About when was the home built?
+  options:
+  - 1978 or later
+  - 1977 or before
+  - Not sure
+  ask_if: popcorn or sanding older texture
+  changes_price: 'yes'
+  why: Older textures and joint compound may contain asbestos.
+quote_without_visit_needs:
+- Size of hole/area with tape measure
+- Texture type
+- Whether leak is fixed
+- Paint needed or not
+site_visit_usually_needed:
+- Water damage (moisture check, hidden extent)
+- Ceilings over 2 x 2 ft
+- Popcorn removal
+- New walls (permit in LHC)
+photos_to_request:
+- id: p1
+  ask: Close-up with tape measure
+  for_job_types:
+  - all
+- id: p2
+  ask: Wide shot of wall or ceiling
+  for_job_types:
+  - all
+- id: p3
+  ask: Texture close-up at an angle
+  for_job_types:
+  - all
+photo_cues:
+- photo_id: all
+  look_for:
+  - Shine a flashlight across the wall to show texture
+  - Show nearby outlets or vents
+photo_red_flags:
+- flag: Sagging ceiling with water
+  safety_step_ref: es_drywall_1
+- flag: Mold growth
+  safety_step_ref: null
+- flag: Wet drywall with leak not fixed (route plumbing/roofing first)
+  safety_step_ref: null
+- flag: Cracks that keep coming back or doors sticking near them (possible movement) [judgment]
+  safety_step_ref: null
+- flag: Popcorn ceiling damage in older home
+  safety_step_ref: null
+emergency_signals:
+- id: es_drywall_1
+  signal: Ceiling sagging or bulging with water
+  emergency: 'yes'
+  intake_note:
+  - Keep people and pets out from under it [judgment]; shut off the water source if it is a pipe leak.
+  safety_step: Stay out of the wet area; turn off the breaker only if you can do it without standing in water.
+  source: '[S29]'
+  then_route_to: drywall
+  note: 'Routing: drywall (after plumbing/roofing)'
+- id: es_drywall_2
+  signal: Water near outlets or lights
+  emergency: 'yes'
+  safety_step: Stay out of the wet area; turn off the breaker only if you can do it without standing in water.
+  source: '[S29]'
+  then_route_to: electrical
+- id: es_drywall_3
+  signal: Hole patch, cosmetic crack
+  emergency: 'no'
+  safety_step: No special safety step; normal job card.
+  source: none
+  then_route_to: drywall
+safety_step:
+- when: Water near electrical
+  step: Stay out of the wet area; turn off the breaker only if you can do it without standing in water.
+  source: '[S29]'
+- when: Wet drywall
+  step: Dry wet materials within 24-48 hours to limit mold; porous items with mold may need replacing.
+  source: '[T-epa_mold]'
+- when: Popcorn/acoustic ceiling, old vinyl tile or old drywall texture to be disturbed
+  step: Leave it alone if intact. Do not sand, scrape, drill or cut it. Have it tested or handled by an accredited
+    asbestos professional before remodeling.
+  source: '[T-epa_asb]'
+intake_notes_judgment:
+- 'Sagging wet ceiling: Keep people and pets out from under it [judgment]; shut off the water source if it is a
+  pipe leak.'
+license_classes:
+- job_type:
+  - small_patch
+  - water_damage
+  - texture_match
+  - new_drywall
+  - ceiling_repair
+  classes:
+  - R-10
+  - CR-10
+  - B
+  - B-3
+  - R-61
+  citation: A.A.C. R4-9-103 [S2] R-10; R4-9-104 [S3] CR-10
+  other_agency: none
+  notes: ROC R-10 Drywall, CR-10 dual, or B/B-3/R-61.
+- job_type:
+  - popcorn_removal
+  classes:
+  - R-10
+  citation: EPA/CPSC asbestos guidance; A.A.C. R4-9-103 [S2] (R- residential classes)
+  other_agency: none
+  notes: 'Test first. Asbestos-containing material: accredited asbestos professional. Retexture after: R-10.'
+- job_type:
+  - new_drywall
+  classes:
+  - none
+  citation: LHC Building Permits page [S17]; A.R.S. 32-1121(A)(14)(a) [S4]
+  other_agency: none
+  notes: LHC lists drywall and wall install/removal as permit work, so the handyman exemption does not apply.
+handyman_ok:
+  allowed_examples:
+  - 'Small hole and crack patching (LHC: no permit for minor patching)'
+  not_allowed_examples:
+  - New walls, large replacements or anything LHC permits
+  - Popcorn removal that may contain asbestos
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal
+    batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local
+    building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit;
+    and any ad says ''not a licensed contractor''. Never covers work connected to natural gas, propane or other
+    fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+local_notes:
+- 'LHC: minor drywall hole patching needs no permit; drywall and wall removal/installation are on the permit list.
+  Source: [S17].'
+- Popcorn ceilings were common through the 1980s; asbestos use in them was banned in 1978 but older stock was used
+  later [judgment; EPA lists textured ceilings as a possible source].
+- Fix the water source before drywall repair. [judgment]
+sample_card: 'REQ-0219 | Drywall | Lake Havasu City, Havasu Foothills area
+
+  Ceiling patch about 3 x 3 ft after plumbing leak, leak fixed by plumber. Knockdown texture, paint match wanted.
+
+  Not wet now. 3 photos.
+
+  '
+test_messages:
+- id: drywall_t01
+  message: hole in wall
+  trade: drywall
+  job_type: small_patch
+  emergency: 'no'
+  first_question_id: q1_size
+  ideal_first_question: How big is the damaged area?
+  note: ''
+- id: drywall_t02
+  message: ceiling is sagging and dripping in the hallway
+  trade: drywall
+  job_type: ceiling_repair
+  emergency: 'yes'
+  first_question_id: q2_cause_fixed
+  ideal_first_question: Was there water? Is the leak fixed?
+  note: ''
+- id: drywall_t03
+  message: need a 4x4 section replaced after the water heater leaked, its dry now
+  trade: drywall
+  job_type: water_damage
+  emergency: 'no'
+  first_question_id: q3_texture
+  ideal_first_question: What does the wall/ceiling surface look like?
+  note: ''
+- id: drywall_t04
+  message: quitar el techo de palomitas de toda la casa
+  trade: drywall
+  job_type: popcorn_removal
+  emergency: 'no'
+  first_question_id: q5_home_age
+  ideal_first_question: About when was the home built?
+  note: ''
+- id: drywall_t05
+  message: match knockdown texture where AC guy cut a hole
+  trade: drywall
+  job_type: texture_match
+  emergency: 'no'
+  first_question_id: q1_size
+  ideal_first_question: How big is the damaged area?
+  note: ''
+- id: drywall_t06
+  message: want to finish the garage walls with drywall
+  trade: drywall
+  job_type: new_drywall
+  emergency: 'no'
+  first_question_id: q1_size
+  ideal_first_question: How big is the damaged area?
+  note: ''
+- id: drywall_t07
+  message: crack above the door keeps coming back and door sticks now
+  trade: drywall
+  job_type: small_patch
+  emergency: 'no'
+  first_question_id: q1_size
+  ideal_first_question: How big is the damaged area?
+  note: ''
+- id: drywall_t08
+  message: black spots on bathroom wall and it's soft
+  trade: plumbing
+  job_type: leak_slow
+  emergency: 'no'
+  first_question_id: q1_problem
+  ideal_first_question: Was there water? Is the leak fixed?
+  note: ''
+- id: drywall_t09
+  message: tengo un hoyo en la pared de la puerta
+  trade: drywall
+  job_type: small_patch
+  emergency: 'no'
+  first_question_id: q1_size
+  ideal_first_question: How big is the damaged area?
+  note: ''
+- id: drywall_t10
+  message: patch holes from tv mount and paint before I move out
+  trade: drywall
+  job_type: small_patch
+  emergency: 'no'
+  first_question_id: q4_paint_after
+  ideal_first_question: Paint after the patch?
+  note: ''
+sources:
+- '[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103'
+- '[S3] A.A.C. R4-9-104 Dual license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104'
+- '[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm'
+- '[S17] Lake Havasu City, Building Permits (permit / no-permit lists) https://www.lhcaz.gov/229/Building-Permits'
+- '[T-epa_asb] EPA, Protect Your Family from Exposures to Asbestos https://www.epa.gov/asbestos/protect-your-family-exposures-asbestos'
+- '[T-cpsc_asb] CPSC, Asbestos in the Home https://www.cpsc.gov/safety-education/safety-guides/home/asbestos-home'
+- '[T-epa_mold] EPA, A Brief Guide to Mold, Moisture and Your Home (dry within 24-48 hours) https://www.epa.gov/mold/brief-guide-mold-moisture-and-your-home'
+- '[S29] NFPA, Electrical safety in the home https://www.nfpa.org/education-and-research/home-fire-safety/electrical-safety-in-the-home'

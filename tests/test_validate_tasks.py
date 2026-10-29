@@ -47,6 +47,7 @@ def make_task(tid: str, slug: str, **over: Any) -> dict[str, Any]:
         "slug": slug,
         "title": f"Fake task {slug}",
         "goal": "Fake goal.",
+        "acceptance": "Fake acceptance.",
         "type": "build",
         "phase": 1,
         "stage": "2",
@@ -125,8 +126,16 @@ def valid_tasks() -> list[dict[str, Any]]:
             model=OPUS,
             reviewer_model=OPUS,
             review_areas=["harness", "security"],
-            owns=["stand_ins/fake/", "app/adapters/twilio_sms.py"],
+            owns=[
+                "stand_ins/fake/",
+                "app/adapters/Cargo.toml",
+                "app/adapters/src/twilio_sms.rs",
+                ".github/workflows/twin.yml",
+                ".github/workflows/a11y.yml",
+                "tests/e2e/playwright.config.ts",
+            ],
             cites=["src.md:3"],
+            acceptance="The fake sandbox answers like the vendor.",
         ),
         make_gate("T005", "real-texts", "real-texts-casey-phone", ["T004"], "6", 2),
         make_gate("T006", "finished", "finished", ["T005"], "6", 2),
@@ -230,7 +239,8 @@ def test_protected_path_needs_a_harness_task(tmp_path: Path) -> None:
 
 def test_sources_are_read_only_even_for_harness(tmp_path: Path) -> None:
     tasks = valid_tasks()
-    task(tasks, "T004")["owns"] = ["sources/01_spec/fake.md", "app/adapters/twilio_sms.py"]
+    task(tasks, "T004")["owns"] = ["sources/01_spec/fake.md", "app/adapters/src/twilio_sms.rs"]
+    task(tasks, "T004")["budget"]["files"] = 2
     assert_error(errors_for(tmp_path, tasks), "sources/ is read-only")
 
 
@@ -253,6 +263,7 @@ def test_ordered_tasks_may_share_an_app_path(tmp_path: Path) -> None:
             deps=["T001"],
             owns=["app/fake/rules.py"],
             requirements=["TST-001"],
+            reads=["docs/spec/area.md"],
         ),
     )
     task(tasks, "T002")["deps"] = ["T010"]
@@ -264,7 +275,10 @@ def test_shared_paths_may_be_owned_by_unordered_tasks(tmp_path: Path) -> None:
     task(tasks, "T001")["owns"].append("docs/decisions.md")
     task(tasks, "T001")["budget"]["files"] = 3
     tasks.insert(
-        1, make_task("T010", "fake-other", owns=["docs/decisions.md"], requirements=["TST-001"])
+        1,
+        make_task(
+            "T010", "fake-other", owns=["docs/decisions.md"], requirements=["TST-001"], reads=["docs/spec/area.md"]
+        ),
     )
     task(tasks, "T002")["deps"] = ["T001", "T010"]
     assert errors_for(tmp_path, tasks) == []
@@ -301,9 +315,20 @@ def test_sensitive_areas_need_an_opus_reviewer(tmp_path: Path, area: str) -> Non
     task(tasks, "T001")["review_areas"] = [area]
     errors = errors_for(tmp_path, tasks)
     assert_error(errors, "need an Opus reviewer")
-    assert_error(errors, "runs on Opus (BUILD_BRIEF.md:498)")
+    if area != "security":  # security alone forces the Opus model only through sensitive owned paths (D-483)
+        assert_error(errors, "runs on Opus (BUILD_BRIEF.md:498)")
     task(tasks, "T001").update(reviewer_model=OPUS, model=OPUS)
     assert errors_for(tmp_path, tasks) == []
+
+
+def test_test_only_work_in_a_sensitive_area_may_run_on_sonnet(tmp_path: Path) -> None:
+    """D-483: a task that owns only test files needs the Opus reviewer, not the Opus model."""
+    tasks = valid_tasks()
+    t = task(tasks, "T001")
+    t.update(review_areas=["privacy"], reviewer_model=OPUS, model="claude-sonnet-5-5", effort="medium")
+    t["owns"] = [o for o in t["owns"] if not o.startswith(("app/", "migrations/"))] or ["tests/e2e/x.spec.ts"]
+    errors = errors_for(tmp_path, tasks)
+    assert not [e for e in errors if "runs on Opus" in e]
 
 
 def test_harness_tasks_need_an_opus_reviewer(tmp_path: Path) -> None:
@@ -329,10 +354,10 @@ def test_size_limits(tmp_path: Path) -> None:
         owns=owns, budget={"files": 2, "lines": vt.MAX_LINES + 1, "context_pct": 25}
     )
     errors = errors_for(tmp_path, tasks)
-    assert_error(errors, "owned paths 15 over the limit")
-    assert_error(errors, "budget lines 801 over the limit")
+    assert_error(errors, f"owned paths {vt.MAX_OWNS + 1} over the limit")
+    assert_error(errors, f"budget lines {vt.MAX_LINES + 1} over the limit")
     assert_error(errors, "budget context_pct 25 over the limit")
-    assert_error(errors, "budget files 2 does not match the 15 owned files")
+    assert_error(errors, f"budget files 2 does not match the {vt.MAX_OWNS + 1} owned files")
 
 
 def test_every_gate_kind_once(tmp_path: Path) -> None:
@@ -531,7 +556,7 @@ def test_real_texts_gate_follows_the_twilio_sandbox(tmp_path: Path) -> None:
     task(tasks, "T004")["owns"] = ["stand_ins/fake/"]
     task(tasks, "T004")["review_areas"] = ["harness"]
     assert_error(
-        errors_for(tmp_path, tasks), "must come after the task owning app/adapters/twilio_sms.py"
+        errors_for(tmp_path, tasks), "must come after the task owning app/adapters/src/twilio_sms.rs"
     )
 
 
@@ -542,7 +567,189 @@ def test_kit_outputs_must_match(tmp_path: Path) -> None:
 
 def test_kit_file_entries_match_exactly(tmp_path: Path) -> None:
     tasks = valid_tasks()
-    task(tasks, "T004")["reads"] = ["uv.lock", "uv.lock.old", "tests/contract/x.py"]
+    task(tasks, "T004")["reads"] = ["Cargo.lock", "Cargo.lock.old", "tests/contract/x.py"]
     errors = errors_for(tmp_path, tasks)
-    assert_error(errors, "reads uv.lock.old")
-    assert not any("reads uv.lock," in e or "tests/contract/x.py" in e for e in errors)
+    assert_error(errors, "reads Cargo.lock.old")
+    assert not any("reads Cargo.lock," in e or "tests/contract/x.py" in e for e in errors)
+
+
+# --- P-1 checks (D-485) -------------------------------------------------------------------
+
+
+def test_p1_limits_bind_build_tasks(tmp_path: Path) -> None:
+    assert (vt.MAX_OWNS, vt.MAX_FILES, vt.MAX_LINES, vt.MAX_REQUIREMENTS) == (10, 10, 600, 12)
+    tasks = valid_tasks()
+    reqs = [f"TST-{i:03d}" for i in range(1, 14)]
+    task(tasks, "T001").update(requirements=reqs, budget={"files": 2, "lines": 600, "context_pct": 10})
+    assert_error(errors_for(tmp_path, tasks), "requirements 13 over the limit of 12")
+
+
+def test_harness_keeps_the_d119_size_limits(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    harness = task(tasks, "T004")
+    harness["owns"] = harness["owns"] + [f"stand_ins/other{i}/" for i in range(6)]
+    harness["budget"] = {"files": 11, "lines": 700, "context_pct": 25}
+    errors = errors_for(tmp_path, tasks)
+    assert not [e for e in errors if "T004" in e and "over the limit" in e]
+    harness["budget"]["context_pct"] = vt.MAX_HARNESS_CONTEXT_PCT + 1
+    assert_error(errors_for(tmp_path, tasks), "budget context_pct 31 over the limit of 30")
+
+
+def test_v1_build_and_harness_need_tests_or_acceptance(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    del task(tasks, "T004")["acceptance"]
+    assert_error(errors_for(tmp_path, tasks), "T004 (fake-sandbox): a harness task with no tests needs an 'acceptance' line")
+    task(tasks, "T004")["acceptance"] = 7
+    assert_error(errors_for(tmp_path, tasks), "'acceptance' must be str")
+
+
+def test_v5_goal_must_not_repeat_the_title(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T001")["goal"] = task(tasks, "T001")["title"]
+    assert_error(errors_for(tmp_path, tasks), "goal repeats the title")
+
+
+def test_v6_mutant_rules_owner_needs_opus_reviewer(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T001")["owns"] = ["app/quotes/src/rules.rs", "tests/unit/fake/test_rules.py"]
+    assert_error(errors_for(tmp_path, tasks), "owns app/quotes/src/rules.rs, a cargo-mutants target")
+    task(tasks, "T001")["reviewer_model"] = OPUS
+    assert not [e for e in errors_for(tmp_path, tasks) if "cargo-mutants" in e]
+
+
+def test_v7_task_reads_the_spec_file_of_each_requirement(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T001")["reads"] = []
+    assert_error(errors_for(tmp_path, tasks), "names TST-001 but does not read docs/spec/area.md")
+
+
+MUTANT_DESIGN = (
+    "## 4. Deliberate-break tests\n\n| Rule | Named mutants | Killed by |\n|---|---|---|\n"
+    "| **Fake rule** (fee) | flip the edge; drop the check (killed by TD-TST-02, owned by T001) | TD-TST-01 |\n"
+    "## 5. Journeys\n"
+)
+
+
+def mutant_repo(tmp_path: Path, deps: list[str]) -> list[str]:
+    tasks = valid_tasks()
+    mutants = make_task(
+        "T010", "fake-mutants", type="harness", deps=deps, model=OPUS, reviewer_model=OPUS,
+        review_areas=["harness"], owns=["tests/mutation/mutants.toml"], cites=["src.md:3"],
+        title="Named mutants: the fake rule", acceptance="Each mutant is killed.",
+    )
+    tasks.insert(1, mutants)
+    task(tasks, "T002")["deps"] = ["T001", "T010"]
+    root = write_repo(tmp_path, tasks)
+    design = (root / "docs" / "test-design.md").read_text(encoding="utf-8")
+    design += "| TD-TST-02 | B | U | TST-002 | fake |\n" + MUTANT_DESIGN
+    (root / "docs" / "test-design.md").write_text(design, encoding="utf-8")
+    task(tasks, "T001")["tests"].append("TD-TST-02")
+    (root / "kit" / "tasks.json").write_text(
+        json.dumps({**json.loads((root / "kit" / "tasks.json").read_text()), "tasks": tasks}), encoding="utf-8"
+    )
+    return list(vt.run(root).errors)
+
+
+def test_v3_killed_by_tests_must_be_owned_by_an_ancestor(tmp_path: Path) -> None:
+    errors = mutant_repo(tmp_path, [])
+    assert_error(errors, "TD-TST-01 kills a named mutant of T010 but no ancestor of T010 owns it")
+    assert_error(errors, "TD-TST-02 kills a named mutant of T001 but no ancestor of T001 owns it")
+
+
+def test_v3_passes_when_the_killer_comes_first(tmp_path: Path) -> None:
+    errors = mutant_repo(tmp_path, ["T001"])
+    assert not [e for e in errors if "kills a named mutant of T010" in e]
+    assert vt.expand_tds("TD-CON-01 to TD-CON-03, TD-JOB-05") == ["TD-CON-01", "TD-CON-02", "TD-CON-03", "TD-JOB-05"]
+
+
+def test_v4_coverage_gate_precedes_money_privacy_and_licensing_code(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T001").update(
+        owns=["app/payments/src/rules.rs", "tests/unit/fake/test_rules.py"], model=OPUS,
+        reviewer_model=OPUS, review_areas=["money"],
+    )
+    assert_error(errors_for(tmp_path, tasks), "no harness task owning tests/coverage_floor.json comes first")
+    floor = make_task(
+        "T010", "fake-coverage", type="harness", model=OPUS, reviewer_model=OPUS, review_areas=["harness"],
+        owns=["tests/coverage_floor.json"], cites=["src.md:3"], acceptance="The floor file exists.",
+    )
+    tasks.insert(0, floor)
+    task(tasks, "T001")["deps"] = ["T010"]
+    assert not [e for e in errors_for(tmp_path, tasks) if "coverage_floor" in e]
+
+
+def test_v4_twin_gate_and_harness_must_exist_and_come_first(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    harness = task(tasks, "T004")
+    harness["owns"] = ["stand_ins/fake/", "app/adapters/src/twilio_sms.rs", "twin/app.py"]
+    errors = errors_for(tmp_path, tasks)
+    assert_error(errors, "changes twin/ before the task owning twin/gate.py")
+    assert_error(errors, "no task owns .github/workflows/twin.yml")
+    assert_error(errors, "no harness task owns .github/workflows/a11y.yml and tests/e2e/playwright.config.ts")
+    harness["owns"] = harness["owns"] + ["twin/gate.py"]
+    assert not [e for e in errors_for(tmp_path, tasks) if "changes twin/" in e]
+
+
+def test_v9_migrations_rise_in_serial_order(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    first = make_task(
+        "T010", "fake-early", owns=["migrations/0050_fake_early.sql"], requirements=["TST-001"],
+        reads=["docs/spec/area.md"],
+    )
+    tasks.insert(0, first)
+    task(tasks, "T001")["owns"] = ["app/fake/rules.py", "tests/unit/fake/test_rules.py", "migrations/0040_fake_late.sql"]
+    task(tasks, "T001")["deps"] = ["T010"]
+    task(tasks, "T001")["budget"] = {"files": 3, "lines": 200, "context_pct": 10}
+    assert_error(errors_for(tmp_path, tasks), "migration migrations/0040_fake_late.sql is numbered at or below 0050 (T010)")
+    task(tasks, "T001")["owns"][2] = "migrations/0060_fake_late.sql"
+    assert not [e for e in errors_for(tmp_path, tasks) if "migration" in e]
+
+
+def test_v11_a_rows_case_needs_a_builder_that_runs_first_or_shares_the_row(tmp_path: Path) -> None:
+    """A task listing a row whose covered requirement is owned only by later tasks that do not list the row fails (D-491)."""
+    tasks = valid_tasks()
+    early = make_task(
+        "T010",
+        "fake-early",
+        owns=["app/fake/early.rs", "tests/unit/fake/test_early.py"],
+        budget={"files": 2, "lines": 100, "context_pct": 5},
+        requirements=["TST-001"],
+        tests=["TD-TST-01"],
+        reads=["docs/spec/area.md"],
+    )
+    task(tasks, "T001")["deps"] = ["T010"]
+    task(tasks, "T001")["requirements"] = ["TST-002"]
+    task(tasks, "T001")["tests"] = ["J1", "J2", "J3", "J4"]
+    tasks.insert(0, early)
+    root = write_repo(tmp_path, tasks)
+    errors = list(vt.run(root).errors)
+    assert_error(errors, "TD-TST-01 covers TST-002, owned only by ['T001'], which run after this task and do not list the row")
+    task(tasks, "T001")["tests"] = ["TD-TST-01", "J1", "J2", "J3", "J4"]
+    root = write_repo(tmp_path, tasks)
+    assert not [e for e in vt.run(root).errors if "V11" in e]
+
+
+def test_v12_a_file_under_a_crate_needs_the_manifest_first(tmp_path: Path) -> None:
+    """A task owning `app/<crate>/<file>` before the crate's `Cargo.toml` owner runs fails (D-493)."""
+    tasks = valid_tasks()
+    early = make_task(
+        "T010",
+        "fake-early",
+        owns=["app/adapters/data/schema.json", "tests/unit/fake/test_schema.py"],
+        budget={"files": 2, "lines": 100, "context_pct": 5},
+        model=OPUS,
+        reviewer_model=OPUS,
+        review_areas=["security"],
+        requirements=["TST-001"],
+        tests=["TD-TST-01"],
+        reads=["docs/spec/area.md"],
+    )
+    task(tasks, "T001")["deps"] = ["T010"]
+    tasks.insert(0, early)
+    root = write_repo(tmp_path, tasks)
+    errors = list(vt.run(root).errors)
+    assert_error(errors, "owns app/adapters/data/schema.json before ['T004'] create app/adapters/Cargo.toml")
+    early["deps"] = ["T004"]
+    task(tasks, "T001")["deps"] = []
+    root = write_repo(tmp_path, tasks)
+    assert not [e for e in vt.run(root).errors if "V12" in e]
