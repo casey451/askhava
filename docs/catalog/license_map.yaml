@@ -300,7 +300,7 @@ scope_tags:
     filter repair: [pool plumbing]
     pool leak: [pool plumbing]
     equipment replacement: [pool plumbing]
-    gas pool heater: [gas]
+    gas pool heater: [pool gas]
 
 # ---- Other state agencies and the city list (LIC-011 to LIC-016) ----
 

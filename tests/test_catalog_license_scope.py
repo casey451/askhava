@@ -151,3 +151,13 @@ def test_main_exits_one_on_a_scope_fault(tmp_path: Path) -> None:
         "plumbing_repair: {only: [drain clearing, faucet replacement]}",
     )
     assert check_catalog.main(["--root", str(tmp_path)]) == 1
+
+
+def test_gas_piping_subclass_given_gas_pool_heater_fails(tmp_path: Path) -> None:
+    errors = errors_after(
+        tmp_path,
+        "license_map.yaml",
+        "plumbing_repair: {only: [gas line work]}",
+        "plumbing_repair: {only: [gas line work]}\n      pool_repair: {only: [gas pool heater]}",
+    )
+    assert any("R-37R Gas Piping gets pool_repair job type 'gas pool heater'" in e for e in errors), errors
