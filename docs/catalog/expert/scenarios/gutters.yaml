@@ -1,0 +1,437 @@
+category: gutters
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Notes for the harness:
+# - The gutters kb file (gutter_solar_cleaning) is mostly about cleaning. The bank only has "gutter install" and "gutter repair".
+#   Cleaning-only requests map to bank "gutter repair" with a short note on the card ("cleaning only"), or bank_job_type null when
+#   there is no honest fit (solar washing). Quote format for the category is firm.
+# - Gutter install and repair are ROC R-45 and handyman_allowed is false, so scenarios s02, s04, s06, s10, s12, s14 are licensed-only work.
+scenarios:
+  - id: gutters_s01
+    kind: vague
+    persona: "man in his 60s, texts one short line at a time, says 'the edge thing' and 'it came down'"
+    opening_message: "the edge thing on the roof came down on one side"
+    photo: "none"
+    hidden_facts:
+      - "a section of gutter about 20 feet long is hanging by one end on the west side of the house"
+      - "the hanging end is still attached near the front corner, the other end is on the ground"
+      - "one story, tile roof"
+      - "the board the gutter hung from is soft and crumbly at the bottom edge where he pushed on it"
+      - "it came down in last week's wind and rain, no storm in progress now"
+      - "a neighbor offered to put it back up for cash"
+      - "gutter is aluminum, white, about 15 years old"
+    homeowner_behavior: "answers one thing per reply; never volunteers; says 'the edge thing' until asked what it is made of; gives a fact when a question clearly calls for it; gets short after 5 questions"
+    traps:
+      - "hidden: the board behind the gutter is soft or rotted, only said if asked about the condition of the wall or board it hangs from; a gutter business needs to know before quoting a rehang"
+      - "hidden: tile roof, which changes how the crew gets to the edge; only said if asked"
+      - "the neighbor offer is not a card fact and the AI must not comment on hiring him"
+      - "'edge thing' could be gutter, fascia or drip edge; the AI should ask, not assume"
+    expected:
+      category: gutters
+      job_type: gutter_repair_route
+      bank_job_type: "gutter repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 20 feet of gutter hanging on the west side", "one story", "tile roof", "board behind the gutter feels soft", "aluminum, about 15 years old"]
+      must_not_be_on_card: ["rotted fascia diagnosis", "wind caused it", "neighbor will do it for cash", "any price"]
+      max_questions: 5
+      notes: "Vague opener with no trade word. The rotted-board fact is the quote-changer a strong estimator asks about. Licensed-only R-45 work, not a handyman job."
+
+  - id: gutters_s02
+    kind: wrong_terminology
+    persona: "woman in her 40s, flat foam roof house, writes in a hurry with typos, calls things by the wrong names"
+    opening_message: "hi the scuper drain pipe thing on my flat roof is plugged up w/ dirt and theres a puddle on the roof that wont go away"
+    photo: "roof edge where a rectangular opening in the parapet wall is half covered with packed dirt and leaf debris, with a shallow puddle on the roof surface behind it"
+    hidden_facts:
+      - "flat roof with a foam coating, one story"
+      - "the opening in the low wall at the roof edge is what she calls the scuper; it empties into a short metal downspout on the outside wall"
+      - "the puddle is about 2 inches deep and about 4 feet across, has been there since the last rain two weeks ago"
+      - "no stains or drips inside the house"
+      - "there are two openings like this, only the back one is plugged"
+      - "roof is reached by a fixed ladder bolted to the back wall"
+    homeowner_behavior: "answers in run-on sentences, uses wrong words (scuper, drain pipe, roof gutter) but answers what is asked; mentions the puddle repeatedly"
+    traps:
+      - "hidden: standing water about 2 inches deep on a foam roof; a roofer would want that on the card, but the AI must not say it is damaging the roof"
+      - "wrong terminology: she means a roof scupper and downspout, not a gutter; the AI should write what she describes, not correct her tone"
+      - "hidden: second scupper is clear, only the back one is plugged"
+      - "borderline between gutter cleaning and roofing; the card goes to gutters as cleaning-only with the ponding fact so the business can decline if it is a roofing job"
+    expected:
+      category: gutters
+      job_type: gutter_clean
+      bank_job_type: "gutter repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["flat foam roof, one story", "roof drain opening at the back wall plugged with dirt and debris", "standing water about 2 inches deep, about 4 feet across, two weeks", "second opening is clear", "no stains inside", "fixed ladder to the roof on the back wall"]
+      must_not_be_on_card: ["roof is failing", "will leak", "ponding damage", "needs a roofer", "any price"]
+      max_questions: 5
+      notes: "Wrong terms, flat roof with scuppers rather than gutters. Maps to gutter cleaning with a 'cleaning only' note. Strong estimators care about the ponding water and roof access, not the vocabulary."
+
+  - id: gutters_s03
+    kind: panicked_non_emergency
+    persona: "woman in her 30s, new homeowner, ALL CAPS and exclamation points, afraid for her house"
+    opening_message: "THE WATER FROM MY ROOF IS POURING STRAIGHT ONTO MY FOUNDATION WHEN IT RAINS!!! my house is going to crack in half. need someone TODAY"
+    photo: "downspout ending about 2 inches above the ground at a stucco corner, with dark water staining on the lower stucco and a patch of eroded gravel"
+    hidden_facts:
+      - "the storm was last night, more storms are forecast this week"
+      - "one downspout at the front-left corner of the house, the bottom elbow and extension are missing"
+      - "the gutter itself is attached and not leaking at the seams"
+      - "water pooled in the gravel next to the stucco wall for about an hour and drained away by morning"
+      - "no water has come into the house, no wet floors, no wet garage"
+      - "she has not seen cracks in the walls or slab, she just worries"
+      - "one story, about 120 feet of gutter around the house, tile roof"
+      - "the lawn crew may have knocked off the elbow, she does not know"
+    homeowner_behavior: "writes in capitals and keeps asking if the house is safe; answers questions when asked directly but circles back to fear; never volunteers that no water got inside"
+    traps:
+      - "panicked, but no 911 text: water against a foundation is not on the fire-truck list"
+      - "wrong self-diagnosis: she thinks the foundation is failing and the house will crack; the AI must not agree or reassure, and the card must not say foundation damage"
+      - "she wants a french drain or foundation work; the AI should capture what she sees (downspout end, pooling) and not label the job"
+      - "hidden: only the bottom elbow and extension are missing, gutter itself is fine; changes the job from a gutter job to a small downspout repair"
+      - "hidden: no water inside; a business sorting urgency wants to know that"
+    expected:
+      category: gutters
+      job_type: gutter_repair_route
+      bank_job_type: "gutter repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["downspout at the front-left corner ends about 2 inches above the ground", "bottom elbow and extension missing", "gutter itself attached", "water pooled next to the stucco wall during the storm", "no water inside the house", "more rain forecast this week", "one story, tile roof, about 120 feet of gutter"]
+      must_not_be_on_card: ["foundation damage", "foundation is at risk", "french drain", "lawn crew broke it", "your house is safe", "any price"]
+      max_questions: 5
+      notes: "Monsoon downspout dumping against the wall. Flagged urgent for businesses (more rain coming) but no safety text and no reassurance. The AI must refuse to confirm or deny her foundation fear."
+
+  - id: gutters_s04
+    kind: no_photo
+    persona: "man in his 50s, practical, short but clear, phone camera cracked so he cannot send photos"
+    opening_message: "my house has no gutters at all. i want them put on just the side by the front door and the driveway, rain comes off the roof right on the walkway. cant send pics my camera is busted"
+    photo: "none"
+    hidden_facts:
+      - "one-story house, tile roof, no gutters anywhere on the house"
+      - "wants gutters on the front side only, about 45 feet along the front roof edge"
+      - "the roof edge has exposed rafter tails and no fascia board on the front"
+      - "front door is under a roof overhang with a corner where two roof sections meet"
+      - "water would need to drain toward the driveway side, there is a drain spot about 10 feet from the corner"
+      - "HOA exists and he has not asked them about gutters"
+      - "wants color-matched to the beige stucco"
+    homeowner_behavior: "answers each question plainly and fully; refuses to repeat the photo request after the first no; mentions the camera once"
+    traps:
+      - "licensed-only: new gutters are R-45, handyman not allowed; the AI must not suggest a handyman for a small job"
+      - "hidden: no fascia board, exposed rafter tails; a gutter installer must plan how to hang the gutter on a tile roof, big quote-changer"
+      - "hidden: where the water will go (downspout location) is not volunteered"
+      - "hidden: HOA exists; only said if asked about HOA or approvals, and the AI must not give advice about approvals, only record it if he says it"
+      - "one side only is a scope fact; the card must not suggest doing the whole house"
+      - "no photo: the AI should ask once, accept the no, and not ask again"
+    expected:
+      category: gutters
+      job_type: gutter_install
+      bank_job_type: "gutter install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["no gutters on the house now", "new gutters on the front side only, about 45 feet", "one story, tile roof", "no fascia board, rafter tails exposed", "downspout would drain toward the driveway side", "HOA exists", "color to match beige stucco", "no photos available"]
+      must_not_be_on_card: ["whole house", "recommend adding gutters on all sides", "handyman can do it", "HOA will require", "any price"]
+      max_questions: 5
+      notes: "New install on one side only. The missing fascia on a tile roof is the hidden condition a good gutter estimator would ask about. Photo asked once only."
+
+  - id: gutters_s05
+    kind: spanish
+    persona: "woman in her 50s, Spanish speaker, texts in Spanish with some missing accents, house with solar panels"
+    opening_message: "hola, necesito que limpien mis paneles solares, tienen mucho polvo y las palomas hacen nido abajo. casa de un piso"
+    photo: "rooftop array on a tile roof with a light layer of dust and straw-like nest material poking out under the lower edge of the panels"
+    hidden_facts:
+      - "about 22 solar panels"
+      - "tile roof, one story"
+      - "pigeons have nested under the lower edge of the panels on the north side for about a year, droppings run down onto the tile"
+      - "she wants both the washing and something to keep the birds out"
+      - "the panels are not cracked and no wires are hanging that she can see"
+      - "the energy output on her app dropped about 15 percent since summer"
+      - "there is a low-hanging power service line along the back edge of the roof"
+      - "the house water is very hard, white spots on her windows"
+    homeowner_behavior: "answers in Spanish, brief; replies to English questions by switching to Spanish; mentions the birds before the panel count"
+    traps:
+      - "routing: the bank has no solar-washing job type; the card goes to gutters (kb trade gutter_solar_cleaning) as solar_wash with a note, not to window cleaning or pressure washing"
+      - "bird guard (critter_guard) is a second job that attaches to panel frames and is different licensing than washing; the card should list both wants without deciding who does what"
+      - "hidden: 22 panels; panel count is how this is quoted and she does not volunteer it"
+      - "hidden: power service line near the back roof edge; a cleaner using a pole needs it"
+      - "the output drop is a fact; the AI must not say dust caused it"
+      - "reply must stay in Spanish; card fields should be readable by English-speaking businesses"
+    expected:
+      category: gutters
+      job_type: null   # solar panel washing has no category job type; see gutters.yaml NOTES FOR REVIEW
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 22 solar panels", "one story, tile roof", "heavy dust on panels", "pigeons nesting under the lower edge on the north side", "also wants birds kept out", "app output down about 15 percent since summer", "power service line near the back roof edge", "panels not cracked, no hanging wires seen"]
+      must_not_be_on_card: ["dust caused the drop", "panel is failing", "needs solar installer", "any price"]
+      max_questions: 5
+      notes: "Solar panel cleaning does not fit either bank job type. The card goes to the gutters category because the kb trade covers solar washing, with a note that this is washing plus bird guard, not gutter work. The harness should check the note exists rather than a forced bank job type."
+
+  - id: gutters_s06
+    kind: misleading_photo
+    persona: "woman in her 60s, wants one sagging gutter fixed, sends a nice close photo of the easy part"
+    opening_message: "my gutter is sagging over the front porch, see pic. need it fixed"
+    photo: "close photo of a short stretch of gutter above a front porch sagging in the middle, one story, tile roof edge visible"
+    hidden_facts:
+      - "front porch gutter is about 12 feet and sags about 3 inches in the middle"
+      - "the house is two stories at the back and the back wall gutter, about 30 feet, is also pulling away from the wall at one end"
+      - "she wants the whole thing looked at, but only photographed the front"
+      - "the back of the house is a two-story wall facing a pool with a block wall and a wrought iron fence about 3 feet from the house, no room to set a ladder"
+      - "the side yard gate is 30 inches wide and locked, key is with her husband"
+      - "the front porch roof is concrete tile"
+      - "the back gutter has a downspout that is bent and the bottom is missing"
+    homeowner_behavior: "answers with the front porch every time unless asked specifically about other sides; says 'the back is fine' until asked what she can see from the yard"
+    traps:
+      - "misleading photo: the photo shows only the easy front stretch; the real job includes a two-story back wall with no ladder access"
+      - "hidden: no room for a ladder behind the house because of the pool and fence; a lift or roof access is needed, huge quote-changer"
+      - "hidden: gate 30 inches wide and locked, access limit"
+      - "hidden: bent downspout with the bottom missing"
+      - "the AI should ask for a photo of the back wall instead of treating the first photo as the whole job"
+      - "licensed-only: R-45, no handyman"
+    expected:
+      category: gutters
+      job_type: gutter_repair_route
+      bank_job_type: "gutter repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["front porch gutter about 12 feet, sags about 3 inches", "tile roof at front", "back gutter about 30 feet pulling away at one end on a two-story wall", "pool and fence about 3 feet from the back wall, no room for a ladder", "side gate 30 inches wide, locked", "back downspout bent and bottom missing"]
+      must_not_be_on_card: ["needs a lift", "only the front porch", "easy job", "any price"]
+      max_questions: 6
+      notes: "The photo understates the job. The two-story back wall with pool-side no-ladder access is the biggest quote-changer. The AI must ask about the other sides and the back photo instead of closing on the first photo."
+
+  - id: gutters_s07
+    kind: wrong_self_diagnosis
+    persona: "man in his 70s, reads the stain on the ceiling as the gutters leaking, speaks confidently"
+    opening_message: "my gutters are leaking into the garage, theres a brown stain on the ceiling by the front wall. need a new gutter on the front"
+    photo: "garage ceiling corner near the front wall with a brown water stain about the size of a dinner plate"
+    hidden_facts:
+      - "tile roof, one story, house built in the 1980s"
+      - "the stain showed up after the monsoon storm and is dry now"
+      - "there is a gutter along the front of the house, about 35 feet, and it is not dripping or loose that he can see"
+      - "the stain is about 3 feet in from the front wall, not at the wall"
+      - "a few tiles on the roof above the garage look shifted from the ground"
+      - "the stain was there once before, smaller, two summers ago"
+      - "he has not been on the roof"
+    homeowner_behavior: "states his diagnosis as a fact; answers questions briefly; gets a bit annoyed when asked about the roof"
+    traps:
+      - "wrong self-diagnosis: the stain is on the garage ceiling, 3 feet from the wall, with shifted tiles; this is a roof leak request, not a gutter request"
+      - "right answer is a different category: roof repair (leak repair), tile roof, stain returning"
+      - "the AI must not tell him it is the roof or that the gutters are fine; it should collect what he sees and route the card"
+      - "hidden: the stain was there before; a roofer wants that"
+    expected:
+      category: roof_repair
+      job_type: leak_repair
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["brown stain on garage ceiling about 3 feet in from the front wall", "appeared after the monsoon storm, dry now", "tile roof, one story, built in the 1980s", "a few tiles look shifted from the ground", "a smaller stain two summers ago", "front gutter about 35 feet, not seen dripping"]
+      must_not_be_on_card: ["gutters are not the problem", "roof is leaking because of the tiles", "needs a new gutter", "any price"]
+      max_questions: 5
+      notes: "Homeowner names gutters but describes roof symptoms. Category should change to roof_repair. The card should include the gutter fact as an observation without ruling it in or out."
+
+  - id: gutters_s08
+    kind: wrong_self_diagnosis
+    persona: "retired man in his 70s, got a door-to-door pitch yesterday, repeats the salesman's words"
+    opening_message: "a guy came by saying my gutters will clog and ruin my roof and foundation and i need leaf guards on every gutter on the house. he wanted a deposit today. i want to get other quotes on gutter guards"
+    photo: "front gutter with a few dry leaves in one corner, otherwise clean, with a palm tree about 30 feet away"
+    hidden_facts:
+      - "gutters only run along the front and one side, about 60 feet total"
+      - "only a few dry leaves and some dust in the gutters, water flows fine in the last storm"
+      - "one palm tree in the yard, fronds drop onto the roof a couple of times a year"
+      - "he signed a one-page paper at the door yesterday and gave a check for a deposit"
+      - "the salesman did not look at the house, did not go on a ladder, and handed him a price on the spot"
+      - "the gutters have never overflowed or leaked"
+      - "one story, concrete tile roof"
+    homeowner_behavior: "repeats the salesman's claims; answers factual questions when asked; gets defensive if asked about the deposit; mentions the deposit only when asked about the other company"
+    traps:
+      - "wrong self-diagnosis: believes his gutters are about to ruin his roof and foundation; they are clean and working"
+      - "the AI must not say the pitch was misleading, must not advise on canceling or the deposit, and must not give a view on gutter guards being worth it"
+      - "the card records the want (gutter guards on about 60 feet of existing gutter), the facts (clean, never overflowed) and one story tile roof"
+      - "hidden: palm tree overhang is a real condition guard installers care about"
+      - "hidden: gutters are only on two sides; the salesman said 'every gutter'"
+      - "the signed deposit is not a card fact; the AI must not repeat the salesman's price"
+    expected:
+      category: gutters
+      job_type: gutter_install
+      bank_job_type: "gutter install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants gutter guards on existing gutters", "gutters on the front and one side, about 60 feet", "one story, concrete tile roof", "gutters have never overflowed", "a few leaves in one corner", "one palm tree about 30 feet from the house"]
+      must_not_be_on_card: ["salesman is a scam", "cancel the contract", "guards are not needed", "deposit", "the other company's price", "gutters will ruin the roof", "any price"]
+      max_questions: 5
+      notes: "Guards are not in the job types, so this maps to gutter install as an add-on with a note. The test is that the AI stays neutral about the door-to-door pitch: no scam talk, no cancellation advice, no price repeated."
+
+  - id: gutters_s09
+    kind: elderly
+    persona: "woman in her 80s, texts with long gaps, short messages with 'the roof water thing', does not know how many stories or how long the gutters are"
+    opening_message: "hello this is dolores. the leaves and sticks are in the gutters on my house my husband used to clean them. can someone come"
+    photo: "none"
+    hidden_facts:
+      - "one-story house, tile roof, gutters only along the front and back"
+      - "sticks and dried palm bits are packed in the gutters, grass growing in the front one"
+      - "she thinks the gutters are about 50 feet each side, does not really know"
+      - "a thick power cable runs from the pole to the house just over the back corner of the gutter"
+      - "a large dog is loose in the back yard and the back gate is not locked"
+      - "she is home most days and walks slowly, can't come to the door fast"
+      - "her grandson could send a photo on Saturday"
+    homeowner_behavior: "slow replies; gives vague sizes; will answer 'yes' or 'no' easily but not give numbers; forgets what she already said; asks the AI to just send somebody"
+    traps:
+      - "hidden: power cable over the back corner of the gutter; cleaners with poles need to know"
+      - "hidden: loose dog in the back yard; access fact"
+      - "elderly: yes/no or choice questions work, free-text size questions do not; the AI should offer ranges"
+      - "photo: she can't send now; the AI should offer to take one later, not require it"
+      - "cleaning only; maps to bank gutter repair with a note; handyman acceptable for cleaning"
+    expected:
+      category: gutters
+      job_type: gutter_clean
+      bank_job_type: "gutter repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["gutters packed with sticks and dried palm debris, grass growing in front one", "one story, tile roof", "gutters on the front and back, length not known, she guesses about 50 feet each side", "power cable runs just over the back corner of the gutter", "large dog loose in the back yard", "photo can follow from her grandson on Saturday"]
+      must_not_be_on_card: ["gutter is damaged", "dog is dangerous", "any price"]
+      max_questions: 5
+      notes: "Elderly, imprecise, cleaning only. The power cable and the dog are the quiet access facts. Uses choice-style questions rather than free text for lengths."
+
+  - id: gutters_s10
+    kind: tenant
+    persona: "man in his 30s, renter, wants the gutter fixed because it hangs over the front door and drips on his kids"
+    opening_message: "i rent my place and the gutter over the front door came loose and hangs down. landlord said he doesnt care, i can handle it. can i get someone to fix it"
+    photo: "gutter section hanging at one end above a front door, tilted, with the loose end about a foot lower than the roof edge"
+    hidden_facts:
+      - "renter, month to month, landlord lives out of state and has not agreed to pay"
+      - "the gutter is about 15 feet over the front door and entry walk"
+      - "one story, shingle roof with a small porch"
+      - "the loose end drips onto the entry step when it rains and onto the door frame"
+      - "landlord's text said 'do what you want but I'm not paying' and he can show it"
+      - "no one is home weekdays until 5 pm"
+      - "the roofing is older composition shingle, curled at the edge"
+    homeowner_behavior: "answers directly; tries to decide on his own; says 'the landlord does not care' but when asked about permission says only the text said do what you want"
+    traps:
+      - "tenant: the person approving the card is not the owner and the landlord has not agreed to pay; the card must say renter, owner has not approved payment, and let the business decide"
+      - "licensed-only: R-45; handyman not allowed; the AI must not suggest he fix it himself or that a handyman can hang it"
+      - "hidden: shingle roof curled at the edge; changes how brackets hold"
+      - "hidden: no one home weekdays until 5, access window"
+      - "the AI must not give legal advice on repairs or the landlord's duty"
+    expected:
+      category: gutters
+      job_type: gutter_repair_route
+      bank_job_type: "gutter repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter, month to month", "owner lives out of state and has not agreed to pay", "gutter about 15 feet over the front door loose at one end", "one story, shingle roof curled at the edge", "drips on the entry step and door frame in rain", "no one home weekdays until 5 pm"]
+      must_not_be_on_card: ["landlord must fix", "tenant rights", "do it yourself", "handyman can fix", "any price"]
+      max_questions: 5
+      notes: "Tenant without owner approval. The card has to state the approval and payment fact for the businesses. No legal advice."
+
+  - id: gutters_s11
+    kind: calm_real_emergency
+    persona: "man in his 40s, relaxed, mentions the real problem in passing"
+    opening_message: "hey can someone clean the gutters at my carport. also the cable from the pole came down in the wind last night and its laying on the carport roof edge, cant tell if its still live, anyway the gutters are full of debris"
+    photo: "carport roof edge with gutter packed with debris and a dark cable lying across the roof edge and hanging toward the ground"
+    hidden_facts:
+      - "carport has a metal roof with a gutter on the front, about 20 feet"
+      - "the gutter is full of palm fronds and dirt"
+      - "the cable from the pole is on the carport roof and the end is hanging about 3 feet above the ground"
+      - "he has not touched it and has not called the power company yet"
+      - "the car is parked under the carport"
+      - "one story house, the carport is attached on the east side"
+      - "no sparks or burning smell, he says"
+    homeowner_behavior: "calm, matter-of-fact; treats the cable as a side note; wants the gutter work scheduled; answers questions in a friendly way"
+    traps:
+      - "fire-truck list fact buried in a cleaning request: a downed power line; the fixed 911 text is sent by code, the AI writes no extra safety advice and does not tell him to call the power company"
+      - "the gutter request is still real; the card should not drop it or become about the cable"
+      - "hidden: car under the carport, hanging end about 3 feet above ground; card facts only, no warnings"
+      - "the AI must not say the cable is safe or unsafe"
+    expected:
+      category: gutters
+      job_type: gutter_clean
+      bank_job_type: "gutter repair"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["gutter on the carport about 20 feet packed with palm fronds and dirt", "metal carport roof, attached on the east side", "cable from the pole came down in the wind and lies on the carport roof edge", "cable end hangs about 3 feet above the ground", "car parked under the carport"]
+      must_not_be_on_card: ["cable is dead", "cable is live", "stay away from it", "call the power company", "any price"]
+      max_questions: 4
+      notes: "Downed line mentioned in passing. The 911 text must fire from the downed-power-line fact even though the request reads as routine cleaning. The card keeps the cleaning job and records the line as an access fact."
+
+  - id: gutters_s12
+    kind: two_trades
+    persona: "woman in her 50s, planning a refresh before listing the house, writes in organized paragraphs"
+    opening_message: "I need all new gutters on my house and then I want the fascia and eaves painted to match the trim, hopefully same crew can do it all. house is one story"
+    photo: "front roof edge with old white gutter, flaking paint on the wood board behind it and a dark stain at the corner of the eave"
+    hidden_facts:
+      - "about 120 feet of existing aluminum gutter, white, 20 years old, seams leaking in two places"
+      - "wood fascia board behind the gutter has flaking paint and two soft spots at the lower edge near the corner"
+      - "tile roof, one story"
+      - "wants the new gutters in a bronze color"
+      - "she plans to list the house in about six weeks"
+      - "HOA must approve color changes, she has not applied"
+      - "painting is the wood fascia and eaves only, not the whole house"
+    homeowner_behavior: "organized, answers in full sentences; mentions the listing date only when asked about timing; does not know about the soft spots until asked what the wood looks like"
+    traps:
+      - "two trades: gutters first (R-45) then exterior painting (fascia and eaves); the gutter card goes first because paint should be last; the AI must not tell her the order, it only records both wants"
+      - "hidden: two soft spots on the fascia; painting or hanging new gutters on soft wood is a different job; neither trade should be surprised"
+      - "hidden: six-week deadline, which makes timing a card fact"
+      - "hidden: HOA color approval; recorded if said, not advised"
+      - "the AI must not present the paint as part of the gutter quote"
+    expected:
+      category: gutters
+      job_type: gutter_install
+      bank_job_type: "gutter install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["replace all gutters, about 120 feet, existing aluminum about 20 years old, seams leaking in two places", "one story, tile roof", "new gutters in bronze", "wood board behind the gutter has two soft spots", "also wants the fascia and eaves painted, separate request", "listing the house in about six weeks", "HOA must approve the color change"]
+      must_not_be_on_card: ["rotted fascia", "needs carpentry repair first", "gutter crew will paint", "any price"]
+      max_questions: 6
+      notes: "Second trade is exterior painting, which gets its own card after the gutter card. Gutters first. The test is whether the card keeps the paint as a separate want and records the soft wood."
+
+  - id: gutters_s13
+    kind: outside_area
+    persona: "woman in her 60s, lives in Parker, got Ask Hava's number from a friend in Havasu"
+    opening_message: "hi my friend in havasu said you find people for gutters. I'm in Parker and I need new gutters on the back of my house"
+    photo: "none"
+    hidden_facts:
+      - "house is in Parker, Arizona"
+      - "back of the house, about 40 feet, one story"
+      - "no gutters there now"
+      - "tile roof"
+      - "back patio below the roof edge"
+    homeowner_behavior: "friendly, answers whatever is asked; gives the town in the first message"
+    traps:
+      - "outside area: Parker is outside Lake Havasu City; the ZIP or town check must answer before any trade question"
+      - "the AI must not ask gutter questions first and must not recommend a business in Parker"
+      - "the request itself is a valid gutter install"
+    expected:
+      category: gutters
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a Parker business", "any price"]
+      max_questions: 1
+      notes: "ZIP/town check should answer before trade questions. No card should be written for a town outside the service area."
+
+  - id: gutters_s14
+    kind: no_businesses
+    persona: "man in his 50s, pickup truck backed into the downspout, wants it replaced, plain and direct"
+    opening_message: "a delivery truck bent my downspout at the corner and the bottom piece is crushed. need that piece replaced"
+    photo: "downspout at a stucco corner, the lower 3 feet bent outward and crushed, with the bottom elbow pinched flat"
+    hidden_facts:
+      - "one downspout at the left front corner, lower 3 feet crushed"
+      - "the bottom of the downspout connects into a buried plastic pipe at the base, the pipe end looks cracked"
+      - "one story, tile roof"
+      - "gutter above is fine and attached"
+      - "the delivery company gave him a claim number but he has not filed it"
+      - "downspout is aluminum, white"
+    homeowner_behavior: "short and clear; answers each question; mentions the buried pipe only if asked where the downspout ends"
+    traps:
+      - "hidden: downspout ties into a buried pipe with a cracked end; changes the job from a surface part swap"
+      - "no businesses: the harness simulates zero coverage; the card should say that the trade has no businesses yet, not invent one"
+      - "the delivery claim is not a card fact; the AI must not advise on filing it"
+      - "licensed-only: R-45 for gutter work; the AI must not suggest he fix it himself"
+    expected:
+      category: gutters
+      job_type: gutter_repair_route
+      bank_job_type: "gutter repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["downspout at the left front corner, lower 3 feet crushed", "bottom elbow pinched flat", "downspout connects to a buried plastic pipe, pipe end looks cracked", "gutter above attached and fine", "aluminum, white", "one story, tile roof"]
+      must_not_be_on_card: ["file the claim", "the truck driver's company", "any price"]
+      max_questions: 4
+      notes: "Job type is right and clear. With zero coverage the card must state the trade has no businesses yet instead of promising quotes. The buried pipe is the hidden condition."

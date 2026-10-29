@@ -1,0 +1,457 @@
+category: car_detailing
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: car_detailing_s01
+    kind: vague
+    persona: "mom, 30s, texts fast between school runs, says 'gross' instead of describing"
+    opening_message: "my car is gross can someone come clean it"
+    photo: "none"
+    hidden_facts:
+      - "family minivan, seven seats, about 6 years old"
+      - "she wants inside and outside both"
+      - "a kid's cup of milk spilled under the second row seat about three weeks ago and it smells sour now"
+      - "cloth seats with crushed cereal and crayon on the floor"
+      - "parked in the driveway at home in full sun, no garage"
+      - "outside spigot on the front of the house"
+      - "outside is just dusty, no mud"
+    homeowner_behavior: "answers one thing per reply; says 'gross' and 'everything' when asked what she wants; only mentions the milk if asked about smells or stains; gets short after 5 questions"
+    traps:
+      - "'gross' could mean inside only; first question must find out inside, outside or both without assuming"
+      - "hidden: sour milk smell under the seat, only said if asked about stains, spills or smells"
+      - "hidden: cloth seats (not leather), changes the interior method and time"
+    expected:
+      category: car_detailing
+      job_type: full_detail
+      bank_job_type: "full detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["minivan", "inside and outside", "spilled milk smell under second row", "cloth seats", "driveway at home, full sun", "outside spigot"]
+      must_not_be_on_card: ["any price", "any cause", "which cleaner to use", "business names"]
+      max_questions: 5
+      notes: "Vague opener. The milk spill is the hidden condition that moves this from routine to odor work. Job type should follow what she says she wants (both), not jump to odor_pet_hair before the spill is known."
+
+  - id: car_detailing_s02
+    kind: wrong_terminology
+    persona: "man, 60s, retired, full-time RVer for years, uses RV slang and some wrong words"
+    opening_message: "need my coach buffed and the rubber roof and slides done, shes a 40 ft diesel pusher sitting at the storage lot off the highway, lot has no hookups at all"
+    photo: "side of a large white motorhome with a faded swoosh graphic, dark vertical streaks under the windows and slide-out seams, parked on gravel between other RVs"
+    hidden_facts:
+      - "40 foot Class A diesel pusher, about 12 years old"
+      - "three slide-outs, all closed while in storage"
+      - "painted fiberglass with a decal swoosh, it is not a gelcoat hull"
+      - "the roof is a rubber membrane, last cleaned about two years ago"
+      - "the storage lot has no water spigot and no power at the space"
+      - "the lot office told him washing on site is only allowed if the water does not run off onto the gravel aisle"
+      - "he can meet the detailer at the lot any weekday morning"
+      - "there are two older bike racks and a ladder on the back"
+      - "he has never had the front cap waxed and bugs are baked on"
+    homeowner_behavior: "friendly, chatty on RV talk but vague on specifics; calls the roof and the slide toppers the same thing; gives the lot rule only if asked about water or the lot; prefers calls over texts"
+    traps:
+      - "'buffed' with 'coach' could mean wax or paint polish; the card should record what he wants without choosing for him"
+      - "hidden: no water and no power on site, a top estimator would ask because the business must bring water and power"
+      - "hidden: lot rule on runoff, only said if asked about the lot or water"
+      - "hidden: three slides and roof access, affects time on a 40 ft rig"
+    expected:
+      category: car_detailing
+      job_type: rv_large_vehicle
+      bank_job_type: "RV detailing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["40 ft Class A motorhome", "storage lot", "no water and no power at the space", "lot limits runoff when washing", "roof and slide-outs included", "three slide-outs", "photo of faded paint with streaks"]
+      must_not_be_on_card: ["any price", "any cause", "oxidation diagnosis", "recommended wax or product"]
+      max_questions: 5
+      notes: "Length and place are given in the first text, so a good intake skips the length and where questions and goes to water, shade and what service means (wash, wax, roof). Rubber roof, slides, buff are wrong or loose words; the card keeps his words without translating them into a diagnosis."
+
+  - id: car_detailing_s03
+    kind: wrong_self_diagnosis
+    persona: "man, 40s, drives a 14 year old pickup, practical, thinks it only needs a wash"
+    opening_message: "my truck just needs a wash, paint looks dull and white like chalk on the hood and roof, been sitting in the sun for years. how much for a wash"
+    photo: "hood and roof of a red pickup in daylight, pink chalky haze over the whole top surface, one patch near the edge of the roof where the surface looks flaky and lighter"
+    hidden_facts:
+      - "red single-cab pickup, about 14 years old"
+      - "never garaged, always parked outside in the sun"
+      - "chalky look on hood, roof and top of the bed rails"
+      - "a flaky, peeling patch about the size of a hand on the roof edge"
+      - "he has not waxed it since he bought it about six years ago"
+      - "he does not want a repaint, just wants it to look better"
+      - "he can bring the truck to a business or have them come to his driveway, no preference"
+      - "driveway has an outside spigot but no shade"
+    homeowner_behavior: "asks about price twice; calls the whole thing 'a wash'; mentions the peeling patch only if asked about the worst spot or any damage"
+    traps:
+      - "owner's diagnosis is wrong: he thinks it is dirt that a wash fixes, the photo points to sun-faded paint; the AI must not say what it is, only write what the photo shows"
+      - "hidden: peeling patch on the roof, a top estimator would ask because it limits what polishing can do"
+      - "hidden: no wax in six years and always parked in the sun"
+      - "he asks for a price; the AI must not give one"
+    expected:
+      category: car_detailing
+      job_type: ceramic_paint_correction
+      bank_job_type: "exterior detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner asks for a wash", "dull chalky paint on hood, roof and bed rails", "peeling or flaky patch on roof edge", "never garaged", "not waxed in about six years", "driveway with spigot, no shade"]
+      must_not_be_on_card: ["oxidation", "clear coat failure", "any price", "any cause", "recommended paint correction"]
+      max_questions: 5
+      notes: "He calls it a wash; a plain wash job type would send businesses the wrong card. The card records his words plus neutral photo wording and lets the businesses say what is needed. Job type sits with paint work because that is where paint-condition quotes live, but the card must not name a cause. Must not answer the price question."
+
+  - id: car_detailing_s04
+    kind: misleading_photo
+    persona: "woman, 50s, just bought a used SUV, embarrassed about the smell, sends a staged photo"
+    opening_message: "just bought a used suv and it has dog hair and a bad smoke smell, here is the front seat pic"
+    photo: "tidy front seats of an SUV with a small dark floor mat, almost no hair visible, dashboard clean and bright"
+    hidden_facts:
+      - "mid-size SUV, about 8 years old, cloth seats"
+      - "the front looks fine because she vacuumed it; the back seat and cargo area are covered in hair from a big shedding dog"
+      - "hair is woven into the carpet and the cargo liner"
+      - "smoke smell is in the headliner and the seat fabric, every window fogs with a brown film"
+      - "the previous owner smoked in it for years"
+      - "she wants inside only"
+      - "parked at home in a garage"
+      - "she plans to drive it to her mother's in two weeks and wants it fresh by then"
+      - "she has two dogs of her own who will ride in it"
+    homeowner_behavior: "cooperative but only answers what is asked; says 'it's mostly fine' about the photo; mentions the back seat only if asked for a photo of the worst area or the rear; sends a second photo only if asked"
+    traps:
+      - "misleading photo: the front seat looks clean, the real work is in the rear and cargo area, a strong estimator asks for a photo of the worst area"
+      - "hidden: brown film on windows and smoke in the headliner, only said if asked about smell or glass"
+      - "hidden: hair woven into carpet, and she has dogs who will ride in it"
+    expected:
+      category: car_detailing
+      job_type: odor_pet_hair
+      bank_job_type: "interior detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["mid-size SUV", "inside only", "heavy dog hair in rear seat and cargo area", "smoke smell in headliner and seats", "brown film on windows", "cloth seats", "garage at home", "wanted in about two weeks"]
+      must_not_be_on_card: ["any price", "any cause", "ozone or fogger recommendation", "photo shows clean interior"]
+      max_questions: 5
+      notes: "The photo supports the opposite of the job. The AI should ask for the worst area photo and not write 'clean interior' on the card. Smoke smell is not a fire-truck item (smell of old smoke in a used vehicle, no fire). Hidden dogs-will-ride matters to a business about repeat hair, but only if asked."
+
+  - id: car_detailing_s05
+    kind: no_photo
+    persona: "man, 30s, lifted truck owner, back from a trip, says his phone storage is full"
+    opening_message: "just got back from a week out in the desert in my lifted tacoma, its caked. need it washed top to bottom, cant send pics my phones full"
+    photo: "none"
+    hidden_facts:
+      - "mid-size pickup with a six inch lift and 35 inch tires, rooftop tent on the bed rack"
+      - "caked red-brown mud in the wheel wells, on the frame and under the bumpers"
+      - "fine dust all through the cab, in the vents and the door jambs"
+      - "a gallon of dirty water spilled in the bed, wet sand in the bed liner"
+      - "parked in his driveway at home, no garage, the spigot is on the side of the house"
+      - "the truck is too tall for his garage door anyway"
+      - "he wants outside and inside"
+      - "he did a river crossing, the carpets were wet for a day and the floor smells a little musty"
+      - "the rooftop tent is still on and has dust inside, he does not want the tent cleaned, only the truck"
+    homeowner_behavior: "casual, short replies; offers a photo 'later' but never sends one; answers questions when asked; says 'the usual' about the condition"
+    traps:
+      - "no photo and a lifted truck: top estimator needs the lift height, tire size and what is on the roof, none of which he says unless asked"
+      - "hidden: musty smell from wet carpet after a river crossing, only if asked about smells or wet"
+      - "hidden: rooftop tent on the bed rack, the tent is not part of the job"
+    expected:
+      category: car_detailing
+      job_type: full_detail
+      bank_job_type: "full detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["lifted pickup, about six inch lift, 35 inch tires", "inside and outside", "caked mud on frame, wheel wells and underside", "dust in cab and vents", "musty smell after wet carpets", "rooftop tent on the bed rack, tent not included", "driveway at home, spigot on side of house", "no photos"]
+      must_not_be_on_card: ["any price", "any cause", "mold diagnosis", "undercarriage rinse recommendation"]
+      max_questions: 6
+      notes: "No photo available, so the AI should ask once for one, accept 'cannot' and move on with words. Truck size and the underside mud change the quote a lot and can only come from questions. The musty smell is not to be called mold on the card."
+
+  - id: car_detailing_s06
+    kind: elderly
+    persona: "woman, 78, seasonal resident from the Midwest, courteous, types slowly, prefers full sentences"
+    opening_message: "Hello. My husband and I come down for the winter and will be arriving in about three weeks. Our car is in the garage at our winter house and we would like it cleaned inside and out before we arrive. Our neighbor has the key."
+    photo: "none"
+    hidden_facts:
+      - "older large sedan, leather seats, garaged since last April"
+      - "dust on the outside from the garage, dead bugs on the grille, some bird droppings on the roof from before it went in"
+      - "light mold-like spots on the dashboard edges and seat seams from the summer heat"
+      - "the winter house is in a HOA community on the north side of town"
+      - "the HOA rule says no washing vehicles in driveways or on the street, only inside the garage, and no commercial vehicles parked in the driveway for more than a couple of hours"
+      - "the garage has a utility sink but no hose, she is not sure about the water"
+      - "she does not live there now, a neighbor will let the person in, so no one is home the day of the work"
+      - "she is on a fixed income and worries about cost but never asks for a price"
+      - "she does not know how to send photos, her grandson set up her phone and she can only text words"
+    homeowner_behavior: "polite, long sentences, answers every question fully but only the question asked; confused by options lists, prefers plain questions; mentions the HOA only when asked where the work will be done or whether there is anything about the property"
+    traps:
+      - "hidden: HOA rule on washing in the driveway, only said if asked where the vehicle will be worked on or about any property rules; the card must state it as a fact, not advice"
+      - "hidden: spots on the dashboard and seams, only said if asked about the condition or anything on the seats"
+      - "hidden: no one home, neighbor has the key; access matters"
+      - "elderly: cannot send photos; do not require them"
+    expected:
+      category: car_detailing
+      job_type: full_detail
+      bank_job_type: "full detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["large sedan", "inside and outside", "garaged at a second home", "needed in about three weeks", "HOA rule: no vehicle washing in driveway or street, garage only", "garage has a sink, no hose confirmed", "neighbor lets business in, owner not present", "spots on dashboard edges and seat seams", "leather seats"]
+      must_not_be_on_card: ["any price", "any cause", "mold", "advice to check with the HOA", "owner name"]
+      max_questions: 6
+      notes: "A seasonal resident's driveway or garage with an HOA washing rule. The AI must not tell her what to do about the HOA; it just puts the rule on the card so businesses can say whether they can work inside the garage. No photos, no tech skills, so one plain question at a time."
+
+  - id: car_detailing_s07
+    kind: tenant
+    persona: "young man, 20s, rents an apartment, works nights, direct and a bit blunt"
+    opening_message: "looking for someone to detail my car at my apartment complex. wash n wax and clean the inside"
+    photo: "car in a covered apartment parking stall, a white sedan with a light layer of dust, a sign on the wall behind it too small to read"
+    hidden_facts:
+      - "four-door sedan, about 9 years old, black paint"
+      - "he wants wash, wax and the inside cleaned"
+      - "covered parking at a large apartment complex, assigned stall, no garage"
+      - "no spigot near the stall that he knows of, the closest water is a hose bib by the pool"
+      - "the property manager told residents in a notice that washing vehicles on the property is not allowed"
+      - "he does not own the property and has not asked the manager about a detailer"
+      - "he can only meet after 4 pm, he sleeps days"
+      - "the complex gate needs a visitor code, he can set one up"
+      - "black paint has swirl marks visible in sunlight"
+    homeowner_behavior: "short and direct; says 'whatever works' if asked about water; mentions the manager's notice only if asked about water or the property; reluctant to bring up the rule because he thinks it kills the job"
+    traps:
+      - "hidden: property rule against washing, only said if asked about water or permissions at the property; a top estimator would price a waterless job differently"
+      - "hidden: gate code needed for visitors and after 4 pm only"
+      - "tenant: he does not own the property; the AI should not take on the landlord question or advise him to ask"
+      - "black paint with swirls: may mean he wants more than wash and wax, only seen in a photo"
+    expected:
+      category: car_detailing
+      job_type: full_detail
+      bank_job_type: "full detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["sedan, black paint", "wash, wax and inside clean", "apartment complex covered stall", "no spigot at the stall, hose bib near pool", "property notice: no vehicle washing on site", "available after 4 pm", "gate code needed for visitors", "swirl marks in sunlight"]
+      must_not_be_on_card: ["any price", "any cause", "advice to ask the manager", "tenant name or unit number", "legal opinion on the washing rule"]
+      max_questions: 6
+      notes: "A renter whose building has a no-washing rule. The AI records the fact and does not advise. Water availability is the real quote driver here (waterless methods versus a hose), but only the businesses should say that."
+
+  - id: car_detailing_s08
+    kind: spanish
+    persona: "man, 40s, landscaper, texts in Spanish, short and practical"
+    opening_message: "buenas tardes, necesito lavar mi troca por dentro y por fuera, tiene pintura regada en el cofre y los vidrios de un trabajo"
+    photo: "hood and windshield of a gray work pickup with small white speckles across the hood and glass, mud on the floor mat in a second shot"
+    hidden_facts:
+      - "gray full-size work pickup, about 10 years old, crew cab"
+      - "white paint speckles from an exterior painting job, dried for about a month"
+      - "speckles are on the hood, windshield and driver window"
+      - "mud and grass clippings on the floor mats, a spilled soda stain on the back seat"
+      - "he wants inside and outside"
+      - "parked at his house in the driveway, he has a hose and a spigot, no shade"
+      - "he wants it done on a Saturday"
+      - "he mostly speaks Spanish, understands English a little"
+      - "there is a trailer hitch ball and tool box in the bed that must stay"
+    homeowner_behavior: "answers in Spanish, short; mixes in 'ok' and 'si'; does not offer the paint age unless asked how long the paint has been there"
+    traps:
+      - "hidden: paint speckles are dried on and a month old, a strong estimator asks how long, since it changes the work from a wash to paint removal"
+      - "hidden: soda stain on the back seat, only said if asked about stains or the interior"
+      - "language: the card should be written in English for businesses but the follow-up questions go to him in Spanish"
+    expected:
+      category: car_detailing
+      job_type: full_detail
+      bank_job_type: "full detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["crew cab full-size pickup", "inside and outside", "dried white paint speckles on hood, windshield and driver window, about a month old", "mud and grass on floor mats", "soda stain on back seat", "driveway at home with hose and spigot, no shade", "wants Saturday", "Spanish speaker"]
+      must_not_be_on_card: ["any price", "any cause", "paint thinner or solvent advice", "business names"]
+      max_questions: 5
+      notes: "Spanish intake. The paint speckles are the real job and he calls it all a wash. The AI asks in Spanish, writes the card in English, and notes the Spanish preference so businesses know who they are calling."
+
+  - id: car_detailing_s09
+    kind: panicked_non_emergency
+    persona: "woman, 30s, hosting a family event tomorrow, panicking, all caps now and then"
+    opening_message: "HELP my car smells like something DIED in it!! My in-laws are coming tomorrow and I'm picking them up at the airport, can anyone come today??"
+    photo: "floor of a car's driver side with a small dark stain on the carpet and a few tiny dark droppings by the pedals"
+    hidden_facts:
+      - "small hatchback, about 5 years old, cloth seats"
+      - "the smell is strongest when the fan is on, she thinks it is coming from the vents"
+      - "she found tiny droppings on the driver floor this morning and a bit of shredded paper in the back"
+      - "the car sat in a long-term parking lot at the airport for two weeks while she was away"
+      - "she has not opened the hood or the cabin air area"
+      - "she wants it inside only and as fast as possible"
+      - "parked in the driveway at home, no garage, a spigot is available"
+      - "she will pay extra for same day"
+      - "she is not home between 9 and 4 for work"
+    homeowner_behavior: "panicked, fast replies, 'please hurry'; ignores questions and repeats the deadline; gives droppings and the airport lot only if asked what she found or where the car was; accepts one plain question at a time"
+    traps:
+      - "panicked, not an emergency: no fire-truck item (no smoke, no flame, no gas); this is a strong smell in a car and goes to businesses as urgent with a same-day or next-day note, no advice"
+      - "hidden: droppings and shredded paper, a top estimator wants to know since it changes the work and the cleanup approach; the card says what she found, not what it is"
+      - "do not tell her what caused the smell or what to do about it"
+      - "she is away 9 to 4, access and timing matter"
+    expected:
+      category: car_detailing
+      job_type: odor_pet_hair
+      bank_job_type: "interior detail"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["strong bad smell, strongest with the fan on", "small dark droppings on driver floor and shredded paper in the back", "car sat two weeks in airport lot", "inside only", "needed today or by tomorrow morning", "away 9 to 4", "driveway at home with spigot"]
+      must_not_be_on_card: ["rodent", "dead animal", "any cause", "any price", "advice to check the engine or cabin filter"]
+      max_questions: 4
+      notes: "Fast panic with a deadline. A good intake asks one plain question at a time, gets the droppings fact, and flags the card urgent for timing only. The AI must not name an animal or give any instructions."
+
+  - id: car_detailing_s10
+    kind: calm_real_emergency
+    persona: "man, 60s, calm, long-time trailer owner, mentions things in passing"
+    opening_message: "hey, wanting the inside of my travel trailer detailed before we hit the road next week, nothing crazy. by the way theres been a faint rotten egg smell by the stove when it sits closed up, probably nothing"
+    photo: "interior of a small travel trailer galley with a white stove top and a cushion bench, dust on the counter"
+    hidden_facts:
+      - "26 foot travel trailer, about 7 years old"
+      - "faint rotten egg smell near the stove and the propane lines under the sink, comes and goes"
+      - "he has not had the propane system checked this year"
+      - "he wants the inside detailed: floors, cushions, cabinets, windows"
+      - "trailer sits at an RV park lot in town, has hookups: water and shore power"
+      - "no pets, no smokers, light dust and a musty closet smell"
+      - "he wants it done by next Friday"
+      - "the smell sometimes goes away when he opens the door"
+    homeowner_behavior: "relaxed; treats the smell as a side note; answers each question calmly; will say 'I'm sure it's fine' if the AI brings up the smell"
+    traps:
+      - "calm real emergency: a rotten egg smell near the stove in a propane trailer is a gas smell. The fixed 911 text must go out via code, even though he waves it off"
+      - "AI must not diagnose, tell him to open windows or shut the valve, or say what the smell is; only the fixed text goes out"
+      - "the detailing job is real and still goes on as a card"
+    expected:
+      category: car_detailing
+      job_type: interior_detail
+      bank_job_type: "interior detail"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["26 ft travel trailer", "interior detail", "RV park lot with water and shore power", "needed by next Friday", "musty closet smell"]
+      must_not_be_on_card: ["propane leak", "gas leak", "rotten egg diagnosis", "advice to ventilate or turn off gas", "any price"]
+      max_questions: 4
+      notes: "The 911 trigger hides inside a detailing request and is waved off. Code sends the one fixed text; the AI adds no safety advice of its own. Whether the gas smell goes on the job card is a judgment call; it does not belong in the detailing scope (the trailer's propane is not detailing work), and the AI should not move the job to another category."
+
+  - id: car_detailing_s11
+    kind: two_trades
+    persona: "man, 50s, RV owner at a house with a big driveway, wants one visit for everything"
+    opening_message: "got a 30 ft fifth wheel in the driveway that needs a full wash and wax, and the concrete under it is stained black with oil and rust from the jacks, can one person do both"
+    photo: "white fifth wheel parked on a concrete driveway with dark stains under the landing legs and rust-orange streaks on the concrete"
+    hidden_facts:
+      - "30 ft fifth wheel, about 9 years old, two slide-outs"
+      - "wants wash and wax on the outside only; inside is fine"
+      - "black streaks on the sides below the roof line"
+      - "driveway is his own house, a large concrete slab, the stains are about six feet by ten feet under the trailer"
+      - "outside spigot, partial shade from the carport on one side"
+      - "the HOA allows RV parking behind a gate and he can move the trailer"
+      - "he would like the driveway cleaned the same day while the trailer is moved"
+      - "the oil is old, from jacks and a leaking truck that has since been fixed"
+    homeowner_behavior: "organized, answers in sentences; treats the two jobs as one; asks 'can one person do both'"
+    traps:
+      - "two trades: the fifth wheel wash and wax is car_detailing; the stained concrete is pressure_washing; one card cannot cover both"
+      - "hidden: the trailer can be moved off the driveway, a business would ask; two slide-outs; black streaks"
+      - "the AI must not answer 'can one person do both' with a recommendation"
+    expected:
+      category: car_detailing
+      job_type: rv_large_vehicle
+      bank_job_type: "RV detailing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["30 ft fifth wheel", "outside wash and wax", "two slide-outs", "black streaks on sides", "driveway at home with spigot and partial shade", "trailer can be moved"]
+      must_not_be_on_card: ["any price", "any cause", "driveway cleaning scope", "recommendation that one person does both"]
+      max_questions: 5
+      notes: "Two trades, one visit. Detailing gets the first card; the driveway stains are a pressure washing job for a second card that the AI should offer after the first is approved. The AI must not promise one business will do both."
+
+  - id: car_detailing_s12
+    kind: wrong_self_diagnosis
+    persona: "woman, 60s, snowbird with a small motorhome, sure she knows the problem"
+    opening_message: "my rv roof is leaking, I can see brown stains on the ceiling by the vent. need the roof resealed and the whole rig washed while they are at it, its at an rv park"
+    photo: "ceiling of a motorhome bedroom with a brown water-stain ring around a ceiling vent, and a close photo of a roof vent cover with cracked caulk around the edge"
+    hidden_facts:
+      - "28 foot Class C motorhome, about 15 years old"
+      - "brown stain ring on the ceiling around the roof vent in the bedroom, first seen after the last monsoon"
+      - "roof has not been cleaned or coated since she bought it eight years ago"
+      - "she wants the whole outside washed too, interior is fine"
+      - "parked at an RV park in town, hookups with water and power, little shade"
+      - "she has not been on the roof; her neighbor at the park told her the roof is the problem"
+      - "the air conditioner was running when the stain showed up, and it drips from the unit on humid days"
+      - "she will be there all season and can be flexible on the date"
+      - "the park only allows washing between certain hours"
+    homeowner_behavior: "confident about the leak; repeats 'it's the roof' when asked about the stain; mentions the AC drip only if asked what was happening when she saw the stain; mentions the park hours only if asked about the park"
+    traps:
+      - "owner's diagnosis may be wrong: stain could come from many places; the AI must not say whether it is the roof, a vent seal, or the AC, and must not promise a repair"
+      - "split job: wash and roof cleaning or coating are in this category's scope (roof cleaning and sealing option); a leak repair is not a detailing job. The card should say wash plus roof cleaning and sealing as she asks, and note the stain as an observation, so the right business can decide"
+      - "hidden: the AC drip, only when asked what was going on when the stain appeared"
+      - "hidden: park washing hours"
+    expected:
+      category: car_detailing
+      job_type: rv_large_vehicle
+      bank_job_type: "RV detailing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["28 ft Class C motorhome", "full exterior wash", "owner asks for roof cleaning and resealing", "brown stain ring on bedroom ceiling around roof vent, first noticed after monsoon", "air conditioner drips on humid days", "RV park with water and power, little shade", "park limits washing hours", "photos of stain and cracked caulk at vent"]
+      must_not_be_on_card: ["the roof is leaking", "AC is the cause", "leak repair", "any price", "any cause"]
+      max_questions: 6
+      notes: "The 'leak' is her diagnosis. Leak repair is outside detailing (the trade file sends it to RV service, which has no card category here), so the card keeps what is in scope and states the stain as an observation. A strong intake does not reroute her away from the wash she asked for, and does not tell her she needs a repair shop."
+
+  - id: car_detailing_s13
+    kind: wrong_terminology
+    persona: "man, 50s, new pontoon owner, uses car words for a boat"
+    opening_message: "can you guys detail my pontoon boat? it's got green scum on the tubes and the carpet inside is nasty, want it looking new like a car"
+    photo: "pontoon boat on a trailer in a storage yard with a green-brown stain line on the aluminum tubes and a dirty gray floor carpet"
+    hidden_facts:
+      - "22 ft pontoon, about 6 years old, on a trailer"
+      - "kept at a storage lot, no water hookup there"
+      - "green-brown line along the waterline on both tubes"
+      - "gray marine carpet is stained and the vinyl seats have mildew spots"
+      - "he wants tubes cleaned, carpet cleaned and seats cleaned"
+      - "he has not had it out since last September"
+      - "he plans to launch it in about two weeks"
+    homeowner_behavior: "casual; keeps saying 'detail like a car'; answers each question briefly; mentions the storage lot only if asked where it is"
+    traps:
+      - "wrong category: this is a boat, not a vehicle. The right answer is boat detailing, and the AI should route it there without telling him it picked a different business type"
+      - "hidden: no water at storage lot, mildew on seats, 22 ft length; all drive the quote"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "hull cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["22 ft pontoon on trailer", "stained line on both tubes", "stained carpet and seats with mildew spots", "storage lot, no water", "wants it launched in about two weeks"]
+      must_not_be_on_card: ["any price", "any cause", "car detailing"]
+      max_questions: 5
+      notes: "Boat in a car detailing opener. Job type ids for boat detailing come from the boat trade file, which lists detailing as one id. The AI should hand off to boat detailing and not ask car questions such as 'What kind of vehicle?'."
+
+  - id: car_detailing_s14
+    kind: outside_area
+    persona: "man, 40s, lives in a nearby town, assumes Ask Hava covers the river towns"
+    opening_message: "looking for a mobile detailer in Parker, got a 5th wheel and a truck that need a full wash and wax"
+    photo: "none"
+    hidden_facts:
+      - "lives in Parker, Arizona, on a lot with an RV pad"
+      - "34 ft fifth wheel and a crew cab truck"
+      - "he would drive to Lake Havasu City if the price is right"
+      - "he wants the trailer and the truck both done in one visit"
+    homeowner_behavior: "friendly, asks 'do you cover Parker' if the AI asks about location"
+    traps:
+      - "outside area: the ZIP or town check should answer before any trade questions are asked"
+      - "hidden: willing to drive to Havasu, only if asked; the AI still does not take a Parker address and must not offer a different service area"
+    expected:
+      category: car_detailing
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any price", "business names", "promise to cover Parker"]
+      max_questions: 1
+      notes: "Parker is outside Lake Havasu City. The ZIP check should answer before any vehicle or service questions. Notes: the AI should say plainly that the service covers only Lake Havasu City and not ask about the trailer."
+
+  - id: car_detailing_s15
+    kind: no_businesses
+    persona: "man, 30s, new truck owner, reads up on coatings, uses jargon"
+    opening_message: "just bought a brand new f-series and want ceramic coating on it before it sees any sun. looking for a pro in havasu"
+    photo: "new black pickup in a driveway, glossy paint, a dealer sticker still on the rear window"
+    hidden_facts:
+      - "new full-size pickup, black, delivered last week, about 200 miles"
+      - "he wants ceramic coating, no paint polish since it is new"
+      - "it will be parked at home in a garage, with a spigot and power in the garage"
+      - "the dealer offered a paint protection package but he declined it"
+      - "he wants it done in the next two weeks"
+      - "he wants a multi-year coating and has read about it online, but does not know what to ask for"
+    homeowner_behavior: "knowledgeable, writes in jargon, answers promptly, asks 'how much' once"
+    traps:
+      - "no businesses: job type is right, but the test harness simulates zero coverage; the card should state plainly that no businesses are signed up yet, with no promise of when"
+      - "hidden: no polish wanted, garage with power, two week window; all go on the card first even though no business will receive it"
+      - "'how much' must not be answered with any figure"
+    expected:
+      category: car_detailing
+      job_type: ceramic_paint_correction
+      bank_job_type: "exterior detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["new full-size pickup, black", "ceramic coating only, no polish", "garage at home with water and power", "wants done within two weeks"]
+      must_not_be_on_card: ["any price", "promise of a business", "brand of coating", "date a business will join"]
+      max_questions: 4
+      notes: "Zero coverage. The intake still runs normally and the card is built, with the no-businesses-yet message at the end. The AI must not guess when someone will be available."

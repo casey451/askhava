@@ -1,0 +1,712 @@
+# Ask Hava expert layer: home_watch (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set home_watch and trade_kb/trades/home_watch.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - Mapping. The category has two job types, "weekly house check" (recurring, monthly) and "storm check"
+#   (one-time, firm). All six kb job types are kept:
+#     weekly_house_check -> "weekly house check" (monthly).
+#     storm_check -> "storm check" (firm).
+#     arrival_departure and meet_and_greet -> "storm check", because it is the only one-time job type and
+#       both are a single visit quoted firm. A business that opts into storm checks will get open-up,
+#       close-up and let-someone-in cards too. Suggest renaming "storm check" to "one-time check" or adding
+#       "open or close the house" and "let someone in" as one-time job types.
+#     key_holding -> "weekly house check" (monthly), because holding a key is an ongoing service. Suggest a
+#       "key holding" job type later so businesses can opt in to it alone.
+#     leasing_refused -> the refused name "rent collection, finding tenants or leasing" (LIC-018). Its
+#       card_template is the internal decline record; no card goes to a business. Its quote_format reads
+#       monthly only because the checker takes the category's format; nothing is quoted.
+# - No new_job_type was needed.
+# - The bank set has no home-size question, but the kb has one (home_size) and size is the second price
+#   driver. Here size is the follow-up fu_home_size, which spends the one follow-up allowed. Suggest adding
+#   home_size to the bank set. Suggest adding p3_thermostat (summer away) and p5_storm_area (storm checks)
+#   to the bank photo list, which holds only p1, p2 and p4.
+# - The bank tasks options leave out pool, boat or vehicle checks, mail, trash bins and pet feeding. Pet
+#   feeding is not home watch and there is no pet category; the card states a pet in the home plainly so
+#   the business can decline. Open question for the catalog.
+# - A lockout happening now has no route: there is no enabled locksmith category. key_holding covers only a
+#   spare key set up ahead of time.
+# - A.R.S. 32-2601 defines a security guard as a watchman or patrolman employed by a private security guard
+#   service. NHWA says home watch is not a security service. Cards and follow-ups here avoid "security",
+#   "patrol" and "guard". Whether a business that sells patrols needs a security license is not decided
+#   here and is a question for counsel, not for the intake AI.
+# - Lake Havasu City vacation rentals need a 24/7 emergency point of contact. Acting as that contact is not
+#   a job type in any category; a request for it is carded as home watch only for the visit work. Open.
+schema: 1
+category: home_watch
+question_set: home_watch
+kb_trade: home_watch
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (no class covers looking over an empty home)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_2101
+    title: "A.R.S. 32-2101(51) Real estate broker: for another and for compensation, rents or leases (a), collects rent (g), helps procure prospects for a lease or rental (i)"
+    url: "https://www.azleg.gov/ars/32/02101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_2121
+    title: "A.R.S. 32-2121 Exceptions: (A)(1) a person managing their own property; (A)(15) reservations or money for stays of 31 or fewer days in a dwelling unit"
+    url: "https://www.azleg.gov/ars/32/02121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_2122
+    title: "A.R.S. 32-2122(B) Unlawful to engage in a broker's business without a license"
+    url: "https://www.azleg.gov/ars/32/02122.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_2601
+    title: "A.R.S. 32-2601 Definitions (private security guard service; security guard as watchman or patrolman employed by a guard service)"
+    url: "https://www.azleg.gov/ars/32/02601.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ah_lic_018
+    title: "Ask Hava spec LIC-018 (home watch never includes rent collection, finding tenants or leasing) and LIC-004 (property management not offered)"
+    url: "docs/spec/licensing.md"
+    checked: "2026-10-29"
+    kind: other
+  - id: nhwa
+    title: "National Home Watch Association: home watch is a visual inspection of a home on a schedule, looking for obvious issues; not a security service and not house-sitting; accreditation reviews liability insurance, bonding and background checks on principals"
+    url: "https://www.nationalhomewatchassociation.org/"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: boston_homewatch
+    title: "Boston.com, With a certified home watcher, you're sitting pretty on vacation (2024): visits weekly or every two weeks, about 20 to 40 minutes, inside and outside; watchers profiled charge $50 to $100 per visit; NHWA has 600+ members and a searchable directory"
+    url: "https://www.boston.com/real-estate/ask-the-expert/2024/05/08/with-certified-home-watcher-youre-sitting-pretty-vacation/"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_business_license
+    title: "Lake Havasu City Business License: businesses and individuals conducting business within city limits need one; some also need a privilege tax license"
+    url: "https://www.lhcaz.gov/175/Business-License"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_vacation_rentals
+    title: "Lake Havasu City Vacation Rentals (City Code ch. 5.20): permit per property, an emergency point of contact available 24 hours a day, 7 days a week"
+    url: "https://www.lhcaz.gov/vacation-rentals"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City Annual Drinking Water Quality Report (total hardness about 19 grains per gallon, range 18 to 20)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_weather_2014
+    title: "Lake Havasu City 2014 weather summary (official station: 120 days at or above 100 F, 23 days at or above 110 F, high of 117 F on July 24)"
+    url: "https://www.lhcaz.gov/docs/default-source/department-documents/2014-weather-summary.pdf?sfvrsn=4"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: adwr_monsoon
+    title: "Arizona Department of Water Resources: monsoon season runs June 15 to September 30, with strong winds, dust storms and local flash flooding"
+    url: "https://www.azwater.gov/news/articles/2024-05-28"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (officially June 15 to September 30; flash flooding, lightning, heat)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: census_lhc
+    title: "Census Reporter, Lake Havasu City profile (ACS 2024 5-year): 35,394 housing units and 28,463 households, so about 1 in 5 units has no household living in it; median age 56.1"
+    url: "https://censusreporter.org/profiles/16000US0439370-lake-havasu-city-az/"
+    checked: "2026-10-29"
+    kind: other
+  - id: adjusters_vacancy
+    title: "Adjusters International, Vacancy/Occupancy Clauses: under the HO-3 form, glass breakage and vandalism coverage ends after the dwelling is vacant more than 60 consecutive days; freezing leaks need heat kept on or water shut off"
+    url: "https://www.adjustersinternational.com/pubs/adjusting-today/vacancy-occupancy-clauses-protective-safeguards-endorsements/3/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: iii_homeowners
+    title: "Insurance Information Institute, Facts + Statistics: Homeowners and renters insurance (water damage and freezing 22.6 percent of losses in 2023; about 1.5 claims per 100 house-years, 2019 to 2023)"
+    url: "https://www.iii.org/fact-statistic/facts-statistics-homeowners-and-renters-insurance"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: hcp_thumbtack
+    title: "Housecall Pro (field-service software vendor): how Thumbtack works (pros report $10 to over $100 per lead by trade and market; customers often contact several pros at once)"
+    url: "https://www.housecallpro.com/resources/what-is-thumbtack-how-it-works/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: nextphone_angi
+    title: "NextPhone (marketing vendor): Angi shared-lead model (no single published price; each request goes to 3 or 4 pros, sometimes more, and each is billed)"
+    url: "https://www.getnextphone.com/blog/angi-leads-for-contractors"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: superdupr_thumbtack
+    title: "SuperDupr (marketing vendor): Is Thumbtack worth it for pros in 2026 (third-party reports: about $8 for small cleaning jobs, most home-service trades $25 to $75 per lead; Angi $15 to $85 plus an annual fee)"
+    url: "https://superdupr.com/blog/is-thumbtack-worth-it"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Visits per month: weekly, every two weeks or monthly"
+      why: "The monthly quote is the per-visit price times the visit count; the bank's schedule question settles it. Weekly and every-two-weeks visits are the norm in the trade."
+      source: boston_homewatch
+    - driver: "Time on site: home size, stories, a casita, detached garage or second building"
+      why: "Visits run about 20 to 40 minutes inside and out; a big home or a casita adds a second walk-through."
+      source: boston_homewatch
+    - driver: "Tasks on each visit: run taps and flush toilets, AC and thermostat, plants, fridge, starting a car or golf cart, trash bins"
+      why: "Each task adds minutes to every visit, so a walk-through-only check and a full checklist are different prices. [judgment]"
+      source: null
+    - driver: "Which months and how many: summer only, winter only, year-round, off and on"
+      why: "Months set the total visits; summer checks add AC and heat items, and a short season may carry a minimum. [judgment]"
+      source: null
+    - driver: "Call-outs beyond the schedule: after storms, to meet a contractor, to let the owner in"
+      why: "Extra trips are priced per trip or folded into a higher monthly rate; the owner's words on storms and contractors tell the business which. [judgment]"
+      source: null
+    - driver: "A dated photo report after each visit"
+      why: "Writing and sending the report adds time; owners ask for it because standard HO-3 vacancy terms change after 60 days empty, though Ask Hava gives no insurance advice."
+      source: adjusters_vacancy
+    - driver: "Access: someone local lets them in, lockbox, smart lock, plus a gate pass"
+      why: "A gated community or park office pass, or a key held by a neighbor, adds setup time to the first visit and to any same-day call. [judgment]"
+      source: null
+    - driver: "Drive time to outlying areas beyond the city core"
+      why: "A home well outside town adds windshield time to every visit on a route. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "A leak, wet floor or AC fault already found on an earlier look and never fixed"
+      how_a_pro_spots_it: "Owner says 'nothing special' but a neighbor or last visit found something; the known-problem answer"
+      question_or_photo: fu_known_problem
+      source: iii_homeowners
+    - condition: "Gated community or 55-plus park where the owner or the office must add a vendor pass"
+      how_a_pro_spots_it: "Gate or guard shack in the entry photo; the access answer; manufactured home in a park"
+      question_or_photo: fu_gate_pass
+      source: null
+    - condition: "The home is cooled by an evaporative cooler, not central AC, or the AC is off with a fridge still running"
+      how_a_pro_spots_it: "Thermostat photo; cooler on the roof in the front photo; owner says the AC is set high for summer"
+      question_or_photo: p3_thermostat
+      source: null
+    - condition: "Pool, spa, boat, RV or golf cart on site that nobody is looking after"
+      how_a_pro_spots_it: "RV pad, boat or pool in the front photo; the pool answer"
+      question_or_photo: fu_pool_service
+      source: null
+    - condition: "A pet stays in the home and needs feeding, which is not home watch work"
+      how_a_pro_spots_it: "The homeowner's words mention a cat or dog staying behind"
+      question_or_photo: tasks
+      source: null
+    - condition: "Someone other than the owner is asking (a renter or adult child) and owner approval for keys is not confirmed"
+      how_a_pro_spots_it: "Texter says 'I rent' or 'my mom's house'; the card's arranged-by line"
+      question_or_photo: access
+      source: null
+    - condition: "The home is rented or used by guests between visits, so it is not a vacant-home check"
+      how_a_pro_spots_it: "Owner mentions guests, a rental or a property manager"
+      question_or_photo: fu_rent_out
+      source: ah_lic_018
+    - condition: "Water left on at the main with the water heater running in an empty home, and no one knows where the shutoff is"
+      how_a_pro_spots_it: "Shutoff or water-heater photo, or none sent because the owner does not know where it is"
+      question_or_photo: p4_water_shutoff
+      source: adjusters_vacancy
+  misdiagnosis_checks:
+    - sounds_like: "storm check (water in the garage or house after a storm)"
+      might_be: "leak_active (plumbing kb), a different category"
+      one_question: fu_storm_what
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "storm check (roof tiles off or a ceiling stain after wind or rain)"
+      might_be: "roof damage (roofing kb), a different category"
+      one_question: fu_storm_what
+      if_other_route_to: {category: roof_repair, job_type: "tile replacement"}
+      source: null
+    - sounds_like: "yard cleanup after a wind storm (landscape_maintenance)"
+      might_be: "storm_check"
+      one_question: fu_inside_checked
+      if_other_route_to: {category: home_watch, job_type: "storm check"}
+      source: null
+    - sounds_like: "weekly house check with a pool"
+      might_be: "vacation_service (pool_cleaning kb), a second card"
+      one_question: fu_pool_service
+      if_other_route_to: {category: pool_cleaning, job_type: "weekly pool service"}
+      source: null
+    - sounds_like: "weekly house check (owner asks for a property manager)"
+      might_be: "leasing_refused"
+      one_question: fu_rent_out
+      if_other_route_to: {category: home_watch, job_type: "rent collection, finding tenants or leasing"}
+      source: ah_lic_018
+    - sounds_like: "weekly house check (checks between guest stays)"
+      might_be: "str_turnover (house_cleaning kb), a different category"
+      one_question: fu_rent_out
+      if_other_route_to: {category: turnover_cleaning, job_type: "turnover clean"}
+      source: null
+    - sounds_like: "arrival_departure (turn the AC on before we arrive)"
+      might_be: "AC not cooling (hvac kb), a different category"
+      one_question: fu_known_problem
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "weekly house check (keep an eye on it, nothing special)"
+      might_be: "leak_slow found on an earlier visit (plumbing kb), a second card"
+      one_question: fu_known_problem
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+  photo_reading:
+    - photo_id: p1_home_front
+      reads: ["One or two stories", "Rough size of the home", "Casita, detached garage, RV pad or boat parking", "Rooftop evaporative cooler", "Rock, grass or plants in the yard", "Gate or guard shack in view"]
+      neutral_wording: "Photo shows a one-story home with a two-car garage, rock front yard and an RV pad."
+    - photo_id: p2_entry_access
+      reads: ["Front door, side door or gate", "Keypad or smart lock (no code visible)", "Courtyard or walkway gate", "Lockbox or code showing, which needs a new photo"]
+      neutral_wording: "Photo shows a front door with a keypad lock and a courtyard gate."
+    - photo_id: p3_thermostat
+      reads: ["Basic, programmable or smart thermostat", "Cooling, heating or off", "Set point on the screen", "Cooler switch instead of a thermostat"]
+      neutral_wording: "Photo shows a programmable thermostat set to cooling."
+    - photo_id: p4_water_shutoff
+      reads: ["Where the main shutoff or water heater sits (garage, closet, outside)", "Valve handle type", "Water heater in a hall closet or garage"]
+      neutral_wording: "Photo shows the water heater in the garage with a valve on the line above it."
+    - photo_id: p5_storm_area
+      reads: ["Palm fronds, branches or debris in the yard or pool", "Patio items moved by wind", "Standing water", "A door or window that looks open", "Roof tiles on the ground"]
+      neutral_wording: "Photo shows palm fronds and patio cushions in the back yard and pool, and the sliding door appears partly open."
+  local_factors:
+    - fact: "About 1 in 5 Lake Havasu City housing units has no household living in it (35,394 units, 28,463 households), and the median age is 56.1"
+      effect: "A large stock of part-year and second homes sits empty for months, which is the whole market for house checks"
+      source: census_lhc
+    - fact: "Summer heat: the official city station logged 120 days at or above 100 F and 23 days at or above 110 F in 2014, with a high of 117 F"
+      effect: "An AC that stops in an empty home may not be found until the next visit, so summer owners ask for AC and thermostat checks and some ask for weekly visits"
+      source: lhc_weather_2014
+    - fact: "Monsoon season runs June 15 to September 30, with strong winds, dust storms and local flash flooding"
+      effect: "Storm checks come in bursts after a wind or dust event, often after a neighbor texts the owner"
+      source: adwr_monsoon
+    - fact: "City water hardness is about 19 grains per gallon"
+      effect: "Running taps and flushing toilets is a standard visit task in a home left dry for months [judgment]"
+      source: lhc_ccr
+    - fact: "Under the standard HO-3 form, glass and vandalism coverage changes after more than 60 days vacant"
+      effect: "Some owners ask for dated photo reports for their records; the card notes it as a task, with no insurance advice"
+      source: adjusters_vacancy
+    - fact: "Water damage and freezing were 22.6 percent of US homeowners insurance losses in 2023 (national, not local)"
+      effect: "Finding water early is the main reason owners pay for checks; a found leak goes out as its own plumbing card"
+      source: iii_homeowners
+    - fact: "Vacation rentals in the city need a permit and an emergency contact available around the clock"
+      effect: "Rental owners may ask a home watch business to be that contact; that role and anything about bookings or rent stays off the card"
+      source: lhc_vacation_rentals
+    - fact: "Manufactured homes in age-55-plus parks and gated HOAs are common, often with an office-issued vendor pass"
+      effect: "The gate pass is the most missed access detail on a first visit [judgment]"
+      source: null
+  seasonality:
+    busy: "Summer away season, roughly May to October, when winter residents are gone; storm checks spike during the monsoon, June 15 to September 30"
+    slow: "December to February, when most part-year owners are home [judgment]"
+    source: adwr_monsoon
+
+job_types:
+  - id: weekly_house_check
+    label: "Regular checks while away (weekly, every two weeks or monthly)"
+    bank_job_type: "weekly house check"
+    recurring: true
+    homeowner_phrasings: ["snowbird house check", "check on my house while we're gone for the summer", "house sitter, nobody staying", "keep an eye on my place", "empty house checks", "revisar mi casa cada semana"]
+    must_know:
+      - fact: "How often: weekly, every two weeks or monthly"
+        bank_question: schedule
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Visit count times the per-visit price is the monthly quote."
+        skip_if: "Homeowner already said how often"
+      - fact: "Which months the owner is away"
+        bank_question: season
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets how many months the account runs and whether summer AC items apply. [judgment]"
+        skip_if: "Away dates already given"
+      - fact: "Home size and any casita or second building"
+        bank_question: null
+        follow_up: fu_home_size
+        photo: p1_home_front
+        why_it_moves_price: "Minutes on site per visit, about 20 to 40 for a typical home."
+        skip_if: "Size given or the front photo shows it"
+      - fact: "What each visit includes"
+        bank_question: tasks
+        follow_up: null
+        photo: p3_thermostat
+        why_it_moves_price: "A walk-through with photos is quick; taps, toilets, AC, plants and a fridge add minutes to every visit. [judgment]"
+        skip_if: "Homeowner listed the tasks"
+      - fact: "Anything already known to need a look"
+        bank_question: null
+        follow_up: fu_known_problem
+        photo: null
+        why_it_moves_price: "A known leak or AC fault changes the first visit and goes out as its own trade card. [judgment]"
+        skip_if: "Homeowner already described a problem, or said nothing is wrong"
+    allowed_follow_ups:
+      - id: fu_home_size
+        ask_when: "Size of the home not given and no front photo sent"
+        text_en: "About how big is the home, counting any casita or guest house?"
+        text_es: "¿Más o menos qué tamaño tiene la casa, contando casita o cuarto de huéspedes?"
+        options_en: ["Under 1,500 sq ft", "1,500 to 2,500 sq ft", "Over 2,500 sq ft"]
+        options_es: ["Menos de 1,500 pies cuadrados", "1,500 a 2,500 pies cuadrados", "Más de 2,500 pies cuadrados"]
+        card_field: true
+        why: "Size and extra buildings set the minutes on site, the second biggest part of the quote. [src:boston_homewatch]"
+      - id: fu_known_problem
+        ask_when: "Ongoing checks or an arrival visit, and the homeowner has not said whether anything at the house needs a look"
+        text_en: "Is anything at the house already known to need a look, like water on a floor, cooling trouble or storm damage?"
+        text_es: "¿Ya sabe de algo en la casa que necesite revisión, como agua en el piso, problemas con el aire o daños por tormenta?"
+        options_en: ["Nothing I know of", "Water on a floor or a drip", "Cooling trouble", "Roof or storm damage", "Something else"]
+        options_es: ["Nada que yo sepa", "Agua en el piso o un goteo", "Problemas con el aire", "Daño en el techo o por tormenta", "Otra cosa"]
+        card_field: true
+        why: "A known problem goes out as its own plumbing, hvac or roofing card, and the home watch card notes it so the first visit plans for it. [judgment]"
+      - id: fu_pool_service
+        ask_when: "Homeowner mentions a pool or spa, or the front photo shows one, and did not say who looks after it"
+        text_en: "Is there a pool or spa, and does someone already take care of it?"
+        text_es: "¿Hay alberca o jacuzzi, y ya hay alguien que le da servicio?"
+        options_en: ["No pool or spa", "Yes, already serviced", "Yes, no service now"]
+        options_es: ["No hay alberca ni jacuzzi", "Sí, ya tiene servicio", "Sí, sin servicio ahora"]
+        card_field: true
+        why: "Pool service while away is a separate pool cleaning card; the home watch card says who handles the pool. [judgment]"
+      - id: fu_rent_out
+        ask_when: "Homeowner mentions renting, guests, tenants or a property manager"
+        text_en: "Will anyone stay in the home or rent it while you are away?"
+        text_es: "¿Alguien se va a quedar en la casa o la va a rentar mientras usted no está?"
+        options_en: ["No, it stays empty", "Family or friends at times", "Short stays for paying guests", "A long-term renter"]
+        options_es: ["No, se queda vacía", "Familia o amigos a veces", "Huéspedes por estancias cortas", "Un inquilino de largo plazo"]
+        card_field: true
+        why: "Guest stays point to turnover cleaning, and rent or tenant work is never carded. [src:ah_lic_018]"
+    photos_priority: [p1_home_front, p3_thermostat, p2_entry_access]
+    urgency:
+      fire_dept_triggers: ["Neighbor reports a gas or propane smell at the home", "Neighbor reports smoke or fire at the home"]
+      urgent_capable_triggers: ["Water on a floor already found and not looked at", "No cooling at the empty home in summer heat"]
+      regular: "Checks to start on a set date, nothing known wrong"
+    scope_line_en: "Checks every two weeks while the owner is away for the summer: walk-through and photos, run taps and flush toilets, check the AC."
+    scope_line_es: "Revisiones cada dos semanas mientras el dueño está fuera en el verano: recorrido y fotos, abrir llaves y jalar inodoros, revisar el aire."
+    quote_format: monthly
+    business_fills: ["monthly price", "visits per month and what each visit includes", "whether a photo report is sent after each visit", "first visit date", "minimum months, if any"]
+    card_template: |
+      REQ-<id> | Home watch | <town>, <general area> | <house / manufactured home / condo>
+      <one scope line: how often, while away when, main tasks>
+      Away: <months or season>. Visits: <weekly / every two weeks / monthly>. Size: <size band, stories, casita or other buildings>.
+      Each visit: <tasks>. Cooling: <central AC / evaporative cooler / not said>. Pool or vehicles: <what is on site and who services it>. Pet in home: <none / as said>.
+      Access: <someone lets them in / lockbox / smart lock>, code given on the call. Gate pass: <none / owner adds / office issues>. Arranged by: <owner / family for the owner / renter, owner approval not confirmed>.
+      Known issues: <none / as reported>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>. Needed: <timing answer>.
+    never_say: ["Your insurance needs someone there every 30 days.", "Set the AC to 85 while you're gone.", "Shut the water off at the main before you leave.", "Weekly checks run about 150 a month.", "We can find you a renter too."]
+
+  - id: storm_check
+    label: "One-time check after a storm or monsoon"
+    bank_job_type: "storm check"
+    recurring: false
+    homeowner_phrasings: ["monsoon came through, can someone look at my place", "big wind last night, check my house", "power went out at my house and I'm not there", "neighbor says the yard is a mess", "revisar la casa después de la tormenta"]
+    must_know:
+      - fact: "What anyone has seen or reported at the house"
+        bank_question: null
+        follow_up: fu_storm_what
+        photo: p5_storm_area
+        why_it_moves_price: "Debris and a power outage are a check; water inside or roof damage is a plumbing or roofing card first. [judgment]"
+        skip_if: "Neighbor photo or the owner's words already say what was seen"
+      - fact: "Whether anyone has been inside since the storm"
+        bank_question: null
+        follow_up: fu_inside_checked
+        photo: null
+        why_it_moves_price: "A full inside walk-through takes longer than an outside look, and nobody inside means the business plans for both. [judgment]"
+        skip_if: "Owner said a neighbor went in"
+      - fact: "Home size and buildings"
+        bank_question: null
+        follow_up: fu_home_size
+        photo: p1_home_front
+        why_it_moves_price: "Sets the time for one visit."
+        skip_if: "Size given or the front photo shows it"
+      - fact: "How the business gets in"
+        bank_question: access
+        follow_up: null
+        photo: p2_entry_access
+        why_it_moves_price: "A same-day visit needs a lockbox, smart lock or a neighbor with a key already in place. [judgment]"
+        skip_if: "Access already described"
+    allowed_follow_ups:
+      - id: fu_storm_what
+        ask_when: "Storm, wind or outage at the home and the homeowner has not said what was seen"
+        text_en: "What has anyone seen at the house since the storm?"
+        text_es: "¿Qué ha visto alguien en la casa desde la tormenta?"
+        options_en: ["Yard debris or things moved", "Water inside the home", "Roof, tree or palm damage", "Power out", "A door or window open", "Nothing seen yet"]
+        options_es: ["Basura o cosas movidas en el patio", "Agua dentro de la casa", "Daño en techo, árbol o palmera", "Sin luz", "Una puerta o ventana abierta", "Nadie ha visto nada"]
+        card_field: true
+        why: "Water inside or roof damage goes to plumbing or roofing first; debris, outages and an open door stay a storm check. [judgment]"
+      - id: fu_inside_checked
+        ask_when: "A storm or wind event, and the homeowner asks for yard cleanup or does not say whether anyone went inside"
+        text_en: "Has anyone been inside the house since the storm?"
+        text_es: "¿Alguien ha entrado a la casa desde la tormenta?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "A yard crew does not look inside; if nobody has, the request is a storm check first and yard cleanup second. [judgment]"
+      - fu_home_size
+    photos_priority: [p5_storm_area, p1_home_front, p2_entry_access]
+    urgency:
+      fire_dept_triggers: ["Downed power line at the home after the storm", "Neighbor reports smoke, fire or a gas smell at the home"]
+      urgent_capable_triggers: ["Power out at the empty home in summer heat", "A door or window seen open", "Water seen inside the home", "Tree, palm or roof damage seen"]
+      regular: "Owner wants a look after a storm, nothing reported"
+    scope_line_en: "One check after last night's wind at an empty home; neighbor's photo shows palm fronds in the pool and the slider partly open."
+    scope_line_es: "Una revisión después del viento de anoche en una casa vacía; la foto del vecino muestra hojas de palmera en la alberca y la puerta corrediza medio abierta."
+    quote_format: firm
+    business_fills: ["price for the visit", "what the visit includes (inside and outside walk-through, photos sent to the owner)", "earliest visit"]
+    card_template: |
+      REQ-<id> | Home watch | <town>, <general area> | <kind of place>
+      <one scope line: storm or outage, when, owner away, what was reported>
+      Reported: <debris / water inside / roof, tree or palm / power out / door or window open / nothing seen yet>, per <neighbor / owner camera / not said>. Inside since: <yes / no>.
+      Size: <size band, stories, buildings>. Visit: <walk-through inside and out, photos, other tasks asked>.
+      Access: <someone lets them in / lockbox / smart lock>, code given on the call. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That open door means someone broke in.", "Call the police first.", "Your food is going to spoil, throw it out.", "It's just yard debris, nothing to worry about.", "A storm check runs about 75."]
+
+  - id: arrival_departure
+    label: "Get the house ready before arrival or close it up after leaving (AC, water, fridge)"
+    bank_job_type: "storm check"
+    recurring: false
+    homeowner_phrasings: ["turn the AC on before we get there", "open up the house", "close up the house", "stock the fridge", "shut down the house for summer", "preparar la casa para cuando lleguemos"]
+    must_know:
+      - fact: "Open up before arrival, close up after leaving, or both"
+        bank_question: null
+        follow_up: fu_open_or_close
+        photo: null
+        why_it_moves_price: "Both is two visits; open-up and close-up have different checklists. [judgment]"
+        skip_if: "Owner's words say which"
+      - fact: "What the visit includes (AC on, water on, fridge stocked, plants)"
+        bank_question: tasks
+        follow_up: null
+        photo: p3_thermostat
+        why_it_moves_price: "Grocery runs and plant care add time and sometimes a receipt to settle. [judgment]"
+        skip_if: "Tasks already listed"
+      - fact: "Where the water shutoff and water heater are"
+        bank_question: null
+        follow_up: null
+        photo: p4_water_shutoff
+        why_it_moves_price: "A business turning water on or off needs to know where the valve is before the visit. [judgment]"
+        skip_if: "Water is not part of the visit"
+      - fact: "Home size"
+        bank_question: null
+        follow_up: fu_home_size
+        photo: p1_home_front
+        why_it_moves_price: "Sets the time for the visit."
+        skip_if: "Size given or the front photo shows it"
+      - fact: "Anything known to need a look"
+        bank_question: null
+        follow_up: fu_known_problem
+        photo: null
+        why_it_moves_price: "AC trouble at open-up is an hvac card, not an open-up visit. [judgment]"
+        skip_if: "Owner said nothing is wrong"
+    allowed_follow_ups:
+      - id: fu_open_or_close
+        ask_when: "Homeowner asks for an arrival or departure visit without saying which"
+        text_en: "Is this to get the house ready before you arrive, or to close it up after you leave?"
+        text_es: "¿Es para preparar la casa antes de que llegue, o para cerrarla después de que se vaya?"
+        options_en: ["Ready before I arrive", "Close up after I leave", "Both"]
+        options_es: ["Prepararla antes de llegar", "Cerrarla después de irme", "Las dos"]
+        card_field: true
+        why: "Two visits or one, and two different checklists. [judgment]"
+      - fu_known_problem
+      - fu_home_size
+    photos_priority: [p3_thermostat, p4_water_shutoff, p1_home_front]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Arrival is within two days and cooling is wanted on before then"]
+      regular: "Arrival or departure date a week or more out"
+    scope_line_en: "Open up the house before the owners arrive next month: AC on, water on, fridge stocked; about 2,000 sq ft, one story."
+    scope_line_es: "Preparar la casa antes de que lleguen los dueños el próximo mes: prender el aire, abrir el agua, surtir el refrigerador; unos 2,000 pies cuadrados, un piso."
+    quote_format: firm
+    business_fills: ["price for the visit (or each visit, if both)", "what the visit includes and how groceries are paid for", "earliest date"]
+    card_template: |
+      REQ-<id> | Home watch | <town>, <general area> | <kind of place>
+      <one scope line: open up, close up or both, and the date>
+      Visit: <open up / close up / both>. Tasks: <AC on or set, water on or off, fridge, plants, other>. Thermostat: <type, from photo, or not sent>.
+      Water shutoff: <location from photo / not known>. Size: <size band, stories, buildings>. Known issues: <none / as reported>.
+      Access: <someone lets them in / lockbox / smart lock>, code given on the call. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Set the thermostat to 78 two days before.", "Leave the water heater on vacation mode.", "Prop the fridge door open when you leave.", "That's a quick visit."]
+
+  - id: meet_and_greet
+    label: "Let in a contractor, cleaner or delivery while the owner is away"
+    bank_job_type: "storm check"
+    recurring: false
+    homeowner_phrasings: ["meet the AC guy at my house", "let the plumber in", "wait for a delivery", "let a contractor in while I'm away", "dejar entrar al técnico"]
+    must_know:
+      - fact: "Let them in and lock up, or stay until the work is done"
+        bank_question: null
+        follow_up: fu_meet_stay
+        photo: null
+        why_it_moves_price: "Staying for a two-to-four-hour service window costs more than a let-in and lock-up. [judgment]"
+        skip_if: "Owner already said"
+      - fact: "How the business gets in"
+        bank_question: access
+        follow_up: null
+        photo: p2_entry_access
+        why_it_moves_price: "No local key means a lockbox or smart lock must be set up first. [judgment]"
+        skip_if: "Access described"
+      - fact: "Whether a gate pass is needed for the business and the contractor"
+        bank_question: null
+        follow_up: fu_gate_pass
+        photo: null
+        why_it_moves_price: "Two passes to arrange before the day, or a wasted trip at the gate. [judgment]"
+        skip_if: "Owner said there is no gate"
+    allowed_follow_ups:
+      - id: fu_meet_stay
+        ask_when: "Homeowner asks to let someone in and has not said whether to stay"
+        text_en: "Should the business let them in and lock up after, or stay until the work is done?"
+        text_es: "¿El negocio debe abrirles y cerrar después, o quedarse hasta que terminen el trabajo?"
+        options_en: ["Let them in and lock up after", "Stay until the work is done"]
+        options_es: ["Abrirles y cerrar después", "Quedarse hasta que terminen"]
+        card_field: true
+        why: "Time on site is the whole price of this visit. [judgment]"
+      - id: fu_gate_pass
+        ask_when: "Homeowner has not said whether the home is behind a gate"
+        text_en: "Is the home behind a gate where a visitor or vendor pass is needed?"
+        text_es: "¿La casa está detrás de una reja donde se necesita pase de visitante o proveedor?"
+        options_en: ["Yes, I add the pass", "Yes, a park or HOA office handles it", "No gate"]
+        options_es: ["Sí, yo agrego el pase", "Sí, lo da la oficina del parque o HOA", "No hay reja"]
+        card_field: true
+        why: "The gate pass is the most missed access detail, and it decides whether a visit can happen on the day. [judgment]"
+    photos_priority: [p2_entry_access, p1_home_front]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Contractor visit is today or tomorrow"]
+      regular: "Visit date a few days or more out"
+    scope_line_en: "Let an HVAC technician in on Tuesday between 8 and noon and stay until the work is done; owner is in Phoenix."
+    scope_line_es: "Dejar entrar a un técnico de aire acondicionado el martes entre 8 y mediodía y quedarse hasta que termine; el dueño está en Phoenix."
+    quote_format: firm
+    business_fills: ["price for the visit", "whether waiting time is included, and the charge past it", "earliest date"]
+    card_template: |
+      REQ-<id> | Home watch | <town>, <general area> | <kind of place>
+      <one scope line: who to let in, which day and window, stay or lock up>
+      Visit: <let in and lock up / stay until done>. Who is coming: <trade or delivery, no company name>. Window: <day and hours>.
+      Access: <someone lets them in / lockbox / smart lock>, code given on the call. Gate pass: <none / owner adds / office issues>.
+      Also asked: <key holding or other, if said>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Make sure the tech checks the capacitor.", "Ask the plumber for a discount.", "That company is good.", "Just leave the door unlocked."]
+
+  - id: key_holding
+    label: "Hold a spare key and come let the owner in if locked out (optional add-on)"
+    bank_job_type: "weekly house check"
+    recurring: true
+    homeowner_phrasings: ["key holder", "hold a spare key", "someone local with a key", "guardar una llave"]
+    must_know:
+      - fact: "What the key holder would do besides holding the key"
+        bank_question: null
+        follow_up: fu_key_what
+        photo: null
+        why_it_moves_price: "Holding a key alone is a small monthly fee; let-ins and checks on request add per-trip charges. [judgment]"
+        skip_if: "Owner listed what they want"
+      - fact: "Which door and what kind of lock"
+        bank_question: access
+        follow_up: null
+        photo: p2_entry_access
+        why_it_moves_price: "A smart lock may need no physical key; a gate key or remote adds to what is held. [judgment]"
+        skip_if: "Access described"
+      - fact: "Whether a gate pass is needed"
+        bank_question: null
+        follow_up: fu_gate_pass
+        photo: null
+        why_it_moves_price: "A standing pass has to be set up for any call-out. [judgment]"
+        skip_if: "Owner said there is no gate"
+    allowed_follow_ups:
+      - id: fu_key_what
+        ask_when: "Homeowner asks for key holding and has not said what else the holder would do"
+        text_en: "Besides holding the key, what would you want the business to do?"
+        text_es: "Además de guardar la llave, ¿qué quiere que haga el negocio?"
+        options_en: ["Let me in if I'm locked out", "Let in a repair person or delivery", "Check the house when I ask", "All of these"]
+        options_es: ["Abrirme si me quedo afuera", "Dejar entrar a un técnico o una entrega", "Revisar la casa cuando yo pida", "Todo esto"]
+        card_field: true
+        why: "Sets what the monthly fee covers and what is billed per trip. [judgment]"
+      - fu_gate_pass
+    photos_priority: [p2_entry_access]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Set up ahead of time; a lockout happening now is not this job type"
+    scope_line_en: "Hold a spare key for a part-year home and let the owner or a repair person in when asked; gated HOA."
+    scope_line_es: "Guardar una llave de repuesto de una casa de temporada y abrir al dueño o a un técnico cuando lo pida; HOA con reja."
+    quote_format: monthly
+    business_fills: ["monthly price for holding the key", "charge per call-out or let-in", "how fast a call-out can be answered"]
+    card_template: |
+      REQ-<id> | Home watch | <town>, <general area> | <kind of place>
+      <one scope line: hold a key, and what else>
+      Holder would: <let owner in / let in repair or delivery / check on request / all>. Lock: <key / keypad / smart lock>, from photo if sent.
+      Gate pass: <none / owner adds / office issues>. Owner away: <months, if said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Hide a key under the mat instead.", "A locksmith will charge you more.", "Give them the alarm code too.", "That's an easy add-on."]
+
+  - id: leasing_refused
+    label: "Rent collection, finding tenants or leasing (not offered, no card)"
+    bank_job_type: "rent collection, finding tenants or leasing"
+    recurring: false
+    homeowner_phrasings: ["collect rent", "find renters", "I need a property manager", "handle showings", "cobrar la renta"]
+    must_know:
+      - fact: "Whether the request is only rent, tenant or leasing work, or also asks for checks of the home"
+        bank_question: null
+        follow_up: fu_checks_instead
+        photo: null
+        why_it_moves_price: "Rent, tenant and leasing work is never carded; checks of an empty home can go out as a weekly house check card. [src:ah_lic_018]"
+        skip_if: "Homeowner already asked for checks too"
+      - fact: "If checks are wanted, how often and while empty when"
+        bank_question: schedule
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Only asked after the homeowner says yes to checks; then the weekly house check job type takes over. [judgment]"
+        skip_if: "Homeowner declined checks"
+    allowed_follow_ups:
+      - id: fu_checks_instead
+        ask_when: "Homeowner asks for rent collection, finding tenants, showings, leasing or a property manager"
+        text_en: "Ask Hava doesn't take rent, renter or leasing requests. Would you like checks on the home while it sits empty?"
+        text_es: "Ask Hava no acepta solicitudes de renta, inquilinos ni arrendamiento. ¿Quiere revisiones de la casa mientras está vacía?"
+        options_en: ["Yes, checks while it is empty", "No, thanks"]
+        options_es: ["Sí, revisiones mientras está vacía", "No, gracias"]
+        card_field: false
+        why: "Acting for another person in renting, leasing, collecting rent or finding tenants is a real estate broker act in Arizona, and LIC-018 keeps it off every card. [src:ars_32_2101] [src:ah_lic_018]"
+    photos_priority: []
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Always refused; no card is sent"
+    scope_line_en: "Owner asks for rent collection and a new tenant: not taken on Ask Hava, no card sent."
+    scope_line_es: "El dueño pide cobro de renta y un nuevo inquilino: no se acepta en Ask Hava, no se envía tarjeta."
+    quote_format: monthly
+    business_fills: ["none: refused job, no card goes to a business"]
+    card_template: |
+      REQ-<id> | Home watch | not sent | rent collection, finding tenants or leasing
+      Asked for: <rent collection / tenant search / showings / leasing>.
+      Outcome: plain decline, no card, no routing. Checks offered: <yes, card follows as weekly house check / declined>.
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer, if given>.
+    never_say: ["Call a real estate agent for that.", "You need a broker's license to do that.", "We know a good property manager.", "Short-term rentals are exempt, so that's fine.", "We can collect the rent if you want."]
+
+business_side:
+  how_they_get_customers: ["Word of mouth among part-year neighbors and in 55-plus parks [judgment]", "Realtors, insurance agents and HOA or park offices passing their name along [judgment]", "Google Maps listing and reviews [judgment]", "Local Facebook groups for winter visitors and lake-home owners [judgment]", "NHWA's searchable member directory, for accredited businesses"]
+  customer_acquisition_benchmarks:
+    - channel: "Thumbtack (all trades)"
+      figure: "Pros report about $10 to over $100 per lead by trade and market; customers often contact several pros at once (software vendor)"
+      source: hcp_thumbtack
+      unverified: false
+    - channel: "Thumbtack and Angi (low-ticket services)"
+      figure: "About $8 per lead for small cleaning jobs, $25 to $75 for most home-service trades; Angi $15 to $85 plus an annual fee (marketing vendor citing third-party reports)"
+      source: superdupr_thumbtack
+      unverified: false
+    - channel: "Angi (shared requests)"
+      figure: "No single published price; each request goes to 3 or 4 pros, sometimes more, and each is billed"
+      source: nextphone_angi
+      unverified: false
+    - channel: "What a home watch client is worth (context for the fee)"
+      figure: "Watchers profiled in one 2024 article charge $50 to $100 per visit, weekly or every two weeks"
+      source: boston_homewatch
+      unverified: false
+    - channel: "Home watch businesses specifically, and Lake Havasu City"
+      figure: "No published cost-per-client figures found for home watch or for this market; most clients appear to come by word of mouth"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a one-time storm check that four other businesses also bought", "Requests from people who wanted a house sitter to live in", "Monthly fees whether or not clients come", "Being sorted or rated by the site", "Requests with no away dates and no way to get in"]
+  what_makes_a_lead_worth_paying_for: ["Away dates, visit schedule and tasks stated up front", "Home size, casita and pool or vehicles on site stated", "Access type and any gate pass stated, with codes kept for the call", "A season-long client for one fee", "Pay only when picked, nothing monthly"]
+  their_words: ["home watch", "house check", "visit report", "walk-through", "checklist", "open-up", "close-up", "flush and run", "snowbird", "part-year", "vacant", "unoccupied", "key holder", "vendor pass", "storm check", "call-out", "insured and bonded", "NHWA accredited"]
+  signup_objections:
+    - objection: "Why pay a fee for a home watch client?"
+      answer: "You pay once, only when the homeowner picks your quote. A monthly account counts as 4 months of its price: under $125 a month the fee is $25, $125 to $375 a month it is $75, and over that it is $199. A one-time storm check under $500 is $25. If that owner picks you again through Ask Hava, there is no fee."
+    - objection: "Most of my clients come from referrals. Why do I need this?"
+      answer: "You may not. It costs nothing to be listed and nothing per month, so a card you don't want costs you nothing. You quote only the ones that fit your route."
+    - objection: "Storm checks are one-offs. I want regular clients."
+      answer: "You choose your job types at sign-up and can change them any time. Pick weekly house checks only and you won't get storm check cards."
+    - objection: "I don't quote without walking the house first."
+      answer: "Each card gives away dates, how often, size, casita or pool, tasks and access type. Quote your monthly price and say that it starts after a first walk-through with the owner or their local contact."
+    - objection: "How do I know these are real owners and not renters?"
+      answer: "Each request comes from a texted phone number we check. The card says who is asking: the owner, family for the owner, or a renter, and whether the owner's OK is confirmed. Names and addresses go only to the business the homeowner picks."
+    - objection: "Will you put gate or lockbox codes on the card?"
+      answer: "No. Codes and keys never go on a card. The homeowner gives them to the business she picks, on the call."
+    - objection: "Will you send me property management or rental work?"
+      answer: "No. Ask Hava never sends rent collection, tenant finding or leasing requests."
+    - objection: "Do I need a license to sign up?"
+      answer: "No state contractor license covers home watch visits, so Ask Hava does not ask for one. Lake Havasu City has its own business license rule for businesses working inside city limits. Any repair you spot goes out as its own request to the matching trade."
+    - objection: "Owners want to know I'm insured and bonded."
+      answer: "Your quote can say whether you carry liability insurance and a bond. The homeowner sees it with your name and review links. Ask Hava shows insurance as yes or no and does not check it."
+    - objection: "Will you rank me against other home watch businesses?"
+      answer: "No. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "What if the owner cancels before the first visit?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded. After that the fee stands. It is a fixed introduction fee by job size, not a share of the job."
+  quote_tips_for_card: ["Give a price per visit and the monthly total for the schedule asked", "Say what each visit includes and whether a dated photo report is sent", "Say what you charge for storm call-outs and for meeting contractors", "Say whether there is a minimum number of months", "Say whether you carry liability insurance and a bond", "Give the date of your first walk-through"]

@@ -1,0 +1,644 @@
+# Run agent output for variant baseline_human (the human bar). The intake is played as the best
+# pest-control estimator in Arizona: 25 years, prices jobs from a text and a photo, knows Lake Havasu
+# homes, rock yards, block walls, monsoon swarms and bark scorpions. Per baseline_human_estimator.md the
+# run agent did not open question_bank.yaml, the expert file or trade_kb; it had categories.yaml for
+# routing, so job_type holds the categories.yaml job type label where one exists (general pest service,
+# scorpions, termites, pre-emergent weed control; home_inspection's termite report for a sale or loan),
+# and otherwise the estimator's plain words for the job (bees/wasps, rodents, bed bugs/fleas/other,
+# pigeons/birds), with bank_job_type null. The estimator asks in their own words, may tell the homeowner
+# what they suspect and may give safety advice (the judge notes it; it does not count against the human).
+# Only the privacy rules bind the notes. The homeowner is played strictly from the scenario's persona,
+# behavior and hidden facts; anything not in hidden_facts is answered "not sure". Coverage: 3 businesses
+# in Lake Havasu City, 0 for the no_businesses scenario. The town question is step coverage and is not
+# counted in questions_asked. fire_dept_text records whether the estimator sent a 911/safety message for
+# a fire-truck-list fact.
+category: pest_control
+variant: baseline_human
+model: "claude-opus-5-5"
+run: "run-2026-10-29"
+results:
+  - scenario_id: pest_control_s01
+    transcript:
+      - {who: homeowner, text: "got bugs"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "What kind of bugs, and where are you seeing them?", step: question}
+      - {who: homeowner, text: "roaches. kitchen and laundry room at night. few in garage"}
+      - {who: intake, text: "One-time spray or ongoing service?", step: question}
+      - {who: homeowner, text: "ongoing"}
+      - {who: intake, text: "How big is the house, one story or two, and what's the yard, rock or grass?", step: question}
+      - {who: homeowner, text: "single story 2200. rock front and back"}
+      - {who: intake, text: "Any kids or pets in the house?", step: question}
+      - {who: homeowner, text: "toddler crawls on kitchen floor. dog eats in laundry room"}
+      - {who: intake, text: "When can we get in? Anyone home during the day?", step: question}
+      - {who: homeowner, text: "weekday evenings only"}
+      - {who: intake, text: "Can you snap a picture of one? Size tells me a lot.", step: photo}
+      - {who: homeowner, text: "[photo: blurry kitchen baseboard, small dark brown insect near the corner] thats it"}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "general pest service", bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0121 | pest_control / roaches, ongoing service | Lake Havasu City
+      FACTS
+      - Roaches at night, mostly kitchen and laundry room, a few in the garage.
+      - Single story, about 2,200 sq ft, rock yard front and back.
+      - Wants ongoing service, not a one-time spray.
+      - Toddler who crawls on the kitchen floor; dog eats from a bowl in the laundry room.
+      - Access weekday evenings only.
+      - Photo: blurry, one small dark brown insect at a kitchen baseboard corner.
+      - Needed: not said.
+      SUSPECT (my read, not told to owner)
+      - Night activity in kitchen, laundry and garage with a rock yard reads like outdoor roaches (American or Turkestan) coming in from sewer lines, irrigation boxes and the rock. Small and dark in the photo could also be German roaches; if so it is an inside bait job with follow-ups, priced differently.
+      CHECK ON SITE
+      - ID the roach first (German vs American/Turkestan) and set the price from that.
+      - Look under the range, fridge and washer, the water heater closet, garage door seals, weep screed, sewer cleanout caps and valve boxes.
+      - Toddler and dog: gel bait and IGR only, placed out of reach; no broadcast spray on the kitchen floor; nothing near the dog bowl. Exterior perimeter and garage granules.
+      - Book weekday evening visits.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s02
+    transcript:
+      - {who: homeowner, text: "need the house fumigated, crickets everywhere. hundreds of them at night, the big ugly brown kind. tent the whole thing if thats what it takes"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "Where are you seeing them most: garage, patio, inside?", step: question}
+      - {who: homeowner, text: "mostly the garage and the patio by the back slider. some come in the house"}
+      - {who: intake, text: "Anywhere around the house that stays wet, like a drip line, a leak or a low spot?", step: question}
+      - {who: homeowner, text: "theres a drip line leak by the side of the garage, keeps the rock damp"}
+      - {who: intake, text: "How big is the house, one story or two?", step: question}
+      - {who: homeowner, text: "single story, about 1800"}
+      - {who: intake, text: "Straight talk: tenting is for drywood termites and won't keep crickets from coming back. An outside treatment plus fixing that wet spot does. Want a one-time knockdown or monthly?", step: question}
+      - {who: homeowner, text: "just tent it if thats what it takes. i want them gone and not coming back. is this a one time thing? ill do monthly if thats how it works"}
+      - {who: intake, text: "Any pets, or anyone in the house with breathing problems?", step: question}
+      - {who: homeowner, text: "no pets. nobody with breathing problems"}
+      - {who: intake, text: "Send me a picture of where they pile up?", step: photo}
+      - {who: homeowner, text: "[photo: garage floor near the roll-up door, scatter of dead brown crickets and a few live ones along the seam]"}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "general pest service", bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0122 | pest_control / crickets, exterior + garage | Lake Havasu City
+      FACTS
+      - Owner asked for fumigation / tenting. Crickets, hundreds at night, big brown kind.
+      - Mostly garage and back patio by the slider; some get inside.
+      - Drip line leak by the side of the garage keeps the rock damp.
+      - Single story, about 1,800 sq ft.
+      - Wants them gone and kept out; asked if it is one-time, open to monthly.
+      - No pets; no one with breathing problems.
+      - Photo: dead and live brown crickets along the garage roll-up door seam.
+      - Needed: not said.
+      TOLD OWNER: tenting is for drywood termites, not crickets.
+      SUSPECT
+      - Field crickets drawn to the damp rock and lights; the garage door seal is the main way in.
+      CHECK ON SITE
+      - Exterior perimeter and rock band treatment, garage interior edges, granular bait in the damp area.
+      - Garage door bottom seal and side seals; slider sweep.
+      - Point out the drip leak (owner's fix) and porch/garage lighting.
+      - Quote one-time knockdown with a 30-day follow-up and a monthly option.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s03
+    transcript:
+      - {who: homeowner, text: "i have termites in my kitchen!! saw like 50 of them on the counter this morning going toward the sugar and the dogs food bowl, i read termites eat your house and i am freaking out how fast can someone come look at it"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "Can you send a close picture of them on the counter?", step: photo}
+      - {who: homeowner, text: "[photo: kitchen counter edge, a thin line of tiny dark insects with no wings walking along the backsplash toward a canister] see, termites"}
+      - {who: intake, text: "Thanks. Do they have wings, and are they walking in a line or scattered?", step: question}
+      - {who: homeowner, text: "no wings, single file line. but they're termites right? how fast can someone come"}
+      - {who: intake, text: "Where does the line start and where does it end?", step: question}
+      - {who: homeowner, text: "starts at a crack by the window over the sink and ends at the sugar canister and the dog bowl"}
+      - {who: intake, text: "Have you seen mud tubes, little piles like sawdust, or soft or damaged wood anywhere?", step: question}
+      - {who: homeowner, text: "no, none of that that ive noticed. still termites though?"}
+      - {who: intake, text: "A single-file line heading for sugar and dog food is ant behavior; termites don't go after sugar. Someone will confirm it on site. When did they show up, and have you had pest service before?", step: question}
+      - {who: homeowner, text: "two days after the first monsoon storm this week. never had pest service. i still think its termites"}
+      - {who: intake, text: "How big is the house, and do you want one-time or ongoing?", step: question}
+      - {who: homeowner, text: "about 2000 sq ft, built early 2000s, slab. one time to start, would do ongoing if you suggest it. how fast can someone come"}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "general pest service", bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0123 | pest_control / insects trailing to food in kitchen (owner says termites) | Lake Havasu City
+      FACTS
+      - Owner believes termites. About 50 tiny dark insects, no wings, single-file line on the kitchen counter.
+      - Line starts at a crack by the window over the sink, ends at the sugar canister and the dog's food bowl.
+      - No mud tubes, no sawdust, no soft or damaged wood noticed.
+      - First seen two days after the first monsoon storm this week.
+      - About 2,000 sq ft, built early 2000s, slab. Never had pest service.
+      - One-time to start; open to ongoing if suggested. Dog in the home.
+      - Photo attached (line along the backsplash toward a canister).
+      - Needed: owner asked how fast someone can come; anxious, not an emergency.
+      TOLD OWNER: trailing to sugar and dog food is ant behavior, not termite; tech will confirm.
+      SUSPECT
+      - Sugar-feeding ants pushed in by monsoon moisture, coming through the window crack. Not termites.
+      CHECK ON SITE
+      - ID the ant; follow the trail outside from the window crack to the nest.
+      - Non-repellent exterior treatment and bait; no repellent spray on the trail inside. Keep bait away from the dog bowl.
+      - Do a quick look at the slab edge and garage for mud tubes so the owner hears it from us. Seal the window crack.
+      - Quote one-time with a follow-up, plus a quarterly or monthly option.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s04
+    transcript:
+      - {who: homeowner, text: "i think i have bed bugs, waking up covered in bites every morning. need to get treated asap"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "Where on your body are the bites?", step: question}
+      - {who: homeowner, text: "only ankles and lower legs. none on arms or neck"}
+      - {who: intake, text: "Have you checked the mattress seams and bed frame for tiny black spots, blood stains or shed skins?", step: question}
+      - {who: homeowner, text: "yeah nothing like that that ive seen"}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "a cat, it goes outside. its flea collar ran out about a month ago"}
+      - {who: intake, text: "Carpet or tile in the house? Do the bites happen more after being in one room?", step: question}
+      - {who: homeowner, text: "mostly after walking through the back bedroom, its carpet. rest of the house is tile"}
+      - {who: intake, text: "Ankles only, an outdoor cat off its collar for a month, a carpeted room: that reads like fleas more than bed bugs. Get the cat treated by your vet at the same time or any treatment fails. How big is the house, and do you own it?", step: question}
+      - {who: homeowner, text: "about 1600 sq ft, i own it"}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "bed bugs / fleas / other", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0124 | pest_control / biting insects (owner says bed bugs) | Lake Havasu City
+      FACTS
+      - Owner thinks bed bugs; waking up with bites every morning.
+      - Bites only on ankles and lower legs; none on arms or neck.
+      - No spots, stains or shed skins seen on the mattress or frame.
+      - Indoor/outdoor cat; flea collar ran out about a month ago.
+      - Bites mostly after walking through the back bedroom (carpet); rest of the house is tile.
+      - About 1,600 sq ft, owner-occupied.
+      - Needed: asap (owner's word; not an emergency).
+      TOLD OWNER: looks more like fleas than bed bugs; get the cat treated by the vet at the same time.
+      SUSPECT
+      - Cat fleas, carpet in the back bedroom as the main breeding spot. Bed bugs unlikely with ankle-only bites and a clean mattress.
+      CHECK ON SITE
+      - Flea check with white socks in the back bedroom; quick bed bug check of the mattress and headboard to rule it out.
+      - Price as a flea job: interior carpet treatment with IGR, tile edges, shaded yard areas where the cat lies; 14-day follow-up.
+      - Owner vacuums before and daily after. Confirm the cat is treated before the visit.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s05
+    transcript:
+      - {who: homeowner, text: "found mud tubes on the side of my house, termites right? here's a picture, can someone come look [photo: several parallel tan tube-shaped clumps of dried mud, each about a finger long, stuck to the stucco directly under the eave at roughly two stories up, not touching the ground]"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City."}
+      - {who: intake, text: "Where exactly are they: down at the foundation, or up the wall?", step: question}
+      - {who: homeowner, text: "High up under the roof edge on the second-floor side, about 15 feet off the ground. Nothing on the foundation or stem wall."}
+      - {who: intake, text: "Is anything flying in and out of them?", step: question}
+      - {who: homeowner, text: "Yes, small dark wasps with thin waists fly in and out on warm afternoons."}
+      - {who: intake, text: "Those are mud dauber nests, not termites. Termite tubes come up from the soil. Just to be sure: any damaged wood, sawdust, or winged swarmers inside the house?", step: question}
+      - {who: homeowner, text: "No damaged wood, no sawdust, no swarmers inside."}
+      - {who: intake, text: "How long have they been there, and are more showing up?", step: question}
+      - {who: homeowner, text: "First noticed about two weeks ago. More appear each week."}
+      - {who: intake, text: "About how big is the house, and how do we get to that side, gate and room for a ladder?", step: question}
+      - {who: homeowner, text: "Two-story, about 2,800 sq ft. Ladder access only; the side yard has a gate with a latch."}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "bees/wasps", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0125 | pest_control / mud nests under eave, wasps (owner thought termites) | Lake Havasu City
+      FACTS
+      - Several parallel tan tube-shaped mud clumps, each about a finger long, on the stucco right under the eave, second-floor side, about 15 ft up. Not touching the ground; nothing on the foundation or stem wall.
+      - Small dark thin-waisted wasps fly in and out on warm afternoons.
+      - No damaged wood, sawdust or swarmers inside.
+      - First noticed about two weeks ago; more each week.
+      - Two-story, about 2,800 sq ft. Ladder access only; side yard gate with a latch.
+      - Photo attached. Needed: not said.
+      TOLD OWNER: mud dauber nests, not termites.
+      SUSPECT
+      - Mud daubers. Low-risk, rarely sting.
+      CHECK ON SITE
+      - 28 ft extension ladder, second-story eave. Scrape nests, treat the eave line, check the rest of the eaves and patio cover for more.
+      - Walk the foundation for real termite tubes while there so the owner is settled.
+      - One-time price; offer a quarterly exterior with eave sweeps.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s06
+    transcript:
+      - {who: homeowner, text: "we are getting scorpions in the house like 4 or 5 a week, even with monthly spray guy before. i dont have a picture, never wants to hold still lol. we are on the east side of town"}
+      - {who: intake, text: "East side of which town, Lake Havasu City?", step: coverage}
+      - {who: homeowner, text: "yes havasu!"}
+      - {who: intake, text: "Where in the house are you finding them?", step: question}
+      - {who: homeowner, text: "mostly in the bedroom hallway and the bathroom closest to that side. my kids are 6 and 9 so it really scares me"}
+      - {who: intake, text: "What did the last company do: inside, outside, how often?", step: question}
+      - {who: homeowner, text: "monthly, they sprayed the outside perimeter. didnt change anything"}
+      - {who: intake, text: "What's around the house on that side? Neighbors, desert, an empty lot?", step: question}
+      - {who: homeowner, text: "oh theres a vacant dirt lot right next to us on the east side with piles of old concrete, scrap lumber and brush. theres a block wall between us with a gap at the bottom near the gate"}
+      - {who: intake, text: "That lot and the gap are your problem. Bark scorpions live in that debris and climb block. How big is the house, and any pets besides the kids?", step: question}
+      - {who: homeowner, text: "about 2400 sq ft, we own it. two kids 6 and 9 and a small dog"}
+      - {who: intake, text: "Has anyone been stung? And you want monthly again?", step: question}
+      - {who: homeowner, text: "nobody stung this season thank goodness. yes monthly ongoing this time"}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "scorpions", bank_job_type: "scorpions", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0126 | pest_control / scorpions inside, monthly | Lake Havasu City (east side)
+      FACTS
+      - Scorpions inside, 4 or 5 a week, mostly the bedroom hallway and the bathroom nearest the east side.
+      - Vacant dirt lot right next door on the east side with piles of old concrete, scrap lumber and brush. Block wall between, gap at the bottom near the gate.
+      - Previous provider: monthly exterior perimeter spray; no change.
+      - About 2,400 sq ft, owner-occupied. Two kids (6 and 9) and a small dog. No stings this season.
+      - Wants monthly ongoing. No photo.
+      - Needed: not said.
+      TOLD OWNER: the lot and the wall gap are the source.
+      SUSPECT
+      - Arizona bark scorpions harboring in the lot debris, coming over and through the block wall into the east side of the house. Perimeter spray alone doesn't hold them.
+      CHECK ON SITE
+      - Blacklight inspection at dusk if possible, east wall and the gap.
+      - Exclusion quote: seal the wall gap, door sweeps and weatherstripping, weep screed, plumbing penetrations in the east bathroom, attic/eave gaps.
+      - Monthly: residual on the east block wall and wall base, granules in the rock band, interior crack-and-crevice in the hallway and bath. Dog and kids: keep interior to cracks only.
+      - Optional: wall-cap scorpion barrier on the shared wall. Lot is not theirs; we treat our side only.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s07
+    transcript:
+      - {who: homeowner, text: "hello this is dorothy my grandson put this number in. theres something in the cieling at night scratching and runing around. i can not sleep. also i found little black things in the garage like rice"}
+      - {who: intake, text: "Hello. What town do you live in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "How long have you heard the noise?", step: question}
+      - {who: homeowner, text: "about 3 weeks. only at night. over my bed room. sorry for the typos"}
+      - {who: intake, text: "Where are the little black things?", step: question}
+      - {who: homeowner, text: "on the garage floor and on top of the washer"}
+      - {who: intake, text: "Where is the opening to your attic?", step: question}
+      - {who: homeowner, text: "in the hall way closet. i can not climb a ladder. there are boxes stacked under it and i can not move them"}
+      - {who: intake, text: "Who lives with you? Any pets?", step: question}
+      - {who: homeowner, text: "just me and my cat. she sleeps inside. i use a walker"}
+      - {who: intake, text: "About how big is your house?", step: question}
+      - {who: homeowner, text: "about 1300 one story. i have been here since the early 90s"}
+      - {who: intake, text: "What is the best way to set up a visit?", step: question}
+      - {who: homeowner, text: "my grandson. on weekends. he comes sundays"}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "rodents", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0127 | pest_control / noise in attic at night + droppings in garage | Lake Havasu City
+      FACTS
+      - Scratching and running overhead in the bedroom ceiling, only at night, about 3 weeks.
+      - Small dark rice-size droppings on the garage floor and on top of the washer.
+      - Attic hatch in the hallway closet; boxes stacked under it; she can't move them or climb a ladder.
+      - Lives alone; indoor cat; uses a walker.
+      - About 1,300 sq ft, single story, owner-occupied since the early 1990s.
+      - Schedule through her grandson on weekends (he visits Sundays).
+      - Elderly, voice-texts; keep messages short, one thing at a time.
+      - No photo. Needed: not said (she can't sleep).
+      SUSPECT
+      - Roof rats in the attic, using the garage. Probably getting in at the roof line, a swamp cooler or vent, or the garage door seal.
+      CHECK ON SITE
+      - Crew moves the boxes and puts them back. Attic inspection for runways, droppings, nesting, chewed wiring.
+      - Exterior and roof: eaves, roof vents, plumbing vents, any cooler, garage door seal; quote exclusion separately.
+      - Snap traps in the attic only, in boxes in the garage; no loose bait anywhere the cat can reach. Keep her walking paths clear.
+      - Plan 2 to 3 trap checks; book with the grandson, weekend visit.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s08
+    transcript:
+      - {who: homeowner, text: "hey i rent a duplex and my place has roaches bad. landlord said i can find someone who does it, he'll look at the quote. can you help"}
+      - {who: intake, text: "Yes. What town is the duplex in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "Send me a picture of them?", step: photo}
+      - {who: homeowner, text: "[photo: kitchen cabinet interior, several small brown insects on the shelf liner] gross lol"}
+      - {who: intake, text: "Those look like German roaches. Does the other half of the duplex have them too?", step: question}
+      - {who: homeowner, text: "yeah my neighbor said they have roaches too. we share a wall"}
+      - {who: intake, text: "Who pays and approves, the landlord himself or a management company?", step: question}
+      - {who: homeowner, text: "landlord, he owns both halves and manages it himself. he'll pay if its under his limit, needs the quote in writing first"}
+      - {who: intake, text: "How big is your unit?", step: question}
+      - {who: homeowner, text: "about 900 sq ft, 2 bedrooms"}
+      - {who: intake, text: "Any kids or pets?", step: question}
+      - {who: homeowner, text: "no kids. i have a pet snake in a tank in my bedroom"}
+      - {who: intake, text: "When can someone get in?", step: question}
+      - {who: homeowner, text: "after 4 pm, i work nights"}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "general pest service", bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0128 | pest_control / roaches in rented duplex unit | Lake Havasu City
+      FACTS
+      - Tenant in one half of a duplex; roaches bad. Photo: several small brown roaches on kitchen cabinet shelf liner.
+      - Shares a wall with the other unit (also rented); that tenant says they have roaches too.
+      - Landlord owns both halves, manages it himself, pays if under his limit, needs a written quote before approving.
+      - Unit about 900 sq ft, 2 bedrooms.
+      - No kids; pet snake in a tank in the bedroom.
+      - Access after 4 pm (tenant works nights).
+      - Needed: not said.
+      TOLD TENANT: they look like German roaches.
+      SUSPECT
+      - German roach infestation running through the shared wall. Treating one side pushes them next door.
+      CHECK ON SITE
+      - Written quote to the landlord: price this unit, and price both units together (recommended).
+      - Gel bait, IGR, dust in wall voids and under sink, 2 to 3 follow-ups at 2-week intervals. No foggers.
+      - Snake: no spray in the bedroom near the tank; bait only, cover the tank during service.
+      - Book after 4 pm.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s09
+    transcript:
+      - {who: homeowner, text: "buenas tardes, despues de la tormenta de ayer salieron muchos bichos con alas por las ventanas de la sala y hay alitas en el piso. creo que es comején, quiero que vengan a revisar"}
+      - {who: intake, text: "Buenas tardes. ¿En qué ciudad está la casa?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "¿Me puede mandar una foto de las alitas?", step: photo}
+      - {who: homeowner, text: "[foto: un montoncito de alas delgadas y transparentes en el marco de la ventana y unas pocas en el piso debajo]"}
+      - {who: intake, text: "Gracias. Por lo que veo suena a enjambre de comején subterráneo. ¿Ha visto tubitos de tierra en las paredes, en la base de la casa o en la cochera?", step: question}
+      - {who: homeowner, text: "sí, hay un tubito delgado de tierra en la pared de la cochera, abajo, detrás del calentador de agua"}
+      - {who: intake, text: "¿Ha visto madera dañada, o algo que suene hueco cuando lo toca?", step: question}
+      - {who: homeowner, text: "madera dañada no. un zoclo de la sala suena hueco cuando lo toco"}
+      - {who: intake, text: "¿Le han tratado la casa contra comején antes? ¿Tiene papeles?", step: question}
+      - {who: homeowner, text: "hay papeles de un tratamiento del dueño anterior, como del 2011, en un cajón"}
+      - {who: intake, text: "¿De qué año es la casa, cuántos pies cuadrados, y es de losa (slab)?", step: question}
+      - {who: homeowner, text: "1998, losa, como 1,900 pies, estuco"}
+      - {who: intake, text: "¿Quiere un tratamiento de una vez o servicio mensual?", step: question}
+      - {who: homeowner, text: "una vez, no mensual"}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "termites", bank_job_type: "termites", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0129 | pest_control / winged insects after storm + earthen tube (owner says comején) | Lake Havasu City
+      FACTS
+      - Homeowner writes only in Spanish; keep all contact in Spanish.
+      - Evening after the storm, many winged insects came out at the living room windows; wings left on the floor.
+      - Photo: small pile of thin translucent wings on a windowsill, a few on the floor tile below.
+      - Thin earthen tube low on the garage wall behind the water heater.
+      - No wood damage seen; one living room baseboard sounds hollow when tapped.
+      - Previous owner's termite treatment paperwork from about 2011 in a drawer.
+      - Built 1998, slab, about 1,900 sq ft, stucco.
+      - Wants a one-time treatment, not monthly.
+      - Needed: not said.
+      TOLD OWNER: sounds like a subterranean termite swarm.
+      SUSPECT
+      - Active subterranean termites, swarm triggered by monsoon rain; colony likely entering at the garage stem wall / water heater area and up into the living room walls. The 2011 treatment is long past any residual life.
+      CHECK ON SITE
+      - Site visit needed to price. Full WDO inspection: garage behind water heater, perimeter stem wall, living room window frames and baseboards (probe the hollow one), expansion joints, plumbing penetrations.
+      - Read the 2011 paperwork for what was used and any transferable warranty.
+      - Quote liquid non-repellent perimeter treatment (trench and drill where slab/patio meets) vs bait stations; include warranty terms. Linear feet from the visit.
+      - Spanish-speaking tech, or send the quote in Spanish.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s10
+    transcript:
+      - {who: homeowner, text: "THERES A HUGE SWARM OF BEES HANGING IN THE TREE IN OUR BACKYARD!!! THEY ARE GOING TO KILL US!!! my kids play out there. SEND SOMEONE NOW"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "LAKE HAVASU!!!"}
+      - {who: intake, text: "Has anyone been stung, and is everyone inside right now?", step: question}
+      - {who: homeowner, text: "NOBODY STUNG. KIDS AND THE DOG ARE INSIDE"}
+      - {who: intake, text: "Good. Keep everyone and the dog inside and don't spray it or hose it. A hanging swarm is resting, not defending a nest. Can you send a picture from inside?", step: photo}
+      - {who: homeowner, text: "[photo: dark football-sized hanging cluster of bees on a lower branch of a mesquite tree about 6 feet off the ground, taken from the patio door] HERE"}
+      - {who: intake, text: "How long has it been there, and how far from the house?", step: question}
+      - {who: homeowner, text: "SHOWED UP THIS MORNING. HASNT MOVED IN 3 HOURS. ABOUT 25 FEET FROM THE BACK DOOR BY THE POOL EQUIPMENT"}
+      - {who: intake, text: "How do we get into the back yard, and are you home all day?", step: question}
+      - {who: homeowner, text: "SIDE GATE IS LOCKED. WE CAN LET YOU IN THROUGH THE GARAGE. IM HOME ALL DAY"}
+      - {who: intake, text: "Do you want it gone any way, or live removal by a beekeeper if we can?", step: question}
+      - {who: homeowner, text: "LIVE REMOVAL IF YOU CAN. JUST GET IT GONE TODAY"}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "bees/wasps", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0130 | pest_control / bee swarm in back yard tree | Lake Havasu City | URGENT (today)
+      FACTS
+      - Football-size bee swarm hanging on a lower branch of a mesquite, about 6 ft up (photo attached).
+      - Appeared this morning; hasn't moved in 3 hours.
+      - About 25 ft from the back door, near the pool equipment pad.
+      - Nobody stung; kids and dog inside.
+      - Side gate locked; access through the garage. Owner home all day.
+      - Wants live removal if possible; wants it gone today.
+      - Needed: today.
+      TOLD OWNER: keep everyone inside, don't spray or hose it; a resting swarm isn't defending a nest.
+      SUSPECT
+      - Fresh reproductive swarm, not an established colony. Treat as Africanized until shown otherwise (Mohave County).
+      CHECK ON SITE
+      - Go today before it moves into the pool equipment, a valve box or the house.
+      - Live removal: shake/vacuum into a swarm box at dusk or same day; beekeeper partner if ours isn't available. Fallback: removal by kill if aggressive.
+      - Full suit, keep owner and kids inside while working; check the pool pad and equipment covers for a second cluster.
+      - Price as swarm removal (no structure opening).
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s11
+    transcript:
+      - {who: homeowner, text: "hi, just looking for someone to do a monthly ant treatment around the house, we get them every spring at the back door. oh and by the way theres a faint propane smell near the water heater in the garage since yesterday, probably nothing. anyway ants are in the kitchen too sometimes"}
+      - {who: intake, text: "Before the ants: a propane smell is never probably nothing. Don't flip switches or start a car in the garage, get everyone out, and call 911 or your propane company from outside. The ants can wait.", step: "911"}
+      - {who: homeowner, text: "oh ok. noted. so about the ants"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "Where do the ants come in?", step: question}
+      - {who: homeowner, text: "they come in at the back door threshold, and in the kitchen near the dishwasher"}
+      - {who: intake, text: "How big is the house, one story or two?", step: question}
+      - {who: homeowner, text: "single story, about 2,000 sq ft"}
+      - {who: intake, text: "Any pets?", step: question}
+      - {who: homeowner, text: "we have a dog that stays in the back yard"}
+      - {who: intake, text: "Has anyone looked at that propane smell yet?", step: question}
+      - {who: homeowner, text: "no, no one has called anyone about it. the tank is on the side of the house"}
+      - {who: intake, text: "Please call the propane company or 911 before anyone goes in that garage. I'll hold the crew off the garage until it's cleared.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "general pest service", bank_job_type: "general pest service", unsure: false}
+    fire_dept_text: true
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0131 | pest_control / ants, monthly | Lake Havasu City
+      GAS FLAG (read first)
+      - Owner reports a faint propane smell near the garage water heater since yesterday; tank on the side of the house; nobody has called it in as of this text. I told him to get out and call 911 or the propane company from outside. Crew does not enter the garage or work near the tank until he confirms it's been checked.
+      FACTS
+      - Ants every spring at the back door threshold; also in the kitchen near the dishwasher.
+      - Single story, about 2,000 sq ft.
+      - Wants monthly service.
+      - Dog stays in the back yard.
+      - Needed: not said.
+      SUSPECT
+      - Seasonal ant trailing from the back patio slab edge; dishwasher line is the inside water source.
+      CHECK ON SITE
+      - Find the nest outside the back door; non-repellent perimeter and bait; check the dishwasher and sink penetrations.
+      - Dog: apply when the dog is put up, keep it off treated areas until dry.
+      - Monthly price; first visit can be inside and out.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s12
+    transcript:
+      - {who: homeowner, text: "back in town for the winter. need two things done: (1) pre-emergent sprayed on my front and back rock yards before the winter weeds, my gardener says he can't do that part, and (2) the usual monthly yard guy for mowing the small lawn strip, trimming the oleanders and cleaning up the palm fronds"}
+      - {who: intake, text: "Welcome back. What town is the house in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City."}
+      - {who: intake, text: "I'll take the pre-emergent; mowing and trimming goes to a yard company and I'll send that as its own request. About how much rock area, front and back together?", step: question}
+      - {who: homeowner, text: "About half an acre of rock, front and back combined."}
+      - {who: intake, text: "Is there landscape fabric under the rock, and what shape is it in? Are weeds up already?", step: question}
+      - {who: homeowner, text: "There's old fabric, torn in places. Weeds are scattered through the rock."}
+      - {who: intake, text: "What's planted in the rock: trees, cactus, drip lines?", step: question}
+      - {who: homeowner, text: "A palo verde, two agaves and an ocotillo, plus a drip line."}
+      - {who: intake, text: "Just this fall, or twice a year, fall and early spring?", step: question}
+      - {who: homeowner, text: "Twice a year, fall and early spring, if that is how it is done."}
+      - {who: intake, text: "Can you send a photo of the front rock?", step: photo}
+      - {who: homeowner, text: "[photo: front rock yard with scattered small green weeds and a drip line running along the edge]"}
+      - {who: intake, text: "Any pets, and is the house empty in the summer when the spring round is due?", step: question}
+      - {who: homeowner, text: "No pets at home during winter. The house is empty May to October; a house watcher stops by."}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "pre-emergent weed control", bank_job_type: "pre-emergent weed control", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0132 | pest_control / pre-emergent, rock yards | Lake Havasu City
+      ALSO SEND: landscape_maintenance / mowing small lawn strip, trimming oleanders, palm frond cleanup, monthly (second card; owner wants a new yard company for that part)
+      FACTS
+      - Pre-emergent on front and back rock yards before winter weeds; current gardener says he can't do it.
+      - About half an acre of rock combined. Old landscape fabric, torn in places. Small weeds already up, scattered (photo attached).
+      - In the rock: a palo verde, two agaves, an ocotillo, and a drip line.
+      - Wants twice a year, fall and early spring.
+      - No pets in winter. House empty May to October; a house watcher stops by.
+      - Needed: before winter weeds (owner's words).
+      SUSPECT
+      - Winter annuals already germinating, so pre-emergent alone won't clear what's up. Torn fabric means more breakthrough.
+      CHECK ON SITE
+      - Measure rock area; quote pre-emergent (e.g. prodiamine or similar) plus a post-emergent spot spray for what's up now.
+      - Keep off the palo verde root zone with anything soil-active beyond label; nothing root-absorbed near the ocotillo and agaves; watch the drip emitters.
+      - Spring round falls before May; confirm timing and that the house watcher can give gate access if needed.
+      - Two-application annual price.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s13
+    transcript:
+      - {who: homeowner, text: "got scorpions in my house out here in Parker, need monthly service. who comes out this far"}
+      - {who: intake, text: "We don't cover Parker yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s14
+    transcript:
+      - {who: homeowner, text: "bees are going in and out of my irrigation valve box in the front yard, been a few days, want them gone"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu, east side"}
+      - {who: intake, text: "We don't cover pest control jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "bees/wasps", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s15
+    transcript:
+      - {who: homeowner, text: "selling my house and my agent says I need a termite certificate or clearance before closing. who does those? escrow opens next week"}
+      - {who: intake, text: "Is the house in Lake Havasu City?", step: coverage}
+      - {who: homeowner, text: "yes, lake havasu city. its listed and under contract"}
+      - {who: intake, text: "Is this the termite inspection report (WDIIR) the buyer's lender wants, or did someone find termites and you need treatment?", step: question}
+      - {who: homeowner, text: "the buyer's lender asked for a wood-destroying insect report"}
+      - {who: intake, text: "Got it, that's an inspection report, not a treatment. Have you ever seen termite signs, or had the house treated?", step: question}
+      - {who: homeowner, text: "no signs that ive noticed, no prior treatment that i know of"}
+      - {who: intake, text: "Size, year built, slab? And what else is on the lot: detached garage, shed, wood patio cover?", step: question}
+      - {who: homeowner, text: "single story about 1600, built 2006, slab. theres a detached garage and a wood patio cover on the back"}
+      - {who: intake, text: "How do we get in, and when do you close?", step: question}
+      - {who: homeowner, text: "its vacant, my listing agent has the lockbox code. closing in about 3 weeks"}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: home_inspection, job_type: "termite report for a sale or loan", bank_job_type: "termite report for a sale or loan", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0135 | home_inspection / termite report (WDIIR) for a sale | Lake Havasu City
+      FACTS
+      - Seller; house listed and under contract. Buyer's lender asked for a wood-destroying insect report. Owner's words: "termite certificate or clearance."
+      - Escrow opens next week; close in about 3 weeks.
+      - Single story, about 1,600 sq ft, built 2006, slab.
+      - Detached garage and a wood patio cover on the back.
+      - No termite signs noticed; no prior treatment known.
+      - Vacant; listing agent holds the lockbox code.
+      - Needed: before close, about 3 weeks; report in hand well before.
+      TOLD OWNER: it's an inspection report, not a treatment.
+      SUSPECT
+      - Nothing; 2006 slab with no history. Wood patio cover and detached garage are where findings usually turn up.
+      CHECK ON SITE
+      - WDIIR on the state form by a licensed WDO inspector; include house, detached garage and patio cover.
+      - Coordinate entry through the listing agent's lockbox; send the report to the agent and lender per their instructions.
+      - If activity is found, treatment is a separate quote.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pest_control_s16
+    transcript:
+      - {who: homeowner, text: "pigeons have moved in under my solar panels, poop everywhere on the patio and the panels look filthy. need them gone and whatever keeps them out, and the panels cleaned"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "Can you send a picture of the panel edge where they're getting under?", step: photo}
+      - {who: homeowner, text: "[photo: roof edge from a ladder, gap under the lower row of solar panels with straw, feathers and droppings, two pigeons on the roof tile]"}
+      - {who: intake, text: "How many panels, what kind of roof, and is it one story?", step: question}
+      - {who: homeowner, text: "about 16 panels on a tile roof, single story over the patio side"}
+      - {who: intake, text: "Where do they roost, and how often are they there?", step: question}
+      - {who: homeowner, text: "every morning, under the lower edge on the south side. droppings land on the back patio and the dining table"}
+      - {who: intake, text: "Who installed the panels and how long ago? Some installers' warranties care what gets clipped to the frames.", step: question}
+      - {who: homeowner, text: "installed six years ago, the warranty paperwork is in the file. i havent talked to the installer"}
+      - {who: intake, text: "Fine with mesh or screen around the panels, or were you thinking something else for the birds?", step: question}
+      - {who: homeowner, text: "no poison. netting or screen if thats what works"}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: "pigeons/birds", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0136 | pest_control / pigeons under solar panels, exclusion | Lake Havasu City
+      ALSO SEND: solar panel washing as its own request to the cleaning trade (not on this card), scheduled after the mesh goes on
+      FACTS
+      - Pigeons roost every morning under the lower edge of the panels, south side.
+      - About 16 panels on a tile roof, single story over the patio side.
+      - Droppings on the back patio and the dining table.
+      - Photo: gap under the lower panel row with straw, feathers and droppings; two pigeons on the tile.
+      - No poison; netting or screen preferred.
+      - Panels installed six years ago; warranty paperwork on file; owner hasn't talked to the installer.
+      - Needed: not said.
+      SUSPECT
+      - Nesting pigeons under the array; they'll keep coming back until the perimeter is closed.
+      CHECK ON SITE
+      - Clean out nests, straw and droppings under the array; sanitize; bag and remove.
+      - Clip-on mesh around the full array perimeter, no drilling into panels, rails or tile. Owner should check the warranty paperwork (or we read it) before install.
+      - Tile roof: walk carefully, bring spare tiles for breakage; one-story ladder.
+      - Quote cleanout + exclusion by linear feet of perimeter; optional patio-cover deterrent if they shift there.
+    facts_in_card_not_stated: []

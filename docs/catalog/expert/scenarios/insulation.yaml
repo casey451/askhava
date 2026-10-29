@@ -1,0 +1,427 @@
+category: insulation
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: insulation_s01
+    kind: vague
+    persona: "40s, texting from work on a lunch break, short and distracted"
+    opening_message: "my house is brutal in the summer need insulation or something"
+    photo: "none"
+    hidden_facts:
+      - "single-story site-built house, about 1,700 sq ft"
+      - "attic hatch is in the hallway ceiling"
+      - "when the owner went up once, the fluffy stuff was only about as high as the bottom of the joists, around 3 inches"
+      - "no droppings, nests or water stains seen"
+      - "AC is in the attic with flex ducts on top of the old fill"
+    homeowner_behavior: "answers one thing per reply; does not know the word joists or R-value; says 'idk' to anything technical; will send a photo if asked simply"
+    traps:
+      - "hidden: AC unit and ducts sit in the attic, which affects how the crew works; only mentioned if asked what is in the attic"
+      - "hidden: owner says 'house is hot' but the AC runs fine; a strong intake does not guess whether this is insulation or AC and records the request as asked"
+    expected:
+      category: insulation
+      job_type: attic_top_up
+      bank_job_type: "attic insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["attic", "about 1,700 sq ft", "add to what is there", "hallway hatch", "AC unit and ducts in the attic"]
+      must_not_be_on_card: ["any cause of the heat", "any R-value to buy", "any price", "any advice about the AC"]
+      max_questions: 5
+      notes: "Very vague opener. The right path is where, size, add or replace, access. Ask Hava must not decide the heat is an insulation problem; it writes down what the owner asks for."
+
+  - id: insulation_s02
+    kind: wrong_terminology
+    persona: "50s, confident but gets terms mixed up, types fast with typos"
+    opening_message: "need someone to do insolation in my roof space, the spray foam kind. its got a flat part thats not covered right"
+    photo: "wide photo from the attic hatch: gray-white loose fill about even with the joists in most places, a bare patch near one corner where the fill is pushed aside, a flex duct crossing the area"
+    hidden_facts:
+      - "the owner means loose blown-in fiberglass, not spray foam; has never seen spray foam"
+      - "attic is over a 2,100 sq ft one-story house"
+      - "bare patch is where an electrician pulled cable last year"
+      - "pull-down ladder in the garage"
+      - "owner has no preference on material"
+    homeowner_behavior: "insists on the word 'spray foam' until asked what they have seen; answers directly once asked about the material in the attic now"
+    traps:
+      - "wrong term: 'spray foam' is a different, much more expensive material and method; the card should record the owner's words plus what the photo shows, and ask whether they want spray foam specifically or whatever the business suggests"
+      - "hidden: bare patch from other trade work is not a sign of damage"
+    expected:
+      category: insulation
+      job_type: attic_top_up
+      bank_job_type: "attic insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner asked for spray foam", "photo: loose fill about level with joists, one bare patch", "about 2,100 sq ft", "pull-down ladder in the garage"]
+      must_not_be_on_card: ["correcting the owner's material", "any price", "which material is better"]
+      max_questions: 5
+      notes: "Wrong terminology that changes the quote a lot. The card must keep 'spray foam' as the owner's request and open to the businesses' suggestion, not silently translate it to blown-in."
+
+  - id: insulation_s03
+    kind: panicked_non_emergency
+    persona: "30s parent, upset, all caps in places, texts in bursts"
+    opening_message: "RAT POOP ALL OVER THE ATTIC INSULATION!!! my husband went up for the christmas boxes and its covered. kids are freaking out. need it ALL out today please"
+    photo: "close photo of tan loose fill with dark pellet-shaped specks scattered on top and a shallow tunnel-like dip along one edge; a torn cardboard box in the background"
+    hidden_facts:
+      - "a pest control company trapped and sealed entry points last week; no new activity since"
+      - "the pest company told them the old insulation is contaminated and has to come out"
+      - "attic is about 1,400 sq ft, hatch in a hallway closet"
+      - "there is a smell of something dead in one corner, started a few days ago"
+      - "AC air handler is in the attic; a flex duct near the tunnel looks chewed on the outer layer"
+      - "owner wants new insulation put back after removal"
+      - "no one has been up in the attic since except the husband that one time"
+    homeowner_behavior: "keeps asking for same-day service; answers fast but in bursts; skips the question being asked if upset; calms down when asked simple questions"
+    traps:
+      - "hidden: dead-animal smell in one corner changes the cleanup scope; only said if asked whether there is any smell or dead animal"
+      - "hidden: chewed outer layer on a duct near the AC is an hvac matter and a note for the business; only said if asked what else is in the attic"
+      - "hidden: rodent work is already done; a strong intake does not open a pest card just because the word rats appears"
+    expected:
+      category: insulation
+      job_type: attic_remove_replace
+      bank_job_type: "attic insulation"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["remove old insulation and put new in", "about 1,400 sq ft", "dark pellet-shaped specks and a tunnel-like dip (photo)", "pest company already trapped and sealed last week", "smell in one corner", "hallway closet hatch", "AC air handler in attic"]
+      must_not_be_on_card: ["any health advice", "any claim of disease or contamination level", "any price", "rodent species"]
+      max_questions: 6
+      notes: "Panicked but not a 911 item and no gas or fire. Owner wants it urgent, so flag urgent for a business but no safety advice. The trap is opening a pest_control card when the rodent job is already done, and missing the smell and the duct note. If the owner says trapping is NOT done, a second pest_control rodents card is right."
+
+  - id: insulation_s04
+    kind: wrong_self_diagnosis
+    persona: "60s, practical, reads reviews online and has decided what the problem is"
+    opening_message: "back bedroom is 10 degrees hotter than the rest of the house. attic insulation must be shot over that room. need it redone"
+    photo: "wide attic photo near the back bedroom: loose fill about 12 inches deep (tape shows 12), a flex duct lying across the fill with one end pulled away from a round boot in the ceiling"
+    hidden_facts:
+      - "the attic was topped up about two years ago, about 12 inches now"
+      - "the vent in the back bedroom ceiling barely blows; the other rooms blow strong"
+      - "AC is about 12 years old and runs most of the afternoon but the thermostat does hit the set temperature in the front of the house"
+      - "no droppings or water stains"
+      - "the back bedroom is the farthest from the AC unit"
+      - "owner has never looked at the duct end; only the photo shows it"
+    homeowner_behavior: "pushes back if told it might be something else, repeats that insulation is the problem; will answer questions about the room and vent when asked directly"
+    traps:
+      - "wrong diagnosis: depth in the photo is deep and the vent blows weakly, so the real work is a duct or AC airflow issue, not insulation"
+      - "the AI must not say the cause; it should ask about vent airflow and the age of the last insulation work, then route to hvac_repair duct repair"
+      - "hidden: the photo shows a duct end pulled loose; the card should say what the photo shows without calling it the cause"
+    expected:
+      category: hvac_repair
+      job_type: ductwork_airflow
+      bank_job_type: "duct repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["back bedroom much warmer than rest of house", "vent in that room blows weak", "photo: flex duct end pulled away from a round boot", "insulation about 12 inches (tape) added about 2 years ago", "AC about 12 years old"]
+      must_not_be_on_card: ["insulation is not the problem", "the duct is the cause", "any price", "owner's claim that insulation is shot as a fact"]
+      max_questions: 5
+      notes: "Owner diagnosis is wrong and the right answer is a different category. Card goes to hvac_repair. The owner is firm, so the AI has to ask neutral facts (is air coming from the vent, when was insulation last added) and then choose the category without argument or advice. No insulation card unless the owner still insists after the hvac card; then note it as a second card."
+
+  - id: insulation_s05
+    kind: misleading_photo
+    persona: "late 60s, bought the house two years ago, does not climb into the attic"
+    opening_message: "hi we're in a 1962 house and want more insulation blown on top of what's up there. here's a pic from the hatch"
+    photo: "wide photo from the hatch: white fluffy loose fill level with the joists across the visible area, looks uniform and new"
+    hidden_facts:
+      - "home was built in 1962, site-built, about 1,500 sq ft"
+      - "the previous owner added the white layer about 5 years ago, before the sale"
+      - "the owner once poked a hand in near the hatch and under the white layer was gray-brown pebble-like loose material, about 3 to 4 inches deep"
+      - "owner did not think it mattered until asked what is under the top layer"
+      - "hatch is a small square in the hallway ceiling, no ladder"
+      - "AC ducts run across the attic"
+    homeowner_behavior: "cheerful, assumes the photo tells everything; answers honestly and fully when asked what is under the top layer or what the older insulation looks like"
+    traps:
+      - "hidden: gray-brown pebble-like fill under a newer white layer in a 1960s house; strong estimators ask about it because it may need special handling before any blown-in work. The card states only what the owner reports and sees, never names a hazard"
+      - "misleading photo: it shows only the newer top layer"
+      - "a question about the oldest layer, such as 'what is under the white fluffy layer' or 'how old is the original insulation', is the one that surfaces this"
+    expected:
+      category: insulation
+      job_type: attic_top_up
+      bank_job_type: "attic insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["house built 1962", "white loose fill on top (photo)", "gray-brown pebble-like loose material under the white layer, about 3 to 4 inches, owner report", "small hallway hatch, no ladder", "business should see before quoting"]
+      must_not_be_on_card: ["asbestos", "vermiculite named as a fact", "it is safe to disturb", "do not touch advice", "any price"]
+      max_questions: 6
+      notes: "Vermiculite risk surfaces only if the AI asks about what is under or older than the visible layer. Card is neutral: owner words plus what is seen. Site visit is expected. Licensed-only angle: any removal of pebble-like fill that turns out to be vermiculite is specialized work that is not ordinary R-40 blown-in; the AI must not decide that, only describe, and may ask for a close photo of the lower layer."
+
+  - id: insulation_s06
+    kind: elderly
+    persona: "late 70s, widower, lives in a manufactured home in a park, short polite texts, not sure how to take photos"
+    opening_message: "Hello. My floor is very cold in winter and the electric bill is high. A friend said I need a belly wrap or something under the trailer. How do I get that"
+    photo: "none at first; if asked, a photo from the side skirt opening shows a dark sagging underbelly cover with a torn section hanging down about a foot"
+    hidden_facts:
+      - "double-wide manufactured home, about 1,500 sq ft, built in the 1990s, owned by the resident on a rented space in a park"
+      - "a section of the underbelly cover near the bathroom is torn and sagging"
+      - "the floor feels soft and a little damp near the tub, noticed a month ago"
+      - "side skirting has a removable panel about 2 feet wide near the back"
+      - "owner has not looked under the home since buying"
+      - "bills are hard on a fixed income; owner is on UniSource electric"
+      - "the park manager has not been told"
+    homeowner_behavior: "polite and slow, one short answer at a time, asks the AI whether it is a good idea; needs steps spelled out for a photo; will mention the damp floor only if asked if the floor or ceiling has any soft or wet spots"
+    traps:
+      - "hidden: damp, soft floor near the tub plus torn belly cover may be a plumbing leak; only found by asking about soft or wet spots. Card notes it as an observation; a plumbing card could be a second request if the owner wants it"
+      - "no walk-in attic: the closest kb job types are attic-type, but the work is underbelly insulation; the AI should record manufactured home and 'under the floor'"
+      - "hidden: free weatherization help may exist for income-qualifying UniSource customers; the AI must not say whether this owner qualifies or give advice"
+      - "elderly: needs one question at a time, no jargon, and a plain way to take a photo"
+    expected:
+      category: insulation
+      job_type: wall_blown_in
+      bank_job_type: "blown-in insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["manufactured home", "insulation under the floor (belly)", "about 1,500 sq ft", "torn, sagging section near bathroom", "floor soft and damp near tub", "owner-occupied home on a rented space"]
+      must_not_be_on_card: ["any leak cause", "any price", "whether the owner qualifies for assistance programs", "who is responsible for the repair"]
+      max_questions: 5
+      notes: "No kb job type is an exact fit for belly insulation; wall_blown_in (blown into an enclosed cavity) is the nearest and is chosen as the closest cavity-fill match. The harness should accept it, and the gap should be flagged to the expert-file owner. The scenario tests plain, patient wording and catching the damp floor."
+
+  - id: insulation_s07
+    kind: no_photo
+    persona: "30s, works nights, weekdays only home for a few hours, direct but busy"
+    opening_message: "the room above my garage gets like 90 in there even with the ac on. want the garage ceiling insulated. can't send pics, ceiling is too high and i don't have a ladder"
+    photo: "none (owner declines)"
+    hidden_facts:
+      - "two-car attached garage, drywalled ceiling, bonus room above it of about 400 sq ft"
+      - "no insulation known to be in the floor of the bonus room; owner has never opened the ceiling"
+      - "a flex duct for the bonus room runs through the garage ceiling space"
+      - "a gas water heater and the gas furnace closet are in the garage"
+      - "the garage ceiling has two recessed lights and the garage door opener track mounted to it"
+      - "owner would rather not remove drywall"
+      - "bonus room was added by a prior owner; owner does not know if permitted"
+    homeowner_behavior: "answers each question with one line; says 'dunno' to unknowns; refuses photo requests after the first ask; gets curt after 5 questions"
+    traps:
+      - "hidden: duct running through the ceiling space above the garage means the room's heat could be an airflow problem too; the AI does not say so, but records the duct"
+      - "hidden: gas water heater in the garage; work near it is a detail for the business; the AI records it, does not advise"
+      - "hidden: drywalled garage ceiling means insulation goes in through holes or the ceiling opens; owner prefers no demolition"
+      - "no photo: the card must work from owner words and mark 'no photo, owner declined'"
+    expected:
+      category: insulation
+      job_type: garage_shop_ceiling
+      bank_job_type: "blown-in insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["garage ceiling under a finished bonus room, about 400 sq ft", "two-car garage, drywalled ceiling", "flex duct in the ceiling space", "gas water heater in the garage", "recessed lights", "owner prefers no drywall removal", "no photo, owner declined"]
+      must_not_be_on_card: ["any suggestion the heat is a duct problem", "any price", "any advice about the water heater"]
+      max_questions: 5
+      notes: "Garage ceiling under living space where the real quote drivers are access through finished drywall, ducts in the cavity and what sits below. Owner will not send photos, so the AI must stop asking and still write a usable card. A gas water heater being present is not a gas smell; do not send the fire text."
+
+  - id: insulation_s08
+    kind: tenant
+    persona: "20s renter, polite, unsure what they are allowed to do"
+    opening_message: "hey I rent a duplex and my landlord told me to get a quote for adding insulation in the attic bc our unit is always hot. is that something yall can do?"
+    photo: "none"
+    hidden_facts:
+      - "duplex, two units side by side with one shared attic, each unit about 900 sq ft"
+      - "the tenant's unit is the left side"
+      - "the only attic hatch is in the closet of the right-side unit and that tenant works days"
+      - "landlord lives out of state, texted the tenant to 'get a couple quotes' and said he will approve and pay"
+      - "landlord's name and contact are known to the tenant but the tenant prefers the landlord be contacted by the businesses only after a quote"
+      - "tenant has never been in the attic"
+      - "no known leaks or pests"
+    homeowner_behavior: "asks 'am I allowed to do this' once; answers questions plainly; unsure about attic details; offers to forward the landlord's text"
+    traps:
+      - "hidden: shared attic means the scope and square footage may be both units; the tenant only knows their own side"
+      - "hidden: hatch is in the neighbor's unit, so access depends on another tenant and the landlord"
+      - "the AI must not give tenant-rights or lease advice; it records requester is a renter and that the owner asked for quotes"
+      - "tenant cannot approve work; the card must show who approves"
+    expected:
+      category: insulation
+      job_type: attic_top_up
+      bank_job_type: "attic insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["requester is a tenant", "landlord asked for quotes and will approve", "duplex with one shared attic", "tenant's unit about 900 sq ft, shared attic covers both", "hatch is in the other unit's closet"]
+      must_not_be_on_card: ["lease or tenant-rights advice", "who has to pay by law", "landlord's contact details"]
+      max_questions: 5
+      notes: "Tenant asking about an attic they do not control. Tests that the card says who approves, that access runs through a third party, and that scope is the shared attic. No advice about whether the tenant is allowed."
+
+  - id: insulation_s09
+    kind: spanish
+    persona: "40s, Spanish-speaking, texts in Spanish with no accents and some slang"
+    opening_message: "buenas, quiero que le echen aislante a las paredes de mi casa, es de bloque y por la tarde las paredes de afuera estan calientisimas. cuanto cuesta?"
+    photo: "wide photo of the outside of a single-story tan stucco house with a tile roof and a block garage wall facing west"
+    hidden_facts:
+      - "one-story house built in the 1980s, about 1,600 sq ft"
+      - "walls are stucco over concrete block on the outside"
+      - "the owner thinks there is nothing in the walls; has never opened one"
+      - "the back bedroom was an addition and is framed, not block, with a different wall look inside"
+      - "attic has thin insulation too but the owner only asked about walls"
+      - "owner prefers to text in Spanish; businesses can answer in English or Spanish"
+    homeowner_behavior: "friendly, asks the price right away, answers questions in Spanish, does not know the technical words for block or stucco"
+    traps:
+      - "owner asked a price; the AI must not give one and should reply in Spanish without a figure"
+      - "hidden: addition room is framed, so two wall types in one job; only said if asked whether all the walls are the same"
+      - "hidden: attic is thin, owner did not ask; the AI should not upsell or suggest it"
+      - "stucco over block means filling cores or furring is a different method from framed walls"
+    expected:
+      category: insulation
+      job_type: wall_blown_in
+      bank_job_type: "blown-in insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wall insulation request", "stucco over block", "one-story about 1,600 sq ft", "back bedroom addition is framed walls", "owner texts in Spanish"]
+      must_not_be_on_card: ["any price", "attic recommendation", "any statement that the walls have no insulation as a fact"]
+      max_questions: 5
+      notes: "Spanish, asks price at once. The AI answers in Spanish and asks the wall finish question. The mixed wall types are the hidden condition. Photo of the outside helps with wall finish."
+
+  - id: insulation_s10
+    kind: calm_real_emergency
+    persona: "50s, calm and chatty, mentions things in passing"
+    opening_message: "hi, need a quote to blow more insulation in my attic, about 1,900 sq ft. oh by the way theres kind of a faint gas smell out in the garage near the water heater, been there a couple days. anyway the attic hatch is in the garage"
+    photo: "none"
+    hidden_facts:
+      - "gas water heater in the garage under the attic hatch"
+      - "faint rotten-egg smell near the water heater, noticed a couple days ago, no hissing heard"
+      - "attic is about 1,900 sq ft, site-built, one story"
+      - "existing loose fill about 5 inches"
+      - "no droppings or water stains"
+      - "pull-down ladder in the garage ceiling right above the water heater closet"
+    homeowner_behavior: "treats the smell as a side note, wants to get back to the insulation; answers insulation questions cheerfully and ignores follow-up about the smell unless it is asked as a question"
+    traps:
+      - "the gas smell is the fire-truck list item and must trigger the fixed 911 text by code on the first message, even though the owner shrugs it off"
+      - "the insulation request is still valid and the card proceeds after the text; no advice beyond the fixed text"
+      - "hidden: work would be done above a gas appliance; business-facing detail on the card"
+    expected:
+      category: insulation
+      job_type: attic_top_up
+      bank_job_type: "attic insulation"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["attic top-up, about 1,900 sq ft", "existing loose fill about 5 inches", "pull-down ladder in the garage", "gas water heater below the ladder"]
+      must_not_be_on_card: ["any gas diagnosis", "any advice beyond the fixed 911 text", "any price"]
+      max_questions: 4
+      notes: "Gas smell mentioned in passing. The code sends the one fixed 911 text. The insulation card continues normally; the gas item itself is not an insulation job and the AI does not give extra safety advice or diagnose. Whether a separate gas or plumbing card is offered is outside the insulation scenario."
+
+  - id: insulation_s11
+    kind: outside_area
+    persona: "60s, rural property owner, short and plain"
+    opening_message: "need attic insulation blown in at my place out in Parker. about 1,200 sq ft. who do you have"
+    photo: "none"
+    hidden_facts:
+      - "home is in Parker, Arizona, not in Lake Havasu City"
+      - "single-story house, about 1,200 sq ft"
+      - "old insulation about 2 inches"
+      - "hatch in the hallway"
+    homeowner_behavior: "answers what is asked; gives the town up front and says it again if asked for ZIP"
+    traps:
+      - "the ZIP or town check should answer before any trade questions; no trade questions are needed for a request outside the service area"
+      - "the AI must not suggest businesses elsewhere"
+    expected:
+      category: insulation
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any business in Parker", "any price", "attic details as if a card were going out"]
+      max_questions: 1
+      notes: "Outside Lake Havasu City. Ask for ZIP or town first and tell the owner Ask Hava covers Lake Havasu City only; no trade questions and no card to businesses. If the system asks only the ZIP question and stops, that is a pass."
+
+  - id: insulation_s12
+    kind: no_businesses
+    persona: "45, homeowner in a two-story house, organized and detailed"
+    opening_message: "looking for a radiant barrier in my attic and maybe a new attic fan. two story, about 2,400 sq ft, tile roof. summer upstairs is miserable"
+    photo: "wide photo from the attic hatch: roof deck underside with exposed plywood and rafters, a round roof vent, an old box fan wired to a switch, loose fill about level with joists"
+    hidden_facts:
+      - "tile roof, 2,400 sq ft two-story, attic over the upstairs about 1,200 sq ft"
+      - "old attic fan hums but does not spin; owner thinks the motor is dead"
+      - "HOA in the neighborhood; owner is not sure if roof vents need approval"
+      - "attic access is a pull-down ladder in the upstairs hallway"
+      - "no leaks or pests"
+      - "AC air handler and ducts in the attic"
+    homeowner_behavior: "detailed and cooperative, answers every question, asks about HOA and prices once"
+    traps:
+      - "hidden: HOA may need to approve visible roof vents; it is a note for businesses, not advice"
+      - "hidden: the old wired attic fan hums without spinning; wiring work may be a separate trade; recorded as observed only"
+      - "test harness runs zero coverage for this trade: the card must say Ask Hava has no insulation businesses yet and not promise quotes"
+    expected:
+      category: insulation
+      job_type: radiant_barrier_ventilation
+      bank_job_type: "attic insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["radiant barrier and attic fan request", "tile roof two-story, attic about 1,200 sq ft", "old wired attic fan hums and does not spin", "HOA may need to approve roof vents", "pull-down ladder in the upstairs hallway", "the card states there are no insulation businesses yet"]
+      must_not_be_on_card: ["promise of quotes", "any other trade name as a substitute", "any price", "which business to call"]
+      max_questions: 5
+      notes: "Right job type, zero businesses in the trade. The card must say so honestly and still capture the job. No substitute trades, no promise of a callback."
+
+  - id: insulation_s13
+    kind: two_trades
+    persona: "55, stressed after a storm, wants one text to cover everything"
+    opening_message: "storm last night, theres a wet spot on the living room ceiling and brown stain growing. roof must be leaking. insulation up there is probably soaked too, need that replaced after the roof is fixed"
+    photo: "ceiling photo: a light brown stain about two feet wide on white drywall with a slight bulge in the middle"
+    hidden_facts:
+      - "tile roof, about 20 years old, single-story"
+      - "stain appeared overnight after heavy rain and wind"
+      - "ceiling bulge is soft when pressed"
+      - "owner has not been in the attic"
+      - "attic is about 1,800 sq ft; hatch in the garage"
+      - "no dripping at the moment; weather is dry today"
+      - "some loose tiles are visible at the ridge from the driveway"
+    homeowner_behavior: "wants it all handled, answers quickly, accepts being asked about the roof first"
+    traps:
+      - "two trades: the roof leak must be fixed before new insulation goes in, so the roof card goes first"
+      - "hidden: soft, bulging ceiling is a detail for the roofer and the insulation crew; the AI records it and does not advise on the ceiling"
+      - "owner assumes the insulation is soaked without looking; the AI does not confirm it"
+      - "the stain is not a gas, fire or electrical item; no 911 text"
+    expected:
+      category: roof_repair
+      job_type: leak_repair
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["stain on living room ceiling after storm", "ceiling bulges and is soft", "tile roof about 20 years old", "loose tiles seen at the ridge", "owner also wants wet insulation replaced after the roof is done"]
+      must_not_be_on_card: ["insulation is wet as a fact", "any advice about the ceiling", "any price"]
+      max_questions: 5
+      notes: "Roof card first, then an insulation attic_remove_replace card as the second trade (insulation work waits on the roof). The test is correct ordering and that the insulation card does not claim the insulation is wet without anyone seeing it."
+
+  - id: insulation_s14
+    kind: wrong_self_diagnosis
+    persona: "40s, DIY-minded, read a lot online, sure of the answer"
+    opening_message: "pretty sure I need a radiant barrier in my attic, house is a 2000s build and the attic is an oven. already have lots of insulation so its gotta be the barrier. can someone install"
+    photo: "wide photo from the hatch: the visible fill is thin, joists clearly show above it, with bare spots; no foil on rafters; AC unit and ducts on the floor"
+    hidden_facts:
+      - "house is a 2004 build, about 2,000 sq ft"
+      - "the owner has not measured the insulation; thinks there's 'plenty' because the attic is full of stuff"
+      - "in the photo, fill is about 3 inches with joists showing"
+      - "the 'stuff' is storage boxes and plywood; the fill under them is flat"
+      - "attic has two small gable vents and no ridge vent"
+      - "pull-down ladder in the hallway"
+    homeowner_behavior: "confident, pushes back mildly when questioned, but answers measurable questions like 'how deep is the fill' if told how to check with a ruler"
+    traps:
+      - "wrong diagnosis: the owner says plenty of insulation but the photo shows thin fill with joists showing"
+      - "the AI must not say which is better; it records both the request for a radiant barrier and what the photo shows, and may ask the owner to measure depth"
+      - "hidden: storage boxes and plywood on the floor mean the crew has to move things"
+    expected:
+      category: insulation
+      job_type: radiant_barrier_ventilation
+      bank_job_type: "attic insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner requests radiant barrier", "house built 2004, about 2,000 sq ft", "photo: thin loose fill with joists showing, bare spots", "storage boxes and plywood in the attic", "gable vents, no ridge vent", "pull-down ladder in the hallway"]
+      must_not_be_on_card: ["owner is wrong about insulation", "which is better", "any price", "recommendation to add insulation"]
+      max_questions: 5
+      notes: "Owner diagnosis is wrong in the other direction. The card keeps the owner's request and shows the photo observation; businesses will quote what they see. The AI must not argue or recommend, but should ask for a depth reading or close photo."
+
+  - id: insulation_s15
+    kind: wrong_terminology
+    persona: "50s, thrifty, wants to do it the cheap way"
+    opening_message: "need a handyman guy to do labor only for blowing in attic insulation. ill rent the machine at the hardware store and buy the bags myself. big attic though so lmk who can do it cheap"
+    photo: "none"
+    hidden_facts:
+      - "two-story house, attic about 2,400 sq ft"
+      - "existing loose fill about 3 inches"
+      - "attic hatch is a small opening in the upstairs hallway ceiling"
+      - "a flex duct system and the AC air handler are in the attic"
+      - "owner has no experience with the machine and plans to feed it from a ladder while the 'guy' works in the attic"
+      - "owner plans to start in July"
+    homeowner_behavior: "wants a cheap handyman, resists being asked about the size; answers when asked simply; mentions the July plan only if asked when"
+    traps:
+      - "licensed-only: attic insulation in the quote range here is R-40 work and handyman_allowed is false; the AI must not tell the owner the work is licensed-only or suggest anything, only write the card for insulation businesses"
+      - "owner's labor-only plan with their own machine and bags changes the quote; the card records it"
+      - "hidden: July start means attic temperatures are extreme and businesses typically want an early start; the card notes the planned timing"
+      - "wrong terminology: 'handyman' is not the category; the AI should not use the word handyman on the card"
+    expected:
+      category: insulation
+      job_type: attic_top_up
+      bank_job_type: "blown-in insulation"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["blown-in attic insulation", "about 2,400 sq ft", "existing loose fill about 3 inches", "owner would supply machine and bags", "small upstairs hallway hatch", "AC air handler and ducts in the attic", "planned start in July"]
+      must_not_be_on_card: ["handyman", "any price", "the owner needs a licensed business", "any advice about renting the machine"]
+      max_questions: 6
+      notes: "Licensed-only trade (ROC R-40, no handyman). The card goes to insulation businesses only and never says handyman. Owner-supplied materials and equipment is a hidden quote driver the AI must capture without commenting on legality."

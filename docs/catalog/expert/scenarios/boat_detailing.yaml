@@ -1,0 +1,465 @@
+category: boat_detailing
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: boat_detailing_s01
+    kind: vague
+    persona: "man, 50s, texts one short line at a time, treats the boat like a car"
+    opening_message: "boat looks rough need it done"
+    photo: "none"
+    hidden_facts:
+      - "20 ft bowrider, about 12 years old"
+      - "sits on a trailer in his side yard"
+      - "he wants the outside washed and waxed, inside is fine"
+      - "he has a hose and outside spigot at the house"
+      - "boat has not been waxed since he bought it two years ago"
+    homeowner_behavior: "answers one thing per reply; never volunteers; says 'done' when he means detailed; short answers; gets curt after 5 questions"
+    traps:
+      - "'done' could mean a mechanical service or a detail; first question must find out whether this is cleaning or repair"
+      - "hidden: no wax in two years, only said when asked what the boat has had done or what he wants for the outside"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "waxing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wash and wax outside only", "20 ft bowrider", "on trailer at home", "water available at the house", "not waxed in about two years"]
+      must_not_be_on_card: ["any price", "any cause", "engine service", "interior detail"]
+      max_questions: 5
+      notes: "Vague one-liner. If the AI jumps to boat length before knowing it is a cleaning job it risks the wrong category. Boat length and type come from the bank questions; service type decides job type."
+
+  - id: boat_detailing_s02
+    kind: wrong_terminology
+    persona: "man, 40s, wake boat owner, confident, uses made-up terms"
+    opening_message: "need the scum line on my wakeboat acid washed and buffed out, its like a white crusty ring all the way down both sides from the lake spray, vinegar did nothing"
+    photo: "side of a dark blue wake boat with a thick white crusty band along the lower hull and rub rail, finger marks wiped through it in one spot"
+    hidden_facts:
+      - "24 ft inboard wake boat, dark blue gelcoat, about 5 years old"
+      - "boat lives on a trailer in an RV-style carport and gets rinsed but not dried after each lake day"
+      - "the white band is hard and crusty, he has scrubbed it with a brush and it barely moves"
+      - "after scrubbing, the dull streaks stayed on the dark gelcoat"
+      - "he has already used vinegar twice and a household bathroom cleaner once"
+      - "ballast tanks are fine, this is only about the outside"
+      - "he wants it ready for a lake weekend in two weeks, not a rush"
+    homeowner_behavior: "answers fully but pushes his own method; says 'acid wash' and 'buff' as if he knows the job; will mention the bathroom cleaner only when asked what he already tried"
+    traps:
+      - "hidden: heavy hard-water buildup on dark gelcoat that has been scrubbed and treated with household cleaners; a strong detailer would want to know what was already used and whether the finish looks dull or scratched"
+      - "'acid wash' is his word, not a job type; the card should say heavy white mineral-looking buildup, scrubbing and cleaners already tried, and let the business decide the method"
+      - "the AI must not agree it is hard water, say acid is safe or unsafe, or suggest a product"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "waxing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["24 ft wake boat, dark blue", "thick white crusty band along both sides of lower hull", "brush scrubbing, vinegar and a household bathroom cleaner already tried", "dull streaks on the dark finish after scrubbing", "on trailer at home", "owner asked for acid wash and buff, method up to the business"]
+      must_not_be_on_card: ["hard water (as a diagnosis)", "any price", "any product recommendation", "safe to use acid"]
+      max_questions: 5
+      notes: "Wrong terminology plus a hidden condition: what the owner already put on the finish changes the quote a lot. Must capture the earlier cleaners without judging them. Job type is hull cleaning or wax/polish in the bank; accept 'hull cleaning' or 'waxing' as bank_job_type if the card describes buildup removal and finish."
+
+  - id: boat_detailing_s03
+    kind: wrong_terminology
+    persona: "woman, 60s, owns two boats with her husband, mixes them up in her texts"
+    opening_message: "Hi we have the pontoon and the wake boat, my husband said the pontoon needs waxed and polished like we did the wake boat last year, can you get quotes"
+    photo: "pontoon on a trailer, silver aluminum tubes with brown streaks and a dull white film, vinyl seats with dark spots"
+    hidden_facts:
+      - "22 ft pontoon with two aluminum tubes (toons), bimini top, vinyl bench seating"
+      - "the wake boat was done last year and is NOT part of this request"
+      - "tubes are bare aluminum, brown tannin-looking streaks and a white film from the waterline up"
+      - "there is no gelcoat on the tubes; the deck rails are anodized aluminum"
+      - "vinyl seats have dark spots in the seams and cracks"
+      - "pontoon is on a trailer at a storage lot, no hookups there, lot manager must be told"
+      - "she wants the tubes and rails to look shiny; seats just cleaned, not re-covered"
+    homeowner_behavior: "friendly, answers what is asked, but keeps saying 'the boat' and may mean either; will clarify the wake boat is not included when asked which boat"
+    traps:
+      - "two boats in one message; the card is for the pontoon only"
+      - "wax and gelcoat language from the wake boat does not apply to aluminum tubes; the card should describe what she sees (aluminum tubes, brown streaks, white film) and say 'wax and polish' as her words"
+      - "hidden: storage lot has no water or power; mobile detailer would need to bring both"
+      - "hidden: seat dark spots are in the seams, only said when asked about the interior or seats"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "full detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pontoon, 22 ft", "aluminum tubes with brown streaks and white film", "seats have dark spots in seams, clean only", "on trailer at storage lot, no water or power there", "wake boat not included"]
+      must_not_be_on_card: ["wake boat details", "gelcoat", "any price", "re-cover seats"]
+      max_questions: 6
+      notes: "Pontoon versus wake boat. First clarifying question must settle which boat the quote is for. Pontoon surfaces are aluminum so the wake-boat history should not leak onto the card as gelcoat. Storage lot with no hookups is a quote-changing hidden fact."
+
+  - id: boat_detailing_s04
+    kind: wrong_self_diagnosis
+    persona: "man, 30s, bought a used boat last month, practical, a little defensive about his boat"
+    opening_message: "my boat is just dirty it wont come clean no matter what i do. washed it 3 times. need someone to deep clean the hull"
+    photo: "white fiberglass runabout in the sun, hull dull and chalky looking, faded red stripe that looks pink, a wiped streak where a hand was dragged across it showing a shinier patch"
+    hidden_facts:
+      - "19 ft bowrider, early 2000s, white hull with a red stripe"
+      - "after washing his hand and the rag come away white and chalky"
+      - "red stripe has faded to pink and looks flat"
+      - "boat was stored outside under no cover for years by the previous owner, he bought it from a private seller"
+      - "boat is on a trailer in his driveway"
+      - "he has never waxed it and does not own a polisher"
+      - "he wants it to look shiny again, he is not trying to repaint"
+    homeowner_behavior: "answers directly; insists it is dirt; will say what is on the rag only if asked what happens when he wipes or washes it"
+    traps:
+      - "owner's diagnosis is wrong: he thinks dirt, the observable facts are chalky residue on his hand, flat faded color and a shinier wiped patch"
+      - "the AI must not say oxidized, sun damage or restoration needed; it records what he sees and what the photo shows, and lets the business quote it"
+      - "'deep clean the hull' lands on hull cleaning but the right quote is polish or compound and wax; both must be reachable from the card"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "waxing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["19 ft bowrider on trailer at home", "washed 3 times and still looks dull", "white chalky residue comes off on hand and rag", "red stripe faded to pink", "photo shows dull chalky hull", "never waxed, stored uncovered by previous owner", "owner called it dirty and asked for deep clean"]
+      must_not_be_on_card: ["oxidation (as a diagnosis)", "sun damage", "any price", "repaint"]
+      max_questions: 5
+      notes: "Oxidized gelcoat the owner calls dirty. Key is that the card carries the chalky hand residue and faded stripe so the estimator can price compounding versus wash. The AI must not correct the owner."
+
+  - id: boat_detailing_s05
+    kind: misleading_photo
+    persona: "woman, 50s, boat kept in a marina slip, posts with a photo she is proud of"
+    opening_message: "Can someone clean the bottom of my boat? Here's a pic, it's at the marina in a slip"
+    photo: "sunny side-on shot of a clean white cruiser tied in a slip, hull above the waterline looks shiny, waterline barely visible, no growth shown"
+    hidden_facts:
+      - "26 ft cabin cruiser, in the water in a marina slip year-round"
+      - "boat has not been hauled out in about two years"
+      - "green slime and hard crust on the waterline and the lower unit when she looked over the side last weekend"
+      - "she can see the growth when she leans over the swim platform, not from the dock side where the photo was taken"
+      - "marina requires outside vendors to show insurance and check in at the office"
+      - "she wants only the hull bottom, not the top sides"
+      - "boat has been in the lake more than a week, she has not moved it"
+    homeowner_behavior: "cheerful, assumes the photo shows her point; will describe the growth if asked what she sees below the water; gives marina rules only if asked about access"
+    traps:
+      - "misleading photo: the photo shows the clean topsides, not the problem; the AI must ask for a close-up of the waterline or lower hull rather than quote from the pretty picture"
+      - "hidden: crusty hard growth on lower unit and waterline; cleaning vendors would want to know slime versus hard crust"
+      - "hidden: marina vendor rules (insurance, check-in) change who can quote; must go on the card as stated, no advice"
+      - "boat in the water: a strong estimator asks whether diver, haul-out or slip-side cleaning; the AI must not say which"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "hull cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["26 ft cruiser in the water at a marina slip", "bottom of hull only", "green slime and hard crust at waterline and lower unit", "not hauled in about two years", "marina requires outside vendors to show insurance and check in at office", "photo shows topsides only, close-up of waterline requested"]
+      must_not_be_on_card: ["quagga", "any price", "any cause", "diver required", "haul out required"]
+      max_questions: 6
+      notes: "Photo is misleading because it shows the shiny part. The photo ask must target the waterline. Do not tell her the growth is mussels or that decontamination is needed; the card states what she sees and where the boat is."
+
+  - id: boat_detailing_s06
+    kind: no_photo
+    persona: "man, 40s, works away, boat is at a storage lot across town, practical"
+    opening_message: "my boat has been in storage all summer and the inside smells musty. need the interior cleaned. i cant get a pic its at the lot and i am out of town til friday"
+    photo: "none"
+    hidden_facts:
+      - "23 ft bowrider with a full snap-in cover, cover had a rip near the stern"
+      - "stored on a trailer in a fenced storage lot, no water or power at the lot"
+      - "the musty smell is strongest in the bow seats and the carpet under them"
+      - "black spots on the vinyl seat backs and on the bow cushion"
+      - "carpet is snap-in marine carpet, damp to the touch last time he checked a month ago"
+      - "lot requires a gate code and manager must be called ahead for outside vendors"
+      - "he is not asking for a repair; he wants it cleaned"
+    homeowner_behavior: "answers briefly; cannot send photos until Friday; will give lot rules only when asked about access; gets impatient if asked for a photo twice"
+    traps:
+      - "no photo: the AI should ask once for a photo, accept 'not until Friday', and still write the card with observable facts from his words"
+      - "hidden: damp carpet and black spots; estimator would want to know if carpet is removable and whether anything is wet; AI must not call it mold"
+      - "hidden: lot has no hookups, outside vendors need manager approval"
+      - "hole in cover is a possible source of water, but the AI must not mention cause or the cover"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "interior detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["interior clean wanted", "23 ft bowrider on trailer in storage lot", "musty smell in bow seats and carpet", "black spots on vinyl seat backs and bow cushion", "carpet snap-in and damp last time he checked", "no water or power at lot, gate code and manager call needed", "no photo available until Friday"]
+      must_not_be_on_card: ["mold", "leak", "any price", "any cause", "cover repair"]
+      max_questions: 5
+      notes: "No photo available. Card must say photos are not available yet rather than inventing detail. Interior job in a storage lot with no hookups is a quote-changing hidden fact."
+
+  - id: boat_detailing_s07
+    kind: elderly
+    persona: "widower, late 70s, boat belonged to his late wife's family, slow polite texter, calls it 'the yacht'"
+    opening_message: "Good morning. I would like to get quotes to have the yacht washed and waxed. It has been a long time. My son will help me but he is out of state. Thank you kindly"
+    photo: "none"
+    hidden_facts:
+      - "30 ft cruiser with a small cabin, fiberglass hull, in a covered slip at a marina"
+      - "wood trim on the rails and a teak swim platform, grey and dry looking"
+      - "cabin has a small galley and a berth, he wants just the outside plus a basic wipe of the cabin"
+      - "boat has not been out of the slip in about three years"
+      - "he cannot climb on the boat; he can meet at the dock office for access"
+      - "his son's email handles the payments, not relevant to the card"
+      - "it is a 1990s boat with a faded stripe"
+    homeowner_behavior: "slow, polite, answers fully but off-topic stories; needs one question at a time in plain words; does not know 'gelcoat' or 'teak' unless asked what the rails are made of; does not text photos"
+    traps:
+      - "'yacht' is a 30 ft cruiser; length and type must be asked plainly"
+      - "hidden: grey dry wood trim and teak platform; estimator would price teak separately but he never volunteers wood"
+      - "hidden: three years unused, not waxed, and faded stripe"
+      - "hidden: access is through the dock office, he cannot be on the boat during the work"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "full detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["30 ft cruiser in a covered marina slip", "wash and wax outside, basic wipe of cabin", "wood rails and swim platform look grey and dry", "not used or waxed in about three years", "faded stripe", "owner cannot be on the boat, access through the dock office"]
+      must_not_be_on_card: ["any price", "teak oil", "any cause", "boat is neglected"]
+      max_questions: 6
+      notes: "Elderly, slow, plain-language needs. The wood trim is the hidden quote-changer; asking 'what are the rails made of' or 'anything wood on the outside' reaches it. Do not use jargon like gelcoat, oxidation or teak in questions."
+
+  - id: boat_detailing_s08
+    kind: tenant
+    persona: "man, late 20s, renting a house in a Lake Havasu neighborhood, owns a jet boat"
+    opening_message: "I rent my house and have a jet boat on a trailer parked on the side. need it washed and waxed. landlord said fine for the boat to be there but idk about the hose and stuff"
+    photo: "small jet boat on a trailer in a narrow gravel side yard next to a block wall, dull sides, a few bird droppings on the bow"
+    hidden_facts:
+      - "18 ft jet boat, white with blue graphics"
+      - "wants wash and wax outside only"
+      - "the outside spigot is on the landlord's side of the house and is shut off with a locked cover"
+      - "there is no water access he can use right now; landlord is reachable by text"
+      - "HOA bans driveway car-washing runoff, he got a notice about the last time"
+      - "landlord said the boat can be there but nothing about vendors on the property"
+      - "he is home on weekends only"
+    homeowner_behavior: "relaxed, answers what is asked; unsure of landlord and HOA rules and says 'idk' honestly; shares the notice only when asked if any rules apply at the home"
+    traps:
+      - "tenant: no authority over water access; card should say water is not available until landlord agrees, not that it is fine"
+      - "hidden: HOA wash runoff notice, only said when asked about rules or access; the AI must not advise on HOA rules"
+      - "hidden: weekends only, vendor cannot access during week"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "waxing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["18 ft jet boat on trailer at a rented house", "wash and wax outside only", "outside spigot is locked off, water access not confirmed", "HOA notice about wash runoff", "home on weekends only", "tenant, landlord is okay with boat being there"]
+      must_not_be_on_card: ["any price", "HOA advice", "landlord approved water use", "any cause"]
+      max_questions: 5
+      notes: "Tenant. The AI should not ask him to get permission as advice; it only records that water access and vendor access are not confirmed. HOA runoff notice is a hidden constraint on a mobile wash job."
+
+  - id: boat_detailing_s09
+    kind: spanish
+    persona: "man, 40s, texts in Spanish, owns a ski boat and a jet ski, uses informal wording"
+    opening_message: "buenas tardes, tengo una lancha de esqui y quiero que la pulan y la enceren, esta opaca y le sale una raya blanca en el agua que no se quita. tambien la tapiceria esta muy sucia"
+    photo: "ski boat on a trailer in a driveway, dull hull, thick white band along the lower sides, seats with dirt in the seams"
+    hidden_facts:
+      - "21 ft ski boat on a trailer at home"
+      - "wants polish, wax and a clean of the seats"
+      - "white band along the lower hull from lake water, he tried a brush and soap"
+      - "hull is dull and chalky to the touch"
+      - "he also has a jet ski but only the boat is part of this request"
+      - "he speaks little English, his teenage daughter translates on the phone"
+      - "available weekday afternoons"
+    homeowner_behavior: "answers in Spanish, short; should be replied to in Spanish; mentions the jet ski only if asked how many boats"
+    traps:
+      - "Spanish: card must be written in English for the businesses with his words preserved, reply to him in Spanish"
+      - "hidden: heavy white band along the lower hull plus dull chalky finish, two issues in one message"
+      - "jet ski is a possible add-on, not part of this card unless he asks"
+      - "'esqui' boat is a wake or ski boat; the AI must not guess type beyond what he says"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "full detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["21 ft ski boat on trailer at home", "polish, wax and clean seats", "dull and chalky finish", "thick white band along lower hull, brush and soap did not remove it", "weekday afternoons", "customer speaks Spanish"]
+      must_not_be_on_card: ["jet ski", "any price", "any cause", "hard water (as a diagnosis)"]
+      max_questions: 5
+      notes: "Spanish text. Questions in Spanish. Heavy white line on the hull is the second job inside the polish request; it must be on the card without a diagnosis."
+
+  - id: boat_detailing_s10
+    kind: panicked_non_emergency
+    persona: "man, 50s, listing his boat for sale, stressed, caps lock when worried"
+    opening_message: "HELP!!! my boat is covered in MOLD i just opened the cover!! a buyer is coming SATURDAY to look at it. its going to be ruined someone please come ASAP"
+    photo: "interior of a boat with a few black spots along vinyl seat seams and a white fuzzy patch on a cushion"
+    hidden_facts:
+      - "22 ft bowrider in a covered carport, on a trailer"
+      - "he opened the cover for the first time in about two months"
+      - "black spots in seat seams and a white fuzzy patch on one cushion, rest of the boat looks fine"
+      - "exterior hull is okay, he already washed it last week"
+      - "no fuel smell, no one is hurt, nothing wet in the bilge that he knows of"
+      - "buyer visit is Saturday at noon"
+      - "he does not want anything replaced, just cleaned"
+      - "it is Tuesday"
+    homeowner_behavior: "panicked, sends several short messages in a row, calms down once asked specific questions; will say nothing is wet only when asked about water or smells"
+    traps:
+      - "panicked but not an emergency: no safety step, no 911 text; the card is urgent because of the Saturday noon deadline only"
+      - "the AI must not say it is mold, soothe with advice, or promise a Saturday visit"
+      - "hidden: fuzzy white patch on one cushion only, exterior already washed, nothing wet"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "interior detail"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["needed before Saturday noon buyer visit", "22 ft bowrider on trailer in covered carport", "black spots in seat seams and white fuzzy patch on one cushion", "exterior already washed", "interior clean only, nothing replaced"]
+      must_not_be_on_card: ["mold (as a diagnosis)", "any price", "any promise of Saturday", "any cause", "advice to leave the cover off"]
+      max_questions: 4
+      notes: "Mark urgent for the deadline, not for safety. The AI stays calm and short and does not argue about the word mold."
+
+  - id: boat_detailing_s11
+    kind: calm_real_emergency
+    persona: "man, 60s, calm, practical, mentions things in passing"
+    opening_message: "Hey, want a quote on a full detail for my 28 ft cruiser, inside and out. Oh and by the way I smelled propane in the cabin by the galley stove when I opened it up this morning, probably nothing"
+    photo: "cruiser on a trailer in a home garage, cabin door open, stove and small cabinet visible"
+    hidden_facts:
+      - "28 ft cruiser with a cabin, small galley with a propane stove, boat is in his attached garage on a trailer"
+      - "propane smell in the cabin near the stove this morning, noticed once, faint"
+      - "wants full detail inside and outside"
+      - "hull is white, a little dull, interior is clean but has stale smell besides the propane"
+      - "has not used the stove this season"
+      - "garage has water and power"
+      - "he is home all week"
+    homeowner_behavior: "casual, answers anything asked; does not think the smell matters and will say so if asked about it"
+    traps:
+      - "propane smell mentioned in passing; the fixed 911 text fires by code on the propane smell and the detail card is still written"
+      - "the AI must not discuss the stove, the tank, ventilation or what to do beyond the fixed text"
+      - "the propane smell is not a detailing item and must not be a repair request on the card"
+      - "boat kb has a bilge-gas safety step, but the fire-truck list is the only safety message and the fixed text is the one that goes out"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "full detail"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["full detail inside and out", "28 ft cruiser on trailer in home garage", "hull white and a little dull", "garage has water and power", "home all week"]
+      must_not_be_on_card: ["propane repair request", "stove", "any cause", "any price", "any gas advice"]
+      max_questions: 5
+      notes: "Real emergency buried in a routine request. Fixed 911 text once, by code, then the detail intake continues. A cabin propane smell is on the fire-truck list. Not a second job card unless he asks."
+
+  - id: boat_detailing_s12
+    kind: two_trades
+    persona: "woman, 40s, direct, one run-on message"
+    opening_message: "my pontoon seats are filthy and one of the seat cushions has a big tear in the vinyl with foam coming out. can someone clean it all and fix the torn seat"
+    photo: "pontoon bench seat with a long split in the vinyl, foam showing, other seats with dark grime in the seams"
+    hidden_facts:
+      - "21 ft pontoon, bench seating all around, on a trailer at home"
+      - "one bench cushion has a split about a foot long with foam showing"
+      - "all seats are dirty with grime in the seams, no black spots she has noticed"
+      - "she wants the torn seat repaired, not replaced, if possible; she does not know if the repair is patch or re-sew"
+      - "bimini top is fine"
+      - "she wants the whole boat cleaned inside once the seat is fixed, outside is fine"
+      - "available any weekday"
+    homeowner_behavior: "answers each question; does not separate the two jobs unless asked; says 'fixed' to mean repaired"
+    traps:
+      - "two trades: cleaning the seats is boat_detailing; fixing the torn vinyl is boat_repair (canvas and upholstery repair); the kb treats upholstery under one job type but the bank splits them across two categories"
+      - "hidden: only one cushion is torn; foam is showing and the rest of the seats are intact"
+      - "ordering matters to the estimator: repair should come first, then clean the interior; the AI must not decide the order or tell her"
+    expected:
+      category: boat_repair
+      job_type: detailing
+      bank_job_type: "canvas and upholstery repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["one bench cushion with foot-long split and foam showing", "all seats dirty in seams", "21 ft pontoon on trailer at home", "owner wants repair not replace if possible", "bimini fine", "interior clean wanted too"]
+      must_not_be_on_card: ["any price", "any cause", "replace all seats", "mold"]
+      max_questions: 6
+      notes: "Two trades. The upholstery repair should get the card first as boat_repair canvas and upholstery; the interior clean is boat_detailing and should be offered as a second card after she approves the first. The kb uses detailing for upholstery, so job_type stays detailing for both."
+
+  - id: boat_detailing_s13
+    kind: outside_area
+    persona: "man, 50s, boat on the Colorado River up the road, casual"
+    opening_message: "got a 22 ft boat in Parker, need it waxed and the hull cleaned. who comes out there?"
+    photo: "none"
+    hidden_facts:
+      - "boat is at a marina in Parker, AZ, on the river"
+      - "22 ft bowrider, in the water on a mooring"
+      - "wants wax and hull bottom cleaning"
+      - "he is in Parker year-round"
+    homeowner_behavior: "casual, answers directly, will give the town again if asked for a ZIP"
+    traps:
+      - "location is outside Lake Havasu City; the ZIP check should answer before any boat or trade questions"
+      - "once outside area is confirmed, no quote card for businesses"
+    expected:
+      category: boat_detailing
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any price", "any business", "any promise to find one"]
+      max_questions: 2
+      notes: "Outside area. ZIP check should answer before any trade questions. Parker, AZ is outside the service area; the AI should say so politely and not ask about the boat."
+
+  - id: boat_detailing_s14
+    kind: no_businesses
+    persona: "woman, 30s, boat owner, plain and quick"
+    opening_message: "need a full detail on my 21 ft bowrider, inside and out, it's at my house on a trailer. just got it so want it nice"
+    photo: "21 ft bowrider on a trailer in a driveway, light grime on the hull, clean seats"
+    hidden_facts:
+      - "21 ft bowrider, newer boat, bought used last month"
+      - "on a trailer in the driveway, water and power at the house"
+      - "wants wash, wax and interior clean"
+      - "hull has light dust and water spots, seats are clean"
+      - "she is home weekends"
+    homeowner_behavior: "answers quickly and fully; has no hidden problems"
+    traps:
+      - "the job is simple and complete; the point is the no-coverage branch: the card must state that this trade has no businesses yet and not promise quotes"
+      - "the AI must not recommend a business from outside the system or give DIY advice"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "full detail"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["full detail inside and out", "21 ft bowrider on trailer at home", "water and power at the house", "weekends"]
+      must_not_be_on_card: ["any price", "any business name", "DIY advice", "promise of quotes"]
+      max_questions: 4
+      notes: "Test harness simulates zero coverage. The card is still written and the homeowner is told no businesses are signed up for this trade yet. No substitute advice."
+
+  - id: boat_detailing_s15
+    kind: wrong_self_diagnosis
+    persona: "woman, 40s, boat owner, anxious about smells, assumes it is dirt"
+    opening_message: "my boat smells like rotten eggs and the carpet in the back is soaking wet. need an interior cleaning. it just needs a good scrub right"
+    photo: "stern area of a boat with wet-looking carpet and a small puddle near the engine hatch, a drain plug visible"
+    hidden_facts:
+      - "20 ft bowrider in a marina slip in the water"
+      - "water in the stern keeps coming back after she mops it up; she did it twice this week"
+      - "bilge pump click-clicks or does not run, she is not sure; she saw the bilge switch panel is dark"
+      - "boat battery has been dead for a couple of weeks, she has not been out"
+      - "the stern sits lower than normal in the water compared with the bow"
+      - "she thinks the smell is from the carpet being wet and old"
+      - "no fuel smell, no one is on the boat now"
+    homeowner_behavior: "worried but polite; answers specific questions; mentions the bilge only when asked where the water is coming from or whether the pump or battery works"
+    traps:
+      - "wrong self-diagnosis and the right answer is a different category: owner thinks a dirty interior, facts point to water coming into the stern and an electrical or pump problem; the request belongs to boat_repair electrical, not boat_detailing"
+      - "the AI must not say the boat is leaking, sinking or needs a pump; it records what she sees"
+      - "hidden: stern sits low, bilge switch panel dark, battery dead two weeks; estimator needs these"
+      - "boat in the water with water returning: flag urgent for the business; no fire truck text, since this is not on the fire list"
+    expected:
+      category: boat_repair
+      job_type: electrical_marine
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["20 ft bowrider in a marina slip", "water keeps coming back in the stern after mopping", "wet carpet and rotten-egg smell", "bilge switch panel dark", "battery dead about two weeks", "stern sits lower than the bow", "photo shows wet carpet and puddle near engine hatch"]
+      must_not_be_on_card: ["leak", "sinking", "bilge pump failure (as a diagnosis)", "any price", "interior detail only"]
+      max_questions: 5
+      notes: "Wrong category. The detail request is a symptom of water entering the boat with a dead battery. Route to boat_repair electrical (the bank has no listed job type for this, so bank_job_type is null) and mark urgent. Not a fire-truck-list item. If the card goes to detailing only, businesses will show up with a mop."
+
+  - id: boat_detailing_s16
+    kind: two_trades
+    persona: "man, 60s, owns a house on the water with a private slip and lift, matter-of-fact"
+    opening_message: "boat sits on the lift behind my house, hull needs cleaned and the lift cable on the back left is frayed bad, boat hangs crooked. can i get one guy to clean the hull and fix the lift"
+    photo: "boat raised out of the water on a lift behind a house, back left side lower than the right, green growth visible on the hull, a frayed cable end near the winch"
+    hidden_facts:
+      - "24 ft bowrider on a boat lift behind his house"
+      - "back left lift cable is frayed with broken strands, boat hangs lower on that side"
+      - "hull has green slime along the waterline and below"
+      - "he wants the hull bottom cleaned"
+      - "he has not lowered or raised the lift since he noticed the fraying"
+      - "the dock and lift belong to the house, no HOA or marina"
+      - "boat is out of the water now but touching the water at the stern"
+    homeowner_behavior: "matter-of-fact; assumes one person can do both; answers directly; gives the lift details when asked about the lift"
+    traps:
+      - "boat lift repair is licensed-only (dock, boat lift or seawall work) and is not part of boat_detailing or boat_repair; the AI must say it cannot take that part, not quote it, and not tell him who to hire or what permit applies"
+      - "hull cleaning is in scope; the card is for the hull only and should note the boat is on a lift hanging crooked as an access fact"
+      - "hidden: fraying cable and crooked boat change how a detailer would work around it; the card says the boat hangs lower on the back left side, no diagnosis and no advice on using the lift"
+    expected:
+      category: boat_detailing
+      job_type: detailing
+      bank_job_type: "hull cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["24 ft bowrider on a lift behind the house", "hull bottom cleaning wanted", "green slime along waterline and below", "boat hangs lower on the back left side", "stern touching the water"]
+      must_not_be_on_card: ["lift repair request", "frayed cable repair", "any price", "any advice to avoid using the lift", "any contractor name"]
+      max_questions: 6
+      notes: "Two trades, one refused. The lift work routes to licensed-only per boat_repair refused list. Only the hull cleaning goes to businesses. The AI says plainly this service cannot take the lift part. It must not give safety advice about the cable (not on the fire-truck list)."

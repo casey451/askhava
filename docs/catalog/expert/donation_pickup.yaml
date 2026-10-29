@@ -1,0 +1,347 @@
+# Ask Hava expert layer: donation_pickup (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set donation_pickup and trade_kb/trades/junk_removal.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The junk_removal kb file serves three categories: donation_pickup (this file), estate_cleanout and the
+#   disabled junk_removal category. Only kb job type furniture_items maps here, to "furniture donation pickup".
+# - Left out on purpose: cleanout (estate_cleanout "whole-house cleanout"); yard_debris, construction_debris and
+#   hazmat_route (junk haul-away, and the junk_removal category is off until the city-code check, LIC-005);
+#   demo_small (tear-down is junk work or licensed R-57, R-11 or R-37 work). appliances is also left out as a
+#   job type: a working fridge, washer or dryer given away is carried inside furniture_items through fu_hookups
+#   and photo p2, and a dead appliance to the scrap yard is junk haul-away. If Casey wants working-appliance
+#   donations as their own job type, add one with new_job_type: true.
+# - No new_job_type added. "Sorting for donation" is an estate_cleanout job type; a request to sort a house is
+#   routed there by the misdiagnosis check on the bank's items answer ("More than a room").
+# - A request to haul to the dump, or one where nothing is usable, routes to junk_removal "junk haul-away".
+#   Because that category is disabled, the homeowner gets the plain no-coverage reply (INT-017), not a card.
+# - Bank gaps: no condition question (the top hidden condition: a charity turning pieces away), the stairs
+#   question has no floor or elevator option, and where_to does not separate a charity from a person's home.
+#   fu_condition and fu_destination cover the first and last; a bank condition question would be stronger.
+# - Charity pickup rules cited here come from Habitat for Humanity's national page and one regional affiliate
+#   (Los Angeles), not from a Lake Havasu City store. Local charity pickup rules are unverified.
+schema: 1
+category: donation_pickup
+question_set: donation_pickup
+kb_trade: junk_removal
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: lhc_hhw
+    title: "Lake Havasu City, Household Hazardous Waste: landfill charges by weight, cash only; Republic Services gives single-family homes in city limits six free bulk curbside pickups a year, four items each, scheduled ahead; two hazardous waste collection days a year"
+    url: "https://www.lhcaz.gov/232/Hazardous-Waste"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: habitat_pickup
+    title: "Habitat for Humanity, Does Habitat ReStore pick up furniture donations? (most ReStores offer furniture pickup; accepted items vary by store; upholstered or leather furniture must be free of tears, stains or pet damage)"
+    url: "https://www.habitat.org/stories/does-habitat-offer-furniture-donation-pickup"
+    checked: "2026-10-29"
+    kind: other
+  - id: habitat_la_items
+    title: "Habitat for Humanity Greater Los Angeles, ReStore Donate Items (no broken or missing pieces; upholstery with no stains, wear, tears or pet hair; no mattresses or box springs; appliances under 8 years old, uninstalled and disconnected; items on the ground level for pickup; driver decides at pickup)"
+    url: "https://www.habitatla.org/restore/donate-items/"
+    checked: "2026-10-29"
+    kind: other
+  - id: cpsc_resale
+    title: "US CPSC, Resale and Thrift Stores: it is illegal to sell a recalled product; cribs made or sold before the June 2011 crib standards are very likely noncompliant and illegal to sell or distribute"
+    url: "https://www.cpsc.gov/Business--Manufacturing/Business-Education/ResaleThrift-Stores-Information-Center/Stop-Online-Sale-of-Recalled-Products"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_608_disposal
+    title: "[T-epa_608] US EPA, Stationary Refrigeration Safe Disposal Requirements (the final person in the disposal chain makes sure refrigerant is recovered from fridges, freezers and window AC units before final disposal)"
+    url: "https://www.epa.gov/section608/stationary-refrigeration-safe-disposal-requirements"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: irs_substantiation
+    title: "IRS, Substantiating Charitable Contributions (written acknowledgment from the charity for a deduction of $250 or more; household items must be in at least good used condition to be deductible)"
+    url: "https://www.irs.gov/charities-non-profits/substantiating-charitable-contributions"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed ((A)(14) handyman exemption; (D) never covers work connected to natural gas, propane or other fuel gas)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (no class for hauling; R-57 Wrecking for demolition; R-37 plumbing including gas piping)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: superdupr_lead_math
+    title: "SuperDupr (marketing vendor), Is Thumbtack Worth It for Pros in 2026 (Thumbtack most home-service trades about $25 to $75 per lead; Angi about $15 to $85 per lead plus a yearly membership; leads go to several pros; no junk-removal figure given)"
+    url: "https://superdupr.com/blog/is-thumbtack-worth-it.md"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: webtonic_junk_ads
+    title: "Webtonic (marketing vendor), Junk Removal and Dumpster Rental Google Ads Statistics 2026 (LocaliQ 2025 Storage subcategory as a proxy: about $120 per lead, 4.65 percent conversion; LocaliQ does not report junk removal by name)"
+    url: "https://www.webtonic.io/blog/junk-removal-and-dumpster-rental-google-ads-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: pushleads_junk_cpl
+    title: "PushLeads (marketing vendor), Junk removal cost per lead (Google Local Services Ads about $30 to $65 per lead; HomeAdvisor about $15 to $100; the page body is partly written about mold removal)"
+    url: "https://pushleads.com/junk-removal-marketing/junk-removal-cost-per-lead-2/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "How many pieces and how big (1 or 2 large items, a room, more than a room)"
+      why: "Sets truck space, crew size and whether it is one trip; the bank's items answer and the wide photo settle it. [judgment]"
+      source: null
+    - driver: "Extra-heavy or take-apart pieces: sleeper sofa, piano, slate pool table, gun safe, bunk bed, hospital bed, sectional"
+      why: "One of these turns a two-person, one-hour stop into a three-person job with dollies, straps or tools. [judgment]"
+      source: null
+    - driver: "The carry: stairs, floor, no elevator, tight turns, long walk from the truck, gated or condo access"
+      why: "Every flight and every long carry adds crew time; a second-floor sleeper sofa is a different quote from a garage loveseat. [judgment]"
+      source: null
+    - driver: "Condition, and so whether a charity will take each piece"
+      why: "Charity stores turn away stained, torn, broken or pet-damaged upholstery and most mattresses, and the driver decides at pickup; a turned-down piece means a second stop or a landfill trip that is charged by weight."
+      source: habitat_la_items
+    - driver: "Hookups: anything plugged in, tied to a water line or gas, or bolted down"
+      why: "Unhooking adds time, and gas work is licensed only, so the pickup waits on someone else. [judgment]"
+      source: null
+    - driver: "Where it goes: any donation site, one named place, a person's home, or out of town"
+      why: "A single drop at the nearest open store is the cheapest run; a named place across town, several stops or a drive to another town adds hours. [judgment]"
+      source: null
+    - driver: "Deadline: lease end, closing date, city notice"
+      why: "A hard date limits which days a crew can offer and may push the job onto a full day. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "The charity turns pieces away at drop-off (stains, tears, pet hair, smoke smell, broken parts, mattresses)"
+      how_a_pro_spots_it: "Close look at upholstery and arms in the wide photo; the homeowner's condition answer; any mattress or box spring on the list"
+      question_or_photo: fu_condition
+      source: habitat_la_items
+    - condition: "Bed bugs or other pests in a mattress, couch or box spring"
+      how_a_pro_spots_it: "Only the homeowner can say; dark spotting on seams in a close photo"
+      question_or_photo: fu_condition
+      source: null
+    - condition: "A piece is far heavier or more built-in than the word used (sleeper sofa called a couch, gun safe called a cabinet, slate pool table)"
+      how_a_pro_spots_it: "Keypad, bolts at the base, fold-out bar under the cushions, felt table with heavy legs in the photo"
+      question_or_photo: fu_heavy
+      source: null
+    - condition: "An appliance still hooked up: gas range or dryer, fridge with an ice-maker water line, washer still plumbed"
+      how_a_pro_spots_it: "Appliance photo shows the back with a flex gas line or a water line; homeowner says it is still in place"
+      question_or_photo: fu_hookups
+      source: ars_32_1121
+    - condition: "Old appliances a charity will not take, or that must have refrigerant recovered before scrapping"
+      how_a_pro_spots_it: "Age and model in the appliance photo; fridge, freezer or window AC on the list"
+      question_or_photo: p2
+      source: epa_608_disposal
+    - condition: "Children's items a store cannot resell: older cribs, drop-side cribs, recalled products"
+      how_a_pro_spots_it: "Crib or child gear in the wide photo; the homeowner's words on its age"
+      question_or_photo: p1
+      source: cpsc_resale
+    - condition: "Access the homeowner forgets: gate code, elevator booking, HOA truck rule, narrow side gate to a patio"
+      how_a_pro_spots_it: "Kind of place on the card (condo, gated street, manufactured-home park); the stairs answer"
+      question_or_photo: stairs
+      source: null
+    - condition: "The pile is bigger than described once the crew is there"
+      how_a_pro_spots_it: "Wide photo with a person, door or car for scale; items answer versus her list"
+      question_or_photo: p1
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "furniture donation pickup (donate or dump, whichever)"
+      might_be: "junk haul-away (dump run, broken or worn items), a disabled category"
+      one_question: fu_condition
+      if_other_route_to: {category: junk_removal, job_type: "junk haul-away"}
+      source: null
+    - sounds_like: "furniture donation pickup (shed trash, broken washer, just take it to the dump)"
+      might_be: "junk haul-away, a disabled category: the homeowner gets the no-coverage reply"
+      one_question: fu_condition
+      if_other_route_to: {category: junk_removal, job_type: "junk haul-away"}
+      source: null
+    - sounds_like: "furniture donation pickup (clear the whole house, donate what's good)"
+      might_be: "cleanout, a different category"
+      one_question: items
+      if_other_route_to: {category: estate_cleanout, job_type: "whole-house cleanout"}
+      source: null
+    - sounds_like: "furniture donation pickup (sort what can be donated and what can't)"
+      might_be: "cleanout with sorting, a different category"
+      one_question: items
+      if_other_route_to: {category: estate_cleanout, job_type: "sorting for donation"}
+      source: null
+    - sounds_like: "furniture donation pickup (take it to my daughter's new place)"
+      might_be: "a furniture move to a person's home, a different category"
+      one_question: fu_destination
+      if_other_route_to: {category: local_moving, job_type: "in-town move"}
+      source: null
+    - sounds_like: "furniture donation pickup (gas dryer or gas range, and cap the line)"
+      might_be: "gas disconnect, licensed-only work in another category; the pickup itself stays here"
+      one_question: fu_hookups
+      if_other_route_to: {category: plumbing_repair, job_type: "gas line work"}
+      source: ars_32_1121
+    - sounds_like: "furniture donation pickup (hot tub, shed or playset)"
+      might_be: "demo_small tear-down, junk work or licensed demolition"
+      one_question: fu_hookups
+      if_other_route_to: {category: junk_removal, job_type: "junk haul-away"}
+      source: aac_r4_9_103
+  photo_reading:
+    - photo_id: p1
+      reads: ["Count and size of pieces", "Scale against a door, person or car", "Stains, tears, pet hair or sun fade on upholstery", "Fold-out bar under sofa cushions", "Bolts, keypad or a felt top that mark a safe or pool table", "Stairs or a landing in the background", "Cribs or child gear"]
+      neutral_wording: "Tan three-seat sofa and two wood end tables in an upstairs hallway; dark mark on one sofa arm."
+    - photo_id: p2
+      reads: ["Appliance kind, brand and rough age", "Gas flex line or water line at the back", "Whether it is pulled out and unplugged", "Rust, dents or missing parts"]
+      neutral_wording: "White top-freezer fridge pulled out from the wall; a thin water line is still attached at the back."
+    - photo_id: p3
+      reads: ["Hot tub wiring or gas line still in place", "Shed or playset size and anchoring"]
+      neutral_wording: "Hot tub on a concrete pad with a gray electrical conduit running into the side."
+  local_factors:
+    - fact: "The Lake Havasu City landfill charges by weight and takes cash only"
+      effect: "A piece a charity turns down costs the business a landfill trip, so firm quotes say what happens to turned-down pieces"
+      source: lhc_hhw
+    - fact: "Republic Services gives single-family homes in city limits six free bulk curbside pickups a year, four items each, scheduled ahead"
+      effect: "Worn single items often go to the curb, so donation requests lean toward usable pieces, heavy pieces and upstairs carries [judgment]"
+      source: lhc_hhw
+    - fact: "Charity pickup rules vary store by store, and most want pieces in clean, sellable shape and on the ground level"
+      effect: "A homeowner with an upstairs piece, a deadline or worn upholstery is the one who texts for paid pickup [judgment]"
+      source: habitat_pickup
+    - fact: "Part-year residents arrive in fall and leave in spring, and second homes are sold or refurnished between seasons"
+      effect: "Furniture swaps cluster around arrivals and departures; the homeowner may be leaving town before pickup, so access needs saying [judgment]"
+      source: null
+    - fact: "Summer afternoons run well above 100 degrees"
+      effect: "Crews book early-morning pickups from June to September; upholstered pieces left in a garage or carport may be sun-faded or dusty [judgment]"
+      source: null
+    - fact: "Many homes sit on slopes with steep driveways, gated HOA streets, condos without elevators and manufactured-home parks with narrow lanes"
+      effect: "Truck parking and the carry distance move the quote as much as the pieces do [judgment]"
+      source: null
+  seasonality:
+    busy: "March to May (part-year residents leave, home sales, spring clearing) and October to November (arrivals, refurnishing); month ends for lease move-outs [judgment]"
+    slow: "July to August midday, and the weeks around Christmas [judgment]"
+    source: null
+
+job_types:
+  - id: furniture_items
+    label: "Pick up usable furniture and household pieces and take them to a donation site or chosen place"
+    bank_job_type: "furniture donation pickup"
+    recurring: false
+    homeowner_phrasings: ["donate my couch", "pick up a dresser for donation", "give my furniture to a charity", "someone to take a recliner to the thrift store", "donar muebles"]
+    must_know:
+      - fact: "What the pieces are and how many"
+        bank_question: items
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Truck space and crew size come from the list and the wide photo. [judgment]"
+        skip_if: "Her words list every piece and a wide photo was sent"
+      - fact: "Whether any piece is extra heavy or has to come apart"
+        bank_question: null
+        follow_up: fu_heavy
+        photo: p1
+        why_it_moves_price: "A sleeper sofa, piano, slate pool table, safe or bunk bed sets the crew size and tools. [judgment]"
+        skip_if: "Only light pieces named (chairs, end tables, lamps) or the photo shows plain furniture"
+      - fact: "Stairs and the carry from the piece to the truck"
+        bank_question: stairs
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Each flight and long carry adds crew time. [judgment]"
+        skip_if: "She said the pieces are in the garage, driveway or on a ground floor"
+      - fact: "What shape the pieces are in, including pests"
+        bank_question: null
+        follow_up: fu_condition
+        photo: p1
+        why_it_moves_price: "Charity stores turn away stained, torn, broken or pet-damaged pieces and most mattresses, and a turned-down piece means another stop."
+        skip_if: "She already described the condition and the photo shows it"
+      - fact: "Whether anything is still hooked up or bolted down"
+        bank_question: null
+        follow_up: fu_hookups
+        photo: p2
+        why_it_moves_price: "Unhooking adds time, and a gas hookup is licensed work the pickup has to wait for."
+        skip_if: "No appliance, safe or built-in piece on the list"
+    allowed_follow_ups:
+      - id: fu_condition
+        ask_when: "Her words and photos do not show condition; first choice when she says donate or dump, mentions broken things, or names a mattress or upholstered piece"
+        text_en: "What shape are the pieces in?"
+        text_es: "¿En qué estado están las cosas?"
+        options_en: ["Clean and ready to use", "Some wear but usable", "Stained, torn or broken", "Has had bed bugs or other pests"]
+        options_es: ["Limpias y listas para usarse", "Algo usadas pero sirven", "Manchadas, rotas o descompuestas", "Han tenido chinches u otras plagas"]
+        card_field: true
+        why: "Separates a donation run from a junk haul-away and tells the crew whether pieces may be turned down at drop-off."
+      - id: fu_heavy
+        ask_when: "She names a large piece (couch, cabinet, table, bed) without saying what kind or how big, and condition is already known"
+        text_en: "Is any piece extra heavy or set up so it has to come apart, like a sleeper sofa, piano, pool table, safe, bunk bed or hospital bed?"
+        text_es: "¿Alguna pieza es muy pesada o está armada y hay que desarmarla, como un sofá cama, piano, mesa de billar, caja fuerte, litera o cama de hospital?"
+        options_en: ["No, regular furniture", "Yes, extra heavy", "Yes, has to come apart", "Both"]
+        options_es: ["No, muebles normales", "Sí, muy pesada", "Sí, hay que desarmarla", "Las dos cosas"]
+        card_field: true
+        why: "The heavy or take-apart piece is the hidden driver behind most donation-pickup quotes. [judgment]"
+      - id: fu_hookups
+        ask_when: "An appliance, safe, hot tub or built-in piece is on the list and the photo does not show it free"
+        text_en: "Is anything still plugged in, hooked to water or gas, or bolted down?"
+        text_es: "¿Algo sigue conectado a la luz, al agua o al gas, o está atornillado?"
+        options_en: ["No, everything is loose", "Plugged in only", "Hooked to water or gas", "Bolted down"]
+        options_es: ["No, todo está suelto", "Solo enchufado", "Conectado al agua o al gas", "Atornillado"]
+        card_field: true
+        why: "A gas hookup is licensed work outside this category, and a bolted or plumbed piece changes the crew's tools and time."
+      - id: fu_destination
+        ask_when: "She answered where_to with a place in mind, or her words point at a person, a new home or a named group"
+        text_en: "Should it go to a charity or thrift store, or to a person's home?"
+        text_es: "¿Debe ir a una caridad o tienda de segunda, o a la casa de una persona?"
+        options_en: ["Any charity or thrift store", "A church, school or group", "A person's home", "Anywhere it gets used"]
+        options_es: ["Cualquier caridad o tienda de segunda", "Una iglesia, escuela o grupo", "La casa de una persona", "Donde sea que se use"]
+        card_field: true
+        why: "Delivery to a person's home is a furniture move, a different category; a named group sets the drive. [judgment]"
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: ["Gas smell or hiss at a gas range, dryer or other gas line while moving an appliance"]
+      urgent_capable_triggers: ["Lease, closing or city-notice deadline within 3 days", "Pieces sitting outside on the driveway or curb"]
+      regular: "Pickup any day before a deadline more than a week out"
+    scope_line_en: "Queen sleeper sofa and 2 end tables from a second-floor condo, no elevator, to any donation site."
+    scope_line_es: "Sofá cama matrimonial y 2 mesitas desde un condominio en el segundo piso, sin elevador, a cualquier lugar de donación."
+    quote_format: firm
+    business_fills: ["price to pick up and drop off the listed pieces", "what the price includes (stairs, taking apart, number of stops)", "what you do with a piece the charity turns down", "earliest day and time"]
+    card_template: |
+      REQ-<id> | Donation pickup | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: which pieces, where they sit, where they go>
+      Pieces: <list and count>. Heavy or take-apart: <none / which>. Hookups: <none / plugged in / water or gas / bolted>.
+      Stairs: <none / which floor, elevator or not>. Condition, her words: <clean / some wear / stained, torn or broken / pests noted>. Goes to: <any donation site / kind of place she chose, and town>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A charity will definitely take that.", "You can write this off on your taxes.", "That mattress won't be accepted anywhere.", "Pickups like this run about a hundred.", "Just put it out for the city bulk pickup.", "Unhook the gas line before the crew comes."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Repeat customers, realtors, property managers and senior-living staff passing their name along [judgment]", "Google Local Services Ads and search ads", "Thumbtack, Angi and Yelp", "Local Facebook groups and Marketplace, truck and trailer signage [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Thumbtack (most home-service trades; no junk or hauling figure given)"
+      figure: "About $25 to $75 per lead, sent to several pros (marketing vendor estimate)"
+      source: superdupr_lead_math
+      unverified: false
+    - channel: "Angi (most home-service trades)"
+      figure: "About $15 to $85 per lead plus a yearly membership of a few hundred dollars (marketing vendor estimate)"
+      source: superdupr_lead_math
+      unverified: false
+    - channel: "Google search ads (storage subcategory used as a stand-in; junk removal not reported by name)"
+      figure: "About $120 per lead, 4.65 percent of clicks becoming leads (marketing vendor citing LocaliQ 2025)"
+      source: webtonic_junk_ads
+      unverified: false
+    - channel: "Google Local Services Ads (junk removal)"
+      figure: "About $30 to $65 per lead (marketing vendor; the page text is partly about another trade)"
+      source: pushleads_junk_cpl
+      unverified: true
+    - channel: "Lake Havasu City haulers and donation-pickup crews specifically"
+      figure: "No local figures found; a small market with few haulers may run below national figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["The same request sold to several haulers at once", "Requests with no list and no photo, so the price is a guess", "Paying for someone who only wants it free or has already called the charity truck", "Monthly or membership fees with slow months", "Showing up to find pieces nobody will take", "Being ranked or reviewed by the site"]
+  what_makes_a_lead_worth_paying_for: ["A piece list, a wide photo and the stairs answer before the first call", "Condition stated, so they know whether pieces may be turned down", "Heavy pieces and hookups named up front", "A real date or deadline and a town", "Pay only when picked, nothing monthly, no share of the job"]
+  their_words: ["donation run", "drop-off", "two-man crew", "stair carry", "long carry", "dolly", "furniture pads", "straps", "take-apart", "rejects", "dump fee", "minimum", "box truck", "trailer load"]
+  signup_objections:
+    - objection: "Charities pick up for free. Why would anyone pay for this?"
+      answer: "Some homeowners have pieces upstairs, a heavy piece, worn upholstery or a move-out date, and the charity truck can't help. Those are the requests that come in. You quote your price, and you pay a fee only if she picks you."
+    - objection: "What if the charity turns the stuff down at drop-off?"
+      answer: "Say in your quote what you do with a turned-down piece and whether it costs more. The card shows her condition answer and photos, so you see it before you quote."
+    - objection: "I can't give a firm price without seeing it."
+      answer: "Each card lists the pieces, stairs, heavy items, hookups and photos when she sends them. Quote a firm price and say what it assumes. If you need one more photo, say which."
+    - objection: "These jobs are small. Is the fee worth it?"
+      answer: "The fee is set by job size: $25, $75 or $199. Small pickups carry the smallest fee, and you pay nothing unless the homeowner picks your quote."
+    - objection: "Will you send me dump runs and trash hauls?"
+      answer: "No. Junk haul-away is not open on Ask Hava right now. Donation pickup cards are for pieces going to a donation site or a chosen place."
+    - objection: "I don't do gas disconnects."
+      answer: "You don't have to. Cards say when a piece is hooked to gas or water. Quote the pickup only and say the item has to be disconnected first. Gas work goes only to licensed plumbers."
+    - objection: "What if she cancels after I pay?"
+      answer: "If you haven't spoken with her yet, the fee is refunded."
+    - objection: "Will you rank me against other haulers?"
+      answer: "No. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "How do I know the request is real?"
+      answer: "Each request comes from a texted phone number we check, with a town, a piece list and answers to the questions a hauler asks. Her name and address go only to the business she picks."
+    - objection: "I only want small loads, not whole houses."
+      answer: "Pick the job types you want at sign-up and change them any time. Whole-house cleanouts are a separate job type."
+  quote_tips_for_card: ["Say what the price includes: stairs, taking apart, number of stops", "Say what you do with a piece the charity turns down and whether that costs more", "Say whether you bring back the charity's donation receipt; the charity writes it, not the hauler [src:irs_substantiation]", "Say if a gas or water hookup has to be undone before you come", "Give your earliest day and a morning or afternoon window"]

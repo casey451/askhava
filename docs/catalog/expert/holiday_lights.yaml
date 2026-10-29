@@ -1,0 +1,670 @@
+# Ask Hava expert layer: holiday_lights (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set holiday_lights and trade_kb/trades/holiday_lights.yaml (a Claude-written trade file, not Grok).
+# Fake data only. Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - kb job type hardwired_route maps to the refused name "new outlet, circuit or hardwiring" (R-11 only, LIC-029).
+#   Its card_template is the internal routing record: no card goes to a holiday-light business; an electrical
+#   card is built instead ("new circuit" for a new outlet or circuit, "light fixture" for permanent wired lights).
+# - full_package (install, service calls, take-down, storage) maps to "plug-in light hanging", since the job starts
+#   with an install; take-down and storage ride in the business's tiers.
+# - The bank set asks only service, stories and who supplies the lights. The kb file's areas (q2), roof type (q5)
+#   and outlet (q6) questions are not in the bank, and the AI gets one follow-up, so a roofline card often lacks
+#   either the sides to light or the roof type. Suggest adding "Where do you want lights?" to the bank set, and a
+#   rent-each-year option to the "lights" question. Not changed here.
+# - The bank photos list is p1, p2, p4; this file also uses kb photos p3_trees_yard (trees job) and
+#   p5_lights_up_now (take-down). Suggest adding both to the bank photos list.
+# - Lights on a boat for the Boat Parade of Lights: the kb routes it to boat_dock, which is not a category, and no
+#   enabled boat category has a decor job type, so there is no misdiagnosis row for it.
+# - The bank set has no timing question; "Needed: <timing answer>" uses the app's standard timing answer.
+# - Thumbtack price-per-foot figures are kept in business-facing reasoning only, never in homeowner copy.
+schema: 1
+category: holiday_lights
+question_set: holiday_lights
+kb_trade: holiday_lights
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: cpsc_holiday
+    title: "CPSC, Holiday Season Decorating Safety Tips (outdoor-certified labels; outdoor lights on GFCI-protected circuits; fasten outdoor lights to firm supports against wind; insulated staples or hooks, not nails or tacks; check every set for cracked sockets, frayed wires, loose connections; extension cords rated for the use)"
+    url: "https://www.cpsc.gov/Newsroom/News-Releases/2005/CPSC-Announces-Holiday-Season-Decorating-Safety-Tips"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: thumbtack_prices
+    title: "Thumbtack (marketplace staff guide, updated April 2026): holiday lighting install prices; priced per linear foot; second story about twice the first; hard-to-reach roofs add about 20 percent; lights bought from the installer add a per-foot charge; removal about half the install price; tree price varies widely by size (national figures)"
+    url: "https://thumbtack.com/p/christmas-light-installation-prices"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: golakehavasu_parade
+    title: "Go Lake Havasu (city tourism bureau), Parade of Lights: Saturday, December 12, 2026, Bridgewater Channel"
+    url: "https://www.golakehavasu.com/events/boat-parade-of-lights/"
+    checked: "2026-10-29"
+    kind: other
+  - id: blm_parade
+    title: "BLM Colorado River District blog: 43rd Annual Lake Havasu City Boat Parade of Lights, December 14, 2024, Bridgewater Channel"
+    url: "https://www.blm.gov/blog/2024-12-20/blm-lake-havasu-city-boat-parade"
+    checked: "2026-10-29"
+    kind: other
+  - id: nws_monsoon
+    title: "National Weather Service Tucson, Monsoon Safety (season defined as June 15 to September 30; thunderstorm gusts almost always over 40 mph)"
+    url: "https://www.weather.gov/twc/MonsoonSafety"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ues_safety
+    title: "UniSource Energy Services, Electrical Safety Tips (keep materials, tools and your body at least 15 feet from overhead power lines; check for lines before climbing a ladder) [S24]"
+    url: "https://www.uesaz.com/electric-safety/"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (total hardness about 19 grains per gallon, range 18 to 20)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-11 Electrical: install and repair residential electrical systems) [S2]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits: permit required for electrical updates, panel change-outs and rewires [S17]"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: contra_xmas_ads
+    title: "Contra portfolio entry by a freelance marketer (self-reported, Jan 2025): Google Ads for a pressure-washing company's Christmas light service, 44 leads in 30 days at about $69 per lead"
+    url: "https://contra.com/p/3Y3N7AYO-44-house-christmas-lighting-install-leads-for-dollar6942-each-1mo"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: leadcapture_thumbtack
+    title: "LeadCapture (marketing vendor, Dec 2022): Thumbtack lead costs start about $10 and run to $100 or more by service; home improvement about $10 to $50 per lead"
+    url: "https://leadcapture.io/blog/thumbtack-lead-cost/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Feet of lights: which sides of the roofline, how many peaks, plus each added area (trees, bushes, windows)"
+      why: "Installers price by the linear foot, so front-only versus all the way around is the biggest swing on the card."
+      source: thumbtack_prices
+    - driver: "Stories and roof height or pitch"
+      why: "A second story runs about twice the first, and hard-to-reach roofs add about 20 percent for gear and time (national marketplace figures)."
+      source: thumbtack_prices
+    - driver: "Who supplies the lights: the homeowner's own, bought from the business, or rented each year"
+      why: "Lights from the installer add a per-foot charge; homeowner lights save that but take time to test and untangle, and may not fit the runs."
+      source: thumbtack_prices
+    - driver: "Tall palms and trees: how many, how tall, trunk only or trunk and fronds"
+      why: "Tree prices vary widely by size; a palm over about 20 feet means a taller ladder or a lift and a second worker. [judgment]"
+      source: thumbtack_prices
+    - driver: "Take-down and storage bundled in, or install only"
+      why: "Removal runs about half the install price when sold separately; many businesses bundle install, take-down and storage into tiers."
+      source: thumbtack_prices
+    - driver: "Roof edge type: tile, shingle, flat or foam, metal; gutters or bare stucco fascia"
+      why: "Sets the clip type and count, since lights hang on clips or hooks rather than nails; tile edges take more care and time. CPSC: hooks or insulated staples, not nails or tacks."
+      source: cpsc_holiday
+    - driver: "Outdoor outlets: how many, where, GFCI or not, and whether a timer is wanted"
+      why: "Far or missing outlets mean long cord runs and more timers; CPSC says outdoor lights go on GFCI-protected circuits, and a new outlet is electrical work."
+      source: cpsc_holiday
+    - driver: "Install date: before Thanksgiving or the boat parade versus later in December"
+      why: "Install slots fill by early December; a firm date sets whether the business can take it at all. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Homeowner's own lights have dead sections, cracked sockets or mixed bulb types and colors"
+      how_a_pro_spots_it: "Homeowner supplies the lights and mentions old sets or a bin from the garage; CPSC says every set, new or old, gets checked for cracked sockets and frayed wires"
+      question_or_photo: lights
+      source: cpsc_holiday
+    - condition: "Cracked, slipped or loose tiles at the roof edge, or a loose gutter, which breaks or pulls further during the install"
+      how_a_pro_spots_it: "Out-of-line edge tiles or a sagging gutter in the close-up; homeowner says wind blew lights off last year"
+      question_or_photo: fu_roof_edge_damage
+      source: null
+    - condition: "Overhead service line close to the roof edge where lights would hang"
+      how_a_pro_spots_it: "A line running from the pole to the house near the front eave in the street photo; UES asks for 15 feet of clearance from overhead lines"
+      question_or_photo: p1_front_house
+      source: ues_safety
+    - condition: "No usable outdoor outlet, or an outlet that keeps shutting off, so the plan needs cords from the garage or an electrician first"
+      how_a_pro_spots_it: "Outlet photo shows no cover, scorching or none near the runs; homeowner says the lights kept going out last year"
+      question_or_photo: p4_outlets
+      source: cpsc_holiday
+    - condition: "Old clips, nails, staples or glued clips left from a past install, which slow a take-down or a fresh install"
+      how_a_pro_spots_it: "Close-up of the lights now up; homeowner or a past owner hung them"
+      question_or_photo: fu_who_hung
+      source: null
+    - condition: "HOA rule on colors, start date or a take-down deadline"
+      how_a_pro_spots_it: "Homeowner mentions an HOA or a rule like white only"
+      question_or_photo: fu_hoa_rule
+      source: null
+    - condition: "Sprinklers aimed at bushes and walls that spray cord joins and plugs"
+      how_a_pro_spots_it: "Sprinkler heads or drip lines visible by the bushes in the yard photo"
+      question_or_photo: p3_trees_yard
+      source: null
+    - condition: "Palms with dead fronds or seed pods that need trimming before a wrap"
+      how_a_pro_spots_it: "Brown hanging fronds or a skirt of old fronds in the yard photo"
+      question_or_photo: p3_trees_yard
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "plug-in light hanging (homeowner wants an outlet added for the lights)"
+      might_be: "hardwired_route, refused in this category"
+      one_question: fu_power_plan
+      if_other_route_to: {category: electrical, job_type: "new circuit"}
+      source: aac_r4_9_103
+    - sounds_like: "plug-in light hanging (permanent roofline lights that stay up all year)"
+      might_be: "hardwired_route: permanent wired lighting, refused in this category"
+      one_question: fu_power_plan
+      if_other_route_to: {category: electrical, job_type: "light fixture"}
+      source: null
+    - sounds_like: "plug-in light hanging (wind blew the lights off the roof)"
+      might_be: "cracked or slipped roof tiles, a different category"
+      one_question: fu_roof_edge_damage
+      if_other_route_to: {category: roof_repair, job_type: "tile replacement"}
+      source: null
+    - sounds_like: "plug-in light hanging (lights on the gutters)"
+      might_be: "a loose or bent gutter, a different category"
+      one_question: fu_roof_edge_damage
+      if_other_route_to: {category: gutters, job_type: "gutter repair"}
+      source: null
+    - sounds_like: "plug-in light hanging (lights up but won't turn on)"
+      might_be: "a dead outdoor outlet or one that keeps shutting off, electrical work"
+      one_question: fu_outlet_works
+      if_other_route_to: {category: electrical, job_type: "outlet repair"}
+      source: null
+  photo_reading:
+    - photo_id: p1_front_house
+      reads: ["Stories and roof pitch", "Roof type (tile, shingle, flat, metal)", "Gutters or bare stucco fascia", "Number of peaks and sides seen from the street", "Overhead service line near the eave", "Trees and palms in front"]
+      neutral_wording: "Photo shows a 1-story home with a tile roof, no gutters, 3 peaks on the front and one palm by the drive."
+    - photo_id: p2_roofline_closeup
+      reads: ["Tile shape at the edge (flat or curved)", "Stucco or wood fascia", "Gutter lip for clips", "Edge tiles out of line or cracked", "Old clips or nails left from past years"]
+      neutral_wording: "Photo shows curved tiles along a stucco fascia; one edge tile sits out of line with the rest."
+    - photo_id: p3_trees_yard
+      reads: ["Count and height of palms and trees", "Dead fronds or seed pods", "Bush count and size", "Sprinkler heads near bushes", "Distance to the house"]
+      neutral_wording: "Photo shows 2 tall palms and 4 low bushes in a rock yard, with sprinkler heads by the bushes."
+    - photo_id: p4_outlets
+      reads: ["Outlet location and height", "Weather cover present", "GFCI buttons on the face", "Scorch marks or a cracked cover"]
+      neutral_wording: "Photo shows one outdoor outlet by the garage door with a flip cover and test buttons."
+    - photo_id: p5_lights_up_now
+      reads: ["How much is up (roofline, trees, windows)", "Clips, nails or ties used", "Height of the highest run", "Wrapped palms and how high the wrap goes"]
+      neutral_wording: "Photo shows white lights on the front roofline on clips and one palm wrapped about halfway up."
+  local_factors:
+    - fact: "Concrete and clay-style tile roofs are common in Lake Havasu City"
+      effect: "Tile clips and ridge clips replace nails; the card states roof type so the business brings the right clips and plans time for care on tile [judgment]"
+      source: null
+    - fact: "Many homes have stucco walls and fascia with no gutters"
+      effect: "No gutter lip for clips changes the attachment plan and the clip count [judgment]"
+      source: null
+    - fact: "The Boat Parade of Lights runs on the Bridgewater Channel each December (the 43rd was December 14, 2024; the 2026 parade is Saturday, December 12)"
+      effect: "Many homeowners want lights up before the parade weekend, so early-December install slots fill first; parade-date requests need a firm earliest-day answer"
+      source: golakehavasu_parade
+    - fact: "Wind off the lake and desert is common; CPSC says to fasten outdoor lights to firm supports against wind damage"
+      effect: "More clips and tie-downs per run, and some calls in December to re-hang lights blown loose [judgment on local wind]"
+      source: cpsc_holiday
+    - fact: "CPSC says outdoor lights belong on GFCI-protected circuits"
+      effect: "A missing or tripping GFCI outlet is electrical work and goes on a separate electrical card"
+      source: cpsc_holiday
+    - fact: "UES asks for at least 15 feet between overhead power lines and any tools, materials or people"
+      effect: "Service drops near the front eave limit where lights can hang; the street photo shows it"
+      source: ues_safety
+    - fact: "City water hardness is about 19 grains per gallon"
+      effect: "Sprinkler spray leaves white spots on bulbs and wets cord joins near bushes; installers route cords away from heads [judgment on effect]"
+      source: lhc_ccr
+    - fact: "Monsoon season runs June 15 to September 30, with gusts usually over 40 mph"
+      effect: "Lights and clips left up all year wear out and blow loose; a spring take-down or a new install may replace sun-worn sets [judgment on effect]"
+      source: nws_monsoon
+    - fact: "Seasonal residents and vacant second homes"
+      effect: "Owners want lights up on timers before they arrive, or taken down after they leave in January, so full packages with storage and timers are common [judgment]"
+      source: null
+    - fact: "HOAs in some neighborhoods set decor colors, start dates and take-down deadlines; manufactured homes may have metal roofs and short eaves"
+      effect: "The card carries any HOA rule as her fact; metal roofs take magnetic or edge clips [judgment]"
+      source: null
+  seasonality:
+    busy: "Early November to mid-December for installs (peak the two weeks before the boat parade); early to mid-January for take-downs [judgment]"
+    slow: "February to October, apart from late take-downs and summer re-hangs after wind [judgment]"
+    source: null
+
+job_types:
+  - id: roofline_gutters
+    label: "Roofline, eaves and gutter lights (plug-in)"
+    bank_job_type: "plug-in light hanging"
+    recurring: false
+    homeowner_phrasings: ["lights on the roofline", "c9s on the eaves", "icicle lights", "lights on the gutters", "outline the house in white lights"]
+    must_know:
+      - fact: "Which sides of the roofline: front only, front and sides, or all the way around"
+        bank_question: null
+        follow_up: fu_roof_sides
+        photo: p1_front_house
+        why_it_moves_price: "Feet of lights is the core of the quote; front only versus the whole house can triple it. [judgment]"
+        skip_if: "Her words or the street photo make the runs clear"
+      - fact: "Stories and roof height"
+        bank_question: stories
+        follow_up: null
+        photo: p1_front_house
+        why_it_moves_price: "A second story runs about twice the first per the national marketplace guide; steep roofs add time and gear."
+        skip_if: "Answered"
+      - fact: "Roof type and whether there are gutters"
+        bank_question: null
+        follow_up: fu_roof_type
+        photo: p2_roofline_closeup
+        why_it_moves_price: "Tile, shingle, foam and metal take different clips and different care. [judgment]"
+        skip_if: "Close-up or street photo shows the roof"
+      - fact: "Who supplies the lights"
+        bank_question: lights
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Business-supplied lights add a per-foot charge; her own lights need testing first."
+        skip_if: "Answered"
+      - fact: "Where the outdoor outlets are"
+        bank_question: null
+        follow_up: null
+        photo: p4_outlets
+        why_it_moves_price: "Outlet spots set cord runs and timers; no outlet may mean a separate electrical card. [judgment]"
+        skip_if: "Outlet photo sent or she named the spot"
+    allowed_follow_ups:
+      - id: fu_roof_sides
+        ask_when: "Roofline lights wanted and her words and photos don't show which sides"
+        text_en: "Which parts of the roofline should get lights?"
+        text_es: "¿Qué partes de la orilla del techo llevan luces?"
+        options_en: ["Front only", "Front and sides", "All the way around"]
+        options_es: ["Solo el frente", "El frente y los lados", "Toda la casa"]
+        card_field: true
+        why: "Sets the feet of lights, the number one price driver. [judgment]"
+      - id: fu_roof_type
+        ask_when: "Roofline lights are part of the job and no photo shows the roof"
+        text_en: "What kind of roof does the house have?"
+        text_es: "¿Qué tipo de techo tiene la casa?"
+        options_en: ["Tile", "Shingle", "Flat or foam", "Metal"]
+        options_es: ["Teja", "Tejas de asfalto (shingle)", "Plano o de espuma", "Metal"]
+        card_field: true
+        why: "Roof type sets the clips and the care on the roof edge. [judgment]"
+      - id: fu_power_plan
+        ask_when: "She mentions an outlet, wiring, a switch, or lights that stay up all year"
+        text_en: "Will the lights plug into an outlet that's there now, or do you want a new outlet or wiring added?"
+        text_es: "¿Las luces se van a conectar a un enchufe que ya existe, o quiere que se ponga un enchufe o cableado nuevo?"
+        options_en: ["Plug into an outlet there now", "Add a new outlet or wiring", "Lights that stay up all year, wired in"]
+        options_es: ["Conectar a un enchufe que ya existe", "Poner un enchufe o cableado nuevo", "Luces fijas todo el año, con cableado"]
+        card_field: true
+        why: "A new outlet, circuit or wired-in lights is R-11 electrical work and leaves this category. [src:aac_r4_9_103]"
+      - id: fu_roof_edge_damage
+        ask_when: "She mentions wind, lights blown down, broken tiles, or a gutter that sags or pulls loose"
+        text_en: "Does anything on the roof edge look loose or broken, like tiles or a gutter?"
+        text_es: "¿Se ve algo flojo o roto en la orilla del techo, como tejas o una canaleta?"
+        options_en: ["Tiles cracked or out of place", "Gutter loose or bent", "No, it all looks fine"]
+        options_es: ["Tejas rotas o fuera de lugar", "Canaleta floja o doblada", "No, todo se ve bien"]
+        card_field: true
+        why: "Tile and gutter repair are separate cards to roofing and gutter businesses; the light business wants to know before climbing. [judgment]"
+    photos_priority: [p1_front_house, p2_roofline_closeup, p4_outlets]
+    urgency:
+      fire_dept_triggers: ["Sparks, smoke or a burning smell at an outlet, cord or plug"]
+      urgent_capable_triggers: []
+      regular: "All roofline installs"
+    scope_line_en: "Hang white lights on the front roofline, 1 story, tile roof with no gutters; homeowner has her own lights."
+    scope_line_es: "Colgar luces blancas en la orilla del techo del frente, 1 piso, techo de teja sin canaletas; la dueña tiene sus propias luces."
+    quote_format: tiers
+    business_fills: ["up to 3 named packages with prices", "what each package covers (runs, lights supplied or rented, take-down, storage)", "earliest install day and take-down window"]
+    card_template: |
+      REQ-<id> | Holiday lights (plug-in) | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: which runs, stories, roof, who supplies lights>
+      Runs: <front only / front and sides / all the way around>. Stories: <1 / 2 or more>. Roof: <tile / shingle / flat or foam / metal>, gutters <yes / no>.
+      Lights: <homeowner has them / business supplies>. Outlets: <neutral, from photo or her words>. Roof edge: <looks fine / loose or broken, in her words>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Tile roofs are tricky, expect to pay more.", "Roofline lights usually run a couple dollars a foot.", "You'll need an outlet on the eave.", "Just use extension cords from the garage.", "Those tiles were probably cracked already."]
+
+  - id: trees_bushes
+    label: "Trees, palms, bushes and yard lights (plug-in)"
+    bank_job_type: "plug-in light hanging"
+    recurring: false
+    homeowner_phrasings: ["wrap the palm trees", "lights on my palms", "net lights on the bushes", "wrap the tree in the front yard", "light up the yard"]
+    must_know:
+      - fact: "How many palms or trees, and how tall the tallest is"
+        bank_question: null
+        follow_up: fu_tree_height
+        photo: p3_trees_yard
+        why_it_moves_price: "Tall palms need a long ladder or a lift and more lights per trunk. [judgment]"
+        skip_if: "Yard photo shows the trees with something for scale"
+      - fact: "Trunk only, or trunk and fronds or canopy"
+        bank_question: null
+        follow_up: fu_wrap_style
+        photo: null
+        why_it_moves_price: "A canopy or frond wrap takes several times the lights and time of a trunk wrap. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Distance from the trees to the nearest outdoor outlet"
+        bank_question: null
+        follow_up: fu_outlet_distance
+        photo: p4_outlets
+        why_it_moves_price: "Yard runs need long outdoor cords, stakes and timers. [judgment]"
+        skip_if: "Outlet photo shows it next to the trees"
+      - fact: "Who supplies the lights"
+        bank_question: lights
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Business-supplied lights add to the quote by the foot."
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_tree_height
+        ask_when: "Palms or trees are part of the job and no photo shows their height"
+        text_en: "About how tall is the tallest palm or tree you want lit?"
+        text_es: "¿Más o menos qué tan alta es la palma o el árbol más alto que quiere iluminar?"
+        options_en: ["Under 10 feet", "10 to 20 feet", "Over 20 feet"]
+        options_es: ["Menos de 10 pies", "De 10 a 20 pies", "Más de 20 pies"]
+        card_field: true
+        why: "Height decides ladder or lift and the lights per tree. [judgment]"
+      - id: fu_wrap_style
+        ask_when: "Palms or trees wanted and she didn't say how far up the lights go"
+        text_en: "Should the lights go on the trunk only, or the trunk and the top too?"
+        text_es: "¿Las luces van solo en el tronco, o en el tronco y también arriba?"
+        options_en: ["Trunk only", "Trunk and the top", "Bushes only, no trees"]
+        options_es: ["Solo el tronco", "El tronco y arriba", "Solo arbustos, sin árboles"]
+        card_field: true
+        why: "Frond and canopy wraps are the high tier on most tree quotes. [judgment]"
+      - id: fu_outlet_distance
+        ask_when: "No outlet photo and she didn't say where the outlets are"
+        text_en: "How close is the nearest outdoor outlet to where the lights will go?"
+        text_es: "¿Qué tan cerca está el enchufe de afuera más cercano de donde van las luces?"
+        options_en: ["Close by", "Across the yard", "No outdoor outlet"]
+        options_es: ["Cerca", "Al otro lado del patio", "No hay enchufe afuera"]
+        card_field: true
+        why: "Sets cord runs and timers; no outlet may mean a separate electrical card. [judgment]"
+      - fu_power_plan
+    photos_priority: [p3_trees_yard, p4_outlets, p1_front_house]
+    urgency:
+      fire_dept_triggers: ["Power line down in the yard or across a tree"]
+      urgent_capable_triggers: []
+      regular: "All tree and yard light installs"
+    scope_line_en: "Wrap 2 front palms, trunk only, about 15 feet tall; outlet by the garage; business supplies the lights."
+    scope_line_es: "Envolver 2 palmas del frente, solo el tronco, de unos 15 pies; enchufe junto a la cochera; el negocio pone las luces."
+    quote_format: tiers
+    business_fills: ["up to 3 named packages with prices", "what each package covers (trees, wrap height, lights supplied or rented, take-down)", "earliest install day"]
+    card_template: |
+      REQ-<id> | Holiday lights (plug-in) | <town>, <general area> | <kind of place>
+      <one scope line: how many trees or palms, height, wrap style>
+      Trees: <count>, tallest <under 10 / 10 to 20 / over 20 feet>. Wrap: <trunk only / trunk and top / bushes only>. Bushes: <count, from photo or her words>.
+      Lights: <homeowner has them / business supplies>. Nearest outlet: <close by / across the yard / none>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those palms need trimming first.", "Tall palms need a lift, that adds up.", "Wrapping a palm is cheap.", "Solar lights would be easier out there.", "Run a cord across the yard."]
+
+  - id: windows_doors
+    label: "Window, door, porch and pillar lights (plug-in)"
+    bank_job_type: "plug-in light hanging"
+    recurring: false
+    homeowner_phrasings: ["lights around the windows", "outline the front door", "garland and lights on the porch", "wrap the porch posts", "lights on the patio cover"]
+    must_know:
+      - fact: "How many windows, doors or posts"
+        bank_question: null
+        follow_up: fu_window_count
+        photo: p1_front_house
+        why_it_moves_price: "Each frame is a separate run with its own clips and cord. [judgment]"
+        skip_if: "Street photo shows the frames she named"
+      - fact: "Where the outlets are"
+        bank_question: null
+        follow_up: fu_outlet_distance
+        photo: p4_outlets
+        why_it_moves_price: "Porch and window runs often need cords across doorways. [judgment]"
+        skip_if: "Outlet photo sent"
+      - fact: "Any HOA rule on colors or dates"
+        bank_question: null
+        follow_up: fu_hoa_rule
+        photo: null
+        why_it_moves_price: "A color rule can rule out her own lights or a business's stock. [judgment]"
+        skip_if: "No HOA mentioned"
+      - fact: "Who supplies the lights or garland"
+        bank_question: lights
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Garland and lights from the business change the package price. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_window_count
+        ask_when: "Windows, doors or posts wanted and the count isn't clear"
+        text_en: "How many windows, doors or posts should get lights?"
+        text_es: "¿Cuántas ventanas, puertas o postes llevan luces?"
+        options_en: ["1 or 2", "3 to 5", "6 or more"]
+        options_es: ["1 o 2", "3 a 5", "6 o más"]
+        card_field: true
+        why: "Count sets the runs and the time. [judgment]"
+      - fu_outlet_distance
+      - id: fu_outlet_works
+        ask_when: "She says lights or an outlet outside don't work or keep going out"
+        text_en: "When you plug something else into that outdoor outlet, does it work?"
+        text_es: "¿Si conecta otra cosa a ese enchufe de afuera, funciona?"
+        options_en: ["Yes, it works", "No, nothing works there", "It works, then shuts off"]
+        options_es: ["Sí, funciona", "No, nada funciona ahí", "Funciona y luego se apaga"]
+        card_field: true
+        why: "A dead or tripping outlet is electrical work for an electrician, a different card. [judgment]"
+      - id: fu_hoa_rule
+        ask_when: "She mentions an HOA, a rule, or a set color"
+        text_en: "Does your HOA have any rules on holiday lights, like colors or dates?"
+        text_es: "¿Su HOA tiene reglas para las luces navideñas, como colores o fechas?"
+        options_en: ["Yes, colors", "Yes, dates", "Yes, colors and dates", "No rules", "No HOA"]
+        options_es: ["Sí, colores", "Sí, fechas", "Sí, colores y fechas", "No hay reglas", "No hay HOA"]
+        card_field: true
+        why: "The rule goes on the card as her fact so the business quotes the right lights and dates. [judgment]"
+    photos_priority: [p1_front_house, p4_outlets]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All window, door and porch installs"
+    scope_line_en: "Outline 3 front windows and the front door in white lights; HOA allows white only; outlet on the porch."
+    scope_line_es: "Marcar 3 ventanas del frente y la puerta principal con luces blancas; el HOA solo permite blanco; enchufe en el porche."
+    quote_format: tiers
+    business_fills: ["up to 3 named packages with prices", "what each package covers (frames, lights or garland supplied, take-down)", "earliest install day"]
+    card_template: |
+      REQ-<id> | Holiday lights (plug-in) | <town>, <general area> | <kind of place>
+      <one scope line: which windows, doors or posts, colors>
+      Frames: <1 or 2 / 3 to 5 / 6 or more>. HOA rule: <colors / dates / both / none / no HOA>. Lights: <homeowner has them / business supplies>.
+      Outlet: <close by / across the yard / none / works, then shuts off>. Stories: <1 / 2 or more>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your outlet's GFCI is bad.", "Adhesive clips work fine on stucco.", "Your HOA can't stop you.", "Window outlines are the cheap option."]
+
+  - id: full_package
+    label: "Full package: install, service calls, take-down and storage"
+    bank_job_type: "plug-in light hanging"
+    recurring: false
+    homeowner_phrasings: ["put up and take down", "install and take down in January", "lights with storage", "rent christmas lights", "do the whole thing for me"]
+    must_know:
+      - fact: "Which areas: roofline, trees, bushes, windows"
+        bank_question: null
+        follow_up: fu_areas
+        photo: p1_front_house
+        why_it_moves_price: "Each area adds feet of lights and sets the tier. [judgment]"
+        skip_if: "Her words or photos show the areas"
+      - fact: "Lights kept, rented each year, or hers; and who stores them"
+        bank_question: lights
+        follow_up: fu_storage
+        photo: null
+        why_it_moves_price: "Rental with storage is a yearly program price; her lights stored by the business add a storage fee. [judgment]"
+        skip_if: "She said rent or store"
+      - fact: "Stories and roof type"
+        bank_question: stories
+        follow_up: fu_roof_type
+        photo: p2_roofline_closeup
+        why_it_moves_price: "Height and roof type set time and clips on both the install and the take-down. [judgment]"
+        skip_if: "Photos show it"
+      - fact: "Any HOA dates or color rules"
+        bank_question: null
+        follow_up: fu_hoa_rule
+        photo: null
+        why_it_moves_price: "A take-down deadline fixes the second visit date. [judgment]"
+        skip_if: "No HOA mentioned"
+    allowed_follow_ups:
+      - id: fu_areas
+        ask_when: "Full package wanted and she didn't say where the lights go"
+        text_en: "Where do you want lights?"
+        text_es: "¿Dónde quiere las luces?"
+        options_en: ["Roofline only", "Roofline and trees or bushes", "Trees, palms or bushes only", "Windows and doors only", "Roofline, trees and windows"]
+        options_es: ["Solo la orilla del techo", "El techo y árboles o arbustos", "Solo árboles, palmas o arbustos", "Solo ventanas y puertas", "Techo, árboles y ventanas"]
+        card_field: true
+        why: "Areas set the tiers a full-package business quotes. [judgment]"
+      - id: fu_storage
+        ask_when: "Full package wanted and she didn't say what happens to the lights after the season"
+        text_en: "After take-down, what should happen to the lights?"
+        text_es: "Después de quitarlas, ¿qué se hace con las luces?"
+        options_en: ["I keep them at the house", "The business stores them for next year", "Business lights, rented each year"]
+        options_es: ["Me las quedo en la casa", "El negocio las guarda para el próximo año", "Luces del negocio, rentadas cada año"]
+        card_field: true
+        why: "Keep, store or rent are three different package prices. [judgment]"
+      - fu_hoa_rule
+      - fu_roof_type
+    photos_priority: [p1_front_house, p2_roofline_closeup, p3_trees_yard]
+    urgency:
+      fire_dept_triggers: ["Sparks, smoke or a burning smell at an outlet, cord or plug"]
+      urgent_capable_triggers: []
+      regular: "All full packages"
+    scope_line_en: "Full package with storage: front roofline and 2 palms, 1 story, tile roof; business supplies lights each year; wants them up before the boat parade."
+    scope_line_es: "Paquete completo con almacenaje: orilla del techo del frente y 2 palmas, 1 piso, techo de teja; el negocio pone las luces cada año; las quiere antes del desfile de lanchas."
+    quote_format: tiers
+    business_fills: ["up to 3 named packages with prices", "what each package covers (areas, lights supplied or rented, service calls, take-down date, storage)", "earliest install day and take-down window"]
+    card_template: |
+      REQ-<id> | Holiday lights (plug-in) | <town>, <general area> | <kind of place>
+      <one scope line: full package, areas, stories, roof, lights>
+      Areas: <roofline / trees or bushes / windows and doors, as chosen>. Stories: <1 / 2 or more>. Roof: <tile / shingle / flat or foam / metal>.
+      After the season: <homeowner keeps / business stores / business rental>. HOA rule: <colors / dates / both / none / no HOA>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Renting is cheaper in the long run.", "Packages usually run several hundred dollars.", "Storage is always included.", "They'll fix any strand that goes out for free."]
+
+  - id: takedown_only
+    label: "Take-down only (lights already up)"
+    bank_job_type: "take-down"
+    recurring: false
+    homeowner_phrasings: ["take down christmas lights", "take my lights down", "lights still up from last year", "need them down before the HOA deadline", "back up north, need the lights taken down"]
+    must_know:
+      - fact: "What is up now and how high the top run is"
+        bank_question: stories
+        follow_up: fu_lights_up_where
+        photo: p5_lights_up_now
+        why_it_moves_price: "Take-down is priced on the same runs and heights as the install, at about half the install price when sold alone."
+        skip_if: "Photo of the lights up now sent"
+      - fact: "Who put them up and how they are attached"
+        bank_question: null
+        follow_up: fu_who_hung
+        photo: p5_lights_up_now
+        why_it_moves_price: "Nails, staples or glued clips take longer to remove than clips a business used; a business that owns rental lights usually takes its own down. [judgment]"
+        skip_if: "Photo shows clips and she said who hung them"
+      - fact: "What happens to the lights after"
+        bank_question: null
+        follow_up: fu_after_takedown
+        photo: null
+        why_it_moves_price: "Boxing for storage, hauling away or leaving them in the garage are different add-ons. [judgment]"
+        skip_if: "She said"
+      - fact: "Roof type"
+        bank_question: null
+        follow_up: fu_roof_type
+        photo: p1_front_house
+        why_it_moves_price: "Tile takes care on the walk and the clip removal. [judgment]"
+        skip_if: "Photo shows the roof"
+    allowed_follow_ups:
+      - id: fu_lights_up_where
+        ask_when: "Take-down wanted and no photo of the lights now up"
+        text_en: "Where are the lights up now?"
+        text_es: "¿Dónde están puestas las luces ahora?"
+        options_en: ["Roofline only", "Roofline and trees or bushes", "Trees, palms or bushes only", "Windows and doors only", "Roofline, trees and windows"]
+        options_es: ["Solo la orilla del techo", "El techo y árboles o arbustos", "Solo árboles, palmas o arbustos", "Solo ventanas y puertas", "Techo, árboles y ventanas"]
+        card_field: true
+        why: "Sets the runs and the time for the take-down. [judgment]"
+      - id: fu_who_hung
+        ask_when: "Take-down wanted and she didn't say who put the lights up"
+        text_en: "Who put these lights up?"
+        text_es: "¿Quién puso estas luces?"
+        options_en: ["Me or my family", "A past owner", "A business, and I own the lights", "A business that owns the lights"]
+        options_es: ["Yo o mi familia", "Un dueño anterior", "Un negocio, y las luces son mías", "Un negocio que es dueño de las luces"]
+        card_field: true
+        why: "Homemade attachments slow removal, and rental lights belong to the business that hung them. [judgment]"
+      - id: fu_after_takedown
+        ask_when: "Take-down wanted and she didn't say what to do with the lights"
+        text_en: "After they come down, what should happen to the lights?"
+        text_es: "Después de quitarlas, ¿qué se hace con las luces?"
+        options_en: ["Box them and leave them at the house", "The business stores them", "Haul them away"]
+        options_es: ["Guardarlas en cajas y dejarlas en la casa", "Que el negocio las guarde", "Llevárselas"]
+        card_field: true
+        why: "Storage and haul-away are separate line items on a take-down quote. [judgment]"
+      - fu_roof_type
+    photos_priority: [p5_lights_up_now, p1_front_house]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Lights blown loose and hanging over a walkway or driveway", "HOA take-down deadline within a week"]
+      regular: "All take-downs"
+    scope_line_en: "Take down white lights on the front roofline and one wrapped palm, 1 story, tile roof; homeowner is out of state; box and leave in the garage."
+    scope_line_es: "Quitar luces blancas de la orilla del techo del frente y de una palma, 1 piso, techo de teja; la dueña está fuera del estado; guardarlas en cajas en la cochera."
+    quote_format: tiers
+    business_fills: ["up to 3 named packages with prices (for example take-down only, take-down and boxing, take-down with storage)", "what each covers", "earliest take-down day"]
+    card_template: |
+      REQ-<id> | Holiday lights (plug-in) | <town>, <general area> | <kind of place>
+      <one scope line: take-down, what is up, stories, roof>
+      Up now: <roofline / trees or bushes / windows and doors, as chosen>. Stories: <1 / 2 or more>. Roof: <tile / shingle / flat or foam / metal>.
+      Hung by: <homeowner / past owner / business, homeowner's lights / business rental>. After: <boxed at house / business stores / haul away>. Homeowner home: <yes / away, in her words>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Just leave them up till next year.", "Take-down is usually half the install price.", "The tiles under those clips are probably cracked.", "Call the company that put them up."]
+
+  - id: hardwired_route
+    label: "New outlet, circuit, hardwired or permanent wired lights (refused: new outlet, circuit or hardwiring)"
+    bank_job_type: "new outlet, circuit or hardwiring"
+    recurring: false
+    homeowner_phrasings: ["need an outdoor outlet for lights", "add an outlet on the eave", "permanent roofline lights", "hardwire my lights", "put the lights on a switch"]
+    must_know:
+      - fact: "Whether she wants a new outlet or circuit, or wired-in permanent lights"
+        bank_question: null
+        follow_up: fu_power_plan
+        photo: p4_outlets
+        why_it_moves_price: "Both are R-11 electrical work; a new outlet routes to electrical new circuit, permanent wired lights to electrical light fixture. Electrical updates need a city permit. [src:aac_r4_9_103] [src:lhc_permits]"
+        skip_if: "Her words say which"
+      - fact: "Whether she also wants plug-in lights hung this season"
+        bank_question: service
+        follow_up: null
+        photo: null
+        why_it_moves_price: "If yes, a holiday-lights card goes out for the plug-in part and the outlet goes on its own electrical card. [judgment]"
+        skip_if: "She asked only for the outlet or wiring"
+    allowed_follow_ups:
+      - fu_power_plan
+    photos_priority: [p4_outlets, p1_front_house]
+    urgency:
+      fire_dept_triggers: ["Sparks, smoke or a burning smell at an outlet, cord or plug"]
+      urgent_capable_triggers: []
+      regular: "Always refused here; routed to electrical"
+    scope_line_en: "Add an outdoor outlet under the front eave for holiday lights: not taken in this category, sent as an electrical request."
+    scope_line_es: "Poner un enchufe afuera bajo el alero del frente para luces navideñas: no se toma en esta categoría, se envía como solicitud eléctrica."
+    quote_format: tiers
+    business_fills: ["none: refused here, no card goes to a holiday-light business; an electrical card is built instead"]
+    card_template: |
+      REQ-<id> | Holiday lights (plug-in) | not sent | new outlet, circuit or hardwiring
+      Wanted: <new outlet or circuit / wired-in permanent lights>. Where: <in her words>.
+      Routed to: electrical (<new circuit / light fixture>). Plug-in hanging also wanted: <yes, separate card / no>.
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A light installer can add the outlet.", "Just run an extension cord instead.", "That's a small job, no permit needed.", "An outlet usually runs a couple hundred."]
+
+business_side:
+  how_they_get_customers: ["Repeat customers who rebook every fall [judgment]", "Yard signs on lit homes and neighbors asking [judgment]", "Local Facebook groups and Nextdoor posts [judgment]", "Google search ads and a Google Maps listing", "Thumbtack's holiday lighting category", "Add-on season for pressure-washing, window-cleaning and yard businesses [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google search ads for a Christmas light install service"
+      figure: "About $69 per lead, 44 leads in 30 days (one freelance marketer's self-reported case, not audited)"
+      source: contra_xmas_ads
+      unverified: false
+    - channel: "Thumbtack (all categories; home improvement)"
+      figure: "About $10 to $100 or more per lead by service; home improvement about $10 to $50 (marketing vendor, 2022; holiday lighting not listed)"
+      source: leadcapture_thumbtack
+      unverified: false
+    - channel: "Lake Havasu City holiday-light businesses specifically"
+      figure: "No local figures found; a short season and repeat customers may mean few paid channels at all"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["The same request sold to several installers", "Price shoppers who want a per-foot number by phone", "Requests in mid-December when the calendar is full", "Paying for requests outside their area", "Monthly fees for a six-week season"]
+  what_makes_a_lead_worth_paying_for: ["A street photo of the whole roofline", "Stories, roof type and areas on the card", "Who supplies the lights stated up front", "A real date, before the parade or after", "Pay only when picked, nothing monthly"]
+  their_words: ["linear feet", "C9", "C7", "mini lights", "roofline", "peaks", "ridge clips", "tile tabs", "gutter clips", "custom-cut", "zip cord", "timer", "GFCI", "palm wrap", "canopy", "net lights", "take-down", "storage", "rental program", "service call", "lift"]
+  signup_objections:
+    - objection: "Why pay $25 when my repeat customers book me anyway?"
+      answer: "Keep them. Cards here are new homeowners asking for quotes. You pay only when one picks your quote, and the fee is set by job size: $25, $75 or $199. There is nothing to join and nothing monthly."
+    - objection: "I can't price a roofline without measuring it."
+      answer: "Most cards come with a street photo, stories, roof type and the sides she wants lit. Quote up to 3 packages and say what each one assumes, like front roofline only on one story."
+    - objection: "My calendar is full by Thanksgiving."
+      answer: "Each card says when she wants the lights up, so you quote only the ones you can fit. You pick the job types you take and can change them any time."
+    - objection: "I only do installs with my own rental lights."
+      answer: "Every card says whether the homeowner has lights or wants the business to supply them. Quote the ones that fit how you work."
+    - objection: "Will you rank me against other installers?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "What if a homeowner wants an outlet added?"
+      answer: "This category is plug-in work only. A new outlet, circuit or wired-in light goes on a separate card to electrical businesses, not to you."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "I do take-downs but not installs."
+      answer: "You choose the job types you want at sign-up. Take-down is its own job type, so you can take only those cards."
+  quote_tips_for_card: ["Name each package and say what it covers: runs, trees, lights supplied or rented", "Say whether take-down and storage are included and when the take-down happens", "Say whether a strand going out during the season is covered", "Give your earliest install day", "If you need a photo of another side of the house, say which"]

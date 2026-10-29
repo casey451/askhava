@@ -1,0 +1,531 @@
+# Ask Hava expert layer: boat_detailing (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set boat_detailing and trade_kb/trades/boat_dock.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The boat_dock kb file serves boat_detailing and boat_repair. Only its detailing job type is here.
+#   The kb's single "detailing" id covers wash, wax, oxidation and upholstery in one; the category routes
+#   three job types, so three new_job_type entries split it: hull_cleaning ("hull cleaning"),
+#   interior_detail ("interior detail") and wax_polish ("waxing"). The kb id "detailing" is kept as the
+#   full detail (inside and out) package and sits under "waxing", since every full detail includes a wax
+#   or polish step. The bank's service question offers "Full detail", but the category has no
+#   "full detail" job type; car_detailing does. Casey may add "full detail" to boat_detailing.
+# - Left out, with a home in boat_repair: engine_repair, service_tuneup, trailer, electrical_marine,
+#   mobile_service (mobile is how most detailers work anyway; the bank's location question and
+#   fu_water_power cover it). Left out as licensed or permit work under boat_repair's refused row:
+#   boat_lift, dock_repair, dock_new, dock_electrical.
+# - The kb lists no interior photo (its quote_without_visit_needs says "photos of hull and interior").
+#   p1 (engine label) does little for a detailing quote. Suggest the bank use [p2, p3, p7] with a new
+#   kb photo "p7: Seats and floor from the back of the boat".
+# - Gelcoat or fiberglass repair (cracks, chips, blisters) has no catalog home. fu_gelcoat_damage puts
+#   it on the card only. Quagga decontamination is done only by AZ Game and Fish or its authorized
+#   agents, so it is not a job type; fu_hull_crust and fu_time_in_water put the facts on the card.
+# - Lake Havasu City water hardness (lhc_ccr) is taken from plumbing_repair.yaml's source row; the city
+#   water page itself does not print the figure, the linked annual report does.
+schema: 1
+category: boat_detailing
+question_set: boat_detailing
+kb_trade: boat_dock
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: azgfd_ais
+    title: "Arizona Game and Fish Department, Aquatic Invasive Species: a boat in listed water 6 or more days in a row must be inspected and decontaminated by AZGFD or an authorized agent before transport; dry time 18 days Nov to Apr, 7 days May to Oct"
+    url: "https://www.azgfd.com/fishing-2/aquatic-invasive-species/"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: blm_ais
+    title: "BLM Lake Havasu Field Office, Aquatic Invasive Species Program guide: boats launched, moored, docked or trailered in Lake Havasu may carry quagga mussels; transporting them is against the law; free decontamination at Rock House on the Parker Strip"
+    url: "https://www.blm.gov/arizona-lake-havasu-fo/public-room/brochure/aquatic-invasive-species-program-informational-guide"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: azsp_weather
+    title: "Arizona State Parks, Lake Havasu State Park weather: average highs 103 F June, 108 F July, 106 F August; monsoon June to September with strong afternoon storms and wind"
+    url: "https://azstateparks.com/lake-havasu/explore/weather"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 grains per gallon, TDS about 753 ppm), linked from the Water Division page"
+    url: "https://www.lhcaz.gov/288/Water"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: havasu_docks_s46
+    title: "[S46] Lake Havasu dock and lift company answer page: shoreline is managed by BLM; most boat lifts and docks are at marinas (third-party, context only)"
+    url: "https://www.havasuliftsdocks.com/answers/do-i-need-a-permit-lake-havasu/"
+    checked: "2026-10-29"
+    kind: other
+  - id: fisheries_gelcoat
+    title: "Fisheries Supply, Guide to Restoring Gelcoat: UV, moisture and pollutants leave a chalky, faded surface; light oxidation may need polish only, medium needs compound and polish, heavy needs extra-cut compound and sometimes wet sanding; most boats need a full polish and wax at least yearly, more often in harsh sun"
+    url: "https://www.fisheriessupply.com/restoring-gelcoat"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: boatzon_prices
+    title: "Boatzon, Boat detailing cost per foot 2026: priced per foot by step (wash, wash and wax, one-step polish, multi-step compound, wet sand); condition matters more than size; neglect and mildew can double a quote; slips, lifts and pontoon tubes add time (marketplace blog, national figures)"
+    url: "https://boatzon.com/blog/boat-detailing-cost-real-per-foot-prices-for-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: mastercraft_vinyl
+    title: "MasterCraft, Upholstery vinyl care: pink stains come from micro-organisms; no power washers, bleach, solvents or silicone protectants; covering wet vinyl invites mildew; wrong cleaners may void the warranty"
+    url: "https://www.mastercraft.com/knowledge-center/upholstery-vinyl-care/"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: taco_pink_stain
+    title: "Taco Marine, Pink Stain FAQ: pink stain is a bacterial dye that dissolves into vinyl plasticizer and can migrate up from wet foam or wood"
+    url: "https://tacomarine.com/Content/Images/uploaded/Pink Stain FAQ.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: practical_sailor_waterline
+    title: "Practical Sailor, Waterline stain removers: stains are mostly metallic salts from dissolved metals, plus algae; oxalic and phosphoric acid cleaners remove them; stronger acids can dull gelcoat"
+    url: "https://www.practical-sailor.com/boat-maintenance/waterline-stain-removers-2/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: bennington_pontoon
+    title: "Bennington Marine, How to clean your aluminum pontoons: bare aluminum oxidizes and discolors from minerals and organisms in the water; boats kept in the water need cleaning more often; polishing a few times a season, about two hours for a 22 ft boat"
+    url: "https://www.benningtonmarine.com/articles/how-to-clean-your-aluminum-pontoons/"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: superdupr_thumbtack
+    title: "Superdupr (marketing vendor), Is Thumbtack worth it for pros in 2026: Thumbtack leads about $25 to $75 for most home-service trades, shared with several pros; Angi about $15 to $85 per lead plus a yearly membership (third-party reported, not published prices)"
+    url: "https://superdupr.com/blog/is-thumbtack-worth-it"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Gelcoat condition: still shiny, dull and faded, or chalky"
+      why: "Shine sets how many cutting steps the job takes: polish only, compound then polish, or extra-cut compound and wet sanding. It moves the price more than boat size does."
+      source: fisheries_gelcoat
+    - driver: "Boat length and type (bowrider, pontoon, wake boat, cruiser, PWC)"
+      why: "Detailers price by the foot and by step; pontoon tubes are quoted on their own and a cruiser adds a cabin."
+      source: boatzon_prices
+    - driver: "Where the boat sits: trailer at home, lift, slip at a marina, or a storage lot"
+      why: "A boat on a trailer is reachable all around and below the waterline; a slip or lift slows the work and limits what can be reached."
+      source: boatzon_prices
+    - driver: "Time since the last wax or detail, and signs of neglect (mildew, heavy chalk, bird mess)"
+      why: "Neglect can double a quote compared with the same boat kept up."
+      source: boatzon_prices
+    - driver: "Interior state: everyday dirt, mildew, pink stain, carpet or foam mat"
+      why: "Pink stain and mildew take extra steps and some will not fully lift; carpet needs extraction and drying time."
+      source: taco_pink_stain
+    - driver: "Water and power at the boat"
+      why: "A storage lot or marina with no water or power means the detailer brings a tank and generator, or the job waits. [judgment]"
+      source: null
+    - driver: "Waterline scum, mineral stains or shell crust below the waterline"
+      why: "Acid hull cleaners and scraping add time and care; stronger acids can dull gelcoat if left on."
+      source: practical_sailor_waterline
+    - driver: "A fixed deadline (holiday weekend, a sale, a rental season start)"
+      why: "Rush slots in the spring and before holiday weekends fill first and carry a premium. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Oxidation deep enough that compound alone will not bring the shine back, so wet sanding is needed"
+      how_a_pro_spots_it: "Close-up photo shows chalk that is heavy and even, or color that rubs off; the homeowner says it was never waxed"
+      question_or_photo: fu_gelcoat_shine
+      source: fisheries_gelcoat
+    - condition: "Quagga mussel crust on the hull, drive, trim tabs or trailer bunks"
+      how_a_pro_spots_it: "Small shells or rough white crust in the hull photo; boat kept in the water for weeks"
+      question_or_photo: fu_hull_crust
+      source: blm_ais
+    - condition: "Pink stain that comes back up from wet foam after a cleaning"
+      how_a_pro_spots_it: "Homeowner names pink spots on the seats; the boat sat under a cover in summer heat"
+      question_or_photo: fu_interior_issues
+      source: taco_pink_stain
+    - condition: "Seats already cracked or split, or stitching gone, that tear further under scrubbing"
+      how_a_pro_spots_it: "Homeowner says a seat is torn or cracked; past use of silicone protectant or bleach"
+      question_or_photo: fu_vinyl_condition
+      source: mastercraft_vinyl
+    - condition: "Cracks, chips, faded decals or graphics that lift or burn through under a buffer"
+      how_a_pro_spots_it: "Side photo shows graphics and spider cracks; the homeowner mentions chips"
+      question_or_photo: fu_gelcoat_damage
+      source: null
+    - condition: "No water or power at the storage lot, or a marina that limits washing in the slip"
+      how_a_pro_spots_it: "Location answer says storage lot or marina; homeowner does not know what is there"
+      question_or_photo: fu_water_power
+      source: null
+    - condition: "Painted pontoon tubes or bottom paint, where an aluminum or gelcoat cleaner would do harm"
+      how_a_pro_spots_it: "Side photo shows painted tubes or a colored bottom below the waterline"
+      question_or_photo: p2
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "waxing (pontoon looks dull)"
+      might_be: "hull_cleaning of bare aluminum pontoon tubes, which takes acid-safe cleaning and metal polish, not gelcoat wax"
+      one_question: boat_type
+      if_other_route_to: {category: boat_detailing, job_type: "hull cleaning"}
+      source: bennington_pontoon
+    - sounds_like: "interior detail (seats look bad)"
+      might_be: "torn or cracked vinyl, cover or bimini top, which is repair work"
+      one_question: fu_vinyl_condition
+      if_other_route_to: {category: boat_repair, job_type: "canvas and upholstery repair"}
+      source: null
+    - sounds_like: "hull cleaning (dirty bottom)"
+      might_be: "quagga mussel attachment; decontamination before the boat leaves the lake is done only by AZGFD or its authorized agents, so the card flags it and the detailer quotes only the cleaning"
+      one_question: fu_hull_crust
+      if_other_route_to: {category: boat_detailing, job_type: "hull cleaning"}
+      source: azgfd_ais
+    - sounds_like: "waxing (faded hull)"
+      might_be: "gelcoat or fiberglass damage (cracks, chips, blisters) that wax will not cover; no catalog home, so the card notes it"
+      one_question: fu_gelcoat_damage
+      if_other_route_to: {category: boat_detailing, job_type: "waxing"}
+      source: null
+    - sounds_like: "full detail before moving or selling the boat out of state"
+      might_be: "a boat in the water 6 or more days in a row, which must be decontaminated before transport"
+      one_question: fu_time_in_water
+      if_other_route_to: {category: boat_detailing, job_type: "hull cleaning"}
+      source: azgfd_ais
+  photo_reading:
+    - photo_id: p2
+      reads: ["Boat type and rough length", "Shine or chalk along the sides", "Scum line or brown stain at the waterline", "Graphics and decals", "Painted or bare pontoon tubes", "Cover, bimini top and seats in view", "Trailer, lift or slip"]
+      neutral_wording: "Side view of a bowrider on a trailer; sides look dull and there is a brown line at the waterline."
+    - photo_id: p3
+      reads: ["Chalky versus glossy gelcoat", "Small shells or white crust", "Spider cracks, chips or blisters", "Mineral spots"]
+      neutral_wording: "Close-up of the hull side shows a chalky surface and some white spots."
+    - photo_id: p1
+      reads: ["Engine make and year range, a rough guide to boat age", "Not needed for most detailing quotes"]
+      neutral_wording: "Engine label photo attached."
+  local_factors:
+    - fact: "Summer average highs run 103 F in June, 108 F in July and 106 F in August"
+      effect: "Sun breaks down gelcoat and vinyl fast, so wax wears off sooner; detailers book early mornings or shade in summer [judgment for the scheduling]"
+      source: azsp_weather
+    - fact: "Boats launched, moored, docked or trailered in Lake Havasu may carry quagga mussels; a boat in the water 6 or more days in a row must be decontaminated by AZGFD or an authorized agent before it is moved"
+      effect: "Slip and lift boats can come with shell crust; the card states time in the water and any crust so a detailer knows what the bottom looks like"
+      source: azgfd_ais
+    - fact: "City water hardness is about 19 grains per gallon"
+      effect: "A hose rinse at home leaves spots; detailers ask about water on site and may bring filtered or spot-free rinse water [judgment for the gear]"
+      source: lhc_ccr
+    - fact: "Most boat lifts and docks are at marinas"
+      effect: "Many jobs are in a slip or on a marina lift, where marina rules on outside workers, washing and runoff apply [judgment for the rules]"
+      source: havasu_docks_s46
+    - fact: "Monsoon storms June to September bring strong wind and dust"
+      effect: "Covered boats in storage lots collect dust and grit, so a wash comes before any wax [judgment for the effect]"
+      source: azsp_weather
+    - fact: "Many owners are seasonal or keep the boat in a storage lot for months"
+      effect: "Boats come out of storage with dust, bird mess and mildew under the cover, and the owner may not be in town to meet the detailer [judgment]"
+      source: null
+  seasonality:
+    busy: "March to May (spring prep, spring break, Memorial Day) and before July 4 and Labor Day [judgment]"
+    slow: "December to January [judgment]"
+    source: null
+
+job_types:
+  - id: hull_cleaning
+    new_job_type: true
+    label: "Wash the outside of the hull, clean the waterline scum and mineral spots, the bottom on a trailer or lift, or pontoon tubes"
+    bank_job_type: "hull cleaning"
+    recurring: false
+    homeowner_phrasings: ["clean the hull", "scum line on the boat", "bottom is green", "clean my pontoon tubes", "hard water spots on the boat", "barnacles on the bottom"]
+    must_know:
+      - fact: "Boat length and type, and whether it has pontoon tubes"
+        bank_question: boat_type
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Priced by the foot; bare aluminum tubes take a different cleaner and polish than gelcoat."
+        skip_if: "Homeowner gave length and type"
+      - fact: "Which parts of the hull: above the waterline, the bottom too, pontoon tubes, or the whole boat"
+        bank_question: null
+        follow_up: fu_hull_scope
+        photo: p2
+        why_it_moves_price: "Bottom work needs the boat out of the water or on a lift and adds acid cleaning time. [judgment]"
+        skip_if: "Homeowner named the parts"
+      - fact: "Shell crust or stains on the hull"
+        bank_question: null
+        follow_up: fu_hull_crust
+        photo: p3
+        why_it_moves_price: "Crust means scraping and care around the drive; a stain line means acid cleaner and rinse."
+        skip_if: "Close-up photo shows the bottom"
+      - fact: "Where the boat sits and how long it has been in the water"
+        bank_question: location
+        follow_up: fu_time_in_water
+        photo: null
+        why_it_moves_price: "A boat kept in the water builds more residue, and a slip limits reach below the waterline."
+        skip_if: "Homeowner said it is kept on a trailer"
+    allowed_follow_ups:
+      - id: fu_hull_scope
+        ask_when: "Homeowner wants the hull cleaned without saying which parts"
+        text_en: "Which parts should be cleaned: the sides above the waterline, the bottom too, the pontoon tubes, or the whole boat?"
+        text_es: "¿Qué partes hay que limpiar: los lados arriba de la línea de flotación, también el fondo, los tubos del pontón, o toda la lancha?"
+        options_en: ["Sides above the waterline", "Sides and bottom", "Pontoon tubes", "The whole boat"]
+        options_es: ["Lados arriba de la línea de flotación", "Lados y fondo", "Tubos del pontón", "Toda la lancha"]
+        card_field: true
+        why: "Each answer is a different amount of work and gear. [judgment]"
+      - id: fu_hull_crust
+        ask_when: "Boat is or was kept in the water, or the homeowner mentions a dirty bottom, growth or barnacles"
+        text_en: "Is there any crust or small shells stuck to the hull, the drive or the trailer bunks?"
+        text_es: "¿Hay costra o conchitas pegadas al casco, a la transmisión o a las bases del remolque?"
+        options_en: ["Yes, crust or shells", "Only a scum line or stains", "No"]
+        options_es: ["Sí, costra o conchitas", "Solo una línea de suciedad o manchas", "No"]
+        card_field: true
+        why: "Crust changes the work, and a detailer wants to know before arriving; the card states it as seen, never names it."
+      - id: fu_time_in_water
+        ask_when: "Boat is in the water or on a lift, or the homeowner mentions moving or selling it"
+        text_en: "How long has the boat been in the water this time?"
+        text_es: "¿Cuánto tiempo lleva la lancha en el agua esta vez?"
+        options_en: ["Not kept in the water", "Under a week", "A few weeks", "A month or more"]
+        options_es: ["No se queda en el agua", "Menos de una semana", "Unas semanas", "Un mes o más"]
+        card_field: true
+        why: "Time in the water sets how much growth is on the hull, and 6 days in a row is the AZGFD decontamination line before a boat is moved."
+      - id: fu_water_power
+        ask_when: "Boat is at a marina or storage lot, or the homeowner did not say what is on site"
+        text_en: "Is there water and power where the boat is?"
+        text_es: "¿Hay agua y luz donde está la lancha?"
+        options_en: ["Water and power", "Water only", "Power only", "Neither", "Not sure"]
+        options_es: ["Agua y luz", "Solo agua", "Solo luz", "Ninguna", "No sé"]
+        card_field: true
+        why: "A mobile detailer brings a tank and generator when the site has neither. [judgment]"
+    photos_priority: [p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All hull cleaning requests"
+    scope_line_en: "Clean the hull sides and waterline scum on a 22 ft bowrider; on a trailer at home with water and power."
+    scope_line_es: "Limpiar los lados del casco y la línea de suciedad de una lancha bowrider de 22 pies; en remolque en casa, con agua y luz."
+    quote_format: tiers
+    business_fills: ["up to 3 named packages with prices", "what each package covers", "earliest day and how long the boat is needed"]
+    card_template: |
+      REQ-<id> | Boat detailing | <town>, <general area> | <in the water / on a lift / on a trailer / in storage>
+      <one scope line: what to clean, boat length and type, where it sits>
+      Boat: <length>, <type>. Parts: <sides / sides and bottom / pontoon tubes / whole boat>. Crust or shells: <yes / scum line or stains / no / not said>.
+      Time in the water: <not kept in / under a week / a few weeks / a month or more>. Water and power on site: <both / water only / power only / neither / not sure>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those are quagga mussels.", "You have to get it decontaminated first.", "That stain needs an acid wash.", "Hull cleaning runs about ten dollars a foot.", "Just pressure wash it."]
+
+  - id: interior_detail
+    new_job_type: true
+    label: "Clean the inside: vinyl seats, carpet or foam mat, cup holders, storage, cuddy or cabin"
+    bank_job_type: "interior detail"
+    recurring: false
+    homeowner_phrasings: ["seats are moldy", "pink spots on the seats", "clean the carpet in the boat", "interior is gross after the summer", "boat smells musty"]
+    must_know:
+      - fact: "What the interior has: dirt, mildew, pink stain, spill stains"
+        bank_question: null
+        follow_up: fu_interior_issues
+        photo: p2
+        why_it_moves_price: "Mildew and pink stain take extra steps and dwell time, and pink stain may not fully lift."
+        skip_if: "Homeowner described the stains"
+      - fact: "Boat type and length (seat count, cabin or not)"
+        bank_question: boat_type
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A pontoon or wake boat has far more seating than a ski boat; a cruiser adds a cabin. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether any seat, cover or bimini top is torn or cracked"
+        bank_question: null
+        follow_up: fu_vinyl_condition
+        photo: null
+        why_it_moves_price: "Torn vinyl can tear further under scrubbing, and repair is a different job."
+        skip_if: "Homeowner said the seats are in good shape"
+      - fact: "Floor type: carpet, vinyl, foam traction mat or bare fiberglass"
+        bank_question: null
+        follow_up: fu_floor_type
+        photo: null
+        why_it_moves_price: "Carpet needs extraction and drying; foam mat needs a soft brush; fiberglass is a quick wipe. [judgment]"
+        skip_if: "Photo shows the floor"
+    allowed_follow_ups:
+      - id: fu_interior_issues
+        ask_when: "Homeowner wants the interior cleaned and did not say what is on it"
+        text_en: "What is on the seats and floor: everyday dirt, mildew or dark spots, pink stains, or spill stains?"
+        text_es: "¿Qué tienen los asientos y el piso: suciedad normal, moho o manchas oscuras, manchas rosas, o manchas de algo derramado?"
+        options_en: ["Everyday dirt", "Mildew or dark spots", "Pink stains on the vinyl", "Spill stains", "More than one of these"]
+        options_es: ["Suciedad normal", "Moho o manchas oscuras", "Manchas rosas en el vinil", "Manchas de algo derramado", "Más de una de estas"]
+        card_field: true
+        why: "These are the four interior conditions a detailer prices differently."
+      - id: fu_vinyl_condition
+        ask_when: "Homeowner mentions seats, the cover or the bimini top looking bad or old"
+        text_en: "Are any seats, the cover or the bimini top torn, cracked or coming apart at the seams?"
+        text_es: "¿Algún asiento, la lona o el toldo bimini está roto, agrietado o descosido?"
+        options_en: ["Yes, a seat", "Yes, the cover or bimini top", "No"]
+        options_es: ["Sí, un asiento", "Sí, la lona o el bimini", "No"]
+        card_field: true
+        why: "Separates cleaning from canvas and upholstery repair, which boat_repair routes. [judgment]"
+      - id: fu_floor_type
+        ask_when: "Interior detail and no photo of the floor"
+        text_en: "What is the floor: carpet, vinyl, a foam traction mat, or bare fiberglass?"
+        text_es: "¿De qué es el piso: alfombra, vinil, tapete de espuma antiderrapante, o fibra de vidrio?"
+        options_en: ["Carpet", "Vinyl", "Foam traction mat", "Bare fiberglass"]
+        options_es: ["Alfombra", "Vinil", "Tapete de espuma", "Fibra de vidrio"]
+        card_field: true
+        why: "Each floor takes different gear and drying time. [judgment]"
+      - fu_water_power
+    photos_priority: [p2]
+    urgency:
+      fire_dept_triggers: ["Propane smell or hiss in a cruiser cabin", "Smoke or fire on the boat"]
+      urgent_capable_triggers: []
+      regular: "All interior detail requests"
+    scope_line_en: "Interior detail on a 24 ft pontoon: vinyl seats with dark spots and snap-in carpet; in a slip at a marina."
+    scope_line_es: "Detallado interior de un pontón de 24 pies: asientos de vinil con manchas oscuras y alfombra de broches; en un muelle de marina."
+    quote_format: tiers
+    business_fills: ["up to 3 named packages with prices", "what each package covers", "earliest day and how long the boat is needed"]
+    card_template: |
+      REQ-<id> | Boat detailing | <town>, <general area> | <in the water / on a lift / on a trailer / in storage>
+      <one scope line: interior detail, boat length and type, what is on the seats>
+      Boat: <length>, <type>. Seats and floor: <dirt / mildew or dark spots / pink stains / spill stains>. Floor: <carpet / vinyl / foam mat / fiberglass>.
+      Torn or cracked: <a seat / cover or bimini / none / not said>. Water and power on site: <both / water only / power only / neither / not sure>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's mildew, bleach will take it out.", "Pink stain is permanent.", "Use a magic eraser on the seats.", "Interior details are about three hundred.", "Those seats need to be replaced."]
+
+  - id: wax_polish
+    new_job_type: true
+    label: "Wax, polish or remove oxidation from the gelcoat (shine and protect the hull and deck)"
+    bank_job_type: "waxing"
+    recurring: false
+    homeowner_phrasings: ["wax the boat", "hull is chalky", "boat looks faded", "buff out the oxidation", "ceramic coat my boat", "make it shine again"]
+    must_know:
+      - fact: "How the gelcoat looks now: shiny, dull and faded, or chalky"
+        bank_question: null
+        follow_up: fu_gelcoat_shine
+        photo: p3
+        why_it_moves_price: "Sets polish only, compound and polish, or heavy compound and wet sanding."
+        skip_if: "Close-up photo shows the surface clearly"
+      - fact: "Boat length and type"
+        bank_question: length
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Wax and compound are priced by the foot and by step."
+        skip_if: "Answered"
+      - fact: "When it was last waxed or detailed"
+        bank_question: null
+        follow_up: fu_last_detail
+        photo: null
+        why_it_moves_price: "Years without wax under Havasu sun mean more cutting; yearly wax is the usual minimum."
+        skip_if: "Homeowner said when"
+      - fact: "Cracks, chips or graphics that need care under the buffer"
+        bank_question: null
+        follow_up: fu_gelcoat_damage
+        photo: p2
+        why_it_moves_price: "Decals and graphics burn or lift under a buffer and are taped off or worked by hand. [judgment]"
+        skip_if: "Side photo shows no graphics or damage"
+    allowed_follow_ups:
+      - id: fu_gelcoat_shine
+        ask_when: "Homeowner wants a wax or polish and no close-up photo was sent"
+        text_en: "How does the outside of the hull look now: still shiny, dull or faded, or chalky enough to rub off on your hand?"
+        text_es: "¿Cómo se ve el casco por fuera: todavía brilla, se ve opaco o desteñido, o tan gastado que se pega a la mano como gis?"
+        options_en: ["Still shiny", "Dull or faded", "Chalky, rubs off on my hand"]
+        options_es: ["Todavía brilla", "Opaco o desteñido", "Gastado, se pega a la mano"]
+        card_field: true
+        why: "The three answers match the three levels of work a detailer prices."
+      - id: fu_last_detail
+        ask_when: "Homeowner did not say when the boat was last waxed or detailed"
+        text_en: "When was the boat last waxed or detailed?"
+        text_es: "¿Cuándo fue la última vez que enceraron o detallaron la lancha?"
+        options_en: ["Within the last year", "1 to 3 years ago", "Over 3 years or never", "Just bought it, don't know"]
+        options_es: ["En el último año", "Hace 1 a 3 años", "Hace más de 3 años o nunca", "La acabo de comprar, no sé"]
+        card_field: true
+        why: "Time since the last wax tells the detailer how much cutting to plan."
+      - id: fu_gelcoat_damage
+        ask_when: "Homeowner mentions an older boat, a faded hull, or chips, and the photos do not show the sides"
+        text_en: "Are there any cracks, chips or deep scratches in the gelcoat?"
+        text_es: "¿Tiene el gelcoat grietas, despostilladuras o rayones profundos?"
+        options_en: ["Yes, a few", "Yes, many", "No", "Not sure"]
+        options_es: ["Sí, unos pocos", "Sí, muchos", "No", "No sé"]
+        card_field: true
+        why: "Wax does not cover damage, and gelcoat repair has no catalog home, so the card states it. [judgment]"
+      - fu_water_power
+    photos_priority: [p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All wax and polish requests"
+    scope_line_en: "Polish and wax a 21 ft ski boat; sides are chalky; on a lift at home, no power there."
+    scope_line_es: "Pulir y encerar una lancha de esquí de 21 pies; los lados están gastados como gis; en elevador en casa, sin luz ahí."
+    quote_format: tiers
+    business_fills: ["up to 3 named packages with prices", "what each package covers", "earliest day and how long the boat is needed"]
+    card_template: |
+      REQ-<id> | Boat detailing | <town>, <general area> | <in the water / on a lift / on a trailer / in storage>
+      <one scope line: wax or polish, boat length and type, how the hull looks>
+      Boat: <length>, <type>. Gelcoat now: <shiny / dull or faded / chalky>. Last waxed: <within a year / 1 to 3 years / over 3 or never / not known>.
+      Cracks or chips: <a few / many / none / not sure>. Water and power on site: <both / water only / power only / neither / not sure>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's oxidation, it needs a compound.", "Your hull needs wet sanding.", "A ceramic coating will fix that.", "Wax runs about twenty dollars a foot.", "Those cracks are structural."]
+
+  - id: detailing
+    label: "Full detail inside and out: wash, interior, polish and wax"
+    bank_job_type: "waxing"
+    recurring: false
+    homeowner_phrasings: ["full detail", "detail my boat before the season", "get it ready to sell", "clean it top to bottom", "detail before Memorial Day"]
+    must_know:
+      - fact: "Boat length and type"
+        bank_question: length
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "A full detail is priced by the foot and by step, with a cabin or pontoon tubes on top."
+        skip_if: "Answered"
+      - fact: "How the gelcoat looks now"
+        bank_question: null
+        follow_up: fu_gelcoat_shine
+        photo: p3
+        why_it_moves_price: "The outside work is the larger share of a full detail, and shine sets the steps."
+        skip_if: "Close-up photo sent"
+      - fact: "What the interior has on it"
+        bank_question: null
+        follow_up: fu_interior_issues
+        photo: p2
+        why_it_moves_price: "Mildew or pink stain adds steps inside."
+        skip_if: "Homeowner described the interior"
+      - fact: "Where the boat sits, and water and power there"
+        bank_question: location
+        follow_up: fu_water_power
+        photo: null
+        why_it_moves_price: "A full detail is a long day; no water or power, or a slip, changes the setup. [judgment]"
+        skip_if: "Homeowner said it is on a trailer at home"
+    allowed_follow_ups:
+      - fu_gelcoat_shine
+      - fu_interior_issues
+      - fu_last_detail
+      - fu_water_power
+    photos_priority: [p2, p3]
+    urgency:
+      fire_dept_triggers: ["Propane smell or hiss in a cruiser cabin", "Smoke or fire on the boat"]
+      urgent_capable_triggers: []
+      regular: "All full detail requests"
+    scope_line_en: "Full detail inside and out on a 23 ft wake boat before the season; in a storage lot, no water there."
+    scope_line_es: "Detallado completo por dentro y por fuera de una lancha wake de 23 pies antes de la temporada; en un lote de almacenaje, sin agua ahí."
+    quote_format: tiers
+    business_fills: ["up to 3 named packages with prices", "what each package covers inside and out", "earliest day and how long the boat is needed"]
+    card_template: |
+      REQ-<id> | Boat detailing | <town>, <general area> | <in the water / on a lift / on a trailer / in storage>
+      <one scope line: full detail, boat length and type, where it sits>
+      Boat: <length>, <type>. Gelcoat now: <shiny / dull or faded / chalky>. Inside: <dirt / mildew or dark spots / pink stains / spill stains>.
+      Last waxed or detailed: <within a year / 1 to 3 years / over 3 or never / not known>. Water and power on site: <both / water only / power only / neither / not sure>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A full detail will make it look new.", "It needs a full compound.", "Bleach the seats first.", "A full detail on that size boat is about a thousand.", "Get it decontaminated before anyone touches it."]
+
+business_side:
+  how_they_get_customers: ["Word of mouth at marinas, launch ramps and storage lots [judgment]", "Marina and storage-lot staff passing names along [judgment]", "Local Facebook groups and before-and-after photos on social media [judgment]", "Google Maps listing and reviews [judgment]", "Boat dealers and boat sellers before a sale [judgment]", "Home-service marketplaces such as Thumbtack"]
+  customer_acquisition_benchmarks:
+    - channel: "Thumbtack (most home-service trades; boat detailing not broken out)"
+      figure: "About $25 to $75 per lead, sent to several pros; marketing-vendor estimate, not a published price"
+      source: superdupr_thumbtack
+      unverified: false
+    - channel: "Angi (most home-service trades)"
+      figure: "About $15 to $85 per lead plus a yearly membership of a few hundred dollars; leads go to several contractors; marketing-vendor estimate"
+      source: superdupr_thumbtack
+      unverified: false
+    - channel: "Lake Havasu boat detailers specifically"
+      figure: "No local figures found; most local work appears to come by word of mouth at marinas and ramps"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a request that several other detailers also got", "Owners who want a price for a boat no one has seen", "Requests from out of the area or for boats that never show up", "Monthly or yearly fees in the slow winter months", "Being ranked or reviewed by the site itself"]
+  what_makes_a_lead_worth_paying_for: ["Length, type and where the boat sits up front", "A close-up of the gelcoat so the cutting steps are clear", "Water and power on site stated", "Pay only on the pick, nothing monthly", "A real date the boat is needed"]
+  their_words: ["one-step", "two-step", "compound", "cut", "polish", "wet sand", "ceramic", "oxidation", "chalky", "scum line", "waterline", "gelcoat", "pink stain", "extractor", "spot-free rinse", "per foot", "tubes"]
+  signup_objections:
+    - objection: "Every boat is different. I can't price one I haven't seen."
+      answer: "Quote up to three packages and say what each covers. Each card gives length, type, where the boat sits, how the gelcoat looks and whether water and power are there, with photos when the owner sends them."
+    - objection: "Why pay a fee when the marina already sends me work?"
+      answer: "You pay only when the owner picks your quote, and nothing if they don't. There is nothing to join and nothing monthly."
+    - objection: "Which package sets the fee?"
+      answer: "The package the owner picks. Under $500 is $25, $500 to $1,500 is $75, and over $1,500 is $199. The quote form shows the fee for each package before you send it."
+    - objection: "Is this one of those sites that sells the same job to five detailers?"
+      answer: "Every detailer who takes this job type in the area gets the card and may quote. Nobody buys the owner's contact details. Only the business the owner picks pays, and only that business gets them."
+    - objection: "Will you rank me against the other detailers?"
+      answer: "No. The owner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "I only do interiors, or only wax and polish."
+      answer: "You pick the job types you want at sign-up and change them any time. You only get cards for those."
+    - objection: "What if the boat is in a slip and the marina won't let me work there?"
+      answer: "The card says where the boat sits. Marina rules are between you and the owner, so say in your quote if you need it on a trailer or out of the slip."
+    - objection: "What if there are mussels on the hull?"
+      answer: "The card says if the owner saw crust or shells and how long the boat has been in the water. Quote the cleaning you do. Decontamination before a boat leaves the lake is done by AZ Game and Fish or its authorized agents."
+    - objection: "What if the owner cancels after I pay?"
+      answer: "If you haven't spoken with the owner yet, the fee is refunded."
+  quote_tips_for_card: ["Name each package by what it does, like wash and one-step wax, or compound, polish and wax", "Say whether the price is for this boat or per foot", "Say if you bring your own water and power", "Give your earliest day and how long you need the boat", "If you need a photo of the interior or the bottom, say which"]

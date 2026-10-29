@@ -1,0 +1,815 @@
+# Ask Hava expert layer: septic_pumping (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set septic_pumping and trade_kb/trades/septic.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The category has two job types (tank pumping, tank inspection) and no refused list. The kb's repair and
+#   new_system are R-41 work (A.A.C. R4-9-103) plus a Mohave County permit. They are kept, mapped to
+#   "tank inspection", because a site look at the system is the first paid step and the scenario file
+#   expects new_system. But license_map.yaml sends every septic_pumping card to holders of the ADEQ
+#   septage-hauler vehicle license, and a pumping company may hold no R-41. Casey may want a "septic repair
+#   or new system" job type licensed to R-41 / CR-41 / C-41 / A-12 / R-37, or a refused row
+#   "licensed only (R-41)". Until then, the card says plainly what work is asked for.
+# - kb sewer_hookup (abandon the tank and connect to city sewer) is mapped to "tank pumping", scoped to the
+#   pump-out before abandonment. The sewer connection itself is R-37 or A-12 work and plumbing_repair has
+#   no job type for it, so the card says the connection is a separate job.
+# - RESPA: a transfer-of-ownership inspection is required by law before a home sale (A.A.C. R18-9-A316),
+#   and Regulation X (12 CFR 1024.2) lists "inspections required by applicable law ... prior to transfer
+#   of title" as a settlement service. home_inspection makes sale inspections fee-free (FEE-045, D-403);
+#   septic_pumping has no fee_free_job_types. Casey should decide whether a sale "tank inspection" gets the
+#   same treatment. The sign-up answers below do not promise either way.
+# - The kb's safety steps (someone in a tank, open or broken lid, sewage indoors) are not used (D-436).
+#   None is on the fire-truck list, so they get no 911 text here; an open lid and sewage indoors are plain
+#   urgent facts only.
+# - The kb says the ADEQ vehicle license applies at 750 gallons or more; the R18-13-1103 text read on
+#   2026-10-29 says a license for each vehicle and states no size threshold. Not relied on below.
+# - Scenario septic_pumping_s01 (RV black tank, house on sewer) expects routine_pump; fu_what_tank lets the
+#   card say it is an RV tank so businesses do not quote a ground tank.
+schema: 1
+category: septic_pumping
+question_set: septic_pumping
+kb_trade: septic
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r18_13_1103
+    title: "[S13] A.A.C. R18-13-1103 ADEQ license for each vehicle that handles septage or human excreta, renewed yearly after a vehicle inspection within 12 months; any required county permit also needed"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-13-1103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: mohave_hauler
+    title: "[S15] Mohave County Environmental Health, application to operate a refuse or sewage tank truck (one application per vehicle, inspection first, ADEQ license also required for septic haulers)"
+    url: "https://www.mohave.gov/media/gzjdbtqv/application-to-operate-hauler-formfill-8-15.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: mohave_septic
+    title: "[S14] Mohave County Development Services, Septic and Well Permitting (site plans on file for most county systems; leach field repair or replacement needs a new permit; a failed system means a new system; transfer forms)"
+    url: "https://www.mohave.gov/departments/development-services/environmental-qualitywaste-disposal/septic-well-permitting/"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: aac_r18_9_a316
+    title: "[S16] A.A.C. R18-9-A316 Transfer of ownership inspection (within 6 months before transfer; qualified inspector incl. licensed septage vehicle owners or employees and C-41 holders; tank pumped unless an exception applies; Report of Inspection on a Department form; buyer files Notice of Transfer within 15 days)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-A316"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r18_9_a314
+    title: "A.A.C. R18-9-A314 Septic tank design (minimum 1,000 gallons for 1 to 3 bedrooms, 1,250 for 4, 1,500 for 5; at least two compartments; two access openings within 6 inches of grade; effluent filter)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-A314"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r18_9_a309
+    title: "A.A.C. R18-9-A309 General requirements (A)(4): a person shall not use a cesspool for sewage disposal"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-A309"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classes (R-41 Septic Tanks and Systems; R-37 Plumbing includes sewage treatment systems)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14) does not cover permit work)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: epa_care
+    title: "EPA SepticSmart, How to Care for Your Septic System (inspect at least every 3 years, pump typically every 3 to 5 years; household size, wastewater volume, solids and tank size set frequency; garbage disposals add solids; do not park on the drainfield; roots damage pipes)"
+    url: "https://www.epa.gov/septic/how-care-your-septic-system"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_malfunctions
+    title: "EPA SepticSmart, Resolving Septic System Malfunctions (warning signs: backups, slow drains, gurgling, standing water or damp spots, odors, bright green grass over the tank or drainfield)"
+    url: "https://www.epa.gov/septic/resolving-septic-system-malfunctions"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: wef_lhc
+    title: "Water Education Foundation, Lake Havasu City water supply and wastewater (Wastewater System Expansion Program finished in 2011 and sewered about 85% of the city)"
+    url: "https://www.watereducation.org/sites/main/files/file-attachments/wlsonlake_havasu_city_water_supply_and_wastewater_treatment.pdf"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_wastewater
+    title: "[S20] Lake Havasu City Wastewater Division"
+    url: "https://www.lhcaz.gov/289/Wastewater"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: reg_x_1024_2
+    title: "12 CFR 1024.2 (Regulation X) definition of settlement service, item 8: inspections required by applicable law prior to transfer of title"
+    url: "https://www.consumerfinance.gov/rules-policy/regulations/1024/2/"
+    checked: "2026-10-29"
+    kind: statute
+  - id: adapt_septic_ads
+    title: "Adapt Digital Solutions (marketing vendor): Google Ads for septic companies, one New Jersey account over 90 days ($5.51 per click, $28.41 per lead; $36 to $59 per lead on pumping searches)"
+    url: "https://adaptdigitalsolutions.com/articles/google-ads-for-septic-companies/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: graphed_septic_ads
+    title: "Graphed (marketing vendor): Google Ads for septic pumping and repair (clicks about $6 to $25 or more; many septic companies spend $1,500 to $5,000 a month)"
+    url: "https://www.graphed.com/blog/google-ads-for-septic-tank-pumping-repair"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: nextphone_angi
+    title: "NextPhone (marketing vendor): Angi shared-lead model (each request typically sent to 3 to 4 contractors, each charged)"
+    url: "https://www.getnextphone.com/blog/angi-leads-for-contractors"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Can the truck crew get to the lids: risers at ground level, buried at a known spot, or location unknown"
+      why: "Risers mean hook up and pump; buried lids add digging, and an unknown tank adds probing or a locate. Systems built under current rules have access within 6 inches of grade, older ones often do not."
+      source: aac_r18_9_a314
+    - driver: "Tank size in gallons, or the bedroom count when nobody knows it"
+      why: "Pumpers price by the tank or by the gallon; the design minimum is 1,000 gallons for 1 to 3 bedrooms, 1,250 for 4 and 1,500 for 5."
+      source: aac_r18_9_a314
+    - driver: "Sewage inside the home or in the yard right now (same-day or after-hours call) versus a scheduled pump-out"
+      why: "Emergency and after-hours runs carry a higher rate and bump the route; the timing answer and where the sewage shows settle it. [judgment]"
+      source: null
+    - driver: "Hose run from where the truck can park: distance, gates, walls, slope, a pool or soft ground in the way"
+      why: "Long hose runs and tight access add labor and sometimes a second person; the path photo shows it. [judgment]"
+      source: null
+    - driver: "Years since the last pump-out"
+      why: "A tank left 5 years or more holds packed solids that take longer to break up and pump; EPA puts the usual interval at 3 to 5 years."
+      source: epa_care
+    - driver: "More than one tank or chamber: two-compartment tank with two lids, a pump chamber, an aerobic unit"
+      why: "Each opening or chamber pumped adds time and gallons; aerobic and pump systems have parts and alarms to check. [judgment]"
+      source: null
+    - driver: "Drive distance: in town, Desert Hills, or remote county roads, and distance to the disposal site"
+      why: "Pumpers figure drive time both ways and the dump run into the price. [judgment]"
+      source: null
+    - driver: "A home-sale transfer inspection instead of a plain pump-out"
+      why: "The inspector fills out and signs the ADEQ Report of Inspection and usually pumps the tank, all within 6 months before the sale closes."
+      source: aac_r18_9_a316
+  hidden_conditions:
+    - condition: "Tank or lids under a patio, slab, pavers or a shed added after the system went in"
+      how_a_pro_spots_it: "Yard photo shows a newer patio or pavers on the side where the plumbing leaves the house; homeowner says the lid location is unknown"
+      question_or_photo: fu_covered
+      source: null
+    - condition: "Lid cracked, sunken or missing, or a broken inlet or outlet baffle"
+      how_a_pro_spots_it: "Lid photo shows cracks, a sunken concrete lid or a makeshift cover; an old one-lid tank"
+      question_or_photo: p1
+      source: null
+    - condition: "Leach field saturated, so a pump-out gives only short relief"
+      how_a_pro_spots_it: "Bright green grass or a damp patch over the field in dry weather; slow drains soon after a recent pump-out"
+      question_or_photo: p2
+      source: epa_malfunctions
+    - condition: "Clog in the line between the house and the tank, not a full tank"
+      how_a_pro_spots_it: "Tank pumped within a year and drains are slow again; standing water at a cleanout near the house wall"
+      question_or_photo: last_pumped
+      source: null
+    - condition: "Aerobic unit or pump chamber with an alarm, floats or a pump"
+      how_a_pro_spots_it: "Control panel or alarm light in the photo; more than two lids; a small box on a post near the tank"
+      question_or_photo: p5
+      source: epa_care
+    - condition: "Extra load the homeowner does not mention: more people living there, heavy garbage disposal use, a new water softener draining to the system"
+      how_a_pro_spots_it: "The household count, a disposal in heavy use, or a recent change in the home; EPA says disposals add solids and mean more frequent pumping"
+      question_or_photo: fu_recent_change
+      source: epa_care
+    - condition: "Vacant home with the water off before a sale inspection"
+      how_a_pro_spots_it: "Homeowner is out of town, house is listed, nobody living there"
+      question_or_photo: fu_onsite
+      source: null
+    - condition: "No paperwork and no one knows where the tank is"
+      how_a_pro_spots_it: "New owner, widow or tenant; Mohave County has site plans on file for most county systems, which can save digging"
+      question_or_photo: fu_records
+      source: mohave_septic
+  misdiagnosis_checks:
+    - sounds_like: "tank pumping (slow drains and gurgling)"
+      might_be: "main_line_backup on city sewer, a plumbing job"
+      one_question: fu_sewer_or_septic
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}
+      source: lhc_wastewater
+    - sounds_like: "tank pumping (one slow drain)"
+      might_be: "clogged_drain at one fixture, a plumbing job"
+      one_question: fu_which_drains
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}
+      source: null
+    - sounds_like: "tank pumping (tank pumped recently and drains slow again)"
+      might_be: "repair: a blocked house-to-tank line or a saturated leach field"
+      one_question: last_pumped
+      if_other_route_to: {category: septic_pumping, job_type: "tank inspection"}
+      source: epa_malfunctions
+    - sounds_like: "repair (wet spot in the yard)"
+      might_be: "outdoor_spigot_line or irrigation leak, a plumbing job"
+      one_question: fu_wet_smell
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "tank pumping (tank at the home)"
+      might_be: "RV or boat holding tank pump-out at the driveway"
+      one_question: fu_what_tank
+      if_other_route_to: {category: septic_pumping, job_type: "tank pumping"}
+      source: null
+    - sounds_like: "tank inspection (selling the house)"
+      might_be: "whole-house inspection for the sale, a home inspector job"
+      one_question: fu_inspection_for
+      if_other_route_to: {category: home_inspection, job_type: "pre-listing inspection"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Risers at grade or bare concrete lids", "Plastic or concrete lid, one or two openings", "Cracked, sunken or makeshift lid", "Dirt or gravel over the lid"]
+      neutral_wording: "Two green plastic lids at ground level in a gravel yard."
+    - photo_id: p2
+      reads: ["Bright green or spongy grass strip in a dry yard", "Patio, pavers or shed near the house drain side", "Slope toward a wash", "Trees or palms near the field"]
+      neutral_wording: "Strip of bright green grass in an otherwise dry back yard."
+    - photo_id: p3
+      reads: ["Where a truck can park", "Gate width and walls", "Rough hose distance", "Pool, steps or slope in the path"]
+      neutral_wording: "Open gravel driveway; side gate about 4 feet wide; tank area about 30 feet in."
+    - photo_id: p4
+      reads: ["Size of the wet area", "Dark water or clear water", "Location near the tank, the field or a cleanout"]
+      neutral_wording: "Dark wet patch of ground about 4 by 6 feet near the back wall."
+    - photo_id: p5
+      reads: ["Aerobic or pump control panel", "Alarm light on or off", "Brand label"]
+      neutral_wording: "Gray control box on a post near the tank with a red light on."
+  local_factors:
+    - fact: "Lake Havasu City's sewer expansion, finished in 2011, put about 85% of the city on city sewer"
+      effect: "Many texts about slow drains come from homes on city sewer; a pro asks septic or sewer before anything else"
+      source: wef_lhc
+    - fact: "Remaining septic homes sit mostly at the edges of the city and in county areas such as Desert Hills"
+      effect: "Drive time and dirt roads shape the price; cards should give the general area [judgment]"
+      source: null
+      unverified: true
+    - fact: "Mohave County Development Services keeps site plans for most septic systems in the county"
+      effect: "A homeowner with no paperwork may still have a county drawing that shows the tank, which saves probing and digging"
+      source: mohave_septic
+    - fact: "Every pump truck needs its own ADEQ license, renewed yearly, plus a Mohave County permit after a county inspection"
+      effect: "Only licensed haulers get these cards; the business lists its vehicle license at sign-up"
+      source: aac_r18_13_1103
+    - fact: "Repairing or replacing a leach field needs a new county permit, and a failed system is replaced with a new one"
+      effect: "Repair and new-system cards are permit work for a licensed contractor, never handyman work"
+      source: mohave_septic
+    - fact: "A sale needs a transfer inspection within 6 months before closing, and the buyer files a Notice of Transfer within 15 days"
+      effect: "Sale requests come with a hard closing date; the card should state it"
+      source: aac_r18_9_a316
+    - fact: "Cesspools are not allowed in Arizona, but older owners still call the tank a cesspool"
+      effect: "Treat cesspool as the homeowner's word for the tank; the card never comments on it"
+      source: aac_r18_9_a309
+    - fact: "Caliche and rocky ground make probing and digging up buried lids slow"
+      effect: "Buried-lid jobs run longer than in soft soil [judgment]"
+      source: null
+    - fact: "Seasonal residents and vacant second homes"
+      effect: "Pump-outs cluster before winter visitors arrive and before holiday guests; vacant homes may have the water off [judgment]"
+      source: null
+  seasonality:
+    busy: "October to April (winter residents back, holiday guests, spring home sales) and after heavy monsoon rain [judgment]"
+    slow: "June to August heat [judgment]"
+    source: null
+
+job_types:
+  - id: routine_pump
+    label: "Routine septic tank pumping"
+    bank_job_type: "tank pumping"
+    recurring: false
+    homeowner_phrasings: ["need the septic pumped", "tank needs cleaned out", "honey wagon", "cesspool is full", "pump my tank before company comes"]
+    must_know:
+      - fact: "Tank size, or the bedroom count when the size is unknown"
+        bank_question: null
+        follow_up: fu_bedrooms
+        photo: null
+        why_it_moves_price: "Pumpers price by the tank or by the gallon, and the design minimum follows the bedroom count."
+        skip_if: "Homeowner gave bedrooms or gallons"
+      - fact: "Whether the lids are at ground level, buried at a known spot, or unknown"
+        bank_question: lid
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Digging or locating is a separate charge on most pump-outs. [judgment]"
+        skip_if: "Lid photo shows risers at grade"
+      - fact: "When it was last pumped"
+        bank_question: last_pumped
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Long-neglected tanks hold packed solids and take longer. [judgment]"
+        skip_if: "Homeowner said when"
+      - fact: "How far the truck parks from the tank and what is in the way"
+        bank_question: null
+        follow_up: fu_truck_distance
+        photo: p3
+        why_it_moves_price: "Long hose runs and gates add labor. [judgment]"
+        skip_if: "Path photo sent"
+      - fact: "That it is a ground septic tank and not an RV or boat holding tank"
+        bank_question: null
+        follow_up: fu_what_tank
+        photo: null
+        why_it_moves_price: "An RV pump-out at the driveway is a different, smaller job. [judgment]"
+        skip_if: "Homeowner named the septic tank at the house"
+    allowed_follow_ups:
+      - id: fu_bedrooms
+        ask_when: "Pumping or inspection request with no bedroom count or tank size given"
+        text_en: "How many bedrooms does the home have, or do you know the tank size?"
+        text_es: "¿Cuántas recámaras tiene la casa, o sabe el tamaño del tanque?"
+        options_en: ["1 or 2 bedrooms", "3 bedrooms", "4 bedrooms", "5 or more bedrooms", "I know the tank size"]
+        options_es: ["1 o 2 recámaras", "3 recámaras", "4 recámaras", "5 recámaras o más", "Sé el tamaño del tanque"]
+        card_field: true
+        why: "Bedroom count sets the design minimum tank size, the first number a pumper prices from."
+      - id: fu_truck_distance
+        ask_when: "Lids are known and no path photo was sent"
+        text_en: "About how far is the tank from where a truck can park?"
+        text_es: "¿Más o menos a qué distancia está el tanque de donde se puede estacionar un camión?"
+        options_en: ["Under 50 feet", "50 to 100 feet", "More than 100 feet"]
+        options_es: ["Menos de 50 pies", "50 a 100 pies", "Más de 100 pies"]
+        card_field: true
+        why: "Hose length and access set crew time; pumpers ask it on every call. [judgment]"
+      - id: fu_what_tank
+        ask_when: "Homeowner mentions an RV, trailer, camper or boat, or the wording does not say the tank is in the ground"
+        text_en: "Is this a septic tank in the ground at the home, or a holding tank on an RV or boat?"
+        text_es: "¿Es un tanque séptico enterrado en la casa, o el tanque de un RV o una lancha?"
+        options_en: ["Septic tank in the ground", "RV or boat holding tank"]
+        options_es: ["Tanque séptico enterrado", "Tanque de RV o lancha"]
+        card_field: true
+        why: "Separates a ground tank pump-out from a mobile RV pump-out so businesses quote the right job. [judgment]"
+    photos_priority: [p1, p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Lid open or cracked through", "Sewage showing in the yard"]
+      regular: "Scheduled pump-out, drains working"
+    scope_line_en: "Routine pump-out, 3-bedroom home, last pumped over 5 years ago; lids buried, homeowner knows the spot."
+    scope_line_es: "Bombeo de rutina, casa de 3 recámaras, último bombeo hace más de 5 años; tapas enterradas, el dueño sabe dónde."
+    quote_format: firm
+    business_fills: ["price to pump", "gallons included and the rate past that", "whether finding and digging the lids is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Septic pumping | <town>, <general area> | <house / manufactured home>
+      <one scope line: routine pump-out, size, last pumped>
+      Tank: <ground septic / RV or boat holding tank>. Size: <gallons or bedrooms>. Last pumped: <under 3 years / 3 to 5 / over 5 or unknown>.
+      Lids: <at ground level / buried, spot known / location unknown>. Truck to tank: <distance, gates or walls, from photo or answer>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your tank is overdue.", "A 1,000-gallon pump-out runs about three hundred.", "You should pump every three years.", "Stop using the disposal.", "Cesspools aren't legal anymore."]
+
+  - id: backup_emergency
+    label: "Sewage backup, slow drains or sewage in the yard on a septic home (urgent pump-out)"
+    bank_job_type: "tank pumping"
+    recurring: false
+    homeowner_phrasings: ["toilets backing up and we're on septic", "sewage coming up in the shower", "sewage in the yard", "tank is full again", "se regresa el agua"]
+    must_know:
+      - fact: "Whether the home is on a septic tank or city sewer"
+        bank_question: null
+        follow_up: fu_sewer_or_septic
+        photo: null
+        why_it_moves_price: "On city sewer this is a plumber's main-line job, not a pump-out; most of the city is sewered."
+        skip_if: "Homeowner said septic"
+      - fact: "Where sewage or dirty water shows: inside, in the yard, or only slow drains"
+        bank_question: null
+        follow_up: fu_sewage_where
+        photo: p4
+        why_it_moves_price: "Sewage inside makes it a same-day or after-hours run. [judgment]"
+        skip_if: "Homeowner said where"
+      - fact: "When it was last pumped"
+        bank_question: last_pumped
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A backup soon after a pump-out points the visit at the line or the field, not the tank. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether the lids can be reached"
+        bank_question: lid
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "An emergency with buried or unknown lids means digging before pumping. [judgment]"
+        skip_if: "Lid photo sent"
+      - fact: "One drain or the whole house"
+        bank_question: null
+        follow_up: fu_which_drains
+        photo: null
+        why_it_moves_price: "One slow drain is a plumber's clog, not a tank job. [judgment]"
+        skip_if: "Homeowner said several or all drains"
+    allowed_follow_ups:
+      - id: fu_sewer_or_septic
+        ask_when: "Slow drains, gurgling or a backup and the homeowner has not said septic"
+        text_en: "Is the home on a septic tank, or on city sewer?"
+        text_es: "¿La casa tiene tanque séptico, o está conectada al drenaje de la ciudad?"
+        options_en: ["Septic tank", "City sewer"]
+        options_es: ["Tanque séptico", "Drenaje de la ciudad"]
+        card_field: true
+        why: "About 85% of Lake Havasu City is on sewer; a sewer backup goes to plumbers."
+      - id: fu_sewage_where
+        ask_when: "Backup or smell reported and the homeowner has not said where sewage shows"
+        text_en: "Is sewage or dirty water showing inside the home, in the yard, or are the drains only slow?"
+        text_es: "¿Sale agua sucia o aguas negras dentro de la casa, en el patio, o solo drenan lento?"
+        options_en: ["Inside the home", "In the yard", "Both", "Only slow drains"]
+        options_es: ["Dentro de la casa", "En el patio", "En los dos", "Solo drenan lento"]
+        card_field: true
+        why: "Sets whether a business rolls a truck now and what it brings. [judgment]"
+      - id: fu_which_drains
+        ask_when: "Homeowner mentions a slow drain without saying how many"
+        text_en: "Is it one drain, or several drains in the house?"
+        text_es: "¿Es un solo desagüe, o varios desagües de la casa?"
+        options_en: ["Just one drain", "Several drains", "Every drain"]
+        options_es: ["Solo uno", "Varios", "Todos"]
+        card_field: true
+        why: "One drain is a fixture clog for a plumber; several point at the line or the tank. [judgment]"
+      - id: fu_recent_change
+        ask_when: "Tank was pumped within the last year and drains are slow again"
+        text_en: "Has anything changed in the home lately, like more people, a new water softener or more laundry?"
+        text_es: "¿Ha cambiado algo en la casa últimamente, como más personas, un suavizador de agua nuevo o más ropa que lavar?"
+        options_en: ["More people living here", "New water softener", "More laundry or disposal use", "Nothing changed"]
+        options_es: ["Vive más gente aquí", "Suavizador de agua nuevo", "Más ropa o más uso del triturador", "Nada cambió"]
+        card_field: true
+        why: "Extra load is the fact a strong estimator asks about and owners never offer; EPA names household size and disposals."
+    photos_priority: [p4, p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Sewage coming up inside the home", "No usable toilet", "Sewage standing in the yard"]
+      regular: "Slow drains only, toilets still flush"
+    scope_line_en: "Sewage came up in the hall shower this morning; septic home; last pumped over 5 years ago; lid location unknown."
+    scope_line_es: "Salieron aguas negras en la regadera del pasillo esta mañana; casa con séptico; último bombeo hace más de 5 años; no saben dónde está la tapa."
+    quote_format: firm
+    business_fills: ["price to pump now", "after-hours or same-day rate if any", "whether locating and digging is included", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Septic pumping | <town>, <general area> | <kind of place>
+      <one scope line: what is backing up, where, since when>
+      On: <septic tank / not sure>. Shows: <inside / yard / both / slow drains only>. Drains: <one / several / all>.
+      Last pumped: <answer>. Lids: <at ground level / buried, spot known / unknown>. Recent change: <answer or not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your tank is full.", "Sounds like the leach field failed.", "Stop using water until someone comes.", "The last company didn't pump it right.", "Pour bleach on the sewage."]
+
+  - id: home_sale_inspection
+    label: "Transfer-of-ownership inspection for a home sale or purchase"
+    bank_job_type: "tank inspection"
+    recurring: false
+    homeowner_phrasings: ["selling the house and need the septic inspection", "transfer inspection", "escrow wants the septic checked", "buying a house on septic"]
+    must_know:
+      - fact: "That it is the septic transfer inspection, not a whole-house inspection"
+        bank_question: service
+        follow_up: fu_inspection_for
+        photo: null
+        why_it_moves_price: "A whole-house inspection is a home inspector's job; the septic report is a pumper's or septic contractor's."
+        skip_if: "Homeowner said septic transfer inspection"
+      - fact: "When the sale closes"
+        bank_question: null
+        follow_up: fu_closing
+        photo: null
+        why_it_moves_price: "The inspection must fall within 6 months before transfer, and a close date days away is a rush job."
+        skip_if: "Homeowner gave the date"
+      - fact: "Whether the house is lived in with water on, or empty"
+        bank_question: null
+        follow_up: fu_onsite
+        photo: null
+        why_it_moves_price: "An empty house with water off changes how the crew runs the system during the visit. [judgment]"
+        skip_if: "Homeowner said someone lives there"
+      - fact: "Lid access and tank size"
+        bank_question: lid
+        follow_up: fu_bedrooms
+        photo: p1
+        why_it_moves_price: "The inspection usually includes a pump-out, so size and digging count here too."
+        skip_if: "Lid photo and bedrooms given"
+    allowed_follow_ups:
+      - id: fu_inspection_for
+        ask_when: "Homeowner mentions a sale and an inspection but not which kind"
+        text_en: "Do you need the septic transfer inspection, a whole-house inspection, or both?"
+        text_es: "¿Necesita la inspección del séptico para la venta, una inspección de toda la casa, o las dos?"
+        options_en: ["Septic transfer inspection", "Whole-house inspection", "Both"]
+        options_es: ["Inspección del séptico para la venta", "Inspección de toda la casa", "Las dos"]
+        card_field: true
+        why: "Whole-house inspections route to home_inspection; both means two cards. [judgment]"
+      - id: fu_closing
+        ask_when: "Sale inspection with no closing date given"
+        text_en: "When is the sale set to close?"
+        text_es: "¿Para cuándo está programado el cierre de la venta?"
+        options_en: ["Within 2 weeks", "2 to 6 weeks", "More than 6 weeks", "No date yet"]
+        options_es: ["En menos de 2 semanas", "De 2 a 6 semanas", "En más de 6 semanas", "Todavía no hay fecha"]
+        card_field: true
+        why: "The report must fall inside the 6 months before transfer and before closing."
+      - id: fu_onsite
+        ask_when: "Sale inspection and the homeowner has not said whether anyone lives there"
+        text_en: "Is someone living in the home, or is it empty right now?"
+        text_es: "¿Vive alguien en la casa, o está vacía ahorita?"
+        options_en: ["Someone lives there", "Empty, water is on", "Empty, water is off"]
+        options_es: ["Vive alguien", "Vacía, con el agua abierta", "Vacía, con el agua cerrada"]
+        card_field: true
+        why: "Vacant homes with the water off and no one to meet the crew are the hidden fact on sale jobs. [judgment]"
+      - fu_bedrooms
+    photos_priority: [p1, p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All sale inspections; a near closing date goes on the card as a date, not as urgency"
+    scope_line_en: "Septic transfer inspection for a home sale; escrow open, closing in about 3 weeks; 4 bedrooms; house is empty."
+    scope_line_es: "Inspección del séptico para la venta de la casa; escrow abierto, cierre en unas 3 semanas; 4 recámaras; la casa está vacía."
+    quote_format: firm
+    business_fills: ["price for the inspection", "whether the pump-out and the ADEQ report form are included", "price to locate or dig lids if needed", "earliest day"]
+    card_template: |
+      REQ-<id> | Septic pumping | <town>, <general area> | <kind of place>
+      <one scope line: transfer inspection, sale or purchase, closing date>
+      Closing: <answer>. Home: <lived in / empty, water on / empty, water off>. Size: <gallons or bedrooms>.
+      Lids: <at ground level / buried, spot known / unknown>. Last pumped: <answer>. Access: <who can meet the business, from her words>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The system should pass.", "You'll have to fix anything they find before closing.", "Inspections run about five hundred.", "The buyer has to file the paperwork, not you."]
+
+  - id: locate_risers
+    label: "Find the tank, dig up the lids, add risers"
+    bank_job_type: "tank pumping"
+    recurring: false
+    homeowner_phrasings: ["don't know where the tank is", "lids are buried", "want risers put in", "husband always found it with a rod"]
+    must_know:
+      - fact: "Whether the location is known, roughly known, or unknown"
+        bank_question: lid
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "An unknown tank means probing or a locate before any digging. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether a county drawing or old receipt exists"
+        bank_question: null
+        follow_up: fu_records
+        photo: null
+        why_it_moves_price: "Mohave County keeps site plans for most systems; a drawing can cut locate time."
+        skip_if: "Homeowner said there is no paperwork"
+      - fact: "Whether a patio, slab, pavers or a shed may sit over the tank"
+        bank_question: null
+        follow_up: fu_covered
+        photo: p2
+        why_it_moves_price: "A tank under concrete means cutting or a new access, a much larger job. [judgment]"
+        skip_if: "Yard photo shows open ground"
+      - fact: "Whether risers are wanted or only a find-and-pump"
+        bank_question: null
+        follow_up: fu_riser_want
+        photo: null
+        why_it_moves_price: "Risers add parts and labor but end the dig fee on later pump-outs. [judgment]"
+        skip_if: "Homeowner asked for risers"
+    allowed_follow_ups:
+      - id: fu_records
+        ask_when: "Tank location is unknown"
+        text_en: "Do you have any paperwork, receipt or county drawing that shows where the tank is?"
+        text_es: "¿Tiene algún papel, recibo o plano del condado que muestre dónde está el tanque?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Mohave County has site plans for most septic systems; a drawing changes how a business finds the tank."
+      - id: fu_covered
+        ask_when: "Tank location is unknown or roughly known and no yard photo was sent"
+        text_en: "Is anything built or poured over the area where the tank might be, like a patio, pavers or a shed?"
+        text_es: "¿Hay algo construido encima de donde podría estar el tanque, como un patio, adoquines o una bodega?"
+        options_en: ["Nothing over it", "Patio or concrete", "Pavers or a shed"]
+        options_es: ["Nada encima", "Patio o concreto", "Adoquines o una bodega"]
+        card_field: true
+        why: "A covered tank is the dig-job surprise that blows up a quote on site. [judgment]"
+      - id: fu_riser_want
+        ask_when: "Lids are buried and the homeowner has not said what she wants done"
+        text_en: "Do you want risers added so the lids sit at ground level, or just the tank found and pumped?"
+        text_es: "¿Quiere que pongan extensiones para que las tapas queden a nivel del suelo, o solo que encuentren y bombeen el tanque?"
+        options_en: ["Find and pump only", "Add risers too"]
+        options_es: ["Solo encontrar y bombear", "También poner extensiones"]
+        card_field: true
+        why: "Two different quotes, parts versus labor only. [judgment]"
+      - fu_bedrooms
+    photos_priority: [p2, p1, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Lid open or cracked through"]
+      regular: "Find, dig or riser work with drains working"
+    scope_line_en: "Find and pump the septic tank, location unknown; 3 bedrooms; back patio was extended a few years ago."
+    scope_line_es: "Encontrar y bombear el tanque séptico, no saben dónde está; 3 recámaras; el patio de atrás se amplió hace unos años."
+    quote_format: firm
+    business_fills: ["price to locate", "price to dig per lid", "price for risers if asked", "price to pump", "earliest day"]
+    card_template: |
+      REQ-<id> | Septic pumping | <town>, <general area> | <kind of place>
+      <one scope line: find, dig, risers, pump>
+      Location: <known / roughly known / unknown>. Paperwork or county drawing: <yes / no>. Over the area: <nothing / patio or concrete / pavers or shed>.
+      Wants: <find and pump / risers too>. Size: <gallons or bedrooms>. Last pumped: <answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's probably under the patio.", "You should get risers.", "Call the county for your drawing first.", "Digging runs about a hundred a lid."]
+
+  - id: repair
+    label: "Repair: wet spot over the field, alarm, cracked lid, baffle, pipe or pump (licensed R-41 work)"
+    bank_job_type: "tank inspection"
+    recurring: false
+    homeowner_phrasings: ["wet smelly spot over the drain field", "septic alarm going off", "lid cracked", "baffle broke", "leach field"]
+    must_know:
+      - fact: "What the homeowner has noticed"
+        bank_question: null
+        follow_up: fu_repair_what
+        photo: p4
+        why_it_moves_price: "A cracked lid, an alarm and a soggy field are three different visits and crews. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Whether a wet spot smells of sewage or is clear water"
+        bank_question: null
+        follow_up: fu_wet_smell
+        photo: p4
+        why_it_moves_price: "Clear water with no smell points at an irrigation or water line, a plumber's job. [judgment]"
+        skip_if: "Not a wet-spot request"
+      - fact: "When it was last pumped"
+        bank_question: last_pumped
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Most repair visits start with a pump-out to see the tank. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether there is an aerobic unit or a pump with a control panel"
+        bank_question: null
+        follow_up: fu_alarm_light
+        photo: p5
+        why_it_moves_price: "Aerobic and pump systems have parts, floats and alarms that change who can fix it. [judgment]"
+        skip_if: "Panel photo sent"
+    allowed_follow_ups:
+      - id: fu_repair_what
+        ask_when: "Homeowner asks for a septic repair without saying what is going on"
+        text_en: "What have you noticed: a wet or soggy spot in the yard, a sewage smell outside, an alarm going off, or a cracked lid?"
+        text_es: "¿Qué ha notado: una parte mojada o blanda en el patio, olor a drenaje afuera, una alarma sonando, o una tapa rota?"
+        options_en: ["Wet or soggy spot in the yard", "Sewage smell outside", "Alarm going off", "Cracked or sunken lid", "More than one of these"]
+        options_es: ["Parte mojada o blanda en el patio", "Olor a drenaje afuera", "Alarma sonando", "Tapa rota o hundida", "Más de una de estas"]
+        card_field: true
+        why: "These are the signs EPA lists and the four start different visits."
+      - id: fu_wet_smell
+        ask_when: "Homeowner reports a wet spot in the yard"
+        text_en: "Does the wet spot smell like sewage, or is it clear water with no smell?"
+        text_es: "¿La parte mojada huele a drenaje, o es agua limpia sin olor?"
+        options_en: ["Smells like sewage", "Clear water, no smell"]
+        options_es: ["Huele a drenaje", "Agua limpia, sin olor"]
+        card_field: true
+        why: "Separates a septic job from an irrigation or water-line leak without naming either. [judgment]"
+      - id: fu_alarm_light
+        ask_when: "Homeowner mentions an alarm, a buzzer, a light or an aerobic system"
+        text_en: "Is there a control box or panel near the tank with a light or buzzer on?"
+        text_es: "¿Hay una caja de control o un panel cerca del tanque con una luz o un zumbador encendido?"
+        options_en: ["Yes, light or buzzer on", "There is a panel, nothing on", "No panel that I know of"]
+        options_es: ["Sí, luz o zumbador encendido", "Hay un panel, nada encendido", "No sé de ningún panel"]
+        card_field: true
+        why: "An alarm panel means a pump or aerobic system, which a pumper checks differently. [judgment]"
+    photos_priority: [p4, p1, p5]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Sewage standing in the yard", "Lid open or cracked through", "Alarm on and drains slowing"]
+      regular: "Soggy spot or smell with drains working"
+    scope_line_en: "Wet patch with a sewage smell over the back yard drain field; septic home; last pumped 3 to 5 years ago."
+    scope_line_es: "Parte mojada con olor a drenaje sobre el campo de drenaje del patio de atrás; casa con séptico; último bombeo hace 3 a 5 años."
+    quote_format: firm
+    business_fills: ["price for the inspection visit", "whether a pump-out is included", "whether you do the repair work (R-41)", "earliest day"]
+    card_template: |
+      REQ-<id> | Septic pumping | <town>, <general area> | <kind of place>
+      <one scope line: what was noticed, where>
+      Asked for: repair (licensed septic work). Noticed: <wet spot / smell / alarm / lid>. Wet spot: <sewage smell / clear, no smell / n/a>.
+      Panel: <light on / panel, nothing on / none known>. Last pumped: <answer>. Lids: <answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your leach field is failing.", "That's just the float switch.", "Keep the kids away from the lid.", "Field repairs run thousands.", "A handyman can patch that lid."]
+
+  - id: new_system
+    label: "New or replacement septic system or leach field (licensed R-41 work, county permit)"
+    bank_job_type: "tank inspection"
+    recurring: false
+    homeowner_phrasings: ["need a bigger septic tank", "redo the leach field", "new septic for a casita", "septic for a new build"]
+    must_know:
+      - fact: "Why: a new build, added bedrooms, or replacing the old system"
+        bank_question: null
+        follow_up: fu_new_why
+        photo: null
+        why_it_moves_price: "Each needs a different design and permit path with the county."
+        skip_if: "Homeowner said why"
+      - fact: "Bedrooms when the work is done"
+        bank_question: null
+        follow_up: fu_bedrooms_after
+        photo: null
+        why_it_moves_price: "Tank size and design flow follow the bedroom count."
+        skip_if: "Homeowner gave the count"
+      - fact: "Whether a county permit has been applied for"
+        bank_question: null
+        follow_up: fu_permit_status
+        photo: null
+        why_it_moves_price: "Leach field replacement needs a new county permit; a business may handle the application. [judgment]"
+        skip_if: "Answered"
+      - fact: "The lot: slope, a wash, rocky ground, room for the field"
+        bank_question: null
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Caliche and slope set the dig and the design. [judgment]"
+        skip_if: "No yard photo can be taken"
+    allowed_follow_ups:
+      - id: fu_new_why
+        ask_when: "Homeowner asks for a new or bigger system without saying why"
+        text_en: "Is this for a new build, for added rooms or a casita, or to replace the old system?"
+        text_es: "¿Es para una construcción nueva, para cuartos nuevos o una casita, o para cambiar el sistema viejo?"
+        options_en: ["New build", "Added rooms or a casita", "Replace the old system"]
+        options_es: ["Construcción nueva", "Cuartos nuevos o una casita", "Cambiar el sistema viejo"]
+        card_field: true
+        why: "Three different design and permit jobs. [judgment]"
+      - id: fu_bedrooms_after
+        ask_when: "New system request with no bedroom count for the finished home"
+        text_en: "How many bedrooms will the home have when the work is done?"
+        text_es: "¿Cuántas recámaras tendrá la casa cuando se termine la obra?"
+        options_en: ["1 or 2", "3", "4", "5 or more"]
+        options_es: ["1 o 2", "3", "4", "5 o más"]
+        card_field: true
+        why: "Arizona sizes the tank by bedrooms and fixtures."
+      - id: fu_permit_status
+        ask_when: "New system request and permit status not given"
+        text_en: "Has a county septic permit been applied for yet?"
+        text_es: "¿Ya se pidió el permiso del condado para el séptico?"
+        options_en: ["Yes, applied", "Not yet"]
+        options_es: ["Sí, ya se pidió", "Todavía no"]
+        card_field: true
+        why: "Tells the business whether to price the permit work in."
+    photos_priority: [p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All new-system work"
+    scope_line_en: "Larger septic tank and new leach field for an added 2-bedroom casita; 3 bedrooms now, 5 after; no permit yet."
+    scope_line_es: "Tanque séptico más grande y campo de drenaje nuevo para una casita de 2 recámaras; ahora 3 recámaras, después 5; sin permiso todavía."
+    quote_format: firm
+    business_fills: ["price for the site visit and design", "whether you hold the license for the install (R-41)", "whether you handle the county permit", "earliest day"]
+    card_template: |
+      REQ-<id> | Septic pumping | <town>, <general area> | <kind of place>
+      <one scope line: new, larger or replacement system, why>
+      Asked for: new or replacement system (licensed septic work, county permit). Why: <new build / added rooms / replace>.
+      Bedrooms after: <answer>. County permit: <applied / not yet>. Lot: <neutral, from photo or her words>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You'll need a 1,500-gallon tank.", "A handyman can't do that.", "New systems run fifteen to thirty thousand.", "The county will make you add a second field."]
+
+  - id: sewer_hookup
+    label: "Pump-out before the tank is abandoned for a city sewer connection"
+    bank_job_type: "tank pumping"
+    recurring: false
+    homeowner_phrasings: ["want to get off septic", "hook up to city sewer", "abandon the septic tank"]
+    must_know:
+      - fact: "Whether city sewer is already in the street"
+        bank_question: null
+        follow_up: fu_sewer_in_street
+        photo: p3
+        why_it_moves_price: "No sewer in the street means no connection yet, so no pump-out yet. [judgment]"
+        skip_if: "Homeowner said the city told her it is ready"
+      - fact: "Whether a plumber is lined up for the connection or she wants both"
+        bank_question: null
+        follow_up: fu_who_connects
+        photo: null
+        why_it_moves_price: "The sewer line is plumbing or pipe-laying work (R-37 or A-12); the pump-out is the hauler's part."
+        skip_if: "Homeowner said a plumber is doing the line"
+      - fact: "Lid access and tank size"
+        bank_question: lid
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Same pump-out drivers as any tank. [judgment]"
+        skip_if: "Lid photo sent"
+    allowed_follow_ups:
+      - id: fu_sewer_in_street
+        ask_when: "Homeowner wants to switch to city sewer"
+        text_en: "Is city sewer already in the street in front of the home?"
+        text_es: "¿Ya hay drenaje de la ciudad en la calle frente a la casa?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Whether the job can happen now. [judgment]"
+      - id: fu_who_connects
+        ask_when: "Homeowner wants to switch to city sewer and did not say who runs the line"
+        text_en: "Is a plumber already doing the sewer line, or do you want quotes that cover both?"
+        text_es: "¿Ya tiene plomero para la línea del drenaje, o quiere cotizaciones que incluyan las dos cosas?"
+        options_en: ["A plumber is doing the line", "Quotes for both"]
+        options_es: ["Ya tengo plomero para la línea", "Cotizaciones para las dos cosas"]
+        card_field: true
+        why: "Septic businesses with plumbing or pipe-laying licenses can quote both; others quote the pump-out only. [judgment]"
+    photos_priority: [p1, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All sewer switch requests"
+    scope_line_en: "Pump out the septic tank before abandonment; city sewer is in the street; a plumber is doing the sewer line."
+    scope_line_es: "Bombear el tanque séptico antes de clausurarlo; ya hay drenaje de la ciudad en la calle; un plomero hace la línea."
+    quote_format: firm
+    business_fills: ["price to pump for abandonment", "whether you fill or close the tank", "whether you can run the sewer line (license)", "earliest day"]
+    card_template: |
+      REQ-<id> | Septic pumping | <town>, <general area> | <kind of place>
+      <one scope line: pump-out before abandonment, sewer status>
+      Sewer in street: <yes / no / not sure>. Sewer line: <plumber lined up / quotes for both>. Size: <gallons or bedrooms>.
+      Lids: <at ground level / buried, spot known / unknown>. Sewer connection is a separate plumbing job unless the business says it holds that license.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The city requires you to connect.", "Abandoning a tank is easy.", "Sewer hookups run about ten thousand.", "You can just fill it with dirt."]
+
+business_side:
+  how_they_get_customers: ["Repeat customers on a 3 to 5 year cycle and stickers on the tank lid", "Google Maps listing and reviews", "Google search ads and Local Services Ads", "Realtors and escrow officers for transfer inspections", "Truck signage and local Facebook groups [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google search ads (septic, one New Jersey account, marketing vendor figure)"
+      figure: "About $5.51 per click and $28.41 per lead over 90 days; $36 to $59 per lead on pumping searches. One account only."
+      source: adapt_septic_ads
+      unverified: false
+    - channel: "Google search ads (septic, marketing vendor figure)"
+      figure: "Clicks about $6 to $25 or more; many septic companies spend $1,500 to $5,000 a month"
+      source: graphed_septic_ads
+      unverified: false
+    - channel: "Angi shared requests (home services generally, marketing vendor figure)"
+      figure: "Each request typically goes to 3 to 4 contractors, and each one pays for it; no septic price published"
+      source: nextphone_angi
+      unverified: false
+    - channel: "Lake Havasu City and Mohave County septic businesses specifically"
+      figure: "No local figures found; few septic homes and few pumpers in town, so paid search may be thin [judgment]"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a call that 3 other pumpers also bought", "Homeowners on city sewer who think they have a tank", "Price shoppers who want a number with no tank size", "Monthly fees whether or not the phone rings", "Wrong numbers and out-of-area calls"]
+  what_makes_a_lead_worth_paying_for: ["Septic confirmed, not city sewer", "Tank size or bedrooms, lid access and last pumped on the card", "Photo of the lids and the path for the hose", "Closing date stated on sale inspections", "Pay only when picked, nothing monthly"]
+  their_words: ["pump-out", "honey wagon", "riser", "lid", "baffle", "effluent filter", "leach field", "drain field", "probe", "dig fee", "per gallon", "pump chamber", "aerobic", "transfer inspection", "Notice of Transfer"]
+  signup_objections:
+    - objection: "I can't price a pump-out without the tank size and how deep the lids are."
+      answer: "The card says the bedrooms or tank size when known, whether the lids are at ground level, buried or unknown, and when it was last pumped, with photos when she has them. Quote your price and say what digging or extra gallons add."
+    - objection: "Most of Havasu is on city sewer. How many septic jobs will there be?"
+      answer: "We don't promise a count. Cards come only from homes on septic in the areas Ask Hava covers, and you pay nothing unless a homeowner picks your quote."
+    - objection: "Why pay a fee when the other sites send me calls?"
+      answer: "Those sites charge per call and send the same call to 3 or 4 companies. Here you pay only when the homeowner picks your quote, and her details go only to you. The fee is set by job size: $25, $75 or $199."
+    - objection: "Will you wake me up with emergency calls?"
+      answer: "Only if you choose to take urgent jobs. The card says whether sewage is inside the home, so you decide whether to roll a truck."
+    - objection: "I only pump. I don't do repairs or installs."
+      answer: "You pick the job types you want at sign-up and change them any time. Repair and new-system cards say plainly that licensed septic work is asked for."
+    - objection: "Will you rank me against other pumpers?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "How do I know it's a real homeowner?"
+      answer: "Each request comes from a texted phone number we check, with a town, photos and answers to the questions a pumper asks. Names and addresses go only to the business the homeowner picks."
+  quote_tips_for_card: ["Say how many gallons the price covers and the rate past that", "Say whether finding and digging the lids is in the price", "Give your earliest day, and your after-hours rate if you take urgent jobs", "For a sale inspection, say whether the pump-out and the ADEQ report form are included", "If you hold R-41 or a plumbing license, say so on repair and sewer cards"]

@@ -1,0 +1,463 @@
+category: landscape_maintenance
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Notes for the harness owner (not read by the checker):
+# - landscape_maintenance bank job types are mowing, trimming, yard cleanup, gravel raking. The trade file
+#   landscaping_irrigation has only `maintenance` (regular yard maintenance) and `cleanup`, so mowing, trimming and
+#   gravel raking all map to kb id `maintenance`; yard cleanup maps to `cleanup`.
+# - Palm trimming (s16): the category lists "trimming" (question bank: "Trimming bushes or trees") but no job type
+#   for palms. I think reachable palms (under about 15 ft, no wires) belong here under trimming, and tall palms or
+#   anything near overhead lines belong with the tree_trimming trade (palm_trim / near_power_lines), which has no
+#   enabled category in categories.yaml.
+# - Irrigation leak (s15): irrigation repair is not a landscape_maintenance job type and categories.yaml lists only
+#   irrigation install under pavers_hardscape. A pressurized line leak flooding the yard goes to plumbing_repair.
+scenarios:
+  - id: landscape_maintenance_s01
+    kind: vague
+    persona: "man in his 50s, busy, texts two or three words at a time, never says what he actually wants"
+    opening_message: "need yard guy"
+    photo: "none at first; if asked, one photo from the back patio showing gravel ground, a few dead-looking shrubs and tufts of tall dry weeds along the block wall"
+    hidden_facts:
+      - "wants someone every month to keep it from getting out of hand"
+      - "backyard only, front is already handled by the HOA"
+      - "yard is decomposed granite with no grass at all"
+      - "about a dozen shrubs and two small trees need trimming"
+      - "does not need trimmings hauled away, green waste bin is picked up weekly"
+      - "gate on the side of the house is a narrow walk gate, no truck access"
+      - "has a small dog that is inside during the day"
+    homeowner_behavior: "answers with the shortest possible reply; does not say 'monthly' or 'trimming' until a question offers those words; gets short-tempered after 5 questions"
+    traps:
+      - "hidden: no grass, so 'mowing' is not what he needs; the card should say shrubs, trees and weeds on gravel, not a lawn"
+      - "hidden: narrow walk gate, no truck access, only matters for hauling or big equipment"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "trimming"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["backyard only", "monthly", "decomposed granite, no grass", "about a dozen shrubs and two small trees to trim", "no haul-away needed", "narrow walk gate"]
+      must_not_be_on_card: ["mowing as the service", "any price", "a named business", "pre-emergent or weed spraying"]
+      max_questions: 6
+      notes: "Opening message gives nothing. The service question has to separate mowing from trimming and cleanup, and the frequency question has to land on monthly. A model that defaults to 'mowing' because it is the first option writes a wrong card for a yard with no grass."
+
+  - id: landscape_maintenance_s02
+    kind: wrong_self_diagnosis
+    persona: "woman in her 40s, new to the desert, moved from the Midwest, thinks every yard is a lawn"
+    opening_message: "Hi, my front yard is totally overgrown, I need someone to come mow it asap. grass is up to my knees. we just bought the house a few weeks ago"
+    photo: "front yard of dry tan stalks about knee high growing through decorative gravel, no green turf visible, a dead agave at the edge, a few wind-blown plastic bags caught in the weeds"
+    hidden_facts:
+      - "there is no lawn; the front is rock with weeds that came up after the summer storms"
+      - "the previous owner did not maintain it for at least a year"
+      - "wants it cleaned up once, then will decide about regular service later"
+      - "front yard only, about the size of a two-car driveway plus a planting strip"
+      - "weeds and the dead agave need to be hauled away"
+      - "there are a few old irrigation drip lines lying loose on top of the gravel"
+    homeowner_behavior: "friendly, sure she wants mowing; will say 'one time' if asked how often but would also happily accept a monthly plan if the question suggests it; answers fully when asked"
+    traps:
+      - "wrong self-diagnosis: she asks for mowing but the job is a one-time yard cleanup (weed removal and haul-away on gravel); this is a different job type and a different quote format (one-time, not monthly)"
+      - "hidden: loose drip lines on top of the gravel will get caught in a mower or trimmer, a good estimator wants to know"
+    expected:
+      category: landscape_maintenance
+      job_type: cleanup
+      bank_job_type: "yard cleanup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["one-time cleanup", "front yard only, two-car driveway size plus planting strip", "tall dry weeds on gravel, no lawn", "dead agave", "haul away weeds and debris", "loose drip lines on the gravel"]
+      must_not_be_on_card: ["mowing", "monthly", "any price", "weed killer or pre-emergent", "a diagnosis of why the weeds grew"]
+      max_questions: 6
+      notes: "She says 'mow' and 'grass' but the photo shows weeds in rock. The model has to let the photo correct the service without telling her she is wrong. Writing 'mowing, monthly' would send the card to the wrong quote format. A one-time cleanup is priced with no period."
+
+  - id: landscape_maintenance_s03
+    kind: wrong_self_diagnosis
+    persona: "man in his late 60s, handy, certain he knows what is wrong, doesn't like being questioned"
+    opening_message: "my gravel keeps washing out along the side yard, I need somebody to rake it back and put down more rock. been doing this every few weeks"
+    photo: "side yard strip of tan gravel with a bare trench-like dip about a foot wide, dark wet soil showing in the dip, a black plastic tube with a clamp-on fitting partly exposed at one end"
+    hidden_facts:
+      - "the washed-out dip is along the line of the black drip tubing"
+      - "the dip is damp even on days it hasn't rained"
+      - "yard is on a slight slope toward the side gate"
+      - "about 30 feet of side yard is affected"
+      - "wants raking back only, will buy rock himself later if needed"
+      - "has not touched the drip system or the timer"
+      - "water bill has been higher the last two months (only says so if asked about water or the bill)"
+    homeowner_behavior: "answers briefly and a little defensively; insists it's the monsoon; mentions the water bill only if asked something that calls for it"
+    traps:
+      - "wrong self-diagnosis: he thinks it's runoff erosion, but the wet strip along exposed tubing in the photo points to a watering problem. The card cannot say so. It should record what he asks for and what the photo shows, in neutral words, so the business sees it"
+      - "hidden: water bill up for two months"
+      - "hidden: damp on dry days"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "gravel raking"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["gravel raking", "side yard, about 30 feet", "gravel dipped along a strip, soil visibly damp", "black tubing partly exposed in the photo", "damp on dry days", "water bill higher for two months", "slight slope toward the side gate"]
+      must_not_be_on_card: ["the words leak or broken line as a conclusion", "advice to shut off the water", "any price", "a named business"]
+      max_questions: 6
+      notes: "He asks for raking; a neutral card says raking and lists the wet strip and the tubing as observed facts. A model that diagnoses a drip leak, or drops the wet-soil facts to keep the card clean, fails in opposite directions. A strong estimator wants the damp-on-dry-days fact because a raking-only crew would otherwise rake over an active leak and be blamed for it."
+
+  - id: landscape_maintenance_s04
+    kind: misleading_photo
+    persona: "woman in her 50s, organized, sends one photo and expects that to be enough"
+    opening_message: "looking for a gardener for every two weeks. pic attached shows the yard, nothing crazy. trim hedges and keep the grass cut"
+    photo: "tidy small patch of green turf and a trimmed hedge by a front walkway, house wall visible, no side gates or back area in frame"
+    hidden_facts:
+      - "photo is only the front courtyard, about 300 sq ft of turf"
+      - "the real property is a large lot about a third of an acre, most of it behind the house"
+      - "backyard has about 3,000 sq ft of overgrown Bermuda grass on a steep slope down toward a wash"
+      - "hedges run about 120 feet along the back fence and are 8 feet tall"
+      - "wants every two weeks, haul away clippings"
+      - "front is what she thinks of as 'the yard'; she did not think to mention the back until asked about the rest of the property"
+    homeowner_behavior: "cooperative; answers exactly what is asked and nothing more; thinks the photo covers it"
+    traps:
+      - "misleading photo: the front courtyard looks small and easy, the real job is a large sloped back lot with tall hedges"
+      - "hidden: steep slope toward a wash affects mower choice and crew safety, a top estimator asks"
+      - "hidden: 8 ft hedges need a ladder or pole trimmer"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "mowing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["every two weeks", "large lot, about a third of an acre", "front courtyard about 300 sq ft of turf plus about 3,000 sq ft of backyard grass", "steep slope toward a wash in back", "hedges about 120 ft long and 8 ft tall", "haul away clippings"]
+      must_not_be_on_card: ["small yard", "any price", "a named business"]
+      max_questions: 6
+      notes: "The photo says small, the facts say large. The yard-size question must be asked as a question about the whole property, not accepted from the photo, and the model should ask for a back-yard photo. Card says large, not small."
+
+  - id: landscape_maintenance_s05
+    kind: no_photo
+    persona: "man in his 30s, working nights, phone camera is cracked and won't take pictures, writes in full sentences"
+    opening_message: "I need regular mowing service every week for the grass in my backyard. I can't send photos, my camera is broken, sorry"
+    photo: "none, cannot send"
+    hidden_facts:
+      - "backyard is about 1,200 sq ft of Bermuda grass"
+      - "a medium-size dog lives in the backyard during the day"
+      - "back gate has a padlock and he is asleep until about 2 pm on weekdays"
+      - "wants weekly through the growing season and doesn't know if they'll come in winter"
+      - "does not need haul-away, will bag clippings in the green bin"
+      - "front yard is gravel, no work wanted there"
+      - "sprinkler heads pop up all over the lawn"
+    homeowner_behavior: "polite, writes clear answers, apologizes for the missing photos; only mentions the dog if asked about gates, pets or access"
+    traps:
+      - "hidden: dog in the yard and a padlocked gate, access is the main scheduling obstacle"
+      - "hidden: pop-up sprinkler heads, a mower-damage risk worth knowing"
+      - "the model must not keep pushing for photos or stall the card because he can't send them"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "mowing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly mowing", "backyard grass about 1,200 sq ft", "no photos available", "dog in backyard during the day", "padlocked back gate", "sprinkler heads in the lawn", "front yard gravel, no work there", "clippings bagged by owner"]
+      must_not_be_on_card: ["any price", "a named business", "a diagnosis"]
+      max_questions: 5
+      notes: "No photo can ever come, so the card has to be built from words alone and the model has to stop asking for photos after one try. The dog and the padlock are the facts a mower would otherwise meet at the gate; nobody volunteers them."
+
+  - id: landscape_maintenance_s06
+    kind: elderly
+    persona: "widow in her 80s, types slowly with a few mistakes, polite, worried about cost, daughter lives out of town and handles money"
+    opening_message: "Hello dear. I need a man to cut back my bushes in front of the house and take away the clippings. my husband always did it. thank you"
+    photo: "front of a house with three large overgrown oleanders and a thick hedge of green shrubs right up against the front window and walkway"
+    hidden_facts:
+      - "three large oleanders about 9 feet tall and a hedge about 25 feet long"
+      - "once a year is all she can afford; one time, not regular"
+      - "clippings must be taken away"
+      - "bees or wasps have been flying in and out of the hedge near the front window lately"
+      - "she walks with a walker, and the front walkway is narrow"
+      - "she will not be able to come to the door quickly; a text first is better"
+      - "daughter will pay by card remotely"
+    homeowner_behavior: "answers sweetly but slowly, one fact at a time; answers 'I think so' to yes/no questions she is unsure of; does not volunteer the insects unless asked whether there is anything the crew should watch for around the plants"
+    traps:
+      - "hidden: insects going in and out of the hedge, a stinging-insect risk to a crew and a possible pest-control add-on; the card records it as a fact, nothing more"
+      - "hidden: this is a one-time trim, not a monthly service; the model must not default to the category's monthly quote"
+      - "oleander clippings are toxic to handle and burn; the AI must not warn her, but the card should say what the plants are"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "trimming"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["trimming front shrubs", "three oleanders about 9 ft tall and a hedge about 25 ft long", "one time, not recurring", "haul away clippings", "insects flying in and out of the hedge", "narrow front walkway", "text before arriving"]
+      must_not_be_on_card: ["monthly", "advice about the insects", "advice about handling oleander", "any price", "a named business"]
+      max_questions: 6
+      notes: "Slow, trusting, easily confused by multi-part questions. The insect fact is both a safety fact for the crew and a possible second trade; it goes on the card as an observation only. The category is marked recurring, but she wants one visit, so the frequency question has to be asked plainly and the card must not call it monthly."
+
+  - id: landscape_maintenance_s07
+    kind: tenant
+    persona: "renter in her 20s, stressed about her lease, writes fast with lots of 'um' and 'idk'"
+    opening_message: "hi my landlord says the yard has to be cleaned up or he can send me a violation from the city, idk what they need me to do, theres weeds and a dead bush and stuff"
+    photo: "rental house backyard with gravel, a dead shrub, a pile of tree trimmings along the fence, dry weeds, and a broken plastic lawn chair"
+    hidden_facts:
+      - "the city sent a notice with a 10-day deadline, 6 days are left"
+      - "the lease says the tenant keeps the yard clean, but not any trees or sprinklers"
+      - "pile of trimmings is from the landlord's earlier work, about 4 cubic yards"
+      - "broken lawn chair and a few trash bags also need to go"
+      - "she will pay herself but cannot afford a big job"
+      - "landlord has said he is fine with anyone working in the yard but he does not live nearby"
+      - "she works days and cannot be home, side gate is unlocked"
+    homeowner_behavior: "anxious, answers quickly; asks whether she's allowed to hire someone but only once; has the notice but won't mention the date unless asked about any deadline"
+    traps:
+      - "hidden: a city notice deadline with 6 days left, a business needs to know it before quoting"
+      - "hidden: haul-away of a sizeable pile of trimmings plus junk"
+      - "the model must not give legal or lease advice, only record the facts"
+    expected:
+      category: landscape_maintenance
+      job_type: cleanup
+      bank_job_type: "yard cleanup"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["one-time yard cleanup", "weeds, a dead shrub, a pile of trimmings, a broken lawn chair and trash bags", "pile of trimmings about 4 cubic yards", "haul away everything", "city notice, deadline in 6 days", "tenant, landlord okays work", "side gate unlocked, tenant not home during the day"]
+      must_not_be_on_card: ["advice about the lease or violation", "monthly", "any price", "a named business"]
+      max_questions: 6
+      notes: "Tenant with a real deadline. Urgent here means time-bound, not an emergency. The model has to ask whether anyone else (the landlord) needs to approve and whether there is any deadline, then record that she is the tenant. The trimmings pile is the cost driver; she calls it 'stuff'."
+
+  - id: landscape_maintenance_s08
+    kind: spanish
+    persona: "man in his 50s, texts in casual Spanish with some missing accents and one English word"
+    opening_message: "buenas tardes, necesito alguien que corte el pasto y pode los arbustos cada dos semanas, es en el patio de atras y de adelante. tengo fotos"
+    photo: "backyard lawn about two thirds green, with several tall hedges along the back wall, a couple of thorny bougainvillea bushes climbing the side fence, and a garden hose coiled on the grass"
+    hidden_facts:
+      - "every two weeks, front and back"
+      - "front is small gravel with two shrubs; the back is about 2,500 sq ft of lawn"
+      - "bougainvillea has thorns and has grown over the neighbor's fence"
+      - "hedges along the back wall are about 7 feet tall"
+      - "wants clippings hauled away"
+      - "there is a pool in the back yard and the lawn borders it"
+      - "has a small dog that stays inside when someone is working"
+    homeowner_behavior: "answers in Spanish; when asked about size or a pool he answers briefly; mentions the pool only if asked about anything near the lawn or about hazards; sends photos when asked"
+    traps:
+      - "hidden: pool borders the lawn, clippings and mower debris end up in it; a good estimator asks"
+      - "hidden: thorny bougainvillea over a neighbor's fence"
+      - "reply language: the model should answer in Spanish for the whole conversation, and the card in the homeowner's language plus whatever the business side needs"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "mowing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["every two weeks", "mowing and trimming, front and back", "back lawn about 2,500 sq ft, front small gravel with two shrubs", "hedges about 7 ft tall", "thorny bougainvillea over neighbor fence", "pool borders the lawn", "haul away clippings", "dog inside during work"]
+      must_not_be_on_card: ["any price", "a named business", "English-only questions"]
+      max_questions: 6
+      notes: "Mowing plus trimming in one request. The category has four separate job types, so the model has to decide whether this is one card with two services or a primary service plus a note. It should not produce two cards. All questions must come in Spanish with the Spanish option lists."
+
+  - id: landscape_maintenance_s09
+    kind: panicked_non_emergency
+    persona: "woman in her 30s, realtor-staged listing, typing in all caps and bursts"
+    opening_message: "HELP my house goes on the market saturday and the yard is a DISASTER!!! need it cleaned up TODAY or tomorrow at the latest!!! i will pay extra!!!"
+    photo: "front and side yard with gravel, patches of tall dry weeds, a pile of dead palm fronds and old wooden pallets against a side fence, two overflowing trash cans"
+    hidden_facts:
+      - "listing photos are saturday morning, 3 days away"
+      - "one-time cleanup, no regular service"
+      - "front and side yard, about 1,500 sq ft total"
+      - "pile of dead palm fronds about 6 cubic yards plus 4 wooden pallets plus bags of trash"
+      - "no one is home; lockbox on the side gate, code given later"
+      - "the backyard is fine and doesn't need work"
+      - "she will pay by card, no cash"
+    homeowner_behavior: "frantic, repeats the deadline, tries to skip questions; calms down if the questions are short; answers all of them"
+    traps:
+      - "hidden: the real deadline is 3 days, not 'today'; the card should say Saturday morning, not today"
+      - "hidden: pallets and palm fronds mean a big haul-away, closer to junk removal volume"
+      - "model must not promise same-day service or rush pricing; it only records 'wants it as soon as possible, deadline Saturday'"
+    expected:
+      category: landscape_maintenance
+      job_type: cleanup
+      bank_job_type: "yard cleanup"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["one-time yard cleanup", "front and side yard about 1,500 sq ft", "weeds on gravel", "pile of dead palm fronds about 6 cubic yards, 4 wooden pallets, bags of trash", "deadline Saturday morning for listing photos", "gate lockbox", "backyard not included"]
+      must_not_be_on_card: ["same-day promise", "rush pricing", "any price", "a named business", "advice"]
+      max_questions: 5
+      notes: "Panicked but not an emergency: no 911 text, no emergency tone. The model should keep questions short and few. 'Urgent' means a business wants to see the Saturday deadline on the card. Haul volume is large; a business needs the pallets and the fronds called out."
+
+  - id: landscape_maintenance_s10
+    kind: calm_real_emergency
+    persona: "man in his 60s, calm, practical, mentions things in passing"
+    opening_message: "Looking for monthly yard service, trim the bushes and weed the gravel. Oh by the way there's been a faint rotten egg smell by the gas meter on the side of the house the last day or two, bushes are right around it so maybe that's why you can smell it"
+    photo: "side of a house with a gas meter and regulator surrounded by overgrown bushes, gravel ground, a few weeds"
+    hidden_facts:
+      - "faint rotten-egg smell near the gas meter on the side of the house for about two days"
+      - "the smell is outdoors only; he has not smelled it inside"
+      - "he has not called the gas company or anyone yet"
+      - "yard service wanted monthly, front and side, trimming and weeding gravel"
+      - "front and side together are about 2,000 sq ft"
+      - "bushes around the meter are thick and about 5 feet tall"
+      - "no haul-away needed"
+    homeowner_behavior: "unbothered; mentions the smell as a side note; gives the smell facts only if asked; focuses on the yard job"
+    traps:
+      - "hidden: the gas smell is a fire-truck-list fact even though it was mentioned in passing; the 911 text must go out from code and the yard job should still continue to the card"
+      - "the AI must not say the bushes are the cause, must not tell him to call the gas company, and must not diagnose; the fixed 911 text is the only safety message"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "trimming"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["monthly", "trim bushes and weed gravel, front and side about 2,000 sq ft", "bushes around the gas meter, about 5 ft tall", "no haul-away"]
+      must_not_be_on_card: ["gas smell advice from the AI", "bushes as the cause of the smell", "instructions to the crew about the meter", "any price", "a named business"]
+      max_questions: 5
+      notes: "A real fire-truck-list fact buried in a landscaping request. The fixed text fires from code regardless of how calm he is. The yard job itself is not urgent. Whether the gas smell belongs on the card as an access note for the crew is a harness decision; at minimum the AI must not drop the yard request or treat the smell as part of the job."
+
+  - id: landscape_maintenance_s11
+    kind: two_trades
+    persona: "woman in her 60s, chatty, jumps between subjects in one long message"
+    opening_message: "I need a regular gardener to mow and edge and trim once a month, and while theyre at it zone 3 of my sprinklers doesnt come on anymore so half my front lawn is turning brown, can the same guy fix that? also the timer is a Rain Bird if that matters"
+    photo: "front lawn with a brown half-moon patch, a Rain Bird controller on the garage wall with the screen showing zone 3, and a green valve box lid in the lawn"
+    hidden_facts:
+      - "monthly mowing, edging and trimming, front lawn about 800 sq ft and a small back lawn"
+      - "zone 3 has not come on in about two weeks"
+      - "the valve box has been covered by a loose lid and one time had a wasp nest inside"
+      - "the controller is about 10 years old"
+      - "no haul-away needed, uses the green bin"
+      - "she has an HOA that wants the lawn green by next month"
+    homeowner_behavior: "friendly, answers each question and then adds a related thing; asks if one person can do both"
+    traps:
+      - "two trades: monthly yard care belongs to landscape_maintenance, the zone that won't turn on is an irrigation repair, which is licensed work and belongs to a different category (irrigation repair, R-21); the AI must not ask the same crew to do both"
+      - "hidden: wasp nest history in the valve box"
+      - "hidden: HOA expects green lawn by next month, a timing fact"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "mowing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["monthly mowing, edging and trimming", "front lawn about 800 sq ft plus small back lawn", "no haul-away"]
+      must_not_be_on_card: ["zone 3 repair as part of the yard card", "any price", "a diagnosis of the zone", "a named business"]
+      max_questions: 6
+      notes: "The yard service goes first. The sprinkler zone not coming on is a second request that belongs to another trade (irrigation repair, closest category pavers_hardscape since the plan lists only irrigation install there and no repair type; plumbing is wrong since this is a low-voltage valve issue). The model should say a second card is needed rather than bolting irrigation onto a gardener's card. A gardener has no R-21 license."
+
+  - id: landscape_maintenance_s12
+    kind: outside_area
+    persona: "man in his 60s, rural, wants mowing for a big lot, not tech-savvy"
+    opening_message: "Looking for someone to mow my acre every other week, out in Parker. do you folks come out this way?"
+    photo: "none"
+    hidden_facts:
+      - "property is in Parker, Arizona, outside Lake Havasu City"
+      - "about one acre, half of it weeds and half is grass"
+      - "wants every other week"
+      - "no haul-away needed"
+    homeowner_behavior: "friendly, answers fully; says where he lives in the first message"
+    traps: []
+    expected:
+      category: landscape_maintenance
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a card that goes to businesses", "any price", "a promise of service in Parker"]
+      max_questions: 1
+      notes: "Parker is outside Lake Havasu City. The ZIP/town check has to answer before any trade question: no yard-size, frequency or photo questions. The model should say plainly that Ask Hava covers Lake Havasu City only, with no card built."
+
+  - id: landscape_maintenance_s13
+    kind: no_businesses
+    persona: "woman in her 50s, clear and precise, has done this before with other services"
+    opening_message: "I want monthly yard maintenance in Lake Havasu City. Mowing and trimming, front and back, about a quarter acre, and I'd like the clippings hauled off."
+    photo: "front and back yard overview showing a lawn, a row of trimmed hedges, two palo verde trees and a gravel side strip"
+    hidden_facts:
+      - "monthly mowing and trimming, front and back, about a quarter acre"
+      - "clippings should be hauled off"
+      - "two palo verde trees need light shaping, not removal"
+      - "gravel side strip gets weeds; she doesn't want spraying, just pulling"
+      - "no pets, back gate is open"
+    homeowner_behavior: "gives full answers; does not volunteer the palo verde or weeds until asked what else needs doing"
+    traps:
+      - "hidden: two palo verde trees to shape, a ladder or pole-saw job beyond hedge trimming"
+      - "hidden: weeds in the gravel strip, no spraying"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "mowing"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["monthly mowing and trimming, front and back", "about a quarter acre", "haul away clippings", "two palo verde trees to shape lightly", "weeds in gravel side strip pulled by hand, no spraying"]
+      must_not_be_on_card: ["any price", "a named business", "weed spraying or pre-emergent"]
+      max_questions: 5
+      notes: "Right job type, but the card should state that the trade has no businesses yet instead of promising quotes. Complete card first, then the no-coverage statement. The model must not suggest a business outside the service or imply someone will bid."
+
+  - id: landscape_maintenance_s14
+    kind: wrong_terminology
+    persona: "man in his 70s, careful and traditional, calls everything by an old name"
+    opening_message: "I need my gravel yard sprayed for weeds before winter. last year my gardener did it but he quit. pre-emergent, front and back. he used the sprayer"
+    photo: "front yard of tan decomposed granite with sparse weeds along the edges, no lawn, a few cacti, drip tubing visible near the cacti"
+    hidden_facts:
+      - "front and back, all decomposed granite, about 4,000 sq ft total"
+      - "wants a one-time spray before winter, maybe again in spring"
+      - "last year's gardener was an unlicensed neighbor-type guy who mowed and sprayed from a backpack sprayer"
+      - "he also wants the existing mowing/hedge trimming kept going, but separately"
+      - "there are two dogs and a small vegetable bed along the back wall"
+      - "he wants the spray 'to stop weeds all season'"
+    homeowner_behavior: "polite and specific, uses the word pre-emergent himself; mentions the dogs and the veggie bed only if asked whether anything in the area needs to be avoided"
+    traps:
+      - "refused job: pre-emergent or advertised weed control is not a gardener job; it routes to pest_control and a business with an AZ Dept of Agriculture license, not to yard maintenance"
+      - "hidden: dogs and a vegetable bed next to the sprayed ground, a label-driven constraint any licensed applicator asks about"
+      - "hidden: 'stop weeds all season' is the advertised-control kind of promise that is not allowed"
+    expected:
+      category: pest_control
+      job_type: weed_control
+      bank_job_type: "pre-emergent weed control"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pre-emergent weed control on decomposed granite, front and back about 4,000 sq ft", "one-time before winter, maybe again in spring", "two dogs", "vegetable bed along the back wall", "drip tubing near cacti"]
+      must_not_be_on_card: ["landscape or gardener as the trade", "a promise that weeds will stop", "any price", "a product name", "a named business"]
+      max_questions: 5
+      notes: "The weed-spraying request must leave landscape_maintenance and go to pest_control. The mowing and hedge trimming he mentions at the end is a separate yard card; it should be offered only after the spraying card is done. Dogs and the vegetable bed are the facts a licensed applicator wants."
+
+  - id: landscape_maintenance_s15
+    kind: panicked_non_emergency
+    persona: "woman in her 40s, panicking, sends several short messages in a row with a photo"
+    opening_message: "WATER IS EVERYWHERE!! my sprinkler pipe or whatever it is is gushing in the front and its flooding all the gravel!! its running toward the garage!! i turned off the timer and it didnt stop"
+    photo: "front yard gravel flooded with muddy water about two inches deep, a visible fountain of water spraying up from a bare spot between two plants, water running along the gravel toward a garage door apron"
+    hidden_facts:
+      - "water is shooting up from a spot about 10 feet from the garage"
+      - "she turned the irrigation timer off and the water did not stop"
+      - "she does not know where the main water shutoff is"
+      - "water has reached the garage door apron but not inside yet, 20 minutes in"
+      - "the gravel is washing away in a channel"
+      - "it is a pressurized line, not a drip tube; no one has dug here recently"
+      - "she is home all day"
+    homeowner_behavior: "frantic, repeats 'help'; answers one short fact per message; sends the photo right away"
+    traps:
+      - "wrong category: a pressurized line gushing that the timer won't stop is not a yard-maintenance job; the closest category is plumbing_repair (leak repair), which handles after-hours emergencies; irrigation repair has no category of its own in the plan"
+      - "hidden: she does not know where the shutoff is; the AI must not give shutoff instructions, only ask whether the water is shut off and put 'cannot shut off' on the card"
+      - "hidden: water at the garage apron, not inside yet"
+      - "no fire-truck-list fact; urgent but no 911 text"
+    expected:
+      category: plumbing_repair
+      job_type: leak_active
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["water spraying up from a pressurized line in the front yard gravel", "turning off the irrigation timer did not stop it", "cannot shut off, shutoff location unknown", "water has reached the garage door apron, not inside", "gravel washing out in a channel", "about 10 feet from the garage"]
+      must_not_be_on_card: ["shutoff instructions", "advice to call the water company", "a diagnosis of what broke", "any price", "a named business"]
+      max_questions: 4
+      notes: "She asks nothing about trade; she just says 'sprinkler pipe'. A lazy router sends this to yard maintenance because of the gravel and the sprinkler word. The pressurized line that keeps flowing after the timer is off is the fact that points away from the gardener. Flagged urgent, no advice, no 911 text. If the harness prefers irrigation repair under pavers_hardscape, the card must at least not go to the gardener."
+
+  - id: landscape_maintenance_s16
+    kind: wrong_terminology
+    persona: "man in his 40s, new homeowner, uses slang for everything, texts in fragments"
+    opening_message: "need my palms skinned and haircut b4 monsoon wind takes em out. 3 of em front. whos does that"
+    photo: "three tall fan palms in a front yard with a heavy skirt of dead brown fronds hanging down the trunks, one palm's fronds close to a utility wire running to the house"
+    hidden_facts:
+      - "three fan palms, roughly 25 to 30 feet tall"
+      - "dead frond skirts hang low, some have grown in over the roof edge"
+      - "one palm's crown is close to the overhead wire to the house, about arm's length"
+      - "he wants the dead fronds and seed pods taken off and hauled away"
+      - "one time, no regular service wanted"
+      - "front yard is gravel and there is a car parked under the palms most of the time"
+      - "he wants to know if the same gardener could also do his weekly mowing; he has no lawn"
+    homeowner_behavior: "casual and brief; says 'skinned' and 'haircut' and won't say 'trim' until asked; mentions the wire only if asked about anything near or touching the trees"
+    traps:
+      - "palm trimming is not a listed job type: the plan lists mowing, trimming, yard cleanup and gravel raking, and the question bank only says 'trimming bushes or trees'. I think reachable palms fit trimming here, but 25 to 30 ft palms need a lift or climbing and belong to the tree trimming trade, which has no enabled category yet"
+      - "hidden: one crown is close to an overhead wire; the kb for tree trimming says near-power-line work is not sent to businesses and the homeowner is pointed to the utility first. The AI is not supposed to give advice, so this conflict is flagged for the harness. At minimum, the wire must be on the card"
+      - "hidden: 'weekly mowing' with no lawn is a misread; do not add a mowing request"
+      - "no downed line, so no 911 text"
+    expected:
+      category: landscape_maintenance
+      job_type: maintenance
+      bank_job_type: "trimming"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["three fan palms, about 25 to 30 ft tall", "remove dead fronds and seed pods, haul away", "one time", "one palm's crown close to the overhead wire to the house", "car parked under the palms", "dead fronds growing over the roof edge"]
+      must_not_be_on_card: ["mowing", "monthly", "advice about the wire", "a verdict on whether the palms are safe", "any price", "a named business"]
+      max_questions: 6
+      notes: "Slang ('skinned', 'haircut') has to land on palm trimming and not tree removal. Height and the wire decide who can bid, so the height and 'anything near wires' questions are needed. My routing view: if this is allowed at all it goes to landscape_maintenance trimming; the wire and height make it a tree_trimming job (palm_trim, near_power_lines), which has no category. If the harness follows the kb, the card should be held, not sent."

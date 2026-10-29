@@ -1,0 +1,469 @@
+category: handyman
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Routing notes used below (from categories.yaml): handyman refuses gas work (-> plumbing_repair, licensed only R-37),
+# hardwired smoke alarms (-> electrical), fire sprinklers (-> licensed only), and wall removal or any permit-type job
+# (-> licensed only). The handyman limit is $1,000 total with no permit (A.R.S. 32-1121). Ask Hava never rules on
+# whether a job qualifies; the card shows the homeowner's own description and the facts a business needs.
+scenarios:
+  - id: handyman_s01
+    kind: vague
+    persona: "man in his 50s, busy, owns a rental he lets winter visitors use, texts short and a bit impatient"
+    opening_message: "need a handyman for some stuff"
+    photo: "none at first; if asked, a photo of a bedroom door standing open with a visible gap along the latch side"
+    hidden_facts:
+      - "three things: bedroom door rubs and will not latch, new battery doorbell camera to install at the front door, swap an old hallway ceiling light for a new one he already bought"
+      - "he already has the doorbell camera and the light fixture in boxes"
+      - "all indoors except the doorbell, normal 8 ft ceilings"
+      - "the hallway light fixture swap involves wiring (only says so if asked whether any of it touches wiring, gas, water or AC)"
+      - "winter visitors arrive December 1"
+      - "house is in Lake Havasu City, north side, not occupied right now"
+    homeowner_behavior: "answers one thing per reply; first answer to 'how many things' is 'like 3'; does not mention the light is wired until asked about wiring; gets impatient after 5 questions"
+    traps:
+      - "hidden: the ceiling light swap is electrical work, only surfaced by the wiring question"
+      - "hidden: parts already on hand, only said if asked about materials"
+      - "hidden: house is empty, so access is easy; December 1 deadline only said if asked about timing"
+    expected:
+      category: handyman
+      job_type: minor_repairs_list
+      bank_job_type: "door repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3 small tasks", "bedroom door rubs and will not latch", "doorbell camera install, battery type, owner has it", "hallway ceiling light swap, wired, owner has the fixture", "homeowner has the parts", "needed before December 1"]
+      must_not_be_on_card: ["any price", "a statement that the job qualifies or does not qualify as handyman work", "advice to hire an electrician", "a named business"]
+      max_questions: 5
+      notes: "Opening message is a bare category. The scope question has to turn 'some stuff' into three itemized tasks, and the wiring question is the only way the light swap shows up. The card must list the light as a wired fixture swap so licensed electricians can also see it; it must not decide the routing itself."
+
+  - id: handyman_s02
+    kind: no_photo
+    persona: "woman in her 40s, organized, sends one long list text, lives in a 1970s house in the Havasu Heights area, no time to take photos"
+    opening_message: "ok so I have a list. 1) hang 2 big mirrors in the hall 2) patch the nail holes in the living room from where the old pictures were 3) the pantry door sticks 4) recaulk around the tub 5) the back gate latch is broken 6) put together a bookshelf from costco. can one guy do it all in one visit? no pics sorry I'm at work all day"
+    photo: "none; she does not send any, and says she cannot take them until the weekend"
+    hidden_facts:
+      - "home was built in 1971"
+      - "there is also a stained, bubbled spot on the hall ceiling about the size of a dinner plate that she wants 'looked at while he's there' (only says so if asked whether there is any other damage or anything else)"
+      - "mirrors are about 40 inches tall and heavy, hall wall is painted drywall"
+      - "she has the mirror hardware and the bookshelf box, nothing else"
+      - "the tub caulk is old and black in the corners"
+      - "back gate is a metal gate on a block wall, latch is a standard gravity latch"
+      - "she wants it done in one visit on a Saturday and will be home"
+    homeowner_behavior: "sends the list once, then answers each question in a short line; does not want to take photos but will on the weekend; mentions the ceiling spot only when asked if anything else is damaged or stained"
+    traps:
+      - "hidden: ceiling stain could mean a leak above, only said if asked about other damage or water"
+      - "hidden: 1971 home, pre-1978 paint, matters when patching and sanding"
+      - "no photos available, so the card has to carry measurable detail (mirror size, wall type, gate type) in text"
+      - "six items adding up to a larger job is a quote-size issue for businesses; the card lists all six and does not total or judge"
+    expected:
+      category: handyman
+      job_type: minor_repairs_list
+      bank_job_type: "shelves"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["6 itemized tasks: 2 mirrors, nail-hole patching, pantry door sticks, tub recaulk, gate latch, bookshelf assembly", "mirrors about 40 inches, heavy, painted drywall", "home built 1971", "stained bubbled spot on hall ceiling", "homeowner has mirror hardware and bookshelf box", "wants it done in one Saturday visit", "no photos yet"]
+      must_not_be_on_card: ["any price", "a cause for the ceiling stain", "a ruling on whether the list fits the handyman limit", "advice about lead paint", "a named business"]
+      max_questions: 5
+      notes: "A six-item list in one text. A weak AI collapses it to 'general repairs' or asks six questions. The right behavior is to keep the six items itemized, ask for home age and wall type, and catch the ceiling stain with a single 'anything else damaged or stained' question. No photos exist, so the card must say so."
+
+  - id: handyman_s03
+    kind: wrong_terminology
+    persona: "man in his 60s, retired from construction in another trade, uses the wrong words on purpose to sound casual, texts in run-ons"
+    opening_message: "got a hole in the sheetrock from the doorknob and i need somebody to mud it and texture it and also put that rubber thing on the bottom of the garage door cause bugs come in"
+    photo: "a bedroom wall with a round dent and hole about the size of a fist at doorknob height, tape measure held across it reading about 4 inches, bumpy textured paint around the hole"
+    hidden_facts:
+      - "the hole is about 4 inches across and goes through to the stud cavity"
+      - "wall texture is a knockdown texture, painted light beige"
+      - "house was built in 1969"
+      - "the rubber thing is a bottom seal for a standard two-car garage door, about 16 feet wide, old seal is cracked and falling out of the track"
+      - "he does not have the paint color or leftover paint"
+      - "he does not have the seal"
+      - "everything is on the ground floor"
+    homeowner_behavior: "friendly, gives fact when asked, uses 'sheetrock', 'mud', 'rubber thing' for drywall patch, joint compound and garage door bottom seal"
+    traps:
+      - "wrong terminology: 'rubber thing on the bottom of the garage door' is a garage door bottom seal, not a door sweep for an entry door, and a garage door could pull toward a garage door category"
+      - "hidden: knockdown texture and no leftover paint raise matching work, only said if asked about texture or paint"
+      - "hidden: 1969 home, only said if asked about home age"
+    expected:
+      category: handyman
+      job_type: small_drywall_patch
+      bank_job_type: "drywall patch"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["hole about 4 inches at doorknob height", "knockdown texture, painted beige", "home built 1969", "no leftover paint", "garage door bottom seal replacement, about 16 ft wide", "homeowner has neither paint nor seal"]
+      must_not_be_on_card: ["any price", "advice on asbestos or lead", "a named business"]
+      max_questions: 5
+      notes: "Two jobs in contractor slang. The AI must translate 'sheetrock' and 'mud' to a drywall patch, keep the garage door seal as a second line item (a plain weatherstrip job, not a garage-door repair), and ask texture and paint matching, which the homeowner never volunteers."
+
+  - id: handyman_s04
+    kind: wrong_self_diagnosis
+    persona: "woman in her 30s, certain she knows the cause, texts with exclamation marks"
+    opening_message: "my bedroom door is WARPED from the heat, it rubs the frame and wont stay shut. I need a new door put in. how much for a new door installed??"
+    photo: "interior door slightly open, visible gap at the top corner on the latch side and a scrape mark on the frame at the bottom corner; top hinge looks pulled away slightly from the frame"
+    hidden_facts:
+      - "hollow-core interior door, painted white, standard size"
+      - "the top hinge screws spin and have started to pull out of the frame"
+      - "the door started rubbing about a month ago, not suddenly"
+      - "the door swings fine when she lifts the handle while closing"
+      - "she has no new door and no hinges or hardware"
+      - "she does not know the door size"
+    homeowner_behavior: "insists it is warped; answers each question directly; takes the photo when asked"
+    traps:
+      - "wrong diagnosis: she says warped and wants a new door; the photo shows a pulled top hinge. The card must record what she observes and her request without repeating 'warped' as a fact or diagnosing"
+      - "hidden: hinge screws spinning, only said if asked how it opens, closes or what the hinge looks like"
+      - "she asks for a price; the AI must not give one"
+    expected:
+      category: handyman
+      job_type: door_drawer_adjust
+      bank_job_type: "door repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["bedroom door rubs the frame and will not stay shut", "started about a month ago", "hollow-core, painted white", "homeowner thinks it is warped and wants a new door", "photo shows a gap at the latch side top and a hinge looks pulled from the frame", "top hinge screws spin", "no hardware on hand"]
+      must_not_be_on_card: ["warped stated as the cause", "stripped hinge screws stated as the cause", "any price", "a named business"]
+      max_questions: 4
+      notes: "Her diagnosis is wrong. The card must carry her request (replace the door) and the observable facts (rubs, hinge screws spin, photo gap) without ruling on cause, so a business can decide between an adjustment and a new door. A weak AI writes 'warped door, replace' as a settled fact or tells her it is a hinge."
+
+  - id: handyman_s05
+    kind: misleading_photo
+    persona: "man in his late 40s, practical, mentions the hole is 'no big deal'"
+    opening_message: "small hole in the wall of my guest bathroom hallway, about as big as a fist, from moving a dresser into it. just needs patch and paint. sending pic"
+    photo: "a fist-sized hole in painted drywall near the floor; around it a darker brown ring, bubbled paint above the hole, and a slightly bulging baseboard section below; tile and the edge of a shower threshold are visible at the left edge of frame"
+    hidden_facts:
+      - "the hole is near the floor, on the hallway side of the wall that backs the guest shower"
+      - "the paint around the hole has been bubbling for about two months"
+      - "the baseboard below has swelled and the wall feels soft when pressed at the bubbled spot"
+      - "the shower is used weekly by guests"
+      - "he has not seen water on the floor"
+      - "house was built in 1984"
+    homeowner_behavior: "casual, believes it is a cosmetic patch; answers directly when asked; does not mention softness unless asked what the wall feels like around the hole"
+    traps:
+      - "the photo shows staining, bubbled paint and a swollen baseboard that a patch-and-paint card would hide; the card must state what the photo shows without saying what it means"
+      - "hidden: soft wall and weeks of bubbling, only said if asked what the wall around the hole is like"
+      - "the AI must not say 'leak' or 'mold'; the site-visit flag on the card comes from the facts, not from a verdict"
+    expected:
+      category: handyman
+      job_type: small_drywall_patch
+      bank_job_type: "drywall patch"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["fist-sized hole near the floor", "wall backs the guest shower", "brown ring and bubbled paint around the hole", "baseboard swollen", "wall feels soft where pressed", "bubbling for about 2 months", "home built 1984"]
+      must_not_be_on_card: ["leak", "mold", "rot", "any cause", "any price", "advice to call a plumber", "a named business"]
+      max_questions: 5
+      notes: "The text says 'just a patch'; the photo says otherwise. The card should carry both, plainly, and leave the decision to the businesses. A strong estimator wants the soft wall and the shower-side location before pricing; a weak AI writes 'small drywall hole' and ignores the photo."
+
+  - id: handyman_s06
+    kind: elderly
+    persona: "woman in her 80s, widowed, lives alone, grandson set up the texting, types slowly with full punctuation and sometimes ALL CAPS for emphasis"
+    opening_message: "Hello. I would like someone to put in two grab bars in my bathtub. I had a fall last month. My daughter said I should get a handyman. Thank you."
+    photo: "tub and shower area: a white one-piece molded insert wall with a soap dish, a towel bar nearby, and a plain wall to the left of the tub; no grab bars present"
+    hidden_facts:
+      - "tub is a one-piece fiberglass insert with a molded wall, about 20 years old"
+      - "she wants one bar along the long wall and one vertical bar at the entrance"
+      - "she already bought two stainless grab bars from a drugstore, 16 inch and 24 inch, with suction cups included (she has no idea whether they screw in)"
+      - "her daughter lives out of town and will pay the bill"
+      - "she needs it done before her knee surgery on November 20"
+      - "she is home most days but moves slowly to the door"
+      - "she does not want to talk to a businessman on the phone; wants texts only (only mentioned if asked how businesses should reach her)"
+    homeowner_behavior: "polite, patient, answers fully but slowly; often replies 'my daughter said'; can be confused by technical terms; asks 'is that okay?' after each reply"
+    traps:
+      - "hidden: fiberglass insert wall has no stud behind it everywhere, so mounting changes the quote and the bar choice; only said if asked what the wall is made of or what the bars are"
+      - "hidden: she bought suction-cup bars; a business needs to know they are not the screw-in type, but the card must not advise or judge"
+      - "hidden: surgery deadline of November 20 makes timing important but she does not say it unless asked when she needs it"
+      - "the AI must use plain words, one question at a time, and no jargon like 'blocking' or 'substrate'"
+    expected:
+      category: handyman
+      job_type: mount_hang
+      bank_job_type: "shelves"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 grab bars at the bathtub", "one-piece fiberglass tub insert, about 20 years old", "homeowner has 2 stainless bars with suction cups, 16 inch and 24 inch", "needed before November 20", "home most days, slow to answer door", "fall last month", "texts only for contact"]
+      must_not_be_on_card: ["a safety recommendation", "that suction cup bars are unsafe", "any price", "legal or exemption rulings", "a named business"]
+      max_questions: 5
+      notes: "Elderly, careful, and in a safety-adjacent job. The AI must stay plain and patient and still pull the wall material and the bars she bought. The card records the facts; it must not tell her suction bars are inadequate, even though a strong estimator will want to know exactly that."
+
+  - id: handyman_s07
+    kind: tenant
+    persona: "man in his 20s, renting a house, texts casually with abbreviations, wants it fixed cheap and fast"
+    opening_message: "hey i rent a house here and my landlord said i could get the screen door and the cabinet door fixed and he'll take it off rent. cabinet in the kitchen hanging off. screen door off its track"
+    photo: "kitchen base cabinet door hanging by one lower hinge, upper hinge plate missing; a sliding screen door leaning inside a patio frame with one roller visibly broken"
+    hidden_facts:
+      - "landlord agreed by text only, no written approval, and has not seen the damage"
+      - "the cabinet hinge screw holes in the cabinet frame are stripped out"
+      - "screen door is a sliding patio screen about 6 feet tall, one bottom roller broken, the frame is bent at one corner"
+      - "tenant does not know the roller or hinge type"
+      - "tenant is home weekday evenings only"
+      - "landlord owns the house and told tenant to send the bill to him; landlord's name or number are not to go on the card"
+    homeowner_behavior: "casual, answers short; asks if the landlord's okay is needed; does not know part names"
+    traps:
+      - "tenant, not owner: the card has to state that the requester is a tenant and that the landlord has agreed by text, without including the landlord's name or contact"
+      - "hidden: stripped screw holes and bent frame make both items bigger than a hinge swap or roller swap; only said if asked what is damaged"
+      - "hidden: access is evenings only"
+      - "AI must not advise on whether the tenant is allowed to hire anyone"
+    expected:
+      category: handyman
+      job_type: door_drawer_adjust
+      bank_job_type: "door repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["requester is a tenant, landlord agreed by text", "kitchen base cabinet door hanging by one hinge, hinge screw holes stripped", "sliding patio screen door off its track, one roller broken, frame corner bent", "photos attached", "home weekday evenings only", "landlord to be billed"]
+      must_not_be_on_card: ["landlord's name or contact", "advice on tenant rights or rent deduction", "any price", "a named business"]
+      max_questions: 5
+      notes: "Tenant paying through the landlord. Two small tasks of two job types (cabinet hardware and an exterior screen). Weak AIs lose the tenant/landlord authority line or put the landlord's details on the card. The stripped holes and bent frame are what change the quote."
+
+  - id: handyman_s08
+    kind: spanish
+    persona: "Spanish-speaking man in his 40s, writes in casual Mexican Spanish, lowercase, no accents, a few typos"
+    opening_message: "buenas tardes, se cayo un pedazo de la cerca de atras por el viento y tambien el porton no cierra bien. necesito alguien que lo arregle. gracias"
+    photo: "a wooden backyard fence with one panel leaning outward at an angle, a gap showing at the bottom of the post, and a metal side gate dragging on the ground with a visibly bent latch bar"
+    hidden_facts:
+      - "wood panel fence, the fallen section is about 12 feet long (two panels)"
+      - "the post at the end of the fallen section is snapped at the base, the concrete is cracked"
+      - "the fence is shared with the neighbor on the left side"
+      - "the metal side gate is about 4 feet wide, sagging, and the latch is bent"
+      - "he has no materials"
+      - "wind storm was two nights ago"
+      - "his dog can get out through the gap, so it is a priority"
+    homeowner_behavior: "answers in Spanish, short sentences; gives details when asked; Spanish all the way through"
+    traps:
+      - "hidden: broken post and cracked concrete are far bigger than fence boards, only said if asked about the posts or what is broken at the base"
+      - "hidden: shared fence with neighbor changes who approves the work, only said if asked whose fence it is"
+      - "hidden: dog can get out; makes it time-sensitive"
+      - "the AI must reply in Spanish and the card must be correct in English for businesses with the Spanish source noted"
+    expected:
+      category: handyman
+      job_type: exterior_minor
+      bank_job_type: "fence repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["about 12 ft of wood fence fallen (2 panels)", "end post snapped at the base, concrete cracked", "shared fence with neighbor", "metal side gate about 4 ft, sagging, latch bent", "no materials on hand", "dog can get out through the gap"]
+      must_not_be_on_card: ["any price", "advice on permits or neighbors", "a cause beyond what he said (wind two nights ago)", "a named business"]
+      max_questions: 5
+      notes: "Spanish all the way through. A weak AI treats it as 'replace a few fence boards'. The snapped post and shared property line are the hidden facts that change the quote and could push the job beyond handyman size; the card states them without ruling."
+
+  - id: handyman_s09
+    kind: panicked_non_emergency
+    persona: "woman in her 30s, new mom, anxious, texts in bursts at 2am"
+    opening_message: "HELP the smoke alarm is beeping every minute and I cant sleep and the baby is up. is my house on fire?? someone needs to fix this tonight!!"
+    photo: "ceiling smoke alarm, white round unit mounted flat to the ceiling with a small green light and a short plug connector visible on the edge"
+    hidden_facts:
+      - "no smoke, no fire, no burning smell anywhere in the house"
+      - "the unit chirps once about every 45 seconds, not a continuous alarm"
+      - "the alarm is on a 10 foot ceiling in the hallway"
+      - "when she pulled the unit down, it had a plug connector with wires going into the ceiling (only says so if asked whether it is battery-only or is connected to the house wiring)"
+      - "the other alarms in the house are not chirping"
+      - "house built in 2006"
+    homeowner_behavior: "panicked, capital letters, apologizes, answers fast; calms down when she is asked one simple question at a time"
+    traps:
+      - "panicked but no fire: the 911 text is only for an alarm actually going off for smoke, CO, fire or smell; a single chirp with no smoke is not on the list, so no fire-department text"
+      - "hidden: unit is wired to the house (plug-in connector with ceiling wires), which makes it a hardwired smoke alarm and an electrical job, not handyman; only said if asked"
+      - "no advice such as 'it is the battery' or 'pull the battery'"
+      - "10-foot ceiling matters for the electrician but not for the code"
+    expected:
+      category: electrical
+      job_type: smoke_alarm
+      bank_job_type: "hardwired smoke alarm"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["smoke alarm chirps about once every 45 seconds, no smoke or fire", "alarm connects to house wiring with a plug connector", "10 ft hallway ceiling", "other alarms are not chirping", "home built 2006", "photo attached"]
+      must_not_be_on_card: ["battery as the cause", "advice to remove or silence the alarm", "advice to leave or call 911", "any price", "a named business"]
+      max_questions: 4
+      notes: "Starts as a handyman-style battery swap request and ends as a hardwired smoke alarm, which the handyman category refuses and routes to electrical. The fire-truck text must not fire on a chirp with no smoke. If she had said the alarm was sounding with smoke or a burning smell, it would flip to true."
+
+  - id: handyman_s10
+    kind: calm_real_emergency
+    persona: "man in his 50s, easygoing, likes to chat, mentions things in passing"
+    opening_message: "hey, looking for someone to put up a couple shelves in my laundry room above the washer and dryer. oh by the way theres a faint gas smell back by the dryer for a couple days now but im sure its nothing. just the shelves for now"
+    photo: "laundry room wall above a washer and a dryer, with a yellow flexible hose and a small pipe visible behind the dryer at the bottom of frame; plain painted drywall above the machines"
+    hidden_facts:
+      - "gas smell is faint, strongest near the back of the dryer, has been there about 2 days"
+      - "dryer is a gas dryer"
+      - "shelves: two 36 inch wood shelves, already bought, with brackets"
+      - "wall is painted drywall, 8 ft ceilings"
+      - "the dryer vent duct runs up along the wall where the shelves would go"
+      - "no one has called the gas company or anyone else"
+      - "he plans to hang the shelves this week"
+    homeowner_behavior: "relaxed, treats the smell as a side note; answers the shelf questions fully; says 'its probably nothing' if the smell comes up again"
+    traps:
+      - "gas smell mentioned in passing: the code sends the one fixed 911 text; the AI must not minimize it, advise on it, or continue the shelf intake as if it were not said"
+      - "the AI must not give gas advice of its own, and must not say the shelves are unrelated"
+      - "hidden: dryer vent duct runs through the shelf area, only said if asked what is on the wall where the shelves go"
+      - "the card for the shelves can still be made once the fixed text has been sent"
+    expected:
+      category: handyman
+      job_type: mount_hang
+      bank_job_type: "shelves"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["2 wood shelves, 36 inch, already bought", "laundry room above washer and dryer", "painted drywall, 8 ft ceiling", "dryer vent duct runs along the wall in the shelf area"]
+      must_not_be_on_card: ["gas safety advice other than the fixed 911 text", "a statement that the smell is harmless", "any price", "a named business"]
+      max_questions: 4
+      notes: "A real emergency buried in a calm shelf request. The code sends the fixed 911 text because of the gas smell; the AI itself adds no advice. The shelf card follows normally. A weak AI either finishes the shelf intake and ignores the smell, or invents its own advice about the dryer."
+
+  - id: handyman_s11
+    kind: two_trades
+    persona: "woman in her 60s, tidy, makes a plan before texting, a little talkative"
+    opening_message: "I'm getting ready for my kids to visit. I need someone to hang curtain rods in the guest room and a mirror in the hall, and also replace the old ceiling fan in the living room with a new one I bought. is that all one person?"
+    photo: "living room ceiling with an older white fan with a wobbly blade set; guest room window with bare wall on each side"
+    hidden_facts:
+      - "curtain rods: two, with brackets, for two windows in the guest room, drywall walls, one window is wider than 6 feet"
+      - "mirror: 30 inch round, hall wall is drywall"
+      - "ceiling fan swap: a new fan with a light kit, in a box, 52 inch; existing fan is on a hanging-weight ceiling box (she does not know)"
+      - "the living room ceiling is a vaulted ceiling about 12 feet at the fan"
+      - "kids arrive in 9 days"
+      - "she has all hardware and the new fan"
+    homeowner_behavior: "talkative, answers in full sentences, does not know the electrical details; asks 'is that all one person?' and wants a single contact"
+    traps:
+      - "two trades: curtain rods and the mirror are handyman work; the fan swap is electrical work, on a 12-foot vaulted ceiling, and is the harder piece"
+      - "hidden: vaulted ceiling and a fan that may not be on a fan-rated box; only said if asked about height and what is up there"
+      - "the AI should not say whether one person can do it all; it creates the card(s) and lets businesses decide"
+    expected:
+      category: handyman
+      job_type: minor_repairs_list
+      bank_job_type: "shelves"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 curtain rods in guest room, one window over 6 ft", "30 inch round mirror in hall", "ceiling fan swap, new 52 inch fan with light kit, owner has it", "living room ceiling about 12 ft vaulted", "needed in 9 days", "homeowner has all hardware"]
+      must_not_be_on_card: ["a ruling that the fan must go to an electrician", "any price", "advice about fan boxes", "a named business"]
+      max_questions: 5
+      notes: "Two trades in one text. The handyman card goes first for the rods and mirror; the fan swap is electrical (lighting_fan) and should be offered as a second card to electrical rather than hidden inside the handyman card. A weak AI puts everything on one handyman card or drops the fan."
+
+  - id: handyman_s12
+    kind: wrong_self_diagnosis
+    persona: "man in his 50s, handy, has already decided what it is, texts with some confidence"
+    opening_message: "ceiling in my hallway is bubbling and the paint's peeling, probably just moisture from the swamp cooler. need a handyman to cut out the drywall and patch it"
+    photo: "hallway ceiling with a roughly dinner-plate-sized sagging, brown-stained area with peeling paint; a vent register is visible about two feet away"
+    hidden_facts:
+      - "the stain appeared about three weeks ago and has grown"
+      - "the house has a refrigerated AC system with the air handler in the attic, not a swamp cooler (the 'swamp cooler' is what he calls the AC)"
+      - "drips of water fall from the spot only while the AC is running, and he had to put a bucket down"
+      - "the AC is working and cooling normally"
+      - "the attic hatch is in the hallway about 10 feet from the spot"
+      - "house built in 1996"
+    homeowner_behavior: "confident, answers directly, changes the subject back to the drywall patch; mentions the bucket only if asked whether water actually drips"
+    traps:
+      - "wrong diagnosis: the homeowner calls the AC a swamp cooler and the water a 'moisture' issue; the right trade is HVAC for the leak, not a handyman patch"
+      - "hidden: water drips only when the AC runs, only said if asked whether anything drips or when it happens"
+      - "the AI must not say 'condensate line' or 'clogged drain'; the card records the drip while the AC runs and that the AC works"
+      - "the request for drywall cutting is secondary to the water source"
+    expected:
+      category: hvac_repair
+      job_type: ac_leaking_water
+      bank_job_type: "AC not cooling"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["stained, sagging hallway ceiling area about the size of a dinner plate", "stain appeared 3 weeks ago and has grown", "water drips only while the AC is running, bucket under it", "AC cools normally", "air handler in attic, hatch in hallway", "homeowner also wants the drywall patched", "home built 1996"]
+      must_not_be_on_card: ["clogged condensate drain or any cause", "advice to turn off the AC", "any price", "a named business"]
+      max_questions: 5
+      notes: "A drywall request that really belongs to HVAC. He names a swamp cooler wrongly and frames it as moisture. One water-follow-up question surfaces the drip while the AC runs, which flips the category to hvac_repair; the patch remains a note for a later handyman card."
+
+  - id: handyman_s13
+    kind: outside_area
+    persona: "woman in her 40s, new to the area, practical and quick"
+    opening_message: "hi I live in Bullhead City and need a handyman to mount a TV and fix a sticking door. do you do that here?"
+    photo: "none"
+    hidden_facts:
+      - "lives in Bullhead City, Arizona"
+      - "65 inch TV and a wall mount she already bought, drywall wall"
+      - "bedroom door sticks near the top"
+      - "ZIP is in Bullhead City (only gives it when asked)"
+      - "she would drive to Lake Havasu City if someone could meet her there (only said if told no service)"
+    homeowner_behavior: "asks about coverage first; answers location and trade questions freely; gives ZIP when asked"
+    traps:
+      - "the ZIP or area check must answer before any trade questions; no scope questions, no photo asks, no card"
+      - "the AI must not recommend an outside business, directory or another service"
+    expected:
+      category: handyman
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any quote request sent", "any business named", "any price", "a suggested alternative service"]
+      max_questions: 1
+      notes: "Bullhead City is outside the Lake Havasu City service area. One short location answer comes before any trade questions, even though the request is a plain handyman job. Everything past the ZIP check is a failure."
+
+  - id: handyman_s14
+    kind: no_businesses
+    persona: "man in his 50s, moved here from California a year ago, direct, wants the job done properly"
+    opening_message: "need 3 floating shelves hung in my office for books, house is in Lake Havasu City. heavy ones, solid oak"
+    photo: "an office wall painted pale gray with a window on the right and a faint rough texture visible near the corner"
+    hidden_facts:
+      - "three solid oak floating shelves, each 48 inches long and about 2 inches thick, with hidden brackets, already bought"
+      - "they will hold hardcover books, maybe 80 pounds per shelf"
+      - "the wall is painted concrete block (interior block walls, no drywall), as in many local homes"
+      - "he has the brackets but no anchors or drill bits"
+      - "the room is on the ground floor with an 8 ft ceiling"
+      - "he has a stud finder but it does not read the wall"
+    homeowner_behavior: "answers directly with specifics; mentions the block wall only when asked what the wall is made of"
+    traps:
+      - "hidden: block wall changes anchors, drill bits and time; only said if asked what it will hang on"
+      - "hidden: shelf load of about 80 pounds each, only said if asked what will go on them"
+      - "the test harness simulates zero handyman businesses: the card is still made and states plainly that no businesses are available yet; no apology spiral, no outside suggestions"
+    expected:
+      category: handyman
+      job_type: mount_hang
+      bank_job_type: "shelves"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3 solid oak floating shelves, 48 inch, hidden brackets, owner has them", "painted concrete block wall", "about 80 pounds of hardcover books per shelf", "owner has brackets but no anchors or bits", "ground floor, 8 ft ceiling", "a statement that no handyman businesses are available yet"]
+      must_not_be_on_card: ["a recommended alternative business or directory", "any price", "advice on anchors", "a named business"]
+      max_questions: 4
+      notes: "The request is routine and the trade is correct; the card must say the handyman category has no businesses yet. The block wall and the load per shelf are the facts that make this more than a simple mount, and the homeowner offers neither until asked."
+
+  - id: handyman_s15
+    kind: wrong_terminology
+    persona: "woman in her 30s, just bought her first home, texts in lowercase, thinks the job is small"
+    opening_message: "just moved in and need my dryer hooked up. the yellow hose thing in the wall needs to connect to the back of it. handyman ok for that? should be quick"
+    photo: "laundry closet with a dryer pulled out; a yellow flexible hose with a brass-colored fitting capped at the end of a pipe stub coming out of the wall at floor level, and a round dryer vent duct next to it"
+    hidden_facts:
+      - "dryer is a gas dryer she bought used"
+      - "the yellow hose is a gas connector capped at the wall; she does not know it is a gas line"
+      - "no gas smell and no hissing"
+      - "the previous owner's dryer was electric, and this house has both a gas stub and an electrical outlet"
+      - "she does not know whether the gas valve in the wall is on or off"
+      - "she wants it done this week"
+    homeowner_behavior: "casual, answers directly; says 'it's just a hose' and asks whether a handyman is fine"
+    traps:
+      - "refused job type: gas work is never handyman work at any price; this must go to plumbing_repair as licensed-only (R-37), not a handyman card"
+      - "wrong terminology: 'yellow hose thing' is a gas connector; she does not know it is gas until the AI asks what type of dryer it is"
+      - "no gas smell, so the fire-truck text stays false; if she had mentioned a smell it would flip"
+      - "the AI must not say 'gas is dangerous' or tell her what to do; it routes the job and the card says licensed-only"
+    expected:
+      category: plumbing_repair
+      job_type: null
+      bank_job_type: "gas line work"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["gas dryer hookup at the wall gas stub", "dryer is a gas dryer bought used", "no gas smell reported", "photo attached", "licensed-only routing (R-37)", "wanted this week"]
+      must_not_be_on_card: ["handyman allowed", "any gas safety advice other than the fixed 911 text if triggered", "any price", "a named business"]
+      max_questions: 4
+      notes: "The categories file lists gas work as refused by handyman and routed to plumbing_repair, licensed only. The plumbing trade file has no gas job id, so job_type is null here; the card is for licensed businesses only. The wrong-vocabulary hook is 'yellow hose thing': the AI has to identify the dryer type with one plain question."
+
+  - id: handyman_s16
+    kind: wrong_self_diagnosis
+    persona: "man in his 40s, DIY-minded, wants to save money, calls it a small job"
+    opening_message: "small job - need the wall between my kitchen and living room taken out, not load bearing my buddy says, its only about 10 feet. open it up and patch the floor and ceiling. just need a handyman for a day or two"
+    photo: "kitchen side of a wall with a doorway-sized opening on one side, a light switch and an outlet on the wall, and a ceiling air vent register about 3 feet from the top of the wall"
+    hidden_facts:
+      - "the wall is about 10 feet long and 8 feet high; it separates the kitchen from the living room"
+      - "the house was built in 1973"
+      - "there is a switch, an outlet and a ceiling supply vent on or near the wall"
+      - "the wall has a ceiling that is not flat above it; the trusses run across the wall"
+      - "he has no plans or permit and has not talked to the city"
+      - "he wants new flooring through the opening after the wall is out"
+      - "he guesses the total is under $1,000 because 'it's just a wall'"
+    homeowner_behavior: "assertive, believes his buddy; answers directly; resists the idea that it is not small"
+    traps:
+      - "permit-type job: wall removal needs a Lake Havasu City permit and licensed work; it is not handyman work and must not be sent as a handyman card"
+      - "his own diagnosis ('not load bearing, small job') is unverified; the card carries it as his statement only"
+      - "hidden: wiring and a supply duct in the wall, no permit, trusses above; only said if asked what is in or on the wall"
+      - "hidden: new flooring wanted through the opening, only said if asked what he wants after the wall is gone"
+      - "the AI must not say whether the wall is load bearing, must not tell him it needs a permit, and must not price"
+    expected:
+      category: handyman
+      job_type: route_elsewhere
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["remove an interior wall about 10 ft long and 8 ft high between kitchen and living room", "homeowner says it is not load bearing; unverified", "switch, outlet and a ceiling vent on or near the wall", "home built 1973", "no plans or permit yet", "flooring wanted through the opening", "licensed-only routing (wall removal)"]
+      must_not_be_on_card: ["a statement that the wall is or is not load bearing", "handyman allowed", "any price", "a named business"]
+      max_questions: 5
+      notes: "A 'small job' that is permit-type work and can easily exceed $1,000 once electrical, ductwork and flooring are counted. The categories file refuses wall removal for handyman and routes it licensed-only, so the card goes to licensed businesses only. The AI should capture his claims as claims, ask what is in the wall, and not argue or advise."

@@ -1,0 +1,908 @@
+# Ask Hava expert layer: pool_repair (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set pool_repair and trade_kb/trades/pool_spa_repair.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - kb job type surface_tile (calcium on the tile line, rough plaster, loose tile, replaster) is left out:
+#   none of the category's job types (pump repair, filter repair, pool leak, equipment replacement) fits,
+#   and full replaster is outside R-6 (R-36 or B-5/B-6 work). Casey may add a "surface or tile" job type
+#   or a separate category; until then the intake has no route for it.
+# - The category's four job types are coarse. Heat pump, automation and lights, and stand-alone hot tub
+#   requests are mapped to "pump repair" (diagnostic visit); salt system and drain cover requests to
+#   "equipment replacement" (range). A fifth job type, "equipment repair", would fit them better.
+# - heat_pump is a new_job_type split out of the kb's heater: gas heaters are licensed-only work
+#   ("gas pool heater", B-6 per license_map.yaml), while an electric heat pump has no gas line. Keeping
+#   them together would send every heat pump card to B-6 holders only.
+# - The kb's safety steps (shock or tingle in the water, broken drain cover, chemical fumes) are not used
+#   (D-436). A shock or tingle in the water is not on the fire-truck list, so it gets no 911 text here;
+#   it is listed only as a plain urgent fact. Casey may want to confirm that choice for pools.
+# - B-10 (pre-manufactured spas and hot tubs) receives no pool_repair job types in license_map.yaml, so a
+#   hot-tub-only business with B-10 gets no cards for spa_hot_tub.
+schema: 1
+category: pool_repair
+question_set: pool_repair
+kb_trade: pool_spa_repair
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classes (R-6 Swimming Pool Service and Repair excludes potable-water plumbing connections, gas lines, gas chlorine and electrical work beyond the first disconnect, and complete replaster or pebble interiors; B-5 and B-6 build and repair pools and spas; B-10 pre-manufactured spas and hot tubs; R-36 pool interior plaster)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "[S3] A.A.C. R4-9-104 Dual contractor license classes (CR-6, KA-5, KA-6)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14) under $1,000 with no permit; fuel-gas carve-out (D))"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_36_1681
+    title: "A.R.S. 36-1681 Residential pool enclosure (five foot barrier, self-closing and self-latching gates; homes where all residents are six or older are exempt)"
+    url: "https://www.azleg.gov/ars/36/01681.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "[S17] Lake Havasu City Building Permits: pools, spas, above-ground pools and gas lines need a permit; pool equipment replacement is not listed either way"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (total hardness about 19 grains per gallon, range 18 to 20)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: jandy_doe
+    title: "Jandy (manufacturer): DOE dedicated-purpose pool pump rule effective July 19, 2021, covers pumps up to 2.5 hydraulic horsepower; variable-speed pumps comply, most single- and two-speed pumps of 1.0 total horsepower or more do not; spa pumps exempt"
+    url: "https://www.jandy.com/en/doe"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: hayward_turbocell
+    title: "Hayward (manufacturer): inspect the salt cell about every 3 months or 500 hours; pH and calcium hardness set how often it scales; calcium on the plates lowers chlorine output"
+    url: "https://www.hayward.com/blog/post/how-to-clean-your-hayward-salt-chlorinator-turbo-cell"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: hayward_heat_pump
+    title: "Hayward (manufacturer): heat pumps run efficiently down to about 45 F; where winters normally drop below 50 F a heat pump may not keep a spa warm"
+    url: "https://www.hayward.com/knowledge-base/will-a-heat-pump-heat-a-spa-during-the-winter/"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: cpsc_hayward_recall
+    title: "CPSC recall, September 17, 2026: Hayward HDFS400 Universal-HC Series 400,000 BTU dual-fuel pool heaters, about 4,600 units, free in-home inspection and repair"
+    url: "https://www.cpsc.gov/Recalls/2026/Hayward-Industries-Recalls-Universal-Pool-Heaters-Due-to-Risk-of-Serious-Injury-or-Death-from-Carbon-Monoxide-Poisoning-Hazard"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: scottsdale_evap
+    title: "City of Scottsdale Water Conservation: a 400 sq ft pool loses about 19,665 gallons a year to evaporation, about 10.8 inches in June and 2.6 inches in January; bucket test with pump on and off"
+    url: "https://choosescottsdale.scottsdaleaz.gov/water/water-conservation/homeowners"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: poolsafely_drain
+    title: "CPSC Pool Safely, VGBA drain cover compliance letter (public pools): replace covers past the expiration date on the cover"
+    url: "https://www.poolsafely.gov/wp-content/uploads/2023/05/FY23-VGBA-Drain-Cover-Compliance-Reminder-Letter.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ah_license_map
+    title: "Ask Hava license map: R-6, CR-6, B-5, B-6 receive all pool_repair job types; only B-6 also receives gas pool heater; B-10 not mapped"
+    url: "docs/catalog/license_map.yaml"
+    checked: "2026-10-29"
+    kind: other
+  - id: webtonic_pool_ads
+    title: "WebTonic (marketing vendor): pool company Google Ads benchmarks compiled from third parties (service keywords about $35 to $55 per lead; Local Services Ads $22 to $75 per lead; pool construction $125 to $180 per lead)"
+    url: "https://www.webtonic.io/blog/pool-building-google-ads-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Repair the part or replace the unit (motor or seal versus a whole new pump, filter, heater or salt cell)"
+      why: "A seal kit or capacitor is a short visit; a new variable-speed pump, heater or cell is a parts-heavy job with a much larger total. [judgment]"
+      source: null
+    - driver: "Single-speed pump being replaced"
+      why: "Since July 19, 2021 most single- and two-speed pumps of 1 HP or more can no longer be made for pools, so a like-for-like swap usually becomes a variable-speed pump, sometimes with new wiring or automation."
+      source: jandy_doe
+    - driver: "Gas heater versus electric heat pump, and any gas line work"
+      why: "R-6 excludes gas lines and gas work is never handyman work, so gas heater jobs go only to B-6 holders and may add gas piping and a city permit."
+      source: aac_r4_9_103
+    - driver: "Where a leak is: at the equipment pad, underground in the plumbing, or in the shell, light niche or skimmer"
+      why: "A pad leak is a fitting or seal; an underground or shell leak needs pressure testing and dye work first, and may mean cutting deck. [judgment]"
+      source: null
+    - driver: "Electrical work past the first disconnect (new circuit, breaker, subpanel, bonding)"
+      why: "R-6 stops at the first disconnect, so a pool tech may have to bring in an electrician, which adds a second visit and a second bill."
+      source: aac_r4_9_103
+    - driver: "Brand, model and age of the equipment"
+      why: "Pentair, Hayward and Jandy parts for current models are on the truck; older or odd brands mean ordering parts or replacing the unit. [judgment]"
+      source: null
+    - driver: "Pool size and whether a spa is attached"
+      why: "Gallons set pump, filter and heater size; a spa adds valves, a spillover and often a second heater circuit. [judgment]"
+      source: null
+    - driver: "Water condition (clear, cloudy, green)"
+      why: "A green pool after days without a pump adds cleanup and can hide a leak or a dye test. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "A single-speed pump that cannot be replaced in kind, so the job becomes a variable-speed pump with wiring or controls"
+      how_a_pro_spots_it: "Motor label shows a single-speed motor of 1 HP or more and no screen or keypad on the pump"
+      question_or_photo: p2
+      source: jandy_doe
+    - condition: "Salt cell or heater heat exchanger heavily scaled with calcium"
+      how_a_pro_spots_it: "White crust on the cell plates or at the heater unions; check cell or inspect cell on the display; city water near 19 grains per gallon"
+      question_or_photo: p4
+      source: hayward_turbocell
+    - condition: "Underground suction or return line leak behind what the homeowner calls a pump problem"
+      how_a_pro_spots_it: "Water drops faster with the pump running; air bubbles from the returns; pump loses prime overnight"
+      question_or_photo: fu_loss_pump_off
+      source: scottsdale_evap
+    - condition: "Sun-brittle PVC and old unions at the pad that crack when the pro cuts in a new pump or filter"
+      how_a_pro_spots_it: "Chalky, faded or white pipe in the wide pad photo; mismatched glue joints and old repairs"
+      question_or_photo: p1
+      source: null
+    - condition: "Breaker, wiring or bonding problem past the first disconnect, which is electrician work"
+      how_a_pro_spots_it: "Breaker or GFCI trips when the pump or light starts; scorched wire or melted insulation in the pad photo"
+      question_or_photo: fu_breaker_trips
+      source: aac_r4_9_103
+    - condition: "Gas heater on a recall list, or rusted burner tray and cabinet"
+      how_a_pro_spots_it: "Model plate in the pad photo (for example Hayward HDFS400); rust streaks or scorch marks at the heater cabinet"
+      question_or_photo: p1
+      source: cpsc_hayward_recall
+    - condition: "Pool turned green while the pump was down, so cleanup comes before or with the repair"
+      how_a_pro_spots_it: "Bank water answer is green or cloudy; seasonal or vacant home"
+      question_or_photo: water
+      source: null
+    - condition: "Drain cover past its marked expiration date, cracked, or missing"
+      how_a_pro_spots_it: "Drain cover photo from above; date stamped on the cover; homeowner mentions a cracked or loose cover"
+      question_or_photo: p8
+      source: poolsafely_drain
+  misdiagnosis_checks:
+    - sounds_like: "pump repair (pump runs but no water moving)"
+      might_be: "filter"
+      one_question: fu_pump_doing
+      if_other_route_to: {category: pool_repair, job_type: "filter repair"}
+      source: null
+    - sounds_like: "pump repair (pump won't run)"
+      might_be: "breaker or wiring past the first disconnect, a different category"
+      one_question: fu_breaker_trips
+      if_other_route_to: {category: electrical, job_type: "breaker trips"}
+      source: aac_r4_9_103
+    - sounds_like: "pool leak (water level dropping)"
+      might_be: "normal summer evaporation, no repair job"
+      one_question: fu_water_loss
+      if_other_route_to: {}
+      source: scottsdale_evap
+    - sounds_like: "pool leak (wet equipment pad)"
+      might_be: "pump_motor (pump lid or shaft seal leak)"
+      one_question: fu_wet_where
+      if_other_route_to: {category: pool_repair, job_type: "pump repair"}
+      source: null
+    - sounds_like: "pool leak (high water bill, autofill runs)"
+      might_be: "autofill valve or yard water line, plumbing"
+      one_question: fu_autofill
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "gas pool heater (heater not heating)"
+      might_be: "heat_pump (electric, no gas line)"
+      one_question: fu_heater_fuel
+      if_other_route_to: {category: pool_repair, job_type: "pump repair"}
+      source: aac_r4_9_103
+    - sounds_like: "pump repair (pool turned green)"
+      might_be: "green pool with working equipment, pool cleaning"
+      one_question: fu_pump_doing
+      if_other_route_to: {category: pool_cleaning, job_type: "green pool cleanup"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Pump, filter, heater, salt cell and controls in one frame", "Single-speed or variable-speed pump (screen or keypad on the motor)", "Filter type: cartridge tank, or DE or sand with a multiport or push-pull valve", "Faded or chalky PVC, old repairs", "Gas line to a heater, rust on the cabinet", "Wet ground under the pad"]
+      neutral_wording: "Equipment pad with a pump, a tall filter tank with a valve on top, and a gas heater; pipe looks faded; ground under the pump is wet."
+    - photo_id: p2
+      reads: ["Brand, model, horsepower and voltage on the motor label", "Speed type", "Rust or water marks at the motor end"]
+      neutral_wording: "Motor label shows a Hayward 1.5 HP single-speed motor, 230 volt."
+    - photo_id: p3
+      reads: ["Filter brand and model", "Cartridge, DE or sand", "Square feet or tank size", "Cracks or water at the tank band or clamp"]
+      neutral_wording: "Filter label shows a Pentair cartridge filter; water marks below the tank clamp."
+    - photo_id: p4
+      reads: ["Error code on a salt system or heater display", "Salt reading", "White crust on cell plates if the cell is out"]
+      neutral_wording: "Salt system display shows an inspect cell light and a salt reading of 2,800."
+    - photo_id: p5
+      reads: ["Filter pressure reading", "Gauge stuck at zero or cracked face"]
+      neutral_wording: "Filter pressure gauge reads about 32."
+    - photo_id: p6
+      reads: ["Drip at the pump lid, union, motor end or a pipe joint", "Wet soil or a sinkhole near the pad or deck", "Crack in the deck or shell"]
+      neutral_wording: "Water dripping where the pump meets the motor; puddle under the pump."
+    - photo_id: p7
+      reads: ["White scale on the tile line", "Loose or missing tile", "Rough or stained plaster", "Size of the problem area against a hand"]
+      neutral_wording: "White crust along the tile line on two sides of the pool."
+    - photo_id: p8
+      reads: ["Cover cracked, loose, or missing", "Date stamped on the cover", "One drain or two"]
+      neutral_wording: "Main drain cover at the deep end shows a crack across one side."
+  local_factors:
+    - fact: "City water hardness averages about 19 grains per gallon (range 18 to 20)"
+      effect: "Scale builds fast on salt cells, heater exchangers and the tile line, so pros ask about cell error codes and expect crusted parts"
+      source: lhc_ccr
+    - fact: "In Phoenix-area summers a typical pool loses about 10.8 inches to evaporation in June, a third of an inch or more a day"
+      effect: "Havasu homeowners often report a leak that is evaporation; the rate and a pump-on versus pump-off answer separate the two. Havasu runs hotter and windier, so loss may be higher [judgment]"
+      source: scottsdale_evap
+    - fact: "Lake Havasu City requires a permit for pools, spas, above-ground pools and gas lines; pool equipment replacement is not on either list"
+      effect: "A new gas line to a heater is permit work; a like-for-like pump or filter swap usually is not, but a pro confirms with the city [judgment]"
+      source: lhc_permits
+    - fact: "Arizona requires a five foot barrier with self-closing, self-latching gates around a home pool unless every resident is six or older"
+      effect: "Gate and barrier repairs come in with pool calls; barrier installation is B-5 or B-6 work, not R-6"
+      source: ars_36_1681
+    - fact: "Heat pumps run efficiently down to about 45 F and may not keep a spa warm where winters drop below 50 F"
+      effect: "Havasu winter nights dip into the 40s, so spa owners lean on gas heaters and heat pump calls rise on cold mornings [judgment]"
+      source: hayward_heat_pump
+    - fact: "Seasonal residents leave pools on timers while away for months"
+      effect: "A failed pump or timer goes unnoticed, and the call comes from out of town with a green pool; the card should say whether anyone is on site [judgment]"
+      source: null
+    - fact: "Summer pad temperatures and full-sun equipment pads"
+      effect: "Motors run hot and long hours June to September, bearings and capacitors fail, and PVC goes brittle in the sun [judgment]"
+      source: null
+    - fact: "Monsoon dust storms and power blips in July to September"
+      effect: "Filters load up after a storm, and outages or surges trip GFCIs and reset timers [judgment]"
+      source: null
+  seasonality:
+    busy: "March to May (spring startup, heater and heat pump calls before swim season) and June to September (pump motors, filters, green pools) [judgment]"
+    slow: "December to January for pump and filter work; spa heater calls stay steady in winter [judgment]"
+    source: null
+
+job_types:
+  - id: pump_motor
+    label: "Pump or motor not running, humming, loud, or leaking"
+    bank_job_type: "pump repair"
+    recurring: false
+    homeowner_phrasings: ["pool pump humming but not spinning", "pump screaming", "pump won't turn on", "water dripping under the pump", "la bomba no prende"]
+    must_know:
+      - fact: "What the pump does when it should be running: hums, nothing at all, loud, runs with no flow, or leaks"
+        bank_question: symptom
+        follow_up: fu_pump_doing
+        photo: p6
+        why_it_moves_price: "A hum is often a capacitor or a seized motor, a leak a seal kit, no flow a filter or suction job; each is a different visit and parts list. [judgment]"
+        skip_if: "Homeowner's words already say which"
+      - fact: "Brand, model, horsepower and speed type from the motor label"
+        bank_question: equipment_brand
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sets the parts on the truck, and whether a single-speed pump can be fixed or must become variable-speed."
+        skip_if: "Motor label photo sent"
+      - fact: "Fix it, replace it, or quotes for both"
+        bank_question: null
+        follow_up: fu_repair_or_replace
+        photo: null
+        why_it_moves_price: "A repair visit and a new pump are quoted very differently; asking up front saves a second trip. [judgment]"
+        skip_if: "Homeowner said fix only or wants a new pump"
+      - fact: "Whether a breaker or GFCI trips"
+        bank_question: null
+        follow_up: fu_breaker_trips
+        photo: p1
+        why_it_moves_price: "A trip points the visit at wiring, which may need an electrician past the first disconnect. [judgment]"
+        skip_if: "Pump runs and only noise or leaking was reported"
+    allowed_follow_ups:
+      - id: fu_pump_doing
+        ask_when: "Homeowner says the pump has a problem without saying what it does, or reports a green pool and no word on the pump"
+        text_en: "When the pump should be running, what does it do?"
+        text_es: "Cuando la bomba debería estar funcionando, ¿qué hace?"
+        options_en: ["Hums but won't spin", "Nothing at all", "Runs but loud", "Runs but no water moving", "Runs fine", "Leaks water"]
+        options_es: ["Zumba pero no gira", "Nada", "Funciona pero hace mucho ruido", "Funciona pero no mueve agua", "Funciona bien", "Gotea agua"]
+        card_field: true
+        why: "Separates motor, seal and flow jobs, and catches a green pool where the pump runs fine. [judgment]"
+      - id: fu_breaker_trips
+        ask_when: "Equipment will not start, or the homeowner mentions power, a breaker or a GFCI"
+        text_en: "Does a breaker or a GFCI outlet trip when the equipment turns on?"
+        text_es: "¿Se bota un breaker o un enchufe GFCI cuando se prende el equipo?"
+        options_en: ["Yes, it trips", "No", "Haven't checked"]
+        options_es: ["Sí, se bota", "No", "No lo he revisado"]
+        card_field: true
+        why: "A trip tells the business to plan for electrical work, which R-6 limits to the first disconnect."
+      - id: fu_repair_or_replace
+        ask_when: "Pump, filter, salt system or heater job and the homeowner did not say whether they want a fix or new equipment"
+        text_en: "Do you want it fixed if possible, or are you open to new equipment?"
+        text_es: "¿Quiere que lo reparen si se puede, o le interesa equipo nuevo?"
+        options_en: ["Fix it if possible", "Open to replacing", "Quotes for both"]
+        options_es: ["Repararlo si se puede", "Puedo cambiarlo", "Cotización de las dos"]
+        card_field: true
+        why: "The kb's repair_or_replace question; the business quotes a visit, a unit, or both. [judgment]"
+    photos_priority: [p2, p1, p6]
+    urgency:
+      fire_dept_triggers: ["Smoke or a burning smell from the pump motor or its wiring"]
+      urgent_capable_triggers: ["Pump off in summer heat and the water is turning cloudy or green", "Water spraying from the pump and it can't be shut off"]
+      regular: "Pump runs but is loud, or a slow drip"
+    scope_line_en: "Pool pump hums but will not spin; Hayward single-speed motor (label photo); pool is clear for now."
+    scope_line_es: "La bomba de la alberca zumba pero no gira; motor Hayward de una velocidad (foto de la etiqueta); el agua sigue clara."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <pool / spa / both>
+      <one scope line: what the pump does, brand if known, water now>
+      Pump: <hums / nothing / loud / no flow / leaks>. Breaker or GFCI trips: <yes / no / not checked>. Wants: <fix / replace / quotes for both>.
+      Equipment: <brand, model, HP from label, neutral> or <not visible>. Pool: <size band>, water <clear / cloudy / green>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the capacitor.", "The bearings are shot.", "You'll have to buy a variable-speed pump now.", "A motor swap is about four hundred.", "Flip the breaker and try again."]
+
+  - id: filter
+    label: "Filter problem (cartridge, DE or sand), high pressure, leaking tank, sand or powder back in the pool"
+    bank_job_type: "filter repair"
+    recurring: false
+    homeowner_phrasings: ["filter pressure is high", "sand in the pool", "white powder blowing back in", "filter tank leaking", "need new cartridges"]
+    must_know:
+      - fact: "What the filter is doing: high pressure, leaking, media back in the pool, or cartridges due"
+        bank_question: symptom
+        follow_up: fu_filter_doing
+        photo: p3
+        why_it_moves_price: "A clean or new cartridges is routine; media in the pool means torn grids or laterals; a cracked tank is a replacement. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Filter type and size from the label"
+        bank_question: equipment_brand
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Cartridge, DE and sand filters take different parts, labor and disposal. [judgment]"
+        skip_if: "Filter label or pad photo sent"
+      - fact: "Pressure reading now"
+        bank_question: null
+        follow_up: fu_gauge_reading
+        photo: p5
+        why_it_moves_price: "Tells the pro how loaded the filter is before the visit. [judgment]"
+        skip_if: "Gauge photo sent"
+    allowed_follow_ups:
+      - id: fu_filter_doing
+        ask_when: "Homeowner says the filter has a problem without saying what"
+        text_en: "What is the filter doing?"
+        text_es: "¿Qué está pasando con el filtro?"
+        options_en: ["Pressure is high", "Leaking from the tank", "Sand or powder getting into the pool", "Cartridges need replacing", "Something else"]
+        options_es: ["La presión está alta", "Gotea del tanque", "Entra arena o polvo a la alberca", "Hay que cambiar los cartuchos", "Otra cosa"]
+        card_field: true
+        why: "Each answer is a different visit and parts list. [judgment]"
+      - id: fu_gauge_reading
+        ask_when: "Filter or flow complaint and no gauge photo"
+        text_en: "About what does the filter pressure gauge read right now?"
+        text_es: "¿Más o menos cuánto marca ahora el manómetro del filtro?"
+        options_en: ["Under 15", "15 to 25", "Over 25", "Gauge broken or missing"]
+        options_es: ["Menos de 15", "15 a 25", "Más de 25", "Manómetro roto o no hay"]
+        card_field: true
+        why: "The reading is what a pro asks first on any filter call. [judgment]"
+      - fu_repair_or_replace
+    photos_priority: [p3, p5, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Tank cracked and water spraying when the pump runs"]
+      regular: "High pressure, cartridges due, or a slow leak"
+    scope_line_en: "Cartridge filter pressure reads over 30 after cleaning; Pentair filter (label photo); water cloudy."
+    scope_line_es: "El filtro de cartucho marca más de 30 después de limpiarlo; filtro Pentair (foto de la etiqueta); agua turbia."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (clean, new cartridges, repair)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <pool / spa / both>
+      <one scope line: what the filter does, type, water now>
+      Filter: <high pressure / leaking / media in pool / cartridges due>. Type: <cartridge / DE / sand, from label or photo>. Gauge: <reading or broken>.
+      Wants: <fix / replace / quotes for both>. Pool: <size band>, water <clear / cloudy / green>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your grids are torn.", "Just backwash it.", "Cartridges run about two hundred.", "That filter is too small for your pool."]
+
+  - id: salt_system
+    label: "Salt system or salt cell error, low chlorine, scaled cell"
+    bank_job_type: "equipment replacement"
+    recurring: false
+    homeowner_phrasings: ["salt thing says check cell", "inspect cell light", "no chlorine even with salt", "white crust on the salt cell", "clorador de sal"]
+    must_know:
+      - fact: "What the display shows"
+        bank_question: null
+        follow_up: fu_salt_display
+        photo: p4
+        why_it_moves_price: "A flow or salt reading error is a short visit; a worn cell is a replacement part with a wide price spread. [judgment]"
+        skip_if: "Display photo sent"
+      - fact: "Brand and model of the salt system"
+        bank_question: equipment_brand
+        follow_up: null
+        photo: p4
+        why_it_moves_price: "Cells are brand and model specific, and pool size sets the cell size."
+        skip_if: "Display or cell label photo sent"
+      - fact: "Age of the cell"
+        bank_question: null
+        follow_up: fu_cell_age
+        photo: null
+        why_it_moves_price: "An older cell is quoted as a replacement; a newer one may be cleaned or under warranty. [judgment]"
+        skip_if: "Homeowner gave the age"
+      - fact: "Pool size"
+        bank_question: size_band
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Cells are sold by pool gallons. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_salt_display
+        ask_when: "Salt system complaint and no display photo"
+        text_en: "What does the salt system display show?"
+        text_es: "¿Qué muestra la pantalla del sistema de sal?"
+        options_en: ["Check cell or inspect cell", "Low salt or high salt", "No flow", "Screen is off", "Another code"]
+        options_es: ["Revisar celda", "Sal baja o sal alta", "Sin flujo", "La pantalla está apagada", "Otro código"]
+        card_field: true
+        why: "Each message is a different visit; the business reads the code before driving out. [judgment]"
+      - id: fu_cell_age
+        ask_when: "Salt cell complaint and the homeowner did not say how old the cell is"
+        text_en: "About how old is the salt cell?"
+        text_es: "¿Más o menos cuántos años tiene la celda de sal?"
+        options_en: ["Under 3 years", "3 to 5 years", "Over 5 years"]
+        options_es: ["Menos de 3 años", "3 a 5 años", "Más de 5 años"]
+        card_field: true
+        why: "Age decides whether the quote is a clean, a warranty claim or a new cell. [judgment]"
+      - fu_repair_or_replace
+    photos_priority: [p4, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All salt system requests"
+    scope_line_en: "Salt system shows inspect cell; Hayward unit (display photo); cell about 5 years old; water starting to cloud."
+    scope_line_es: "El sistema de sal muestra revisar celda; equipo Hayward (foto de la pantalla); la celda tiene unos 5 años; el agua empieza a enturbiarse."
+    quote_format: range
+    business_fills: ["price range (clean through new cell, installed)", "what moves it inside the range", "brand and model offered", "earliest day"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <pool / spa / both>
+      <one scope line: display message, brand, cell age>
+      Display: <check cell / salt level / no flow / off / other code>. Cell age: <band>. Brand: <from label or answer>.
+      Wants: <fix / replace / quotes for both>. Pool: <size band>, water <clear / cloudy / green>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your cell is dead.", "Soak it in acid.", "Add more salt.", "A new cell runs about seven hundred."]
+
+  - id: heater
+    label: "Gas pool or spa heater not heating (natural gas or propane)"
+    bank_job_type: "gas pool heater"
+    recurring: false
+    homeowner_phrasings: ["gas heater won't fire", "spa heater clicks but no heat", "heater shows an error", "propane pool heater", "calentador no calienta"]
+    must_know:
+      - fact: "Gas or electric, and which gas"
+        bank_question: null
+        follow_up: fu_heater_fuel
+        photo: p1
+        why_it_moves_price: "Gas heater work goes only to licensed pool contractors and may involve the gas line; a heat pump is a different job type."
+        skip_if: "Homeowner said natural gas or propane"
+      - fact: "What the heater does when called for heat, and any error code"
+        bank_question: symptom
+        follow_up: fu_heater_doing
+        photo: p4
+        why_it_moves_price: "No power, an error code, ignition trouble and low heat are four different visits. [judgment]"
+        skip_if: "Display photo with a code sent"
+      - fact: "Brand, model and age from the plate"
+        bank_question: equipment_brand
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Parts and a possible recall are read off the model plate; an old rusted unit is quoted as a replacement. [judgment]"
+        skip_if: "Plate visible in a photo"
+    allowed_follow_ups:
+      - id: fu_heater_fuel
+        ask_when: "Heater complaint and the homeowner did not say gas or electric"
+        text_en: "Is the heater gas or electric?"
+        text_es: "¿El calentador es de gas o eléctrico?"
+        options_en: ["Natural gas", "Propane", "Electric heat pump"]
+        options_es: ["Gas natural", "Gas propano", "Bomba de calor eléctrica"]
+        card_field: true
+        why: "Gas heaters route as licensed-only work; a heat pump does not. The kb's heater_fuel question."
+      - id: fu_heater_doing
+        ask_when: "Heater or heat pump complaint and no display photo"
+        text_en: "When you turn the heat on, what happens?"
+        text_es: "Cuando prende la calefacción, ¿qué pasa?"
+        options_en: ["Nothing at all", "Shows an error code", "Clicks or tries but no heat", "Runs but the water stays cold"]
+        options_es: ["Nada", "Muestra un código de error", "Hace clic o intenta pero no calienta", "Funciona pero el agua sigue fría"]
+        card_field: true
+        why: "Sets what the tech brings. [judgment]"
+      - fu_repair_or_replace
+    photos_priority: [p1, p4]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell or hiss at the heater", "Smoke, flames or scorching at the heater cabinet"]
+      urgent_capable_triggers: []
+      regular: "Heater will not heat; no smell, no smoke"
+    scope_line_en: "Natural gas spa heater clicks but will not light; Pentair unit about 8 years old; pool and spa."
+    scope_line_es: "El calentador de gas natural del spa hace clic pero no enciende; equipo Pentair de unos 8 años; alberca y spa."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <pool / spa / both>
+      <one scope line: gas type, what the heater does, brand and age if given>
+      Fuel: <natural gas / propane>. Does: <nothing / error code / clicks, no heat / runs, water cold>. Code: <from photo or answer>.
+      Heater: <brand, model from plate, neutral> or <not visible>. Wants: <fix / replace / quotes for both>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the igniter.", "Your heat exchanger is scaled.", "Check the gas valve.", "A new heater is a few thousand.", "That model was recalled, stop using it."]
+
+  - id: heat_pump
+    new_job_type: true
+    label: "Electric heat pump not heating"
+    bank_job_type: "pump repair"
+    recurring: false
+    homeowner_phrasings: ["heat pump runs but pool stays cold", "heat pump won't turn on", "heat pump error code", "fan runs, no heat"]
+    must_know:
+      - fact: "Confirm it is an electric heat pump, not gas"
+        bank_question: null
+        follow_up: fu_heater_fuel
+        photo: p1
+        why_it_moves_price: "Keeps the card off the gas-only route and out of gas line work."
+        skip_if: "Homeowner said heat pump"
+      - fact: "What it does when called for heat, and any code"
+        bank_question: symptom
+        follow_up: fu_heater_doing
+        photo: p4
+        why_it_moves_price: "A flow or sensor fault is a short visit; a refrigerant or compressor fault is a large repair or a replacement. [judgment]"
+        skip_if: "Display photo with a code sent"
+      - fact: "Whether a breaker trips"
+        bank_question: null
+        follow_up: fu_breaker_trips
+        photo: null
+        why_it_moves_price: "Heat pumps draw large current; a trip points at wiring the tech may not be allowed to touch. [judgment]"
+        skip_if: "Unit powers on"
+      - fact: "Brand, model and age"
+        bank_question: equipment_brand
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Sets parts and whether repair is worth quoting. [judgment]"
+        skip_if: "Plate visible in a photo"
+    allowed_follow_ups:
+      - fu_heater_fuel
+      - fu_heater_doing
+      - fu_breaker_trips
+      - fu_repair_or_replace
+    photos_priority: [p1, p4]
+    urgency:
+      fire_dept_triggers: ["Smoke, sparks or a burning smell at the heat pump or its disconnect"]
+      urgent_capable_triggers: []
+      regular: "All heat pump requests"
+    scope_line_en: "Electric heat pump fan runs but the pool stays cold; Hayward unit (photo); no error code shown."
+    scope_line_es: "El ventilador de la bomba de calor funciona pero la alberca sigue fría; equipo Hayward (foto); no muestra código."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <pool / spa / both>
+      <one scope line: heat pump, what it does, brand if known>
+      Does: <nothing / error code / runs, water cold>. Code: <from photo or answer>. Breaker trips: <yes / no / not checked>.
+      Heat pump: <brand, model, neutral> or <not visible>. Wants: <fix / replace / quotes for both>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's low on refrigerant.", "Heat pumps don't work in winter.", "The compressor is gone.", "Switch to gas."]
+
+  - id: leak
+    label: "Losing water: leak at the equipment, in the plumbing, or in the shell"
+    bank_job_type: "pool leak"
+    recurring: false
+    homeowner_phrasings: ["pool losing an inch a day", "is it evaporation", "wet spot by the pool", "have to fill it every few days", "pierde agua"]
+    must_know:
+      - fact: "How fast the level drops"
+        bank_question: symptom
+        follow_up: fu_water_loss
+        photo: null
+        why_it_moves_price: "A quarter inch a day in summer can be evaporation; an inch or more points at a leak search, which is priced as its own visit."
+        skip_if: "Homeowner gave a rate"
+      - fact: "Whether it drops faster with the pump running"
+        bank_question: null
+        follow_up: fu_loss_pump_off
+        photo: null
+        why_it_moves_price: "Faster with the pump on points at the plumbing; the same either way points at the shell, light or skimmer. The test the city pages describe."
+        skip_if: "Homeowner already compared"
+      - fact: "Where any water shows"
+        bank_question: null
+        follow_up: fu_wet_where
+        photo: p6
+        why_it_moves_price: "A wet pad is a fitting or seal; a wet yard or sinking deck means pressure testing and maybe digging. [judgment]"
+        skip_if: "Leak photo sent"
+      - fact: "Surface and water condition"
+        bank_question: water
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A dye test needs clear water; a green pool adds cleanup first. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_water_loss
+        ask_when: "Homeowner reports the level dropping and gave no rate"
+        text_en: "About how fast is the water going down?"
+        text_es: "¿Más o menos qué tan rápido baja el agua?"
+        options_en: ["About 1/4 inch a day or less", "About 1/2 inch a day", "1 inch a day or more", "Only when the pump runs"]
+        options_es: ["Como 1/4 de pulgada al día o menos", "Como 1/2 pulgada al día", "1 pulgada al día o más", "Solo cuando funciona la bomba"]
+        card_field: true
+        why: "The kb's water_loss question; the rate separates evaporation from a leak search."
+      - id: fu_loss_pump_off
+        ask_when: "Level drops faster than about 1/4 inch a day and the homeowner has not compared pump on and off"
+        text_en: "Does the water drop faster when the pump is running, or about the same with it off?"
+        text_es: "¿El agua baja más rápido cuando la bomba está prendida, o más o menos igual con la bomba apagada?"
+        options_en: ["Faster with the pump on", "About the same", "Stops at a certain level", "Haven't compared"]
+        options_es: ["Más rápido con la bomba prendida", "Más o menos igual", "Se detiene en cierto nivel", "No lo he comparado"]
+        card_field: true
+        why: "The pump-on, pump-off comparison is the first split a leak tech makes."
+      - id: fu_wet_where
+        ask_when: "Leak request and no photo of where water shows"
+        text_en: "Do you see water anywhere outside the pool?"
+        text_es: "¿Ve agua en algún lugar fuera de la alberca?"
+        options_en: ["At the equipment pad", "Wet spot in the yard or deck", "Nowhere, just the level drops"]
+        options_es: ["En el área del equipo", "Parte mojada en el patio o la terraza", "En ningún lado, solo baja el nivel"]
+        card_field: true
+        why: "Water at the pad may be a pump seal, which is pump repair. [judgment]"
+      - id: fu_autofill
+        ask_when: "Homeowner mentions a high water bill, an autofill, or refilling and no visible water loss"
+        text_en: "Does the pool have an autofill that adds water on its own?"
+        text_es: "¿La alberca tiene un llenado automático que le agrega agua solo?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "An autofill hides a leak and can itself leak, which may be plumbing work on the potable line that R-6 excludes."
+    photos_priority: [p6, p1, p8]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water draining toward the house or a neighbor's yard", "Level below the skimmer and the pump can't run"]
+      regular: "Slow loss, pool still running"
+    scope_line_en: "Pool losing about an inch a day, faster with the pump on; no wet spots seen; plaster pool, water clear."
+    scope_line_es: "La alberca pierde como una pulgada al día, más rápido con la bomba prendida; no se ven partes mojadas; alberca de yeso, agua clara."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (leak search, pressure test, dye test)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <pool / spa / both>
+      <one scope line: rate of loss, pump on or off, where water shows>
+      Loss: <rate>. Pump on versus off: <faster on / same / stops at a level / not compared>. Water seen: <pad / yard or deck / none>.
+      Autofill: <yes / no / not said>. Pool: <size band>, <surface>, water <clear / cloudy / green>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's just evaporation.", "You have a cracked pipe under the deck.", "Do a bucket test first.", "Leak detection runs about three hundred.", "It's probably the light niche."]
+
+  - id: automation_electrical
+    label: "Timer, automation panel or app, breaker trips, pool light out"
+    bank_job_type: "pump repair"
+    recurring: false
+    homeowner_phrasings: ["pool light won't turn on", "timer stopped working", "AquaLink app offline", "GFCI keeps tripping", "se bota el breaker"]
+    must_know:
+      - fact: "What is not working: light, timer or automation, or power to the equipment"
+        bank_question: symptom
+        follow_up: fu_what_electric
+        photo: p1
+        why_it_moves_price: "A light is a niche and fixture job, automation a board or a setting, a power fault possibly an electrician. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Whether a breaker or GFCI trips"
+        bank_question: null
+        follow_up: fu_breaker_trips
+        photo: p1
+        why_it_moves_price: "R-6 stops at the first disconnect; past that, the job needs an electrician."
+        skip_if: "Answered"
+      - fact: "Brand and model of the control system"
+        bank_question: equipment_brand
+        follow_up: null
+        photo: p4
+        why_it_moves_price: "Boards and light fixtures are brand specific. [judgment]"
+        skip_if: "Panel photo sent"
+    allowed_follow_ups:
+      - id: fu_what_electric
+        ask_when: "Homeowner reports a light, timer, app or power problem without saying which"
+        text_en: "What isn't working: the pool light, the timer or automation, or power to the equipment?"
+        text_es: "¿Qué no funciona: la luz de la alberca, el timer o el control automático, o la corriente al equipo?"
+        options_en: ["Pool or spa light", "Timer, automation or app", "No power to the equipment", "More than one"]
+        options_es: ["Luz de la alberca o spa", "Timer, control o app", "No hay corriente al equipo", "Más de una"]
+        card_field: true
+        why: "Three different trades of work inside one category. [judgment]"
+      - fu_breaker_trips
+    photos_priority: [p1, p4]
+    urgency:
+      fire_dept_triggers: ["Sparking, smoke or a burning smell at the breaker, timer or control panel"]
+      urgent_capable_triggers: ["Someone felt a tingle or shock in or near the water", "No power to the pump in summer heat"]
+      regular: "Light out or a timer setting"
+    scope_line_en: "Pool light will not turn on and the GFCI trips when it is switched; Pentair automation panel (photo)."
+    scope_line_es: "La luz de la alberca no prende y el GFCI se bota cuando se enciende; panel de control Pentair (foto)."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers", "earliest arrival", "whether an electrician may be needed"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <pool / spa / both>
+      <one scope line: what is not working, trips or not>
+      Not working: <light / timer or automation / power / more than one>. Breaker or GFCI trips: <yes / no / not checked>.
+      Controls: <brand, model from photo, neutral> or <not visible>. Tingle or shock reported: <yes / no>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your bonding is bad.", "Reset the GFCI.", "The light is shorted.", "Stay out of the pool until it's fixed.", "A new board is about five hundred."]
+
+  - id: spa_hot_tub
+    label: "Hot tub or spa not heating, jets weak, control pack error"
+    bank_job_type: "pump repair"
+    recurring: false
+    homeowner_phrasings: ["hot tub won't heat", "spa jets weak", "hot tub says FLO", "jacuzzi no prende", "spa breaker trips"]
+    must_know:
+      - fact: "Stand-alone hot tub or a spa built in with the pool"
+        bank_question: pool_or_spa
+        follow_up: fu_spa_kind
+        photo: p1
+        why_it_moves_price: "A built-in spa shares the pool pump and heater; a stand-alone tub has its own pack, heater and pumps. [judgment]"
+        skip_if: "Homeowner said which"
+      - fact: "What it does: not heating, weak jets, an error code, no power"
+        bank_question: symptom
+        follow_up: fu_spa_doing
+        photo: p4
+        why_it_moves_price: "A heater element, a jet pump and a control pack are different parts and visits. [judgment]"
+        skip_if: "Display photo with a code sent"
+      - fact: "Brand and model"
+        bank_question: equipment_brand
+        follow_up: null
+        photo: p4
+        why_it_moves_price: "Hot tub parts are brand specific and some brands need parts ordered. [judgment]"
+        skip_if: "Label photo sent"
+    allowed_follow_ups:
+      - id: fu_spa_kind
+        ask_when: "Homeowner says spa or hot tub and did not say whether it stands alone"
+        text_en: "Is it a stand-alone hot tub, or a spa built in next to the pool?"
+        text_es: "¿Es un jacuzzi independiente, o un spa construido junto a la alberca?"
+        options_en: ["Stand-alone hot tub", "Built in with the pool"]
+        options_es: ["Jacuzzi independiente", "Construido con la alberca"]
+        card_field: true
+        why: "A built-in spa is a pool equipment job; a stand-alone tub is its own unit. [judgment]"
+      - id: fu_spa_doing
+        ask_when: "Hot tub complaint without saying what it does"
+        text_en: "What is the hot tub doing?"
+        text_es: "¿Qué está haciendo el jacuzzi?"
+        options_en: ["Not heating", "Jets weak or off", "Shows an error code", "No power at all"]
+        options_es: ["No calienta", "Chorros débiles o apagados", "Muestra un código de error", "No prende nada"]
+        card_field: true
+        why: "Sets the parts the tech brings. [judgment]"
+      - fu_breaker_trips
+    photos_priority: [p4, p1]
+    urgency:
+      fire_dept_triggers: ["Smoke, sparks or a burning smell at the hot tub control pack or its disconnect"]
+      urgent_capable_triggers: ["Someone felt a tingle or shock in or near the water"]
+      regular: "All hot tub requests"
+    scope_line_en: "Stand-alone hot tub shows FLO and will not heat; jets run; brand not known."
+    scope_line_es: "El jacuzzi independiente muestra FLO y no calienta; los chorros funcionan; no se sabe la marca."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <stand-alone hot tub / built-in spa>
+      <one scope line: what it does, code if any>
+      Does: <not heating / jets weak / error code / no power>. Code: <from photo or answer>. Breaker trips: <yes / no / not checked>.
+      Brand: <from label or answer> or <not known>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["FLO means a dirty filter.", "Your heater element burned out.", "Hot tub packs are about a thousand.", "Just drain and refill it."]
+
+  - id: drain_cover_safety
+    label: "Broken, loose or missing drain cover"
+    bank_job_type: "equipment replacement"
+    recurring: false
+    homeowner_phrasings: ["drain cover cracked in half", "drain cover missing", "drain grate loose", "tapa del drenaje rota"]
+    must_know:
+      - fact: "Cracked, loose or missing, and in the pool or the spa"
+        bank_question: pool_or_spa
+        follow_up: fu_cover_state
+        photo: p8
+        why_it_moves_price: "A cover swap is a short job; a missing cover or a damaged sump may need a diver or a drained spa. [judgment]"
+        skip_if: "Drain cover photo sent"
+      - fact: "Pool surface and size"
+        bank_question: surface
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets how the cover is reached and fastened. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_cover_state
+        ask_when: "Drain cover request and no photo"
+        text_en: "Is the drain cover cracked, loose, or missing?"
+        text_es: "¿La tapa del drenaje está rajada, floja, o no está?"
+        options_en: ["Cracked", "Loose", "Missing"]
+        options_es: ["Rajada", "Floja", "No está"]
+        card_field: true
+        why: "Tells the business what to bring and how soon to come. [judgment]"
+    photos_priority: [p8]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Drain cover cracked or missing and the pool or spa is in use"]
+      regular: "Cover loose, pool not in use"
+    scope_line_en: "Main drain cover at the deep end is cracked across one side; pebble pool, water clear."
+    scope_line_es: "La tapa del drenaje principal en la parte honda está rajada de un lado; alberca de piedrita, agua clara."
+    quote_format: range
+    business_fills: ["price range installed", "what moves it inside the range", "earliest day"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <pool / spa / both>
+      <one scope line: cover state, where>
+      Cover: <cracked / loose / missing>. Where: <pool floor / spa>. Date on cover: <from photo or not visible>.
+      Pool: <size band>, <surface>, water <clear / cloudy / green>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Keep everyone out of the pool.", "That's a federal violation.", "Covers are cheap.", "Turn the pump off until it's replaced."]
+
+  - id: equipment_replace
+    label: "Replace a pump, filter, heater or salt system with new"
+    bank_job_type: "equipment replacement"
+    recurring: false
+    homeowner_phrasings: ["want a new variable speed pump", "replace the filter", "new heater quote", "upgrade the equipment", "pump is old, want a new one"]
+    must_know:
+      - fact: "What is being replaced"
+        bank_question: symptom
+        follow_up: fu_replace_what
+        photo: p1
+        why_it_moves_price: "Each unit has its own price band; more than one changes the plumbing at the pad. [judgment]"
+        skip_if: "Homeowner named it"
+      - fact: "Current brand, model and size from the labels"
+        bank_question: equipment_brand
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "A same-brand, same-footprint swap needs less replumbing; a single-speed pump must become variable-speed under the DOE rule."
+        skip_if: "Label photos sent"
+      - fact: "Pool size and spa"
+        bank_question: size_band
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sizing sets the model quoted. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether the homeowner already has the new unit"
+        bank_question: null
+        follow_up: fu_have_equipment
+        photo: null
+        why_it_moves_price: "Labor-only installs are quoted differently from supply-and-install. [judgment]"
+        skip_if: "Homeowner said who supplies it"
+    allowed_follow_ups:
+      - id: fu_replace_what
+        ask_when: "Homeowner wants new equipment and did not say which"
+        text_en: "What would you like replaced?"
+        text_es: "¿Qué le gustaría cambiar?"
+        options_en: ["Pump", "Filter", "Heater or heat pump", "Salt system", "More than one"]
+        options_es: ["Bomba", "Filtro", "Calentador o bomba de calor", "Sistema de sal", "Más de uno"]
+        card_field: true
+        why: "Each unit is a different quote. [judgment]"
+      - id: fu_have_equipment
+        ask_when: "Replacement request and the homeowner did not say who supplies the new unit"
+        text_en: "Do you already have the new equipment, or should the business supply it?"
+        text_es: "¿Ya tiene el equipo nuevo, o prefiere que el negocio lo traiga?"
+        options_en: ["I have it", "Business supplies it", "Either"]
+        options_es: ["Ya lo tengo", "Que lo traiga el negocio", "Cualquiera"]
+        card_field: true
+        why: "Decides whether the quote is labor only. [judgment]"
+      - fu_heater_fuel
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Old pump has stopped and the water is turning green in summer heat"]
+      regular: "Planned upgrade"
+    scope_line_en: "Replace a single-speed pump with a variable-speed pump; Hayward 1.5 HP now (label photo); medium pool with spa."
+    scope_line_es: "Cambiar una bomba de una velocidad por una de velocidad variable; ahora es Hayward de 1.5 HP (foto de la etiqueta); alberca mediana con spa."
+    quote_format: range
+    business_fills: ["price range installed", "brand and model offered", "what moves it inside the range (wiring, replumbing, automation)", "earliest day"]
+    card_template: |
+      REQ-<id> | Pool and spa repair | <town>, <general area> | <pool / spa / both>
+      <one scope line: what to replace, current unit>
+      Replace: <pump / filter / heater or heat pump / salt system / more than one>. Now: <brand, model, size from label, neutral>.
+      New unit: <on site / business supplies / either>. Fuel if heater: <natural gas / propane / electric / n/a>.
+      Pool: <size band>, spa <yes / no>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Variable-speed pumps pay for themselves.", "Get the biggest pump you can.", "Pentair is better than Hayward.", "A new pump installed runs about fifteen hundred."]
+
+business_side:
+  how_they_get_customers: ["Weekly route customers who call their pool tech first", "Google Maps listing and reviews", "Referrals from pool cleaning routes and builders", "Local Facebook groups and Nextdoor [judgment]", "Google search ads and Local Services Ads", "Home-service marketplaces"]
+  customer_acquisition_benchmarks:
+    - channel: "Google search ads, pool service and repair keywords"
+      figure: "About $35 to $55 per lead (marketing-vendor figures compiled from third parties, not audited)"
+      source: webtonic_pool_ads
+      unverified: false
+    - channel: "Google Local Services Ads, pool companies"
+      figure: "About $22 to $75 per lead; the vendor's own table and text disagree (marketing-vendor figure)"
+      source: webtonic_pool_ads
+      unverified: false
+    - channel: "Google search ads, pool construction (context for equipment replacement)"
+      figure: "About $125 to $180 per lead (marketing-vendor figure)"
+      source: webtonic_pool_ads
+      unverified: false
+    - channel: "Lake Havasu City pool repair businesses specifically"
+      figure: "No local figures found; a small market with route-based word of mouth may run below national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead that several other pool companies also bought", "Price shoppers who want a pump price over the phone", "Weekly cleaning requests sent as repair jobs", "Monthly fees whether or not jobs come", "No brand or model, so they drive out blind"]
+  what_makes_a_lead_worth_paying_for: ["Pad photo and motor label before the first call", "Brand, model and error code on the card", "Fix or replace already asked", "Water condition stated, so they know whether a green-to-clean comes with it", "Pay only when picked, nothing monthly"]
+  their_words: ["equipment pad", "capacitor", "shaft seal", "lid o-ring", "prime", "VS pump", "multiport", "grids", "laterals", "cell", "check cell", "flow switch", "pressure test", "dye test", "bonding", "first disconnect", "green-to-clean"]
+  signup_objections:
+    - objection: "My route customers already call me. Why pay $25?"
+      answer: "You pay only when a homeowner who isn't already yours picks your quote. Nothing to join, nothing per month. The fee is set by job size: $25, $75 or $199."
+    - objection: "I can't quote a pump without seeing it."
+      answer: "You don't have to. Quote a visit fee and say what it covers. Most cards come with a pad photo, the motor label and what the pump is doing."
+    - objection: "Will I get weekly cleaning requests?"
+      answer: "Only if you sign up for weekly cleaning too. Repair cards go only to businesses that picked repair job types, and you choose those at sign-up."
+    - objection: "I'm R-6. Will I get gas heater jobs I can't do?"
+      answer: "No. Gas heater cards go only to license classes that cover gas heater work. You see the job types your license covers, and you pick which ones you want."
+    - objection: "I'm not licensed. Can I join?"
+      answer: "Yes, for repair jobs under $1,000 total that need no permit and have no gas work. Your quote has to stay inside that limit, and your ads must say you are not a licensed contractor."
+    - objection: "Will you rank me against other pool companies?"
+      answer: "No. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "What if I quote and don't get the job?"
+      answer: "Then you pay nothing. The fee is charged only when a homeowner picks your quote and you confirm."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Half these calls are from people out of town."
+      answer: "The card says when it's needed and what the homeowner told us. Many seasonal owners text from out of town, and you get their contact details once they pick you."
+  quote_tips_for_card: ["Say what the visit fee covers and whether it comes off the repair", "For a replacement, name the brand and model you would install", "Say if wiring or replumbing could change the price", "Give your earliest arrival", "If you need a photo of the motor label or gauge, say which"]

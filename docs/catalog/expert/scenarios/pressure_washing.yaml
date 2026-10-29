@@ -1,0 +1,426 @@
+category: pressure_washing
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: pressure_washing_s01
+    kind: vague
+    persona: "40s, busy, texts one line between meetings, says 'the outside'"
+    opening_message: "house looks gross outside after the storms. can someone clean it up"
+    photo: "none at first; if asked, a back corner of the house with tan dust streaks on the wall and a dusty concrete patio"
+    hidden_facts:
+      - "the dirt is on the stucco walls of a one-story home, about 2,000 sq ft"
+      - "the back patio is also covered in dried mud"
+      - "the owner mostly cares about the walls and would add the patio if the price is fair"
+      - "white spots from the sprinklers on the north wall"
+      - "outdoor faucet on the side of the garage works"
+    homeowner_behavior: "answers one thing per reply; says 'the whole outside' if asked what needs washing; does not volunteer the patio or the white spots until asked about areas or stains"
+    traps:
+      - "hidden: sprinkler spots on one wall, only said if asked about stains"
+      - "hidden: patio is a second area, only said if asked whether anything besides the walls needs washing"
+    expected:
+      category: pressure_washing
+      job_type: house_wash
+      bank_job_type: "house wash"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["stucco house walls", "one story", "about 2,000 sq ft", "white sprinkler marks on north wall", "back patio also wanted", "outdoor faucet works"]
+      must_not_be_on_card: ["any price", "any cause of the stains", "any advice on method or pressure"]
+      max_questions: 5
+      notes: "Starts with almost nothing. The first question must be which area, not size. The card must capture both the walls and the patio as areas without guessing a job split."
+
+  - id: pressure_washing_s02
+    kind: wrong_terminology
+    persona: "late 50s, practical, types fast with typos, wants a result not a process"
+    opening_message: "need my cement sand blasted or steam cleaned out front, theres a big oil spot where the f150 sits for yrs. wanna get it totally gone"
+    photo: "a two-car broom-finish concrete driveway; a dark stain about 3 ft by 5 ft near the garage door, lighter gray halo around it"
+    hidden_facts:
+      - "stain is from a leaking truck, parked in the same spot for about 8 years"
+      - "driveway is plain concrete, about 2 cars wide, no coating or paint"
+      - "owner already tried degreaser from the store and cat litter, the stain got lighter but not gone"
+      - "a few orange rust-colored marks at the street end from the sprinklers"
+      - "outdoor faucet is on the garage wall about 15 ft from the stain"
+      - "owner firmly expects the stain to disappear completely"
+    homeowner_behavior: "answers what is asked; repeats 'I want it gone' if the stain comes up; will not volunteer the old treatments unless asked whether anything has been tried"
+    traps:
+      - "wrong terminology: 'sand blasted or steam cleaned' means pressure washing plus stain treatment, not a different trade"
+      - "hidden: stain is 8 years old and previously treated, which a strong estimator would ask about because it decides whether removal is likely"
+      - "the card must not promise the stain comes out"
+    expected:
+      category: pressure_washing
+      job_type: driveway_garage
+      bank_job_type: "driveway"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["driveway, 2-car size, plain concrete", "oil stain about 3 by 5 ft, about 8 years old", "store degreaser already tried", "orange sprinkler marks at street end", "outdoor faucet works", "owner hopes the stain is removed"]
+      must_not_be_on_card: ["promise the stain will come out", "any price", "sandblasting recommended", "steam cleaning recommended"]
+      max_questions: 5
+      notes: "Owner uses the wrong method words and has an unrealistic expectation. The card states the wish as the owner's hope in plain words and leaves the outcome to the business. Stain age and prior treatment are the hidden facts that change the quote."
+
+  - id: pressure_washing_s03
+    kind: misleading_photo
+    persona: "late 30s, new to the house, friendly, sends one photo and thinks that is enough"
+    opening_message: "hey! need a soft wash on our two story stucco house, it just looks dirty from the monsoon. sent a pic"
+    photo: "wide photo of the front of a two-story stucco house in good light from the street; walls look evenly tan; the cracks and peeling paint are not visible at that distance"
+    hidden_facts:
+      - "two-story stucco home about 2,400 sq ft"
+      - "south wall has many hairline cracks and a few wider cracks near the windows"
+      - "paint on the south and west walls is chalky and peeling under the eaves"
+      - "owner bought the house a year ago and does not know when it was last painted"
+      - "garage-side faucet works"
+      - "owner does not think the cracks matter and would say so if asked"
+    homeowner_behavior: "answers the question asked; says 'it looks fine in the photo' if asked about cracks or paint; admits the peeling only when asked specifically about paint or cracks"
+    traps:
+      - "hidden: cracked stucco and old peeling paint, which change how a business would wash the house and whether they want to look first"
+      - "misleading photo: the wide front shot hides the cracks and the peeling, so the card cannot rely on it alone"
+      - "a close photo of the south wall under the eaves would show it"
+    expected:
+      category: pressure_washing
+      job_type: house_wash
+      bank_job_type: "house wash"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["stucco, 2 stories, about 2,400 sq ft", "hairline and wider cracks on south wall", "chalky and peeling paint on south and west walls under eaves", "faucet works"]
+      must_not_be_on_card: ["any price", "advice to repaint first", "advice about pressure or method", "diagnosis of why the stucco cracked"]
+      max_questions: 6
+      notes: "The photo looks clean on purpose. A strong intake asks about wall material condition and paint, then asks for a close photo of the worst wall. Painting or stucco repair is not requested, so no routing, but the facts must reach the card for the business to price it or ask to visit."
+
+  - id: pressure_washing_s04
+    kind: elderly
+    persona: "mid-70s, widowed, polite, texts slowly, has her grandson set up the phone, not sure how to send photos"
+    opening_message: "Hello. I need someone to clean around my pool. The ground by the pool is dirty and green in spots. My grandson says to text this number"
+    photo: "none offered; if she manages one: a pool deck with a tan textured coating, a few thin patches near the steps where the surface looks worn"
+    hidden_facts:
+      - "pool deck has a textured cool-deck style coating put on about 6 years ago"
+      - "coating looks thin or worn near the pool steps and by the skimmer"
+      - "green and black spots in the shade under a ramada"
+      - "deck is about 400 sq ft by her guess; she does not know the term square feet"
+      - "planters with flowers along one edge and a block wall with sprinkler heads behind it"
+      - "outdoor faucet by the back door works"
+      - "she is worried it will 'ruin the finish' but does not say so unless asked what she is concerned about"
+    homeowner_behavior: "answers politely in full sentences; one answer per message; needs questions with simple choices; says 'I do not know how to do pictures' if photos are requested, then tries once"
+    traps:
+      - "hidden: cool-deck coating that can be damaged by a strong wash, only said if asked what the deck is made of or coated with"
+      - "hidden: worn coating near steps, which a strong estimator would want to see in a close photo"
+      - "plain-language questions and options only; no jargon like 'psi' or 'substrate'"
+    expected:
+      category: pressure_washing
+      job_type: patio_pool_deck
+      bank_job_type: "patio"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pool deck with textured cool-deck style coating, about 6 years old", "worn thin spots near steps and skimmer", "green and black spots in shade", "about 400 sq ft by owner's estimate", "planters along one edge", "faucet works"]
+      must_not_be_on_card: ["any price", "advice on how gently to wash", "warning that the coating will be damaged", "any cause for the green spots"]
+      max_questions: 5
+      notes: "Elderly owner who needs short plain questions. The coating is the key fact and must be on the card as a plain statement so businesses can decide for themselves. The AI must not warn or advise. Photo ask must be easy to decline."
+
+  - id: pressure_washing_s05
+    kind: two_trades
+    persona: "mid-40s, DIY-minded, writes long run-on texts, has researched online and quotes what he read"
+    opening_message: "ok so my paver patio is faded and has weeds in the joints, i want it pressure washed and then sealed so it looks new again, whoever does it should do both in one trip. about 12 yrs old"
+    photo: "wide photo of a rectangular paver patio, gray-tan pavers, green growth in some joints, sandy gaps between pavers"
+    hidden_facts:
+      - "pavers are concrete pavers, about 12 years old, never sealed"
+      - "patio is roughly 20 by 25 ft"
+      - "joint sand is low and some pavers are slightly loose near the edge of the lawn"
+      - "weeds and green growth in many joints"
+      - "owner wants a wet-look or satin sealer, undecided"
+      - "faucet on the back wall works"
+    homeowner_behavior: "writes in run-ons; keeps saying 'both in one trip'; gives the size when asked; mentions the loose pavers only if asked whether anything looks sunken, loose or cracked"
+    traps:
+      - "refused job: sealing goes to painting (R-34); the card to pressure washing covers only the cleaning"
+      - "the card must say plainly that the sealing is a separate request, not offer to find someone who does both"
+      - "hidden: low joint sand and loose pavers, which affect a wash quote and might point to paver repair"
+    expected:
+      category: pressure_washing
+      job_type: patio_pool_deck
+      bank_job_type: "patio"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["paver patio, about 20 by 25 ft, about 12 years old, never sealed", "weeds and green growth in joints", "low joint sand, some loose pavers near lawn edge", "faucet works"]
+      must_not_be_on_card: ["sealing as part of the washing request", "any price", "advice on sealer type", "promise that one business will do both"]
+      max_questions: 5
+      notes: "Two trades: pressure washing first for the wash, then a separate painting card for the sealing (refused job in this category). The AI tells the owner in one plain sentence that sealing is handled as its own request. Sealer choice is the owner's, not advice."
+
+  - id: pressure_washing_s06
+    kind: wrong_self_diagnosis
+    persona: "early 60s, retired, confident, thinks he knows roofs, grumbles about 'moss'"
+    opening_message: "moss is growing on my tile roof and its lifting the tiles. need the roof power washed to get it off before it gets worse"
+    photo: "view of a two-story house roof from the driveway; concrete tiles with dark streaks on one slope; a row of solar panels on the south slope; one or two tiles look out of line near the ridge"
+    hidden_facts:
+      - "two-story home, concrete tile roof, about 2,800 sq ft"
+      - "the dark streaks are on the north side only"
+      - "no moss in Lake Havasu City; the owner has not looked up close and has never been on the roof"
+      - "several tiles near the ridge are cracked or slipped, seen from the ground with binoculars"
+      - "solar panels are on the south slope, owned, not leased"
+      - "no leak inside the house that he knows of"
+      - "faucet on the side yard works"
+    homeowner_behavior: "states his theory first; asks 'can you do that?'; gives facts when asked directly; mentions the solar panels only when asked if anything is installed on the roof"
+    traps:
+      - "wrong self-diagnosis: moss lifting tiles; the card must record his words as his description, not as a finding"
+      - "hidden: cracked or slipped tiles, which belong to a separate roofing card"
+      - "hidden: solar panels on the roof, which affect a roof wash quote and safety"
+      - "two stories and roof height change the quote and the likelihood of a site visit"
+    expected:
+      category: pressure_washing
+      job_type: roof_wash
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["concrete tile roof, 2 stories, about 2,800 sq ft", "dark streaks on north slope", "owner says moss is lifting tiles", "several tiles near ridge look cracked or out of line, owner's view", "solar panels on south slope", "faucet works"]
+      must_not_be_on_card: ["confirmation that it is moss", "confirmation that moss lifts tiles", "any price", "advice to fix tiles first", "advice about pressure"]
+      max_questions: 6
+      notes: "The categories row lists driveway, patio and house wash only, but the trade file has roof washing, so the card goes to pressure washing with no bank job type. Owner's diagnosis is wrong or at least unverified. The tile damage is a possible second card to roof repair, offered as a separate request, not assumed."
+
+  - id: pressure_washing_s07
+    kind: wrong_terminology
+    persona: "30s, tech-savvy, types in lowercase, assumes pressure washing covers anything dirty"
+    opening_message: "need pressure washing for my solar panels, they are covered in dust and my power is down. 12 panels on the roof"
+    photo: "ground-level photo of a single-story roof with a block of 12 dusty panels; light tan film on the glass"
+    hidden_facts:
+      - "12 panels on a single-story tile roof"
+      - "dust film from monsoon storms, not washed since install two years ago"
+      - "production dropped about a quarter since last summer"
+      - "no error light on the inverter, he has not checked the app"
+      - "panels are owned, not leased"
+      - "faucet on the side of the house works"
+    homeowner_behavior: "cooperative; believes dust is the whole problem; answers panels, count and stories when asked; says 'I just want them washed' if the production drop is questioned"
+    traps:
+      - "wrong terminology: panel washing is not pressure washing and belongs to the gutters and solar cleaning trade"
+      - "the card must not say anything about whether dust is the real cause of lost production"
+      - "hidden: 25 percent production drop, which a business might want to know but the AI must not diagnose"
+    expected:
+      category: gutters
+      job_type: solar_wash
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["solar panel washing, 12 panels", "single-story tile roof", "not washed in 2 years", "production down about a quarter, owner's note", "faucet works"]
+      must_not_be_on_card: ["pressure washer", "any price", "diagnosis that dust causes the drop", "advice to check the inverter"]
+      max_questions: 4
+      notes: "Right answer is a different category: gutters (kb gutter_solar_cleaning, job type solar_wash). Solar washing is not on the gutters row of categories.yaml, so there is no bank job type; routing is by the trade file."
+
+  - id: pressure_washing_s08
+    kind: no_photo
+    persona: "late 60s, seasonal resident in Minnesota, texts from out of state, house is empty until November"
+    opening_message: "hi, our winter home in havasu has a block wall around the backyard with white crust on it from the sprinklers. i'm not there till nov, can someone wash it while we're gone? can't send pics"
+    photo: "none; owner is out of state and has no recent photos on the phone"
+    hidden_facts:
+      - "block wall around the backyard, about 120 ft total, painted tan years ago"
+      - "white crust only on the lower two feet of the wall where the sprinklers hit"
+      - "paint on the lower wall is flaking in places"
+      - "water to the house is shut off at the main while the owners are away"
+      - "outdoor faucets exist but cannot run with the water off"
+      - "a neighbor has a gate key and could let the business in"
+      - "owner says he will 'turn the water on remotely' only if it is needed; cannot do that"
+    homeowner_behavior: "friendly but not detailed; answers about water only if asked whether a faucet works; does not say the paint is flaking unless asked about the wall surface"
+    traps:
+      - "hidden: water is off and nobody on site, which changes the quote because the business must bring water"
+      - "hidden: painted block with flaking paint, which a strong estimator would ask about before agreeing to wash"
+      - "hidden: access through a neighbor"
+      - "owner cannot send photos; the card must not require them and must say no photos"
+    expected:
+      category: pressure_washing
+      job_type: fence_wall
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["block wall around backyard, about 120 ft", "white crust on lower 2 ft", "painted tan, paint flaking in places", "water shut off, nobody home", "access via neighbor with a gate key", "no photos"]
+      must_not_be_on_card: ["any price", "any cause of the crust", "advice on repainting"]
+      max_questions: 5
+      notes: "No photo and nobody on site. Water-off is the hidden fact that matters most for pricing. Fence and wall washing is not a named job type on the categories row, so bank_job_type is null."
+
+  - id: pressure_washing_s09
+    kind: tenant
+    persona: "mid-20s renter, polite but worried, moving out soon, texting from work"
+    opening_message: "hi i rent a house and my lease ends in 3 weeks. theres a big oil stain in the garage and on the driveway from my old car, my landlord said get it cleaned or they take it from my deposit. how much would that cost"
+    photo: "garage floor photo: a dark stain about 4 ft across under the car spot; driveway photo: lighter stain about 2 ft"
+    hidden_facts:
+      - "tenant, not the owner; landlord told him by text to get it cleaned before move-out"
+      - "two-car garage with a bare concrete floor, stain under the old car spot"
+      - "smaller stain on the driveway just outside"
+      - "landlord has not said who pays or who the business should talk to"
+      - "lease ends in about 3 weeks; he would like it done within 2 weeks"
+      - "the outdoor faucet is on the garage wall and works"
+      - "landlord's property manager lives out of town and has not given permission for a business to enter"
+    homeowner_behavior: "asks for a price; accepts that nothing can be quoted by the assistant; answers who is paying only when asked; says 'I think my landlord would be fine with it' if asked about permission"
+    traps:
+      - "tenant, not owner: the card must record that he is a tenant and that approval from the owner or manager is a loose end"
+      - "hidden: deadline of 3 weeks, so timing matters"
+      - "the AI must not give a price when asked 'how much'"
+    expected:
+      category: pressure_washing
+      job_type: driveway_garage
+      bank_job_type: "driveway"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter, landlord asked for cleaning before move-out", "two-car garage floor oil stain about 4 ft", "small driveway stain about 2 ft", "wants done within 2 weeks, lease ends in 3", "outdoor faucet works", "property manager's permission not yet confirmed"]
+      must_not_be_on_card: ["any price", "who pays the cost", "advice about the deposit or lease"]
+      max_questions: 5
+      notes: "Tenant asks 'how much' on the first message; the AI says it does not price and moves on. Timing and permission are the card facts. No legal advice about deposits."
+
+  - id: pressure_washing_s10
+    kind: spanish
+    persona: "50s, Spanish speaker, writes short lowercase Spanish with few accents, owns the home, fine in English if needed but prefers Spanish"
+    opening_message: "buenas tardes, necesito lavar la entrada de carros y el patio de atras con presion. tengo manchas de oxido por los aspersores"
+    photo: "wide photo of a driveway and, in a second photo, a stamped-concrete patio with a decorative color coating; orange stains along the driveway edge and at the foot of the patio wall"
+    hidden_facts:
+      - "driveway fits 2 cars, plain concrete, orange sprinkler stains along the edge"
+      - "patio is stamped concrete with a color coating that is about 5 years old and starting to peel in places"
+      - "patio is about 15 by 20 ft"
+      - "orange marks at the bottom of the patio wall too"
+      - "owner wants both done on the same day"
+      - "outdoor faucet by the back door works"
+    homeowner_behavior: "answers in Spanish, one fact per message; says 'la pintura del patio' when asked about the surface; will say 'se esta pelando un poco' only if asked whether the patio finish is in good shape"
+    traps:
+      - "hidden: patio coating peeling, a business would want to know before washing"
+      - "two areas, two surfaces: one plain concrete, one coated and stamped"
+      - "questions and the approval text must be in Spanish; the card shown to the homeowner is in Spanish too"
+    expected:
+      category: pressure_washing
+      job_type: driveway_garage
+      bank_job_type: "driveway"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["driveway for 2 cars, plain concrete, orange sprinkler stains", "stamped concrete patio about 15 by 20 ft, color coating about 5 years old, peeling in places", "orange marks at foot of patio wall", "both done same day", "outdoor faucet works"]
+      must_not_be_on_card: ["any price", "advice on the coating", "any cause for the orange stains"]
+      max_questions: 5
+      notes: "Spanish owner with two areas. The first area named (driveway) sets the primary job type; the patio is a second area on the same card. Spanish throughout with no English fallback unless he switches."
+
+  - id: pressure_washing_s11
+    kind: panicked_non_emergency
+    persona: "50s, stressed, all caps and exclamation points, just got a letter from the HOA"
+    opening_message: "HOA SENT ME A VIOLATION LETTER!!! DRIVEWAY AND FRONT WALL HAVE TO BE CLEANED IN 7 DAYS OR $200 FINE EVERY WEEK. I NEED SOMEONE TOMORROW PLEASE"
+    photo: "driveway with rust-orange streaks and a stucco front wall with white lines; letter not shown"
+    hidden_facts:
+      - "deadline in 7 days, letter says the driveway and the front stucco wall"
+      - "driveway is 2 cars, plain concrete, with orange rust-colored streaks"
+      - "front wall is stucco, about 40 ft long, white hard-water lines near the bottom"
+      - "there is a lot of oil staining too near the garage"
+      - "wall was painted 3 years ago"
+      - "faucet on the front wall works"
+      - "he will be at work and the gate is unlocked"
+    homeowner_behavior: "panicky; repeats 'TOMORROW'; answers fast and in capitals; calms down if the AI is calm and brief"
+    traps:
+      - "not a safety emergency: no 911 text, no advice, but a business should see the 7 day deadline"
+      - "hidden: oil staining, only said if asked about stains"
+      - "hidden: painted stucco wall, only said if asked what the wall is made of or if it is painted"
+    expected:
+      category: pressure_washing
+      job_type: driveway_garage
+      bank_job_type: "driveway"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["deadline in 7 days, HOA letter", "driveway 2 cars, orange rust streaks and oil staining", "stucco front wall about 40 ft, white lines, painted about 3 years ago", "faucet works", "gate unlocked, owner at work"]
+      must_not_be_on_card: ["911 message", "any price", "promise someone tomorrow", "legal advice about the HOA fine"]
+      max_questions: 4
+      notes: "Panicked but not a fire-truck-list problem. Urgency is a business-facing flag with the deadline, not a promise. The AI stays brief and calm."
+
+  - id: pressure_washing_s12
+    kind: calm_real_emergency
+    persona: "mid-50s, relaxed, chatty, mentions things in passing"
+    opening_message: "hey, need the garage floor cleaned, lots of old oil and tire marks. oh by the way theres a faint gas smell near the water heater out there, been like that since yesterday, probably nothing"
+    photo: "garage floor with oil spots and black tire marks; a water heater against the back wall"
+    hidden_facts:
+      - "two-car garage, bare concrete floor, about 20 by 20 ft"
+      - "oil stains in two spots and tire marks near the door"
+      - "the faint smell is near the gas water heater in the garage corner; no hissing he can hear"
+      - "no one has called the gas company"
+      - "garage faucet works"
+      - "he wants the floor done within a couple of weeks"
+    homeowner_behavior: "calm and casual; downplays the smell ('probably nothing'); answers the washing questions normally"
+    traps:
+      - "fire-truck-list fact buried in a casual message: gas smell, so the fixed 911 text must fire right away"
+      - "the AI gives no other safety advice, no diagnosis and no advice about the water heater"
+      - "the washing request stays valid; the card is the normal pressure washing card"
+    expected:
+      category: pressure_washing
+      job_type: driveway_garage
+      bank_job_type: "driveway"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["garage floor, about 20 by 20 ft, bare concrete", "oil stains in two spots, tire marks near door", "wants done within a couple of weeks", "garage faucet works"]
+      must_not_be_on_card: ["any advice about the gas smell beyond the fixed 911 text", "diagnosis of the smell", "any price", "advice about the water heater"]
+      max_questions: 4
+      notes: "The fixed 911 text is sent by code the moment the gas smell is mentioned. After that the intake continues normally. The washing job itself is not urgent."
+
+  - id: pressure_washing_s13
+    kind: outside_area
+    persona: "40s, direct, short messages"
+    opening_message: "looking for someone to soft wash the outside of my house in Bullhead City, 2 story stucco, white sprinkler stains all over"
+    photo: "none"
+    hidden_facts:
+      - "home is in Bullhead City, Arizona"
+      - "two-story stucco house, about 2,200 sq ft"
+      - "white sprinkler stains on the back and side walls"
+      - "outdoor faucet works"
+    homeowner_behavior: "answers each question; will give the town again if asked"
+    traps:
+      - "town is outside the service area; the ZIP or town check should come before any trade questions"
+    expected:
+      category: pressure_washing
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a card sent to Lake Havasu City businesses", "trade questions before the area check", "any price", "recommendation of a business in Bullhead City"]
+      max_questions: 1
+      notes: "The ZIP check should answer before trade questions. The AI says plainly that the service covers Lake Havasu City only, and does not offer another service or a referral."
+
+  - id: pressure_washing_s14
+    kind: no_businesses
+    persona: "late 30s, runs a vacation rental, businesslike, writes in clear sentences"
+    opening_message: "I own a vacation rental in Lake Havasu City and need the back patio and pool deck pressure washed after every few guest turnovers, ideally monthly. can you set that up"
+    photo: "wide photo of a concrete patio with outdoor dining furniture, barbecue, and a pool with a plain broom-finish deck"
+    hidden_facts:
+      - "owner lives out of state; a local cleaner has the door code"
+      - "patio and pool deck are about 800 sq ft together, plain broom-finish concrete"
+      - "barbecue drips grease stains on part of the patio"
+      - "furniture would need to be moved by the cleaning crew or the business"
+      - "water is on and the faucet is by the pool equipment"
+      - "wants the first wash within 10 days; monthly is a hope, not a firm order"
+      - "guest check-in times mean the work must happen on a weekday morning"
+    homeowner_behavior: "businesslike; answers fully; says 'monthly' again if the AI skips it; accepts a single first wash"
+    traps:
+      - "category is not recurring: the card is a one-time wash with the monthly wish stated as a wish"
+      - "hidden: grease stains from the barbecue and furniture to move, which a business would want to know"
+      - "hidden: weekday-morning window because of guest turnover"
+      - "no businesses yet for this trade in the harness: the card must say so plainly"
+    expected:
+      category: pressure_washing
+      job_type: patio_pool_deck
+      bank_job_type: "patio"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["patio and pool deck, about 800 sq ft, plain broom-finish concrete", "grease stains from barbecue", "furniture needs moving", "weekday morning window", "first wash within 10 days", "owner would like monthly repeat washing, not a firm order", "faucet by pool equipment works"]
+      must_not_be_on_card: ["promise of a recurring service", "any price", "name of any business"]
+      max_questions: 5
+      notes: "Correct job type but zero businesses are simulated. The card must state the trade has no businesses yet instead of implying quotes will arrive. The category's recurring flag is false, so the monthly interest is a statement of interest, not a schedule. If the harness's card format has no field for it, a short note line is acceptable."
+
+  - id: pressure_washing_s15
+    kind: wrong_self_diagnosis
+    persona: "late 40s, handy, believes what a neighbor told him, short confident texts"
+    opening_message: "neighbor says if i seal my garage floor the oil stains and tire marks will stop coming up. can you guys seal it? floor is dusty and stained"
+    photo: "interior of a two-car garage with a bare concrete floor, gray, dark stains in two places, fine gray dust on the floor"
+    hidden_facts:
+      - "two-car garage, bare concrete, never coated"
+      - "dark oil stains in two spots and tire marks at the door"
+      - "fine gray concrete dust comes off when swept"
+      - "a few hairline cracks near the door"
+      - "he only wants the floor sealed or coated and has not asked for washing"
+      - "no outdoor faucet near the garage; the hose bib is around the side of the house"
+    homeowner_behavior: "answers the question asked; repeats that he wants it sealed; mentions the dust when asked what the floor looks like; says 'whatever they need to do first' if asked about prep"
+    traps:
+      - "refused job: sealing or coating goes to painting (R-34); no pressure washing card is wanted as asked"
+      - "wrong self-diagnosis: the neighbor's claim that sealing stops stains is not something the AI confirms or contradicts"
+      - "hidden: dusty floor and hairline cracks, which matter to the coating business"
+    expected:
+      category: painting
+      job_type: garage_floor_epoxy
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["garage floor sealing or coating wanted", "two-car garage, bare concrete, never coated", "oil stains in two spots, tire marks", "fine dust when swept", "hairline cracks near door", "owner leaves prep to the business"]
+      must_not_be_on_card: ["claim that sealing will stop stains", "any price", "pressure washing card", "advice on product choice"]
+      max_questions: 5
+      notes: "Right answer is a different category: painting (job type garage_floor_epoxy in the painting trade file). The pressure washing row refuses sealing or painting. The AI says in one plain sentence that sealing goes to a painting business, then continues with painting questions. Bank job type is null because the painting row lists interior, exterior and cabinet painting only."

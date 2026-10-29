@@ -1,0 +1,624 @@
+# Run agent output for variant baseline_human (the human bar). The intake is played as the best
+# electrical estimator in Arizona: 25 years, prices jobs from a text and a photo, knows Lake Havasu
+# homes. Per baseline_human_estimator.md the run agent did not open question_bank.yaml, the expert
+# file or trade_kb; it had categories.yaml for routing, so job_type holds the categories.yaml job
+# type label (no kb ids). The estimator asks in their own words, may tell the homeowner what they
+# suspect and may give safety advice (the judge notes it; it does not count against the human).
+# Only the privacy rules bind the notes. The homeowner is played strictly from the scenario's
+# hidden facts and behavior; anything not in hidden_facts is answered "not sure".
+# fire_dept_text records whether the estimator sent a 911/safety message for a fire-truck-list fact.
+category: electrical
+variant: baseline_human
+model: "claude-opus-5-5"
+run: "run-2026-10-29"
+results:
+  - scenario_id: electrical_s01
+    transcript:
+      - {who: homeowner, text: "power is acting weird in the back of the house"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "What's it doing exactly: lights dimming or flickering, things shutting off, or outlets dead?", step: question}
+      - {who: homeowner, text: "lights dim for a second and come back. its weird"}
+      - {who: intake, text: "Which rooms? Only the back, or does the kitchen and front of the house do it too?", step: question}
+      - {who: homeowner, text: "the two back bedrooms. front and kitchen are normal"}
+      - {who: intake, text: "How often does it happen?", step: question}
+      - {who: homeowner, text: "about once an hour"}
+      - {who: intake, text: "When did it start? Anything happen around then, like a storm, new appliance or any work on the house?", step: question}
+      - {who: homeowner, text: "couple weeks ago. after the monsoon storm"}
+      - {who: intake, text: "Any buzzing, warm switch plates or outlets, burning smell or sparks anywhere?", step: question}
+      - {who: homeowner, text: "no. none of that"}
+      - {who: intake, text: "What year is the house, and where's the panel?", step: question}
+      - {who: homeowner, text: "1979. original panel in the garage"}
+      - {who: intake, text: "Can you text me a picture of the panel with the door open? Helps me see what I'm walking into.", step: photo}
+      - {who: homeowner, text: "busy. just send it"}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "breaker trips", bank_job_type: "breaker trips", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | electrical / dimming lights, one area | Lake Havasu City
+      FACTS
+      - Lights in the two back bedrooms dim for about a second and come back, roughly once an hour.
+      - Front of the house and kitchen are normal.
+      - Started about two weeks ago, after the monsoon storm.
+      - No buzzing, no warm plates or outlets, no burning smell, no sparks.
+      - House built 1979, original panel in the garage.
+      - No panel photo (owner busy). Timing: not said.
+      SUSPECT (my read, not told to owner)
+      - Localized to the back bedrooms points to one branch circuit, not the service. Top of the list: a loose neutral or hot on a shared (multiwire) circuit, a backstabbed receptacle or splice in the back rooms, or a loose breaker/neutral-bar termination on that circuit. Storm timing makes me want to rule out surge damage at the panel.
+      CHECK ON SITE
+      - Identify the back-bedroom circuit(s); look for a shared neutral / handle-tied pair.
+      - Torque and inspect that breaker and the neutral bar; look for heat discoloration.
+      - Voltage at a back-bedroom receptacle under load, both legs; compare to the kitchen.
+      - Pull receptacles/switches in those rooms for backstabs and loose wire nuts; check for aluminum branch wiring given the age.
+      - If it shows up house-wide on the meter, look at the service neutral and call the utility.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s02
+    transcript:
+      - {who: homeowner, text: "the little reset button plug in my garage keeps popping out and wont stay in, i think the fuse is blown on it, need someone to put a new fuse in"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "Can you send me a picture of that outlet?", step: photo}
+      - {who: homeowner, text: "[photo: outlet with two small buttons (test and reset) in the middle of the faceplate, reset button sitting out]"}
+      - {who: intake, text: "Thanks. That's a GFCI outlet, it has no fuse in it; when it pops it's tripping on purpose. What's plugged into it?", step: question}
+      - {who: homeowner, text: "my chest freezer. it trips within a minute of me plugging the freezer in and the freezer is full of meat so i need it fixed today"}
+      - {who: intake, text: "Does it trip with nothing plugged in, or only when the freezer is on it?", step: question}
+      - {who: homeowner, text: "not sure, i only notice it with the freezer"}
+      - {who: intake, text: "Is the garage attached to the house or detached? Does it have its own breaker panel?", step: question}
+      - {who: homeowner, text: "detached, about 40 feet from the house. not sure about a panel out there"}
+      - {who: intake, text: "Is that outlet on an outside wall or anywhere it could get wet or dusty?", step: question}
+      - {who: homeowner, text: "its on an outside wall and the garage door seal is old"}
+      - {who: intake, text: "When it trips, do the other outlets in the garage go dead too?", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "What year was the house built?", step: question}
+      - {who: homeowner, text: "1998. can you just send it, i need someone today"}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "breaker trips", bank_job_type: "breaker trips", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0102 | electrical / GFCI tripping, detached garage | Lake Havasu City | SAME DAY
+      FACTS
+      - GFCI receptacle in the detached garage keeps tripping; reset will not hold. (Owner called it a fuse; photo shows a GFCI with test/reset buttons, reset sitting out.)
+      - Trips within a minute of plugging in a chest freezer. Freezer is full of meat. Owner wants it fixed today.
+      - Not known whether it trips with nothing plugged in.
+      - Detached garage, about 40 ft from the house. Not known if the garage has its own panel.
+      - Outlet is on an outside wall; garage door seal is old.
+      - Not known whether other garage outlets go dead when it trips.
+      - House built 1998.
+      SUSPECT (told owner it's a GFCI, not a fuse; cause not told)
+      - Either moisture/dust in the box on the exterior wall, a worn 1998-era GFCI, or ground-fault leakage from the freezer compressor/defrost circuit. Could also be a downstream device on the same GFCI.
+      CHECK ON SITE
+      - Bring a new weather-resistant GFCI and an in-use cover. Open the box: moisture, corrosion, wire condition.
+      - Test GFCI with no load, then with the freezer; plug freezer into a known-good GFCI to split device vs appliance.
+      - Trace what's downstream of this GFCI; check the feed to the detached garage (sub-panel or single circuit, grounding electrode if a sub).
+      - If the freezer is leaking to ground, tell the owner it's the appliance and get the food on a temporary circuit.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s03
+    transcript:
+      - {who: homeowner, text: "I need a new 20 amp breaker, the one for the kitchen keeps tripping. Have it replaced, I already know that is the problem"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City"}
+      - {who: intake, text: "When it trips, what's running at the time?", step: question}
+      - {who: homeowner, text: "Only when the microwave and the toaster oven run together. Just replace the breaker"}
+      - {who: intake, text: "How long has it been doing this?", step: question}
+      - {who: homeowner, text: "About a year. More often in summer"}
+      - {who: intake, text: "After it trips, is the breaker or the panel warm, any buzzing or burning smell?", step: question}
+      - {who: homeowner, text: "The breaker feels slightly warm when I touch it after a trip. No smell, no buzzing. That's why I want it replaced"}
+      - {who: intake, text: "Has any work been done on the kitchen wiring? Who did it?", step: question}
+      - {who: homeowner, text: "Previous owner remodeled the kitchen and added outlets along the counter"}
+      - {who: intake, text: "Is there a second kitchen breaker, and does it ever trip?", step: question}
+      - {who: homeowner, text: "There's a second one. It has never tripped"}
+      - {who: intake, text: "What year was the house built?", step: question}
+      - {who: homeowner, text: "1986"}
+      - {who: intake, text: "Send me a picture of the panel with the door open? A microwave and a toaster oven together will trip a good 20 amp breaker, so I want to see the panel before I price just a breaker.", step: photo}
+      - {who: homeowner, text: "[photo: panel with the door open; one breaker in the off-middle position, a handwritten label reading 'kitchen'] Fine, but I still want the breaker replaced. Just send it"}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "breaker trips", bank_job_type: "breaker trips", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | electrical / kitchen breaker tripping | Lake Havasu City
+      FACTS
+      - Owner asks for a new 20 A breaker for the kitchen circuit; says he already knows it's the breaker.
+      - Trips only when the microwave and the toaster oven run together.
+      - About a year, more often in summer.
+      - Breaker feels slightly warm after a trip. No smell, no buzzing.
+      - Kitchen remodeled by a previous owner; outlets added along the counter.
+      - A second kitchen breaker exists and has never tripped.
+      - House built 1986. Photo: panel open, one breaker in the tripped (middle) position, handwritten label "kitchen".
+      SUSPECT (told owner the load alone can trip a good breaker)
+      - Most likely both appliances are on one 20 A counter circuit, about 2,500-2,900 W together, so it's tripping as designed. Warm handle could be load, or a loose/oxidized lug or a tired breaker. Unknown remodel wiring (counter outlets possibly daisy-chained off one circuit, possibly undersized wire).
+      CHECK ON SITE
+      - Map which counter receptacles are on which kitchen breaker.
+      - Clamp the circuit with both appliances running; check wire gauge at the breaker (must be 12 AWG for 20 A).
+      - Inspect the breaker lug and bus stab for heat damage; IR the breaker under load.
+      - Quote two options: replace breaker plus re-torque (his ask), and re-split counter receptacles / add a dedicated circuit for the microwave.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s04
+    transcript:
+      - {who: homeowner, text: "my outlet in the hallway looks burnt, I just bought the house and the inspector didnt say anything. pic attached. want it checked"}
+      - {who: homeowner, text: "[photo: outlet cover plate and outlet face with an even tan-yellow discoloration; no black marks around the slots, no melted plastic, a faint paint smear along one edge]"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "Does the outlet still work?", step: question}
+      - {who: homeowner, text: "yes, i plugged my phone charger in this morning and it charged"}
+      - {who: intake, text: "Is it warm to the touch, making any noise, or smelling like something burning?", step: question}
+      - {who: homeowner, text: "no. not warm, no noise, no burning smell"}
+      - {who: intake, text: "Ever seen sparks from it?", step: question}
+      - {who: homeowner, text: "no, never"}
+      - {who: intake, text: "What year was the house built?", step: question}
+      - {who: homeowner, text: "1974"}
+      - {who: intake, text: "From the picture it looks evenly yellowed with some paint on it, not scorched at the slots. Are the other hallway outlets the same style and color?", step: question}
+      - {who: homeowner, text: "i havent looked. i would like to know if they are the same though"}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "outlet repair", bank_job_type: "outlet repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | electrical / outlet check, hallway | Lake Havasu City
+      FACTS
+      - New owner wants the hallway outlet checked; she describes it as burnt.
+      - Photo: cover and outlet face evenly tan-yellow; no black marks at the slots, no melted plastic; faint paint smear on one edge.
+      - Outlet works (phone charged this morning). Not warm, no noise, no burning smell, no sparks ever.
+      - House built 1974.
+      - She'd like to know if the other hall outlets are the same type; she hasn't looked.
+      - Timing: not said.
+      SUSPECT (told her it looks like age yellowing and paint, not scorching)
+      - Age-yellowed 1970s receptacle and plate, painted over. Low risk on the photo, but a 1974 house is in the aluminum branch wiring window and likely has backstabbed, ungrounded receptacles.
+      CHECK ON SITE
+      - Pull the receptacle: look for heat at the terminals, backstabs, aluminum conductors, ground.
+      - Check the other hallway receptacles while there; quote replacing as a set (with CO/ALR or AlumiConn if aluminum).
+      - Plug-in tester for polarity and ground on the hall circuit.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s05
+    transcript:
+      - {who: homeowner, text: "want to add a 240 outlet in my garage for a welder and a couple regular outlets. no pics im at work til 6, just need a ballpark"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "What amp outlet does the welder call for? It's on the plate or in the manual.", step: question}
+      - {who: homeowner, text: "50 amp 240 i think"}
+      - {who: intake, text: "Is the garage attached, and where's your panel from it? Roughly how far?", step: question}
+      - {who: homeowner, text: "attached. panel is on the opposite side of the house, about 60 feet"}
+      - {who: intake, text: "What size is your main breaker, and is there room in the panel for more breakers?", step: question}
+      - {who: homeowner, text: "100 amp main. pretty sure its nearly full"}
+      - {who: intake, text: "Is the garage finished with drywall, or open studs? And what's the outside of the house?", step: question}
+      - {who: homeowner, text: "drywall is up, its finished. house is stucco"}
+      - {who: intake, text: "Anything else big you're planning to add, like an EV charger, hot tub or more AC?", step: question}
+      - {who: homeowner, text: "EV charger next year"}
+      - {who: intake, text: "What year was the house built?", step: question}
+      - {who: homeowner, text: "1992"}
+      - {who: intake, text: "I can't give you an honest number until I see the panel; a full 100 amp with a welder and an EV coming can change the whole job. When you're home after 6 can you text a picture of the panel with the door open and the label inside the door?", step: photo}
+      - {who: homeowner, text: "yeah after 6 i can"}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "new circuit", bank_job_type: "new circuit", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | electrical / new 240 V welder circuit + garage outlets | Lake Havasu City
+      FACTS
+      - Wants a 240 V welder receptacle (he thinks 50 A) and a couple of regular outlets in the garage.
+      - Attached garage. Panel is on the opposite side of the house, about 60 ft run.
+      - 100 A main; he thinks the panel is nearly full.
+      - Garage is finished drywall; house is stucco.
+      - Plans an EV charger next year.
+      - House built 1992.
+      - No photos yet; he'll send a panel photo after 6 pm. He asked for a ballpark; no number given.
+      SUSPECT
+      - Load is the real question: 50 A welder plus a future EV on a 100 A service likely needs a load calc and may push to a 200 A upgrade or a garage sub-panel fed once. A full panel may need tandem breakers (if listed) or a sub. 60 ft fished through finished walls / attic in a stucco house is the labor driver; 6 AWG Cu for 50 A.
+      CHECK ON SITE / BEFORE QUOTE
+      - Panel photo: brand, spaces, main size, existing large loads (range, dryer, AC, water heater). Run a load calc.
+      - Confirm welder nameplate (input amps, breaker size) before settling on 50 A.
+      - Attic path from panel to garage; surface conduit option on the garage side vs fishing drywall.
+      - Quote two ways: circuits only off the existing panel, and a garage sub-panel sized for the future EV charger.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s06
+    transcript:
+      - {who: homeowner, text: "Hello. My smoke alarms in the hall and bedroom keep beeping at night. My late husband put in new batteries and it did not stop. I cannot get up on a ladder."}
+      - {who: intake, text: "What town is your house in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City."}
+      - {who: intake, text: "Is it a short chirp now and then, or the full loud alarm? Is there any smoke?", step: question}
+      - {who: homeowner, text: "It is a short chirp. There is no smoke and no fire. The loud alarm does not go off."}
+      - {who: intake, text: "About how often does it chirp, and does it seem to come from one alarm or all of them?", step: question}
+      - {who: homeowner, text: "Once a minute. It comes from all of them."}
+      - {who: intake, text: "Are the alarms wired into the house and linked to each other? How many are there?", step: question}
+      - {who: homeowner, text: "My grandson said they are all wired to the house with a cable and all linked. There are six."}
+      - {who: intake, text: "Do you know about how old they are?", step: question}
+      - {who: homeowner, text: "About 12 years old."}
+      - {who: intake, text: "How high are the ceilings where they are?", step: question}
+      - {who: homeowner, text: "Nine feet in the hall. The living room is vaulted."}
+      - {who: intake, text: "Is there a day that works for someone to come, and would you like someone there with you?", step: question}
+      - {who: homeowner, text: "My grandson can be there Saturday to let someone in."}
+      - {who: intake, text: "If it is easy, a photo of one alarm from below helps. Please don't climb anything. Smoke alarms are made to last about 10 years, so at 12 the electrician will likely talk with you about replacing them.", step: photo}
+      - {who: homeowner, text: "[photo: ceiling smoke alarm with a small green light and a white label, hall ceiling about nine feet up] I am on a fixed income. I hope it is not too much."}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "hardwired smoke alarm", bank_job_type: "hardwired smoke alarm", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | electrical / hardwired smoke alarms chirping | Lake Havasu City
+      FACTS
+      - Six hardwired, interconnected smoke alarms (per her grandson). A short chirp about once a minute, heard from all of them, at night.
+      - No smoke, no fire, no full alarm. New batteries were put in and it did not stop.
+      - Alarms about 12 years old. Photo: ceiling alarm, small green light, white label, hall ceiling about 9 ft.
+      - Ceilings: 9 ft in the hall, vaulted in the living room.
+      - Elderly owner, lives on her own, cannot use a ladder; on a fixed income and worried about cost. Be patient and plain.
+      - Access: grandson can let someone in Saturday.
+      - CO alarm: not asked.
+      SUSPECT (told her they are past the usual 10-year life)
+      - All six past end of life; one unit's end-of-life or low-battery chirp propagates over the interconnect. Replace all six as a set (mixing brands on the interconnect causes problems).
+      CHECK ON SITE
+      - Brand/model and date on the back to match pigtail connectors; bring six replacement units plus adapters.
+      - Tall ladder for the vaulted living room.
+      - Confirm interconnect and power at each base; check whether there is any CO alarm and offer combination units if fuel-burning appliances are present.
+      - Quote all six as one visit; Saturday.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s07
+    transcript:
+      - {who: homeowner, text: "hey so the outlets in my bedroom and bathroom stopped working yesterday. i rent the place, landlord said to find an electrician and send him the bill. can u do that"}
+      - {who: intake, text: "What town is the place in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "Do the lights in those rooms still work, or just the outlets are out?", step: question}
+      - {who: homeowner, text: "lights work. just the outlets"}
+      - {who: intake, text: "Is it a house, an apartment or a duplex, and about how old?", step: question}
+      - {who: homeowner, text: "half a duplex. early 70s i think"}
+      - {who: intake, text: "Have you reset any breakers?", step: question}
+      - {who: homeowner, text: "reset one in the closet panel once, nothing changed"}
+      - {who: intake, text: "Is there an outlet in the bathroom with two little buttons in the middle?", step: question}
+      - {who: homeowner, text: "yeah the bathroom one has two buttons in the middle"}
+      - {who: intake, text: "How do we get to the panel, and when are you home?", step: question}
+      - {who: homeowner, text: "neighbor in the other half has the key to the panel closet. im home most evenings. dunno if the panel is shared with them"}
+      - {who: intake, text: "On the landlord: has he said in writing that you can hire someone and he'll pay?", step: question}
+      - {who: homeowner, text: "yeah hes out of state, he texted me i can hire someone and he will pay. he said its fine"}
+      - {who: intake, text: "Can you send a picture of one of the dead outlets and the closet panel?", step: photo}
+      - {who: homeowner, text: "[photo: bedroom wall outlet with a lamp plugged in and the lamp off; panel not visible]"}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "outlet repair", bank_job_type: "outlet repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0107 | electrical / outlets dead, bedroom + bathroom | Lake Havasu City
+      FACTS
+      - Tenant in half of a duplex, built early 1970s (his guess).
+      - Bedroom and bathroom outlets dead since yesterday; lights in those rooms work.
+      - Reset one breaker in the closet panel once; no change.
+      - Bathroom outlet has two buttons in the middle (test/reset style). Whether it was pressed: not known.
+      - Photo: bedroom outlet with a lamp plugged in, lamp off. Panel not shown.
+      - Panel closet key is with the neighbor in the other half. Not known if the panel is shared.
+      - Tenant home most evenings.
+      - Billing: landlord is out of state; tenant says the landlord texted that he may hire someone and the landlord will pay. Get the landlord's OK and billing contact directly before work.
+      SUSPECT (not told to tenant)
+      - Classic: the bathroom GFCI tripped or failed and the bedroom receptacles are wired downstream of it. Second guess: an open at a backstabbed receptacle feeding the rest of the run.
+      CHECK ON SITE
+      - Reset/test the bathroom GFCI first; replace if it won't hold or won't reset.
+      - If it holds and the bedroom is still dead, find the open on the run (backstabs, splice), check for aluminum given the age.
+      - Confirm which panel feeds this unit; coordinate key with the neighbor; evening appointment.
+      - Likely a short service-call job; tell the landlord the trip-fee range up front.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s08
+    transcript:
+      - {who: homeowner, text: "buenas, se me fue la luz en la cocina y el breaker no se queda arriba, lo subo y se baja otra vez. necesito alguien urgente porque tengo el refri ahi"}
+      - {who: intake, text: "¿En qué ciudad está la casa?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "¿Qué se quedó sin luz: solo la cocina, o también otras partes de la casa?", step: question}
+      - {who: homeowner, text: "solo la cocina, los contactos y las luces. lo demas si tiene luz"}
+      - {who: intake, text: "Cuando sube el breaker, ¿se baja de inmediato o aguanta un rato?", step: question}
+      - {who: homeowner, text: "se baja luego luego, cada vez"}
+      - {who: intake, text: "¿Qué estaba prendido cuando se fue la luz?", step: question}
+      - {who: homeowner, text: "el microondas"}
+      - {who: intake, text: "¿Huele a quemado, vio chispas o escucha un zumbido?", step: question}
+      - {who: homeowner, text: "no, nada de eso"}
+      - {who: intake, text: "¿Qué tiene conectado en la cocina que le preocupa?", step: question}
+      - {who: homeowner, text: "el refri, ya esta caliente adentro"}
+      - {who: intake, text: "¿Es casa, casa manufacturada o traila? ¿De qué año?", step: question}
+      - {who: homeowner, text: "casa manufacturada, del 76"}
+      - {who: intake, text: "¿Dónde está el panel? Si puede, mándeme una foto con la puerta abierta.", step: photo}
+      - {who: homeowner, text: "afuera de la casa junto a la puerta de atras [foto: panel de breakers abierto, un breaker abajo marcado 'cocina' con letra a mano] ya mandelo por favor, es urgente"}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "breaker trips", bank_job_type: "breaker trips", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0108 | electrical / kitchen breaker won't reset | Lake Havasu City | URGENT (food at risk)
+      FACTS / DATOS
+      - Kitchen outlets and kitchen lights have no power; rest of the home has power. / Sin luz en contactos y luces de la cocina; el resto de la casa sí tiene.
+      - Kitchen breaker drops again immediately every time she turns it on. / El breaker se baja de inmediato cada vez.
+      - Microwave was running when it first went out. / El microondas estaba prendido.
+      - No burning smell, no sparks, no buzzing. / Sin olor a quemado, chispas ni zumbido.
+      - Refrigerator is on a kitchen outlet and is already warm inside. / El refri ya está caliente adentro.
+      - Manufactured home, 1976. / Casa manufacturada, 1976.
+      - Panel is outside the home near the back door. Photo: panel open, one breaker down, handwritten label "cocina".
+      - Owner texts in Spanish; send a Spanish-speaking tech or text in Spanish. Timing: urgent, today.
+      SUSPECT (not told to owner)
+      - Instant re-trip with no load change = dead short on the kitchen circuit (failed receptacle or microwave cord/appliance) or a failed breaker. 1976 manufactured home: possible aluminum branch wiring, older panel brand (check for Zinsco/FPE/Pushmatic), receptacles on the wall that fail at the device.
+      CHECK ON SITE
+      - Unplug everything on the circuit and retry; if it still trips, megger/continuity to find the short.
+      - Inspect the microwave receptacle first; open boxes along the run.
+      - Inspect the breaker and panel bus; if the panel is obsolete, quote replacement separately.
+      - Get the fridge running on a temporary circuit right away.
+      - Manufactured-home alterations: follow the HUD/state rules; note for permit.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s09
+    transcript:
+      - {who: homeowner, text: "HELP the lights are flickering EVERY time my dryer starts!!! I think the whole house is going to burn down. need an electrician ASAP"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "LAKE HAVASU"}
+      - {who: intake, text: "First the important part: any sparks, burning smell, smoke, buzzing, or anything hot to the touch?", step: question}
+      - {who: homeowner, text: "no. none of that"}
+      - {who: intake, text: "OK. Does the whole house dim, or one room?", step: question}
+      - {who: homeowner, text: "the whole house"}
+      - {who: intake, text: "How long does it dim for?", step: question}
+      - {who: homeowner, text: "about two seconds then its normal"}
+      - {who: intake, text: "Does anything else make it dim, like the microwave or the AC starting?", step: question}
+      - {who: homeowner, text: "a little when the microwave runs"}
+      - {who: intake, text: "Is the dryer gas or electric, and has anyone worked on the dryer outlet?", step: question}
+      - {who: homeowner, text: "electric. thick four prong cord. an electrician put in the dryer outlet last year"}
+      - {who: intake, text: "What year was the house built, and is the main panel original?", step: question}
+      - {who: homeowner, text: "1981. i think the panel is original"}
+      - {who: intake, text: "A short dim when a big motor or heater starts is common and not a fire on its own; we'll check the connections. Can you send a picture of the main panel and the meter?", step: photo}
+      - {who: homeowner, text: "no pics. just send someone please"}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "breaker trips", bank_job_type: "breaker trips", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0109 | electrical / whole-house dimming on dryer start | Lake Havasu City
+      FACTS
+      - Lights in the whole house dim for about two seconds when the electric dryer starts, then return to normal.
+      - Dims slightly when the microwave runs.
+      - No sparks, burning smell, smoke, buzzing, or heat.
+      - Dryer has a 4-prong cord; dryer receptacle installed by an electrician last year.
+      - House built 1981; she thinks the main panel is original.
+      - No photos. Owner is frightened; wants someone ASAP (no fire-list facts, not an emergency).
+      SUSPECT (told her a brief dim on startup is common; no diagnosis given)
+      - Whole-house dim on large-load start = voltage drop on the service: loose or corroded service neutral/main lugs, a tired main breaker, or a long/undersized utility drop or transformer. Since the microwave also does it, less likely the dryer circuit itself. 1981 service may have aluminum SE conductors.
+      CHECK ON SITE
+      - Measure voltage at the panel, leg to leg and each leg to neutral, at rest and with the dryer started; note drop.
+      - Inspect and torque main lugs and neutral; look for heat on the SE conductors and meter base.
+      - If the drop is on the utility side, call UniSource with readings.
+      - Check the dryer receptacle install from last year while there.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s10
+    transcript:
+      - {who: homeowner, text: "looking for a quote to hang a new ceiling fan in my living room, already have the fan. oh and by the way the outlet by the dining room table has a burning plastic smell when I run the space heater, been doing it for a few days"}
+      - {who: intake, text: "Before the fan: stop using that dining room outlet now. Unplug the heater and turn that breaker off if you know which one it is. If you see smoke or the outlet or wall is hot, call 911. That outlet is the priority.", step: "911"}
+      - {who: homeowner, text: "huh, I have been using it every evening. ok. anyway about the fan"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City"}
+      - {who: intake, text: "Is the smell coming from the outlet itself or from the heater?", step: question}
+      - {who: homeowner, text: "the outlet itself"}
+      - {who: intake, text: "Is the outlet cover warm after the heater has been running?", step: question}
+      - {who: homeowner, text: "yeah, warm after the heater runs an hour"}
+      - {who: intake, text: "Is the heater plugged straight into the wall or into a power strip, and do you know the wattage?", step: question}
+      - {who: homeowner, text: "1500 watt, plugged straight in, no strip"}
+      - {who: intake, text: "Can you send me a picture of that outlet, close up?", step: photo}
+      - {who: homeowner, text: "[photo: ceiling fan box on the floor; dining room outlet with a slightly dark ring at the lower slot]"}
+      - {who: intake, text: "For the fan: is there a light fixture there now, and what controls it?", step: question}
+      - {who: homeowner, text: "existing light fixture, single switch"}
+      - {who: intake, text: "How high is the ceiling where the fan goes?", step: question}
+      - {who: homeowner, text: "vaulted, about 12 feet"}
+      - {who: intake, text: "What year was the house built?", step: question}
+      - {who: homeowner, text: "1969. just send it"}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "outlet repair", bank_job_type: "outlet repair", unsure: false}
+    fire_dept_text: true
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0110 | electrical / OVERHEATING OUTLET (priority) + ceiling fan install | Lake Havasu City | URGENT
+      JOB 1 (FIRST): dining room outlet
+      - Burning plastic smell from the dining room outlet itself when a 1500 W space heater runs; a few days now.
+      - Outlet cover warm after the heater runs about an hour. Heater plugged straight in, no power strip.
+      - Photo: dark ring at the lower slot.
+      - He has been using it every evening. I told him to stop using it, kill the breaker, and call 911 on smoke or heat.
+      JOB 2: ceiling fan
+      - New fan (owner has it) to replace an existing light fixture in the living room, single switch.
+      - Vaulted ceiling, about 12 ft at the fan location.
+      - House built 1969.
+      SUSPECT
+      - Outlet: loose/backstabbed connection or worn receptacle contacts heating under a 12.5 A continuous load; possibly aluminum branch wiring in a 1969 house. Expect heat damage to the receptacle and maybe the conductor ends and box.
+      - Fan: existing box is probably a light-only box; on a vaulted ceiling likely needs a fan-rated brace box and a slope/angle mount and longer downrod.
+      CHECK ON SITE
+      - Kill the circuit, pull the receptacle, cut back damaged conductor, inspect box and upstream devices on the same circuit; check for aluminum (CO/ALR or AlumiConn).
+      - Check breaker size vs wire; IR the circuit under load after repair.
+      - Fan: box rating, ceiling slope, downrod length; 12 ft ladder or scaffold; 2-person lift.
+      - Do the outlet first, same visit, ASAP.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s11
+    transcript:
+      - {who: homeowner, text: "every time the AC kicks on the breaker trips and the house is already 90. is it the breaker or the AC. need somebody today"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "Does the breaker trip the instant the outside unit starts, or a few seconds after?", step: question}
+      - {who: homeowner, text: "few seconds after the outside unit starts"}
+      - {who: intake, text: "Does the inside fan run? Does the outside unit hum or buzz before it trips?", step: question}
+      - {who: homeowner, text: "inside fan runs. outside hums for a second then the breaker trips"}
+      - {who: intake, text: "How old is the AC and what size?", step: question}
+      - {who: homeowner, text: "about 14 years. 3 ton, on a pad at the side of the house"}
+      - {who: intake, text: "Any burning smell, sparks or smoke, or anything hot at the panel or the disconnect by the unit?", step: question}
+      - {who: homeowner, text: "no smell, sparks or smoke. the breaker handle feels warm. nothing else does"}
+      - {who: intake, text: "How many times have you reset it, and was it working fine before? Any recent work on it?", step: question}
+      - {who: homeowner, text: "reset it three times today. was working last week. no work done"}
+      - {who: intake, text: "Anyone at home who can't take the heat, like elderly, kids or pets?", step: question}
+      - {who: homeowner, text: "a dog and my 70 year old parent are home"}
+      - {who: intake, text: "What year was the house built?", step: question}
+      - {who: homeowner, text: "2004"}
+      - {who: intake, text: "Hum then trip a few seconds later usually points at the AC (a start part or the compressor), not the breaker. Stop resetting it, it can damage the compressor. I'll send it to both an electrician and an AC tech. Can you send a picture of the data plate on the outside unit?", step: photo}
+      - {who: homeowner, text: "[photo: breaker panel with the door open; a double-width breaker in the off position; separate outdoor unit with the disconnect box cover on] thats what i got. just send it"}
+    questions_asked: 8
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "breaker trips", bank_job_type: "breaker trips", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0111 | electrical / AC breaker trips on compressor start | Lake Havasu City | URGENT (heat)
+      ALSO SEND: hvac_repair / AC not cooling (second card)
+      FACTS
+      - Double breaker marked "A/C" trips a few seconds after the outdoor unit starts.
+      - Indoor fan runs; outdoor unit hums briefly, then the breaker trips.
+      - AC about 14 years old, 3 ton, pad at the side of the house. Working last week; no recent work.
+      - Reset three times today.
+      - No burning smell, sparks or smoke. Breaker handle feels warm; nothing else does.
+      - House is 90 F inside; a dog and a 70-year-old parent are home. Needed today.
+      - House built 2004. Photo: panel open, double-width breaker off; outdoor unit with disconnect cover on. No data plate photo.
+      SUSPECT (told owner it is likely the AC side, not the breaker)
+      - Hum-then-trip = locked rotor: failed run capacitor or hard-start issue, or a seized/shorted compressor. A warm handle after repeated locked-rotor trips is expected. Less likely: a weak breaker, or a burnt lug or contactor.
+      CHECK ON SITE
+      - Electrician: inspect the breaker, lugs and wire at panel and disconnect; check for heat damage; verify breaker size vs the unit's MOCP.
+      - AC tech: capacitor microfarad test, contactor, compressor amp draw and windings to ground.
+      - Tell him to stop resetting until someone is there. Get the parent somewhere cool if it drags on.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s12
+    transcript:
+      - {who: homeowner, text: "I'm in Parker, AZ. Need an electrician to upgrade my panel from 100 to 200 amp. do you cover Parker?"}
+      - {who: intake, text: "We don't cover Parker yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s13
+    transcript:
+      - {who: homeowner, text: "my home inspection says i have aluminum wiring and the buyer wants it dealt with before closing. need quotes to fix it. closing is in 3 weeks. house in Lake Havasu City"}
+      - {who: intake, text: "We don't cover electrical jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s14
+    transcript:
+      - {who: homeowner, text: "need to swap out my main panel for a bigger one, 100 to 200 amp. my handyman Mike says he can do it for 800 cash. just put it on the handyman list, dont need a license for that"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu. and like i said my handyman says no permit needed, just put it on the handyman list"}
+      - {who: intake, text: "A panel change in Arizona is licensed electrician work and needs a permit and a utility disconnect, so I can only send it to licensed electricians. Want me to send it that way?", step: question}
+      - {who: homeowner, text: "fine, send it to electricians. if the price is reasonable"}
+      - {who: intake, text: "What's driving the 200 amp? Adding anything?", step: question}
+      - {who: homeowner, text: "a mini-split and an EV charger"}
+      - {who: intake, text: "Where's the panel, and is the meter right next to it?", step: question}
+      - {who: homeowner, text: "inside the garage on the wall next to the meter"}
+      - {who: intake, text: "Do you know if the service wire coming in from the meter is rated for 200 amp, or is it the original?", step: question}
+      - {who: homeowner, text: "its old. dont know if its rated for 200"}
+      - {who: intake, text: "What year was the house built?", step: question}
+      - {who: homeowner, text: "1985"}
+      - {who: intake, text: "Send me a picture of the panel with the door open, and one of the meter from outside if you can.", step: photo}
+      - {who: homeowner, text: "[photo: panel with the door open showing a 100 amp main and an interior label; a few breakers with handwritten labels]"}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "panel upgrade", bank_job_type: "panel upgrade", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0114 | electrical / panel upgrade 100 A to 200 A | Lake Havasu City | LICENSED ELECTRICIANS ONLY
+      FACTS
+      - Wants to upgrade from a 100 A to a 200 A panel to add a mini-split and an EV charger.
+      - Panel is inside the garage, on the wall next to the meter.
+      - Service entrance wire is old; owner doesn't know if it's rated for 200 A.
+      - House built 1985. Photo: panel open, 100 A main, interior label, a few breakers hand-labeled. No meter photo.
+      - Price-sensitive: he had an unlicensed handyman offer for cash with no permit; he agreed to licensed electricians if the price is reasonable. Told him it is permit and licensed work.
+      SUSPECT
+      - Likely a full service upgrade, not just a panel swap: inside panel next to the meter suggests a meter-main or short SE run through the wall; old SE conductors almost certainly not 200 A rated; meter base may need replacement; utility (UniSource) disconnect/reconnect and possibly a larger drop.
+      CHECK ON SITE / BEFORE QUOTE
+      - Meter base rating, SE conductor size and type, overhead vs underground service, grounding electrode system.
+      - Load calc with mini-split and a Level 2 EV charger; quote 200 A service plus the EV and mini-split circuits as add-ons.
+      - Permit, utility coordination and inspection timeline; give him a clear itemized number so it reads against the cheap offer.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s15
+    transcript:
+      - {who: homeowner, text: "my dryer wont heat up, it spins but no heat. i think its an outlet or breaker problem so I need an electrician to check the outlet"}
+      - {who: intake, text: "What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu"}
+      - {who: intake, text: "Is it an electric or gas dryer, and about how old?", step: question}
+      - {who: homeowner, text: "electric. about 9 years old. whirlpool"}
+      - {who: intake, text: "Does it get warm at all, or stay completely cold?", step: question}
+      - {who: homeowner, text: "clothes get warm but never hot or dry"}
+      - {who: intake, text: "What's been checked so far, the breaker or the outlet?", step: question}
+      - {who: homeowner, text: "breaker is on. my husband plugged in a drill-style tester and it read live"}
+      - {who: intake, text: "How long does a load take to dry now?", step: question}
+      - {who: homeowner, text: "two or three cycles"}
+      - {who: intake, text: "Have you looked at the vent hose behind the dryer? Is it crushed or kinked?", step: question}
+      - {who: homeowner, text: "i havent looked"}
+      - {who: intake, text: "Any burning smell, sparks or smoke from it?", step: question}
+      - {who: homeowner, text: "no burning smell, no sparks, no smoke"}
+      - {who: intake, text: "If it spins and the clothes get warm, the outlet is feeding it; that sounds like the dryer or the vent, not the wiring, so an appliance tech is the right call. Can you send a picture of the model sticker inside the door?", step: photo}
+      - {who: homeowner, text: "[photo: dryer door open with a pile of damp clothes; dryer face with drum visible] thats the dryer. just send it"}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: appliance_repair, job_type: "dryer", bank_job_type: "dryer", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0115 | appliance_repair / dryer not heating fully | Lake Havasu City
+      (Owner asked for an electrician; routed to appliance repair.)
+      FACTS
+      - Electric dryer, about 9 years old, owner says Whirlpool.
+      - Drum spins; clothes get warm but never hot or dry. A load takes two or three cycles.
+      - Breaker is on; husband checked the dryer outlet with a tester and it read live.
+      - Vent hose behind the dryer: not checked.
+      - No burning smell, sparks or smoke.
+      - Photo: dryer door open, damp clothes, drum visible. No model sticker photo.
+      - Home built: not asked. Timing: not said.
+      SUSPECT (told owner it sounds like the dryer or vent, not the wiring)
+      - Warm-not-hot with long cycles is classic restricted airflow (crushed transition hose, lint-packed vent run) cycling the high-limit, or a weak/partially open element or cycling thermostat. The "drill-style" tester is likely non-contact and does not prove both 120 V legs; but warm air means the element is seeing 240 V, so the receptacle is probably fine.
+      CHECK ON SITE
+      - Pull the dryer: transition hose and full vent run airflow; recommend dryer-vent cleaning (separate trade) if restricted.
+      - Meter the receptacle leg-to-leg (240 V) to close out the electrical question.
+      - Element resistance, high-limit and cycling thermostats, thermal fuse.
+    facts_in_card_not_stated: []

@@ -1,0 +1,1093 @@
+# Ask Hava expert layer: electrical (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set electrical and trade_kb/trades/electrical.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - All 12 kb job types are kept. Six have no exact category job type and sit under the closest one:
+#   burning_sparks -> "outlet repair" (a burning panel may suit "panel upgrade" businesses better);
+#   partial_power, flicker_dim and whole_home_out -> "breaker trips" (the troubleshooting family);
+#   rewire -> "new circuit" (branch-circuit work; it is permit work like a panel job);
+#   outdoor_lighting -> "light fixture". A "troubleshooting" category job type would route these more cleanly.
+# - The kb test message electrical_t07 sends EV chargers to the generator_ev trade, but no enabled category
+#   serves generator_ev today, so EV charger circuits and generator inlets ride on new_circuit here.
+# - Low-voltage yard lighting is in the R-21 scope (A.A.C. R4-9-103), but this category routes only to R-11,
+#   so R-21 businesses never see those cards. Decide whether low-voltage-only lighting should also reach R-21.
+# - Whole-home outages that are the utility's go to UniSource per the kb file; this file only puts the
+#   neighbors answer on the card. The product rule for an outage with no card belongs in the intake flow.
+# - Lake Havasu City deletes NEC 230.85 and requires the service disconnect outside (local amendment to
+#   230.70(A)(1)). How the Building Division applies that on a panel change-out with an inside panel is not
+#   confirmed; the effect lines say [judgment].
+schema: 1
+category: electrical
+question_set: electrical
+kb_trade: electrical
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-11 Electrical; R-21 low-voltage landscape lighting; R-39 may add a circuit to an existing panel but not a new panel or sub-panel) [S2]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104 Dual contractor license classifications (CR-11 Electrical) [S3]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14); fire-safety carve-out (D) covers hardwired or interconnected smoke alarms) [S4]"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_41_4047
+    title: "A.R.S. 41-4047(5): no alterations to a manufactured home unless the person is licensed or certified"
+    url: "https://www.azleg.gov/ars/41/04047.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits: permit required for electrical panel change-outs, electrical updates and rewires, photovoltaic systems, and electrical work for detached structures under 200 sq ft; no electrical item on the no-permit list [S17]"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_nec_amend
+    title: "Lake Havasu City Amendments to the 2023 NEC (Ordinance 25-1370): service disconnect outside nearest the point of entrance (230.70(A)(1)); 230.85 deleted; pool, spa and hot tub bonding at four points (680.26); PV disconnect outside (690.13)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/1208/Amendments-To-2023-Natl-Electrical-Code-PDF"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ues_safety
+    title: "UniSource Energy Services, Electrical Safety Tips (do not tamper with the meter; 15 ft from overhead lines; wiring checklist: breakers trip often, appliances don't heat fully; Arizona 811 two working days before digging, required by state law) [S24]"
+    url: "https://www.uesaz.com/electric-safety/"
+    checked: "2026-10-29"
+    kind: other
+  - id: ues_outage
+    title: "UniSource Energy Services, During a Storm or Service Outage (storm outages, downed lines) [S25]"
+    url: "https://www.uesaz.com/outage-preparation/"
+    checked: "2026-10-29"
+    kind: other
+  - id: nfpa_electrical
+    title: "NFPA, Electrical Safety in the Home (warning signs: frequent trips, discolored or warm outlets, burning or rubbery smell, flickering or dimming lights, sparks; AFCI and GFCI) [S29]"
+    url: "https://www.nfpa.org/education-and-research/home-fire-safety/electrical-safety-in-the-home"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: nfpa_smoke
+    title: "NFPA, Smoke Alarms (replace 10 years after the manufacture date; interconnected alarms installed by a qualified electrician) [S28]"
+    url: "https://www.nfpa.org/education-and-research/home-fire-safety/smoke-alarms"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: cpsc_alwire
+    title: "CPSC Pub. 516, Repairing Aluminum Wiring (homes wired 1965 to mid-1970s may have aluminum branch wiring; repairs: copper rewire, COPALUM, AlumiConn)"
+    url: "https://www.cpsc.gov/s3fs-public/516.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: cpsc_fpe
+    title: "CPSC news release (1983): Commission closes investigation of FPE circuit breakers"
+    url: "https://www.cpsc.gov/Newsroom/News-Releases/1983/Commission-Closes-Investigation-Of-FPE-Circuit-Breakers-And-Provides-Safety-Information-For-Consumers"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ecm_406_4d
+    title: "EC&M (Mike Holt), Code Q&A: Receptacle Replacement Rules (NEC 406.4(D): grounding, GFCI, AFCI, tamper-resistant and weather-resistant rules for replacement receptacles)"
+    url: "https://www.ecmweb.com/national-electrical-code/qa/article/20900771/code-qa-receptacle-replacement-rules"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: ecm_fan_box
+    title: "EC&M (Mike Holt), Code Q&A: Boxes at Ceiling-Suspended Fan Outlets (box listed for fan support; 35 lb and 70 lb limits; NEC 314.27(C))"
+    url: "https://www.ecmweb.com/national-electrical-code/qa/article/20903870/code-qa-boxes-at-ceiling-suspended-fan-outlets"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: ecmag_230_85
+    title: "Electrical Contractor magazine: NEC 230.85 outdoor emergency disconnect for one- and two-family dwellings applies when service equipment is replaced"
+    url: "https://www.ecmag.com/magazine/articles/article-detail/outdoor-emergency-disconnecting-means-installing-and-marking-this-equipment-for-one--and-two-family-dwellings"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: webtonic_electrical
+    title: "WebTonic (marketing vendor), Electrical Digital Marketing Statistics 2026 (electrician CPL: Google Search Ads $93.69, Google LSA $39, Meta $52, SEO $28, HomeAdvisor/Angi $85, referrals $0-$15; cost per booked job: LSA $90, Angi $1,000), citing BaaDigi/LocaliQ, SearchLight Digital and Elev8"
+    url: "https://www.webtonic.io/blog/electrical-services-digital-marketing-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: elevarus_angi_lsa
+    title: "Elevarus (marketing vendor), Angi Leads vs Google LSA for Electricians in 2026 (Angi leads typically sold to more than one contractor; speed to contact decides who wins)"
+    url: "https://elevarus.com/electrical-contractor-angi-vs-google-lsa-cost-per-booked-job/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Find-the-fault work (tripping, dead circuits, flicker, partial power) versus a known install (swap, fixture, new circuit)"
+      why: "Troubleshooting is priced by the hour with a range because nobody knows the cause until the cover is off; an install is priced per device. The bank's what question splits these. [judgment]"
+      source: null
+    - driver: "Panel capacity and condition from the panel photo: main breaker size, open spaces, brand"
+      why: "A new circuit into a 200 amp panel with open spaces is a short job; a full 100 amp panel, or an older brand where breakers are hard to source, turns it into a panel or sub-panel conversation. [judgment]"
+      source: null
+    - driver: "Permit-type work: panel change-out, electrical updates, rewires, PV, power to a small detached structure"
+      why: "Lake Havasu City requires a permit for these, so the quote carries permit time, an inspection visit and, for a service change, utility coordination."
+      source: lhc_permits
+    - driver: "Wire run and access: distance from the panel, attic or no attic, ceiling height, trench to a detached garage, shed or spa"
+      why: "Feet of wire, attic crawling in heat, tall ladders and trenching through rock or caliche are where labor hours go. [judgment]"
+      source: null
+    - driver: "Home age and wiring type: aluminum branch wiring, two-slot ungrounded outlets, cloth-covered wire"
+      why: "Homes wired 1965 to the mid-1970s may have aluminum branch wiring, which changes how every device is connected; CPSC lists copper rewire, COPALUM and AlumiConn as repairs."
+      source: cpsc_alwire
+    - driver: "Code rules on replacement devices"
+      why: "Under NEC 406.4(D) a replacement receptacle must add GFCI, AFCI, tamper-resistant or weather-resistant protection where the current code calls for it, so a simple swap can mean pricier devices or a breaker change."
+      source: ecm_406_4d
+    - driver: "How many devices or fixtures"
+      why: "Per-device pricing drops with count once the electrician is on site; the bank's count question sets it. [judgment]"
+      source: null
+    - driver: "Same-day, after-hours or no-power call versus a scheduled visit"
+      why: "Burning smells, no power in summer heat and dead AC circuits get same-day rates. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Aluminum branch wiring behind a routine outlet or switch swap"
+      how_a_pro_spots_it: "Home built about 1965 to 1975; dull silver wire or AL marks if a device is pulled; warm faceplates or flicker in the homeowner's words"
+      question_or_photo: home_age
+      source: cpsc_alwire
+    - condition: "Two-wire ungrounded circuits, so three-prong replacements need GFCI protection or a ground"
+      how_a_pro_spots_it: "Two-slot outlets in the device photo; older home"
+      question_or_photo: fu_prong
+      source: ecm_406_4d
+    - condition: "Panel full, no open spaces, tandem breakers, or an older brand (Federal Pacific, Zinsco) where parts are hard to find"
+      how_a_pro_spots_it: "Panel photo with the door open and the label inside the door"
+      question_or_photo: p1_panel
+      source: cpsc_fpe
+    - condition: "Ceiling box not rated for a fan, so a fan job needs a new box or brace"
+      how_a_pro_spots_it: "A light there now rather than a fan; a box over 35 lb needs a weight marking and over 70 lb needs separate support"
+      question_or_photo: fu_fixture_what
+      source: ecm_fan_box
+    - condition: "Fault on the utility's side (meter base, service line), not inside the house"
+      how_a_pro_spots_it: "Neighbors out too, half the house out with big 240-volt items dead, lights that flicker in wind"
+      question_or_photo: fu_neighbors_power
+      source: null
+    - condition: "Heat-damaged meter base or main lugs on a south or west wall"
+      how_a_pro_spots_it: "Discoloration or melted plastic at the meter and panel in the outside photo"
+      question_or_photo: p4_meter
+      source: null
+    - condition: "Manufactured home, where alterations must be done by a licensed or certified person and wiring methods differ"
+      how_a_pro_spots_it: "Kind of place on the card; panel inside a hallway closet"
+      question_or_photo: null
+      source: ars_41_4047
+    - condition: "A run to a detached garage, shed, spa or RV pad that needs a trench through rock or caliche, plus an Arizona 811 call"
+      how_a_pro_spots_it: "Location photo shows a yard run; homeowner says detached or yard"
+      question_or_photo: fu_run_distance
+      source: ues_safety
+  misdiagnosis_checks:
+    - sounds_like: "breaker trips (trips when the AC starts)"
+      might_be: "AC unit fault, a different category"
+      one_question: fu_trip_when
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "breaker trips (trips only when the dryer runs)"
+      might_be: "appliance fault, a different category"
+      one_question: fu_trip_when
+      if_other_route_to: {category: appliance_repair, job_type: "dryer"}
+      source: null
+    - sounds_like: "outlet repair (one dead outlet)"
+      might_be: "breaker_tripping (a tripped GFCI or breaker that feeds several outlets)"
+      one_question: fu_other_dead
+      if_other_route_to: {category: electrical, job_type: "breaker trips"}
+      source: null
+    - sounds_like: "partial_power (half the house is out)"
+      might_be: "utility-side loss at the meter or service line; the card carries the neighbors answer so the business can decide"
+      one_question: fu_neighbors_power
+      if_other_route_to: {category: electrical, job_type: "breaker trips"}
+      source: ues_outage
+    - sounds_like: "flicker_dim (lights dim when the AC starts)"
+      might_be: "AC unit starting fault, a different category"
+      one_question: fu_flicker_when
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "hardwired smoke alarm (chirping)"
+      might_be: "a smoke or CO alarm sounding, which is on the 911 list and gets the fixed text first"
+      one_question: fu_alarm_sound
+      if_other_route_to: {category: electrical, job_type: "hardwired smoke alarm"}
+      source: nfpa_smoke
+    - sounds_like: "light fixture (outdoor string or holiday lights)"
+      might_be: "plug-in light hanging, a different category"
+      one_question: fu_outdoor_power
+      if_other_route_to: {category: holiday_lights, job_type: "plug-in light hanging"}
+      source: null
+    - sounds_like: "outlet repair (outlet looks brown or felt hot)"
+      might_be: "burning_sparks, on the 911 list when sparking or burning"
+      one_question: danger
+      if_other_route_to: {category: electrical, job_type: "outlet repair"}
+      source: nfpa_electrical
+  photo_reading:
+    - photo_id: p1_panel
+      reads: ["Brand on the label (Federal Pacific, Zinsco, Square D, Siemens, Eaton, GE)", "Main breaker size on the main handle", "Open spaces and tandem breakers", "Fuses instead of breakers", "Scorch marks, rust or water stains", "Any breaker in the middle or off position"]
+      neutral_wording: "Panel label reads Zinsco, 100 amp main; no open spaces; one breaker handle sits in the middle position."
+    - photo_id: p2_device
+      reads: ["Two-slot or three-prong outlet", "GFCI test and reset buttons", "Brown or melted faceplate", "Fixture type and whether a fan or light is there now", "Loose or cracked device"]
+      neutral_wording: "Two-slot outlet in the living room; faceplate shows brown marks around the left slot."
+    - photo_id: p3_location
+      reads: ["Distance and path to the panel", "Wall type (drywall, block, stucco)", "Yard run or attic access", "Ceiling height and slope"]
+      neutral_wording: "Wants a 240-volt outlet on the far garage wall, about 30 ft from the panel; block wall."
+    - photo_id: p4_meter
+      reads: ["Overhead wire or underground service", "Meter and main breaker in one box", "Panel inside or outside", "Heat marks or rust at the meter base"]
+      neutral_wording: "Meter and main breaker in one box on the west wall; underground service; paint faded around the box."
+    - photo_id: p5_alarm
+      reads: ["Wires on the back (hardwired) or battery only", "Date on the back label", "Smoke only or smoke and CO combo", "Brand and plug shape"]
+      neutral_wording: "Hardwired smoke alarm with a wire plug on the back; label dated 2013."
+  local_factors:
+    - fact: "Lake Havasu City uses the 2023 NEC with local amendments: the service disconnect goes outside nearest the point of entrance, and NEC 230.85 is deleted"
+      effect: "A change-out of an inside panel may raise where the main disconnect sits, which a pro will want to see in the meter photo. [judgment]"
+      source: lhc_nec_amend
+    - fact: "Panel change-outs, electrical updates, rewires, PV systems and power to small detached structures need a city permit"
+      effect: "Pros price permit time and an inspection into these quotes; the card flags them as permit-type work"
+      source: lhc_permits
+    - fact: "The city amends pool and spa bonding to four points on the shell"
+      effect: "Spa and hot tub circuit quotes include bonding work, so the card says if the spa is new or existing. [judgment]"
+      source: lhc_nec_amend
+    - fact: "UniSource is the electric utility; it warns against tampering with the meter and says to keep 15 ft from overhead lines"
+      effect: "Service changes need UniSource for the disconnect and reconnect, and roof work near the service drop (swamp coolers, palms) is a factor in the quote. [judgment]"
+      source: ues_safety
+    - fact: "Arizona 811 must be called at least two working days before digging, under state law"
+      effect: "Trenched runs to a shed, spa or yard lights add lead time before work starts"
+      source: ues_safety
+    - fact: "Summer AC load and monsoon storms bring trips, flicker, surges, outages and wet outdoor GFCIs"
+      effect: "July to September tripping and no-power requests spike; the trip-when-it-rains answer matters on the card. [judgment]"
+      source: null
+    - fact: "Manufactured homes are common, and alterations to them must be done by a licensed or certified person"
+      effect: "The card must say manufactured home so the business can decide; panels are often indoors in a hallway. [judgment on the panel location]"
+      source: ars_41_4047
+    - fact: "Seasonal residents return in fall to vacant homes"
+      effect: "October and November bring chirping smoke alarms (10-year end of life, dead batteries) and tripped GFCIs found on arrival. [judgment]"
+      source: nfpa_smoke
+  seasonality:
+    busy: "June to September (AC load, heat, monsoon outages and surges) and October to December (returning seasonal residents, alarm swaps, holiday lighting) [judgment]"
+    slow: "January to March [judgment]"
+    source: null
+
+job_types:
+  - id: burning_sparks
+    label: "Burning smell, sparks, smoke, hot or melted outlet or panel"
+    bank_job_type: "outlet repair"
+    recurring: false
+    homeowner_phrasings: ["outlet smells like burning plastic", "sparks when I plug in", "panel buzzing and smells hot", "switch plate melted"]
+    must_know:
+      - fact: "Whether anything is sparking, hot, buzzing or smoking now"
+        bank_question: danger
+        follow_up: fu_burn_stopped
+        photo: null
+        why_it_moves_price: "Sets same-day or scheduled and is the 911-list check; the code sends the fixed text, the card states the fact. [judgment]"
+        skip_if: "Never skip the bank question; skip the follow-up when she said it stopped"
+      - fact: "Where it was: outlet, switch, light, panel or meter"
+        bank_question: what
+        follow_up: fu_burn_where
+        photo: p2_device
+        why_it_moves_price: "A burned outlet is a device and maybe a short wire repair; a burned panel or meter base is a much bigger job and may involve UniSource. [judgment]"
+        skip_if: "Her words name the spot"
+      - fact: "Home age"
+        bank_question: home_age
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A burned device in a home wired 1965 to the mid-1970s raises the aluminum wiring question for every other device."
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_burn_where
+        ask_when: "Homeowner reports a burning smell, sparks or heat but not where"
+        text_en: "Where did you notice it: an outlet, a switch, a light or fan, or the electrical panel or meter?"
+        text_es: "¿Dónde lo notó: en un enchufe, un apagador, una lámpara o ventilador, o en el panel eléctrico o el medidor?"
+        options_en: ["An outlet", "A switch", "A light or fan", "The panel or meter"]
+        options_es: ["Un enchufe", "Un apagador", "Una lámpara o ventilador", "El panel o el medidor"]
+        card_field: true
+        why: "The spot sets the size of the job and whether the business brings panel parts. [judgment]"
+      - id: fu_burn_stopped
+        ask_when: "The danger answer was yes and she has not said whether it is still going on"
+        text_en: "Is the smell, heat or sparking still happening now, or has it stopped?"
+        text_es: "¿El olor, el calor o las chispas siguen ahora, o ya pararon?"
+        options_en: ["Still happening", "It stopped"]
+        options_es: ["Siguen", "Ya pararon"]
+        card_field: true
+        why: "A business taking urgent jobs wants to know if it is still active before it drives out. [judgment]"
+    photos_priority: [p2_device, p1_panel, p4_meter]
+    urgency:
+      fire_dept_triggers: ["Sparking, smoke or a burning smell at an outlet, switch, light or panel"]
+      urgent_capable_triggers: ["Smell or heat came back after it stopped", "Power is off to part of the home because of it"]
+      regular: "A brown mark noticed on an old outlet with no heat, smell or sparks now"
+    scope_line_en: "Bedroom outlet smelled like burning plastic last night and the faceplate is brown; it has stopped; nothing is plugged in."
+    scope_line_es: "El enchufe de la recámara olía a plástico quemado anoche y la tapa está café; ya paró; no hay nada conectado."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what was noticed, where, still happening or stopped>
+      Spot: <outlet / switch / light or fan / panel or meter>. Now: <still happening / stopped>. Built: <home age answer>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That outlet is a fire hazard.", "It's probably a loose wire.", "Turn off that breaker and don't use it.", "Your panel is unsafe.", "That's a quick outlet swap."]
+
+  - id: partial_power
+    label: "Part of the home has no power; breaker won't reset"
+    bank_job_type: "breaker trips"
+    recurring: false
+    homeowner_phrasings: ["half my house has no power", "kitchen outlets all dead", "breaker won't reset", "lights half bright", "AC and dryer don't work but lights do"]
+    must_know:
+      - fact: "What is out: a few outlets in one area, about half the house, or the big 240-volt items"
+        bank_question: what
+        follow_up: fu_what_is_out
+        photo: null
+        why_it_moves_price: "One dead circuit is a short troubleshooting visit; half the house or dead big items points toward the panel, the main or the utility side, a longer and pricier visit. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Whether neighbors have power"
+        bank_question: null
+        follow_up: fu_neighbors_power
+        photo: null
+        why_it_moves_price: "If the street is out, the visit may be wasted; the business wants this before it rolls a truck. [judgment]"
+        skip_if: "She said the neighbors have power"
+      - fact: "Panel brand, main size and any breaker out of position"
+        bank_question: null
+        follow_up: null
+        photo: p1_panel
+        why_it_moves_price: "Tells the business which breakers to bring and whether the panel is one where parts are hard to find. [judgment]"
+        skip_if: "Panel photo sent"
+      - fact: "Home age"
+        bank_question: home_age
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Older homes carry older panels and wiring types that change the repair. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_what_is_out
+        ask_when: "Homeowner says part of the home has no power without saying what"
+        text_en: "What is out: outlets or lights in one area, about half the house, or big items like the AC, dryer or range?"
+        text_es: "¿Qué no funciona: enchufes o luces en un área, como la mitad de la casa, o aparatos grandes como el aire, la secadora o la estufa?"
+        options_en: ["Outlets or lights in one area", "About half the house", "Big items like AC, dryer or range", "Lights work but look dim or half bright"]
+        options_es: ["Enchufes o luces en un área", "Como la mitad de la casa", "Aparatos grandes como aire, secadora o estufa", "Las luces prenden pero se ven bajas"]
+        card_field: true
+        why: "Separates one circuit from a panel, main or utility-side fault without naming either. [judgment]"
+      - id: fu_neighbors_power
+        ask_when: "Half the house, the whole house, or the big items are out, or lights look dim"
+        text_en: "Do your neighbors have power right now?"
+        text_es: "¿Sus vecinos tienen luz ahora mismo?"
+        options_en: ["Yes, they have power", "No, they're out too", "Don't know"]
+        options_es: ["Sí, tienen luz", "No, también están sin luz", "No sé"]
+        card_field: true
+        why: "UniSource handles outages and the line to the meter; a business wants to know before it drives out."
+      - id: fu_breaker_or_gfci
+        ask_when: "Homeowner says something will not reset but not what"
+        text_en: "Is it a breaker in the panel that won't reset, or an outlet with test and reset buttons?"
+        text_es: "¿Es un breaker del panel que no se reinicia, o un enchufe con botones de prueba y reinicio?"
+        options_en: ["A breaker in the panel", "An outlet with test and reset buttons", "Haven't found either"]
+        options_es: ["Un breaker del panel", "Un enchufe con botones de prueba y reinicio", "No encontré ninguno"]
+        card_field: true
+        why: "A GFCI outlet in a garage, bath or outside often feeds other outlets; a breaker that will not reset is a different visit. [judgment]"
+    photos_priority: [p1_panel, p4_meter]
+    urgency:
+      fire_dept_triggers: ["Burning smell at the panel or meter"]
+      urgent_capable_triggers: ["No power to the AC in summer heat", "Half the home or more without power", "Fridge or freezer without power"]
+      regular: "One area out, rest of the home normal, mild weather"
+    scope_line_en: "Kitchen and dining room outlets dead since this morning; breaker will not reset; neighbors have power."
+    scope_line_es: "Los enchufes de la cocina y el comedor no funcionan desde esta mañana; el breaker no se reinicia; los vecinos tienen luz."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: what is out, since when>
+      Out: <one area / about half / big items / dim lights>. Neighbors: <have power / out too / don't know>. Won't reset: <breaker / GFCI outlet / not found>.
+      Panel: <neutral, from photo: brand, main size, breaker positions> or <no photo>. Built: <home age answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You lost a leg of power.", "Sounds like the main breaker.", "Call UniSource, it's their problem.", "Flip every breaker off and on.", "That's a cheap fix."]
+
+  - id: breaker_tripping
+    label: "Breaker or GFCI keeps tripping"
+    bank_job_type: "breaker trips"
+    recurring: false
+    homeowner_phrasings: ["breaker keeps popping", "GFI won't stay on", "trips when I run the microwave", "bathroom outlet trips every time it rains"]
+    must_know:
+      - fact: "When it trips: when the AC starts, when one appliance runs, in rain, at random, or right away on reset"
+        bank_question: null
+        follow_up: fu_trip_when
+        photo: null
+        why_it_moves_price: "An overload is a new-circuit talk; an AC or appliance trip may be another trade; a rain trip is an outdoor fixture; an instant trip is a fault to find. [judgment]"
+        skip_if: "Her words say when"
+      - fact: "Breaker in the panel or a GFCI outlet"
+        bank_question: null
+        follow_up: fu_breaker_or_gfci
+        photo: p1_panel
+        why_it_moves_price: "Sets where the electrician starts and which parts come on the truck. [judgment]"
+        skip_if: "She named it, or the panel photo shows the tripped breaker"
+      - fact: "How many breakers or outlets trip"
+        bank_question: count
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Several circuits tripping points at a bigger fault than one overloaded circuit. [judgment]"
+        skip_if: "Answered"
+      - fact: "Panel brand and condition"
+        bank_question: null
+        follow_up: null
+        photo: p1_panel
+        why_it_moves_price: "Some older panels have breakers that are hard to find, which moves the price. [judgment]"
+        skip_if: "Panel photo sent"
+    allowed_follow_ups:
+      - id: fu_trip_when
+        ask_when: "A breaker or GFCI trips and she has not said when"
+        text_en: "When does it trip: when the AC starts, when one appliance runs, when it rains, at random, or right away when reset?"
+        text_es: "¿Cuándo se bota: cuando arranca el aire, cuando se usa un aparato, cuando llueve, a cualquier hora, o en cuanto se reinicia?"
+        options_en: ["When the AC starts", "When one appliance runs", "When it rains or sprinklers run", "At random times", "Right away when reset"]
+        options_es: ["Cuando arranca el aire", "Cuando se usa un aparato", "Cuando llueve o corre el riego", "A cualquier hora", "En cuanto se reinicia"]
+        card_field: true
+        why: "Each answer is a different visit, and two of them may belong to another trade. [judgment]"
+      - fu_breaker_or_gfci
+    photos_priority: [p1_panel, p2_device]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["The breaker for the AC trips in summer heat", "Breaker trips right away and the circuit runs a fridge"]
+      regular: "Trips now and then, resets fine"
+    scope_line_en: "Breaker for the kitchen counter outlets trips when the microwave and coffee maker run together; resets fine."
+    scope_line_es: "El breaker de los enchufes de la barra de la cocina se bota cuando se usan el microondas y la cafetera juntos; se reinicia bien."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: which circuit, when it trips>
+      Trips: <AC starts / one appliance / rain / random / right away>. Device: <breaker / GFCI outlet>. How many: <count answer>.
+      Panel: <neutral, from photo> or <no photo>. Built: <home age answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's just overloaded.", "That breaker has failed.", "The microwave is bad.", "Try a bigger breaker.", "Swapping a breaker is cheap."]
+
+  - id: outlet_switch
+    label: "Outlet or switch dead, loose, replace, add USB or GFCI"
+    bank_job_type: "outlet repair"
+    recurring: false
+    homeowner_phrasings: ["outlet doesn't work", "plugs fall out of the outlet", "replace all the outlets", "add USB outlets", "light switch broken"]
+    must_know:
+      - fact: "What it does: dead, loose or worn, a switch that misbehaves, or a planned upgrade"
+        bank_question: what
+        follow_up: fu_outlet_what
+        photo: p2_device
+        why_it_moves_price: "Dead means finding a fault first; worn or upgrade is a per-device swap. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "How many devices"
+        bank_question: count
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Per-device pricing drops as the count goes up. [judgment]"
+        skip_if: "Answered"
+      - fact: "Two-slot or three-prong outlets"
+        bank_question: null
+        follow_up: fu_prong
+        photo: p2_device
+        why_it_moves_price: "Replacing two-slot outlets with three-prong ones needs a ground or GFCI protection under NEC 406.4(D), which adds parts."
+        skip_if: "Device photo shows the outlet"
+      - fact: "Home age"
+        bank_question: home_age
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Homes wired 1965 to the mid-1970s may have aluminum branch wiring, which changes how each device is connected."
+        skip_if: "Answered"
+      - fact: "Whether other outlets nearby are dead too"
+        bank_question: null
+        follow_up: fu_other_dead
+        photo: null
+        why_it_moves_price: "Several dead outlets often trace to one tripped GFCI or breaker, a different visit than one bad device. [judgment]"
+        skip_if: "Upgrade job, nothing dead"
+    allowed_follow_ups:
+      - id: fu_outlet_what
+        ask_when: "Homeowner mentions an outlet or switch without saying what it does or what she wants"
+        text_en: "What is going on with it: dead, loose or worn, a switch that doesn't work right, or you want new ones like USB or GFCI?"
+        text_es: "¿Qué pasa con él: no funciona, está flojo o gastado, el apagador no funciona bien, o quiere nuevos como USB o GFCI?"
+        options_en: ["Dead, nothing works", "Loose or plugs fall out", "Switch doesn't work right", "Want new ones (USB, GFCI, style)"]
+        options_es: ["No funciona nada", "Flojo o se salen las clavijas", "El apagador no funciona bien", "Quiero nuevos (USB, GFCI, estilo)"]
+        card_field: true
+        why: "Four answers, four kinds of visit. [judgment]"
+      - id: fu_other_dead
+        ask_when: "One outlet or switch is dead"
+        text_en: "Is it just this one, or are other outlets in the room, a bathroom, the garage or outside dead too?"
+        text_es: "¿Es solo este, o también hay otros enchufes sin luz en el cuarto, un baño, la cochera o afuera?"
+        options_en: ["Just this one", "Others in the same room", "Others in another room or outside"]
+        options_es: ["Solo este", "Otros en el mismo cuarto", "Otros en otro cuarto o afuera"]
+        card_field: true
+        why: "Separates one device from a tripped GFCI or breaker upstream without naming either. [judgment]"
+      - id: fu_prong
+        ask_when: "Outlet swap or rewire request with no device photo"
+        text_en: "Do the outlets have two slots only, or two slots and a round hole?"
+        text_es: "¿Los enchufes tienen solo dos ranuras, o dos ranuras y un hoyo redondo?"
+        options_en: ["Two slots only", "Two slots and a round hole", "A mix of both"]
+        options_es: ["Solo dos ranuras", "Dos ranuras y un hoyo redondo", "De los dos tipos"]
+        card_field: true
+        why: "Ungrounded outlets change what a code-compliant replacement needs."
+    photos_priority: [p2_device, p1_panel]
+    urgency:
+      fire_dept_triggers: ["Sparking or burning smell at the outlet or switch"]
+      urgent_capable_triggers: ["Outlet for a fridge or medical equipment is dead"]
+      regular: "Dead, worn or upgrade, nothing hot"
+    scope_line_en: "Replace 8 worn two-slot outlets in the living room and bedrooms; plugs fall out; built about 1978."
+    scope_line_es: "Cambiar 8 enchufes gastados de dos ranuras en la sala y recámaras; las clavijas se salen; casa de alrededor de 1978."
+    quote_format: range
+    business_fills: ["low and high end of the range", "price per added device", "earliest day"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: what device, how many, what it does or what she wants>
+      Doing: <dead / loose / switch issue / upgrade>. How many: <count>. Outlet type: <two-slot / three-prong / mix>. Others dead: <just this one / same room / elsewhere / n/a>.
+      Built: <home age answer>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's a five-minute swap.", "It's probably a tripped GFCI somewhere.", "Push the reset button in the bathroom.", "Two-prong outlets aren't up to code.", "Outlets are about ten bucks each to replace."]
+
+  - id: lighting_fan
+    label: "Light fixture or ceiling fan install or replace"
+    bank_job_type: "light fixture"
+    recurring: false
+    homeowner_phrasings: ["install 2 ceiling fans I bought", "swap the dining light", "hang a chandelier", "add can lights", "ceiling fan wobbles"]
+    must_know:
+      - fact: "Replacing a light or fan there now, or a new spot with no box"
+        bank_question: what
+        follow_up: fu_fixture_what
+        photo: p2_device
+        why_it_moves_price: "A swap on an existing box is a firm-ish labor job; a new spot means fishing wire and a new switch; recessed lights are priced per can. A fan where a light was may need a fan-rated box."
+        skip_if: "Her words say which"
+      - fact: "Ceiling height"
+        bank_question: null
+        follow_up: fu_ceiling_height
+        photo: p3_location
+        why_it_moves_price: "Over about 12 ft means a tall ladder or scaffold and a second person. [judgment]"
+        skip_if: "Photo shows a standard room ceiling"
+      - fact: "How many fixtures"
+        bank_question: count
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Per-fixture price drops with count. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether she has the fixture or fan already"
+        bank_question: null
+        follow_up: fu_have_fixture
+        photo: p2_device
+        why_it_moves_price: "Labor-only with the fixture on site is a tighter range than supplying one. [judgment]"
+        skip_if: "She said she bought it"
+    allowed_follow_ups:
+      - id: fu_fixture_what
+        ask_when: "Light or fan request and she has not said whether there is one there now"
+        text_en: "Is there a light or fan in that spot now, or is it a new spot with nothing there?"
+        text_es: "¿Hay una lámpara o ventilador en ese lugar ahora, o es un lugar nuevo donde no hay nada?"
+        options_en: ["A fan there now", "A light there now", "New spot, nothing there", "Adding recessed (can) lights"]
+        options_es: ["Hay un ventilador", "Hay una lámpara", "Lugar nuevo, no hay nada", "Agregar luces empotradas"]
+        card_field: true
+        why: "A fan replacing a light, or a new spot, are the two changes that move the range most."
+      - id: fu_ceiling_height
+        ask_when: "Ceiling fan, chandelier or fixture with no ceiling height given"
+        text_en: "About how high is the ceiling there?"
+        text_es: "¿Más o menos qué tan alto está el techo ahí?"
+        options_en: ["8 to 9 feet", "10 to 12 feet", "Over 12 feet or vaulted", "Two-story entry or stairs"]
+        options_es: ["8 a 9 pies", "10 a 12 pies", "Más de 12 pies o techo inclinado", "Entrada de dos pisos o escalera"]
+        card_field: true
+        why: "Height sets ladder, help and time. [judgment]"
+      - id: fu_have_fixture
+        ask_when: "Install request and she has not said who supplies the item"
+        text_en: "Do you already have the new one, or should the business supply it?"
+        text_es: "¿Ya tiene el nuevo, o prefiere que el negocio lo traiga?"
+        options_en: ["I have it", "Business supplies it", "Either"]
+        options_es: ["Ya lo tengo", "Que lo traiga el negocio", "Cualquiera"]
+        card_field: true
+        why: "Decides whether the range is labor only. [judgment]"
+    photos_priority: [p2_device, p3_location]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All fixture and fan installs"
+    scope_line_en: "Install 2 ceiling fans the homeowner bought, replacing bedroom lights; 8 ft ceilings; single story."
+    scope_line_es: "Instalar 2 ventiladores de techo que ya compró el dueño, en lugar de las lámparas de las recámaras; techos de 8 pies; un piso."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (box, brace, new wire)", "earliest day"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: what to install, how many, replacing what>
+      There now: <fan / light / nothing / recessed>. Ceiling: <height answer>. Fixture: <on site / business supplies / either>.
+      How many: <count>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Any handyman can hang a fan.", "Your box won't hold a fan.", "That's an easy swap.", "Fan installs run about a hundred each."]
+
+  - id: flicker_dim
+    label: "Lights flicker or dim when something turns on"
+    bank_job_type: "breaker trips"
+    recurring: false
+    homeowner_phrasings: ["lights flicker when the AC kicks on", "lights blinking all over", "one light keeps flickering", "lights dim when the dryer runs"]
+    must_know:
+      - fact: "One light, one room, or the whole house"
+        bank_question: null
+        follow_up: fu_flicker_scope
+        photo: null
+        why_it_moves_price: "One light is a bulb, socket or fixture visit; the whole house points at the panel, the service or the utility side. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "When it happens: when the AC or a big item starts, in wind or storms, at random"
+        bank_question: null
+        follow_up: fu_flicker_when
+        photo: null
+        why_it_moves_price: "Wind-related flicker points at the overhead service; AC-start flicker may be the AC itself, another trade. [judgment]"
+        skip_if: "Her words say when"
+      - fact: "Home age and panel"
+        bank_question: home_age
+        follow_up: null
+        photo: p1_panel
+        why_it_moves_price: "CPSC lists flicker as a sign with aluminum branch wiring, common in homes wired 1965 to the mid-1970s."
+        skip_if: "Answered and panel photo sent"
+    allowed_follow_ups:
+      - id: fu_flicker_scope
+        ask_when: "Flicker or dimming with no scope given"
+        text_en: "Do the lights flicker all over the house, in one room, or just one light?"
+        text_es: "¿Las luces parpadean en toda la casa, en un cuarto, o solo una lámpara?"
+        options_en: ["Just one light", "One room", "All over the house"]
+        options_es: ["Solo una lámpara", "Un cuarto", "Toda la casa"]
+        card_field: true
+        why: "Scope separates a fixture job from a panel or service visit. [judgment]"
+      - id: fu_flicker_when
+        ask_when: "Flicker across a room or the house and she has not said when"
+        text_en: "When does it happen: when the AC or another big item starts, in wind or storms, at random, or all the time?"
+        text_es: "¿Cuándo pasa: cuando arranca el aire u otro aparato grande, con viento o tormenta, a cualquier hora, o todo el tiempo?"
+        options_en: ["When the AC or a big item starts", "In wind or storms", "At random", "All the time"]
+        options_es: ["Cuando arranca el aire o un aparato grande", "Con viento o tormenta", "A cualquier hora", "Todo el tiempo"]
+        card_field: true
+        why: "Each answer points to a different place to look, one of them in another trade. [judgment]"
+      - fu_neighbors_power
+    photos_priority: [p1_panel, p4_meter]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Lights going dim and bright across the whole house"]
+      regular: "One light flickers, or a brief dip when the AC starts"
+    scope_line_en: "Lights all over the house dim for a second when the AC starts; started this summer; built about 1990."
+    scope_line_es: "Las luces de toda la casa bajan un segundo cuando arranca el aire; empezó este verano; casa de alrededor de 1990."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: where it flickers, when>
+      Where: <one light / one room / whole house>. When: <AC or big item starts / wind or storms / random / all the time>. Neighbors: <same / fine / not asked>.
+      Panel: <neutral, from photo> or <no photo>. Built: <home age answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's a loose neutral.", "Your AC capacitor is going.", "It's the utility's problem.", "Flicker is normal when the AC starts.", "You'll need a new panel."]
+
+  - id: panel_upgrade
+    label: "Panel upgrade, change-out, sub-panel, more amps"
+    bank_job_type: "panel upgrade"
+    recurring: false
+    homeowner_phrasings: ["need a 200 amp panel", "inspector flagged our Federal Pacific panel", "insurance wants the Zinsco replaced", "add a sub-panel in the garage", "need more power for solar and an EV"]
+    must_know:
+      - fact: "Why the panel work: adding big load, an inspector, insurer or sale note, an older panel, or a sub-panel"
+        bank_question: what
+        follow_up: fu_panel_why
+        photo: null
+        why_it_moves_price: "A same-size change-out, a service upgrade with more amps, and a sub-panel are three different jobs and price levels. [judgment]"
+        skip_if: "Her words say why"
+      - fact: "Panel brand, main size, open spaces"
+        bank_question: null
+        follow_up: null
+        photo: p1_panel
+        why_it_moves_price: "Sets what is being replaced and how many circuits move over. [judgment]"
+        skip_if: "Panel photo sent"
+      - fact: "Meter and panel outside: overhead or underground service, meter and main in one box, inside or outside panel"
+        bank_question: null
+        follow_up: fu_service_drop
+        photo: p4_meter
+        why_it_moves_price: "The city requires the service disconnect outside; an inside panel or an overhead mast changes the scope and UniSource coordination."
+        skip_if: "Meter photo sent"
+      - fact: "Same amps or more amps"
+        bank_question: null
+        follow_up: fu_amps_wanted
+        photo: null
+        why_it_moves_price: "Going up in amps changes the service wires and needs UniSource; staying the same is a change-out. [judgment]"
+        skip_if: "She named the amps she wants"
+      - fact: "Home age"
+        bank_question: home_age
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Older homes bring older wiring that has to land in the new panel. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_panel_why
+        ask_when: "Panel work requested without a reason"
+        text_en: "What is the panel work for: adding something big, a note from an inspector, insurer or sale, an older panel, or a sub-panel?"
+        text_es: "¿Para qué es el trabajo del panel: agregar algo grande, una nota de un inspector, aseguradora o venta, un panel viejo, o un subpanel?"
+        options_en: ["Adding AC, spa, EV charger or solar", "Inspector, insurer or home sale", "Panel is old or a certain brand", "Want a sub-panel"]
+        options_es: ["Agregar aire, spa, cargador de auto o solar", "Inspector, aseguradora o venta", "El panel es viejo o de cierta marca", "Quiero un subpanel"]
+        card_field: true
+        why: "The reason decides the size of the job and whether a load calculation is part of the quote. [judgment]"
+      - id: fu_amps_wanted
+        ask_when: "Panel change-out or upgrade with no size named"
+        text_en: "Do you want to keep the same size service, or go up in amps?"
+        text_es: "¿Quiere quedarse con el mismo tamaño de servicio, o subir el amperaje?"
+        options_en: ["Keep the same size", "Go up in amps", "Whatever fits what I'm adding"]
+        options_es: ["El mismo tamaño", "Subir el amperaje", "Lo que se necesite para lo que voy a agregar"]
+        card_field: true
+        why: "Going up in amps brings UniSource and new service wires into the quote. [judgment]"
+      - id: fu_service_drop
+        ask_when: "Panel work and no meter photo"
+        text_en: "Does power come to the house on an overhead wire from a pole, or underground?"
+        text_es: "¿La luz llega a la casa por un cable aéreo desde un poste, o por debajo de la tierra?"
+        options_en: ["Overhead wire", "Underground", "Don't know"]
+        options_es: ["Cable aéreo", "Por debajo de la tierra", "No sé"]
+        card_field: true
+        why: "Overhead service may add a mast and drop work; underground ties into the existing meter base. [judgment]"
+    photos_priority: [p1_panel, p4_meter]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Home sale or insurance deadline stated by the homeowner"]
+      regular: "Planned upgrade"
+    scope_line_en: "Replace a 100 amp Federal Pacific panel noted by a buyer's inspector; keep the same size; meter and panel on the outside wall."
+    scope_line_es: "Cambiar un panel Federal Pacific de 100 amperios que anotó el inspector del comprador; mismo tamaño; medidor y panel en la pared de afuera."
+    quote_format: range
+    business_fills: ["low and high end of the range", "whether permit and inspection are included", "what puts it at the high end", "earliest start"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: panel work, reason, size wanted>
+      Reason: <adding load / inspector or insurer or sale / older panel / sub-panel>. Size: <same / more amps / fits plan>. Service: <overhead / underground / not known>.
+      Panel now: <neutral, from photo: brand, main size, location>. Permit-type work: yes. Built: <home age answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Federal Pacific panels are dangerous.", "You need 200 amps.", "Panel swaps run two to four thousand.", "Your insurance is right to drop you.", "A sub-panel will fix it."]
+
+  - id: new_circuit
+    label: "New circuit or outlet (AC, spa, shop, kitchen, EV)"
+    bank_job_type: "new circuit"
+    recurring: false
+    homeowner_phrasings: ["220 outlet in the garage for a welder", "wire the new hot tub", "plug for my EV", "dedicated circuit for a freezer", "run power to the shed"]
+    must_know:
+      - fact: "What the circuit is for"
+        bank_question: what
+        follow_up: fu_circuit_for
+        photo: null
+        why_it_moves_price: "A 120-volt outlet, a 240-volt EV or welder circuit and a spa feed differ in wire size, breaker and parts. [judgment]"
+        skip_if: "Her words name the item"
+      - fact: "Distance and path from the panel"
+        bank_question: null
+        follow_up: fu_run_distance
+        photo: p3_location
+        why_it_moves_price: "Feet of wire, attic runs and trenching are the biggest labor items; a yard trench needs an Arizona 811 call first."
+        skip_if: "Location photo shows the run"
+      - fact: "Panel main size and open spaces"
+        bank_question: null
+        follow_up: null
+        photo: p1_panel
+        why_it_moves_price: "No open spaces or no capacity turns a circuit job into a panel job. [judgment]"
+        skip_if: "Panel photo sent"
+      - fact: "For an EV: charger on hand or an outlet to plug into"
+        bank_question: null
+        follow_up: fu_ev_charger
+        photo: null
+        why_it_moves_price: "Hardwiring a wall charger and installing a 240-volt outlet are priced differently. [judgment]"
+        skip_if: "Not an EV request"
+    allowed_follow_ups:
+      - id: fu_circuit_for
+        ask_when: "New circuit requested without saying what it powers"
+        text_en: "What will the new circuit power?"
+        text_es: "¿Qué va a conectar en el circuito nuevo?"
+        options_en: ["EV charger", "Spa or hot tub", "AC, mini-split or shop tool", "Kitchen or laundry appliance", "Outlets in a garage, shed or yard"]
+        options_es: ["Cargador de auto eléctrico", "Spa o jacuzzi", "Aire, minisplit o herramienta de taller", "Aparato de cocina o lavandería", "Enchufes en cochera, bodega o patio"]
+        card_field: true
+        why: "The load sets wire, breaker and whether a permit-type update is involved. [judgment]"
+      - id: fu_run_distance
+        ask_when: "New circuit or outdoor power with no location detail"
+        text_en: "About how far is the spot from the electrical panel?"
+        text_es: "¿Más o menos a qué distancia está el lugar del panel eléctrico?"
+        options_en: ["Same wall or right next to it", "Same floor, across the house", "Upstairs or through the attic", "Detached garage, shed or yard"]
+        options_es: ["En la misma pared o al lado", "En el mismo piso, al otro lado de la casa", "Arriba o por el ático", "Cochera separada, bodega o patio"]
+        card_field: true
+        why: "The run is the largest cost line in a circuit job. [judgment]"
+      - id: fu_ev_charger
+        ask_when: "EV charging request with no detail"
+        text_en: "Do you have a wall charger to install, or do you want a 240-volt outlet to plug one into?"
+        text_es: "¿Tiene un cargador de pared para instalar, o quiere un enchufe de 240 voltios para conectarlo?"
+        options_en: ["I have a wall charger", "Want a 240-volt outlet", "Business supplies the charger"]
+        options_es: ["Tengo un cargador de pared", "Quiero un enchufe de 240 voltios", "Que el negocio traiga el cargador"]
+        card_field: true
+        why: "Sets parts and labor in the range. [judgment]"
+    photos_priority: [p1_panel, p3_location]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All new circuit requests"
+    scope_line_en: "New 240-volt outlet for an EV on the far garage wall, about 30 ft from the panel; homeowner has no charger yet."
+    scope_line_es: "Enchufe nuevo de 240 voltios para auto eléctrico en la pared del fondo de la cochera, a unos 30 pies del panel; el dueño aún no tiene cargador."
+    quote_format: range
+    business_fills: ["low and high end of the range", "whether permit and inspection are included", "what puts it at the high end", "earliest day"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: what the circuit powers, where>
+      For: <EV / spa / AC or tool / appliance / garage, shed or yard>. Distance: <same wall / across the house / attic / detached or yard>. EV: <charger on hand / outlet / business supplies / n/a>.
+      Panel: <neutral, from photo: main size, open spaces> or <no photo>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your panel can't handle that.", "You need a 50 amp circuit.", "A handyman can run that.", "EV outlets are about five hundred.", "You'll have to trench the yard."]
+
+  - id: rewire
+    label: "Rewire home, aluminum wiring, old wiring"
+    bank_job_type: "new circuit"
+    recurring: false
+    homeowner_phrasings: ["house has aluminum wiring", "inspector said rewire", "all two-prong outlets", "old cloth wiring", "want to rewire before we remodel"]
+    must_know:
+      - fact: "What wiring the homeowner has been told about"
+        bank_question: what
+        follow_up: fu_wire_seen
+        photo: p2_device
+        why_it_moves_price: "Aluminum repair can be pigtailing at every device (COPALUM or AlumiConn) or a full copper rewire; ungrounded wiring is a different scope."
+        skip_if: "Her words say which"
+      - fact: "Home size"
+        bank_question: null
+        follow_up: fu_home_size
+        photo: null
+        why_it_moves_price: "Rooms and square feet drive device and wire counts. [judgment]"
+        skip_if: "She gave the size"
+      - fact: "Home age"
+        bank_question: home_age
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Homes wired 1965 to the mid-1970s may have aluminum branch wiring."
+        skip_if: "Answered"
+      - fact: "Two-slot or three-prong outlets"
+        bank_question: null
+        follow_up: fu_prong
+        photo: p2_device
+        why_it_moves_price: "Shows whether circuits carry a ground. [judgment]"
+        skip_if: "Device photo sent"
+    allowed_follow_ups:
+      - id: fu_wire_seen
+        ask_when: "Rewire or old wiring request with no detail on the wiring"
+        text_en: "What have you been told or seen about the wiring?"
+        text_es: "¿Qué le han dicho o qué ha visto del cableado?"
+        options_en: ["Aluminum wiring", "Old cloth-covered wiring", "Two-slot outlets with no ground", "Report says rewire, type not given", "Want it for a remodel"]
+        options_es: ["Cableado de aluminio", "Cableado viejo forrado de tela", "Enchufes de dos ranuras sin tierra", "El reporte dice recablear, sin decir tipo", "Lo quiero por una remodelación"]
+        card_field: true
+        why: "Each answer is a different scope of work. [judgment]"
+      - id: fu_home_size
+        ask_when: "Whole-home rewire or aluminum repair with no size given"
+        text_en: "About how big is the home?"
+        text_es: "¿Más o menos qué tamaño tiene la casa?"
+        options_en: ["Under 1,500 sq ft", "1,500 to 2,500 sq ft", "Over 2,500 sq ft"]
+        options_es: ["Menos de 1,500 pies²", "1,500 a 2,500 pies²", "Más de 2,500 pies²"]
+        card_field: true
+        why: "Size is the first number a rewire estimator writes down. [judgment]"
+      - fu_prong
+    photos_priority: [p2_device, p1_panel]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Home sale or insurance deadline stated by the homeowner"]
+      regular: "Planned rewire or repair"
+    scope_line_en: "Quote to address aluminum branch wiring noted by an inspector; about 1,600 sq ft, single story, built about 1972."
+    scope_line_es: "Cotización para atender el cableado de aluminio que anotó un inspector; unos 1,600 pies², un piso, casa de alrededor de 1972."
+    quote_format: range
+    business_fills: ["low and high end of the range", "method the range assumes", "whether permit and inspection are included", "earliest start"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: what wiring, why, size>
+      Wiring: <aluminum / cloth / ungrounded / report only / remodel>. Size: <size answer>. Outlets: <two-slot / three-prong / mix>.
+      Built: <home age answer>. Permit-type work: yes.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Aluminum wiring is a fire waiting to happen.", "You need a full rewire.", "Pigtailing is good enough.", "Rewires run ten to fifteen thousand."]
+
+  - id: smoke_alarm
+    label: "Smoke or CO alarms (hardwired, chirping, replace)"
+    bank_job_type: "hardwired smoke alarm"
+    recurring: false
+    homeowner_phrasings: ["smoke detectors chirping all over", "replace hardwired smoke alarms", "alarm beeps every minute", "add smoke and CO alarms"]
+    must_know:
+      - fact: "Short chirp, loud alarm, or a planned replacement"
+        bank_question: danger
+        follow_up: fu_alarm_sound
+        photo: null
+        why_it_moves_price: "A chirp is a battery or end-of-life visit; a loud alarm with smoke or a CO alarm is on the 911 list and the code sends the fixed text first. [judgment]"
+        skip_if: "She said it is a planned replacement"
+      - fact: "How many alarms"
+        bank_question: count
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Priced per alarm; interconnected sets are usually replaced together. [judgment]"
+        skip_if: "Answered"
+      - fact: "Hardwired or battery only, and the date on the back"
+        bank_question: null
+        follow_up: fu_alarm_wired
+        photo: p5_alarm
+        why_it_moves_price: "NFPA says to replace alarms 10 years after the manufacture date; hardwired units need matching plugs or new adapters."
+        skip_if: "Alarm photo sent"
+    allowed_follow_ups:
+      - id: fu_alarm_sound
+        ask_when: "Alarm request and she has not said what it is doing"
+        text_en: "Is it a short chirp every so often, a loud alarm that keeps going, or do you want to replace or add alarms?"
+        text_es: "¿Es un pitido corto de vez en cuando, una alarma fuerte que no para, o quiere cambiar o agregar alarmas?"
+        options_en: ["Short chirp every minute or so", "Loud alarm that keeps going", "Replace or add alarms"]
+        options_es: ["Pitido corto cada minuto o así", "Alarma fuerte que no para", "Cambiar o agregar alarmas"]
+        card_field: true
+        why: "Separates a chirp from an alarm that belongs on the 911 list. [judgment]"
+      - id: fu_alarm_wired
+        ask_when: "No alarm photo"
+        text_en: "Do the alarms have a wire going into the ceiling, or only a battery?"
+        text_es: "¿Las alarmas tienen un cable que entra al techo, o solo batería?"
+        options_en: ["Wire into the ceiling", "Battery only", "Some of each"]
+        options_es: ["Cable que entra al techo", "Solo batería", "De los dos tipos"]
+        card_field: true
+        why: "Hardwired and interconnected alarms are licensed work; the business wants to know which it will find."
+      - fu_have_fixture
+    photos_priority: [p5_alarm]
+    urgency:
+      fire_dept_triggers: ["Smoke alarm sounding with smoke or fire", "CO alarm sounding"]
+      urgent_capable_triggers: ["Chirping all night in a home with small children or older adults"]
+      regular: "Chirp or planned replacement"
+    scope_line_en: "Replace 5 hardwired smoke alarms that chirp; back label dated 2013; single story, 8 ft ceilings."
+    scope_line_es: "Cambiar 5 alarmas de humo cableadas que pitan; la etiqueta de atrás dice 2013; un piso, techos de 8 pies."
+    quote_format: range
+    business_fills: ["low and high end of the range", "price per added alarm", "whether alarms are included", "earliest day"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: chirp or replace, how many>
+      Sound: <chirp / loud alarm / planned>. How many: <count>. Type: <hardwired / battery / mix>. Date on back: <from photo or not given>.
+      Alarms: <on site / business supplies / either>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Just change the battery.", "Those alarms are expired.", "Pull it off the ceiling to stop the chirp.", "It's the 10-year sensor.", "Alarms are about forty dollars each."]
+
+  - id: outdoor_lighting
+    label: "Outdoor or security lights, landscape lighting"
+    bank_job_type: "light fixture"
+    recurring: false
+    homeowner_phrasings: ["motion light by the garage", "porch light stopped working", "string lights over the patio", "lights along the path", "security lights on the side yard"]
+    must_know:
+      - fact: "Plug-in, swap of a light there now, or a new spot with no wiring"
+        bank_question: what
+        follow_up: fu_outdoor_power
+        photo: p2_device
+        why_it_moves_price: "A swap is a per-fixture price; a new spot needs a run, a box and a switch, and maybe a trench. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Distance from the panel or nearest outdoor outlet"
+        bank_question: null
+        follow_up: fu_run_distance
+        photo: p3_location
+        why_it_moves_price: "Yard runs mean trenching through rock or caliche and an Arizona 811 call."
+        skip_if: "Swap of a light there now"
+      - fact: "How many lights"
+        bank_question: count
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Per-fixture price drops with count. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether she has the lights"
+        bank_question: null
+        follow_up: fu_have_fixture
+        photo: null
+        why_it_moves_price: "Labor only or supply and install. [judgment]"
+        skip_if: "She said she bought them"
+    allowed_follow_ups:
+      - id: fu_outdoor_power
+        ask_when: "Outdoor lighting request without saying how it gets power"
+        text_en: "Will the lights plug into an outlet that's there now, replace a light that's there now, or go in a new spot with no wiring?"
+        text_es: "¿Las luces se van a conectar a un enchufe que ya existe, van a cambiar una lámpara que ya está, o van en un lugar nuevo sin cableado?"
+        options_en: ["Plug into an outlet there now", "Replace a light there now", "New spot with no wiring"]
+        options_es: ["Se conectan a un enchufe que ya existe", "Cambiar una lámpara que ya está", "Lugar nuevo sin cableado"]
+        card_field: true
+        why: "Plug-in string lights may belong to the holiday lights category; a new spot is wiring work. [judgment]"
+      - fu_run_distance
+      - fu_have_fixture
+    photos_priority: [p2_device, p3_location]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All outdoor lighting requests"
+    scope_line_en: "Replace 2 porch lights and add a motion light over the garage where there is no light now; homeowner has the fixtures."
+    scope_line_es: "Cambiar 2 lámparas del porche y agregar una lámpara con sensor sobre la cochera donde no hay luz ahora; el dueño ya tiene las lámparas."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (new run, trench)", "earliest day"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: which lights, where, swap or new>
+      Power: <plug-in / swap / new spot>. Distance: <distance answer or n/a>. How many: <count>. Fixtures: <on site / business supplies / either>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Solar lights would be cheaper.", "Low-voltage lights don't need an electrician.", "That's a quick swap.", "You'll have to dig a trench."]
+
+  - id: whole_home_out
+    label: "Whole home has no power"
+    bank_job_type: "breaker trips"
+    recurring: false
+    homeowner_phrasings: ["no power at all", "whole house dark", "power out but the neighbors have lights", "main breaker won't stay on"]
+    must_know:
+      - fact: "Whether neighbors have power"
+        bank_question: null
+        follow_up: fu_neighbors_power
+        photo: null
+        why_it_moves_price: "A street outage is UniSource's; only the house dark with neighbors lit is an electrician visit, often same day. [judgment]"
+        skip_if: "She said the neighbors have power"
+      - fact: "What UniSource has said, if anything"
+        bank_question: null
+        follow_up: fu_utility_said
+        photo: null
+        why_it_moves_price: "If the utility says the fault is on the owner's side (meter base, service wires, main), the business knows it is a real job. [judgment]"
+        skip_if: "Neighbors are out too"
+      - fact: "Meter and panel condition outside"
+        bank_question: null
+        follow_up: null
+        photo: p4_meter
+        why_it_moves_price: "Heat marks or damage at the meter base point at a bigger, urgent repair with UniSource involved. [judgment]"
+        skip_if: "Meter photo sent"
+    allowed_follow_ups:
+      - fu_neighbors_power
+      - id: fu_utility_said
+        ask_when: "Whole home out, neighbors have power"
+        text_en: "Has UniSource said anything about it yet?"
+        text_es: "¿UniSource ya le dijo algo sobre esto?"
+        options_en: ["They said it's on my side", "They're sending someone", "Haven't talked to them"]
+        options_es: ["Dijeron que es de mi lado", "Van a mandar a alguien", "No he hablado con ellos"]
+        card_field: true
+        why: "The business wants to know whether the utility has looked before it drives out. [judgment]"
+    photos_priority: [p4_meter, p1_panel]
+    urgency:
+      fire_dept_triggers: ["Power line down or sparking outside", "Burning smell or sparks at the meter or panel"]
+      urgent_capable_triggers: ["Whole home without power and neighbors have power", "No AC in summer heat"]
+      regular: "Never regular; a whole-home outage is same-day or the utility's"
+    scope_line_en: "Whole house has no power since 2 p.m.; neighbors have power; UniSource said it is on the owner's side."
+    scope_line_es: "Toda la casa está sin luz desde las 2 p.m.; los vecinos tienen luz; UniSource dijo que es del lado del dueño."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Electrical | <town>, <general area> | <kind of place>
+      <one scope line: whole home out since when, neighbors, utility answer>
+      Neighbors: <have power / out too / don't know>. UniSource: <said owner's side / sending someone / not contacted>.
+      Meter and panel: <neutral, from photo> or <no photo>. Built: <home age answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your main breaker is shot.", "It's a UniSource outage, nothing we can do.", "Reset the main breaker.", "The meter is bad.", "That's an expensive repair."]
+
+business_side:
+  how_they_get_customers: ["Repeat customers, word of mouth and realtor or inspector referrals", "Google Maps listing and reviews", "Google Local Services Ads and search ads", "Home-service marketplaces (Angi, HomeAdvisor, Thumbtack)", "Subcontract work for general contractors, HVAC and solar companies", "Truck signage and local Facebook groups [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "HomeAdvisor and Angi (electricians)"
+      figure: "About $85 per lead and about $1,000 per booked job; marketing-vendor figures, shared with other contractors"
+      source: webtonic_electrical
+      unverified: false
+    - channel: "Google Local Services Ads (electricians)"
+      figure: "About $39 per lead and about $90 per booked job; marketing-vendor figures"
+      source: webtonic_electrical
+      unverified: false
+    - channel: "Google search ads (electricians)"
+      figure: "About $93.69 per lead, about $12.18 per click, and about $625 per booked job; marketing-vendor figures"
+      source: webtonic_electrical
+      unverified: false
+    - channel: "Meta ads, SEO and referrals (electricians)"
+      figure: "Meta about $52 per lead, SEO about $28 per lead, referrals $0 to $15 per lead; marketing-vendor figures"
+      source: webtonic_electrical
+      unverified: false
+    - channel: "Shared marketplace leads (electricians)"
+      figure: "Typically sold to more than one contractor; the fastest callback usually wins the job"
+      source: elevarus_angi_lsa
+      unverified: false
+    - channel: "Lake Havasu City electricians specifically"
+      figure: "No local figures found; a small market with fewer bidders may run below national marketing-vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead that several other electricians also bought", "Homeowners who want free troubleshooting over the phone", "Wrong-area or fake requests", "Monthly fees whether or not jobs come", "Being ranked or reviewed by the site itself", "Small jobs (one outlet) priced like big ones"]
+  what_makes_a_lead_worth_paying_for: ["A panel photo with the label before the first call", "Clear scope: device count, ceiling height, distance from the panel", "Home age and kind of place, so aluminum wiring or a manufactured home is no surprise", "Pay only when picked, nothing monthly", "Neighbors-have-power answer on no-power calls", "Permit-type work flagged up front"]
+  their_words: ["service call", "trip charge", "troubleshoot", "change-out", "service upgrade", "load calc", "home run", "dedicated circuit", "pigtail", "GFCI", "AFCI", "tandem", "meter-main", "service drop", "mast", "fan-rated box", "old-work box", "fish the wall"]
+  signup_objections:
+    - objection: "Why pay $25 or more when Google already sends me calls?"
+      answer: "You pay only when the homeowner picks your quote, and nobody else gets that job. There is nothing to join and nothing monthly. The fee is set by job size: $25, $75 or $199."
+    - objection: "I can't price electrical without seeing it."
+      answer: "You can quote a range and say what puts it at the high end. Most cards come with a panel photo, the home's age, a device count and the distance from the panel, so the range can be tight."
+    - objection: "These sites send me people who want me to diagnose it on the phone."
+      answer: "The homeowner sees your quote in writing and picks it before you talk. You get her contact details after the pick, with the job already scoped."
+    - objection: "Will you rank me against other electricians?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license numbers and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "I don't want small outlet jobs."
+      answer: "You choose your job types at sign-up and can change them any time. If you only want panels and new circuits, you only get those cards."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Do handymen get these cards too?"
+      answer: "No. Electrical cards go only to businesses with an R-11 or CR-11 license, and hardwired smoke alarms and new circuits are never sent to handymen."
+    - objection: "Does Ask Hava take a cut of the job?"
+      answer: "No. It is one fixed introduction fee by job size, paid when you confirm a pick. It is never a share of the job."
+  quote_tips_for_card: ["Give the low and high end and say what puts it at the high end", "Say whether permit and inspection fees are in the range", "Say if the range assumes open spaces in the panel", "Give your earliest arrival, and say if you take same-day no-power calls", "If you need another photo, like the meter or the inside of the panel door, say which"]

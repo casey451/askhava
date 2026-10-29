@@ -1,0 +1,455 @@
+category: pest_control
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Note for the harness: the categories row lists four bank job types (general pest service, scorpions, termites,
+# pre-emergent weed control). Bees, pigeons and rodents exist as kb job types but have no bank job type name,
+# so bank_job_type is null for those.
+scenarios:
+  - id: pest_control_s01
+    kind: vague
+    persona: "40s, texts one word at a time between work calls, no punctuation"
+    opening_message: "got bugs"
+    photo: "none at first; if asked, one blurry photo of a kitchen baseboard with a small dark brown insect near the corner"
+    hidden_facts:
+      - "mostly seeing roaches at night in the kitchen and laundry room, a few in the garage"
+      - "single-story home, about 2,200 sq ft, rock yard front and back"
+      - "wants ongoing service, not a one-time spray"
+      - "has a toddler who crawls on the kitchen floor and a dog that eats from a bowl in the laundry room"
+      - "home has been vacant of anyone during the day; homeowner can let someone in on weekday evenings only"
+      - "neighbors on both sides share block walls with the back yard"
+    homeowner_behavior: "one short answer per reply; never volunteers; gives a fact only when a question clearly calls for it; gets short with the sixth question"
+    traps:
+      - "hidden: toddler and dog in the home, only said if asked who is in the home or about pets; a strong provider wants it before choosing product"
+      - "hidden: evening-only access, only said if asked about scheduling or who is home"
+    expected:
+      category: pest_control
+      job_type: general_pest
+      bank_job_type: "general pest service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["roaches, mostly kitchen and laundry room, some in garage", "about 2,200 sq ft single story", "ongoing service wanted", "toddler and dog in the home", "evening access only"]
+      must_not_be_on_card: ["any species name beyond what the homeowner said", "any cause", "any product or price", "advice about the toddler or the dog"]
+      max_questions: 5
+      notes: "Two words in. The pest question has to open the job, then frequency, inside or outside and size. Kids and pets and the access window are the facts a strong provider asks and the homeowner never offers."
+
+  - id: pest_control_s02
+    kind: wrong_terminology
+    persona: "50s, confident, uses trade words slightly wrong"
+    opening_message: "need the house fumigated, crickets everywhere. hundreds of them at night, the big ugly brown kind. tent the whole thing if thats what it takes"
+    photo: "one photo of a garage floor near the roll-up door with a scatter of dead brown crickets and a few live ones along the seam"
+    hidden_facts:
+      - "does not need tenting; wants the crickets gone and wants whatever stops them coming back"
+      - "crickets are mostly in the garage and on the patio by the back slider, some come in the house"
+      - "single story, about 1,800 sq ft"
+      - "there is a drip line leak by the side of the garage that keeps the rock damp"
+      - "wants to know if it is a one-time job; open to monthly if that is how it works"
+      - "no one in the home has a breathing condition and there are no pets"
+    homeowner_behavior: "answers what is asked, a bit bossy, repeats 'just tent it' if a question seems to second-guess him"
+    traps:
+      - "hidden: damp rock from a drip leak by the garage, only said if asked where they are coming in or what the area around the house is like"
+      - "terminology: 'fumigate' and 'tent' should not turn into a fumigation or termite job type"
+    expected:
+      category: pest_control
+      job_type: general_pest
+      bank_job_type: "general pest service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["crickets, hundreds at night", "mostly garage and back patio, some inside", "about 1,800 sq ft", "damp rock by the garage side", "homeowner asked for fumigation/tenting"]
+      must_not_be_on_card: ["a statement that tenting is or is not needed", "any cause", "any price"]
+      max_questions: 5
+      notes: "The words 'fumigate' and 'tent' map to a different licensed activity in the trade, but the facts describe crickets. The card carries his words as a request and the facts as the job. The damp-rock fact only comes out of a question about where they enter."
+
+  - id: pest_control_s03
+    kind: wrong_self_diagnosis
+    persona: "30s, anxious reader of the internet, writes long run-on texts"
+    opening_message: "i have termites in my kitchen!! saw like 50 of them on the counter this morning going toward the sugar and the dogs food bowl, i read termites eat your house and i am freaking out how fast can someone come look at it"
+    photo: "close photo of a kitchen counter edge: a thin line of tiny dark insects with no wings walking along the backsplash toward a canister"
+    hidden_facts:
+      - "insects walk in a single-file line and have no wings"
+      - "first seen two days after the first monsoon storm of the week"
+      - "line starts at a crack by the window over the sink and ends at the sugar canister and the pet bowl"
+      - "no mud tubes, no sawdust, no soft or damaged wood anywhere that homeowner has noticed"
+      - "house is about 2,000 sq ft, built in the early 2000s, slab"
+      - "never had any pest service before"
+      - "wants one-time to start; would do ongoing if the provider suggests it"
+    homeowner_behavior: "keeps saying 'termites'; answers factual questions fully but returns to the word 'termites' and to urgency"
+    traps:
+      - "wrong_self_diagnosis: the homeowner says termites; observable facts are a trail of tiny wingless insects to food. Card must carry the observations, not the label as fact, and must not escalate to the termite job type on his word alone"
+      - "hidden: line comes from a crack by the window and no wood damage, only said if asked what it looks like or where it starts and ends"
+    expected:
+      category: pest_control
+      job_type: general_pest
+      bank_job_type: "general pest service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["homeowner believes termites", "about 50 tiny dark wingless insects in a line on the counter to sugar and pet bowl", "started near a window crack over the sink", "no mud tubes or wood damage noticed", "about 2,000 sq ft, slab", "no prior pest service", "photo attached"]
+      must_not_be_on_card: ["the word termites stated as fact", "the word ants stated as fact", "reassurance that it is not termites", "any price"]
+      max_questions: 5
+      notes: "Classic misdiagnosis driven by panic. The trap is the termite job type: the homeowner names it and a strong flow still asks what it looks like and whether there is wood damage or mud tubes. The AI must not diagnose in either direction. Urgency is emotional, not real."
+
+  - id: pest_control_s04
+    kind: wrong_self_diagnosis
+    persona: "late 20s, tired, texts in lowercase with few commas"
+    opening_message: "i think i have bed bugs, waking up covered in bites every morning. need to get treated asap"
+    photo: "none; later one photo of an ankle with a cluster of small red bumps, no mattress shown"
+    hidden_facts:
+      - "bites are only on ankles and lower legs, none on arms or neck"
+      - "there are no spots, stains or shed skins on the mattress or bed frame that homeowner has seen"
+      - "a cat that goes outside lives in the home; its flea collar ran out about a month ago"
+      - "bites mostly after walking through the back bedroom, which has carpet, the rest of the house is tile"
+      - "house is about 1,600 sq ft, owner-occupied"
+      - "has not told anyone else in the household"
+    homeowner_behavior: "answers factual questions quickly, but does not connect the cat until asked about pets or where the bites are"
+    traps:
+      - "wrong_self_diagnosis: homeowner says bed bugs; facts (ankles only, outdoor cat, carpet) point elsewhere. Card carries facts and the homeowner's belief, not a verdict"
+      - "hidden: indoor/outdoor cat, only said if asked about pets"
+    expected:
+      category: pest_control
+      job_type: bed_bugs_other
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["homeowner thinks bed bugs, bitten overnight", "bites on ankles and lower legs only", "no marks seen on mattress or frame", "outdoor cat in the home", "carpeted back bedroom, tile elsewhere", "about 1,600 sq ft"]
+      must_not_be_on_card: ["a diagnosis of fleas or bed bugs", "advice about washing bedding", "any cause", "any price"]
+      max_questions: 5
+      notes: "Kb has one job type for bed bugs, fleas and other, so the routing is easy; the work is getting facts a provider uses to decide what to bring. 'asap' is not an emergency. No medical advice about the bites."
+
+  - id: pest_control_s05
+    kind: misleading_photo
+    persona: "60s, retired, careful, sends several photos"
+    opening_message: "found mud tubes on the side of my house, termites right? here's a picture, can someone come look"
+    photo: "several parallel tan tube-shaped clumps of dried mud, each about a finger long, stuck to the stucco directly under the eave at roughly two stories up, not touching the ground"
+    hidden_facts:
+      - "the clumps are high up under the roof edge on the second-floor side, about 15 feet off the ground; nothing on the foundation or stem wall"
+      - "small dark wasps with thin waists fly in and out of the tubes on warm afternoons"
+      - "no damaged wood, no sawdust, no swarmers inside the home"
+      - "first noticed about two weeks ago; more appear each week"
+      - "two-story home, about 2,800 sq ft"
+      - "ladder access only; side yard has a gate with a latch"
+    homeowner_behavior: "friendly and thorough; describes only what a question asks about; assumes the photo speaks for itself"
+    traps:
+      - "misleading_photo: photo shows tube-shaped mud but placement is far off the ground and insects are flying. Card must record where it is and what is flying, not 'mud tubes at foundation'"
+      - "hidden: height off the ground and wasps flying, only said if asked where exactly or whether anything is flying around it"
+      - "hidden: ladder access, second-story height matters for the visit"
+    expected:
+      category: pest_control
+      job_type: bees_wasps
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["tube-shaped mud clumps under the eave about two stories up", "not at the foundation", "small wasp-like insects flying in and out", "homeowner thinks termites", "no wood damage or swarmers noticed", "two-story, about 2,800 sq ft", "ladder access, side gate"]
+      must_not_be_on_card: ["mud dauber", "termites stated as fact", "any cause", "any price"]
+      max_questions: 5
+      notes: "The photo matches the word 'mud tubes' but the where and the flying insects change the job. A flow that locks onto the trigger phrase 'mud tubes' and files termites misses it. Accept bees_wasps or general_pest only if the card clearly records the height and the flyers; bees_wasps is the target."
+
+  - id: pest_control_s06
+    kind: no_photo
+    persona: "late 30s, local mom, texts in full sentences and tells the story"
+    opening_message: "we are getting scorpions in the house like 4 or 5 a week, even with monthly spray guy before. i dont have a picture, never wants to hold still lol. we are on the east side of town"
+    photo: "none; says the scorpions are dead and gone and she will not take pictures of the dirt lot"
+    hidden_facts:
+      - "a vacant dirt lot sits right next to the house on the east side with piles of old concrete, scrap lumber and brush"
+      - "the lot is separated from the yard by a block wall that has a gap at the bottom near the gate"
+      - "scorpions show up mostly in the bedroom hallway and the bathroom closest to that side"
+      - "previous monthly provider sprayed the outside perimeter and the problem did not change"
+      - "home is about 2,400 sq ft, owner-occupied, two kids ages 6 and 9 and a small dog"
+      - "wants ongoing service this time, monthly"
+      - "no one has been stung this season"
+    homeowner_behavior: "friendly and chatty, answers with extra detail about the family but does not mention the lot until asked what is around the house or next door"
+    traps:
+      - "hidden: vacant lot with debris on the east side, only said if asked about the surroundings or neighbors"
+      - "hidden: previous provider already sprayed perimeter without result, only said if asked about earlier service"
+      - "hidden: kids and dog, relevant to product choice"
+    expected:
+      category: pest_control
+      job_type: scorpions
+      bank_job_type: "scorpions"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["scorpions, 4 or 5 a week inside", "mostly bedroom hallway and nearest bathroom on the east side", "vacant dirt lot next door with debris piles, block wall with a gap", "previous monthly service did not change it", "about 2,400 sq ft", "two kids and a dog", "monthly ongoing wanted"]
+      must_not_be_on_card: ["any cause", "advice about the lot or the wall", "any product or price", "a recommendation to change provider"]
+      max_questions: 6
+      notes: "Hidden fact is the neighboring vacant lot. A provider quoting without it prices a standard perimeter service and comes back unhappy. Homeowner never thinks of the lot as part of 'my house'. No photo is expected and none should be demanded."
+
+  - id: pest_control_s07
+    kind: elderly
+    persona: "80s, widowed, dictates by voice into the phone, long pauses mean typos and missing words"
+    opening_message: "hello this is dorothy my grandson put this number in. theres something in the cieling at night scratching and runing around. i can not sleep. also i found little black things in the garage like rice"
+    photo: "none; says her grandson visits Sundays and could take pictures then"
+    hidden_facts:
+      - "scratching and running overhead in the bedroom ceiling, only at night, for about 3 weeks"
+      - "dark pellet-sized droppings on the garage floor and on top of the washer"
+      - "attic hatch is in the hallway closet; she cannot climb a ladder and keeps boxes stacked under it"
+      - "she lives alone, has a cat that sleeps indoors, and uses a walker"
+      - "home is about 1,300 sq ft, single story, owner-occupied since the early 1990s"
+      - "she does not use a smart phone beyond texts and calls; best to schedule through her grandson on weekends"
+      - "swamp cooler on the roof, no solar"
+    homeowner_behavior: "slow, polite, apologizes for typos, answers the question before the last one if replies come fast; needs short plain questions and one at a time; can lose the thread"
+    traps:
+      - "hidden: attic hatch blocked by boxes and she cannot move them, only said if asked about attic access"
+      - "hidden: indoor cat and a walker, relevant to the visit; only said if asked who lives there or about pets"
+      - "elderly: she types 'cieling' and 'runing'; the AI must not correct or be confused, and should not send long multi-part questions"
+    expected:
+      category: pest_control
+      job_type: rodents
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["scratching overhead in bedroom ceiling at night for about 3 weeks", "dark pellet droppings in garage and on washer", "attic hatch in hallway closet blocked by boxes, homeowner cannot move them", "lives alone with an indoor cat and uses a walker", "about 1,300 sq ft single story", "grandson helps schedule on weekends"]
+      must_not_be_on_card: ["rats or mice as a stated fact", "any cause", "advice about the droppings or cleanup", "any price"]
+      max_questions: 5
+      notes: "Voice-dictated typos and a vulnerable homeowner. The rodent job type is not in the category's four bank job types, so job-type pick comes from the story, not a menu word. The blocked attic hatch changes visit scope and who must be there."
+
+  - id: pest_control_s08
+    kind: tenant
+    persona: "20s, renting half of a duplex, texts casually with emojis"
+    opening_message: "hey i rent a duplex and my place has roaches bad. landlord said i can find someone who does it, he'll look at the quote. can you help"
+    photo: "one photo of a kitchen cabinet interior with several small brown insects on the shelf liner"
+    hidden_facts:
+      - "duplex shares one wall with the other unit, which is also rented by someone else"
+      - "the neighbor has told the tenant that they have roaches too"
+      - "landlord owns both halves and the property is managed by him directly, not a company"
+      - "landlord said he will pay if the quote is under his limit and needs the quote in writing before approving"
+      - "unit is about 900 sq ft, two bedrooms"
+      - "tenant works nights and sleeps days; can let someone in after 4 pm"
+      - "there are no kids; tenant has a pet snake in a tank in the bedroom"
+    homeowner_behavior: "casual and quick; answers truthfully; does not offer details about the neighbor unless asked whether other units are affected"
+    traps:
+      - "hidden: shared wall and neighbor also has roaches, only said if asked about the building or other units"
+      - "hidden: landlord approves in writing and pays, only said if asked who is paying or approving"
+      - "hidden: pet snake in a tank, relevant to product choice; only said if asked about pets"
+    expected:
+      category: pest_control
+      job_type: general_pest
+      bank_job_type: "general pest service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["roaches in kitchen", "tenant in one half of a duplex, shares a wall with another unit that also has roaches", "landlord approves and pays, needs written quote", "about 900 sq ft, 2 bedrooms", "pet snake in the bedroom", "access after 4 pm"]
+      must_not_be_on_card: ["advice about the landlord", "a statement of who is responsible", "any cause", "any price"]
+      max_questions: 6
+      notes: "Tenant cannot authorize work, and the quote may need to cover both halves. The card has to say who approves and pays and that the other unit is affected, without advising on the lease."
+
+  - id: pest_control_s09
+    kind: spanish
+    persona: "50s, homeowner, texts only in Spanish, short messages"
+    opening_message: "buenas tardes, despues de la tormenta de ayer salieron muchos bichos con alas por las ventanas de la sala y hay alitas en el piso. creo que es comején, quiero que vengan a revisar"
+    photo: "a small pile of thin translucent wings on a windowsill and a few on the floor tile under the window"
+    hidden_facts:
+      - "winged insects came out of the living room window frames and floor edges the evening after a monsoon storm"
+      - "wings are all the same size and piled on the sill, near the front window"
+      - "there is a thin earthen tube on the garage stem wall behind the water heater"
+      - "house was built in 1998, slab, about 1,900 sq ft, stucco"
+      - "a previous owner's termite treatment paperwork from about 2011 is in a drawer"
+      - "no wood damage seen; one baseboard in the living room sounds hollow when tapped"
+      - "wants a one-time treatment, not monthly"
+      - "the homeowner speaks Spanish and a little English; prefers to keep it in Spanish"
+    homeowner_behavior: "answers in Spanish; short replies; mentions the previous treatment paperwork only if asked about earlier treatments or paperwork"
+    traps:
+      - "hidden: thin tube on garage stem wall behind water heater, only said if asked whether anything was seen on walls, foundation or in the garage"
+      - "hidden: previous treatment paperwork from 2011, only said if asked about earlier treatment"
+      - "hidden: hollow-sounding baseboard"
+      - "language: card and questions in Spanish to the homeowner; card fields for providers still readable"
+    expected:
+      category: pest_control
+      job_type: termites
+      bank_job_type: "termites"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["winged insects came out after the storm near the living room window, wings piled on the sill", "thin earthen tube on garage stem wall behind water heater", "built 1998, slab, about 1,900 sq ft", "previous termite treatment paperwork from about 2011", "one hollow-sounding baseboard", "one-time treatment wanted", "Spanish speaker"]
+      must_not_be_on_card: ["a statement that it is or is not termites", "any cause", "any price"]
+      max_questions: 5
+      notes: "Real termite signs, but the key fact (tube behind the water heater) and the old treatment paperwork are only in the garage and in a drawer. The termite quote usually needs a site visit. Homeowner wrote the word comején, which maps to termites."
+
+  - id: pest_control_s10
+    kind: panicked_non_emergency
+    persona: "40s, dad, all caps and exclamation marks, kids are home"
+    opening_message: "THERES A HUGE SWARM OF BEES HANGING IN THE TREE IN OUR BACKYARD!!! THEY ARE GOING TO KILL US!!! my kids play out there. SEND SOMEONE NOW"
+    photo: "a dark football-sized hanging cluster of bees on a lower branch of a mesquite tree about 6 feet off the ground, taken from the patio door"
+    hidden_facts:
+      - "the cluster appeared this morning and has not moved in three hours"
+      - "nobody has been stung and no one is outside; the kids and the dog are inside"
+      - "the tree is in the back yard near the pool equipment pad, about 25 feet from the back door"
+      - "back yard has a locked side gate; a person can be let in through the garage"
+      - "wants removal and prefers live removal if possible"
+      - "home is about 2,600 sq ft; no known allergies"
+      - "can be home all day"
+    homeowner_behavior: "frantic; repeats urgency; answers questions fast but in all caps; gives facts when asked directly"
+    traps:
+      - "panic: nobody is being attacked and no one has been stung, so the 911 text does not apply; this is urgent for a provider but gets no safety advice"
+      - "hidden: nobody stung, kids and dog inside, only said if asked; the card must say nobody stung only if the homeowner confirms it"
+      - "hidden: swarm near pool equipment pad, gate locked"
+    expected:
+      category: pest_control
+      job_type: bees_wasps
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["bee swarm hanging in a mesquite tree about 6 feet up, appeared this morning", "no one stung, kids and dog inside", "about 25 feet from back door near the pool pad", "locked side gate, access through garage", "live removal preferred", "homeowner home all day", "photo attached"]
+      must_not_be_on_card: ["safety instructions such as stay inside or do not spray", "a statement that the bees are Africanized", "any price"]
+      max_questions: 4
+      notes: "ALL CAPS fear, but the facts are a hanging swarm with no stings. The fixed 911 text is for the fire-truck list only and must not fire. The card goes out flagged urgent with no advice. The bee location question is the useful first one."
+
+  - id: pest_control_s11
+    kind: calm_real_emergency
+    persona: "50s, calm, chatty homeowner, buries the important fact in a long message"
+    opening_message: "hi, just looking for someone to do a monthly ant treatment around the house, we get them every spring at the back door. oh and by the way theres a faint propane smell near the water heater in the garage since yesterday, probably nothing. anyway ants are in the kitchen too sometimes"
+    photo: "none"
+    hidden_facts:
+      - "faint propane smell near the garage water heater since yesterday"
+      - "ants come in at the back door threshold and in the kitchen near the dishwasher"
+      - "single story, about 2,000 sq ft"
+      - "wants monthly service"
+      - "has a dog that stays in the back yard"
+      - "the propane tank is on the side of the house; no one has called anyone about the smell"
+    homeowner_behavior: "relaxed, answers questions in full sentences, treats the smell as a side comment; does not ask for help with it"
+    traps:
+      - "calm_real_emergency: the propane smell must trigger the fixed 911 text by code even though the request is ants"
+      - "the pest card should not become a gas card and should not carry advice about the smell"
+    expected:
+      category: pest_control
+      job_type: general_pest
+      bank_job_type: "general pest service"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["ants at the back door and in the kitchen", "about 2,000 sq ft single story", "monthly service wanted", "dog in the back yard"]
+      must_not_be_on_card: ["advice about the propane smell", "a diagnosis of the smell", "any cause", "any price"]
+      max_questions: 4
+      notes: "The fire-truck-list fact arrives mid-sentence in a message about something else. The 911 text must fire on the propane smell and the ant intake can continue. Whether the card mentions the smell is a design choice; it must not carry advice."
+
+  - id: pest_control_s12
+    kind: two_trades
+    persona: "60s, snowbird returning for the winter, organized, writes a list"
+    opening_message: "back in town for the winter. need two things done: (1) pre-emergent sprayed on my front and back rock yards before the winter weeds, my gardener says he can't do that part, and (2) the usual monthly yard guy for mowing the small lawn strip, trimming the oleanders and cleaning up the palm fronds"
+    photo: "one photo of a front rock yard with scattered small green weeds and a drip line running along the edge"
+    hidden_facts:
+      - "front and back rock yards, about half an acre of rock combined"
+      - "weeds are scattered through the rock; the old landscape fabric is torn in places"
+      - "desert plants in the rock include a palo verde, two agaves and an ocotillo, plus a drip line"
+      - "wants pre-emergent twice a year, fall and early spring, if that is how it is done"
+      - "the existing gardener has been paid monthly for years; the homeowner wants a new one for mowing and trimming"
+      - "the house will be empty from May to October with a house watcher stopping by"
+      - "no pets at home during winter"
+    homeowner_behavior: "organized; answers the pre-emergent questions well; says 'the gardener part is separate, just do the weed part first' if asked which comes first"
+    traps:
+      - "two_trades: the pre-emergent part is licensed pest control; the mowing and trimming part is yard maintenance and needs its own card"
+      - "hidden: desert plants and a drip line in the rock, only said if asked what is in the rock areas"
+      - "hidden: torn fabric and half an acre of rock, changes the quote by a lot; only said if asked about size or condition"
+    expected:
+      category: pest_control
+      job_type: weed_control
+      bank_job_type: "pre-emergent weed control"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pre-emergent on front and back rock yards", "about half an acre of rock", "torn landscape fabric", "desert plants and a drip line in the rock", "twice a year, fall and early spring", "photo attached"]
+      must_not_be_on_card: ["mowing, trimming or palm cleanup on this card", "any product name", "any price", "a judgment on whether the gardener can spray"]
+      max_questions: 5
+      notes: "Second trade is yard maintenance (landscape_maintenance), which gets its own card. Pre-emergent is a licensed pest-control job type that the yard category does not take. The card must keep the pest part clean and offer the yard part as a separate request."
+
+  - id: pest_control_s13
+    kind: outside_area
+    persona: "50s, rural homeowner, short and direct"
+    opening_message: "got scorpions in my house out here in Parker, need monthly service. who comes out this far"
+    photo: "none"
+    hidden_facts:
+      - "home is in Parker, Arizona, about 60 miles north-west of Lake Havasu City"
+      - "bark-type scorpions inside several times a week"
+      - "home is about 1,700 sq ft on a half-acre lot"
+      - "wants monthly service"
+    homeowner_behavior: "answers directly; will give the ZIP when asked; does not volunteer the ZIP"
+    traps:
+      - "outside_area: Parker is outside the service area; the ZIP check should answer before any pest questions"
+    expected:
+      category: pest_control
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a card sent to any business", "a promise that anyone will travel to Parker", "any price"]
+      max_questions: 1
+      notes: "The ZIP check should answer before trade questions, with the outside-area message. No scorpion intake, no job card. The town is named in the first message, so the outside-area decision can come from the text itself."
+
+  - id: pest_control_s14
+    kind: no_businesses
+    persona: "30s, homeowner, practical, answers in short sentences"
+    opening_message: "bees are going in and out of my irrigation valve box in the front yard, been a few days, want them gone"
+    photo: "the plastic valve box lid in a rock yard bed, lid ajar about an inch, several bees on the rim and flying in and out"
+    hidden_facts:
+      - "front yard valve box about 12 feet from the front walkway"
+      - "bees going in and out all day for four days, more each day"
+      - "nobody has been stung; two kids and a dog use the front yard"
+      - "the sprinkler timer runs at 6 am and the valves are still clicking"
+      - "does not need live removal, wants the colony gone"
+      - "home is about 1,900 sq ft, east side"
+    homeowner_behavior: "short factual answers; no drama"
+    traps:
+      - "no_businesses: job type is right (bees_wasps); card must say the trade has no businesses yet"
+      - "hidden: kids and dog use the front yard, 12 feet from walkway; only said if asked"
+    expected:
+      category: pest_control
+      job_type: bees_wasps
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["bees going in and out of an irrigation valve box in the front rock yard", "about four days, increasing", "box about 12 feet from the front walkway", "nobody stung, two kids and a dog use the yard", "removal wanted, not necessarily live", "photo attached"]
+      must_not_be_on_card: ["a named business", "any advice about the box or the bees", "any price"]
+      max_questions: 4
+      notes: "With zero coverage the harness expects the card to state plainly that no pest businesses are signed up yet instead of promising quotes. The intake itself should still be right."
+
+  - id: pest_control_s15
+    kind: wrong_terminology
+    persona: "mid 30s, seller, agent-driven, a little rushed"
+    opening_message: "selling my house and my agent says I need a termite certificate or clearance before closing. who does those? escrow opens next week"
+    photo: "none"
+    hidden_facts:
+      - "house is in Lake Havasu City, listed for sale, under contract"
+      - "buyer's lender asked for a wood-destroying insect report"
+      - "single story, about 1,600 sq ft, built in 2006, slab"
+      - "no termite signs noticed by the seller, and no prior treatment known"
+      - "detached garage and a wood patio cover on the back"
+      - "vacant house; the lockbox code is held by the listing agent"
+      - "close of escrow in about 3 weeks"
+    homeowner_behavior: "quick and a bit distracted; answers what is asked; assumes the agent will handle logistics"
+    traps:
+      - "wrong_terminology: 'termite certificate' or 'clearance' means a wood-destroying insect inspection report for a sale, which belongs to the home inspection category's termite report job type, not a termite treatment"
+      - "hidden: detached garage and wood patio cover, relevant to inspection scope; only said if asked what structures are on the lot"
+      - "hidden: vacant, access via the listing agent's lockbox"
+    expected:
+      category: home_inspection
+      job_type: wdiir
+      bank_job_type: "termite report for a sale or loan"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["termite report for a sale/loan, buyer's lender requires it", "escrow opens next week, closing in about 3 weeks", "about 1,600 sq ft, built 2006, slab", "detached garage and wood patio cover", "vacant, access through listing agent"]
+      must_not_be_on_card: ["a request for a treatment", "any prediction of what will be found", "any price"]
+      max_questions: 4
+      notes: "Right answer is a different category. 'Termite' would pull this into pest control termites (treatment), but the job is a sale-time report that home_inspection takes as a fee-free job type. The pest_control termite_inspection kb entry overlaps; this category's card should not be the one produced."
+
+  - id: pest_control_s16
+    kind: two_trades
+    persona: "late 40s, homeowner with rooftop solar, direct and a little annoyed"
+    opening_message: "pigeons have moved in under my solar panels, poop everywhere on the patio and the panels look filthy. need them gone and whatever keeps them out, and the panels cleaned"
+    photo: "a roof edge photo from a ladder: gap under the lower row of solar panels with straw, feathers and droppings, and two pigeons on the roof tile"
+    hidden_facts:
+      - "about 16 panels on a tile roof, single story over the patio side"
+      - "panels were installed six years ago; the installer's warranty paperwork is in the file"
+      - "pigeons come every morning and roost under the lower edge on the south side"
+      - "droppings fall on the back patio and the dining table"
+      - "does not want poison; wants netting or screen if that is what works"
+      - "has not talked to the solar installer"
+      - "home is about 2,200 sq ft"
+    homeowner_behavior: "direct; answers fully; irritated at repeats; will say 'both, just get it done' if asked which one first"
+    traps:
+      - "two_trades: pigeon work (pest control, birds) and critter-guard / solar panel cleaning (gutters category). Routing of exclusion-only work is unclear"
+      - "hidden: installer warranty on the panels, only said if asked about the solar install or who installed it"
+      - "hidden: tile roof and ladder reach, changes the visit"
+    expected:
+      category: pest_control
+      job_type: pigeons_birds
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pigeons roosting under the lower row of solar panels on the south side", "about 16 panels, tile roof", "droppings on the patio", "no poison wanted, netting or screening preferred", "panels installed six years ago, warranty paperwork exists", "photo attached"]
+      must_not_be_on_card: ["panel cleaning on the pest card", "a statement that poison or exclusion is required", "any price"]
+      max_questions: 5
+      notes: "Routing is unclear: bird removal belongs to pest control, but exclusion-only work (screen, critter guard) and panel washing overlap the gutter and solar cleaning category. The pest card goes first; the cleaning and screening request is the other trade and needs its own card. Warranty is the hidden-fact trap."

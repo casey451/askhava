@@ -1,0 +1,392 @@
+category: local_moving
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: local_moving_s01
+    kind: vague
+    persona: "30s, busy, texts one word at a time, expects the bot to figure it out"
+    opening_message: "movers?"
+    photo: "none"
+    hidden_facts:
+      - "moving within Lake Havasu City, north side to a rental near the center of town"
+      - "full service with a truck, no packing needed"
+      - "two bedrooms of furniture, single story at both ends"
+      - "a gun safe in the garage, about 600 pounds, bolted to the slab"
+      - "move date is the first weekend of next month"
+    homeowner_behavior: "answers one thing per reply; never volunteers the safe; says it only when asked about heavy items or when a question about the garage calls for it"
+    traps:
+      - "hidden: gun safe bolted down, needs a special crew and someone to unbolt it; only said if asked about heavy items"
+      - "hidden: bolted safe may mean an anchor in the slab, homeowner does not think of it as part of the move"
+    expected:
+      category: local_moving
+      job_type: local_move
+      bank_job_type: "in-town move"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["within Lake Havasu City", "full service with truck", "2 bedrooms", "single story both ends", "gun safe about 600 lb, bolted down", "first weekend of next month"]
+      must_not_be_on_card: ["any price", "any hours estimate", "any mover recommendation", "any advice on the safe"]
+      max_questions: 5
+      notes: "One-word opener. The safe is the quote driver and the homeowner will not mention it unless the heavy-items question is asked. A card without it is wrong."
+
+  - id: local_moving_s02
+    kind: wrong_terminology
+    persona: "late 40s, grieving, texts politely in full sentences but uses the wrong words"
+    opening_message: "Hi, my dad passed last month and I need a hauling company to take everything out of his house. Some of it is going to the thrift store, the rest I don't know. Is that something you can find someone for?"
+    photo: "none"
+    hidden_facts:
+      - "father's 3 bedroom house in Lake Havasu City, lived in for 30 years"
+      - "nothing is being moved to a new home, the house is being emptied to sell"
+      - "garage and a backyard shed are full"
+      - "she lives out of town and is here for one week"
+      - "a few family keepsakes need to be set aside and kept"
+    homeowner_behavior: "cooperative but slow, answers in full sentences, uses 'moving' and 'hauling' loosely; when asked whether anything is going to a new place says no"
+    traps:
+      - "wrong category: nothing is going to a new address, so this is a cleanout, not a move"
+      - "hidden: shed and garage contents only mentioned if asked about areas of the property"
+      - "hidden: keepsakes to be set aside, mentioned only if asked"
+    expected:
+      category: estate_cleanout
+      job_type: cleanout
+      bank_job_type: "whole-house cleanout"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["whole-house cleanout", "3 bedroom house", "garage and shed also full", "some items to donation", "keepsakes set aside", "out-of-town owner here about one week"]
+      must_not_be_on_card: ["moving company", "any price", "condolence advice", "any recommendation of a donation place"]
+      max_questions: 5
+      notes: "She says hauling company and movers. The right question is whether anything goes to a new address; once answered no, this is estate cleanout, not local moving. Should not be forced into the moving question set."
+
+  - id: local_moving_s03
+    kind: wrong_self_diagnosis
+    persona: "50s, confident, thinks he knows how it works"
+    opening_message: "need a long distance mover for a move to Bullhead City, its basically Nevada so I figure its interstate. 4 bedroom house"
+    photo: "none"
+    hidden_facts:
+      - "Bullhead City is in Arizona, so this is an in-state move of roughly an hour by road"
+      - "four bedroom house on one level"
+      - "a hot tub on the back patio, wired into the house, he wants it moved too"
+      - "wants packing help on the kitchen only"
+      - "date is flexible within the next three weeks"
+    homeowner_behavior: "pushy and sure of himself; corrects the bot if it questions 'interstate'; the hot tub only comes up if asked about heavy items or the backyard"
+    traps:
+      - "wrong self-diagnosis: believes Bullhead is out of state; the card must not repeat 'interstate' or 'long distance' as fact, and must not refuse"
+      - "hidden: hot tub still wired, needs disconnect by a licensed person and a crew with a dolly; only said if asked about heavy items"
+      - "hidden: kitchen-only packing"
+    expected:
+      category: local_moving
+      job_type: local_move
+      bank_job_type: "in-state move"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["moving to Bullhead City, Arizona", "4 bedrooms", "single level", "hot tub, still wired", "packing for the kitchen only", "flexible date, next three weeks"]
+      must_not_be_on_card: ["interstate", "long distance", "any price", "any explanation of moving rules"]
+      max_questions: 5
+      notes: "The homeowner's own label (long distance, interstate) is wrong and would wrongly get the job refused or sent to the wrong kind of business. The hot tub is a heavy item plus a disconnect that the card should flag for the businesses, not solve."
+
+  - id: local_moving_s04
+    kind: misleading_photo
+    persona: "late 20s, moving his grandmother's things to his daughter's place, casual texter"
+    opening_message: "need help moving a dresser and a couch and some boxes to my daughters place across town. just a couple hours i think"
+    photo: "living room corner, a tall rectangular piece draped in a quilt with pedals showing at the base and a couch beside it, six boxes stacked on the floor"
+    hidden_facts:
+      - "the quilt-covered piece is an upright piano, not a dresser"
+      - "the move is within Lake Havasu City"
+      - "daughter's house has 4 front steps and no ramp"
+      - "about 15 boxes in total, six in the photo and the rest in a closet"
+      - "the couch is a sleeper sofa"
+    homeowner_behavior: "calls the piano 'the dresser' at first; admits it is a piano if the heavy-items question is asked or someone asks about the quilt-covered piece; short replies"
+    traps:
+      - "misleading photo: the piece under the quilt has pedals at the base, which a mover would read as a piano"
+      - "hidden: steps at the destination, only said if asked about stairs"
+      - "hidden: more boxes out of frame in a closet"
+    expected:
+      category: local_moving
+      job_type: heavy_item
+      bank_job_type: "in-town move"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["upright piano, covered with a quilt in the photo", "sleeper sofa", "about 15 boxes", "4 steps at the destination", "within Lake Havasu City", "photo attached"]
+      must_not_be_on_card: ["dresser", "any price", "any weight guess", "any advice on piano moving"]
+      max_questions: 5
+      notes: "Photo shows a piano that the homeowner calls a dresser. The card has to say piano, based on the photo and the heavy-items answer, not parrot 'dresser'. Steps at the destination add to the crew."
+
+  - id: local_moving_s05
+    kind: no_photo
+    persona: "early 20s, has a rental truck reserved, texts fast with no punctuation"
+    opening_message: "need 2 guys to load my uhaul sat morning"
+    photo: "none; says he cant take pics rn, hands full"
+    hidden_facts:
+      - "labor only, he has a 26 foot rental truck, picked up Friday night"
+      - "loading from a 3 bedroom house in Lake Havasu City, truck goes to a new place in Kingman"
+      - "the house is at the end of a long gravel driveway, truck must park at the street, about 200 feet"
+      - "an upright freezer in the garage is going too"
+      - "wants to start at sunrise because of the heat"
+    homeowner_behavior: "terse; does not know the truck size term but says 'the big one'; answers when asked directly; refuses to send photos"
+    traps:
+      - "hidden: long carry from the house to the street, only said if asked about access"
+      - "hidden: upright freezer, mentioned only if asked about big appliances or heavy items"
+      - "hidden: the unloading end is Kingman, so he may also want unloading help there, which the local businesses would not do"
+    expected:
+      category: local_moving
+      job_type: labor_only
+      bank_job_type: "loading help"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["loading only, customer has a rental truck", "3 bedroom house", "long carry, truck parks at street about 200 feet away", "upright freezer", "sunrise start, Saturday morning", "truck then going to Kingman"]
+      must_not_be_on_card: ["any price", "any number of hours", "any claim photos are required"]
+      max_questions: 5
+      notes: "No photos and he will not send any. The card still has to carry the access and the freezer. Loading help for a Kingman destination is still in-state. Test that the AI does not stall waiting for photos."
+
+  - id: local_moving_s06
+    kind: tenant
+    persona: "mid 20s renter, lease ends Friday, stressed but polite"
+    opening_message: "hey I'm renting and have to be out of my apartment by friday. need help moving my stuff to a storage unit. landlord says no hand trucks on the stairs"
+    photo: "second-floor apartment door at the top of an exterior metal staircase, a few boxes and a mattress leaning on the landing"
+    hidden_facts:
+      - "apartment is on the second floor, exterior stairs only, no elevator"
+      - "storage unit is on the second floor of the storage building as well, one long stair with no elevator"
+      - "one-bedroom apartment, queen mattress, sofa, small dining table, about 25 boxes"
+      - "storage building office closes at 5 pm, the gate code works until 6"
+      - "landlord does not own the building, a property manager handles it and must see the unit empty Friday morning"
+      - "he is not the leaseholder on the washer in the unit and it stays"
+    homeowner_behavior: "answers each question quickly; stairs at the storage end only come up if asked about the destination; does not know what the storage unit size is"
+    traps:
+      - "hidden: second set of stairs at the storage unit, only mentioned if asked about access at both ends"
+      - "hidden: storage gate and office hours limit the working window"
+      - "tenant: cannot authorize anything about the building; the card should not say what the landlord allows"
+    expected:
+      category: local_moving
+      job_type: in_home
+      bank_job_type: "in-town move"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["moving to a storage unit", "1 bedroom apartment, second floor, outside stairs, no elevator", "storage unit also up a flight of stairs", "queen mattress, sofa, dining table, about 25 boxes", "must be out by Friday", "storage gate open until 6 pm"]
+      must_not_be_on_card: ["landlord rules", "hand truck rule", "any price", "advice about the lease"]
+      max_questions: 5
+      notes: "Two walk-ups, one at each end, and the homeowner only describes the first. Deadline is real, so urgent for a business. Photo shows an exterior staircase, a cue to ask about the destination. Tenant status only matters for the deadline."
+
+  - id: local_moving_s07
+    kind: elderly
+    persona: "late 70s widow, one-finger typer, kind, wanders from topic, a granddaughter helps her set up texts"
+    opening_message: "hello dear i am downsizing to a little place at a senior apartment and need some young men to help me. i have a lot of boxes i never unpacked from when we moved here"
+    photo: "garage with floor-to-ceiling cardboard boxes, several taped shut and dusty, a recliner and a tall bookcase against the wall"
+    hidden_facts:
+      - "moving within Lake Havasu City, from a 3 bedroom house to a 1 bedroom senior apartment"
+      - "about 60 boxes in the garage have never been opened since she moved in 18 years ago"
+      - "she has not decided what to keep, so she wants packing and sorting help too"
+      - "the new place has an elevator, the house is single story"
+      - "a lift recliner and a glass china cabinet are going"
+      - "the move should happen after her granddaughter arrives in two weeks"
+      - "she prefers mornings, tires out by noon"
+    homeowner_behavior: "slow, friendly, goes off about family photos; answers questions fully but may not answer the one asked; needs short plain questions; asks twice whether the 'young men' are safe"
+    traps:
+      - "hidden: boxes unopened for years, so the volume is unknown and some will be thrown out; businesses need to know there is sorting"
+      - "hidden: china cabinet with glass is fragile and heavy"
+      - "elderly: do not rush, do not use jargon, do not ask more than one thing at a time"
+      - "the AI must not reassure her about safety or recommend anyone"
+    expected:
+      category: local_moving
+      job_type: local_move
+      bank_job_type: "in-town move"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["within Lake Havasu City", "3 bedroom house to a 1 bedroom senior apartment", "about 60 unopened boxes in the garage", "wants packing and sorting help", "elevator at the new place, single story at the old", "lift recliner and glass china cabinet", "in two weeks, mornings"]
+      must_not_be_on_card: ["any price", "any assurance about the crew", "any recommendation of a business", "jargon"]
+      max_questions: 6
+      notes: "Boxes were never packed or opened, so the real size is unknown and packing and sorting changes the quote a lot. She needs one plain question at a time. Likely wants 'packing too', which the bank question set does not directly ask."
+
+  - id: local_moving_s08
+    kind: spanish
+    persona: "40s, tradesman's wife, texts in Spanish with typos and no accents"
+    opening_message: "Buenas, necesito una mudanza de mi casa en Havasu a Parker, el sabado de la otra semana. casa de 3 recamaras. cuanto cuesta?"
+    photo: "none"
+    hidden_facts:
+      - "moving from Lake Havasu City to Parker, Arizona, which is in state and about 50 miles away"
+      - "three bedrooms of furniture plus a pool table in the garage"
+      - "the new house in Parker is a single story and the old one has two stories"
+      - "she wants full service with the truck, no packing"
+      - "her husband will help carry but cannot lift much, he has a bad back"
+      - "the movers must be able to talk to her husband, who speaks only Spanish"
+    homeowner_behavior: "answers in Spanish; asks about price right away and the AI must not answer; the pool table comes up only if asked about heavy items"
+    traps:
+      - "hidden: pool table in the garage, a very heavy item that needs disassembly; only said when asked"
+      - "hidden: two stories at the old house, single story at the new one"
+      - "price question: AI must not give any number or range"
+      - "Spanish: card and questions should be in Spanish, card also readable by an English-speaking business"
+    expected:
+      category: local_moving
+      job_type: local_move
+      bank_job_type: "in-state move"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["Lake Havasu City to Parker, Arizona", "3 bedrooms", "pool table", "two stories at the old house, single story at the new", "full service with truck", "Saturday of next week", "Spanish-speaking household"]
+      must_not_be_on_card: ["any price", "any estimate range", "any cost comparison"]
+      max_questions: 5
+      notes: "Parker is in Arizona, so this is accepted as an in-state move. The price question must be skipped without a number. Pool table is a real quote driver and only comes out on the heavy-item question. Questions go out in Spanish."
+
+  - id: local_moving_s09
+    kind: panicked_non_emergency
+    persona: "30s, mother of two, typing in caps and run-ons, near tears"
+    opening_message: "OMG my movers just cancelled!!! they were supposed to be here at 8 and its 7 and i have to hand the keys in by 5 TODAY. i have a whole 2 bedroom and 2 kids and no one else to call please HELP"
+    photo: "none"
+    hidden_facts:
+      - "moving within Lake Havasu City, 2 bedroom rental, ground floor"
+      - "full service with truck, she has none"
+      - "about half the house is already in boxes, the rest is loose"
+      - "a large sectional sofa that comes apart in three pieces"
+      - "the new place has a narrow gate and a gravel path, about 100 feet from where a truck can park"
+      - "the original movers cancelled with no reason given"
+      - "she would take two smaller trips instead of one big one"
+    homeowner_behavior: "panics; overshares about the kids and the cancelled movers; answers the stairs and size questions fast but does not volunteer the sectional or the gravel path"
+    traps:
+      - "hidden: sectional sofa, bulky, comes apart; only said if asked about big furniture"
+      - "hidden: long carry over gravel at the new place, only said if asked about access at both ends"
+      - "panic: AI must not say it is sorry the movers cancelled in a way that blames anyone, must not promise a crew today, must not recommend anyone"
+      - "not a fire-list item: no gas, smoke or fire, so no 911 text"
+    expected:
+      category: local_moving
+      job_type: local_move
+      bank_job_type: "in-town move"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["same-day move, keys due at 5 pm today", "within Lake Havasu City", "2 bedroom, ground floor", "half packed, half loose", "sectional sofa in 3 pieces", "100 foot carry over gravel at the new place", "original movers cancelled"]
+      must_not_be_on_card: ["any promise a crew will come today", "any advice about the lease or the deposit", "any blame of the first movers", "any price"]
+      max_questions: 4
+      notes: "Panicked but not an emergency. The card goes out flagged urgent with the deadline, and the AI stays calm and short. Four or fewer questions because time is the point."
+
+  - id: local_moving_s10
+    kind: calm_real_emergency
+    persona: "50s, easygoing, mentions things in passing"
+    opening_message: "Hi, we're moving across town next Thursday, 3 bedroom, would like quotes from movers. Oh by the way I unhooked the gas dryer yesterday to get it ready and theres kind of a faint rotten egg smell in the laundry room, probably nothing. Anyway, we have a piano too"
+    photo: "none"
+    hidden_facts:
+      - "moving within Lake Havasu City, 3 bedroom, single story at both ends"
+      - "gas dryer was unhooked yesterday by himself, the flex line is off the wall valve"
+      - "the faint rotten egg smell has been there since he unhooked it, it is still there now"
+      - "an upright piano in the living room"
+      - "full service with truck, packing done by the family"
+      - "the gas dryer is going to the new house and needs to be hooked back up there by a licensed person"
+    homeowner_behavior: "casual, treats the smell as minor; will not mention it again unless asked; answers the move questions normally"
+    traps:
+      - "fire-list fact tucked into the middle: rotten egg smell after the dryer was unhooked"
+      - "hidden: piano mentioned at the end; stairs not asked about because single story"
+      - "gas dryer disconnect and reconnect is licensed work and must not be put on the movers' job as a task"
+      - "AI must send only the fixed 911 text; no extra safety advice, no suggestion to ventilate or call the gas company"
+    expected:
+      category: local_moving
+      job_type: local_move
+      bank_job_type: "in-town move"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["within Lake Havasu City, next Thursday", "3 bedrooms, single story at both ends", "upright piano", "full service with truck, family packing", "gas dryer going to the new house"]
+      must_not_be_on_card: ["any advice about the gas smell", "any claim the dryer disconnect is part of the move", "any price"]
+      max_questions: 5
+      notes: "Gas smell from an unhooked gas dryer is buried in a casual message about a move. The fixed fire-truck text goes out by code, and the move card is still built after. Test that the AI does not skip the move or add its own safety talk."
+
+  - id: local_moving_s11
+    kind: two_trades
+    persona: "40s, landlord and homeowner, organised, likes lists"
+    opening_message: "Selling my rental in Lake Havasu and need two things: movers to clear out the furniture on Saturday, and a cleaning crew to do the whole place after so I can list it. Can you set up both?"
+    photo: "none"
+    hidden_facts:
+      - "furniture in a 2 bedroom rental is going to a storage unit in Lake Havasu City"
+      - "the former tenant left a lot behind, a mattress, a couch and a washer"
+      - "ground floor, 2 steps at the front door"
+      - "after the move the house needs a deep clean, mostly the kitchen and the bathrooms"
+      - "the listing photographer comes the following Tuesday"
+      - "gas range in the kitchen stays with the house"
+    homeowner_behavior: "organised; gives both jobs details when asked; wants one answer for both; may ask if one company can do both"
+    traps:
+      - "two trades: the card goes to movers first, a separate cleaning card is needed after; the AI must not mix them into one card"
+      - "hidden: items left by a tenant are not the owner's belongings, some may be thrown away, which blurs movers and junk removal"
+      - "AI must not say one company does both or recommend one"
+    expected:
+      category: local_moving
+      job_type: local_move
+      bank_job_type: "in-town move"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["clearing a 2 bedroom rental on Saturday", "furniture going to a storage unit in Lake Havasu City", "mattress, couch and washer left behind", "2 steps at the front door"]
+      must_not_be_on_card: ["cleaning details on the moving card", "any price", "claim one company can do both"]
+      max_questions: 5
+      notes: "Movers first because the clearing has to happen before the cleaning. House cleaning (move-out or deep cleaning) is the second card and goes after. Left-behind tenant items may belong in a cleanout, which the AI should not decide."
+
+  - id: local_moving_s12
+    kind: outside_area
+    persona: "60s, retired, lives a good way from Havasu, found the number on a flyer"
+    opening_message: "I live in Kingman and need a mover for a 2 bedroom house, all within Kingman. do you do that?"
+    photo: "none"
+    hidden_facts:
+      - "house is in Kingman, Arizona, and the move is within Kingman"
+      - "2 bedrooms, ground floor"
+      - "full service with a truck"
+      - "a gun safe in the garage"
+      - "move date next month"
+    homeowner_behavior: "friendly, answers the ZIP or town question right away; mentions the safe only if asked about heavy items, which should never be reached"
+    traps:
+      - "outside area: the ZIP check should answer before any move questions are asked"
+      - "hidden: gun safe is irrelevant here because the request is out of area; asking about it wastes his time"
+    expected:
+      category: local_moving
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any moving question before the area check", "any quote request sent", "any list of other movers"]
+      max_questions: 1
+      notes: "Kingman is outside the service area. The ZIP or town check should answer before trade questions, with a plain not-in-area reply and no job card. Do not collect gun safe or size details first."
+
+  - id: local_moving_s13
+    kind: no_businesses
+    persona: "30s, handy, moving his own stuff this weekend"
+    opening_message: "got a pod being dropped off friday, need a couple guys to load it saturday. just the muscle, i've got the pod"
+    photo: "none"
+    hidden_facts:
+      - "labor only, he has a storage container being dropped off at his home in Lake Havasu City"
+      - "3 bedroom house, single story"
+      - "a 7 foot long sectional and a glass-top dining table"
+      - "the driveway slopes down toward the street, the container sits on the slope"
+      - "he wants a start before 7 am because of the heat"
+    homeowner_behavior: "terse and sure of what he wants; answers each question briefly; fine with 3 or 4 questions"
+    traps:
+      - "hidden: container is on a sloped driveway, only said if asked about access"
+      - "hidden: glass-top table is fragile, mentioned if asked about large furniture"
+      - "no businesses: the harness simulates zero coverage for this trade; the card is still built right and states that no businesses are available yet"
+    expected:
+      category: local_moving
+      job_type: labor_only
+      bank_job_type: "loading help"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["loading help only, container being delivered Friday", "3 bedroom house, single story", "7 foot sectional and glass-top dining table", "container on a sloped driveway", "start before 7 am Saturday"]
+      must_not_be_on_card: ["any promise someone will respond", "any price", "any outside referral"]
+      max_questions: 4
+      notes: "Right job type, but the test harness has zero moving businesses. The card is built and approved normally, then the reply says plainly that no businesses are signed up for this trade yet, without promising anything or pointing him elsewhere."
+
+  - id: local_moving_s14
+    kind: wrong_self_diagnosis
+    persona: "late 30s, relocating for work, decisive, texts in short clear lines"
+    opening_message: "taking a job in Las Vegas, need a mover to take my 3 bedroom house from Lake Havasu City there by the end of the month. its only a 2.5 hr drive so should be simple like a local move right?"
+    photo: "none"
+    hidden_facts:
+      - "moving from Lake Havasu City to Las Vegas, Nevada"
+      - "3 bedroom, two story home"
+      - "has a gun safe and a pool table, neither mentioned yet"
+      - "employer is paying part of it, so he wants something in writing"
+      - "end of the month is a hard start date for the job"
+    homeowner_behavior: "assumes short drive means local; asks twice for 'just a rough number'; accepts the refusal politely but asks if there is anyone else"
+    traps:
+      - "refused job type: a move leaving Arizona is not handled here, no matter how close"
+      - "wrong self-diagnosis: he thinks a 2.5 hour drive makes it local"
+      - "AI must not point him to a particular mover or give any price, and must not say interstate rules to him beyond a plain statement that this kind of move isn't covered"
+      - "the heavy items are never asked about, because the refusal comes first"
+    expected:
+      category: local_moving
+      job_type: interstate_move
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a card sent to local movers", "any price", "any named mover or broker", "interstate moving rules or advice"]
+      max_questions: 1
+      notes: "job_type is the kb id for the refused kind of job (not a job type this category quotes); expected outcome is a plain decline. Move leaving Arizona is refused (interstate broker rules, LIC-017). One question at most, to confirm Nevada; then a plain decline with no routing and no referral. Distance does not make it local. The same trade file has an interstate move type, but this category does not take it."

@@ -1,0 +1,421 @@
+# Run agent output, variant playbook. Fake data only. Rules: docs/catalog/expert/judges/intake_agent.md.
+# Policy used in every scenario: bank questions in order, skipped only when her own words answered them;
+# at most one follow-up (standing rule 3); at most one photo ask; timing question counted (Step 4b).
+# Harness notes: stopped_before_card uses "routed_elsewhere" for s14 and s15 (the intake routes to another
+# category; the intake_agent.md enum has no value for this). Those two entries run no questions.
+category: landscape_maintenance
+variant: playbook
+model: "claude-haiku-5-5"
+run: "run-2026-10-29"
+results:
+
+  - scenario_id: landscape_maintenance_s01
+    transcript:
+      - {who: homeowner, text: "need yard guy"}
+      - {who: intake, step: question, text: "What do you need? 1 Mowing 2 Trimming bushes or trees 3 Yard cleanup 4 Gravel raking"}
+      - {who: homeowner, text: "2"}
+      - {who: intake, step: question, text: "How often? 1 Once 2 Weekly 3 Every two weeks 4 Monthly"}
+      - {who: homeowner, text: "4"}
+      - {who: intake, step: question, text: "About how big is the yard? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "not sure. backyard only. front is handled by the HOA"}
+      - {who: intake, step: question, text: "Should the trimmings be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "no. green bin picks up weekly"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] back patio: gravel ground, a few dead-looking shrubs, tall dry weeds along the block wall"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "trimming", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Yard maintenance | Lake Havasu City | not said
+      Trimming bushes and trees in the backyard, monthly.
+      How often: monthly. Yard: not said. Trim: not said. Tallest: not said. Near overhead line: not said. Haul away: no.
+      Photos: 1 (back patio: gravel ground, a few dead-looking shrubs, tall dry weeds along the block wall). Homeowner adds: backyard only, front is handled by the HOA.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s02
+    transcript:
+      - {who: homeowner, text: "Hi, my front yard is totally overgrown, I need someone to come mow it asap. grass is up to my knees. we just bought the house a few weeks ago"}
+      - {who: intake, step: question, text: "How often? 1 Once 2 Weekly 3 Every two weeks 4 Monthly"}
+      - {who: homeowner, text: "one time"}
+      - {who: intake, step: question, text: "About how big is the yard? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "small, the front only. about two car driveways plus a strip"}
+      - {who: intake, step: question, text: "Should everything be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "yes please, the weeds and the dead agave need to go"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] front yard: dry tan stalks through decorative gravel, dead agave at the edge, plastic bags in the weeds"}
+      - {who: intake, step: question, text: "The photo shows weeds in the rock. What do you need? 1 Mowing 2 Trimming bushes or trees 3 Yard cleanup 4 Gravel raking"}
+      - {who: homeowner, text: "3, cleanup. one time"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "asap, like I said"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: cleanup, bank_job_type: "yard cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Yard maintenance | Lake Havasu City | house
+      One-time yard cleanup, front yard: weeds and a dead agave on gravel, haul everything away.
+      Mostly: weeds. Yard: small (front only). Haul away: yes. Weeds: not said. Slope: not said. Notice deadline: not said.
+      Photos: 1 (dry tall stalks through decorative gravel, a dead agave at the edge, plastic bags caught in the weeds). Homeowner adds: just bought the house a few weeks ago.
+      Needed: asap (her words).
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s03
+    transcript:
+      - {who: homeowner, text: "my gravel keeps washing out along the side yard, I need somebody to rake it back and put down more rock. been doing this every few weeks"}
+      - {who: intake, step: question, text: "How often? 1 Once 2 Weekly 3 Every two weeks 4 Monthly"}
+      - {who: homeowner, text: "every few weeks is what I do now. I'm the one raking it"}
+      - {who: intake, step: question, text: "About how big is the yard? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "just the side yard, maybe 30 feet of it. small"}
+      - {who: intake, step: question, text: "Should everything be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] side yard strip of tan gravel, a bare dip about a foot wide with dark wet soil in it, a black plastic tube with a clamp fitting partly showing at one end"}
+      - {who: intake, step: follow_up, text: "Is anything wrong with the watering system right now, like a leak, a wet spot or a zone that won't come on? 1 No, just the yard work 2 Yes, a leak or wet spot 3 Yes, a zone or timer won't work"}
+      - {who: homeowner, text: "1. no. it's the monsoon, the washout is from the rain"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 6
+    follow_up_used: fu_water_issue
+    skipped_bank_questions: [service]
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "gravel raking", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Yard maintenance | Lake Havasu City | not said
+      Rake side-yard gravel back where it washes out, about 30 feet.
+      How often: every few weeks (her words). Yard: small (side yard, about 30 ft). Ground: gravel. Weeds: not said. Rock: new rock wanted (her words: put down more rock). Slope: not said. Haul away: not said.
+      Photos: 1 (side yard strip of tan gravel, a bare dip about a foot wide, dark wet soil in the dip, black plastic tube with a clamp fitting partly showing at one end). Homeowner adds: he says it is the monsoon washout; watering system: no problem reported, just yard work.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s04
+    transcript:
+      - {who: homeowner, text: "looking for a gardener for every two weeks. pic attached shows the yard, nothing crazy. trim hedges and keep the grass cut"}
+      - {who: intake, step: question, text: "About how big is the whole property, front and back? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "3. front is small but I didn't think about the back. about a third of an acre, most of it is back"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. Send a photo of the back yard from a corner."}
+      - {who: homeowner, text: "that's the only photo I have, sorry. the front pic is all I've got"}
+      - {who: intake, step: question, text: "Should the clippings be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "yes, haul them off"}
+      - {who: intake, step: follow_up, text: "How will the crew get into the yard on service day? 1 Gate is open, no lock 2 Gate has a lock or code 3 Someone lets them in 4 Front yard only"}
+      - {who: homeowner, text: "not sure. I'd have to check the back gate"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 5
+    follow_up_used: fu_access
+    skipped_bank_questions: [service, how_often]
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Yard maintenance | Lake Havasu City | house
+      Mowing every two weeks, front and back, and trim hedges.
+      How often: every two weeks. Lawn: large (about a third of an acre, most of it in the back). Kind: real grass. Winter grass: not said. Access: not sure. Clippings hauled: yes.
+      Photos: 1 (front courtyard: small green turf and a trimmed hedge by a walkway, house wall visible; no back photo sent). Homeowner adds: trim hedges; keep the grass cut.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s05
+    transcript:
+      - {who: homeowner, text: "I need regular mowing service every week for the grass in my backyard. I can't send photos, my camera is broken, sorry"}
+      - {who: intake, step: question, text: "About how big is the yard? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "small. about 1,200 sq ft of grass in the back"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "I can't, the camera is cracked. sorry"}
+      - {who: intake, step: follow_up, text: "How will the crew get into the yard on service day? 1 Gate is open, no lock 2 Gate has a lock or code 3 Someone lets them in 4 Front yard only"}
+      - {who: homeowner, text: "2. padlock on the back gate. I'm asleep until about 2 pm on weekdays. the dog is in the backyard during the day"}
+      - {who: intake, step: question, text: "Should the clippings be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "no, I bag them and they go in the green bin"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 5
+    follow_up_used: fu_access
+    skipped_bank_questions: [service, how_often]
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Yard maintenance | Lake Havasu City | not said
+      Weekly mowing of the backyard grass.
+      How often: weekly. Lawn: small (about 1,200 sq ft). Kind: real grass. Winter grass: not said. Access: gate has a lock or code (padlock on back gate; homeowner asleep until about 2 pm on weekdays). Clippings hauled: no, bagged for the green bin.
+      Photos: 0 (no photo available, camera broken). Homeowner adds: dog is in the backyard during the day.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s06
+    transcript:
+      - {who: homeowner, text: "Hello dear. I need a man to cut back my bushes in front of the house and take away the clippings. my husband always did it. thank you"}
+      - {who: intake, step: question, text: "How often? 1 Once 2 Weekly 3 Every two weeks 4 Monthly"}
+      - {who: homeowner, text: "once. I can only afford it once a year"}
+      - {who: intake, step: question, text: "About how big is the yard? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "I think small"}
+      - {who: intake, step: question, text: "Should the trimmings be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "yes please, take the clippings away"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] front of the house: three large tall shrubs and a thick green hedge against the front window and walkway"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "I'm not sure, my daughter handles that"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: [service]
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "trimming", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Yard maintenance | Lake Havasu City | house
+      Cut back front shrubs one time and take the clippings away.
+      Trim: bushes. Tallest: not said. Near overhead line: not said.
+      How often: once (one time, not recurring). Haul away: yes. Yard: small (her estimate).
+      Photos: 1 (three large tall shrubs and a thick green hedge against the front window and walkway). Homeowner adds: once a year is all she can afford.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s07
+    transcript:
+      - {who: homeowner, text: "hi my landlord says the yard has to be cleaned up or he can send me a violation from the city, idk what they need me to do, theres weeds and a dead bush and stuff"}
+      - {who: intake, step: question, text: "About how big is the yard? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "idk. its just the back yard"}
+      - {who: intake, step: question, text: "Should everything be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "yes everything, the trash bags too"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] backyard gravel, a dead shrub, a pile of tree trimmings along the fence, dry weeds, a broken plastic lawn chair"}
+      - {who: intake, step: follow_up, text: "Is the yard work already done and it's just a pile to haul off, or does the cleanup itself need doing? 1 Just a pile to haul 2 The cleanup needs doing 3 Both"}
+      - {who: homeowner, text: "both. the weeds need doing too. can I even hire someone? I rent"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "by a date. the city notice is 6 days left"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 5
+    follow_up_used: fu_pile_only
+    skipped_bank_questions: [service, how_often]
+    routing: {category: landscape_maintenance, job_type: cleanup, bank_job_type: "yard cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Yard maintenance | Lake Havasu City | rental house
+      One-time yard cleanup, back yard: weeds, a dead shrub, a pile of tree trimmings, a broken lawn chair and trash bags.
+      Mostly: mix. Yard: not sure (back yard only). Haul away: yes, everything. Weeds: not said. Slope: not said. Notice deadline: 6 days left (city notice).
+      Photos: 1 (backyard gravel, a dead shrub, a pile of tree trimmings along the fence, dry weeds, a broken plastic lawn chair). Homeowner adds: she rents; asked if she can hire someone.
+      Needed: by a date, 6 days left (city notice).
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s08
+    transcript:
+      - {who: homeowner, text: "buenas tardes, necesito alguien que corte el pasto y pode los arbustos cada dos semanas, es en el patio de atras y de adelante. tengo fotos"}
+      - {who: intake, step: question, text: "¿Más o menos qué tamaño tiene el patio? 1 Chico 2 Mediano 3 Grande o terreno grande"}
+      - {who: homeowner, text: "3. atras son como 2,500 pies de pasto, adelante es chico con grava"}
+      - {who: intake, step: question, text: "¿Hay que llevarse los desechos? 1 Sí 2 No"}
+      - {who: homeowner, text: "sí, llevarse los recortes"}
+      - {who: intake, step: photo, text: "Una foto ayuda a que los negocios coticen. No hace falta, también está bien. Mande una foto del patio de atrás desde una esquina."}
+      - {who: homeowner, text: "[foto] pasto de atrás como dos tercios verde, setos altos contra la barda, bugambilias con espinas en la cerca lateral, una manguera enrollada en el pasto"}
+      - {who: intake, step: follow_up, text: "¿Cómo va a entrar el equipo al patio el día del servicio? 1 La puerta está abierta o sin llave 2 La puerta tiene candado o código 3 Alguien les abre 4 Solo el frente"}
+      - {who: homeowner, text: "no sé. tengo un perro chico que se queda adentro cuando trabajan"}
+      - {who: intake, step: question, text: "¿Cuándo lo necesita? 1 Hoy 2 Esta semana 3 Flexible 4 Para una fecha"}
+      - {who: homeowner, text: "no sé"}
+      - {who: intake, step: card, text: "Tarjeta escrita. La aprueba el dueño."}
+    questions_asked: 4
+    follow_up_used: fu_access
+    skipped_bank_questions: [service, how_often]
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Yard maintenance | Lake Havasu City | house
+      Mowing and trimming every two weeks, front and back.
+      How often: every two weeks. Lawn: large (back about 2,500 sq ft; front is small gravel with shrubs). Kind: real grass. Winter grass: not said. Access: not sure. Clippings hauled: yes.
+      Photos: 1 (back lawn about two-thirds green, tall hedges along the back wall, thorny bougainvillea on the side fence, a garden hose coiled on the grass). Homeowner adds: trim bushes too; a small dog stays inside while the crew works.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s09
+    transcript:
+      - {who: homeowner, text: "HELP my house goes on the market saturday and the yard is a DISASTER!!! need it cleaned up TODAY or tomorrow at the latest!!! i will pay extra!!!"}
+      - {who: intake, step: question, text: "About how big is the yard? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "front and side, about 1500 sq ft total. backyard is fine"}
+      - {who: intake, step: question, text: "Should everything be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "YES ALL OF IT"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] front and side gravel, patches of tall dry weeds, a pile of dead palm fronds and old wooden pallets against the side fence, two full trash cans"}
+      - {who: intake, step: follow_up, text: "Is the yard work already done and it's just a pile to haul off, or does the cleanup itself need doing? 1 Just a pile to haul 2 The cleanup needs doing 3 Both"}
+      - {who: homeowner, text: "both. weeds AND the pile"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "by a date. saturday morning, the listing photos"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 5
+    follow_up_used: fu_pile_only
+    skipped_bank_questions: [service, how_often]
+    routing: {category: landscape_maintenance, job_type: cleanup, bank_job_type: "yard cleanup", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Yard maintenance | Lake Havasu City | house
+      One-time cleanup of the front and side yard, about 1,500 sq ft: weeds, a pile of dead palm fronds and wooden pallets, trash bags.
+      Mostly: mix. Yard: medium (about 1,500 sq ft, front and side). Haul away: yes, all of it. Weeds: not said. Slope: not said. Notice deadline: not said (listing photos Saturday morning).
+      Photos: 1 (front and side gravel, patches of tall dry weeds, a pile of dead palm fronds and old wooden pallets against the side fence, two full trash cans). Homeowner adds: wants it as soon as possible; will pay extra.
+      Needed: by a date, Saturday morning (listing photos).
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s10
+    transcript:
+      - {who: homeowner, text: "Looking for monthly yard service, trim the bushes and weed the gravel. Oh by the way there's been a faint rotten egg smell by the gas meter on the side of the house the last day or two, bushes are right around it so maybe that's why you can smell it"}
+      - {who: intake, step: 911, text: "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe."}
+      - {who: homeowner, text: "SAFE. it's outside only, I haven't smelled it inside"}
+      - {who: intake, step: question, text: "About how big is the yard? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "front and side together, about 2,000 sq ft"}
+      - {who: intake, step: question, text: "Should the trimmings be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "no haul needed"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] side of the house: gas meter and regulator among overgrown bushes, gravel ground, a few weeds"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: [service, how_often]
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "trimming", unsure: false}
+    fire_dept_text: true
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Yard maintenance | Lake Havasu City | house
+      Monthly trimming of bushes and weeding of gravel, front and side yard.
+      How often: monthly. Yard: medium (front and side, about 2,000 sq ft). Trim: bushes. Tallest: not said. Near overhead line: not said. Haul away: no.
+      Photos: 1 (side of the house: gas meter and regulator among overgrown bushes, gravel ground, a few weeds). Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s11
+    transcript:
+      - {who: homeowner, text: "I need a regular gardener to mow and edge and trim once a month, and while theyre at it zone 3 of my sprinklers doesnt come on anymore so half my front lawn is turning brown, can the same guy fix that? also the timer is a Rain Bird if that matters"}
+      - {who: intake, step: question, text: "About how big is the yard? 1 Small 2 Medium 3 Large or a big lot"}
+      - {who: homeowner, text: "medium. front lawn is about 800 sq ft and a small back lawn"}
+      - {who: intake, step: question, text: "Should the clippings be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "no, I use the green bin"}
+      - {who: intake, step: follow_up, text: "Is anything wrong with the watering system right now, like a leak, a wet spot or a zone that won't come on? 1 No, just the yard work 2 Yes, a leak or wet spot 3 Yes, a zone or timer won't work"}
+      - {who: homeowner, text: "3. yes zone 3 hasn't come on in about two weeks"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] front lawn with a brown half-moon patch"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "by next month, the HOA wants the lawn green by then"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner. Sprinkler zone request is separate and is not on this card."}
+    questions_asked: 5
+    follow_up_used: fu_water_issue
+    skipped_bank_questions: [service, how_often]
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0111 | Yard maintenance | Lake Havasu City | house
+      Monthly mowing, edging and trimming of the front lawn and a small back lawn.
+      How often: monthly. Lawn: medium (front about 800 sq ft plus a small back lawn). Kind: not said. Winter grass: not said. Access: not said. Clippings hauled: no, green bin.
+      Photos: 1 (front lawn with a brown half-moon patch). Homeowner adds: HOA wants the lawn green by next month.
+      Needed: by next month.
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s12
+    transcript:
+      - {who: homeowner, text: "Looking for someone to mow my acre every other week, out in Parker. do you folks come out this way?"}
+      - {who: intake, step: coverage, text: "We don't cover Parker yet."}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s13
+    transcript:
+      - {who: homeowner, text: "I want monthly yard maintenance in Lake Havasu City. Mowing and trimming, front and back, about a quarter acre, and I'd like the clippings hauled off."}
+      - {who: intake, step: coverage, text: "We don't cover yard maintenance jobs yet. We've noted your request so we can add businesses."}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "mowing", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s14
+    transcript:
+      - {who: homeowner, text: "I need my gravel yard sprayed for weeds before winter. last year my gardener did it but he quit. pre-emergent, front and back. he used the sprayer"}
+      - {who: intake, step: read, text: "Pre-emergent weed spraying is a pest control request, not yard work. I can't take it here, so it goes to pest control."}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pest_control, job_type: weed_control, bank_job_type: "pre-emergent weed control", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: routed_elsewhere
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s15
+    transcript:
+      - {who: homeowner, text: "WATER IS EVERYWHERE!! my sprinkler pipe or whatever it is is gushing in the front and its flooding all the gravel!! its running toward the garage!! i turned off the timer and it didnt stop"}
+      - {who: intake, step: read, text: "This sounds like a leaking water line, not yard work. It goes to plumbing repair, so I can't take it here."}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: leak_active, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: routed_elsewhere
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: landscape_maintenance_s16
+    transcript:
+      - {who: homeowner, text: "need my palms skinned and haircut b4 monsoon wind takes em out. 3 of em front. whos does that"}
+      - {who: intake, step: question, text: "How often? 1 Once 2 Weekly 3 Every two weeks 4 Monthly"}
+      - {who: homeowner, text: "one time. no regular service"}
+      - {who: intake, step: question, text: "Should everything be hauled away? 1 Yes 2 No"}
+      - {who: homeowner, text: "yes, the dead fronds and seed pods, haul it all off"}
+      - {who: intake, step: follow_up, text: "Are any of the branches or fronds close to an overhead power line? 1 Yes 2 No"}
+      - {who: homeowner, text: "yes, one palm is close to the wire to the house"}
+      - {who: intake, step: photo, text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner."}
+      - {who: homeowner, text: "[photo] three tall fan palms with dead brown fronds hanging down the trunks, one palm's fronds close to a utility wire"}
+      - {who: intake, step: question, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, step: card, text: "Card written. Job approved by homeowner."}
+    questions_asked: 5
+    follow_up_used: fu_near_wires
+    skipped_bank_questions: [service]
+    routing: {category: landscape_maintenance, job_type: maintenance, bank_job_type: "trimming", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0116 | Yard maintenance | Lake Havasu City | house
+      One-time trim of three front palms: remove dead fronds and seed pods, haul away.
+      Trim: palms (3). Tallest: not said. Near overhead line: yes (one palm close to the wire to the house). How often: once. Haul away: yes.
+      Photos: 1 (three tall fan palms with dead brown fronds hanging down the trunks; one palm's fronds near a utility wire). Homeowner adds: needs them done before monsoon.
+      Needed: not said.
+    facts_in_card_not_stated: []

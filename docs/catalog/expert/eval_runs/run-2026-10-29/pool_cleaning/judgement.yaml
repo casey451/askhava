@@ -1,0 +1,604 @@
+category: pool_cleaning
+run: run-2026-10-29
+judge_model: "claude-opus-5-5"
+panel: [owner, estimator, field_tech]
+judging_notes:
+  - "Labels shuffled per scenario; mapping recorded in each block. Scored from the scenario file and the three run files only; docs/catalog/expert/pool_cleaning.yaml (and pool_repair.yaml for the two routed-out scenarios) was opened only afterwards, for compliance check C10."
+  - "trap_caught is true only when every trap listed for the scenario surfaced on the card (or, for stops, when the stop behavior the traps describe was met). Where the main trap was caught but a smaller one was not, the panel notes say so."
+  - "Stops for the expected reason (s12 outside_area for all three, s13 no_businesses for all three) score quotable null and routing_correct true. baseline_none s10 stopped at the 911 hold because the homeowner never replied SAFE and the scenario never says everyone is safe: quotable null, fire_dept_correct true, and trap_caught true because the trap the stop could test (the fixed 911 text on the buried gas smell, nothing more said about the heater) was met; the card-level trap could not be tested."
+  - "Baseline job_type labels ('weekly pool service', 'chemical balancing', 'green pool cleanup', 'pump repair', 'equipment replacement') count as correct when they name the job type the scenario expects. baseline_none s09 'green pool cleanup' is accepted under the scenario note because its card says brown-gray after a dust storm and not algae."
+  - "routing_correct follows README's bar literally: category and bank job type. The playbook recorded bank_job_type 'green pool cleanup' for s05 (expected 'chemical balancing') and 'gas pool heater' for s15 (expected 'equipment replacement'); both kb job_type ids match, but the bank job types do not, so both score false."
+  - "The card's town or area line is not counted as an unstated fact (the harness assumes coverage). Not counted, but noted: the playbook header also carries a property type ('house') in s01, s02, s04, s05, s06, s08, s09, s10 and s11 that no homeowner said."
+  - "quotable 3 was given only where the card holds size, spa, water, sanitizer, filter, chemicals and debris for a weekly account (baseline_none s11, baseline_human s11). The human may diagnose; SUSPECT and ON SITE lines were read as notes, not as facts, and do not count against it."
+  - "Harness fidelity, not scored against any variant: in s10 the simulated homeowner replied SAFE in the playbook and human runs but not in baseline_none, with the same scenario facts."
+scenarios:
+  - scenario_id: pool_cleaning_s01
+    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["When do you need this? (answer: 'not sure')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "Monthly price with a first-visit check, yes. Palms and salt-only supply are there.", estimator: "Every must-have. Filter type missing, minor. Eight questions to a man who goes short after five.", field_tech: "I know about the north-side palms before I park."}
+      B:
+        quotable: 2
+        missing_facts: ["two big palms on the north side drop fronds"]
+        wasted_questions: ["Besides the regular visit, will it need extra visits, like between rental guests? (his own home, already said every week; answer 'no just the regular')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "I'd quote monthly, but I'd lowball the stop time without the palms.", estimator: "Good first move: asked what he needs, not what's broken. Then spent the one follow-up on rental visits for a retiree's house; the palm question would have changed my number. 'Trees or palms: not said' is true only because nobody asked.", field_tech: "Two palms dropping fronds would be my surprise every week."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Yes, monthly with salt excluded.", estimator: "Asked the open question first, then trees directly. Filter not asked.", field_tech: "Palms flagged; I plan basket time."}
+
+  - scenario_id: pool_cleaning_s02
+    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Season price November to April, chemicals in. Yes.", estimator: "Asked about May to October first and wrote 'undecided', not a plan. Sand, tabs, lockbox, dog all there.", field_tech: "Dog and lockbox on the card; I close the gate."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["When do you need this? (answer 'by the first of November', already in the opening)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "Season price, yes. Water condition after the summer unknown, so a range for the first visit.", estimator: "Complete card. Eight questions where six was the limit.", field_tech: "Access and dog on the card."}
+      C:
+        quotable: 2
+        missing_facts: ["May to October undecided (card says only 'not said')", "sand filter", "chlorine tabs in a floating feeder", "gate lockbox", "small dog in the yard"]
+        wasted_questions: ["Besides the regular visit, will it need extra visits, like between rental guests? (answer 'no')", "How is the water right now? (answer 'not sure', they are away)", "When do you need this? (answer restates the opening, November 1)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 9
+        stopped_before_card: null
+        panel_notes: {owner: "Season window and spa are there, so I can price a range. I'd call about access before the first stop.", estimator: "Nine questions to a couple whose limit was six, and three of them returned nothing. Never asked about the summer months, the filter, the chlorine or the gate.", field_tech: "I'd meet a lockbox and a dog I wasn't told about."}
+
+  - scenario_id: pool_cleaning_s03
+    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["about one or two extra visits a week in summer", "spa used daily by guests, gets cloudy fast", "salt system", "cartridge filter", "gate lockbox", "text or note after each visit"]
+        wasted_questions: ["Besides the regular visit, will it need extra visits, like between rental guests? (the opening already said 'plus a quick check between guest stays')", "How is the water right now? (answer 'not sure', owner is away)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "I can give weekly plus a per-turnover price, so a range quote. I don't know how many turnovers.", estimator: "The follow-up re-asked what she had already said instead of asking how many. No equipment, no spa load, no access, no report request.", field_tech: "Guest spa use and the lockbox would both be news on site."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly plus per-turnover, priced from the card.", estimator: "First question was the turnover count. Spa load, equipment, report and the house cleaner all captured.", field_tech: "I can time visits around the cleaner."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["When do you need this? (answer 'not sure')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "Yes, weekly plus turnovers.", estimator: "Complete; asked turnover frequency first. Eight questions where six was the limit.", field_tech: "Lockbox only as 'gate lockbox', no code. Good."}
+
+  - scenario_id: pool_cleaning_s04
+    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Cleanup with the pump side priced alongside. Yes.", estimator: "Visibility, pump, age, equipment, access, deadline. FACTS repeat 'shock' only as the homeowner's ask.", field_tech: "Pump first; side gate unlocked."}
+      B:
+        quotable: 2
+        missing_facts: ["pump about 9 years old", "cartridge filter", "chlorine tabs", "one-time cleanup (card says 'After this: not said')", "equipment behind an unlocked side gate"]
+        wasted_questions: ["Should chemicals be included in the price? (a green cleanup always includes chemicals)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "The pump fact is up front, so I can price cleanup plus pump caveat. No firm price without the pump age.", estimator: "Main trap caught: asked about the pump right after the town, and the card doesn't say shock or heat. Missed age, filter and sanitizer, and spent a turn on chemicals.", field_tech: "I'd bring the wrong cartridge; filter not on the card."}
+      C:
+        quotable: 2
+        missing_facts: ["equipment behind an unlocked side gate"]
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Cleanup plus pump, yes.", estimator: "All the must-haves including age. One over the limit.", field_tech: "Access not asked; minor."}
+
+  - scenario_id: pool_cleaning_s05
+    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["never drained, stabilizer never tested"]
+        wasted_questions: ["When do you need this? (answer 'not sure')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "One-time balance visit with a drain option. Yes.", estimator: "Asked how he chlorinates and what the filter looks like; got the six-year tab habit and the cartridge correction.", field_tech: "I bring a CYA test kit."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Visit price plus a partial-drain option. Yes.", estimator: "Tabs, years, never drained, never tested, cartridge confirmed, plaster age. The card I want.", field_tech: "Check the plaster before draining. Good."}
+      C:
+        quotable: 1
+        missing_facts: ["chlorine tabs in a floating feeder for about six years", "cartridge filter (card says 'not confirmed')", "never drained, stabilizer never tested"]
+        wasted_questions: ["Should chemicals be included in the price? (a one-time balance visit always includes chemicals)"]
+        trap_caught: false
+        routing_correct: false
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "I'd call him: without the chlorine history I can't tell a rebalance from a drain and refill.", estimator: "Eight questions where five was the limit, no follow-up used, and the one question that mattered (what he chlorinates with) never asked. bank_job_type recorded as 'green pool cleanup' for clear water.", field_tech: "Card doesn't say sand, good, but I don't know what filter I'm opening."}
+
+  - scenario_id: pool_cleaning_s06
+    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["dark green pebble finish per homeowner (only the photo text says the plaster looks dark green)", "dark spots on the top step and shallow corner that do not wipe off (photo text has top-step spots only)", "salt system", "cartridge filter"]
+        wasted_questions: ["Besides the regular visit, will it need extra visits, like between rental guests? (his own home; answer 'no just weekly')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly, clear, medium. I'd quote a range.", estimator: "Asked the water first, right call, and no 'algae' on the card. Never asked about the spots or the equipment; eight questions where five was the limit.", field_tech: "Spots that don't brush off would be news; I'd want my stain kit."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly, plus a look at the spots. Yes.", estimator: "Water first, then finish, then spots. All must-haves.", field_tech: "Salt display noted; I'll read it."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["'New to the house' (he said only that the previous owner described the finish)"]
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly with spot treatment priced separately. Yes.", estimator: "All facts in five. 'New to the house' is an inference.", field_tech: "Told how to test the spots."}
+
+  - scenario_id: pool_cleaning_s07
+    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly, two price levels. Yes.", estimator: "Photo did the equipment work; access, dogs and service gap captured. Key location kept off the card.", field_tech: "Dogs put up before each visit; good."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["When do you need this? (answer 'not sure')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly, yes.", estimator: "Asked him to name filter and sanitizer first, which he couldn't, then the photo. Dogs and padlock captured.", field_tech: "Equipment photo not sent; I'll ID the filter on site."}
+      C:
+        quotable: 2
+        missing_facts: ["two large dogs in the yard", "padlocked gate", "floating plastic feeder (card says 'Chlorine from: not said')"]
+        wasted_questions: ["Should chemicals be included in the price? (answer 'not sure')", "Besides the regular visit, will it need extra visits, like between rental guests? (answer 'no just weekly')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly, small pool. I can quote, but I'd call to sort out the gate.", estimator: "The equipment photo ask was right. Eight questions where six was the limit, and access never asked.", field_tech: "Two big dogs and a padlock would stop my first visit at the gate."}
+
+  - scenario_id: pool_cleaning_s08
+    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["¿Cuándo la necesita? (answer 'no sé')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Cleanup with a weekly price after. Yes.", estimator: "Duration, sand filter, empty feeder, timer. All there.", field_tech: "A month green in a large pool with sand; I plan backwashes."}
+      B:
+        quotable: 2
+        missing_facts: ["green about a month", "sand filter", "chlorine tabs, feeder empty"]
+        wasted_questions: ["¿Los químicos deben estar incluidos en el precio? (a green cleanup always includes chemicals)", "¿Cuándo lo necesita? (answer 'no sé')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Large, can't see the floor, pump runs. Range quote.", estimator: "Spanish questions were plain. Never asked how long it's been green or what filter, which is the difference between two visits and five.", field_tech: "Sand filter would be my surprise; I'd bring cartridge cleaner."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Cleanup and weekly after, both priced. Yes.", estimator: "Duration first, then size, filter, pump, chlorine.", field_tech: "Latch gate noted; no safety advice."}
+
+  - scenario_id: pool_cleaning_s09
+    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["dust storm two nights ago", "cartridge filter", "salt system", "pump running normally", "home today, can let someone in any time"]
+        wasted_questions: ["When do you need this? (already said twice: 'tomorrow afternoon')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "One-time cleanup, urgent, mesquite noted. I'd price it, and I'd call to ask if the pump runs.", estimator: "Eight questions where four was the limit, one of them re-asking the deadline. No dust storm, no pump.", field_tech: "If the pump were down I'd find out on site, the day before a party."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Go today, firm-ish cleanup price. Yes.", estimator: "Four questions, asked about the dust storm directly. Everything I need.", field_tech: "Packed cartridge expected."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["When do you need this? (already said 'before tomorrow')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "All facts, but not marked urgent with a party tomorrow.", estimator: "Complete card, eight questions to a panicked homeowner with a limit of four.", field_tech: "Pump running, cartridge, salt; fine."}
+
+  - scenario_id: pool_cleaning_s10
+    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    scores:
+      A:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: "911_hold"
+        panel_notes: {owner: "No card; stopped at the 911 hold as the harness requires.", estimator: "Fixed 911 text on the buried gas smell, nothing more said.", field_tech: "Nothing reached me; correct for a hold."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["How often have you noticed the smell? (does not change the cleaning quote)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly with chemicals, yes; heater kept off our card as a repair.", estimator: "All facts in four. Its own 911 wording with heater advice, which the human is allowed.", field_tech: "Told not to open the heater. Good warning."}
+      C:
+        quotable: 2
+        missing_facts: ["chlorine tabs", "equipment pad on the west side behind an unlocked gate"]
+        wasted_questions: ["Besides the regular visit, will it need extra visits, like between rental guests? (answer 'no just weekly')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly with chemicals, medium, cartridge, clear. Yes.", estimator: "911 text once, first, by the fixed words; then the cleaning card. Skipped what he already said, good, but six questions where four was the limit.", field_tech: "Nothing tells me a gas smell was reported at this pad; I'd walk up to that heater cold."}
+
+  - scenario_id: pool_cleaning_s11
+    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    scores:
+      A:
+        quotable: 3
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Firm labor-only monthly from this card.", estimator: "Size, spa, filter, sanitizer, chemicals, water, debris load. Second card for the palms already written.", field_tech: "Basket every visit; fine."}
+      B:
+        quotable: 2
+        missing_facts: ["sand filter", "chlorine tabs", "skimmer basket fills every day"]
+        wasted_questions: ["Besides the regular visit, will it need extra visits, like between rental guests? (answer 'no just the weekly')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "Labor-only weekly, palms noted. Range quote.", estimator: "Split the palm request without picking a business, good. Eight questions where five was the limit; filter and chlorine never asked.", field_tech: "Sand filter backwash time not planned."}
+      C:
+        quotable: 3
+        missing_facts: []
+        wasted_questions: ["When do you need this? (answer 'not sure')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Firm labor-only monthly.", estimator: "Everything, including the daily skimmer basket.", field_tech: "Fine."}
+
+  - scenario_id: pool_cleaning_s12
+    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    scores:
+      A:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: "outside_area"
+        panel_notes: {owner: "Correct stop, no promise.", estimator: "Answered the town before any trade question.", field_tech: "n/a"}
+      B:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: "outside_area"
+        panel_notes: {owner: "Correct stop.", estimator: "Coverage check before the read; no category recorded, which is fine for a stop.", field_tech: "n/a"}
+      C:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: "outside_area"
+        panel_notes: {owner: "Correct stop.", estimator: "n/a", field_tech: "n/a"}
+
+  - scenario_id: pool_cleaning_s13
+    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    scores:
+      A:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: "no_businesses"
+        panel_notes: {owner: "Correct stop, no promise of quotes.", estimator: "The homeowner's 'is anyone available' got no reply in the run.", field_tech: "n/a"}
+      B:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: "no_businesses"
+        panel_notes: {owner: "Correct stop, no promise of quotes.", estimator: "No light intake, so the every-other-week detail was not kept for later.", field_tech: "n/a"}
+      C:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: "no_businesses"
+        panel_notes: {owner: "Correct stop; answered her follow-up plainly.", estimator: "n/a", field_tech: "n/a"}
+
+  - scenario_id: pool_cleaning_s14
+    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Repair visit fee plus a replacement price. Yes.", estimator: "Hum, trip, speed, age, leak timing, access, pump only. Gave breaker advice, which the human is allowed.", field_tech: "I check the lid O-ring versus shaft seal."}
+      B:
+        quotable: 2
+        missing_facts: ["pump only, no weekly service wanted"]
+        wasted_questions: ["When do you need this? (answer 'not sure')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Repair visit, yes.", estimator: "All the facts; seven where five was the limit.", field_tech: "Gate open, leak a week old. Fine."}
+      C:
+        quotable: 2
+        missing_facts: ["single speed, about 11 years old", "water on the pad started about a week ago", "side yard gate open", "pump only, no weekly service"]
+        wasted_questions: ["What brand is the equipment? (answer 'not sure')"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Routed to repair, visit fee. Can't pre-price a new pump without speed and age.", estimator: "Hum and breaker trip captured; the leak only via the photo text. The brand question returned nothing; speed and age would have.", field_tech: "No word on access; I'd call ahead."}
+
+  - scenario_id: pool_cleaning_s15
+    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["propane", "about 16 years old", "no gas smell per homeowner (never asked)", "equipment inside a block enclosure with a door", "licensed-only routing (R-6 or B-6) not marked on the card"]
+        wasted_questions: ["What brand is the heater? (answer 'not sure')"]
+        trap_caught: false
+        routing_correct: false
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Replacement needs a site visit anyway, so a visit-fee quote. I don't know propane or natural gas, which changes the unit I'd bid.", estimator: "Card says gas pool heater, not boiler, good. Nobody asked about a gas smell, age or fuel. bank_job_type recorded as 'gas pool heater', not 'equipment replacement'.", field_tech: "Block enclosure and no smell check would both be surprises; card doesn't say licensed-only."}
+      B:
+        quotable: 2
+        missing_facts: ["licensed-only routing (R-6 or B-6) not marked on the card"]
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Same-size propane replacement, quoted after a visit. Yes.", estimator: "Fuel, age, symptom, no smell, replace, enclosure, deadline. Seven where five was the limit.", field_tech: "Card doesn't say licensed-only."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Licensed-only header, propane, same size. Yes.", estimator: "Asked about a gas smell directly and wrote 'no smell per homeowner'.", field_tech: "Check the tank and regulator first; good note."}
+
+summary_by_variant:
+  playbook: {median_quotable: 2, quotable_share: 0.923, median_questions: 7, routing_correct_share: 0.867, fire_dept_correct_share: 1.0, trap_caught_share: 0.267, facts_not_stated_count: 0}
+  baseline_none: {median_quotable: 2, quotable_share: 1.0, median_questions: 7, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 0.933, facts_not_stated_count: 0}
+  baseline_human: {median_quotable: 2, quotable_share: 1.0, median_questions: 5, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 1.0, facts_not_stated_count: 1}
+
+where_playbook_lost_to_human:
+  - "Equipment never asked on any cleaning card: filter and sanitizer were missing in s01, s02, s03, s04, s06, s08, s09, s10 and s11, and the s05 tab habit was the scenario's main point. The human asked 'size, spa, filter type, and how do you chlorinate?' in one turn. Fix: merge size_band and the spa question into one turn that also asks filter and chlorine, or make fu_sanitizer plus a filter question standard for weekly_service, green_pool and one_time_clean."
+  - "The one follow-up went to fu_extra_visits in eight scenarios (s01, s02, s03, s06, s07, s10, s11, and s03 where the opening had already said it). It changed nothing in seven. Fix: ask fu_extra_visits only when a rental or vacation home is mentioned and turnovers were not stated; when turnovers are stated (s03), ask how many a week instead. Spend the slot on fu_debris (s01 palms, s11 skimmer basket) or fu_sanitizer (s05)."
+  - "Access never asked: s02 lockbox and dog, s07 padlock and two large dogs, s10 pad on the west side, s04 unlocked side gate, s14 side yard. The human asked 'how will the tech get in, gate locked, any pets?' every time. Fix: add a fixed access question to every recurring cleaning job type (fu_access exists only under vacation_service), or fold gate and pets into the timing question."
+  - "s02: the human asked what happens May to October and wrote 'undecided'; the playbook card says 'not said'. Fix: when a homeowner gives a season window, route through vacation_service's fu_season, or add a 'Months:' and off-season line to weekly_service and ask it."
+  - "s09: the human asked about a dust storm, the pump and access in four questions; the playbook used eight, re-asked the deadline, and missed the storm, pump, equipment and that he is home today. Fix: when water is brown, gray or 'black', ask about wind or a dust storm and whether the pump runs; skip the timing question when the opening gives a deadline."
+  - "s06: the human asked about spots that don't wipe off and took the finish color from the homeowner; the playbook relied on the photo text. Fix: when the homeowner says algae but the water is clear, ask 'any spots or patches that don't brush off?'"
+  - "s05: routed to one_time_clean, whose allowed follow-ups do not include fu_sanitizer, so the six-year tab habit and the never-drained fact could not be asked; the cartridge correction was never asked either ('Filter: not confirmed'). Fix: add fu_sanitizer and a filter-look question to one_time_clean, or route rebalance requests to chem_only."
+  - "s08: the human asked how long it has been green and the filter type; the playbook got neither, nor the empty tab feeder. Fix: for green_pool, ask how long it has been green; use fu_sanitizer when tabs or a floater are likely."
+  - "s03: the human got the turnover count, daily spa use and cloudiness, salt and cartridge, the report-after-each-visit request and the house cleaner on the same days. Fix: see the fu_extra_visits fix; add 'any report after each visit?' for rentals."
+  - "s14, s15: the brand question returned 'not sure' twice. The human asked speed and age (s14), and fuel, age and gas smell (s15), and marked the heater card licensed-only. Fix: ask brand, speed and age from the label in one turn; for gas heaters ask the fuel and 'any gas smell?', and put 'Licensed only: R-6 or B-6' on the card."
+  - "Bank questions that never move a cleanup quote cost turns: 'chemicals included?' on green and one-time jobs (s04, s05, s08), and water on a pool the owner can't see (s02, s03). Playbook median questions 7 against the human's 5. Fix: skip chemicals on green_pool and one_time_clean (always included) and skip water when the homeowner is away."
+  - "Routing labels: bank_job_type 'green pool cleanup' for a clear-water rebalance (s05, expected 'chemical balancing') and 'gas pool heater' for a heater replacement (s15, expected 'equipment replacement'). The human and baseline_none carried the expected labels. Fix: map a one-time rebalance to 'chemical balancing' and a heater the homeowner wants replaced to 'equipment replacement', or have the scenario writer and the expert file agree on one label."
+
+compliance:
+  violations:
+    - {scenario_id: pool_cleaning_s02, code: C11, where: "questions_asked 9 (intake messages 2 to 9 plus the photo ask)", text: "9 questions; the limit is 8"}
+    - {scenario_id: pool_cleaning_s02, code: C11, where: "intake message 8", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+    - {scenario_id: pool_cleaning_s03, code: C11, where: "intake message 5", text: "Besides the regular visit, will it need extra visits, like between rental guests? 1 No, just the regular visit 2 Yes, between rental guests 3 Yes, for another reason"}
+    - {scenario_id: pool_cleaning_s09, code: C11, where: "intake message 7", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date"}
+  count: 4
+  clean_scenarios: 12
+  notes:
+    - "s02 message 8 re-asks timing after the opening said 'We come down the first of November'. s03 message 5 re-asks extra visits after the opening said 'a weekly visit plus a quick check between guest stays'. s09 message 7 re-asks timing after the opening said 'TOMORROW AFTERNOON' and the homeowner answered 'before tomorrow afternoon' to message 2."
+    - "C10 clean: every follow_up_used is in allowed_follow_ups for the job type routed, at most one per scenario: fu_extra_visits (weekly_service: s01, s02, s03, s06, s07, s10, s11), fu_pump_running (green_pool: s04, s08), fu_debris (one_time_clean: s09), fu_breaker_trips (pool_repair pump_motor: s14), fu_heater_doing (pool_repair heater: s15). s05 used none."
+    - "C3: the fixed 911 text went out in s10 only, once, which is the one fire-truck-list scenario (gas smell at a pool heater). No other safety, health or repair advice in any message or card."
+    - "C1, C2, C4, C5, C7, C8, C9, C12: no hits in intake messages or cards. 'Should chemicals be included in the price?' asks about scope and names no price, so it is not counted under C2. No em dashes, exclamation marks or ai_smell words in intake messages; the 911 text is exempt under INT-004."
+    - "C6: no card fact the homeowner did not say, apart from the header line. Not counted, per the run's instructions on the town and area line, but noted: the property type 'house' in the header of s01, s02, s04, s05, s06, s08, s09, s10 and s11 was never said. Fix: the template default for an unasked property type should be left blank or read 'not said'."
+    - "Near miss, not counted: s07 'Homeowner adds' puts in quotation marks words the homeowner did not type ('im renting, and the landlord said i have to keep it up'); his words were 'im renting a house with a pool and the landlord said i have to keep it up'. Scrubbing may shorten a quote but should not add punctuation inside it."
+    - "Expert-file findings for the routing team, not compliance codes: (1) weekly_service's fu_extra_visits ask_when ('or the homeowner said weekly with no other detail') fires on nearly every weekly request and conflicts with its own must_know skip_if ('Homeowner said plain weekly for her own home'); this is why the slot was spent seven times for nothing. (2) fu_access lives only under vacation_service, so weekly_service can never ask about gates or dogs. (3) one_time_clean maps to bank 'green pool cleanup' and has no fu_sanitizer, which blocked the key s05 question. (4) pool_repair heater maps to bank 'gas pool heater' while the scenario expects 'equipment replacement' for a wanted replacement. (5) The weekly_service and green_pool card templates have no filter or access line, so even a stated filter (s10) appears only in the scope line."

@@ -1,0 +1,864 @@
+# Ask Hava expert layer: painting (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set painting and trade_kb/trades/painting.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - kb job type garage_floor_epoxy is left out: the enabled category epoxy_floors (job type "garage floor
+#   epoxy", kb_trade flooring) owns it. A misdiagnosis check below routes it there. R-34 also covers
+#   "liquid floor and wall coatings" (A.A.C. R4-9-103), so docs/catalog/license_map.yaml decides whether
+#   R-34 painters also see epoxy cards.
+# - The other 8 kb job types are kept. block_wall and deck_stain sit under "exterior painting"
+#   (deck_stain also covers a front door, which can be stained from inside); touch_up, wallpaper and
+#   popcorn_ceiling sit under "interior painting". No new_job_type was needed.
+# - popcorn_ceiling: removing texture is also R-10 scope ("wall board tape and texture"). CPSC says textured
+#   paint and patching compounds may hold asbestos (use banned in 1977), and EPA says a trained, accredited
+#   professional should sample before remodeling. Ask Hava gives no advice; the card carries the home's age
+#   and whether the texture was tested. Casey may want removal of untested texture in older homes to go to a
+#   narrower set of businesses.
+# - kb emergency signal es_painting_2 (a child ate paint chips, someone sick from fumes) is marked
+#   emergency in the kb but is not on the D-436 fire-truck list, so no text goes out; the card carries her
+#   words. Confirm that is the intended behavior.
+# - "Paint my roof" (foam or elastomeric roof coating) is R-42 work. roof_repair has no coating job type,
+#   so the check below routes it to "leak repair" as the closest fit. A "roof coating" job type would be
+#   cleaner.
+# - The question set has no home-age or ceilings question, and the AI may ask only one follow-up. The kb
+#   has q5_home_age and q4_ceilings. Adding "About when was the home built?" to the bank would let the one
+#   follow-up go to ceilings, HOA or cabinet material instead. The bank's size options (rooms) also do not
+#   fit block walls or cabinets, and "where" has no block wall option.
+# - EPA RRP firm certification is federal and separate from the ROC license. Whether a business states
+#   its RRP status at sign-up or on its quote is a license_map / sign-up decision, not made here.
+schema: 1
+category: painting
+question_set: painting
+kb_trade: painting
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-34 Painting and Wall Covering: surface preparation and wallpaper, wall covering, decorative texture, paint, liquid floor and wall coatings; R-10 Drywall incl. wall board tape and texture; R-8 Floor Covering incl. concrete coatings) [S2]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104 Dual license classifications (CR-34 Painting and Wall Covering: the C-34 and R-34 scopes) [S3]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121(A)(14) handyman exemption: under $1,000 aggregate on one project, casual or minor, no local building permit, not part of a larger job or split, ads say 'not a licensed contractor' [S4]"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits: no-permit list includes paint, floor covering, minor drywall repair (hole patching); lath for stucco systems needs a permit [S17]"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: epa_rrp
+    title: "EPA Renovation, Repair and Painting Program for contractors: pre-1978 housing; minor repair exempt at 6 sq ft or less per room inside, 20 sq ft or less outside; window replacement always covered; paid firms must be certified"
+    url: "https://www.epa.gov/lead/renovation-repair-and-painting-program-contractors"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: cfr_745_84
+    title: "40 CFR 745.84 Information distribution: firm gives the owner (and an adult occupant if the owner does not live there) the lead pamphlet no more than 60 days before renovation"
+    url: "https://www.law.cornell.edu/cfr/text/40/745.84"
+    checked: "2026-10-29"
+    kind: statute
+  - id: epa_asb
+    title: "EPA, Protect Your Family from Exposures to Asbestos: you can't tell by looking; material in good condition that will not be disturbed should be left alone; a trained, accredited professional should take samples before remodeling"
+    url: "https://www.epa.gov/asbestos/protect-your-family-exposures-asbestos"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: cpsc_asb
+    title: "CPSC, Asbestos in the Home: textured paint and patching compounds may contain asbestos, their use was banned in 1977; sanding, scraping or drilling may release fibers"
+    url: "https://www.cpsc.gov/safety-education/safety-guides/home/asbestos-home"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report: hardness 19 grains per gallon (range 18 to 20), TDS 753 ppm"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233/Water-Quality-Report-PDF"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: sw_exterior_faq
+    title: "Sherwin-Williams exterior product application FAQ: avoid painting in direct sun in summer; over 100 F a film can dry before it adheres; traditional latex needs above 50 to 60 F to cure, some lines to 35 F"
+    url: "https://www.sherwin-williams.com/home-builders/tape/resources/faqs/exterior-product-application-faqs"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: nws_monsoon
+    title: "National Weather Service Tucson, Monsoon Safety: June 15 through September 30 is defined as the monsoon; dust storms most common early in the season"
+    url: "https://www.weather.gov/twc/monsoonsafety"
+    checked: "2026-10-29"
+    kind: other
+  - id: usclimate_lhc
+    title: "US Climate Data, Lake Havasu City (1991 to 2020 normals): average high 105 F June, 109 F July, 108 F August, 64 F January, 63 F December"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: webtonic_painting
+    title: "Webtonic (marketing vendor), Painting Google Ads statistics 2026: Google Ads median cost per lead for painters $174; Local Services Ads median about $48; LSA $15 to $30 per lead in markets under 500K population (citing 99 Calls, Hearth Digital, PainterWebLab)"
+    url: "https://www.webtonic.io/blog/painting-google-ads-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: facade_painting
+    title: "Facade Colorizer (software vendor), Yelp vs Angi lead generation for painting contractors 2026: Angi/HomeAdvisor shared leads $30 to $80 with 5 to 10% close rate ($400 to $2,000 per booked job); LSA $25 to $65 with 15 to 25% close rate"
+    url: "https://facadecolorizer.com/us/blog/painting-contractor-yelp-angi-lead-generation-comparison-2026"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "How much surface: rooms or wall length, ceiling height, one or two stories"
+      why: "Area and reach set paint, labor days and whether ladders, planks or a lift come out; vaulted rooms and two-story walls cost more per foot. [judgment]"
+      source: null
+    - driver: "Prep: peeling, chalking, stucco cracks, patching, stains that need a blocking primer"
+      why: "Prep is where painting quotes split; a color change on sound walls is the low end, scraping and patching the high end. The bank's repairs question and the close-up photo carry it. [judgment]"
+      source: null
+    - driver: "Home built before 1978 and the work will sand, scrape or cut more than a small area"
+      why: "Paid work in pre-1978 housing that disturbs more than 6 sq ft per room inside or 20 sq ft outside falls under the EPA RRP rule: certified firm, containment, cleaning checks and paperwork, all priced in."
+      source: epa_rrp
+    - driver: "What is in the job: walls only, or ceilings, trim, doors, cabinets"
+      why: "Each adds a separate pass with different paint and sheen; cabinets are priced per door and drawer and take days. [judgment]"
+      source: null
+    - driver: "Size of the color change (dark to light, or a deep color over a light one)"
+      why: "A big change means a primer coat or a third coat. The wide photo and her look pictures show it. [judgment]"
+      source: null
+    - driver: "Who supplies the paint, and what grade"
+      why: "The bank's paint question. Painters mark up materials and quote by product line; homeowner-supplied paint shrinks the total but some painters will not warranty it. [judgment]"
+      source: null
+    - driver: "Empty home or lived-in with furniture to move and cover"
+      why: "Moving and masking furniture adds hours; a vacant second home or rental between guests is faster. [judgment]"
+      source: null
+    - driver: "Exterior: HOA color approval, tight side yards, summer heat windows"
+      why: "An approval wait sets the start date, a narrow side yard slows setup, and summer exterior work is limited to cooler hours. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "A ceiling or wall stain that is still getting wet (roof or plumbing leak not fixed)"
+      how_a_pro_spots_it: "Ring that grows after rain or after a shower upstairs; sagging or bubbling at the stain in the ceiling photo"
+      question_or_photo: fu_stain_wet
+      source: null
+    - condition: "Textured or popcorn ceiling in an older home that may hold asbestos once scraped"
+      how_a_pro_spots_it: "Sprayed bumpy texture in the ceiling photo plus a build year in the 1970s or earlier; textured paint and patching compounds were banned in 1977; no lab test on file"
+      question_or_photo: fu_texture_tested
+      source: cpsc_asb
+    - condition: "Pre-1978 paint that will be disturbed past the RRP minor-repair limits"
+      how_a_pro_spots_it: "Build year, peeling on trim, sills and fascia in the close-up photo"
+      question_or_photo: fu_home_age
+      source: epa_rrp
+    - condition: "Old thick or rubbery coating on stucco peeling in sheets, or chalky paint that will not hold new paint"
+      how_a_pro_spots_it: "Large flakes with gray stucco underneath, or powder on a finger in her words; west and south walls worst"
+      question_or_photo: p2
+      source: null
+    - condition: "Stucco cracks wider than hairline, or stucco that sounds hollow, which is a stucco repair before paint"
+      how_a_pro_spots_it: "Diagonal cracks off window corners in the close-up, the bank's repairs answer is yes"
+      question_or_photo: repairs
+      source: null
+    - condition: "Cabinet doors with a plastic or laminate skin, which many painters will not paint or will price as special prep"
+      how_a_pro_spots_it: "Very even wood grain with a gloss in the wide photo; lifting edges near the dishwasher or range in a close-up"
+      question_or_photo: fu_cabinet_material
+      source: null
+    - condition: "White crust and peeling at the base of a block wall where sprinklers hit it"
+      how_a_pro_spots_it: "Powdery band along the bottom rows of block in the photo; sprinkler heads or drip lines along the wall; city water near 19 grains per gallon leaves mineral marks"
+      question_or_photo: fu_wall_water
+      source: lhc_ccr
+    - condition: "Wallpaper that was painted over, or several layers, which slows removal and leaves wall repair"
+      how_a_pro_spots_it: "Paper seams showing through paint, torn corners with a second pattern under it in the close-up"
+      question_or_photo: p2
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "interior painting (paint over a ceiling stain)"
+      might_be: "roof leak_repair, a different category"
+      one_question: fu_stain_wet
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "interior painting (stain under a bathroom)"
+      might_be: "plumbing leak_slow, a different category"
+      one_question: fu_stain_wet
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "touch_up (patch and paint before move-out)"
+      might_be: "handyman small_drywall_patch, a different category, when it is mostly patching and under the handyman limit"
+      one_question: fu_patch_or_paint
+      if_other_route_to: {category: handyman, job_type: "drywall patch"}
+      source: ars_32_1121
+    - sounds_like: "exterior painting (paint the garage or patio)"
+      might_be: "garage_floor_epoxy, a different category"
+      one_question: fu_exterior_parts
+      if_other_route_to: {category: epoxy_floors, job_type: "garage floor epoxy"}
+      source: null
+    - sounds_like: "exterior painting (paint the roof)"
+      might_be: "roofing foam_coating, R-42 roof work"
+      one_question: fu_exterior_parts
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: aac_r4_9_103
+  photo_reading:
+    - photo_id: p1
+      reads: ["Current wall color and how big the color change is", "Ceiling height against a door (8 foot, 10 foot, vaulted)", "Trim, doors and baseboards in the shot", "Furniture in the room", "Number of stories and side-yard room for exteriors", "Cabinet count and finish for kitchens"]
+      neutral_wording: "Living room with beige walls and white trim; ceiling rises to about twice the door height with a fan; furniture in place."
+    - photo_id: p2
+      reads: ["Peeling in flakes or sheets, bare stucco or wood underneath", "Crack width and direction off window corners", "Powdery band at the base of a block wall", "Lifting edges on cabinet doors", "Paper seams or layers under paint"]
+      neutral_wording: "Close-up of the west wall: paint coming off in palm-size flakes with gray stucco showing; a thin crack runs up from the window corner."
+    - photo_id: p3
+      reads: ["Smooth, light texture, or sprayed popcorn texture", "Stain rings, sagging or bubbling", "Fans, vents and lights to mask around"]
+      neutral_wording: "Ceiling has a bumpy sprayed texture; a tan ring about 2 feet across sits near the air vent."
+  local_factors:
+    - fact: "Summer average highs run about 105 F in June, 109 F in July and 108 F in August"
+      effect: "Exterior work in summer runs early mornings on shaded walls; the label and the maker warn against direct sun and very high heat, so exterior jobs stretch over more days or move to fall"
+      source: usclimate_lhc
+    - fact: "Paint makers warn that over 100 F a paint film can dry before it adheres, and advise against painting in direct summer sun"
+      effect: "Pros schedule west and south walls around the sun; a quote's start date may depend on the season"
+      source: sw_exterior_faq
+    - fact: "The monsoon runs June 15 to September 30, with dust storms most common early in the season"
+      effect: "Wind and dust cost exterior paint days and can mean a re-wash before coating"
+      source: nws_monsoon
+    - fact: "Lake Havasu City needs no building permit for paint; lath for stucco systems does need one"
+      effect: "Repaints carry no permit time; stucco re-lath under a paint job would be a separate permitted job"
+      source: lhc_permits
+    - fact: "City water hardness is about 19 grains per gallon"
+      effect: "Sprinkler overspray leaves white mineral marks on block walls and stucco bases that painters wash and treat before coating [judgment]"
+      source: lhc_ccr
+    - fact: "Many stucco homes carry thick elastomeric or rubbery coatings from past repaints, and desert sun fades and chalks south and west walls first"
+      effect: "Pros ask what the house was last coated with and look hardest at the sun sides [judgment]"
+      source: null
+    - fact: "Much of the city was built from the late 1960s through the 1970s, so many homes predate 1978"
+      effect: "Home age decides whether RRP lead-safe work applies when paint is disturbed; local share of pre-1978 homes not confirmed [judgment]"
+      source: null
+      unverified: true
+    - fact: "Some subdivisions have HOAs with approved exterior color lists and an approval step"
+      effect: "An exterior card should say whether approval is needed and done, since it sets the start date [judgment]"
+      source: null
+    - fact: "Seasonal residents and vacation rentals leave homes empty for months"
+      effect: "Empty homes paint faster; owners often want work done before winter visitors arrive or between guest stays [judgment]"
+      source: null
+  seasonality:
+    busy: "October to May for exteriors (cooler days), spring and fall for rental refreshes and pre-sale paint [judgment]"
+    slow: "July and August for exteriors; interiors keep going through summer [judgment]"
+    source: null
+
+job_types:
+  - id: interior_rooms
+    label: "Interior walls and ceilings, one room to the whole inside"
+    bank_job_type: "interior painting"
+    recurring: false
+    homeowner_phrasings: ["paint the house", "repaint 3 bedrooms", "living room a new color", "quiero pintar 2 cuartos y la sala"]
+    must_know:
+      - fact: "Which rooms and how much (rooms named, open areas, closets)"
+        bank_question: size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Wall area sets paint and labor days more than anything else. [judgment]"
+        skip_if: "Her words name the rooms"
+      - fact: "Whether ceilings are in, and if they are textured or tall"
+        bank_question: null
+        follow_up: fu_ceilings
+        photo: p3
+        why_it_moves_price: "Ceilings add a pass with different paint; popcorn and vaulted ceilings change the method and the gear. [judgment]"
+        skip_if: "She said walls only, or the ceiling photo shows it and she said they are in"
+      - fact: "Wall condition: sound, nail holes and scuffs, peeling, stains"
+        bank_question: repairs
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Patching and stain-blocking primer are the difference between the low and high end of a range. [judgment]"
+        skip_if: "Close-up sent and her words cover condition"
+      - fact: "Home built before 1978 or not"
+        bank_question: null
+        follow_up: fu_home_age
+        photo: null
+        why_it_moves_price: "Peeling or sanding in a pre-1978 home brings in RRP lead-safe work."
+        skip_if: "She gave the year, or walls are sound and the job is a color change only"
+      - fact: "Empty, or furniture to move"
+        bank_question: null
+        follow_up: fu_furniture
+        photo: p1
+        why_it_moves_price: "Moving and covering furniture adds hours, and some clients cannot move it themselves. [judgment]"
+        skip_if: "Wide photo shows an empty room, or she said it is empty"
+    allowed_follow_ups:
+      - id: fu_ceilings
+        ask_when: "Inside rooms and she has not said whether ceilings are part of the job"
+        text_en: "Are the ceilings part of the job?"
+        text_es: "¿Los techos también se pintan?"
+        options_en: ["Walls only", "Walls and smooth ceilings", "Walls and bumpy or popcorn ceilings", "Walls and tall or vaulted ceilings"]
+        options_es: ["Solo paredes", "Paredes y techos lisos", "Paredes y techos con textura o tipo popcorn", "Paredes y techos altos o inclinados"]
+        card_field: true
+        why: "Ceilings are a separate pass, and texture and height change the method and gear. [judgment]"
+      - id: fu_home_age
+        ask_when: "Paint is peeling, will be scraped or sanded, or she calls the house old, and she has not given a year"
+        text_en: "About when was the home built?"
+        text_es: "¿Más o menos en qué año se construyó la casa?"
+        options_en: ["1978 or later", "Before 1978"]
+        options_es: ["1978 o después", "Antes de 1978"]
+        card_field: true
+        why: "Paid work that disturbs paint in pre-1978 housing past the minor-repair limits falls under the EPA RRP rule; the question names no hazard."
+      - id: fu_stain_wet
+        ask_when: "She wants a stain, ring, bubbling or peeling spot on a ceiling or wall painted over"
+        text_en: "Does the spot change after it rains, or after a shower or tub upstairs is used?"
+        text_es: "¿La mancha cambia cuando llueve, o cuando se usa una regadera o tina de arriba?"
+        options_en: ["No, it stays the same", "It changes after rain", "It changes after a shower or tub is used", "It feels damp now"]
+        options_es: ["No, sigue igual", "Cambia cuando llueve", "Cambia cuando se usa la regadera o la tina", "Se siente húmeda ahora"]
+        card_field: true
+        why: "A spot that changes is a roof or plumbing job first and painting after; she decides, the card carries her answer. [judgment]"
+      - id: fu_furniture
+        ask_when: "Inside rooms, no wide photo of an empty room, and she has not said who moves furniture"
+        text_en: "Will the rooms be empty, or will furniture need moving?"
+        text_es: "¿Los cuartos van a estar vacíos, o hay que mover muebles?"
+        options_en: ["Empty", "Furniture stays, I can move it", "Furniture stays, the painter moves it"]
+        options_es: ["Vacíos", "Los muebles se quedan, yo los muevo", "Los muebles se quedan, el pintor los mueve"]
+        card_field: true
+        why: "Furniture adds hours, and the painter needs to know who moves it. [judgment]"
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: ["Outlet in a room to be painted sparked or smells burning (said in passing)"]
+      urgent_capable_triggers: []
+      regular: "All interior repaints, including ones with a fixed move-in or guest date"
+    scope_line_en: "Repaint walls in 3 bedrooms and the hallway; ceilings not included; nail holes and scuffs to patch."
+    scope_line_es: "Pintar las paredes de 3 recámaras y el pasillo; techos no incluidos; hay hoyos de clavos y raspones que resanar."
+    quote_format: range
+    business_fills: ["price range", "what is included (patching, primer, coats, ceilings, trim, paint line)", "how many days", "earliest start day"]
+    card_template: |
+      REQ-<id> | Painting | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: rooms, walls or ceilings, condition>
+      Size: <size answer, rooms named>. Ceilings: <not included / smooth / bumpy or popcorn / tall or vaulted>. Repairs first: <yes / no>. Built: <year / before 1978 / 1978 or later / not said>.
+      Paint: <business supplies / homeowner has it>. Furniture: <empty / homeowner moves / painter moves / not said>. Look: <her words>; look pictures <n> (inspiration, not her home); concept image <attached, labeled AI-generated, not exact, may not be feasible / none>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That old paint probably has lead in it.", "You'll need a primer for that much color change.", "Interior repaints run about three dollars a foot.", "A handyman can do one room cheaper.", "That green will look great."]
+
+  - id: exterior_stucco
+    label: "Exterior stucco, siding, trim and fascia"
+    bank_job_type: "exterior painting"
+    recurring: false
+    homeowner_phrasings: ["outside of the house is faded", "stucco is chalky", "fascia peeling", "repaint the outside", "pintar por fuera"]
+    must_know:
+      - fact: "Which parts: stucco walls, trim and fascia, or both"
+        bank_question: where
+        follow_up: fu_exterior_parts
+        photo: p1
+        why_it_moves_price: "Trim-only is a small ladder job; whole-body stucco is spray and back-roll over days. [judgment]"
+        skip_if: "Her words or the photo make the parts clear"
+      - fact: "One story or two, and hillside walls"
+        bank_question: null
+        follow_up: fu_stories
+        photo: p1
+        why_it_moves_price: "Two stories and tall downhill walls mean planks or a lift and more hours. [judgment]"
+        skip_if: "Wide photo shows the full house"
+      - fact: "Surface condition: peeling, chalking, cracks"
+        bank_question: repairs
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Crack repair, scraping and primer set the prep days. [judgment]"
+        skip_if: "Close-up sent and her words cover it"
+      - fact: "HOA color approval needed, and whether it is done"
+        bank_question: null
+        follow_up: fu_hoa_colors
+        photo: null
+        why_it_moves_price: "An approval wait sets the start date and limits the color list. [judgment]"
+        skip_if: "She said there is no HOA"
+      - fact: "Home built before 1978 or not"
+        bank_question: null
+        follow_up: fu_home_age
+        photo: null
+        why_it_moves_price: "Scraping more than 20 sq ft outside on a pre-1978 home brings in RRP lead-safe work."
+        skip_if: "Year given, or the home is clearly newer from her words"
+    allowed_follow_ups:
+      - id: fu_exterior_parts
+        ask_when: "Outside work and she has not said which parts, or she names a garage floor, patio or roof"
+        text_en: "Which parts need paint?"
+        text_es: "¿Qué partes hay que pintar?"
+        options_en: ["Stucco or siding walls", "Trim, fascia and eaves", "Walls and trim", "Garage floor or patio slab", "Roof coating"]
+        options_es: ["Paredes de estuco o revestimiento", "Molduras, fascia y aleros", "Paredes y molduras", "Piso de la cochera o losa del patio", "Recubrimiento del techo"]
+        card_field: true
+        why: "Walls and trim are painting; a floor coating goes to epoxy floors and a roof coating to roofing. [judgment]"
+      - id: fu_stories
+        ask_when: "Outside work and no wide photo of the whole house"
+        text_en: "How tall is the house?"
+        text_es: "¿Qué tan alta es la casa?"
+        options_en: ["One story", "Two stories", "Two stories with a tall downhill side"]
+        options_es: ["Un piso", "Dos pisos", "Dos pisos con un lado alto hacia abajo de la loma"]
+        card_field: true
+        why: "Height sets ladders, planks or a lift. [judgment]"
+      - id: fu_hoa_colors
+        ask_when: "Outside work, a color change, and she has not mentioned an HOA"
+        text_en: "Does an HOA have to approve the outside colors?"
+        text_es: "¿Una asociación de vecinos (HOA) tiene que aprobar los colores de afuera?"
+        options_en: ["Yes, not approved yet", "Yes, already approved", "No HOA", "HOA, no color rule"]
+        options_es: ["Sí, todavía no aprobados", "Sí, ya aprobados", "No hay HOA", "Hay HOA, sin regla de colores"]
+        card_field: true
+        why: "Approval sets the start date and the color list. [judgment]"
+      - fu_home_age
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All exterior repaints"
+    scope_line_en: "Repaint the whole outside, stucco walls and fascia; two stories; faded and chalky on the west side."
+    scope_line_es: "Pintar todo el exterior, paredes de estuco y fascia; dos pisos; descolorido y con polvo en el lado oeste."
+    quote_format: range
+    business_fills: ["price range", "what is included (wash, crack repair, primer, coats, trim, paint line)", "how many days", "earliest start day"]
+    card_template: |
+      REQ-<id> | Painting | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: parts, stories, condition>
+      Parts: <walls / trim and fascia / both>. Height: <one story / two stories / tall downhill side>. Repairs first: <yes / no>. Built: <year / before 1978 / 1978 or later / not said>.
+      HOA colors: <approval needed, not done / approved / no HOA / not said>. Paint: <business supplies / homeowner has it>. Look: <her words>; look pictures <n> (inspiration, not her home); concept image <attached, labeled AI-generated, not exact, may not be feasible / none>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Elastomeric is what you want on stucco.", "Those cracks mean the stucco is failing.", "The sun side faded because of cheap paint.", "Keep the kids away from those chips.", "Exterior repaints run five to eight thousand."]
+
+  - id: block_wall
+    label: "Block fence or garden walls"
+    bank_job_type: "exterior painting"
+    recurring: false
+    homeowner_phrasings: ["paint the block wall", "fence wall is peeling", "pintar la barda", "yard wall paint"]
+    must_know:
+      - fact: "About how long and how tall"
+        bank_question: size
+        follow_up: fu_wall_length
+        photo: p1
+        why_it_moves_price: "Block walls are priced by the running foot and height. [judgment]"
+        skip_if: "She gave the length"
+      - fact: "One face or both, and whether a neighbor shares it"
+        bank_question: null
+        follow_up: fu_wall_sides
+        photo: p1
+        why_it_moves_price: "Both faces doubles the area, and a shared face needs the neighbor's yes and access. [judgment]"
+        skip_if: "She said yard side only and no neighbor shares it"
+      - fact: "Condition: peeling, white crust at the base"
+        bank_question: repairs
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Crust and peeling mean washing, scraping and a masonry primer. [judgment]"
+        skip_if: "Close-up sent"
+      - fact: "Sprinklers or drip lines that wet the wall"
+        bank_question: null
+        follow_up: fu_wall_water
+        photo: p2
+        why_it_moves_price: "Water on the wall brings the crust back, and the painter wants to know before warranting the work. [judgment]"
+        skip_if: "No irrigation near the wall"
+    allowed_follow_ups:
+      - id: fu_wall_length
+        ask_when: "Block wall and no length given"
+        text_en: "About how long is the wall, all sides added up?"
+        text_es: "¿Más o menos qué largo tiene la barda, sumando todos los lados?"
+        options_en: ["Under 50 feet", "50 to 150 feet", "Over 150 feet"]
+        options_es: ["Menos de 50 pies", "50 a 150 pies", "Más de 150 pies"]
+        card_field: true
+        why: "Length is the first number a painter writes for a wall. [judgment]"
+      - id: fu_wall_sides
+        ask_when: "Block wall and she has not said which face, or the wall borders a neighbor"
+        text_en: "Which side of the wall gets paint, and does a neighbor share it?"
+        text_es: "¿Qué lado de la barda se pinta, y la comparte con un vecino?"
+        options_en: ["My side only, not shared", "My side only, shared with a neighbor", "Both sides"]
+        options_es: ["Solo mi lado, no se comparte", "Solo mi lado, se comparte con un vecino", "Los dos lados"]
+        card_field: true
+        why: "Sets the area and whether a second owner is involved. [judgment]"
+      - id: fu_wall_water
+        ask_when: "Block wall with peeling or a white crust and no word on irrigation"
+        text_en: "Do sprinklers or drip lines put water on the wall?"
+        text_es: "¿Los aspersores o el riego por goteo mojan la barda?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Water at the base changes prep and what the painter will warranty; the question names no cause. [judgment]"
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All block wall painting"
+    scope_line_en: "Paint the yard side of the back block wall, about 150 feet long and 6 feet tall; paint peeling in patches."
+    scope_line_es: "Pintar el lado del patio de la barda de bloque de atrás, unos 150 pies de largo y 6 pies de alto; la pintura se cae en partes."
+    quote_format: range
+    business_fills: ["price range", "what is included (wash, scraping, primer, coats)", "how many days", "earliest start day"]
+    card_template: |
+      REQ-<id> | Painting | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: wall, length, height, face, condition>
+      Length: <under 50 / 50 to 150 / over 150 feet, or her number>. Height: <her words>. Faces: <her side / both / shared with neighbor>.
+      Repairs first: <yes / no>. Irrigation wets the wall: <yes / no / not said>. Color: <keep same / new, her words>. Paint: <business supplies / homeowner has it>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That white stuff is efflorescence from the sprinklers.", "Move your sprinklers first.", "Block walls are cheap to paint.", "Talk to your neighbor before anyone starts."]
+
+  - id: cabinets_paint
+    label: "Cabinet painting or refinishing"
+    bank_job_type: "cabinet painting"
+    recurring: false
+    homeowner_phrasings: ["paint the kitchen cabinets white", "refinish cabinets", "pintar gabinetes", "bathroom vanity paint"]
+    must_know:
+      - fact: "How many doors and drawer fronts, and which rooms"
+        bank_question: null
+        follow_up: fu_cabinet_count
+        photo: p1
+        why_it_moves_price: "Cabinet work is priced per door and drawer front. [judgment]"
+        skip_if: "She gave a count, or the wide photo shows every cabinet"
+      - fact: "What the doors are made of, and their edge condition"
+        bank_question: null
+        follow_up: fu_cabinet_material
+        photo: p2
+        why_it_moves_price: "Wood takes paint with normal prep; laminate or wrapped doors need special bonding or may be declined. [judgment]"
+        skip_if: "Edge close-up sent"
+      - fact: "Where doors get painted: a shop, the garage, or inside only"
+        bank_question: null
+        follow_up: fu_cabinet_workspace
+        photo: null
+        why_it_moves_price: "Shop spraying is faster and smoother; brush-only inside the house adds days. [judgment]"
+        skip_if: "She said where, or said no spraying and no garage"
+      - fact: "Keeping hinges and pulls, or new ones"
+        bank_question: null
+        follow_up: fu_hardware
+        photo: p1
+        why_it_moves_price: "New pulls with new holes means filling and drilling every door. [judgment]"
+        skip_if: "She said she is keeping hardware"
+      - fact: "Who supplies the paint"
+        bank_question: paint
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Cabinet painters often use their own coating line and may not warranty another. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_cabinet_count
+        ask_when: "Cabinets and no count or full wide photo"
+        text_en: "About how many cabinet doors and drawer fronts in all?"
+        text_es: "¿Más o menos cuántas puertas y frentes de cajón hay en total?"
+        options_en: ["Under 20", "20 to 35", "Over 35"]
+        options_es: ["Menos de 20", "20 a 35", "Más de 35"]
+        card_field: true
+        why: "Door and drawer count is how cabinet painting is priced. [judgment]"
+      - id: fu_cabinet_material
+        ask_when: "Cabinets and no edge close-up, or she names the material herself"
+        text_en: "What are the cabinet doors made of, if you know?"
+        text_es: "¿De qué material son las puertas de los gabinetes, si sabe?"
+        options_en: ["Real wood", "Smooth plastic-like skin or laminate", "Painted before", "Metal"]
+        options_es: ["Madera real", "Cubierta lisa tipo plástico o laminado", "Ya pintadas antes", "Metal"]
+        card_field: true
+        why: "Material decides the prep and whether a painter takes the job. [judgment]"
+      - id: fu_cabinet_workspace
+        ask_when: "Cabinets and she has not said where the work can happen or whether spraying is OK"
+        text_en: "Where can the doors be painted?"
+        text_es: "¿Dónde se pueden pintar las puertas?"
+        options_en: ["Painter can take them to a shop", "In my garage", "Inside the house only"]
+        options_es: ["El pintor se las puede llevar a su taller", "En mi cochera", "Solo adentro de la casa"]
+        card_field: true
+        why: "Where the doors are painted sets the method and the days. [judgment]"
+      - id: fu_hardware
+        ask_when: "Cabinets and no word on hinges or pulls"
+        text_en: "Are you keeping the current hinges and pulls?"
+        text_es: "¿Se quedan las bisagras y jaladeras que tiene ahora?"
+        options_en: ["Keeping them", "New pulls, same holes", "New pulls, new holes", "New hinges too"]
+        options_es: ["Se quedan", "Jaladeras nuevas, mismos hoyos", "Jaladeras nuevas, hoyos nuevos", "También bisagras nuevas"]
+        card_field: true
+        why: "New hole spacing means filling and drilling every door. [judgment]"
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All cabinet painting"
+    scope_line_en: "Paint kitchen cabinets white, about 26 doors and 9 drawer fronts plus an island; keeping hinges and pulls."
+    scope_line_es: "Pintar de blanco los gabinetes de la cocina, unas 26 puertas y 9 frentes de cajón más una isla; se quedan las bisagras y jaladeras."
+    quote_format: range
+    business_fills: ["price range", "what is included (degrease, sanding, primer, coats, boxes and frames, hardware)", "where the doors are painted and how many days", "earliest start day"]
+    card_template: |
+      REQ-<id> | Painting | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: which cabinets, count, new color>
+      Count: <doors and drawer fronts>. Doors made of: <her answer, as she says it> (<edge condition from photo, neutral>). Hardware: <keeping / new pulls same holes / new holes / new hinges>.
+      Work area: <shop / garage / inside only>. Paint: <business supplies / homeowner has it>. Look: <her words>; look pictures <n> (inspiration, not her home); concept image <attached, labeled AI-generated, not exact, may not be feasible / none>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Solid oak will take paint fine.", "Those are laminate, they can't be painted.", "Spraying gives the smoothest finish.", "Cabinet painting runs about a hundred a door."]
+
+  - id: deck_stain
+    label: "Wood stain or seal: doors, beams, pergola, patio cover, deck"
+    bank_job_type: "exterior painting"
+    recurring: false
+    homeowner_phrasings: ["restain the front door", "seal the beams", "pergola stain", "patio cover is gray"]
+    must_know:
+      - fact: "What wood: door, beams, pergola, deck"
+        bank_question: null
+        follow_up: fu_wood_what
+        photo: p1
+        why_it_moves_price: "A door is a half-day; a pergola or patio cover is ladder work over days. [judgment]"
+        skip_if: "Her words or photo say which"
+      - fact: "What is on the wood now: stain, paint or bare"
+        bank_question: null
+        follow_up: fu_wood_finish_now
+        photo: p2
+        why_it_moves_price: "Going from paint back to stain means stripping; bare gray wood needs cleaning and brightening first. [judgment]"
+        skip_if: "Close-up shows it"
+      - fact: "Home built before 1978, if painted wood will be scraped"
+        bank_question: null
+        follow_up: fu_home_age
+        photo: null
+        why_it_moves_price: "Scraping painted wood on a pre-1978 home brings in RRP lead-safe work."
+        skip_if: "Wood is stained or bare, or the year is known"
+    allowed_follow_ups:
+      - id: fu_wood_what
+        ask_when: "Stain or seal request and the wood is not named"
+        text_en: "What wood needs stain or sealer?"
+        text_es: "¿Qué madera necesita tinte o sellador?"
+        options_en: ["Front door", "Beams or patio cover", "Pergola or wood fence", "Deck or dock boards", "More than one of these"]
+        options_es: ["Puerta de entrada", "Vigas o techo del patio", "Pérgola o cerca de madera", "Tablas de terraza o muelle", "Más de una de estas"]
+        card_field: true
+        why: "Each is a different size and setup. [judgment]"
+      - id: fu_wood_finish_now
+        ask_when: "Stain or seal request and no close-up of the wood"
+        text_en: "What is on the wood now?"
+        text_es: "¿Qué tiene la madera ahora?"
+        options_en: ["Stain or clear sealer", "Paint", "Nothing, bare or gray wood"]
+        options_es: ["Tinte o sellador transparente", "Pintura", "Nada, madera sin acabado o gris"]
+        card_field: true
+        why: "The current finish sets stripping and cleaning. [judgment]"
+      - fu_home_age
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All stain and seal work"
+    scope_line_en: "Restain the front door and two patio beams; the wood looks faded and gray in the photo."
+    scope_line_es: "Volver a teñir la puerta de entrada y dos vigas del patio; la madera se ve descolorida y gris en la foto."
+    quote_format: range
+    business_fills: ["price range", "what is included (cleaning, sanding or stripping, coats)", "how many days", "earliest start day"]
+    card_template: |
+      REQ-<id> | Painting | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what wood, what finish>
+      Wood: <door / beams or patio cover / pergola or fence / deck>. On it now: <stain or sealer / paint / bare>. Built: <year / before 1978 / 1978 or later / not said>.
+      Finish wanted: <her words>. Paint or stain: <business supplies / homeowner has it>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That wood is rotting.", "Use an oil stain out here.", "Sun has dried it out, it needs sealing every year.", "A door refinish is a quick cheap job."]
+
+  - id: touch_up
+    label: "Touch-ups, move-out or rental refresh"
+    bank_job_type: "interior painting"
+    recurring: false
+    homeowner_phrasings: ["touch up before move-out", "patch nail holes and paint", "airbnb refresh", "landlord says repaint"]
+    must_know:
+      - fact: "Owner, renter or manager, and who approves access"
+        bank_question: null
+        follow_up: fu_who_approves
+        photo: null
+        why_it_moves_price: "A renter may need the owner's yes before a painter can work or be paid by whom. [judgment]"
+        skip_if: "She said she owns it"
+      - fact: "Whether matching paint or the color name is on hand"
+        bank_question: paint
+        follow_up: fu_paint_on_hand
+        photo: null
+        why_it_moves_price: "Without the exact paint, touch-ups show and turn into full walls. [judgment]"
+        skip_if: "She said she has the paint"
+      - fact: "Mostly patching, or mostly painting, and any dark wall to cover"
+        bank_question: repairs
+        follow_up: fu_patch_or_paint
+        photo: p1
+        why_it_moves_price: "A dark accent wall back to white is two or three coats; a patch-only list may be handyman work. [judgment]"
+        skip_if: "Her words and photos make it clear"
+    allowed_follow_ups:
+      - id: fu_who_approves
+        ask_when: "She mentions a landlord, a lease, a move-out or a property manager"
+        text_en: "Do you own the home, rent it, or manage it for the owner?"
+        text_es: "¿Usted es dueño de la casa, la renta, o la administra para el dueño?"
+        options_en: ["I own it", "I rent it", "I manage it for the owner"]
+        options_es: ["Soy dueño", "La rento", "La administro para el dueño"]
+        card_field: true
+        why: "The business needs to know who allows access and who pays. [judgment]"
+      - id: fu_paint_on_hand
+        ask_when: "Touch-up job and she has not said whether the wall paint is on hand"
+        text_en: "Is there leftover wall paint on site, or do you know the color name?"
+        text_es: "¿Hay pintura de las paredes que sobró, o sabe el nombre del color?"
+        options_en: ["Leftover paint is here", "I know the color name", "Neither"]
+        options_es: ["Hay pintura que sobró", "Sé el nombre del color", "Ninguno"]
+        card_field: true
+        why: "Exact paint decides whether spots can be touched up or whole walls are painted. [judgment]"
+      - id: fu_patch_or_paint
+        ask_when: "She lists holes, dents and marks and it is unclear how much painting there is"
+        text_en: "Is the job mostly patching holes, or mostly painting walls?"
+        text_es: "¿El trabajo es más que nada tapar hoyos, o más que nada pintar paredes?"
+        options_en: ["Mostly patching holes or dents", "Mostly painting", "About the same"]
+        options_es: ["Más que nada tapar hoyos o golpes", "Más que nada pintar", "Más o menos igual"]
+        card_field: true
+        why: "A small patch-only list can be handyman work under the A.R.S. 32-1121 limit; painting walls stays here."
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All touch-ups, including a fixed move-out or guest date"
+    scope_line_en: "Touch up a 2-bedroom condo before move-out, about 15 nail holes and scuffs, and repaint one purple accent wall white."
+    scope_line_es: "Retocar un condominio de 2 recámaras antes de la mudanza, unos 15 hoyos de clavos y raspones, y pintar de blanco una pared morada."
+    quote_format: range
+    business_fills: ["price range", "what is included (patching, spot priming, full walls if needed)", "how many hours or days", "earliest start day"]
+    card_template: |
+      REQ-<id> | Painting | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: rooms, holes and marks, any wall to repaint>
+      Requester: <owner / renter / manager>; access approved by: <her words or not said>. Mostly: <patching / painting / both>.
+      Paint on site: <leftover paint / color name known / neither>. Repairs first: <yes / no>. Dark or bright walls to cover: <from photo or her words>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer, with the move-out or guest date>.
+    never_say: ["That will get your deposit back.", "Your landlord can't charge you for that.", "Touch-ups are a quick cheap job.", "Any handyman can do this."]
+
+  - id: wallpaper
+    label: "Wallpaper install or removal"
+    bank_job_type: "interior painting"
+    recurring: false
+    homeowner_phrasings: ["take down the wallpaper", "hang wallpaper", "peel and stick accent wall", "old wallpaper border"]
+    must_know:
+      - fact: "Install, removal, or removal then paint or new paper"
+        bank_question: null
+        follow_up: fu_paper_job
+        photo: p1
+        why_it_moves_price: "Removal and wall repair is a different job from hanging new paper; both together is the largest. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "How many walls or rooms"
+        bank_question: size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Area sets rolls and hours. [judgment]"
+        skip_if: "Answered"
+      - fact: "Layers or paint over the old paper"
+        bank_question: null
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Painted-over or layered paper slows removal and leaves more wall repair. [judgment]"
+        skip_if: "Install only"
+      - fact: "Whether she has the new paper"
+        bank_question: null
+        follow_up: fu_have_paper
+        photo: null
+        why_it_moves_price: "Pattern match and roll count depend on the paper; labor-only is a tighter range. [judgment]"
+        skip_if: "Removal only"
+    allowed_follow_ups:
+      - id: fu_paper_job
+        ask_when: "Wallpaper is mentioned and the job is not clear"
+        text_en: "What is the wallpaper job?"
+        text_es: "¿Qué trabajo de papel tapiz es?"
+        options_en: ["Put up new paper", "Take old paper off", "Take old paper off and paint", "Take old paper off and put up new"]
+        options_es: ["Poner papel nuevo", "Quitar el papel viejo", "Quitar el papel viejo y pintar", "Quitar el papel viejo y poner nuevo"]
+        card_field: true
+        why: "Each is a different job and price. [judgment]"
+      - id: fu_have_paper
+        ask_when: "New paper goes up and she has not said whether she has it"
+        text_en: "Do you already have the new wallpaper?"
+        text_es: "¿Ya tiene el papel tapiz nuevo?"
+        options_en: ["Yes, I have it", "Not yet, I'm choosing", "The business can supply it"]
+        options_es: ["Sí, ya lo tengo", "Todavía no, lo estoy escogiendo", "El negocio lo puede conseguir"]
+        card_field: true
+        why: "Labor-only with the paper on site narrows the range. [judgment]"
+      - fu_furniture
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All wallpaper work"
+    scope_line_en: "Take old wallpaper off in the hall bathroom and paint the walls; one pattern seen in the photo."
+    scope_line_es: "Quitar el papel tapiz viejo del baño del pasillo y pintar las paredes; se ve un solo diseño en la foto."
+    quote_format: range
+    business_fills: ["price range", "what is included (removal, wall repair, primer, hanging, paint)", "how many days", "earliest start day"]
+    card_template: |
+      REQ-<id> | Painting | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: install or removal, which room>
+      Job: <put up / take off / take off and paint / take off and put up new>. Size: <walls or rooms>. Old paper: <from photo, neutral>.
+      New paper: <on site / choosing / business supplies / n/a>. Furniture: <empty / homeowner moves / painter moves / not said>. Look: <her words>; look pictures <n> (inspiration, not her home).
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That paper will come right off.", "Just steam it and scrape.", "The wall behind will need skim coating.", "Peel and stick is easy to do yourself."]
+
+  - id: popcorn_ceiling
+    label: "Popcorn or textured ceiling: paint over, or remove and refinish"
+    bank_job_type: "interior painting"
+    recurring: false
+    homeowner_phrasings: ["scrape the popcorn ceilings", "cottage cheese ceiling", "acoustic ceiling removal", "techo de palomitas"]
+    must_know:
+      - fact: "Paint over the texture, or take it off"
+        bank_question: null
+        follow_up: fu_popcorn_plan
+        photo: p3
+        why_it_moves_price: "Painting over is a ceiling repaint; removal is wetting, scraping, skim coat or new texture, then paint, and it may need testing first. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Whether the texture was tested by a lab"
+        bank_question: null
+        follow_up: fu_texture_tested
+        photo: null
+        why_it_moves_price: "Businesses that remove texture ask for test results first; the answer sets whether testing or abatement comes before the quote."
+        skip_if: "She wants it painted over, or gave the test result"
+      - fact: "Home age"
+        bank_question: null
+        follow_up: fu_home_age
+        photo: null
+        why_it_moves_price: "Textured paint and patching compounds were banned in 1977; older ceilings get more care in the quote."
+        skip_if: "She gave the year"
+      - fact: "Which rooms and any stains or damage in the texture"
+        bank_question: size
+        follow_up: fu_stain_wet
+        photo: p3
+        why_it_moves_price: "Room count sets the area; a stain or loose patch adds repair and may point at a leak first. [judgment]"
+        skip_if: "No stain mentioned or seen"
+    allowed_follow_ups:
+      - id: fu_popcorn_plan
+        ask_when: "Popcorn or textured ceiling mentioned and the plan is not clear"
+        text_en: "Do you want the ceiling texture painted over, or taken off?"
+        text_es: "¿Quiere pintar encima de la textura del techo, o quitarla?"
+        options_en: ["Paint over it", "Take it off, smooth finish", "Take it off, new light texture"]
+        options_es: ["Pintar encima", "Quitarla, acabado liso", "Quitarla, textura ligera nueva"]
+        card_field: true
+        why: "Paint-over and removal are different jobs and may go to different businesses. [judgment]"
+      - id: fu_texture_tested
+        ask_when: "She wants texture taken off and has not said whether it was tested"
+        text_en: "Has the ceiling texture been tested by a lab?"
+        text_es: "¿Un laboratorio ya analizó la textura del techo?"
+        options_en: ["Yes, I have results", "No"]
+        options_es: ["Sí, tengo los resultados", "No"]
+        card_field: true
+        why: "EPA says you can't tell by looking and a trained, accredited professional should sample before remodeling; the question records a fact and names no hazard."
+      - fu_home_age
+      - fu_stain_wet
+    photos_priority: [p3, p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All ceiling texture work"
+    scope_line_en: "Take popcorn texture off the ceilings in every room but the baths and garage, then paint; home built 1972; texture not tested."
+    scope_line_es: "Quitar la textura tipo popcorn de los techos de todos los cuartos menos los baños y la cochera, y luego pintar; casa de 1972; la textura no se ha analizado."
+    quote_format: range
+    business_fills: ["price range", "whether testing comes first and who arranges it", "finish after removal (smooth or light texture) and paint", "how many days", "earliest start day"]
+    card_template: |
+      REQ-<id> | Painting | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: paint over or remove, which rooms, home age>
+      Plan: <paint over / remove, smooth / remove, new texture>. Lab test: <results on hand / not tested / not said>. Built: <year / before 1978 / 1978 or later / not said>.
+      Rooms: <her list or size answer>. Stains or loose spots: <her words or from photo / none>. Furniture: <empty / homeowner empties / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Popcorn ceilings from that era have asbestos.", "Don't scrape it yourself.", "Just paint over it to be safe.", "A handyman can scrape that for cash.", "Removal runs two dollars a foot."]
+
+business_side:
+  how_they_get_customers: ["Repeat customers and word of mouth", "Google Maps listing and reviews", "Realtors, property managers and vacation-rental hosts", "Builders and HOA boards for exterior repaints [judgment]", "Local Facebook groups, Nextdoor and yard signs [judgment]", "Google Local Services Ads and search ads", "Home-service lead marketplaces"]
+  customer_acquisition_benchmarks:
+    - channel: "Google search ads (painting contractors, 2026)"
+      figure: "Median about $174 per lead, top advertisers $67 to $128 (marketing-vendor figures)"
+      source: webtonic_painting
+      unverified: false
+    - channel: "Google Local Services Ads (painting)"
+      figure: "Median about $48 per lead nationally; about $15 to $30 per lead in markets under 500,000 people (marketing-vendor figures)"
+      source: webtonic_painting
+      unverified: false
+    - channel: "Angi and HomeAdvisor shared leads (painting)"
+      figure: "About $30 to $80 per lead with a 5 to 10% close rate, so $400 to $2,000 per booked job (software-vendor figures)"
+      source: facade_painting
+      unverified: false
+    - channel: "Lake Havasu City painters specifically"
+      figure: "No local figures found; a small market with fewer bidders may run below national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead four other painters also bought", "Homeowners who want a price for a whole house over the phone", "Driving out for a walk-through to someone only collecting bids", "Fake numbers and people outside their area", "Monthly fees whether or not jobs come", "Being ranked by the site"]
+  what_makes_a_lead_worth_paying_for: ["Rooms or wall length, ceilings and stories stated up front", "Wide photos plus a close-up of the worst spot", "Home age stated, so they know whether lead-safe work applies", "Who supplies paint and whether colors are picked", "HOA approval status on exteriors", "Pay only when picked, nothing monthly"]
+  their_words: ["cut in", "back-roll", "spray and back-roll", "two coats", "primer", "stain blocker", "elastomeric", "chalking", "efflorescence", "caulk", "fascia", "eaves", "masking", "sheen", "orange peel", "knockdown", "walk-through", "color consult", "lead-safe", "RRP", "per door"]
+  signup_objections:
+    - objection: "I can't price a paint job from a text. I need a walk-through."
+      answer: "Quote a range and say what would move it. Cards carry the rooms or wall length, ceilings, stories, surface condition and photos. If she picks you, a walk-through can firm up the number."
+    - objection: "Why pay $199 on an exterior I haven't even seen?"
+      answer: "You pay only when the homeowner picks your quote and you confirm. The fee is set by job size: $25, $75 or $199. Nothing to join and nothing per month."
+    - objection: "Homeowners just pick the cheapest painter."
+      answer: "She sees every quote in the order it came in, with each business's name, license numbers and review links, and your own words on what is included. Ask Hava never sorts, rates or scores a business."
+    - objection: "I'm not RRP certified and don't take pre-1978 jobs that disturb paint."
+      answer: "Cards state the home's age when the homeowner gives it, so you can pass on a job you don't take. You only pay if you quote and get picked."
+    - objection: "I only do cabinets, or only interiors."
+      answer: "You pick the job types you want at sign-up and change them any time. You get cards only for those."
+    - objection: "Do I need a license to get these?"
+      answer: "Cards go only to businesses whose Arizona ROC license covers the job. For painting that is a painting and wall covering license or a general license that includes it."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town, photos and answers to a painter's questions. Names and addresses go only to the business she picks."
+    - objection: "What if she cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+  quote_tips_for_card: ["Say what the range includes: prep, primer, coats, ceilings, trim and the paint line", "Say what would move the price to the top of your range", "Give your earliest start day and how many days the job takes", "If you need another photo, say which wall or close-up"]

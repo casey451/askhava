@@ -1,0 +1,447 @@
+# Written by Claude (expert layer, Oct 29 2026), not part of the Grok delivery (D-431). AI research, not legal advice.
+# Ask Hava trade knowledge file: holiday_lights. Schema: foundation/schema.yaml (v2). Items marked [judgment] are not
+# from a cited source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: holiday_lights
+display_name: "Holiday lights (plug-in)"
+summary: >
+  Hanging plug-in holiday lights on rooflines, gutters, trees, bushes, palms, windows and doors, and taking them down
+  after the season. Some businesses sell a full package: install, a service call if a strand goes out, take-down and
+  storage until next year. Plug-in work only: a new outdoor outlet, a new circuit or any hardwired or permanent wired
+  lighting is electrical work and routes to electrical (R-11). Businesses quote in tiers in their own words. Ask Hava
+  collects the service, the areas to light, stories, roof type, who supplies the lights and outlet spots, then sends
+  an anonymous job card.
+job_types:
+  - id: roofline_gutters
+    label: "Roofline, eaves and gutter lights (plug-in)"
+    site_visit_usually_needed: "sometimes"
+    handyman_ok: "no"
+  - id: trees_bushes
+    label: "Trees, palms, bushes and yard lights (plug-in)"
+    site_visit_usually_needed: "no"
+    handyman_ok: "no"
+  - id: windows_doors
+    label: "Window, door, porch and pillar lights (plug-in)"
+    site_visit_usually_needed: "no"
+    handyman_ok: "no"
+  - id: full_package
+    label: "Full package: install, service calls, take-down and storage"
+    site_visit_usually_needed: "sometimes"
+    handyman_ok: "no"
+  - id: takedown_only
+    label: "Take-down only (lights already up)"
+    site_visit_usually_needed: "no"
+    handyman_ok: "no"
+  - id: hardwired_route
+    label: "New outlet, circuit, hardwired or permanent wired lights (refused; route to electrical)"
+    site_visit_usually_needed: "yes"
+    handyman_ok: "no"
+triggers_en:
+  - phrase: "christmas lights"
+    job_type: null
+  - phrase: "xmas lights"
+    job_type: null
+  - phrase: "holiday lights"
+    job_type: null
+  - phrase: "hang lights"
+    job_type: null
+  - phrase: "light hanging"
+    job_type: null
+  - phrase: "christmas light install"
+    job_type: null
+  - phrase: "christmas lites"
+    job_type: null
+  - phrase: "chrismas lights"
+    job_type: null
+  - phrase: "decorate my house for christmas"
+    job_type: null
+  - phrase: "lights on the roofline"
+    job_type: roofline_gutters
+  - phrase: "lights on the gutters"
+    job_type: roofline_gutters
+  - phrase: "c9 lights on the eaves"
+    job_type: roofline_gutters
+  - phrase: "icicle lights"
+    job_type: roofline_gutters
+  - phrase: "lights on tile roof"
+    job_type: roofline_gutters
+  - phrase: "wrap the palm trees"
+    job_type: trees_bushes
+  - phrase: "lights on my palms"
+    job_type: trees_bushes
+  - phrase: "wrap trees in lights"
+    job_type: trees_bushes
+  - phrase: "net lights on bushes"
+    job_type: trees_bushes
+  - phrase: "yard lights for christmas"
+    job_type: trees_bushes
+  - phrase: "lights around the windows"
+    job_type: windows_doors
+  - phrase: "outline the front door"
+    job_type: windows_doors
+  - phrase: "garland and lights on the porch"
+    job_type: windows_doors
+  - phrase: "install and take down"
+    job_type: full_package
+  - phrase: "put up and take down"
+    job_type: full_package
+  - phrase: "lights with storage"
+    job_type: full_package
+  - phrase: "full christmas light service"
+    job_type: full_package
+  - phrase: "rent christmas lights"
+    job_type: full_package
+  - phrase: "take down christmas lights"
+    job_type: takedown_only
+  - phrase: "take my lights down"
+    job_type: takedown_only
+  - phrase: "remove xmas lights"
+    job_type: takedown_only
+  - phrase: "lights still up from last year"
+    job_type: takedown_only
+  - phrase: "need an outdoor outlet for lights"
+    job_type: hardwired_route
+  - phrase: "add outlet on the eave"
+    job_type: hardwired_route
+  - phrase: "permanent roofline lights"
+    job_type: hardwired_route
+  - phrase: "hardwire my lights"
+    job_type: hardwired_route
+  - phrase: "lights on a switch"
+    job_type: hardwired_route
+triggers_es:
+  - phrase: "luces de navidad"
+    job_type: null
+  - phrase: "poner luces navideñas"
+    job_type: null
+  - phrase: "colgar luces"
+    job_type: null
+  - phrase: "decorar la casa para navidad"
+    job_type: null
+  - phrase: "luces en el techo"
+    job_type: roofline_gutters
+  - phrase: "luces en la orilla del techo"
+    job_type: roofline_gutters
+  - phrase: "luces en las palmas"
+    job_type: trees_bushes
+  - phrase: "luces en los arboles"
+    job_type: trees_bushes
+  - phrase: "luces en las ventanas"
+    job_type: windows_doors
+  - phrase: "poner y quitar las luces"
+    job_type: full_package
+  - phrase: "quitar las luces de navidad"
+    job_type: takedown_only
+  - phrase: "bajar las luces"
+    job_type: takedown_only
+  - phrase: "poner un enchufe afuera para las luces"
+    job_type: hardwired_route
+questions:
+  - id: q1_service
+    text: "What do you need?"
+    options:
+      - "Hang lights only"
+      - "Hang now, take down later"
+      - "Full package with storage"
+      - "Take down only"
+      - "Not sure"
+    ask_if: "always"
+    changes_price: "yes"
+    why: "Hanging, take-down and storage are often priced as separate tiers or one bundle. [judgment]"
+  - id: q2_areas
+    text: "Where do you want lights?"
+    options:
+      - "Roofline only"
+      - "Roofline and trees or bushes"
+      - "Trees, palms or bushes only"
+      - "Windows and doors only"
+      - "Roofline, trees and windows"
+      - "Not sure"
+    ask_if: "job_type != hardwired_route"
+    changes_price: "yes"
+    why: "Each area adds feet of lights, clips and time, and tiers are often built around these areas. [judgment]"
+  - id: q3_stories
+    text: "How many stories?"
+    options:
+      - "1 story"
+      - "2 stories"
+      - "Higher or steep roof"
+      - "Not sure"
+    ask_if: "job_type != hardwired_route"
+    changes_price: "yes"
+    why: "Taller rooflines need longer ladders and more time on each run. [judgment]"
+  - id: q4_lights_supplied
+    text: "Who supplies the lights?"
+    options:
+      - "I have my own lights"
+      - "The business (to keep)"
+      - "The business (rent each year)"
+      - "Not sure"
+    ask_if: "job_type in [roofline_gutters, trees_bushes, windows_doors, full_package]"
+    changes_price: "yes"
+    why: "Lights the business buys or rents out are part of the quote; homeowner lights may need testing first. [judgment]"
+  - id: q5_roof_type
+    text: "What kind of roof?"
+    options:
+      - "Tile"
+      - "Shingle"
+      - "Flat or foam"
+      - "Metal (manufactured home or other)"
+      - "Not sure"
+    ask_if: "job_type in [roofline_gutters, full_package, takedown_only] or q2_areas contains Roofline"
+    changes_price: "yes"
+    why: "Roof type sets the clips used and how the lights attach without fasteners into the roof. [judgment]"
+  - id: q6_outlets
+    text: "Are there outdoor outlets near where the lights will go?"
+    options:
+      - "Yes, close by"
+      - "Yes, but far away"
+      - "No outdoor outlets"
+      - "Not sure"
+    ask_if: "job_type != takedown_only"
+    changes_price: "yes"
+    why: "Outlet spots set how many cords and timers are needed. A new outlet is electrical work and goes on a separate electrical card. [judgment]"
+  - id: q7_timing
+    text: "When do you want the lights up?"
+    options:
+      - "Before Thanksgiving"
+      - "Early December"
+      - "Before the boat parade"
+      - "After the holidays (take-down)"
+      - "Not sure"
+    ask_if: "always"
+    changes_price: "no"
+    why: "Install slots fill up in late November and early December, so timing helps a business say if it can fit the job. [judgment]"
+quote_without_visit_needs:
+  - "Service: hang, take down, or full package with storage [judgment]"
+  - "Areas to light (roofline, trees, bushes, windows, doors) [judgment]"
+  - "Stories and roof type [judgment]"
+  - "Who supplies the lights (homeowner, business to keep, business rental) [judgment]"
+  - "Outdoor outlet spots and whether a timer is wanted [judgment]"
+  - "Front-of-house photo showing the roofline and trees [judgment]"
+site_visit_usually_needed:
+  - "Large or two-story homes with long rooflines, or a custom design [judgment]"
+  - "Full packages where the business measures runs and makes custom-length strands [judgment]"
+  - "hardwired_route: any new outlet or wiring is quoted by an electrician, usually after a visit [judgment]"
+photos_to_request:
+  - id: p1_front_house
+    ask: "A photo of the front of the house from the street, showing the whole roofline."
+    for_job_types: [roofline_gutters, trees_bushes, windows_doors, full_package, takedown_only]
+  - id: p2_roofline_closeup
+    ask: "A closer photo of the roof edge or gutter where lights would hang."
+    for_job_types: [roofline_gutters, full_package]
+  - id: p3_trees_yard
+    ask: "A photo of the trees, palms or bushes you want lit."
+    for_job_types: [trees_bushes, full_package]
+  - id: p4_outlets
+    ask: "A photo of the outdoor outlet nearest to where the lights will go."
+    for_job_types: [roofline_gutters, trees_bushes, windows_doors, full_package, hardwired_route]
+  - id: p5_lights_up_now
+    ask: "A photo of the lights that are up now."
+    for_job_types: [takedown_only]
+photo_cues:
+  - photo_id: p1_front_house
+    look_for:
+      - "Number of stories and roof pitch"
+      - "Roof type (tile, shingle, flat, metal)"
+      - "Gutters or no gutters"
+      - "Overhead power lines near the roof edge"
+    neutral_wording_example: "Photo shows a 1-story home with a tile roof, no gutters, and about 3 peaks on the front."
+  - photo_id: p2_roofline_closeup
+    look_for:
+      - "Tile shape at the edge (flat or curved)"
+      - "Fascia or stucco edge"
+      - "Gutter lip for clips"
+      - "Visible cracked or slipped tiles"
+    neutral_wording_example: "Photo shows curved clay-style tiles along a stucco fascia; one edge tile looks out of line."
+  - photo_id: p3_trees_yard
+    look_for:
+      - "Count and height of palms or trees"
+      - "Bush count and size"
+      - "Distance from the nearest outlet"
+    neutral_wording_example: "Photo shows 2 tall palms and 4 low bushes in a rock yard."
+  - photo_id: p4_outlets
+    look_for:
+      - "Outlet location and height"
+      - "Weather cover on the outlet"
+      - "Scorch marks or a cracked cover"
+    neutral_wording_example: "Photo shows one outdoor outlet by the garage with a flip cover."
+  - photo_id: p5_lights_up_now
+    look_for:
+      - "How much is up (roofline, trees, windows)"
+      - "Clips or ties used"
+      - "Height of the highest run"
+    neutral_wording_example: "Photo shows white lights on the front roofline and wrapped around one palm."
+photo_red_flags:
+  - flag: "Scorch marks, melting or a burnt look at an outlet, cord or plug"
+    safety_step_ref: es_holiday_lights_1
+  - flag: "Power line down on the ground or across the yard"
+    safety_step_ref: es_holiday_lights_2
+  - flag: "Overhead power line close to the roof edge where lights would hang"
+    safety_step_ref: null
+  - flag: "Cracked, broken or slipped roof tiles (roofing is a separate card)"
+    safety_step_ref: null
+  - flag: "Cords run through a closed window or door, or taped cord joins"
+    safety_step_ref: null
+emergency_signals:
+  - id: es_holiday_lights_1
+    signal: "Sparks, smoke, burning smell or fire from an outlet, cord, plug or lights"
+    emergency: "yes"
+    safety_step: "Not used by the app. Ask Hava sends only the fixed INT-004 911 text for a sparking outlet, smoke or fire. [judgment]"
+    source: "INT-004 (D-436)"
+    then_route_to: electrical
+    note: "Routing: 911 text first; electrical card only after the homeowner says everyone is safe."
+  - id: es_holiday_lights_2
+    signal: "Downed power line, for example after wind"
+    emergency: "yes"
+    safety_step: "Not used by the app. Ask Hava sends only the fixed INT-004 911 text for a downed power line. [judgment]"
+    source: "INT-004 (D-436)"
+    then_route_to: none
+    note: "Routing: none until the 911 text is sent."
+  - id: es_holiday_lights_3
+    signal: "Lights blown down or hanging loose after wind, strand out, or lights still up after the season"
+    emergency: "no"
+    safety_step: "No safety step. Not an emergency. [judgment]"
+    source: "[judgment]"
+    then_route_to: holiday_lights
+safety_step:
+  - when: "Sparking outlet, smoke, fire or downed power line"
+    step: "Ask Hava sends only the fixed INT-004 911 text. No other safety wording is used. [judgment]"
+    source: "INT-004 (D-436)"
+license_classes:
+  - job_type: [roofline_gutters, trees_bushes, windows_doors, full_package, takedown_only]
+    work: "Hanging and removing plug-in holiday lights"
+    classes: ["none"]
+    citation: "No matching ROC class; plug-in seasonal decor is not treated as construction [judgment]. Category license kind none (categories.yaml)."
+    other_agency: "City business and transaction privilege tax licensing may apply [judgment; not verified on lhcaz.gov]."
+    notes: "Plug-in only: lights plug into existing outlets with outdoor-rated cords and timers. Any new outlet, circuit, hardwired fixture or permanent wired roofline system is electrical work [judgment]."
+  - job_type: [hardwired_route]
+    work: "New outdoor outlet, new circuit, hardwired or permanent wired lighting"
+    classes: ["R-11 Electrical", "CR-11 (dual)"]
+    citation: "A.A.C. R4-9-103 R-11 'install and repair residential electrical systems' [S2]; R4-9-104 CR-11 [S3]. Refused here per categories.yaml (LIC-029)."
+    other_agency: "Lake Havasu City building permit may be needed for electrical updates [S17]."
+    notes: "Ask Hava does not send this to holiday-light businesses; it builds an electrical card instead (electrical job new_circuit or outdoor_lighting) [judgment]."
+handyman_ok:
+  allowed_examples:
+    - "Plug-in light hanging is not construction, so the handyman rule does not come into play [judgment]"
+  not_allowed_examples:
+    - "Adding an outdoor outlet or circuit (electrical work, needs R-11 and may need a permit) [S2][S17][judgment]"
+    - "Hardwiring permanent roofline lights [judgment]"
+  rule_reminder: 'Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting
+    labor, materials and everything else, is under $1,000; the work is casual or minor; no local building permit is
+    needed; it is not part of a larger job and not split into small contracts to dodge the limit; and any ad says
+    ''not a licensed contractor''. Never covers work connected to natural gas, propane or other fuel gas, or
+    hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]'
+  note: "The catalog does not send these cards to handyman businesses (categories.yaml handyman_allowed false)."
+local_notes:
+  - "Many Havasu homes have concrete or clay-style tile roofs. Light businesses often use tile or ridge clips and gutter clips instead of nails or screws into the roof, so roof type goes on the card [judgment]."
+  - "Cracked or slipped tiles seen during a light job are roofing work and go on a separate roofing card [judgment]."
+  - "Many homes have stucco walls and fascia, often with no gutters. Clip and attachment choices differ from homes with wood fascia and gutters [judgment]."
+  - "Manufactured homes may have metal roofs and short eaves, which change how lights attach [judgment]."
+  - "Some HOAs have rules on holiday decor, such as colors, when lights may go up and when they must come down. The homeowner checks with their HOA [judgment]."
+  - "The Boat Parade of Lights runs on the Bridgewater Channel in mid-December and is in its fourth decade (the 43rd parade was in 2024). Some homeowners want lights up before it. Source: [T-blm_parade][T-golakehavasu_parade]; demand note [judgment]."
+  - "Decorating a boat for the parade is boat work (boat_dock), not this category [judgment]."
+  - "Wind is common on the lake. CPSC tells consumers to fasten outdoor lights firmly to solid supports so wind does not damage them. Tie-downs and clip count can change a quote. Source: [T-cpsc_holiday]; quote note [judgment]."
+  - "CPSC also says outdoor lights should be labeled for outdoor use and be on GFCI-protected circuits. A missing GFCI outlet is electrical work. Source: [T-cpsc_holiday]; routing note [judgment]."
+  - "Install season runs from early November to mid-December; take-down runs early to mid-January. Slots fill fast [judgment]."
+  - "Seasonal residents and vacant second homes may want lights put up, run on timers, and taken down while they are away, so a full package with storage and timers is common [judgment]."
+  - "Sprinklers aimed at bushes and walls can spray lights and cord joins; city water is hard (about 19 grains per gallon, range 18 to 20) and can leave white spots. Hardness: [LHC-CCR]; spray note [judgment]."
+  - "Summer heat (June to September) and monsoon wind (June 15 to September 30) wear on lights and clips left up all year. Season dates: [T-nws_monsoon]; wear note [judgment]."
+  - "Overhead service drops near the roof edge can limit where lights go; UES asks people to keep ladders and poles at least 15 feet from overhead lines. Source: [S24]."
+sample_card: |
+  REQ-0142 | Holiday lights (plug-in) | Lake Havasu City, north side
+  Full package with storage: front roofline and 2 palms. 1 story, tile roof, no gutters.
+  Business supplies lights (rent each year). One outdoor outlet by the garage. Wants lights up before the boat parade. 3 photos.
+test_messages:
+  - id: holiday_lights_t01
+    message: "xmas"
+    trade: holiday_lights
+    job_type: unknown
+    emergency: "no"
+    first_question_id: q1_service
+    ideal_first_question: "Do you want lights hung, taken down, or a full package with storage?"
+    note: "One-word message; the service question picks the job type."
+  - id: holiday_lights_t02
+    message: "need someone to hang christmas lights on my roofline, tile roof, single story"
+    trade: holiday_lights
+    job_type: roofline_gutters
+    emergency: "no"
+    first_question_id: q1_service
+    ideal_first_question: "Just hanging, or should they take them down after the season too?"
+    note: "Roof type and stories already given; skip q3 and q5."
+  - id: holiday_lights_t03
+    message: "can u wrap my 3 palm trees in lights for the holidays"
+    trade: holiday_lights
+    job_type: trees_bushes
+    emergency: "no"
+    first_question_id: q1_service
+    ideal_first_question: "Just hanging, or take-down later too?"
+    note: ""
+  - id: holiday_lights_t04
+    message: "quiero que pongan luces de navidad en la casa y las quiten en enero"
+    trade: holiday_lights
+    job_type: full_package
+    emergency: "no"
+    first_question_id: q2_areas
+    ideal_first_question: "¿Dónde quiere las luces?"
+    note: "Spanish."
+  - id: holiday_lights_t05
+    message: "lights still up on the roof and im back in oregon, need them taken down"
+    trade: holiday_lights
+    job_type: takedown_only
+    emergency: "no"
+    first_question_id: q3_stories
+    ideal_first_question: "How many stories is the home?"
+    note: "Seasonal resident; owner away, photo may come from a neighbor or not at all."
+  - id: holiday_lights_t06
+    message: "no outlet out front, need one put in on the eave for my christmas lights"
+    trade: electrical
+    job_type: new_circuit
+    emergency: "no"
+    first_question_id: q1_problem
+    ideal_first_question: "What do you need done?"
+    note: "Wrong trade; a new outlet is refused here and routes to electrical (R-11)."
+  - id: holiday_lights_t07
+    message: "outlet sparked when i plugged in the lights and now it smells burnt"
+    trade: electrical
+    job_type: burning_sparks
+    emergency: "yes"
+    first_question_id: safety_step_first
+    ideal_first_question: "Send the INT-004 911 text first."
+    note: "Sparking outlet and burning smell are on the 911 list."
+  - id: holiday_lights_t08
+    message: "want lights on my boat for the boat parade"
+    trade: boat_dock
+    job_type: electrical_marine
+    emergency: "no"
+    first_question_id: boat_job
+    ideal_first_question: "What do you need done on the boat?"
+    note: "Wrong trade; boat decor goes to boat_dock [judgment]."
+  - id: holiday_lights_t09
+    message: "wind blew half my lights off the roof and a couple tiles look broken"
+    trade: holiday_lights
+    job_type: roofline_gutters
+    emergency: "no"
+    first_question_id: q1_service
+    ideal_first_question: "Do you want the lights re-hung, or taken down?"
+    note: "Mixed; broken tiles go on a separate roofing card (tile_repair)."
+  - id: holiday_lights_t10
+    message: "something festive for the front, hoa says white only, mostly windows and the door"
+    trade: holiday_lights
+    job_type: windows_doors
+    emergency: "no"
+    first_question_id: q1_service
+    ideal_first_question: "Just hanging, or a full package with take-down?"
+    note: "Vague; HOA color rule goes on the card as a fact."
+sources:
+  - "[T-cpsc_holiday] CPSC, CPSC Announces Holiday Season Decorating Safety Tips (outdoor-rated labels, GFCI circuits, fasten outdoor lights against wind, hooks or insulated staples, no nails or tacks) https://www.cpsc.gov/Newsroom/News-Releases/2005/CPSC-Announces-Holiday-Season-Decorating-Safety-Tips"
+  - "[T-blm_parade] BLM, BLM Colorado River District celebrates community spirit at the 43rd Annual Lake Havasu City Boat Parade of Lights (Bridgewater Channel, December) https://www.blm.gov/blog/2024-12-20/blm-lake-havasu-city-boat-parade"
+  - "[T-golakehavasu_parade] Go Lake Havasu, Boat Parade of Lights event page (Bridgewater Channel, December evening) https://www.golakehavasu.com/events/boat-parade-of-lights/"
+  - "[T-nws_monsoon] National Weather Service Tucson, Monsoon Safety (season June 15 to September 30) https://www.weather.gov/twc/MonsoonSafety"
+  - "[LHC-CCR] Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 gpg, range 18 to 20) https://www.lhcaz.gov/DocumentCenter/View/3233"
+  - "[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+  - "[S3] A.A.C. R4-9-104 Dual license classifications (LII mirror of AZ SOS text) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+  - "[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety/fuel gas) https://www.azleg.gov/ars/32/01121.htm"
+  - "[S17] Lake Havasu City, Building Permits (permit / no-permit lists) https://www.lhcaz.gov/229/Building-Permits"
+  - "[S24] UES Electrical Safety Tips (15 ft rule, downed lines, Arizona 811) https://www.uesaz.com/electric-safety/"
+  - "INT-004 (D-436) Ask Hava fixed 911 text"
+  - "docs/catalog/categories.yaml holiday_lights row (license none, handyman_allowed false, refused hardwiring to electrical, LIC-029, quote_format tiers)"

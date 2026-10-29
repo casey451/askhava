@@ -1,0 +1,395 @@
+category: pool_repair
+variant: playbook
+model: "Claude Haiku 5.5 (claude-haiku-5-5)"
+run: "run-2026-10-29"
+results:
+  - scenario_id: pool_repair_s01
+    transcript:
+      - {who: homeowner, text: "somethings wrong with the pool thing"}
+      - {who: intake, text: "What's going wrong with the pool? 1 Pump won't run 2 Pump is loud 3 Filter or pressure problem 4 Losing water 5 Heater not working 6 Other equipment", step: question}
+      - {who: homeowner, text: "the motor box hums when the timer kicks on but nothing turns. been off about 3 days"}
+      - {who: intake, text: "Does a breaker or GFCI trip when the equipment turns on? 1 Yes 2 No 3 Haven't checked", step: follow_up}
+      - {who: homeowner, text: "yes. tripped twice this week"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "pentair i think"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "today if you can. pad is behind the side gate and its locked, im home most days"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the equipment pad from a few feet back?", step: photo}
+      - {who: homeowner, text: "ok sending one"}
+    questions_asked: 5
+    follow_up_used: fu_breaker_trips
+    skipped_bank_questions: [pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Pool and spa repair | Lake Havasu City, central | pool
+      Pool pump hums when the timer starts but does not turn; pool off about 3 days.
+      Pump: hums, nothing turns. Breaker or GFCI trips: yes, twice this week. Wants: not said.
+      Equipment: Pentair (homeowner's words). Pool: size not said, water not said.
+      Photos: 1 (equipment pad from the side: pump, tank, small gray box). Homeowner adds: pad behind side gate, locked; home most days.
+      Needed: Today.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s02
+    transcript:
+      - {who: homeowner, text: "my pool furnace wont fire up. its the gas one on the side of the house. want it warm for thanksgiving, grandkids coming"}
+      - {who: intake, text: "What's going wrong with the pool? 1 Pump won't run 2 Pump is loud 3 Filter or pressure problem 4 Losing water 5 Heater not working 6 Other equipment", step: question}
+      - {who: homeowner, text: "heater wont light. clicks a few times when i call for heat then nothing. pump runs fine, water flows"}
+      - {who: intake, text: "Is the heater gas or electric? 1 Natural gas 2 Propane 3 Electric heat pump", step: follow_up}
+      - {who: homeowner, text: "natural gas i think. gas line comes in from the house"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "dont know the brand, its on the plate. about 14 years old i'd guess"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "by thanksgiving"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the heater cabinet and its data plate?", step: photo}
+      - {who: homeowner, text: "[photo sent]"}
+    questions_asked: 5
+    follow_up_used: fu_heater_fuel
+    skipped_bank_questions: [pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: heater, bank_job_type: "gas pool heater", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Pool and spa repair | Lake Havasu City, north side | pool
+      Gas pool heater on the side of the house clicks but nothing lights. Pump runs and water flows.
+      Fuel: natural gas. Does: clicks a few times, no light. Code: not said.
+      Heater: brand not known, about 14 years old (homeowner's guess). Wants: not said.
+      Photos: 1 (heater cabinet with data plate partly visible, rust staining along the bottom edge, gray pipe entering the side). Homeowner adds: none.
+      Needed: By Thanksgiving.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s03
+    transcript:
+      - {who: homeowner, text: "pool went totally green while we were up north. need someone to shock it and clean it asap, guessing the chlorine ran out"}
+      - {who: intake, text: "What's going wrong with the pool? 1 Pump won't run 2 Pump is loud 3 Filter or pressure problem 4 Losing water 5 Heater not working 6 Other equipment", step: question}
+      - {who: homeowner, text: "pump wont run i guess. nothing when the timer should start it, no sound at all. we've been gone about 5 weeks"}
+      - {who: intake, text: "Does a breaker or GFCI trip when the equipment turns on? 1 Yes 2 No 3 Haven't checked", step: follow_up}
+      - {who: homeowner, text: "havent looked at the breaker. the one in the garage panel is sitting in the middle"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "hayward i think, variable speed, maybe 6 years"}
+      - {who: intake, text: "About how big is the pool? 1 Small (under 10000 gallons) 2 Medium (10000 to 20000 gallons) 3 Large (over 20000 gallons)", step: question}
+      - {who: homeowner, text: "about 15000 gallons. salt system, not tablets"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "asap"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the equipment pad from about 6 feet back?", step: photo}
+      - {who: homeowner, text: "[2 photos sent]"}
+    questions_asked: 6
+    follow_up_used: fu_breaker_trips
+    skipped_bank_questions: [pool_or_spa, surface, water]
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Pool and spa repair | Lake Havasu City, central | pool
+      Pump not running: no sound when the timer should start it. Pool water green.
+      Pump: nothing, no sound. Breaker or GFCI trips: not checked; garage panel breaker sitting in the middle position. Wants: not said.
+      Equipment: Hayward, variable speed, about 6 years old (homeowner's words). Pool: medium (about 15000 gallons), salt system, water green.
+      Photos: 2 (green pool with leaves on the surface; equipment pad with a dry, dusty pump lid). Homeowner adds: away about 5 weeks; wants it cleaned as soon as possible.
+      Needed: Today.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s04
+    transcript:
+      - {who: homeowner, text: "my pool keeps dropping. its july in havasu so im 99% sure its just evaporation but my husband wants it checked. can someone look"}
+      - {who: intake, text: "About how fast is the water going down? 1 About 1/4 inch a day or less 2 About 1/2 inch a day 3 1 inch a day or more 4 Only when the pump runs", step: follow_up}
+      - {who: homeowner, text: "about an inch a day, even on cooler nights"}
+      - {who: intake, text: "What's the pool surface? 1 Plaster 2 Pebble 3 Tile 4 Vinyl or fiberglass", step: question}
+      - {who: homeowner, text: "plaster"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green", step: question}
+      - {who: homeowner, text: "clear"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "flexible"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of any wet spot or puddle?", step: photo}
+      - {who: homeowner, text: "nothing wet that i can see. no photo"}
+    questions_asked: 5
+    follow_up_used: fu_water_loss
+    skipped_bank_questions: [pool_or_spa, size_band, equipment_brand, symptom]
+    routing: {category: pool_repair, job_type: leak, bank_job_type: "pool leak", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Pool and spa repair | Lake Havasu City, north side | pool
+      Pool level drops about 1 inch a day, even on cooler nights.
+      Loss: about 1 inch a day. Pump on versus off: not compared. Water seen: none reported.
+      Autofill: not said. Pool: surface plaster, water clear.
+      Photos: 0 (homeowner says no wet spot she can see). Homeowner adds: none.
+      Needed: Flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s05
+    transcript:
+      - {who: homeowner, text: "pump is leaking all over the pad, pic attached. i think i need a whole new pump"}
+      - {who: intake, text: "What is the pump doing when it runs? 1 Hums but won't spin 2 Nothing at all 3 Runs but loud 4 Runs but no water moving 5 Runs fine 6 Leaks water", step: question}
+      - {who: homeowner, text: "its loud, a grinding noise, getting louder over about 2 weeks. the pad gets wet too"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "jandy, single speed, about 10 years old"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "flexible. i want quotes for both fixing it and a new pump"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the pump motor label?", step: photo}
+      - {who: homeowner, text: "[label photo sent]"}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: [pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Pool and spa repair | Lake Havasu City, central | pool
+      Pump makes a loud grinding noise, getting louder over about 2 weeks.
+      Pump: loud grinding noise. Breaker or GFCI trips: not checked. Wants: quotes for both fix and replace.
+      Equipment: Jandy, single speed, about 10 years old (homeowner's words; label photo sent). Pool: size and water not said.
+      Photos: 2 (wide view: ground and pump base wet on the pad, sprinkler riser and drip line behind the pump; motor label). Homeowner adds: pad looks wet to him.
+      Needed: Flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s06
+    transcript:
+      - {who: homeowner, text: "salt system on my pool says check cell, cant send pics my phone is old. also lots of white crusty stuff on the tile"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "hayward"}
+      - {who: intake, text: "About how old is the salt cell? 1 Under 3 years 2 3 to 5 years 3 Over 5 years", step: follow_up}
+      - {who: homeowner, text: "about 4 years"}
+      - {who: intake, text: "About how big is the pool? 1 Small (under 10000 gallons) 2 Medium (10000 to 20000 gallons) 3 Large (over 20000 gallons)", step: question}
+      - {who: homeowner, text: "about 12000 gallons"}
+      - {who: intake, text: "How is the water right now, and what do the test strips read? 1 Clear 2 Cloudy 3 Green", step: question}
+      - {who: homeowner, text: "still clear. strips read almost zero"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "no rush"}
+    questions_asked: 5
+    follow_up_used: fu_cell_age
+    skipped_bank_questions: [pool_or_spa, symptom, surface]
+    routing: {category: pool_repair, job_type: salt_system, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Pool and spa repair | Lake Havasu City, central | pool
+      Salt system display says check cell; white crust on the tile line and waterfall edge.
+      Display: check cell (homeowner's words). Cell age: 3 to 5 years. Brand: Hayward. Wants: not said.
+      Pool: medium (about 12000 gallons), water clear, test strips read almost zero.
+      Photos: 0 (homeowner cannot send photos). Homeowner adds: white crust on the tile line and the waterfall edge.
+      Needed: Flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s07
+    transcript:
+      - {who: homeowner, text: "Hello. The light in my pool does not come on anymore and the little switch by the back door keeps clicking off. My late husband took care of all this"}
+      - {who: intake, text: "What's going wrong with the pool? 1 Pump won't run 2 Pump is loud 3 Filter or pressure problem 4 Losing water 5 Heater not working 6 Other equipment", step: question}
+      - {who: homeowner, text: "the light in the pool does not come on. the pump and timer seem fine. the house was built in the 1990s and the light is the original one"}
+      - {who: intake, text: "Does a breaker or GFCI trip when the equipment turns on? 1 Yes 2 No 3 Haven't checked", step: follow_up}
+      - {who: homeowner, text: "I am sorry, I do not know those words. There is a little reset button on the outlet by the back patio that pops when the light switch is turned on"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "I do not know the brand, my husband did that"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "by a date: in two weeks. my grandchildren visit then"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. If you can, a photo of the pool equipment pad would help.", step: photo}
+      - {who: homeowner, text: "I am sorry, I cannot manage the photo"}
+    questions_asked: 5
+    follow_up_used: fu_breaker_trips
+    skipped_bank_questions: [pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: automation_electrical, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Pool and spa repair | Lake Havasu City, central | pool
+      Pool light does not come on. Reset button on the outlet by the back patio pops when the light switch is turned on.
+      Not working: pool light. Breaker or GFCI trips: yes, the reset button pops when the light switch is turned on. Controls: brand not known. Pump and timer: run fine (homeowner's words).
+      Pool: size and water not said. Photos: 0 (homeowner could not send a photo).
+      Homeowner adds: home built in the 1990s, light is the original; grandchildren visit in two weeks.
+      Needed: In two weeks.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s08
+    transcript:
+      - {who: homeowner, text: "hi im renting a house in the north area and the pool filter tank is leaking at the bottom. landlord said to get a quote and send it to him"}
+      - {who: intake, text: "About what does the filter pressure gauge read right now? 1 Under 15 2 15 to 25 3 Over 25 4 Gauge broken or missing", step: follow_up}
+      - {who: homeowner, text: "its in the red, about 35 i think"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "no idea. landlord said its the sand kind"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "flexible. i can only be home after 5 on weekdays or weekends. i cant approve anything, landlord has to"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the filter tank?", step: photo}
+      - {who: homeowner, text: "[photo sent]"}
+    questions_asked: 4
+    follow_up_used: fu_gauge_reading
+    skipped_bank_questions: [symptom, pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: filter, bank_job_type: "filter repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Pool and spa repair | Lake Havasu City, north side | pool
+      Filter tank dripping at the bottom. Requester is a tenant; landlord must approve before work is booked.
+      Filter: leaking at the bottom of the tank. Type: sand, per landlord. Gauge: over 25, in the red (about 35, homeowner's words).
+      Wants: not said. Brand and age: not known.
+      Photos: 1 (filter tank on the pad with a wet stain and drip at the base; pressure gauge on top). Homeowner adds: tenant, cannot approve work; home after 5 on weekdays or weekends.
+      Needed: Flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s09
+    transcript:
+      - {who: homeowner, text: "buenas tardes, la bomba de la alberca hace mucho ruido y esta goteando un poco, ya tiene 2 dias asi. necesito cotizacion por favor"}
+      - {who: intake, text: "¿Quiere que lo reparen si se puede, o le interesa equipo nuevo? 1 Repararlo si se puede 2 Puedo cambiarlo 3 Cotización de las dos", step: follow_up}
+      - {who: homeowner, text: "reparar si se puede, pero si hace falta uno nuevo tambien esta bien"}
+      - {who: intake, text: "¿De qué marca es el equipo? 1 Pentair 2 Hayward 3 Jandy 4 Otra marca", step: question}
+      - {who: homeowner, text: "pentair creo, la mas grande"}
+      - {who: intake, text: "¿Cuándo lo necesita? 1 Hoy 2 Esta semana 3 Sin prisa 4 Para una fecha", step: question}
+      - {who: homeowner, text: "no hay prisa"}
+      - {who: intake, text: "Una foto ayuda a cotizar. Tambien puede no mandar foto. ¿Me manda una foto de la base del equipo?", step: photo}
+      - {who: homeowner, text: "[foto enviada] la que hace ruido es la grande, la de Pentair"}
+    questions_asked: 4
+    follow_up_used: fu_repair_or_replace
+    skipped_bank_questions: [symptom, pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Pool and spa repair | Lake Havasu City, central | pool
+      Main pump loud for 2 days, dripping a little. Two motors on the pad; the bigger one is the loud one.
+      Pump: loud for 2 days, a little drip. Breaker or GFCI trips: not checked. Wants: fix if possible; open to new equipment if needed.
+      Equipment: Pentair on the bigger motor (homeowner's words). Pool: size and water not said.
+      Photos: 1 (two small motors side by side, one bigger and one smaller; a few drops of water on the concrete under the bigger one). Homeowner adds: none.
+      Needed: Flexible. Language: Spanish.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s10
+    transcript:
+      - {who: homeowner, text: "OMG THE POOL FILTER JUST BLEW UP WATER EVERYWHERE!!! party in 2 hours HELP I NEED SOMEONE NOW"}
+      - {who: intake, text: "What is the filter doing? 1 Pressure is high 2 Leaking from the tank 3 Sand or powder getting into the pool 4 Cartridges need replacing 5 Something else", step: follow_up}
+      - {who: homeowner, text: "water sprayed out around the top valve when the pump came on after sitting a week. pump is off now, nobody hurt"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "not sure of the brand. white powder around the valve, about 7 years old"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "today or tomorrow if possible"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the filter tank label?", step: photo}
+      - {who: homeowner, text: "[photo sent]"}
+      - {who: intake, text: "A close-up of the pressure gauge helps. No photo is fine too.", step: photo}
+      - {who: homeowner, text: "gauge was at 35 right before it sprayed. cant get a close up now"}
+    questions_asked: 5
+    follow_up_used: fu_filter_doing
+    skipped_bank_questions: [symptom, pool_or_spa, size_band, surface, water]
+    routing: {category: pool_repair, job_type: filter, bank_job_type: "filter repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Pool and spa repair | Lake Havasu City, central | pool
+      Water sprayed out around the top valve of the filter when the pump started after sitting off a week. Pump is now off.
+      Filter: leaking from the tank at the top valve. Type: DE (white powder around the valve, homeowner's words), about 7 years old. Gauge: about 35 right before it sprayed.
+      Wants: not said. Brand: not known. Pool: size and water not said; water level lower now.
+      Photos: 1 (round filter tank, wet pad around it, water pooled on the concrete, multiport valve on top). Homeowner adds: pool party outside in 2 hours; okay with the pool sitting.
+      Needed: Today or tomorrow.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s11
+    transcript:
+      - {who: homeowner, text: "pool pump has been getting louder the last couple weeks, would like a quote on fixing it. oh and by the way theres a faint rotten egg smell by the pool heater when it kicks on, no big deal"}
+      - {who: intake, text: "Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe.", step: 911}
+      - {who: homeowner, text: "ok. its a faint smell, im not worried, no big deal"}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: pump_motor, bank_job_type: "pump repair", unsure: false}
+    fire_dept_text: true
+    urgent: true
+    stopped_before_card: "911_hold_no_safe"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s12
+    transcript:
+      - {who: homeowner, text: "need a new variable speed pump put in, mine is dead. and the new one needs a 240 circuit at the pad apparently, and i want the old pool timer box gone. who does all that"}
+      - {who: intake, text: "What brand is the equipment? 1 Pentair 2 Hayward 3 Jandy 4 Other", step: question}
+      - {who: homeowner, text: "pentair, single speed, about 13 years old. motor hums and does not start"}
+      - {who: intake, text: "Do you already have the new equipment, or should the business supply it? 1 I have it 2 Business supplies it 3 Either", step: follow_up}
+      - {who: homeowner, text: "I have it. bought a variable speed pump online, its in a box in the garage"}
+      - {who: intake, text: "About how big is the pool? 1 Small (under 10000 gallons) 2 Medium (10000 to 20000 gallons) 3 Large (over 20000 gallons)", step: question}
+      - {who: homeowner, text: "around 15000 gallons"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "this week would be great, pool's been off 4 days"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the whole equipment pad from about 6 feet back?", step: photo}
+      - {who: homeowner, text: "[photo sent]"}
+    questions_asked: 5
+    follow_up_used: fu_have_equipment
+    skipped_bank_questions: [symptom, pool_or_spa, surface, water]
+    routing: {category: pool_repair, job_type: equipment_replace, bank_job_type: "equipment replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0112 | Pool and spa repair | Lake Havasu City, north side | pool
+      Old pump is dead: hums, does not start, about 13 years old. Homeowner already has the new variable-speed pump.
+      Replace: pump. Now: Pentair, single speed, about 13 years old. New unit: homeowner has it (in a box in the garage). Wants: new pump installed.
+      Pool: medium (about 15000 gallons), spa not said. Water not said; pool off 4 days.
+      Homeowner also asks about a new 240V circuit at the pad and removing the old timer box.
+      Photos: 1 (old pump on the pad, gray timer box on the wall with conduit running up). Homeowner adds: none.
+      Needed: This week.
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s13
+    transcript:
+      - {who: homeowner, text: "my pool pump in bullhead city wont turn on, do you guys come out here"}
+      - {who: intake, text: "We don't cover Bullhead City yet.", step: coverage}
+      - {who: homeowner, text: "ok. will you ever cover it?"}
+      - {who: intake, text: "We can't say when that will be.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: null, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: "outside_area"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s14
+    transcript:
+      - {who: homeowner, text: "our hot tub stopped heating, it's a stand-alone one on the patio, about 6 years old. can you get quotes"}
+      - {who: intake, text: "We don't cover pool and spa repair jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: pool_repair, job_type: spa_hot_tub, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: "no_businesses"
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: pool_repair_s15
+    transcript:
+      - {who: homeowner, text: "hi can someone take care of my pool every week? just bought the house and idk anything about pools"}
+      - {who: intake, text: "About how big is the pool? 1 Small (under 10000 gallons) 2 Medium (10000 to 20000 gallons) 3 Large (over 20000 gallons)", step: question}
+      - {who: homeowner, text: "maybe 10000 gallons"}
+      - {who: intake, text: "Is there an attached spa? 1 Yes 2 No", step: question}
+      - {who: homeowner, text: "yes, a small one attached"}
+      - {who: intake, text: "How is the water right now? 1 Clear 2 Cloudy 3 Green", step: question}
+      - {who: homeowner, text: "clear. a few leaves on top"}
+      - {who: intake, text: "Should chemicals be included in the price? 1 Yes 2 No", step: question}
+      - {who: homeowner, text: "yes please"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "flexible, no rush"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a wide photo of the pool?", step: photo}
+      - {who: homeowner, text: "[wide photo sent]"}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: [service]
+    routing: {category: pool_cleaning, job_type: weekly_service, bank_job_type: "weekly pool service", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0115 | Weekly pool cleaning | Lake Havasu City, central | both
+      Weekly pool service wanted. Pool about 10000 gallons with a small attached spa; water clear; chemicals included in price.
+      Service: weekly. Pool: medium (about 10000 gallons). Spa: attached, small. Water: clear, a few leaves on the surface. Chemicals: included.
+      Photos: 1 (wide view of backyard pool, clear water, a few leaves on the surface, equipment pad in the background with all equipment in place). Homeowner adds: just bought the house; no experience with pools.
+      Needed: Flexible.
+    facts_in_card_not_stated: []

@@ -1,0 +1,437 @@
+category: security_cameras
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: security_cameras_s01
+    kind: vague
+    persona: "man in his 30s, new homeowner, texts in short lowercase lines, never says the word camera"
+    opening_message: "want to see who comes to my door when im not home"
+    photo: "front entry under a covered porch, stucco wall beside the door, no button or chime box visible anywhere on the wall"
+    hidden_facts:
+      - "wants a video doorbell at the front door"
+      - "there has never been a doorbell at this house; no button, no chime inside, no doorbell wires he knows of"
+      - "stucco wall beside the front door, covered entry"
+      - "Wi-Fi router is at the back of the house; phone signal at the front door is weak"
+      - "he has not bought a unit yet"
+      - "house built in 2006, single story"
+      - "he is fine with a battery model if that works, does not care which"
+      - "wants it done within a couple weeks, no rush"
+    homeowner_behavior: "answers one thing per reply; says 'doorbell thing' or 'door cam'; gives a fact only when a question clearly calls for it; gets short after 4 questions"
+    traps:
+      - "hidden: no existing doorbell wiring at all; this decides battery unit versus new wiring, and only comes out if asked whether there is a doorbell or wires there now"
+      - "hidden: weak Wi-Fi at the front door; only said if asked about Wi-Fi at the door"
+      - "hidden: stucco wall; only said if asked what the wall is made of"
+      - "he has not bought a unit; the card should say business supplies or he buys, not assume"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "doorbell camera"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["video doorbell at the front door", "no existing doorbell, button or wiring", "stucco wall, covered entry", "Wi-Fi weak at the front door, router at the back", "does not have a unit yet", "open to a battery model"]
+      must_not_be_on_card: ["any price", "any cause", "needs an electrician", "wired is better", "recommended brand"]
+      max_questions: 5
+      notes: "Vague opener never names the product. The point is to find out there is no doorbell wiring and the Wi-Fi is weak at the door. The AI must not steer him to battery or wired; it records the facts. A battery unit on stucco can be small handyman work, a wired new run is not."
+
+  - id: security_cameras_s02
+    kind: wrong_self_diagnosis
+    persona: "woman in her 60s, tech-comfortable enough to use an app, writes complete sentences with typos"
+    opening_message: "my 3 outdoor cameras all went offline and i think they are all burnt out from the heat. need new ones put up before my trip on the 8th"
+    photo: "none"
+    hidden_facts:
+      - "three battery-free plug-in outdoor cameras, about 4 years old, same brand"
+      - "all three went offline the same afternoon, last Thursday"
+      - "the internet provider swapped her modem and router the day before"
+      - "she did not set the new router up with the old network name; her husband handled it and he is away until next week"
+      - "the cameras are under eaves, shaded, one on a west wall"
+      - "she has not looked at the cameras themselves, just the app"
+      - "leaving for two weeks on the 8th"
+    homeowner_behavior: "confident about her diagnosis; answers fully but only the question asked; mentions the provider swap only if asked about anything that changed at the house or internet recently"
+    traps:
+      - "her diagnosis (burnt out from heat) is wrong or unproven; all three offline at once right after a router swap points elsewhere; the card records the symptom and the timing, not her cause"
+      - "hidden: modem and router replaced the day before; only said if asked what changed recently or about the internet"
+      - "hidden: she has not checked the cameras in person"
+      - "timing: trip on the 8th is a real deadline a business needs"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "camera install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3 outdoor plug-in cameras about 4 years old", "all three offline since last Thursday", "internet modem and router were replaced the day before", "has not checked the cameras in person", "wants work done before leaving on the 8th"]
+      must_not_be_on_card: ["burnt out", "heat damage", "router is the problem", "need replacing", "any price", "any cause"]
+      max_questions: 5
+      notes: "She asks for new cameras but the facts point to a network change, not dead hardware. The AI must not agree that they are burnt out and must not say it is the router. It records both the symptom and the router swap so a business can decide. Hard because she volunteers a confident cause and a deadline, and the real clue only shows if asked what changed."
+
+  - id: security_cameras_s03
+    kind: no_photo
+    persona: "man in his 50s, owner of a two-story stucco home, writes in complete run-on messages, practical"
+    opening_message: "looking for 6 wired cameras around my house with a recorder box, two story stucco, want the cables hidden not stapled to the outside. no photos right now im at work"
+    photo: "none"
+    hidden_facts:
+      - "two-story stucco home, built 2011, about 2,800 sq ft, tile roof"
+      - "wants 6 wired cameras with one recorder, no monthly fee, recording stays in the house"
+      - "cameras: front door, garage driveway, both side yards, back patio, and one on the second-story back corner about 20 feet up"
+      - "cameras not bought yet; wants the business to supply and install"
+      - "attic access is a hatch in the upstairs hall closet; attic is hot, with blown-in insulation"
+      - "recorder would go in the downstairs office closet, which is on the opposite side of the house from the garage"
+      - "house has a rear pool and a gate he wants covered"
+      - "he does not know if there is any conduit or spare pipe from garage to attic"
+      - "no current alarm or cameras"
+    homeowner_behavior: "answers fully and plainly when asked; does not know construction terms; says 'I assume' a lot; asks no questions back"
+    traps:
+      - "hidden: second-story camera about 20 feet up changes the labor and ladder or lift needs; only said if asked where each camera goes and how high"
+      - "hidden: attic access and hot attic with insulation; only said if asked how cables would get from outside to the recorder"
+      - "hidden: recorder location far from the garage side; long cable runs"
+      - "hidden: pool gate coverage; only said if asked about each area"
+      - "this is a six-camera wired install through stucco and an attic; it is not small plug-in or battery work and cannot be a handyman job; the card must not suggest otherwise"
+      - "no photos: the AI should ask for a photo of where cameras go once but accept none"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "camera install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["6 wired cameras with one recorder", "two-story stucco home, tile roof", "cables hidden, not run on the outside", "cameras at front door, driveway, both side yards, back patio, second-story back corner about 20 ft up", "recorder in downstairs office closet", "attic access from upstairs hall closet", "pool gate to be covered", "business to supply and install", "site visit likely wanted"]
+      must_not_be_on_card: ["handyman ok", "any price", "easy job", "a brand", "wireless would be cheaper"]
+      max_questions: 6
+      notes: "The user asked for a large wired job on a two-story stucco home. It is a licensed-only job type in effect: six wired cameras through walls and attic is outside the small plug-in or battery handyman case and far over the handyman limit. The card should read like a range-quote request needing a site visit. Hard because he gives the count and style up front but not heights, attic path or recorder distance."
+
+  - id: security_cameras_s04
+    kind: two_trades
+    persona: "man in his 40s, lives in Phoenix, owns a vacation rental on a Havasu channel, texts efficiently, a bit pushy about dates"
+    opening_message: "I own a vacation rental on the channel in havasu and want to watch my dock from my phone, boats keep getting tied up there that arent ours. also want power out to the dock end if theres none"
+    photo: "a private dock on a channel with a short gangway; a post at the dock end; no visible light or outlet"
+    hidden_facts:
+      - "vacation rental; owner lives in Phoenix and is not at the property"
+      - "wants one or two cameras that can see the dock and the boat slip, live view on his phone, with recording"
+      - "dock is about 80 feet from the back patio"
+      - "no power on the dock and he is not sure about Wi-Fi reach; the house router is inside near the front"
+      - "a property manager has a key and can let someone in"
+      - "guests use the dock, and the house has a guest check-in that is turned over on Fridays"
+      - "he does not know if the dock itself belongs to the lot or to an association"
+      - "wants it done before the October busy weekend"
+    homeowner_behavior: "answers in short complete sentences; gives owner-role and rental status up front; mentions the property manager only if asked about access; ignores questions about the dock ownership until asked twice"
+    traps:
+      - "hidden: no power and likely no Wi-Fi at the dock; the camera job depends on both; only said if asked how power and internet would get there"
+      - "hidden: dock may not be on his lot; only comes out if asked who owns or controls the dock"
+      - "hidden: owner is away and a property manager has the key; access must be on the card"
+      - "two trades: power run to the dock is electrical, the camera side is security cameras; the AI must not blend them into one vague line"
+      - "rental: guests use the dock; the card states the property is a vacation rental, no advice about rules or notices"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "camera install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["vacation rental, owner lives out of town", "1 or 2 cameras to view the dock and slip, live view on phone with recording", "dock about 80 ft from patio", "no power and unknown Wi-Fi at the dock", "property manager has access", "wants it done before the October busy weekend"]
+      must_not_be_on_card: ["any price", "legal to film guests", "you need permission from the association", "recommended camera", "solar camera is best"]
+      max_questions: 6
+      notes: "Cameras should get the card first; the power run to the dock end is a second request for electrical (outdoor power at a dock) and should be its own card or an offer, not buried. A dock over water is exactly where a business would ask about power and signal; he does not volunteer either. The AI must not advise on guest privacy or association rules."
+
+  - id: security_cameras_s05
+    kind: tenant
+    persona: "woman in her late 20s, renting a townhouse, polite and careful, worried about her deposit"
+    opening_message: "hi im renting a townhouse and want a camera on the front door, my landlord hasnt said yes yet. can someone install one that doesnt leave holes"
+    photo: "front door of a townhouse, painted stucco wall, small covered stoop, no existing doorbell button visible"
+    hidden_facts:
+      - "she rents; the landlord is a local owner and has not answered her request yet"
+      - "lease says no changes to the walls without written permission"
+      - "wants a battery video doorbell or small camera that comes off cleanly, no drilling and no new wiring"
+      - "there is an existing doorbell button on the door frame that is dead; the landlord says it has not worked in years"
+      - "the stoop light is on a switch inside and she has no control of the wall"
+      - "townhouse is part of a small complex with a community board"
+      - "she does not own the camera yet"
+      - "wants it within the next month"
+    homeowner_behavior: "answers politely and fully; asks 'is that allowed' and expects the AI to answer; gives the landlord detail only when asked whether she owns the home"
+    traps:
+      - "tenant: she does not own the place, the landlord has not approved yet; the card must record this plainly and must not say it is allowed or not allowed"
+      - "hidden: dead existing doorbell button; only said if asked about any current doorbell or wiring"
+      - "hidden: lease has a no-wall-changes clause; the card states renter and approval pending, no legal reading"
+      - "hidden: complex has a community board; a business may need to know of it; only said if asked about any association"
+      - "the AI should not answer 'is that allowed'; the answer is a plain line that the card is for quotes and the landlord question stays with her"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "doorbell camera"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter; landlord has not approved yet", "wants no drilling or new wiring", "front door of a townhouse with stucco wall", "dead existing doorbell button on the frame", "townhouse complex with a community board", "no unit bought yet"]
+      must_not_be_on_card: ["landlord must approve", "this is allowed", "this is not allowed", "lease permits", "any price", "any cause"]
+      max_questions: 5
+      notes: "Renter wants a no-holes install, which suits a small battery job. The AI must not rule on whether the landlord must approve or what the lease allows. It records renter status and approval pending as plain facts for the card. Hard because she asks permission questions directly and a dead doorbell button hides in the photo."
+
+  - id: security_cameras_s06
+    kind: wrong_terminology
+    persona: "woman in her 50s, thinks of all security equipment as 'cameras', writes in medium-length run-ons"
+    opening_message: "i want security cameras that call the police if someone breaks in and a monitoring company that watches them 24/7, how much for that"
+    photo: "none"
+    hidden_facts:
+      - "no current alarm or cameras at the house"
+      - "single-story home, about 1,600 sq ft, 3 exterior doors and 8 windows she would want covered"
+      - "wants a company to monitor and dispatch police when something happens, with a siren and door sensors"
+      - "she would also like a camera or two, but the main goal is monitoring and a siren"
+      - "Wi-Fi in the house is good; she has no landline"
+      - "she is fine with a monthly monitoring fee, does not know what it costs"
+      - "home built in 2003"
+    homeowner_behavior: "keeps saying 'cameras' for everything; asks price first; answers questions plainly when asked; does not know what a sensor or panel is"
+    traps:
+      - "wrong category: monitoring with police dispatch, door and window sensors and a siren is an alarm system, not a camera job; the card belongs under alarm systems, with a camera noted as a secondary want"
+      - "wrong terminology: 'cameras that call the police' is a monitored alarm"
+      - "hidden: 3 exterior doors and 8 windows and no landline; only said if asked about doors, windows and phone line"
+      - "she asks 'how much'; the AI must not give any price"
+    expected:
+      category: alarm_systems
+      job_type: burglar_alarm
+      bank_job_type: "alarm monitoring setup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants 24/7 monitored alarm with police dispatch and a siren", "3 exterior doors and 8 windows", "no existing system", "good Wi-Fi, no landline", "may want 1 or 2 cameras added", "single-story home built 2003"]
+      must_not_be_on_card: ["any price", "monitoring costs", "cameras alone are enough", "recommended company"]
+      max_questions: 5
+      notes: "The right answer is a different category: alarm_systems. She says cameras, but what she describes is a monitored alarm. The AI must route her without lecturing and must not quote a monthly fee. A camera add-on is a note on the alarm card or a second request."
+
+  - id: security_cameras_s07
+    kind: misleading_photo
+    persona: "man in his 60s, just bought a house, texts in short lines, believes he got a working system"
+    opening_message: "bought this house in august, it has a camera on the roof edge but the app the old owner left doesnt work. need someone to fix it"
+    photo: "white dome-style camera on the eave at a front corner; no cable or conduit visible entering the wall; a tiny red light on the front"
+    hidden_facts:
+      - "house sold with a camera on the front eave"
+      - "no recorder, hub or monitor found anywhere in the house"
+      - "no cable is visible going from the camera into the wall or fascia"
+      - "the previous owner's app login is a closed account"
+      - "the red light blinks about every few seconds"
+      - "he has not climbed up to look at it; it is about 10 feet up on a single-story house"
+      - "he wants one working camera at the front corner and would like a second at the back"
+      - "house built in 1994, stucco"
+    homeowner_behavior: "assumes the photo shows a real camera; answers one question per reply; mentions the missing recorder only if asked what else came with the system"
+    traps:
+      - "misleading photo: the camera looks real but has no cable and a blinking light; it may be a dummy; the card records what is seen and what is missing, never says it is fake"
+      - "hidden: no recorder or hub anywhere; only said if asked what else came with the camera"
+      - "his ask is repair; the real job may be a new install; the card says what the existing camera shows and what he wants, without deciding"
+      - "hidden: second camera wanted at the back; only said if asked how many cameras he wants overall"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "camera install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["existing white dome camera on the front eave about 10 ft up", "no cable seen entering the wall", "no recorder or hub found in the house", "old owner's app login does not work", "wants one working camera at the front and a second at the back", "stucco, built 1994"]
+      must_not_be_on_card: ["fake camera", "dummy camera", "broken camera", "needs a new system", "any price", "any cause"]
+      max_questions: 5
+      notes: "A dummy camera is likely, but the AI cannot say so. It must record what the photo shows, including no cable, and ask what else came with the system. A top estimator hears 'no recorder, no cable' and prices a new install, not a repair."
+
+  - id: security_cameras_s08
+    kind: elderly
+    persona: "woman in her late 70s, types slowly with a stylus on a tablet, one short message at a time, polite, repeats herself"
+    opening_message: "My daughter says I need one of those door cameras. I am not good with these things. Can somebody come and put it up"
+    photo: "none"
+    hidden_facts:
+      - "front door of a single-story home, small covered porch"
+      - "she has a flip phone, not a smartphone; the tablet is her daughter's old one"
+      - "Wi-Fi is on the tablet only because her daughter set it up; she does not know the password"
+      - "there is an old doorbell button and a chime in the hallway that work"
+      - "she wants the daughter, who lives in California, to see the door too"
+      - "she cannot climb a ladder and nobody lives with her"
+      - "the daughter would pay and is available by phone for the visit"
+      - "she wants a weekday morning visit only"
+    homeowner_behavior: "slow, polite; answers one question at a time; says 'I think so' when unsure; mentions the daughter's role only when asked who will use it"
+    traps:
+      - "hidden: no smartphone and does not know the Wi-Fi password; a business needs this to plan the set-up visit; only said if asked how she will view it and about Wi-Fi"
+      - "hidden: existing working doorbell button and chime; the card should say so; only said if asked about a doorbell now"
+      - "hidden: the daughter is out of state and paying; the card records a second contact role, not any number"
+      - "elderly: do not rush her or ask more than one thing per turn; no jargon like PoE or SSID"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "doorbell camera"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["video doorbell at the front door of a single-story home", "existing working doorbell button and chime", "homeowner has a flip phone, no smartphone", "does not know the Wi-Fi password", "daughter out of state will watch it and pay", "weekday morning visits only", "needs help with setup"]
+      must_not_be_on_card: ["any price", "elderly or vulnerable", "recommended camera", "scam warning"]
+      max_questions: 5
+      notes: "Slow, polite texter with no smartphone. The AI must keep each message short and avoid jargon. The card must make clear that setup help is part of the job. She has a working doorbell, which changes the install for a business."
+
+  - id: security_cameras_s09
+    kind: spanish
+    persona: "man in his 40s, Spanish speaker, some English, texts in short Spanish messages with no accents"
+    opening_message: "buenas, compre 2 camaras en costco y quiero que alguien las instale, una en la cochera y otra atras en el patio. cuanto cobran"
+    photo: "back patio wall with a patio light and no outlet visible; garage door and driveway from the front"
+    hidden_facts:
+      - "he already bought 2 cameras, still in the box; wireless type that plug in with a power cord"
+      - "wants one at the front of the garage and one at the back patio"
+      - "there is no outlet near the garage front outside; there is one inside the garage about 8 feet from where the camera would go"
+      - "the back patio has a covered outlet on the opposite wall, about 12 feet from where he wants the camera"
+      - "single-story home, stucco, built 2009"
+      - "Wi-Fi from the house reaches the patio; the garage front is weak"
+      - "he can be home on Saturdays only"
+      - "speaks Spanish; prefers to keep it in Spanish"
+    homeowner_behavior: "writes in Spanish; short replies; asks the price first and again after the third question; gives outlet and distance facts only when asked where the power comes from"
+    traps:
+      - "hidden: no outlet outside at the garage; the power for the first camera is inside the garage and the cord has to run through the wall; only said if asked where the power comes from"
+      - "hidden: Wi-Fi weak at the garage; only said if asked about signal at each spot"
+      - "he asks the price twice; the AI must not give any price in either language"
+      - "plug-in cameras bought by the owner are the small handyman case, but a cord through a stucco wall may not be; the card does not decide"
+      - "language: card and questions in Spanish to him, with card fields readable for businesses"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "camera install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 wireless plug-in cameras already bought, still boxed", "one at the front of the garage, one at the back patio", "no outside outlet at the garage; outlet inside the garage about 8 ft away", "patio outlet about 12 ft from the camera spot", "Wi-Fi weak at the garage", "available Saturdays only", "Spanish speaker"]
+      must_not_be_on_card: ["any price", "handyman ok", "drilling is fine", "recommended mount"]
+      max_questions: 5
+      notes: "Real Spanish text without accents. The AI must keep the whole exchange in Spanish, refuse to give a price twice and still get the power source and signal facts. The garage camera has no outside power; that is the part a business needs."
+
+  - id: security_cameras_s10
+    kind: panicked_non_emergency
+    persona: "woman in her 30s, shaken, typing fast with caps and exclamation marks, short and repeated"
+    opening_message: "SOMEONE WAS IN MY BACKYARD LAST NIGHT AND TRIED MY SLIDING DOOR!!! i need cameras TODAY pls hurry!!!"
+    photo: "sliding glass door at the back of a house with scuff marks near the handle, and a dark yard"
+    hidden_facts:
+      - "it happened around 2 am last night; her dog barked and she saw a figure on the patio; they left when the light came on"
+      - "nobody is in the yard now and she and her kids are safe inside"
+      - "she called the police this morning and has a report"
+      - "she wants 3 or 4 cameras: back patio, side gate, front door, driveway"
+      - "she has not bought cameras and wants the business to supply and install them"
+      - "single-story home, built 2015, stucco, good Wi-Fi"
+      - "has a motion light on the back wall but no cameras"
+      - "she can be home any day, wants it as soon as possible"
+    homeowner_behavior: "writes in caps and repeats; answers each question quickly but only the question; calms down a little with calm questions; mentions the police report only if asked"
+    traps:
+      - "panicked but not on the fire-truck list: no one is breaking in now; no 911 text; urgent for timing only"
+      - "do not tell her to call the police, lock up or stay safe; the AI only collects facts; the card is marked urgent so businesses see it"
+      - "hidden: 3 or 4 cameras at four spots; only said if asked how many and where"
+      - "hidden: good Wi-Fi and stucco; an installer wants both"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "camera install"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["attempted entry at the sliding door last night around 2 am", "wants 3 or 4 cameras: back patio, side gate, front door, driveway", "business to supply and install", "wants it as soon as possible", "single-story stucco home built 2015, good Wi-Fi", "motion light on back wall already"]
+      must_not_be_on_card: ["call the police", "stay safe", "lock your doors", "she is in danger", "any price", "burglar"]
+      max_questions: 5
+      notes: "Frightened language but nothing on the fire-truck list. The AI must not send the 911 text, must not give safety advice and must stay calm and short. The card is urgent because she wants it today; no after-hours emergency path exists for this category."
+
+  - id: security_cameras_s11
+    kind: calm_real_emergency
+    persona: "man in his 60s, matter-of-fact retiree, writes in tidy short paragraphs"
+    opening_message: "want a quote for 2 cameras on the garage and back fence, i have the cameras already. by the way the outlet in the garage where my old camera power brick plugs in smells a little like burnt plastic and the brick is hot. anyway, the new cameras need power from there"
+    photo: "wall outlet in a garage with a plug-in power adapter, slight discoloration around the lower outlet slot"
+    hidden_facts:
+      - "outlet in the garage near the side door with a small power brick for the old camera"
+      - "burnt-plastic smell noticed today and the brick feels hot to touch"
+      - "the old camera stopped working a few days ago"
+      - "2 new cameras bought, still boxed, plug-in type"
+      - "wants them at the garage front and the back fence"
+      - "single-story home built 1996"
+      - "he has not unplugged anything and does not seem worried"
+      - "Wi-Fi is fine on that side"
+    homeowner_behavior: "unbothered; mentions the smell as a side note; gives other facts when asked; calls it 'a little warm'"
+    traps:
+      - "fire-truck list fact buried in an ordinary request: a burning-smelling outlet with a hot adapter; the fixed 911 text is sent by code; the AI gives no other safety advice"
+      - "hidden: old camera stopped working a few days ago; the card records it"
+      - "second job: the outlet itself is electrical work and should become its own card to electrical; the camera card stays"
+      - "do not say 'unplug it' or 'do not use that outlet' or name a cause"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "camera install"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["2 new plug-in cameras bought, boxed, for garage front and back fence", "garage outlet near the side door where the old camera power adapter plugs in", "burnt-plastic smell and hot adapter at that outlet", "old camera stopped working a few days ago", "single-story home built 1996"]
+      must_not_be_on_card: ["unplug it", "do not use the outlet", "bad outlet", "overloaded", "any price", "any cause", "safe to use"]
+      max_questions: 4
+      notes: "Camera request is routine; the burning outlet is an automatic fire-truck-list fact. The 911 text goes out by code only. Electrical is the second request. Hard because he says it casually and an AI chasing the camera job could skip it."
+
+  - id: security_cameras_s12
+    kind: outside_area
+    persona: "man in his 50s, lives on a small ranch outside town, writes in plain brief lines"
+    opening_message: "need 4 cameras put up on my place outside parker, barn and house and gate. any of you come out that way"
+    photo: "none"
+    hidden_facts:
+      - "property is outside Parker, Arizona, on a dirt road"
+      - "barn, house and a front gate with no power at the gate"
+      - "wants 4 cameras, no cameras now"
+      - "cell signal only, no wired internet"
+      - "power at the barn but the gate has none"
+      - "wants an install in the next two months"
+    homeowner_behavior: "plain and brief; answers questions he is asked"
+    traps:
+      - "location outside Lake Havasu City: the ZIP check should answer before any trade question is asked"
+      - "hidden: no power at the gate and cell signal only; these would matter if the area were served"
+    expected:
+      category: security_cameras
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any price", "cameras can be installed there", "recommended business"]
+      max_questions: 1
+      notes: "Parker is outside the service area. The ZIP check should answer before any camera question and say the service covers Lake Havasu City only. No job card is made. The AI must not ask about the gate or power."
+
+  - id: security_cameras_s13
+    kind: no_businesses
+    persona: "woman in her 40s, straightforward, writes in complete short sentences"
+    opening_message: "I want a video doorbell put in where my old doorbell button is. I have a chime inside. Lake Havasu City"
+    photo: "front door with a small lit doorbell button on a stucco wall beside the frame"
+    hidden_facts:
+      - "an existing wired doorbell button and chime, working"
+      - "the doorbell transformer is in the garage ceiling; she does not know its voltage"
+      - "she already bought a video doorbell, still in the box"
+      - "stucco wall beside the front door"
+      - "home built in 2001, single story"
+      - "Wi-Fi is fine at the front door"
+      - "wants it done within a few weeks"
+    homeowner_behavior: "answers each question fully; knows the chime works; does not know the transformer details unless asked what is in the garage"
+    traps:
+      - "hidden: existing transformer in the garage ceiling, unknown voltage; a top estimator checks it because many video doorbells need more power than an old doorbell transformer gives; only said if asked about the wiring now"
+      - "hidden: stucco wall; the new unit mounts on stucco"
+      - "no_businesses: the job type is right; the card should state that this trade has no businesses yet"
+      - "do not promise when someone will quote"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "doorbell camera"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["video doorbell to replace existing wired doorbell button", "working chime inside", "transformer in garage ceiling, voltage unknown", "unit already bought, boxed", "stucco wall beside the front door", "good Wi-Fi at the front door", "home built 2001"]
+      must_not_be_on_card: ["any price", "needs a new transformer", "any cause", "someone will contact you soon", "recommended installer"]
+      max_questions: 5
+      notes: "The test harness simulates zero coverage. The card is right and complete but the response must say plainly that this trade has no businesses yet. The transformer fact is the one a skilled estimator needs and she does not offer it."
+
+  - id: security_cameras_s14
+    kind: wrong_self_diagnosis
+    persona: "man in his 40s, DIY type, writes in blunt short lines with technical-sounding words he half knows"
+    opening_message: "my cameras night vision is garbage, lens must be going bad on all 4. want them swapped for new ones with better lenses. 6 yrs old"
+    photo: "a camera image from a phone screenshot: night view with a bright white glare spot in the lower half and a blurry porch wall"
+    hidden_facts:
+      - "four wired cameras on a recorder, about 6 years old, mounted by a previous installer"
+      - "two cameras face the porch and the other two face the driveway"
+      - "the glare is worst on the two porch cameras, which sit under the porch light and close to a white wall"
+      - "the two on the west wall sit in full afternoon sun and the housings are chalky and faded"
+      - "daytime picture is okay on all four, only night is bad"
+      - "single-story stucco home, built 2007, cameras about 9 feet up"
+      - "he wants to keep the recorder and cable if they can be reused"
+      - "he has never cleaned the lenses or looked closely at the cameras"
+    homeowner_behavior: "sure of his diagnosis; answers technical-ish but short; will say 'lens' every time; mentions daytime only if asked when the picture looks fine"
+    traps:
+      - "his diagnosis (lens going bad) is unproven; daytime is fine and the glare is on the porch cameras under a light next to a white wall, which points away from lens failure; the card records the symptoms and the mounting, not the cause"
+      - "hidden: daytime is fine; only said if asked when the problem happens"
+      - "hidden: two cameras in full west sun with faded housings; only said if asked where each camera is"
+      - "hidden: wants to reuse the recorder and cable; changes the quote; only said if asked what he expects to keep"
+      - "the AI must not say clean the lens, move the light or anything else"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "camera install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["4 wired cameras on a recorder about 6 years old", "night picture bad, daytime fine", "glare spot on the two porch cameras under the porch light near a white wall", "two cameras on west wall in full afternoon sun, housings faded", "wants to keep the recorder and cable if reusable", "single-story stucco home, cameras about 9 ft up"]
+      must_not_be_on_card: ["lens is bad", "lenses need replacing", "clean the lenses", "light glare is the cause", "any price", "any cause"]
+      max_questions: 5
+      notes: "He asks for four new cameras on a self-diagnosis that the facts do not support. The AI writes the symptoms and the mounting, never agrees the lenses are failing. A strong estimator asks night versus day and where each camera sits before pricing a swap."

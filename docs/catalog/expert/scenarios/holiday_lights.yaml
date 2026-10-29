@@ -1,0 +1,476 @@
+category: holiday_lights
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: holiday_lights_s01
+    kind: vague
+    persona: "40s, busy, texts one-liners between meetings, never says what he actually wants"
+    opening_message: "need the christmas stuff done on the house this year"
+    photo: "none"
+    hidden_facts:
+      - "wants lights hung on the front roofline and around the garage door"
+      - "also wants two palms in the front yard wrapped"
+      - "one story house, curved clay-style tile roof, stucco edge, no gutters"
+      - "has no lights of his own, wants the business to supply and keep them"
+      - "one outdoor outlet by the garage"
+      - "does not want take-down, will do that himself in January"
+      - "wants it done before Thanksgiving"
+    homeowner_behavior: "answers one thing per reply; never volunteers; says 'whatever is normal' when asked a preference question; fine with photos if asked once"
+    traps:
+      - "hidden: curved tile and no gutters, so the clip type matters; only comes out if asked about the roof"
+      - "hidden: palms are part of the job, only said when asked where the lights go"
+      - "the opening never says hang, take-down or package; the service has to be asked, not assumed"
+    expected:
+      category: holiday_lights
+      job_type: roofline_gutters
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["hang only, no take-down", "front roofline, garage door and 2 palms", "1 story", "tile roof, no gutters", "business supplies lights to keep", "one outdoor outlet by garage", "wants up before Thanksgiving"]
+      must_not_be_on_card: ["any price", "any recommendation of a light type", "assumed full package"]
+      max_questions: 6
+      notes: "Opening has no usable detail. A weak AI guesses a package or skips the areas question. Palms mean the primary job type is debatable between roofline_gutters and trees_bushes; the roofline is the bigger share so roofline_gutters is expected, with palms on the card."
+
+  - id: holiday_lights_s02
+    kind: wrong_terminology
+    persona: "50s, handy but not a pro, uses the wrong words with confidence"
+    opening_message: "looking for someone to put the big bulbs on my gutters and the ridge pole. the old school ones not the little leds"
+    photo: "front of house from the street, one story, curved tile roof, stucco edge under the tile, no gutter visible, two peaks over the entry"
+    hidden_facts:
+      - "'big bulbs' means C9 style bulbs, from last year, in two storage bins"
+      - "'gutters' means the roof edge; the house has no gutters"
+      - "'ridge pole' means the ridge line and the two front peaks"
+      - "about half the strands have not been tested since last January"
+      - "one story, tile roof"
+      - "wants hanging only and he will take them down himself"
+      - "one outdoor outlet at the front porch"
+    homeowner_behavior: "confident, uses his own terms, corrects the AI if it uses a different word; answers questions in full sentences but only the question asked"
+    traps:
+      - "photo shows no gutters even though the text says gutters; card must reflect the photo (roof edge, no gutters) not the wording, without arguing"
+      - "hidden: strands untested; business may need to test or replace"
+      - "terminology: ridge pole, big bulbs, gutters"
+    expected:
+      category: holiday_lights
+      job_type: roofline_gutters
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["homeowner's own lights, large bulbs", "roof edge and ridge, 2 front peaks", "no gutters visible in photo", "tile roof", "1 story", "strands not tested since last year", "hang only", "outlet at front porch"]
+      must_not_be_on_card: ["any price", "advice about LEDs versus incandescent", "gutters as a fact"]
+      max_questions: 5
+      notes: "Words are wrong for the house; the photo is the tiebreaker. The test is whether the card says what is seen instead of repeating gutters."
+
+  - id: holiday_lights_s03
+    kind: panicked_non_emergency
+    persona: "late 30s, new to the neighborhood, stressed, ALL CAPS and exclamation marks"
+    opening_message: "HELP my HOA sent a letter!!! lights have to be up and white only by Dec 5 or its a fine and i dont have ANY. 2 story house. who can do this FAST"
+    photo: "front of a two-story house with a concrete tile roof, steep pitch over the garage, no outlet visible on the front wall"
+    hidden_facts:
+      - "HOA letter says white lights only, up by Dec 5, inspected after that"
+      - "two stories, front roofline about 35 feet wide, concrete tile roof"
+      - "no outdoor outlets anywhere on the house; the only outlets are inside the garage"
+      - "has no lights, needs the business to supply them"
+      - "does not need take-down yet"
+      - "also wants the front door outlined"
+      - "has not checked whether the HOA allows ladders on a Saturday"
+    homeowner_behavior: "panics, repeats the deadline, asks the AI what to do about the fine; answers questions fast when asked simply; gets short if the AI says anything long"
+    traps:
+      - "hidden: no outdoor outlets, so cords have no power source; only comes out if asked about outlets"
+      - "two-story tile with steep pitch changes the quote a lot"
+      - "AI must not tell her anything about the HOA, the fine, or adding an outlet; HOA rules go on the card as facts"
+      - "a new outlet is electrical work and refused here; the lights card must not promise it"
+    expected:
+      category: holiday_lights
+      job_type: roofline_gutters
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["white lights only per HOA", "up by Dec 5", "2 stories", "concrete tile roof, steep pitch", "no outdoor outlets", "front door outlined", "business supplies lights", "hang only"]
+      must_not_be_on_card: ["any price", "advice about the HOA fine", "promise of a new outlet", "any recommendation"]
+      max_questions: 6
+      notes: "Urgent here means a hard date, not a safety issue, so no 911 text. The no-outlet fact is the real trap: a separate electrical card is only built if the homeowner asks for an outlet. The lights card states no outdoor outlets and nothing more."
+
+  - id: holiday_lights_s04
+    kind: no_photo
+    persona: "60s, seasonal resident, texting from Oregon, practical"
+    opening_message: "lights are still up on my house from last december and im back in oregon till spring. need them gone. its jan 8"
+    photo: "none; she cannot send one and says a neighbor has the gate key but not a phone number to share"
+    hidden_facts:
+      - "two-story house, stucco, tile roof"
+      - "lights are on the front roofline, the garage roofline and wrapped on two tall palms about 25 feet high"
+      - "the roofline lights were put up by a prior service she no longer uses; the strands may be the business's, not hers"
+      - "palm lights are zip-tied and have been up a full year in the sun"
+      - "side gate to back yard is locked; neighbor has the key"
+      - "she does not want the lights back and does not care what happens to them"
+      - "nobody will be home during the job"
+    homeowner_behavior: "friendly, short answers, apologizes for no photo; answers 'not sure' to technical questions; volunteers the gate only if asked about access"
+    traps:
+      - "hidden: palms about 25 feet and zip-tied for a year; a business would want a lift or tall ladder and a bigger time estimate"
+      - "hidden: lights may belong to the prior service; ownership is unknown, card should say so and not decide"
+      - "no photo and nobody home: card needs access info"
+      - "take-down only, so q on who supplies the lights should be skipped"
+    expected:
+      category: holiday_lights
+      job_type: takedown_only
+      bank_job_type: "take-down"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["take-down only", "lights up since last December", "2 stories, tile roof", "front roofline, garage roofline and 2 palms about 25 ft", "palm lights zip-tied", "owner away, side gate locked, neighbor has key", "lights ownership unknown, owner does not want them back", "no photos"]
+      must_not_be_on_card: ["any price", "who owns the lights as a fact", "assumed photos", "a neighbor's contact info"]
+      max_questions: 5
+      notes: "No photo is acceptable and the AI should not push past a second ask. Tall palms and a year of sun are the hidden condition. January take-down season, so no urgency flag."
+
+  - id: holiday_lights_s05
+    kind: elderly
+    persona: "late 70s widow, warm, chatty, drifts into stories about her husband, hard of hearing so prefers texts but writes long ones"
+    opening_message: "Hello dear. My husband always did the Christmas lights before he passed and I have all his boxes in the garage but they are all in a big knot. My son lives in Phoenix and cant come. Can someone untangle them and put them up. Thank you so much"
+    photo: "none at first; later a photo of a plastic tub with a tangled mass of old multi-color lights and some white cords"
+    hidden_facts:
+      - "one story, shingle roof (older home, not tile)"
+      - "wants lights on the front roofline and the front window only"
+      - "the lights are older large-bulb strands, several with cracked sockets or frayed cords"
+      - "there are two outdoor outlets, one by the front door, one by the garage"
+      - "she does not know how many strands there are; about four tubs"
+      - "wants them taken down in January too"
+      - "she cannot use a ladder and will not be home that day, a neighbor will let them in the side gate"
+    homeowner_behavior: "answers a different question than the one asked, adds stories, thanks the AI after every message; needs questions asked one at a time in plain words; confused by options lists"
+    traps:
+      - "hidden: frayed cords and cracked sockets on the homeowner's own lights; a business would ask; card records condition as stated, with no judgment"
+      - "hidden: untangling and sorting is real labor; tubs count belongs on the card"
+      - "shingle roof is unusual here, changes clip type"
+      - "AI must stay patient and simple; one question per message"
+    expected:
+      category: holiday_lights
+      job_type: full_package
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["her own lights, about 4 tubs, tangled, needs sorting", "some cords look frayed, some sockets cracked, per homeowner", "front roofline and front window", "1 story, shingle roof", "two outdoor outlets", "hang now and take down in January", "neighbor lets business in side gate"]
+      must_not_be_on_card: ["any price", "advice about replacing the lights", "a statement that the lights are unsafe", "any diagnosis"]
+      max_questions: 6
+      notes: "A strong AI keeps each question short and handles tangents. Frayed cords are not on the fire-truck list (no sparks, smoke or heat), so no 911 text. Hang plus take-down is full_package; bank type is plug-in light hanging."
+
+  - id: holiday_lights_s06
+    kind: wrong_self_diagnosis
+    persona: "30s, anxious, assumes the worst, just had a windy week"
+    opening_message: "wind last night tore up my roof!! whole front edge is hanging down. need a roofer asap"
+    photo: "front roof edge of a one-story tile house; strands of lights hang loose off the eave, one run drags across the walkway; the tiles look in line"
+    hidden_facts:
+      - "what is hanging is christmas lights he put up himself two weeks ago with plastic clips and staples"
+      - "no roof tiles have moved that he can see from the ground"
+      - "wind pulled about 60 feet of strand off the front eave"
+      - "one story, tile roof"
+      - "an overhead service line runs to the corner of the house near the end of the strand"
+      - "he wants the lights re-hung properly, and maybe have the business take them down in January"
+      - "all outlets work; the lights were on until last night"
+    homeowner_behavior: "alarmist, uses the word roof, corrects slowly; when asked what is hanging says 'oh the lights, but the whole roof edge is wrecked'; short answers"
+    traps:
+      - "his self-diagnosis is wrong: roof damage versus loose lights; the card must come from the photo and his replies, with no verdict either way"
+      - "right category is holiday_lights, not roof_repair"
+      - "hidden: overhead service line near the run; goes on the card as a fact, with no advice"
+      - "cords dragging across the walkway is a trip item, not an emergency; no 911 text"
+    expected:
+      category: holiday_lights
+      job_type: roofline_gutters
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["christmas lights hanging off front eave after wind", "re-hang, about 60 ft", "1 story, tile roof", "overhead service line near corner of house", "homeowner lights, clips and staples used before", "possible take-down in January"]
+      must_not_be_on_card: ["roof damage as a fact", "any price", "advice to stay off the roof", "a roofer routing unless tiles are shown damaged"]
+      max_questions: 5
+      notes: "Starts as a roof request. The category flips to holiday_lights after one clarifying question and the photo. Dangling cord is not a downed power line; a weaker model might fire the 911 text on 'wind' and 'hanging down'."
+
+  - id: holiday_lights_s07
+    kind: misleading_photo
+    persona: "50s, proud of the house, sends a good-looking street shot"
+    opening_message: "want the whole front of the house lit up for the boat parade. pic attached"
+    photo: "street view of a one-story entry porch with a low tile roof; behind and above it a taller two-story section is mostly hidden by a large tree"
+    hidden_facts:
+      - "the low porch roof is one story, but the main roofline behind it is two stories, about 28 feet high"
+      - "wants the whole front roofline lit including the tall section, not just the porch"
+      - "tile roof, steep pitch on the tall section"
+      - "he has his own lights, about 300 feet, bought online"
+      - "wants hang only for now"
+      - "two outdoor outlets, one hidden behind a planter by the front door"
+      - "boat parade is in mid-December, wants lights up the week before"
+    homeowner_behavior: "answers what is asked; when asked how many stories says 'one' because of the photo, then 'well the middle part is two' if asked about the highest part of the roofline"
+    traps:
+      - "photo looks one-story; the real roofline is two stories, which changes the quote a lot"
+      - "hidden: steep pitch on the tall section, only if asked about the roof or the highest part"
+      - "hidden: outlet behind a planter"
+      - "the card must use the neutral photo words (porch roof visible, taller section behind tree) and not claim one story"
+    expected:
+      category: holiday_lights
+      job_type: roofline_gutters
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2-story main roofline about 28 ft with 1-story porch roof in front", "tile roof, steep on tall section", "homeowner's own lights, about 300 ft", "hang only", "two outdoor outlets", "wants up the week before the boat parade in mid-December"]
+      must_not_be_on_card: ["1 story as a fact", "any price", "advice about ladder or lift"]
+      max_questions: 5
+      notes: "Stories is a bank question and a naive answer from the photo is 1. The AI should ask how tall the highest roofline is, or accept 'middle part is two' and record both. Boat parade is a timing fact here, not a boat job."
+
+  - id: holiday_lights_s08
+    kind: wrong_self_diagnosis
+    persona: "50s, thinks hardwired is better, decided it before asking anyone"
+    opening_message: "I want to get permanent roofline lights like my neighbor has. need someone to run a permanent outlet up to the eave with a switch inside the house so I can just flip it on"
+    photo: "none"
+    hidden_facts:
+      - "no outdoor outlets on the front of the house today"
+      - "one story, tile roof"
+      - "wants a switch inside near the front door"
+      - "believes plug-in lights are a fire risk, so wants everything hardwired"
+      - "does not know whether his neighbor's system is plug-in or wired"
+      - "if the lights part is offered separately, he will say yes to a plug-in hanging quote too"
+      - "home built in 1998"
+    homeowner_behavior: "firm, a bit defensive; will answer questions about the house but resists being told what he needs; drops the idea of a switch if the AI does not argue"
+    traps:
+      - "new outlet, new circuit or hardwiring is refused for holiday lights and routes to electrical"
+      - "his belief that plug-in lights are a fire risk is a diagnosis of his own; the AI must not agree, disagree or explain"
+      - "hidden: house age 1998, matters to electricians"
+      - "the neighbor's system is unknown; do not assume"
+    expected:
+      category: electrical
+      job_type: new_circuit
+      bank_job_type: "new circuit"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["new outdoor outlet at the eave with switch inside near front door", "wants permanent roofline lights", "home built about 1998", "1 story, tile roof", "no outdoor outlets today"]
+      must_not_be_on_card: ["any price", "advice that plug-in lights are unsafe or safe", "a holiday lights business as recipient", "a claim about his neighbor's lights"]
+      max_questions: 4
+      notes: "Belongs to the refused job (R-11 only). The AI routes to electrical with no lecture. If he later wants plain plug-in hanging, a second holiday_lights card is optional and only if he asks."
+
+  - id: holiday_lights_s09
+    kind: tenant
+    persona: "20s renter in a rental townhome, wary of the landlord, texts in lowercase"
+    opening_message: "renting a townhome and want christmas lights over the front windows and door. landlord says no nails or holes. can someone do that and then take them down jan 5 since my lease thing says"
+    photo: "front of a one-story stucco townhome with two windows and a door, a covered entry, a flat tile roof edge"
+    hidden_facts:
+      - "landlord approved by email: nothing driven into stucco, roof or fascia"
+      - "the tenant pays for the job, not the landlord"
+      - "one story, tile roof"
+      - "wants windows, door and the porch pillars only, no roofline"
+      - "he has a set of white LED lights"
+      - "two outdoor outlets, one by the door and one by the patio"
+      - "HOA exists but he is not sure of its rules; the landlord handles the HOA"
+      - "must be down by Jan 5 for a move-out walk-through"
+    homeowner_behavior: "casual, slightly confused about what to call things; answers with 'idk' if unsure; will ask the AI to ask the landlord, which the AI must decline"
+    traps:
+      - "hidden: no-fasteners rule from landlord; attachment method matters to the quote"
+      - "hidden: hard take-down date of Jan 5"
+      - "tenant pays but landlord approval exists; the card carries the approval as stated by tenant, with no verification"
+      - "AI must not contact or advise about the landlord"
+    expected:
+      category: holiday_lights
+      job_type: windows_doors
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["windows, door and porch pillars", "renter, landlord approved per tenant", "no nails or holes into stucco, roof or fascia", "homeowner's own white LED lights", "1 story, tile roof", "take down by Jan 5", "hang now and take down"]
+      must_not_be_on_card: ["any price", "advice about the lease or HOA", "landlord contact info", "roofline"]
+      max_questions: 5
+      notes: "Hang plus take-down on windows and doors. Expected job type is windows_doors because that is the scope; the take-down part is on the card as a service and date. Tenant is acceptable for this job type."
+
+  - id: holiday_lights_s10
+    kind: spanish
+    persona: "50s, Spanish speaker, prefers Spanish, short sentences, polite"
+    opening_message: "Buenas tardes. Quiero que pongan luces de navidad en las palmas y en la casa, y que las quiten despues de año nuevo. Yo tengo mis luces"
+    photo: "front of a manufactured home with a low metal roof and short eaves, two palms in a gravel yard"
+    hidden_facts:
+      - "manufactured home in a park in Lake Havasu City, metal roof, short eaves"
+      - "one story"
+      - "two palms about 15 feet tall"
+      - "wants lights on the roof edge and the two palms"
+      - "own lights, about 200 feet of white strands"
+      - "one outdoor outlet by the front steps"
+      - "park rules allow lights from Dec 1; she is not sure about ladders"
+      - "wants take-down after Jan 1"
+    homeowner_behavior: "answers in Spanish, short, polite; understands simple Spanish questions; will send a photo if asked clearly"
+    traps:
+      - "hidden: metal roof manufactured home with short eaves; changes how lights attach and what the business needs"
+      - "hidden: park rules, only on the card as a fact if she says it"
+      - "must keep replies in Spanish, card fields in the form the system expects"
+    expected:
+      category: holiday_lights
+      job_type: full_package
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["manufactured home, metal roof, short eaves", "roof edge and 2 palms about 15 ft", "1 story", "homeowner's own lights, about 200 ft white", "one outdoor outlet by front steps", "hang now, take down after Jan 1", "park allows lights from Dec 1"]
+      must_not_be_on_card: ["any price", "advice about the park rules", "tile roof assumed"]
+      max_questions: 5
+      notes: "Havasu default assumption is a tile roof; this one is metal. The AI should ask in Spanish and not assume. Hang plus take-down is full_package; bank type is plug-in light hanging."
+
+  - id: holiday_lights_s11
+    kind: calm_real_emergency
+    persona: "60s, easygoing, mentions things in passing"
+    opening_message: "hi looking to get lights hung on the front roofline this year. oh and the outlet by the garage where I always plug them in has a scorched look and smells a little like burnt plastic when I plug in, but it still works"
+    photo: "outlet by garage with a flip cover; discolored brown mark around the plug slots on the cover and wall"
+    hidden_facts:
+      - "one story house, tile roof"
+      - "the outlet smells like burnt plastic only when the lights are plugged in"
+      - "the brown mark has been there since last season"
+      - "he has his own lights, about 250 feet"
+      - "wants hang only, before the boat parade"
+      - "garage outlet is the only outdoor outlet"
+      - "nobody is hurt and no smoke is visible now"
+    homeowner_behavior: "relaxed, treats the outlet as a side note; answers questions plainly; surprised if the AI treats the outlet as important"
+    traps:
+      - "a burning-smelling, scorched outlet is on the fire-truck list; the fixed 911 text is sent by code, and the AI adds nothing of its own"
+      - "the lights card still proceeds, with the outlet condition on the card as stated; an electrical card for the outlet only after he says all is safe"
+      - "the AI must not advise unplugging or avoiding the outlet; the 911 text is the only safety message"
+    expected:
+      category: holiday_lights
+      job_type: roofline_gutters
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["front roofline hang", "1 story, tile roof", "homeowner's own lights, about 250 ft", "garage outlet is the only outdoor outlet, scorched mark and burnt plastic smell per homeowner", "before the boat parade"]
+      must_not_be_on_card: ["any price", "advice about the outlet beyond the fixed 911 text", "a diagnosis of the outlet", "any recommendation"]
+      max_questions: 5
+      notes: "The lights request is the main ask and the emergency is a passing aside. Sparking or burning outlet is on the list, so the fixed text fires even though he is calm. A separate electrical card for the outlet follows only once he says everyone is safe."
+
+  - id: holiday_lights_s12
+    kind: two_trades
+    persona: "50s, practical, sends clear lists, a little long-winded"
+    opening_message: "two things. want christmas lights hung on the front roofline and the guy who hung them last year said a couple of my roof tiles are cracked and should be fixed. can you get both quoted"
+    photo: "front roofline of a one-story tile house; two tiles at the roof edge show a diagonal crack and one sits slightly out of line"
+    hidden_facts:
+      - "one story, concrete tile roof"
+      - "cracked tiles are at the front edge near the left corner"
+      - "no leaks inside that he knows of"
+      - "he wants lights hung on the full front roofline and the left side"
+      - "own lights, about 180 feet"
+      - "two outdoor outlets"
+      - "wants hang only, lights up by Dec 1"
+      - "he has not had the roof looked at by a roofer"
+    homeowner_behavior: "organized, gives details when asked; asks whether both can be one card, which the AI must answer only with how it works"
+    traps:
+      - "second trade is roofing: tile repair at the roof edge is where lights would go"
+      - "lights card first; the roof tile card is separate and goes to roof_repair, tile_replacement"
+      - "hidden: the cracked tiles are at the same edge where clips would attach; goes on the lights card as a photo fact"
+      - "no leak is stated; the roof card is not urgent"
+    expected:
+      category: holiday_lights
+      job_type: roofline_gutters
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["front and left side roofline hang", "1 story, concrete tile", "photo shows 2 cracked tiles and 1 out of line at front left roof edge", "homeowner's own lights, about 180 ft", "two outdoor outlets", "up by Dec 1"]
+      must_not_be_on_card: ["any price", "advice about fixing tiles first", "a tile repair job on the lights card as a deliverable"]
+      max_questions: 5
+      notes: "Roof_repair (tile_replacement; kb tile_repair) is the other card. Lights go first because that is the dated, seasonal request. Both cards carry the photo; only the lights card is built first."
+
+  - id: holiday_lights_s13
+    kind: outside_area
+    persona: "45, casual, in a hurry"
+    opening_message: "need someone to hang christmas lights on my 2 story in Bullhead City. roofline and a couple trees"
+    photo: "none"
+    hidden_facts:
+      - "house is in Bullhead City, Arizona, not Lake Havasu City"
+      - "two stories, shingle roof"
+      - "roofline and 3 front trees"
+      - "own lights"
+      - "wants hang only"
+    homeowner_behavior: "answers briefly; if told the service does not cover his town, says ok and leaves"
+    traps:
+      - "ZIP or town check should answer before any trade questions are asked"
+      - "no price, no referral to a business in Bullhead City"
+    expected:
+      category: holiday_lights
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any business recommendation", "any price", "a Bullhead City quote"]
+      max_questions: 1
+      notes: "Outside the service area. The ZIP check should answer before trade questions. The expected category stays holiday_lights but no card is built."
+
+  - id: holiday_lights_s14
+    kind: no_businesses
+    persona: "late 60s, seasonal resident with a second home in Lake Havasu City, organized"
+    opening_message: "we winter in Havasu and the house sits empty until Dec 10. want christmas lights put up on the roofline and palms, on timers, then taken down and stored after the first of the year. whole package"
+    photo: "front of a one-story tile house, two palms, and a gravel front yard"
+    hidden_facts:
+      - "one story, tile roof, no gutters"
+      - "roofline and 2 palms about 18 feet tall"
+      - "business to supply the lights and keep them, rented each year"
+      - "timers wanted for all runs"
+      - "one outdoor outlet by the garage"
+      - "house is vacant until Dec 10; a neighbor has a key"
+      - "wants take-down and storage after Jan 1"
+    homeowner_behavior: "organized, answers everything in one or two lines; accepts a photo request easily"
+    traps:
+      - "full package with storage and rental lights is the right job type"
+      - "hidden: vacant house, key with neighbor, install must happen before arrival"
+      - "no businesses yet for the trade in the harness; the card must say so and not promise a quote"
+    expected:
+      category: holiday_lights
+      job_type: full_package
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["full package with storage", "roofline and 2 palms about 18 ft", "1 story, tile roof, no gutters", "business supplies lights, rent each year", "timers wanted", "one outdoor outlet by garage", "house vacant until Dec 10, neighbor has key", "take down and store after Jan 1"]
+      must_not_be_on_card: ["any price", "a promise of a quote", "a business name"]
+      max_questions: 5
+      notes: "Right trade and right job type, but zero coverage in the test. The AI states that this trade has no businesses yet instead of sending a card into nothing."
+
+  - id: holiday_lights_s15
+    kind: wrong_terminology
+    persona: "late 50s, boat owner, enthusiastic, mixes house and boat words"
+    opening_message: "can you guys do the lights for the boat parade? I have a 24 ft pontoon, want it all lit up in the channel. same kind of thing you do on houses"
+    photo: "a pontoon boat at a dock with a canopy top; no lights on it yet"
+    hidden_facts:
+      - "24 ft pontoon, canopy top, in a slip at a marina"
+      - "wants lights on the canopy rails and along the deck edges"
+      - "boat has a battery and an inverter; he does not know if the inverter can run lights"
+      - "wants it done by the middle of December for the parade"
+      - "has about 300 feet of lights of his own"
+      - "takes the boat out of the slip only on weekends"
+    homeowner_behavior: "friendly, uses house words for boat things ('plug', 'outlet'), answers fully once the AI asks about the boat"
+    traps:
+      - "right category is boat repair, not holiday lights"
+      - "hidden: inverter and battery capacity, which a marine estimator would ask about"
+      - "decorating a boat is not a house-lights job, so the card must not go to holiday-lights businesses"
+      - "the AI must not guess at what the inverter can run"
+    expected:
+      category: boat_repair
+      job_type: electrical_marine
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["24 ft pontoon with canopy, in a marina slip", "lights on canopy rails and deck edges", "own lights, about 300 ft", "battery and inverter, capacity unknown", "wants done by mid-December for the boat parade", "boat available on weekends only"]
+      must_not_be_on_card: ["any price", "advice about whether the inverter can run the lights", "a holiday lights business as recipient"]
+      max_questions: 5
+      notes: "Boat decor lands in boat_repair (kb boat_dock electrical_marine); the bank list has no matching job name, so bank_job_type is null. A weak AI treats boat parade as a holiday lights job."
+
+  - id: holiday_lights_s16
+    kind: no_photo
+    persona: "40s, homeowner with young kids, texts in a hurry, wants options"
+    opening_message: "hi need quotes for christmas lights on 4 palm trees out front and the bushes. can u give me a few options like basic and fancy"
+    photo: "none; says his phone is full and he will try later"
+    hidden_facts:
+      - "four palms about 20 feet tall in a rock yard"
+      - "a set of low bushes along the front wall, about six of them"
+      - "an overhead service line runs through the fronds of the left palm"
+      - "one story, shingle roof, no roofline needed"
+      - "business to supply the lights, to keep"
+      - "two outdoor outlets, one on each side of the front door; the palms are about 40 feet from the nearest"
+      - "wants hang only, in early December"
+    homeowner_behavior: "pushes for options and price; asks the AI to recommend; gives facts only when a question calls for them; skips photos"
+    traps:
+      - "hidden: power line through one palm; a business would care and it goes on the card as a fact with no advice"
+      - "hidden: palms far from outlets, long cords or timers"
+      - "tiered quotes are the format, but the AI does not make tiers or prices; the businesses build them"
+      - "he asks for a recommendation of basic or fancy; the AI must not give one"
+    expected:
+      category: holiday_lights
+      job_type: trees_bushes
+      bank_job_type: "plug-in light hanging"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["4 palms about 20 ft and about 6 bushes", "overhead service line through fronds of left palm", "business supplies lights to keep", "two outdoor outlets, about 40 ft from palms", "1 story, shingle roof", "hang only, early December", "wants tiered options"]
+      must_not_be_on_card: ["any price", "a basic or fancy tier written by the AI", "advice about the power line", "a recommendation"]
+      max_questions: 6
+      notes: "Overhead line is not a downed line, so no 911 text. The tier request is for businesses to answer in their own words. No photo; the AI may ask once more, then proceed."

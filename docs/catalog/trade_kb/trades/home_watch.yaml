@@ -1,0 +1,394 @@
+# Written by Claude (expert layer, Oct 29 2026), not part of the Grok delivery (D-431). AI research, not legal advice.
+# Ask Hava trade knowledge file: home_watch. Schema: foundation/schema.yaml (v2). Items marked [judgment] are not
+# from a cited source. Ask Hava never diagnoses, prices, recommends or supervises work.
+trade: home_watch
+display_name: "Home watch"
+summary: >
+  Scheduled visits to a home while the owner is away, most often a seasonal or second home that sits empty for
+  months. A visit is a walk-through that looks for plain, visible problems and reports back to the owner, often with
+  photos [T-nhwa]. Most requests are ongoing weekly or every-other-week checks, quoted by the month. Others are one
+  visit after a monsoon storm, getting the house ready before the owner arrives or closing it up after they leave,
+  letting a contractor or delivery in, or holding a spare key [judgment]. Ask Hava collects how often, how big the
+  home is, what each visit should include, when the owner is away and how the business gets in, then sends an
+  anonymous job card. Home watch is not property management: rent collection, finding tenants and leasing are never
+  carded (LIC-018), and in Arizona those acts for another person are real estate broker acts under A.R.S. 32-2101
+  [T-ars_2101]. No state contractor license applies to the visits themselves [judgment].
+job_types:
+  - id: weekly_house_check
+    label: "Regular checks while away (weekly, every two weeks or monthly)"
+    site_visit_usually_needed: "no"
+  - id: storm_check
+    label: "One-time check after a storm or monsoon"
+    site_visit_usually_needed: "no"
+  - id: arrival_departure
+    label: "Get the house ready before arrival or close it up after leaving (AC, water, fridge)"
+    site_visit_usually_needed: "no"
+  - id: meet_and_greet
+    label: "Let in a contractor, cleaner or delivery while the owner is away"
+    site_visit_usually_needed: "no"
+  - id: key_holding
+    label: "Hold a spare key and come let the owner in if locked out (optional add-on)"
+    site_visit_usually_needed: "no"
+  - id: leasing_refused
+    label: "Rent collection, finding tenants or leasing (not offered, no card)"
+    site_visit_usually_needed: "no"
+triggers_en:
+  - phrase: "home watch"
+    job_type: null
+  - phrase: "house watch"
+    job_type: null
+  - phrase: "house watcher"
+    job_type: null
+  - phrase: "home watcher"
+    job_type: null
+  - phrase: "someone to watch my house"
+    job_type: null
+  - phrase: "keep an eye on my house"
+    job_type: null
+  - phrase: "check on my place"
+    job_type: null
+  - phrase: "snowbird house check"
+    job_type: weekly_house_check
+  - phrase: "house check"
+    job_type: weekly_house_check
+  - phrase: "weekly house check"
+    job_type: weekly_house_check
+  - phrase: "check my house every week"
+    job_type: weekly_house_check
+  - phrase: "every other week house check"
+    job_type: weekly_house_check
+  - phrase: "biweekly home check"
+    job_type: weekly_house_check
+  - phrase: "check on the house while were gone for the summer"
+    job_type: weekly_house_check
+  - phrase: "vacant home checks"
+    job_type: weekly_house_check
+  - phrase: "empty house check"
+    job_type: weekly_house_check
+  - phrase: "second home check"
+    job_type: weekly_house_check
+  - phrase: "run the water and flush toilets"
+    job_type: weekly_house_check
+  - phrase: "house sitter"
+    job_type: weekly_house_check
+  - phrase: "storm check"
+    job_type: storm_check
+  - phrase: "check my house after the storm"
+    job_type: storm_check
+  - phrase: "monsoon check"
+    job_type: storm_check
+  - phrase: "after the monsoon can someone look"
+    job_type: storm_check
+  - phrase: "big wind last night check my house"
+    job_type: storm_check
+  - phrase: "power went out at my house and im not there"
+    job_type: storm_check
+  - phrase: "turn the ac on before we get there"
+    job_type: arrival_departure
+  - phrase: "open up the house"
+    job_type: arrival_departure
+  - phrase: "close up the house"
+    job_type: arrival_departure
+  - phrase: "get the house ready for our arrival"
+    job_type: arrival_departure
+  - phrase: "stock the fridge"
+    job_type: arrival_departure
+  - phrase: "turn the water back on"
+    job_type: arrival_departure
+  - phrase: "shut down the house for summer"
+    job_type: arrival_departure
+  - phrase: "let the plumber in"
+    job_type: meet_and_greet
+  - phrase: "meet the ac guy"
+    job_type: meet_and_greet
+  - phrase: "let a contractor in while im away"
+    job_type: meet_and_greet
+  - phrase: "wait for a delivery"
+    job_type: meet_and_greet
+  - phrase: "key holder"
+    job_type: key_holding
+  - phrase: "hold a spare key"
+    job_type: key_holding
+  - phrase: "collect rent"
+    job_type: leasing_refused
+  - phrase: "find renters"
+    job_type: leasing_refused
+triggers_es:
+  - phrase: "cuidar mi casa"
+    job_type: null
+  - phrase: "revisar la casa"
+    job_type: null
+  - phrase: "vigilar la casa mientras no estoy"
+    job_type: null
+  - phrase: "revisar mi casa cada semana"
+    job_type: weekly_house_check
+  - phrase: "revisar la casa cada dos semanas"
+    job_type: weekly_house_check
+  - phrase: "casa vacía"
+    job_type: weekly_house_check
+  - phrase: "revisar la casa después de la tormenta"
+    job_type: storm_check
+  - phrase: "después del monzón"
+    job_type: storm_check
+  - phrase: "prender el aire antes de llegar"
+    job_type: arrival_departure
+  - phrase: "preparar la casa para cuando lleguemos"
+    job_type: arrival_departure
+  - phrase: "dejar entrar al técnico"
+    job_type: meet_and_greet
+  - phrase: "recibir un paquete"
+    job_type: meet_and_greet
+  - phrase: "guardar una llave"
+    job_type: key_holding
+  - phrase: "cobrar la renta"
+    job_type: leasing_refused
+questions:
+  - id: service
+    text: "What do you need?"
+    options: ["Regular checks while I'm away", "One check after a storm", "Get the house ready or close it up", "Let someone in", "Hold a spare key", "Not sure"]
+    ask_if: "always"
+    changes_price: "yes"
+    why: "Ongoing checks are quoted by the month and one visit is quoted on its own. [judgment]"
+  - id: schedule
+    text: "How often should someone check the home?"
+    options: ["Weekly", "Every two weeks", "Monthly", "After storms only", "Not sure"]
+    ask_if: "job_type == weekly_house_check"
+    changes_price: "yes"
+    why: "The number of visits each month sets the monthly quote. [judgment]"
+  - id: home_size
+    text: "About how big is the home?"
+    options: ["Under 1,500 sq ft", "1,500 to 2,500 sq ft", "Over 2,500 sq ft", "Not sure"]
+    ask_if: "job_type != leasing_refused"
+    changes_price: "yes"
+    why: "A bigger home, a casita or a detached garage takes longer to walk through. [judgment]"
+  - id: tasks
+    text: "What should the visit include?"
+    options: ["Walk-through and photos", "Run taps and flush toilets", "Check the AC and thermostat", "Water plants", "All of these", "Not sure"]
+    ask_if: "job_type in [weekly_house_check, storm_check, arrival_departure]"
+    changes_price: "yes"
+    why: "Each added task adds time on every visit. Options match the home_watch question set. [judgment]"
+  - id: season
+    text: "When are you away?"
+    options: ["Summer", "Winter", "Year-round", "Off and on", "Not sure"]
+    ask_if: "job_type in [weekly_house_check, arrival_departure]"
+    changes_price: "yes"
+    why: "Summer visits often add AC and heat checks, and a year-round home gets more visits in total. [judgment]"
+  - id: access
+    text: "How will the business get in?"
+    options: ["Someone lets them in", "Lockbox (code given on the call)", "Smart lock", "Not sure"]
+    ask_if: "job_type != leasing_refused"
+    changes_price: "no"
+    why: "Access is needed to plan a visit. Codes and keys are never put on the card. [judgment]"
+quote_without_visit_needs:
+  - "Type of service: ongoing checks, one storm check, arrival or departure, let someone in, or key holding [judgment]"
+  - "How often (weekly, every two weeks, monthly) and for which months [judgment]"
+  - "Rough home size and any casita, detached garage, pool or boat or RV on site [judgment]"
+  - "What each visit should include (walk-through and photos, taps and toilets, AC and thermostat, plants) [judgment]"
+  - "How the business gets in (gate codes and lockbox codes are given only on the call, never on the card) [judgment]"
+  - "Whether the home is in a gated HOA that needs a visitor or vendor pass [judgment]"
+site_visit_usually_needed:
+  - "Most businesses do a first walk-through with the owner or a local contact before the first scheduled check, to learn the home and where the shutoffs are [judgment]"
+  - "Large homes or properties with several buildings [judgment]"
+photos_to_request:
+  - id: p1_home_front
+    ask: "A photo of the front of the home, with no house number or car plates showing."
+    for_job_types: [weekly_house_check, storm_check, arrival_departure, meet_and_greet]
+  - id: p2_entry_access
+    ask: "A photo of the door or gate the business would use, with no codes or lockbox showing."
+    for_job_types: [weekly_house_check, arrival_departure, meet_and_greet, key_holding]
+  - id: p3_thermostat
+    ask: "A photo of the thermostat screen."
+    for_job_types: [weekly_house_check, arrival_departure]
+  - id: p4_water_shutoff
+    ask: "A photo of the main water shutoff or the water heater, if you know where it is."
+    for_job_types: [weekly_house_check, arrival_departure]
+  - id: p5_storm_area
+    ask: "If someone local sent you a photo after the storm, add it here."
+    for_job_types: [storm_check]
+photo_cues:
+  - photo_id: p1_home_front
+    look_for: ["One or two stories", "Rough size of the home", "Casita, detached garage or RV or boat parking", "Yard type (rock, grass, plants)"]
+    neutral_wording_example: "Photo shows a one-story home with a two-car garage, rock front yard and an RV pad."
+  - photo_id: p2_entry_access
+    look_for: ["Front door, side door or gate", "Smart lock or keypad (no code visible)", "Gated walkway or courtyard"]
+    neutral_wording_example: "Photo shows a front door with a keypad lock and a courtyard gate."
+  - photo_id: p3_thermostat
+    look_for: ["Thermostat type (basic, programmable or smart)", "Current reading on the screen"]
+    neutral_wording_example: "Photo shows a programmable thermostat on cooling mode."
+  - photo_id: p4_water_shutoff
+    look_for: ["Where the main shutoff or water heater sits (garage, closet, outside)", "Valve handle type"]
+    neutral_wording_example: "Photo shows the water heater in the garage with a valve on the line above it."
+  - photo_id: p5_storm_area
+    look_for: ["Debris in the yard or pool", "Fallen branches or palm fronds", "Items moved by wind", "Standing water"]
+    neutral_wording_example: "Photo shows palm fronds and patio cushions in the back yard and pool."
+photo_red_flags:
+  - flag: "Smoke or flames at the home"
+    safety_step_ref: es_home_watch_1
+  - flag: "Water on floors, a stained ceiling or water running out of the home (not home watch; may be a plumbing or roofing card) [judgment]"
+    safety_step_ref: null
+  - flag: "A door standing open or a broken window (not home watch work; Ask Hava gives no advice; a windows_doors or locksmith card may fit) [judgment]"
+    safety_step_ref: null
+  - flag: "Photo shows a gate code, lockbox, key, house number, plate or a person's face (privacy: ask for a cropped or new photo)"
+    safety_step_ref: null
+emergency_signals:
+  - id: es_home_watch_1
+    signal: "Smoke, fire, a gas smell, a CO alarm going off or a downed power line at the home (often reported by a neighbor)"
+    emergency: "yes"
+    safety_step: "Not used by the app. Ask Hava sends only the fixed INT-004 911 text. [judgment]"
+    source: "INT-004 (D-436)"
+    then_route_to: "none"
+    note: "Routing: none until the 911 text is sent and the homeowner says they are safe."
+  - id: es_home_watch_2
+    signal: "Water leak, wet floors or running water found at an empty home"
+    emergency: "no"
+    safety_step: "No safety step. Not on the 911 list. [judgment]"
+    source: "[judgment]"
+    then_route_to: plumbing
+    note: "The repair is a plumbing card; a roof leak is a roofing card. A home watch card can go out too if the owner wants checks after. [judgment]"
+  - id: es_home_watch_3
+    signal: "Routine checks, storm checks, arrival or departure, let someone in or key holding"
+    emergency: "no"
+    safety_step: "No safety step. Not an emergency. [judgment]"
+    source: "[judgment]"
+    then_route_to: home_watch
+safety_step:
+  - when: "Smoke, fire, gas smell, CO alarm or downed power line"
+    step: "Ask Hava sends only the fixed INT-004 911 text. No other safety wording is used. [judgment]"
+    source: "INT-004 (D-436)"
+intake_notes_judgment:
+  - "An owner who is away often writes from out of state. The card says the owner is away and how the business gets in, never the code. [judgment]"
+  - "A request that mixes home watch with renting the home out: card the home watch part only and send the not-offered reply for rent collection, tenants or leasing (LIC-018). [judgment]"
+  - "Pool service while away is a separate pool_cleaning card (vacation_service). Repairs found on a check go to the matching trade. [judgment]"
+  - "Vacation-rental turnover cleaning is its own category (turnover_cleaning; KB house_cleaning str_turnover), not home watch. [judgment]"
+license_classes:
+  - job_type: [weekly_house_check, storm_check, arrival_departure, meet_and_greet, key_holding]
+    work: "Visual checks of an empty home, opening and closing it, letting people in, holding a key"
+    classes: ["none"]
+    citation: "No ROC class in A.A.C. R4-9-103 covers looking over a home; it is not construction work [judgment] [S2]"
+    other_agency: "Lake Havasu City business license; some businesses also need a privilege tax license [T-lhc_bizlic]"
+    notes: "Ask Hava does not check city licenses. Any repair found on a visit is a separate card for the matching trade and its license class (for example plumbing R-37, roofing R-42). The visits alone do not rent, lease or collect rent, the acts that A.R.S. 32-2101(51) lists for a real estate broker [T-ars_2101] [judgment, not legal advice]."
+  - job_type: [leasing_refused]
+    work: "Rent collection, finding tenants, showing or leasing a rental"
+    classes: ["none (not offered by Ask Hava)"]
+    citation: "A.R.S. 32-2101(51): a real estate broker is a person who, for another and for compensation, rents or leases real estate (a), negotiates a rental or lease (c), collects rent (g) or helps procure tenants (i) [T-ars_2101]; A.R.S. 32-2122(B): unlawful to act as a broker without a license [T-ars_2122]; A.R.S. 32-2121 lists the exceptions [T-ars_2121]"
+    other_agency: "Arizona Department of Real Estate (ADRE) [T-adre]"
+    notes: "Never carded (LIC-018; property management is not offered, LIC-004). The 32-2121 exceptions include an owner managing their own property (A)(1) and a person who takes reservations or money for stays of 31 or fewer days in a dwelling unit (A)(15) [T-ars_2121]. A real estate trade group says the (A)(15) exception may not cover every short-term rental setup [T-aar_airbnb]. Ask Hava gives no legal advice and does not decide these questions."
+handyman_ok:
+  allowed_examples: []
+  not_allowed_examples: []
+  rule_reminder: "Handyman exemption only if the whole job (labor + materials) is under $1,000, needs no permit, is not part of a larger or split job, does not connect to gas or propane and is not fire-safety work (32-1121(D)), and ads say 'not a licensed contractor'. Source: A.R.S. 32-1121(A)(14) and (D) [S4]"
+  note: "Home watch visits are not construction work, so the handyman exemption does not come into play [judgment]. The category does not send cards to handyman businesses (handyman_allowed: false in docs/catalog/categories.yaml). Small fixes found on a visit go out as a separate handyman or trade card."
+local_notes:
+  - "Seasonal residents: many Havasu homes sit empty for months, so we see house-watching requests, AC checks before arrival and 'came back and found' messages [judgment, foundation part1]."
+  - "Two away seasons: winter visitors often leave in spring and are gone all summer, and some owners who live elsewhere use the home only on weekends or in winter. The season question helps a business plan [judgment]."
+  - "Summer heat runs June to September. An AC that stops in an empty home may not be found until the next visit, so many owners ask for AC and thermostat checks in summer [judgment]. Ask Hava gives no thermostat or heat advice."
+  - "Monsoon season officially runs June 15 to September 30; the NWS names flash flooding, lightning and heat as its main threats [T-nws_monsoon]. Storm checks after wind or dust often look for debris, pool mess, moved patio items and power outages [judgment]."
+  - "Water leaks in empty homes: water damage and freezing were 22.6 percent of US homeowners insurance losses in 2023 (ISO data), and about 1.6 percent of insured homes had such a loss each year from 2018 to 2022 [T-iii_homeowners]. National figures, not Lake Havasu. Background only."
+  - "The EPA says about 9 percent of US homes have leaks that waste 50 gallons or more a day [T-epa_fixaleak]. Background only; Ask Hava does not diagnose leaks."
+  - "City water is hard, about 19 grains per gallon (range 18 to 20) [T-lhc_water_quality]. Running taps and flushing toilets is a common visit task [judgment]."
+  - "HOAs and gated communities: some need a vendor or visitor pass, set contractor hours or have rules for yards and trash bins at empty homes. The business sorts this out with the owner [judgment]."
+  - "Some homeowners insurance policies have terms for homes left empty for a long time; some owners ask for dated visit photos for their records. Ask Hava gives no insurance advice [judgment]."
+  - "Boats, RVs, golf carts and pools at the home are common. A home watch visit may look at them, but repairs go to boat_dock, rv_services, golf_cart or pool_spa_repair [judgment]."
+  - "Manufactured homes and homes in parks are common; walk-throughs are the same, repairs follow the manufactured-home rules in the other trade files [judgment]."
+  - "Trade body: the National Home Watch Association (NHWA) describes home watch as a visual inspection of an empty home on a set schedule, reporting problems to the owner and acting on the owner's instructions. It says home watch is not a security service and not a house-sitting service [T-nhwa]."
+  - "NHWA accreditation is voluntary. NHWA says its review covers company principals, general and professional liability insurance and bonding [T-nhwa]. Ask Hava does not check NHWA status or make claims about any business."
+  - "Not property management: Ask Hava never cards rent collection, finding tenants or leasing (LIC-018), and property management is not offered (LIC-004)."
+sample_card: |
+  REQ-0142 | Home watch | Lake Havasu City, north side
+  Owner away in summer. Wants checks every two weeks: walk-through and photos, run taps and flush toilets, check AC.
+  About 2,000 sq ft, one story, pool on site (pool service is separate). Access by lockbox, code given on the call. 2 photos.
+test_messages:
+  - id: home_watch_t01
+    message: "snowbird"
+    trade: home_watch
+    job_type: unknown
+    emergency: "no"
+    first_question_id: service
+    ideal_first_question: "What do you need?"
+    note: "job_type unknown = too vague; the first question picks the job type."
+  - id: home_watch_t02
+    message: "need someone to check on my house every week while were gone for the summer"
+    trade: home_watch
+    job_type: weekly_house_check
+    emergency: "no"
+    first_question_id: home_size
+    ideal_first_question: "About how big is the home?"
+    note: "Schedule and season are already in the message."
+  - id: home_watch_t03
+    message: "necesito que alguien revise mi casa cada dos semanas mientras estoy fuera"
+    trade: home_watch
+    job_type: weekly_house_check
+    emergency: "no"
+    first_question_id: home_size
+    ideal_first_question: "¿Más o menos qué tamaño tiene la casa?"
+    note: ""
+  - id: home_watch_t04
+    message: "monsoon came thru last night can someone go look at my place, we live in washington"
+    trade: home_watch
+    job_type: storm_check
+    emergency: "no"
+    first_question_id: home_size
+    ideal_first_question: "About how big is the home?"
+    note: ""
+  - id: home_watch_t05
+    message: "coming back next month, want the ac on, water turned on and fridge stocked before we get there"
+    trade: home_watch
+    job_type: arrival_departure
+    emergency: "no"
+    first_question_id: home_size
+    ideal_first_question: "About how big is the home?"
+    note: "Tasks are already in the message."
+  - id: home_watch_t06
+    message: "house checks and pool service while we're gone"
+    trade: home_watch
+    job_type: weekly_house_check
+    emergency: "no"
+    first_question_id: schedule
+    ideal_first_question: "How often should someone check the home?"
+    note: "Mixed: home watch card here; the pool part is a separate pool_cleaning card (vacation_service)."
+  - id: home_watch_t07
+    message: "locked out of my house right now, no spare key"
+    trade: locksmith
+    job_type: home_lockout
+    emergency: "no"
+    first_question_id: q1_what
+    ideal_first_question: "What do you need?"
+    note: "Wrong trade: a lockout now goes to locksmith. key_holding is only for a spare key set up ahead of time."
+  - id: home_watch_t08
+    message: "can you find renters for my place and collect the rent while im away"
+    trade: home_watch
+    job_type: leasing_refused
+    emergency: "no"
+    first_question_id: null
+    ideal_first_question: "Send the not-offered reply; ask if they also want home checks while away."
+    note: "Refused (LIC-018). No card for leasing or rent collection."
+  - id: home_watch_t09
+    message: "neighbor just texted theres smoke coming from my house and im out of state"
+    trade: home_watch
+    job_type: weekly_house_check
+    emergency: "yes"
+    first_question_id: safety_step_first
+    ideal_first_question: "Send the INT-004 911 text first."
+    note: "Smoke is on the 911 list. Any card waits until the homeowner replies SAFE; the job type is picked after."
+  - id: home_watch_t10
+    message: "need someone to meet the ac guy at my house tuesday, im in phoenix"
+    trade: home_watch
+    job_type: meet_and_greet
+    emergency: "no"
+    first_question_id: access
+    ideal_first_question: "How will the business get in?"
+    note: "The AC repair itself is an hvac matter between the owner and that company."
+sources:
+  - "[S2] A.A.C. R4-9-103 Residential contractor license classifications (Cornell LII copy) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+  - "[S4] A.R.S. 32-1121 Persons not required to be licensed (handyman (A)(14), fuel gas and fire safety (D)) https://www.azleg.gov/ars/32/01121.htm"
+  - "[T-ars_2101] A.R.S. 32-2101 Definitions, paragraph 51 real estate broker (a) rents or leases, (c) negotiates rental or leasing, (g) collects rent, (i) procures prospects https://www.azleg.gov/ars/32/02101.htm"
+  - "[T-ars_2121] A.R.S. 32-2121 Applicability of article; exceptions ((A)(1) own property, (A)(15) reservations for stays of 31 or fewer days) https://www.azleg.gov/ars/32/02121.htm"
+  - "[T-ars_2122] A.R.S. 32-2122 License required of brokers and salespersons ((B) unlawful without a license) https://www.azleg.gov/ars/32/02122.htm"
+  - "[T-adre] Arizona Department of Real Estate (licensing) https://azre.gov/"
+  - "[T-aar_airbnb] Arizona REALTORS, Assistance With Airbnb Rentals for Another May Be Real Estate Activity https://www.aaronline.com/?p=39983"
+  - "[T-nhwa] National Home Watch Association, home page (what home watch is and is not; accreditation) https://www.nationalhomewatchassociation.org/"
+  - "[T-lhc_bizlic] Lake Havasu City, Business License (business license; some businesses also need a privilege tax license) https://www.lhcaz.gov/175/Business-License"
+  - "[T-nws_monsoon] National Weather Service Flagstaff, Monsoon information (officially June 15 to September 30) https://www.weather.gov/fgz/monsooninfo"
+  - "[T-lhc_water_quality] Lake Havasu City Annual Drinking Water Quality Report (total hardness 19 grains per gallon, range 18-20) https://www.lhcaz.gov/DocumentCenter/View/3233"
+  - "[T-iii_homeowners] Insurance Information Institute, Facts + Statistics: Homeowners and renters insurance (losses by cause, ISO data) https://www.iii.org/fact-statistic/facts-statistics-homeowners-and-renters-insurance"
+  - "[T-epa_fixaleak] US EPA WaterSense, Fix a Leak Week (household leak figures) https://www.epa.gov/watersense/fix-leak-week"

@@ -1,0 +1,735 @@
+# Ask Hava expert layer: insulation (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set insulation and trade_kb/trades/insulation.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - Mapping. The category has two job types (attic insulation, blown-in insulation); the kb has six.
+#   attic_top_up and wall_blown_in -> "blown-in insulation" (both are blown-in work over or into what is there);
+#   attic_remove_replace, radiant_barrier_ventilation, duct_insulation and garage_shop_ceiling -> "attic insulation".
+#   Nearly every R-40 shop does both, so the split matters little for routing today. No kb job type was left out
+#   and no new_job_type was needed.
+# - garage_shop_ceiling has no clean home. A metal shop with open roof panels is not an attic job and often not
+#   blown-in work (batts or spray foam). It sits under "attic insulation" because a garage ceiling with an attic
+#   above is the common case. A "garage or shop insulation" job type would route it more cleanly.
+# - Radiant barrier is R-40 by name, but cutting a new roof vent (R-42 roofing) and wiring a powered attic fan
+#   (R-11 electrical) are [judgment] on class. Today these cards go to R-40 businesses only. Worth a license_map
+#   look, or a split into "radiant barrier" (R-40) and "attic vents or fan" (R-42 / R-11).
+# - Vermiculite: EPA says assume it holds asbestos, do not disturb it, and hire a professional asbestos contractor
+#   before work that could disturb it. Whether an R-40 business may remove it, or only an asbestos abatement
+#   contractor, is an open question (kb intake_notes). The card states only what the photo shows.
+# - The bank set has three questions (where, size, existing). The kb's access (q5), wall finish (q6) and home type
+#   (q7) are carried as follow-ups, but only one follow-up runs per request. Adding "site-built or manufactured
+#   home" to the bank would free the follow-up for the job-specific question. The bank's "where" options also
+#   lack Ducts and Radiant barrier; those requests answer "Attic".
+# - Lake Havasu City's permit page lists insulation in neither the permit nor the no-permit list; whether a
+#   re-insulation job needs a permit is unverified.
+schema: 1
+category: insulation
+question_set: insulation
+kb_trade: insulation
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications [S2]: R-40 Insulation (install and repair insulation materials, including radiant barriers; preformed acoustical materials; insulation protecting materials); R-42 Roofing includes roof insulation or coatings on or above the roof deck; R-39 includes ventilating; R-45 Sheet Metal includes duct work; R-36 Plastering; R-10 Drywall"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed [S4] (handyman exemption (A)(14): under $1,000 total, no permit, not part of a larger job)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits [S17]: adopts the 2024 IRC with amendments; insulation, attic vents and attic fans appear in neither the permit-required nor the no-permit list"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: bhc_energy
+    title: "Bullhead City, 2018 IRC Energy Conservation as amended: 'Arizona, Mohave County, Declared climate zone is 3-Dry(B)'; ceiling R-38 for zone 3 new homes"
+    url: "https://www.bullheadcityaz.gov/media/scukjaqp/2018-irc-energy-conservation-amended-072025.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: openei_mohave
+    title: "OpenEI, Mohave County, Arizona: ASHRAE 169-2006 climate zone 3, subtype B"
+    url: "https://openei.org/wiki/Mohave_County,_Arizona"
+    checked: "2026-10-29"
+    kind: other
+  - id: doe_insulation
+    title: "US DOE Energy Saver, Insulation: zone 3 attic R-49 to R-60 when uninsulated, R-38 to R-49 when adding to 3 to 4 inches already there; uninsulated wood-frame wall R-20 or R-13 plus R-5 continuous"
+    url: "https://www.energy.gov/energysaver/insulation"
+    checked: "2026-10-29"
+    kind: other
+  - id: doe_radiant
+    title: "US DOE Energy Saver, Radiant Barriers: more effective in hot climates, especially with cooling ducts in the attic; some studies show 5 to 10 percent lower cooling costs in warm, sunny climates; dust on the foil cuts its effect; in existing homes stapled to the bottoms of the rafters, easiest in an open attic"
+    url: "https://www.energy.gov/energysaver/radiant-barriers"
+    checked: "2026-10-29"
+    kind: other
+  - id: energystar_diy
+    title: "ENERGY STAR, A Do-It-Yourself Guide to Sealing and Insulating (May 2008): insulation level with or below the joists means add more; keep insulation 3 inches from non-IC can lights; flue clearance with a metal dam; never block soffit vents, use rafter baffles; seal air leaks first; vermiculite may contain asbestos"
+    url: "https://www.energystar.gov/sites/default/files/asset/document/DIY_Guide_May_2008.pdf"
+    checked: "2026-10-29"
+    kind: other
+  - id: pnnl_non_ic
+    title: "PNNL Building America Solution Center, Insulating and air sealing existing non-IC recessed lights: keep insulation at least 3 inches from a non-IC fixture all the way around; ICAT label; holes in the top of older cans"
+    url: "https://basc.pnnl.gov/resource-guides/insulating-and-air-sealing-existing-non-icat-recessed-lights"
+    checked: "2026-10-29"
+    kind: other
+  - id: epa_vermiculite
+    title: "US EPA (Jan 2021 archive), Protect Your Family from Asbestos-Contaminated Vermiculite Insulation: pebble-like, gray-brown or silver-gold; the Libby mine supplied over 70 percent of US vermiculite 1919 to 1990, often sold as Zonolite; assume it contains asbestos and do not disturb it; hire a professional asbestos contractor before work that could disturb it"
+    url: "https://19january2021snapshot.epa.gov/asbestos/protect-your-family-asbestos-contaminated-vermiculite-insulation_.html"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ftc_rvalue
+    title: "16 CFR 460.17 (FTC R-value Rule), installer receipts: for loose fill, the receipt must show coverage area, initial installed thickness, minimum settled thickness, R-value and number of bags"
+    url: "https://www.law.cornell.edu/cfr/text/16/460.17"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ua_hantavirus
+    title: "University of Arizona Cooperative Extension AZ2158, Hantavirus and Disease Prevention (2025): deer mice and wood rats carry Sin Nombre virus; western deer mouse more prevalent in western and central Arizona; do not sweep or vacuum contaminated areas; wet with disinfectant; HEPA respirator for heavy infestations"
+    url: "https://extension.arizona.edu/publication/hantavirus-and-disease-prevention"
+    checked: "2026-10-29"
+    kind: other
+  - id: nws_monsoon
+    title: "National Weather Service Phoenix, Monsoon Awareness: season June 15 to September 30; outflow gusts of 50 mph or more with dense dust"
+    url: "https://weather.gov/psr/monsoonawarenessweek"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_climate
+    title: "US Climate Data, Lake Havasu City: average highs June 105 F, July 109 F, August 108 F; December average low 43 F"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: ues_weatherization
+    title: "UniSource Energy Services, Weatherization Assistance: attic, wall and duct insulation for income-qualifying electric customers (200 percent of federal poverty level); run by WACOG in Mohave County"
+    url: "https://www.uesaz.com/weatherization-assistance/"
+    checked: "2026-10-29"
+    kind: other
+  - id: ues_efficient_home
+    title: "UniSource Energy Services, Efficient Home Program: duct sealing rebate up to $150 through participating licensed contractors; no attic insulation or air sealing rebate listed"
+    url: "https://www.uesaz.com/efficient-home-program/"
+    checked: "2026-10-29"
+    kind: other
+  - id: pipeline_construction_leads
+    title: "Pipeline (marketing vendor), Construction Leads Guide 2026: shared marketplace leads (Angi, HomeAdvisor, Thumbtack) about $20 to $75, 5 to 12 contractors get the same one (citing Hook Agency); Google Local Services Ads about $53 per lead across home services (citing Searchlight Digital); Google Ads about $165 per lead in construction (citing LocaliQ)"
+    url: "https://pipelineon.com/blog/construction-leads-guide/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: valley_angi_cpl
+    title: "The Valley Marketing Group (marketing vendor), HomeAdvisor and Angi cost per lead for contractors 2026: general contracting and remodeling $40 to $100 or more per lead; a standard lead goes to 3 to 8 other contractors at once"
+    url: "https://thevalleymarketinggroup.com/blog/homeadvisor-angi-cost-per-lead-contractors-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Square feet of attic floor, wall or ceiling to cover"
+      why: "Insulation is priced by area at a set depth; the bank's size answer is the first number an estimator writes down. [judgment]"
+      source: null
+    - driver: "Add over what is there, or remove it first"
+      why: "Removal adds a vacuum truck or bagging crew, hauling and cleanup before any new material goes in, often doubling the labor. [judgment]"
+      source: null
+    - driver: "Depth there now against the target R-value"
+      why: "DOE lists R-38 to R-49 for a zone 3 attic that already has 3 to 4 inches and R-49 to R-60 for an empty one; the gap sets the bag count."
+      source: doe_insulation
+    - driver: "Droppings, nests, water stains or a pebble-like fill in the old insulation"
+      why: "Rodent waste brings protective gear and wet cleanup; vermiculite is treated as asbestos and may stop the job until it is handled."
+      source: epa_vermiculite
+    - driver: "Room to work: hatch size and spot, roof pitch, AC air handler and flex ducts across the attic floor"
+      why: "A small closet hatch, a low tile-roof attic or ducts laid on the joists slow the crew and can mean a second opening. [judgment]"
+      source: null
+    - driver: "Prep before the blow: rafter baffles at the eaves, covers or dams at can lights and flues, sealing the hatch"
+      why: "ENERGY STAR says never block soffit vents, keep insulation off non-IC cans and away from flues, and seal leaks first; each is a line item."
+      source: energystar_diy
+    - driver: "Site-built house or manufactured home"
+      why: "Many manufactured homes have a shallow roof cavity with no walk-in attic, so the method and the gear change. [judgment]"
+      source: null
+    - driver: "Wall jobs: outside finish and stories"
+      why: "Drilling and patching stucco, filling block cores or pulling siding are different jobs, and two stories add ladders or a lift. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Pebble-like gray-brown or silver-gold fill under newer insulation (looks like vermiculite)"
+      how_a_pro_spots_it: "Loose granules in the close-up depth photo, often near the joists under a top layer; older home"
+      question_or_photo: p2_existing_depth
+      source: epa_vermiculite
+    - condition: "Rodent droppings, nests and tunnels under a clean-looking top layer, which turns a top-up into a removal"
+      how_a_pro_spots_it: "Dark specks or matted trails along the eaves in the close-up; pack rat or mouse mention in her words"
+      question_or_photo: fu_animals_now
+      source: ua_hantavirus
+    - condition: "Older recessed can lights that are not rated for insulation contact and need covers or a 3 inch gap"
+      how_a_pro_spots_it: "Metal cans with holes on top poking through the insulation in the wide attic photo; can lights in the ceiling below"
+      question_or_photo: p1_attic_wide
+      source: pnnl_non_ic
+    - condition: "Soffit vents already buried, or no baffles, so a top-up would block attic airflow"
+      how_a_pro_spots_it: "Insulation packed to the roof deck at the eaves in the wide photo; no daylight at the eave line"
+      question_or_photo: p1_attic_wide
+      source: energystar_diy
+    - condition: "Gas water heater or furnace flue running through the attic that needs a metal dam"
+      how_a_pro_spots_it: "Metal pipe rising through the attic floor in the wide photo; gas appliance in a closet below"
+      question_or_photo: p1_attic_wide
+      source: energystar_diy
+    - condition: "Air handler, flex ducts and wiring laid across the joists, leaving no path to walk or blow from"
+      how_a_pro_spots_it: "Ducts on top of the insulation and a unit near the hatch in the wide photo"
+      question_or_photo: p1_attic_wide
+      source: null
+    - condition: "Insulation wet from a roof or AC drain leak that is still active"
+      how_a_pro_spots_it: "Dark, matted or sagging patches in the close-up; ceiling stain below; recent storm in her words"
+      question_or_photo: fu_wet_source
+      source: null
+    - condition: "Shallow roof cavity with no hatch, common on manufactured homes"
+      how_a_pro_spots_it: "Low-slope metal or rolled roof in the outside photo; no hatch photo sent; manufactured home answer"
+      question_or_photo: fu_home_type
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "attic_top_up (house is hot, bills are high)"
+      might_be: "ac_not_cooling (hvac kb), a different category"
+      one_question: fu_ac_cooling
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "radiant_barrier_ventilation (some rooms too hot)"
+      might_be: "sun through west or south windows, a solar screen job"
+      one_question: fu_hot_where
+      if_other_route_to: {category: solar_screens, job_type: "solar screens"}
+      source: null
+    - sounds_like: "attic_remove_replace (rats in the attic insulation)"
+      might_be: "rodents still getting in (pest_control kb rodents)"
+      one_question: fu_animals_now
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+    - sounds_like: "attic_remove_replace (wet insulation after a storm)"
+      might_be: "roof leak still open (roofing kb leak_repair)"
+      one_question: fu_wet_source
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "attic_remove_replace (wet insulation near the attic AC unit, no rain)"
+      might_be: "AC drain leak (hvac kb), a different category"
+      one_question: fu_wet_source
+      if_other_route_to: {category: hvac_repair, job_type: "AC not cooling"}
+      source: null
+    - sounds_like: "duct_insulation (ducts sweating, one room hot)"
+      might_be: "ductwork_airflow (hvac kb): torn, loose or fallen ducts"
+      one_question: fu_duct_want
+      if_other_route_to: {category: hvac_repair, job_type: "duct repair"}
+      source: null
+    - sounds_like: "garage_shop_ceiling (garage is an oven)"
+      might_be: "an uninsulated garage door, a garage door job"
+      one_question: fu_garage_parts
+      if_other_route_to: {category: garage_doors, job_type: "door replacement"}
+      source: null
+  photo_reading:
+    - photo_id: p1_attic_wide
+      reads: ["Loose fill, batts or bare joists", "Whether joist tops show above the insulation", "Air handler and flex ducts on the attic floor", "Can lights or junction boxes in the insulation", "Flue pipes", "Eave vents clear or buried", "Foil already on the rafters", "Roof pitch and headroom"]
+      neutral_wording: "Loose fill about level with the joist tops, flex ducts lying on top, a metal flue pipe near the hatch."
+    - photo_id: p2_existing_depth
+      reads: ["Depth on the tape", "Fiberglass (pink, yellow, white) or cellulose (gray flakes)", "Pebble-like gray-brown or gold granules", "Droppings, nests, tunnels", "Water stains or matted patches"]
+      neutral_wording: "Tape shows about 4 inches of yellow loose fill; dark specks along the eave side."
+    - photo_id: p3_access
+      reads: ["Hatch in a closet, hallway or garage", "Opening size", "Pull-down ladder or none", "Shelving or storage under the hatch"]
+      neutral_wording: "Small hatch in the hallway closet ceiling, no ladder, shelves below."
+    - photo_id: p4_house_outside
+      reads: ["Stucco, block or siding", "One or two stories", "Tile, shingle, foam or metal roof", "Gable vents, roof vents or attic fan", "Manufactured home skirting"]
+      neutral_wording: "Single-story stucco home, tile roof, gable vents at both ends."
+    - photo_id: p5_garage_ceiling
+      reads: ["Drywall ceiling or open rafters", "Metal building or framed", "Room above", "Opener and lights in the way", "Insulated garage door or not"]
+      neutral_wording: "Open metal roof panels, no ceiling, two-car shop with a roll-up door."
+    - photo_id: p6_ducts
+      reads: ["Flex or metal duct", "Torn or missing wrap", "Drips or stains on or under the ducts", "Ducts sagging or apart at a joint"]
+      neutral_wording: "Metal trunk duct with no wrap; flex runs with a torn outer jacket."
+  local_factors:
+    - fact: "Mohave County is declared climate zone 3, dry (3B)"
+      effect: "DOE and code tables for zone 3 are the numbers businesses quote against; R-38 is the zone 3 ceiling level for new homes in Bullhead City's amended code"
+      source: bhc_energy
+    - fact: "Summer highs average 105 to 109 F from June to August"
+      effect: "Attic crews work at first light in summer, so start dates stretch and the timing answer matters more [judgment]"
+      source: lhc_climate
+    - fact: "Monsoon runs June 15 to September 30 with outflow winds of 50 mph or more and dense dust"
+      effect: "Dust blows in through attic vents and onto foil, and storm leaks wet insulation; wet-insulation requests come after storms [judgment]"
+      source: nws_monsoon
+    - fact: "Wood rats (pack rats) and deer mice carry Sin Nombre hantavirus, and the western deer mouse is more common in western Arizona"
+      effect: "Rodent-soiled insulation is a removal job with protective gear and wet cleanup, never a top-up"
+      source: ua_hantavirus
+    - fact: "The city's permit page lists insulation in neither the permit nor the no-permit list"
+      effect: "Whether a re-insulation job needs a permit is the business's call; the card never says either way [judgment]"
+      source: lhc_permits
+    - fact: "UniSource offers free attic, wall and duct insulation to income-qualifying electric customers through WACOG in Mohave County, and no attic insulation rebate"
+      effect: "Some homeowners will already have asked about the program; Ask Hava never says who qualifies [judgment]"
+      source: ues_weatherization
+    - fact: "Manufactured homes are common and many have a shallow roof cavity with no walk-in attic"
+      effect: "The card says manufactured home in the first line so businesses that do roof-cavity blowing can see it [judgment]"
+      source: null
+    - fact: "Seasonal residents and vacant second homes"
+      effect: "Work is often done while the owner is away; access is arranged by the business after the pick, never on the card [judgment]"
+      source: null
+  seasonality:
+    busy: "March to June, before the heat and when the first summer bill lands; a second bump in September and October [judgment]"
+    slow: "December to February, and midday hours all summer [judgment]"
+    source: null
+
+job_types:
+  - id: attic_top_up
+    label: "Attic top-up (blown-in over existing insulation)"
+    bank_job_type: "blown-in insulation"
+    recurring: false
+    homeowner_phrasings: ["blow more insulation in the attic", "attic looks thin", "can see the beams in the attic", "upstairs is so hot", "electric bill is crazy"]
+    must_know:
+      - fact: "Square feet of attic floor"
+        bank_question: size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Bags and hours scale with area. [judgment]"
+        skip_if: "She gave the house size"
+      - fact: "How deep the old insulation is, against the joist tops"
+        bank_question: existing
+        follow_up: fu_depth_now
+        photo: p2_existing_depth
+        why_it_moves_price: "Level with or below the joists means a full top-up; DOE's zone 3 target over 3 to 4 inches is R-38 to R-49."
+        skip_if: "Depth photo with a tape sent"
+      - fact: "What the old insulation is made of"
+        bank_question: null
+        follow_up: fu_old_material
+        photo: p2_existing_depth
+        why_it_moves_price: "Fiberglass or cellulose sets the top-up material; pebble-like fill may stop the job until it is handled. [judgment]"
+        skip_if: "Close-up photo shows the material"
+      - fact: "How the crew gets in and what is on the attic floor"
+        bank_question: null
+        follow_up: null
+        photo: p3_access
+        why_it_moves_price: "A small closet hatch or ducts across the joists slow the blow and may need a walkway. [judgment]"
+        skip_if: "Hatch and wide attic photos sent"
+      - fact: "Site-built house or manufactured home"
+        bank_question: null
+        follow_up: fu_home_type
+        photo: p4_house_outside
+        why_it_moves_price: "A shallow roof cavity is blown through the roof or ceiling, a different method. [judgment]"
+        skip_if: "Her words or the outside photo say which"
+    allowed_follow_ups:
+      - id: fu_depth_now
+        ask_when: "Top-up request, no depth photo, and she has seen the attic"
+        text_en: "In the attic, is the old insulation below the tops of the wood beams on the floor, about level with them, or covering them?"
+        text_es: "En el ático, ¿el aislamiento viejo está por debajo de las vigas de madera del piso, más o menos al nivel, o las cubre?"
+        options_en: ["Below the beams", "About level", "Covering the beams", "Haven't looked"]
+        options_es: ["Por debajo de las vigas", "Más o menos al nivel", "Cubre las vigas", "No he visto"]
+        card_field: true
+        why: "ENERGY STAR uses the joist tops as the quick depth check; it sets the bag count."
+      - id: fu_old_material
+        ask_when: "No close photo of the old insulation, or the photo is unclear"
+        text_en: "What does the old insulation look like: fluffy pink, yellow or white, gray flakes like shredded paper, rolls or sheets, or small gray-brown or gold pebbles?"
+        text_es: "¿Cómo se ve el aislamiento viejo: esponjoso rosa, amarillo o blanco, hojuelas grises como papel picado, rollos o láminas, o piedritas color café grisáceo o dorado?"
+        options_en: ["Fluffy pink, yellow or white", "Gray flakes like paper", "Rolls or sheets", "Small gray-brown or gold pebbles", "Can't tell"]
+        options_es: ["Esponjoso rosa, amarillo o blanco", "Hojuelas grises como papel", "Rollos o láminas", "Piedritas café grisáceo o doradas", "No sé"]
+        card_field: true
+        why: "Material sets the top-up method, and the pebble answer flags fill EPA treats as asbestos."
+      - id: fu_home_type
+        ask_when: "Her words and photos do not say whether it is a manufactured home"
+        text_en: "Is it a site-built house or a manufactured home?"
+        text_es: "¿Es una casa construida en el sitio o una casa prefabricada (manufacturada)?"
+        options_en: ["Site-built house", "Manufactured home"]
+        options_es: ["Casa construida en el sitio", "Casa prefabricada"]
+        card_field: true
+        why: "Many manufactured homes have no walk-in attic, so a different crew and method. [judgment]"
+      - id: fu_ac_cooling
+        ask_when: "She says the house is hot or bills are high and does not mention the AC"
+        text_en: "When the AC runs, does cold air come out of the vents?"
+        text_es: "Cuando el aire acondicionado está prendido, ¿sale aire frío de las rejillas?"
+        options_en: ["Yes, cold air", "Air comes out but not cold", "Weak air or none", "No central AC"]
+        options_es: ["Sí, aire frío", "Sale aire pero no frío", "Poco aire o nada", "No hay aire central"]
+        card_field: true
+        why: "Air that is not cold is an AC repair card, not an insulation card. [judgment]"
+    photos_priority: [p2_existing_depth, p1_attic_wide, p3_access]
+    urgency:
+      fire_dept_triggers: ["Smoke, fire or sparks in the attic"]
+      urgent_capable_triggers: []
+      regular: "All top-up requests"
+    scope_line_en: "Attic top-up over old loose fill about level with the joists; about 1,500 sq ft; single-story house."
+    scope_line_es: "Agregar aislamiento soplado en el ático sobre el relleno viejo, más o menos al nivel de las vigas; unos 1,500 pies cuadrados; casa de un piso."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (target R-value or settled depth, material, baffles and can-light covers)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Insulation | <town>, <general area> | <house / manufactured home>
+      <one scope line: top-up, area, depth now>
+      Area: <size answer>. Old insulation: <below / level with / covering the joists>, <material, neutral, from photo or answer>.
+      Attic: <hatch spot and ladder, from photo>. On the attic floor: <ducts, air handler, can lights, flue, neutral> or <not visible>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You need R-49 up there.", "That's vermiculite, it has asbestos.", "A top-up runs about a dollar a foot.", "Insulation will cut your bill in half.", "Your AC is fine, it's the insulation."]
+
+  - id: attic_remove_replace
+    label: "Attic removal and replace (rodent or water damage, old or flat insulation)"
+    bank_job_type: "attic insulation"
+    recurring: false
+    homeowner_phrasings: ["rats in the attic insulation", "pack rat nest up there", "insulation got wet from the roof", "pull out the old insulation", "attic cleanout"]
+    must_know:
+      - fact: "Why it is coming out: droppings or nests, water, or flat and old"
+        bank_question: existing
+        follow_up: fu_animals_now
+        photo: p2_existing_depth
+        why_it_moves_price: "Rodent waste means protective gear, wet cleanup and often sanitizing; flat old fill is a plain vacuum-out. [judgment]"
+        skip_if: "Her words and the close-up say which"
+      - fact: "Square feet of attic floor"
+        bank_question: size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Removal and new fill both scale with area. [judgment]"
+        skip_if: "She gave the house size"
+      - fact: "Whether the source is stopped (animals out, roof or AC leak fixed)"
+        bank_question: null
+        follow_up: fu_wet_source
+        photo: null
+        why_it_moves_price: "Businesses will not re-insulate over an open leak or live rodents; the card says if another trade comes first. [judgment]"
+        skip_if: "She says it was handled"
+      - fact: "What the old material is"
+        bank_question: null
+        follow_up: fu_old_material
+        photo: p2_existing_depth
+        why_it_moves_price: "Pebble-like fill is treated as asbestos and may need an abatement contractor first."
+        skip_if: "Close-up photo shows it"
+      - fact: "Hatch spot and size"
+        bank_question: null
+        follow_up: fu_access
+        photo: p3_access
+        why_it_moves_price: "The vacuum hose and bags go through the hatch; a small closet hatch slows the crew. [judgment]"
+        skip_if: "Hatch photo sent"
+    allowed_follow_ups:
+      - id: fu_animals_now
+        ask_when: "She mentions rats, mice, droppings or nests in the attic"
+        text_en: "Are animals still getting into the attic, or has that been taken care of?"
+        text_es: "¿Todavía están entrando animales al ático, o ya se resolvió?"
+        options_en: ["Still hearing or seeing them", "Taken care of", "Not sure"]
+        options_es: ["Todavía los oigo o los veo", "Ya se resolvió", "No sé"]
+        card_field: true
+        why: "Live rodents make a pest control card first; new insulation over them gets soiled again. [judgment]"
+      - id: fu_wet_source
+        ask_when: "She says the insulation is wet or stained"
+        text_en: "What got the insulation wet: rain through the roof, a leak from the AC or a water line, or you're not sure?"
+        text_es: "¿Qué mojó el aislamiento: lluvia que entró por el techo, una fuga del aire acondicionado o de una tubería, o no sabe?"
+        options_en: ["Rain through the roof", "AC or water line leak", "Not sure"]
+        options_es: ["Lluvia por el techo", "Fuga del aire o de una tubería", "No sé"]
+        card_field: true
+        why: "Rain is a roofing card first; an AC drain is an AC card first; the insulation card follows. [judgment]"
+      - fu_old_material
+      - id: fu_access
+        ask_when: "No hatch photo and the job uses the attic"
+        text_en: "How do you get into the attic: a hatch in a closet or hallway, a hatch in the garage, a pull-down ladder, or no opening you know of?"
+        text_es: "¿Cómo se entra al ático: una tapa en un clóset o pasillo, una tapa en la cochera, una escalera plegable, o no sabe de ninguna entrada?"
+        options_en: ["Hatch in a closet or hallway", "Hatch in the garage", "Pull-down ladder", "No opening I know of"]
+        options_es: ["Tapa en un clóset o pasillo", "Tapa en la cochera", "Escalera plegable", "No sé de ninguna entrada"]
+        card_field: true
+        why: "A garage hatch lets the hose and bags in without crossing the house; no opening means cutting one. [judgment]"
+    photos_priority: [p2_existing_depth, p1_attic_wide, p3_access]
+    urgency:
+      fire_dept_triggers: ["Smoke, fire or sparks in the attic"]
+      urgent_capable_triggers: ["Wet insulation over a ceiling that is sagging or dripping"]
+      regular: "Rodent-soiled, old or dry stained insulation"
+    scope_line_en: "Remove pack rat-soiled attic insulation and install new; about 1,800 sq ft; animals handled last month."
+    scope_line_es: "Quitar el aislamiento del ático sucio por ratas y poner nuevo; unos 1,800 pies cuadrados; los animales se resolvieron el mes pasado."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (removal, haul-away, sanitizing, new material and R-value)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Insulation | <town>, <general area> | <house / manufactured home>
+      <one scope line: remove and replace, why, area>
+      Old insulation: <droppings or nests / wet or stained / flat or old>, <material, neutral, from photo or answer>. Area: <size answer>.
+      Animals: <still getting in / taken care of / not said>. Wet from: <roof / AC or water line / not sure / n/a>.
+      Attic: <hatch spot, from photo or answer>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's hantavirus, don't go up there.", "You'll need it all ripped out.", "Removal costs about two dollars a foot.", "Just vacuum the droppings out first.", "Your roof is leaking."]
+
+  - id: radiant_barrier_ventilation
+    label: "Radiant barrier or attic vents"
+    bank_job_type: "attic insulation"
+    recurring: false
+    homeowner_phrasings: ["radiant barrier", "foil in the attic", "attic fan", "more attic vents", "attic is like an oven"]
+    must_know:
+      - fact: "Which is wanted: foil radiant barrier, more vents, or a powered or solar fan"
+        bank_question: null
+        follow_up: fu_vents_want
+        photo: null
+        why_it_moves_price: "Foil is R-40 rafter work; a new roof vent cuts the roof and a wired fan needs a circuit, different trades. [judgment]"
+        skip_if: "Her words name it"
+      - fact: "Attic floor area and how open the attic is"
+        bank_question: size
+        follow_up: null
+        photo: p1_attic_wide
+        why_it_moves_price: "Foil is stapled to the rafters, easiest in an open attic; low or cluttered attics take longer."
+        skip_if: "Size given and wide photo sent"
+      - fact: "Roof type and stories"
+        bank_question: null
+        follow_up: null
+        photo: p4_house_outside
+        why_it_moves_price: "Tile and two-story roofs make vent work slower and riskier to price. [judgment]"
+        skip_if: "Foil only"
+      - fact: "Ducts in the attic"
+        bank_question: null
+        follow_up: null
+        photo: p1_attic_wide
+        why_it_moves_price: "DOE says radiant barriers pay off most when cooling ducts run in the attic; businesses note it in the quote."
+        skip_if: "Wide photo shows the attic"
+    allowed_follow_ups:
+      - id: fu_vents_want
+        ask_when: "She asks about attic heat, vents or fans without naming the work"
+        text_en: "Which are you asking about: a foil radiant barrier, more attic vents, a powered or solar attic fan, or not sure?"
+        text_es: "¿Por cuál pregunta: una barrera radiante de aluminio, más ventilas en el ático, un ventilador de ático eléctrico o solar, o no sabe?"
+        options_en: ["Foil radiant barrier", "More attic vents", "Powered or solar attic fan", "Not sure"]
+        options_es: ["Barrera radiante de aluminio", "Más ventilas en el ático", "Ventilador eléctrico o solar", "No sé"]
+        card_field: true
+        why: "Each answer is a different job and possibly a different license class. [judgment]"
+      - id: fu_hot_where
+        ask_when: "She says rooms are too hot without saying where"
+        text_en: "Where does the heat feel worst: rooms with big sunny windows, the whole house under the roof, or the room over the garage?"
+        text_es: "¿Dónde se siente más el calor: en cuartos con ventanas grandes donde pega el sol, en toda la casa bajo el techo, o en el cuarto sobre la cochera?"
+        options_en: ["Rooms with big sunny windows", "The whole house", "Room over the garage", "Not sure"]
+        options_es: ["Cuartos con ventanas grandes al sol", "Toda la casa", "Cuarto sobre la cochera", "No sé"]
+        card_field: true
+        why: "Sunny-window heat is a solar screen card; whole-house heat stays here. [judgment]"
+      - fu_ac_cooling
+      - fu_access
+    photos_priority: [p1_attic_wide, p4_house_outside, p3_access]
+    urgency:
+      fire_dept_triggers: ["Smoke, fire or sparks from an attic fan"]
+      urgent_capable_triggers: []
+      regular: "All radiant barrier and vent requests"
+    scope_line_en: "Foil radiant barrier on the attic rafters; about 1,800 sq ft; open attic with AC ducts; single-story tile roof."
+    scope_line_es: "Barrera radiante de aluminio en las vigas del techo del ático; unos 1,800 pies cuadrados; ático abierto con ductos de aire; casa de un piso con techo de teja."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (foil type, area, vents or fan and who cuts the roof)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Insulation | <town>, <general area> | <house / manufactured home>
+      <one scope line: radiant barrier, vents or fan; area>
+      Wanted: <foil / vents / powered or solar fan / not sure>. Area: <size answer>. Roof: <type and stories, from photo>.
+      Attic: <open or low, ducts in attic, neutral, from photo>. Hatch: <spot, from photo or answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Radiant barrier will drop your bill 10 percent.", "You need more vents, not foil.", "Solar fans are a waste of money.", "Foil runs about fifty cents a foot."]
+
+  - id: wall_blown_in
+    label: "Wall insulation (blown in through small holes)"
+    bank_job_type: "blown-in insulation"
+    recurring: false
+    homeowner_phrasings: ["no insulation in the walls", "blow insulation into the walls", "outside walls hot to the touch", "insulate my walls"]
+    must_know:
+      - fact: "Outside finish: stucco, block or siding"
+        bank_question: null
+        follow_up: fu_wall_outside
+        photo: p4_house_outside
+        why_it_moves_price: "Stucco is drilled and patched, block is filled through the cores, siding is pulled and reset. [judgment]"
+        skip_if: "Outside photo shows the finish"
+      - fact: "Size of the house and how many outside walls"
+        bank_question: size
+        follow_up: null
+        photo: p4_house_outside
+        why_it_moves_price: "Wall area sets the bag count and the number of holes. [judgment]"
+        skip_if: "Size given"
+      - fact: "One story or two"
+        bank_question: null
+        follow_up: fu_stories
+        photo: p4_house_outside
+        why_it_moves_price: "Second-story walls need ladders or a lift. [judgment]"
+        skip_if: "Outside photo shows it"
+      - fact: "Whether walls hold any insulation now"
+        bank_question: existing
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Partly filled walls take less material but can block the fill tube. [judgment]"
+        skip_if: "She said the walls are empty"
+    allowed_follow_ups:
+      - id: fu_wall_outside
+        ask_when: "Wall job and no outside photo"
+        text_en: "What is on the outside of the walls: stucco, block, siding, or not sure?"
+        text_es: "¿Qué tienen las paredes por fuera: estuco, bloque, revestimiento (siding), o no sabe?"
+        options_en: ["Stucco", "Block", "Siding", "Not sure"]
+        options_es: ["Estuco", "Bloque", "Revestimiento (siding)", "No sé"]
+        card_field: true
+        why: "The kb's wall question; the method and the patch work change with the finish. [judgment]"
+      - id: fu_stories
+        ask_when: "Wall job and no outside photo"
+        text_en: "Is the house one story or two?"
+        text_es: "¿La casa es de un piso o de dos?"
+        options_en: ["One story", "Two stories"]
+        options_es: ["Un piso", "Dos pisos"]
+        card_field: true
+        why: "Height sets ladder or lift work. [judgment]"
+      - fu_home_type
+    photos_priority: [p4_house_outside]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All wall requests"
+    scope_line_en: "Blow insulation into the outside walls; single-story stucco house, about 1,400 sq ft; walls have none now."
+    scope_line_es: "Soplar aislamiento en las paredes de afuera; casa de estuco de un piso, unos 1,400 pies cuadrados; las paredes no tienen ahora."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (drill from inside or outside, patching and texture match, material)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Insulation | <town>, <general area> | <house / manufactured home>
+      <one scope line: wall insulation, finish, size>
+      Outside: <stucco / block / siding / not sure>. Stories: <one / two>. Area: <size answer>. Walls now: <empty / some / not sure>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Block walls can't be insulated.", "The patches will show.", "You'll need the stucco redone.", "Walls usually run a few thousand."]
+
+  - id: garage_shop_ceiling
+    label: "Garage or shop ceiling or walls"
+    bank_job_type: "attic insulation"
+    recurring: false
+    homeowner_phrasings: ["insulate the garage ceiling", "garage is 130 degrees", "insulate my metal shop", "room over the garage is hot"]
+    must_know:
+      - fact: "What the ceiling is: drywall with attic above, open wood rafters, or metal roof with no ceiling"
+        bank_question: null
+        follow_up: fu_garage_ceiling
+        photo: p5_garage_ceiling
+        why_it_moves_price: "Drywall with an attic is a blow; open rafters take batts; bare metal panels need a different product. [judgment]"
+        skip_if: "Garage photo sent"
+      - fact: "Ceiling, walls, or both"
+        bank_question: where
+        follow_up: fu_garage_parts
+        photo: p5_garage_ceiling
+        why_it_moves_price: "Walls double the area and may need covering. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "Size: one, two or three car, or shop square feet"
+        bank_question: size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Area sets the material. [judgment]"
+        skip_if: "Size given"
+    allowed_follow_ups:
+      - id: fu_garage_ceiling
+        ask_when: "Garage or shop job and no ceiling photo"
+        text_en: "What is the garage ceiling now: drywall, open wood rafters, or metal roof panels with no ceiling?"
+        text_es: "¿Cómo es ahora el techo de la cochera: tablaroca, vigas de madera abiertas, o láminas de metal sin plafón?"
+        options_en: ["Drywall", "Open wood rafters", "Metal panels, no ceiling", "Room above it"]
+        options_es: ["Tablaroca", "Vigas de madera abiertas", "Láminas de metal sin plafón", "Hay un cuarto arriba"]
+        card_field: true
+        why: "Each ceiling type is a different product and method. [judgment]"
+      - id: fu_garage_parts
+        ask_when: "Garage job and she did not say what to insulate"
+        text_en: "What do you want insulated: the ceiling, the walls, both, or the garage door?"
+        text_es: "¿Qué quiere aislar: el techo, las paredes, ambos, o la puerta de la cochera?"
+        options_en: ["Ceiling", "Walls", "Ceiling and walls", "The garage door"]
+        options_es: ["El techo", "Las paredes", "Techo y paredes", "La puerta de la cochera"]
+        card_field: true
+        why: "A garage door answer is a garage door card, not insulation. [judgment]"
+    photos_priority: [p5_garage_ceiling, p2_existing_depth]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All garage and shop requests"
+    scope_line_en: "Insulate the ceiling of a two-car garage; drywall ceiling with attic space above; no insulation now."
+    scope_line_es: "Aislar el techo de una cochera de dos carros; techo de tablaroca con ático arriba; no tiene aislamiento ahora."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (product, ceiling or walls, covering if open)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Insulation | <town>, <general area> | <garage / detached shop>
+      <one scope line: garage or shop, what to insulate, size>
+      Ceiling now: <drywall / open rafters / metal panels / room above>. Insulate: <ceiling / walls / both>. Size: <size answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Spray foam is the only thing that works on metal.", "A handyman can throw batts up there.", "That will drop it 30 degrees.", "Garages run about a thousand."]
+
+  - id: duct_insulation
+    label: "Duct insulation wrap (sealing or new ducts go to hvac)"
+    bank_job_type: "attic insulation"
+    recurring: false
+    homeowner_phrasings: ["wrap my ducts", "ducts in the attic are sweating", "duct insulation torn", "metal ducts with no wrap"]
+    must_know:
+      - fact: "Wrap only, or ducts torn, loose or fallen"
+        bank_question: null
+        follow_up: fu_duct_want
+        photo: p6_ducts
+        why_it_moves_price: "Wrap is R-40 work; opening, sealing or replacing ducts is HVAC or sheet metal work, a different card."
+        skip_if: "She says wrap only and the photo shows ducts in place"
+      - fact: "Where the ducts run"
+        bank_question: null
+        follow_up: fu_duct_where
+        photo: p1_attic_wide
+        why_it_moves_price: "Attic runs in summer and crawling under a manufactured home are slow, hot work. [judgment]"
+        skip_if: "Photo shows them"
+      - fact: "How much duct and what kind (metal trunk, flex runs)"
+        bank_question: size
+        follow_up: null
+        photo: p6_ducts
+        why_it_moves_price: "Linear feet and duct type set the wrap and tape. [judgment]"
+        skip_if: "Duct photo sent"
+    allowed_follow_ups:
+      - id: fu_duct_want
+        ask_when: "Duct request without saying whether the ducts themselves are damaged"
+        text_en: "Do you want the ducts wrapped only, or are any ducts torn, loose or fallen down?"
+        text_es: "¿Quiere solo forrar los ductos, o hay ductos rotos, sueltos o caídos?"
+        options_en: ["Wrap only", "Some are torn, loose or down", "Not sure"]
+        options_es: ["Solo forrarlos", "Algunos están rotos, sueltos o caídos", "No sé"]
+        card_field: true
+        why: "Damaged ducts are an hvac duct repair card; wrap only stays here."
+      - id: fu_duct_where
+        ask_when: "No duct photo"
+        text_en: "Where are the ducts: in the attic, under a manufactured home, in the garage, or on the roof?"
+        text_es: "¿Dónde están los ductos: en el ático, debajo de una casa prefabricada, en la cochera, o en el techo?"
+        options_en: ["In the attic", "Under a manufactured home", "In the garage", "On the roof"]
+        options_es: ["En el ático", "Debajo de una casa prefabricada", "En la cochera", "En el techo"]
+        card_field: true
+        why: "Location sets the crew, the gear and the hours. [judgment]"
+      - fu_access
+    photos_priority: [p6_ducts, p1_attic_wide, p3_access]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All duct wrap requests"
+    scope_line_en: "Wrap bare metal trunk duct and torn flex jackets in the attic; ducts in place; hallway hatch."
+    scope_line_es: "Forrar el ducto principal de metal sin forro y las fundas rotas de los ductos flexibles en el ático; los ductos están en su lugar; tapa en el pasillo."
+    quote_format: range
+    business_fills: ["low and high price", "what the range covers (wrap R-value, linear feet, flex jacket replacement)", "earliest day", "Range to be confirmed on site, if needed"]
+    card_template: |
+      REQ-<id> | Insulation | <town>, <general area> | <house / manufactured home>
+      <one scope line: duct wrap, where, ducts in place or not>
+      Wanted: <wrap only / some torn, loose or down / not sure>. Ducts in: <attic / under home / garage / roof>.
+      Ducts seen: <metal or flex, neutral, from photo>. Hatch: <spot, from photo or answer>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your ducts are leaking.", "Sweating ducts mean the AC is low on freon.", "Just tape them up.", "Wrap is cheap, maybe a few hundred."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Repeat customers, realtors and word of mouth", "HVAC, roofing and pest control companies that pass along attic work [judgment]", "Utility weatherization program work through WACOG [judgment]", "Home-service marketplaces (Angi, HomeAdvisor, Thumbtack)", "Google search and Local Services Ads", "Door hangers and local Facebook groups after a hot month [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Shared marketplace requests (Angi, HomeAdvisor, Thumbtack), all home services"
+      figure: "About $20 to $75 per request, with 5 to 12 contractors getting the same one (marketing-vendor figure, not trade-specific)"
+      source: pipeline_construction_leads
+      unverified: false
+    - channel: "Angi and HomeAdvisor, general contracting and remodeling"
+      figure: "About $40 to over $100 per request, sent to 3 to 8 other contractors at once (marketing-vendor figure; no insulation-only figure given)"
+      source: valley_angi_cpl
+      unverified: false
+    - channel: "Google Local Services Ads, all home services"
+      figure: "About $53 per request on average (marketing-vendor figure citing Searchlight Digital)"
+      source: pipeline_construction_leads
+      unverified: false
+    - channel: "Google search ads, construction and contracting"
+      figure: "About $165 per request on average (marketing-vendor figure citing LocaliQ)"
+      source: pipeline_construction_leads
+      unverified: false
+    - channel: "Insulation contractors specifically"
+      figure: "No insulation-specific figure found from a source worth citing"
+      source: null
+      unverified: true
+    - channel: "Lake Havasu City insulation businesses"
+      figure: "No local figures found; a small market with few R-40 shops may pay less than national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a request 5 other shops also bought", "Homeowners who want a per-foot price over the phone and never let anyone up in the attic", "Requests that turn out to be an AC problem", "Monthly fees whether or not jobs come", "Being ranked or reviewed by the site itself"]
+  what_makes_a_lead_worth_paying_for: ["Square feet and add-or-remove stated", "A depth photo with a tape in it", "A wide attic photo from the hatch showing ducts, can lights and eaves", "Droppings, water or odd fill called out before they drive out", "Pay only when picked, nothing monthly", "Real town and timing"]
+  their_words: ["top-up", "blow-in", "loose fill", "batts", "cellulose", "fiberglass", "R-38", "R-49", "settled depth", "baffles", "rafter vents", "can covers", "IC-rated", "hatch dam", "air sealing", "vacuum-out", "radiant barrier", "duct wrap", "vermiculite"]
+  signup_objections:
+    - objection: "Why pay a fee when I can get these jobs myself?"
+      answer: "You pay only when the homeowner picks your quote. Nothing to join and nothing per month. The fee is set by job size: $25, $75 or $199."
+    - objection: "I can't price an attic without going up there."
+      answer: "Quote a range and say what puts it at the high end. Each card lists the area, add or remove, the depth she sees and what is on the attic floor, with photos when she sends them. Your final price can follow your look."
+    - objection: "Half these calls are really AC problems."
+      answer: "Before a card goes out, we ask whether cold air comes out of the vents when the AC runs. If it doesn't, the request goes to AC businesses instead."
+    - objection: "Rat jobs need the pest guy first."
+      answer: "The card says whether animals are still getting in. If they are, she also gets a pest control card, so you know where it stands before you quote."
+    - objection: "How do I know these homeowners are serious?"
+      answer: "Each request comes from a texted phone number we check, with a town, answers to the questions an insulation estimator asks, and photos when she has them. Her name and address go only to the business she picks."
+    - objection: "What if I quote and don't get picked?"
+      answer: "Then you pay nothing. The introduction fee is charged only when a homeowner picks your quote and you confirm."
+    - objection: "Will you rank me against other shops?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license number and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "I only do attics, not walls or shops."
+      answer: "You pick the job types you want at sign-up and change them any time. You get cards only for those."
+    - objection: "What if she cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+  quote_tips_for_card: ["Name the target R-value or settled depth and the material", "Say whether baffles, can-light covers and a hatch dam are in the range", "For removal, say whether haul-away and sanitizing are included", "Give the earliest day and whether you start early in summer", "If you need a photo of something else, say which", "Your receipt will need coverage area, installed and settled thickness, R-value and bag count under the FTC rule"]

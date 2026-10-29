@@ -1,0 +1,814 @@
+# Ask Hava expert layer: home_inspection (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set home_inspection and trade_kb/trades/home_inspection.yaml. Fake data only.
+# Ask Hava never diagnoses, predicts what an inspection will find, prices, judges safety or recommends a business;
+# every string here keeps that.
+#
+# NOTES FOR REVIEW
+# 1. Termite report (kb wdiir) stays mapped to "termite report for a sale or loan" in this category, as the
+#    catalog says. But under A.A.C. R3-8-307(A) and A.R.S. 3-3633 only an applicator certified in the
+#    wood-destroying organism category, employed by a pest-management business licensee, may complete a WDIIR.
+#    A Board-certified home inspector may not be able to sign one. Unless the inspector's firm also holds a pest
+#    license, a wdiir card sent to home inspectors only may reach nobody who can do it. pest_control.yaml raises
+#    the same problem (its note 1). Needs a catalog decision, for example: send fee-free termite-report cards to
+#    pest licensees who attest to the wood-destroying organism category, or add a fee-free "termite report for a
+#    sale or loan" job type in pest_control. Routing it to pest_control "termites" today would charge an
+#    introduction fee on a sale or loan report, which the fee-free rule (FEE-045, D-403) exists to avoid, so this
+#    file routes only treatment requests there (misdiagnosis checks).
+# 2. Two new job types, because the kb has no match: refinance_inspection (category job type "refinance
+#    inspection") and condition_check ("home condition inspection (no sale or refinance)"). The independent
+#    scenario file (scenarios/home_inspection.yaml s07, s08, s15) expects job_type buyer_inspection with bank job
+#    type "home condition inspection"; under this file those requests are condition_check. The scenario's
+#    bank_job_type is unchanged.
+# 3. manufactured_home and addons map to "buyer inspection" (the usual case, and what the scenarios expect). A
+#    manufactured-home or pool add-on request with the bank sale question answered "No" is a home condition
+#    inspection and must not be fee-free. Suggest routing code pick the bank job type from the sale answer, not
+#    from the kb job type alone.
+# 4. The question set's only photo ask is p1 ("listing photos are enough"). For a home not on the market there are
+#    no listing photos; the card is still complete without photos.
+# 5. A.A.C. R4-30-301.01(C)(3) bars an inspector from repairs on a home their firm inspected for 24 months.
+#    Ask Hava cannot know which homes an inspector inspected. Open question whether sign-up should remind an
+#    inspector who also holds a trade license.
+# 6. Septic transfer-of-ownership inspections (A.A.C. R18-9-A316) are seller-arranged and done by other licensees;
+#    they route to septic_pumping "tank inspection", which is not fee-free. Same fee-free question as note 1.
+schema: 1
+category: home_inspection
+question_set: home_inspection
+kb_trade: home_inspection
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: ars_32_122_02
+    title: "A.R.S. 32-122.02 Home inspectors; qualifications (exam, course, fingerprint clearance card; E&O insurance $200,000 aggregate and $100,000 per occurrence, or $25,000 bond; fee-based inspections only by a certified inspector) [S6]"
+    url: "https://www.azleg.gov/ars/32/00122-02.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_101
+    title: "A.R.S. 32-101 Definitions (home inspection covers residential buildings of four units or fewer) [S5]"
+    url: "https://www.azleg.gov/ars/32/00101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_30_301_01
+    title: "A.A.C. R4-30-301.01 Home inspector rules of professional conduct (pool and spa optional, separate pool and spa standard; no referral fees or pay-to-play with real estate parties; no repairs on an inspected home for 24 months)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-30-301.01"
+    checked: "2026-10-29"
+    kind: statute
+  - id: btr_sop
+    title: "AZ Board of Technical Registration, Home Inspector Standards of Professional Practice adopted Oct 27 2023 (garages and carports in scope, other outbuildings excluded 5.3H; shut-down systems not operated 3.2(B)(4); no code compliance or repair costs 3.2; solar, water conditioning and wood-destroying organisms excluded; attic and crawl entry unless under 16 by 24 inches 4.2(B); roof walk not required 6.3A; written agreement 2.2A)"
+    url: "https://btr.az.gov/sites/default/files/2024-04/HI-Standards-10-27-23-clean_0.pdf"
+    checked: "2026-10-29"
+    kind: code_standard
+  - id: aac_r3_8_307
+    title: "A.A.C. R3-8-307 Wood-destroying insect inspection and WDIIR (only a certified wood-destroying organism applicator employed by a business licensee; other structures may be excluded but must be listed; conducive conditions include wood within six inches of the structure and earth-to-wood contact)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-307"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_3_3633
+    title: "A.R.S. 3-3633 Wood-destroying insect inspection reports (completed only by a WDO-certified applicator; on file within seven calendar days)"
+    url: "https://www.azleg.gov/ars/3/03633.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r18_9_a316
+    title: "A.A.C. R18-9-A316 Septic transfer of ownership inspection (seller arranges, within six months before transfer, by a qualified inspector) [S16]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-A316"
+    checked: "2026-10-29"
+    kind: statute
+  - id: regx_1024_2
+    title: "12 CFR 1024.2 (Regulation X, RESPA) settlement service includes inspections required by the sales contract or mortgage documents"
+    url: "https://www.consumerfinance.gov/rules-policy/regulations/1024/2/"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: regx_1024_14
+    title: "12 CFR 1024.14(b) (Regulation X, RESPA) no fee, kickback or thing of value for referring settlement service business"
+    url: "https://www.consumerfinance.gov/rules-policy/regulations/1024/14/"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: aar_contract
+    title: "Arizona Association of REALTORS, A Contract Series Part 7 (buyer inspection period 10 days after acceptance unless otherwise stated; wood-destroying insect report at buyer's expense; septic addendum)"
+    url: "https://www.aaronline.com/?p=78755"
+    checked: "2026-10-29"
+    kind: trade_association
+  - id: hud_label
+    title: "HUD Office of Manufactured Housing Programs fact sheet (homes built after June 15, 1976 carry a HUD certification label)"
+    url: "https://hud.gov/program_offices/housing/mhs/csp/mfsheet"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: adoh_mh
+    title: "AZ Department of Housing, Office of Manufactured Housing, Licensing (installers licensed by the Department) [S12]"
+    url: "https://housing.az.gov/manufactured-housing/licensing"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (season officially June 15 to September 30)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 grains per gallon)"
+    url: "https://www.lhcaz.gov/288/Water"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: wolfpack_leads
+    title: "WolfPack Advising (marketing vendor), Home inspection leads (about $40 average cost per lead; agents the largest single referral source; tracked lead mix Jan to Jul 2026)"
+    url: "https://wolfpackadvising.com/blog/home-inspection-leads/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Square footage of the main home"
+      why: "Inspection time scales with size, and most inspectors price in size bands; the bank's home_size question sets the band. [judgment]"
+      source: null
+    - driver: "Pool or spa on the property"
+      why: "A pool and spa check is optional for a home inspector and follows a separate Board pool and spa standard, so it is priced as an add-on."
+      source: aac_r4_30_301_01
+    - driver: "Buildings beyond the house and its garage or carport (casita, guest house, shop, shed)"
+      why: "The Board standard covers the home with its garage or carport and excludes other outbuildings, so each one is extra scope."
+      source: btr_sop
+    - driver: "Add-ons other licensees do: termite report, septic transfer inspection, sewer camera"
+      why: "A termite report needs a pest-licensed WDO applicator and a septic transfer inspection a qualified septic inspector, so the inspector subs it out or the homeowner books it separately."
+      source: aac_r3_8_307
+    - driver: "How soon it must be done (contract or lender deadline)"
+      why: "The standard Arizona resale contract gives the buyer 10 days to inspect, so rush and weekend slots are common and some inspectors charge for them."
+      source: aar_contract
+    - driver: "Age of the home"
+      why: "Older homes take longer: more past repairs, older wiring and plumbing to describe. [judgment]"
+      source: null
+    - driver: "Manufactured home versus site-built, and crawl space entry"
+      why: "Under-floor entry and skirting access change the time on site; some inspectors price manufactured homes separately. [judgment]"
+      source: null
+    - driver: "Utilities on or off at a vacant home"
+      why: "The inspector does not operate shut-down systems, so a home with water, gas or power off can mean a second trip."
+      source: btr_sop
+  hidden_conditions:
+    - condition: "Water, gas or power off at a vacant, bank-owned or seasonal home"
+      how_a_pro_spots_it: "Owner is away, listing says vacant, or the homeowner mentions a winterized or shut-down home"
+      question_or_photo: fu_utilities_on
+      source: btr_sop
+    - condition: "Casita, guest house or room addition not counted in the stated square feet"
+      how_a_pro_spots_it: "Listing photo shows a second building or a long low wing; homeowner gives only the main-home size"
+      question_or_photo: p1
+      source: btr_sop
+    - condition: "Pool and spa equipment beyond a basic pump and filter (gas heater, salt cell, raised spa with spillway)"
+      how_a_pro_spots_it: "Equipment pad in the listing photo; the bank's extras answer"
+      question_or_photo: extras
+      source: aac_r4_30_301_01
+    - condition: "Home on a septic tank instead of city sewer"
+      how_a_pro_spots_it: "Lot outside city sewer areas; homeowner or listing mentions septic"
+      question_or_photo: fu_septic_or_sewer
+      source: aac_r18_9_a316
+    - condition: "Attic or crawl space opening blocked or too small to enter"
+      how_a_pro_spots_it: "Older manufactured home with low skirting, stored items in the garage under the attic hatch; found on site"
+      question_or_photo: null
+      source: btr_sop
+    - condition: "Requester is a tenant and the owner has not agreed, or nobody can open the home"
+      how_a_pro_spots_it: "Words like landlord, rent or lease; owner out of state"
+      question_or_photo: fu_owner_ok
+      source: null
+    - condition: "Wood touching the house (patio cover, pergola, wood pile) that a termite report must list"
+      how_a_pro_spots_it: "Listing photo of the back yard; homeowner mentions a patio cover or pergola"
+      question_or_photo: fu_other_structures
+      source: aac_r3_8_307
+  misdiagnosis_checks:
+    - sounds_like: "termite report for a sale or loan (homeowner says spray, treat or clearance)"
+      might_be: "termites treatment in pest_control"
+      one_question: fu_report_or_treatment
+      if_other_route_to: {category: pest_control, job_type: "termites"}
+      source: aac_r3_8_307
+    - sounds_like: "home condition inspection (mud tubes or wood damage, not selling)"
+      might_be: "termites treatment in pest_control"
+      one_question: fu_report_or_treatment
+      if_other_route_to: {category: pest_control, job_type: "termites"}
+      source: null
+    - sounds_like: "home condition inspection (one problem: roof leak or ceiling stain)"
+      might_be: "roof leak repair; an inspection is a visual report, not a repair"
+      one_question: fu_what_for
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: btr_sop
+    - sounds_like: "home condition inspection (drains backing up, wants the sewer line looked at)"
+      might_be: "drain clearing in plumbing_repair"
+      one_question: fu_what_for
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}
+      source: null
+    - sounds_like: "buyer inspection add-on (septic inspection for the sale)"
+      might_be: "septic transfer of ownership inspection, a different licensee"
+      one_question: fu_septic_or_sewer
+      if_other_route_to: {category: septic_pumping, job_type: "tank inspection"}
+      source: aac_r18_9_a316
+    - sounds_like: "manufactured home buyer inspection (lender wants a foundation certification)"
+      might_be: "an engineer's foundation letter, which no Ask Hava category covers; the card states it as the lender's requirement only"
+      one_question: fu_lender_extras
+      if_other_route_to: null
+      source: null
+    - sounds_like: "home condition inspection (floor slopes, wants a cause confirmed)"
+      might_be: "an engineer's evaluation, which no Ask Hava category covers; the card lists what she sees"
+      one_question: fu_what_for
+      if_other_route_to: null
+      source: btr_sop
+  photo_reading:
+    - photo_id: p1
+      reads: ["One or two stories", "Roof type (tile, shingle, flat or foam)", "Pool, spa, equipment pad", "Casita, shop, shed or carport", "Manufactured home skirting, porch or carport added on", "Solar panels or a roof cooler", "Whether the photo is a current or an old listing photo"]
+      neutral_wording: "Listing photo shows a one-story home with a tile roof, a pool with a raised spa, and a separate small building behind the pool."
+  local_factors:
+    - fact: "Arizona monsoon runs June 15 to September 30"
+      effect: "Ceiling stains and roof or drainage questions come up after storms; buyers ask whether a stain is old or new [judgment]"
+      source: nws_monsoon
+    - fact: "Manufactured homes built after June 15, 1976 carry a HUD label; older ones do not"
+      effect: "Year built and the label matter to buyers and lenders, so the card carries the year [judgment]"
+      source: hud_label
+    - fact: "Manufactured home installers are licensed by the Arizona Department of Housing"
+      effect: "Setup and tie-down questions go to an installer, not the inspector; the card states what the lender asked for and nothing more [judgment]"
+      source: adoh_mh
+    - fact: "City water hardness is about 19 grains per gallon, and the Board standard excludes water conditioning systems"
+      effect: "Scale at the water heater and fixtures shows in reports, but a softener or RO unit is outside the standard inspection"
+      source: lhc_ccr
+    - fact: "The Board standard excludes solar systems and does not name evaporative coolers"
+      effect: "Inspectors differ on roof coolers and solar; the card says whether either is there so the quote can say what is covered"
+      source: btr_sop
+    - fact: "Many homes have pools, casitas or RV garages, and many owners are seasonal and away for months"
+      effect: "Size and extras are understated, and vacant homes may have utilities off or need a neighbor to open up [judgment]"
+      source: null
+    - fact: "Some lots outside city sewer areas use septic tanks, which need a transfer inspection before a sale"
+      effect: "Septic is a separate inspection by a different licensee, arranged by the seller"
+      source: aac_r18_9_a316
+  seasonality:
+    busy: "February to May (spring listings and snowbird buyers) and October to December as seasonal owners return [judgment]"
+    slow: "July and August, when attics are very hot and fewer homes go under contract [judgment]"
+    source: null
+
+job_types:
+  - id: buyer_inspection
+    label: "Buyer's whole-home inspection during a purchase"
+    bank_job_type: "buyer inspection"
+    recurring: false
+    homeowner_phrasings: ["buying a house need inspection", "inspection period", "my agent said get an inspector", "under contract"]
+    must_know:
+      - fact: "Size of the main home and stories"
+        bank_question: home_size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Size band sets the base price and time on site. [judgment]"
+        skip_if: "Homeowner gave square feet"
+      - fact: "Pool, spa or buildings beyond the garage"
+        bank_question: extras
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Pool and spa follow a separate standard and outbuildings are outside the standard scope, so each is an add-on."
+        skip_if: "Homeowner already listed them"
+      - fact: "When the contract inspection period ends"
+        bank_question: null
+        follow_up: fu_inspection_deadline
+        photo: null
+        why_it_moves_price: "The default resale contract allows 10 days; a short window means a rush slot."
+        skip_if: "Homeowner gave the date or the timing answer covers it"
+      - fact: "Year built"
+        bank_question: null
+        follow_up: fu_year_built
+        photo: null
+        why_it_moves_price: "Older homes take longer to inspect and report. [judgment]"
+        skip_if: "Homeowner gave the year or decade"
+      - fact: "Whether utilities are on"
+        bank_question: null
+        follow_up: fu_utilities_on
+        photo: null
+        why_it_moves_price: "Shut-down systems are not operated, which can mean a return trip."
+        skip_if: "Seller lives in the home"
+    allowed_follow_ups:
+      - id: fu_inspection_deadline
+        ask_when: "A purchase, sale or loan is involved and no deadline was given"
+        text_en: "Is there a contract or lender deadline for the inspection, and how far away is it?"
+        text_es: "¿Hay una fecha límite del contrato o del prestamista para la inspección, y para cuándo es?"
+        options_en: ["Within 3 days", "4 to 7 days", "8 days or more", "No deadline"]
+        options_es: ["En 3 días o menos", "De 4 a 7 días", "En 8 días o más", "No hay fecha límite"]
+        card_field: true
+        why: "Buyer inspection periods default to 10 days in the Arizona resale contract, so the deadline decides who can take it."
+      - id: fu_year_built
+        ask_when: "Home age not given"
+        text_en: "About what year was the home built?"
+        text_es: "¿Más o menos en qué año se construyó la casa?"
+        options_en: ["2010 or newer", "1990 to 2009", "1970 to 1989", "Before 1970"]
+        options_es: ["2010 o más nueva", "De 1990 a 2009", "De 1970 a 1989", "Antes de 1970"]
+        card_field: true
+        why: "Age changes time on site and what the inspector plans for. [judgment]"
+      - id: fu_utilities_on
+        ask_when: "Home may be vacant, bank-owned, a second home or the owner is away"
+        text_en: "Will the water, power and gas be on at the home for the inspection?"
+        text_es: "¿Va a estar conectada el agua, la luz y el gas en la casa para la inspección?"
+        options_en: ["All on", "Some are off", "Don't know yet"]
+        options_es: ["Todo conectado", "Algo está desconectado", "Todavía no sé"]
+        card_field: true
+        why: "The Board standard does not require operating shut-down systems, so utilities off can mean a second visit."
+      - id: fu_septic_or_sewer
+        ask_when: "Home may be outside city sewer, or the homeowner mentions a septic tank"
+        text_en: "Is the home on city sewer or a septic tank?"
+        text_es: "¿La casa está conectada al drenaje de la ciudad o tiene fosa séptica?"
+        options_en: ["City sewer", "Septic tank"]
+        options_es: ["Drenaje de la ciudad", "Fosa séptica"]
+        card_field: true
+        why: "A septic transfer inspection is a separate job by a different licensee, arranged by the seller."
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell at the home", "CO alarm sounding"]
+      urgent_capable_triggers: ["Contract inspection period ends within 3 days"]
+      regular: "Deadline more than a week away"
+    scope_line_en: "Buyer inspection, one-story home about 1,900 sq ft built in 1996, pool and spa; inspection period ends in 8 days."
+    scope_line_es: "Inspección para comprador, casa de un piso de unos 1,900 pies² construida en 1996, con alberca y spa; el plazo de inspección termina en 8 días."
+    quote_format: firm
+    business_fills: ["price for the inspection", "what is included (pool and spa, other buildings)", "earliest date", "how soon the report arrives"]
+    card_template: |
+      REQ-<id> | Home inspection | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: buyer inspection, size, year, extras, deadline>
+      For: purchase. Size: <band>, <stories if given>. Built: <year or decade>. Extras: <pool / spa / other buildings / none>.
+      Add-ons asked about: <termite report / pool and spa / sewer camera / none>. Deadline: <days left>. Utilities: <on / some off / not known>. Access: <buyer there / agent lockbox>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Homes that age usually have roof problems.", "You'll be fine on your earnest money.", "Ask your agent for an extension.", "The inspector will tell you if it meets code.", "Inspections here run about four hundred."]
+
+  - id: pre_listing
+    label: "Seller's pre-listing inspection before the home goes on the market"
+    bank_job_type: "pre-listing inspection"
+    recurring: false
+    homeowner_phrasings: ["inspect before I sell", "pre-listing inspection", "want to know problems first", "agent said get an inspection before listing"]
+    must_know:
+      - fact: "Size and extras, including buildings the stated size leaves out"
+        bank_question: home_size
+        follow_up: fu_changes_made
+        photo: p1
+        why_it_moves_price: "A casita, addition or converted garage adds time; sellers often give only the main-home size. [judgment]"
+        skip_if: "Homeowner listed every building"
+      - fact: "Pool, spa or detached building"
+        bank_question: extras
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Each is an add-on outside the standard home scope."
+        skip_if: "Answered"
+      - fact: "Who opens the home and whether utilities are on"
+        bank_question: null
+        follow_up: fu_who_opens
+        photo: null
+        why_it_moves_price: "Sellers away for the season need a lockbox or neighbor; a second trip costs the business. [judgment]"
+        skip_if: "Seller will be home"
+      - fact: "Year built"
+        bank_question: null
+        follow_up: fu_year_built
+        photo: null
+        why_it_moves_price: "Older homes take longer. [judgment]"
+        skip_if: "Given"
+    allowed_follow_ups:
+      - fu_year_built
+      - id: fu_changes_made
+        ask_when: "Seller gave a size and no other buildings or changes"
+        text_en: "Has anything been added or changed since the home was built, like a room addition, a garage made into a room, or a casita?"
+        text_es: "¿Se le ha agregado o cambiado algo a la casa desde que se construyó, como un cuarto extra, una cochera convertida en cuarto o una casita?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Added space is time on site the stated size misses. [judgment]"
+      - id: fu_who_opens
+        ask_when: "Owner may be away or the home may be empty"
+        text_en: "Who will let the inspector in?"
+        text_es: "¿Quién le va a abrir al inspector?"
+        options_en: ["I will be there", "An agent or a lockbox", "A neighbor or friend"]
+        options_es: ["Yo voy a estar", "Un agente o una caja de llaves", "Un vecino o amigo"]
+        card_field: true
+        why: "Access sets scheduling and who gets the walk-through. [judgment]"
+      - fu_utilities_on
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell at the home", "CO alarm sounding"]
+      urgent_capable_triggers: []
+      regular: "All pre-listing requests"
+    scope_line_en: "Pre-listing inspection, home about 2,200 sq ft built in 1992, tile roof, no pool; owners away, a neighbor can open up."
+    scope_line_es: "Inspección antes de poner la casa en venta, unos 2,200 pies² construida en 1992, techo de teja, sin alberca; los dueños están fuera y un vecino puede abrir."
+    quote_format: firm
+    business_fills: ["price for the inspection", "what is included", "earliest date", "how soon the report arrives"]
+    card_template: |
+      REQ-<id> | Home inspection | <town>, <general area> | <kind of place>
+      <one scope line: pre-listing, size, year, extras>
+      For: sale (pre-listing). Size: <band>. Built: <year or decade>. Extras: <pool / spa / other buildings / none>. Added or changed: <yes, what she said / no>.
+      Access: <owner there / agent lockbox / neighbor>. Utilities: <on / some off / not known>. Listing planned: <when, if given>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That garage conversion was probably done without a permit.", "Fix the roof before you list.", "Buyers always ask for that.", "A pre-listing inspection will help you sell faster."]
+
+  - id: manufactured_home
+    label: "Manufactured or mobile home inspection, usually for a purchase"
+    bank_job_type: "buyer inspection"
+    recurring: false
+    homeowner_phrasings: ["mobile home inspection", "buying a double-wide", "casa móvil", "manufactured home in a park"]
+    must_know:
+      - fact: "Single-wide, double-wide or larger"
+        bank_question: home_size
+        follow_up: fu_mh_width
+        photo: p1
+        why_it_moves_price: "Sections and size set crawl and roof time. [judgment]"
+        skip_if: "Homeowner said which"
+      - fact: "Year built (before or after the HUD label began)"
+        bank_question: null
+        follow_up: fu_year_built
+        photo: null
+        why_it_moves_price: "Homes built after June 15, 1976 carry a HUD label; lenders and buyers ask about it."
+        skip_if: "Given"
+      - fact: "Anything special the lender asked for"
+        bank_question: null
+        follow_up: fu_lender_extras
+        photo: null
+        why_it_moves_price: "A foundation letter is engineer work, not part of the inspection; the business must know what the card does not cover. [judgment]"
+        skip_if: "Cash purchase"
+      - fact: "Added porch, carport, cooler or shed"
+        bank_question: extras
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Add-on structures change time on site. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_mh_width
+        ask_when: "Manufactured home and the size answer does not say how many sections"
+        text_en: "Is it a single-wide, a double-wide, or larger?"
+        text_es: "¿Es de una sección, de dos secciones, o más grande?"
+        options_en: ["Single-wide", "Double-wide", "Triple-wide or larger"]
+        options_es: ["Una sección", "Dos secciones", "Tres secciones o más"]
+        card_field: true
+        why: "Section count is the first scoping fact for a manufactured home. [judgment]"
+      - fu_year_built
+      - id: fu_lender_extras
+        ask_when: "A loan is involved, or the homeowner mentions a lender, VA or FHA"
+        text_en: "Has the lender asked for anything besides the inspection, like a foundation letter?"
+        text_es: "¿El prestamista pidió algo además de la inspección, como una carta sobre los cimientos?"
+        options_en: ["Yes, a foundation letter", "Yes, something else", "No", "No lender, paying cash"]
+        options_es: ["Sí, una carta de cimientos", "Sí, otra cosa", "No", "No hay prestamista, pago de contado"]
+        card_field: true
+        why: "A foundation certification is an engineer's letter outside this category; the card states it only as the lender's request. [judgment]"
+      - fu_inspection_deadline
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell at the home", "CO alarm sounding"]
+      urgent_capable_triggers: ["Contract inspection period ends within 3 days"]
+      regular: "Deadline more than a week away"
+    scope_line_en: "Buyer inspection of a double-wide manufactured home, about 1,500 sq ft, built 1998, on its own lot with a detached carport and shed."
+    scope_line_es: "Inspección para comprador de una casa prefabricada de dos secciones, unos 1,500 pies², construida en 1998, en terreno propio con cochera techada y bodega aparte."
+    quote_format: firm
+    business_fills: ["price for the inspection", "what is included (under-floor, add-on structures)", "earliest date", "how soon the report arrives"]
+    card_template: |
+      REQ-<id> | Home inspection | <town>, <general area> | manufactured home
+      <one scope line: purchase, sections, size, year, lot>
+      For: <purchase / not a sale>. Sections: <single / double / triple>. Size: <band>. Built: <year>. Lot: <own land / park>.
+      Added structures: <porch / carport / shed / cooler / none>. Lender asked for: <foundation letter, as stated / nothing extra / cash>. Deadline: <days left>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The inspector can do the foundation certification too.", "Pre-1976 homes can't get a loan.", "That porch probably isn't tied down right.", "Mobile home inspections are cheaper."]
+
+  - id: wdiir
+    label: "Termite report (wood-destroying insect inspection report) for a sale or loan"
+    bank_job_type: "termite report for a sale or loan"
+    recurring: false
+    homeowner_phrasings: ["lender needs a termite report", "termite letter for escrow", "WDIIR", "termite clearance for the refi"]
+    must_know:
+      - fact: "A written report, not treatment"
+        bank_question: kind
+        follow_up: fu_report_or_treatment
+        photo: null
+        why_it_moves_price: "A report is a set-price inspection; treatment is pest-control work in a different category."
+        skip_if: "Homeowner said report and no treatment"
+      - fact: "Who asked for it (lender, buyer, seller)"
+        bank_question: sale
+        follow_up: fu_who_asked
+        photo: null
+        why_it_moves_price: "Tells the business the report's audience and deadline; a lender may want an updated report before closing."
+        skip_if: "Homeowner named the lender or escrow"
+      - fact: "Other structures the report must cover or list"
+        bank_question: extras
+        follow_up: fu_other_structures
+        photo: p1
+        why_it_moves_price: "Other structures may be excluded but must be listed, so each one is time on site or a line on the report."
+        skip_if: "Homeowner listed them"
+      - fact: "Home size"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Size sets time on site. [judgment]"
+        skip_if: "Given"
+    allowed_follow_ups:
+      - id: fu_report_or_treatment
+        ask_when: "Homeowner mentions termites, mud tubes, spraying, treatment or a clearance"
+        text_en: "Do you need a written termite report for a sale or loan, or treatment for termites you have seen?"
+        text_es: "¿Necesita un reporte escrito de termitas para una venta o un préstamo, o un tratamiento para termitas que ha visto?"
+        options_en: ["A written report for a sale or loan", "Treatment for termites I've seen", "Both"]
+        options_es: ["Un reporte escrito para venta o préstamo", "Tratamiento para termitas que he visto", "Las dos cosas"]
+        card_field: true
+        why: "Treatment goes to pest_control termites; the report stays here. [judgment]"
+      - id: fu_who_asked
+        ask_when: "Termite report and the homeowner did not say who wants it"
+        text_en: "Who asked for the termite report?"
+        text_es: "¿Quién pidió el reporte de termitas?"
+        options_en: ["The lender", "The buyer or buyer's agent", "The seller or listing agent", "Just for me"]
+        options_es: ["El prestamista", "El comprador o su agente", "El vendedor o su agente", "Solo para mí"]
+        card_field: true
+        why: "The default Arizona resale contract puts the report at the buyer's expense, and lenders can ask for an updated one before closing."
+      - id: fu_other_structures
+        ask_when: "Termite report and the extras answer did not cover attached wood structures"
+        text_en: "Besides the house, is there a garage, carport, shed, patio cover or pergola the report should include?"
+        text_es: "Además de la casa, ¿hay cochera, techo para carro, bodega, techo de patio o pérgola que deba incluir el reporte?"
+        options_en: ["Attached patio cover or pergola", "Detached garage, carport or shed", "Both", "None"]
+        options_es: ["Techo de patio o pérgola pegada a la casa", "Cochera, techo para carro o bodega aparte", "Las dos", "Ninguna"]
+        card_field: true
+        why: "The WDIIR rule lets the applicator exclude other structures only if each is listed, so the business scopes them up front."
+      - fu_inspection_deadline
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Lender or contract deadline within 3 days"]
+      regular: "Deadline more than a week away"
+    scope_line_en: "Termite report for a refinance, home about 1,700 sq ft built 1989, detached garage and attached pergola; report due in 12 days; no treatment asked for."
+    scope_line_es: "Reporte de termitas para un refinanciamiento, casa de unos 1,700 pies² construida en 1989, cochera aparte y pérgola pegada a la casa; el reporte se necesita en 12 días; no pidió tratamiento."
+    quote_format: firm
+    business_fills: ["price for the report", "structures included", "earliest date", "how soon the report arrives"]
+    card_template: |
+      REQ-<id> | Home inspection | <town>, <general area> | <kind of place>
+      <one scope line: termite report, for sale or loan, size, structures>
+      Wanted: written termite report (no treatment asked for). Asked for by: <lender / buyer / seller / homeowner>. For: <purchase / sale / refinance>.
+      Size: <band>. Built: <year if given>. Other structures: <patio cover or pergola / detached garage or shed / none>. Deadline: <days left>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You'll pass the termite inspection.", "Termites are everywhere here, so it will need treatment.", "Any home inspector can sign that report.", "Termite letters run about a hundred."]
+
+  - id: addons
+    label: "Add-on inspection: pool and spa, sewer camera, roof only, mold sampling"
+    bank_job_type: "buyer inspection"
+    recurring: false
+    homeowner_phrasings: ["pool inspection", "need the pool and spa certified", "sewer scope", "mold test"]
+    must_know:
+      - fact: "Which add-on"
+        bank_question: kind
+        follow_up: fu_addon_which
+        photo: p1
+        why_it_moves_price: "Each add-on is priced on its own and some need other gear or licensees. [judgment]"
+        skip_if: "Homeowner named it"
+      - fact: "Whether the whole-home inspection is booked elsewhere"
+        bank_question: null
+        follow_up: fu_main_booked
+        photo: null
+        why_it_moves_price: "A stand-alone add-on carries its own trip; bundled with the home it is a smaller line. [judgment]"
+        skip_if: "Homeowner said"
+      - fact: "Pool and spa equipment on the pad"
+        bank_question: extras
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Gas heaters, salt cells and raised spas add checks under the Board pool and spa standard."
+        skip_if: "Not a pool add-on"
+    allowed_follow_ups:
+      - id: fu_addon_which
+        ask_when: "Homeowner asks for an add-on or uses a word like certified without saying what"
+        text_en: "Which check do you want: the pool and spa, a camera in the sewer line, the roof only, or something else?"
+        text_es: "¿Qué revisión quiere: la alberca y el spa, una cámara en la línea del drenaje, solo el techo, u otra cosa?"
+        options_en: ["Pool and spa", "Sewer line camera", "Roof only", "Something else"]
+        options_es: ["Alberca y spa", "Cámara en el drenaje", "Solo el techo", "Otra cosa"]
+        card_field: true
+        why: "Each is a different visit and gear list. [judgment]"
+      - id: fu_main_booked
+        ask_when: "Add-on request during a purchase"
+        text_en: "Is the whole-home inspection already booked with another business, or should this be part of it?"
+        text_es: "¿Ya tiene agendada la inspección de toda la casa con otro negocio, o esto debe ir junto con ella?"
+        options_en: ["Already booked elsewhere", "Part of the same inspection", "Only this check"]
+        options_es: ["Ya está agendada con otro", "Junto con la misma inspección", "Solo esta revisión"]
+        card_field: true
+        why: "Stand-alone and bundled add-ons are quoted differently. [judgment]"
+      - fu_septic_or_sewer
+      - fu_inspection_deadline
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Contract deadline within 3 days"]
+      regular: "Deadline more than a week away"
+    scope_line_en: "Pool and spa condition check as an add-on; home inspection already booked Thursday with another business; closing in 12 days."
+    scope_line_es: "Revisión de la condición de la alberca y el spa como servicio extra; la inspección de la casa ya está agendada el jueves con otro negocio; el cierre es en 12 días."
+    quote_format: firm
+    business_fills: ["price for the add-on", "what the check covers", "earliest date", "how soon the report arrives"]
+    card_template: |
+      REQ-<id> | Home inspection | <town>, <general area> | <kind of place>
+      <one scope line: which add-on, booked with the home or alone>
+      Add-on: <pool and spa / sewer camera / roof only / other>. Whole-home inspection: <booked elsewhere / same visit / not wanted>. For: <purchase / not a sale>.
+      Pool and spa as seen: <neutral, from photo or her words> or <n/a>. Sewer: <city / septic / not said>. Deadline: <days left>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The inspector will certify the pool.", "That fence being down is a code violation.", "Older pools usually need new equipment.", "Sewer scopes are only a hundred or so."]
+
+  - id: warranty_check
+    label: "11-month builder warranty inspection on a new home"
+    bank_job_type: "home condition inspection (no sale or refinance)"
+    recurring: false
+    homeowner_phrasings: ["11 month warranty inspection", "builder warranty runs out", "new build walkthrough", "one-year warranty check"]
+    must_know:
+      - fact: "When the builder warranty or walk-through deadline is"
+        bank_question: null
+        follow_up: fu_warranty_ends
+        photo: null
+        why_it_moves_price: "The report has to reach the builder before the date. [judgment]"
+        skip_if: "Homeowner gave the date"
+      - fact: "Size and extras (builder-installed pool)"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Size band sets the price; a pool is an add-on."
+        skip_if: "Given"
+      - fact: "Whether she already has a list of items"
+        bank_question: null
+        follow_up: fu_own_list
+        photo: null
+        why_it_moves_price: "A list tells the inspector what to document for the builder claim. [judgment]"
+        skip_if: "She listed items already"
+    allowed_follow_ups:
+      - id: fu_warranty_ends
+        ask_when: "Warranty inspection and no date given"
+        text_en: "When does the builder warranty or walk-through window end?"
+        text_es: "¿Cuándo termina la garantía del constructor o el plazo para la revisión?"
+        options_en: ["Within 2 weeks", "2 to 4 weeks", "More than a month"]
+        options_es: ["En 2 semanas o menos", "De 2 a 4 semanas", "En más de un mes"]
+        card_field: true
+        why: "Sets whether the business can fit it in before the deadline. [judgment]"
+      - id: fu_own_list
+        ask_when: "Warranty inspection and no items mentioned"
+        text_en: "Do you have a list of things you have already noticed?"
+        text_es: "¿Tiene una lista de cosas que ya ha notado?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Her list, in her words, goes on the card for the inspector to check. [judgment]"
+    photos_priority: []
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Warranty deadline within 2 weeks"]
+      regular: "Deadline more than two weeks away"
+    scope_line_en: "11-month builder warranty inspection, home about 2,300 sq ft with a builder-installed pool; warranty deadline in 3 weeks."
+    scope_line_es: "Inspección de garantía del constructor a los 11 meses, casa de unos 2,300 pies² con alberca instalada por el constructor; la garantía vence en 3 semanas."
+    quote_format: firm
+    business_fills: ["price for the inspection", "what is included", "earliest date", "how soon the report arrives"]
+    card_template: |
+      REQ-<id> | Home inspection | <town>, <general area> | <kind of place>
+      <one scope line: warranty inspection, size, deadline>
+      For: builder warranty (not a sale). Size: <band>. Built: <about 11 months ago or date>. Extras: <pool / none>.
+      Warranty deadline: <when>. Her list: <items in her words, no causes> or <none given>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That crack is just settling.", "The builder has to fix all of that.", "Nail pops are normal.", "Send the builder a letter first."]
+
+  - id: refinance_inspection
+    new_job_type: true
+    label: "Inspection a lender asks for during a refinance"
+    bank_job_type: "refinance inspection"
+    recurring: false
+    homeowner_phrasings: ["lender needs an inspection for the refi", "refinance inspection", "bank wants the house inspected"]
+    must_know:
+      - fact: "What the lender asked for (a form, a list, or a general inspection)"
+        bank_question: sale
+        follow_up: fu_lender_form
+        photo: null
+        why_it_moves_price: "A lender form can be narrower or broader than a full inspection. [judgment]"
+        skip_if: "Homeowner described the lender's request"
+      - fact: "Size, extras and year built"
+        bank_question: home_size
+        follow_up: fu_year_built
+        photo: null
+        why_it_moves_price: "Same base drivers as any whole-home inspection. [judgment]"
+        skip_if: "Given"
+      - fact: "Lender deadline"
+        bank_question: null
+        follow_up: fu_inspection_deadline
+        photo: null
+        why_it_moves_price: "A short loan deadline means a rush slot. [judgment]"
+        skip_if: "Timing answer covers it"
+    allowed_follow_ups:
+      - id: fu_lender_form
+        ask_when: "Refinance and the homeowner did not say what the lender wants"
+        text_en: "Did the lender send a form or a list of what the inspection must cover?"
+        text_es: "¿El prestamista le mandó una forma o una lista de lo que debe cubrir la inspección?"
+        options_en: ["Yes, a form or list", "No, just an inspection"]
+        options_es: ["Sí, una forma o lista", "No, solo una inspección"]
+        card_field: true
+        why: "The business quotes to the lender's scope. [judgment]"
+      - fu_year_built
+      - fu_inspection_deadline
+      - fu_lender_extras
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Lender deadline within 3 days"]
+      regular: "Deadline more than a week away"
+    scope_line_en: "Refinance inspection the lender asked for, home about 1,800 sq ft built in the 1980s; lender sent a form; due in 10 days."
+    scope_line_es: "Inspección que pidió el prestamista para un refinanciamiento, casa de unos 1,800 pies² de los años 80; el prestamista mandó una forma; se necesita en 10 días."
+    quote_format: firm
+    business_fills: ["price for the inspection", "what is included (lender form)", "earliest date", "how soon the report arrives"]
+    card_template: |
+      REQ-<id> | Home inspection | <town>, <general area> | <kind of place>
+      <one scope line: refinance, what the lender asked for, size>
+      For: refinance. Lender asked for: <form or list / general inspection / foundation letter, as stated>. Size: <band>. Built: <year or decade>.
+      Extras: <pool / other buildings / none>. Deadline: <days left>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The appraiser will catch anything the inspector misses.", "Lenders don't really read these.", "Your loan will go through once this is done.", "Refi inspections cost less."]
+
+  - id: condition_check
+    new_job_type: true
+    label: "Home condition inspection with no sale or refinance (check-up, owner or tenant request)"
+    bank_job_type: "home condition inspection (no sale or refinance)"
+    recurring: false
+    homeowner_phrasings: ["the man who looks at houses", "want someone to look over my house", "inspector to write it all down", "check the house before summer"]
+    must_know:
+      - fact: "What it is for: a whole-home check or one problem to fix"
+        bank_question: kind
+        follow_up: fu_what_for
+        photo: null
+        why_it_moves_price: "A whole-home check is an inspection; a problem to fix belongs to a trade. [judgment]"
+        skip_if: "Homeowner asked for a whole-home check plainly"
+      - fact: "Owner or tenant, and whether the owner agreed"
+        bank_question: null
+        follow_up: fu_owner_ok
+        photo: null
+        why_it_moves_price: "No owner consent means no entry, a wasted trip. [judgment]"
+        skip_if: "Homeowner said she owns it"
+      - fact: "Size and extras"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Size band and add-ons set the price."
+        skip_if: "Given"
+      - fact: "Year built"
+        bank_question: null
+        follow_up: fu_year_built
+        photo: null
+        why_it_moves_price: "Older homes take longer. [judgment]"
+        skip_if: "Given"
+    allowed_follow_ups:
+      - id: fu_what_for
+        ask_when: "Homeowner names one problem (stain, slope, drains, roof) or asks for a cause"
+        text_en: "Do you want a written check of the whole home, or someone to look at one problem and fix it?"
+        text_es: "¿Quiere una revisión escrita de toda la casa, o que alguien vea un problema y lo arregle?"
+        options_en: ["A written check of the whole home", "Look at one problem and fix it", "Both"]
+        options_es: ["Una revisión escrita de toda la casa", "Ver un problema y arreglarlo", "Las dos cosas"]
+        card_field: true
+        why: "An inspection is a visual report that names no repair cost; fixing goes to the trade's category."
+      - id: fu_owner_ok
+        ask_when: "Words like rent, landlord or lease, or the requester may not own the home"
+        text_en: "Do you own the home, or has the owner agreed to the inspection?"
+        text_es: "¿Usted es dueño de la casa, o el dueño ya aceptó la inspección?"
+        options_en: ["I own it", "I rent and the owner agreed", "I rent and the owner hasn't agreed yet"]
+        options_es: ["Soy el dueño", "Rento y el dueño aceptó", "Rento y el dueño todavía no acepta"]
+        card_field: true
+        why: "A business needs to know who can let them in before scheduling. [judgment]"
+      - fu_year_built
+      - fu_report_or_treatment
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell at the home", "CO alarm sounding"]
+      urgent_capable_triggers: []
+      regular: "All condition checks"
+    scope_line_en: "Home condition inspection, not a sale or refinance; home about 1,200 sq ft built about 1974, roof cooler, detached shed."
+    scope_line_es: "Inspección de la condición de la casa, no es venta ni refinanciamiento; casa de unos 1,200 pies² de alrededor de 1974, enfriador en el techo, bodega aparte."
+    quote_format: firm
+    business_fills: ["price for the inspection", "what is included", "earliest date", "how soon the report arrives"]
+    card_template: |
+      REQ-<id> | Home inspection | <town>, <general area> | <kind of place>
+      <one scope line: condition check, not a sale or refinance, size, year>
+      For: home condition check (no sale or refinance). Requester: <owner / tenant, owner agreed / tenant, owner not yet agreed>.
+      Size: <band>. Built: <year or decade>. Extras: <pool / other buildings / roof cooler / none>. Noticed: <what she sees, in her words, no causes>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That stain is a leak.", "It sounds like mold.", "Your foundation is settling.", "You can withhold rent until it's fixed.", "The inspection is free for you."]
+
+business_side:
+  how_they_get_customers: ["Real estate agent referrals (the largest single source)", "Google Business Profile and reviews", "Paid search and Local Services Ads", "Repeat agents and past clients", "Lead marketplaces that sell the same request to several inspectors"]
+  customer_acquisition_benchmarks:
+    - channel: "Home inspection, all tracked channels (one marketing agency's clients)"
+      figure: "About $40 per lead on average; paid ads were 49% of tracked leads and Google Business Profile 26%, Jan to Jul 2026. Marketing-vendor figure; the agency says its mix skews to ads"
+      source: wolfpack_leads
+      unverified: false
+    - channel: "Angi and similar shared-request marketplaces (home inspection)"
+      figure: "Same request sold to several inspectors; no reliable per-request price found"
+      source: null
+      unverified: true
+    - channel: "Lake Havasu City home inspectors specifically"
+      figure: "No local figures found; agent referral share likely higher in a small market"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["The same request sold to three or more inspectors", "Price shoppers who book whoever is cheapest", "Monthly fees with no bookings", "Programs that look like pay-to-play with agents, which the Board bars", "Requests with no size, year or deadline"]
+  what_makes_a_lead_worth_paying_for: ["Size, year, pool and other buildings stated, so the price is firm", "The contract or lender deadline stated", "Access and utilities stated", "No fee on sale and loan inspections", "The homeowner picked them from every quote"]
+  their_words: ["inspection period", "BINSR", "WDIIR", "pre-listing", "11-month", "sewer scope", "add-on", "report turnaround", "agreement", "repair request", "walk-through", "lockbox"]
+  signup_objections:
+    - objection: "What does it cost me?"
+      answer: "Buyer, pre-listing, refinance and termite-report cards carry no introduction fee. A home condition check with no sale or loan has a set fee by job size, $25, $75 or $199, paid only if the homeowner picks your quote. Nothing to join, nothing monthly."
+    - objection: "Is this a pay-to-play program? The Board bars those."
+      answer: "Ask Hava is not a real estate company. Cards tied to a sale, purchase, refinance or termite report carry no fee at all, and nobody pays for placement or ranking."
+    - objection: "Agents send me my work. Why would I need this?"
+      answer: "Keep your agents. These are homeowners who texted us directly, including owners who aren't in a sale. You quote only the cards you want."
+    - objection: "Can I take the termite-report cards?"
+      answer: "Only if your business also holds a pest-management license with an applicator certified for wood-destroying organisms. Arizona lets only that applicator sign the report. Leave that job type off otherwise."
+    - objection: "Will you send me repair work from homes I inspect?"
+      answer: "You pick your job types. An inspection card asks only for an inspection price, never for repairs."
+    - objection: "I can't quote without seeing the house."
+      answer: "Most cards give size, year built, pool, other buildings, access and the deadline, which is what you'd ask on the phone. Quote a firm price and say what would change it on site."
+    - objection: "Will you rank me against other inspectors?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, Board certificate number and review links. Ask Hava never sorts or scores a business."
+    - objection: "What if the deal falls through after I'm picked?"
+      answer: "On a fee-free card there is nothing to refund. On a fee card, if the homeowner cancels before you have spoken, the fee is refunded."
+    - objection: "I need my agreement signed before I inspect."
+      answer: "That stays between you and the homeowner. After the pick you get her contact details and send your agreement as you do now."
+  quote_tips_for_card: ["Give one firm price and list what it covers: pool and spa, other buildings, termite report", "Say how soon the report arrives after the inspection", "Give your earliest date, since many buyers have about 10 days", "Say what would change the price on site, like a casita not on the card", "If your business holds a pest license for termite reports, say so in the quote"]

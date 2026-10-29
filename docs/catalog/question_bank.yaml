@@ -155,6 +155,8 @@ sets:
   dog_waste_pickup:
     version: 1
     confirmed_by: []
+    kb_trade: dog_waste_pickup
+    photos: [p1_yard_overview, p2_gate_access, p3_heaviest_spot]
     questions:
       - {id: dogs, card_field: true, en: "How many dogs?", es: "¿Cuántos perros?", options_en: ["1", "2", "3 or more"], options_es: ["1", "2", "3 o más"]}
       - {id: how_often, card_field: true, en: "How often?", es: "¿Con qué frecuencia?", options_en: [Once, Weekly, Twice a week], options_es: [Una vez, Cada semana, Dos veces por semana]}
@@ -163,6 +165,8 @@ sets:
   trash_can_cleaning:
     version: 1
     confirmed_by: []
+    kb_trade: trash_can_cleaning
+    photos: [p1_bins_curb, p2_inside_bin, p3_dumpster]
     questions:
       - {id: bins, card_field: true, en: "How many bins?", es: "¿Cuántos botes?", options_en: ["1", "2", "3 or more"], options_es: ["1", "2", "3 o más"]}
       - {id: how_often, card_field: true, en: "How often?", es: "¿Con qué frecuencia?", options_en: [Once, Monthly, Every three months], options_es: [Una vez, Cada mes, Cada tres meses]}
@@ -183,6 +187,8 @@ sets:
   car_detailing:
     version: 1
     confirmed_by: []
+    kb_trade: car_detailing
+    photos: [p1_vehicle_wide, p3_worst_area, p5_parking_spot]
     questions:
       - {id: vehicle, card_field: true, en: "What kind of vehicle?", es: "¿Qué tipo de vehículo?", options_en: [Car, Truck or SUV, RV or motorhome, Travel trailer, Side-by-side or UTV], options_es: [Carro, Troca o SUV, Casa rodante, Remolque de viaje, Razer o UTV]}
       - {id: rv_length, card_field: true, ask_if: {question: vehicle, answers: [3, 4]}, en: "About how long is it?", es: "¿Más o menos qué largo tiene?", options_en: [Under 25 ft, 25 to 35 ft, Over 35 ft], options_es: [Menos de 25 pies, 25 a 35 pies, Más de 35 pies]}
@@ -227,6 +233,8 @@ sets:
   pressure_washing:
     version: 1
     confirmed_by: []
+    kb_trade: pressure_washing
+    photos: [p1_whole_area, p2_worst_stain, p5_faucet]
     questions:
       - {id: surface, card_field: true, en: "What needs washing?", es: "¿Qué hay que lavar?", options_en: [Driveway, Patio or deck, House walls, Several areas], options_es: [Entrada de carros, Patio o terraza, Paredes de la casa, Varias áreas]}
       - {id: size, card_field: true, en: "About how big?", es: "¿Más o menos qué tamaño?", options_en: [Small (1 car), Medium (2 to 3 cars), Large], options_es: [Chico (1 carro), Mediano (2 a 3 carros), Grande]}
@@ -291,6 +299,8 @@ sets:
   dryer_vent_cleaning:
     version: 1
     confirmed_by: []
+    kb_trade: dryer_vent_cleaning
+    photos: [p1_outside_vent, p2_behind_dryer, p3_roof_vent]
     questions:
       - {id: where_vent, card_field: true, en: "Where does the vent come out?", es: "¿Por dónde sale el ducto?", options_en: [Side wall, Roof, Not sure where], options_es: [Pared de lado, Techo, No sé dónde]}
       - {id: stories, card_field: true, en: "How many stories?", es: "¿Cuántos pisos?", options_en: ["1", "2 or more"], options_es: ["1", "2 o más"]}
@@ -299,6 +309,8 @@ sets:
   holiday_lights:
     version: 1
     confirmed_by: []
+    kb_trade: holiday_lights
+    photos: [p1_front_house, p2_roofline_closeup, p4_outlets]
     questions:
       - {id: service, card_field: true, en: "What do you need?", es: "¿Qué necesita?", options_en: [Hang lights, Take down lights, Both], options_es: [Colgar luces, Quitar luces, Ambos]}
       - {id: stories, card_field: true, en: "How many stories?", es: "¿Cuántos pisos?", options_en: ["1", "2 or more"], options_es: ["1", "2 o más"]}
@@ -368,6 +380,8 @@ sets:
   home_watch:
     version: 1
     confirmed_by: []
+    kb_trade: home_watch
+    photos: [p1_home_front, p2_entry_access, p4_water_shutoff]
     questions:
       - {id: schedule, card_field: true, en: "How often should someone check the home?", es: "¿Cada cuánto deben revisar la casa?", options_en: [Weekly, Every two weeks, Monthly, After storms only], options_es: [Cada semana, Cada dos semanas, Cada mes, Solo después de tormentas]}
       - {id: season, card_field: true, en: "When are you away?", es: "¿Cuándo está fuera?", options_en: [Summer, Winter, Year-round, Off and on], options_es: [Verano, Invierno, Todo el año, A veces]}
@@ -397,6 +411,8 @@ sets:
   insulation:
     version: 1
     confirmed_by: []
+    kb_trade: insulation
+    photos: [p1_attic_wide, p2_existing_depth, p3_access]
     questions:
       - {id: where, card_field: true, en: "Where?", es: "¿Dónde?", options_en: [Attic, Walls, Garage], options_es: [Ático, Paredes, Cochera]}
       - {id: size, card_field: true, size_band: true, en: "About how many square feet?", es: "¿Más o menos cuántos pies cuadrados?", options_en: ["Under 1,000", "1,000 to 2,000", "Over 2,000"], options_es: ["Menos de 1,000", "1,000 a 2,000", "Más de 2,000"], band_floor: ["0", "1500.00", "1500.00"]}

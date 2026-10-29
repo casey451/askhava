@@ -1,0 +1,657 @@
+category: landscape_maintenance
+run: run-2026-10-29
+judge_model: "claude-opus-5-5"
+panel: [owner, estimator, field_tech]
+# Judging conventions used in this file:
+# - Inputs read: scenarios/landscape_maintenance.yaml and the three run files. The expert file was opened only for C10, after this panel block was written.
+# - A stop for the expected reason (outside_area, no_businesses, routed_elsewhere to the category the scenario expects) scores quotable: null and routing_correct: true.
+# - Baseline job_type labels ("trimming", "yard cleanup", "pre-emergent weed control", "leak repair") count as correct when they name the job type the scenario expects.
+# - trap_caught is true only when every trap in the scenario surfaced on the card. It is null where the scenario has no traps (s12) and where the
+#   harness rule gives every variant no card (s13, no_businesses). The playbook's routed_elsewhere stops (s14, s15) score false: the routing trap
+#   was caught, but no card carried the hidden-fact traps to any business. Change these two to null if the harness wants routed stops treated
+#   like the other stops.
+# - Estimator suspicions, on-site instructions and advice on the human baseline's card are not counted as facts_not_stated (they are labelled
+#   as the estimator's own view); only lines presented as facts are checked.
+scenarios:
+  - scenario_id: landscape_maintenance_s01
+    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Monthly trim, a dozen shrubs and two small trees on rock, no haul. I can price a monthly rate and confirm on the first visit.", estimator: "Everything I need is there. Seven questions is one over the scenario's limit of 6.", field_tech: "Narrow walk gate, no truck: I bring handhelds. Nothing on the card surprises me."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: ["no truck or trailer access (homeowner said only 'narrow walk gate')"]
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Clear monthly scope, count of plants, no haul, access. I'd send a truck.", estimator: "Complete in six. Paired questions (count plus haul, gate plus dogs) saved turns.", field_tech: "Gate and dog both covered. The note about dead shrubs on drip is useful."}
+      C:
+        quotable: 1
+        missing_facts: ["about a dozen shrubs and two small trees (count never asked)", "no grass stated outright (only the photo shows gravel)", "narrow walk gate, no truck access"]
+        wasted_questions: ["About how big is the yard? (answer: not sure)", "When do you need this? (answer: not sure)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Monthly trimming, backyard, but how many plants and how big? I'd call first.", estimator: "Trim: not said, Tallest: not said, Yard: not said. The card has the service and the frequency and little else.", field_tech: "No gate note. I'd show up with a trailer and find a walk gate."}
+
+  - scenario_id: landscape_maintenance_s02
+    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["front yard size: about a two-car driveway plus a planting strip (card says only 'small')", "loose drip lines lying on top of the gravel"]
+        wasted_questions: ["When do you need this? (she had already said asap; answer: 'asap, like I said')"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "One-time cleanup, weeds and a dead agave on rock, haul it. I can range-quote it from the photo.", estimator: "Good that the photo turned 'mow' into cleanup. The size she gave in words was cut down to 'small'.", field_tech: "Nobody told me about the loose drip lines; they will wrap my trimmer head."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Clear one-time cleanup with size, haul and drip lines.", estimator: "Photo first, then the right questions. Nothing missing.", field_tech: "Drip lines flagged, no mower needed. Ready to go."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["What do you need done? (answered 'mowing', which the photo then overrode)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 8
+        stopped_before_card: null
+        panel_notes: {owner: "Complete card, one-time cleanup, haul away.", estimator: "All the facts, but eight questions against a limit of 6. The service question before the photo was wasted.", field_tech: "Drip lines on the card. Good."}
+
+  - scenario_id: landscape_maintenance_s03
+    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Raking 30 ft only, owner buys rock. I can quote it, and I know to check the drip first.", estimator: "Damp on dry days, the bill, the tubing line, the slope: everything I would ask.", field_tech: "I know not to rake over a live leak and get blamed for it."}
+      B:
+        quotable: 2
+        missing_facts: ["dip is damp even on days it has not rained", "water bill higher for the last two months", "slight slope toward the side gate", "dip runs along the line of the tubing", "raking only, owner will buy rock himself (card says new rock wanted)"]
+        wasted_questions: ["How often? (answer described his own raking, not a service frequency)", "Should everything be hauled away? (answer: not sure)", "Is anything wrong with the watering system right now...? (asked for his verdict; answer: no)", "When do you need this? (answer: not sure)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "I can price raking 30 ft, but the card says he wants rock, which he doesn't, so the price comes out wrong.", estimator: "The follow-up asked him to judge his own watering system, and he said no. The observable facts (damp on dry days, the bill) never got asked.", field_tech: "The photo shows wet soil and a tube, but nothing says it is wet on dry days. I'd rake over a leak."}
+      C:
+        quotable: 2
+        missing_facts: ["dip runs along the line of the tubing (only the photo implies it)"]
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Raking only, 30 ft, damp on dry days, higher bill. I know what I'm walking into.", estimator: "Neutral and complete, but 7 questions against a limit of 6.", field_tech: "Damp-on-dry-days is the line that saves me."}
+
+  - scenario_id: landscape_maintenance_s04
+    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["front about 300 sq ft and back about 3,000 sq ft (only 'a third of an acre' and 'overgrown bermuda')"]
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Big lot, slope to a wash, 120 ft of 8 ft hedge. I can range it.", estimator: "Only the turf square footage is missing; the third of an acre gets me close.", field_tech: "Slope and hedge height mean the right mower and a pole trimmer."}
+      B:
+        quotable: 1
+        missing_facts: ["front about 300 sq ft, back about 3,000 sq ft of overgrown Bermuda", "steep slope down toward a wash", "hedges about 120 ft long and 8 ft tall"]
+        wasted_questions: ["How will the crew get into the yard...? (answer: not sure)", "When do you need this? (answer: not sure)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "It says large, which is good, but how much hedge and is the back flat? I'd call.", estimator: "The size question fixed the photo trap, then the follow-up went to access instead of the back yard's slope and hedges.", field_tech: "I'd bring a rider and a hand trimmer and find a steep slope and 8 ft hedges."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Every fact I need, and the first-visit catch-up is called out.", estimator: "Five questions, all of them useful.", field_tech: "Slope, wash, hedge height, haul volume: warned on all of them."}
+
+  - scenario_id: landscape_maintenance_s05
+    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    scores:
+      A:
+        quotable: 3
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Weekly, 1,200 sq ft Bermuda, no haul. I can give a firm weekly price.", estimator: "Complete in five without a photo.", field_tech: "Dog, padlock, 2 pm, sprinkler heads. No surprises."}
+      B:
+        quotable: 3
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Firm weekly price from this card.", estimator: "It dropped the photo ask at once and asked the right access and lawn-hazard questions.", field_tech: "Sprinkler heads and dog both on the card."}
+      C:
+        quotable: 3
+        missing_facts: ["pop-up sprinkler heads all over the lawn", "weekly through the growing season, winter unknown"]
+        wasted_questions: ["A photo or two helps businesses quote... (he had said his camera is broken)", "When do you need this? (answer: not sure)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Size, frequency and access are enough to price weekly mowing.", estimator: "It asked for a photo after he said he couldn't send one.", field_tech: "No warning about the sprinkler heads; I'd clip a few on the first cut."}
+
+  - scenario_id: landscape_maintenance_s06
+    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: ["three oleanders about 9 ft tall and a hedge about 25 ft long (card: Tallest not said)", "plants named as oleanders", "bees or wasps flying in and out of the hedge by the front window", "narrow walkway, walker, text before arriving"]
+        wasted_questions: ["Should the trimmings be hauled away? (she had said 'take away the clippings')", "About how big is the yard? (answer: 'I think small'; size of the plants is what matters)", "When do you need this? (answer: not sure)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "One-time trim with haul and a photo of big shrubs. I can range it from the photo, no more.", estimator: "One-time is right. The questions spent turns on yard size and haul, which she had answered, and never on plant size or hazards.", field_tech: "Nobody warned me about the insects in the hedge. I'd put a hedge trimmer into a nest."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "One time, oleanders 9 ft, 25 ft hedge, haul. I can quote it.", estimator: "All the facts, at a pace she could follow.", field_tech: "Insects, walker, text first. Good."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Same as a good card from my office.", estimator: "Complete; identified oleander from the photo and confirmed it with her.", field_tech: "Nest, oleander handling and walkway all flagged."}
+
+  - scenario_id: landscape_maintenance_s07
+    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Tenant, landlord OK, 6-day deadline, 4 yards of trimmings. I can quote and schedule.", estimator: "Complete, but 7 questions against a limit of 6.", field_tech: "Side gate unlocked, nobody home. Fine."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["If he's OK'd it, yes. Who's paying for this, you or him? (payer does not change the quote)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Everything plus her budget. I'd quote the haul as its own line.", estimator: "Complete, 7 questions, one about who pays.", field_tech: "Access and pile size covered."}
+      C:
+        quotable: 1
+        missing_facts: ["pile of trimmings about 4 cubic yards", "landlord has OK'd anyone working in the yard", "side gate unlocked, tenant not home during the day"]
+        wasted_questions: ["About how big is the yard? (answer: idk)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Deadline and items are there, but a renter asking if she may hire someone, with no landlord OK and no access, means I call first.", estimator: "The pile is the cost driver and its size was never asked.", field_tech: "Nobody home and no access note; I couldn't get in."}
+
+  - scenario_id: landscape_maintenance_s08
+    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Every two weeks, 2,500 sq ft lawn, 7 ft hedges, pool. I can quote.", estimator: "Spanish throughout, card in both languages, all facts.", field_tech: "Pool edge and the thorny bougainvillea over the neighbor's fence both warned."}
+      B:
+        quotable: 2
+        missing_facts: ["hedges about 7 ft tall (photo says only 'tall')", "pool in the back yard, lawn runs to its edge", "bougainvillea grown over the neighbor's fence", "card is in English only"]
+        wasted_questions: ["¿Cómo va a entrar el equipo...? (answer: no sé)", "¿Cuándo lo necesita? (answer: no sé)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Lawn size and frequency, so I can range it.", estimator: "Only four questions, and the follow-up went to access, which he didn't know, instead of hazards by the lawn.", field_tech: "Nobody said there's a pool. I'd blow clippings straight into it."}
+      C:
+        quotable: 2
+        missing_facts: ["bougainvillea grown over the neighbor's fence (card says only 'climbing the side fence')"]
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 7
+        stopped_before_card: null
+        panel_notes: {owner: "Complete enough to quote.", estimator: "Seven questions, one over the limit. Spanish throughout.", field_tech: "Pool flagged. The neighbor-side cut needs an OK and the card doesn't say it."}
+
+  - scenario_id: landscape_maintenance_s09
+    labels: {A: playbook, B: baseline_human, C: baseline_none}
+    scores:
+      A:
+        quotable: 1
+        missing_facts: ["dead palm fronds about 6 cubic yards and 4 wooden pallets (card says 'a pile')", "nobody home, lockbox on the side gate"]
+        wasted_questions: ["Is the yard work already done and it's just a pile to haul off...? (photo already showed weeds and a pile)", "When do you need this? (she had said Saturday and today or tomorrow)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Saturday deadline is right. Haul volume decides whether I bring a dump trailer, and it's not there.", estimator: "The follow-up confirmed what the photo showed instead of asking how big the pile is or how we get in.", field_tech: "No access note on a job where nobody is home."}
+      B:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Volume, deadline, lockbox. I can quote and schedule Friday.", estimator: "Five short questions for a frantic homeowner. Complete.", field_tech: "Lockbox code to get before dispatch is noted."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Complete. Six yards plus pallets is a trailer load.", estimator: "Six questions against a limit of 5, all of them useful.", field_tech: "Lockbox and backyard excluded are both on the card."}
+
+  - scenario_id: landscape_maintenance_s10
+    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Monthly trim and weed, 2,000 sq ft, 5 ft bushes. I can quote.", estimator: "Fixed 911 text, then the yard job. Gas smell recorded as his words.", field_tech: "I know about the smell at the meter before I get there."}
+      B:
+        quotable: 2
+        missing_facts: ["bushes around the meter thick and about 5 ft tall (card: Tallest not said)", "outdoor gas smell at the meter (left off the card; harness decision, but a crew would want it)"]
+        wasted_questions: ["When do you need this? (answer: not sure)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Monthly, 2,000 sq ft, no haul, photo of the meter bushes. I can range it.", estimator: "911 text right, no diagnosis. Bush height not asked.", field_tech: "Photo shows a gas meter in the bushes; nothing tells me he smelled gas there."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Complete, with the meter held until the gas company checks it.", estimator: "Sent its own gas warning instead of the fixed text; allowed for this baseline. All the facts.", field_tech: "Clear instruction not to run tools by the meter."}
+
+  - scenario_id: landscape_maintenance_s11
+    labels: {A: baseline_human, B: baseline_none, C: playbook}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Monthly mow, edge, trim; 800 sq ft plus a small back lawn. Sprinkler split off. I can quote.", estimator: "Two requests written up separately; the zone details go to the irrigation tech.", field_tech: "Loose valve box lid with wasp history flagged."}
+      B:
+        quotable: 2
+        missing_facts: ["HOA wants the lawn green by next month (said in transcript, card says flexible)", "valve box lid loose, wasp nest once"]
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Enough to price monthly yard care.", estimator: "It split off the sprinkler fast. It dropped the HOA date she gave.", field_tech: "No warning on the valve box."}
+      C:
+        quotable: 2
+        missing_facts: ["valve box lid loose, wasp nest once"]
+        wasted_questions: ["Is anything wrong with the watering system right now...? (she had already said zone 3 doesn't come on)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Monthly yard care with the HOA date. I can quote.", estimator: "Zone 3 kept off the card, which is right. The follow-up re-asked what she had already said.", field_tech: "No valve box warning."}
+
+  - scenario_id: landscape_maintenance_s12
+    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    scores:
+      A:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: outside_area
+        panel_notes: {owner: "Parker, out of area, no card. Correct.", estimator: "Zero questions.", field_tech: "Nothing to see."}
+      B:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: outside_area
+        panel_notes: {owner: "Correct stop.", estimator: "Zero questions.", field_tech: "Nothing to see."}
+      C:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: outside_area
+        panel_notes: {owner: "Correct stop.", estimator: "Zero questions.", field_tech: "Nothing to see."}
+
+  - scenario_id: landscape_maintenance_s13
+    labels: {A: baseline_none, B: baseline_human, C: playbook}
+    scores:
+      A:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: no_businesses
+        panel_notes: {owner: "No businesses, coverage reply, no card. Correct under INT-017.", estimator: "The scenario's own note asks for a complete card first; the harness rule says no card. Scored as the harness rule says.", field_tech: "Nothing to see."}
+      B:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: no_businesses
+        panel_notes: {owner: "Correct stop.", estimator: "Same as the others.", field_tech: "Nothing to see."}
+      C:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: null
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: no_businesses
+        panel_notes: {owner: "Correct stop.", estimator: "Same as the others.", field_tech: "Nothing to see."}
+
+  - scenario_id: landscape_maintenance_s14
+    labels: {A: baseline_human, B: playbook, C: baseline_none}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Licensed applicator card: 4,000 sq ft DG, one time before winter, dogs, veg bed. I can quote.", estimator: "Complete; mowing set up as a separate request.", field_tech: "Veg bed, dogs, drip near cacti: label constraints all there."}
+      B:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: routed_elsewhere
+        panel_notes: {owner: "Routed to pest control, which is right, but no card came with it. Nothing for an applicator to quote.", estimator: "The routing trap was caught; the size, dogs and veg bed never got asked.", field_tech: "No card, nothing to prepare for."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Pest control card with the facts I need.", estimator: "Routed, then carried on in the right trade. No promise of season-long control on the card.", field_tech: "Dogs and veg bed noted."}
+
+  - scenario_id: landscape_maintenance_s15
+    labels: {A: playbook, B: baseline_none, C: baseline_human}
+    scores:
+      A:
+        quotable: null
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 0
+        stopped_before_card: routed_elsewhere
+        panel_notes: {owner: "Right trade, but an active flood with no card means the plumber knows nothing: not whether it is shut off, not how close it is to the garage.", estimator: "The routing is right, the urgent flag is set, and the card is empty.", field_tech: "I'd roll with no idea it can't be shut off."}
+      B:
+        quotable: 2
+        missing_facts: ["about 10 ft from the garage", "a pressurized pipe, not a drip tube (homeowner's words only say 'sprinkler pipe or whatever it is')"]
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Emergency leak, can't shut off, water at the garage. I'd send a truck on a call-out fee.", estimator: "Four questions, no advice. Distance from the garage not asked.", field_tech: "I bring a meter key because the card says shutoff unknown."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 4
+        stopped_before_card: null
+        panel_notes: {owner: "Complete emergency card.", estimator: "Gave shutoff advice (allowed for this baseline) and got every fact.", field_tech: "Pressurized line, 10 ft from the garage, no recent digging. Ready."}
+
+  - scenario_id: landscape_maintenance_s16
+    labels: {A: baseline_none, B: playbook, C: baseline_human}
+    scores:
+      A:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: ["Do you need the palms trimmed? 1 Trimming 2 Yard cleanup 3 Not sure (confirmed what 'haircut' already said)"]
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Three 25 to 30 ft palms, one by the service drop. I can quote two and price the wire palm separately.", estimator: "Height and the wire both asked; mowing kept off.", field_tech: "Car, roof edge and wire all on the card."}
+      B:
+        quotable: 1
+        missing_facts: ["palms about 25 to 30 ft tall (card: Tallest not said)", "dead fronds growing over the roof edge", "car parked under the palms most of the time", "wire about arm's length from the crown"]
+        wasted_questions: ["When do you need this? (he had said before monsoon; answer: not sure)"]
+        trap_caught: false
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 5
+        stopped_before_card: null
+        panel_notes: {owner: "Palm height decides whether I need a lift or a climber, and it isn't there. I'd call.", estimator: "The wire follow-up was the right one; the height question was never asked.", field_tech: "No warning about the car underneath or the fronds on the roof."}
+      C:
+        quotable: 2
+        missing_facts: []
+        wasted_questions: []
+        trap_caught: true
+        routing_correct: true
+        fire_dept_correct: true
+        facts_not_stated: []
+        questions_asked: 6
+        stopped_before_card: null
+        panel_notes: {owner: "Complete; wire palm to be quoted separately.", estimator: "All facts, and it cleared up the 'weekly mowing' with no lawn.", field_tech: "Drop zone, car, roof edge and wire all planned."}
+
+summary_by_variant:
+  # quotable_share = scores of 2 or 3 over scored scenarios (nulls left out), the way scripts/expert_eval_report.py computes it.
+  # median_questions covers all 16 scenarios, stops at 0 included, as the script does.
+  playbook: {median_quotable: 2, quotable_share: 0.58, median_questions: 5, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 0.21, facts_not_stated_count: 0}
+  baseline_none: {median_quotable: 2, quotable_share: 1.0, median_questions: 6, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 0.86, facts_not_stated_count: 0}
+  baseline_human: {median_quotable: 2, quotable_share: 1.0, median_questions: 5.5, routing_correct_share: 1.0, fire_dept_correct_share: 1.0, trap_caught_share: 1.0, facts_not_stated_count: 1}
+# Playbook detail: 7 of 12 scored scenarios quotable (s02, s03, s05, s06, s08, s10, s11); scored 1 on s01, s04, s07, s09, s16. Null on s12, s13, s14, s15.
+# Playbook traps caught: 3 of 14 (s07, s09, s10). Baselines: 14 of 14 scored scenarios quotable each.
+where_playbook_lost_to_human:
+  - "Plant size for trimming is never asked. The card read 'Tallest: not said' on s01, s06, s10 and s16. The human asked how many plants and how tall (a dozen shrubs and 2 small trees; oleanders 9 ft and a 25 ft hedge; meter bushes 5 ft; palms 25 to 30 ft). Fix: make a trimming bank question 'How many bushes or trees, and about how tall is the tallest?' required, ahead of yard size."
+  - "The Small/Medium/Large yard-size question throws away the numbers. s02's 'two-car driveway plus a strip' became 'small'; s04's back yard of 3,000 sq ft Bermuda on a steep slope to a wash, with 120 ft of 8 ft hedge, never reached the card. Fix: ask 'What's in the yard, front and back, and about how big?' as free text, keep her numbers, and for mowing ask 'Is any of it on a slope?'"
+  - "There is no 'anything the crew should watch for' question. The human got stinging insects in the hedge (s06), the pool at the lawn edge (s08), loose drip lines (s02), pop-up sprinkler heads (s05), the car under the palms and fronds on the roof (s16), the walk gate (s01) and the walker and narrow walkway with text-first (s06). Fix: one fixed question 'Anything the crew should know about: pets, a pool, sprinkler heads, a narrow gate, things on the ground?'"
+  - "s03: fu_water_issue asks the homeowner to judge his own system ('Is anything wrong with the watering system?'), and he said no. The human asked what can be seen: 'Is the dip damp on days it hasn't rained?', 'Does it run along the tubing?', 'Has the water bill gone up?' Fix: change the gravel-raking follow-up to the neutral 'Is that spot damp on days it hasn't rained?' Also keep 'raking only or new rock' as an asked question; the card said rock was wanted, and it wasn't."
+  - "Cleanup haul volume is never asked (s07, s09). The human got 4 cubic yards of trimmings, and 6 cubic yards of fronds plus 4 pallets. Fix: for yard cleanup, use the follow-up on pile size ('About how big is the pile: a pickup load, a trailer, more?') instead of fu_pile_only, which only repeated what the photo showed."
+  - "Access when nobody is home (s07 unlocked side gate, s09 lockbox) and tenant authorization (s07 landlord OK) were missed. The one follow-up went elsewhere. Fix: when the requester says they rent, ask 'Has the owner OK'd the work?'; ask access ('How will the crew get in?') as a bank question for cleanup rather than spending the single follow-up."
+  - "Questions already answered in her own words were asked again: timing after 'asap' (s02), after 'Saturday / today or tomorrow' (s09) and after 'b4 monsoon' (s16); haul after 'take away the clippings' (s06); a photo ask after 'my camera is broken' (s05); the water follow-up after 'zone 3 doesn't come on' (s11). Fix: apply the skip rule to the fixed INT-030 timing question and the photo ask too, and put her stated timing on the card as 'Needed:'."
+  - "s14 and s15: the routed_elsewhere stop ends with no card. Both baselines carried on in the right trade and wrote quotable cards: pest control with 4,000 sq ft DG, dogs and a veg bed; plumbing with 'cannot shut off, water at the garage apron, 10 ft from the garage'. For an active flood, no card is the worst outcome. Fix: after the routing line, run the target category's question set and write that category's card."
+  - "s08: the card is English only. The human wrote it in Spanish with an English section for the crew, as the scenario asks."
+  - "s10: the outdoor gas smell at the meter was left off the card. Both baselines kept it as the homeowner's words. This is a harness decision; at minimum, add a neutral crew note quoting the homeowner."
+
+compliance:
+  # Playbook run only, checked against compliance_judge.md C1 to C12 and docs/ai_smell.yaml.
+  # C10: docs/catalog/expert/landscape_maintenance.yaml was opened only here. Each follow_up_used was checked against the
+  #   allowed_follow_ups of the job type the card template shows the intake landed on: s03 fu_water_issue (maintenance),
+  #   s04, s05 and s08 fu_access (lawn_mowing), s11 fu_water_issue (lawn_mowing lists it), s07 and s09 fu_pile_only (cleanup),
+  #   s16 fu_near_wires (shrub_tree_trim). Every one is allowed, and no scenario used more than one. No C10 violation.
+  # C3: the 911 text went out in s10 (gas smell, a fire-truck-list fact) and nowhere else. s15 (flood) and s16 (wire near a palm,
+  #   not down) correctly got none. No other safety, shutoff or repair advice.
+  # C4, C7, C8, C9, C12: no hits. No em dashes, exclamation marks or ai_smell words or patterns in any intake message (the 911 text is exempt under INT-004).
+  violations:
+    - {scenario_id: landscape_maintenance_s15, code: C1, where: "intake message 1 (read)", text: "This sounds like a leaking water line, not yard work."}
+    - {scenario_id: landscape_maintenance_s15, code: C5, where: "intake message 1 (read)", text: "It goes to plumbing repair, so I can't take it here.", note: "Tells the homeowner where her active flood goes, but the run stopped with no card, so nothing went to plumbing."}
+    - {scenario_id: landscape_maintenance_s14, code: C5, where: "intake message 1 (read)", text: "I can't take it here, so it goes to pest control.", note: "Same as s15: the run ended with no card, so nothing went to pest control."}
+    - {scenario_id: landscape_maintenance_s03, code: C1, where: "card line 4", text: "Homeowner adds: he says it is the monsoon washout", note: "A cause on the card. It is the homeowner's belief and labelled as his, but C1 bars a cause on the card. The standing rules should say whether a cause the homeowner states can be quoted."}
+    - {scenario_id: landscape_maintenance_s06, code: C2, where: "card line 5", text: "Homeowner adds: once a year is all she can afford.", note: "Cost or budget talk on the card. These are her words, but the scrub rule should drop them."}
+    - {scenario_id: landscape_maintenance_s09, code: C2, where: "card line 4", text: "Homeowner adds: wants it as soon as possible; will pay extra.", note: "Cost talk on the card that invites rush pricing, which the scenario lists in must_not_be_on_card."}
+    - {scenario_id: landscape_maintenance_s08, code: C6, where: "card line 1", text: "REQ-0108 | Yard maintenance | Lake Havasu City | house", note: "The homeowner never said what kind of place it is, and the photo shows only the back lawn, hedges and fence."}
+    - {scenario_id: landscape_maintenance_s02, code: C11, where: "intake message 6 (timing)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", note: "Her opening message already said asap. She replied 'asap, like I said'."}
+    - {scenario_id: landscape_maintenance_s05, code: C11, where: "intake message 2 (photo)", text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner.", note: "His opening message said he can't send photos because his camera is broken. The photo ask counts as a question in questions_asked."}
+    - {scenario_id: landscape_maintenance_s06, code: C11, where: "intake message 3", text: "Should the trimmings be hauled away? 1 Yes 2 No", note: "Her opening message said 'take away the clippings'."}
+    - {scenario_id: landscape_maintenance_s09, code: C11, where: "intake message 5 (timing)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", note: "Her opening message said Saturday and 'TODAY or tomorrow at the latest'."}
+    - {scenario_id: landscape_maintenance_s11, code: C11, where: "intake message 3 (follow_up)", text: "Is anything wrong with the watering system right now, like a leak, a wet spot or a zone that won't come on?", note: "Her opening message said zone 3 doesn't come on anymore."}
+    - {scenario_id: landscape_maintenance_s16, code: C11, where: "intake message 5 (timing)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", note: "His opening message said 'b4 monsoon'. The card then reads 'Needed: not said'."}
+  count: 13
+  clean_scenarios: 6   # s01, s04, s07, s10, s12, s13
+  # Borderline, not counted: s02 re-asked the service question after she said 'mow'. The photo contradicted her, which is what the scenario
+  #   wants, so this is not counted as C11. s03 asked 'How often?' after 'been doing this every few weeks', which describes his own raking, not a service frequency.
+  # Fixes these point to: (1) apply the skip rule to the INT-030 timing question and the photo ask; (2) after a routed_elsewhere read, either run
+  #   the target category's intake and write its card, or don't tell the homeowner where it goes; (3) in the read line, drop 'sounds like' and say only which trade the request goes to;
+  #   (4) scrub budget and payment remarks out of 'Homeowner adds'; (5) leave the kind-of-place field 'not said' unless she said it or the photo shows it.

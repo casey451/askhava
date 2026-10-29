@@ -1,0 +1,411 @@
+category: roof_repair
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: roof_repair_s01
+    kind: vague
+    persona: "retired man, 70s, texts in short fragments, says 'the top of the house'"
+    opening_message: "somethings wrong with the top of the house. can someone look"
+    photo: "none"
+    hidden_facts:
+      - "concrete tile roof, one story, about 2,000 sq ft"
+      - "three tiles slid down over the back patio after the last wind"
+      - "no water has come inside that he has seen"
+      - "solar panels are on the south side of the roof"
+      - "house is about 22 years old and the roof has never been redone"
+    homeowner_behavior: "answers one thing per reply; never volunteers; gives a fact only when a question clearly calls for it; gets impatient after 5 questions"
+    traps:
+      - "hidden: rooftop solar on the south side, only said if asked what is on the roof; panels may have to come off for the work"
+      - "hidden: roof is original at 22 years, only said if asked about age; changes whether a patch or underlayment work is quoted"
+    expected:
+      category: roof_repair
+      job_type: tile_repair
+      bank_job_type: "tile replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["concrete tile", "one story", "three slipped tiles over back patio", "solar panels on south side", "roof about 22 years old", "no water inside"]
+      must_not_be_on_card: ["underlayment is bad", "needs new roof", "any price", "any cause"]
+      max_questions: 6
+      notes: "Opening has no roof type, no symptom and no location. Solar panels and roof age are things only a pointed question surfaces. The assistant must not guess the roof needs replacing."
+
+  - id: roof_repair_s02
+    kind: wrong_terminology
+    persona: "40s, just bought the house, texts fast with typos, not sure of roof words"
+    opening_message: "hey my shingles are cracked and some of them slid off the roof, the clay looking ones. need someone to put them back and seal the roof"
+    photo: "ground shot of a tan concrete tile roof with two tiles sitting crooked near the ridge"
+    hidden_facts:
+      - "the roof is concrete tile, not shingle and not clay"
+      - "two tiles cracked and about four are slipped out of line near the ridge"
+      - "two stories, steep pitch on the front"
+      - "he saw black paper showing where the tiles slipped"
+      - "house was built in the 1990s and he does not know if the roof was ever redone"
+      - "sealing means he wants the roof waterproofed so it does not leak; nothing leaks inside now"
+    homeowner_behavior: "answers right away and with detail when asked a direct question; keeps saying 'shingles' unless the assistant uses another word"
+    traps:
+      - "wrong term: 'shingles' and 'clay' for concrete tile, card must say tile roof, not shingle"
+      - "wrong term: 'seal the roof' is not a coating job, card should note he wants the roof sealed against leaks and not choose a job type for him"
+      - "hidden: two stories and steep front pitch, only said if asked about stories or steepness"
+    expected:
+      category: roof_repair
+      job_type: tile_repair
+      bank_job_type: "tile replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["tile roof", "two stories", "steep front", "two cracked and about four slipped tiles near the ridge", "black paper showing", "built in the 1990s, roof age unknown", "wants it sealed against leaks"]
+      must_not_be_on_card: ["shingle", "clay", "recoat", "underlayment failed", "any price"]
+      max_questions: 6
+      notes: "Roof type words are wrong in two ways. Seal the roof tempts a foam_coating job type. The photo and one direct question settle the material."
+
+  - id: roof_repair_s03
+    kind: wrong_self_diagnosis
+    persona: "50s, certain of himself, texts full sentences with some typos"
+    opening_message: "I have a roof leak in the upstairs hall ceiling. brown ring about the size of a dinner plate. need a roofer out here asap before the next rain"
+    photo: "hall ceiling with a brown ring stain, no drip"
+    hidden_facts:
+      - "it has not rained in about five weeks"
+      - "the stain is directly under the upstairs bathroom"
+      - "the stain got bigger last week after the family showered several mornings in a row"
+      - "ceiling is soft and slightly sagging at the center of the ring"
+      - "the house has a flat concrete tile roof with no leak history"
+      - "the bathroom floor near the tub is a little damp when he checks it"
+    homeowner_behavior: "defends the roof idea; answers direct questions about when it grows and what is above it; does not connect the shower to it until asked"
+    traps:
+      - "wrong self-diagnosis: roof leak, but it grows after showers and sits under the upstairs bathroom with no rain for weeks, so the request belongs to plumbing_repair"
+      - "hidden: damp bathroom floor and a soft ceiling, only said when asked what is above the stain or when it grows"
+    expected:
+      category: plumbing_repair
+      job_type: leak_slow
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["stain in upstairs hall ceiling under bathroom", "grows after showers", "no rain in about five weeks", "ceiling soft and slightly sagging", "damp bathroom floor near tub"]
+      must_not_be_on_card: ["roof leak", "plumbing leak", "supply line", "any price", "any cause"]
+      max_questions: 5
+      notes: "He says roof and asks for a roofer. One question about when the stain changes reroutes the card to plumbing_repair without the assistant naming a cause. Sagging ceiling is a safety fact that must be kept on the card."
+
+  - id: roof_repair_s04
+    kind: wrong_self_diagnosis
+    persona: "late 50s, retired contractor's widow, firm, texts in complete sentences"
+    opening_message: "My roof is shot and needs to be replaced. Every time it rains the water comes in the living room by the skylight. I want quotes for a whole new roof."
+    photo: "ceiling around a skylight well with a faint brown ring on the drywall"
+    hidden_facts:
+      - "the leak only shows around the skylight, nowhere else in the house"
+      - "tile roof about 12 years old with no other stains"
+      - "the skylight was installed about 15 years ago, the roof was redone around it"
+      - "water appears after hard rain, not light rain"
+      - "one story, roughly 2,200 sq ft"
+      - "she has not been on the roof or had anyone look at the skylight"
+    homeowner_behavior: "pushes for a full re-roof; answers where the stain is and how old the roof is when asked; does not volunteer that only the skylight is affected"
+    traps:
+      - "wrong self-diagnosis: whole roof replacement, but all the facts point at one skylight, a flashing job type"
+      - "hidden: roof is 12 years old with no other stains, only said when asked about age or other rooms"
+    expected:
+      category: roof_repair
+      job_type: flashing_skylight
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["leak only around the skylight", "after hard rain", "tile roof about 12 years old", "one story about 2,200 sq ft", "no other stains"]
+      must_not_be_on_card: ["whole roof", "flashing failed", "re-roof needed", "any price"]
+      max_questions: 5
+      notes: "She asks for a re-roof. The card should record what is true (one skylight, one location) and let businesses decide scope. Both wanting a new roof and the single-location facts may go on the card, as her words versus the facts."
+
+  - id: roof_repair_s05
+    kind: misleading_photo
+    persona: "30s, works from home, texts in lowercase, helpful but guessing"
+    opening_message: "got a leak in the back bedroom when it rains. sent a pic of the roof, tiles look messed up on the front"
+    photo: "front of a tile roof with three slipped tiles near the eave; no photo of the back of the house or the back bedroom ceiling"
+    hidden_facts:
+      - "the leak is in the back bedroom, which is a room addition built later"
+      - "the addition has a flat roof with white foam and a coating, not tile"
+      - "water sits in a low spot on the flat part for a day or two after rain"
+      - "the coating has blisters and one spot where yellow foam shows"
+      - "the three slipped tiles in the photo are on the front of the house over the garage"
+      - "no water has ever come in under the front tiles"
+      - "addition is about 12 years old"
+    homeowner_behavior: "assumes the front tiles are the problem; answers direct questions about which room and what the back roof looks like; says 'oh the back is flat, I forgot' when asked"
+    traps:
+      - "misleading photo: slipped front tiles are real but not where the water enters; the leak is under the flat foam roof of the back addition"
+      - "hidden: blistered coating, bare yellow foam and ponding on the flat section, only said if asked about the roof over the bedroom"
+    expected:
+      category: roof_repair
+      job_type: leak_repair
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["leak in back bedroom when it rains", "back bedroom is an addition with flat foam roof", "ponding after rain", "blisters and yellow foam showing", "three slipped tiles over the garage in front, no leak there", "addition about 12 years old"]
+      must_not_be_on_card: ["tiles are the cause", "foam failed", "needs recoat", "any price"]
+      max_questions: 6
+      notes: "The photo shows a different roof section than the leak. Without a question about the roof above the bedroom the card sends the roofer to the wrong roof. Photo ask for the back flat section is expected."
+
+  - id: roof_repair_s06
+    kind: no_photo
+    persona: "30s, lives in a single-wide in a mobile home park outside the city, texts short, no ladder"
+    opening_message: "my trailer roof leaks over the kitchen. i want a peaked roof put over the whole thing like my neighbor got. how much"
+    photo: "none"
+    hidden_facts:
+      - "single-wide manufactured home on a rented space in a park, he owns the home"
+      - "the home was built in 1974"
+      - "flat-ish metal roof with old silver coating that is peeling"
+      - "leak is a drip over the kitchen sink when it rains"
+      - "there is a rooftop swamp cooler near the kitchen end"
+      - "park manager said any structure change needs the park's OK"
+      - "he cannot get on the roof and has no photos from the ground"
+    homeowner_behavior: "answers briefly; says 'no pics, I don't have a ladder' when asked; will take a ground photo only if the assistant asks for it simply"
+    traps:
+      - "licensed-only: a roof-over that adds a peaked roof structure alters the home and needs an Arizona Dept of Housing licensed installer plus a permit, not a plain roofing license"
+      - "hidden: home built in 1974 (before the 1976 federal standard), only said if asked about age of the home"
+      - "hidden: swamp cooler on the roof near the leak, only said if asked what is on the roof"
+    expected:
+      category: roof_repair
+      job_type: manufactured_home_roof
+      bank_job_type: "re-roof"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["manufactured home", "built 1974", "owns the home, rented space in a park", "wants a peaked roof-over", "metal roof with peeling coating", "drip over kitchen sink when it rains", "rooftop swamp cooler near the kitchen end", "no photos available"]
+      must_not_be_on_card: ["roof-over is allowed", "needs a permit", "any price", "any cause"]
+      max_questions: 6
+      notes: "Roof-over belongs to a licensed-only job type; the card must state what he asked for so only licensed businesses can quote, without the assistant explaining licensing. No photo; a ground photo ask must be easy for a man without a ladder."
+
+  - id: roof_repair_s07
+    kind: elderly
+    persona: "widow, 80s, types slowly with a single finger, polite, sometimes sends the same message twice"
+    opening_message: "Hello dear I have a stain on my bedroom ceiling and a man came by the door after the storm and said I need a whole new roof for a lot of money. my son said to text this number to get other people to look"
+    photo: "none"
+    hidden_facts:
+      - "tile roof, one story, house about 30 years old"
+      - "stain is about the size of a hand in the corner of the bedroom, dry now"
+      - "the stain appeared after a heavy rain in September"
+      - "the door-to-door man gave a written number and wants a deposit on Friday"
+      - "she has hearing trouble and cannot take phone calls"
+      - "her son lives out of state and will help with photos on the weekend"
+    homeowner_behavior: "answers slowly one thing at a time; mentions the door-knocker again if asked about the roof; needs plain wording and no more than one question per message"
+    traps:
+      - "hidden: door-to-door man wants a deposit Friday, only said if asked whether anyone else has looked at it; the card should not carry his price or her deposit worry as advice"
+      - "hidden: no phone calls, text only because of hearing, a card note matters for businesses"
+    expected:
+      category: roof_repair
+      job_type: leak_repair
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["stain in bedroom corner, dry now", "appeared after heavy rain in September", "tile roof, one story, home about 30 years old", "text only, cannot take calls", "another company already gave her a written figure"]
+      must_not_be_on_card: ["scam", "do not pay a deposit", "needs a whole new roof", "the other company's number", "any price"]
+      max_questions: 5
+      notes: "The assistant must keep each message short and warm and ask one thing at a time. No advice about the door-knocker. The text-only contact need belongs on the card. Photos can wait for the son."
+
+  - id: roof_repair_s08
+    kind: tenant
+    persona: "20s renter, texts casually, wants it handled fast, unsure what she is allowed to do"
+    opening_message: "im renting a house in havasu and the roof leaks in my bedroom closet. landlord said to just get a couple quotes and send them to him. can u do that"
+    photo: "closet ceiling with drywall bubbled and a drip stain on the shelf"
+    hidden_facts:
+      - "she is a tenant; the owner lives in another state"
+      - "the owner told her by text to get quotes and he will approve and pay"
+      - "she can be home after 5 pm on weekdays and anytime on weekends"
+      - "the closet is under a flat-looking section at the back of the house"
+      - "leaks when it rains hard; water dripped on clothes on the shelf last night"
+      - "house is one story with tile"
+    homeowner_behavior: "answers quickly; says she does not know about the roof type or age and does not know who owns the insurance; agrees to ask the owner if the assistant needs approval details"
+    traps:
+      - "tenant: she is not the owner, the owner approves and pays, card must say so and give access times"
+      - "hidden: closet is under a flat-looking section, only said if asked what is on the roof above that room"
+    expected:
+      category: roof_repair
+      job_type: leak_repair
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["tenant, owner approves and pays", "bedroom closet ceiling leaks when it rains hard", "one story, tile roof", "flat-looking section above closet", "home after 5 pm weekdays and weekends", "roof age unknown"]
+      must_not_be_on_card: ["landlord must fix", "tenant rights", "any price", "any cause"]
+      max_questions: 5
+      notes: "She cannot approve a job, so the card must make the owner role clear. The assistant should not give landlord or tenant advice. Possible foam section is a hidden-condition lead."
+
+  - id: roof_repair_s09
+    kind: spanish
+    persona: "50s, Spanish speaker, writes quick with no accents and a few typos"
+    opening_message: "buenas tardes, con el viento del otro dia se me cayeron varias tejas del techo y creo que ya se esta metiendo agua en la cochera. necesito que alguien venga a revisar"
+    photo: "ground photo of the garage roof edge with a gap in the tile row and broken tile pieces in the yard"
+    hidden_facts:
+      - "concrete tile roof, one story, about 1,800 sq ft"
+      - "five or six tiles fell on the garage side, some broke"
+      - "a wet spot showed on the garage ceiling after last night's light rain"
+      - "the tile pieces are still in the yard and he saved a few whole ones"
+      - "the roof is about 15 years old"
+      - "he is home mornings and speaks little English"
+    homeowner_behavior: "answers in Spanish only; short sentences; understands simple multiple-choice options; answers about the saved tiles when asked what happened to the fallen ones"
+    traps:
+      - "hidden: a wet spot on the garage ceiling, only said if asked about water inside"
+      - "hidden: roof is 15 years old, a roofer would weigh underlayment; only said if asked age"
+    expected:
+      category: roof_repair
+      job_type: storm_damage
+      bank_job_type: "tile replacement"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["wind knocked off five or six tiles on garage side", "concrete tile, one story, about 1,800 sq ft", "wet spot on garage ceiling after light rain", "roof about 15 years old", "some whole tiles saved", "Spanish speaker"]
+      must_not_be_on_card: ["underlayment failed", "needs new roof", "any price"]
+      max_questions: 5
+      notes: "All replies in Spanish. Water coming in after a storm makes this time-sensitive for businesses but it is not a fire-truck item. Card carries Spanish-speaking preference."
+
+  - id: roof_repair_s10
+    kind: panicked_non_emergency
+    persona: "40s mother of two, panicking, ALL CAPS and many exclamation points, texts in bursts at night"
+    opening_message: "THE ROOF IS LEAKING!!!! ITS MONSOON AND WATER IS POURING IN THE HALLWAY. ITS 11PM I NEED SOMEONE NOW!!! WE ARE GONNA DIE"
+    photo: "hallway ceiling with water dripping into a plastic bucket and a wet patch on the carpet, light fixture visible above, no smoke or sparks"
+    hidden_facts:
+      - "water is dripping from the ceiling beside a hallway light fixture, the light is switched off"
+      - "no sparks, no buzzing, no burning smell, no outlets involved"
+      - "the ceiling is firm, not sagging"
+      - "three buckets are catching drips and the rain is still falling"
+      - "tile roof about 18 years old, one story"
+      - "everyone is safe inside, nobody is hurt"
+      - "the monsoon storm started two hours ago and thunder has stopped"
+    homeowner_behavior: "answers each direct question in a burst; calms down a little if the assistant is short and clear; repeats 'hurry' if asked more than three questions"
+    traps:
+      - "panic: loud and frightened but nothing on the fire-truck list, so no 911 text; urgent flag still applies for businesses"
+      - "hidden: water beside a light fixture with the light off, no sparks or burning smell, only said when asked about electrical signs; if the assistant over-triggers 911 here the test fails"
+    expected:
+      category: roof_repair
+      job_type: active_leak
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["active leak during monsoon rain, 11 pm", "hallway ceiling dripping beside a light fixture, light off", "no sparks or burning smell", "ceiling firm", "tile roof about 18 years old, one story", "buckets catching water", "after-hours"]
+      must_not_be_on_card: ["call 911", "turn off the power", "stay out of the hall", "tarp it", "any price"]
+      max_questions: 3
+      notes: "Few questions; the homeowner is panicked at night. Water near a fixture is not the sparking or burning outlet trigger unless she says sparks. The assistant must not give any advice. The card goes out marked urgent and after-hours."
+
+  - id: roof_repair_s11
+    kind: calm_real_emergency
+    persona: "60s, calm and chatty, texts full sentences, in no hurry"
+    opening_message: "Hi, hoping to get a quote on a ceiling stain in the den that showed up after the rains last month. Not dripping now. By the way, the outlet on that wall made a crackle and a spark last night and it smells a bit burnt, but I figured it can wait till the roofer comes."
+    photo: "den ceiling corner with a light brown stain; outlet on the wall below with a dark scorch mark around one slot"
+    hidden_facts:
+      - "the outlet below the stain sparked once last night and smells burnt"
+      - "the outlet is still on and he has been using the lamp plugged into it"
+      - "stain is about two feet wide and has grown after each rain"
+      - "tile roof, one story, about 25 years old"
+      - "never had the roof looked at"
+      - "the wall is a shared wall with the garage"
+    homeowner_behavior: "unbothered; answers each question fully; would never raise the outlet again unless the assistant ignores it"
+    traps:
+      - "fire-truck list fact buried in passing: a sparking, burning-smell outlet; the fixed 911 text must go out even though the request is a calm roof quote"
+      - "hidden: stain grows after each rain, outlet still in use; both go on the card"
+    expected:
+      category: roof_repair
+      job_type: leak_repair
+      bank_job_type: "leak repair"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["stain in den ceiling, about two feet wide, after last month's rains", "grows after each rain", "tile roof, one story, about 25 years old", "outlet below stain sparked and smells burnt", "outlet still in use"]
+      must_not_be_on_card: ["roof caused the outlet problem", "water got into the outlet", "any advice", "any price"]
+      max_questions: 4
+      notes: "Only the fixed 911 text may speak to the outlet; no advice from the assistant. The roof job still proceeds. Easy to miss because the homeowner calls it nothing."
+
+  - id: roof_repair_s12
+    kind: two_trades
+    persona: "late 30s, organized, texts in neat short paragraphs"
+    opening_message: "We had a roof leak over our dining room that left a big stain and the drywall is sagging a bit. Need the roof fixed first, and then someone to patch the ceiling and repaint it. Can you handle both?"
+    photo: "dining room ceiling with a stain about three feet wide and a slightly bowed section of drywall"
+    hidden_facts:
+      - "tile roof, one story, about 2,400 sq ft"
+      - "leak showed up after the September storms, dry now"
+      - "the ceiling is textured (popcorn style) and about 18 feet across the room"
+      - "ceiling has a bowed section about two feet wide"
+      - "roof has solar panels on the section above the dining room"
+      - "she wants the roof fixed before any ceiling work"
+    homeowner_behavior: "answers directly; says the ceiling and paint come second; confirms the sagging when asked about the ceiling"
+    traps:
+      - "two trades: roof leak fix first, then drywall and paint; first card is roof_repair"
+      - "hidden: solar panels above the leak, only said if asked what is on the roof there; changes the roof quote a lot"
+      - "hidden: bowed drywall, a roofer would want to know whether the ceiling is holding water; only said if asked about the ceiling"
+    expected:
+      category: roof_repair
+      job_type: leak_repair
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["stain over dining room after September storms, dry now", "tile roof, one story, about 2,400 sq ft", "solar panels on the section above", "ceiling bowed about two feet", "ceiling work comes after the roof"]
+      must_not_be_on_card: ["panels must come off", "ceiling must be replaced", "any price"]
+      max_questions: 5
+      notes: "Roof card goes first. The ceiling patch and paint (drywall or painting) is a second request the assistant should note without bundling into this card. Solar above the leak area is the big hidden driver."
+
+  - id: roof_repair_s13
+    kind: outside_area
+    persona: "50s, texts in short lines from a different town, direct"
+    opening_message: "need a roofer for a leak, house in Bullhead City. tile roof. do you guys cover that"
+    photo: "none"
+    hidden_facts:
+      - "the house is in Bullhead City, Arizona"
+      - "concrete tile roof, one story"
+      - "leak shows in the living room when it rains"
+      - "he found Ask Hava through a Lake Havasu City neighbor"
+    homeowner_behavior: "answers directly; will give the ZIP when asked; drops the matter if told the town is outside the area"
+    traps:
+      - "outside area: ZIP/town must answer before trade questions; no roof questions should be asked first"
+    expected:
+      category: roof_repair
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["roof questions asked before the area check", "any businesses named", "any price"]
+      max_questions: 1
+      notes: "The ZIP check should answer before any roof questions, so the right result is a short out-of-area reply, not an intake. The category stays roof_repair."
+
+  - id: roof_repair_s14
+    kind: no_businesses
+    persona: "50s landlord of a small house, matter-of-fact, texts in clean sentences"
+    opening_message: "The flat foam roof over our back addition has water sitting on it after rain and the coating is bubbling. We need it looked at and recoated. House is in Lake Havasu City, 86403."
+    photo: "flat roof with white coating, several blisters and a shallow puddle near the drain; one patch of yellow foam showing"
+    hidden_facts:
+      - "foam roof section is about 400 sq ft over a back addition"
+      - "coating is about 14 years old and was last recoated 8 years ago"
+      - "yellow foam shows in one spot about the size of a dinner plate"
+      - "no leak inside yet"
+      - "someone put a different white coating over the old one last time, he does not know which kind"
+      - "the main house has a tile roof in good shape"
+    homeowner_behavior: "answers clearly; knows the roof history from the invoice; does not know the coating type"
+    traps:
+      - "hidden: previous recoat with an unknown coating over the old one, a recoater would care about compatibility; only said if asked about past recoating"
+      - "hidden: bare yellow foam showing in one spot, only said if asked about the photo detail"
+    expected:
+      category: roof_repair
+      job_type: foam_coating
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["flat foam roof over back addition, about 400 sq ft", "ponding after rain, coating blisters", "bare foam showing in one spot", "coating about 14 years old, recoated 8 years ago, coating type unknown", "no leak inside", "main house tile roof is fine"]
+      must_not_be_on_card: ["coating failed", "needs full replacement", "any price"]
+      max_questions: 5
+      notes: "Zero coverage for roofing in the harness: the card should say no roofing businesses are signed up yet, and the intake should still capture the right job type."
+
+  - id: roof_repair_s15
+    kind: wrong_terminology
+    persona: "60s, handy and proud of it, texts in long run-on messages"
+    opening_message: "i need my roof retarred and the felt redone under the tile on the whole house its 1998 build and i keep getting stains on the ceilings in a couple rooms but only when it rains hard and i dont wanna pay for new tile"
+    photo: "none"
+    hidden_facts:
+      - "concrete tile roof, 1998 build, never redone, one story, about 2,300 sq ft"
+      - "ceiling stains in the hallway and the guest room, both dry now"
+      - "he has patched cracks with roofing cement from a can himself, three spots"
+      - "solar panels cover about half the south roof"
+      - "he wants the tile saved and relaid, not replaced"
+      - "the house has a shared wall garage with an attic hatch he can reach"
+    homeowner_behavior: "talks in long messages and answers more than he is asked, but forgets the solar and his own patching unless asked about what is on the roof or whether anyone has worked on it"
+    traps:
+      - "wrong term: 'retarred' and 'felt' for roof underlayment, card should say he wants the tile lifted and relaid on new underlayment, not tar work"
+      - "hidden: solar on half the south roof, only said if asked what is on the roof; changes the quote a lot"
+      - "hidden: his own roofing-cement patches on three spots, only said if asked whether the roof has been worked on"
+    expected:
+      category: roof_repair
+      job_type: tile_underlayment
+      bank_job_type: "re-roof"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["concrete tile, built 1998, never redone, one story, about 2,300 sq ft", "wants tile lifted and relaid", "stains in hallway and guest room after hard rain, dry now", "solar panels on half the south roof", "three spots patched with roofing cement"]
+      must_not_be_on_card: ["underlayment has failed", "tar", "any price", "any cause"]
+      max_questions: 6
+      notes: "He prescribes his own fix with the wrong vocabulary. The card should record the request in plain words and keep the solar and patch history for the quote."

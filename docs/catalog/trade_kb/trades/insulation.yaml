@@ -1,0 +1,408 @@
+# Written by Claude (expert layer, Oct 29 2026), not part of the Grok delivery (D-431). AI research, not legal advice.
+# Ask Hava trade knowledge file: insulation. Schema: foundation/schema.yaml (v2). Items marked [judgment] are not
+# from a cited source; [unverified] = could not confirm in an official source. Ask Hava never diagnoses, prices, ranks or supervises work.
+trade: insulation
+display_name: "Insulation"
+summary: >-
+  Attic insulation (blown-in top-ups over what is there, or full removal and replacement after rodents or water),
+  radiant barriers and attic vents, blown-in wall insulation through small holes, garage or shop ceilings, and
+  insulation wrap on ducts. In Arizona this is ROC R-40 Insulation work, and the R-40 scope names radiant barriers
+  [S2]. Businesses usually quote a range from the area, the depth that is there now and how easy the attic is to
+  reach [judgment]. Lake Havasu City is in climate zone 3B (hot, dry), where the US Department of Energy table lists
+  R-49 to R-60 for an attic with no insulation [T-mohave_cz][T-doe_insulation]. Sealing or replacing ducts goes to
+  hvac; wet insulation from a roof leak also needs a roofing card [judgment].
+job_types:
+  - id: attic_top_up
+    label: "Attic top-up (blown-in over existing insulation)"
+    site_visit_usually_needed: "sometimes"
+    handyman_ok: "no"
+  - id: attic_remove_replace
+    label: "Attic removal and replace (rodent or water damage, old or flat insulation)"
+    site_visit_usually_needed: "yes"
+    handyman_ok: "no"
+  - id: radiant_barrier_ventilation
+    label: "Radiant barrier or attic vents"
+    site_visit_usually_needed: "sometimes"
+    handyman_ok: "no"
+  - id: wall_blown_in
+    label: "Wall insulation (blown in through small holes)"
+    site_visit_usually_needed: "yes"
+    handyman_ok: "no"
+  - id: garage_shop_ceiling
+    label: "Garage or shop ceiling or walls"
+    site_visit_usually_needed: "sometimes"
+    handyman_ok: "limited"
+  - id: duct_insulation
+    label: "Duct insulation wrap (sealing or new ducts go to hvac)"
+    site_visit_usually_needed: "sometimes"
+    handyman_ok: "no"
+triggers_en:
+  - phrase: "insulation"
+    job_type: null
+  - phrase: "insulation guy"
+    job_type: null
+  - phrase: "insolation"
+    job_type: null
+  - phrase: "insulaton"
+    job_type: null
+  - phrase: "need more insulation"
+    job_type: null
+  - phrase: "attic insulation"
+    job_type: attic_top_up
+  - phrase: "blown in insulation"
+    job_type: attic_top_up
+  - phrase: "blow in insulation"
+    job_type: attic_top_up
+  - phrase: "add insulation to attic"
+    job_type: attic_top_up
+  - phrase: "top off attic insulation"
+    job_type: attic_top_up
+  - phrase: "attic is thin"
+    job_type: attic_top_up
+  - phrase: "can see the ceiling joists in the attic"
+    job_type: attic_top_up
+  - phrase: "R-49 in attic"
+    job_type: attic_top_up
+  - phrase: "upstairs is so hot"
+    job_type: attic_top_up
+  - phrase: "remove old insulation"
+    job_type: attic_remove_replace
+  - phrase: "insulation removal"
+    job_type: attic_remove_replace
+  - phrase: "rats in the attic insulation"
+    job_type: attic_remove_replace
+  - phrase: "mouse poop in attic"
+    job_type: attic_remove_replace
+  - phrase: "pack rat nest in insulation"
+    job_type: attic_remove_replace
+  - phrase: "wet insulation"
+    job_type: attic_remove_replace
+  - phrase: "insulation got wet from roof leak"
+    job_type: attic_remove_replace
+  - phrase: "attic cleanout"
+    job_type: attic_remove_replace
+  - phrase: "radiant barrier"
+    job_type: radiant_barrier_ventilation
+  - phrase: "foil in the attic"
+    job_type: radiant_barrier_ventilation
+  - phrase: "attic fan"
+    job_type: radiant_barrier_ventilation
+  - phrase: "attic vents"
+    job_type: radiant_barrier_ventilation
+  - phrase: "attic too hot"
+    job_type: radiant_barrier_ventilation
+  - phrase: "insulate my walls"
+    job_type: wall_blown_in
+  - phrase: "blown in wall insulation"
+    job_type: wall_blown_in
+  - phrase: "no insulation in walls"
+    job_type: wall_blown_in
+  - phrase: "outside walls hot to the touch"
+    job_type: wall_blown_in
+  - phrase: "insulate garage"
+    job_type: garage_shop_ceiling
+  - phrase: "garage ceiling insulation"
+    job_type: garage_shop_ceiling
+  - phrase: "insulate my shop"
+    job_type: garage_shop_ceiling
+  - phrase: "metal building insulation"
+    job_type: garage_shop_ceiling
+  - phrase: "room over the garage is hot"
+    job_type: garage_shop_ceiling
+  - phrase: "duct insulation"
+    job_type: duct_insulation
+  - phrase: "wrap my ducts"
+    job_type: duct_insulation
+  - phrase: "ducts in attic sweating"
+    job_type: duct_insulation
+triggers_es:
+  - phrase: "aislamiento"
+    job_type: null
+  - phrase: "aislante"
+    job_type: null
+  - phrase: "aislamiento del ático"
+    job_type: attic_top_up
+  - phrase: "aislamiento soplado"
+    job_type: attic_top_up
+  - phrase: "agregar aislamiento"
+    job_type: attic_top_up
+  - phrase: "quitar el aislamiento viejo"
+    job_type: attic_remove_replace
+  - phrase: "ratas en el ático"
+    job_type: attic_remove_replace
+  - phrase: "aislamiento mojado"
+    job_type: attic_remove_replace
+  - phrase: "barrera radiante"
+    job_type: radiant_barrier_ventilation
+  - phrase: "ventilación del ático"
+    job_type: radiant_barrier_ventilation
+  - phrase: "aislar las paredes"
+    job_type: wall_blown_in
+  - phrase: "aislar la cochera"
+    job_type: garage_shop_ceiling
+  - phrase: "aislar el taller"
+    job_type: garage_shop_ceiling
+  - phrase: "aislar los ductos"
+    job_type: duct_insulation
+questions:
+  - id: q1_where
+    text: "Where do you want insulation work?"
+    options: ["Attic", "Walls", "Garage or shop", "Ducts", "Radiant barrier or attic vents", "Not sure"]
+    ask_if: "always"
+    changes_price: "yes"
+    why: "The area sets the method, the material and the time. Maps to the question bank 'where' question. [judgment]"
+  - id: q2_size
+    text: "About how many square feet?"
+    options: ["Under 1,000", "1,000 to 2,000", "Over 2,000", "Not sure"]
+    ask_if: "always"
+    changes_price: "yes"
+    why: "Insulation is quoted by area. Bands match the question bank 'size' question. [judgment]"
+  - id: q3_existing
+    text: "Add to what is there, or remove it and put in new?"
+    options: ["Add to what is there", "Remove and replace", "Nothing there now", "Not sure"]
+    ask_if: "q1_where in ['Attic', 'Garage or shop', 'Not sure']"
+    changes_price: "yes"
+    why: "Removal adds a vacuum-out and hauling step before new insulation goes in. Maps to the question bank 'existing' question. [judgment]"
+  - id: q4_condition
+    text: "What does the old insulation look like?"
+    options: ["Droppings or nests", "Water stains or wet spots", "Flat or thin", "Looks fine, just want more", "Not sure"]
+    ask_if: "q3_existing in ['Remove and replace', 'Not sure'] or job_type == attic_remove_replace"
+    changes_price: "yes"
+    why: "Droppings, nests or wet spots often mean a full removal and cleanup in the quote. [judgment]"
+  - id: q5_access
+    text: "How do you get into the attic?"
+    options: ["Hatch in a closet or hallway", "Hatch in the garage", "Pull-down ladder", "No opening I know of", "Not sure"]
+    ask_if: "q1_where in ['Attic', 'Radiant barrier or attic vents', 'Ducts', 'Not sure']"
+    changes_price: "yes"
+    why: "A small or hard-to-reach opening, or none at all, adds time and may mean a new opening. [judgment]"
+  - id: q6_wall_outside
+    text: "What is on the outside of the walls?"
+    options: ["Stucco", "Block", "Siding", "Not sure"]
+    ask_if: "q1_where == 'Walls' or job_type == wall_blown_in"
+    changes_price: "yes"
+    why: "Blown-in wall work drills and patches small holes, and block walls are filled differently from framed walls. [judgment]"
+  - id: q7_home_type
+    text: "What kind of home is it?"
+    options: ["Site-built house", "Manufactured or mobile home", "Not sure"]
+    ask_if: "always"
+    changes_price: "yes"
+    why: "Many manufactured homes have a low or no walk-in attic, which changes the method. [judgment]"
+quote_without_visit_needs:
+  - "Which area (attic, walls, garage or shop, ducts) and about how many square feet [judgment]"
+  - "Add to what is there or remove and replace, and how deep the old insulation is now [judgment]"
+  - "Any droppings, nests or wet spots in the old insulation [judgment]"
+  - "How to reach the attic (hatch spot, ladder, no opening) [judgment]"
+  - "Wall outside finish for wall jobs (stucco, block, siding) [judgment]"
+  - "A photo from the attic opening and a close photo of the old insulation with a ruler or tape if one is handy [judgment]"
+site_visit_usually_needed:
+  - "attic_remove_replace: droppings, nests or water stains, where the business may want to see how much area is affected [judgment]"
+  - "wall_blown_in: the business may want to check the wall type and hole spots [judgment]"
+  - "No attic opening, or a very low attic [judgment]"
+  - "Loose, pebble-like fill that is gray-brown or silver-gold (see photo_red_flags) [judgment]"
+photos_to_request:
+  - id: p1_attic_wide
+    ask: "A wide photo of the attic taken from the opening, if you can take it from the ladder or hatch."
+    for_job_types: [attic_top_up, attic_remove_replace, radiant_barrier_ventilation, duct_insulation]
+  - id: p2_existing_depth
+    ask: "A close photo of the old insulation, with a ruler or tape measure standing in it if you have one."
+    for_job_types: [attic_top_up, attic_remove_replace, garage_shop_ceiling]
+  - id: p3_access
+    ask: "A photo of the attic hatch or pull-down ladder."
+    for_job_types: [attic_top_up, attic_remove_replace, radiant_barrier_ventilation, duct_insulation]
+  - id: p4_house_outside
+    ask: "A photo of the outside of the house showing the walls and roof."
+    for_job_types: [wall_blown_in, radiant_barrier_ventilation]
+  - id: p5_garage_ceiling
+    ask: "A wide photo of the garage or shop ceiling and walls."
+    for_job_types: [garage_shop_ceiling]
+  - id: p6_ducts
+    ask: "A photo of the ducts you want wrapped, if you can see them from the opening."
+    for_job_types: [duct_insulation]
+photo_cues:
+  - photo_id: p1_attic_wide
+    look_for: ["Insulation type (loose fill, batts, none)", "Whether ceiling joists show above the insulation", "AC unit or ducts in the attic", "Can lights or junction boxes in the insulation", "Roof vents or attic fan", "Foil sheets on the rafters"]
+    neutral_wording_example: "Loose fill about level with the joists, flex ducts on top, two roof vents visible."
+  - photo_id: p2_existing_depth
+    look_for: ["Depth on the tape", "Color and type of material", "Droppings, nests, tunnels or stains", "Flattened or missing patches"]
+    neutral_wording_example: "Tape shows about 4 inches of yellow loose fill. Dark specks near the eave side."
+  - photo_id: p3_access
+    look_for: ["Hatch spot (closet, hallway, garage)", "Opening size", "Pull-down ladder or none"]
+    neutral_wording_example: "Small hatch in the hallway ceiling, no ladder."
+  - photo_id: p4_house_outside
+    look_for: ["Wall finish (stucco, block, siding)", "Number of stories", "Roof type and vents"]
+    neutral_wording_example: "Single-story stucco home, tile roof, gable vents on both ends."
+  - photo_id: p5_garage_ceiling
+    look_for: ["Open rafters or finished drywall ceiling", "Metal building or framed", "Garage door opener and lights", "Room above the garage"]
+    neutral_wording_example: "Open metal roof panels, no ceiling, two-car shop."
+  - photo_id: p6_ducts
+    look_for: ["Duct type (flex, metal)", "Torn or missing wrap", "Drips or stains on or under the ducts"]
+    neutral_wording_example: "Metal trunk duct with no wrap, flex runs with torn outer jacket."
+photo_red_flags:
+  - flag: "Loose, pebble-like fill that is gray-brown or silver-gold (looks like vermiculite) [T-epa_vermiculite]"
+    safety_step_ref: null
+  - flag: "Droppings, nests or dead animals in the insulation (pest work goes to pest_control)"
+    safety_step_ref: null
+  - flag: "Wet, stained or sagging insulation or ceiling below (roof leak goes to roofing)"
+    safety_step_ref: null
+  - flag: "Burn marks, melted wires or open wire splices in the attic (goes to electrical)"
+    safety_step_ref: null
+  - flag: "Disconnected or crushed ducts (goes to hvac)"
+    safety_step_ref: null
+emergency_signals:
+  - id: es_insulation_smoke_fire
+    signal: "Smoke, fire or sparks in the attic or walls"
+    emergency: "yes"
+    safety_step: "Not used by the app. Ask Hava sends only the fixed INT-004 911 text for smoke or fire and for a sparking outlet or panel. [judgment]"
+    source: "INT-004 (D-436)"
+    then_route_to: none
+    note: "Routing: none until the 911 text is sent and the homeowner says they are safe. Burn marks with no smoke go to electrical. [judgment]"
+  - id: es_insulation_routine
+    signal: "Hot rooms, high bills, thin, old, wet or rodent-soiled insulation"
+    emergency: "no"
+    safety_step: ""
+    source: "[judgment]"
+    then_route_to: insulation
+    note: "Not an emergency. Normal intake. [judgment]"
+safety_step: []
+intake_notes_judgment:
+  - "Mixed messages are common: rodents plus insulation is a pest_control card and an insulation card; a roof leak plus wet insulation is a roofing card and an insulation card. [judgment]"
+  - "Vermiculite look in a photo: the card states only what the photo shows. EPA says to assume vermiculite has asbestos and not disturb it, and to hire a professional asbestos contractor before work that could disturb it [T-epa_vermiculite]. That is business-facing context, not a message to the homeowner. Who may remove it is an [open question]."
+  - "Duct wrap is insulation (R-40) [S2], but sealing, fixing or replacing ducts is hvac or sheet metal work (R-39, R-45) [S2]. If the homeowner wants ducts sealed or replaced, make an hvac ductwork_airflow card. [judgment]"
+license_classes:
+  - job_type: [attic_top_up, attic_remove_replace, wall_blown_in, garage_shop_ceiling, duct_insulation]
+    work: "Install and repair insulation"
+    classes: ["R-40 Insulation"]
+    citation: "A.A.C. R4-9-103, R-40: 'install and repair: 1. Insulation materials, including radiant barriers 2. Preformed architectural acoustical materials 3. Insulation protecting materials' [S2]"
+    other_agency: "City business and transaction privilege tax licensing may apply [judgment; not checked on lhcaz.gov]"
+    notes: "Catalog row: license kind roc, classes [R-40], handyman_allowed false (categories.yaml). Ask Hava never tells a homeowner a business is licensed; the ROC license lookup is how to check. Patching drill holes in stucco or drywall after wall work may fall under R-36 Plastering or R-10 Drywall [S2] [judgment]."
+  - job_type: [radiant_barrier_ventilation]
+    work: "Radiant barrier; attic vents or fans"
+    classes: ["R-40 Insulation (radiant barrier)", "R-42 Roofing for new roof vents [judgment]", "R-11 Electrical for a new wired attic fan [judgment]", "R-39 for ventilating systems [judgment]"]
+    citation: "A.A.C. R4-9-103 [S2]: R-40 names radiant barriers; R-39 scope includes ventilating; R-42 covers roofing and 'roof insulation or coatings on or above the roof deck'"
+    other_agency: "none found"
+    notes: "Radiant barrier is clearly R-40 [S2]. Which class covers cutting a new roof vent or wiring a powered attic fan is [judgment]. Insulation on or above the roof deck is R-42 [S2]."
+  - job_type: [duct_insulation]
+    work: "Duct sealing, repair or replacement (route to hvac)"
+    classes: ["R-39 Air Conditioning and Refrigeration", "R-45 Sheet Metal (duct work)"]
+    citation: "A.A.C. R4-9-103 [S2]: R-45 lists 'Duct work'"
+    other_agency: "UniSource duct sealing rebate requires a participating Efficient Home Program contractor [T-ues_efficient_home]"
+    notes: "Wrap-only jobs stay here; anything that opens, seals or replaces ducts is an hvac card. [judgment]"
+handyman_ok:
+  allowed_examples:
+    - "Laying a few batts over a garage hatch, under $1,000 total, no permit, not part of a larger job [judgment]"
+  not_allowed_examples:
+    - "Whole-attic blown-in jobs or removals over $1,000 (R-40) [S2][S4]"
+    - "Any insulation job tied to a larger remodel or split into small contracts [S4]"
+  rule_reminder: "Unlicensed work is legal in Arizona only if ALL of these are true: the whole job price, counting labor, materials and everything else, is under $1,000 (an unmodified plug-in appliance, or one with internal batteries of 12 volts or less, using no gas, is left out of the total); the work is casual or minor; no local building permit is needed; it is not part of a larger job and not split into small contracts to dodge the limit; and any ad says 'not a licensed contractor'. Never covers work connected to natural gas, propane or other fuel gas, or hardwired/interconnected smoke alarms or fire sprinklers. A.R.S. 32-1121(A)(14) and (D). [S4]"
+  note: "The catalog sets handyman_allowed false for insulation, so handyman businesses do not get these cards. [judgment]"
+local_notes:
+  - "Climate zone: Mohave County is climate zone 3B (hot, dry). Bullhead City's energy code amendments state 'Arizona, Mohave County, Declared climate zone is 3-Dry(B)' [T-bhc_energy], and OpenEI lists Mohave County as ASHRAE 169 zone 3B [T-mohave_cz]. Earlier notes that said 2B were not confirmed."
+  - "Attic R-values: the DOE Energy Saver table lists, for zone 3, R-49 to R-60 for an attic with no insulation and R-38 to R-49 when adding to 3 to 4 inches already there [T-doe_insulation]. Bullhead City's amended 2018 IRC energy chapter lists a ceiling R-38 for zone 3 new homes [T-bhc_energy]. Ask Hava quotes neither to homeowners as advice; a business may name the target in its quote. [judgment]"
+  - "Lake Havasu City adopts the 2024 IRC with amendments; its building permit page does not list insulation in the permit or no-permit lists, and the city's energy code edition was not checked [S17] [unverified]."
+  - "DOE says radiant barriers work better in hot climates than cool ones, especially with cooling ducts in the attic, and some studies show 5 to 10 percent lower cooling costs in a warm, sunny climate [T-doe_radiant]."
+  - "Heat runs June to September and attics get far hotter than the house, so many businesses work early in the morning in summer, and some homeowners ask in spring before the heat. [judgment]"
+  - "Monsoon storms, roughly July to September, can blow dust in through attic vents and bring roof leaks that wet insulation. [judgment]"
+  - "Many homes have the AC air handler or ducts in the attic or on the roof; insulation jobs often need to work around them. [judgment]"
+  - "Pack rats and roof rats are a common reason for removal requests; trapping and sealing entry points is pest_control work. [judgment]"
+  - "Seasonal residents and vacant second homes: work may be done while the owner is away, so access and lockbox details are handled by the business directly, never on the card. [judgment]"
+  - "Manufactured homes often have a low roof cavity with no walk-in attic; underbelly insulation under the floor is a different job. [judgment]"
+  - "HOAs may need to approve new roof vents or attic fans that show from the street. [judgment]"
+  - "UniSource Weatherization Assistance gives free upgrades, including attic, wall and duct insulation, to income-qualifying UniSource electric customers; in Mohave County it runs through the Western Arizona Council of Governments (WACOG) [T-ues_weatherization]. UniSource's Efficient Home Program lists a duct sealing rebate through participating contractors and no attic insulation rebate as read [T-ues_efficient_home]. Ask Hava does not say whether a homeowner qualifies. [judgment]"
+sample_card: |
+  REQ-0142 | Insulation | Lake Havasu City, north side
+  Attic top-up, about 1,500 sq ft, site-built house. Old loose fill about 4 inches (tape photo), no droppings seen.
+  Hatch in the hallway ceiling, AC ducts in the attic. 3 photos.
+test_messages:
+  - id: insulation_t01
+    message: "insulation"
+    trade: insulation
+    job_type: unknown
+    emergency: "no"
+    first_question_id: q1_where
+    ideal_first_question: "Where do you want insulation work?"
+    note: "One-word message; the first question picks the job type."
+  - id: insulation_t02
+    message: "electric bill is crazy in summer, attic looks thin, can someone blow more in"
+    trade: insulation
+    job_type: attic_top_up
+    emergency: "no"
+    first_question_id: q2_size
+    ideal_first_question: "About how many square feet?"
+    note: "Area is known from the message, so skip q1_where."
+  - id: insulation_t03
+    message: "rats got in the attic, need the nasty insulation pulled out and new put in, and the rats gone"
+    trade: insulation
+    job_type: attic_remove_replace
+    emergency: "no"
+    first_question_id: q2_size
+    ideal_first_question: "About how many square feet?"
+    note: "Mixed. Removal and new insulation is this card; trapping and sealing entry points is a separate pest_control rodents card."
+  - id: insulation_t04
+    message: "quiero agregar aislamiento soplado en el ático, casa de un piso"
+    trade: insulation
+    job_type: attic_top_up
+    emergency: "no"
+    first_question_id: q2_size
+    ideal_first_question: "¿Más o menos cuántos pies cuadrados?"
+    note: ""
+  - id: insulation_t05
+    message: "radiant barrier in the attic, house is 1800 sq ft"
+    trade: insulation
+    job_type: radiant_barrier_ventilation
+    emergency: "no"
+    first_question_id: q5_access
+    ideal_first_question: "How do you get into the attic?"
+    note: "Area and size are known from the message."
+  - id: insulation_t06
+    message: "ac ducts in the attic are leaking air and one fell down"
+    trade: hvac
+    job_type: ductwork_airflow
+    emergency: "no"
+    first_question_id: q1_system_type
+    ideal_first_question: "What kind of system do you have?"
+    note: "Wrong trade. Duct repair goes to hvac; only wrap-only work stays in insulation."
+  - id: insulation_t07
+    message: "roof leaked in the storm and the insulation and ceiling are soaked"
+    trade: roofing
+    job_type: leak_repair
+    emergency: "no"
+    first_question_id: q1_roof_type
+    ideal_first_question: "What kind of roof do you have?"
+    note: "Mixed. Roof leak is the roofing card first; wet insulation can be a second card (attic_remove_replace)."
+  - id: insulation_t08
+    message: "want to insulate my garage ceiling so its not 130 in there"
+    trade: insulation
+    job_type: garage_shop_ceiling
+    emergency: "no"
+    first_question_id: q2_size
+    ideal_first_question: "About how many square feet?"
+    note: ""
+  - id: insulation_t09
+    message: "older house no insulation in the outside walls, can you blow some in"
+    trade: insulation
+    job_type: wall_blown_in
+    emergency: "no"
+    first_question_id: q6_wall_outside
+    ideal_first_question: "What is on the outside of the walls?"
+    note: ""
+  - id: insulation_t10
+    message: "house is always hot, not sure if its the ac or insulation"
+    trade: insulation
+    job_type: unknown
+    emergency: "no"
+    first_question_id: q1_where
+    ideal_first_question: "Where do you want insulation work?"
+    note: "Vague. If the homeowner says the AC is not cooling, make an hvac card instead."
+sources:
+  - "[S2] A.A.C. R4-9-103 Residential license classifications (LII mirror of AZ SOS text; R-40 scope read this pass) https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+  - "[S4] A.R.S. 32-1121 Persons not required to be licensed (incl. (A)(14) handyman, (D) fire safety and fuel gas) https://www.azleg.gov/ars/32/01121.htm"
+  - "[S17] Lake Havasu City Building Permits (adopted 2024 codes; insulation not listed) https://www.lhcaz.gov/229/Building-Permits"
+  - "[T-doe_insulation] US DOE Energy Saver, Insulation (attic R-value table by climate zone) https://www.energy.gov/energysaver/insulation"
+  - "[T-doe_radiant] US DOE Energy Saver, Radiant Barriers https://www.energy.gov/energysaver/radiant-barriers"
+  - "[T-bhc_energy] Bullhead City, 2018 IRC Energy Conservation amended (Mohave County declared climate zone 3-Dry(B); ceiling R-38 for zone 3) https://www.bullheadcityaz.gov/media/scukjaqp/2018-irc-energy-conservation-amended-072025.pdf"
+  - "[T-mohave_cz] OpenEI, Mohave County, Arizona (ASHRAE 169-2006 climate zone 3B) https://openei.org/wiki/Mohave_County,_Arizona"
+  - "[T-epa_vermiculite] US EPA (Jan 2021 archive), Protect Your Family from Asbestos-Contaminated Vermiculite Insulation https://19january2021snapshot.epa.gov/asbestos/protect-your-family-asbestos-contaminated-vermiculite-insulation_.html"
+  - "[T-ues_weatherization] UniSource Energy Services, Weatherization Assistance (income-qualifying electric customers; WACOG in Mohave County) https://www.uesaz.com/weatherization-assistance/"
+  - "[T-ues_efficient_home] UniSource Energy Services, Efficient Home Program (duct sealing rebate, participating contractors) https://www.uesaz.com/efficient-home-program/"
+  - "[categories] docs/catalog/categories.yaml, insulation row (R-40, handyman_allowed false, quote_format range)"
+  - "[question_bank] docs/catalog/question_bank.yaml, insulation set (where, size, existing)"

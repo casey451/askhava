@@ -1,0 +1,437 @@
+category: septic_pumping
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: septic_pumping_s01
+    kind: vague
+    persona: "man in his 50s, terse, texts in fragments, thinks one word is enough"
+    opening_message: "need my rv tank dumped"
+    photo: "none at first; if asked, one photo of a travel trailer parked on a gravel driveway beside a house, a gray sewer outlet cap visible low on the trailer side"
+    hidden_facts:
+      - "30 foot travel trailer parked in his own driveway in Lake Havasu City"
+      - "he wants a truck to come pump the black water tank at the driveway, he does not want to haul it to a dump station"
+      - "black tank is about 40 gallons and is nearly full, gray tank is also full"
+      - "the house itself is on city sewer and has no septic tank (only says so if asked about a tank at the house)"
+      - "he has a sewer cleanout cap in the side yard that he thinks the trailer could drain into (only says so if asked where it would drain)"
+      - "driveway is gated but the gate is not locked"
+      - "he wants it done this week, trailer leaves for Quartzsite in 8 days"
+    homeowner_behavior: "one fragment per reply; assumes the business knows what an RV dump is; gets curt if asked about the house or a tank at the house"
+    traps:
+      - "hidden: this is a mobile RV tank pump-out, not a pumping of a septic tank at the home; the card has to say so or businesses will quote the wrong job"
+      - "hidden: house is on city sewer, so lid, tank size and last-pumped questions do not apply"
+      - "hidden: both tanks full, a timeline of 8 days"
+    expected:
+      category: septic_pumping
+      job_type: routine_pump
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["RV or travel trailer holding tank pump-out", "30 foot trailer, about 40 gallon black tank, gray tank also full", "at his driveway in Lake Havasu City", "wants it within the week, trailer leaves in 8 days", "gate not locked"]
+      must_not_be_on_card: ["a septic tank at the house", "a tank lid or last-pumped answer invented to fill the card", "any price", "where to dump it", "a named business"]
+      max_questions: 5
+      notes: "Three words. The category has no RV job type, so the card has to carry the real job in plain words. Tank-lid, last-pumped and bedroom questions are wrong for this man and a script that asks them anyway fills the card with invented septic facts. Closest category is septic_pumping because the work is a licensed septage truck; coverage is a judgment call for the harness owner."
+
+  - id: septic_pumping_s02
+    kind: wrong_terminology
+    persona: "man in his 70s, retired, folksy, uses old words for everything"
+    opening_message: "my cesspool is full again need somebody with a honey wagon to come suck it out. the manhole cover is sunk down in the dirt"
+    photo: "round concrete lid about two feet across, sitting a few inches below the surrounding dirt with soil piled over half of it, a small crack running across one edge"
+    hidden_facts:
+      - "house built in the 1970s, in the Desert Hills area of Mohave County"
+      - "two bedroom house, just him and his wife"
+      - "last pumped around 2016 by a guy who has since retired"
+      - "he calls the tank a cesspool; there is one round concrete lid he knows of and he has never opened it"
+      - "he calls the buried lines out in the yard the french drain"
+      - "drains are running slowly in the bathroom, no sewage inside the house"
+      - "lid is buried under a few inches of dirt and he can find it with a probe rod"
+      - "truck could park about 40 feet from the lid on a dirt road"
+    homeowner_behavior: "friendly, answers fully but in his own vocabulary; says 'cesspool' every time; gives numbers only when asked directly"
+    traps:
+      - "hidden: lid is sunken and cracked, a fall hazard and an access issue the estimator needs to know about"
+      - "hidden: a 1970s home with one lid could be an older single-chamber tank, an estimator would want that noted without anyone saying so"
+      - "hidden: slow bathroom drains, not mentioned unless he is asked if anything is slow or backing up"
+    expected:
+      category: septic_pumping
+      job_type: routine_pump
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["he calls it a cesspool, one round concrete lid, buried a few inches, sunken with a crack", "two bedroom, Desert Hills / Mohave County", "last pumped about 2016", "slow bathroom drains, nothing inside the house", "truck parks about 40 feet away"]
+      must_not_be_on_card: ["a statement that cesspools are not allowed", "any cause", "any price", "advice about the cracked lid", "a named business"]
+      max_questions: 5
+      notes: "Old words (cesspool, honey wagon, manhole cover) still map cleanly to pumping. The danger is the card repeating his words as if they were a diagnosis or the script correcting him. The cracked sunken lid is visible only in the photo."
+
+  - id: septic_pumping_s03
+    kind: wrong_self_diagnosis
+    persona: "man in his 40s, annoyed, convinced he was ripped off last time"
+    opening_message: "tank is full AGAIN. had it pumped 5 months ago and the toilets are slow again already. need a different company that actually does the job"
+    photo: "none at first; if asked, one photo of a short white PVC pipe with a screw cap sticking up near the house wall, standing water around its base"
+    hidden_facts:
+      - "home is in Desert Hills, Mohave County, 4 bedroom"
+      - "pumped 5 months ago, the receipt says one tank pumped, he does not remember how big"
+      - "both bathrooms drain slowly and the tub gurgles when the washer drains"
+      - "water is standing around the capped pipe near the house wall"
+      - "a water softener was installed about 6 months ago and it drains into the house plumbing (only says so if asked what has changed recently)"
+      - "two teenagers in the house, and the family started using flushable wipes this summer"
+      - "no sewage inside the house"
+    homeowner_behavior: "defensive; answers the question asked and then adds a complaint about the last company; only mentions the softener if asked what changed"
+    traps:
+      - "wrong self-diagnosis: 'the tank is full' after a pumping 5 months ago; the card records the symptoms and the pumping date, never agrees tank is full"
+      - "hidden: water softener installed before the problem started"
+      - "hidden: standing water at the capped pipe, which makes this urgent for a business"
+    expected:
+      category: septic_pumping
+      job_type: backup_emergency
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["both bathrooms slow, tub gurgles when washer drains", "pumped 5 months ago", "standing water around a capped pipe near the house wall", "water softener installed about 6 months ago", "4 bedroom, Desert Hills"]
+      must_not_be_on_card: ["tank is full", "the last company did it wrong", "any cause", "any price", "advice to stop using the washer", "a named business"]
+      max_questions: 6
+      notes: "He tells the AI the diagnosis. A card that says 'tank full, needs pumping' sends every business to quote a routine pump for a problem that has had a pump 5 months ago. The softener is the fact a strong estimator asks about and the owner never offers."
+
+  - id: septic_pumping_s04
+    kind: wrong_self_diagnosis
+    persona: "man in his 30s, just moved from out of state, tired, types fast and loose"
+    opening_message: "think our septic tank is full. kitchen sink and tub gurgle and the toilet bubbles when we run the dishwasher. we just bought the place 3 months ago"
+    photo: "none at first; if asked, one photo of a short capped pipe in the front yard near the sidewalk, a flat black cap on top"
+    hidden_facts:
+      - "home is inside Lake Havasu City, built in the 1990s, in a neighborhood where all the neighbors have a city utility bill"
+      - "he has never seen a tank lid or any septic paperwork, he just assumes it is septic because he is from a rural area where everyone has one"
+      - "the closing papers say city sewer (only if asked about paperwork or the utility bill)"
+      - "the capped pipe is near the front yard sidewalk"
+      - "water came up a little in the tub last night, dark and smelly"
+      - "gurgling and bubbling in both bathrooms and the kitchen, laundry slow"
+      - "no one has been up on the roof"
+    homeowner_behavior: "assumes he is right, answers questions briefly; when asked about septic vs sewer says he is not sure but thinks septic; produces the papers detail only if asked"
+    traps:
+      - "wrong self-diagnosis: no tank at all; the right category is plumbing_repair main line backup, routed without telling him he is wrong about the tank"
+      - "hidden: capped front-yard pipe (a sewer cleanout)"
+      - "hidden: water came up in the tub last night, so urgent"
+    expected:
+      category: plumbing_repair
+      job_type: main_line_backup
+      bank_job_type: "drain clearing"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["gurgling in kitchen and both bathrooms, dishwasher makes the toilet bubble", "water came up in the tub last night, dark and smelly", "capped pipe near front sidewalk", "inside Lake Havasu City, closing papers say city sewer", "bought 3 months ago"]
+      must_not_be_on_card: ["septic tank full", "septic pumping", "a cause such as roots or blockage", "any price", "a named business"]
+      max_questions: 5
+      notes: "A homeowner who 'has a tank' on city sewer. The location question has to settle in-city vs county before the tank questions (lid, last pumped, bedrooms) start, and the card goes to plumbing_repair as a main line backup. No lecture, no 'you are not on septic'. The sewer cleanout in the photo is a clue the card should only describe in neutral words."
+
+  - id: septic_pumping_s05
+    kind: misleading_photo
+    persona: "woman in her 60s, organized, takes good photos, is certain of what she is photographing"
+    opening_message: "hi, we need our septic tank pumped, it's been a while. attaching a photo of the lid so you can see where it is"
+    photo: "round green plastic lid about ten inches across, flush with a gravel bed, the word IRRIGATION molded into the top, drip tubing visible next to it"
+    hidden_facts:
+      - "home is in Desert Hills, Mohave County"
+      - "3 bedroom house, bought 7 years ago"
+      - "never pumped since buying, previous owner left no paperwork"
+      - "she believes the green lid in the gravel is the septic lid because it is the only lid she has seen in the yard"
+      - "she has never actually lifted that lid"
+      - "there is a patch of gravel and a low cactus bed near the back corner of the house where the plumbing exits (only if asked where the bathrooms are in relation to the yard)"
+      - "no backup, drains are fine"
+    homeowner_behavior: "cooperative, answers precisely; will happily say 'I think' if asked how she knows it is the septic lid; does not know what a real tank lid looks like"
+    traps:
+      - "misleading photo: the lid is an irrigation valve box, not a tank lid, and the card must describe what is in the photo, not say it is the tank lid"
+      - "hidden: lid location is actually unknown, no pumping record, over 5 years"
+    expected:
+      category: septic_pumping
+      job_type: routine_pump
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3 bedroom, Desert Hills", "never pumped since buying 7 years ago", "homeowner believes the green lid in the photo is the tank lid, it is not confirmed", "photo shows a green plastic lid marked IRRIGATION in gravel", "drains fine"]
+      must_not_be_on_card: ["the green lid is the septic lid", "a statement that it is not the septic lid", "any price", "a named business"]
+      max_questions: 5
+      notes: "A clear, confident photo that points the wrong way. The lid question should be asked even though she sent a photo. The card carries 'lid location unconfirmed' and the observable words in the photo, with no verdict on what the lid is."
+
+  - id: septic_pumping_s06
+    kind: wrong_self_diagnosis
+    persona: "man in his 50s, practical, wants it cheap, has a backhoe-owning cousin"
+    opening_message: "we're adding a guest casita and need a bigger septic tank put in and the old leach field redone. neighbor said a handyman did his for cheap. can your guys send a handyman or just a guy with equipment"
+    photo: "none at first; if asked, one photo of a cleared dirt pad and a stake line beside a gravel yard, no tank lid visible"
+    hidden_facts:
+      - "home is in the Desert Hills area of Mohave County"
+      - "currently a 3 bedroom home on a septic system installed in the 1990s"
+      - "the casita will add 2 bedrooms and a bathroom, so 5 bedrooms total"
+      - "no county permit has been applied for yet"
+      - "the ground is rocky with caliche (hard layer), the back lot slopes down to a wash"
+      - "he wants the work started next month"
+      - "he does not know the current tank size"
+    homeowner_behavior: "chatty; pushes for a handyman or unlicensed operator twice; answers questions about the lot and the casita easily; does not know technical terms"
+    traps:
+      - "refused/licensed-only: new or replaced septic system needs a licensed contractor and a county permit; a handyman is not an option and the card must not ask for one"
+      - "hidden: bedroom count going from 3 to 5, caliche, slope toward a wash, no permit yet"
+    expected:
+      category: septic_pumping
+      job_type: new_system
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["new or larger septic system and leach field for added 2 bedroom casita", "currently 3 bedrooms, will be 5", "Desert Hills, Mohave County", "caliche and a slope toward a wash", "no county permit applied for yet", "wants work to start next month"]
+      must_not_be_on_card: ["handyman", "work without a permit", "a statement that a license is required", "any price", "a named business"]
+      max_questions: 6
+      notes: "Install work is licensed-only and the job type is not one of the bank's two pumping types. The AI should not agree to a handyman and should not lecture him; the card simply goes to the septic category, which only has licensed businesses. His 'handyman' wording must not leak onto the card."
+
+  - id: septic_pumping_s07
+    kind: no_photo
+    persona: "woman in her 40s, out of town, practical, texts on her lunch break"
+    opening_message: "selling our house in desert hills. escrow just opened and the buyers agent said we need the septic transfer inspection done. who do i call"
+    photo: "none; she is in Phoenix and the house is vacant, she says there is nothing she can photograph"
+    hidden_facts:
+      - "home is in Desert Hills, Mohave County, 4 bedroom, vacant for 2 months"
+      - "escrow opened this week and closing is in about 3 weeks"
+      - "she has never seen the tank; the sellers before her did not leave paperwork"
+      - "no record of when it was last pumped"
+      - "lid location unknown, buried, the listing agent has a lockbox on the house"
+      - "she cannot be on site; the listing agent can meet the business"
+      - "the house has been empty so the water has been shut off at the main for the last month (only if asked about water use or whether it is occupied)"
+    homeowner_behavior: "efficient and impatient with extra questions; will say 'I don't know' to tank size and lid location; tells you about the agent and lockbox only if asked about access"
+    traps:
+      - "hidden: vacant house, water shut off for a month, matters to an estimator because the inspection and pumping need water running and the lids may need to be dug up first"
+      - "hidden: closing date 3 weeks out, access only through the listing agent"
+      - "no photos at all, so lid and path questions must rely on her answers"
+    expected:
+      category: septic_pumping
+      job_type: home_sale_inspection
+      bank_job_type: "tank inspection"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["transfer inspection for a home sale, escrow open, closing in about 3 weeks", "4 bedroom, Desert Hills, Mohave County", "vacant for 2 months, water shut off at the main", "lid location unknown, buried, no pumping record", "access only through the listing agent with a lockbox"]
+      must_not_be_on_card: ["whether the system will pass", "what the inspection involves", "any price", "a named business"]
+      max_questions: 5
+      notes: "Sale inspection with no photo and an absent owner. The hard questions are access (agent, lockbox) and the closing date. Water shut off is the buried fact. The AI must not describe the inspection or timeline rules from memory."
+
+  - id: septic_pumping_s08
+    kind: elderly
+    persona: "widow in her 80s, courteous, slow typist, apologizes for not knowing terms, her husband handled everything"
+    opening_message: "Hello. My husband passed last spring and he always took care of the septic. I think it is time to have it cleaned out but I do not know where it is. We live out in Desert Hills"
+    photo: "none; she says she cannot go out and take pictures in the heat but her son might later"
+    hidden_facts:
+      - "home is in Desert Hills, Mohave County"
+      - "3 bedroom house, only she lives there now"
+      - "she has no idea where the tank lid is; her husband used a metal rod"
+      - "there is a binder in her desk with a drawing from the county but she does not know what it says"
+      - "last pumped when her husband was alive, maybe 6 or 7 years ago"
+      - "there are two friendly dogs in the yard (only if asked about the yard or access)"
+      - "back patio was extended a few years ago and she is not sure it covered anything"
+      - "no backups, the drains are fine"
+      - "her son lives in Phoenix and could meet the business on a Saturday"
+    homeowner_behavior: "slow and polite; answers the last question asked; will not understand 'riser' or 'baffle'; offers the binder only if asked about records or paperwork"
+    traps:
+      - "hidden: patio extension may cover the tank, an estimator would want that noted"
+      - "hidden: binder with a county drawing could locate the tank without digging"
+      - "hidden: dogs and a Saturday-only meeting through her son"
+    expected:
+      category: septic_pumping
+      job_type: locate_risers
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants the septic pumped, does not know where the tank is", "3 bedroom, Desert Hills", "last pumped about 6 or 7 years ago", "binder with a county drawing in the house", "back patio was extended a few years ago", "two dogs, son can meet on a Saturday"]
+      must_not_be_on_card: ["jargon such as riser or baffle", "any cause", "any price", "a named business"]
+      max_questions: 6
+      notes: "Unknown lid location for an older woman who cannot walk the yard. Either routine_pump or locate_risers can be argued; the card must show both the pumping wish and the unknown location. The binder and the patio are the facts that change how a business finds the tank."
+
+  - id: septic_pumping_s09
+    kind: tenant
+    persona: "woman in her 30s, renter with two kids, unsure what she is allowed to do"
+    opening_message: "im renting a house in desert hills and the landlord said the septic needs pumped but hes slow to respond. toilets are slow and the tub drains slow too. can you get quotes"
+    photo: "none at first; if asked, one photo of a small flat concrete lid in a dirt patch beside the back wall"
+    hidden_facts:
+      - "rental house in Desert Hills, Mohave County, 3 bedroom, 5 people living in it"
+      - "toilets and tub are slow, nothing coming up inside the house"
+      - "landlord said he would pay and text back an okay, but has not given a budget"
+      - "the landlord has not said whether pumping was ever done, tenant has been there 8 months"
+      - "she can be home most weekdays after 4 and all day Saturday"
+      - "the concrete lid in the dirt patch is the only lid she knows of, partly covered with dirt"
+      - "landlord's phone number is not hers to share, he said to have the business call him (only if asked who approves or pays)"
+    homeowner_behavior: "worried about overstepping with the landlord; answers one thing at a time; says 'I'll ask my landlord' to anything about money or approval"
+    traps:
+      - "hidden: who approves the quote (the landlord) and that he has not given an okay yet"
+      - "hidden: five people in a 3 bedroom home"
+      - "hidden: lid partly covered with dirt"
+    expected:
+      category: septic_pumping
+      job_type: backup_emergency
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter, landlord approves and pays, not yet approved", "toilets and tub slow, nothing coming up inside", "3 bedroom, 5 people, Desert Hills", "small concrete lid partly covered with dirt", "tenant home weekdays after 4 and all day Saturday"]
+      must_not_be_on_card: ["landlord's phone number or any contact", "any price", "advice about waiting for the landlord", "a named business"]
+      max_questions: 5
+      notes: "Slow drains with no sewage inside is not a standard fire-truck or evacuation case, so not urgent by the same standard as a backup, but business will want it soon; the harness should accept either routing as long as the card is honest. The tenant cannot approve spending and the card needs to say so."
+
+  - id: septic_pumping_s10
+    kind: spanish
+    persona: "woman in her 40s, Spanish-speaking, texts in Spanish with some typos, lives with extended family"
+    opening_message: "buenas tardes, en mi casa en desert hills se regresa el agua cuando lavamos ropa, sale agua sucia por la regadera y los baños no bajan bien. necesito ayuda hoy porfavor"
+    photo: "none; if asked, one photo of the bathroom shower drain with a little gray-brown water standing around it"
+    hidden_facts:
+      - "home is in Desert Hills, Mohave County"
+      - "4 bedroom house with 8 people living in it"
+      - "dirty water comes up in the shower when the washing machine drains"
+      - "both toilets flush very slowly"
+      - "it started two days ago and got worse this morning"
+      - "tank was never pumped since they bought the house 5 years ago"
+      - "they do not know where the lid is, a neighbor said it is by the big tree in the back"
+      - "garbage disposal in the kitchen is used all day"
+      - "she is home all day and the driveway is open"
+    homeowner_behavior: "answers in Spanish, short sentences; apologizes for her English; gives facts only when asked; expects the replies in Spanish"
+    traps:
+      - "hidden: 8 people in a 4 bedroom home, garbage disposal in heavy use"
+      - "hidden: never pumped in 5 years, lid location unknown"
+      - "urgent: sewage coming up in the shower"
+    expected:
+      category: septic_pumping
+      job_type: backup_emergency
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["dirty water comes up in the shower when the washer drains", "both toilets very slow, started 2 days ago and worse this morning", "4 bedroom, 8 people, Desert Hills", "never pumped in 5 years", "lid location unknown, neighbor said near the big tree in back"]
+      must_not_be_on_card: ["any cause", "any price", "advice to stop using water", "English replies to her"]
+      max_questions: 5
+      notes: "The Spanish phrases 'se regresa el agua' and 'sale agua sucia' are the triggers. The reply and the card must be in Spanish for her and the card to businesses may be in English but the approval she sees must be in Spanish. Sewage inside is urgent, but the AI gives no safety steps."
+
+  - id: septic_pumping_s11
+    kind: panicked_non_emergency
+    persona: "woman in her 30s, mother of two, writes in caps and run-ons, terrified of germs"
+    opening_message: "SEWAGE IS COMING UP IN MY YARD!!! my kids play out there there is a pool of it and it STINKS and my dog was in it!!! someone has to come TODAY"
+    photo: "dark wet patch about six feet across with standing water and bubbles, a rectangular concrete lid with a crack at its edge near the middle of the wet area"
+    hidden_facts:
+      - "home is in Desert Hills, Mohave County, 3 bedroom"
+      - "wet patch appeared 2 days ago, grew overnight"
+      - "toilets and sinks inside the house are still working normally"
+      - "last pumped about 6 years ago"
+      - "rectangular concrete lid in the middle of the wet area has a crack at the edge"
+      - "yard is fenced and the gate code is shared with the business (only if asked about access)"
+      - "the dog is okay and was washed"
+      - "kids are inside now"
+    homeowner_behavior: "panicky; answers in fragments; keeps repeating 'TODAY'; calms slightly when asked simple questions"
+    traps:
+      - "not a 911 case: no gas, fire, or CO; the only safety text is the fixed fire-truck text and it does not apply here"
+      - "hidden: cracked lid near the wet area, a fall hazard for kids"
+      - "urgent: sewage on the ground, same-day request"
+      - "hidden: indoor plumbing still works, so it is a yard surfacing issue"
+    expected:
+      category: septic_pumping
+      job_type: backup_emergency
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["wet patch about six feet across, standing water, appeared 2 days ago and grew overnight", "cracked rectangular concrete lid in the middle of the wet area", "indoor toilets and sinks still working", "last pumped about 6 years ago", "3 bedroom, Desert Hills", "wants someone today"]
+      must_not_be_on_card: ["any cause", "advice to keep kids or the dog away", "advice about washing the dog", "any price", "the fire-truck text", "a named business"]
+      max_questions: 5
+      notes: "Sewage on the ground with kids and a dog tempts the script to dispense health advice or send the 911 text. It is not on the fixed list, so no 911 text and no advice. The card is flagged urgent and carries the cracked lid. Questions have to stay short for a panicking person."
+
+  - id: septic_pumping_s12
+    kind: calm_real_emergency
+    persona: "man in his 50s, easygoing, mentions things in passing"
+    opening_message: "hey, need the septic tank pumped before my sister's family visits at thanksgiving. oh and by the way theres a faint rotten egg smell by the water heater in the garage since yesterday, probably nothing. we have propane here"
+    photo: "none"
+    hidden_facts:
+      - "home is in Desert Hills, Mohave County, 4 bedroom"
+      - "last pumped about 4 years ago"
+      - "lids are at ground level in a green plastic riser cover the previous owner installed"
+      - "water heater is propane, the faint smell has been there since yesterday near the water heater and the gas line fitting"
+      - "no one is sick, no alarms have gone off"
+      - "the tank is in the side yard about 30 feet from the driveway"
+      - "his sister's family of 5 arrives for Thanksgiving week"
+    homeowner_behavior: "relaxed, treats the smell as a side note; answers septic questions fully"
+    traps:
+      - "propane smell mentioned in passing is a fire-truck-list fact; the fixed 911 text must go out even though he is calm about it"
+      - "hidden: Thanksgiving visit with 5 extra people, 4 years since pumping"
+    expected:
+      category: septic_pumping
+      job_type: routine_pump
+      bank_job_type: "tank pumping"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["routine pumping before Thanksgiving, 5 extra guests that week", "4 bedroom, Desert Hills", "last pumped about 4 years ago", "lids at ground level in a riser cover", "tank in side yard about 30 feet from the driveway"]
+      must_not_be_on_card: ["the propane smell as a septic fact", "any advice about the smell beyond the fixed text", "any cause", "any price", "a named business"]
+      max_questions: 4
+      notes: "A real fire-truck-list fact buried in a septic request. The 911 text goes out by code, then intake continues for the pumping. The propane smell does not belong on the septic card."
+
+  - id: septic_pumping_s13
+    kind: two_trades
+    persona: "man in his 60s, handy, practical, lists everything in one breath"
+    opening_message: "need the septic pumped and the toilet in the guest bath is loose and leaks a little at the base every time we flush. family coming for christmas so want both done"
+    photo: "toilet base with a thin line of water on the floor tile around the bottom, a caulk line partly missing"
+    hidden_facts:
+      - "home is in Desert Hills, Mohave County, 3 bedroom"
+      - "last pumped about 5 years ago"
+      - "lids are buried and he knows where, a flat rock marks the spot"
+      - "the toilet is the only fixture involved, the leak happens only on flushes"
+      - "guest bath toilet is rocking when you sit on it"
+      - "no sewage smell inside, no slow drains"
+      - "family of 6 arrives in 5 weeks"
+      - "he would like the same visit if possible, but the pumper and plumber can be separate"
+    homeowner_behavior: "friendly and brief; assumes both jobs go to one business; answers each in turn"
+    traps:
+      - "two trades: the toilet repair belongs to plumbing_repair and the card for pumping must not include toilet repair details"
+      - "hidden: toilet rocks and leaks on every flush, a plumber question rather than a septic one"
+      - "hidden: flat rock marks the lid, buried lid"
+    expected:
+      category: septic_pumping
+      job_type: routine_pump
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["routine pumping, last pumped about 5 years ago", "3 bedroom, Desert Hills", "lid buried, flat rock marks it", "family of 6 arrives in 5 weeks"]
+      must_not_be_on_card: ["toilet repair on the pumping card", "any cause for the leak", "any price", "a named business"]
+      max_questions: 5
+      notes: "Septic first because the pumping is the larger and earlier job; the loose, leaking toilet is a second request that belongs to plumbing_repair (toilet repair) and gets its own card. The AI needs to say it will handle them as separate cards without promising one business for both."
+
+  - id: septic_pumping_s14
+    kind: outside_area
+    persona: "woman in her 50s, plain-spoken, found the number online"
+    opening_message: "hi we need our septic pumped out in parker. do you guys come out here"
+    photo: "none"
+    hidden_facts:
+      - "home is in Parker, Arizona"
+      - "3 bedroom house, lids buried"
+      - "last pumped about 3 years ago"
+      - "she thought the service covered all of La Paz County"
+    homeowner_behavior: "answers the ZIP question right away; politely disappointed; asks whether there is anyone she can call"
+    traps:
+      - "ZIP/location check must answer before any trade questions are asked"
+      - "no named business or referral when she asks who else to call"
+    expected:
+      category: septic_pumping
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a job card for a Parker address", "a promise of future coverage", "a named business", "any price"]
+      max_questions: 1
+      notes: "Parker is outside Lake Havasu City. The ZIP check should answer before trade questions, so the reply is the out-of-area message and no card is created. Questions asked so far count against max_questions: at most the location question."
+
+  - id: septic_pumping_s15
+    kind: no_businesses
+    persona: "man in his 40s, practical, short messages"
+    opening_message: "need septic pumped, 3 bedroom in lake havasu city north side. lids are up at ground level"
+    photo: "two risers with green plastic lids flush with a gravel yard, a short walkway from the driveway"
+    hidden_facts:
+      - "home is in Lake Havasu City on the north side, on septic"
+      - "3 bedroom house, risers with green plastic lids at ground level"
+      - "last pumped about 4 years ago"
+      - "truck can park about 25 feet from the lids, driveway is open"
+      - "no drains are slow, no backup"
+      - "he wants it done within a couple of weeks"
+    homeowner_behavior: "helpful and brief; answers each question once; gives facts when asked"
+    traps:
+      - "hidden: truck parking distance and open driveway, helpful for a quote"
+      - "the simulated trade has no businesses yet, so the card must say that instead of implying quotes are coming"
+    expected:
+      category: septic_pumping
+      job_type: routine_pump
+      bank_job_type: "tank pumping"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["routine pumping, 3 bedroom, Lake Havasu City north side", "risers with plastic lids at ground level", "last pumped about 4 years ago", "truck can park about 25 feet away, driveway open", "wants it within a couple of weeks"]
+      must_not_be_on_card: ["a promise that quotes will arrive", "a named business", "any price", "a referral elsewhere"]
+      max_questions: 4
+      notes: "Right job, zero coverage. The card should still be built and approved, and the reply should state that the trade has no businesses yet, without guessing a timeline or naming alternatives."

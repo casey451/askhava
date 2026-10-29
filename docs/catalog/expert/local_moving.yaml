@@ -1,0 +1,627 @@
+# Ask Hava expert layer: local_moving (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set local_moving and trade_kb/trades/moving.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - kb job type disconnect_route (gas, water or electric disconnect or reconnect) is left out: it is licensed
+#   work (R-37 gas piping, R-11 electrical) and has no job type or refused name in local_moving. Requests that
+#   mention it get the fu_connected follow-up, the card says the item is connected, and the misdiagnosis check
+#   routes gas work to plumbing_repair "gas line work".
+# - in_state_move is a new job type (new_job_type: true). The kb's local_move covers any move inside Arizona,
+#   but each kb id may appear once, so local_move carries "in-town move" and in_state_move carries "in-state move".
+#   Scenarios s03 and s08 name job_type local_move with bank_job_type "in-state move"; routing should read
+#   in_state_move for those.
+# - interstate_move maps to the refused name "move leaving Arizona" (LIC-017, D-082: a move that starts OR ends
+#   outside Arizona is refused). Its card_template is the internal decline record; no card goes to a business.
+# - Bank gaps: the distance option "Under 50 miles" does not say "in Arizona", and Needles, Havasu Lake and
+#   Earp (California) are all under 50 miles; suggest "Under 50 miles in Arizona". The bank has no heavy-items
+#   or packing question although the kb has q4_heavy and a packing option in q3_service; fu_heavy_items and
+#   fu_packing cover them here, but a heavy-items bank question would be stronger (it is the top hidden driver).
+# - kb emergency signals es_moving_1 (heat illness) and es_moving_3 (mover holding goods) are not on the
+#   fire-truck list, so they get no text from Ask Hava (D-436). A "mover won't unload" message is not a job for
+#   a business; it gets a plain reply with no advice and no card.
+schema: 1
+category: local_moving
+question_set: local_moving
+kb_trade: moving
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: azdps_hhg
+    title: "[S36] AZ DPS Household Goods Enforcement: in-state movers may charge hourly; ask for a written estimate with all charges; check registration through the Arizona Corporation Commission entity search; mover or broker; interstate complaints go to FMCSA"
+    url: "https://www.azdps.gov/content/basic-page/94/hhg"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: azag_movers
+    title: "Arizona Attorney General consumer guide on household goods movers: in-state moves are usually based on hourly charges; Arizona has no registration or professional licensing requirement for movers; get written estimates; deposits"
+    url: "https://azag.gov/sites/default/files/docs/consumer/AZMA.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_44_1611
+    title: "[S37] A.R.S. 44-1611 Definitions (household goods moving services: loading, packing, transporting, storing in transit, delivering and unloading for an intrastate move; moves for disposal are excluded)"
+    url: "https://www.azleg.gov/ars/44/01611.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_44_1612
+    title: "[S37] A.R.S. 44-1612 Exemption qualifications (signed contract before work with services, fees, minimum charges, payment terms, loss or damage terms and total estimated price; consumer may cancel before services begin)"
+    url: "https://www.azleg.gov/ars/44/01612.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: fmcsa_rr
+    title: "FMCSA, Your Rights and Responsibilities When You Move (federal rules apply to moves from one state to another, not between two points in the same state; released value no more than 60 cents per pound per article; broker arranges, mover transports)"
+    url: "https://www.fmcsa.dot.gov/sites/fmcsa.dot.gov/files/2023-10/FMCSA_R%26R_Handbook_Web_v1.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed ((A)(14) handyman exemption never covers work connected to natural gas, propane or other fuel gas, (D))"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (R-37 plumbing includes gas piping; R-11 electrical)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ah_lic_017
+    title: "Ask Hava spec LIC-017 and decision D-082: moves that start or end outside Arizona are refused (interstate broker rules)"
+    url: "docs/spec/licensing.md"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_weather_2014
+    title: "Lake Havasu City 2014 weather summary (official station: 120 days at or above 100 F, 23 days at or above 110 F; first 100 F day May 3; first 110 F day June 9; high of 117 F on July 24)"
+    url: "https://www.lhcaz.gov/docs/default-source/department-documents/2014-weather-summary.pdf?sfvrsn=4"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: webtonic_moving_lsa
+    title: "WebTonic (marketing vendor), moving company page: Google Local Services Ads median $48 per lead, range $28 to $95, about 30 percent book (citing a Blue Grid Media 2026 dataset)"
+    url: "https://www.webtonic.io/industry/moving-company"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: smartmoving_google_ads
+    title: "SmartMoving (moving-software vendor), How much should you spend on Google Ads: estimated cost per lead $66 to $200 for 2 to 4 trucks, $66 to $140 for 5 to 10 trucks, $63 to $83 for 11 or more"
+    url: "https://www.smartmoving.com/blog/how-much-should-you-spend-on-google-ads-for-your-moving-business"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: netpeak_moving_cpl
+    title: "Netpeak (marketing agency), cost of a moving lead 2026: Google paid search $30 to $80, Yelp $20 to $60, Meta $15 to $45, lead aggregators $10 to $100 or more (shared at the low end), referrals $0 to $15"
+    url: "https://netpeak.us/blog/how-to-calculate-the-cost-of-a-moving-lead-this-year-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: netpeak_moving_platforms
+    title: "Netpeak (marketing agency), platforms for moving leads 2026: Thumbtack pay per contact, HireAHelper listed at a 29 percent platform fee or 15 percent direct, shared leads sold to five movers at once"
+    url: "https://netpeak.us/blog/3-best-platforms-to-get-moving-leads-from-in-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "How much is moving: bedrooms plus the garage, shed, patio and anything never unpacked"
+      why: "In-state moves are usually billed by the hour, so volume sets crew size, truck size and hours; bedroom count alone undercounts a full garage."
+      source: azag_movers
+    - driver: "Service: full move with a truck, labor only into a truck or container she has, or packing too"
+      why: "Labor only drops the truck and drive time; packing can add a day of crew time. [judgment]"
+      source: null
+    - driver: "Heavy or specialty items: piano, gun safe, pool table, hot tub, large aquarium"
+      why: "They set crew size and gear (piano board, stair climber, extra hands) and some crews do not take them at all. [judgment]"
+      source: null
+    - driver: "Access at both ends: stairs, elevator, long carry from where a truck can park, gravel, steep driveway"
+      why: "Every flight and every extra 50 feet of carry adds crew time on hourly billing; the bank's stairs question covers only one end. [judgment]"
+      source: null
+    - driver: "Distance and drive time: inside Lake Havasu City, or Parker, Kingman, Bullhead City and beyond"
+      why: "Hourly crews bill drive time, and a run to Kingman or Bullhead City can double the clock for the same load. [judgment]"
+      source: null
+    - driver: "Date and start time: weekend, end of month, summer afternoon, or a same-day rescue"
+      why: "End of month and weekends book first; summer crews start at dawn and fit fewer jobs in a day. [judgment]"
+      source: null
+    - driver: "How packed it is on move day"
+      why: "Loose items and open shelves slow a crew more than any other single thing a homeowner controls. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "A piano, gun safe, pool table or hot tub that the homeowner did not mention"
+      how_a_pro_spots_it: "A quilt-covered upright with pedals, a tall steel box in the garage, a felt-top table in a room photo"
+      question_or_photo: fu_heavy_items
+      source: null
+    - condition: "Stairs, an elevator or a long carry at the other end, which the homeowner forgets to describe"
+      how_a_pro_spots_it: "Destination is an apartment, condo, senior building or storage unit; the bank answer only covers the home she is in"
+      question_or_photo: fu_other_end
+      source: null
+    - condition: "Far more stuff than the bedroom count: full garage, shed, patio furniture, boxes never unpacked"
+      how_a_pro_spots_it: "Floor-to-ceiling boxes or a crowded garage in the room photos; long-time owner downsizing"
+      question_or_photo: p1
+      source: null
+    - condition: "Nothing is boxed yet on move day"
+      how_a_pro_spots_it: "Room photos show full shelves, open closets, no boxes; homeowner says 'just a couple hours'"
+      question_or_photo: fu_packing
+      source: null
+    - condition: "An item that is bolted down, wired in, or hooked to gas or water (safe anchored to the slab, hot tub on a circuit, gas dryer or range)"
+      how_a_pro_spots_it: "Bolt heads at a safe's base, a conduit to a hot tub, a flex gas line behind a dryer in a photo"
+      question_or_photo: fu_connected
+      source: ars_32_1121
+    - condition: "The truck cannot park near the door: steep or gravel driveway, narrow gate, cul-de-sac, HOA rule on large trucks"
+      how_a_pro_spots_it: "Access photo shows a slope, gate or gravel path; gated community named; container on a sloped drive"
+      question_or_photo: p3
+      source: null
+    - condition: "The pickup or drop-off is outside Arizona, so the job is refused after the crew has planned it"
+      how_a_pro_spots_it: "Town named is Needles, Havasu Lake, Laughlin or Las Vegas; the bank answer 'Under 50 miles' does not say which state"
+      question_or_photo: fu_both_in_az
+      source: ah_lic_017
+    - condition: "The work is a cleanout, not a move: most of it is going to donation or the dump"
+      how_a_pro_spots_it: "Estate, sale closing or tenant leftovers in her words; no new address named"
+      question_or_photo: fu_anything_new_home
+      source: ars_44_1611
+  misdiagnosis_checks:
+    - sounds_like: "in-town move (empty a house, haul everything out)"
+      might_be: "estate cleanout, a different category"
+      one_question: fu_anything_new_home
+      if_other_route_to: {category: estate_cleanout, job_type: "whole-house cleanout"}
+      source: ars_44_1611
+    - sounds_like: "in-town move (take furniture to a thrift store or charity)"
+      might_be: "donation pickup, a different category"
+      one_question: fu_anything_new_home
+      if_other_route_to: {category: donation_pickup, job_type: "furniture donation pickup"}
+      source: null
+    - sounds_like: "move leaving Arizona (homeowner calls Bullhead City or Kingman long distance or interstate)"
+      might_be: "in_state_move"
+      one_question: fu_both_in_az
+      if_other_route_to: {category: local_moving, job_type: "in-state move"}
+      source: fmcsa_rr
+    - sounds_like: "in-town move or in-state move (short drive to Needles, Havasu Lake, Laughlin or Las Vegas)"
+      might_be: "interstate_move, refused in this category"
+      one_question: fu_both_in_az
+      if_other_route_to: {category: local_moving, job_type: "move leaving Arizona"}
+      source: ah_lic_017
+    - sounds_like: "loading help (needs a couple of guys)"
+      might_be: "local_move (no truck or container booked, wants the whole move)"
+      one_question: fu_truck_type
+      if_other_route_to: {category: local_moving, job_type: "in-town move"}
+      source: null
+    - sounds_like: "in-town move (move the gas dryer or range too)"
+      might_be: "disconnect_route, licensed gas work outside this category"
+      one_question: fu_connected
+      if_other_route_to: {category: plumbing_repair, job_type: "gas line work"}
+      source: ars_32_1121
+  photo_reading:
+    - photo_id: p1
+      reads: ["Count of large furniture per room", "Boxes packed and taped or shelves still full", "Garage and patio volume", "Beds, sectionals or cribs that come apart", "Wall-mounted TVs", "Glass tops and china cabinets"]
+      neutral_wording: "Living room with a sectional sofa, a glass-top table and about 10 taped boxes; shelves still full."
+    - photo_id: p2
+      reads: ["Upright or grand piano", "Gun safe size and whether bolts show at the base", "Pool table with a slate top", "Hot tub and whether a conduit or cord runs to it", "Upright freezer or second fridge"]
+      neutral_wording: "Tall gun safe in the garage corner, bolts visible at the base."
+    - photo_id: p3
+      reads: ["Number of steps or flights", "Exterior metal stairs", "Gravel path or slope from the street", "Gate width", "Where a truck could park", "Elevator in a building"]
+      neutral_wording: "Exterior metal staircase to a second-floor door; parking lot about 50 feet away."
+  local_factors:
+    - fact: "Lake Havasu City logged 120 days at or above 100 F and 23 days at or above 110 F in 2014, with the first 100 F day in early May"
+      effect: "Crews start at dawn from May to September and fit fewer jobs in a day, so start time on the card matters to them"
+      source: lhc_weather_2014
+    - fact: "Arizona has no state license or registration for in-state movers; DPS points consumers to the Corporation Commission entity search"
+      effect: "No license check gates this category; every mover that opts in gets the card"
+      source: azag_movers
+    - fact: "In-state moves are usually billed by the hour"
+      effect: "A range quote rests on crew size, hours and drive time, so the card's volume and access facts move the range more than anything else"
+      source: azdps_hhg
+    - fact: "Federal moving rules apply to moves from one state to another; Ask Hava refuses any move that starts or ends outside Arizona"
+      effect: "Needles, Havasu Lake and Earp in California and Laughlin and Las Vegas in Nevada are refused even though they are close; Parker, Kingman, Bullhead City and Fort Mohave are accepted"
+      source: ah_lic_017
+    - fact: "Seasonal residents arrive in fall and leave in spring, and many second homes sit empty in summer"
+      effect: "Fall and spring bring partial moves and storage runs; the owner is often out of town, so key handoff and timing matter [judgment]"
+      source: null
+    - fact: "Many homes sit on slopes, with steep or gravel driveways, gated HOA streets and manufactured-home parks with narrow lanes"
+      effect: "Truck parking distance is a common surprise, so the access photo at both ends is worth asking for [judgment]"
+      source: null
+    - fact: "Boats, trailers, golf carts and RVs are common at Havasu homes"
+      effect: "Household movers usually do not tow them; the card notes them so a crew can say what it takes [judgment]"
+      source: null
+  seasonality:
+    busy: "Late spring (seasonal residents leaving, school out), end of every month, and fall arrivals; summer moves start at dawn [judgment]"
+    slow: "Mid-December to January, apart from end-of-month moves [judgment]"
+    source: null
+
+job_types:
+  - id: local_move
+    label: "Full move inside Lake Havasu City (house, apartment or condo to a new home)"
+    bank_job_type: "in-town move"
+    recurring: false
+    homeowner_phrasings: ["movers?", "moving across town", "need a moving company", "move my stuff to my new house", "mudanza dentro de Havasu"]
+    must_know:
+      - fact: "How much is moving, including the garage, shed and patio"
+        bank_question: bedrooms
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Volume sets crew size, truck size and hours on hourly billing; a full garage can add a room's worth. [judgment]"
+        skip_if: "Room photos cover the house and garage"
+      - fact: "Any piano, gun safe, pool table or hot tub"
+        bank_question: null
+        follow_up: fu_heavy_items
+        photo: p2
+        why_it_moves_price: "Specialty items change the crew and gear, and some movers do not take them. [judgment]"
+        skip_if: "Homeowner already listed heavy items or said none"
+      - fact: "Access at both ends: stairs, elevator, long carry"
+        bank_question: stairs
+        follow_up: fu_other_end
+        photo: p3
+        why_it_moves_price: "Each flight and each long carry adds crew time; the bank answer covers one end only. [judgment]"
+        skip_if: "Homeowner described both ends"
+      - fact: "Whether everything will be boxed by move day"
+        bank_question: service
+        follow_up: fu_packing
+        photo: p1
+        why_it_moves_price: "Packing help or loose items can add hours or a second day. [judgment]"
+        skip_if: "Homeowner said it is all boxed, or asked for packing"
+    allowed_follow_ups:
+      - id: fu_heavy_items
+        ask_when: "Homeowner has not said whether any very heavy items are going"
+        text_en: "Is anything very heavy going, like a piano, gun safe, pool table or hot tub?"
+        text_es: "¿Va algo muy pesado, como un piano, una caja fuerte, una mesa de billar o un jacuzzi?"
+        options_en: ["Piano", "Gun safe", "Pool table", "Hot tub or spa", "More than one of these", "None of these"]
+        options_es: ["Piano", "Caja fuerte", "Mesa de billar", "Jacuzzi o spa", "Más de uno", "Ninguno"]
+        card_field: true
+        why: "The item a homeowner forgets most often and the one that changes the crew most. [judgment]"
+      - id: fu_other_end
+        ask_when: "The stairs answer or her words describe only one end, or the new place is an apartment, condo, senior building or storage unit"
+        text_en: "What is it like at the new place: ground level, stairs, an elevator, or a long walk from where a truck can park?"
+        text_es: "¿Cómo es el lugar nuevo: a nivel del suelo, con escaleras, con elevador, o hay que caminar lejos desde donde se estaciona el camión?"
+        options_en: ["Ground level, truck parks close", "Stairs", "Elevator", "Long walk, gravel or a tight gate"]
+        options_es: ["A nivel del suelo, el camión se estaciona cerca", "Escaleras", "Elevador", "Caminata larga, grava o un portón angosto"]
+        card_field: true
+        why: "Access at the drop-off is the second end of the clock and the one homeowners leave out. [judgment]"
+      - id: fu_packing
+        ask_when: "Full move and she has not said whether things are boxed"
+        text_en: "Will everything be in boxes by move day, or do you want help packing too?"
+        text_es: "¿Va a tener todo en cajas para el día de la mudanza, o quiere ayuda para empacar también?"
+        options_en: ["All boxed by move day", "Some boxed", "Want packing help"]
+        options_es: ["Todo en cajas para ese día", "Una parte en cajas", "Quiero ayuda para empacar"]
+        card_field: true
+        why: "Packing is priced separately and loose items slow a crew. [judgment]"
+      - id: fu_anything_new_home
+        ask_when: "Her words point at emptying a house, an estate, a sale, a donation run or tenant leftovers, and no new address is named"
+        text_en: "Is everything going to a new home, or is some of it being given away or hauled off?"
+        text_es: "¿Todo va a una casa nueva, o una parte se va a regalar o a tirar?"
+        options_en: ["All to a new home", "Some to a new home, some given away or hauled off", "None of it goes to a new home"]
+        options_es: ["Todo a una casa nueva", "Una parte a casa nueva, otra se regala o se tira", "Nada va a una casa nueva"]
+        card_field: true
+        why: "Moving law covers goods taken to a place the consumer chooses, not disposal; a no answer is a cleanout or donation job. [src:ars_44_1611]"
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: ["Gas smell after a gas dryer, range or grill was unhooked"]
+      urgent_capable_triggers: ["Must be out today or tomorrow (keys or lease due)", "Booked movers cancelled and the move is today"]
+      regular: "Move date a week or more out"
+    scope_line_en: "Full move with a truck, 2-bedroom single-story house on the north side to a rental near the center of town; gun safe in the garage."
+    scope_line_es: "Mudanza completa con camión, casa de 2 recámaras de un piso en el lado norte a una casa rentada cerca del centro; caja fuerte en la cochera."
+    quote_format: range
+    business_fills: ["low and high price", "what the range assumes (crew size, hours, truck, any minimum)", "earliest date and start time"]
+    card_template: |
+      REQ-<id> | Local moving | <town>, <general area> to <town>, <general area> | <kind of place at each end>
+      <one scope line: size, service, from and to>
+      Service: <full with truck / packing too>. Size: <bedrooms>, plus <garage, shed, patio if said>. Boxed: <all / some / wants packing>.
+      Access: from <ground / stairs / elevator / long carry>; to <ground / stairs / elevator / long carry / not said>. Heavy items: <list / none / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's about a four-hour job.", "Two guys should be plenty.", "Movers here run about a hundred an hour.", "Unbolt the safe before they come.", "You'll want to pack the kitchen yourself to save money."]
+
+  - id: in_state_move
+    new_job_type: true
+    label: "Full move from Lake Havasu City to another Arizona town (Parker, Kingman, Bullhead City, Fort Mohave, Phoenix area)"
+    bank_job_type: "in-state move"
+    recurring: false
+    homeowner_phrasings: ["moving to Kingman", "moving to Bullhead next month", "mudanza a Parker", "moving to Phoenix", "long distance to Bullhead"]
+    must_know:
+      - fact: "That both ends are in Arizona, and which town the move goes to"
+        bank_question: distance
+        follow_up: fu_both_in_az
+        photo: null
+        why_it_moves_price: "Drive time to the named town sets the clock, and an out-of-state end makes it a refused job. [judgment]"
+        skip_if: "Homeowner named an Arizona town for both ends"
+      - fact: "How much is moving"
+        bank_question: bedrooms
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Volume decides whether one truckload makes the trip or two. [judgment]"
+        skip_if: "Room photos cover the house and garage"
+      - fact: "Any piano, gun safe, pool table or hot tub"
+        bank_question: null
+        follow_up: fu_heavy_items
+        photo: p2
+        why_it_moves_price: "Specialty items change the crew and gear for a long day on the road. [judgment]"
+        skip_if: "Homeowner listed heavy items or said none"
+      - fact: "Access at both ends and whether it is packed"
+        bank_question: stairs
+        follow_up: fu_other_end
+        photo: p3
+        why_it_moves_price: "Stairs or a long carry at either end add hours on top of drive time. [judgment]"
+        skip_if: "Homeowner described both ends"
+    allowed_follow_ups:
+      - id: fu_both_in_az
+        ask_when: "The town at either end is not named, or a named town or the 'Under 50 miles' answer could be across the state line"
+        text_en: "Are both the pickup and the drop-off in Arizona?"
+        text_es: "¿Tanto el lugar donde se recoge como el lugar de entrega están en Arizona?"
+        options_en: ["Both in Arizona", "One is in another state"]
+        options_es: ["Los dos en Arizona", "Uno está en otro estado"]
+        card_field: true
+        why: "Ask Hava refuses any move that starts or ends outside Arizona, and close towns like Needles and Laughlin are across the line. [src:ah_lic_017]"
+      - fu_heavy_items
+      - fu_other_end
+      - fu_packing
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: ["Gas smell after a gas dryer, range or grill was unhooked"]
+      urgent_capable_triggers: ["Must be out today or tomorrow (keys or lease due)"]
+      regular: "Move date a week or more out"
+    scope_line_en: "Full move with a truck from a 3-bedroom two-story house in Lake Havasu City to a single-story house in Parker, Arizona; pool table."
+    scope_line_es: "Mudanza completa con camión de una casa de 3 recámaras y dos pisos en Lake Havasu City a una casa de un piso en Parker, Arizona; mesa de billar."
+    quote_format: range
+    business_fills: ["low and high price", "what the range assumes (crew size, hours, drive time, truck, any minimum)", "earliest date and start time"]
+    card_template: |
+      REQ-<id> | Local moving | <town>, <general area> to <Arizona town> | <kind of place at each end>
+      <one scope line: size, service, from and to>
+      Both ends in Arizona: yes. Service: <full with truck / packing too>. Size: <bedrooms>, plus <garage, shed, patio if said>. Boxed: <all / some / wants packing>.
+      Access: from <ground / stairs / elevator / long carry>; to <ground / stairs / elevator / long carry / not said>. Heavy items: <list / none / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Bullhead counts as long distance.", "That's an interstate move.", "A Kingman run is about a full day.", "It'll cost about the same as a local move.", "Rent a truck and hire help, it's cheaper."]
+
+  - id: labor_only
+    label: "Labor only: load or unload a rental truck, trailer or moving container"
+    bank_job_type: "loading help"
+    recurring: false
+    homeowner_phrasings: ["need 2 guys to load my uhaul", "unload a pod", "just the muscle", "help loading a truck saturday", "ayuda para cargar"]
+    must_know:
+      - fact: "What is being loaded: rental truck, container or trailer, and whether it is booked"
+        bank_question: service
+        follow_up: fu_truck_type
+        photo: null
+        why_it_moves_price: "A container on a driveway loads differently from a truck at the curb, and no truck yet means a full move. [judgment]"
+        skip_if: "Homeowner named the truck or container"
+      - fact: "Loading here, unloading here, or both ends"
+        bank_question: null
+        follow_up: fu_load_where
+        photo: null
+        why_it_moves_price: "Two ends means two crew trips; an end outside the area is not something a local crew can quote. [judgment]"
+        skip_if: "Her words say which end"
+      - fact: "How much is going and any heavy items"
+        bank_question: bedrooms
+        follow_up: fu_heavy_items
+        photo: p1
+        why_it_moves_price: "Volume and heavy pieces set crew size and hours. [judgment]"
+        skip_if: "Answered"
+      - fact: "How far the truck or container sits from the door"
+        bank_question: stairs
+        follow_up: fu_truck_distance
+        photo: p3
+        why_it_moves_price: "A 200-foot carry or a sloped drive can double load time. [judgment]"
+        skip_if: "Access photo shows the truck spot"
+    allowed_follow_ups:
+      - id: fu_truck_type
+        ask_when: "Labor only and she has not said what is being loaded"
+        text_en: "What will the crew load or unload: a rental truck, a moving container, or a trailer or pickup?"
+        text_es: "¿Qué va a cargar o descargar el equipo: un camión rentado, un contenedor de mudanza, o un remolque o camioneta?"
+        options_en: ["Rental truck", "Moving container", "Trailer or pickup", "Nothing booked yet"]
+        options_es: ["Camión rentado", "Contenedor de mudanza", "Remolque o camioneta", "Nada reservado todavía"]
+        card_field: true
+        why: "Sets how the crew loads, and 'nothing booked' means a full move with a truck. [judgment]"
+      - id: fu_load_where
+        ask_when: "Labor only and she has not said which end the help is for"
+        text_en: "Is the help for loading here, unloading here, or both ends?"
+        text_es: "¿La ayuda es para cargar aquí, descargar aquí, o en los dos lugares?"
+        options_en: ["Loading here", "Unloading here", "Both ends"]
+        options_es: ["Cargar aquí", "Descargar aquí", "En los dos lugares"]
+        card_field: true
+        why: "One end or two is a different crew day. [judgment]"
+      - id: fu_truck_distance
+        ask_when: "Labor only and no access photo or description of where the truck will sit"
+        text_en: "About how far from the door will the truck or container be?"
+        text_es: "¿Más o menos a qué distancia de la puerta va a estar el camión o el contenedor?"
+        options_en: ["Right at the door or driveway", "At the street, a short walk", "A long walk or up a slope"]
+        options_es: ["Junto a la puerta o en la entrada", "En la calle, a poca distancia", "Lejos o en subida"]
+        card_field: true
+        why: "Carry distance is the hidden clock on a labor-only job. [judgment]"
+      - fu_heavy_items
+    photos_priority: [p3, p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Truck or container is due back or picked up today", "Booked help cancelled and the truck is here now"]
+      regular: "Load date set a few days or more out"
+    scope_line_en: "Loading help only, 26-foot rental truck at the street about 200 feet from the door; 3-bedroom house; Saturday at sunrise."
+    scope_line_es: "Solo ayuda para cargar, camión rentado de 26 pies en la calle a unos 200 pies de la puerta; casa de 3 recámaras; sábado al amanecer."
+    quote_format: range
+    business_fills: ["low and high price", "crew size and hours the range assumes, and any minimum", "earliest date and start time"]
+    card_template: |
+      REQ-<id> | Local moving | <town>, <general area> | <kind of place>
+      <one scope line: loading or unloading, what into, size>
+      Loading into: <rental truck / container / trailer>. Help for: <loading here / unloading here / both ends>. Truck distance: <at the door / at the street / long walk or slope>.
+      Size: <bedrooms>, plus <garage if said>. Heavy items: <list / none / not said>. Stairs: <none / stairs / elevator>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Two guys can load that in three hours.", "Labor-only crews charge about fifty an hour each.", "Get the bigger truck.", "Park the truck in the driveway, it's easier."]
+
+  - id: heavy_item
+    label: "One heavy item: piano, gun safe, pool table, hot tub on a dolly"
+    bank_job_type: "in-town move"
+    recurring: false
+    homeowner_phrasings: ["move a piano", "move my gun safe to the bedroom", "pool table to the new house", "move the hot tub", "mover una caja fuerte"]
+    must_know:
+      - fact: "Which item, and its size if she knows"
+        bank_question: null
+        follow_up: fu_heavy_items
+        photo: p2
+        why_it_moves_price: "An upright piano, a grand, a 1,000-pound safe and a slate table are four different crews and gear lists. [judgment]"
+        skip_if: "Her words and photo name the item"
+      - fact: "Whether it is bolted down, wired in or hooked to gas or water"
+        bank_question: null
+        follow_up: fu_connected
+        photo: p2
+        why_it_moves_price: "Unbolting adds time, and a wired hot tub or gas appliance needs a licensed disconnect first, which a mover does not do. [src:ars_32_1121] [src:aac_r4_9_103]"
+        skip_if: "Photo shows it free-standing"
+      - fact: "Stairs, slope or tight turns on the path at both ends"
+        bank_question: stairs
+        follow_up: fu_other_end
+        photo: p3
+        why_it_moves_price: "A safe or piano on stairs needs more hands or a stair climber. [judgment]"
+        skip_if: "Both ends described"
+    allowed_follow_ups:
+      - fu_heavy_items
+      - id: fu_connected
+        ask_when: "A safe, hot tub, appliance or anything that might be bolted, wired or hooked up is going"
+        text_en: "Is it bolted to the floor, wired in, or hooked to gas or water?"
+        text_es: "¿Está atornillado al piso, conectado a la electricidad, o conectado al gas o al agua?"
+        options_en: ["Free-standing", "Bolted to the floor", "Wired in", "Hooked to gas or water"]
+        options_es: ["Suelto", "Atornillado al piso", "Conectado a la electricidad", "Conectado al gas o al agua"]
+        card_field: true
+        why: "Gas work is never handyman or mover work in Arizona; the card states the fact and the business decides. [src:ars_32_1121]"
+      - fu_other_end
+    photos_priority: [p2, p3]
+    urgency:
+      fire_dept_triggers: ["Gas smell after a gas appliance was unhooked"]
+      urgent_capable_triggers: []
+      regular: "Any single-item move"
+    scope_line_en: "Move an upright piano from a single-story house to a home across town with 4 front steps; piano is free-standing."
+    scope_line_es: "Mover un piano vertical de una casa de un piso a una casa al otro lado de la ciudad con 4 escalones al frente; el piano está suelto."
+    quote_format: range
+    business_fills: ["low and high price", "crew size and gear the range assumes", "earliest date"]
+    card_template: |
+      REQ-<id> | Local moving | <town>, <general area> to <town>, <general area> | <kind of place at each end>
+      <one scope line: the item, from and to>
+      Item: <piano / gun safe / pool table / hot tub / other>, <size if given>. Connected: <free-standing / bolted / wired / gas or water>.
+      Path: from <ground / steps / stairs / slope>; to <ground / steps / stairs / slope / same home>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A gun safe that size weighs about 800 pounds.", "Just unbolt it first.", "Unhook the hot tub before they come.", "Piano moves start around two hundred.", "Any two strong guys can do it."]
+
+  - id: in_home
+    label: "Move furniture within the home, to the garage or to a storage unit"
+    bank_job_type: "in-town move"
+    recurring: false
+    homeowner_phrasings: ["move furniture upstairs", "rearrange the living room", "take my stuff to a storage unit", "move boxes to the garage", "need help before the floors go in"]
+    must_know:
+      - fact: "Where it is going: another room, the garage, a storage unit or another home"
+        bank_question: distance
+        follow_up: fu_where_to
+        photo: null
+        why_it_moves_price: "Inside the home needs no truck; a storage run does. [judgment]"
+        skip_if: "Her words say where"
+      - fact: "What and how much"
+        bank_question: bedrooms
+        follow_up: fu_heavy_items
+        photo: p1
+        why_it_moves_price: "A few pieces is a short visit; a room of furniture plus boxes is a crew. [judgment]"
+        skip_if: "Photo or list sent"
+      - fact: "Stairs at either end, including the storage building"
+        bank_question: stairs
+        follow_up: fu_other_end
+        photo: p3
+        why_it_moves_price: "Second-floor storage units and walk-ups add time, and storage gate hours limit the window. [judgment]"
+        skip_if: "Both ends described"
+    allowed_follow_ups:
+      - id: fu_where_to
+        ask_when: "Furniture is moving and she has not said where it goes"
+        text_en: "Where is it going: another room, the garage or a shed, a storage unit, or another home?"
+        text_es: "¿A dónde va: a otro cuarto, a la cochera o un cobertizo, a una bodega, o a otra casa?"
+        options_en: ["Another room in the home", "Garage or shed", "A storage unit", "Another home"]
+        options_es: ["Otro cuarto de la casa", "Cochera o cobertizo", "Una bodega", "Otra casa"]
+        card_field: true
+        why: "Sets whether a truck comes at all; 'another home' is a full move. [judgment]"
+      - fu_heavy_items
+      - fu_other_end
+    photos_priority: [p1, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Must be out of a rental by a set day this week"]
+      regular: "No deadline in the next few days"
+    scope_line_en: "Move a 1-bedroom apartment to a storage unit in town; second floor with outside stairs; storage unit is up a flight of stairs."
+    scope_line_es: "Mover un departamento de 1 recámara a una bodega en la ciudad; segundo piso con escaleras de afuera; la bodega está subiendo un piso de escaleras."
+    quote_format: range
+    business_fills: ["low and high price", "crew size, truck and hours the range assumes", "earliest date and start time"]
+    card_template: |
+      REQ-<id> | Local moving | <town>, <general area> | <kind of place>
+      <one scope line: what, from where to where>
+      Going to: <another room / garage or shed / storage unit / another home>. Items: <list or bedrooms>, heavy items: <list / none / not said>.
+      Access: from <ground / stairs / elevator>; to <ground / stairs / elevator / not said>. Storage hours: <if said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's a quick job.", "A 10 by 10 unit will fit it.", "You don't need a truck for that.", "The landlord can't stop you from using a dolly."]
+
+  - id: interstate_move
+    label: "Move that starts or ends outside Arizona (refused: move leaving Arizona)"
+    bank_job_type: "move leaving Arizona"
+    recurring: false
+    homeowner_phrasings: ["moving to Vegas", "moving to California", "moving to Needles", "out of state move", "mudanza a otro estado"]
+    must_know:
+      - fact: "Whether either end is outside Arizona"
+        bank_question: distance
+        follow_up: fu_both_in_az
+        photo: null
+        why_it_moves_price: "Any end outside Arizona makes the job refused, so nothing else is asked. [judgment]"
+        skip_if: "Homeowner named an out-of-state town, or said both ends are in Arizona"
+      - fact: "Which town, when the homeowner calls an Arizona town long distance"
+        bank_question: null
+        follow_up: fu_both_in_az
+        photo: null
+        why_it_moves_price: "Bullhead City, Kingman and Parker are Arizona and accepted; Laughlin and Needles are not. [judgment]"
+        skip_if: "Town named"
+    allowed_follow_ups:
+      - fu_both_in_az
+    photos_priority: []
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Always refused; no card is sent"
+    scope_line_en: "Move from Lake Havasu City to Las Vegas, Nevada: not taken on Ask Hava, no card sent."
+    scope_line_es: "Mudanza de Lake Havasu City a Las Vegas, Nevada: no se acepta en Ask Hava, no se envía tarjeta."
+    quote_format: range
+    business_fills: ["none: refused job, no card goes to a business"]
+    card_template: |
+      REQ-<id> | Local moving | not sent | move leaving Arizona
+      From: <town, state>. To: <town, state>.
+      Outcome: plain decline, no card, no routing.
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer, if given>.
+    never_say: ["Try a long-distance mover in Vegas.", "You need a mover with a USDOT number.", "It's only a couple of hours, so it's basically local.", "Rent a truck and do it yourself.", "Long-distance moves run a few thousand."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Repeat customers and word of mouth", "Realtors, property managers and senior-living staff passing their name along [judgment]", "Google search ads and Local Services Ads", "Marketplaces such as Thumbtack, Yelp and labor-only moving-help sites", "Local Facebook groups and truck signage [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google Local Services Ads (movers)"
+      figure: "Median about $48 per lead, range $28 to $95, about 30 percent book (marketing vendor citing a third-party dataset)"
+      source: webtonic_moving_lsa
+      unverified: false
+    - channel: "Google search ads (movers)"
+      figure: "About $66 to $200 per lead for a 2 to 4 truck company, $63 to $83 for 11 or more trucks (moving-software vendor estimate)"
+      source: smartmoving_google_ads
+      unverified: false
+    - channel: "Lead aggregators and shared-lead sites (movers)"
+      figure: "About $10 to over $100 per lead; shared leads at the low end are sold to several movers at once (marketing agency)"
+      source: netpeak_moving_cpl
+      unverified: false
+    - channel: "Yelp (movers)"
+      figure: "About $20 to $60 per lead (marketing agency)"
+      source: netpeak_moving_cpl
+      unverified: false
+    - channel: "Labor-only moving-help marketplaces"
+      figure: "Listed at a 29 percent platform fee, or 15 percent on direct bookings (marketing agency; terms not explained there)"
+      source: netpeak_moving_platforms
+      unverified: true
+    - channel: "Lake Havasu City movers specifically"
+      figure: "No local figures found; a small market with few movers may run below national figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["The same lead sold to five movers at once", "Out-of-state and long-distance requests they can't take", "People who want a phone price and have no date", "Wrong numbers and fake requests", "Percentage fees on the whole job", "Being ranked or reviewed by the site"]
+  what_makes_a_lead_worth_paying_for: ["A real date and town at both ends", "Bedrooms plus garage, heavy items and access at both ends on the card", "Room photos before the first call", "Pay only when picked, nothing monthly, no share of the job", "Both ends confirmed in Arizona"]
+  their_words: ["binding estimate", "not-to-exceed", "hourly with a minimum", "two-man crew", "travel time", "long carry", "shuttle", "pads and wrap", "piano board", "stair climber", "box count", "26-footer", "labor only", "container"]
+  signup_objections:
+    - objection: "I already get moving leads from other sites."
+      answer: "Those are usually sold to several movers at once. Here every mover that takes the job type sees the card, but you pay only when the homeowner picks your quote. Nothing to join, nothing monthly."
+    - objection: "I can't quote a move without a walk-through."
+      answer: "Quote a range and say what it assumes: crew size, hours, truck. Cards list bedrooms, garage, heavy items, stairs at both ends and photos when she sends them. If you need a video walk-through, say so in your quote."
+    - objection: "Moves cancel and reschedule all the time. Do I lose the fee?"
+      answer: "If the homeowner cancels before you have spoken with her, the fee is refunded."
+    - objection: "What does it cost me?"
+      answer: "One set introduction fee when you confirm a pick: $25, $75 or $199 by job size. It is not a share of the job, and there is no monthly fee."
+    - objection: "Will you send me long-distance moves?"
+      answer: "No. Ask Hava does not take moves that start or end outside Arizona. Every moving card has both ends in Arizona."
+    - objection: "I only do labor, I don't have a truck."
+      answer: "Pick loading help only at sign-up. You get cards for that job type and nothing else, and you can change it any time."
+    - objection: "Will you rank me against other movers?"
+      answer: "No. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "How do I know the homeowner is real?"
+      answer: "Each request comes from a texted phone number we check, with a town, a date and answers to the questions a mover asks. Her name and address go only to the business she picks."
+  quote_tips_for_card: ["Say what the range assumes: crew size, truck size, hours and any minimum", "Say whether drive time is in the range", "Say whether you take the piano, safe or pool table on the card, or that you don't", "Give your earliest date and start time", "Arizona's in-state mover law expects a signed contract with the total estimated price before work starts; your quote here is the range, and your own contract still comes from you (A.R.S. 44-1612) [src:ars_44_1612]"]

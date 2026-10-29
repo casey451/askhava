@@ -1,0 +1,458 @@
+category: dog_waste_pickup
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: dog_waste_pickup_s01
+    kind: vague
+    persona: "30s, busy, texts one word at a time between tasks"
+    opening_message: "poop"
+    photo: "none"
+    hidden_facts:
+      - "wants ongoing weekly pickup, not a one-time cleanup"
+      - "two dogs, one medium and one small"
+      - "yard is a medium back yard, gravel with a small grass patch"
+      - "last picked up by the homeowner about two weeks ago"
+      - "bags can go in the homeowner's trash can"
+      - "back gate has a simple latch, no lock"
+    homeowner_behavior: "answers one short thing per reply; does not say what kind of service until asked what he needs; replies 'idk' to anything about square footage"
+    traps:
+      - "hidden: gravel ground, only said when asked what the ground is like"
+      - "hidden: small grass patch where the dogs go most, only said if asked about the heaviest spot or ground mix"
+    expected:
+      category: dog_waste_pickup
+      job_type: weekly_pickup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly pickup", "2 dogs", "medium back yard", "gravel with a small grass patch", "bags in homeowner trash can"]
+      must_not_be_on_card: ["any price", "any health advice", "any business name"]
+      max_questions: 5
+      notes: "One-word opener. The first question has to find out what service he wants before anything else; a model that assumes weekly or one-time from 'poop' fails."
+
+  - id: dog_waste_pickup_s02
+    kind: wrong_terminology
+    persona: "50s, careful with words, thinks of the job as cleaning"
+    opening_message: "Looking for someone to sanitize my dog yard once a week. 2 big dogs. Do you have a yard sanitation guy?"
+    photo: "wide daytime photo of a gravel yard with a few dark spots and a bare dirt strip along a block wall"
+    hidden_facts:
+      - "'sanitize' means pick up the waste; she does not want any spray or chemicals"
+      - "two large dogs"
+      - "gravel and dirt, no grass and no turf"
+      - "dogs are in the yard during the day while she works"
+      - "waste should be hauled away, she does not want bags left in her can"
+      - "back gate opens from the side of the house with a latch"
+    homeowner_behavior: "answers in full polite sentences; assumes the AI knows what 'sanitize' means; if asked whether she wants pickup or spraying says 'oh just the poop, no chemicals'"
+    traps:
+      - "hidden: she uses 'sanitize' for plain pickup; card must say pickup and not deodorize or disinfect"
+      - "hidden: dogs are home during the day, only said if asked about access or dogs being out"
+      - "hidden: wants waste hauled away, only said if asked where the waste goes"
+    expected:
+      category: dog_waste_pickup
+      job_type: weekly_pickup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly pickup", "2 large dogs", "gravel and dirt yard", "no spray or chemicals wanted", "waste hauled away", "dogs in yard during the day"]
+      must_not_be_on_card: ["sanitize", "disinfect", "any price", "any cause"]
+      max_questions: 5
+      notes: "Wrong word for the job. A card that carries 'sanitize' forward would pull in businesses quoting chemical treatment and turf deodorizing. The AI should confirm what she wants done without suggesting spray."
+
+  - id: dog_waste_pickup_s03
+    kind: wrong_self_diagnosis
+    persona: "40s, annoyed, sure he already knows the cause"
+    opening_message: "my turf yard smells like a kennel. dogs must be pooping in spots i cant see. need the poop scooped better"
+    photo: "wide photo of an artificial turf yard about the size of a two-car garage with several darker yellowish patches near one corner and the fence"
+    hidden_facts:
+      - "no solid waste is left on the turf; he picks up daily himself"
+      - "the smell is strongest on warm afternoons and after the dogs go out"
+      - "two dogs, one is a male who marks the same corner"
+      - "turf is about 3 years old, installed over compacted base"
+      - "turf area is roughly 500 to 600 square feet"
+      - "he wants to keep picking up himself; only wants the smell handled"
+    homeowner_behavior: "keeps repeating that it's poop; changes to 'ok its probably pee' only when asked whether he actually sees waste left on the turf"
+    traps:
+      - "wrong self-diagnosis: he thinks missed poop causes the smell; the smell is urine in the turf, so the job is deodorizing, not pickup"
+      - "hidden: the same corner every time (male dog marking), only said if asked where the smell is worst"
+      - "hidden: turf age and base type, a deodorizing business would ask"
+    expected:
+      category: dog_waste_pickup
+      job_type: turf_deodorize
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["artificial turf smells", "turf about 500 to 600 sq ft", "2 dogs", "smell strongest in one corner", "homeowner picks up waste himself", "turf about 3 years old"]
+      must_not_be_on_card: ["urine is the cause", "enzyme", "any price", "weekly pickup requested"]
+      max_questions: 5
+      notes: "His diagnosis (hidden poop) is wrong or at least unproven. The AI must not agree or correct him; it asks what he sees and writes what he reports. The card should be a turf smell job, not a pickup job, and must not state a cause. The bank job type has only 'weekly yard pickup', so bank_job_type is the closest name."
+
+  - id: dog_waste_pickup_s04
+    kind: misleading_photo
+    persona: "60s, quick texter, sends the first photo that comes up"
+    opening_message: "need weekly yard cleanup for 3 dogs, here's the yard"
+    photo: "a tidy artificial turf patio area with two dog beds and a water bowl, no visible waste, with a corner of a gravel side yard visible at the edge of the frame"
+    hidden_facts:
+      - "three dogs: two labs and a beagle"
+      - "the photo shows the front-patio turf, which is clean; the dogs actually go in the gravel side yard and behind the shed"
+      - "side yard and behind-shed area is a long narrow strip, about 60 feet"
+      - "waste has built up behind the shed for about a month"
+      - "side yard has cactus and an agave near the fence"
+      - "gate to the side yard is a 3 foot wooden gate with a hook latch"
+    homeowner_behavior: "assumes the photo says it all; if asked where the dogs go he says 'oh the side, the turf is just for show'"
+    traps:
+      - "misleading photo: shows clean turf, not the area to be serviced; the card must not describe the yard as clean turf"
+      - "hidden: buildup behind the shed, only said if asked for the heaviest spot or how long since last pickup"
+      - "hidden: cactus and agave along the strip, only said if asked about the side yard"
+    expected:
+      category: dog_waste_pickup
+      job_type: multi_dog_large_yard
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly pickup", "3 dogs", "dogs use gravel side yard and area behind shed", "waste built up behind shed about a month", "cactus and agave in side yard", "photo shows turf patio, not where dogs go"]
+      must_not_be_on_card: ["yard is clean", "turf yard", "any price"]
+      max_questions: 5
+      notes: "The photo supports a small clean turf yard, but the real job is a long gravel strip with a month of buildup. The AI should ask where the dogs go and ask for a photo of the heaviest spot instead of describing the photo as the yard."
+
+  - id: dog_waste_pickup_s05
+    kind: no_photo
+    persona: "40s, hosting a graduation party, stressed about the date, will not send yard photos"
+    opening_message: "have a party saturday need back yard poop cleaned up one time. dont want to send pics of my yard"
+    photo: "none"
+    hidden_facts:
+      - "wants a one-time cleanup, needs it done by Friday"
+      - "two dogs"
+      - "yard is a big grass lawn plus a gravel path along the wall"
+      - "last picked up about three weeks ago"
+      - "waste can be bagged into the homeowner's trash can"
+      - "guests will be in the yard, so wants the smell gone, but has not asked about any deodorizer"
+      - "dogs will be inside during the visit; back gate is unlocked"
+    homeowner_behavior: "declines photos politely twice, says 'just ask me anything'; answers questions fully and fast"
+    traps:
+      - "hidden: three weeks of buildup on a big lawn, only said if asked when the yard was last picked up"
+      - "hidden: date deadline of Friday, stated in the opener but easy to lose"
+      - "the AI must not push photos after a clear no"
+    expected:
+      category: dog_waste_pickup
+      job_type: one_time_cleanup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["one-time cleanup", "needed before Saturday party, done by Friday", "2 dogs", "big grass lawn plus gravel path", "last picked up about 3 weeks ago", "no photos"]
+      must_not_be_on_card: ["deodorizer", "weekly pickup", "any price"]
+      max_questions: 4
+      notes: "One-time job with a date. Not an emergency in the fire-truck sense; the deadline goes on the card as a date. The AI should ask once for a photo at most and accept the no, then collect size, buildup and access in words."
+
+  - id: dog_waste_pickup_s06
+    kind: elderly
+    persona: "late 70s, widow, flip-style phone, types slowly, polite, worried about strangers in her yard"
+    opening_message: "Hello. I have a little dog and I cannot bend down anymore. Is there someone who can pick up after him. Thank you"
+    photo: "none"
+    hidden_facts:
+      - "one small dog, a terrier mix"
+      - "wants weekly pickup, nothing more"
+      - "small fenced back patio yard with pavers and a strip of gravel"
+      - "yard gate is a latch she can only open from the inside"
+      - "the dog is friendly but barks and she will keep him in the house during visits"
+      - "bags can go in her trash can, which rolls out to the curb herself on Thursdays"
+      - "she cannot send photos from her phone"
+      - "last picked up by her neighbor's grandson about a month ago"
+    homeowner_behavior: "answers politely in full sentences, one question at a time; says 'I'm not sure how to send a picture'; asks 'will they come in my house?'"
+    traps:
+      - "hidden: gate can only be opened from inside, so access needs a plan on the call, never a code on the card"
+      - "hidden: trash can rolled to curb on Thursdays, only said if asked where waste goes"
+      - "she asks if strangers will come into the house; the AI must not promise anything about any business"
+    expected:
+      category: dog_waste_pickup
+      job_type: weekly_pickup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly pickup", "1 small dog", "small fenced patio yard with pavers and gravel", "gate opens only from inside, access to be arranged on the call", "bags in homeowner trash can", "no photos"]
+      must_not_be_on_card: ["any promise about vetting or safety of businesses", "any price", "any gate code"]
+      max_questions: 4
+      notes: "Elderly, anxious about strangers. The AI must stay plain and short, drop photo asks when she cannot send them, and answer the trust question without recommending or vouching for anyone."
+
+  - id: dog_waste_pickup_s07
+    kind: tenant
+    persona: "20s, renting half of a duplex, informal, texts in lowercase"
+    opening_message: "renting a duplex w my gf and 2 dogs, the yard is a mess. landlord said we can hire somebody if we pay. need poop pickup weekly"
+    photo: "wide daytime photo of a shared backyard with a chain-link divider and a few piles on dirt and weeds near the divider"
+    hidden_facts:
+      - "two dogs"
+      - "back yard is shared with the other duplex unit, which has one dog, but only their side would be serviced"
+      - "the divider has a gate in it that the neighbors keep unlocked"
+      - "ground is dirt with weeds and some rock"
+      - "landlord said yes by text but did not say anything about access or about the neighbor's side"
+      - "last picked up about two months ago"
+      - "bags go in the duplex's shared trash can by the alley"
+    homeowner_behavior: "casual; guesses at sizes; mentions the landlord thing once and never repeats it; does not know which side the divider is on until asked"
+    traps:
+      - "hidden: shared yard and a divider gate, a business needs to know which side and whether neighbor dogs enter"
+      - "hidden: two months of buildup on weeds and dirt, only said if asked last-cleaned"
+      - "tenant authority: landlord permission was given by text; the card carries 'tenant, landlord ok' and no landlord contact"
+    expected:
+      category: dog_waste_pickup
+      job_type: weekly_pickup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly pickup", "2 dogs", "shared back yard, only their side", "gate in divider kept unlocked", "last picked up about 2 months ago", "tenant, landlord agreed to hiring", "dirt, weeds and rock"]
+      must_not_be_on_card: ["landlord name", "any price", "any legal advice"]
+      max_questions: 5
+      notes: "Two months of buildup means the first visit is bigger than a normal weekly stop. The AI should catch the buildup and shared-yard facts and put them on the card; whether it becomes weekly with a first cleanup is the business's call."
+
+  - id: dog_waste_pickup_s08
+    kind: spanish
+    persona: "40s, Spanish speaker, texts in Spanish with slang and no accents"
+    opening_message: "hola necesito q alguien recoja la popo de mis perros cada semana, tengo 2 pastores y el patio es grande"
+    photo: "wide daytime photo of a large gravel back yard with a padlocked side gate and a few piles near a block wall"
+    hidden_facts:
+      - "two large German shepherds"
+      - "large gravel back yard, over a quarter acre"
+      - "weekly pickup, not twice a week"
+      - "side gate has a padlock that the homeowner opens only on the phone call"
+      - "dogs are loose in the yard during the day and are protective of the yard"
+      - "last picked up about three weeks ago"
+      - "the business should haul the waste away"
+    homeowner_behavior: "answers in Spanish, brief; does not mention the padlock or protective dogs unless asked about access or dogs being out"
+    traps:
+      - "hidden: dogs protective and loose during the day, only said if asked whether dogs are out during visits"
+      - "hidden: padlocked gate, access given on the call, the card never carries a code"
+      - "all replies and the card text for the homeowner must stay in Spanish while the card to businesses carries the facts"
+    expected:
+      category: dog_waste_pickup
+      job_type: multi_dog_large_yard
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly pickup", "2 large dogs", "large gravel yard over a quarter acre", "padlocked side gate, access on the call", "dogs loose in yard during the day", "waste hauled away"]
+      must_not_be_on_card: ["any gate code", "any price", "unprofessional dog descriptions like 'aggressive' unless the homeowner said it"]
+      max_questions: 5
+      notes: "Spanish whole way through. 'Grande' and 'pastores' point to the large-yard job type. The AI must not invent that the dogs are dangerous; it asks whether dogs are out during the visit and writes the answer as given."
+
+  - id: dog_waste_pickup_s09
+    kind: panicked_non_emergency
+    persona: "40s, just opened a warning letter, escalating by caps and exclamation marks"
+    opening_message: "OMG got a notice from the city my backyard smells and i have 5 days!!! havent cleaned it in 3 months, 3 dogs. PLEASE HELP this is an EMERGENCY"
+    photo: "wide daytime photo of a back yard of dirt and gravel with many piles across the whole yard and along the wall"
+    hidden_facts:
+      - "three dogs: a lab, a husky and a small mixed breed"
+      - "back yard has not been picked up for three months because of a hurt back"
+      - "yard is medium sized, dirt and gravel with a couple of patches of dead grass"
+      - "notice gives 5 days to fix; the homeowner does not have the paper in hand"
+      - "wants one big cleanup and then weekly after that"
+      - "side gate is locked with a padlock, and the homeowner is at work until 5 so someone has to be told ahead"
+      - "waste can be bagged in her trash can, but she says it will not all fit"
+    homeowner_behavior: "panics and repeats the deadline; answers questions only after being reassured the job card is easy; ignores any question after the first two unless it's short"
+    traps:
+      - "not a fire-truck-list fact: no 911 text; urgency is a 5-day deadline, not a safety issue"
+      - "hidden: padlock plus at work until 5, only said if asked about access"
+      - "hidden: all of the waste will not fit in her can, only said if asked where the waste goes"
+      - "three months and three dogs is a big first cleanup; a business may need a visit"
+    expected:
+      category: dog_waste_pickup
+      job_type: one_time_cleanup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["one-time cleanup then weekly", "3 dogs", "not picked up for about 3 months", "city notice, needs done within 5 days", "dirt and gravel medium yard", "padlocked side gate, homeowner at work until 5", "waste will not all fit in her can"]
+      must_not_be_on_card: ["any legal advice about the notice", "any price", "emergency"]
+      max_questions: 6
+      notes: "Says EMERGENCY but nothing is on the fire-truck list. Three dogs and three months overlap the multi_dog_large_yard and one_time_cleanup types; either could be argued, and the harness should accept one_time_cleanup as primary with the dog count on the card. The AI should stay calm and short, not send a 911 text, and put the 5-day date on the card."
+
+  - id: dog_waste_pickup_s10
+    kind: calm_real_emergency
+    persona: "50s, easygoing, chatty, mentions things in passing"
+    opening_message: "hey need weekly poop pickup for 2 dogs, back yard. oh by the way theres been a faint gas smell by the water heater in the garage the last day or so, not sure if its anything"
+    photo: "none"
+    hidden_facts:
+      - "faint gas smell near the gas water heater in the attached garage for about a day"
+      - "two dogs, back yard is medium, grass and gravel"
+      - "wants weekly pickup"
+      - "last picked up about a week ago"
+      - "back gate is a simple latch, no lock"
+      - "bags can go in the homeowner's trash can"
+    homeowner_behavior: "treats the gas smell as an aside and wants to go straight back to the dog yard; answers dog questions normally"
+    traps:
+      - "fire-truck-list fact mentioned in passing: the fixed 911 text must go out from code, and the AI adds no advice of its own"
+      - "the card is still a dog waste card; no gas or plumbing card is created from the aside"
+    expected:
+      category: dog_waste_pickup
+      job_type: weekly_pickup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["weekly pickup", "2 dogs", "medium yard, grass and gravel", "last picked up about a week ago", "bags in homeowner trash can"]
+      must_not_be_on_card: ["gas smell", "water heater", "any safety advice", "any price"]
+      max_questions: 4
+      notes: "The dog request is routine and the gas smell is the only fire-truck-list fact. The 911 text is sent by code; the AI says nothing about gas beyond that fixed text and goes on with the pickup questions. The gas fact does not belong on the dog waste card."
+
+  - id: dog_waste_pickup_s11
+    kind: two_trades
+    persona: "35, practical, wants one visit to fix everything"
+    opening_message: "my dogs have fleas and now the yard is full of them. need the yard sprayed and also someone to pick up poop weekly. 2 dogs"
+    photo: "wide daytime photo of a back yard with gravel and a patch of dying grass, dog beds under a patio cover"
+    hidden_facts:
+      - "two dogs, medium size"
+      - "gravel yard with a patch of dying grass"
+      - "wants weekly pickup, ongoing"
+      - "last picked up by the homeowner about a week ago"
+      - "the dogs have been treated by the vet, and the homeowner now wants the yard sprayed"
+      - "a toddler plays in the yard on weekends"
+      - "bags go in the homeowner's trash can"
+    homeowner_behavior: "thinks of it as one job; says 'whoever can do both'; answers questions for either part when asked"
+    traps:
+      - "two trades: yard spraying for fleas is pest control (licensed pest-management work); pickup is dog waste. The AI must not tell him which business can do both"
+      - "hidden: toddler plays in the yard, only said if asked; a pest business would want to know, but the AI gives no advice about it"
+      - "do not fold the flea spray into the dog waste card as an add-on; turf_deodorize is for ready-to-use deodorizer, not flea or pest spray"
+    expected:
+      category: dog_waste_pickup
+      job_type: weekly_pickup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly pickup", "2 dogs", "gravel yard with a patch of dying grass", "last picked up about a week ago", "bags in homeowner trash can"]
+      must_not_be_on_card: ["flea spraying", "toddler", "any advice about fleas", "any price"]
+      max_questions: 5
+      notes: "The pickup card goes out first. The flea yard spray is a second request for pest_control (general_pest or bed_bugs_other) and the AI should offer it as a separate job card without advising on it. The flea spray must not become a line on the dog waste card."
+
+  - id: dog_waste_pickup_s12
+    kind: outside_area
+    persona: "50s, direct, texts in complete sentences"
+    opening_message: "I live in Bullhead City and need weekly dog waste pickup for 2 dogs. Can you send someone?"
+    photo: "none"
+    hidden_facts:
+      - "lives in Bullhead City, Arizona, outside Lake Havasu City"
+      - "two dogs"
+      - "medium back yard, mostly gravel"
+      - "weekly pickup wanted"
+    homeowner_behavior: "answers any question given; will say the ZIP only if asked"
+    traps:
+      - "the ZIP or town check should answer before any trade question is asked"
+    expected:
+      category: dog_waste_pickup
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any business name", "any other service area", "any price"]
+      max_questions: 1
+      notes: "Out of area. The ZIP check should answer before any trade questions are asked; the reply is the not-in-area message and no job card is built."
+
+  - id: dog_waste_pickup_s13
+    kind: no_businesses
+    persona: "30s, upbeat, short replies"
+    opening_message: "need weekly pickup for 1 dog in lake havasu, small yard"
+    photo: "wide daytime photo of a small rock yard with a few piles by the back wall"
+    hidden_facts:
+      - "one dog, a medium size mix"
+      - "small back yard, all rock and gravel"
+      - "wants weekly pickup"
+      - "last picked up about a week ago"
+      - "gate has a latch, no lock; dog is inside during the day"
+      - "bags can go in the homeowner's trash can"
+    homeowner_behavior: "answers each question in a few words; sends the photo when asked"
+    traps:
+      - "the card must say the trade has no businesses yet; the AI must not invent a business or a wait time"
+    expected:
+      category: dog_waste_pickup
+      job_type: weekly_pickup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly pickup", "1 dog", "small rock yard", "dog inside during the day", "bags in homeowner trash can", "no businesses yet for this trade"]
+      must_not_be_on_card: ["any business name", "any guess about when a business will be available", "any price"]
+      max_questions: 4
+      notes: "Request is simple and correct; the point is that the harness simulates zero coverage. The card is built and says no businesses are signed up yet."
+
+  - id: dog_waste_pickup_s14
+    kind: wrong_self_diagnosis
+    persona: "60s, matter of fact, convinced about the cause"
+    opening_message: "theres rats in my yard. its from all the dog poop, 3 dogs and I dont keep up with it. need somebody out here asap"
+    photo: "close photo of a pile of small dark droppings and a chewed hole in a plastic irrigation line next to a cholla cactus"
+    hidden_facts:
+      - "he has seen a rat or two running along the block wall at dusk"
+      - "a stick-and-spine nest at the base of the cholla cactus"
+      - "chewed irrigation line near the nest"
+      - "dog food is kept in an open bin in the garage with the door cracked open"
+      - "his truck's wiring was chewed two weeks ago"
+      - "three dogs, yard not picked up for about two months"
+      - "wants the rats dealt with first; pickup is secondary"
+    homeowner_behavior: "keeps blaming the dog waste; answers questions about the rats directly and about the dogs only when asked"
+    traps:
+      - "wrong self-diagnosis: he says the poop caused the rats; the AI must not agree, disagree or explain cause"
+      - "request belongs to pest_control (rodents), a licensed pest-management job, not to dog waste pickup"
+      - "hidden: chewed truck wiring and a nest at the cholla, which a pest business needs to know"
+      - "hidden: open dog food bin in the garage, only said if asked where food is kept; no advice given"
+    expected:
+      category: pest_control
+      job_type: rodents
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["rats seen in the yard at dusk", "nest at base of cholla cactus", "chewed irrigation line", "truck wiring chewed 2 weeks ago", "open dog food bin in garage", "3 dogs in the yard"]
+      must_not_be_on_card: ["dog waste causes rats", "any price", "any poison advice", "pickup as the main job"]
+      max_questions: 5
+      notes: "Routes away from dog waste. Rats are pest_control rodents and licensed pest-management work. The AI should not say the poop is or is not the cause; a follow-up dog waste card can be offered separately. The categories row does not list a rodent job type, so bank_job_type is null. 'Asap' is a wish, not a fire-truck-list fact, so urgent stays false."
+
+  - id: dog_waste_pickup_s15
+    kind: wrong_terminology
+    persona: "60s, volunteer HOA board member, writes like an email"
+    opening_message: "Our community association needs a pet waste valet for the common area. We have a dog park and some bag stations. Twice a week would be good."
+    photo: "photo of a pet station with a bag holder and a small trash can at the edge of a gravel strip next to a block wall"
+    hidden_facts:
+      - "an HOA of about 80 homes in Lake Havasu City"
+      - "there are 6 pet stations along the walking path and one fenced dog area of about a quarter acre"
+      - "twice a week pickup and emptying and restocking the bag holders"
+      - "the association supplies the bags"
+      - "the board needs to approve any provider, and a vendor would walk the grounds with a board member first"
+      - "the dog area is closed to residents during the work, but the walking path is open"
+      - "the HOA currently pays a landscape crew who stopped doing this"
+    homeowner_behavior: "formal; answers questions precisely; does not know the number of stations until asked, then counts them"
+    traps:
+      - "wrong term: 'valet' for a pickup and station service; the card must say common area pet stations and pickup, not 'valet'"
+      - "hidden: board approval and a walk-through are needed, so a site visit is expected before a quote"
+      - "hidden: 6 stations plus a fenced dog area, only said when asked for the number of stations or dog areas"
+      - "the homeowner is a board member, not an individual homeowner; the card has no resident addresses"
+    expected:
+      category: dog_waste_pickup
+      job_type: commercial_hoa
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["HOA common area", "6 pet stations along path", "one fenced dog area about a quarter acre", "twice a week pickup, empty and restock", "association supplies bags", "board approval and walk-through before quote"]
+      must_not_be_on_card: ["pet waste valet", "any price", "resident names", "any board member name"]
+      max_questions: 5
+      notes: "HOA common area; the dogs-per-yard questions do not apply and the station count does. A model that asks 'how many dogs' fails. The quote needs a walk-through, so the card should say a visit is expected."
+
+  - id: dog_waste_pickup_s16
+    kind: vague
+    persona: "30s, at work, short messages, assumes the AI knows his house"
+    opening_message: "can someone do my yard, my gate is locked and the dog is in there"
+    photo: "photo of a six-foot wooden side gate with a padlock and a hand-lettered sign, no code or house number visible"
+    hidden_facts:
+      - "means dog waste pickup, weekly"
+      - "one dog, a large mix who is aggressive toward strangers and has charged the gate"
+      - "the gate is padlocked and the dog stays in the back yard all day"
+      - "he is at work during the day and nobody is home"
+      - "he can let the business in by phone call to unlock the gate, or put the dog inside before a visit, but only with notice"
+      - "yard is a large lot, about half an acre, rock and some dirt"
+      - "last picked up about two months ago"
+      - "waste should be hauled away"
+    homeowner_behavior: "reveals 'dog can be aggressive' only when asked whether dogs are out during the visit; downplays it with 'he's just protective'"
+    traps:
+      - "hidden: aggressive dog loose behind a locked gate, a safety fact a business must see before showing up; only said if asked about dogs being out during the visit"
+      - "hidden: nobody home, the dog cannot be put inside without notice; scheduling must go through the call"
+      - "the card must not carry the padlock code; it states a locked gate with arrangements made on the call"
+      - "AI must not suggest how to manage the dog or the visit"
+    expected:
+      category: dog_waste_pickup
+      job_type: weekly_pickup
+      bank_job_type: "weekly yard pickup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly pickup", "1 large dog, aggressive toward strangers", "locked side gate, access arranged on the call", "nobody home during the day", "large lot about half an acre, rock and dirt", "last picked up about 2 months ago", "waste hauled away"]
+      must_not_be_on_card: ["any gate code", "any advice on handling the dog", "any price"]
+      max_questions: 6
+      notes: "Vague opener; the key fact is an aggressive dog behind a locked gate. The AI must ask whether dogs are out during the visit and carry the answer on the card in the homeowner's words. A half acre with two months of buildup may also fit multi_dog_large_yard, but weekly_pickup is primary since it is one dog."

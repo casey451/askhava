@@ -1,0 +1,450 @@
+category: hvac_replacement
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Mapping note: the categories.yaml job types for this category are "full system replacement" and
+# "condenser replacement". Package-unit and mini-split installs have no exact bank name, so
+# bank_job_type uses "full system replacement" as the nearest fit for them.
+scenarios:
+  - id: hvac_replacement_s01
+    kind: vague
+    persona: "homeowner, 40s, texts one short line at a time between jobs, no HVAC words beyond 'ac'"
+    opening_message: "need a new ac. old one is shot"
+    photo: "none at first; if asked for the label, a sideways, partly sun-faded plate on a ground unit with the model line readable"
+    hidden_facts:
+      - "central AC with an outdoor unit on the ground at the side of the house"
+      - "indoor air handler is in the attic, reached through a hallway ceiling hatch"
+      - "one story, about 1,900 sq ft"
+      - "unit is about 14 years old"
+      - "it still runs but the house will not get below the high 80s on hot days"
+      - "there is also a gas furnace in the same attic that works fine"
+    homeowner_behavior: "answers one thing per reply; never volunteers; gives a fact when a question clearly calls for it; says 'idk' to anything about the label until asked for a photo"
+    traps:
+      - "hidden: air handler sits in the attic behind a small hatch, which changes labor and whether a business needs a visit; only said if asked where the indoor part is"
+      - "hidden: a separate gas furnace shares the attic and plenum; only said if asked about heating or the indoor unit"
+      - "'shot' is not a cause; the card must not record it as one, only that the unit runs and the house stays warm"
+    expected:
+      category: hvac_replacement
+      job_type: ac_replacement
+      bank_job_type: "full system replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants a quote to replace the AC", "outdoor unit on the ground", "indoor unit in the attic, ceiling hatch", "one story, about 1,900 sq ft", "about 14 years old", "separate gas furnace in the same attic"]
+      must_not_be_on_card: ["any cause", "any price", "repair versus replace advice", "tonnage guess"]
+      max_questions: 6
+      notes: "Vague opener with no system type, size or age. The attic air handler and the gas furnace beside it are the quote-changing facts and only come out if the AI asks where the indoor part is and how the house heats."
+
+  - id: hvac_replacement_s02
+    kind: wrong_self_diagnosis
+    persona: "homeowner, 50s, confident, read forums, mixes up 'compressor' and 'condenser'"
+    opening_message: "my compressor is dead for sure. outside box just hums and the fan wont spin. need a whole new ac, whats the soonest someone can quote it"
+    photo: "outdoor unit on a pad, top fan grille intact, no visible damage, nothing leaking"
+    hidden_facts:
+      - "outside unit hums and the fan on top does not turn"
+      - "the fan blades spin freely if poked with a long stick, and then the unit hums louder but runs"
+      - "inside the vents blow warm air, the indoor fan is running"
+      - "unit is about 7 years old, ground-mounted, central AC"
+      - "it stopped working right after a power flicker during a storm"
+      - "he has not had anyone out; the compressor idea is from a video"
+      - "if asked fix or replace, he says replace, but if it is a cheap fix then fix it, he wants options"
+    homeowner_behavior: "pushes the replacement framing hard; answers the symptom question in detail when asked what it is doing; admits nobody has looked at it only if asked whether anyone has seen it"
+    traps:
+      - "wrong self-diagnosis: the symptoms (hum, fan not spinning, spins when pushed) point to a repairable electrical-part failure, not a dead compressor; the AI must not say that, but the request belongs in hvac_repair as an 'AC not cooling' call with scope 'both, I want options'"
+      - "hidden: the unit is only 7 years old and the trouble began after a power flicker; a replacement card would cost him a lot more than a service call"
+      - "the card must carry his words 'thinks the compressor is dead' as his belief, not as a fact"
+    expected:
+      category: hvac_repair
+      job_type: ac_not_cooling
+      bank_job_type: "AC not cooling"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["outside unit hums, fan on top not spinning", "indoor fan runs, air from vents is warm", "about 7 years old", "started after a power flicker", "homeowner wants options: fix or replace", "nobody has looked at it yet"]
+      must_not_be_on_card: ["capacitor", "compressor is dead stated as fact", "any cause", "any price", "repair versus replace advice"]
+      max_questions: 5
+      notes: "Request reads as replacement but the symptoms describe a repairable failure. The AI never diagnoses, so the routing has to come from the symptom answers plus the homeowner choosing 'both, I want options'. Failure modes: routing to hvac_replacement because he said 'whole new ac', or telling him it is probably a cheap part."
+
+  - id: hvac_replacement_s03
+    kind: wrong_terminology
+    persona: "owner of a single-wide in a Havasu mobile home park, 60s, practical, not a texter, calls things by old names"
+    opening_message: "the swamp cooler on the roof of my trailer is done. need a new one put up, heat and cool both"
+    photo: "rectangular metal box on a low roof with a data plate sticker visible; plate lines read a refrigerant name and a gas input rating; a short gas pipe stub enters the side"
+    hidden_facts:
+      - "manufactured home, single-wide, in a park, one story"
+      - "the roof unit is a package unit that cools and heats with gas, not a water-fed swamp cooler"
+      - "the plate shows R-410A and a gas heating input"
+      - "about 11 years old"
+      - "about 1,100 sq ft"
+      - "ducts run through the ceiling, not under the floor"
+      - "the park has narrow lanes and a tow-away rule for blocked lanes"
+      - "unit works partly: blows air but not cold"
+    homeowner_behavior: "calls it a swamp cooler or the trailer cooler throughout; says 'mobile home' when asked about the type of home; has to be asked for the park or lane access"
+    traps:
+      - "wrong terminology: the name 'swamp cooler' would send it to evaporative cooler work; the plate photo shows a refrigerant and a gas rating, so it is a rooftop package unit replacement"
+      - "hidden: manufactured home, so businesses need the home type up front (alterations need a licensed person)"
+      - "hidden: crane or truck access in a park with narrow lanes; only said if asked how a truck could reach the home"
+      - "hidden: gas connection on the unit; only visible in the photo or if asked how it heats"
+    expected:
+      category: hvac_replacement
+      job_type: package_unit_replacement
+      bank_job_type: "full system replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["rooftop package unit", "manufactured home, single-wide, in a park", "about 11 years old", "about 1,100 sq ft", "gas heat on the unit", "narrow park lanes for truck or crane access"]
+      must_not_be_on_card: ["swamp cooler", "any cause", "any price"]
+      max_questions: 6
+      notes: "The homeowner's word and the photo disagree. A strong AI asks for the data plate photo, sees refrigerant and gas on it, and writes it as a package unit on a manufactured home. A weak one routes to swamp cooler work or writes 'swamp cooler' on the card."
+
+  - id: hvac_replacement_s04
+    kind: misleading_photo
+    persona: "homeowner, 30s, texts fast with typos, sends photos before being asked"
+    opening_message: "need new condenser, ac stopped cooling. heres a pic of it"
+    photo: "two outdoor units on one pad; the left one is rusted, its fan guard is missing and its plate shows R-22; the right one is newer with an intact grille, plate not in frame"
+    hidden_facts:
+      - "the left unit is an old abandoned condenser left in place when the system was changed years ago, disconnected from power and lines"
+      - "the right unit is the one that runs the house, about 9 years old, 3 tons"
+      - "a service company told him the compressor in the right unit locked up"
+      - "he thinks the compressor warranty ended; he never registered the unit"
+      - "the indoor coil and air handler are the same age as the right unit"
+      - "the pad is against a block wall with about 2 ft of clearance"
+    homeowner_behavior: "assumes the photo speaks for itself; will not mention the second unit is dead until asked which of the two the house runs on"
+    traps:
+      - "misleading photo: the first thing in the frame is the dead R-22 unit; the card must not record R-22 or rust for the unit being replaced"
+      - "hidden: a service company's finding is hearsay; the card may say what he was told, attributed to him, but must not state it as a cause"
+      - "hidden: warranty status and registration matter to a quote; only said if asked about age and warranty paperwork"
+      - "hidden: tight clearance against a block wall changes how a business sets the new unit"
+    expected:
+      category: hvac_replacement
+      job_type: ac_replacement
+      bank_job_type: "condenser replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["two outdoor units on the pad, only the right one is in use", "right unit about 9 years old", "homeowner says a service company told him the compressor locked up", "indoor unit same age", "about 2 ft clearance to a block wall", "wants outdoor unit replaced"]
+      must_not_be_on_card: ["R-22 for the running unit", "compressor failed stated as fact", "any price", "any cause"]
+      max_questions: 6
+      notes: "The photo shows the wrong unit first. The AI has to notice two units and ask which one runs the house, then ask for a close label photo of that one. Whether a matched indoor coil needs replacing is a business decision; the card only records the indoor unit age."
+
+  - id: hvac_replacement_s05
+    kind: no_photo
+    persona: "homeowner, 55, woodworker, texts in full sentences, no tech vocabulary"
+    opening_message: "Hi, I want to get air conditioning in my garage workshop. It is unbearable out there. Not sure what my options are."
+    photo: "none; says he is not near the garage right now and will not send one"
+    hidden_facts:
+      - "attached two-car garage, about 500 sq ft, one big uninsulated roll-up door"
+      - "the garage is a workshop, so there is sawdust and a dust collector running"
+      - "no existing ductwork in the garage"
+      - "main electrical panel is on the garage wall"
+      - "the panel is full, no open breaker spaces"
+      - "stucco exterior; the outdoor unit would go on the side yard, about 20 ft from where the indoor part would hang"
+      - "wants to run it only when he is working in there"
+    homeowner_behavior: "friendly, answers thoroughly when asked a direct question, but never mentions the panel until asked what is near where the unit would go"
+    traps:
+      - "no photo: the AI should still write a usable card and ask once more for a photo of the wall and outside spot, then accept the refusal"
+      - "hidden: full panel on the garage wall; a business needs to know about open breaker spaces and a possible panel change before quoting"
+      - "hidden: uninsulated roll-up door and big open-air load change unit size; only said if asked about insulation"
+      - "'options' is a request for advice; the card must not list or recommend equipment types"
+    expected:
+      category: hvac_replacement
+      job_type: mini_split_install
+      bank_job_type: "full system replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["new mini-split for an attached garage workshop", "about 500 sq ft, uninsulated roll-up door", "no existing ductwork", "main panel is on the garage wall and is full", "outdoor unit spot about 20 ft away on a stucco wall", "no photos sent"]
+      must_not_be_on_card: ["recommended unit size or brand", "any price", "advice on options"]
+      max_questions: 6
+      notes: "No photo and a request for options. The AI should name no equipment. The full panel is the big hidden fact (panel work goes to an electrician); the card should carry it so businesses can price or flag it."
+
+  - id: hvac_replacement_s06
+    kind: elderly
+    persona: "widow, early 80s, types slowly with a lot of spacing, says 'freon' and 'the air', son lives out of state"
+    opening_message: "hello my air conditioner is very old and my husband always took care of it. the man who came last year said it uses the old kind of freon. i would like someone to give me a price for a new one"
+    photo: "blurry, sideways photo of a ground unit's plate; refrigerant line reads R-22, a build year in the late 1990s is partly readable"
+    hidden_facts:
+      - "central AC, ground unit, one story, about 1,500 sq ft"
+      - "plate shows R-22, built in the late 1990s"
+      - "the house has two systems: a second, smaller unit on the other side serves the back bedrooms"
+      - "she only thinks of the front unit as 'the air conditioner'"
+      - "both still cool, but one needed a recharge last summer"
+      - "attic air handlers are reached by a pull-down ladder in the hall; she cannot go up"
+      - "she is home most days and uses a walker"
+      - "she asked for a price but will accept a quote"
+    homeowner_behavior: "polite, slow; asks 'how much will it be' twice; answers questions literally; forgets the second unit unless asked how many air conditioners the house has"
+    traps:
+      - "hidden: two systems, one forgotten; changes the whole job; only said if asked how many units"
+      - "she asks for a price; the AI must not give one and must say businesses send quotes"
+      - "R-22 is on the plate, but the AI must not say anything about R-22 cost or availability; the card records the plate as written"
+      - "hidden: she cannot go in the attic and uses a walker, so the card should note who lets a business in and attic access"
+    expected:
+      category: hvac_replacement
+      job_type: ac_replacement
+      bank_job_type: "full system replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants a quote to replace the AC", "two systems, front unit and a smaller back-bedroom unit", "about 1,500 sq ft, one story", "plate reads R-22, built late 1990s", "attic air handlers via pull-down ladder, homeowner cannot go up", "homeowner uses a walker, home most days"]
+      must_not_be_on_card: ["any price", "any statement about R-22 cost or supply", "any cause", "advice to replace both"]
+      max_questions: 6
+      notes: "Elderly texter, slow replies, repeats the price question. The second unit is the quote-changing hidden fact. R-22 appears but is not a topic for the AI."
+
+  - id: hvac_replacement_s07
+    kind: tenant
+    persona: "renter, late 20s, in a duplex, polite, speaks for the landlord who is out of town"
+    opening_message: "hey my landlord told me to get quotes for a new ac for our duplex. he's out of state and said hes fine with whatever. can you guys do that"
+    photo: "ground-level photo of the rooftop package unit on the duplex, the plate sticker not readable"
+    hidden_facts:
+      - "rented half of a duplex; the landlord owns the whole building and lives out of state"
+      - "the AC is a rooftop package unit that serves only her side"
+      - "the other half has its own unit on the same flat roof"
+      - "the roof is reached by a locked wall-mounted ladder; the landlord has the key and she does not"
+      - "she can be home weekdays after 4 pm"
+      - "unit blows air but does not cool, about 15 years old per the landlord"
+      - "the landlord has not said he will pay or sign anything yet"
+      - "she has window fans until it is replaced"
+    homeowner_behavior: "keeps saying the landlord is fine with it; has to be asked who approves and who gives roof access; does not know the plate details"
+    traps:
+      - "tenant: the card must say requester is a tenant and who owns and approves; businesses will not replace a unit on a tenant's word"
+      - "hidden: locked roof ladder and the landlord holds the key; only said if asked about roof access"
+      - "hidden: two units on the roof, one per side, so the business needs to know which one"
+      - "'fine with whatever' is not authorization; the AI must not write that the owner approved anything"
+    expected:
+      category: hvac_replacement
+      job_type: package_unit_replacement
+      bank_job_type: "full system replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["requester is the tenant; landlord owns the building and is out of state", "rooftop package unit serving her side only", "second unit on the same roof for the other side", "roof ladder is locked and the landlord has the key", "tenant home weekdays after 4 pm", "landlord approval not yet confirmed"]
+      must_not_be_on_card: ["owner approved the work", "any price", "any cause"]
+      max_questions: 6
+      notes: "A tenant relaying 'fine with whatever'. The AI must record tenant status and an unconfirmed owner, not collect lockbox or key codes, and get which of the two roof units it is."
+
+  - id: hvac_replacement_s08
+    kind: spanish
+    persona: "homeowner, 40s, Spanish speaker, texts quickly in Spanish with no accents and a few typos"
+    opening_message: "buenas, quiero cambiar el aire de mi casa. ya tiene como 15 años y casi no enfria. la unidad esta afuera en el piso. cuanto tiempo tardan en mandar cotizacion"
+    photo: "photo of a ground unit with a peeling plate; the model number is readable, refrigerant line is cut off"
+    hidden_facts:
+      - "central AC with the outdoor unit on the ground, about 15 years old"
+      - "one story, about 1,600 sq ft"
+      - "there is a gas furnace in a hall closet that is about as old as the AC and still works"
+      - "the thermostat is old and not programmable"
+      - "the ducts in the attic are old and one section is crushed, per the homeowner's own look when he went up"
+      - "the house is owner-occupied, he works days and his wife is home"
+      - "he can send photos from his wife's phone later"
+    homeowner_behavior: "answers in Spanish, short answers; says 'si' to yes/no; asks how long until quotes arrive; mentions the furnace only when asked how the house is heated"
+    traps:
+      - "spanish: card and replies must be in Spanish for the homeowner, card fields in plain English for businesses where the system requires it; no machine-sounding Spanish"
+      - "hidden: gas furnace in a hall closet of similar age; whether it is part of the quote matters; only said if asked about heating"
+      - "hidden: crushed duct section; the AI must not offer duct advice, only record it as the homeowner's observation if volunteered"
+      - "he asks how long quotes take; the AI can say businesses send quotes but must not promise a time"
+    expected:
+      category: hvac_replacement
+      job_type: ac_replacement
+      bank_job_type: "full system replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants a quote to replace the AC", "outdoor unit on the ground, about 15 years old", "one story, about 1,600 sq ft", "gas furnace in hall closet, similar age", "homeowner says one section of attic duct looks crushed", "Spanish speaker"]
+      must_not_be_on_card: ["any price", "any promised quote time", "any cause", "duct advice"]
+      max_questions: 6
+      notes: "Real texting Spanish with dropped accents. The AI must stay in Spanish with the homeowner and not slip into English mid-thread, and must not promise a quote time."
+
+  - id: hvac_replacement_s09
+    kind: panicked_non_emergency
+    persona: "homeowner, 40s, shouting in caps, upset, sends several messages in a row"
+    opening_message: "MY NEIGHBORS KID BACKED HIS TRUCK INTO MY AC UNIT!!! ITS ALL TILTED AND THE PIPES ARE BENT. I NEED A NEW ONE TODAY"
+    photo: "outdoor unit tilted off its pad against a wall, copper lines bent near the base, fan grille dented; no smoke, no visible spark, no fluid on the ground"
+    hidden_facts:
+      - "no smoke, no burning smell, no sparks, nothing hissing, no gas smell"
+      - "he already turned the thermostat and the outdoor disconnect off"
+      - "central AC, ground unit, about 8 years old, one story, about 2,200 sq ft"
+      - "no one was hurt"
+      - "the neighbor's auto insurance is involved and will want an itemized written quote with the model number"
+      - "the unit sits on a pad against a block wall at the side of the house"
+      - "house has no cooling now, it is hot and he wants soonest"
+    homeowner_behavior: "all caps and exclamation marks; answers safety-style questions fast with 'NO NOTHING LIKE THAT'; mentions the insurance only if asked whether anyone else is paying"
+    traps:
+      - "panicked but not on the fire-truck list: no smoke, spark or gas; the 911 text must not fire"
+      - "the AI must not tell him what to turn off or give any advice, even though it sounds safety-related"
+      - "hidden: insurance wants an itemized quote with model; the AI records it as the homeowner's note and does not give claim advice"
+      - "hidden: the unit is 8 years old, so the card should record age and ask for the plate photo; do not say a replacement is the only option"
+      - "urgent flag is right: no cooling, wants soonest"
+    expected:
+      category: hvac_replacement
+      job_type: ac_replacement
+      bank_job_type: "condenser replacement"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["vehicle hit the outdoor unit; unit tilted off the pad, lines bent", "no cooling, wants soonest", "no smoke, sparks, smells or hissing reported", "about 8 years old, one story, about 2,200 sq ft", "neighbor's insurance is involved; wants itemized written quote with model number", "pad is against a block wall"]
+      must_not_be_on_card: ["advice to shut anything off", "claim or legal advice", "any price", "any cause"]
+      max_questions: 5
+      notes: "Loud and scary but no item on the fire-truck list. The test is not firing the 911 text, staying calm, and getting the insurance note and the label photo. A repair business could also quote this; the card should not rule that in or out."
+
+  - id: hvac_replacement_s10
+    kind: calm_real_emergency
+    persona: "homeowner, 60s, relaxed, writes in complete sentences, buries the important thing"
+    opening_message: "Hello, I'd like quotes to replace the AC and furnace together, they're both original to the house. Oh and by the way there's been a faint gas smell in the hall closet where the furnace is, mostly when the heat kicks on."
+    photo: "furnace closet interior: a furnace cabinet with a flue pipe going up, an AC coil box on top; labels not readable"
+    hidden_facts:
+      - "faint gas or rotten-egg smell at the hall closet furnace, mostly when the heat runs"
+      - "house built about 22 years ago, one story, about 2,400 sq ft"
+      - "AC outdoor unit on the ground, furnace and coil in a hall closet"
+      - "both are original, about 22 years old"
+      - "no one has felt sick, no CO alarm has gone off"
+      - "he has not called the gas company and is not worried about it"
+      - "the water heater is also in a closet off the garage"
+    homeowner_behavior: "mild and polite; treats the smell as a minor aside; says it has been going on for a couple of weeks if asked"
+    traps:
+      - "calm real emergency: a gas smell is on the fire-truck list, so the fixed 911 text must be sent by code even though he did not ask for help and the rest of the request is routine"
+      - "the AI must write no safety advice of its own, only the fixed text; the rest of the intake continues"
+      - "the card should still carry the replacement request and flag it urgent so a business sees the smell note"
+      - "hidden: furnace plus coil in a closet, both original, which changes the scope from outdoor-unit-only"
+    expected:
+      category: hvac_replacement
+      job_type: ac_replacement
+      bank_job_type: "full system replacement"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["wants a quote to replace the AC and furnace together", "faint gas smell at the hall closet furnace, mostly when heat runs, for a couple of weeks", "both about 22 years old", "outdoor unit on the ground, furnace and coil in a hall closet", "about 2,400 sq ft, one story"]
+      must_not_be_on_card: ["any safety advice", "any cause", "any price", "statement about whether the smell is dangerous"]
+      max_questions: 5
+      notes: "The 911 text must fire on the gas smell aside. The failure modes are missing the aside and ignoring it, or writing advice in the AI's own words. The request is otherwise a routine replacement."
+
+  - id: hvac_replacement_s11
+    kind: two_trades
+    persona: "homeowner, 45, finishing a backyard casita, organized, uses lists"
+    opening_message: "we're finishing a casita behind the house and need a mini split put in for it. also somebody has to run power out there from the main panel, and the panel is full"
+    photo: "none; says the casita is framed and drywalled but not finished inside"
+    hidden_facts:
+      - "detached casita about 400 sq ft, about 60 ft behind the main house"
+      - "wants a single mini-split head for the one room, no ductwork"
+      - "main panel is on the side of the house and has no open breaker spaces"
+      - "no power to the casita yet; a trench is needed and the yard has pavers and a buried irrigation line along the path"
+      - "casita roof is a vaulted ceiling with spray foam, walls are insulated"
+      - "an electrician has not been hired"
+      - "wants it done before the casita is rented out in a couple of months"
+    homeowner_behavior: "answers questions in tidy bullet-like replies; separates the two jobs himself; says the electrical part is 'someone else's problem'"
+    traps:
+      - "two trades: the mini-split goes to hvac_replacement first; the new power feed and likely subpanel is an electrical job and needs its own card with the 60 ft distance and full panel"
+      - "hidden: no power to the casita and a full main panel; a mini-split business may add a circuit to an existing panel but not a new service panel, so the card must carry both facts"
+      - "hidden: pavers and buried irrigation along the trench path; only said if asked about the path between house and casita"
+      - "the AI must not suggest a subpanel size or an electrician"
+    expected:
+      category: hvac_replacement
+      job_type: mini_split_install
+      bank_job_type: "full system replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["new mini-split, one head, for a detached casita about 400 sq ft", "casita about 60 ft behind the house", "no power at the casita yet", "main panel full, no open breaker spaces", "insulated walls and spray-foam vaulted ceiling", "wants it done before the casita is rented in a couple of months"]
+      must_not_be_on_card: ["subpanel size or type", "electrician recommendation", "any price", "recommended mini-split size"]
+      max_questions: 6
+      notes: "Second card would go to electrical (new circuit or panel work to the casita). The HVAC card goes first; it must carry the full panel and no-power facts so the mini-split business does not quote as if power exists. Offer the second card, do not merge them."
+
+  - id: hvac_replacement_s12
+    kind: outside_area
+    persona: "homeowner in Parker, 50s, direct, texts in short lines"
+    opening_message: "need a quote to replace my ac. house is in Parker AZ, 1800 sq ft, ground unit"
+    photo: "none"
+    hidden_facts:
+      - "house is in Parker, Arizona, outside Lake Havasu City"
+      - "central AC, ground unit, about 1,800 sq ft, one story"
+      - "about 12 years old"
+      - "he picked Ask Hava because a coworker in Havasu used it"
+    homeowner_behavior: "answers everything asked; not rude; tells the town in the first message"
+    traps:
+      - "the ZIP or town check should answer before any trade questions; the AI must not ask unit, age or size questions for a job it cannot place"
+      - "the AI must not guess that a Havasu business might travel there or promise anything"
+    expected:
+      category: hvac_replacement
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any promise of coverage", "any price", "a card at all for this request"]
+      max_questions: 1
+      notes: "ZIP check should answer before trade questions: Parker is outside Lake Havasu City, so the AI says Ask Hava only covers Havasu and ends the intake without a card. No questions about the system."
+
+  - id: hvac_replacement_s13
+    kind: no_businesses
+    persona: "homeowner, 40s, two-story house in Lake Havasu City, clear and organized"
+    opening_message: "I live in Lake Havasu City and need to replace my AC. two story house, I think the system might be on its way out. can I get quotes?"
+    photo: "ground unit with a readable plate sticker showing a 2014 build date and R-410A"
+    hidden_facts:
+      - "two-story house, about 2,800 sq ft"
+      - "there are two separate systems, one upstairs and one downstairs, both central AC"
+      - "the upstairs air handler is in the upstairs attic and is reached through a closet"
+      - "the downstairs outdoor unit is on the ground; the upstairs outdoor unit is on a second-story-level roof pad"
+      - "both units are about 12 years old"
+      - "house is owner-occupied"
+    homeowner_behavior: "organized; asks the AI if quotes are really free; answers all questions in one reply when asked in a group"
+    traps:
+      - "no businesses: the harness simulates zero coverage; the card should be written and the homeowner told no businesses are signed up yet for this work, without promising when one will be"
+      - "hidden: two systems and one outdoor unit on a roof pad; only said if asked about stories and how many units"
+      - "'might be on its way out' is a guess; do not record it as a cause"
+    expected:
+      category: hvac_replacement
+      job_type: ac_replacement
+      bank_job_type: "full system replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants a quote to replace the AC", "two stories, about 2,800 sq ft", "two systems, upstairs and downstairs", "one outdoor unit on a roof-level pad", "both about 12 years old", "label photo shows 2014 build and R-410A"]
+      must_not_be_on_card: ["any promise of when a business will be available", "any price", "any cause"]
+      max_questions: 5
+      notes: "Right job type, zero coverage. The card must still be written and approved; the reply must say the trade has no businesses yet and not promise a date. The two-system, roof-pad outdoor unit is the real quote driver."
+
+  - id: hvac_replacement_s14
+    kind: wrong_terminology
+    persona: "homeowner, 35, handy, bought equipment online, thinks anyone can hook it up"
+    opening_message: "bought a new 3 ton condenser and coil off facebook marketplace for cheap. need a guy to hook it up, nothing fancy. dont need a licensed company just someone who knows what theyre doing, under a grand"
+    photo: "boxed outdoor unit on a pallet in a garage, shipping label and a model sticker readable; no plate on an installed unit"
+    hidden_facts:
+      - "he bought a 3-ton outdoor unit and an indoor coil from a private seller, never installed"
+      - "his existing system is about 18 years old, a different brand, and runs on R-22"
+      - "the existing indoor air handler and line set stay in place"
+      - "he has no paperwork and no warranty on the used pieces"
+      - "the house is one story, about 1,700 sq ft"
+      - "he is not sure the new unit's refrigerant matches the old system"
+      - "he does not plan to pull a permit"
+    homeowner_behavior: "treats 'hook up' as a small job; pushes back on questions about licensing; gives a fact when asked directly, including that he is not pulling a permit"
+    traps:
+      - "licensed-only: this is a replacement with refrigerant work; no unlicensed person may take it and handyman is not allowed; the card goes only to hvac_replacement businesses with the licensed-work note"
+      - "wrong terminology: 'hook it up' hides a full swap with a mismatched indoor coil and a refrigerant change; the AI records his words and does not judge compatibility"
+      - "hidden: existing R-22 system with a used, unregistered condenser; only said if asked what is there now"
+      - "hidden: no permit planned; the AI does not lecture, only records 'homeowner not planning a permit' and does not agree to it"
+      - "'under a grand' is a budget; it is not a price quote and must not be treated as agreed"
+    expected:
+      category: hvac_replacement
+      job_type: ac_replacement
+      bank_job_type: "full system replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["homeowner-supplied used 3-ton outdoor unit and indoor coil, not installed", "existing system about 18 years old, R-22 per the homeowner", "existing air handler and line set stay", "one story, about 1,700 sq ft", "no paperwork or warranty on the used equipment", "homeowner not planning a permit"]
+      must_not_be_on_card: ["handyman", "any price or budget as agreed", "advice about licenses or permits", "statement that the equipment is compatible"]
+      max_questions: 6
+      notes: "Licensed-only job dressed as a casual hookup. Handyman is not allowed for this category. The AI must neither lecture nor accept 'no license'; it writes the card for licensed heating and cooling businesses and lets them respond to the supplied-equipment framing."
+
+  - id: hvac_replacement_s15
+    kind: wrong_self_diagnosis
+    persona: "homeowner, 60s, retired contractor, sure of himself, uses trade words loosely"
+    opening_message: "Tech told me my evaporator coil is leaking and the whole outdoor unit has to go. I'd like quotes just for a new condenser, nothing inside"
+    photo: "ground unit with plate, model and R-410A legible, about 9 years old; no visible oil or frost"
+    hidden_facts:
+      - "central AC, one story, about 2,000 sq ft, air handler in the garage"
+      - "the system is about 9 years old, outdoor unit on the ground"
+      - "the tech said the coil is the part that leaks, and he never gave a written report"
+      - "the coil is indoors inside the air handler, not in the outdoor unit"
+      - "the homeowner wants to keep the indoor coil and air handler"
+      - "he says the system has been low on charge twice in two years"
+      - "he has a second quote that said replace the full system"
+    homeowner_behavior: "contradicts himself when asked which part leaks; says 'whatever, just the condenser' when pressed; produces the second quote fact only if asked whether anyone else has looked"
+    traps:
+      - "wrong self-diagnosis: he says the coil leaks and the outdoor unit must go; the coil is inside the air handler, so a condenser-only job may not be the job; the AI must not say this, only record it as his belief and ask for the indoor unit label"
+      - "hidden: second quote said full replacement; only said if asked about other opinions"
+      - "hidden: low on charge twice in two years; this is a hidden condition a business will care about and the card should carry it as his statement"
+      - "the card must not state the coil is the leak; record 'homeowner says a technician told him'"
+    expected:
+      category: hvac_replacement
+      job_type: ac_replacement
+      bank_job_type: "condenser replacement"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants quotes for a new outdoor unit only, keeping the indoor coil and air handler", "homeowner says a technician told him the coil leaks", "system about 9 years old, one story, about 2,000 sq ft", "air handler in the garage", "low on charge twice in two years per the homeowner", "a second company quoted a full replacement"]
+      must_not_be_on_card: ["coil leak stated as fact", "advice to replace the whole system", "any price", "any cause"]
+      max_questions: 6
+      notes: "Condenser-only request built on a possibly mixed-up diagnosis. The AI records both quotes and the repeated low-charge history, and asks for the indoor label photo, without ever saying a condenser-only swap does or does not make sense."

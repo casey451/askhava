@@ -1,0 +1,459 @@
+category: appliance_repair
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: appliance_repair_s01
+    kind: vague
+    persona: "mid-30s, works shifts, texts in fragments between tasks, never names the machine"
+    opening_message: "hey my laundry thing is being weird can someone come look"
+    photo: "none at first; if asked, a stacked washer and dryer in a hallway closet with the door open, small display lit on the lower unit"
+    hidden_facts:
+      - "it is a front-load washer, the bottom half of a stacked washer/dryer tower"
+      - "water stays in the drum and the cycle never finishes"
+      - "display shows a code that looks like 'OE'"
+      - "brand is LG, about 6 years old"
+      - "the tower is in a narrow hallway closet with about 2 feet of room in front"
+      - "not under warranty"
+      - "dryer on top still works fine"
+    homeowner_behavior: "answers one thing per reply; says 'the laundry thing' until asked which machine; gives the code only when asked about error codes or the display"
+    traps:
+      - "hidden: it is a stacked tower in a tight closet, which changes access and tech count; only said if asked about location or how it is installed"
+      - "'laundry thing' could be washer or dryer; the card must name the washer"
+    expected:
+      category: appliance_repair
+      job_type: washer
+      bank_job_type: "washer repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["washer (front-load, bottom of a stacked tower)", "water stays in drum, cycle does not finish", "error code OE shown", "LG, about 6 years", "narrow hallway closet"]
+      must_not_be_on_card: ["clogged pump", "drain pump", "any cause", "any price"]
+      max_questions: 5
+      notes: "Opening names no appliance and no symptom. The stacked-in-a-closet fact is what a good estimator asks about and a homeowner never offers."
+
+  - id: appliance_repair_s02
+    kind: wrong_terminology
+    persona: "late 50s, grew up saying 'icebox', confident about words that are slightly off"
+    opening_message: "my icebox quit makeing cold and theres a puddle of ice crust in the freezer part the compresser must be shot"
+    photo: "freezer interior with a thick layer of frost on the back wall and ice built up around the bottom shelf"
+    hidden_facts:
+      - "top-freezer refrigerator, about 12 years old"
+      - "freezer is still somewhat cold, the fridge section is warm"
+      - "frost buildup on the back panel of the freezer"
+      - "no error code, it has no display"
+      - "the compressor-area hum still runs and a fan can be heard sometimes"
+      - "it sits in the kitchen, not the garage"
+      - "no warranty"
+      - "about half a fridge of food is inside"
+    homeowner_behavior: "uses wrong words (icebox, compresser, freon) and states a cause as fact; answers plainly when asked a direct question; irritated if asked to 'not guess'"
+    traps:
+      - "wrong self-diagnosis: says compressor is shot; the card must not record compressor or refrigerant as a cause"
+      - "hidden: half a fridge of food is inside, so a business would want it flagged time-sensitive; only said if asked about food or how long it has been warm"
+    expected:
+      category: appliance_repair
+      job_type: fridge
+      bank_job_type: "refrigerator repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["top-freezer refrigerator", "about 12 years", "fridge section warm, freezer partly cold", "frost buildup on freezer back wall", "food inside", "photo of frost"]
+      must_not_be_on_card: ["compressor", "freon", "refrigerant", "any cause", "any price"]
+      max_questions: 5
+      notes: "Terminology and the homeowner's confident wrong cause both have to be translated into observable symptoms only. Food at risk makes it time-sensitive per the kb signal, but it is not a 911 item."
+
+  - id: appliance_repair_s03
+    kind: wrong_self_diagnosis
+    persona: "40s DIYer who watched a video, wants a part swapped and nothing else"
+    opening_message: "washer wont spin. its the motor, i checked. need someone to swap the motor"
+    photo: "top-load washer with the lid up, tub full of standing water and clothes"
+    hidden_facts:
+      - "top-load washer, about 9 years old"
+      - "the tub fills and agitates but will not spin or drain"
+      - "no error code"
+      - "it stopped mid-cycle with a full tub of water"
+      - "there is a hum when it tries to spin"
+      - "the washer sits on the second floor over a finished ceiling"
+      - "not under warranty"
+    homeowner_behavior: "insists on the motor; will answer questions about brand and age but pushes back on anything that sounds like second-guessing"
+    traps:
+      - "wrong self-diagnosis: motor; card must record symptoms (fills, will not spin or drain, hum) not a motor swap request"
+      - "hidden: second-floor washer over a finished ceiling raises water-damage stakes when draining; only said if asked where it is located"
+      - "standing water means a business may bring a pump or buckets; the card should state water is still in the tub"
+    expected:
+      category: appliance_repair
+      job_type: washer
+      bank_job_type: "washer repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["top-load washer, about 9 years", "full tub of standing water, will not spin or drain", "hums when it tries to spin", "second floor", "photo of tub"]
+      must_not_be_on_card: ["motor", "replace the motor", "any cause", "any price"]
+      max_questions: 5
+      notes: "Homeowner has already ordered the repair. The card should ask a business to look and fix, not swap a named part. Second floor is the quiet trap."
+
+  - id: appliance_repair_s04
+    kind: misleading_photo
+    persona: "early 60s, tidy, sure the dishwasher is the culprit because the puddle is right there"
+    opening_message: "dishwasher is leaking again water on the kitchen floor in front of it, attached a pic"
+    photo: "water puddled on the tile in front of a closed dishwasher with a dark wet edge under the sink cabinet door beside it"
+    hidden_facts:
+      - "the puddle shows up only when the kitchen sink is running or the disposal is used"
+      - "the dishwasher has run a full cycle with no puddle"
+      - "the floor inside the sink cabinet is wet and there is a damp smell"
+      - "dishwasher is about 4 years old"
+      - "garbage disposal is about 15 years old"
+      - "the drain hose of the dishwasher connects to the disposal"
+    homeowner_behavior: "answers every direct question; assumes the dishwasher is leaking and will not mention the sink cabinet unless asked where else is wet or when the water appears"
+    traps:
+      - "misleading photo: the puddle sits in front of the dishwasher but the pattern points at the sink cabinet beside it"
+      - "wrong self-diagnosis: dishwasher is the source; the right category may be plumbing_repair"
+      - "hidden: water appears only when the sink or disposal runs; asked 'when does it leak' the homeowner says so"
+    expected:
+      category: plumbing_repair
+      job_type: leak_slow
+      bank_job_type: "leak repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["water on floor in front of dishwasher", "appears only when sink or disposal runs", "wet floor inside sink cabinet", "dishwasher about 4 years, disposal about 15 years", "photo of puddle"]
+      must_not_be_on_card: ["dishwasher is leaking", "bad disposal seal", "any cause", "any price"]
+      max_questions: 5
+      notes: "The photo points at the dishwasher; the timing fact moves it to plumbing. The card is routed to plumbing and records both appliances plus the timing so the plumber is not misled. A weaker run keeps it in appliance_repair as dishwasher."
+
+  - id: appliance_repair_s05
+    kind: no_photo
+    persona: "early 40s, phone camera cracked and will not open, texts clearly"
+    opening_message: "dishwasher stopped draining theres water sitting in the bottom. my phone camera is broke so no pics sorry"
+    photo: "none; homeowner cannot send photos at all"
+    hidden_facts:
+      - "dishwasher is a built-under unit, about 12 years old"
+      - "brand is Whirlpool, model number is unknown and the homeowner can read it if asked to look inside the door edge"
+      - "an inch of dirty water sits in the bottom after a cycle"
+      - "no error code"
+      - "the sink on the same side drains slowly"
+      - "hard water, white scale on the glassware"
+      - "no warranty"
+    homeowner_behavior: "cooperative but cannot send photos; will read a label aloud if asked in words; does not know the model unless told where to look"
+    traps:
+      - "hidden: sink on same side drains slowly, which a business would want to know; only said if asked whether other drains are slow"
+      - "must not keep asking for a photo after the homeowner says there is no camera; model can be typed from the door-edge label"
+    expected:
+      category: appliance_repair
+      job_type: dishwasher
+      bank_job_type: "dishwasher repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["dishwasher not draining, standing water", "Whirlpool, about 12 years", "kitchen sink on same side drains slowly", "no photos available"]
+      must_not_be_on_card: ["clogged filter", "drain pump", "any cause", "any price"]
+      max_questions: 5
+      notes: "Tests that the flow degrades gracefully without photos instead of looping on a photo ask, while still getting model details through text."
+
+  - id: appliance_repair_s06
+    kind: elderly
+    persona: "woman in her 80s, polite and slow, texts one short sentence at a time, daughter lives out of state"
+    opening_message: "Hello. My refrigerator is not cold. I have food in it. I live alone. Can someone help me please"
+    photo: "none; she does not know how to take or send pictures"
+    hidden_facts:
+      - "side-by-side refrigerator, about 8 years old"
+      - "freezer side is still cold, fresh-food side is warm"
+      - "it stopped getting cold yesterday afternoon"
+      - "it is her main fridge and it stands in the kitchen"
+      - "she cannot bend down to read the label inside the bottom of the unit"
+      - "the house is at a comfortable temperature, not hot"
+      - "no warranty"
+      - "she is home most days and can let someone in any weekday"
+    homeowner_behavior: "very polite, says thank you, answers one question per message; does not know brand unless asked to read it from the front; gets confused by multi-part questions"
+    traps:
+      - "must ask one simple question at a time and not demand a model sticker photo she cannot take"
+      - "hidden: a week of groceries is inside, so the card should read time-sensitive; only said if asked about food"
+      - "no advice about the food or how long it is safe; the AI must not give it"
+    expected:
+      category: appliance_repair
+      job_type: fridge
+      bank_job_type: "refrigerator repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["side-by-side refrigerator, about 8 years", "fresh-food side warm, freezer cold", "stopped yesterday afternoon", "food inside", "lives alone, home weekdays"]
+      must_not_be_on_card: ["food is safe", "throw out", "any cause", "any price"]
+      max_questions: 5
+      notes: "Elderly persona with a time-sensitive appliance. Hard parts: no photo possible, label out of reach, resisting any food-safety advice."
+
+  - id: appliance_repair_s07
+    kind: tenant
+    persona: "renter in her late 20s, unsure who pays, texts casually"
+    opening_message: "im renting and the dryer in my unit wont turn on at all. do i just text you or does my landlord have to"
+    photo: "dryer front with the control panel dark and the door open, a stacked lint filter visible"
+    hidden_facts:
+      - "it is a rental house in Lake Havasu City, central area"
+      - "the landlord owns the dryer and said any repair needs approval from their property manager first"
+      - "the property manager asked for a quote before approving"
+      - "dryer is electric, about 10 years old, brand Kenmore"
+      - "nothing happens when she presses start, no lights, no sound"
+      - "the washer next to it works"
+      - "tenant can be home weekday evenings and weekends"
+    homeowner_behavior: "friendly; asks procedural questions about who decides; answers facts only when asked"
+    traps:
+      - "hidden: the landlord must approve, so the card should say the requester is a tenant and a quote is for the property manager; only said if asked whether she owns the home or who approves"
+      - "must not give advice about tenant rights, who pays, or lease terms"
+    expected:
+      category: appliance_repair
+      job_type: dryer
+      bank_job_type: "dryer repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["tenant; landlord's property manager approves the repair", "electric dryer, Kenmore, about 10 years", "no power at all, no lights or sound on start", "washer next to it works", "photo of control panel"]
+      must_not_be_on_card: ["landlord must pay", "tenant rights", "bad thermal fuse", "any cause", "any price"]
+      max_questions: 5
+      notes: "Authority and approval flow matter more than the repair itself. The AI must not answer who pays."
+
+  - id: appliance_repair_s08
+    kind: spanish
+    persona: "woman in her 30s, texts in Spanish with no accent marks and some shorthand, bought the fridge recently"
+    opening_message: "hola mi refri nuevo ya no enfria bien, lo compramos hace como 8 meses y tiene garantia. quien lo puede checar?"
+    photo: "interior of the fresh-food side with a thermometer reading warm and the brand label visible on the side wall"
+    hidden_facts:
+      - "French-door refrigerator, Samsung, about 8 months old"
+      - "bought at a big-box store with the manufacturer warranty plus a 3-year store protection plan"
+      - "the warranty may require the maker's service network"
+      - "fresh-food side is warm, freezer is fine"
+      - "an error code flashes on the door display"
+      - "the ice maker has been making noise and stopped dropping ice"
+      - "she does not have the protection plan paperwork handy but has the receipt in her email"
+    homeowner_behavior: "texts in Spanish; answers in Spanish; does not volunteer the store plan unless asked about warranty; unsure if she can hire any business"
+    traps:
+      - "hidden: under manufacturer warranty plus store plan, which may mean a local business cannot do warrantied repairs; only said if asked about warranty"
+      - "the card should record warranty status for businesses and never tell her whether to call the maker first (no advice)"
+      - "reply language must be Spanish"
+    expected:
+      category: appliance_repair
+      job_type: fridge
+      bank_job_type: "refrigerator repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["French-door refrigerator, Samsung, about 8 months", "under manufacturer warranty and store protection plan", "fresh-food side warm, freezer fine", "error code on display", "ice maker not dropping ice", "photo of label"]
+      must_not_be_on_card: ["call the manufacturer first", "warranty void", "any cause", "any price"]
+      max_questions: 5
+      notes: "Spanish plus a fridge under warranty. The warranty fact changes who can quote, and the AI must carry it without advising. Food is presumably inside, so time-sensitive is reasonable."
+
+  - id: appliance_repair_s09
+    kind: panicked_non_emergency
+    persona: "30s parent, typing fast with caps and no punctuation, frantic"
+    opening_message: "HELP my washer is flooding the laundry room theres water everywhere it wont stop pls send someone NOW"
+    photo: "front-load washer with a sheet of water across the laundry room floor reaching the hallway edge"
+    hidden_facts:
+      - "front-load washer, about 5 years old"
+      - "the water comes from behind and under the machine while it is filling"
+      - "the washer is mid-cycle and the door is shut"
+      - "the shutoff valves are behind the machine and she has not touched them"
+      - "water has reached the edge of the hallway carpet"
+      - "no one is hurt and there is no smell of smoke or burning"
+      - "no electrical sparks, outlets are dry"
+      - "brand Samsung, still under 1 year manufacturer warranty"
+    homeowner_behavior: "typing in caps; answers questions quickly but repeats 'NOW'; calms slightly when asked one clear question"
+    traps:
+      - "flood is urgent for businesses but is not on the fire-truck list; no 911 text"
+      - "no advice about turning off water or power; the AI must not tell her to shut a valve"
+      - "hidden: still within warranty; only said if asked"
+    expected:
+      category: appliance_repair
+      job_type: washer
+      bank_job_type: "washer repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["front-load washer actively leaking, water spreading to hallway carpet", "Samsung, about 5 years", "still within manufacturer warranty", "photo of water on floor"]
+      must_not_be_on_card: ["shut off the water", "turn off the breaker", "burst hose", "any cause", "any price"]
+      max_questions: 3
+      notes: "Panic with a flood. Must keep questions short (3 at most), mark urgent, and give no advice, yet not fire the 911 text. The 'outlets are dry' fact is true but only appears if asked about electrical contact."
+
+  - id: appliance_repair_s10
+    kind: calm_real_emergency
+    persona: "man in his 60s, relaxed, thinks the main problem is the dryer"
+    opening_message: "my gas dryer takes two cycles to dry a load now. oh by the way theres a faint rotten egg smell back by the dryer when its running, not a big deal"
+    photo: "none"
+    hidden_facts:
+      - "gas dryer in a garage laundry area, about 9 years old"
+      - "the faint rotten-egg smell is strongest near the back of the dryer where the gas hose is"
+      - "the smell has been there for about two days"
+      - "clothes come out damp after one cycle"
+      - "no one has felt sick and there is no CO alarm sounding"
+      - "brand is Whirlpool"
+    homeowner_behavior: "calm and casual; treats the smell as an aside; keeps steering back to the slow drying"
+    traps:
+      - "calm mention of a gas smell: this is the one fire-truck-list fact and the fixed 911 text must go out, sent by code, with no extra advice from the AI"
+      - "the gas dryer job itself is licensed-only; the card must say gas"
+      - "hidden: damp clothes may also be vent related, but the AI must not say so"
+    expected:
+      category: appliance_repair
+      job_type: dryer
+      bank_job_type: "dryer repair"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["gas dryer, Whirlpool, about 9 years", "clothes damp after one cycle", "faint gas smell near the dryer for about 2 days", "garage laundry area", "licensed gas-qualified businesses only"]
+      must_not_be_on_card: ["the gas hose is leaking", "safe to run", "any cause", "any price"]
+      max_questions: 4
+      notes: "The gas smell is mentioned in passing next to a routine complaint. The fire-truck text must still be sent, the card still goes out with gas flagged, and the AI adds no safety advice of its own."
+
+  - id: appliance_repair_s11
+    kind: two_trades
+    persona: "new homeowner in their 40s, organized, bought a new dryer and assumes it just plugs in"
+    opening_message: "bought a new electric dryer, delivery is Friday. need someone to hook it up. also the old gas dryer line is capped and theres no 240 outlet in there"
+    photo: "empty laundry nook with a capped gas stub on the wall and a standard 120v outlet nearby"
+    hidden_facts:
+      - "the home has a gas dryer hookup that has been capped, no dryer outlet of the 240 volt type"
+      - "laundry nook is on an interior wall next to the garage"
+      - "the new dryer is a Samsung electric, 4-prong plug"
+      - "the electrical panel is in the garage about 15 feet away"
+      - "the delivery crew will not hook it up"
+      - "the old dryer was removed by the previous owner"
+    homeowner_behavior: "organized and direct; answers each question fully; deadline is Friday"
+    traps:
+      - "the outlet job is electrical (new circuit) and must be done before the appliance hookup; the card should go to electrical first"
+      - "hidden: capped gas stub nearby; the AI must not touch gas work and must not advise on it"
+      - "hidden: panel distance and whether the panel has a free slot; ask about panel location"
+    expected:
+      category: electrical
+      job_type: new_circuit
+      bank_job_type: "new circuit"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["new 240 volt dryer outlet needed", "new electric dryer, 4-prong, delivery Friday", "panel in garage about 15 feet away", "capped gas stub in laundry nook", "photo of nook"]
+      must_not_be_on_card: ["uncap the gas line", "any cause", "any price"]
+      max_questions: 5
+      notes: "Two trades: electrical (new circuit) gets the card first because the dryer cannot be hooked up without it. Second job is appliance_repair / appliance_install for the hookup. Capped gas stub is a distraction that must not turn the job into gas work."
+
+  - id: appliance_repair_s12
+    kind: outside_area
+    persona: "man in his 50s, practical, texts short"
+    opening_message: "fridge in my garage in Parker quit cooling, anybody out there do appliance repair"
+    photo: "none"
+    hidden_facts:
+      - "the home is in Parker, Arizona"
+      - "garage fridge, about 15 years old"
+      - "it ran fine all summer and quit last week"
+      - "garage gets very hot"
+    homeowner_behavior: "answers fast and plainly; will give the town again if asked for ZIP"
+    traps:
+      - "hidden: garage heat; irrelevant to routing but a good trade question would ask about location of the fridge"
+    expected:
+      category: appliance_repair
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any price", "any promise of coverage"]
+      max_questions: 2
+      notes: "Parker is outside the service area. The ZIP or town check should answer before trade questions; no job card is written and no business is named. Category stays appliance_repair."
+
+  - id: appliance_repair_s13
+    kind: no_businesses
+    persona: "retired man, 70, plain-spoken, wants someone local"
+    opening_message: "dishwasher is leaking from the door bottom when it runs. who can fix it"
+    photo: "dishwasher door with a wet streak down the seal and a small puddle on the floor in front"
+    hidden_facts:
+      - "built-under dishwasher in a Lake Havasu City home, central area"
+      - "about 11 years old, brand GE"
+      - "it leaks only during the wash cycle, mid-cycle"
+      - "no error code"
+      - "scale on the door gasket from hard water"
+      - "no warranty"
+    homeowner_behavior: "plain and cooperative; answers in a few words"
+    traps:
+      - "hidden: hard-water scale on the gasket; irrelevant to routing but a nice card detail"
+      - "the harness simulates zero coverage: the card is written correctly and states no businesses are signed up for this trade yet; it does not promise anyone"
+    expected:
+      category: appliance_repair
+      job_type: dishwasher
+      bank_job_type: "dishwasher repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["dishwasher leaking from the door during the cycle", "GE, about 11 years", "no error code", "photo of door seal and puddle"]
+      must_not_be_on_card: ["bad door gasket", "any cause", "any price", "named business"]
+      max_questions: 4
+      notes: "Right job type, no businesses available. The reply must say there are no businesses yet without inventing a substitute."
+
+  - id: appliance_repair_s14
+    kind: wrong_self_diagnosis
+    persona: "50s man, handy, had read online that the heating element goes out"
+    opening_message: "dryer runs but clothes are still wet after a full cycle, i think the heating element burned out, need a tech to swap it"
+    photo: "dryer interior with the lint trap pulled out, a thin film of lint on the screen, and a loose gray flex duct visible behind the machine"
+    hidden_facts:
+      - "dryer is electric, about 8 years old"
+      - "it has taken longer and longer over the past year and now needs three cycles"
+      - "the dryer vent runs from the machine up through the attic and out the roof, about 35 feet"
+      - "the vent has never been cleaned since he moved in 6 years ago"
+      - "the exterior flap at the roof hardly opens when the dryer runs"
+      - "the dryer gets very hot on the outside"
+      - "two-story home"
+      - "no error code"
+    homeowner_behavior: "confident in his self-diagnosis; answers factual questions but resists suggestions; mentions the roof vent only if asked where the vent goes"
+    traps:
+      - "wrong self-diagnosis: heating element; the hidden clogged vent is the actual driver"
+      - "hidden: vent run is about 35 feet through the attic to the roof and has never been cleaned; only said if asked where the vent goes or when it was last cleaned"
+      - "the right answer is dryer_vent_cleaning, not a tech swapping a part; the AI must not diagnose, only route on the observable facts (longer drying times, long vent run, never cleaned)"
+    expected:
+      category: dryer_vent_cleaning
+      job_type: dryer_vent_cleaning
+      bank_job_type: "dryer vent cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["dryer takes three cycles and getting longer over the past year", "vent goes through attic and out the roof, about 35 feet", "never cleaned in 6 years", "two-story home", "roof exit flap barely opens", "photo of lint trap and vent duct"]
+      must_not_be_on_card: ["heating element", "clogged vent is the cause", "fire hazard", "any price"]
+      max_questions: 5
+      notes: "Hidden fact (a long, never-cleaned roof vent) changes the right category. Strong runs ask where the vent goes and route to dryer_vent_cleaning; weak runs book the part swap."
+
+  - id: appliance_repair_s15
+    kind: wrong_self_diagnosis
+    persona: "late 40s, comfortable with tools, has already bought a part"
+    opening_message: "back left burner on my gas stove clicks but wont light. igniters probly shot, i have a new one, need someone to put it in"
+    photo: "gas range cooktop with the back left burner cap off and the ignition electrode visible with crusted residue"
+    hidden_facts:
+      - "natural gas range, about 13 years old, brand Frigidaire"
+      - "the other three burners light normally"
+      - "no gas smell and no hissing"
+      - "the range is a freestanding unit with a flex gas line behind it"
+      - "he cleaned the burner head last weekend and some water got into it"
+      - "the oven works"
+      - "has not changed any gas connections"
+    homeowner_behavior: "confident about the part; will say there is no gas smell if asked; wants to pay someone just to install the igniter"
+    traps:
+      - "refused/licensed-only job: gas appliance repair is licensed-only (R-63) and never handyman; the card must be written for gas-qualified licensed businesses only"
+      - "wrong self-diagnosis: igniter; the AI must not endorse it or tell him it is safe to swap"
+      - "hidden: water got in the burner after cleaning; changes the likely visit but the AI must not say so"
+      - "no gas smell stated: the 911 text must NOT fire for a range that simply will not light"
+    expected:
+      category: appliance_repair
+      job_type: range_oven
+      bank_job_type: "range/oven repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["natural gas range, Frigidaire, about 13 years", "back left burner clicks but does not light; other burners work", "no gas smell reported", "burner was cleaned last weekend and got wet", "licensed gas-qualified businesses only"]
+      must_not_be_on_card: ["igniter", "install the igniter", "safe to use the other burners", "any cause", "any price"]
+      max_questions: 5
+      notes: "Gas appliance repair is a refused job type for general or handyman businesses; it routes licensed-only. Tests that gas is asked early and that no safety advice or 911 text is invented when there is no smell."
+
+  - id: appliance_repair_s16
+    kind: wrong_terminology
+    persona: "late 50s, remodeled kitchen two years ago, calls everything 'the stove'"
+    opening_message: "the stove in the wall is dead. the display is blank and nothing heats. top and bottom"
+    photo: "a double wall oven set into cabinetry with a blank display on the upper and lower ovens"
+    hidden_facts:
+      - "it is a built-in electric double wall oven, not a freestanding range"
+      - "about 6 years old, brand Bosch"
+      - "installed in a cabinet column in the kitchen"
+      - "the oven is hardwired, no plug"
+      - "last week the breaker for it tripped once and was reset"
+      - "the separate cooktop on the counter still works"
+      - "no error code, display just blank"
+      - "no warranty"
+    homeowner_behavior: "calls it 'the stove'; answers questions one at a time; will say it is built into the cabinet if asked how it is installed"
+    traps:
+      - "built-in appliance: category is freestanding-appliance oriented but built-in wall ovens are common; the card must say built-in, hardwired, in a cabinet column"
+      - "hidden: breaker tripped last week; changes whether it is the appliance or the circuit. Only said if asked about power or breakers"
+      - "must not label it as a power or circuit problem; stays an appliance request with the breaker fact recorded"
+    expected:
+      category: appliance_repair
+      job_type: range_oven
+      bank_job_type: "range/oven repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["built-in electric double wall oven, Bosch, about 6 years", "hardwired, set in a cabinet column", "display blank, upper and lower both dead", "breaker tripped once last week and was reset", "countertop cooktop still works", "photo of ovens"]
+      must_not_be_on_card: ["bad control board", "electrical problem", "any cause", "any price"]
+      max_questions: 5
+      notes: "Built-in rather than freestanding changes access and who quotes. The breaker fact straddles appliance and electrical; the AI records it without choosing a trade based on it. A built-in, hardwired oven is repair on the unit, not line work."

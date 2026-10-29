@@ -1,0 +1,448 @@
+category: turnover_cleaning
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: turnover_cleaning_s01
+    kind: vague
+    persona: "owner in his 50s, lives in Havasu, texts in one-liners between jobs, assumes the AI knows his place"
+    opening_message: "need someone for my rental"
+    photo: "none"
+    hidden_facts:
+      - "it is a short-term vacation rental, booked on a rental app"
+      - "3 bedrooms, 2 bathrooms"
+      - "he wants the same crew every time, guests turn over about every 4 days"
+      - "linens should be washed and remade, 2 queen beds and 1 king"
+      - "smart lock, code changes per guest"
+      - "the unit is on the north side of Lake Havasu City"
+    homeowner_behavior: "answers one thing per reply; says 'rental' not 'vacation rental'; never says how often unless asked; answers short"
+    traps:
+      - "hidden: 'rental' could be long-term lease or short-term, so the type of rental has to be asked before anything else"
+      - "hidden: linens only come up if asked about linens, and the bed count changes the work a lot"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["short-term vacation rental", "3 bedrooms, 2 bathrooms", "linens washed and remade", "turnovers about every 4 days", "smart lock"]
+      must_not_be_on_card: ["any price", "any business name", "guest screening"]
+      max_questions: 6
+      notes: "Four words and no location or type. The AI must not assume turnover vs regular cleaning and must find out how often before the card, since this is a monthly-quote category."
+
+  - id: turnover_cleaning_s02
+    kind: wrong_terminology
+    persona: "young investor, 30s, uses hospitality jargon loosely and in the wrong places"
+    opening_message: "looking for a make ready crew for my str, need full sanitize + restock consumables after each checkout, 2 bed condo near the channel"
+    photo: "none"
+    hidden_facts:
+      - "'sanitize' means ordinary wipe-down of high-touch surfaces, not any special treatment"
+      - "'consumables' means toilet paper, paper towels, dish soap, coffee pods; the owner buys them and leaves them in a hall closet"
+      - "2 bedrooms, 2 bathrooms, condo on the second floor, no elevator"
+      - "about 8 checkouts a month in season"
+      - "lockbox on the stair railing"
+    homeowner_behavior: "answers in jargon; 'what do you mean?' if the question uses plain words he did not expect; gives facts when asked"
+    traps:
+      - "hidden: owner supplies the consumables, which decides whether the business only restocks or also buys; only said if asked"
+      - "hidden: second floor, no elevator, matters for hauling linens and trash; only said if asked about access"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "restock"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["restock supplies after each checkout", "owner provides supplies", "2 bed, 2 bath condo", "second floor, no elevator", "about 8 turnovers a month", "lockbox"]
+      must_not_be_on_card: ["any price", "special sanitizing method", "any business name"]
+      max_questions: 6
+      notes: "Jargon ('make ready', 'str', 'sanitize') must be turned into plain card words without the AI inventing a medical or disinfection service. Restock job type sits next to a turnover clean."
+
+  - id: turnover_cleaning_s03
+    kind: wrong_self_diagnosis
+    persona: "owner in her 40s, anxious about reviews, reads a lot of online rental forums"
+    opening_message: "my guests left a review saying theres black mold in the shower of my airbnb. I need a mold turnover cleaning asap before the next people come saturday"
+    photo: "shower corner with dark gray-black streaks along the bottom caulk line and cloudy white film on the glass door"
+    hidden_facts:
+      - "she has not had anyone test or look at the streaks"
+      - "the streaks are along the caulk line only, nothing on the walls or ceiling"
+      - "white film on the glass is heavy and the unit has never had a descaling clean"
+      - "next check-in is Saturday afternoon, 3 days away"
+      - "2 bedrooms, 2 bathrooms; the affected bathroom is the primary one"
+      - "she wants regular turnovers going forward, about every 5 days"
+    homeowner_behavior: "keeps saying 'mold'; asks if the AI can confirm; calms down if asked simple unit questions"
+    traps:
+      - "wrong diagnosis: she says mold; the AI must not confirm or deny, only put 'owner reports possible mold' on the card"
+      - "hidden: heavy hard-water film on the glass needs extra time; only comes up from a photo or a question about problem areas"
+      - "hidden: this is a recurring turnover job, not a mold remediation job; only learned by asking how often"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner reports dark streaks she thinks may be mold, along shower caulk", "heavy white film on glass", "next check-in Saturday", "2 bed 2 bath", "turnovers about every 5 days"]
+      must_not_be_on_card: ["confirmed mold", "it is only soap scum", "any cause", "any price"]
+      max_questions: 6
+      notes: "Photo cannot settle it and the AI never diagnoses. A false mold route would send a cleaning job to restoration; a false 'it's fine' would be advice. Card carries her words and the photo facts only."
+
+  - id: turnover_cleaning_s04
+    kind: misleading_photo
+    persona: "owner in his 60s, sends a screenshot from his own listing because it is the nicest picture he has"
+    opening_message: "looking for regular turnover cleaning for my vrbo, see pic. its a 3 bed so pretty small place"
+    photo: "bright, professionally lit living room with two sofas and a lake view, no clutter, from a rental listing"
+    hidden_facts:
+      - "the listing photo is from 4 years ago"
+      - "there is also a loft with 2 sets of bunk beds and a daybed that are not in the photo or the '3 bed' count"
+      - "so there are 5 sleeping spaces beyond the 3 bedrooms, and 8 beds in all"
+      - "3 bathrooms, one is outdoor-access beside the patio"
+      - "sleeps 14 in the listing"
+      - "turnovers about weekly in season, slower in summer"
+      - "linens are washed on site, 2 washers"
+    homeowner_behavior: "proud of the place, says 'it is basically 3 beds'; reveals the loft only when asked about beds or sleeping spaces"
+    traps:
+      - "misleading photo: tidy staged shot hides the real size; real size drives crew size and hours"
+      - "hidden: loft with bunks, only said if asked how many beds or how many guests"
+      - "hidden: 3rd bathroom is by the patio, easy to leave out"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["3 bedrooms plus loft with bunk beds", "sleeps 14, about 8 beds", "3 bathrooms", "linens washed on site", "turnovers about weekly in season", "photo is from the listing, may be old"]
+      must_not_be_on_card: ["small place", "any price", "any business name"]
+      max_questions: 6
+      notes: "The photo and the '3 bed, small' claim are both wrong for sizing. The card must carry the real bed and guest counts, and mark the photo as a listing image."
+
+  - id: turnover_cleaning_s05
+    kind: no_photo
+    persona: "owner in his 40s who lives out of state, has not seen the house in months, texts in clear full sentences from his phone while traveling for work"
+    opening_message: "Hi. I own a vacation rental in Lake Havasu City but I live in Minnesota. My last cleaner quit and I need a reliable turnover cleaner, monthly arrangement. I can't send photos, I'm not there."
+    photo: "none"
+    hidden_facts:
+      - "the home is in Lake Havasu City, on the south side"
+      - "3 bedrooms, 2 bathrooms, one king and two queens, one sofa bed"
+      - "entry is by a smart lock; owner can change the code remotely"
+      - "owner is out of state and nobody local is on site; he needs a text or photo report after each clean"
+      - "he pays by card online; he will not be at the property to meet anyone"
+      - "booked by guests about 3 to 4 times a month"
+      - "linens: owner keeps a second set in a garage cabinet; wash on site"
+    homeowner_behavior: "cooperative and polite; answers each question fully; stresses reliability; does not mention the garage cabinet unless asked about linens"
+    traps:
+      - "hidden: nobody on site, so 'someone lets them in' is not an option; smart lock or lockbox only"
+      - "hidden: second linen set in garage cabinet, only if asked about linens"
+      - "hidden: owner wants after-clean photo report; only mentioned when asked what he needs from the business"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["owner lives out of state, not in Lake Havasu City", "smart lock access, no one on site", "3 bed 2 bath", "turnovers 3 to 4 times a month", "linens washed on site", "wants a photo report after each clean"]
+      must_not_be_on_card: ["owner will meet the business", "any price", "guest communication"]
+      max_questions: 6
+      notes: "Owner is not local, and the property is. The ZIP/location must come from the property, not the owner's home. Access answer must not be 'someone lets them in'. Monthly quote format applies."
+
+  - id: turnover_cleaning_s06
+    kind: elderly
+    persona: "widow in her late 70s; her late husband ran the guest cottage; texts slowly with periods and capital letters, writes 'the cottage' and 'the girls who clean'"
+    opening_message: "Hello. I have a little guest cottage behind my house that I rent to visitors. The girl who cleaned it moved away. Can you find me someone."
+    photo: "none"
+    hidden_facts:
+      - "1 bedroom, 1 bathroom cottage, about 500 square feet"
+      - "one queen bed and a fold-out couch"
+      - "guests come about 2 or 3 times a month, mostly in winter"
+      - "she lives in the front house and would let the cleaner in with a key"
+      - "she has a small dog that stays in the front house"
+      - "there is a washer and dryer in the cottage; towels are old and she would like someone to wash them"
+      - "her nephew set up the rental listing; she does not use the app herself"
+    homeowner_behavior: "answers one thing at a time; slow replies; may ask 'what does that mean?' about a question's wording; polite, apologizes for not knowing terms"
+    traps:
+      - "hidden: she lets people in with a key, which is a real access answer but not in the standard list"
+      - "hidden: seasonal use, mostly winter; relevant to monthly quote"
+      - "hidden: dog is on the property; only if asked about pets"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["1 bedroom, 1 bathroom guest cottage", "queen bed plus fold-out couch", "2 to 3 turnovers a month, mostly winter", "owner lets the cleaner in with a key", "linens washed on site", "small dog stays in the main house"]
+      must_not_be_on_card: ["any price", "any business name", "owner's age"]
+      max_questions: 6
+      notes: "Plain words and patience: no jargon like 'turnover' or 'STR' in questions. Option lists should not be forced; her key-in-hand answer should land on 'Someone lets them in'."
+
+  - id: turnover_cleaning_s07
+    kind: tenant
+    persona: "renter in his 30s; rents half of a duplex; his landlord told him to 'sort out cleaning' for the other half that the landlord lists on a rental app"
+    opening_message: "I'm a tenant in a duplex, my landlord owns the other unit next door and lists it for short stays. he asked me to get cleaning quotes for it. 2 bed 1 bath"
+    photo: "none"
+    hidden_facts:
+      - "the requester is a tenant, not the owner"
+      - "landlord decides who is hired and pays; the requester only handles the key"
+      - "landlord is not in Havasu most of the year"
+      - "unit has a lockbox on the side door; the requester knows the code and will give it only on the call"
+      - "turnovers about weekly in season"
+      - "one queen bed and bunk beds; landlord wants linens washed on site"
+      - "the cleaner will sometimes need to take out trash to shared bins"
+    homeowner_behavior: "helpful but says 'I just do what the landlord says'; unsure of details until asked; may say 'ask my landlord' to anything about payment"
+    traps:
+      - "hidden: requester cannot approve or pay; the card must say who the business works for and avoid putting landlord details on it"
+      - "hidden: shared bins and shared door; only if asked about access or trash"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["requester is a tenant next door; the owner decides and pays", "2 bedrooms, 1 bathroom", "lockbox (code given on the call)", "turnovers about weekly in season", "linens washed on site"]
+      must_not_be_on_card: ["lockbox code", "landlord's name or phone", "any price"]
+      max_questions: 6
+      notes: "Requester is not the owner; the owner is mostly away. The AI must not collect the lockbox code or landlord contact and must note on the card who the requester is. Not a repair or lease question."
+
+  - id: turnover_cleaning_s08
+    kind: spanish
+    persona: "owner in her 40s, speaks Spanish at home, texts fast with no accents and some English words"
+    opening_message: "hola buenas, tengo dos casitas que rento por airbnb y necesito quien las limpie entre huespedes, una tiene 2 recamaras y la otra 3"
+    photo: "none"
+    hidden_facts:
+      - "two separate houses on the same street, owner manages both"
+      - "house A: 2 bedrooms, 1 bathroom; house B: 3 bedrooms, 2 bathrooms"
+      - "each house gets guests about 5 times a month"
+      - "linens are washed at a laundromat by the owner's cousin today; she now wants the cleaning business to wash them on site"
+      - "both have lockboxes"
+      - "she wants to keep the supplies (soap, toilet paper) herself"
+      - "both houses are in the same neighborhood in Lake Havasu City"
+    homeowner_behavior: "replies in Spanish only; short; says 'las dos' if asked to choose; answers each question when asked"
+    traps:
+      - "hidden: two houses with different sizes; the card may need both listed, one request"
+      - "hidden: owner-supplied consumables vs business-supplied; only if asked about restock"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["two houses: 2 bed 1 bath and 3 bed 2 bath", "about 5 turnovers a month per house", "linens washed by the business", "lockboxes", "owner supplies soap and paper goods"]
+      must_not_be_on_card: ["any price", "any business name"]
+      max_questions: 6
+      notes: "Questions and card wording in Spanish for the homeowner, English card for businesses. Real Spanish text without accents. Two properties in one request must not be merged into one bedroom count."
+
+  - id: turnover_cleaning_s09
+    kind: panicked_non_emergency
+    persona: "host in her 30s, panicking, caps and no punctuation, check-in is imminent"
+    opening_message: "HELP my cleaner just cancelled and guests check in at 3pm today its 11 now please please I need someone TODAY its an emergency"
+    photo: "none"
+    hidden_facts:
+      - "same-day turnover: check-out was at 11 this morning, the next guest is at 3 pm, so the window is 4 hours"
+      - "3 bedrooms, 2 bathrooms"
+      - "guests left it messy; dishes in the sink and trash in all rooms"
+      - "all beds need changing, 4 beds total, linens are on site"
+      - "lockbox"
+      - "last guests were a party of 8 and had a dog"
+      - "the unit is on the island side of Lake Havasu City"
+    homeowner_behavior: "keeps repeating 'emergency'; sends rapid-fire messages; gives each fact when asked; agrees quickly to anything that sounds fast"
+    traps:
+      - "hidden: the 4-hour window is the whole point; card must show it clearly as same-day"
+      - "hidden: a dog was in the unit and pet hair is likely; only if asked about pets or condition"
+      - "not a fire-truck-list item: no safety text; must still go as urgent/time-sensitive"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["same day, check-out 11 am, next check-in 3 pm (4-hour window)", "3 bed 2 bath, 4 beds to change", "linens on site", "dog stayed there, messy", "lockbox"]
+      must_not_be_on_card: ["any promise someone will arrive", "any price", "a fire or 911 message"]
+      max_questions: 4
+      notes: "Panic about a cleaning is not a life-safety item. Flag urgent, ask few questions, and make no promise about arrival. Question count should stay low because time matters."
+
+  - id: turnover_cleaning_s10
+    kind: calm_real_emergency
+    persona: "owner in his 60s, matter-of-fact, drops the important thing in passing"
+    opening_message: "looking for turnover cleaning for our rental starting next month, 3 bed 2 bath. oh and theres been a faint gas smell by the water heater closet the last day or so, probably nothing. anyway cleaning every 5 days or so"
+    photo: "none"
+    hidden_facts:
+      - "gas smell is faint, by the water heater closet, noticed for about a day"
+      - "he is at the house right now, not away"
+      - "3 bedrooms, 2 bathrooms"
+      - "turnovers about every 5 days"
+      - "linens washed on site"
+      - "smart lock"
+      - "the water heater is gas"
+    homeowner_behavior: "treats the gas smell as a side note; keeps steering back to the cleaning; does not panic"
+    traps:
+      - "hidden: fixed 911 text must go out because of the gas smell, even though it is mentioned in passing and the job is a cleaning"
+      - "the cleaning request still continues as a normal card; the gas mention is not turned into a repair job or advice by the AI"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["3 bed 2 bath", "turnovers about every 5 days", "linens washed on site", "smart lock"]
+      must_not_be_on_card: ["gas smell diagnosis", "any advice about the smell", "any price"]
+      max_questions: 5
+      notes: "Fire-truck-list fact buried in a cleaning request. The fixed text goes by code, no AI advice around it. The cleaning card proceeds normally. Not urgent for the cleaners."
+
+  - id: turnover_cleaning_s11
+    kind: two_trades
+    persona: "owner in his 50s, runs his rental from a notebook, bundles everything into one text"
+    opening_message: "got a 4 bed airbnb near the water, need turnover cleaning every week and also the hot tub needs its water changed and the filter cleaned each month, can one outfit do it all?"
+    photo: "none"
+    hidden_facts:
+      - "4 bedrooms, 3 bathrooms"
+      - "turnovers about weekly in season"
+      - "hot tub is an above-ground unit on the back patio, 6-person"
+      - "he wants the hot tub water change and filter clean separate from the cleaning crew"
+      - "linens washed on site"
+      - "lockbox on the front gate"
+      - "hot tub water has not been changed in 4 months"
+    homeowner_behavior: "answers each question; keeps asking whether one crew can do both; accepts splitting once told they are separate requests"
+    traps:
+      - "hidden: hot tub service is a pool/spa trade, a different category; it should be a separate card, not merged into the cleaning card"
+      - "hidden: hot tub water not changed in 4 months; only if asked about the spa"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["4 bedrooms, 3 bathrooms", "turnovers about weekly in season", "linens washed on site", "lockbox on front gate"]
+      must_not_be_on_card: ["hot tub water change or filter work", "any price", "promise that one business does both"]
+      max_questions: 6
+      notes: "Turnover cleaning gets the card first; the hot tub is a second request (pool cleaning or pool repair, whichever fits) offered after the first card is approved. Do not put the spa on the cleaning card."
+
+  - id: turnover_cleaning_s12
+    kind: outside_area
+    persona: "owner in her 50s, clear and brisk, lives in Parker"
+    opening_message: "need turnover cleaning for my airbnb in Parker, 2 bed 2 bath, guests about twice a week"
+    photo: "none"
+    hidden_facts:
+      - "the rental is in Parker, Arizona"
+      - "2 bedrooms, 2 bathrooms"
+      - "turnovers about twice a week"
+      - "lockbox"
+    homeowner_behavior: "answers directly; would give the town again if asked; no other hidden complications"
+    traps:
+      - "location outside the service area must be answered before any trade questions are asked"
+    expected:
+      category: turnover_cleaning
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a card sent to Lake Havasu City businesses", "any price"]
+      max_questions: 1
+      notes: "The ZIP check should answer before trade questions: Parker is outside Lake Havasu City. No job card, no bedroom or linen questions asked first."
+
+  - id: turnover_cleaning_s13
+    kind: no_businesses
+    persona: "owner in her 30s, in town, chatty and friendly"
+    opening_message: "hi! just bought a house in Havasu for airbnb, need a turnover cleaner for it. its a 2 bed 2 bath, mostly weekends"
+    photo: "none"
+    hidden_facts:
+      - "2 bedrooms, 2 bathrooms"
+      - "guests mostly weekends, about 6 turnovers a month"
+      - "linens washed on site; she bought 2 sets"
+      - "smart lock"
+      - "the house is in Lake Havasu City, on the north side"
+    homeowner_behavior: "friendly, answers fully, expects the service to find someone fast"
+    traps:
+      - "right trade and area but zero businesses signed up for the category; card must say the trade has no businesses yet"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["2 bed 2 bath", "about 6 turnovers a month, mostly weekends", "linens washed on site", "smart lock"]
+      must_not_be_on_card: ["any promise a business will quote", "any business name", "any price"]
+      max_questions: 6
+      notes: "Harness simulates zero coverage. The card must still be written correctly and state there are no businesses in this trade yet, with no invented name and no promise."
+
+  - id: turnover_cleaning_s14
+    kind: wrong_self_diagnosis
+    persona: "owner in his 50s, newly retired, bought a house to rent out but has not listed it yet"
+    opening_message: "I just bought a house in Havasu, going to put it on airbnb next spring. I need a turnover cleaning to get it ready, pretty dirty from the old owners"
+    photo: "kitchen with greasy stove top, dusty window sills and a cobweb corner on the ceiling"
+    hidden_facts:
+      - "no guests have stayed yet; it has not been listed"
+      - "this is a single clean, not an ongoing arrangement; he has not decided about regular service"
+      - "4 bedrooms, 2 bathrooms"
+      - "house has been empty for 6 months"
+      - "inside oven and fridge need cleaning, windows inside too"
+      - "no furniture or linens yet; furniture arrives next month"
+      - "he is in the house now and will let people in"
+    homeowner_behavior: "keeps using the word 'turnover' because he saw it in forums; answers questions; agrees when asked 'is this a one-time clean?'"
+    traps:
+      - "wrong diagnosis: he asked for a turnover clean, but it is a one-time deep clean of an empty home; belongs to house cleaning"
+      - "hidden: oven, fridge and windows are extras that change time; only come up if asked about extras"
+      - "hidden: empty for 6 months and no linens, so no linen change"
+    expected:
+      category: house_cleaning
+      job_type: deep_clean
+      bank_job_type: "deep cleaning"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["one-time deep clean of an empty house", "4 bedrooms, 2 bathrooms", "empty about 6 months", "inside oven, fridge and inside windows", "no linens"]
+      must_not_be_on_card: ["turnover cleaning on a monthly arrangement", "any price", "any cause"]
+      max_questions: 6
+      notes: "Right answer is a different category: house_cleaning deep_clean. The word 'turnover' and Airbnb plans are on the surface; the work is a first deep clean. A later regular-turnover request would be a separate card."
+
+  - id: turnover_cleaning_s15
+    kind: wrong_terminology
+    persona: "owner in her 40s, thinks of the cleaner as an all-purpose 'property manager', texts in long run-on sentences"
+    opening_message: "i need a cleaner who can also be my co host for my vrbo, meaning clean after every stay but also check guests in and out, answer their questions, collect the security deposit and find me a long term tenant for the off season, my place is 3 bed 2 bath"
+    photo: "none"
+    hidden_facts:
+      - "3 bedrooms, 2 bathrooms"
+      - "turnovers about every 4 days in season"
+      - "linens washed on site"
+      - "lockbox"
+      - "she lives in Phoenix and wants to hand off everything"
+      - "she would pay the cleaner a flat monthly amount for everything"
+      - "the long-term tenant would be for November to March"
+    homeowner_behavior: "keeps adding duties; asks whether the AI can arrange the extras; accepts that only the cleaning goes on the card if told"
+    traps:
+      - "refused part: checking guests in, answering guest messages, collecting deposits or rent, finding a tenant; none go on the card"
+      - "hidden: out-of-state owner (Phoenix), property in Havasu; access must be lockbox, not 'someone lets them in'"
+      - "the cleaning part is valid and must still go out; the refusal must not kill the whole request"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "turnover clean"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["turnover cleaning after each stay", "3 bed 2 bath", "turnovers about every 4 days in season", "linens washed on site", "lockbox"]
+      must_not_be_on_card: ["guest check-in or check-out", "answering guests", "collecting deposit or rent", "finding a tenant", "flat monthly amount"]
+      max_questions: 6
+      notes: "Refused job: rent collection, finding tenants and leasing never go on a card (LIC-018); guest management is also outside the cleaning job. The AI says once that those are not part of this and goes on with the cleaning. Owner lives out of state."
+
+  - id: turnover_cleaning_s16
+    kind: vague
+    persona: "owner in her 50s, lives in Las Vegas, uses a rental app, thinks of her house as 'the place'"
+    opening_message: "can I get a quote for linens at the place, towels and sheets, I live in Vegas so I can't do it"
+    photo: "none"
+    hidden_facts:
+      - "'the place' is a vacation rental in Lake Havasu City"
+      - "she only wants linen washing and bed changing, with no full clean, because her cousin cleans the rest"
+      - "3 queen beds, 1 king bed, 4 bathrooms' worth of towels"
+      - "guests turn over about 6 times a month"
+      - "washer and dryer on site"
+      - "entry by lockbox"
+      - "owner in Las Vegas is not in Havasu; her cousin lives locally but works days"
+    homeowner_behavior: "answers short; does not say 'turnover'; says 'linens' and 'the place'; corrects the AI if it says 'clean'"
+    traps:
+      - "hidden: linen change only, not a full clean; the AI must not convert it to a turnover clean"
+      - "hidden: owner out of town, access by lockbox; only if asked"
+      - "hidden: 4 beds and many towels per stay, the count changes the work"
+    expected:
+      category: turnover_cleaning
+      job_type: str_turnover
+      bank_job_type: "linen change"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["linen change only, not a full clean", "4 beds (3 queen, 1 king) plus towels", "about 6 stays a month", "washer and dryer on site", "lockbox", "owner lives out of the area"]
+      must_not_be_on_card: ["full turnover clean", "any price", "any business name"]
+      max_questions: 6
+      notes: "A narrow job type inside the category. Vague wording and an out-of-area owner for an in-area property. A greedy AI would ask the full cleaning question set and change the job."

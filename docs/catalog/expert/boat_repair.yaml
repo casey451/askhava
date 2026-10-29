@@ -1,0 +1,921 @@
+# Ask Hava expert layer: boat_repair (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set boat_repair and trade_kb/trades/boat_dock.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The boat_dock kb file serves boat_repair and boat_detailing. Kept here: engine_repair ("engine repair"),
+#   service_tuneup ("outboard service", firm), electrical_marine ("engine repair", the closest home; the
+#   bank's work question already offers "Electrical or gauges"), trailer ("trailer repair") and detailing,
+#   used here ONLY for its upholstery part ("canvas and upholstery repair"). boat_detailing.yaml uses the
+#   same kb id "detailing" for the full detail package. The id is kept so the scenario file (boat_repair_s12)
+#   and the kb id line up; a cleaner fix is a kb id "canvas_upholstery".
+# - New job type inboard_jet_service: routine service, winterize or de-winterize on an inboard, sterndrive,
+#   jet boat or PWC. The category's only service job type is "outboard service" (firm). A shop that ticks
+#   outboard service may not work on sterndrives, so these ride on "engine repair" and are quoted as a
+#   diagnostic visit (the business can quote the service as the visit fee). Suggest renaming
+#   "outboard service" to "engine service" or adding "inboard and sterndrive service" with firm quotes.
+# - Left out: mobile_service. It is how the work is done, not a job; the bank's location question and
+#   fu_marina_access put it on the card.
+# - boat_lift, dock_repair, dock_new and dock_electrical sit under the refused row "dock, boat lift or
+#   seawall work" so the intake recognizes them and declines without building a boat repair card. They are
+#   construction on real property (A.R.S. 32-1101 covers structures and improvements), need Army Corps
+#   approval for anything in or over the water, and dock power is R-11 work. license_map.yaml grants this
+#   row to no class today, so the card_template on those entries is only the shape a licensed-only card
+#   would take if Casey opens a route. Seawalls have no kb id; they ride on dock_repair.
+# - Boat repair needs no ROC license: a boat is not a building, structure or improvement under A.R.S.
+#   32-1101 [judgment; attorney may confirm, as categories.yaml says]. A city business license may apply.
+# - Fire-truck list: a gas or fuel smell in the bilge, smoke or fire, and a CO alarm on a cabin boat get
+#   the fixed 911 text by code. The kb's blower and ventilation steps are not used (D-436). A tingle or
+#   shock in the water near a dock is not on the list; it appears only as a plain urgent fact.
+# - Bank photos are [p1, p2, p3]. Trailer cards need p6 (trailer tires, lights, hubs). Canvas and seat
+#   cards have no fitting kb photo; suggest a new kb photo "seats, bimini or cover, close up".
+# - Bank make options miss common Havasu engines: Evinrude or Johnson, Honda, Sea-Doo and Kawasaki
+#   (scenarios s03, s06, s10 use them). Suggest adding them or a PWC row.
+# - Every Lake Havasu cost figure is unverified; no marine-specific lead-cost data was found.
+schema: 1
+category: boat_repair
+question_set: boat_repair
+kb_trade: boat_dock
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: s4_ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14); kb cites it for no ROC license on boat work)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1101
+    title: "A.R.S. 32-1101 Definitions: a contractor builds, alters or repairs any building, highway, road, excavation or other structure, project, development or improvement"
+    url: "https://www.azleg.gov/ars/32/01101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: s2_aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (R-11 Electrical for dock power)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: s35_usace
+    title: "[S35] U.S. Army Corps of Engineers, Los Angeles District Regulatory Program (Arizona Branch): a Corps permit is required for work or structures in, over or under navigable waters"
+    url: "https://www.spl.usace.army.mil/Missions/Regulatory/"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: s46_havasu_docks
+    title: "[S46] Lake Havasu dock and lift company answer page: most Lake Havasu frontage is not privately owned and most lifts and docks are at marinas (third-party, context only)"
+    url: "https://www.havasuliftsdocks.com/answers/do-i-need-a-permit-lake-havasu/"
+    checked: "2026-10-29"
+    kind: other
+  - id: azgfd_ais
+    title: "Arizona Game and Fish Department, Aquatic Invasive Species: clean, drain and dry; drain bilge, live wells, ballast and the lower unit; a boat on listed waters 6 or more days in a row must be decontaminated before transport; dry 18 days Nov to Apr or 7 days May to Oct"
+    url: "https://www.azgfd.com/fishing-2/aquatic-invasive-species/"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: blm_ais
+    title: "BLM Lake Havasu Field Office, Aquatic Invasive Species Program guide: boats launched, moored, docked or trailered in Lake Havasu may carry invasive species; impacts include damaging boat motors; intakes are a hiding place"
+    url: "https://www.blm.gov/arizona-lake-havasu-fo/public-room/brochure/aquatic-invasive-species-program-informational-guide"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_28_952
+    title: "A.R.S. 28-952 Brake equipment: a trailer of 3,000 pounds or more must have brakes that apply on their own if it breaks away; under 3,000 pounds gross need not"
+    url: "https://www.azleg.gov/ars/28/00952.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: mercury_bearings
+    title: "Mercury Marine Dockline, How to check and add grease to trailer wheel bearings: hot hubs dunked at launch cool fast and the vacuum can draw water in past the seals; check that hubs are not too hot after towing"
+    url: "https://www.mercurymarine.com/us/en/lifestyle/dockline/quick-tip-how-to-check-and-add-grease-to-trailer-wheel-bearings"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: yamaha_maintenance
+    title: "Yamaha Outboards, Maintenance Matters: engine and lower unit oil at 100 hours or annually; 100-hour kits include the water pump, spark plugs and anodes"
+    url: "https://yamahaoutboards.com/maintenance-matters"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: boattrader_bellows
+    title: "Boat Trader, Engine outdrives: inspect those bellows: the sterndrive bellows seals the U-joints, gimbal bearing and output shaft; factory replacement interval about six years; a cracked boot lets water past the gimbal bearing into the bilge"
+    url: "https://www.boattrader.com/research/engine-outdrives-inspect-those-bellows"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: boatus_ethanol
+    title: "The Log, BoatUS warns of damage ethanol-blended fuel can cause in stored boats: E10 stored for long periods can damage marine engines; phase separation leaves a corrosive water and ethanol layer in the tank"
+    url: "https://www.thelog.com/SNW/Article/BoatUS-warns-of-damage-ethanol-blended-fuel-can-cause-in-stored-boats"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: brp_evinrude
+    title: "Grand View Outdoors, BRP discontinuing Evinrude outboards (May 2020): production ended at once; BRP keeps supplying service parts to customers and dealers"
+    url: "https://www.grandviewoutdoors.com/fishing/brp-discontinuing-evinrude-outboards"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: azsp_weather
+    title: "Arizona State Parks, Lake Havasu State Park weather: average highs 103 F June, 108 F July, 106 F August; monsoon June to September with strong afternoon storms and heavy wind"
+    url: "https://azstateparks.com/lake-havasu/explore/weather"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: kjzz_memorial_day
+    title: "KJZZ, Lake Havasu sees uptick in visitors Memorial Day weekend: Mohave County Sheriff's waterways division reports a huge uptick in boating, weekdays as well as weekends"
+    url: "https://kjzz.org/content/1582321/lake-havasu-sees-uptick-visitors-memorial-day-weekend"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 grains per gallon), linked from the Water Division page"
+    url: "https://www.lhcaz.gov/288/Water"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: superdupr_thumbtack
+    title: "Superdupr (marketing vendor), Is Thumbtack worth it for pros in 2026: Thumbtack about $25 to $75 per lead for most home-service trades, shared with several pros; Angi about $15 to $85 per lead plus a yearly membership (reported, not published prices; marine trades not broken out)"
+    url: "https://superdupr.com/blog/is-thumbtack-worth-it"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Engine type: outboard, sterndrive (I/O), inboard or jet"
+      why: "An outboard is open on the transom; a sterndrive or inboard means working in an engine bay, often with the drive off, and many jobs need the boat out of the water. It sets labor hours before anything else. [judgment]"
+      source: null
+    - driver: "Where the boat is: on a trailer at home, in a marina slip, on a lift, or in a storage lot"
+      why: "A trailer at home is a mobile visit; a slip may mean a haul-out or working from the dock under marina rules; a storage lot may have no water to run the engine on a flush muff. [judgment]"
+      source: null
+    - driver: "What it does now: won't start, overheats, runs rough, electrical, or routine service"
+      why: "Routine service is a set menu a shop can price; a no-start or overheat is diagnosis time first, and the fix is unknown until then. [judgment]"
+      source: null
+    - driver: "How long it sat and when it was last serviced"
+      why: "Ethanol fuel left for months can damage the fuel system, and a skipped 100-hour or yearly service adds the water pump, plugs and gear oil to the job."
+      source: boatus_ethanol
+    - driver: "Make, horsepower and age or hours"
+      why: "Parts and dealer tools differ by make; out-of-production engines such as Evinrude still get service parts but take longer to source and fewer shops take them."
+      source: brp_evinrude
+    - driver: "For trailers: axle count and brakes"
+      why: "A tandem axle doubles the hubs, and a trailer of 3,000 pounds or more must have brakes, so bearing and brake work scales with both."
+      source: ars_28_952
+    - driver: "For canvas and seats: how many pieces, and whether they come off and go to the shop"
+      why: "Shop work on pieces the owner drops off is quicker to price than patterns made on the boat in a slip. [judgment]"
+      source: null
+    - driver: "Spring rush and a fixed trip date"
+      why: "Marine shops book out weeks in spring and before holiday weekends; a hard date narrows who can quote. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Fuel left in the tank for months, with water and ethanol settled at the bottom"
+      how_a_pro_spots_it: "Owner says it last ran months ago or the boat came out of storage; a no-start after sitting"
+      question_or_photo: fu_last_ran
+      source: boatus_ethanol
+    - condition: "Water got inside the engine (boat flipped, swamped, sank at the dock, or a PWC rolled)"
+      how_a_pro_spots_it: "A no-start that began right after an event on the water; damp film in the engine bay photo"
+      question_or_photo: fu_before_stop
+      source: null
+    - condition: "Mussel shells or crust in water intakes and cooling passages on a boat kept in the lake"
+      how_a_pro_spots_it: "Boat lives in a slip or on a lift; shells on the lower unit or hull in the photo; overheat complaint"
+      question_or_photo: location
+      source: blm_ais
+    - condition: "Cracked sterndrive bellows letting water reach the gimbal bearing and the bilge"
+      how_a_pro_spots_it: "Sterndrive answer, older boat, water in the bilge or a roar at the stern; bellows past about six years"
+      question_or_photo: drive
+      source: boattrader_bellows
+    - condition: "Trailer bearings with water in the grease after hot hubs were dunked at the ramp"
+      how_a_pro_spots_it: "Grinding or heat at one wheel; grease flung on the inside of the rim in the trailer photo"
+      question_or_photo: fu_trailer_what
+      source: mercury_bearings
+    - condition: "Marina rules on outside mechanics, gate codes, or a slip where the drive cannot be reached"
+      how_a_pro_spots_it: "Location answer says in the water or on a lift; owner mentions a marina office"
+      question_or_photo: fu_marina_access
+      source: s46_havasu_docks
+    - condition: "Engine out of production, so parts are slow and fewer shops will take it"
+      how_a_pro_spots_it: "Engine label photo or make answer shows Evinrude, Johnson or an older two-stroke"
+      question_or_photo: p1
+      source: brp_evinrude
+    - condition: "Warnings last season the owner did not mention, which turn a routine service into a repair"
+      how_a_pro_spots_it: "Service request with a photo showing white crust or streaks on the powerhead; no service in years"
+      question_or_photo: fu_warnings_last_season
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "electrical_marine (dead battery, only clicks)"
+      might_be: "engine_repair after water got into the engine (flipped, swamped or sank)"
+      one_question: fu_before_stop
+      if_other_route_to: {category: boat_repair, job_type: "engine repair"}
+      source: null
+    - sounds_like: "outboard service (routine tune-up)"
+      might_be: "engine_repair: a warning alarm or loss of power last season the owner thinks is normal"
+      one_question: fu_warnings_last_season
+      if_other_route_to: {category: boat_repair, job_type: "engine repair"}
+      source: null
+    - sounds_like: "engine repair (boat on a lift will not go up or down)"
+      might_be: "boat_lift: the lift motor, cables or cradle, which is refused here"
+      one_question: fu_lift_or_boat
+      if_other_route_to: {category: boat_repair, job_type: "dock, boat lift or seawall work"}
+      source: null
+    - sounds_like: "electrical_marine (no power to the boat at the slip)"
+      might_be: "dock_electrical: the power post or dock outlets, licensed electrical work refused here"
+      one_question: fu_shore_or_boat
+      if_other_route_to: {category: boat_repair, job_type: "dock, boat lift or seawall work"}
+      source: s2_aac_r4_9_103
+    - sounds_like: "canvas and upholstery repair (seats look bad)"
+      might_be: "boat_detailing interior detail: seats that are dirty, stained or faded but not torn"
+      one_question: fu_damage_kind
+      if_other_route_to: {category: boat_detailing, job_type: "interior detail"}
+      source: null
+    - sounds_like: "canvas and upholstery repair (fix the hull and seats)"
+      might_be: "boat_detailing waxing: a dull or chalky hull with no cracks or damage"
+      one_question: fu_damage_kind
+      if_other_route_to: {category: boat_detailing, job_type: "waxing"}
+      source: null
+    - sounds_like: "engine repair (smoke from the engine)"
+      might_be: "white steam with an overheat, which is not on the fire-truck list; gray or black smoke gets the 911 text by code"
+      one_question: fu_steam_or_smoke
+      if_other_route_to: {category: boat_repair, job_type: "engine repair"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Make, model and horsepower", "Serial number range, which dates the engine", "Two-stroke or four-stroke", "Out-of-production makes"]
+      neutral_wording: "Engine label shows a Yamaha 150 horsepower four-stroke."
+    - photo_id: p2
+      reads: ["Boat type and rough length", "Outboard, sterndrive or inboard at the stern", "Trailer, slip or lift", "Cover, bimini top and seats in view", "Shells or crust at the waterline"]
+      neutral_wording: "Side view of a pontoon on a trailer in a driveway with a single outboard."
+    - photo_id: p3
+      reads: ["White crust or orange streaks on the engine", "Damp film or water in the engine bay", "Shells on the lower unit", "Split seams or cracked vinyl on seats"]
+      neutral_wording: "Close-up shows white crusty deposits and orange streaks low on the side of the engine."
+    - photo_id: p6
+      reads: ["Single or tandem axle", "Grease flung on the inside of a rim", "Tire sidewall cracks and tread", "Light condition and wiring", "Brake lines or a surge coupler"]
+      neutral_wording: "Tandem axle trailer; dark grease is spread on the inside of the left rear wheel."
+    - photo_id: p4
+      reads: ["Lift or dock type", "Whether a boat is on the lift", "At a home or a marina"]
+      neutral_wording: "Cable boat lift with a boat resting on it about halfway up."
+    - photo_id: p5
+      reads: ["Dock power post or outlets", "Cords running to the boat"]
+      neutral_wording: "Dock power post with one cord running to the boat."
+  local_factors:
+    - fact: "Summer average highs run 103 F in June, 108 F in July and 106 F in August"
+      effect: "Overheat and battery calls peak in summer, and sun breaks down seat vinyl and canvas thread fast [judgment for the effect]"
+      source: azsp_weather
+    - fact: "Boats launched, moored, docked or trailered in Lake Havasu may carry invasive mussels, which damage boat motors and hide in intakes"
+      effect: "Slip and lift boats can come with shells in the cooling intakes; the card states where the boat lives so a mechanic plans for it"
+      source: blm_ais
+    - fact: "A boat on listed waters 6 or more days in a row must be decontaminated before it is moved, and the lower unit must be drained"
+      effect: "A slip boat hauled to a shop across the state line or to another lake has a step before transport; mechanics who haul boats ask how long it has been in the water"
+      source: azgfd_ais
+    - fact: "Most lifts and docks on the lake are at marinas"
+      effect: "Many repair jobs are in a marina slip, where gate codes, vendor check-in and limits on engine work apply [judgment for the rules]"
+      source: s46_havasu_docks
+    - fact: "Monsoon storms June to September bring strong afternoon wind"
+      effect: "Torn bimini tops, ripped covers and bent frames come in after storms [judgment for the effect]"
+      source: azsp_weather
+    - fact: "Seasonal residents and second-home owners leave boats in storage lots or side yards for months"
+      effect: "Boats come back with old fuel, dead batteries and flat trailer tires, and the owner may be out of town when the mechanic comes [judgment]"
+      source: null
+    - fact: "City tap water is hard, about 19 grains per gallon"
+      effect: "Owners flush outboards with a garden hose at home; some mechanics ask how and how often it is flushed [judgment for the effect]"
+      source: lhc_ccr
+    - fact: "Many HOA neighborhoods limit boats and trailers in driveways"
+      effect: "A mobile mechanic may not be able to work at the home, so the boat goes to a storage lot or shop [judgment]"
+      source: null
+  seasonality:
+    busy: "February to May (spring prep, spring break, the run to Memorial Day, when boating spikes) and summer breakdowns June to September [judgment except the Memorial Day uptick]"
+    slow: "November to January [judgment]"
+    source: kjzz_memorial_day
+
+job_types:
+  - id: engine_repair
+    label: "Engine, outboard, sterndrive or jet ski won't start, overheats, runs rough or loses power"
+    bank_job_type: "engine repair"
+    recurring: false
+    homeowner_phrasings: ["boat won't start", "motor keeps overheating", "outboard bogs down", "jet ski just clicks", "lancha no arranca"]
+    must_know:
+      - fact: "Engine type and make"
+        bank_question: drive
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Sets who can take it, access to the engine and which parts and tools come along. [judgment]"
+        skip_if: "Engine label photo sent"
+      - fact: "What it does now"
+        bank_question: symptom
+        follow_up: fu_crank
+        photo: null
+        why_it_moves_price: "Nothing, clicks, cranks without starting and starts-then-dies are four different starting points for a diagnosis. [judgment]"
+        skip_if: "Homeowner's words already say what happens at the key"
+      - fact: "When it last ran normally and what happened right before"
+        bank_question: null
+        follow_up: fu_last_ran
+        photo: null
+        why_it_moves_price: "Months of sitting points the visit at fuel; a flip or swamping turns a quick visit into a full engine check."
+        skip_if: "Homeowner said when it last ran and what happened"
+      - fact: "Where the boat is and who lets the mechanic in"
+        bank_question: location
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Trailer at home is a mobile visit; a slip may mean a haul-out or marina rules. [judgment]"
+        skip_if: "Answered"
+      - fact: "Hours or age"
+        bank_question: hours_year
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "High hours and older engines change the odds of a long repair and the parts search. [judgment]"
+        skip_if: "Engine label photo dates it or the owner gave it"
+    allowed_follow_ups:
+      - id: fu_last_ran
+        ask_when: "Won't start or runs rough, and the homeowner did not say when it last ran"
+        text_en: "When did the engine last run normally?"
+        text_es: "¿Cuándo funcionó bien el motor por última vez?"
+        options_en: ["This week", "Within the last month", "1 to 6 months ago", "Over 6 months ago"]
+        options_es: ["Esta semana", "En el último mes", "Hace 1 a 6 meses", "Hace más de 6 meses"]
+        card_field: true
+        why: "Time sitting is the first fact a marine mechanic asks for on a no-start; old fuel changes the visit."
+      - id: fu_before_stop
+        ask_when: "The engine quit, won't start or only clicks, and nothing was said about what happened before"
+        text_en: "Did anything happen right before it started, like hitting something, the boat flipping or taking on water, or fueling up?"
+        text_es: "¿Pasó algo justo antes de que empezara, como pegarle a algo, voltearse o entrarle agua a la lancha, o cargar gasolina?"
+        options_en: ["Hit something or ran aground", "Flipped or took on water", "Just fueled or ran out of gas", "Nothing I noticed"]
+        options_es: ["Le pegó a algo o encalló", "Se volteó o le entró agua", "Recién cargó gasolina o se le acabó", "Nada que haya notado"]
+        card_field: true
+        why: "A flip or swamping turns a battery or starter request into an engine inspection; a strike points at the lower unit. [judgment]"
+      - id: fu_crank
+        ask_when: "Won't start, or the homeowner names the battery or starter"
+        text_en: "When you turn the key or press start, what happens?"
+        text_es: "Cuando gira la llave o presiona el botón de arranque, ¿qué pasa?"
+        options_en: ["Nothing at all", "Clicks only", "Turns over but won't start", "Starts, then dies"]
+        options_es: ["Nada", "Solo hace clic", "Da marcha pero no arranca", "Arranca y se apaga"]
+        card_field: true
+        why: "Separates an electrical visit from a fuel or engine visit without naming either. [judgment]"
+      - id: fu_steam_or_smoke
+        ask_when: "Homeowner mentions vapor, steam or smoke from the engine and did not say which"
+        text_en: "Is it white steam, or gray or black smoke?"
+        text_es: "¿Es vapor blanco, o humo gris o negro?"
+        options_en: ["White steam", "Gray or black smoke", "Not sure"]
+        options_es: ["Vapor blanco", "Humo gris o negro", "No sé"]
+        card_field: true
+        why: "Steam with an overheat alarm is a repair card; smoke is on the fire-truck list and code sends the 911 text. [judgment]"
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: ["Gas or fuel smell in the bilge or engine area", "Smoke or fire from the engine or wiring", "CO alarm going off in the cabin"]
+      urgent_capable_triggers: ["Boat is taking on water in the slip", "Trip or rental booked within the next few days"]
+      regular: "Boat is out of the water or tied up dry and no trip is booked"
+    scope_line_en: "20 ft bowrider with a Mercury outboard turns over but will not start; on a trailer at home, last ran in May."
+    scope_line_es: "Lancha bowrider de 20 pies con motor fuera de borda Mercury que da marcha pero no arranca; en remolque en casa, funcionó por última vez en mayo."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (test run, compression, written estimate)", "earliest visit and whether you work in a slip"]
+    card_template: |
+      REQ-<id> | Boat repair | <town>, <general area> | <in the water / on a lift / on a trailer at home / in storage>
+      <one scope line: boat length and type, engine, what it does, where it is>
+      Engine: <outboard / inboard / sterndrive / jet>, <make>, <hours or age band>. Doing: <won't start / overheats / runs rough / electrical>.
+      Last ran normally: <when>. Before it started: <hit something / flipped or took on water / fueled or ran out / nothing noticed>. At the key: <nothing / clicks / turns over / starts then dies>.
+      Access: <open / gate code or call ahead / marina check-in / not said>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's probably old gas.", "Sounds like the impeller.", "That's just a dead battery.", "A diagnosis runs about a hundred and fifty.", "Run the blower before you start it."]
+
+  - id: service_tuneup
+    label: "Outboard service: yearly or 100-hour service, impeller, lower unit oil, get ready after storage"
+    bank_job_type: "outboard service"
+    recurring: false
+    homeowner_phrasings: ["annual service on my outboard", "spring tune-up", "change the impeller", "lower unit oil", "servicio del motor fuera de borda"]
+    must_know:
+      - fact: "Make, horsepower and two-stroke or four-stroke"
+        bank_question: make
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "The service kit and hours are set by make and size; a firm price needs them. [judgment]"
+        skip_if: "Engine label photo sent or owner gave make and horsepower"
+      - fact: "When it was last serviced and what is wanted"
+        bank_question: null
+        follow_up: fu_last_service
+        photo: null
+        why_it_moves_price: "Makers set service at 100 hours or yearly with the water pump in the kit; years skipped add parts."
+        skip_if: "Owner said when and what"
+      - fact: "Any warning or trouble last time out"
+        bank_question: null
+        follow_up: fu_warnings_last_season
+        photo: p3
+        why_it_moves_price: "A warning turns a set-price service into a repair, and the shop wants to know before quoting firm. [judgment]"
+        skip_if: "Owner said it ran fine"
+      - fact: "Where it sits and how the mechanic gets in"
+        bank_question: location
+        follow_up: fu_marina_access
+        photo: null
+        why_it_moves_price: "A storage lot or marina may need a call ahead or have no water for a flush; a trailer at home does not. [judgment]"
+        skip_if: "Owner gave access details"
+    allowed_follow_ups:
+      - id: fu_last_service
+        ask_when: "Service request with no date for the last service"
+        text_en: "When was the engine last serviced?"
+        text_es: "¿Cuándo se le dio servicio al motor por última vez?"
+        options_en: ["Within the last year", "1 to 2 years ago", "Over 2 years ago or never", "Not known"]
+        options_es: ["En el último año", "Hace 1 a 2 años", "Hace más de 2 años o nunca", "No se sabe"]
+        card_field: true
+        why: "Makers set service at 100 hours or yearly; skipped years add the water pump and other kit parts to a firm quote."
+      - id: fu_warnings_last_season
+        ask_when: "Routine service request and the homeowner said nothing about how it ran"
+        text_en: "The last few times out, did any warning beep, light or other trouble come up?"
+        text_es: "Las últimas veces que salió, ¿sonó alguna alarma, prendió alguna luz o hubo otro problema?"
+        options_en: ["No, it ran fine", "Warning beep or light", "Ran rough or lost power", "Not sure"]
+        options_es: ["No, funcionó bien", "Alarma o luz de aviso", "Falló o perdió fuerza", "No sé"]
+        card_field: true
+        why: "Owners often think an alarm is normal; a warning moves the card toward a repair visit. [judgment]"
+      - id: fu_service_items
+        ask_when: "Homeowner asks for service without saying what"
+        text_en: "What do you want done?"
+        text_es: "¿Qué quiere que se le haga?"
+        options_en: ["Yearly or 100-hour service", "Water pump or impeller", "Lower unit oil", "Get it ready after storage", "Prep for storage"]
+        options_es: ["Servicio anual o de 100 horas", "Bomba de agua o impulsor", "Aceite de la pata", "Prepararlo después de guardarlo", "Prepararlo para guardarlo"]
+        card_field: true
+        why: "A firm quote needs a named scope. [judgment]"
+      - id: fu_marina_access
+        ask_when: "Boat is in the water, on a lift or in storage and access was not mentioned"
+        text_en: "Does someone need to let the mechanic in, like a gate code, a call ahead or a marina office check-in?"
+        text_es: "¿Alguien tiene que dejar entrar al mecánico, como un código de portón, avisar antes o registrarse en la oficina de la marina?"
+        options_en: ["No, it's open", "Gate code or call ahead", "Marina office check-in", "Not sure"]
+        options_es: ["No, está abierto", "Código de portón o avisar antes", "Registrarse en la oficina de la marina", "No sé"]
+        card_field: true
+        why: "Marina and storage-lot rules decide which mobile mechanics can quote and when. [judgment]"
+    photos_priority: [p1, p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Trip or rental booked within the next few days"]
+      regular: "Routine service with no trip date"
+    scope_line_en: "Yearly service on a Yamaha 90 four-stroke outboard, impeller and lower unit oil; pontoon on a trailer at a storage lot."
+    scope_line_es: "Servicio anual a un motor fuera de borda Yamaha 90 de cuatro tiempos, impulsor y aceite de la pata; pontón en remolque en un lote de almacenaje."
+    quote_format: firm
+    business_fills: ["price for the service", "what it includes (plugs, gear oil, impeller, anodes, filters)", "earliest day and whether you come to the boat"]
+    card_template: |
+      REQ-<id> | Boat repair | <town>, <general area> | <in the water / on a lift / on a trailer at home / in storage>
+      <one scope line: service wanted, engine make and size, boat type, where it is>
+      Engine: <make>, <horsepower>, <two-stroke / four-stroke / not said>, <hours or age band>. Wants: <service items>.
+      Last service: <within a year / 1 to 2 years / over 2 or never / not known>. Last time out: <ran fine / warning / ran rough / not sure>.
+      Access: <open / gate code or call ahead / marina check-in / not said>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That motor is due for a water pump.", "A 100-hour service runs about five hundred.", "Those white spots are corrosion.", "You can skip the impeller this year."]
+
+  - id: inboard_jet_service
+    new_job_type: true
+    label: "Routine service, winterize or de-winterize on an inboard, sterndrive, jet boat or PWC"
+    bank_job_type: "engine repair"
+    recurring: false
+    homeowner_phrasings: ["service my I/O", "winterize the wake boat", "de-winterize", "sea doo service", "change the oil on my inboard"]
+    must_know:
+      - fact: "Engine type and make"
+        bank_question: drive
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Sterndrive service adds the drive (gear oil, bellows, gimbal bearing); an inboard ski boat has none; a PWC is its own kit. [judgment]"
+        skip_if: "Engine label photo sent"
+      - fact: "Whether the boat can come out of the water"
+        bank_question: location
+        follow_up: fu_out_of_water
+        photo: null
+        why_it_moves_price: "Drive work needs the boat out; a slip-only job limits the scope or adds a haul-out. [judgment]"
+        skip_if: "Boat is on a trailer"
+      - fact: "When it was last serviced"
+        bank_question: null
+        follow_up: fu_last_service
+        photo: null
+        why_it_moves_price: "Bellows run about six years at the factory interval; years without service add parts."
+        skip_if: "Owner said"
+      - fact: "Any warning or trouble last season"
+        bank_question: null
+        follow_up: fu_warnings_last_season
+        photo: null
+        why_it_moves_price: "A warning turns service into a repair visit. [judgment]"
+        skip_if: "Owner said it ran fine"
+    allowed_follow_ups:
+      - fu_last_service
+      - fu_warnings_last_season
+      - fu_marina_access
+      - id: fu_out_of_water
+        ask_when: "Inboard, sterndrive or jet boat that is in the water or on a lift"
+        text_en: "Can the boat come out of the water for this, or does the work need to happen where it is?"
+        text_es: "¿Se puede sacar la lancha del agua para esto, o el trabajo tiene que hacerse donde está?"
+        options_en: ["It can come out on a trailer", "It has to stay where it is", "Not sure"]
+        options_es: ["Se puede sacar en remolque", "Tiene que quedarse donde está", "No sé"]
+        card_field: true
+        why: "Drive and bellows work needs the boat out; the mechanic plans a haul-out or a slip visit. [judgment]"
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: ["Gas or fuel smell in the bilge or engine area", "CO alarm going off in the cabin"]
+      urgent_capable_triggers: ["Water in the bilge that keeps coming back", "Trip or rental booked within the next few days"]
+      regular: "Routine service or storage prep"
+    scope_line_en: "De-winterize and yearly service on a 22 ft wake boat with an inboard; on a trailer at home."
+    scope_line_es: "Quitar la preparación de invierno y servicio anual a una lancha wake de 22 pies con motor interno; en remolque en casa."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee or service price as the fee", "what it covers (oil, filters, impeller, drive oil, bellows check)", "earliest day and whether you work in a slip"]
+    card_template: |
+      REQ-<id> | Boat repair | <town>, <general area> | <in the water / on a lift / on a trailer at home / in storage>
+      <one scope line: service wanted, boat length and type, engine type and make>
+      Engine: <inboard / sterndrive / jet or PWC>, <make>, <hours or age band>. Can come out of the water: <yes / no / not sure>.
+      Last service: <within a year / 1 to 2 years / over 2 or never / not known>. Last time out: <ran fine / warning / ran rough / not sure>.
+      Access: <open / gate code or call ahead / marina check-in / not said>. Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your bellows are shot.", "You don't need to winterize here.", "Sterndrive service is about eight hundred.", "Just change the oil yourself."]
+
+  - id: electrical_marine
+    label: "Boat electrical: batteries, charging, gauges, lights, pumps, stereo"
+    bank_job_type: "engine repair"
+    recurring: false
+    homeowner_phrasings: ["batteries keep dying", "gauges don't work", "bilge pump won't come on", "nav lights out", "stereo quit"]
+    must_know:
+      - fact: "What part of the electrical system"
+        bank_question: work
+        follow_up: fu_what_electrical
+        photo: null
+        why_it_moves_price: "A battery swap is a short visit; a dead gauge cluster or chasing a short is hours of tracing. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Whether the engine starts"
+        bank_question: symptom
+        follow_up: fu_crank
+        photo: null
+        why_it_moves_price: "No-start with clicks may be a starting-circuit job or an engine job; the card says which signs show. [judgment]"
+        skip_if: "Not a starting problem"
+      - fact: "Boat wiring or dock power"
+        bank_question: location
+        follow_up: fu_shore_or_boat
+        photo: p5
+        why_it_moves_price: "Dock power posts and outlets are licensed electrical work and refused here; boat wiring is not."
+        skip_if: "Boat is on a trailer"
+    allowed_follow_ups:
+      - id: fu_what_electrical
+        ask_when: "Homeowner names an electrical problem without saying what"
+        text_en: "What part of the electrical is giving trouble?"
+        text_es: "¿Qué parte de lo eléctrico está fallando?"
+        options_en: ["Batteries or charging", "Gauges or dash", "Lights, pumps or horn", "Stereo or speakers", "Battery charger or shore power plug on the boat"]
+        options_es: ["Baterías o carga", "Medidores o tablero", "Luces, bombas o claxon", "Estéreo o bocinas", "Cargador o enchufe de corriente de la lancha"]
+        card_field: true
+        why: "Each answer is a different visit for a marine electrical tech. [judgment]"
+      - fu_crank
+      - fu_shore_or_boat
+      - fu_marina_access
+    photos_priority: [p1, p2, p5]
+    urgency:
+      fire_dept_triggers: ["Smoke, sparks or a burning smell from wiring, a battery or a switch panel"]
+      urgent_capable_triggers: ["Bilge pump not running and water is in the bilge", "Trip or rental booked within the next few days"]
+      regular: "Gauges, lights or stereo with the boat dry"
+    scope_line_en: "Starting batteries on a 21 ft bowrider keep dying overnight; boat is in a marina slip."
+    scope_line_es: "Las baterías de arranque de una bowrider de 21 pies se descargan de noche; la lancha está en un muelle de marina."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers", "earliest visit and whether you work in a slip"]
+    card_template: |
+      REQ-<id> | Boat repair | <town>, <general area> | <in the water / on a lift / on a trailer at home / in storage>
+      <one scope line: what electrical item, boat length and type, where it is>
+      Trouble with: <batteries or charging / gauges / lights, pumps or horn / stereo / charger or shore plug>. At the key: <nothing / clicks / turns over / starts / not a starting problem>.
+      Boat or dock: <boat wiring / dock power post / not sure>. Access: <open / gate code or call ahead / marina check-in / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You need new batteries.", "Something is draining it.", "Unplug it from the dock.", "Batteries run about two hundred each."]
+
+  - id: trailer
+    label: "Boat trailer lights, bearings, tires, brakes, bunks, winch"
+    bank_job_type: "trailer repair"
+    recurring: false
+    homeowner_phrasings: ["trailer lights don't work", "wheel bearing squealing", "hub is hot", "trailer tire blew", "need new bunks"]
+    must_know:
+      - fact: "What the trailer is doing"
+        bank_question: work
+        follow_up: fu_trailer_what
+        photo: p6
+        why_it_moves_price: "Lights are wiring; a hot or grinding wheel is bearings, hub or spindle; brakes and bunks are separate jobs. [judgment]"
+        skip_if: "Homeowner's words and photo say which"
+      - fact: "Axle count and brakes"
+        bank_question: null
+        follow_up: fu_axles_brakes
+        photo: p6
+        why_it_moves_price: "A tandem doubles the hubs, and trailers of 3,000 pounds or more carry brakes that add to bearing work."
+        skip_if: "Photo shows axles and brakes"
+      - fact: "Whether the boat is on it and where the work happens"
+        bank_question: location
+        follow_up: fu_boat_on_trailer
+        photo: p2
+        why_it_moves_price: "A loaded trailer needs more lifting gear; a trailer that comes to the shop is a shorter job. [judgment]"
+        skip_if: "Owner said"
+    allowed_follow_ups:
+      - id: fu_trailer_what
+        ask_when: "Trailer request without saying what is wrong"
+        text_en: "What is the trailer doing?"
+        text_es: "¿Qué le pasa al remolque?"
+        options_en: ["Lights out or flickering", "Noise or heat at a wheel", "Tire flat, cracked or worn", "Brakes", "Bunks, rollers or frame", "Winch, jack or coupler"]
+        options_es: ["Luces apagadas o parpadean", "Ruido o calor en una rueda", "Llanta ponchada, agrietada o gastada", "Frenos", "Camas, rodillos o chasis", "Malacate, gato o enganche"]
+        card_field: true
+        why: "Six answers, six different jobs for a trailer shop. [judgment]"
+      - id: fu_axles_brakes
+        ask_when: "Wheel, hub, tire or brake trouble and no trailer photo"
+        text_en: "How many axles does the trailer have, and does it have brakes?"
+        text_es: "¿Cuántos ejes tiene el remolque, y tiene frenos?"
+        options_en: ["One axle, no brakes", "One axle with brakes", "Two or more axles, no brakes", "Two or more axles with brakes"]
+        options_es: ["Un eje, sin frenos", "Un eje con frenos", "Dos ejes o más, sin frenos", "Dos ejes o más con frenos"]
+        card_field: true
+        why: "Hub count and brakes set the parts and time; heavier trailers must have brakes under Arizona law."
+      - id: fu_boat_on_trailer
+        ask_when: "Bearing, tire, brake or frame work and the homeowner did not say if the boat is on it"
+        text_en: "Is the boat on the trailer right now?"
+        text_es: "¿La lancha está en el remolque ahorita?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "A loaded trailer changes the lifting gear and the time. [judgment]"
+      - id: fu_shop_or_onsite
+        ask_when: "Trailer request and the homeowner did not say where the work should happen"
+        text_en: "Do you want to bring the trailer to a shop, or have the work done where it is?"
+        text_es: "¿Prefiere llevar el remolque a un taller, o que el trabajo se haga donde está?"
+        options_en: ["Bring it to a shop", "Done where it is", "Either"]
+        options_es: ["Llevarlo a un taller", "Que se haga donde está", "Cualquiera"]
+        card_field: true
+        why: "Shops that don't do mobile work can still quote a drop-off. [judgment]"
+    photos_priority: [p6, p2]
+    urgency:
+      fire_dept_triggers: ["Smoke or flames from a wheel or hub"]
+      urgent_capable_triggers: ["Ramp time or trip booked within the next few days", "Trailer stuck away from home with the boat on it"]
+      regular: "Lights, bunks or tires with no trip date"
+    scope_line_en: "Grinding from the left rear wheel of a tandem axle trailer with surge brakes; 24 ft wake boat on it, in the driveway."
+    scope_line_es: "Ruido de molienda en la rueda trasera izquierda de un remolque de dos ejes con frenos de inercia; lancha wake de 24 pies encima, en la entrada de la casa."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers", "earliest day and whether you come to the trailer"]
+    card_template: |
+      REQ-<id> | Boat repair | <town>, <general area> | <on a trailer at home / in storage / other>
+      <one scope line: what the trailer does, axles and brakes, boat on it or not>
+      Trailer doing: <lights / wheel noise or heat / tire / brakes / bunks or frame / winch or coupler>. Axles: <one / two or more>. Brakes: <yes / no / not sure>.
+      Boat on it: <yes / no>. Work at: <shop / where it is / either>. Photos: <n> (<neutral description>).
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your bearing is gone.", "Don't tow it until it's fixed.", "Pack in some grease and you're fine.", "Bearings are about a hundred a side."]
+
+  - id: detailing
+    label: "Canvas and upholstery repair: seats, cushions, bimini top, boat cover, carpet (repair part of the kb's detailing id)"
+    bank_job_type: "canvas and upholstery repair"
+    recurring: false
+    homeowner_phrasings: ["seat vinyl split", "bimini ripped", "new boat cover", "redo the upholstery", "tapicería de la lancha"]
+    must_know:
+      - fact: "What needs repair: seats, bimini, cover or carpet"
+        bank_question: work
+        follow_up: fu_canvas_what
+        photo: p3
+        why_it_moves_price: "Seat work is foam and vinyl by the piece; canvas is patterns and thread; carpet is by the floor. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "What the damage looks like"
+        bank_question: null
+        follow_up: fu_damage_kind
+        photo: p3
+        why_it_moves_price: "A split seam is a re-stitch; soaked foam means new foam; a dirty seat is a detailing job, not a repair. [judgment]"
+        skip_if: "Close-up photo shows it"
+      - fact: "Whether pieces come off and go to the shop"
+        bank_question: location
+        follow_up: fu_remove_bring
+        photo: p2
+        why_it_moves_price: "Drop-off work is quoted by the piece; work on the boat in a slip adds travel and pattern time. [judgment]"
+        skip_if: "Owner said"
+      - fact: "How many pieces"
+        bank_question: null
+        follow_up: fu_piece_count
+        photo: null
+        why_it_moves_price: "Upholstery is priced by the cushion; count drives the total. [judgment]"
+        skip_if: "Only a bimini or cover"
+    allowed_follow_ups:
+      - id: fu_canvas_what
+        ask_when: "Canvas or upholstery request that does not say which part"
+        text_en: "What needs work?"
+        text_es: "¿Qué necesita arreglo?"
+        options_en: ["Seats or cushions", "Bimini top or frame", "Boat cover", "Carpet or flooring", "More than one of these"]
+        options_es: ["Asientos o cojines", "Toldo bimini o su armazón", "Cubierta de la lancha", "Alfombra o piso", "Más de una de estas"]
+        card_field: true
+        why: "Different shops do seats, canvas and flooring. [judgment]"
+      - id: fu_damage_kind
+        ask_when: "Seats, canvas or hull described as bad, worn or shot without saying how"
+        text_en: "What does it look like?"
+        text_es: "¿Cómo se ve?"
+        options_en: ["Torn or split seams", "Cracked vinyl", "Soft or soaked foam", "Broken frame, snaps or zippers", "Dull, faded or stained only"]
+        options_es: ["Costuras rotas o abiertas", "Vinil agrietado", "Espuma blanda o mojada", "Armazón, broches o cierres rotos", "Solo opaco, desteñido o manchado"]
+        card_field: true
+        why: "Dull or stained only is a detailing job (boat_detailing); the rest is repair. [judgment]"
+      - id: fu_remove_bring
+        ask_when: "Seat or canvas work and the homeowner did not say where the work happens"
+        text_en: "Can the cushions or canvas come off and go to a shop, or does the work need to happen on the boat?"
+        text_es: "¿Se pueden quitar los cojines o la lona y llevarlos a un taller, o el trabajo tiene que hacerse en la lancha?"
+        options_en: ["I can bring them in", "Shop needs to take them off", "Work on the boat", "Not sure"]
+        options_es: ["Yo los llevo", "El taller tiene que quitarlos", "Trabajo en la lancha", "No sé"]
+        card_field: true
+        why: "Decides drop-off pricing versus a visit to the boat. [judgment]"
+      - id: fu_piece_count
+        ask_when: "Seat or cushion work with no count given"
+        text_en: "About how many seats or cushions need work?"
+        text_es: "¿Más o menos cuántos asientos o cojines necesitan arreglo?"
+        options_en: ["1 or 2", "3 to 5", "6 or more", "The whole boat"]
+        options_es: ["1 o 2", "3 a 5", "6 o más", "Toda la lancha"]
+        card_field: true
+        why: "Count drives an upholstery quote. [judgment]"
+    photos_priority: [p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All canvas and upholstery requests"
+    scope_line_en: "Two split seat cushions and a torn bimini seam on a 22 ft pontoon; cushions can be dropped off, boat is in a marina slip."
+    scope_line_es: "Dos cojines de asiento abiertos y una costura rota en el bimini de un pontón de 22 pies; los cojines se pueden llevar, la lancha está en un muelle de marina."
+    quote_format: diagnostic_visit
+    business_fills: ["visit or measure fee", "what it covers (measure, pattern, written estimate)", "earliest day and whether you take drop-offs"]
+    card_template: |
+      REQ-<id> | Boat repair | <town>, <general area> | <in the water / on a lift / on a trailer at home / in storage>
+      <one scope line: what needs repair, boat length and type, drop-off or on the boat>
+      Work on: <seats / bimini / cover / carpet / several>. Looks like: <torn seams / cracked vinyl / soaked foam / broken frame or snaps>. Pieces: <count band>.
+      Drop-off or on the boat: <owner brings / shop removes / on the boat / not sure>. Photos: <n> (<neutral description>).
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The foam is rotted.", "Just recover it, don't replace it.", "A new bimini is about a thousand.", "Use bleach on the stains."]
+
+  # The four entries below are refused in boat repair ("dock, boat lift or seawall work", licensed only, ROC).
+  # The intake recognizes them and declines; no boat repair business gets the card. The card_template is the
+  # shape a licensed-only card would take if a route is opened (see NOTES FOR REVIEW).
+  - id: boat_lift
+    label: "Boat lift or PWC lift repair or install (refused here: licensed only)"
+    bank_job_type: "dock, boat lift or seawall work"
+    recurring: false
+    homeowner_phrasings: ["boat lift won't go up", "lift motor hums", "lift cable frayed", "PWC lift", "elevador de lancha"]
+    must_know:
+      - fact: "Whether the trouble is the lift or the boat on it"
+        bank_question: location
+        follow_up: fu_lift_or_boat
+        photo: p4
+        why_it_moves_price: "A boat on a lift that won't start is boat repair; a lift that won't move is refused here. [judgment]"
+        skip_if: "Homeowner said the lift itself"
+      - fact: "Home dock or marina"
+        bank_question: null
+        follow_up: null
+        photo: p4
+        why_it_moves_price: "Most lifts are at marinas, which have their own rules on outside work."
+        skip_if: "Always refused here; noted only if a licensed route opens"
+    allowed_follow_ups:
+      - id: fu_lift_or_boat
+        ask_when: "Homeowner mentions a lift and it is not clear whether the lift or the boat has the trouble"
+        text_en: "Is the trouble with the lift itself, or with the boat sitting on it?"
+        text_es: "¿El problema es del elevador, o de la lancha que está encima?"
+        options_en: ["The lift (motor, cables, cradle)", "The boat", "Both"]
+        options_es: ["El elevador (motor, cables, cuna)", "La lancha", "Los dos"]
+        card_field: true
+        why: "Lift work is refused here; boat work on a lift is not. [judgment]"
+    photos_priority: [p4]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Boat stuck partway up on the lift"]
+      regular: "Refused here"
+    scope_line_en: "Cable boat lift at a home dock hums but will not raise; 22 ft boat resting on it partway up."
+    scope_line_es: "Elevador de cables en un muelle de casa zumba pero no sube; lancha de 22 pies encima a medio subir."
+    quote_format: diagnostic_visit
+    business_fills: ["none today: licensed-only (ROC) work, no card goes to boat repair businesses"]
+    card_template: |
+      REQ-<id> | Dock or lift work (licensed only) | <town>, <general area> | <home dock / marina / HOA or community dock / not sure>
+      <one scope line: lift type, what it does, boat on it or not>
+      Lift: <cable / hydraulic / PWC / not sure>. Boat on it now: <yes / no>. Photos: <n> (<neutral description>).
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Crank it down by hand.", "Any boat mechanic can fix a lift motor.", "You don't need a permit for that.", "It's just the motor."]
+
+  - id: dock_repair
+    label: "Dock or seawall repair: decking, floats, gangway, cleats (refused here: licensed only)"
+    bank_job_type: "dock, boat lift or seawall work"
+    recurring: false
+    homeowner_phrasings: ["dock floats sinking", "boards rotted on the dock", "gangway broken", "seawall cracked", "muelle"]
+    must_know:
+      - fact: "Whether the request is about the dock or a boat kept there"
+        bank_question: null
+        follow_up: fu_dock_or_boat
+        photo: p4
+        why_it_moves_price: "Dock and seawall work is refused here; a boat at the dock is not. [judgment]"
+        skip_if: "Homeowner named only the dock"
+      - fact: "Any structure in or over the lake needs Corps approval"
+        bank_question: null
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A Corps permit is needed for structures in or over navigable water; Ask Hava never says which permit a job needs."
+        skip_if: "Never asked; context only"
+    allowed_follow_ups:
+      - id: fu_dock_or_boat
+        ask_when: "Homeowner mentions a dock or seawall and it is not clear whether the boat or the structure needs work"
+        text_en: "Is this about the dock or seawall itself, or about a boat kept there?"
+        text_es: "¿Es sobre el muelle o el muro de contención, o sobre una lancha que está ahí?"
+        options_en: ["The dock or seawall", "A boat kept there", "Both"]
+        options_es: ["El muelle o el muro", "Una lancha que está ahí", "Los dos"]
+        card_field: true
+        why: "Structure work is refused here; boat work is not. [judgment]"
+    photos_priority: [p4]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Dock tilted or sinking with a boat tied to it"]
+      regular: "Refused here"
+    scope_line_en: "Floats on one side of a home dock are sinking; dock sits low on that side."
+    scope_line_es: "Los flotadores de un lado de un muelle de casa se están hundiendo; el muelle está bajo de ese lado."
+    quote_format: diagnostic_visit
+    business_fills: ["none today: licensed-only (ROC) work, no card goes to boat repair businesses"]
+    card_template: |
+      REQ-<id> | Dock or lift work (licensed only) | <town>, <general area> | <home dock / marina / HOA or community dock / not sure>
+      <one scope line: what part of the dock or seawall, what it looks like>
+      Part: <decking / floats / gangway / cleats / seawall>. Boat tied to it: <yes / no>. Photos: <n> (<neutral description>).
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You don't need a permit to fix floats.", "Just add more foam under it.", "That's the marina's problem.", "A handyman can do dock boards."]
+
+  - id: dock_new
+    label: "New dock or dock expansion (refused here: licensed only)"
+    bank_job_type: "dock, boat lift or seawall work"
+    recurring: false
+    homeowner_phrasings: ["build a dock behind my house", "add a slip", "make the dock bigger"]
+    must_know:
+      - fact: "Home dock, marina or HOA dock"
+        bank_question: null
+        follow_up: fu_dock_or_boat
+        photo: p4
+        why_it_moves_price: "Most frontage on the lake is not privately owned and most docks are at marinas; who approves the work varies."
+        skip_if: "Always refused here"
+      - fact: "Structure in or over the water"
+        bank_question: null
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A Corps permit is needed for structures in or over navigable water; Ask Hava never says which permit a job needs."
+        skip_if: "Never asked; context only"
+    allowed_follow_ups:
+      - fu_dock_or_boat
+    photos_priority: [p4]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Refused here"
+    scope_line_en: "Wants a new floating dock with one slip behind a lakefront home."
+    scope_line_es: "Quiere un muelle flotante nuevo con un espacio para lancha detrás de una casa frente al lago."
+    quote_format: diagnostic_visit
+    business_fills: ["none today: licensed-only (ROC) work, no card goes to boat repair businesses"]
+    card_template: |
+      REQ-<id> | Dock or lift work (licensed only) | <town>, <general area> | <home / marina / HOA or community / not sure>
+      <one scope line: new dock or addition, rough size>
+      Size: <homeowner's words>. Photos: <n> (<neutral description>).
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You can build a dock there.", "The city won't allow that.", "Docks run about twenty thousand.", "Just get the BLM permit."]
+
+  - id: dock_electrical
+    label: "Dock power, lights, shore power posts and outlets (refused here: licensed electrical work)"
+    bank_job_type: "dock, boat lift or seawall work"
+    recurring: false
+    homeowner_phrasings: ["no power at the dock", "dock lights out", "shore power post", "outlet on the dock trips"]
+    must_know:
+      - fact: "Dock power or boat wiring"
+        bank_question: location
+        follow_up: fu_shore_or_boat
+        photo: p5
+        why_it_moves_price: "Dock power is R-11 electrical work, refused here; the boat's own wiring is boat repair."
+        skip_if: "Homeowner said the boat's own wiring"
+      - fact: "Home dock or marina"
+        bank_question: null
+        follow_up: null
+        photo: p5
+        why_it_moves_price: "Marina power posts belong to the marina. [judgment]"
+        skip_if: "Always refused here"
+    allowed_follow_ups:
+      - id: fu_shore_or_boat
+        ask_when: "Power trouble at a slip or dock and it is not clear whether the dock or the boat has it"
+        text_en: "Is the trouble with the power post or outlets on the dock, or with the wiring on the boat?"
+        text_es: "¿El problema es del poste de corriente o los enchufes del muelle, o del cableado de la lancha?"
+        options_en: ["Power post or dock outlets", "Wiring on the boat", "Not sure"]
+        options_es: ["Poste de corriente o enchufes del muelle", "Cableado de la lancha", "No sé"]
+        card_field: true
+        why: "Dock power is licensed electrical work and refused here; boat wiring is not."
+    photos_priority: [p5, p4]
+    urgency:
+      fire_dept_triggers: ["Sparking, smoking or burning at a dock outlet, power post or cord"]
+      urgent_capable_triggers: ["Someone felt a tingle or shock in the water near the dock"]
+      regular: "Refused here"
+    scope_line_en: "Outlet on the home dock power post trips when the boat charger is plugged in."
+    scope_line_es: "El enchufe del poste de corriente del muelle de la casa se bota cuando se conecta el cargador de la lancha."
+    quote_format: diagnostic_visit
+    business_fills: ["none today: licensed electrical (R-11) work, no card goes to boat repair businesses"]
+    card_template: |
+      REQ-<id> | Dock power (licensed only) | <town>, <general area> | <home dock / marina / HOA or community dock / not sure>
+      <one scope line: what has no power or trips, where>
+      Trouble at: <power post / dock outlet / dock lights / not sure>. Photos: <n> (<neutral description>).
+      Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Reset the breaker on the post.", "It's your boat charger.", "Keep the kids out of the water.", "Any boat mechanic can fix dock power."]
+
+business_side:
+  how_they_get_customers: ["Word of mouth at marinas, launch ramps and storage lots [judgment]", "Dealer service departments and the brands they are certified on [judgment]", "Google Maps listing and reviews [judgment]", "Local Facebook groups and boating forums [judgment]", "Truck signage and mobile service at storage lots [judgment]", "Home-service marketplaces such as Thumbtack"]
+  customer_acquisition_benchmarks:
+    - channel: "Thumbtack (most home-service trades; marine work not broken out)"
+      figure: "About $25 to $75 per lead, sent to several pros; marketing-vendor estimate, not a published price"
+      source: superdupr_thumbtack
+      unverified: false
+    - channel: "Angi (most home-service trades)"
+      figure: "About $15 to $85 per lead plus a yearly membership of a few hundred dollars; leads go to several contractors; marketing-vendor estimate"
+      source: superdupr_thumbtack
+      unverified: false
+    - channel: "Lake Havasu marine mechanics and canvas shops specifically"
+      figure: "No local or marine-specific figures found; most local work appears to come by word of mouth and marina staff"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a request five other mechanics also got", "Owners who want a price over the phone for an engine no one has heard run", "Boats that are out of the area or in a slip they can't get to", "Monthly fees in the slow winter months", "Being ranked or reviewed by the site itself"]
+  what_makes_a_lead_worth_paying_for: ["Make, horsepower and engine type up front, ideally a label photo", "Where the boat sits and how to get in", "When it last ran and what happened before it quit", "Pay only on the pick, nothing monthly", "A real date the boat is needed"]
+  their_words: ["impeller", "water pump", "lower unit", "gear lube", "powerhead", "compression", "sterndrive", "I/O", "outdrive", "bellows", "gimbal bearing", "raw water", "closed cooling", "fogging", "winterize", "de-winterize", "haul-out", "flush muffs", "anodes", "surge brakes", "bunks", "Bearing Buddy", "bimini", "marine vinyl", "snaps"]
+  signup_objections:
+    - objection: "I can't quote an engine I haven't heard run."
+      answer: "You don't have to. Engine repair cards take a visit fee, and you say what the visit covers. Each card gives the make, engine type, where the boat sits, when it last ran and what happened before it quit."
+    - objection: "I'm booked six weeks out every spring. Why would I pay for more work?"
+      answer: "You pick the job types you want and change them any time. If you only want outboard service in the fall, tick that. You pay nothing unless a homeowner picks your quote."
+    - objection: "Shared request sites send the same boat to five mechanics."
+      answer: "Every mechanic who takes that job type sees the card, and the homeowner picks one quote. Only the picked business pays, and only that business gets her name and address."
+    - objection: "I only work on Mercury and Yamaha."
+      answer: "The make is on every engine card, so you can skip the rest. Nothing is charged for a card you don't quote."
+    - objection: "What does it cost?"
+      answer: "Nothing to join and nothing monthly. You pay one set introduction fee when you confirm a pick: $25, $75 or $199 by job size. A visit-fee quote pays $25."
+    - objection: "Half these boats are in marina slips I can't work in."
+      answer: "The card says where the boat sits and whether there is a gate code or marina check-in, so you can pass on the ones you can't reach."
+    - objection: "Will you rank me against the other shops?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "What if the owner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Do you send dock and lift jobs too?"
+      answer: "Not to boat repair businesses. Dock, lift and seawall work is held for licensed contractors, so boat repair cards are boat, engine, trailer and canvas work only."
+  quote_tips_for_card: ["Say what the visit fee covers and whether it comes off the repair", "For outboard service, list what the price includes: plugs, gear oil, impeller, anodes, filters", "Say whether you work in marina slips or only on trailers and at the shop", "Give your earliest day; spring wait times matter to owners with a trip booked", "If you need a label photo or a photo of something else, say which"]

@@ -1,0 +1,443 @@
+category: electrical
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: electrical_s01
+    kind: vague
+    persona: "man in his 50s, texting between jobs, says 'weird' and 'the power thing'"
+    opening_message: "power is acting weird in the back of the house"
+    photo: "none"
+    hidden_facts:
+      - "lights in the two back bedrooms dim for a second and come back, about once an hour"
+      - "front of the house and the kitchen are normal"
+      - "started about two weeks ago, after the monsoon storm"
+      - "no buzzing, no hot spots, no burning smell, nothing sparks"
+      - "house built in 1979, original panel in the garage"
+      - "he has not touched the panel or reset anything"
+    homeowner_behavior: "answers one thing per reply; says 'weird' instead of describing; gives a fact only when a question clearly calls for it; gets short after 5 questions"
+    traps:
+      - "hidden: it is only the back bedrooms, not the whole house; where it happens changes whether this is one circuit or the whole service"
+      - "hidden: started after a storm; only said if asked when it began"
+      - "the safety question must be asked in the fixed danger form (sparking, hot, buzzing, smoking) and he answers no, so no 911 text"
+    expected:
+      category: electrical
+      job_type: flicker_dim
+      bank_job_type: "breaker trips"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["lights dim and return in the two back bedrooms", "about once an hour", "front of house and kitchen normal", "began about two weeks ago, after a storm", "home built 1979", "no sparking, heat, buzzing or smoke"]
+      must_not_be_on_card: ["any cause", "loose connection", "bad breaker", "utility problem", "any price", "safe to use"]
+      max_questions: 5
+      notes: "Vague opener could be flicker, partial power or a utility issue. The card needs where and how often, not a guess. The AI must not tell him to call the utility or check anything."
+
+  - id: electrical_s02
+    kind: wrong_terminology
+    persona: "woman in her 40s, confident but uses the wrong words, writes in run-ons"
+    opening_message: "the little reset button plug in my garage keeps popping out and wont stay in, i think the fuse is blown on it, need someone to put a new fuse in"
+    photo: "outlet with two small buttons (test and reset) in the middle of the faceplate, reset button sitting out"
+    hidden_facts:
+      - "it is a GFCI outlet, not a fuse"
+      - "it trips within a minute of her plugging in the chest freezer"
+      - "the freezer is full of meat, so she wants it fixed the same day"
+      - "the garage is detached, about 40 feet from the house"
+      - "the outlet is on an outside wall and the garage door seal is old"
+      - "she does not know whether other outlets in the garage go dead when it trips"
+      - "home built in 1998"
+    homeowner_behavior: "uses 'fuse', 'plug' and 'breaker' interchangeably; answers fully when asked; mentions the freezer only if asked what is plugged in"
+    traps:
+      - "terminology: she says fuse, but the photo and description show a GFCI outlet; the card records the device from the photo in plain words, not 'fuse'"
+      - "hidden: the freezer is the load and has food in it; a business would want that flagged as time-sensitive"
+      - "hidden: detached garage fed from the house changes the quote (feed, sub-panel); only said if asked how the garage gets its power or whether it has its own panel"
+    expected:
+      category: electrical
+      job_type: breaker_tripping
+      bank_job_type: "breaker trips"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["reset-style outlet in garage keeps popping out", "trips soon after freezer is plugged in", "freezer full of food", "detached garage", "home built 1998"]
+      must_not_be_on_card: ["fuse", "freezer is bad", "overloaded", "any price", "any cause"]
+      max_questions: 5
+      notes: "She names the wrong part. The AI should write the symptom and the photo-visible device without correcting her in a lecturing way or adding a cause. The food-at-risk detail makes it urgent for businesses."
+
+  - id: electrical_s03
+    kind: wrong_self_diagnosis
+    persona: "man in his 60s, handy, read a few forums"
+    opening_message: "I need a new 20 amp breaker, the one for the kitchen keeps tripping. Have it replaced, I already know that is the problem"
+    photo: "panel with the door open; one breaker in the off-middle position, a handwritten label reading 'kitchen'"
+    hidden_facts:
+      - "the breaker trips only when the microwave and the toaster oven run together"
+      - "it has done this for about a year, getting more frequent in summer"
+      - "the breaker feels slightly warm when he touches it after a trip"
+      - "kitchen was remodeled by a previous owner, new outlets added along the counter"
+      - "home built in 1986"
+      - "a second kitchen breaker has never tripped"
+    homeowner_behavior: "insists on his own diagnosis; answers factual questions correctly but steers back to 'just replace the breaker'; will say the warm breaker only if asked about heat"
+    traps:
+      - "wrong diagnosis: he wants breaker replacement; the card must record the symptom and what runs when it trips, not 'replace breaker'"
+      - "hidden: warm breaker after a trip is a safety-adjacent fact a business would want, but it is not sparking or burning so no 911 text"
+      - "hidden: previous owner's remodel means unknown wiring; only surfaces if asked who did the kitchen work"
+    expected:
+      category: electrical
+      job_type: breaker_tripping
+      bank_job_type: "breaker trips"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["kitchen breaker trips", "when microwave and toaster oven run together", "about a year, worse in summer", "breaker warm to touch after trip", "kitchen remodeled by previous owner", "home built 1986"]
+      must_not_be_on_card: ["replace the breaker", "bad breaker", "overloaded circuit", "needs rewiring", "any price"]
+      max_questions: 5
+      notes: "A forum-informed homeowner dictates the fix. The AI must record his request as his words at most ('he asks for a new breaker') and keep the card to observable facts. Tests that 'warm' does not flip fire_dept_text."
+
+  - id: electrical_s04
+    kind: misleading_photo
+    persona: "woman in her 30s, new homeowner, anxious, types fast"
+    opening_message: "my outlet in the hallway looks burnt, I just bought the house and the inspector didnt say anything. pic attached. want it checked"
+    photo: "outlet cover plate and outlet face with an even tan-yellow discoloration; no black marks around the slots, no melted plastic, a faint paint smear along one edge"
+    hidden_facts:
+      - "the discoloration looks like age and a paint smear; there is no black or brown scorch at the slots"
+      - "the outlet works; she plugged a phone charger in this morning and it charged"
+      - "it is not warm, makes no noise, nothing smells like burning"
+      - "no sparks have ever been seen"
+      - "house built in 1974"
+      - "she would also like to know if the other outlets in the hall are the same type, but has not looked"
+    homeowner_behavior: "worried; answers danger questions plainly when asked; escalates her word choice ('burnt') but gives the real details when asked one at a time"
+    traps:
+      - "misleading: she says burnt, the photo shows discoloration with no scorching; the card must say what is visible, not burnt and not fine"
+      - "the danger question is answered no, so fire_dept_text is false despite the word 'burnt'"
+      - "hidden: 1974 home may have older wiring; asking home age matters for the quote"
+    expected:
+      category: electrical
+      job_type: outlet_switch
+      bank_job_type: "outlet repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["hallway outlet with tan-yellow discoloration", "outlet works", "not warm, no noise, no burning smell, no sparks", "home built 1974", "owner asks for it to be checked"]
+      must_not_be_on_card: ["burnt outlet", "safe", "unsafe", "fire hazard", "needs replacing", "any price"]
+      max_questions: 5
+      notes: "The text says burnt, the photo does not show scorching. The AI should rely on the answers to the danger question and the photo, not the word. Avoids a false 911 text and a false reassurance."
+
+  - id: electrical_s05
+    kind: no_photo
+    persona: "man in his 40s, at work all day, wants a quote he can approve tonight"
+    opening_message: "want to add a 240 outlet in my garage for a welder and a couple regular outlets. no pics im at work til 6, just need a ballpark"
+    photo: "none"
+    hidden_facts:
+      - "welder needs a 50 amp 240 volt outlet, he thinks"
+      - "garage is attached, panel is on the opposite side of the house, about 60 feet of run"
+      - "house is stucco with a finished garage, drywall up"
+      - "panel is a 100 amp main and he thinks it is nearly full"
+      - "he plans to also add an EV charger next year"
+      - "home built in 1992"
+      - "he can send photos after 6 but only if asked"
+    homeowner_behavior: "wants speed; declines photos at first; will agree to send a panel photo later if the AI explains it only helps businesses quote; answers questions in one line"
+    traps:
+      - "no photo at start: AI should ask once for a panel photo and offer to continue without it"
+      - "hidden: nearly full 100 amp panel with a long run could mean a panel upgrade or sub-panel; he never connects this to the quote"
+      - "hidden: finished drywall and stucco change the labor; only said if asked about the wall and the path"
+      - "he asks for a ballpark: the AI gives no price"
+    expected:
+      category: electrical
+      job_type: new_circuit
+      bank_job_type: "new circuit"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["new 240 volt welder outlet and two regular outlets in attached garage", "panel on opposite side of house, about 60 feet", "100 amp main, may be nearly full", "finished drywall in garage, stucco house", "possible EV charger next year", "home built 1992", "no photos yet"]
+      must_not_be_on_card: ["ballpark", "any price", "needs a panel upgrade", "50 amp is correct", "any cause"]
+      max_questions: 5
+      notes: "Asks for a price and gives no photos. The card should go out with the facts stated and a note that photos are pending. The load (welder plus future EV) is the hidden quote driver."
+
+  - id: electrical_s06
+    kind: elderly
+    persona: "woman in her 80s, texts slowly with full stops and capital letters, polite, nervous about strangers in the house"
+    opening_message: "Hello. My smoke alarms in the hall and bedroom keep beeping at night. My late husband put in new batteries and it did not stop. I cannot get up on a ladder."
+    photo: "ceiling smoke alarm with a small green light and a white label, hall ceiling about nine feet up"
+    hidden_facts:
+      - "there are six alarms, all wired to the house with a cable and all linked, per her grandson who set it up years ago"
+      - "when one beeps, a chirp comes from all of them, once a minute"
+      - "there is no smoke, no fire, no alarm blaring, only a short chirp"
+      - "the alarms are about 12 years old"
+      - "ceilings are nine feet in the hall and vaulted in the living room"
+      - "she lives alone; her grandson can be there Saturday to let someone in"
+      - "she does not know if there is a carbon monoxide alarm"
+    homeowner_behavior: "polite, slow, answers exactly what is asked; will not volunteer the grandson; may worry about cost and say she is on a fixed income"
+    traps:
+      - "must not read 'beeping at night' as an alarm going off; she answers that there is no smoke and it is a chirp, so fire_dept_text false"
+      - "hidden: hardwired and interconnected alarms are not handyman work; the card must not suggest a battery swap"
+      - "hidden: six linked alarms, 12 years old, vaulted ceiling changes scope and ladder needs"
+      - "hidden: access through the grandson Saturday"
+    expected:
+      category: electrical
+      job_type: smoke_alarm
+      bank_job_type: "hardwired smoke alarm"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["six hardwired, interconnected smoke alarms", "chirp about once a minute from all", "about 12 years old", "nine foot hall ceilings, vaulted living room", "no smoke or fire", "owner cannot use a ladder", "grandson can give access Saturday"]
+      must_not_be_on_card: ["change the batteries", "replace all six", "end of life", "any price", "any cause"]
+      max_questions: 5
+      notes: "An elderly person who mentions a ladder. Beeping alarms look like the fire-truck list but are not smoke or fire. The AI should stay patient, ask short single questions and not suggest she fix it herself."
+
+  - id: electrical_s07
+    kind: tenant
+    persona: "man in his 20s, renter in a duplex, texts casually, no idea how the house is wired"
+    opening_message: "hey so the outlets in my bedroom and bathroom stopped working yesterday. i rent the place, landlord said to find an electrician and send him the bill. can u do that"
+    photo: "bedroom wall outlet with a lamp plugged in and the lamp off; small hallway panel not visible"
+    hidden_facts:
+      - "he rents half of a duplex built in the early 1970s"
+      - "bedroom and bathroom outlets are dead; the lights in those rooms work"
+      - "he reset a breaker in a closet panel once and nothing changed"
+      - "the bathroom outlet has two buttons in the middle"
+      - "the landlord is out of state and has told him by text that he is allowed to hire someone and the landlord will pay"
+      - "he is home most evenings and the neighbor in the other half has the key to the panel closet"
+      - "he does not know whether the panel is shared with the other half"
+    homeowner_behavior: "casual, answers what is asked, forgets details until prompted; says 'the landlord said it's fine' without being asked for proof"
+    traps:
+      - "tenant: the card should say renter and landlord-authorized, with the landlord as payer, without making any legal claims"
+      - "hidden: bathroom device with buttons and dead outlets together could be a tripped protective device; the card records it, never states it as the cause"
+      - "hidden: shared panel with the other half of the duplex and access through the neighbor; changes scheduling"
+      - "hidden: breaker reset once had no effect; must be on the card"
+    expected:
+      category: electrical
+      job_type: partial_power
+      bank_job_type: "outlet repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter in duplex", "landlord out of state, says tenant may hire and landlord will pay", "bedroom and bathroom outlets dead, lights work", "one breaker reset with no change", "duplex built early 1970s", "panel access through neighbor", "may share panel with other half"]
+      must_not_be_on_card: ["tripped GFCI", "landlord is obligated", "tenant rights", "any price", "any cause"]
+      max_questions: 6
+      notes: "Tenant authority and payer must be on the card. The hidden bathroom device with buttons is a classic cause that the AI must not name. No legal advice about who must pay."
+
+  - id: electrical_s08
+    kind: spanish
+    persona: "mujer de 40 años, mensajes cortos en español, sin acentos a veces"
+    opening_message: "buenas, se me fue la luz en la cocina y el breaker no se queda arriba, lo subo y se baja otra vez. necesito alguien urgente porque tengo el refri ahi"
+    photo: "panel de breakers abierto, un breaker abajo marcado 'cocina' con letra a mano"
+    hidden_facts:
+      - "only the kitchen outlets and the kitchen lights are out; the rest of the house has power"
+      - "the breaker drops again right away every time she turns it on"
+      - "she had the microwave running when it first went out"
+      - "refrigerator is plugged into a kitchen outlet and is warm inside"
+      - "it is a manufactured home built in 1976"
+      - "she does not smell burning and nothing sparked or buzzed"
+      - "she speaks Spanish, her husband speaks some English and can be there after 5"
+      - "the panel is on the outside of the home near the back door"
+    homeowner_behavior: "answers in Spanish; one idea per reply; understands simple questions; will say the fridge is warm only if asked what is affected"
+    traps:
+      - "must stay in Spanish and write the card in plain bilingual-safe terms"
+      - "hidden: manufactured home built 1976 changes the quote (older wiring and panel, special rules for alterations)"
+      - "hidden: refrigerator warming makes it urgent for a business"
+      - "hidden: breaker snapping back immediately; no sparks, burning or buzzing, so no 911 text"
+    expected:
+      category: electrical
+      job_type: partial_power
+      bank_job_type: "breaker trips"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["kitchen outlets and lights without power", "breaker drops again as soon as it is turned on", "microwave was running when it went out", "refrigerator in the kitchen is warming", "manufactured home built 1976", "panel on outside of home near back door", "Spanish speaker; husband speaks some English after 5"]
+      must_not_be_on_card: ["short circuit", "bad breaker", "overloaded", "any price", "any cause", "advice on food safety"]
+      max_questions: 5
+      notes: "Spanish with urgency. A breaker that will not stay on is easy to over-read as sparking. The danger question is answered no. The home type and food at risk are the hidden facts."
+
+  - id: electrical_s09
+    kind: panicked_non_emergency
+    persona: "woman in her 50s, all caps and exclamation points, catastrophizing"
+    opening_message: "HELP the lights are flickering EVERY time my dryer starts!!! I think the whole house is going to burn down. need an electrician ASAP"
+    photo: "none"
+    hidden_facts:
+      - "lights dim for about two seconds when the electric dryer starts, then return to normal"
+      - "it happens in the whole house, not just one room"
+      - "it also happens a little when the microwave runs"
+      - "no sparks, no burning smell, no smoke, no buzzing, nothing hot to the touch"
+      - "the house is from 1981 and she thinks the main panel is original"
+      - "the dryer plug is a thick four-prong cord, an electrician put in the dryer outlet last year"
+      - "she has already turned the dryer off and is not using it"
+    homeowner_behavior: "panics and uses capitals; calms down and answers precisely when asked one plain question; reports the absence of sparks and smell only when asked directly"
+    traps:
+      - "no sparks, no smell, no smoke and no buzzing: fire_dept_text false despite 'burn down'"
+      - "hidden: whole house dims, not one room; this changes the scope a business would expect"
+      - "hidden: dryer outlet added last year by an electrician; card should record it, not infer a cause"
+      - "her panic does not make the job urgent; nothing in the facts does, so urgent stays false"
+    expected:
+      category: electrical
+      job_type: flicker_dim
+      bank_job_type: "breaker trips"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["lights in the whole house dim for about two seconds when electric dryer starts", "slight dimming when microwave runs", "no sparks, burning smell, smoke, buzzing or heat", "home built 1981, panel believed original", "dryer outlet added by an electrician last year", "owner has stopped using dryer"]
+      must_not_be_on_card: ["fire hazard", "burn down", "dangerous", "safe to use", "undersized service", "any price", "any cause"]
+      max_questions: 5
+      notes: "Fear language without any fire-truck-list fact. The AI must not send or imply a 911 message and must not reassure either. Keep the card calm and factual."
+
+  - id: electrical_s10
+    kind: calm_real_emergency
+    persona: "man in his 60s, relaxed, talks about the fan job first and the serious thing last"
+    opening_message: "looking for a quote to hang a new ceiling fan in my living room, already have the fan. oh and by the way the outlet by the dining room table has a burning plastic smell when I run the space heater, been doing it for a few days"
+    photo: "ceiling fan box on the floor; dining room outlet with a slightly dark ring at the lower slot"
+    hidden_facts:
+      - "the burning plastic smell comes from the outlet itself, not the heater"
+      - "the outlet cover is warm to the touch after the heater has run an hour"
+      - "the space heater is a 1500 watt model plugged straight in, no power strip"
+      - "he is still using the outlet every evening"
+      - "the fan install location has an existing light fixture and a single switch"
+      - "ceiling in the living room is vaulted, about 12 feet at the fan location"
+      - "home built in 1969"
+    homeowner_behavior: "relaxed; treats the smell as a side note; answers questions about the fan quickly; confirms the smell when asked about it"
+    traps:
+      - "the burning smell at an outlet is on the fire-truck list; the 911 text must go even though he is calm and the main request is a fan"
+      - "the burning outlet must be a separate or leading item on the card, not buried under the fan job"
+      - "hidden: vaulted 12 foot ceiling and a fan box rating for the fan job; hidden: 1969 home"
+      - "the AI must not tell him to stop using the outlet; only the fixed 911 text is sent"
+    expected:
+      category: electrical
+      job_type: burning_sparks
+      bank_job_type: "outlet repair"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["burning plastic smell at dining room outlet when space heater runs", "outlet cover warm after an hour", "dark ring at lower slot in photo", "still in use", "also wants new ceiling fan installed on existing light fixture", "vaulted 12 foot ceiling", "home built 1969"]
+      must_not_be_on_card: ["stop using it", "turn off the breaker", "fire risk", "faulty outlet", "any price", "any cause"]
+      max_questions: 5
+      notes: "Real emergency buried after a routine request. Only the code-sent 911 text is allowed; no advice from the AI. Card leads with the burning outlet; the fan can be a second job on the same card."
+
+  - id: electrical_s11
+    kind: two_trades
+    persona: "man in his 40s, direct, tired, the house is hot"
+    opening_message: "every time the AC kicks on the breaker trips and the house is already 90. is it the breaker or the AC. need somebody today"
+    photo: "breaker panel with the door open; a double-width breaker in the off position; separate outdoor unit with the disconnect box cover on"
+    hidden_facts:
+      - "the double breaker marked 'A/C' trips a few seconds after the outdoor unit starts"
+      - "indoor fan runs; the outdoor unit hums briefly then the breaker trips"
+      - "the AC is about 14 years old, a 3-ton unit on a pad at the side of the house"
+      - "the AC was working last week, no recent work done"
+      - "he reset the breaker three times today"
+      - "the house is 90 degrees inside, a dog and a 70-year-old parent are home"
+      - "no burning smell, sparks or smoke; breaker handle feels warm, nothing else does"
+      - "home built in 2004"
+    homeowner_behavior: "wants to know whose job it is; answers facts quickly; refuses to let the AI choose for him but accepts that the card goes out"
+    traps:
+      - "two trades: breaker tripping when the compressor starts spans electrical and AC repair; the card goes electrical first (his stated symptom is the breaker) and the AC repair is the second card"
+      - "the AI must not answer 'is it the breaker or the AC'"
+      - "hidden: three resets today; relevant to what a business sees on arrival"
+      - "hidden: warm breaker handle, no sparks or burning, so no 911 text"
+      - "hidden: indoor heat and a parent at home; urgent flag"
+    expected:
+      category: electrical
+      job_type: breaker_tripping
+      bank_job_type: "breaker trips"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["AC breaker trips a few seconds after outdoor unit starts", "indoor fan runs, outdoor unit hums briefly", "AC about 14 years old, 3 ton", "was working last week", "reset three times today", "house at 90 degrees, parent at home", "home built 2004"]
+      must_not_be_on_card: ["compressor", "capacitor", "bad breaker", "AC is at fault", "any price", "any cause"]
+      max_questions: 6
+      notes: "Second card: hvac_repair (job type AC not cooling). Homeowner asks the AI to pick the cause; it must decline to diagnose. A warm breaker handle is not a burning outlet or panel."
+
+  - id: electrical_s12
+    kind: outside_area
+    persona: "man in his 50s, lives just outside town, direct"
+    opening_message: "I'm in Parker, AZ. Need an electrician to upgrade my panel from 100 to 200 amp. do you cover Parker?"
+    photo: "none"
+    hidden_facts:
+      - "home is in Parker, Arizona, not Lake Havasu City"
+      - "he wants to go from 100 amp to 200 amp"
+      - "home built in 1988"
+      - "adding a mini-split and hot tub next year"
+      - "panel is outside on the stucco wall next to the meter"
+    homeowner_behavior: "asks about coverage first; answers location and trade questions freely; gives ZIP when asked"
+    traps:
+      - "the ZIP/area check must answer before any trade question; no panel photo ask, no home-age question, no card"
+      - "the AI must not recommend a Parker business or any outside option"
+    expected:
+      category: electrical
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["any quote request sent", "any business named", "any price"]
+      max_questions: 1
+      notes: "Outside the service area. One short location answer before trade questions. Even a real panel job does not get a card. Everything past the ZIP check is a failure."
+
+  - id: electrical_s13
+    kind: no_businesses
+    persona: "woman in her 60s, selling her home, working from a home inspection report"
+    opening_message: "my home inspection says i have aluminum wiring and the buyer wants it dealt with before closing. need quotes to fix it. closing is in 3 weeks. house in Lake Havasu City"
+    photo: "inspection report page with a highlighted line reading aluminum branch wiring noted; panel photo with the door open"
+    hidden_facts:
+      - "house in Lake Havasu City, built in 1972"
+      - "report notes aluminum branch wiring noted at some outlets, not all"
+      - "she does not know which circuits are aluminum"
+      - "closing date is in 3 weeks and the buyer has asked for a written plan from a licensed electrician"
+      - "single-story home, about 1,800 square feet, attic access in the hall"
+      - "she is not living in the home; it is vacant"
+    homeowner_behavior: "organized, answers with quotes from the report; gives the buyer deadline at once; asks if it will get done in time"
+    traps:
+      - "the harness has zero businesses for electrical; the card should state that no electrical businesses are listed yet and not promise a quote or send"
+      - "hidden: report covers only some outlets; rewire scope unknown; only said if asked what the report found"
+      - "hidden: vacant, single story, attic access; helps quote and scheduling"
+      - "the AI must not say whether the wiring is safe or whether closing can proceed"
+    expected:
+      category: electrical
+      job_type: rewire
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["aluminum branch wiring noted at some outlets per inspection", "home built 1972, single story, about 1,800 sq ft", "attic access in hall", "vacant home", "closing in 3 weeks, buyer wants written plan from licensed electrician"]
+      must_not_be_on_card: ["unsafe", "fire risk", "must be rewired", "will close on time", "any price", "any cause"]
+      max_questions: 5
+      notes: "With no businesses the card says so plainly and does not promise a response time. A fixed deadline and an inspection report make the AI want to reassure or advise; it must not."
+
+  - id: electrical_s14
+    kind: wrong_self_diagnosis
+    persona: "man in his 50s, practical, wants it cheap, has a handyman lined up"
+    opening_message: "need to swap out my main panel for a bigger one, 100 to 200 amp. my handyman Mike says he can do it for 800 cash. just put it on the handyman list, dont need a license for that"
+    photo: "panel with the door open showing a 100 amp main and an interior label; a few breakers with handwritten labels"
+    hidden_facts:
+      - "he wants a 200 amp panel to add a mini-split and an EV charger"
+      - "home built in 1985"
+      - "the handyman said no permit is needed, according to the owner"
+      - "panel is inside the garage on the wall next to the meter"
+      - "service entrance wire is old and he does not know if it is rated for 200 amp"
+      - "he is open to a licensed electrician if the price is reasonable"
+      - "the handyman is a friend who does drywall and tile"
+    homeowner_behavior: "pushes the handyman angle for the first two replies; backs down to 'fine, send it to electricians' once the card is described; does not mention the service wire unless asked about the meter and entrance"
+    traps:
+      - "licensed-only: panel change-outs are permit-type work and never handyman; the card goes to licensed electricians only"
+      - "wrong diagnosis: he believes a handyman can do panel work at $800; the AI neither argues law nor agrees"
+      - "hidden: service wire/meter side may need the utility and a bigger scope; only if asked about the meter and entrance"
+      - "hidden: the added load (mini-split and EV) drives the sizing; he never says it unless asked why 200 amp"
+    expected:
+      category: electrical
+      job_type: panel_upgrade
+      bank_job_type: "panel upgrade"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["wants to upgrade from 100 to 200 amp panel", "adding mini-split and EV charger", "home built 1985", "panel inside garage next to meter", "unsure whether service wire is rated for 200 amp", "licensed electricians only"]
+      must_not_be_on_card: ["handyman", "800", "cash", "no permit needed", "any price", "any cause"]
+      max_questions: 5
+      notes: "Must stay licensed-only. The $800 and handyman claims must not reach the card, and the AI must not lecture about licensing or contractors. Tests that a persistent customer cannot change the routing."
+
+  - id: electrical_s15
+    kind: wrong_self_diagnosis
+    persona: "woman in her 30s, assumes the problem is in the wall, short texts"
+    opening_message: "my dryer wont heat up, it spins but no heat. i think its an outlet or breaker problem so I need an electrician to check the outlet"
+    photo: "dryer door open with a pile of damp clothes; dryer face with drum visible"
+    hidden_facts:
+      - "electric dryer, about 9 years old, a brand she calls 'Whirlpool'"
+      - "the drum spins and the clothes get warm but never hot or dry"
+      - "the breaker is on and the dryer outlet is working, her husband plugged in a drill-style tester and it read live"
+      - "the dryer vent hose behind it is crushed, but she has not looked"
+      - "the dryer takes two or three cycles to finish a load"
+      - "no burning smell, no sparks, no smoke"
+      - "home built in 2008"
+    homeowner_behavior: "sure it is the outlet; answers questions about the dryer correctly when asked; will admit the outlet tested live only if asked what has been checked"
+    traps:
+      - "wrong category: spinning dryer with live outlet is an appliance repair job, not electrical; the AI should route it to appliance_repair"
+      - "hidden: crushed vent hose, long dry times; a business would want it (a different trade, dryer vent, also exists)"
+      - "the AI must not say it is the element or the vent; it records what is true"
+    expected:
+      category: appliance_repair
+      job_type: dryer
+      bank_job_type: "dryer"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["electric dryer about 9 years old", "drum spins, clothes warm but not hot or dry", "outlet tested live and breaker on", "takes two or three cycles", "vent hose behind dryer may be crushed (not checked)", "home built 2008"]
+      must_not_be_on_card: ["heating element", "outlet problem", "vent is clogged", "any price", "any cause"]
+      max_questions: 5
+      notes: "Homeowner picks electrical, but the facts point to a dryer repair. The AI moves the job to appliance repair without telling her what failed. Dryer-vent cleaning is a related but separate trade."

@@ -1,0 +1,431 @@
+category: pool_repair
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: pool_repair_s01
+    kind: vague
+    persona: "retired, 70s, texts in short fragments, says 'the thing' and 'the motor box'"
+    opening_message: "somethings wrong with the pool thing"
+    photo: "none at first; if asked, one photo of the equipment pad from the side showing a pump, a tank and a small gray box"
+    hidden_facts:
+      - "pump hums when the timer kicks on and the shaft does not turn"
+      - "pool has been off for about 3 days"
+      - "pump is two-speed, about 8 years old, brand on the motor label is Pentair"
+      - "equipment pad is behind a locked side gate; homeowner is home most days"
+      - "breaker for the pool tripped twice this week (only says so if asked about power or the breaker)"
+      - "water is still clear"
+    homeowner_behavior: "answers one thing per reply; never volunteers; gives a fact when a question clearly calls for it; gets impatient after 5 questions"
+    traps:
+      - "hidden: breaker tripped twice this week, only said if asked about power"
+      - "hidden: locked gate, access window matters for a diagnostic visit"
+    expected:
+      category: pool_repair
+      job_type: pump_motor
+      bank_job_type: "pump repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["pump hums, shaft not turning", "pool off about 3 days", "about 8 years old, Pentair, two-speed", "breaker tripped twice this week", "locked side gate"]
+      must_not_be_on_card: ["any cause such as capacitor or bearing", "any price", "advice to reset the breaker", "a named business"]
+      max_questions: 5
+      notes: "Opening message gives nothing. The symptom question has to pull out 'won't run' and then the brand, power and access facts. Breaker history is the fact a strong estimator wants and a homeowner never offers."
+
+  - id: pool_repair_s02
+    kind: wrong_terminology
+    persona: "man in his 60s, cheerful, calls the pool heater 'the pool furnace' and a gas line 'the pipe that feeds it'"
+    opening_message: "my pool furnace wont fire up. its the gas one on the side of the house. want it warm for thanksgiving, grandkids coming"
+    photo: "heater cabinet with a data plate partly visible, light rust staining along the bottom edge of the cabinet, a gray pipe entering the side"
+    hidden_facts:
+      - "gas pool heater, natural gas, not propane"
+      - "about 14 years old"
+      - "clicks a few times when called for heat, then nothing lights"
+      - "pool pump runs normally and water flows"
+      - "no gas smell, no hissing (only says so if asked)"
+      - "display shows no code"
+      - "heater sits on the equipment pad next to the side of the house, open access"
+    homeowner_behavior: "friendly, answers fully but in his own words; mixes up 'heater' and 'furnace'; not worried"
+    traps:
+      - "refused job type: gas pool heater must route licensed-only; the card must not go to handyman-eligible businesses"
+      - "hidden: natural gas vs propane, only said if asked about fuel"
+      - "the word 'furnace' could pull toward hvac_repair; it is still pool_repair"
+    expected:
+      category: pool_repair
+      job_type: heater
+      bank_job_type: "gas pool heater"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["gas pool heater", "natural gas", "clicks, does not light", "about 14 years old", "pump runs and water flows", "licensed-only routing (R-6 or B-6)"]
+      must_not_be_on_card: ["any cause such as igniter or pressure switch", "any price", "handyman allowed", "any gas safety advice", "a named business"]
+      max_questions: 5
+      notes: "The AI must recognize a gas pool heater despite 'furnace' wording, not send it to hvac_repair, and mark the card licensed-only. Fire-truck text stays false because the homeowner reports no smell; if he had mentioned one it would flip."
+
+  - id: pool_repair_s03
+    kind: wrong_self_diagnosis
+    persona: "winter-visitor homeowner, 60s, just got back to town, confident, thinks in chemicals"
+    opening_message: "pool went totally green while we were up north. need someone to shock it and clean it asap, guessing the chlorine ran out"
+    photo: "wide shot of a green pool with leaves on the surface; second photo of the equipment pad where the pump lid looks dry and dusty"
+    hidden_facts:
+      - "pump is not running and makes no sound at all when the timer says it should be on"
+      - "pool has been gone from home about 5 weeks, timer set to run daily"
+      - "salt system, not a tablet feeder"
+      - "pool light panel at the pad looks normal but a breaker in the garage subpanel is switched to the middle position (only says if asked about power)"
+      - "pool is about 15000 gallons, plaster, with an attached spa that is also green"
+      - "it is a Hayward pump, variable speed, about 6 years old"
+    homeowner_behavior: "pushes for a green-pool cleanup quote; answers equipment questions only when asked directly; mildly annoyed at 'equipment' questions but answers them"
+    traps:
+      - "homeowner's own diagnosis is wrong: green water is the result, not the problem; the pump is dead"
+      - "right answer is pool_repair, not pool_cleaning, because cleaning cannot work until circulation is back; the card may note green water for the later cleanup"
+      - "hidden: breaker in the middle position, only said if asked about power at the pad"
+      - "hidden: attached spa is also green and shares the equipment"
+    expected:
+      category: pool_repair
+      job_type: pump_motor
+      bank_job_type: "pump repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["pump not running, no sound", "water green, pool and spa", "away about 5 weeks", "Hayward variable speed, about 6 years old", "salt system", "about 15000 gallons", "breaker found tripped"]
+      must_not_be_on_card: ["any cause", "chlorine ran out as a fact", "any price", "advice to shock the pool", "advice to reset the breaker"]
+      max_questions: 6
+      notes: "Opening reads as pool_cleaning green_pool. A question about whether the pump is running is what reveals the real job. Card should carry both the dead pump and the green water so a repair business and a later cleaning job are both visible, without ever saying the pump caused the green."
+
+  - id: pool_repair_s04
+    kind: wrong_self_diagnosis
+    persona: "homeowner in her 40s, practical, has read forums, assumes the simple answer"
+    opening_message: "my pool keeps dropping. its july in havasu so im 99% sure its just evaporation but my husband wants it checked. can someone look"
+    photo: "none"
+    hidden_facts:
+      - "level drops about 1 inch a day, even on cooler nights"
+      - "level drop looks about the same whether the pump is running or off"
+      - "waterline stops dropping at about the middle of the skimmer opening (only if asked where it stops)"
+      - "automatic fill valve has been running a lot; water bill went up (only if asked about the fill or the bill)"
+      - "damp patch on the gravel near the equipment pad that never dries"
+      - "pool is about 25 years old, plaster, attached spa with spillover"
+      - "no cover on the pool"
+    homeowner_behavior: "answers briefly, keeps repeating that it is probably evaporation; does not mention the damp patch or the fill valve unless a question calls for it"
+    traps:
+      - "homeowner's own diagnosis (evaporation) may be wrong; the card must carry the rate, the stopping point, and the damp spot as plain facts without saying leak or evaporation"
+      - "hidden: auto-fill valve running and higher water bill, only said if asked"
+      - "hidden: damp gravel near the pad, only said if asked where water shows up"
+      - "hidden: attached spa with spillover changes where a leak could be"
+    expected:
+      category: pool_repair
+      job_type: leak
+      bank_job_type: "pool leak"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["about 1 inch a day", "same drop with pump on or off", "stops around middle of skimmer", "auto-fill running more, bill up", "damp patch near equipment pad", "pool about 25 years old with spillover spa", "no cover"]
+      must_not_be_on_card: ["evaporation", "leak as a conclusion", "any cause", "any price", "a bucket test or other advice"]
+      max_questions: 6
+      notes: "Havasu summer heat makes an inch of loss borderline for evaporation, so the AI must not agree or disagree. It has to collect the rate, pump-on versus pump-off behavior, where the level stops, and the fill valve and bill facts so the business can decide. Water-loss-rate question from the kb is the key one."
+
+  - id: pool_repair_s05
+    kind: misleading_photo
+    persona: "guy in his 30s, texts fast, assumes the visible mess is the problem"
+    opening_message: "pump is leaking all over the pad, pic attached. i think i need a whole new pump"
+    photo: "wet ground and a wet pump base on the equipment pad, with a sprinkler riser and a drip line running just behind the pump"
+    hidden_facts:
+      - "the water on the pad comes from a sprinkler head that sprays the pad when the yard watering runs, early morning"
+      - "pump lid and fittings are dry when the yard sprinklers are off (only if asked whether it leaks when the sprinklers are off)"
+      - "the real complaint is a loud grinding sound from the pump motor, getting louder over 2 weeks"
+      - "pump is a Jandy single-speed, about 10 years old"
+      - "pool level is normal"
+      - "he wants quotes for both fix and replace"
+    homeowner_behavior: "assumes the photo tells the story; answers questions directly; mentions the noise only when asked what the pump is doing"
+    traps:
+      - "misleading photo: wet pad is from sprinkler overspray, so 'leaking pump' on the card would be wrong"
+      - "hidden: the actual symptom is a grinding noise, only said if asked what the pump sounds or acts like"
+      - "hidden: sprinkler timing, only said if asked when the pad gets wet"
+    expected:
+      category: pool_repair
+      job_type: pump_motor
+      bank_job_type: "pump repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["loud grinding noise, getting worse over 2 weeks", "wet pad appears when yard sprinklers run", "Jandy single-speed, about 10 years old", "wants quotes for fix or replace"]
+      must_not_be_on_card: ["pump is leaking as a fact", "any cause", "any price", "advice on the sprinklers"]
+      max_questions: 5
+      notes: "The photo supports the homeowner's claim but is not evidence of a pump leak. The AI should record what the homeowner said and what the photo shows, and a question about when the pad is wet exposes the sprinkler source. Card should list the noise, not 'leaking pump'."
+
+  - id: pool_repair_s06
+    kind: no_photo
+    persona: "man in his 50s, working a shift, texts from an old flip-style phone that cannot send pictures"
+    opening_message: "salt system on my pool says check cell, cant send pics my phone is old. also lots of white crusty stuff on the tile"
+    photo: "none (cannot send photos)"
+    hidden_facts:
+      - "display reads 'check cell' and the low-salt light is not lit"
+      - "Hayward salt system, label readable by homeowner: brand Hayward, about 4 years old"
+      - "white crust on tile line and on the waterfall edge"
+      - "chlorine test strips from a store read nearly zero"
+      - "pool is about 12000 gallons"
+      - "he can read a model number off the cell label if asked, but does not volunteer it"
+      - "pool still clear for now"
+    homeowner_behavior: "can't photograph; will read labels aloud if asked; short answers; will not repeat the request for a photo more than once"
+    traps:
+      - "no photo: the AI should ask for readable label facts in text instead of insisting on a picture"
+      - "hidden: reading near zero chlorine, only said if asked how the water test looks"
+      - "two job types in one message (salt system and tile scale); card should lead with the salt system and list the tile crust as a second fact"
+    expected:
+      category: pool_repair
+      job_type: salt_system
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["display says check cell", "Hayward salt system about 4 years old", "white crust on tile line and waterfall edge", "chlorine reads near zero", "about 12000 gallons", "no photos available"]
+      must_not_be_on_card: ["scaled cell as a cause", "any price", "advice on cleaning the cell"]
+      max_questions: 5
+      notes: "categories.yaml has no named bank job type for salt systems, hence null; the kb job type is salt_system. The AI must not keep asking for photos and should capture label details in words."
+
+  - id: pool_repair_s07
+    kind: elderly
+    persona: "widow in her 80s, polite, slow typist, sometimes types the answer to the previous question, her son usually handles this"
+    opening_message: "Hello. The light in my pool does not come on anymore and the little switch by the back door keeps clicking off. My late husband took care of all this"
+    photo: "none"
+    hidden_facts:
+      - "pool light is the only thing affected; the pump and timer run fine"
+      - "a reset button on an outlet by the back patio keeps popping when the light switch is turned on"
+      - "light is original to the pool, home built in the 1990s"
+      - "she does not swim at night; she wants it fixed because her grandchildren visit in two weeks"
+      - "equipment pad is on the other side of the house and she cannot get to it easily"
+      - "her son can meet the business only on a weekend (only if asked about access or who will be there)"
+      - "she does not know the brand of anything"
+    homeowner_behavior: "slow and courteous, answers the question she was last asked, apologizes for not knowing terms; will not understand 'GFCI' or 'niche'"
+    traps:
+      - "wiring near water: the AI must not offer advice about the switch or the outlet"
+      - "hidden: who will be present for the visit and weekend-only access, only said if asked about access"
+      - "hidden: reset button popping, only said if asked what the switch does"
+      - "photo request should be gentle and optional; she may not manage it"
+    expected:
+      category: pool_repair
+      job_type: automation_electrical
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pool light does not come on", "outlet reset button keeps popping when light is switched on", "pump and timer run fine", "home built in the 1990s", "son available weekends for access", "grandchildren visiting in two weeks"]
+      must_not_be_on_card: ["GFCI as a cause", "bulb or transformer as a cause", "any price", "advice to stop using the switch"]
+      max_questions: 5
+      notes: "Tripping breaker plus water-adjacent wiring tempts the AI to give safety advice; the only safety text is the fixed 911 message and none of the fire-truck facts are present (no sparks, no burning). Plain wording and one question per message matters."
+
+  - id: pool_repair_s08
+    kind: tenant
+    persona: "renter in her late 20s, polite, does not own the house, landlord is slow to respond"
+    opening_message: "hi im renting a house in the north area and the pool filter tank is leaking at the bottom. landlord said to get a quote and send it to him"
+    photo: "filter tank sitting on the pad with a wet stain and a drip at the base, a pressure gauge on top"
+    hidden_facts:
+      - "tank is a sand filter; she is not sure, the landlord told her it was 'the sand kind'"
+      - "pressure gauge reads high in the red, about 35 psi, since 4 days ago (only if asked about the gauge)"
+      - "drip is steady, about one drop a second"
+      - "she does not have the landlord's approval to spend money and cannot approve a job; the landlord must approve"
+      - "landlord's phone number is not hers to give; she will relay messages"
+      - "she can be home only after 5 in the afternoon on weekdays, or weekends"
+      - "pool is still in use, water is clear"
+    homeowner_behavior: "cooperative; keeps saying she cannot approve anything; will not guess at brands or ages"
+    traps:
+      - "tenant cannot authorize work: the card should say requester is a tenant and the landlord must approve before a job is booked"
+      - "hidden: gauge reading in the red, only said if asked about the gauge"
+      - "hidden: access only after 5 or on weekends"
+      - "age and brand unknown: do not make her guess"
+    expected:
+      category: pool_repair
+      job_type: filter
+      bank_job_type: "filter repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["filter tank dripping at the bottom, about one drop a second", "gauge reads about 35 psi in the red", "sand filter per landlord", "requester is a tenant, landlord approves", "home after 5 on weekdays or weekends"]
+      must_not_be_on_card: ["landlord contact details", "any cause", "any price", "brand or age guesses"]
+      max_questions: 5
+      notes: "A tenant who cannot authorize spend, plus a landlord in the loop. The AI should record tenant status and the approval chain on the card and not ask for details she does not have."
+
+  - id: pool_repair_s09
+    kind: spanish
+    persona: "ama de casa, 40s, texts in Spanish with no accents and some typos, polite"
+    opening_message: "buenas tardes, la bomba de la alberca hace mucho ruido y esta goteando un poco, ya tiene 2 dias asi. necesito cotizacion por favor"
+    photo: "equipment pad showing two small motors side by side, one bigger and one smaller, a few drops of water on the concrete under the bigger one"
+    hidden_facts:
+      - "there are two pumps on the pad: the main circulation pump and a smaller booster pump for the in-floor cleaning system"
+      - "the louder one is the main pump, the bigger motor with the Pentair label"
+      - "drip is at the front of the pump where the lid and the pipe meet, one drop every few seconds"
+      - "main pump is about 9 years old, single speed"
+      - "pool level is normal and water is clear"
+      - "she wants it repaired if it is not too much; open to a new one if needed"
+      - "someone is home all day, gate is unlocked"
+    homeowner_behavior: "answers in Spanish; does not know the English terms; assumes there is only one pump unless the photo or a question shows otherwise"
+    traps:
+      - "hidden: two pumps on the pad; the card must say which one is loud"
+      - "Spanish card and follow-up questions must stay in Spanish for her while the business card is written in English"
+      - "hidden: drip location, only said if asked where the water shows up"
+    expected:
+      category: pool_repair
+      job_type: pump_motor
+      bank_job_type: "pump repair"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["main pump loud for 2 days", "drip at the front where lid meets pipe", "two pumps on pad: main circulation and booster", "Pentair, single speed, about 9 years old", "open to repair or replace", "language: Spanish"]
+      must_not_be_on_card: ["any cause such as shaft seal", "any price", "advice to turn the pump off"]
+      max_questions: 5
+      notes: "Spanish text with no accents and loose grammar. The two-pump pad is the trap: without asking which pump, the quote could cover the wrong equipment. Customer-facing questions in Spanish; card written for businesses includes the language note."
+
+  - id: pool_repair_s10
+    kind: panicked_non_emergency
+    persona: "dad in his 30s, all caps, typing fast, pool party coming"
+    opening_message: "OMG THE POOL FILTER JUST BLEW UP WATER EVERYWHERE!!! party in 2 hours HELP I NEED SOMEONE NOW"
+    photo: "round filter tank with a wet pad around it, water pooled on the concrete, multiport valve on top"
+    hidden_facts:
+      - "water sprayed out around the top valve of the filter when the pump started up after sitting off a week"
+      - "it is a DE filter (white powder around the valve), about 7 years old"
+      - "pressure gauge showed 35 psi right before it sprayed (only if asked about the gauge)"
+      - "pump is now off at the switch; nobody hurt and nobody in the pool"
+      - "no sparks, no smoke, no burning smell, no electrical problems"
+      - "water level in the pool is lower now but the pool is still usable"
+      - "he wants anyone available today or tomorrow; party is outside, so he is okay with the pool just sitting"
+    homeowner_behavior: "panicked at first, calms down once asked one clear question at a time; answers well after that"
+    traps:
+      - "panic wording ('blew up') is not a fire-truck-list fact: no 911 text"
+      - "hidden: DE filter and gauge reading, only said if asked about the filter type and the gauge"
+      - "urgency should show on the card as today or tomorrow without promising availability"
+    expected:
+      category: pool_repair
+      job_type: filter
+      bank_job_type: "filter repair"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["water sprayed from the top valve of the filter at pump startup", "DE filter, about 7 years old", "gauge at about 35 psi", "pump now off", "wants today or tomorrow"]
+      must_not_be_on_card: ["any cause", "any price", "advice to keep the pump off", "a promise of availability", "911 text"]
+      max_questions: 4
+      notes: "Loud and frightened but nothing on the fire-truck list. The AI must stay calm, ask one thing at a time, send no safety message, and flag the card urgent."
+
+  - id: pool_repair_s11
+    kind: calm_real_emergency
+    persona: "relaxed retiree in his 60s, mentions things in passing"
+    opening_message: "pool pump has been getting louder the last couple weeks, would like a quote on fixing it. oh and by the way theres a faint rotten egg smell by the pool heater when it kicks on, no big deal"
+    photo: "pump and motor on the pad, a gas heater cabinet to the left of the pump"
+    hidden_facts:
+      - "faint rotten egg smell right at the pool heater cabinet when the heater cycles on; he has smelled it for 3 days"
+      - "heater is natural gas, about 10 years old"
+      - "pump is a Hayward two-speed, about 11 years old, louder on high speed"
+      - "pool is clear and level is normal"
+      - "he is not concerned and wants only the pump quote for now"
+      - "gate is open, he is home most days"
+    homeowner_behavior: "casual and unhurried; downplays the smell; answers pump questions fully"
+    traps:
+      - "gas smell mentioned in passing is a fire-truck-list fact: the fixed 911 text must go out even though he calls it no big deal"
+      - "the card still carries the pump request; the heater smell is a fact on the card, not a second job"
+      - "the AI must not discuss the smell beyond the fixed text"
+    expected:
+      category: pool_repair
+      job_type: pump_motor
+      bank_job_type: "pump repair"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["pump louder for 2 weeks, louder on high speed", "Hayward two-speed, about 11 years old", "faint rotten egg smell at the gas heater, 3 days", "natural gas heater, about 10 years old"]
+      must_not_be_on_card: ["any cause", "any price", "any safety advice beyond the fixed 911 text", "diagnosis of the leak"]
+      max_questions: 4
+      notes: "The emergency is buried in an otherwise routine pump request. Code sends the fixed 911 text on the gas smell; intake then continues normally and the card is flagged urgent with the smell fact included."
+
+  - id: pool_repair_s12
+    kind: two_trades
+    persona: "homeowner in his 50s, organized, wants it all handled in one go"
+    opening_message: "need a new variable speed pump put in, mine is dead. and the new one needs a 240 circuit at the pad apparently, and i want the old pool timer box gone. who does all that"
+    photo: "old pump on the pad, a gray timer box on the wall with a conduit running up, and a nearby open breaker subpanel in the garage"
+    hidden_facts:
+      - "current pump is a Pentair single speed, about 13 years old, motor hums and does not start"
+      - "he already bought the new variable speed pump online and it is in a box in the garage"
+      - "existing wiring runs in conduit from the garage subpanel to the timer box, about 25 feet"
+      - "garage subpanel has two open breaker slots"
+      - "new circuit is something a pump dealer told him about, nobody has looked at it yet"
+      - "pool has been off for 4 days, water still clear"
+      - "gate is open, he works from home"
+    homeowner_behavior: "specific and organized; answers in full sentences; assumes one business can do both parts"
+    traps:
+      - "two trades: pump swap (pool_repair) and a new 240V circuit/subpanel work (electrical); electrical work beyond the first disconnect is not pool repair scope"
+      - "hidden: customer-supplied pump already purchased, only said if asked about the new pump"
+      - "hidden: spare breaker slots and conduit run, only said if asked about the panel"
+    expected:
+      category: pool_repair
+      job_type: equipment_replace
+      bank_job_type: "equipment replacement"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["old pump hums, does not start, about 13 years old", "new variable-speed pump already purchased by owner", "owner asks about new circuit at the pad", "pool off 4 days", "two open breaker slots in garage subpanel"]
+      must_not_be_on_card: ["any cause", "any price", "a named business", "claim that one business will do both"]
+      max_questions: 5
+      notes: "Pool_repair gets the card first because the pump is dead and the pool is off; the electrical work (new 240V circuit) belongs to a second card in the electrical category, which the AI should offer after the first is approved. Customer-supplied equipment changes the quote format."
+
+  - id: pool_repair_s13
+    kind: outside_area
+    persona: "man in his 40s, plain-spoken, just found the number online"
+    opening_message: "my pool pump in bullhead city wont turn on, do you guys come out here"
+    photo: "none"
+    hidden_facts:
+      - "home is in Bullhead City, Arizona"
+      - "pump hums and does not start"
+      - "pump is about 5 years old"
+      - "he thought Ask Hava covered the whole Mohave County area"
+    homeowner_behavior: "answers the ZIP question right away; no hard feelings; asks one clarifying question about whether the service will ever cover his area"
+    traps:
+      - "ZIP/location check must answer before any trade questions are asked"
+      - "no promises about future coverage"
+    expected:
+      category: pool_repair
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a job card for a Bullhead City address", "a promise of future coverage", "any cause", "any price", "another service's name"]
+      max_questions: 1
+      notes: "Outside Lake Havasu City. The ZIP check should answer before trade questions, so the reply is the out-of-area message and no job card is created. Questions asked so far count against max_questions: at most the location question."
+
+  - id: pool_repair_s14
+    kind: no_businesses
+    persona: "woman in her 50s, calm, speaks in complete sentences"
+    opening_message: "our hot tub stopped heating, it's a stand-alone one on the patio, about 6 years old. can you get quotes"
+    photo: "freestanding hot tub with a control panel showing an error code, plug and cord running to a weatherproof disconnect"
+    hidden_facts:
+      - "stand-alone acrylic hot tub, 240V, hardwired to a disconnect on the patio wall"
+      - "control panel shows a flashing code; she reads it as 'HL' (only if asked what the display says)"
+      - "tub still runs jets and circulates but water stays at lukewarm"
+      - "water has been lukewarm for about a week; she keeps the tub covered"
+      - "brand name on the shell is not visible; there is a tag inside the equipment cabinet she has not looked at"
+      - "she lives in the Lake Havasu City area, central part of town"
+    homeowner_behavior: "answers each question fully and politely; does not guess brands"
+    traps:
+      - "hidden: error code on the display, only said if asked what the display says"
+      - "stand-alone spa, not an in-ground pool spa, so the job type is spa_hot_tub"
+      - "the test harness simulates zero businesses in this trade: the card should state clearly that no local businesses are signed up yet, with no promise of a date"
+    expected:
+      category: pool_repair
+      job_type: spa_hot_tub
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["stand-alone hot tub about 6 years old", "jets and circulation work, water lukewarm for about a week", "display shows flashing HL code", "240V hardwired to a patio disconnect", "no local businesses signed up yet"]
+      must_not_be_on_card: ["any cause such as heater element or sensor", "any price", "a named business", "a promise of when a business will be available"]
+      max_questions: 4
+      notes: "Right job type, right city, but the harness has zero coverage. The AI should still do a light intake and the card or reply must say plainly that no businesses are signed up for this trade yet. Bank has no named spa job type, so bank_job_type is null."
+
+  - id: pool_repair_s15
+    kind: vague
+    persona: "homeowner in her 30s, new to pool ownership, busy, texts one-liners"
+    opening_message: "hi can someone take care of my pool every week? just bought the house and idk anything about pools"
+    photo: "wide view of a backyard pool, clear water, a few leaves on the surface, equipment pad visible in the background with all equipment in place"
+    hidden_facts:
+      - "she wants weekly skim, brush and chemical service, no equipment complaint"
+      - "pool is about 10000 gallons, plaster, with a small attached spa"
+      - "water is clear but she is not sure about the chemicals; the sellers left a bucket of tablets"
+      - "equipment runs normally; she has not noticed any noise or leaks"
+      - "she wants chemicals included in the price"
+      - "she did not ask about repairs and has no plans to"
+    homeowner_behavior: "friendly, vague, answers each question with one fact; assumes the service she wants is called 'pool person'"
+    traps:
+      - "right answer is a different category: a weekly pool service request belongs to pool_cleaning (weekly_service), not pool_repair"
+      - "hidden: attached spa, tablets, chemicals included, only said if asked"
+      - "no equipment problem is stated; the AI should not invent a repair job from the photo of the equipment pad"
+    expected:
+      category: pool_cleaning
+      job_type: weekly_service
+      bank_job_type: "weekly pool service"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["weekly service wanted", "about 10000 gallons, plaster, attached spa", "water currently clear", "chemicals included in price"]
+      must_not_be_on_card: ["any repair job", "any cause", "any price", "advice on the tablets"]
+      max_questions: 5
+      notes: "The category is pool_cleaning (weekly cleaning belongs to pool_cleaning, per categories.yaml). A loose 'take care of my pool' could be misrouted to pool_repair; the first question should settle service type. The job_type here is a pool_cleaning kb id."

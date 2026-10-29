@@ -1,0 +1,432 @@
+category: alarm_systems
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+# Note: categories.yaml lists only two bank job types (alarm install, alarm monitoring setup).
+# Repair/troubleshoot requests on an existing system have no bank name, so bank_job_type is null for them.
+scenarios:
+  - id: alarm_systems_s01
+    kind: vague
+    persona: "50s, busy, texts one-liners from a truck, no punctuation"
+    opening_message: "need an alarm"
+    photo: "none"
+    hidden_facts:
+      - "wants a new burglar alarm for the house he lives in"
+      - "single-story house, about 9 doors and windows, plus a sliding glass door in back"
+      - "no old system in the home"
+      - "wants it to text his phone, not sure about a monthly monitoring contract"
+      - "has Wi-Fi from a cable provider"
+      - "house is on the north side of Lake Havasu City"
+    homeowner_behavior: "answers one thing per reply; says 'idk, whatever is normal' when asked a choice question he has not thought about; gives a number only when asked how many"
+    traps:
+      - "hidden: sliding glass door and a back-yard gate he wants covered, only mentioned if asked what to cover"
+      - "hidden: monitoring is undecided; the card must say 'not sure' instead of picking one"
+    expected:
+      category: alarm_systems
+      job_type: burglar_alarm
+      bank_job_type: "alarm install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["new alarm system", "about 9 doors and windows plus a sliding door", "Wi-Fi at the home", "monitoring undecided", "no existing system"]
+      must_not_be_on_card: ["any brand recommendation", "any price", "wired or wireless chosen for him"]
+      max_questions: 5
+      notes: "Two words in. The AI must not guess cameras vs alarm vs smoke detectors; first question is what he needs. Monitoring undecided must be recorded as undecided."
+
+  - id: alarm_systems_s02
+    kind: wrong_terminology
+    persona: "late 30s, new to the area, texts in lowercase with emojis stripped out, mixes up product names"
+    opening_message: "hi i need a ring alarm for the front of my house, the one with the video, also one of those spotlight things on the garage"
+    photo: "front entry with a plain doorbell button and a dark porch light fixture"
+    hidden_facts:
+      - "wants a video doorbell at the front door"
+      - "wants one outdoor camera with a light over the garage"
+      - "no interest in door/window sensors or a siren"
+      - "has Wi-Fi, router is inside the front hall closet"
+      - "existing doorbell is a wired button with a chime"
+      - "does not already own any cameras"
+      - "two-story home built in the 1990s"
+    homeowner_behavior: "calls everything 'alarm'; agrees to the AI's wording easily; answers with exact counts when asked"
+    traps:
+      - "hidden: existing doorbell wire and transformer; a camera doorbell may replace the wired button"
+      - "hidden: second story soffit height at the garage makes the camera mounting a ladder job"
+    expected:
+      category: security_cameras
+      job_type: cameras
+      bank_job_type: "doorbell camera"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["video doorbell", "1 outdoor camera with light at garage", "no door or window sensors wanted", "does not own the cameras yet", "existing wired doorbell button"]
+      must_not_be_on_card: ["alarm system install", "any brand pick", "any price"]
+      max_questions: 4
+      notes: "He says 'alarm' but wants cameras only. Right answer is the security_cameras category (separate from alarm_systems), not an alarm card. The AI must not upsell door/window sensors."
+
+  - id: alarm_systems_s03
+    kind: wrong_self_diagnosis
+    persona: "60s, retired contractor, confident, tells you what is broken"
+    opening_message: "my alarm panel is dead needs replacing. keeps beeping every minute or so and the screen is blank. its a 2009 install"
+    photo: "wall keypad with a blank dark screen and a small green light off"
+    hidden_facts:
+      - "keypad beeps about once a minute, mostly at night"
+      - "the system has not been serviced since it was installed"
+      - "there was a power outage in the neighborhood a few days before the beeping started"
+      - "the main box is in the garage closet and was never opened by the owner"
+      - "monitoring was cancelled years ago; system is armed and disarmed locally"
+      - "the system still arms and the sirens worked last time he tested it, about a year ago"
+    homeowner_behavior: "keeps insisting the panel needs replacing; answers questions about the keypad but has to be asked to go look in the garage; short and gruff"
+    traps:
+      - "wrong diagnosis: he says the panel is dead; blank keypad plus a beep could be a dead backup battery or a keypad/transformer issue, and the card must record the symptom, not 'replace panel'"
+      - "hidden: main box in the garage and its brand label, a photo of it is worth asking for"
+      - "hidden: power outage a few days before the beeping started"
+    expected:
+      category: alarm_systems
+      job_type: false_alarms
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["keypad blank, beeps about once a minute", "system installed 2009", "outage a few days before it started", "no monitoring now", "main box in garage closet"]
+      must_not_be_on_card: ["replace the panel", "dead battery", "any cause", "any price"]
+      max_questions: 5
+      notes: "Owner states a diagnosis as fact. The card carries symptoms and the outage, not 'needs new panel'. No bank job type fits a repair; the AI should still not refuse. Beeping alarm panel is not an emergency."
+
+  - id: alarm_systems_s04
+    kind: misleading_photo
+    persona: "40s, just bought a house, polite, full sentences, thinks the old system is a lost cause"
+    opening_message: "We bought a house last month and it has an old alarm system the previous owner left. There are sensors on all the doors and windows. Can someone bring it back to life or do we have to start over? Photo of the keypad attached."
+    photo: "newer-looking wall keypad with an illuminated display near the front door; no panel, wiring or box visible"
+    hidden_facts:
+      - "keypad lights up but displays a 'no phone line' message"
+      - "the main panel box is in the hall closet, never photographed"
+      - "wired sensors on 7 doors and windows, two windows were painted over"
+      - "the house has no landline, only cable internet and cell phones"
+      - "previous owner used a monitoring company; new owners do not know if the account was closed"
+      - "owners want the system working and want it to alert their phones"
+      - "house built in the early 2000s, single story"
+    homeowner_behavior: "answers politely and thoroughly; does not know the brand; will go photograph the closet panel if asked"
+    traps:
+      - "misleading photo: the keypad looks modern and powered, which suggests a healthy system, but it shows nothing about the main panel, the wired sensors or the dead phone line"
+      - "hidden: no landline, so the old phone-line communicator cannot report"
+      - "hidden: painted-over window sensors"
+      - "hidden: prior monitoring account may still be tied to the panel"
+    expected:
+      category: alarm_systems
+      job_type: burglar_alarm
+      bank_job_type: "alarm install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["old wired system left by previous owner", "keypad lights up, shows no phone line message", "no landline, internet is cable", "7 wired door/window sensors", "wants phone alerts"]
+      must_not_be_on_card: ["reuse the old system", "start over", "any price", "any brand recommendation"]
+      max_questions: 6
+      notes: "Photo of the keypad looks reassuring, but a top estimator needs the main panel photo and the phone-line question. Wired alarm work is licensed-only and usually needs a site visit; the card should not say whether it can be reused."
+
+  - id: alarm_systems_s05
+    kind: no_photo
+    persona: "55, irritated, writes in run-ons, feels cheated"
+    opening_message: "got a bill from the city for false alarms 3 times this year and my alarm company says its not their fault. my alarm is junk and i want a different company to look at it and tell me whats wrong"
+    photo: "none"
+    hidden_facts:
+      - "the city sent a false-alarm fee notice; he has not paid it yet"
+      - "the alarm goes off randomly, usually in the afternoon"
+      - "system is about 6 years old, wireless sensors, monitored by a national company"
+      - "two cats live in the house and the living room motion sensor faces the stairs"
+      - "he leaves a ceiling fan on in the living room when he is gone"
+      - "he wants a second opinion, not a new system"
+    homeowner_behavior: "keeps returning to the fee and who is to blame; answers a question only after complaining; gives facts when asked directly"
+    traps:
+      - "hidden: cats and a motion sensor facing the stairs, only said if asked about pets or what goes off"
+      - "hidden: it is a second-opinion service call, not a replacement, though he calls it junk"
+      - "the fee dispute is not a business job; the card must not carry blame or legal advice"
+    expected:
+      category: alarm_systems
+      job_type: false_alarms
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["alarm goes off by itself, often in the afternoon", "false-alarm fee notices from the city", "system about 6 years old, wireless", "currently monitored", "two cats in the home", "wants a second opinion, not a new system"]
+      must_not_be_on_card: ["the alarm is junk", "pets cause it", "dispute or pay the fee", "any cause", "any price"]
+      max_questions: 5
+      notes: "Complaint is about money and blame. The AI must not advise on the city fee or say what causes false alarms, and must keep the card to the job. The owner's wording ('junk') is not a finding."
+
+  - id: alarm_systems_s06
+    kind: elderly
+    persona: "80s, widow, texts slowly with long gaps and caps lock on, her son set up the old system"
+    opening_message: "HELLO MY ALARM COMPANY CLOSED AND THE MAN SAID I NEED A NEW COMPANY TO WATCH IT. I DONT UNDERSTAND THIS"
+    photo: "keypad on a hallway wall, small label inside the open door of a panel box partly visible"
+    hidden_facts:
+      - "the system works locally and she uses it every night"
+      - "her old monitoring company went out of business and the monitoring stopped"
+      - "she wants someone to watch the system again, nothing new installed"
+      - "she has no Wi-Fi and a landline she pays for"
+      - "home is a single-story house with 6 doors and windows protected"
+      - "her son lives out of state and will pay but cannot come"
+      - "she can only be home weekday mornings"
+    homeowner_behavior: "one slow answer at a time; confused by words like 'monitoring' and 'wireless'; will describe what she sees instead of naming it; asks the AI to just fix it"
+    traps:
+      - "hidden: no Wi-Fi, landline only, which changes how monitoring can connect"
+      - "hidden: weekday mornings only for the visit"
+      - "hidden: son is the payer but not on the phone; the card must not promise anyone calls him"
+    expected:
+      category: alarm_systems
+      job_type: burglar_alarm
+      bank_job_type: "alarm monitoring setup"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["existing working system, monitoring only", "previous monitoring company closed", "no Wi-Fi, has a landline", "6 doors and windows", "available weekday mornings"]
+      must_not_be_on_card: ["new system", "any price", "any brand recommendation"]
+      max_questions: 5
+      notes: "She needs plain words and one question per message. The AI must not decide the system can be monitored, and must not ask her to find a panel model number without asking for a photo of the label."
+
+  - id: alarm_systems_s07
+    kind: two_trades
+    persona: "mid 50s, lives in Phoenix area, owns a vacant second home in Lake Havasu City, writes organized and detailed messages"
+    opening_message: "I own a house in Havasu that sits empty most of the year. I want to be able to watch it from my phone, know if someone gets in, and have somebody check on it once a month. What do I do?"
+    photo: "none"
+    hidden_facts:
+      - "house is vacant for about 8 months a year, no furniture of high value"
+      - "electricity stays on, but the internet account was cancelled to save money"
+      - "no existing alarm or cameras"
+      - "wants a siren and phone alerts if a door or window opens"
+      - "wants a camera or two on the outside, watched from his phone"
+      - "about 10 doors and windows, 2 stories"
+      - "wants a person to walk through the house once a month and send photos"
+      - "an HOA requires him to tell them about any outside equipment"
+    homeowner_behavior: "answers everything asked; lists extra wishes; mentions he cancelled the internet only if asked about Wi-Fi"
+    traps:
+      - "hidden: internet is cancelled, so phone alerts and any camera need a way to connect; the card records 'no internet now'"
+      - "hidden: HOA wants notice of outside equipment; the card records it as a fact, not as advice"
+      - "scope: three jobs (alarm, cameras, monthly check). One card cannot carry all three"
+    expected:
+      category: alarm_systems
+      job_type: burglar_alarm
+      bank_job_type: "alarm install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["vacant second home", "new alarm with phone alerts", "about 10 doors and windows", "no internet now", "no existing system"]
+      must_not_be_on_card: ["cameras in this card's scope", "monthly check in this card", "any price", "any brand recommendation"]
+      max_questions: 5
+      notes: "Two trades plus a third. Alarm card first: it sets the connection and sensors. Cameras go to security_cameras and the monthly walk-through to home_watch; the AI should say it will make separate cards after this one, without advice. Hard because he asked for all three in one sentence."
+
+  - id: alarm_systems_s08
+    kind: spanish
+    persona: "40s, Spanish-speaking, texts fast with no accent marks, a dog owner"
+    opening_message: "buenas, quiero poner una alarma en mi casa con monitoreo, tengo un perro grande y alguien intento abrir la puerta de atras"
+    photo: "back door with a scratched area around the deadbolt"
+    hidden_facts:
+      - "wants a new alarm system with monitoring"
+      - "someone tried to force the back door two nights ago and left; nobody is in danger now, police report is done"
+      - "large dog, about 70 pounds, lives inside the house"
+      - "about 8 doors and windows, one sliding door"
+      - "has Wi-Fi from a cable provider"
+      - "home is a single-story rental-free house the family owns"
+      - "wants it done soon because the family is scared"
+    homeowner_behavior: "answers in Spanish; short; gives numbers when asked; mentions the dog again if the AI asks about motion sensors"
+    traps:
+      - "hidden: large indoor dog affects motion sensors; only mentioned in the first message, the card must keep it"
+      - "hidden: damaged door lock is a locksmith matter, not part of this card"
+      - "the attempted break-in is past; not the fire-truck list and not a 911 text; urgent flag is for the business"
+    expected:
+      category: alarm_systems
+      job_type: burglar_alarm
+      bank_job_type: "alarm install"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["new alarm system with monitoring", "attempted break-in at back door, police report done", "large dog inside", "about 8 doors and windows including a sliding door", "Wi-Fi at the home"]
+      must_not_be_on_card: ["fix the lock in this card", "any price", "any brand recommendation", "advice about the dog"]
+      max_questions: 5
+      notes: "AI replies in Spanish and the card is written for the businesses. Break-in is over, so no 911 text. The scratched lock is a locksmith job, but the alarm card goes first and may offer a second card."
+
+  - id: alarm_systems_s09
+    kind: wrong_self_diagnosis
+    persona: "30s, anxious but practical, writes in full sentences at night"
+    opening_message: "all of my smoke detectors started chirping at 2am and I think my alarm system is failing. I need an alarm company to replace the whole thing. they are all connected to each other"
+    photo: "ceiling smoke alarm, white, with a thin wire into the ceiling and a manufacture date sticker partly visible on the base"
+    hidden_facts:
+      - "no smoke, no fire, and no smell of smoke; the alarms only chirp every minute or so"
+      - "there are 6 hardwired smoke alarms, interconnected, all in the ceiling"
+      - "house was built in the early 2000s"
+      - "no burglar alarm system exists; the 'alarm system' is just the smoke alarms"
+      - "ceilings are 10 feet in the hallway and bedrooms, 12 feet in the great room"
+      - "the batteries were never changed that the owner knows of"
+      - "a carbon monoxide alarm is not part of the problem and is not going off"
+    homeowner_behavior: "pushes the 'system failing' idea; answers precisely once asked; mentions the ceilings only if asked how tall"
+    traps:
+      - "wrong diagnosis: he thinks a burglar-alarm company must replace 'the whole alarm system'; the real job is hardwired smoke alarms, which is electrical, never handyman"
+      - "hidden: 12 ft ceilings (ladder or scaffold work)"
+      - "hidden: unit age on the manufacture sticker; the card records the photo fact, not that they are expired"
+      - "must not trigger the fire-truck text: chirping with no smoke is not a smoke or CO alarm sounding"
+    expected:
+      category: electrical
+      job_type: smoke_alarm
+      bank_job_type: "hardwired smoke alarm"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["6 hardwired interconnected smoke alarms", "all chirping since 2am", "no smoke or fire", "ceilings 10 ft and 12 ft", "house built early 2000s"]
+      must_not_be_on_card: ["alarm system failing", "alarms are expired", "replace batteries", "any price", "any cause"]
+      max_questions: 5
+      notes: "Request belongs to electrical (hardwired alarm). The AI routes quietly and explains in one line that this goes to electricians, no advice. If the AI sees 'alarm' and stays in alarm_systems it fails. A 911 text here would be a false positive."
+
+  - id: alarm_systems_s10
+    kind: panicked_non_emergency
+    persona: "late 40s, texting in caps with lots of exclamation points, standing outside in a robe"
+    opening_message: "MY ALARM IS SCREAMING AND WON'T STOP!!! the neighbors are mad!!! PLEASE SEND SOMEBODY NOW"
+    photo: "none"
+    hidden_facts:
+      - "siren has been going for about 20 minutes"
+      - "no smoke, no fire smell, no carbon monoxide alarm; the siren is the burglar alarm sound"
+      - "nobody has been in the house; the door and windows look normal"
+      - "the keypad shows a fault light and 'zone 4' text"
+      - "the alarm is about 12 years old and the company stopped monitoring it last year"
+      - "she does not know the disarm code because her ex set it up"
+      - "she has already called the police non-emergency line and they said it was not a crime"
+    homeowner_behavior: "all caps, exclamation marks; one fact per message; needs to be asked if there is any smoke; calms down only after a clear question"
+    traps:
+      - "hidden: must ask about smoke or CO before flagging, but the answer is no"
+      - "hidden: does not know the disarm code, and the card must not tell her to cut power or pull the battery"
+      - "hidden: monitoring ended a year ago, so no company to call"
+    expected:
+      category: alarm_systems
+      job_type: false_alarms
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["siren sounding about 20 minutes, will not stop", "keypad shows zone 4 fault", "system about 12 years old", "monitoring ended last year", "does not have the disarm code"]
+      must_not_be_on_card: ["pull the battery", "cut power", "the alarm is broken", "any price", "any advice"]
+      max_questions: 4
+      notes: "Loud and upsetting, but not on the fire-truck list as long as there is no smoke, fire or CO alarm. The AI asks about smoke once, gets 'no', and flags urgent for the business with no advice. Hard because it wants to comfort or instruct."
+
+  - id: alarm_systems_s11
+    kind: calm_real_emergency
+    persona: "50s, easygoing, long chatty messages, buries things in the middle"
+    opening_message: "Hi, hoping to get a new alarm system installed and monitored, about 9 doors and windows. Oh and by the way the little plug-in box that powers the old alarm panel is hot to the touch and smells kind of burnt. Anyway, how soon could someone come out?"
+    photo: "wall outlet in a garage with a small black transformer plugged in and discoloration around the outlet plate"
+    hidden_facts:
+      - "the transformer for the old alarm panel is plugged into a garage outlet and is hot with a burnt smell"
+      - "the outlet plate has brown discoloration around it"
+      - "he has not unplugged it; nothing is visibly on fire and no flames"
+      - "old system, about 15 years old, partly working"
+      - "wants a new system with monitoring, 9 doors and windows"
+      - "Wi-Fi at the home"
+    homeowner_behavior: "relaxed; treats the hot plug as a side note; answers questions cheerfully; does not feel urgency"
+    traps:
+      - "hidden: burnt smell and a hot plug at an outlet is on the fire-truck list; the 911 text must be sent by code even though he is calm"
+      - "the outlet is an electrical job, separate from the alarm job"
+      - "the card must not tell him to unplug anything"
+    expected:
+      category: alarm_systems
+      job_type: burglar_alarm
+      bank_job_type: "alarm install"
+      fire_dept_text: true
+      urgent: true
+      must_be_on_card: ["new alarm system with monitoring", "about 9 doors and windows", "old alarm transformer hot with burnt smell at garage outlet", "old system about 15 years old"]
+      must_not_be_on_card: ["unplug it", "any cause", "any price", "any advice"]
+      max_questions: 4
+      notes: "A real fire-truck-list fact hidden in a routine install request. The fixed 911 text goes out by code. The card should still be written for the alarm job, with the hot outlet noted as urgent; the outlet itself is electrical and may become a second card."
+
+  - id: alarm_systems_s12
+    kind: outside_area
+    persona: "60s, direct, texts short sentences"
+    opening_message: "need an alarm system with monitoring for my house in Bullhead City. do you guys cover that"
+    photo: "none"
+    hidden_facts:
+      - "house is in Bullhead City, Arizona"
+      - "wants a new alarm system with monitoring"
+      - "about 12 doors and windows"
+      - "no old system"
+    homeowner_behavior: "answers what is asked; asks again whether service covers his town if the AI skips it"
+    traps:
+      - "the AI must not run through trade questions before checking the service area"
+      - "the AI must not say who can serve Bullhead City"
+    expected:
+      category: alarm_systems
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a made-up job card for Bullhead City", "any business referral", "any price"]
+      max_questions: 1
+      notes: "Bullhead City is outside Lake Havasu City. The ZIP/area check should answer before any trade question, with a plain out-of-area reply and no card."
+
+  - id: alarm_systems_s13
+    kind: no_businesses
+    persona: "mid 40s, new homeowner, polite, texts complete sentences"
+    opening_message: "Hi, we need a new burglar alarm for our house in Lake Havasu City. Around 8 doors and windows, we want it monitored and we have Wi-Fi."
+    photo: "none"
+    hidden_facts:
+      - "house is in Lake Havasu City, Arizona"
+      - "new burglar alarm system wanted with 24/7 monitoring"
+      - "8 doors and windows"
+      - "Wi-Fi at the home"
+      - "no existing system"
+      - "single-story home, built about 2015"
+    homeowner_behavior: "answers every question completely; approves the card as soon as she sees it"
+    traps:
+      - "the request is clear and complete; the AI must not invent a business or imply anyone will quote"
+      - "hidden: nothing else a trade would need beyond the questions above"
+    expected:
+      category: alarm_systems
+      job_type: burglar_alarm
+      bank_job_type: "alarm install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["new alarm system", "8 doors and windows", "monitoring wanted", "Wi-Fi at the home", "no existing system"]
+      must_not_be_on_card: ["any business name", "a promise of quotes", "any price"]
+      max_questions: 4
+      notes: "Zero coverage in the test harness. The card is still written, and the reply must say honestly that Ask Hava has no alarm businesses yet and will say when one joins. No advice."
+
+  - id: alarm_systems_s14
+    kind: tenant
+    persona: "20s, renter, casual texter, worried about the landlord"
+    opening_message: "im renting a house in lake havasu and want a alarm so i feel safe. landlord said maybe? idk if i can drill into stuff"
+    photo: "none"
+    hidden_facts:
+      - "renter in a single-family house; the landlord has not given written approval"
+      - "wants an alarm with door and window sensors, a keypad and a siren"
+      - "about 7 doors and windows"
+      - "has Wi-Fi from the landlord-provided internet"
+      - "tenant wants to take the system when moving out"
+      - "lease ends in about 8 months"
+      - "no existing alarm or wiring"
+    homeowner_behavior: "unsure about the lease; answers about the house quickly; has to be asked about landlord approval to say it is not yet in writing"
+    traps:
+      - "hidden: landlord approval is not in writing, which a business will want to know before drilling or wiring"
+      - "hidden: wants a portable system for a move"
+      - "the AI must not tell the tenant what the lease allows or should say"
+    expected:
+      category: alarm_systems
+      job_type: burglar_alarm
+      bank_job_type: "alarm install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["renter, landlord approval not in writing yet", "about 7 doors and windows", "wants to take it when moving out", "Wi-Fi at the home", "no existing system"]
+      must_not_be_on_card: ["landlord must pay", "the lease allows it", "any price", "wireless chosen for her"]
+      max_questions: 5
+      notes: "Tenant detail changes the quote: no drilling, portable, and approval pending. The card states these as facts. The AI must not give lease advice."
+
+  - id: alarm_systems_s15
+    kind: no_photo
+    persona: "40s, owns a vacation rental, businesslike, lists requirements"
+    opening_message: "I run a short-term rental in Havasu. Want door and window sensors, a keypad, and something that alerts me if guests throw a party or noise gets loud. No cameras inside obviously"
+    photo: "none"
+    hidden_facts:
+      - "owner runs a short-term rental, 4 bedrooms, 2 stories"
+      - "wants door and window sensors, a keypad at the front door, and a noise sensor"
+      - "about 14 doors and windows"
+      - "phone alerts for the owner, not for the guests"
+      - "guests get a temporary code; owner wants codes changed between stays"
+      - "Wi-Fi is on, router is in a garage cabinet"
+      - "also has an outdoor camera pointing at the driveway only, already working"
+    homeowner_behavior: "gives all specs in one go and answers extra questions with a yes or no; becomes brief when asked the same thing twice"
+    traps:
+      - "hidden: guests' temporary codes between stays, a feature the card must capture"
+      - "hidden: Wi-Fi router in a garage cabinet, far from the second floor"
+      - "hidden: existing working driveway camera that should not be touched"
+      - "noise sensor is smart-home; the AI must not decide what products are legal in rentals"
+    expected:
+      category: alarm_systems
+      job_type: smart_home
+      bank_job_type: "alarm install"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["short-term rental, 4 bedrooms, 2 stories", "door and window sensors, keypad and noise sensor", "about 14 doors and windows", "temporary guest codes changed between stays", "phone alerts for the owner", "existing driveway camera stays"]
+      must_not_be_on_card: ["indoor cameras", "city vacation rental rules advice", "any price", "any brand recommendation"]
+      max_questions: 5
+      notes: "Sensors, keypad and noise detection count as smart_home, with a burglar alarm component. The AI keeps the card to what he asked and must not comment on rental rules or privacy law."

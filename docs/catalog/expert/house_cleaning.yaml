@@ -1,0 +1,635 @@
+# Ask Hava expert layer: house_cleaning (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set house_cleaning and trade_kb/trades/house_cleaning.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - kb job type str_turnover (vacation rental turnover) is left out: it belongs to category
+#   turnover_cleaning, which shares this kb file. The misdiagnosis check below routes it there.
+# - kb job type post_construction (after-remodel dust) is kept under bank job type
+#   "deep cleaning", the only one-time category job type that fits. Casey may want a separate
+#   "after-remodel clean" job type later so businesses can opt in or out of it.
+# - kb job type specialty_route (heavy-condition home, mold spots, droppings, sewage residue)
+#   is kept under "deep cleaning" so the card goes out with the real condition stated, not as a
+#   plain deep clean. No enabled category does restoration or mold remediation. Sewage still
+#   backing up goes to plumbing_repair first, droppings with live animals to pest_control, a
+#   home full of stored items to estate_cleanout (misdiagnosis checks below). Open question: a
+#   firm quote cannot carry a visit fee, so a cleaner who must walk a heavy home first can only
+#   say so in the quote notes.
+# - No new_job_type was needed: the kb ids cover all three category job types.
+schema: 1
+category: house_cleaning
+question_set: house_cleaning
+kb_trade: house_cleaning
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (no class covers house cleaning)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_business_license
+    title: "Lake Havasu City Business License: businesses and individuals conducting business within city limits need a city business license; annual fee"
+    url: "https://www.lhcaz.gov/business-license"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_vacation_rentals
+    title: "Lake Havasu City Vacation Rentals (City Code ch. 5.20): permit per property, 24/7 emergency point of contact, posted notice, trash out of public view until 12 hours before pickup"
+    url: "https://www.lhcaz.gov/vacation-rentals"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_33_1321
+    title: "A.R.S. 33-1321 Security deposits: itemized deductions and refund within 14 days, not counting weekends and holidays, after move-out and the tenant's demand; deductions as set in the signed lease"
+    url: "https://www.azleg.gov/ars/33/01321.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 grains per gallon, TDS about 753 ppm)"
+    url: "https://www.lhcaz.gov/288/Water"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: adwr_monsoon
+    title: "Arizona Department of Water Resources: monsoon season runs June 15 to September 30 and brings dust storms"
+    url: "https://www.azwater.gov/news/articles/2024-05-28"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: zenmaid_lsa
+    title: "ZenMaid (cleaning software vendor): Google Local Services Ads for cleaning businesses, 2026 (about $60 to $70 per lead in the author's client accounts)"
+    url: "https://www.zenmaid.com/magazine/google-local-services-ads-for-cleaning-businesses-2026-guide-with-real-screenshots/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: zenmaid_marketing
+    title: "ZenMaid: marketing numbers for cleaning businesses (spend 15 to 30 percent of customer lifetime value to win and keep a customer)"
+    url: "https://www.zenmaid.com/magazine/marketing-numbers-you-need/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: nextphone_angi
+    title: "NextPhone (marketing vendor): Angi shared-lead model (no single published price; each request goes to 3 or 4 pros, sometimes more, and each is charged)"
+    url: "https://www.getnextphone.com/blog/angi-leads-for-contractors"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: hcp_thumbtack
+    title: "Housecall Pro (field-service software vendor): how Thumbtack works (pros report $10 to over $100 per lead by trade and market; leads are not exclusive)"
+    url: "https://www.housecallpro.com/resources/what-is-thumbtack-how-it-works/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: pulse_cleaning_gtm
+    title: "Pulse RevOps: go-to-market notes for house cleaning services (page marks its own figures as illustrative and not yet fact-checked)"
+    url: "https://pulserevops.com/knowledge/gp0286"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Kind of clean: regular upkeep, one-time deep clean, or move-out"
+      why: "A first deep or move-out clean takes two to three times the hours of a kept-up regular visit; the bank's service question settles it. [judgment]"
+      source: null
+    - driver: "How long since the last top-to-bottom clean"
+      why: "Months of buildup on stovetops, shower glass and floors add hours that bedrooms and baths do not show; most quotes that go wrong miss this. [judgment]"
+      source: null
+    - driver: "Bathrooms first, then bedrooms"
+      why: "Bathrooms are the slowest rooms per square foot; bedroom count sets the rest of the crew time. [judgment]"
+      source: null
+    - driver: "How often, for regular service (weekly, every two weeks, monthly)"
+      why: "Weekly visits stay light; monthly visits face a month of buildup, so the per-visit price rises as visits spread out. [judgment]"
+      source: null
+    - driver: "Extras: inside the oven, inside the fridge, inside cabinets, inside windows, laundry"
+      why: "Each is a set add-on in most cleaners' price sheets and can add an hour or more. [judgment]"
+      source: null
+    - driver: "Hard-water crust on shower glass, faucets and sinks"
+      why: "City water runs about 19 grains per gallon, so scale on glass and fixtures is the slowest part of a Havasu bathroom."
+      source: lhc_ccr
+    - driver: "Pets in the home"
+      why: "Pet hair on floors, furniture and vents adds vacuum time and sometimes a second pass. [judgment]"
+      source: null
+    - driver: "For move-outs: empty or still furnished, and power and water on"
+      why: "An empty home is a checklist job; furniture, left-behind items or no water and power change the job or stop it. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Home is in much heavier shape than the words say (grease on the stove, soap scum, floors not mopped in months)"
+      how_a_pro_spots_it: "Kitchen photo of the stovetop and counters; the answer on when it was last cleaned top to bottom"
+      question_or_photo: fu_last_clean
+      source: null
+    - condition: "Thick hard-water scale on shower glass and fixtures"
+      how_a_pro_spots_it: "White haze or crust on the glass and faucet in the main bathroom photo"
+      question_or_photo: p2
+      source: lhc_ccr
+    - condition: "Clutter that has to be picked up before any surface can be cleaned"
+      how_a_pro_spots_it: "Items covering counters, tables and floors in the living-area photo"
+      question_or_photo: p3
+      source: null
+    - condition: "Belongings, furniture or trash left in a move-out home"
+      how_a_pro_spots_it: "The empty-or-not answer; boxes or furniture in the living-area photo"
+      question_or_photo: fu_empty
+      source: null
+    - condition: "Power or water already shut off at a move-out or a part-year home"
+      how_a_pro_spots_it: "The utilities answer; a home that has sat empty for the summer"
+      question_or_photo: fu_utilities
+      source: null
+    - condition: "Part-year home shut for months: dust from storms, dead insects, a stale fridge"
+      how_a_pro_spots_it: "The occupancy answer says the home sits empty part of the year; monsoon dust storms run June 15 to September 30"
+      question_or_photo: fu_occupancy
+      source: adwr_monsoon
+    - condition: "Landlord's move-out checklist asks for more than the tenant described (inside appliances, cabinets, blinds)"
+      how_a_pro_spots_it: "The move-out answer says it is a rental the homeowner is leaving; the extras answer"
+      question_or_photo: fu_move_who
+      source: null
+    - condition: "Work outside routine cleaning: mold growth, sewage, heavy droppings, remodel dust in every vent"
+      how_a_pro_spots_it: "The problem-area photo; the answer on anything past normal dirt and dust"
+      question_or_photo: fu_problem_area
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "deep cleaning (a house that has guests in and out)"
+      might_be: "str_turnover, a vacation rental turnover in a different category"
+      one_question: fu_occupancy
+      if_other_route_to: {category: turnover_cleaning, job_type: "turnover clean"}
+      source: null
+    - sounds_like: "regular cleaning (keep the house up while we're gone for the summer)"
+      might_be: "a house check while the home sits empty, a different category"
+      one_question: fu_occupancy
+      if_other_route_to: {category: home_watch, job_type: "weekly house check"}
+      source: null
+    - sounds_like: "regular cleaning (start every two weeks)"
+      might_be: "deep_clean first, because the home has not been cleaned in months"
+      one_question: fu_last_clean
+      if_other_route_to: {category: house_cleaning, job_type: "deep cleaning"}
+      source: null
+    - sounds_like: "move-out cleaning (house still full of a relative's things)"
+      might_be: "a whole-house cleanout, a different category"
+      one_question: fu_empty
+      if_other_route_to: {category: estate_cleanout, job_type: "whole-house cleanout"}
+      source: null
+    - sounds_like: "deep cleaning (\"it got kind of backed up\", \"hasn't been cleaned in years\")"
+      might_be: "specialty_route, a heavy-condition home where items must be moved or hauled first"
+      one_question: fu_floor_visible
+      if_other_route_to: {category: house_cleaning, job_type: "deep cleaning"}
+      source: null
+    - sounds_like: "deep cleaning (sewage on the bathroom floor)"
+      might_be: "main_line_backup, plumbing work first"
+      one_question: fu_problem_area
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}
+      source: null
+    - sounds_like: "deep cleaning (droppings in the garage and cabinets)"
+      might_be: "a pest job, a different category"
+      one_question: fu_problem_area
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+    - sounds_like: "deep cleaning (hard-water spots on the windows outside)"
+      might_be: "window hard-water removal, a different category"
+      one_question: fu_extras
+      if_other_route_to: {category: window_cleaning, job_type: "hard-water removal"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Grease on the stovetop and hood", "Clutter and dishes on counters", "Condition of the floor", "Whether the fridge and oven look used and full or empty"]
+      neutral_wording: "Kitchen counters mostly clear; brown buildup on the stovetop burners."
+    - photo_id: p2
+      reads: ["White haze or crust on the shower glass", "Soap scum in the tub", "Scale at the faucet base", "Tub and shower or shower only"]
+      neutral_wording: "Glass shower door with white haze across the lower half; tub and sink in view."
+    - photo_id: p3
+      reads: ["Clutter on floors and tables", "Carpet, tile or wood floors", "Pet hair or pet beds", "Furniture in place or an empty room"]
+      neutral_wording: "Tile living room, furniture in place, a dog bed by the couch."
+    - photo_id: p4
+      reads: ["Dark spots on walls or ceiling", "Stains on carpet", "Boxes or items piled up", "Dust from a remodel"]
+      neutral_wording: "Dark spots on the bathroom ceiling above the shower."
+  local_factors:
+    - fact: "City water hardness averages about 19 grains per gallon with TDS about 753 ppm"
+      effect: "Hard-water scale on shower glass, faucets and sinks is the slowest part of most bathrooms; cleaners ask for the bathroom photo"
+      source: lhc_ccr
+    - fact: "Monsoon season runs June 15 to September 30 and brings dust storms"
+      effect: "Dust on sills, tracks, fans and patios after storms; a run of one-time deep cleans late in the season"
+      source: adwr_monsoon
+    - fact: "Every vacation rental needs a city permit and a 24/7 emergency contact, and trash must stay out of public view until 12 hours before pickup"
+      effect: "Rentals between guests go to turnover_cleaning, not here; owners of permitted rentals ask about bins and set schedules"
+      source: lhc_vacation_rentals
+    - fact: "A landlord itemizes deposit deductions within 14 days, not counting weekends and holidays, after a tenant moves out and asks; deductions follow the signed lease"
+      effect: "Move-out cleans cluster at month end with a fixed walk-through date, and the lease checklist sets the scope [judgment]"
+      source: ars_33_1321
+    - fact: "Lake Havasu City asks businesses working inside city limits to hold a city business license"
+      effect: "Cleaners may mention a city license; Ask Hava does not check it, and no state contractor license applies to cleaning"
+      source: lhc_business_license
+    - fact: "Many homes belong to part-year residents who arrive in the fall and leave in the spring"
+      effect: "Arrival and departure cleans, homes shut for months, power or water sometimes off [judgment]"
+      source: null
+    - fact: "Summer heat in homes with the AC set high or off"
+      effect: "Crews book early mornings in July and August and ask whether the AC will be on [judgment]"
+      source: null
+    - fact: "Manufactured homes and 55-plus communities with small footprints are common"
+      effect: "Many 1 or 2 bedroom requests; some HOAs set gate or parking rules for crews [judgment]"
+      source: null
+  seasonality:
+    busy: "October to November (part-year residents arrive, holiday hosting) and March to April (spring cleans, departure cleans); month ends for move-outs all year [judgment]"
+    slow: "June to September for regular service, when many part-year homes sit empty [judgment]"
+    source: null
+
+job_types:
+  - id: recurring
+    label: "Weekly, every two weeks or monthly cleaning"
+    bank_job_type: "regular cleaning"
+    recurring: true
+    homeowner_phrasings: ["need a house cleaner", "cleaning lady every other week", "maid service", "someone to clean once a month", "limpieza cada semana"]
+    must_know:
+      - fact: "Bedrooms and bathrooms"
+        bank_question: bathrooms
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Bathroom count drives crew time more than any other room, and bedrooms set the rest. [judgment]"
+        skip_if: "Homeowner already gave beds and baths (bedrooms is asked separately)"
+      - fact: "How often"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Visit spacing sets the per-visit price; monthly visits face more buildup than weekly ones. [judgment]"
+        skip_if: "Homeowner named the schedule"
+      - fact: "When the home was last cleaned top to bottom"
+        bank_question: null
+        follow_up: fu_last_clean
+        photo: p1
+        why_it_moves_price: "A home not cleaned in months needs a longer first visit, which most cleaners price apart from the regular rate. [judgment]"
+        skip_if: "Homeowner says a cleaner just stopped coming, or the kitchen photo shows a kept-up home"
+      - fact: "Pets in the home"
+        bank_question: pets
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Pet hair adds vacuum time on every visit. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether she lives there full time or the home sits empty part of the year"
+        bank_question: null
+        follow_up: fu_occupancy
+        photo: null
+        why_it_moves_price: "A part-year home gets fewer, heavier visits, and a guest rental is a different category. [judgment]"
+        skip_if: "Her words already say she lives there"
+    allowed_follow_ups:
+      - id: fu_last_clean
+        ask_when: "Homeowner wants regular or deep cleaning and has not said when the home was last cleaned top to bottom"
+        text_en: "When was the home last cleaned top to bottom?"
+        text_es: "¿Cuándo fue la última vez que se limpió la casa a fondo?"
+        options_en: ["Within the last month", "1 to 6 months ago", "Over 6 months ago", "Never by a cleaner"]
+        options_es: ["En el último mes", "Hace 1 a 6 meses", "Hace más de 6 meses", "Nunca con un servicio de limpieza"]
+        card_field: true
+        why: "Time since the last full clean is the hidden half of every cleaning price and separates a regular visit from a first deep clean. [judgment]"
+      - id: fu_occupancy
+        ask_when: "Homeowner's words do not say who uses the home, or mention a second home, snowbirds, tenants or guests"
+        text_en: "Who uses the home: you live there full time, it sits empty part of the year, or it is rented to tenants or guests?"
+        text_es: "¿Quién usa la casa: vive ahí todo el año, se queda vacía parte del año, o se renta a inquilinos o huéspedes?"
+        options_en: ["We live here full time", "Empty part of the year", "Rented to long-term tenants", "Rented to vacation guests"]
+        options_es: ["Vivimos aquí todo el año", "Vacía parte del año", "Se renta a inquilinos", "Se renta a huéspedes de vacaciones"]
+        card_field: true
+        why: "Vacation guests are a turnover job in another category; a part-year home changes the visit plan. [judgment]"
+      - fu_extras
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell in the home"]
+      urgent_capable_triggers: []
+      regular: "All regular cleaning requests"
+    scope_line_en: "Cleaning every two weeks for a 3 bed, 2 bath house; last cleaned by a pro about 2 months ago; one dog."
+    scope_line_es: "Limpieza cada dos semanas para una casa de 3 recámaras y 2 baños; la última limpieza profesional fue hace unos 2 meses; un perro."
+    quote_format: monthly
+    business_fills: ["price per visit", "how often", "any first-visit charge, listed as a one-time setup charge", "earliest start date"]
+    card_template: |
+      REQ-<id> | House cleaning | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: how often, size, last full clean, pets>
+      Size: <bedrooms> bed / <bathrooms> bath. How often: <weekly / every two weeks / monthly>. Pets: <yes, kind if given / no>.
+      Last full clean: <within a month / 1 to 6 months / over 6 months / never by a cleaner / not said>. Home: <lived in full time / empty part of the year / not said>. Extras: <list or none>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Every two weeks is the better deal.", "Most cleaners charge about a hundred a visit.", "Don't mix bleach and ammonia.", "That should only take a couple of hours.", "You'll want a deep clean first."]
+
+  - id: deep_clean
+    label: "One-time deep clean"
+    bank_job_type: "deep cleaning"
+    recurring: false
+    homeowner_phrasings: ["deep clean", "spring cleaning", "top to bottom", "baseboards and fans", "getting the house ready for family", "limpieza profunda"]
+    must_know:
+      - fact: "When the home was last cleaned top to bottom"
+        bank_question: null
+        follow_up: fu_last_clean
+        photo: p1
+        why_it_moves_price: "Buildup is what a deep clean removes; months of it can double the hours. [judgment]"
+        skip_if: "Kitchen and bathroom photos show the condition and she said when"
+      - fact: "Bathrooms, and how much hard-water scale is on the glass and fixtures"
+        bank_question: bathrooms
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Scale removal on Havasu shower glass is slow work and sets much of the deep-clean time."
+        skip_if: "Answered and bathroom photo sent"
+      - fact: "Bedrooms and living areas"
+        bank_question: bedrooms
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Sets the time for baseboards, fans, blinds and floors across the home. [judgment]"
+        skip_if: "Answered"
+      - fact: "Extras: inside oven, fridge, cabinets, inside windows, laundry"
+        bank_question: null
+        follow_up: fu_extras
+        photo: null
+        why_it_moves_price: "Each is priced as an add-on by most cleaners. [judgment]"
+        skip_if: "Homeowner listed what she wants or said none"
+      - fact: "Anything past normal dirt and dust"
+        bank_question: null
+        follow_up: fu_problem_area
+        photo: p4
+        why_it_moves_price: "Remodel dust, droppings or sewage change the gear and the hours, and some of it is not cleaning work. [judgment]"
+        skip_if: "Nothing in her words or photos suggests it"
+    allowed_follow_ups:
+      - fu_last_clean
+      - id: fu_extras
+        ask_when: "Homeowner has not said whether she wants inside appliances, cabinets, windows or laundry done"
+        text_en: "Anything extra on the list?"
+        text_es: "¿Algo extra en la lista?"
+        options_en: ["Inside the oven", "Inside the fridge", "Inside cabinets", "Inside windows", "Laundry or bed linens", "None of these"]
+        options_es: ["Adentro del horno", "Adentro del refrigerador", "Adentro de los gabinetes", "Ventanas por dentro", "Ropa o ropa de cama", "Nada de esto"]
+        card_field: true
+        why: "Extras are the add-ons a cleaner prices one by one; outside windows go to window cleaning. [judgment]"
+      - id: fu_problem_area
+        ask_when: "Homeowner mentions a smell, stains, a remodel, a backup, droppings, or a home packed with items"
+        text_en: "Is there anything in the home besides normal dirt and dust?"
+        text_es: "¿Hay algo en la casa además de la suciedad y el polvo normal?"
+        options_en: ["Just normal dirt and dust", "Dust from a remodel or paint job", "Dark spots on walls or ceiling", "Sewage or dirty water", "Droppings or nests", "Piles of stored items"]
+        options_es: ["Solo suciedad y polvo normal", "Polvo de una remodelación o pintura", "Manchas oscuras en paredes o techo", "Aguas negras o agua sucia", "Excremento o nidos", "Montones de cosas guardadas"]
+        card_field: true
+        why: "Separates a routine deep clean from remodel dust, a plumbing backup, a pest job or a cleanout without naming any of them. [judgment]"
+      - fu_occupancy
+    photos_priority: [p1, p2, p4]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell in the home"]
+      urgent_capable_triggers: ["Guests or a family event arriving within 2 days"]
+      regular: "Deep clean with a week or more of notice"
+    scope_line_en: "One-time deep clean of a 3 bed, 2 bath house before family visits; last full clean over 6 months ago; inside oven and fridge too."
+    scope_line_es: "Limpieza profunda de una sola vez para una casa de 3 recámaras y 2 baños antes de una visita familiar; la última limpieza a fondo fue hace más de 6 meses; también adentro del horno y del refrigerador."
+    quote_format: firm
+    business_fills: ["price for the whole clean", "what the clean includes", "crew size or hours planned", "earliest day"]
+    card_template: |
+      REQ-<id> | House cleaning | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: one-time deep clean, size, reason if given>
+      Size: <bedrooms> bed / <bathrooms> bath. Last full clean: <within a month / 1 to 6 months / over 6 months / never by a cleaner / not said>. Pets: <yes / no>.
+      Extras: <oven / fridge / cabinets / inside windows / laundry / none>. Past normal dirt: <none / as she described it>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's black mold.", "Deep cleans run about three hundred.", "You'll need a restoration company for that.", "Vinegar takes those hard-water spots right off.", "It's just a little dust."]
+
+  - id: move_out
+    label: "Move-in or move-out clean"
+    bank_job_type: "move-out cleaning"
+    recurring: false
+    homeowner_phrasings: ["move out clean", "need it clean to get my deposit back", "empty house clean", "cleaning before we list the house", "limpieza de mudanza"]
+    must_know:
+      - fact: "Whether the home will be empty on cleaning day"
+        bank_question: null
+        follow_up: fu_empty
+        photo: p3
+        why_it_moves_price: "Empty is a set checklist; furniture or left items slow the crew or turn it into a cleanout. [judgment]"
+        skip_if: "Homeowner said it is empty, or the living-area photo shows empty rooms"
+      - fact: "Bedrooms and bathrooms"
+        bank_question: bathrooms
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Move-out pricing is set mostly by bed and bath count. [judgment]"
+        skip_if: "Answered (bedrooms is asked separately)"
+      - fact: "Inside appliances, cabinets and windows"
+        bank_question: null
+        follow_up: fu_extras
+        photo: p1
+        why_it_moves_price: "Most move-out checklists include inside the oven, fridge and cabinets; each adds time. [judgment]"
+        skip_if: "Homeowner listed the checklist items"
+      - fact: "Power and water on that day"
+        bank_question: null
+        follow_up: fu_utilities
+        photo: null
+        why_it_moves_price: "No water or power means the crew brings its own or cannot do the job that day. [judgment]"
+        skip_if: "Homeowner said the utilities stay on"
+      - fact: "Whose move it is: tenant leaving, owner selling, or landlord between tenants"
+        bank_question: null
+        follow_up: fu_move_who
+        photo: null
+        why_it_moves_price: "A tenant's lease checklist or a listing date sets the scope and the deadline; a landlord may want repeat work. [judgment]"
+        skip_if: "Her words already say"
+    allowed_follow_ups:
+      - id: fu_empty
+        ask_when: "Move-out or move-in clean and the homeowner has not said whether the home will be empty"
+        text_en: "On cleaning day, will the home be empty, have some furniture left, or still be full of belongings?"
+        text_es: "El día de la limpieza, ¿la casa va a estar vacía, con algunos muebles, o todavía llena de cosas?"
+        options_en: ["Empty", "Some furniture left", "Still full of belongings"]
+        options_es: ["Vacía", "Con algunos muebles", "Todavía llena de cosas"]
+        card_field: true
+        why: "Full of belongings is a cleanout, a different category; some furniture slows the crew. [judgment]"
+      - id: fu_utilities
+        ask_when: "Move-out, move-in or part-year home and the homeowner has not said whether the power and water are on"
+        text_en: "Will the power and water be on that day?"
+        text_es: "¿Va a haber luz y agua ese día?"
+        options_en: ["Both on", "Power only", "Water only", "Both off"]
+        options_es: ["Las dos", "Solo luz", "Solo agua", "Ninguna"]
+        card_field: true
+        why: "Crews need water and power to clean; without them they bring their own or reschedule. [judgment]"
+      - id: fu_move_who
+        ask_when: "Move-out clean and the homeowner's words do not say whose move it is"
+        text_en: "Is this a rental you are leaving, a home you are selling, or a rental you own between tenants?"
+        text_es: "¿Es una renta que está dejando, una casa que está vendiendo, o una renta suya entre inquilinos?"
+        options_en: ["A rental I am leaving", "A home I am selling", "My rental, between tenants", "A home I am moving into"]
+        options_es: ["Una renta que estoy dejando", "Una casa que estoy vendiendo", "Mi renta, entre inquilinos", "Una casa a la que me voy a mudar"]
+        card_field: true
+        why: "A lease checklist, a listing date or a landlord who rents again each set a different scope. [judgment]"
+      - fu_extras
+    photos_priority: [p3, p1, p2]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell in the home"]
+      urgent_capable_triggers: ["Walk-through or key return within 2 days"]
+      regular: "Move date a week or more away"
+    scope_line_en: "Move-out clean of an empty 2 bed, 2 bath rental at lease end; power and water on; inside oven, fridge and cabinets."
+    scope_line_es: "Limpieza de salida de una renta vacía de 2 recámaras y 2 baños al terminar el contrato; hay luz y agua; adentro del horno, refrigerador y gabinetes."
+    quote_format: firm
+    business_fills: ["price for the whole clean", "what the checklist includes", "earliest day"]
+    card_template: |
+      REQ-<id> | House cleaning | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: move-out or move-in, size, empty or not>
+      Size: <bedrooms> bed / <bathrooms> bath. On cleaning day: <empty / some furniture / full of belongings>. Power and water: <both on / power only / water only / both off>.
+      Whose move: <leaving a rental / selling / landlord between tenants / moving in / not said>. Extras: <oven / fridge / cabinets / inside windows / none>. Pets lived here: <yes / no>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["This will get your deposit back.", "Your landlord can't charge you for cleaning.", "Move-outs run about two fifty.", "Leave the power on or they can't clean.", "Carpet cleaning is included."]
+
+  - id: post_construction
+    label: "After-remodel dust and debris clean"
+    bank_job_type: "deep cleaning"
+    recurring: false
+    homeowner_phrasings: ["construction dust", "drywall dust everywhere", "cleaning after the remodel", "just put in new floors and there is dust on everything", "polvo de la obra"]
+    must_know:
+      - fact: "Where the dust reached: surfaces only, or also vents, fans and inside cabinets"
+        bank_question: null
+        follow_up: fu_dust_where
+        photo: p3
+        why_it_moves_price: "Dust inside cabinets, vents and fan blades means every surface is wiped more than once, often twice the hours of a normal deep clean. [judgment]"
+        skip_if: "Homeowner already said where the dust is"
+      - fact: "Anything left from the work besides dust: paint drips, tape, stickers, haze on new floors"
+        bank_question: null
+        follow_up: fu_work_left
+        photo: p4
+        why_it_moves_price: "Scraping paint, peeling labels and floor haze are slow detail work some cleaners price apart or do not take. [judgment]"
+        skip_if: "Photo shows the surfaces and she described them"
+      - fact: "Bedrooms and bathrooms"
+        bank_question: bathrooms
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sets the base time across the home. [judgment]"
+        skip_if: "Answered (bedrooms is asked separately)"
+      - fact: "Whether the home is empty and the work is finished"
+        bank_question: null
+        follow_up: fu_empty
+        photo: null
+        why_it_moves_price: "Cleaning an empty, finished home is one pass; furniture in place or trades still working means a second visit. [judgment]"
+        skip_if: "Homeowner said the contractor is done and nobody lives there yet"
+    allowed_follow_ups:
+      - id: fu_dust_where
+        ask_when: "After-remodel clean and the homeowner has not said where the dust reached"
+        text_en: "Where is the dust: on surfaces only, or also in the vents, ceiling fans and inside cabinets?"
+        text_es: "¿Dónde está el polvo: solo en las superficies, o también en las rejillas, los ventiladores de techo y adentro de los gabinetes?"
+        options_en: ["Surfaces only", "Also vents and fans", "Also inside cabinets", "All of these"]
+        options_es: ["Solo en las superficies", "También rejillas y ventiladores", "También adentro de los gabinetes", "Todo esto"]
+        card_field: true
+        why: "How far the dust reached is the main price driver in an after-remodel clean. [judgment]"
+      - id: fu_work_left
+        ask_when: "After-remodel clean and the homeowner has not said what else the work left behind"
+        text_en: "Is anything left from the work besides dust, like paint drips, tape or stickers, or a haze on new floors?"
+        text_es: "¿Quedó algo de la obra además del polvo, como gotas de pintura, cinta o etiquetas, o una capa opaca en el piso nuevo?"
+        options_en: ["Paint drips or spots", "Tape or stickers", "Haze on new floors or tile", "Nothing besides dust", "More than one of these"]
+        options_es: ["Gotas o manchas de pintura", "Cinta o etiquetas", "Capa opaca en el piso o azulejo nuevo", "Nada además del polvo", "Más de una de estas"]
+        card_field: true
+        why: "Each is detail work a cleaner prices or declines on its own; the card records what she sees, never a cause. [judgment]"
+      - fu_empty
+      - fu_utilities
+    photos_priority: [p3, p4, p1]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell in the home"]
+      urgent_capable_triggers: ["Furniture delivery or move-in within 2 days"]
+      regular: "Work finished, move-in a week or more away"
+    scope_line_en: "After-remodel clean of an empty 4 bed, 3 bath house; new tile floors last week; dust on all surfaces and in vents and fans."
+    scope_line_es: "Limpieza después de la remodelación de una casa vacía de 4 recámaras y 3 baños; pisos de azulejo nuevos la semana pasada; polvo en todas las superficies y en rejillas y ventiladores."
+    quote_format: firm
+    business_fills: ["price for the whole clean", "what the clean includes (vents, fans, inside cabinets, paint drips)", "what is not included", "earliest day"]
+    card_template: |
+      REQ-<id> | House cleaning | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: after-remodel clean, what work was done, size>
+      Size: <bedrooms> bed / <bathrooms> bath. Dust: <surfaces only / vents and fans / inside cabinets / all>. Left from the work: <paint drips / tape or stickers / haze on new floors / nothing else>.
+      On cleaning day: <empty / some furniture / furnished>. Power and water: <both on / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That haze is grout residue.", "Your contractor should have cleaned that.", "Vinegar will take the haze off.", "After-remodel cleans run double a deep clean.", "Change your AC filter first."]
+
+  - id: specialty_route
+    label: "Heavy-condition home: stacked belongings, mold spots, droppings, sewage residue"
+    bank_job_type: "deep cleaning"
+    recurring: false
+    homeowner_phrasings: ["it got kind of backed up", "hasn't been cleaned in years", "hoarder house", "black mold everywhere", "mouse droppings all over", "moho"]
+    must_know:
+      - fact: "How much of the floor shows in the main rooms"
+        bank_question: null
+        follow_up: fu_floor_visible
+        photo: p3
+        why_it_moves_price: "A home with only paths open needs items moved or removed before any cleaning, which can be days of work or a cleanout job. [judgment]"
+        skip_if: "Living-area photo shows the floors"
+      - fact: "What is there besides dirt and dust: stored items, dark spots, droppings, sewage or dirty water"
+        bank_question: null
+        follow_up: fu_problem_area
+        photo: p4
+        why_it_moves_price: "Each changes the gear, the crew and whether a cleaner takes it at all; sewage still backing up and live animals go to other trades first. [judgment]"
+        skip_if: "Her words and photos already say"
+      - fact: "Bedrooms and bathrooms"
+        bank_question: bathrooms
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sets the base time once the home is cleared. [judgment]"
+        skip_if: "Answered (bedrooms is asked separately)"
+      - fact: "Whether items have to be removed or sorted first"
+        bank_question: null
+        follow_up: fu_items_out
+        photo: null
+        why_it_moves_price: "Hauling and sorting is a cleanout, priced by volume, not by rooms. [judgment]"
+        skip_if: "Floor answer is most of it"
+    allowed_follow_ups:
+      - id: fu_floor_visible
+        ask_when: "Homeowner's words suggest a home in much heavier shape than usual (backed up, years, piled up, embarrassed) and no living-area photo"
+        text_en: "In the main rooms, about how much of the floor can you see?"
+        text_es: "En los cuartos principales, ¿más o menos cuánto del piso se ve?"
+        options_en: ["Most of it", "About half", "Only paths", "Hardly any"]
+        options_es: ["Casi todo", "Como la mitad", "Solo pasillos", "Casi nada"]
+        card_field: true
+        why: "A plain, non-judging question that tells a cleaner whether this is a heavy clean or a cleanout first. [judgment]"
+      - fu_problem_area
+      - id: fu_items_out
+        ask_when: "Floor answer is about half, only paths or hardly any"
+        text_en: "Do items need to be hauled away or sorted before the cleaning?"
+        text_es: "¿Hay que sacar o separar cosas antes de la limpieza?"
+        options_en: ["Yes, hauled away", "Yes, sorted to keep or donate", "Both", "No, just cleaned around"]
+        options_es: ["Sí, sacarlas", "Sí, separar para guardar o donar", "Las dos", "No, solo limpiar alrededor"]
+        card_field: true
+        why: "Hauling or sorting is cleanout work in another category; cleaning around items stays here. [judgment]"
+    photos_priority: [p3, p4, p1]
+    urgency:
+      fire_dept_triggers: ["Gas or propane smell in the home"]
+      urgent_capable_triggers: ["Sewage or dirty water still on the floor"]
+      regular: "Heavy-condition clean with no water on the floor"
+    scope_line_en: "One-time heavy clean of a 3 bed, 2 bath house; floor shows only along paths; droppings in several rooms; items to be hauled away first."
+    scope_line_es: "Limpieza fuerte de una sola vez de una casa de 3 recámaras y 2 baños; el piso se ve solo en pasillos; excremento en varios cuartos; hay que sacar cosas primero."
+    quote_format: firm
+    business_fills: ["price for the whole job, or what you need to see before a firm price", "what the price includes and leaves out", "crew size", "earliest day"]
+    card_template: |
+      REQ-<id> | House cleaning | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: heavy-condition one-time clean, size, the main condition in her words>
+      Size: <bedrooms> bed / <bathrooms> bath. Floor showing: <most / about half / only paths / hardly any>. Besides dirt: <stored items / dark spots / droppings / sewage or dirty water / as she described>.
+      Items first: <haul away / sort / both / clean around / not said>. Who will be there: <homeowner / family member with a key / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's black mold.", "This is a hoarding situation.", "Wear a mask before you go in.", "That needs a biohazard team.", "It will cost thousands to clear out."]
+
+business_side:
+  how_they_get_customers: ["Word of mouth and repeat customers", "Google Maps listing and reviews", "Google Local Services Ads", "Local Facebook groups and Nextdoor [judgment]", "Thumbtack and Angi", "Realtors and property managers for move-outs [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google Local Services Ads (cleaning)"
+      figure: "About $60 to $70 per lead, from one marketing vendor's own client accounts"
+      source: zenmaid_lsa
+      unverified: false
+    - channel: "Angi (shared requests)"
+      figure: "No single published price; each request goes to 3 or 4 pros, sometimes more, and each one pays for it"
+      source: nextphone_angi
+      unverified: false
+    - channel: "Thumbtack"
+      figure: "Pros report about $10 to over $100 per lead depending on trade and market; requests are not exclusive"
+      source: hcp_thumbtack
+      unverified: false
+    - channel: "Marketing budget rule of thumb (cleaning)"
+      figure: "Spend 15 to 30 percent of a customer's lifetime value to win and keep that customer"
+      source: zenmaid_marketing
+      unverified: false
+    - channel: "Referred versus paid clients (cleaning)"
+      figure: "About $45 to $90 per referred client versus $220 to $340 on paid channels; the page marks these figures as illustrative"
+      source: pulse_cleaning_gtm
+      unverified: true
+    - channel: "Lake Havasu City cleaners specifically"
+      figure: "No local figures found; a small market with many part-year residents may run below national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a request that 3 or 4 other cleaners also bought", "One-time bargain hunters who never become regulars", "Homeowners who understate the condition, then balk at the real price", "Monthly fees whether or not jobs come", "Requests that never answer the phone"]
+  what_makes_a_lead_worth_paying_for: ["Beds, baths, how often and last full clean stated up front", "Kitchen and bathroom photos that show the real condition", "Pay only when picked, nothing monthly", "A regular customer for the price of one fee, capped at $75", "Move-out date, empty or not, and utilities stated"]
+  their_words: ["recurring", "biweekly", "initial clean", "deep clean", "move-out", "top to bottom", "detail clean", "baseboards", "inside oven", "inside fridge", "blinds", "ceiling fans", "hard water", "soap scum", "two-person team", "per visit", "flat rate", "walk-through", "checklist"]
+  signup_objections:
+    - objection: "Why pay a fee for a cleaning client?"
+      answer: "You pay once, only when the homeowner picks your quote. A regular cleaning customer costs $25 or $75, never more. A one-time deep or move-out clean is $25, $75 or $199 by job size. If that customer picks you again through Ask Hava, there is no fee."
+    - objection: "I don't quote without a walk-through."
+      answer: "Each card gives beds, baths, how often, when it was last cleaned top to bottom, pets and extras, and most come with kitchen and bathroom photos. Quote from that, and use your notes to say what would change the price, like a home in heavier shape than the photos."
+    - objection: "Can I charge more for the first visit?"
+      answer: "Yes. Quote your regular price per visit and list the first deeper visit as a one-time setup charge. The setup charge is not counted in the fee."
+    - objection: "Homeowners just want the cheapest cleaner."
+      answer: "The homeowner sees every quote in the order it came in, with each business's name, review links and notes. Ask Hava never sorts, rates or scores a business."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town, photos and answers to the questions a cleaner asks. Names and addresses go only to the business the homeowner picks."
+    - objection: "What if I quote and don't get the job?"
+      answer: "Then you pay nothing. The fee is charged only when a homeowner picks your quote and you confirm."
+    - objection: "What if they cancel after the first clean?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded. After that the fee stands. It is a fixed introduction fee, not a share of the job."
+    - objection: "Is there a monthly fee or a contract?"
+      answer: "No. Nothing to join and nothing per month. You pay only on a pick."
+    - objection: "I only do regular cleaning, not move-outs."
+      answer: "You choose your job types at sign-up and can change them any time. You get cards only for those."
+    - objection: "Do I need a license to sign up?"
+      answer: "No state contractor license covers house cleaning, so none is asked for. Lake Havasu City has its own business license rule for businesses working inside city limits."
+  quote_tips_for_card: ["Give a price per visit and say how often", "List any first-visit charge as a one-time setup charge", "Say what your deep or move-out clean includes, such as inside the oven, fridge and cabinets", "Say whether you bring supplies and equipment", "Give your earliest start date"]

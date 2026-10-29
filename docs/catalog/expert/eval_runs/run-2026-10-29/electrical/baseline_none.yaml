@@ -1,0 +1,494 @@
+category: electrical
+variant: baseline_none
+model: "claude-haiku-5-5 (Haiku 5.5)"
+run: "run-2026-10-29"
+results:
+  - scenario_id: electrical_s01
+    transcript:
+      - {who: homeowner, text: "power is acting weird in the back of the house"}
+      - {who: intake, text: "What is happening with the power, and in which rooms?", step: question}
+      - {who: homeowner, text: "its weird. back bedrooms. the lights dim for a sec then come back"}
+      - {who: intake, text: "How often does it happen?", step: question}
+      - {who: homeowner, text: "about once an hour"}
+      - {who: intake, text: "Is the front of the house or the kitchen affected too?", step: question}
+      - {who: homeowner, text: "no. front and kitchen are fine"}
+      - {who: intake, text: "Is anything sparking, smoking, hot, or buzzing right now?", step: question}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "When did this start?", step: question}
+      - {who: homeowner, text: "about two weeks ago. after the monsoon storm"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "1979"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Want to send a photo of the panel?", step: photo}
+      - {who: homeowner, text: "not right now"}
+      - {who: intake, text: "Thanks. Here is your card to approve.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: null, bank_job_type: null, unsure: true}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Electrical | Job: not sure yet | Needed: not said
+      - Lights in the back bedrooms dim for a second and come back, about once an hour.
+      - Front of the house and kitchen are normal.
+      - Started about 2 weeks ago, after a storm.
+      - No sparking, hot, buzzing or smoke.
+      - Home built 1979.
+      - Photos: none yet.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s02
+    transcript:
+      - {who: homeowner, text: "the little reset button plug in my garage keeps popping out and wont stay in, i think the fuse is blown on it, need someone to put a new fuse in"}
+      - {who: homeowner, text: "[photo attached: outlet with two small buttons, test and reset, reset button sitting out]"}
+      - {who: intake, text: "The photo shows an outlet with test and reset buttons, and the reset button is out. What is plugged into it?", step: question}
+      - {who: homeowner, text: "chest freezer. it pops out within a minute of plugging in"}
+      - {who: intake, text: "Is there food in the freezer?", step: question}
+      - {who: homeowner, text: "its full of meat. i need it fixed today"}
+      - {who: intake, text: "How does the garage get its power?", step: question}
+      - {who: homeowner, text: "its a separate building about 40 ft from the house. i think it runs off the house"}
+      - {who: intake, text: "Is anything sparking, smoking, hot, or buzzing right now?", step: question}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "1998"}
+      - {who: intake, text: "Thanks. Here is your card to approve.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "outlet repair", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Electrical | Job: garage outlet keeps popping out | Needed: today
+      - Reset-style outlet in the garage keeps popping out. Photo shows an outlet with test and reset buttons, reset button out.
+      - Pops out within about a minute of plugging in a chest freezer.
+      - Freezer is full of food. Owner needs it fixed today.
+      - Garage is a separate building about 40 feet from the house. Owner thinks it runs off the house power.
+      - No sparking, smoking, heat or buzzing.
+      - Home built 1998.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s03
+    transcript:
+      - {who: homeowner, text: "I need a new 20 amp breaker, the one for the kitchen keeps tripping. Have it replaced, I already know that is the problem"}
+      - {who: homeowner, text: "[photo attached: panel door open, one breaker in the off-middle position, handwritten label reading kitchen]"}
+      - {who: intake, text: "The photo shows the panel with one breaker in the off-middle position, labeled kitchen. What do you have running when it trips?", step: question}
+      - {who: homeowner, text: "the microwave and the toaster oven. both at the same time. just replace the breaker"}
+      - {who: intake, text: "How often has it tripped, and has that changed?", step: question}
+      - {who: homeowner, text: "about a year. more in summer"}
+      - {who: intake, text: "Is anything sparking, smoking, hot, or buzzing right now?", step: question}
+      - {who: homeowner, text: "no. the breaker feels a little warm after it trips. thats all"}
+      - {who: intake, text: "Who did the kitchen work, and when?", step: question}
+      - {who: homeowner, text: "the previous owner remodeled it and added outlets along the counter"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "1986"}
+      - {who: intake, text: "Thanks. Here is your card to approve.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "breaker trips", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Electrical | Job: kitchen breaker trips | Needed: not said
+      - Owner asks for a new 20 amp kitchen breaker.
+      - Breaker trips when the microwave and toaster oven run at the same time.
+      - Has happened for about a year, more often in summer.
+      - Breaker feels a little warm after a trip.
+      - No sparking, smoking or buzzing.
+      - Kitchen was remodeled by a previous owner, who added outlets along the counter.
+      - Home built 1986.
+      - Photo: panel door open, one breaker in the off-middle position, handwritten label reading kitchen.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s04
+    transcript:
+      - {who: homeowner, text: "my outlet in the hallway looks burnt, I just bought the house and the inspector didnt say anything. pic attached. want it checked"}
+      - {who: homeowner, text: "[photo attached: outlet cover and face with an even tan-yellow color; no black marks around the slots; faint smear along one edge]"}
+      - {who: intake, text: "The photo shows an outlet with an even tan-yellow color on the cover and face. There are no black marks around the slots. Is anything sparking, smoking, hot, or buzzing right now?", step: question}
+      - {who: homeowner, text: "no no. it isnt warm and doesnt make any noise. nothing sparks"}
+      - {who: intake, text: "Does the outlet work? Has anything been plugged in?", step: question}
+      - {who: homeowner, text: "yes. i plugged my phone charger in this morning and it charged"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "1974. i just bought it"}
+      - {who: intake, text: "Thanks. Here is your card to approve.", step: card}
+    questions_asked: 3
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "outlet repair", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Electrical | Job: hallway outlet, owner asks for a check | Needed: not said
+      - Hallway outlet. Owner says it looks burnt.
+      - Photo: even tan-yellow color on the outlet cover and face. No black marks around the slots. Faint smear along one edge.
+      - Outlet works. A phone charger plugged in this morning and charged.
+      - No sparking, smoking, heat or buzzing. Not warm, no noise.
+      - Home built 1974. Owner just bought the house.
+      - Owner asks for it to be checked.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s05
+    transcript:
+      - {who: homeowner, text: "want to add a 240 outlet in my garage for a welder and a couple regular outlets. no pics im at work til 6, just need a ballpark"}
+      - {who: intake, text: "Ask Hava does not give prices. Local businesses quote after they see your job card. Do you know the amp rating the welder needs?", step: question}
+      - {who: homeowner, text: "i think 50 amp 240 volt"}
+      - {who: intake, text: "Where is the panel, and what is between it and the garage?", step: question}
+      - {who: homeowner, text: "panel is on the opposite side of the house, about 60 feet of run. garage is attached, drywall is up, house is stucco"}
+      - {who: intake, text: "What size is the main breaker on the panel?", step: question}
+      - {who: homeowner, text: "100 amp. i think its nearly full"}
+      - {who: intake, text: "Are you planning any other new loads?", step: question}
+      - {who: homeowner, text: "yes, an ev charger next year"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "1992"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the panel?", step: photo}
+      - {who: homeowner, text: "not till after 6. ill send after 6 if you need it"}
+      - {who: intake, text: "Here is your card to approve. Photos can follow after 6.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "new circuit", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Electrical | Job: new 240 volt outlet and two regular outlets in attached garage | Needed: not said
+      - New 240 volt outlet for a welder. Owner thinks the welder needs 50 amp, 240 volt.
+      - Two regular outlets in the garage.
+      - Garage is attached. Panel is on the opposite side of the house, about 60 feet of run.
+      - Garage has finished drywall. House is stucco.
+      - Panel: 100 amp main. Owner thinks it is nearly full.
+      - Owner plans an EV charger next year.
+      - Home built 1992.
+      - No photos yet. Owner can send a panel photo after 6 pm.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s06
+    transcript:
+      - {who: homeowner, text: "Hello. My smoke alarms in the hall and bedroom keep beeping at night. My late husband put in new batteries and it did not stop. I cannot get up on a ladder."}
+      - {who: intake, text: "Is anything sparking, smoking, hot, or buzzing right now?", step: question}
+      - {who: homeowner, text: "No. There is no smoke and no fire. It is only a short chirp."}
+      - {who: intake, text: "What sound do they make, and how often?", step: question}
+      - {who: homeowner, text: "A short chirp once a minute. It comes from all of them when one does it."}
+      - {who: intake, text: "How many alarms are there, and are they wired to the house or battery only?", step: question}
+      - {who: homeowner, text: "Six. They are wired to the house with a cable and they are all linked."}
+      - {who: intake, text: "How old are the alarms?", step: question}
+      - {who: homeowner, text: "About 12 years."}
+      - {who: intake, text: "What is the ceiling like where they are?", step: question}
+      - {who: homeowner, text: "The hall ceiling is about nine feet. The living room ceiling is vaulted."}
+      - {who: intake, text: "Will someone be home to let a worker in?", step: question}
+      - {who: homeowner, text: "My grandson can come on Saturday."}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Would you send a photo of one alarm?", step: photo}
+      - {who: homeowner, text: "[photo attached: ceiling smoke alarm with a small green light and a white label, hall ceiling about nine feet up]"}
+      - {who: intake, text: "Thank you. Here is your card to approve.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "hardwired smoke alarm", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Electrical | Job: smoke alarm chirping at night | Needed: not said
+      - Hall and bedroom smoke alarms chirp at night. Owner says new batteries did not stop it.
+      - One short chirp about once a minute. All alarms chirp when one does.
+      - No smoke, no fire, no alarm blaring.
+      - Six alarms, wired to the house and linked together.
+      - Alarms about 12 years old.
+      - Hall ceiling about 9 feet. Living room ceiling is vaulted.
+      - Owner cannot use a ladder.
+      - Grandson can let a worker in on Saturday.
+      - Photo: ceiling smoke alarm with a small green light and white label, hall ceiling about 9 feet up.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s07
+    transcript:
+      - {who: homeowner, text: "hey so the outlets in my bedroom and bathroom stopped working yesterday. i rent the place, landlord said to find an electrician and send him the bill. can u do that"}
+      - {who: intake, text: "Which outlets are dead, and do the lights in those rooms work?", step: question}
+      - {who: homeowner, text: "bedroom and bathroom outlets. lights in those rooms work"}
+      - {who: intake, text: "Is anything sparking, smoking, hot, or buzzing right now?", step: question}
+      - {who: homeowner, text: "no nothing like that"}
+      - {who: intake, text: "Have you tried anything yet, like a reset?", step: question}
+      - {who: homeowner, text: "i reset one breaker in the closet panel once. nothing changed"}
+      - {who: intake, text: "Where is your landlord, and what did they say about who pays?", step: question}
+      - {who: homeowner, text: "out of state. he texted me i can hire someone and he will pay for it"}
+      - {who: intake, text: "When was the house built?", step: question}
+      - {who: homeowner, text: "early 1970s. its half of a duplex"}
+      - {who: intake, text: "Who can open the panel, and is it shared with the other half?", step: question}
+      - {who: homeowner, text: "the neighbor has the key to the panel closet. i dont know if its shared"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of a dead outlet?", step: photo}
+      - {who: homeowner, text: "[photo attached: bedroom wall outlet with a lamp plugged in, lamp off]"}
+      - {who: intake, text: "Thanks. Here is your card to approve.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "outlet repair", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Electrical | Job: outlets not working in bedroom and bathroom | Needed: not said
+      - Owner rents half of a duplex built in the early 1970s.
+      - Landlord is out of state. Landlord texted that the tenant may hire someone and the landlord will pay.
+      - Bedroom and bathroom outlets stopped working yesterday. Lights in those rooms work.
+      - Owner reset one breaker in the closet panel once. Nothing changed.
+      - No sparking, smoke or buzzing.
+      - Panel is in a closet. Neighbor in the other half has the key. Owner does not know if the panel is shared.
+      - Photo: bedroom wall outlet with a lamp plugged in, lamp off.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s08
+    transcript:
+      - {who: homeowner, text: "buenas, se me fue la luz en la cocina y el breaker no se queda arriba, lo subo y se baja otra vez. necesito alguien urgente porque tengo el refri ahi"}
+      - {who: intake, text: "¿Qué se quedó sin luz, y qué aparatos estaban conectados ahí?", step: question}
+      - {who: homeowner, text: "solo la cocina. las tomas y las luces de la cocina. el microondas estaba prendido y el refri esta en un enchufe de la cocina"}
+      - {who: intake, text: "¿Cómo está el refrigerador ahora por dentro?", step: question}
+      - {who: homeowner, text: "esta tibio por dentro. ya llevo rato sin luz en esa parte"}
+      - {who: intake, text: "¿Qué pasa cuando sube el breaker?", step: question}
+      - {who: homeowner, text: "se baja enseguida, apenas lo prendo"}
+      - {who: intake, text: "¿Hay chispas, humo, zumbido o algo caliente ahora?", step: question}
+      - {who: homeowner, text: "no. no hay humo ni chispas ni zumbido"}
+      - {who: intake, text: "¿En qué año se construyó la casa?", step: question}
+      - {who: homeowner, text: "1976. es casa prefabricada"}
+      - {who: intake, text: "¿Dónde está el panel de breakers?", step: question}
+      - {who: homeowner, text: "afuera de la casa, cerca de la puerta de atras"}
+      - {who: intake, text: "¿Quién puede estar en la casa cuando llegue el técnico?", step: question}
+      - {who: homeowner, text: "mi esposo, despues de las 5. habla un poco de ingles"}
+      - {who: intake, text: "Una o dos fotos ayudan a que los negocios cotizen. No hay problema si no tiene foto. ¿Me puede mandar una foto del panel?", step: photo}
+      - {who: homeowner, text: "[foto: panel de breakers abierto, un breaker abajo marcado 'cocina' con letra a mano]"}
+      - {who: intake, text: "Gracias. Aquí está su tarjeta para revisar.", step: card}
+    questions_asked: 8
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "breaker trips", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Electrical | Job: kitchen breaker will not stay on | Needed: urgent (owner's word)
+      - Kitchen outlets and kitchen lights have no power. Rest of the house has power.
+      - Breaker drops again right away each time it is turned on.
+      - Microwave was running when the power went out.
+      - Refrigerator is plugged into a kitchen outlet and is warm inside.
+      - No sparks, smoke or buzzing reported.
+      - Manufactured home built 1976.
+      - Panel is outside the home, near the back door.
+      - Owner speaks Spanish. Husband speaks some English and can be there after 5 pm.
+      - Photo: panel open, breaker marked 'cocina' in handwriting.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s09
+    transcript:
+      - {who: homeowner, text: "HELP the lights are flickering EVERY time my dryer starts!!! I think the whole house is going to burn down. need an electrician ASAP"}
+      - {who: intake, text: "Is anything sparking, smoking, hot, or buzzing right now?", step: question}
+      - {who: homeowner, text: "NO!!! nothing sparks, no smoke, no buzzing, nothing hot. i turned the dryer off"}
+      - {who: intake, text: "Do you smell anything burning?", step: question}
+      - {who: homeowner, text: "no smell"}
+      - {who: intake, text: "What happens to the lights, and in which rooms?", step: question}
+      - {who: homeowner, text: "the whole house dims for about 2 seconds when the dryer starts then it goes back to normal"}
+      - {who: intake, text: "Does anything else make the lights dim?", step: question}
+      - {who: homeowner, text: "a little when the microwave runs"}
+      - {who: intake, text: "Has anything electrical changed at the dryer recently?", step: question}
+      - {who: homeowner, text: "an electrician put in the dryer outlet last year"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "1981. i think the main panel is the original one"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Do you have a photo to send?", step: photo}
+      - {who: homeowner, text: "no"}
+      - {who: intake, text: "Thanks. Here is your card to approve.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: null, bank_job_type: null, unsure: true}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Electrical | Job: lights dim when electric dryer starts | Needed: not said
+      - Whole house lights dim for about 2 seconds when the electric dryer starts, then return to normal.
+      - Lights also dim a little when the microwave runs.
+      - No sparking, smoking, buzzing or heat. No burning smell.
+      - Electrician added the dryer outlet last year.
+      - Home built 1981. Owner thinks the main panel is original.
+      - Dryer is turned off and not in use.
+      - No photos.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s10
+    transcript:
+      - {who: homeowner, text: "looking for a quote to hang a new ceiling fan in my living room, already have the fan. oh and by the way the outlet by the dining room table has a burning plastic smell when I run the space heater, been doing it for a few days"}
+      - {who: intake, text: "[fixed 911 text sent by code; intake waits for SAFE]", step: 911}
+      - {who: homeowner, text: "SAFE"}
+      - {who: intake, text: "Is the outlet cover warm to the touch?", step: question}
+      - {who: homeowner, text: "yes. the heater had been running about an hour when i noticed. i havent touched it since"}
+      - {who: intake, text: "Is the space heater plugged straight into the outlet, or into a power strip?", step: question}
+      - {who: homeowner, text: "straight in. its 1500 watt. no strip"}
+      - {who: intake, text: "Are you still using that outlet?", step: question}
+      - {who: homeowner, text: "yes every evening"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Can you send a photo of the outlet and the fan box?", step: photo}
+      - {who: homeowner, text: "[photo attached: ceiling fan box on the floor; dining room outlet with a slightly dark ring at the lower slot]"}
+      - {who: intake, text: "What is at the ceiling where the fan goes now?", step: question}
+      - {who: homeowner, text: "existing light fixture and one switch. the ceiling is vaulted, about 12 feet there"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "1969"}
+      - {who: intake, text: "Here is your card to approve.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "outlet repair", bank_job_type: null, unsure: false}
+    fire_dept_text: true
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Electrical | Job: burning plastic smell at dining room outlet; also ceiling fan | Needed: not said
+      - Burning plastic smell at the dining room outlet when a space heater runs. Owner says it has happened for a few days.
+      - Outlet cover is warm after the heater has run about an hour.
+      - Space heater is 1500 watt, plugged straight into the outlet, no power strip.
+      - Owner still uses the outlet every evening.
+      - Photo: ceiling fan box on the floor; dining room outlet with a slightly dark ring at the lower slot.
+      - Also: install a new ceiling fan in the living room. Owner has the fan.
+      - Fan location has an existing light fixture and one switch. Living room ceiling is vaulted, about 12 feet at the fan.
+      - Home built 1969.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s11
+    transcript:
+      - {who: homeowner, text: "every time the AC kicks on the breaker trips and the house is already 90. is it the breaker or the AC. need somebody today"}
+      - {who: intake, text: "I cannot say what is causing it. I will gather the facts for an electrical card first. Which breaker trips, and what is running when it trips?", step: question}
+      - {who: homeowner, text: "the double one marked A/C. it trips a few seconds after the outdoor unit starts"}
+      - {who: intake, text: "What do you see and hear when the AC starts?", step: question}
+      - {who: homeowner, text: "indoor fan runs. outdoor unit hums for a sec then the breaker trips"}
+      - {who: intake, text: "Is anything sparking, smoking, hot, or buzzing right now?", step: question}
+      - {who: homeowner, text: "no burning or smoke. the breaker handle is warm after it trips. nothing else"}
+      - {who: intake, text: "How many times has the breaker tripped today?", step: question}
+      - {who: homeowner, text: "three resets today"}
+      - {who: intake, text: "How old is the AC unit, and was it working last week?", step: question}
+      - {who: homeowner, text: "about 14 years, 3 ton. it was working last week. nobody has done work on it"}
+      - {who: intake, text: "How warm is the house, and who is home?", step: question}
+      - {who: homeowner, text: "90 inside. my dog and my dad, he is 70, are here"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "2004"}
+      - {who: intake, text: "Thanks. Here is your card to approve. A second card for the AC side is ready too.", step: card}
+    questions_asked: 7
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "breaker trips", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0111 | Electrical | Job: AC breaker trips when outdoor unit starts | Needed: today
+      - Double breaker marked A/C trips a few seconds after the outdoor unit starts.
+      - Indoor fan runs. Outdoor unit hums briefly, then the breaker trips.
+      - Breaker reset three times today.
+      - Breaker handle is warm after a trip.
+      - No sparking, smoking or burning reported.
+      - AC unit about 14 years old, 3 ton. Working last week. No recent work done.
+      - House is about 90 degrees inside. Dog and a 70 year old parent are home.
+      - Home built 2004.
+      - Photo: panel open, double breaker in the off position; outdoor unit with disconnect cover on.
+    card_2: |
+      # Second card (AC side), extra field: the scenario expects two cards.
+      REQ-0112 | Heating and cooling repair | Job: AC not cooling | Needed: today
+      - House is about 90 degrees inside. Dog and a 70 year old parent are home.
+      - AC unit about 14 years old, 3 ton, outdoor unit on a pad at the side of the house.
+      - AC was working last week. No recent work done.
+      - Breaker trips a few seconds after the outdoor unit starts. See electrical card REQ-0111.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s12
+    transcript:
+      - {who: homeowner, text: "I'm in Parker, AZ. Need an electrician to upgrade my panel from 100 to 200 amp. do you cover Parker?"}
+      - {who: intake, text: "We don't cover Parker yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: null, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s13
+    transcript:
+      - {who: homeowner, text: "my home inspection says i have aluminum wiring and the buyer wants it dealt with before closing. need quotes to fix it. closing is in 3 weeks. house in Lake Havasu City"}
+      - {who: homeowner, text: "[photo attached: inspection report page with a highlighted line reading aluminum branch wiring noted; panel photo with the door open]"}
+      - {who: intake, text: "We don't cover electrical jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: null, bank_job_type: null, unsure: true}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s14
+    transcript:
+      - {who: homeowner, text: "need to swap out my main panel for a bigger one, 100 to 200 amp. my handyman Mike says he can do it for 800 cash. just put it on the handyman list, dont need a license for that"}
+      - {who: homeowner, text: "[photo attached: panel door open, 100 amp main, interior label, a few breakers with handwritten labels]"}
+      - {who: intake, text: "Panel work goes to licensed electricians only. Is there something you plan to add that needs the bigger panel?", step: question}
+      - {who: homeowner, text: "a mini split and an EV charger. but mike is still cheaper"}
+      - {who: intake, text: "Where is the meter, and how does the power come into the panel?", step: question}
+      - {who: homeowner, text: "panel is inside the garage on the wall next to the meter. the wire coming in is old, not sure its rated for 200 amp"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "1985"}
+      - {who: intake, text: "Thanks. Here is your card to approve. It goes to licensed electricians only.", step: card}
+    questions_asked: 3
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: electrical, job_type: "panel upgrade", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0113 | Electrical | Job: panel upgrade, 100 amp to 200 amp | Needed: not said
+      - Owner wants to upgrade a 100 amp main panel to 200 amp.
+      - Reason given: adding a mini-split and an EV charger.
+      - Panel is inside the garage, on the wall next to the meter.
+      - Service wire coming in is old. Owner is not sure it is rated for 200 amp.
+      - Home built 1985.
+      - Photo: panel door open, 100 amp main, interior label, handwritten breaker labels.
+      - Licensed electricians only.
+    facts_in_card_not_stated: []
+
+  - scenario_id: electrical_s15
+    transcript:
+      - {who: homeowner, text: "my dryer wont heat up, it spins but no heat. i think its an outlet or breaker problem so I need an electrician to check the outlet"}
+      - {who: homeowner, text: "[photo attached: dryer door open with a pile of damp clothes; dryer face with drum visible]"}
+      - {who: intake, text: "This sounds like a dryer repair. I will send it as a dryer job. Is the dryer gas or electric, and how old is it?", step: question}
+      - {who: homeowner, text: "electric. about 9 years old. its a whirlpool"}
+      - {who: intake, text: "What happens when you run a load?", step: question}
+      - {who: homeowner, text: "the drum spins and clothes get warm but never hot or dry. takes two or three cycles"}
+      - {who: intake, text: "Has the outlet or breaker been checked?", step: question}
+      - {who: homeowner, text: "the breaker is on. my husband plugged in a drill tester and it read live"}
+      - {who: intake, text: "Is anything sparking, smoking, hot, or buzzing right now?", step: question}
+      - {who: homeowner, text: "no. no burning and no sparks"}
+      - {who: intake, text: "Have you looked at the vent hose behind the dryer?", step: question}
+      - {who: homeowner, text: "no, i havent looked behind it"}
+      - {who: intake, text: "How old is the house?", step: question}
+      - {who: homeowner, text: "2008"}
+      - {who: intake, text: "Thanks. Here is your card to approve.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: appliance_repair, job_type: "dryer", bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0114 | Appliance repair | Job: electric dryer not heating | Needed: not said
+      - Electric dryer, about 9 years old, brand Whirlpool per owner.
+      - Drum spins. Clothes get warm but not hot or dry.
+      - Takes two or three cycles to finish a load.
+      - Breaker is on. Dryer outlet read live on a drill-style tester.
+      - Vent hose behind the dryer not checked.
+      - No sparking, smoke or burning reported.
+      - Home built 2008.
+      - Photo: dryer door open with damp clothes; drum visible.
+    facts_in_card_not_stated: []

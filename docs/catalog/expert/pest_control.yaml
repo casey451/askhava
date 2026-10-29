@@ -1,0 +1,861 @@
+# Ask Hava expert layer: pest_control (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set pest_control and trade_kb/trades/pest_control.yaml. Fake data only.
+# Ask Hava never diagnoses, names a pest, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# 1. termite_inspection (kb) is left out. A termite report for a sale or loan is the fee-free home_inspection job
+#    type "termite report for a sale or loan" (LIC-015, FEE-045), and this file routes it there (fu_for_sale).
+#    Open problem: under A.A.C. R3-8-307 and the Department's WDIIR guidance, only a certified applicator in the
+#    wood-destroying organism category, employed by a pest-management business licensee, may complete a WDIIR.
+#    home_inspection cards go to Board-certified home inspectors only, so the sale-report card may reach nobody
+#    who can sign the report unless the inspector also works under a pest license. Needs a catalog decision
+#    (for example a fee-free "termite report for a sale or loan" job type inside pest_control).
+# 2. bees_wasps, pigeons_birds, bed_bugs_other and rodents (kb) map to "general pest service", the only bank job
+#    type that fits, so their quote format is forced to monthly. Bee removal, bird exclusion and bed bug treatment
+#    are one-time jobs; under REC-010 a quote with no period would bounce. Suggest adding one-time job types
+#    ("bee removal", "bird exclusion", "bed bug treatment", "rodent trapping and sealing") to one_time_job_types,
+#    quoted firm. The bank's "pest" question also has no bee, bird or bed bug option. Bird exclusion with no
+#    pesticide may not need a Department license at all (kb open question, A.R.S. 3-3601).
+# 3. The independent scenario file (scenarios/pest_control.yaml) expects all four of those kb job types here.
+# 4. The bank's how_often question offers "One-time", but general pest service, scorpions and pre-emergent weed
+#    control are not one_time_job_types, so a one-time quote for them would bounce under REC-010. Pre-emergent
+#    is usually applied once or twice a year; REC-004 converts quarterly and yearly prices but names no
+#    twice-a-year period.
+# 5. The question set's photos are [p1, p2, p3]; p4 (solar panels), p5 (droppings) and p6 (rock yard) are not in
+#    the set, so rodent, bird and weed cards miss their key photo. Suggest the app order photos by the job type's
+#    photos_priority below (PROMPT_ASSEMBLY section 6) and widen the set's list.
+schema: 1
+category: pest_control
+question_set: pest_control
+kb_trade: pest_control
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: ars_3_3615
+    title: "A.R.S. 3-3615 Pest management business license; $500,000 financial security; $100,000 bond or rider for termite treatment and for WDIIRs"
+    url: "https://www.azleg.gov/ars/3/03615.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_3_3614
+    title: "A.R.S. 3-3614(B) Applicator certification categories (structural and health-related; wood-destroying organism; ornamental and turf; right-of-way; aquatic; fumigation)"
+    url: "https://www.azleg.gov/ars/3/03614.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_3_3613
+    title: "A.R.S. 3-3613 Gardener herbicide exemption; lost for preemergents and sterilants, for advertising weed management, and for applying without doing yard maintenance that day"
+    url: "https://www.azleg.gov/ars/3/03613.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_3_3611
+    title: "A.R.S. 3-3611(A)(1) Owner exemption: nonrestricted pesticides on residential property the person owns"
+    url: "https://www.azleg.gov/ars/3/03611.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_3_3631
+    title: "A.R.S. 3-3631 Termite action report form filed with the Division within 30 calendar days of termite work"
+    url: "https://www.azleg.gov/ars/3/03631.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r3_8_307
+    title: "A.A.C. R3-8-307 Performing a wood-destroying insect inspection; WDIIRs (certified WDO applicator only; conducive conditions; excluded areas noted)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-307"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r3_8_102
+    title: "A.A.C. R3-8-102 Certification category scopes (ornamental and turf covers weeds and bare ground)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R3-8-102"
+    checked: "2026-10-29"
+    kind: statute
+  - id: azda_wdiir
+    title: "Arizona Department of Agriculture, WDIIR Guidance Document (only a Category 2a or 2b applicator completes a WDIIR; visual inspection; written for property sales)"
+    url: "https://agriculture.az.gov/sites/default/files/documents/WDIIR-Guidance%20Document.pdf"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121(A)(8) Pest management licensees need no ROC license (foundation S4)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ua_az1369
+    title: "University of Arizona Cooperative Extension AZ1369, Arizona Termites of Economic Importance (Heterotermes aureus swarms at dusk after monsoon rain, July to September; drywood pellets below kick holes)"
+    url: "https://extension.arizona.edu/sites/extension.arizona.edu/files/pubs/az1369.pdf"
+    checked: "2026-10-29"
+    kind: other
+  - id: ua_az1356
+    title: "University of Arizona Cooperative Extension AZ1356, Termite Management for Homeowners (trench and drill liquid treatment, baits, annual renewable warranties, product breakdown in hot dry soil)"
+    url: "https://extension.arizona.edu/sites/extension.arizona.edu/files/pubs/az1356.pdf"
+    checked: "2026-10-29"
+    kind: other
+  - id: ua_ipm_scorpion
+    title: "University of Arizona Community IPM, Scorpion season is here (2025): hollow block walls preferred by 95 percent in research; exclusion is the main control; active when nights stay above 70 F, least active November to March"
+    url: "https://acis.cals.arizona.edu/community-ipm/home-and-school-ipm-newsletters/ipm-newsletters/2025/05/16/scorpion-season-is-here!"
+    checked: "2026-10-29"
+    kind: other
+  - id: azpoison_scorpions
+    title: "Arizona Poison and Drug Information Center, Scorpions (about 30 Arizona species, bark scorpion the one seen as life-threatening and the best climber; most stings at night in warm months) (foundation S32)"
+    url: "https://azpoison.com/venom/scorpions"
+    checked: "2026-10-29"
+    kind: other
+  - id: ua_preemergent
+    title: "University of Arizona ACIS, Pre-emergence weed control in lawns (apply at soil about 50 to 55 F; Yuma by early to mid February; must be watered in by irrigation or rain)"
+    url: "https://acis.cals.arizona.edu/community-ipm/turfgrass/pre-emergence-weed-control-in-lawns"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_bees
+    title: "Lake Havasu City Fire Department, Bee Safety (bees swarm in spring and fall; the department does not remove swarms or hives)"
+    url: "https://www.lhcaz.gov/fire-department/bee-safety"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: webtonic_pest
+    title: "Webtonic (marketing vendor), Pest Control Digital Marketing Statistics 2026 (Google Ads about $90.92 per lead; LSA $15 to $55; quarterly customer about $1,620 over three years; 70 to 90 percent retention for top firms; recurring revenue 74 percent)"
+    url: "https://www.webtonic.io/blog/pest-control-digital-marketing-statistics"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: cubecreative_pest
+    title: "Cube Creative (marketing vendor), Pest control cost per lead 2026 (Google Local Services Ads about $20 to $80 per lead by competition)"
+    url: "https://cubecreative.design/blog/pest-control-marketing/cost-per-lead-2026"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "What she is seeing: general pests, scorpions, rodents, termites or weeds"
+      why: "Scorpion plans take more labor (eaves, block walls, door sweeps) because pesticide alone does little, and termites are a one-time treatment priced on its own."
+      source: ua_ipm_scorpion
+    - driver: "Service schedule: monthly, every other month or quarterly, plus any first-visit charge"
+      why: "The schedule sets the monthly figure, and most companies charge more for the first visit that knocks numbers down. [judgment]"
+      source: null
+    - driver: "Home size and lot size"
+      why: "Perimeter length and yard area set product and minutes per visit; for termites the length of foundation to trench and drill sets the job. [judgment]"
+      source: null
+    - driver: "Inside and outside, or outside only"
+      why: "Interior service means a booked time with someone home and more minutes per visit. [judgment]"
+      source: null
+    - driver: "Yard features: hollow block walls, rock, palms, wood or debris piles"
+      why: "Hollow block walls are where bark scorpions prefer to hide, so walls and rock add treatment area and time."
+      source: ua_ipm_scorpion
+    - driver: "Termites: slab, crawl space or manufactured home, and how much concrete or patio meets the house"
+      why: "Liquid treatment means trenching and drilling through concrete along the foundation; baits avoid drilling but need repeat monitoring visits."
+      source: ua_az1356
+    - driver: "Weeds: area treated, rock or grass, and whether weeds are already up"
+      why: "Pre-emergent stops seedlings; weeds already up need a second product or pulling first, which changes the visit. [judgment]"
+      source: null
+    - driver: "How heavy it is and how long it has gone on (a sighting now and then versus many every day)"
+      why: "Heavy activity means extra early visits before a regular schedule. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Uncapped hollow block walls and rock borders around the yard"
+      how_a_pro_spots_it: "Yard photo; the homeowner names a block wall; scorpions seen near walls or the pool"
+      question_or_photo: fu_yard_features
+      source: ua_ipm_scorpion
+    - condition: "Small roaches breeding inside the kitchen rather than large ones wandering in from outside"
+      how_a_pro_spots_it: "Size of the roach in the photo; seen in daytime in kitchen cabinets"
+      question_or_photo: fu_roach_size
+      source: null
+    - condition: "Termite damage hidden behind baseboards, drywall or door frames beyond the tubes she can see"
+      how_a_pro_spots_it: "Tubes at several spots, soft or hollow trim, swarmers indoors; wood touching soil"
+      question_or_photo: p2
+      source: aac_r3_8_307
+    - condition: "An active termite warranty with another company, which may cover the re-treat"
+      how_a_pro_spots_it: "Homeowner mentions a past treatment, a yearly renewal or a sticker in the garage"
+      question_or_photo: fu_prior_treatment
+      source: ua_az1356
+    - condition: "Rodent entry gaps (garage door seals, roof vents, skirting on a manufactured home) that keep letting them back in"
+      how_a_pro_spots_it: "Where droppings show up; the attic or skirting named; chewed items in the garage photo"
+      question_or_photo: fu_rodent_where
+      source: null
+    - condition: "Weeds already tall or seeded across the rock yard"
+      how_a_pro_spots_it: "Rock yard photo; homeowner says weeds are up now"
+      question_or_photo: fu_weeds_now
+      source: null
+    - condition: "Second home that sits empty for months, so activity built up and inside service needs someone to open up"
+      how_a_pro_spots_it: "Homeowner says she is out of town or arriving for the season; the card's timing answer"
+      question_or_photo: where
+      source: null
+    - condition: "A bee colony already built inside a wall, roof or box, with comb that has to come out"
+      how_a_pro_spots_it: "Bees going in and out of one opening for days rather than hanging in a ball; more each day"
+      question_or_photo: fu_bee_where
+      source: lhc_bees
+  misdiagnosis_checks:
+    - sounds_like: "general pest service (flying ants)"
+      might_be: "termites"
+      one_question: fu_termite_signs
+      if_other_route_to: {category: pest_control, job_type: "termites"}
+      source: ua_az1369
+    - sounds_like: "termites"
+      might_be: "general_pest (winged ants, no tubes or wood damage)"
+      one_question: fu_termite_signs
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+    - sounds_like: "termites (selling or buying the house, needs a termite letter)"
+      might_be: "termite_inspection, a report for a sale or loan"
+      one_question: fu_for_sale
+      if_other_route_to: {category: home_inspection, job_type: "termite report for a sale or loan"}
+      source: azda_wdiir
+    - sounds_like: "pre-emergent weed control (weeds everywhere after the rain)"
+      might_be: "weed pulling and haul-away, yard work for a gardener"
+      one_question: fu_weed_work
+      if_other_route_to: {category: landscape_maintenance, job_type: "yard cleanup"}
+      source: ars_3_3613
+    - sounds_like: "termites (mud tubes on the house)"
+      might_be: "bees_wasps (mud built high under the eaves, insects flying in and out)"
+      one_question: fu_termite_signs
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+    - sounds_like: "bed_bugs_other (bites at night, homeowner says bed bugs)"
+      might_be: "bed_bugs_other (fleas from a pet that goes outside)"
+      one_question: fu_pets_outside
+      if_other_route_to: {category: pest_control, job_type: "general pest service"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Size, color and shape of the pest (bark scorpion features: thin tail and pincers, about 1.5 inches)", "Roach size: large outdoor type or small kitchen type", "Live or dead, inside or outside", "Where it was found (bed, tub, garage)"]
+      neutral_wording: "Light brown scorpion about an inch long on a bathroom floor."
+    - photo_id: p2
+      reads: ["Pencil-width mud tubes on a stem wall or garage wall", "Light yellow hard tubes versus flatter dark brown tubes", "Hollow or soft wood, kick holes with small pellets below", "Piles of wings near a window or light"]
+      neutral_wording: "Thin mud lines running up the garage wall from the floor, about two feet tall."
+    - photo_id: p5
+      reads: ["Droppings size and how many", "Chewed boxes, wiring or insulation", "Nest material in a garage, engine bay or under a stored boat"]
+      neutral_wording: "Small dark droppings along the garage wall and a chewed cardboard box."
+    - photo_id: p6
+      reads: ["Rock or gravel versus grass", "Weeds up now and how tall", "Plants, drip lines and trees inside the area", "Block walls and rock borders"]
+      neutral_wording: "Front rock yard with a few small green weeds and three shrubs on drip lines."
+    - photo_id: p3
+      reads: ["Hanging cluster in a tree or bush versus bees going in and out of one opening", "Opening in a wall, roof, meter box, valve box or ground", "Height off the ground and nearby doors, pool or walkways"]
+      neutral_wording: "Football-sized cluster of bees on a low tree branch about 6 feet up, near the pool equipment."
+    - photo_id: p4
+      reads: ["Gap under the panel edge", "Nest material and droppings on the roof under the panels", "Number of panels and roof type"]
+      neutral_wording: "Twigs and droppings under the edge of a row of roof solar panels on a tile roof."
+  local_factors:
+    - fact: "Bark scorpions shelter in hollow block walls, under rocks and bark, and are active most of the year when nights stay above 70 F"
+      effect: "Block-wall yards and rock borders, common in Lake Havasu City, widen the treatment area; pros ask about walls and how often scorpions show up inside"
+      source: ua_ipm_scorpion
+    - fact: "The bark scorpion is the only one of about 30 Arizona species seen as life-threatening, and it climbs well; most stings are at night in warm months"
+      effect: "Homeowners with small children often ask for monthly service and inside treatment; the card states children or a crib only if she says so [judgment]"
+      source: azpoison_scorpions
+    - fact: "Arizona's most destructive subterranean termite swarms at dusk after monsoon rains, July to September"
+      effect: "A late-summer run of 'flying ants' requests that need sorting from termites by tubes and wings"
+      source: ua_az1369
+    - fact: "Liquid termite treatment can break down in hot, dry Arizona soil, and many liquid jobs carry an annual renewable warranty"
+      effect: "Termite quotes often include a yearly renewal; a homeowner with an old warranty may already be covered"
+      source: ua_az1356
+    - fact: "Gardeners lose their herbicide exemption for any preemergent, and for advertising weed control"
+      effect: "Pre-emergent jobs go only to Department licensees with the weed control category; gardeners pulling weeds stay in yard maintenance"
+      source: ars_3_3613
+    - fact: "Pre-emergent works when applied at soil about 50 to 55 F (by early to mid February in Yuma, the closest listed low-desert city) and must be watered in by irrigation or rain"
+      effect: "Rock-yard pre-emergent requests bunch up in fall before winter rain and again in January and February [judgment on Lake Havasu timing]"
+      source: ua_preemergent
+    - fact: "Bees swarm in spring and fall, and the city fire department does not remove swarms or hives"
+      effect: "Bee requests come to pest businesses in spring and fall; whether bees are hanging in a ball or going into an opening changes the job"
+      source: lhc_bees
+    - fact: "Seasonal residents, vacant second homes, manufactured homes with skirting, and boats and RVs in storage are common"
+      effect: "Rodent and scorpion activity builds up in empty homes and stored vehicles; inside visits need an access plan [judgment]"
+      source: null
+  seasonality:
+    busy: "April to October for scorpions and general pests (nights above 70 F), July to September for termite swarms after monsoon rain, and fall plus January to February for pre-emergent [judgment on pre-emergent timing]"
+    slow: "November to March for scorpions, which are least active then; December is slow overall [judgment]"
+    source: ua_ipm_scorpion
+
+job_types:
+  - id: general_pest
+    label: "General pests (ants, roaches, crickets, spiders), one-time or ongoing"
+    bank_job_type: "general pest service"
+    recurring: true
+    homeowner_phrasings: ["ants in the kitchen", "roaches in the garage", "black widows by the door", "crickets everywhere", "need a bug guy", "spray for bugs"]
+    must_know:
+      - fact: "What she sees and where (inside, outside, both)"
+        bank_question: pest
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Inside service means a booked visit and more minutes; outside-only is a perimeter route stop. [judgment]"
+        skip_if: "Her words name the pest and the place"
+      - fact: "Service schedule wanted"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Monthly, every other month or quarterly sets the monthly figure the quote is built on. [judgment]"
+        skip_if: "She named a schedule"
+      - fact: "Home size"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Perimeter and square footage set product and time per visit. [judgment]"
+        skip_if: "Answered"
+      - fact: "For roaches: large ones or small ones"
+        bank_question: null
+        follow_up: fu_roach_size
+        photo: p1
+        why_it_moves_price: "Small roaches breeding indoors need several close-together inside treatments; large ones from outside are a routine perimeter job. [judgment]"
+        skip_if: "No roaches mentioned, or the photo shows the roach"
+      - fact: "Whether a pest company treats the home now"
+        bank_question: null
+        follow_up: fu_prior_service
+        photo: null
+        why_it_moves_price: "A home already on service often skips the heavier first visit. [judgment]"
+        skip_if: "She said she has never had service"
+    allowed_follow_ups:
+      - id: fu_roach_size
+        ask_when: "She mentions roaches and sent no photo of one"
+        text_en: "Are the roaches large, over an inch, or small, about half an inch?"
+        text_es: "¿Las cucarachas son grandes, de más de una pulgada, o chicas, de media pulgada más o menos?"
+        options_en: ["Large, over an inch", "Small, about half an inch", "Both sizes"]
+        options_es: ["Grandes, más de una pulgada", "Chicas, media pulgada más o menos", "De los dos tamaños"]
+        card_field: true
+        why: "Roach size is the first thing a pest estimator asks; it separates an indoor job from a perimeter job without naming a species. [judgment]"
+      - id: fu_seen_how_often
+        ask_when: "She did not say how often she sees them"
+        text_en: "How often do you see them, or signs of them?"
+        text_es: "¿Cada cuánto los ve, o ve rastros de ellos?"
+        options_en: ["Once in a while", "Most days", "Many at once or every day"]
+        options_es: ["De vez en cuando", "Casi todos los días", "Muchos a la vez o todos los días"]
+        card_field: true
+        why: "Heavy activity means extra early visits before the regular schedule. [judgment]"
+      - id: fu_prior_service
+        ask_when: "She wants ongoing service and did not say whether anyone treats the home now"
+        text_en: "Has a pest company treated the home in the last 6 months?"
+        text_es: "¿Alguna compañía de control de plagas ha tratado la casa en los últimos 6 meses?"
+        options_en: ["Yes, and still does", "Yes, but it stopped", "No"]
+        options_es: ["Sí, y todavía viene", "Sí, pero ya no viene", "No"]
+        card_field: true
+        why: "A home switching companies often needs no heavy first visit; a home never treated usually does. [judgment]"
+      - id: fu_termite_signs
+        ask_when: "She mentions flying ants, winged bugs, mud on a wall, wood damage or termites"
+        text_en: "Have you seen any of these: thin mud tubes on a wall, piles of small wings, damaged or hollow wood, or small pellets like sand?"
+        text_es: "¿Ha visto algo de esto: tubitos de lodo en una pared, montones de alitas, madera dañada o hueca, o bolitas como arena?"
+        options_en: ["Mud tubes near the ground or foundation", "Mud high up under the roof edge", "Piles of small wings", "Damaged or hollow wood", "Small pellets like sand", "None of these"]
+        options_es: ["Tubitos de lodo cerca del suelo o el cimiento", "Lodo arriba, bajo la orilla del techo", "Montones de alitas", "Madera dañada o hueca", "Bolitas como arena", "Nada de esto"]
+        card_field: true
+        why: "Tubes near the ground, wing piles, wood damage and pellets send a card to termite-category businesses; mud high under the eaves is often a wasp job instead. [judgment]"
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Many pests inside every day", "Black widows near where children play"]
+      regular: "Pests seen now and then, or a request for an ongoing plan"
+    scope_line_en: "Ants in the kitchen and large roaches in the garage, seen most days; wants service every other month."
+    scope_line_es: "Hormigas en la cocina y cucarachas grandes en la cochera, casi todos los días; quiere servicio cada dos meses."
+    quote_format: monthly
+    business_fills: ["monthly price, or price per visit with the visit schedule", "first-visit charge, if any", "inside, outside or both", "whether visits between scheduled ones are free", "earliest start"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what she sees, where, how often>
+      Seeing: <pest answer, her words>. Where: <inside / outside / both>. How often: <once in a while / most days / every day>.
+      Schedule wanted: <one-time / monthly / every other month / quarterly>. Home: <size band>. Current pest service: <yes / stopped / none / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those sound like German roaches.", "Quarterly is usually enough.", "Keep the kids and pets inside after they spray.", "Most companies charge about forty a month.", "Those flying ants aren't termites."]
+
+  - id: scorpions
+    label: "Scorpions: ongoing treatment, blacklight check"
+    bank_job_type: "scorpions"
+    recurring: true
+    homeowner_phrasings: ["scorpions in the bathroom", "found one in the bed", "scorpion in the tub every night", "bark scorpions", "alacranes en la casa"]
+    must_know:
+      - fact: "How often scorpions show up inside, and where"
+        bank_question: where
+        follow_up: fu_seen_how_often
+        photo: p1
+        why_it_moves_price: "Several a week inside points to monthly service with inside work; one now and then may be a lighter plan. [judgment]"
+        skip_if: "She gave a count and the rooms"
+      - fact: "Yard features: block wall, rock, palms, wood or debris piles"
+        bank_question: null
+        follow_up: fu_yard_features
+        photo: p6
+        why_it_moves_price: "Hollow block walls are where scorpions prefer to hide, so they add treatment area and time."
+        skip_if: "Yard photo shows the walls and ground"
+      - fact: "Service schedule wanted"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets the monthly figure. [judgment]"
+        skip_if: "She named a schedule"
+      - fact: "Home size"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Perimeter, eaves and door count scale with size. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - fu_seen_how_often
+      - id: fu_yard_features
+        ask_when: "Scorpion request and no yard photo"
+        text_en: "Does the yard have any of these: a block wall, rock or gravel, palm trees, or wood or debris piles?"
+        text_es: "¿El patio tiene algo de esto: barda de block, piedra o grava, palmeras, o montones de leña o basura?"
+        options_en: ["Block wall", "Rock or gravel", "Palm trees", "Wood or debris piles", "More than one of these", "None of these"]
+        options_es: ["Barda de block", "Piedra o grava", "Palmeras", "Montones de leña o basura", "Más de una de estas", "Nada de esto"]
+        card_field: true
+        why: "Block walls and rock are where scorpions hide by day, and they set how much ground a scorpion plan covers."
+      - fu_prior_service
+    photos_priority: [p1, p6]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Scorpions found in a bed or crib", "Scorpions inside every night"]
+      regular: "Scorpions seen now and then, or a request for an ongoing plan"
+    scope_line_en: "Scorpions inside about three times a week, mostly in the bathrooms; block wall around the back yard; wants monthly service."
+    scope_line_es: "Alacranes adentro unas tres veces por semana, casi siempre en los baños; barda de block alrededor del patio de atrás; quiere servicio cada mes."
+    quote_format: monthly
+    business_fills: ["monthly price, or price per visit with the visit schedule", "first-visit charge, if any", "what each visit covers (inside, eaves, walls, blacklight check)", "earliest start"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: how often scorpions show up, where, schedule wanted>
+      Seen inside: <once in a while / most days / every day>. Rooms: <her words>. Yard: <block wall / rock / palms / debris / none / not said>.
+      Schedule wanted: <one-time / monthly / every other month / quarterly>. Home: <size band>. Current pest service: <yes / stopped / none / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's a bark scorpion.", "Spraying won't stop scorpions, you need to seal the house.", "Shake out your shoes every morning.", "Monthly scorpion service runs about sixty.", "They're dangerous to kids."]
+
+  - id: termites
+    label: "Termite treatment (subterranean, drywood)"
+    bank_job_type: "termites"
+    recurring: false
+    homeowner_phrasings: ["mud tubes on the garage wall", "flying ants after the rain", "termites in the door frame", "wood is hollow", "termite treatment", "comején"]
+    must_know:
+      - fact: "What she has seen: mud tubes, wing piles or swarmers, damaged wood, pellets"
+        bank_question: null
+        follow_up: fu_termite_signs
+        photo: p2
+        why_it_moves_price: "Tubes point to a soil treatment along the foundation; pellets below holes in wood point to a drywood job, priced differently. [judgment]"
+        skip_if: "Photo shows tubes or damage and she said where"
+      - fact: "Whether this is for a home sale, purchase or refinance"
+        bank_question: null
+        follow_up: fu_for_sale
+        photo: null
+        why_it_moves_price: "A report for a sale is a different job, routed to the fee-free home inspection job type. [judgment]"
+        skip_if: "She already said it is not for a sale, or described an infestation with no sale"
+      - fact: "Slab, crawl space or manufactured home"
+        bank_question: null
+        follow_up: fu_foundation
+        photo: null
+        why_it_moves_price: "Liquid treatment on a slab means trenching and drilling through concrete along the foundation; a crawl space is treated from below."
+        skip_if: "She said the floor type"
+      - fact: "Home size"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Square footage stands in for the length of foundation to treat. [judgment]"
+        skip_if: "Answered"
+      - fact: "Any past termite treatment or a warranty now"
+        bank_question: null
+        follow_up: fu_prior_treatment
+        photo: null
+        why_it_moves_price: "An active renewable warranty may cover the re-treat by the company that holds it."
+        skip_if: "She said the home was never treated"
+    allowed_follow_ups:
+      - fu_termite_signs
+      - id: fu_for_sale
+        ask_when: "Termite request that mentions a sale, a buyer, an agent, escrow, a loan, a termite letter or report"
+        text_en: "Is this for a home sale, purchase or refinance?"
+        text_es: "¿Es para una venta, compra o refinanciamiento de la casa?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Same wording as LIC-015; a yes moves the request to the fee-free termite report job type in home inspection."
+      - id: fu_foundation
+        ask_when: "Termite request and the floor type is not known"
+        text_en: "Is the home on a concrete slab, over a crawl space, or a manufactured home with skirting?"
+        text_es: "¿La casa está sobre losa de concreto, sobre un espacio bajo el piso, o es casa prefabricada con faldón?"
+        options_en: ["Concrete slab", "Crawl space", "Manufactured home with skirting"]
+        options_es: ["Losa de concreto", "Espacio bajo el piso", "Casa prefabricada con faldón"]
+        card_field: true
+        why: "Floor type decides whether the job means drilling concrete or working from under the home."
+      - id: fu_prior_treatment
+        ask_when: "Termite request and she did not say whether the home was treated before"
+        text_en: "Has the home had a termite treatment before, or is there a termite warranty now?"
+        text_es: "¿La casa ya tuvo un tratamiento contra termitas, o tiene garantía contra termitas ahora?"
+        options_en: ["Yes, a warranty is active now", "Yes, but years ago", "No"]
+        options_es: ["Sí, tiene garantía vigente", "Sí, pero hace años", "No"]
+        card_field: true
+        why: "Many liquid treatments carry an annual renewable warranty, which changes who quotes and what."
+    photos_priority: [p2, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Winged insects coming out inside the home now"]
+      regular: "Tubes or damage found, or a request for treatment"
+    scope_line_en: "Thin mud tubes on the garage wall and along the back patio; slab home about 1,600 sq ft; not for a sale."
+    scope_line_es: "Tubitos de lodo en la pared de la cochera y junto al patio de atrás; casa sobre losa de unos 1,600 pies²; no es para una venta."
+    quote_format: firm
+    business_fills: ["price for the treatment", "what is treated and how, in your words", "warranty and yearly renewal terms, if any", "earliest day"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what she saw, where, size, sale or not>
+      Seen: <mud tubes / wing piles / damaged wood / pellets / none>. Where: <her words>. Floor: <slab / crawl space / manufactured with skirting>.
+      Home: <size band>. Past treatment: <warranty active / years ago / none / not said>. For a sale or loan: no.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those are subterranean termites.", "Flying ants after the rain are termites.", "You'll need to drill the slab.", "Termite jobs run about fifteen hundred.", "The house is safe to sell."]
+
+  - id: weed_control
+    label: "Pre-emergent or weed spraying in rock yard"
+    bank_job_type: "pre-emergent weed control"
+    recurring: true
+    homeowner_phrasings: ["pre-emergent in the rock yard", "spray the weeds", "weeds coming up in the gravel", "keep weeds out", "pre emergente"]
+    must_know:
+      - fact: "Which areas: front, back, both, whole lot"
+        bank_question: null
+        follow_up: fu_weed_area
+        photo: p6
+        why_it_moves_price: "Area treated is the main number in a weed quote; the bank's home size does not cover yard size. [judgment]"
+        skip_if: "She named the areas"
+      - fact: "Whether weeds are up now"
+        bank_question: null
+        follow_up: fu_weeds_now
+        photo: p6
+        why_it_moves_price: "Weeds already up need a second product or removal before pre-emergent does its job. [judgment]"
+        skip_if: "Photo shows the ground"
+      - fact: "Rock or gravel, grass, or both"
+        bank_question: null
+        follow_up: fu_weed_surface
+        photo: p6
+        why_it_moves_price: "Bare rock ground and a grass lawn take different products and care around plants. [judgment]"
+        skip_if: "She said rock yard, or the photo shows it"
+      - fact: "Schedule wanted"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets how the yearly applications turn into a monthly figure. [judgment]"
+        skip_if: "She named a schedule"
+    allowed_follow_ups:
+      - id: fu_weed_area
+        ask_when: "Weed request and she did not name the areas"
+        text_en: "Which areas need it: the front yard, the back yard, both, or the whole lot?"
+        text_es: "¿Qué partes lo necesitan: el patio de enfrente, el de atrás, los dos, o todo el terreno?"
+        options_en: ["Front yard", "Back yard", "Front and back", "The whole lot"]
+        options_es: ["Patio de enfrente", "Patio de atrás", "Enfrente y atrás", "Todo el terreno"]
+        card_field: true
+        why: "Area is the first number in a weed quote. [judgment]"
+      - id: fu_weeds_now
+        ask_when: "Pre-emergent request and no yard photo"
+        text_en: "Are weeds growing there now, or is the ground clear?"
+        text_es: "¿Hay hierba mala ahí ahorita, o el suelo está limpio?"
+        options_en: ["Clear now", "A few small weeds", "Lots of weeds or tall weeds"]
+        options_es: ["Limpio ahorita", "Poca hierba chica", "Mucha hierba o hierba alta"]
+        card_field: true
+        why: "Weeds already up change the visit. [judgment]"
+      - id: fu_weed_work
+        ask_when: "She says weeds are everywhere or overgrown and does not say sprayed or pulled"
+        text_en: "Do you want the weeds sprayed, or pulled and hauled away?"
+        text_es: "¿Quiere que fumiguen la hierba mala, o que la arranquen y se la lleven?"
+        options_en: ["Sprayed", "Pulled and hauled away", "Both"]
+        options_es: ["Fumigada", "Arrancada y retirada", "Las dos cosas"]
+        card_field: true
+        why: "Pulling and hauling is gardener yard work in another category; spraying stays here."
+      - id: fu_weed_surface
+        ask_when: "Weed request and the ground type is not known"
+        text_en: "Is the area rock or gravel, grass, or both?"
+        text_es: "¿El área es de piedra o grava, de pasto, o de las dos?"
+        options_en: ["Rock or gravel", "Grass", "Both"]
+        options_es: ["Piedra o grava", "Pasto", "Las dos"]
+        card_field: true
+        why: "Rock ground and lawns take different products. [judgment]"
+    photos_priority: [p6]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All weed control requests"
+    scope_line_en: "Pre-emergent for the front and back rock yards; ground is clear now; about a quarter-acre lot."
+    scope_line_es: "Preemergente para los patios de piedra de enfrente y de atrás; el suelo está limpio ahorita; terreno de un cuarto de acre más o menos."
+    quote_format: monthly
+    business_fills: ["price per application and how many a year, or a monthly price", "areas covered", "whether weeds already up are included", "earliest start"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: pre-emergent or spray, which areas, ground now>
+      Areas: <front / back / front and back / whole lot>. Ground: <rock or gravel / grass / both>. Weeds now: <clear / a few / lots or tall>.
+      Schedule wanted: <one-time / monthly / every other month / quarterly>. Home: <size band>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your gardener can spray pre-emergent.", "Put it down before the rain.", "Pre-emergent won't kill what's already there.", "Two treatments a year runs about a hundred fifty.", "That weed killer is safe for pets."]
+
+  - id: rodents
+    label: "Rats, mice, pack rats"
+    bank_job_type: "general pest service"
+    recurring: true
+    homeowner_phrasings: ["rats in the garage", "mice in the kitchen", "pack rat in my car engine", "something in the attic at night", "droppings in the cabinets", "ratas en la yarda"]
+    must_know:
+      - fact: "Where the signs are: attic or walls, inside rooms, garage, yard, a car or boat"
+        bank_question: where
+        follow_up: fu_rodent_where
+        photo: p5
+        why_it_moves_price: "Attic and wall activity means finding and sealing entry points; yard and garage activity is often outdoor bait stations. [judgment]"
+        skip_if: "She named the place"
+      - fact: "How often she sees them or new droppings"
+        bank_question: null
+        follow_up: fu_seen_how_often
+        photo: p5
+        why_it_moves_price: "Daily signs mean more early visits. [judgment]"
+        skip_if: "She described it"
+      - fact: "Home size"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Perimeter sets how many stations and how much sealing. [judgment]"
+        skip_if: "Answered"
+      - fact: "Schedule wanted"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Ongoing station service is priced per month; the monthly format needs a schedule. [judgment]"
+        skip_if: "She named a schedule"
+    allowed_follow_ups:
+      - id: fu_rodent_where
+        ask_when: "Rodent request and she did not say where she sees signs"
+        text_en: "Where have you seen them or their droppings: attic or walls, inside rooms, the garage, or the yard, a car or a boat?"
+        text_es: "¿Dónde los ha visto o ha visto excremento: en el ático o las paredes, adentro de los cuartos, en la cochera, o en el patio, un carro o una lancha?"
+        options_en: ["Attic or walls", "Inside rooms or kitchen", "Garage or storage", "Yard, car or boat", "More than one of these"]
+        options_es: ["Ático o paredes", "Cuartos o cocina", "Cochera o bodega", "Patio, carro o lancha", "Más de una de estas"]
+        card_field: true
+        why: "Where the signs are tells the business whether to bring sealing materials, traps or stations. [judgment]"
+      - fu_seen_how_often
+      - fu_prior_service
+    photos_priority: [p5, p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Rodents seen in the kitchen or food areas every day"]
+      regular: "Droppings found, or noises now and then"
+    scope_line_en: "Droppings and chewed boxes in the garage, a rat seen in the yard at night; about 2,000 sq ft home."
+    scope_line_es: "Excremento y cajas mordidas en la cochera, una rata vista en el patio de noche; casa de unos 2,000 pies²."
+    quote_format: monthly
+    business_fills: ["monthly price, or price per visit with the visit schedule", "first-visit or setup charge, if any", "what is included (stations, traps, sealing)", "earliest start"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: signs seen, where>
+      Signs at: <attic or walls / inside rooms / garage / yard, car or boat>. How often: <once in a while / most days / every day>.
+      Schedule wanted: <one-time / monthly / every other month / quarterly>. Home: <size band>. Current pest service: <yes / stopped / none / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those are roof rat droppings.", "Don't sweep up the droppings.", "Set snap traps along the wall.", "Rodent service is about fifty a month.", "They're getting in through the vents."]
+
+  - id: bees_wasps
+    label: "Bees (swarm or hive), wasps, hornets"
+    bank_job_type: "general pest service"
+    recurring: false
+    homeowner_phrasings: ["bee swarm in the tree", "bees in my wall", "bees in the water meter box", "wasp nest under the eave", "abejas en la pared", "panal"]
+    must_know:
+      - fact: "Where the bees or wasps are, and whether they hang in a ball or go in and out of an opening"
+        bank_question: null
+        follow_up: fu_bee_where
+        photo: p3
+        why_it_moves_price: "A hanging swarm is a short visit; a colony inside a wall or roof can mean opening it up and removing comb. [judgment]"
+        skip_if: "Her words or the photo show the place and which kind"
+      - fact: "How long they have been there"
+        bank_question: null
+        follow_up: fu_bee_how_long
+        photo: null
+        why_it_moves_price: "A swarm often moves on within days; one that stays has started building. [judgment]"
+        skip_if: "She said when it started"
+      - fact: "How high up, and how close to doors, walkways, the pool or play areas"
+        bank_question: null
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Height means a ladder or lift; nearness to people sets how soon the business comes. [judgment]"
+        skip_if: "Photo shows it"
+      - fact: "Whether live removal is wanted"
+        bank_question: null
+        follow_up: fu_live_removal
+        photo: null
+        why_it_moves_price: "Live removal and relocation is a different visit from treatment. [judgment]"
+        skip_if: "She said which she wants"
+    allowed_follow_ups:
+      - id: fu_bee_where
+        ask_when: "Bee or wasp request that does not say where or what they are doing"
+        text_en: "Where are they: hanging in a ball on a tree or bush, going in and out of a wall or roof, in a meter, valve or pool box, or a nest under the eave?"
+        text_es: "¿Dónde están: colgando en bola en un árbol o arbusto, entrando y saliendo de una pared o el techo, en una caja de medidor, válvula o alberca, o un nido bajo el alero?"
+        options_en: ["Hanging in a ball on a tree or bush", "Going in and out of a wall or roof", "In a meter, valve or pool box", "In the ground, rocks or a palm", "Nest under the eave or patio cover"]
+        options_es: ["Colgando en bola en un árbol o arbusto", "Entrando y saliendo de una pared o el techo", "En una caja de medidor, válvula o alberca", "En el suelo, las piedras o una palmera", "Nido bajo el alero o el techo del patio"]
+        card_field: true
+        why: "Same split as the kb's bee_location question; each answer is a different visit."
+      - id: fu_bee_how_long
+        ask_when: "Bee request and she did not say when they showed up"
+        text_en: "When did you first see them there?"
+        text_es: "¿Cuándo los vio ahí por primera vez?"
+        options_en: ["Today", "A few days ago", "A week or more"]
+        options_es: ["Hoy", "Hace unos días", "Hace una semana o más"]
+        card_field: true
+        why: "Bees swarm in spring and fall and rest while traveling; a cluster that stays has started a hive."
+      - id: fu_live_removal
+        ask_when: "Honey bee request and she did not say live removal or treatment"
+        text_en: "Do you want the bees removed alive if possible, or just gone?"
+        text_es: "¿Quiere que se lleven las abejas vivas si se puede, o solo que se vayan?"
+        options_en: ["Removed alive if possible", "Just gone", "Either"]
+        options_es: ["Que se las lleven vivas si se puede", "Solo que se vayan", "Cualquiera"]
+        card_field: true
+        why: "The kb lists live removal as a must-know for bee quotes; some businesses only treat. [judgment]"
+    photos_priority: [p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Bees going in and out near a door, walkway, pool or play area", "Someone was stung today", "A swarm landed on the house or a car"]
+      regular: "Wasp nest under an eave, or bees far from where people walk"
+    scope_line_en: "Bees going in and out of the front yard irrigation valve box for four days, about 12 feet from the walkway; nobody stung."
+    scope_line_es: "Abejas entrando y saliendo de la caja de válvulas del riego en el patio de enfrente desde hace cuatro días, a unos 12 pies de la banqueta; nadie picado."
+    quote_format: monthly
+    business_fills: ["price, with a period stated as the format requires, or a one-time price noted for review", "live removal or treatment", "whether comb removal or sealing is included", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: where they are, hanging or going in, how long>
+      Where: <tree or bush / wall or roof / meter, valve or pool box / ground or palm / under eave>. Since: <today / a few days / a week or more>.
+      Height and nearby: <her words or neutral photo line>. Stung so far: <no / yes / not said>. Live removal: <wanted / just gone / either>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those are killer bees.", "Stay inside and keep the kids away.", "A swarm will leave on its own.", "Spray them with soapy water.", "Bee removal runs a couple hundred."]
+
+  - id: pigeons_birds
+    label: "Pigeons or birds (under solar panels, roof, patio)"
+    bank_job_type: "general pest service"
+    recurring: false
+    homeowner_phrasings: ["pigeons under my solar panels", "birds nesting on the roof", "pigeon mess on the patio", "palomas en el techo"]
+    must_know:
+      - fact: "Where they roost or nest: under solar panels, roof or eaves, patio cover"
+        bank_question: null
+        follow_up: fu_bird_where
+        photo: p4
+        why_it_moves_price: "Panel screening is priced by the number of panels and the edge length; spikes or netting on a patio is another job. [judgment]"
+        skip_if: "Her words or the photo show the place"
+      - fact: "How many solar panels, if under panels"
+        bank_question: null
+        follow_up: fu_panel_count
+        photo: p4
+        why_it_moves_price: "Edge length around the array sets material and time. [judgment]"
+        skip_if: "Not under panels, or the photo shows the array"
+      - fact: "One story or two"
+        bank_question: null
+        follow_up: null
+        photo: p4
+        why_it_moves_price: "Roof height changes the ladder and safety setup. [judgment]"
+        skip_if: "She said, or the photo shows it"
+    allowed_follow_ups:
+      - id: fu_bird_where
+        ask_when: "Bird request and she did not say where they roost"
+        text_en: "Where are the birds roosting or nesting: under solar panels, on the roof or eaves, or on a patio cover?"
+        text_es: "¿Dónde se paran o anidan los pájaros: debajo de los paneles solares, en el techo o los aleros, o en el techo del patio?"
+        options_en: ["Under solar panels", "Roof or eaves", "Patio cover", "More than one of these"]
+        options_es: ["Debajo de los paneles solares", "Techo o aleros", "Techo del patio", "Más de una de estas"]
+        card_field: true
+        why: "Each place takes a different material and method. [judgment]"
+      - id: fu_panel_count
+        ask_when: "Birds under solar panels and no photo of the array"
+        text_en: "About how many solar panels are on the roof?"
+        text_es: "¿Más o menos cuántos paneles solares hay en el techo?"
+        options_en: ["Under 15", "15 to 30", "Over 30"]
+        options_es: ["Menos de 15", "15 a 30", "Más de 30"]
+        card_field: true
+        why: "Panel count is the first number in a panel screening quote. [judgment]"
+    photos_priority: [p4]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All bird requests"
+    scope_line_en: "Pigeons nesting under the roof solar panels, about 20 panels on a one-story tile roof."
+    scope_line_es: "Palomas anidando debajo de los paneles solares del techo, unos 20 paneles en un techo de teja de un piso."
+    quote_format: monthly
+    business_fills: ["price, with a period stated as the format requires, or a one-time price noted for review", "what is included (cleanout, screening, spikes or netting)", "earliest day"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: where the birds are, size of the area>
+      Where: <under solar panels / roof or eaves / patio cover>. Panels: <under 15 / 15 to 30 / over 30 / n/a>. Stories: <one / two / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The droppings are a health risk.", "Screening will void your solar warranty.", "Panel screening is about ten dollars a foot.", "Just put up a fake owl."]
+
+  - id: bed_bugs_other
+    label: "Bed bugs, fleas, other"
+    bank_job_type: "general pest service"
+    recurring: false
+    homeowner_phrasings: ["I think I have bed bugs", "waking up with bites", "fleas in the carpet", "chinches en la cama", "pulgas"]
+    must_know:
+      - fact: "What she has seen: bugs, spots or shed skins on the bed, bites, or bugs in carpet or on a pet"
+        bank_question: null
+        follow_up: fu_bite_signs
+        photo: p1
+        why_it_moves_price: "Bed bug work is room by room with several visits; flea work treats carpet and the yard with the pet treated by its owner. [judgment]"
+        skip_if: "Photo shows a bug or the bed"
+      - fact: "Pets, and whether they go outside"
+        bank_question: null
+        follow_up: fu_pets_outside
+        photo: null
+        why_it_moves_price: "An outdoor pet changes what the business brings and whether the yard is part of the job. [judgment]"
+        skip_if: "She said no pets"
+      - fact: "How many rooms, and carpet or hard floors"
+        bank_question: home_size
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Rooms treated set the price for both kinds of job. [judgment]"
+        skip_if: "She named the rooms"
+    allowed_follow_ups:
+      - id: fu_bite_signs
+        ask_when: "She reports bites or says bed bugs or fleas and sent no photo of a bug"
+        text_en: "Which of these have you seen: small bugs or dark spots on the mattress, bites only on ankles and legs, or bugs jumping in carpet or on a pet?"
+        text_es: "¿Cuál de estas cosas ha visto: bichitos o manchas oscuras en el colchón, piquetes solo en tobillos y piernas, o bichos que brincan en la alfombra o en una mascota?"
+        options_en: ["Bugs or dark spots on the mattress", "Bites only on ankles and legs", "Bugs jumping in carpet or on a pet", "Bites, nothing else seen"]
+        options_es: ["Bichitos o manchas oscuras en el colchón", "Piquetes solo en tobillos y piernas", "Bichos que brincan en la alfombra o en una mascota", "Piquetes, no he visto nada más"]
+        card_field: true
+        why: "These are the facts a pest business uses to decide what to bring, recorded without naming the bug. [judgment]"
+      - id: fu_pets_outside
+        ask_when: "Bites or bugs indoors and she did not mention pets"
+        text_en: "Do you have a dog or cat, and does it go outside?"
+        text_es: "¿Tiene perro o gato, y sale afuera?"
+        options_en: ["Yes, and it goes outside", "Yes, indoor only", "No pets"]
+        options_es: ["Sí, y sale afuera", "Sí, solo adentro", "No tengo mascotas"]
+        card_field: true
+        why: "An outdoor pet is the fact that separates a flea job from a bed bug job for the business, without Ask Hava saying which. [judgment]"
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All bed bug, flea and other requests"
+    scope_line_en: "Homeowner reports bites each morning, ankles and lower legs only; nothing seen on the mattress; outdoor cat; about 1,600 sq ft."
+    scope_line_es: "La dueña reporta piquetes cada mañana, solo en tobillos y piernas; no ha visto nada en el colchón; gato que sale afuera; unos 1,600 pies²."
+    quote_format: monthly
+    business_fills: ["price, with a period stated as the format requires, or a one-time price noted for review", "number of visits included", "what the homeowner must do before the visit", "earliest day"]
+    card_template: |
+      REQ-<id> | Pest control | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what she reports, where, in her words>
+      Seen: <bugs or spots on mattress / bites on ankles and legs / jumping bugs in carpet or on pet / bites only>. Homeowner thinks: <her words>.
+      Pets: <outdoor / indoor only / none>. Rooms and floors: <her words>. Home: <size band>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those are flea bites.", "That's bed bugs.", "Wash all the bedding on hot.", "Bed bug treatment runs about a thousand.", "Get the cat a flea collar."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Google Local Services Ads and search ads", "Door-to-door summer sales crews [judgment]", "Repeat customers and neighbor word of mouth", "Realtor and title referrals for termite reports [judgment]", "Local Facebook groups, truck signage and yard signs [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google Local Services Ads (pest control)"
+      figure: "About $20 to $80 per lead depending on competition (one marketing vendor); another vendor puts general pest LSA at $15 to $55. Vendor figures, not audited."
+      source: cubecreative_pest
+      unverified: false
+    - channel: "Google search ads (pest control)"
+      figure: "About $91 per lead in 2025 (WordStream and LocaliQ figures, reported by a marketing vendor)"
+      source: webtonic_pest
+      unverified: false
+    - channel: "What a recurring customer is worth"
+      figure: "A quarterly plan at about $540 a year is worth about $1,620 over three years; top firms keep 70 to 90 percent of customers; recurring work is about 74 percent of pest revenue (vendor summary of NPMA figures)"
+      source: webtonic_pest
+      unverified: false
+    - channel: "Angi, HomeAdvisor and Thumbtack (pest control)"
+      figure: "No pest-specific per-lead figure found from a source we could check"
+      source: null
+      unverified: true
+    - channel: "Lake Havasu City pest companies specifically"
+      figure: "No local figures found; a small market with fewer bidders may run below national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead that 3 or 4 other companies also bought", "Price shoppers who want a number over the phone and never sign up", "Monthly fees whether or not jobs come", "Fake or wrong-number leads", "Lead sites that rank or review them"]
+  what_makes_a_lead_worth_paying_for: ["She already picked them, so no phone bidding war", "Pay only on the pick, nothing monthly", "Pest, home size, inside or outside and schedule stated up front", "A photo of the pest, tubes or yard", "Ongoing customers: one fee for a customer who may stay years"]
+  their_words: ["initial service", "quarterly", "bimonthly", "perimeter", "eaves sweep", "door sweeps", "blacklight", "granules", "re-service", "callback", "WDIIR", "TARF", "trench and treat", "drill and treat", "bait stations", "pre-em", "post-em", "bare ground", "exclusion"]
+  signup_objections:
+    - objection: "How is the fee figured on a monthly plan?"
+      answer: "Four months of the monthly price, and an ongoing service never pays more than $75. A quarterly plan at $135 is $45 a month, so the basis is $180 and the fee is $25."
+    - objection: "Do you check my pest license?"
+      answer: "Pest jobs go only to businesses that tell us at sign-up they hold an Arizona Department of Agriculture pest-management license and give the number. Each quote card shows that number, says Ask Hava has not checked it, and links to the Department's search."
+    - objection: "Will I get termite and pre-emergent jobs?"
+      answer: "Only if you also tell us you hold the matching category: wood-destroying organism for termites, weed control for pre-emergent. Otherwise you get general pest and scorpion cards."
+    - objection: "I can't quote termites without seeing the house."
+      answer: "Termite treatment is quoted as one price for the work the card describes. Say in your notes what you would confirm on site. Most cards come with a photo of the tubes or damage, the floor type and the home size."
+    - objection: "Why pay a fee when I get pest customers from Google?"
+      answer: "You pay only when the homeowner picks your quote, and nobody else gets that job. There is nothing to join and nothing monthly."
+    - objection: "What if the customer cancels the plan after two months?"
+      answer: "The fee is a one-time introduction fee and is not refunded if a plan ends later. If the homeowner cancels before you have spoken with them, the fee is refunded."
+    - objection: "Will you rank me against other pest companies?"
+      answer: "No. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town, photos when she has them, and answers to the questions a pest company asks. Her name and address go only to the business she picks."
+    - objection: "I only want scorpion and general service, not rodents or weeds."
+      answer: "You pick the job types you want at sign-up and can change them any time. You get cards only for those."
+  quote_tips_for_card: ["State the visit schedule and the monthly figure, or the per-visit price with the schedule", "Say whether the first visit costs more", "Say whether visits between scheduled ones are free", "For termites, say what the price covers and any yearly renewal", "Give your earliest start"]

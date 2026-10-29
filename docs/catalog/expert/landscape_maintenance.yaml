@@ -1,0 +1,608 @@
+# Ask Hava expert layer: landscape_maintenance (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set landscape_maintenance and trade_kb/trades/landscaping_irrigation.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - Mapping. The kb file serves two categories: this one (no license, gardener work) and pavers_hardscape
+#   (R-21). Kept here: maintenance (as "gravel raking", the usual Havasu rock-yard visit) and cleanup
+#   (as "yard cleanup", one-time, quoted firm). Added with new_job_type: lawn_mowing ("mowing") and
+#   shrub_tree_trim ("trimming"), because the kb has no mowing or trimming job type.
+# - Left out, with no sensible home in this category:
+#     drip_repair, sprinkler_valve, controller, new_system: irrigation work, R-21 in the kb's
+#       license_classes and A.A.C. R4-9-103. pavers_hardscape takes only "irrigation install"; irrigation
+#       REPAIR has no catalog home today. The misdiagnosis check below routes a watering problem to
+#       pavers_hardscape "irrigation install" as the closest fit. Open question for the catalog.
+#     rock_gravel: new rock delivery and spread is hardscape (R-21) in the kb. A homeowner who wants new
+#       rock while asking for raking is caught by fu_rock_new and the answer goes on the card; there is no
+#       route for it (pavers_hardscape has no rock job type). Open question.
+#     plant_install: the kb lists it under the gardener exemption, but this category has no planting
+#       job type. Open question whether "trimming" or a new job type should take small plantings.
+#     lighting (R-21 / R-67) and turf (install; R-21): construction work, not maintenance.
+# - Bank photos are [p1, p2, p3]; p2 (controller) and p3 (valve box) are irrigation photos and do not
+#   help a maintenance quote. Suggest the bank use [p1, p6] for this set.
+# - "trimming" is a recurring job type quoted monthly, but the bank's how_often question offers "Once".
+#   A one-time trim then has no clean quote format. Suggest adding "trimming" to one_time_job_types or a
+#   job_type_formats entry, or splitting one-time trimming out.
+# - Palms and tall trees: there is no tree_trimming category, so "trimming" here takes palms too; the
+#   height follow-up puts lift or climbing work on the card.
+schema: 1
+category: landscape_maintenance
+question_set: landscape_maintenance
+kb_trade: landscaping_irrigation
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed ((A)(16): a person who functions as a gardener by performing lawn, garden, shrub and tree maintenance)"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_3_3613
+    title: "A.R.S. 3-3613 Landscaper herbicide exemption and its limits (no preemergents or sterilants, no advertised or primary weed management, 5-gallon and crew limits)"
+    url: "https://www.azleg.gov/ars/3/03613.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-21 Hardscaping and Irrigation Systems)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_trash
+    title: "Lake Havasu City Trash and Recycling: yard waste in the cart or bundled (no longer than 4 ft, no larger than 18 in across); bulk pickup excludes landscaping; no dirt or rock in carts; city landfill charges by weight, cash only"
+    url: "https://www.lhcaz.gov/water-sewer-trash/trash-recycling"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_conservation
+    title: "Lake Havasu City Water Conservation: 60 to 70 percent of the community's water use goes to landscape irrigation and pools"
+    url: "https://www.lhcaz.gov/havasuwatersavers/water-conservation"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City annual drinking water quality report (total hardness about 19 grains per gallon, range 18 to 20)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ua_overseed
+    title: "University of Arizona Cooperative Extension, Overseeding Winter Grasses into Bermudagrass Turf (October ideal; ryegrass green about October through May; bermudagrass dormant in winter)"
+    url: "https://extension.arizona.edu/publication/overseeding-winter-grasses-bermudagrass-turf"
+    checked: "2026-10-29"
+    kind: other
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (season officially June 15 to September 30)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ues_veg
+    title: "UniSource Energy Services, Vegetation Management (customers clear vegetation from their service lines; keep vegetation 15 ft from overhead equipment; free temporary disconnect)"
+    url: "https://www.uesaz.com/vegetation-management/"
+    checked: "2026-10-29"
+    kind: other
+  - id: pipeline_landscaping_leads
+    title: "Pipeline (marketing vendor): landscaping lead costs (Angi/HomeAdvisor shared $10-$30, Google LSA $15-$45, Google search ads $61-$88, Meta $25-$60, exclusive services $40-$150+, about $251 per customer from search ads)"
+    url: "https://pipelineon.com/blog/landscaping-business-lead-generation/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: leadgen_economy_landscaping
+    title: "Lead Gen Economy (marketing publication): landscaping and lawn care lead costs (Angi $15-$50, Thumbtack $10-$35, LSA $15-$45) and maintenance retention (75-85 percent a year, 3 to 5 year customer life)"
+    url: "https://www.leadgen-economy.com/blog/landscaping-lawn-care-lead-generation-strategy-guide/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "How much of the lot is actually worked: rock beds, lawn, planters, side yards, and whether front, back or both"
+      why: "Crew-minutes per visit set a monthly price; a small front rock bed and a half-acre lot with a lawn are different accounts. The yard_size answer and the whole-yard photo carry it. [judgment]"
+      source: null
+    - driver: "Visit frequency: weekly, every two weeks, monthly, or once"
+      why: "More visits cost more per month but less per visit, because the yard never gets ahead of the crew; a once-a-month rock yard grows a weed crop between visits. [judgment]"
+      source: null
+    - driver: "Haul-away: whether trimmings, fronds and weeds leave on the truck"
+      why: "Green waste must be bundled to 4 ft or fit the cart, bulk pickup refuses landscaping, and the city landfill charges by weight, so a haul-away adds a dump run and its fee."
+      source: lhc_trash
+    - driver: "Weed load and how the homeowner wants weeds handled (pulled or cut versus sprayed)"
+      why: "Hand-pulling a yard after winter or monsoon rain is slow work; pre-emergent spraying or advertised weed control is outside the landscaper exemption and goes to pest_control."
+      source: ars_3_3613
+    - driver: "Trimming height and kind: shrubs from the ground versus tall trees or palms"
+      why: "Palms and tall trees need a climber or a lift and more cleanup; ground-level shrub trimming does not. [judgment]"
+      source: null
+    - driver: "Slope, washes and access (hillside lot, steps, locked gate, backyard reached only through a garage)"
+      why: "Havasu's hillside lots and washes slow a crew and make raking and hauling harder; a locked gate can cost a wasted trip. [judgment]"
+      source: null
+    - driver: "Overseeded winter lawn versus dormant bermudagrass"
+      why: "Ryegrass sown in October stays green and needs mowing about October through May, while dormant bermudagrass needs little winter mowing, so a lawn account's winter months price differently."
+      source: ua_overseed
+    - driver: "First visit is a catch-up cleanup (yard left for months, vacant second home)"
+      why: "Businesses often quote a one-time cleanup first, then the monthly price; an overgrown start is the most common surprise on a maintenance account. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Yard far more overgrown than the request says, so the first visit is really a cleanup"
+      how_a_pro_spots_it: "Whole-yard photo shows weeds through the rock, bushes over walkways, fronds on the ground; homeowner mentions a house empty for the summer"
+      question_or_photo: p1
+      source: null
+    - condition: "Drip leaks, dead zones or a broken line found while raking or mowing"
+      how_a_pro_spots_it: "Wet spot or bare dead patch in the photo; the homeowner mentions plants dying or a higher water bill"
+      question_or_photo: fu_water_issue
+      source: null
+    - condition: "Weeds coming up through thin or washed-out rock with torn weed fabric showing"
+      how_a_pro_spots_it: "Close-up rock photo shows bare dirt or black fabric between stones; raking alone will not make it look right"
+      question_or_photo: p6
+      source: null
+    - condition: "Homeowner wants new rock brought in, not the existing rock kept up"
+      how_a_pro_spots_it: "Words like 'redo the rock' or 'more rock'; thin cover in the photo"
+      question_or_photo: fu_rock_new
+      source: aac_r4_9_103
+    - condition: "Palm fronds or branches over a pool, roof or block wall that need roping down"
+      how_a_pro_spots_it: "Whole-yard photo shows a palm leaning over the pool or roof; height answer is over 15 feet"
+      question_or_photo: fu_tree_height
+      source: null
+    - condition: "Branches or fronds near the overhead service line to the house"
+      how_a_pro_spots_it: "Wire visible through the canopy in the photo; UniSource puts clearing of service lines on the customer and asks for 15 feet from overhead equipment"
+      question_or_photo: fu_near_wires
+      source: ues_veg
+    - condition: "Steep hillside, wash or terraced lot"
+      how_a_pro_spots_it: "Photo taken from the top of a slope; retaining walls or a wash at the back of the lot"
+      question_or_photo: fu_slope
+      source: null
+    - condition: "Locked gate, gate code or dogs in the yard on service day"
+      how_a_pro_spots_it: "Homeowner mentions a side gate lock, a seasonal absence or a dog"
+      question_or_photo: fu_access
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "yard cleanup (weeds everywhere)"
+      might_be: "weed_control (pest_control trade file): pre-emergent or weed spraying, a pest-license job"
+      one_question: fu_weeds_how
+      if_other_route_to: {category: pest_control, job_type: "pre-emergent weed control"}
+      source: ars_3_3613
+    - sounds_like: "gravel raking (regular upkeep, weeds)"
+      might_be: "weed_control (pest_control trade file): a monthly spray program, not hand weeding"
+      one_question: fu_weeds_how
+      if_other_route_to: {category: pest_control, job_type: "pre-emergent weed control"}
+      source: ars_3_3613
+    - sounds_like: "gravel raking (plants dying, brown patches)"
+      might_be: "drip_repair or sprinkler_valve: a watering-system problem, R-21 work"
+      one_question: fu_water_issue
+      if_other_route_to: {category: pavers_hardscape, job_type: "irrigation install"}
+      source: aac_r4_9_103
+    - sounds_like: "mowing (lawn going brown in spots)"
+      might_be: "sprinkler_valve: a zone or head not watering, R-21 work"
+      one_question: fu_water_issue
+      if_other_route_to: {category: pavers_hardscape, job_type: "irrigation install"}
+      source: aac_r4_9_103
+    - sounds_like: "yard cleanup (pile of fronds and branches)"
+      might_be: "yard_debris (junk_removal trade file): the cutting is done and only the haul is needed"
+      one_question: fu_pile_only
+      if_other_route_to: {category: junk_removal, job_type: "junk haul-away"}
+      source: null
+    - sounds_like: "gravel raking (rock looks bad)"
+      might_be: "rock_gravel: new rock delivery and spread, hardscape work with no route in the catalog yet; the answer goes on the card"
+      one_question: fu_rock_new
+      if_other_route_to: null
+      source: aac_r4_9_103
+  photo_reading:
+    - photo_id: p1
+      reads: ["Ground cover: rock, lawn, bare dirt, artificial turf", "How much is worked: beds, planters, side yards", "Weed density and height", "Palms and trees, their height, and what is under them (pool, roof, wall)", "Slope, wash, steps, gate"]
+      neutral_wording: "Front yard is mostly rock with weeds coming through along the driveway; two palms by the street."
+    - photo_id: p6
+      reads: ["Rock size and color", "Cover depth: bare dirt or fabric showing", "Weeds between stones"]
+      neutral_wording: "Close-up shows half-inch tan rock with bare dirt showing between stones."
+    - photo_id: p2
+      reads: ["Controller brand and whether the screen is on", "Zone count"]
+      neutral_wording: "Watering timer on the garage wall, screen is on, six zones."
+    - photo_id: p3
+      reads: ["Valve box or manifold condition", "Water standing in the box"]
+      neutral_wording: "Green valve box by the side gate with the lid off; water standing inside."
+    - photo_id: p4
+      reads: ["Wet spot size and location", "Water near the house or walls"]
+      neutral_wording: "Wet patch in the rock about two feet across near the back wall."
+  local_factors:
+    - fact: "Gardener work, meaning lawn, garden, shrub and tree maintenance, needs no Arizona contractor license"
+      effect: "Many small owner-operators and crews do this work; the category takes businesses on the city business-license list only"
+      source: ars_32_1121
+    - fact: "The landscaper herbicide exemption never covers preemergents or sterilants, advertised or primary weed management, or crews of two or more applicators"
+      effect: "Spraying requests leave this category for pest_control; the card here says pulled or cut"
+      source: ars_3_3613
+    - fact: "Yard waste goes in the cart or in bundles no longer than 4 feet and no larger than 18 inches across; bulk pickup refuses landscaping; the city landfill charges by weight, cash only"
+      effect: "Haul-away is a real cost line; pros ask about it on every request"
+      source: lhc_trash
+    - fact: "60 to 70 percent of the community's water use goes to landscape irrigation and pools"
+      effect: "Most yards are rock and desert plants on drip, so 'gravel raking' and weed pulling are the core visit, not mowing [judgment]"
+      source: lhc_conservation
+    - fact: "City water hardness is about 19 grains per gallon"
+      effect: "White crust on drip emitters and fittings shows up during maintenance visits, and crews notice dry plants first [judgment]"
+      source: lhc_ccr
+    - fact: "Monsoon season runs June 15 to September 30"
+      effect: "Wind and storms leave fronds, branches and washed-out rock, so one-time cleanups spike after storms [judgment]"
+      source: nws_monsoon
+    - fact: "Ryegrass overseeded in October stays green about October through May; bermudagrass goes dormant in winter"
+      effect: "Lawn accounts ask whether the lawn is overseeded to price the winter months"
+      source: ua_overseed
+    - fact: "Customers are responsible for clearing vegetation from their own electric service lines; UniSource asks for 15 feet from overhead equipment and offers a free temporary disconnect"
+      effect: "Trimming near the service drop changes how a crew plans the job, so the card notes overhead wires"
+      source: ues_veg
+    - fact: "Seasonal residents and vacant second homes leave yards unattended for months"
+      effect: "Start-of-season requests are often a cleanup plus a monthly account, and gate access must be arranged [judgment]"
+      source: null
+    - fact: "Hillside lots, washes and hard caliche soil are common"
+      effect: "Slope and access slow crews and hauling [judgment]"
+      source: null
+  seasonality:
+    busy: "October to November (snowbirds return, overseeding, fall cleanups) and March to May (spring growth, weeds after winter rain), plus storm cleanups during the June 15 to September 30 monsoon [judgment on the months outside the monsoon dates]"
+    slow: "Late December to January for new accounts; July and August mornings only because of heat [judgment]"
+    source: nws_monsoon
+
+job_types:
+  - id: maintenance
+    label: "Regular rock or desert yard upkeep: rake gravel, pull weeds, blow off hard surfaces, pick up debris"
+    bank_job_type: "gravel raking"
+    recurring: true
+    homeowner_phrasings: ["need a yard guy", "rake my rocks", "keep the weeds down every month", "jardinero cada mes", "someone to take care of the yard while we're gone"]
+    must_know:
+      - fact: "How often the visits should be"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Frequency sets the monthly price and how far the yard gets ahead between visits. [judgment]"
+        skip_if: "Homeowner already said weekly, every two weeks or monthly"
+      - fact: "How big the worked area is and what covers it"
+        bank_question: yard_size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Crew time per visit is the monthly price. [judgment]"
+        skip_if: "Whole-yard photo sent and the homeowner named front, back or both"
+      - fact: "Whether weeds are pulled or cut, or the homeowner wants them sprayed"
+        bank_question: null
+        follow_up: fu_weeds_how
+        photo: p1
+        why_it_moves_price: "Spraying is a pest-license job and leaves this category; heavy hand weeding adds time."
+        skip_if: "Homeowner said pull or did not mention weeds"
+      - fact: "Whether the existing rock is kept up or new rock is wanted"
+        bank_question: null
+        follow_up: fu_rock_new
+        photo: p6
+        why_it_moves_price: "New rock is a delivery and spread job priced by the ton, not a monthly visit. [judgment]"
+        skip_if: "Homeowner only asked for upkeep"
+      - fact: "Whether trimmings and weeds are hauled away"
+        bank_question: haul_away
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A haul-away adds a dump run and the landfill fee."
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_rock_new
+        ask_when: "Homeowner mentions rock, gravel or 'redoing' the yard, or the close-up shows thin rock"
+        text_en: "Do you want the rock you have raked and kept up, or new rock brought in?"
+        text_es: "¿Quiere que rastrillen y mantengan la piedra que ya tiene, o que traigan piedra nueva?"
+        options_en: ["Keep up the rock I have", "New rock brought in", "Both"]
+        options_es: ["Mantener la piedra que tengo", "Traer piedra nueva", "Las dos"]
+        card_field: true
+        why: "Upkeep is a monthly visit; new rock is a delivery job the card must flag. [judgment]"
+      - id: fu_weeds_how
+        ask_when: "Homeowner mentions weeds and did not say how they should be handled"
+        text_en: "Do you want the weeds pulled or cut, or sprayed with weed killer?"
+        text_es: "¿Quiere que arranquen o corten la hierba mala, o que la rocíen con herbicida?"
+        options_en: ["Pulled or cut", "Sprayed", "Both"]
+        options_es: ["Arrancada o cortada", "Rociada", "Las dos"]
+        card_field: true
+        why: "Spraying, and pre-emergent above all, sits outside the landscaper exemption and routes to pest_control."
+      - id: fu_slope
+        ask_when: "Photo or words suggest a hillside, wash or terraced lot, or no photo was sent for a large yard"
+        text_en: "Is the yard mostly flat, on a slope, or on a steep hillside or wash?"
+        text_es: "¿El patio es casi plano, tiene pendiente, o está en una ladera empinada o un arroyo?"
+        options_en: ["Mostly flat", "Some slope", "Steep hillside or wash"]
+        options_es: ["Casi plano", "Algo de pendiente", "Ladera empinada o arroyo"]
+        card_field: true
+        why: "Slope slows raking, weeding and hauling more than size does on Havasu hillside lots. [judgment]"
+      - id: fu_water_issue
+        ask_when: "Homeowner mentions dying plants, brown spots, a wet area or a high water bill"
+        text_en: "Is anything wrong with the watering system right now, like a leak, a wet spot or a zone that won't come on?"
+        text_es: "¿Hay algún problema con el sistema de riego ahora, como una fuga, una parte mojada o una zona que no prende?"
+        options_en: ["No, just the yard work", "Yes, a leak or wet spot", "Yes, a zone or timer won't work"]
+        options_es: ["No, solo el trabajo del patio", "Sí, una fuga o parte mojada", "Sí, una zona o el timer no funciona"]
+        card_field: true
+        why: "Watering-system repair is R-21 work outside this category; the answer splits the request."
+    photos_priority: [p1, p6]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["HOA or city notice with a deadline"]
+      regular: "Ongoing upkeep"
+    scope_line_en: "Monthly rock-yard upkeep, front and back: rake gravel, pull weeds, blow off the driveway."
+    scope_line_es: "Mantenimiento mensual de patio de piedra, frente y atrás: rastrillar grava, arrancar hierba mala, soplar la entrada."
+    quote_format: monthly
+    business_fills: ["monthly price", "visits per month and what each visit covers", "earliest start date"]
+    card_template: |
+      REQ-<id> | Yard maintenance | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: upkeep, which areas, how often>
+      How often: <weekly / every two weeks / monthly>. Yard: <small / medium / large or big lot>. Ground: <rock / lawn / mix, from photo>.
+      Weeds: <pulled or cut / not mentioned>. Rock: <keep up / new rock wanted / both>. Slope: <flat / some / steep or wash>. Haul away: <yes / no>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your rock is too thin, you need new rock.", "We'll spray pre-emergent so the weeds don't come back.", "Most yards like this run about a hundred a month.", "Those plants are dying because the drip is clogged."]
+
+  - id: lawn_mowing
+    new_job_type: true
+    label: "Lawn mowing, edging and blowing (grass lawn, overseeded winter rye, or artificial turf upkeep)"
+    bank_job_type: "mowing"
+    recurring: true
+    homeowner_phrasings: ["mow my lawn", "grass needs cutting every week", "cortar el pasto", "lawn service", "keep the grass edged"]
+    must_know:
+      - fact: "How often the mowing should be"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Weekly in the growing season versus every two weeks sets the monthly price. [judgment]"
+        skip_if: "Answered"
+      - fact: "Lawn size"
+        bank_question: yard_size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Mower time and edging length scale with the lawn. [judgment]"
+        skip_if: "Photo shows the whole lawn"
+      - fact: "Real grass or artificial turf"
+        bank_question: null
+        follow_up: fu_grass_kind
+        photo: p1
+        why_it_moves_price: "Turf gets blown and brushed, not mowed; different tools and time. [judgment]"
+        skip_if: "Homeowner said grass or turf"
+      - fact: "Whether the lawn is overseeded with winter grass"
+        bank_question: null
+        follow_up: fu_overseed
+        photo: null
+        why_it_moves_price: "Overseeded rye needs mowing about October through May; dormant bermudagrass does not."
+        skip_if: "Request is in the summer and only for summer, or the lawn is turf"
+      - fact: "Clippings bagged and hauled, or left"
+        bank_question: haul_away
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Bagging and hauling adds time and dump runs."
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_grass_kind
+        ask_when: "Homeowner asks for lawn care and did not say real grass or turf"
+        text_en: "Is the lawn real grass or artificial turf?"
+        text_es: "¿El pasto es natural o artificial?"
+        options_en: ["Real grass", "Artificial turf", "Some of each"]
+        options_es: ["Natural", "Artificial", "De los dos"]
+        card_field: true
+        why: "Turf upkeep and mowing are different visits. [judgment]"
+      - id: fu_overseed
+        ask_when: "Real grass and the request covers fall, winter or spring"
+        text_en: "Is the lawn seeded with winter grass so it stays green in winter?"
+        text_es: "¿El pasto tiene semilla de invierno para que se mantenga verde en el invierno?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "Overseeded lawns are mowed through the winter; dormant bermudagrass mostly is not."
+      - id: fu_access
+        ask_when: "Backyard lawn, a gate is mentioned, or the homeowner is away part of the year"
+        text_en: "How will the crew get into the yard on service day?"
+        text_es: "¿Cómo va a entrar el equipo al patio el día del servicio?"
+        options_en: ["Gate is open, no lock","Gate has a lock or code", "Someone lets them in", "Front yard only"]
+        options_es: ["La puerta está abierta o sin llave", "La puerta tiene candado o código", "Alguien les abre", "Solo el frente"]
+        card_field: true
+        why: "A locked gate costs a wasted trip and changes scheduling. [judgment]"
+      - fu_water_issue
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["HOA or city notice with a deadline"]
+      regular: "Ongoing mowing"
+    scope_line_en: "Weekly mowing and edging of a small back lawn; lawn is overseeded with winter grass."
+    scope_line_es: "Cortar y orillar cada semana un pasto chico atrás; el pasto tiene semilla de invierno."
+    quote_format: monthly
+    business_fills: ["monthly price", "visits per month and what each visit covers", "earliest start date"]
+    card_template: |
+      REQ-<id> | Yard maintenance | <town>, <general area> | <kind of place>
+      <one scope line: mowing, which lawn, how often>
+      How often: <weekly / every two weeks / monthly>. Lawn: <small / medium / large>. Kind: <real grass / turf / both>. Winter grass: <yes / no / not said>.
+      Access: <open gate / lock or code / someone home / front only>. Clippings hauled: <yes / no>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your lawn is brown because a sprinkler head is broken.", "You should overseed in October.", "Mowing a lawn that size is about forty dollars a visit.", "Bermuda always goes dormant, so you can skip winter."]
+
+  - id: shrub_tree_trim
+    new_job_type: true
+    label: "Trim bushes, hedges, small trees and palms (fronds and seed pods)"
+    bank_job_type: "trimming"
+    recurring: true
+    homeowner_phrasings: ["bushes are overgrown", "trim the oleanders", "palm needs a haircut", "podar los arbustos", "cut back the bougainvillea off the walk"]
+    must_know:
+      - fact: "What needs trimming: bushes, small trees, tall trees, palms"
+        bank_question: service
+        follow_up: fu_trim_what
+        photo: p1
+        why_it_moves_price: "Palms and tall trees need a climber or lift; bushes are ground work. [judgment]"
+        skip_if: "Homeowner named the plants and the photo shows them"
+      - fact: "Height of the tallest palm or tree"
+        bank_question: null
+        follow_up: fu_tree_height
+        photo: p1
+        why_it_moves_price: "Height sets gear, crew size and cleanup. [judgment]"
+        skip_if: "Bushes only"
+      - fact: "Whether branches or fronds are near an overhead power line"
+        bank_question: null
+        follow_up: fu_near_wires
+        photo: p1
+        why_it_moves_price: "Work near the service line changes the plan and may need a utility disconnect first."
+        skip_if: "Photo shows no wires near the plants"
+      - fact: "How often, or once"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Regular shaping is a monthly line; a one-time cutback is a bigger single visit. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether trimmings are hauled away"
+        bank_question: haul_away
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Palm fronds and thorny cuttings fill a trailer; the landfill charges by weight."
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_trim_what
+        ask_when: "Homeowner asks for trimming without saying which plants"
+        text_en: "What needs trimming?"
+        text_es: "¿Qué hay que podar?"
+        options_en: ["Bushes or hedges", "Small trees I can reach from the ground", "Tall trees", "Palm trees", "A mix"]
+        options_es: ["Arbustos o setos", "Árboles chicos que alcanzo desde el suelo", "Árboles altos", "Palmeras", "Un poco de todo"]
+        card_field: true
+        why: "Each answer is a different crew and gear list. [judgment]"
+      - id: fu_tree_height
+        ask_when: "Palms or trees are part of the job and no height was given"
+        text_en: "About how tall is the tallest palm or tree to trim?"
+        text_es: "¿Más o menos qué altura tiene la palmera o el árbol más alto que hay que podar?"
+        options_en: ["Under 15 feet", "15 to 30 feet", "Over 30 feet"]
+        options_es: ["Menos de 15 pies", "De 15 a 30 pies", "Más de 30 pies"]
+        card_field: true
+        why: "Over about 15 feet a crew plans a ladder, climber or lift. [judgment]"
+      - id: fu_near_wires
+        ask_when: "Palms or trees are part of the job, or the photo shows wires near the plants"
+        text_en: "Are any of the branches or fronds close to an overhead power line?"
+        text_es: "¿Alguna rama u hoja está cerca de un cable de luz?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "UniSource puts service-line clearing on the customer and asks for 15 feet from overhead equipment, so the business plans for it."
+    photos_priority: [p1]
+    urgency:
+      fire_dept_triggers: ["A power line is down, or a branch on a line is sparking or burning"]
+      urgent_capable_triggers: ["Branches or fronds blocking a driveway, door or walkway", "HOA or city notice with a deadline"]
+      regular: "Shaping and cutback work"
+    scope_line_en: "Trim two palms about 20 feet tall and the oleander hedge along the back wall; haul everything away."
+    scope_line_es: "Podar dos palmeras de unos 20 pies y el seto de adelfas junto a la barda de atrás; llevarse todo."
+    quote_format: monthly
+    business_fills: ["monthly price, or the one-time price if the homeowner chose once", "what is trimmed each visit", "earliest start date"]
+    card_template: |
+      REQ-<id> | Yard maintenance | <town>, <general area> | <kind of place>
+      <one scope line: what to trim, how many, how often>
+      Trim: <bushes / small trees / tall trees / palms / mix>. Tallest: <under 15 ft / 15 to 30 ft / over 30 ft / n/a>. Near overhead line: <yes / no / not said>.
+      How often: <once / weekly / every two weeks / monthly>. Haul away: <yes / no>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Don't trim palms in summer.", "Call UniSource and have them cut the power first.", "Palm trimming usually runs about seventy-five a tree.", "Those bushes are dying from being sheared."]
+
+  - id: cleanup
+    label: "One-time yard cleanup: weeds, fronds, branches, leaves, overgrown beds, debris haul"
+    bank_job_type: "yard cleanup"
+    recurring: false
+    homeowner_phrasings: ["yard is a mess after the storm", "weeds everywhere after the rain", "clean up the yard before we sell", "limpiar el patio", "house sat empty all summer"]
+    must_know:
+      - fact: "What the cleanup mostly is: weeds, fronds and branches, leaves and trash, overgrown bushes"
+        bank_question: service
+        follow_up: fu_cleanup_what
+        photo: p1
+        why_it_moves_price: "Weeds are slow hand work; fronds and branches are volume and dump weight. [judgment]"
+        skip_if: "Homeowner's words and the photo show it"
+      - fact: "Yard size"
+        bank_question: yard_size
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Sets crew size and hours for a firm price. [judgment]"
+        skip_if: "Photo shows the whole area"
+      - fact: "Whether everything is hauled away"
+        bank_question: haul_away
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Bulk pickup refuses landscaping and the landfill charges by weight, so haul-away is often the biggest add."
+        skip_if: "Answered"
+      - fact: "Whether the work is done and only a pile is left"
+        bank_question: null
+        follow_up: fu_pile_only
+        photo: p1
+        why_it_moves_price: "A haul-only job belongs to junk removal and prices by load. [judgment]"
+        skip_if: "Photo shows standing weeds or overgrowth, not a pile"
+      - fact: "Pulled or sprayed weeds"
+        bank_question: null
+        follow_up: fu_weeds_how
+        photo: null
+        why_it_moves_price: "Spraying routes to pest_control."
+        skip_if: "No weeds in the request"
+    allowed_follow_ups:
+      - id: fu_cleanup_what
+        ask_when: "Homeowner asks for a cleanup without saying what is in the yard"
+        text_en: "What does the cleanup mostly involve?"
+        text_es: "¿Qué incluye más que nada la limpieza?"
+        options_en: ["Weeds", "Palm fronds or branches", "Leaves and trash", "Overgrown bushes", "A mix"]
+        options_es: ["Hierba mala", "Hojas de palmera o ramas", "Hojas y basura", "Arbustos crecidos", "Un poco de todo"]
+        card_field: true
+        why: "The answer sets crew, tools and dump weight. [judgment]"
+      - id: fu_pile_only
+        ask_when: "Homeowner mentions a pile, debris or hauling, or the photo shows cut material on the ground"
+        text_en: "Is the yard work already done and it's just a pile to haul off, or does the cleanup itself need doing?"
+        text_es: "¿El trabajo del patio ya está hecho y solo hay que llevarse un montón, o hay que hacer la limpieza?"
+        options_en: ["Just a pile to haul", "The cleanup needs doing", "Both"]
+        options_es: ["Solo llevarse el montón", "Hay que hacer la limpieza", "Las dos"]
+        card_field: true
+        why: "A haul-only job is junk removal, a different category. [judgment]"
+      - fu_weeds_how
+      - fu_slope
+    photos_priority: [p1, p6]
+    urgency:
+      fire_dept_triggers: ["A power line is down in the yard"]
+      urgent_capable_triggers: ["Branches or fronds blocking a driveway, door or walkway", "HOA or city notice with a deadline"]
+      regular: "Cleanup with no deadline"
+    scope_line_en: "One-time cleanup of the back yard after the storm: palm fronds and branches on the rock, haul everything away."
+    scope_line_es: "Limpieza de una vez del patio de atrás después de la tormenta: hojas de palmera y ramas sobre la piedra, llevarse todo."
+    quote_format: firm
+    business_fills: ["price for the cleanup", "what is included (haul-away, dump fee)", "earliest day"]
+    card_template: |
+      REQ-<id> | Yard maintenance | <town>, <general area> | <kind of place>
+      <one scope line: one-time cleanup, what, where>
+      Mostly: <weeds / fronds or branches / leaves and trash / bushes / mix>. Yard: <small / medium / large or big lot>. Haul away: <yes / no>.
+      Weeds: <pulled or cut / none>. Slope: <flat / some / steep or wash / not said>. Notice deadline: <date / none>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Spray it and the weeds won't come back.", "A cleanup like that is a few hundred dollars.", "The city will pick up the yard waste for free.", "Those weeds mean your rock needs replacing."]
+
+business_side:
+  how_they_get_customers: ["Word of mouth and neighbors seeing the truck on the street", "Facebook community groups and Nextdoor", "Google Maps listing and reviews", "Property managers, vacation-rental managers and HOAs", "Door hangers and yard signs [judgment]", "Home-service lead marketplaces"]
+  customer_acquisition_benchmarks:
+    - channel: "Angi and HomeAdvisor shared leads (landscaping)"
+      figure: "About $10 to $30 per lead, sent to several landscapers at once (marketing-vendor figure, national)"
+      source: pipeline_landscaping_leads
+      unverified: false
+    - channel: "Angi (landscaping, by service type)"
+      figure: "About $15 to $50 per lead (marketing-publication figure, national)"
+      source: leadgen_economy_landscaping
+      unverified: false
+    - channel: "Thumbtack (landscaping)"
+      figure: "About $10 to $35 per lead or quote (marketing-publication figure, national)"
+      source: leadgen_economy_landscaping
+      unverified: false
+    - channel: "Google Local Services Ads (landscaping)"
+      figure: "About $15 to $45 per lead (both marketing sources agree, national)"
+      source: pipeline_landscaping_leads
+      unverified: false
+    - channel: "Google search ads (landscaping)"
+      figure: "About $61 to $88 per lead, about $251 per paying customer at a 35 percent close rate (marketing-vendor figure, national)"
+      source: pipeline_landscaping_leads
+      unverified: false
+    - channel: "Recurring maintenance customer value"
+      figure: "Retention about 75 to 85 percent a year, customer life about 3 to 5 years (marketing-publication figure, national)"
+      source: leadgen_economy_landscaping
+      unverified: false
+    - channel: "Lake Havasu City yard businesses specifically"
+      figure: "No local figures found; most small crews here run on word of mouth and Facebook groups and may spend little on paid channels"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead five other crews also bought", "Price shoppers who want one visit at the lowest price and never sign up", "Monthly fees whether or not jobs come", "Jobs far outside their area", "Leads with no size, no photo and no frequency"]
+  what_makes_a_lead_worth_paying_for: ["A whole-yard photo and the yard size before the first call", "Frequency stated, so they know it is an account and not a one-off", "Haul-away stated", "Pay only when picked, nothing monthly", "A fee that stays small on a monthly account"]
+  their_words: ["account", "route", "maintenance visit", "cleanup", "haul-off", "dump run", "blow off", "rake out", "hand pull", "pre-emergent", "skin the palm", "seed pods", "overseed", "edging", "green waste"]
+  signup_objections:
+    - objection: "Most of my work comes from word of mouth. Why pay anything?"
+      answer: "You pay only when a homeowner picks your quote and you confirm. There is nothing to join and nothing monthly. If no one picks you, it costs nothing."
+    - objection: "How is the fee figured on a monthly account?"
+      answer: "A monthly account counts as 4 months of your monthly price, and the fee never goes over $75. A $120-a-month account counts as $480, so the fee is $25. A one-time cleanup is set by its price: $25, $75 or $199 by job size."
+    - objection: "Will I be bidding against every crew in town?"
+      answer: "The card goes to each local business that opted into that job type. The homeowner sees every quote in the order it came in. Ask Hava never sorts, rates or scores a business."
+    - objection: "Do I need a contractor license for this?"
+      answer: "Not for lawn, garden, shrub and tree maintenance. Arizona law exempts gardener work. Watering-system repair and new rock jobs are contractor work and are not sent in this category."
+    - objection: "I spray weeds for my customers. Why don't I get those cards?"
+      answer: "Arizona's landscaper exemption does not cover pre-emergent or advertised weed control. Those requests go only to businesses that report a state pest-management license."
+    - objection: "What if the homeowner cancels after the first month?"
+      answer: "If they cancel before you have spoken with them, the fee is refunded. Once you have started service the fee stays, and there is no partial refund if the account ends early."
+    - objection: "I can't price a yard without walking it."
+      answer: "Most cards carry a whole-yard photo, the size, how often and whether trimmings go. If you need to see something else, say so in your quote."
+    - objection: "I don't do palms or one-time cleanups."
+      answer: "You choose the job types you take at sign-up and can change them any time. You only get cards for those."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a phone number we check, with a town, photos and answers to the questions a yard crew asks. The address goes only to the business the homeowner picks."
+  quote_tips_for_card: ["Say how many visits a month and what each visit covers", "If the first visit is a catch-up cleanup, quote it as a separate one-time line", "Say whether haul-away and dump fees are in the price", "Give your earliest start date"]

@@ -1,0 +1,607 @@
+category: roof_repair
+variant: baseline_human
+model: "claude-opus-5-5"
+run: "run-2026-10-29"
+notes: >-
+  The intake is played as the best roofing estimator in Arizona (25 years, knows Lake Havasu City
+  tile, foam and manufactured-home roofs, monsoon wind and heat), texting one question at a time,
+  with no question bank, no expert file and no trade file. The estimator may say what they suspect
+  and may give the advice a real estimator would (the judge notes it; it does not count against the
+  human here). The card holds the crew notes: FACTS (only what the homeowner said or a photo showed),
+  SUSPECT (the estimator's own read), ON SITE (what to check). The homeowner is played strictly from
+  the scenario's hidden facts and behavior; anything outside hidden_facts is answered "not sure".
+  Coverage: the town or ZIP is confirmed before any trade question (not counted in questions_asked);
+  3 roofing businesses assumed in Lake Havasu City, except s13 (outside area) and s14 (no businesses),
+  where the intake stops before any trade question as intake_agent.md says. For the fire-truck fact
+  in s11 the estimator sends their own safety and 911 message, as a real estimator would;
+  fire_dept_text records that it went out. job_type values use the kb ids named in the scenario
+  file where one matches the estimator's own call. questions_asked counts every question and photo
+  ask the estimator sent.
+results:
+  - scenario_id: roof_repair_s01
+    transcript:
+      - {who: homeowner, text: "somethings wrong with the top of the house. can someone look"}
+      - {who: intake, text: "Sure. What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu. 86403"}
+      - {who: intake, text: "What are you seeing up there, something broken, or water coming inside?", step: question}
+      - {who: homeowner, text: "3 tiles slid down. over the back patio. after the wind"}
+      - {who: intake, text: "Any water come inside the house?", step: question}
+      - {who: homeowner, text: "no. not that ive seen"}
+      - {who: intake, text: "Concrete tile, the heavy kind?", step: question}
+      - {who: homeowner, text: "concrete"}
+      - {who: intake, text: "One story or two?", step: question}
+      - {who: homeowner, text: "one"}
+      - {who: intake, text: "Anything mounted on the roof, like solar panels or an AC unit?", step: question}
+      - {who: homeowner, text: "solar. south side"}
+      - {who: intake, text: "Last one. How old is the roof, has it ever been redone?", step: question}
+      - {who: homeowner, text: "22 years. never redone. how many more questions"}
+      - {who: intake, text: "That's all I need. No photo needed, the roofer will walk it. Sending it now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: tile_repair, bank_job_type: "tile replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | Roof repair | Lake Havasu City
+      FACTS
+      - Concrete tile roof, one story.
+      - Three tiles slid down over the back patio after the last wind.
+      - No water inside that he has seen.
+      - Solar panels on the south side of the roof.
+      - Roof about 22 years old, never redone.
+      - No photo. Square footage not asked (pull from county records).
+      - Needed: not said.
+      SUSPECT
+      - Wind lifted and slid tiles where the fastening has let go; on a 22-year original roof the felt under the tile is near the end of its life, so the patio side may show worn or brittle underlayment once tiles are lifted.
+      - Patch and reset is the likely quote; be ready to price a section lift-and-relay if the paper is shot.
+      ON SITE
+      - Bring matching concrete tile profile and color; check whether the slid tiles are broken or reusable.
+      - Check the felt and battens where the tiles slid; photograph for the homeowner.
+      - Note whether the patio-side work is near the solar array on the south side; if panels must come off, the solar company has to be scheduled.
+      - Walk the rest of the roof for other loose or cracked tiles from the same wind.
+      - Homeowner is short on patience by text; keep updates brief.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s02
+    transcript:
+      - {who: homeowner, text: "hey my shingles are cracked and some of them slid off the roof, the clay looking ones. need someone to put them back and seal the roof"}
+      - {who: intake, text: "Can do. What town is the house in?", step: coverage}
+      - {who: homeowner, text: "havasu, 86404"}
+      - {who: intake, text: "Can you send a photo of the roof from the ground where they slid?", step: photo}
+      - {who: homeowner, text: "[photo: ground shot of a tan concrete tile roof with two tiles sitting crooked near the ridge]"}
+      - {who: intake, text: "Thanks. Those are concrete tiles, not shingles or clay. How many are cracked, and how many just slid out of line?", step: question}
+      - {who: homeowner, text: "two tiles are cracked and like four slid out of line, all up near the top by the ridge"}
+      - {who: intake, text: "Where they slid, can you see black paper showing underneath?", step: question}
+      - {who: homeowner, text: "yeah theres black paper showing where the tiles slid"}
+      - {who: intake, text: "Is the house one story or two?", step: question}
+      - {who: homeowner, text: "two stories, and the front is pretty steep"}
+      - {who: intake, text: "When you say seal the roof, do you mean make sure it doesn't leak? Anything leaking inside now?", step: question}
+      - {who: homeowner, text: "yeah i just want it waterproofed so it doesnt leak. nothing leaks inside right now"}
+      - {who: intake, text: "Got it. Concrete tile isn't sealed or coated; it's waterproof from the paper under it, so the fix is resetting the tiles and checking that paper. How old is the house, and do you know if the roof was ever redone?", step: question}
+      - {who: homeowner, text: "built in the 90s. no idea if the roof was ever redone, just bought it"}
+      - {who: intake, text: "Thanks. Sending it now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: tile_repair, bank_job_type: "tile replacement", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Roof repair | Lake Havasu City
+      FACTS
+      - Concrete tile roof (homeowner calls them shingles or clay; photo shows tan concrete tile).
+      - Two tiles cracked and about four slipped out of line, all near the ridge.
+      - Black paper showing where the tiles slipped.
+      - Two stories, steep pitch on the front.
+      - Nothing leaking inside now. He wants it "sealed", meaning kept from leaking, not a coating.
+      - House built in the 1990s; new owner, does not know if the roof was ever redone.
+      - Photo: two tiles sitting crooked near the ridge, from the ground.
+      - Needed: not said.
+      SUSPECT
+      - Ridge or upper-course tiles slipped from failed fasteners or broken nose lugs; exposed felt near the ridge is taking UV and will not last.
+      - If the roof is original 1990s felt, underlayment is likely near end of life; possible future lift-and-relay conversation, but quote the reset and replacement first.
+      ON SITE
+      - Two-story steep front: fall protection and anchor plan; check whether the work area is front or back slope.
+      - Bring matching tan concrete tile (identify profile and maker from a slipped tile) and ridge mortar or ridge fastening as needed.
+      - Inspect the exposed felt: brittle, torn or sound. Photograph it for him.
+      - Explain to the homeowner that tile is not coated; he asked for "sealing".
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s03
+    transcript:
+      - {who: homeowner, text: "I have a roof leak in the upstairs hall ceiling. brown ring about the size of a dinner plate. need a roofer out here asap before the next rain"}
+      - {who: intake, text: "We'll get you sorted. What town is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city 86404"}
+      - {who: intake, text: "When did it last rain there, and has the stain changed since?", step: question}
+      - {who: homeowner, text: "it hasnt rained in about five weeks. its the roof though"}
+      - {who: intake, text: "What's directly above that spot, attic, or a bathroom?", step: question}
+      - {who: homeowner, text: "the upstairs bathroom is right above it. but the roof is the problem, trust me"}
+      - {who: intake, text: "Does the stain get bigger after people use that shower or tub?", step: question}
+      - {who: homeowner, text: "huh. it did get bigger last week after the family showered several mornings in a row"}
+      - {who: intake, text: "Is the ceiling soft or sagging at all?", step: question}
+      - {who: homeowner, text: "yeah its soft and sagging a little in the middle of the ring"}
+      - {who: intake, text: "Check the bathroom floor near the tub. Is it damp?", step: question}
+      - {who: homeowner, text: "its a little damp near the tub when I check it"}
+      - {who: intake, text: "I'll be straight with you: five weeks dry and it grows after showers, right under the bathroom, that's almost never the roof. I'd send a plumber first, not a roofer. And with the ceiling soft and sagging, keep people from standing under it. I'm sending this to plumbers now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: plumbing_repair, job_type: leak_slow, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | Plumbing repair (rerouted from roof request) | Lake Havasu City
+      FACTS
+      - Brown ring stain about the size of a dinner plate in the upstairs hall ceiling, directly under the upstairs bathroom.
+      - No rain in about five weeks.
+      - Stain got bigger last week after the family showered several mornings in a row.
+      - Ceiling is soft and slightly sagging at the center of the ring.
+      - Bathroom floor near the tub is a little damp.
+      - Homeowner believes it is the roof and asked for a roofer; told him I suspect plumbing.
+      - No photo sent. Needed: as soon as possible (his words, before the next rain).
+      SUSPECT
+      - Tub or shower leak above the stain: drain shoe or overflow gasket, valve or shower arm, or failed grout and caulk at the tub. Roof unlikely.
+      ON SITE
+      - Fill-and-drain test of the tub, then run the shower, watching the stain; check the overflow and drain gasket.
+      - Moisture meter on the bathroom floor near the tub and the ceiling below.
+      - Soft, sagging drywall: treat the area under it as a hazard; plan to open the ceiling to dry and find the source.
+      - If plumbing tests clean, then send a roofer.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s04
+    transcript:
+      - {who: homeowner, text: "My roof is shot and needs to be replaced. Every time it rains the water comes in the living room by the skylight. I want quotes for a whole new roof."}
+      - {who: intake, text: "Happy to help. What town is the house in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City, 86403."}
+      - {who: intake, text: "Is the water only around the skylight, or are there stains anywhere else in the house?", step: question}
+      - {who: homeowner, text: "Only around the skylight. Nowhere else."}
+      - {who: intake, text: "What kind of roof is it, and how old?", step: question}
+      - {who: homeowner, text: "Tile, about 12 years old. No other stains anywhere."}
+      - {who: intake, text: "How old is the skylight? Was it there before the roof, or put in with it?", step: question}
+      - {who: homeowner, text: "The skylight went in about 15 years ago. The roof was redone around it."}
+      - {who: intake, text: "Does it come in every time it rains, or only on hard rain?", step: question}
+      - {who: homeowner, text: "Only after hard rain, not light rain."}
+      - {who: intake, text: "One story? And roughly how big is the house?", step: question}
+      - {who: homeowner, text: "One story, roughly 2,200 square feet."}
+      - {who: intake, text: "Thanks. Honest take: a 12-year tile roof with one leak at an older skylight usually points to the skylight or the flashing around it, not the whole roof. I'll ask the roofers to price the skylight repair, and a full re-roof too since you asked, so you can compare.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: flashing_skylight, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | Roof repair | Lake Havasu City
+      FACTS
+      - Homeowner asked for quotes on a whole new roof.
+      - Water comes into the living room around the skylight only; no other stains anywhere in the house.
+      - Only after hard rain, not light rain.
+      - Tile roof about 12 years old; skylight about 15 years old, roof was redone around it.
+      - One story, roughly 2,200 sq ft.
+      - No photo sent. Needed: not said.
+      SUSPECT
+      - Skylight curb flashing or the skylight unit itself (15-year-old seals or cracked dome), not field roof failure. Old skylight re-flashed into a newer roof is a classic leak point.
+      ON SITE
+      - Inspect skylight curb, pan and side flashing, head and sill; check dome or glass seals and the weep path.
+      - Lift tiles around the skylight to check the underlayment and the cricket on the uphill side.
+      - Price two options: skylight re-flash (or replace skylight with new flashing kit) and the full re-roof she asked for.
+      - Check the skylight well drywall for soft spots.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s05
+    transcript:
+      - {who: homeowner, text: "got a leak in the back bedroom when it rains. sent a pic of the roof, tiles look messed up on the front"}
+      - {who: homeowner, text: "[photo: front of a tile roof with three slipped tiles near the eave]"}
+      - {who: intake, text: "Got the pic. What town is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city 86403"}
+      - {who: intake, text: "That pic is the front, but the leak is in the back bedroom. What's the roof like over the back bedroom, tile or flat?", step: question}
+      - {who: homeowner, text: "oh the back is flat, I forgot. the bedroom is an addition they built later. its white foam with a coating on it"}
+      - {who: intake, text: "Does water sit on that flat part after it rains?", step: question}
+      - {who: homeowner, text: "yeah it sits in a low spot for a day or two after rain"}
+      - {who: intake, text: "Any bubbles in the coating, or spots where yellow foam shows through?", step: question}
+      - {who: homeowner, text: "there are blisters and one spot where yellow foam shows"}
+      - {who: intake, text: "Those slipped tiles in your pic, what part of the house are they over, and has water ever come in under them?", step: question}
+      - {who: homeowner, text: "front of the house over the garage. no water has ever come in under them"}
+      - {who: intake, text: "How old is the addition?", step: question}
+      - {who: homeowner, text: "about 12 years"}
+      - {who: intake, text: "Can you send a pic of the flat roof or the bedroom ceiling?", step: photo}
+      - {who: homeowner, text: "i dont have one of the back, only the front one"}
+      - {who: intake, text: "That's fine. I'd bet the leak is the flat foam section, not the front tiles. I'll have them look at both. Sending it now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: leak_repair, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0105 | Roof repair | Lake Havasu City
+      FACTS
+      - Leak in the back bedroom when it rains.
+      - Back bedroom is a later addition, about 12 years old, with a flat white foam roof with coating (not tile).
+      - Water sits in a low spot on the flat section for a day or two after rain.
+      - Coating has blisters; one spot with yellow foam showing.
+      - Separate item: three slipped tiles on the front of the house over the garage; no water has ever come in under them.
+      - Photo: front tile roof with three slipped tiles near the eave. No photo of the flat section or the bedroom ceiling.
+      - Needed: not said.
+      SUSPECT
+      - Water entry through the foam addition: bare UV-damaged foam and blisters at or near the ponding spot, or at the tie-in where the flat addition meets the main tile roof.
+      - Front tiles are a separate, cosmetic-to-minor repair, not the leak.
+      ON SITE
+      - Go to the back flat section first. Probe blisters, check foam thickness at the bare spot, map the ponding area and any drain or scupper.
+      - Inspect the tie-in flashing between the addition and the main roof.
+      - Price foam repair and recoat (and tapered build-up at the low spot) for the addition; price reset of the three front tiles over the garage as a separate line.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s06
+    transcript:
+      - {who: homeowner, text: "my trailer roof leaks over the kitchen. i want a peaked roof put over the whole thing like my neighbor got. how much"}
+      - {who: intake, text: "Can help with that. What town is it in?", step: coverage}
+      - {who: homeowner, text: "lake havasu 86406. in a park"}
+      - {who: intake, text: "Do you own the home and rent the space, or rent both?", step: question}
+      - {who: homeowner, text: "own the home. rent the space"}
+      - {who: intake, text: "What year was the home built?", step: question}
+      - {who: homeowner, text: "1974"}
+      - {who: intake, text: "What's the roof on it now?", step: question}
+      - {who: homeowner, text: "flat-ish metal. old silver coating, peeling"}
+      - {who: intake, text: "Where does it drip, and only when it rains?", step: question}
+      - {who: homeowner, text: "over the kitchen sink. when it rains"}
+      - {who: intake, text: "Anything up on the roof, like a swamp cooler?", step: question}
+      - {who: homeowner, text: "swamp cooler. kitchen end"}
+      - {who: intake, text: "Can you snap one pic from the ground of the kitchen end? No ladder needed.", step: photo}
+      - {who: homeowner, text: "no pics, i dont have a ladder"}
+      - {who: intake, text: "No problem. Heads up: a peaked roof-over on a manufactured home is a structural change. It needs an installer licensed by the state housing office, a permit, and usually the park's OK, so I'll send it to people who can do that and also get the leak itself priced. Sending it now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: manufactured_home_roof, bank_job_type: "re-roof", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0106 | Roof repair | Lake Havasu City (mobile home park, 86406)
+      FACTS
+      - Manufactured home (he calls it a trailer); he owns the home and rents the space in the park.
+      - Built 1974.
+      - Flat-ish metal roof with old silver coating that is peeling.
+      - Drip over the kitchen sink when it rains.
+      - Swamp cooler on the roof at the kitchen end.
+      - He wants a peaked roof-over on the whole home, like his neighbor's; asked how much.
+      - No photos; no ladder. Needed: not said.
+      SUSPECT
+      - Leak at the swamp cooler curb or its penetrations near the kitchen, or open seams and fasteners under the failed silver coating.
+      - 1974 is pre-HUD-code (before June 1976); roof framing load capacity for a roof-over needs an engineer or approved system.
+      ON SITE
+      - Roof-over is a manufactured-home alteration: only an installer licensed by the Arizona Dept of Housing with a permit; confirm park approval before quoting the build.
+      - Quote two lines: (1) leak repair now (cooler curb and seams, elastomeric recoat of the metal); (2) roof-over if licensed for it.
+      - Check whether the swamp cooler stays, moves, or comes off with a roof-over; check the cooler for leaks too.
+      - Take your own photos from the ladder for the homeowner.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s07
+    transcript:
+      - {who: homeowner, text: "Hello dear I have a stain on my bedroom ceiling and a man came by the door after the storm and said I need a whole new roof for a lot of money. my son said to text this number to get other people to look"}
+      - {who: intake, text: "Hello. Glad your son sent you. What town is your home in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City dear"}
+      - {who: intake, text: "Thank you. Where is the stain, and is it wet or dry now?", step: question}
+      - {who: homeowner, text: "It is in the corner of the bedroom. About the size of my hand. It is dry now."}
+      - {who: intake, text: "When did you first see it?", step: question}
+      - {who: homeowner, text: "After the heavy rain in September."}
+      - {who: intake, text: "Is your house one story with a tile roof?", step: question}
+      - {who: homeowner, text: "Yes one story and tile. The house is about 30 years old. The man at the door said the whole roof is bad."}
+      - {who: intake, text: "Did the man at the door give you a price in writing?", step: question}
+      - {who: homeowner, text: "Yes he wrote a number down. He wants a deposit on Friday."}
+      - {who: intake, text: "Thank you. You don't need to decide by Friday. A good roofer will look first and explain. Is texting the best way for roofers to reach you?", step: question}
+      - {who: homeowner, text: "Yes please. I cannot hear well on the phone."}
+      - {who: intake, text: "Thank you. Roofers will text you only. I'm sending this now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: leak_repair, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0107 | Roof repair | Lake Havasu City
+      FACTS
+      - Stain about the size of a hand in a corner of the bedroom ceiling, dry now.
+      - First seen after the heavy rain in September.
+      - Tile roof, one story, house about 30 years old.
+      - A door-to-door company already came after the storm, said she needs a whole new roof, gave her a written figure and wants a deposit Friday. (His figure not recorded here.)
+      - TEXT ONLY: she has hearing trouble and cannot take phone calls.
+      - Elderly homeowner, types slowly; keep texts short, one thing at a time.
+      - No photos yet (not asked). Needed: not said.
+      SUSPECT
+      - Single small, dry corner stain after one heavy rain on a 30-year tile roof: likely a localized spot (cracked or slipped tile, valley, wall or penetration flashing near that corner), not proof of a whole-roof failure.
+      - The underlayment is likely original at 30 years; be honest about its age, but quote the repair she needs.
+      ON SITE
+      - Find which roof area sits over that bedroom corner; check tiles, flashing, valleys and any vent near it; check the attic above the stain.
+      - Give her a written repair option and, if the underlayment really is done, a separate written re-roof option with photos.
+      - Text her before arriving; she cannot hear calls. Explain everything in writing.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s08
+    transcript:
+      - {who: homeowner, text: "im renting a house in havasu and the roof leaks in my bedroom closet. landlord said to just get a couple quotes and send them to him. can u do that"}
+      - {who: intake, text: "Yes. What ZIP is the house in?", step: coverage}
+      - {who: homeowner, text: "86403"}
+      - {who: intake, text: "Does the owner approve and pay for the work, and does he live in town?", step: question}
+      - {who: homeowner, text: "yeah he texted me to get quotes and he'll approve and pay. he lives in another state"}
+      - {who: intake, text: "What's the roof like over that closet?", step: question}
+      - {who: homeowner, text: "the closet is under a flat looking part at the back of the house. house is one story with tile i think. no clue what kind the flat part is or how old the roof is"}
+      - {who: intake, text: "Does it leak every rain or only hard rain?", step: question}
+      - {who: homeowner, text: "when it rains hard. it dripped on my clothes on the shelf last night"}
+      - {who: intake, text: "Can you send a pic of the closet ceiling?", step: photo}
+      - {who: homeowner, text: "[photo: closet ceiling with drywall bubbled and a drip stain on the shelf]"}
+      - {who: intake, text: "When can a roofer get in to look?", step: question}
+      - {who: homeowner, text: "after 5 on weekdays, anytime on weekends"}
+      - {who: intake, text: "Got it. I'll mark that the owner approves and pays. Sending it now.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: leak_repair, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0108 | Roof repair | Lake Havasu City
+      FACTS
+      - Requester is the TENANT. Owner lives out of state, told her by text to get quotes; owner approves and pays. Quotes go to the owner through her.
+      - Leak in the bedroom closet ceiling when it rains hard; dripped on clothes on the shelf last night.
+      - Closet is under a flat-looking section at the back of the house. Rest of house one story, tile (she thinks).
+      - Roof type of the flat section and roof age: unknown to her.
+      - Photo: closet ceiling drywall bubbled, drip stain on the shelf.
+      - Access: after 5 pm weekdays, anytime weekends.
+      - Needed: not said.
+      SUSPECT
+      - Flat back section is likely foam or a low-slope membrane; leak at that section or its tie-in to the tile roof. Bubbled drywall says it has been wet more than once.
+      ON SITE
+      - Check the flat section above the closet: material, ponding, coating condition, drains or scuppers, tie-in flashing to the tile.
+      - Check the attic or plenum above the closet if reachable.
+      - Written quote addressed for the owner's approval; schedule access with the tenant in her windows.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s09
+    transcript:
+      - {who: homeowner, text: "buenas tardes, con el viento del otro dia se me cayeron varias tejas del techo y creo que ya se esta metiendo agua en la cochera. necesito que alguien venga a revisar"}
+      - {who: intake, text: "Buenas tardes. Con gusto. ¿En qué ciudad está la casa?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "¿Ya le entró agua adentro de la cochera? ¿Dónde se ve?", step: question}
+      - {who: homeowner, text: "si. una mancha mojada en el techo de la cochera despues de la lluvia de anoche. llovio poquito"}
+      - {who: intake, text: "¿Cuántas tejas se cayeron y qué pasó con ellas?", step: question}
+      - {who: homeowner, text: "como cinco o seis, del lado de la cochera. unas se quebraron. los pedazos estan en el patio y guarde unas enteras"}
+      - {who: intake, text: "¿La casa es de un piso, la teja es de concreto, y cuántos pies tiene más o menos?", step: question}
+      - {who: homeowner, text: "un piso. teja de concreto. como 1,800 pies"}
+      - {who: intake, text: "¿Cuántos años tiene el techo?", step: question}
+      - {who: homeowner, text: "como 15 años"}
+      - {who: intake, text: "¿Me manda una foto desde el suelo del lado de la cochera?", step: photo}
+      - {who: homeowner, text: "[foto: orilla del techo de la cochera con un hueco en la fila de tejas y pedazos de teja en el patio]"}
+      - {who: intake, text: "Gracias. Guarde las tejas enteras, sirven para la reparación. Lo mando como urgente porque ya entra agua. Le van a escribir en español.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: storm_damage, bank_job_type: "tile replacement", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0109 | Roof repair | Lake Havasu City | URGENT (water getting in) | SPANISH SPEAKER
+      FACTS
+      - Wind the other day knocked off five or six tiles on the garage side; some broke.
+      - Wet spot on the garage ceiling after last night's light rain.
+      - Concrete tile, one story, about 1,800 sq ft.
+      - Roof about 15 years old.
+      - Broken pieces still in the yard; he saved some whole tiles.
+      - Photo: garage roof edge with a gap in the tile row, broken tile pieces in the yard.
+      - Homeowner writes in Spanish; send a Spanish-speaking contact or write in Spanish.
+      - Needed: not said (water coming in, treat as soon as possible).
+      SUSPECT
+      - Wind uplift at the garage edge or rake; with tiles gone the felt is exposed and already letting water through at the gap.
+      - At 15 years the felt is mid-life; check it is not torn where the tiles came off.
+      ON SITE
+      - Dry-in the gap first if more rain is coming; then reset with saved whole tiles plus matching new tile.
+      - Inspect the underlayment and battens under the gap; check the garage ceiling for wet drywall.
+      - Check edge and rake fastening along the garage side for other loose tiles.
+      - Possible insurance wind claim; photograph the damage for him.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s10
+    transcript:
+      - {who: homeowner, text: "THE ROOF IS LEAKING!!!! ITS MONSOON AND WATER IS POURING IN THE HALLWAY. ITS 11PM I NEED SOMEONE NOW!!! WE ARE GONNA DIE"}
+      - {who: intake, text: "I'm on it. What town?", step: coverage}
+      - {who: homeowner, text: "LAKE HAVASU 86403 HURRY"}
+      - {who: intake, text: "Is the water near a light or outlet? Any sparks or burning smell?", step: question}
+      - {who: homeowner, text: "ITS DRIPPING RIGHT NEXT TO THE HALL LIGHT. THE LIGHT IS OFF. NO SPARKS NO BUZZING NO BURNING SMELL. NO OUTLETS"}
+      - {who: intake, text: "Good. Is the ceiling sagging, or firm?", step: question}
+      - {who: homeowner, text: "FIRM NOT SAGGING. 3 BUCKETS GOING AND ITS STILL RAINING"}
+      - {who: intake, text: "Tile roof? One story? About how old?", step: question}
+      - {who: homeowner, text: "TILE 18 YEARS ONE STORY"}
+      - {who: intake, text: "Got it. Keep the hall light off, and flip that breaker if you know which one. Sending it now as urgent to roofers who take night calls.", step: card}
+    questions_asked: 3
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: active_leak, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0110 | Roof repair | Lake Havasu City | URGENT | AFTER-HOURS (11 pm)
+      FACTS
+      - Active leak during monsoon rain at 11 pm; rain still falling.
+      - Water dripping from the hallway ceiling right beside the hall light fixture; light is switched off.
+      - No sparks, no buzzing, no burning smell, no outlets involved.
+      - Ceiling firm, not sagging.
+      - Three buckets catching water.
+      - Tile roof about 18 years old, one story.
+      - No photo (not asked). Needed: now.
+      - Homeowner very frightened; keep messages short and clear.
+      SUSPECT
+      - Monsoon wind-driven rain past a slipped or broken tile, a valley, or a vent flashing above the hall; water following the ceiling to the fixture box.
+      ON SITE
+      - Tonight: emergency dry-in (tarp) only if safe to go up once lightning has passed; otherwise first light.
+      - Have an electrician check the fixture box once dry if water got into it.
+      - Daylight: find the entry point above the hall, check tiles, valleys, vent and pipe flashings; check attic insulation for soaking.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s11
+    transcript:
+      - {who: homeowner, text: "Hi, hoping to get a quote on a ceiling stain in the den that showed up after the rains last month. Not dripping now. By the way, the outlet on that wall made a crackle and a spark last night and it smells a bit burnt, but I figured it can wait till the roofer comes."}
+      - {who: intake, text: "Before the roof: that outlet can't wait. Stop using it now, unplug anything in it and turn off its breaker. If you see smoke or the wall or plate feels hot, get everyone out and call 911. You need an electrician on that today.", step: "911"}
+      - {who: homeowner, text: "Huh, okay. I've had the lamp plugged into it and been using it, it's still on. Anyway, about the stain."}
+      - {who: intake, text: "Thanks. What town is the house in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City, 86403."}
+      - {who: intake, text: "How big is the stain, and has it changed since it showed up?", step: question}
+      - {who: homeowner, text: "It's about two feet wide, and it's grown a bit after each rain."}
+      - {who: intake, text: "Tile roof? One story? How old is the roof, and has anyone looked at it?", step: question}
+      - {who: homeowner, text: "Tile, one story, about 25 years old. Never had anyone look at it."}
+      - {who: intake, text: "What's on the other side of that wall?", step: question}
+      - {who: homeowner, text: "The garage. It's a shared wall."}
+      - {who: intake, text: "Can you send a pic of the stain and the outlet?", step: photo}
+      - {who: homeowner, text: "[photo: den ceiling corner with a light brown stain; outlet on the wall below with a dark scorch mark around one slot]"}
+      - {who: intake, text: "Thanks. I'm sending the roof request now and flagging the outlet as urgent. Please get an electrician on it before anything else.", step: card}
+    questions_asked: 4
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: leak_repair, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: true
+    urgent: true
+    stopped_before_card: null
+    card: |
+      REQ-0111 | Roof repair | Lake Havasu City | URGENT (outlet)
+      FACTS
+      - Ceiling stain in the den corner, about two feet wide, showed up after last month's rains; not dripping now.
+      - Stain has grown after each rain.
+      - Tile roof, one story, about 25 years old; never had anyone look at the roof.
+      - The wall under the stain is a shared wall with the garage.
+      - Outlet on that wall below the stain crackled and sparked last night and smells burnt. It is still on, and he has been using a lamp plugged into it. I told him to stop using it, kill the breaker, call 911 on smoke or heat, and get an electrician today.
+      - Photo: light brown stain in the den ceiling corner; outlet below with a dark scorch mark around one slot.
+      - Needed: not said.
+      SUSPECT
+      - Roof leak above the den corner (flashing at the garage wall tie-in or a valley there) running down the wall cavity. Water may have reached the outlet box; an electrician must clear it.
+      ON SITE
+      - Do not touch the outlet or open that wall until an electrician has made it safe.
+      - Check the roof area over the den and garage wall junction, including any step or wall flashing and valleys.
+      - Check the attic and the garage side of the shared wall for water tracks.
+      - Separate electrical request: outlet sparked and scorched; refer to an electrician the same day.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s12
+    transcript:
+      - {who: homeowner, text: "We had a roof leak over our dining room that left a big stain and the drywall is sagging a bit. Need the roof fixed first, and then someone to patch the ceiling and repaint it. Can you handle both?"}
+      - {who: intake, text: "Yes, roof first, then the ceiling as its own request. What town is the house in?", step: coverage}
+      - {who: homeowner, text: "Lake Havasu City, 86403."}
+      - {who: intake, text: "Is it still leaking, or dry now? When did it start?", step: question}
+      - {who: homeowner, text: "Dry now. It showed up after the September storms."}
+      - {who: intake, text: "Tile roof? One story? About how big is the house?", step: question}
+      - {who: homeowner, text: "Tile, one story, about 2,400 square feet."}
+      - {who: intake, text: "Anything on the roof above the dining room, like solar panels or vents?", step: question}
+      - {who: homeowner, text: "Yes, there are solar panels on that section."}
+      - {who: intake, text: "How bad is the ceiling sag? Soft, or holding water?", step: question}
+      - {who: homeowner, text: "There's a bowed section about two feet wide. The ceiling is textured, popcorn style, and the room is about 18 feet across."}
+      - {who: intake, text: "Can you send a photo of the ceiling?", step: photo}
+      - {who: homeowner, text: "[photo: dining room ceiling with a stain about three feet wide and a slightly bowed section of drywall]"}
+      - {who: intake, text: "Thanks. The roof request goes out now; I'll note the ceiling patch and paint as the next job once the roof is done.", step: card}
+    questions_asked: 5
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: leak_repair, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0112 | Roof repair | Lake Havasu City
+      FACTS
+      - Leak over the dining room after the September storms; dry now.
+      - Tile roof, one story, about 2,400 sq ft.
+      - Solar panels on the roof section above the dining room.
+      - Dining ceiling: stain about three feet wide (photo), bowed section about two feet wide; textured popcorn ceiling, room about 18 feet across.
+      - Homeowner wants the roof fixed before any ceiling work.
+      - Photo: stain about three feet wide with a slightly bowed section of drywall.
+      - Needed: not said.
+      SUSPECT
+      - Leak at a solar mount penetration or under the array (debris, cracked tile from install foot traffic) above the dining room. Bowed drywall has been wet; may still be holding some water or insulation weight.
+      ON SITE
+      - Plan for solar panel removal and reset over the leak area: coordinate with the solar company or a solar R&R crew; check mount flashings.
+      - Check tiles broken around the array, the underlayment under the mounts, and the attic over the dining room for wet insulation.
+      - Warn the homeowner not to push on the bowed section.
+      SECOND REQUEST (separate, after the roof)
+      - Ceiling patch and repaint in the dining room: bowed drywall about two feet wide, stain about three feet, popcorn texture, room about 18 feet across. Drywall patch (handyman) plus interior painting. Ask year built; popcorn may need an asbestos test before it is disturbed.
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s13
+    transcript:
+      - {who: homeowner, text: "need a roofer for a leak, house in Bullhead City. tile roof. do you guys cover that"}
+      - {who: intake, text: "We don't cover Bullhead City yet.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: null, bank_job_type: null, unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: outside_area
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s14
+    transcript:
+      - {who: homeowner, text: "The flat foam roof over our back addition has water sitting on it after rain and the coating is bubbling. We need it looked at and recoated. House is in Lake Havasu City, 86403."}
+      - {who: intake, text: "We don't cover roof repair jobs yet. We've noted your request so we can add businesses.", step: coverage}
+    questions_asked: 0
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: foam_coating, bank_job_type: "leak repair", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: no_businesses
+    card: null
+    facts_in_card_not_stated: []
+
+  - scenario_id: roof_repair_s15
+    transcript:
+      - {who: homeowner, text: "i need my roof retarred and the felt redone under the tile on the whole house its 1998 build and i keep getting stains on the ceilings in a couple rooms but only when it rains hard and i dont wanna pay for new tile"}
+      - {who: intake, text: "Can do. What town is the house in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city 86406"}
+      - {who: intake, text: "Which rooms have the stains, and are they wet or dry now?", step: question}
+      - {who: homeowner, text: "the hallway and the guest room, both dry now, they only show up on the hard rains. theres an attic hatch in the garage i can get to if anybody wants to look up there, the garage shares a wall with the house"}
+      - {who: intake, text: "Concrete tile? One story? About how big, and is this the original roof?", step: question}
+      - {who: homeowner, text: "concrete tile, one story, about 2,300 sq ft, never been redone since it was built in 98, original roof"}
+      - {who: intake, text: "Anything on the roof, like solar or an AC unit?", step: question}
+      - {who: homeowner, text: "oh yeah forgot, solar panels cover about half the south roof"}
+      - {who: intake, text: "Has anyone done any work on it, patches or repairs?", step: question}
+      - {who: homeowner, text: "i patched some cracks myself with roofing cement from a can, three spots"}
+      - {who: intake, text: "Just so I write it right: there's no tar on a tile roof. What you're describing is a lift-and-relay: pull the tile, new underlayment, and put your same tile back, replacing only broken ones. That what you want?", step: question}
+      - {who: homeowner, text: "yes exactly, save the tile and relay it, i dont want new tile"}
+      - {who: intake, text: "Any pics of the roof or the stains?", step: photo}
+      - {who: homeowner, text: "not sure, dont have any right now"}
+      - {who: intake, text: "That's fine. Sending it now.", step: card}
+    questions_asked: 6
+    follow_up_used: null
+    skipped_bank_questions: []
+    routing: {category: roof_repair, job_type: tile_underlayment, bank_job_type: "re-roof", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0115 | Roof repair | Lake Havasu City
+      FACTS
+      - Concrete tile, built 1998, original roof never redone, one story, about 2,300 sq ft.
+      - Wants the tile lifted and relaid on new underlayment over the whole house, keeping his existing tile (he said "retarred" and "felt"; there is no tar work on tile). Does not want new tile.
+      - Ceiling stains in the hallway and the guest room after hard rain only; both dry now.
+      - Solar panels cover about half of the south roof.
+      - He patched cracks himself with canned roofing cement in three spots.
+      - Attic hatch in the garage he can reach; garage shares a wall with the house.
+      - No photos. Needed: not said.
+      SUSPECT
+      - 28-year-old original felt at end of life; hard-rain-only stains fit water getting past the tile and through worn felt at valleys, penetrations or low courses. His cement patches may be trapping or diverting water.
+      ON SITE
+      - Quote a full lift-and-relay with new underlayment, battens as needed, new flashings, and an allowance for broken tile replacement with matching profile.
+      - Solar on half the south roof: price panel removal and reset with the solar company; check mount flashing.
+      - Locate and remove the three cement patches; inspect what is under them.
+      - Use the garage attic hatch to check the hallway and guest room areas from above.
+      - Re-roof is permit work; include the permit.
+    facts_in_card_not_stated: []

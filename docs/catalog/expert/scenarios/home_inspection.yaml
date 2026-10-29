@@ -1,0 +1,476 @@
+category: home_inspection
+written_by: "independent scenario writer, Oct 29 2026; did not read the expert file"
+not_applicable: []
+scenarios:
+  - id: home_inspection_s01
+    kind: vague
+    persona: "mid 30s, first-time buyer, texts one short line at a time, no real-estate vocabulary"
+    opening_message: "need inspection"
+    photo: "none"
+    hidden_facts:
+      - "buying a house, offer accepted last week"
+      - "single-story, about 1,900 sq ft, built around 1996"
+      - "backyard has a pool and a small attached spa"
+      - "closing is in about five weeks; inspection period in the contract ends in 8 days"
+      - "south side of Lake Havasu City"
+    homeowner_behavior: "answers one thing per reply; does not mention the pool, the spa or the contract deadline unless asked about extras or timing; gets short with long messages"
+    traps:
+      - "hidden: pool and spa are only mentioned if asked about extras; they change the scope and sometimes the business"
+      - "hidden: the 8-day contract deadline is only mentioned if asked about timing"
+      - "'need inspection' could be a termite report, a seller inspection or a warranty walk; the AI must find out which before anything else"
+    expected:
+      category: home_inspection
+      job_type: buyer_inspection
+      bank_job_type: "buyer inspection"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["buying a home", "about 1,900 sq ft", "built around 1996", "pool and spa", "inspection period ends in 8 days", "south side of Lake Havasu City"]
+      must_not_be_on_card: ["any price", "any prediction of what the inspection will find", "a named inspector"]
+      max_questions: 5
+      notes: "Two words in, with no purchase context. The AI has to establish sale vs not, kind, size and extras without quizzing a buyer who is already impatient, and must not skip the timing question because the deadline is what makes the card urgent."
+
+  - id: home_inspection_s02
+    kind: panicked_non_emergency
+    persona: "early 40s buyer relocating from out of state, anxious, writes in long run-on messages with no punctuation"
+    opening_message: "ok so my agent just told me my 10 day inspection period started monday and i havent hired anybody and today is thursday and she said if i dont get it done in time i could lose my earnest money?? i need an inspector asap please someone who can do tomorrow or saturday"
+    photo: "none"
+    hidden_facts:
+      - "buying a house in Lake Havasu City, contract signed Monday, 10-day inspection period counted from signing"
+      - "house is about 2,600 sq ft, two-story, built in 2004"
+      - "there is a pool, no spa"
+      - "buyer is still out of state and will not be at the house; the listing agent will open the door with a lockbox"
+      - "buyer also wants the termite report and does not know it is a separate item until asked about add-ons"
+      - "buyer can pay a rush amount if needed but will not say so unless asked about timing flexibility"
+    homeowner_behavior: "answers in long paragraphs but only about what was asked; keeps returning to the deadline; will say the house is two-story and has a pool only when asked about size or extras"
+    traps:
+      - "hidden: the 10 days run from contract signing, so only about 4 days remain and the card must carry the exact date window, not 'this week'"
+      - "hidden: buyer is out of state, so access is by lockbox through the agent; a business needs to know who attends and who gets the report"
+      - "hidden: termite report is a separate add-on that may be done by a different licensee (pest management), so it should be asked about or listed as an add-on, not assumed in or out"
+      - "hidden: two-story, 2,600 sq ft, pool: each moves time and price"
+      - "the AI must not reassure the buyer about the earnest money or the contract; it is not advice it can give"
+    expected:
+      category: home_inspection
+      job_type: buyer_inspection
+      bank_job_type: "buyer inspection"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["buyer inspection", "inspection period started Monday, 10 days", "needs it done tomorrow or Saturday", "about 2,600 sq ft, two-story, built 2004", "pool, no spa", "buyer out of state, access by lockbox through agent", "termite report: asked about / wanted as add-on"]
+      must_not_be_on_card: ["advice about the earnest money", "advice about extending the contract", "any price", "any promise the inspection will finish in time"]
+      max_questions: 5
+      notes: "Panic about a contract clock, not a danger. The card is urgent because of a hard external deadline. The AI has to stay calm, ask only what a business needs, and not drift into contract advice."
+
+  - id: home_inspection_s03
+    kind: wrong_terminology
+    persona: "50s, refinancing, practical, texts in plain sentences but uses the wrong words for the paperwork"
+    opening_message: "my lender wants a termite clearance letter for the refi. i need someone to come spray and sign off that the house is clear"
+    photo: "none"
+    hidden_facts:
+      - "this is a refinance, not a purchase"
+      - "house is about 1,700 sq ft, built in 1989, detached two-car garage"
+      - "no known termite activity; the lender just requires a wood-destroying insect report"
+      - "the homeowner has never had a treatment done and has no previous termite paperwork"
+      - "loan underwriter wants the report within 12 days"
+      - "there is a wooden pergola attached to the back of the house"
+    homeowner_behavior: "assumes the person who signs also sprays; corrects himself only if the AI asks whether he wants a report or a treatment; answers direct questions directly"
+    traps:
+      - "wrong term: 'clearance letter' and 'spray' mix an inspection report with a treatment; the card is for the wood-destroying insect inspection report, not a spray job"
+      - "hidden: the detached garage and the attached pergola are extra structures the inspector has to cover, and he mentions them only if asked about other buildings"
+      - "hidden: the 12-day lender deadline is only given if asked about timing"
+      - "the AI must not promise the house will pass or say whether termites are present"
+    expected:
+      category: home_inspection
+      job_type: wdiir
+      bank_job_type: "termite report for a sale or loan"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["termite (wood-destroying insect) report for a refinance loan", "about 1,700 sq ft, built 1989", "detached two-car garage and attached pergola", "report needed within 12 days", "no treatment requested"]
+      must_not_be_on_card: ["spray or treatment", "any statement that the home is or is not clear", "any price"]
+      max_questions: 4
+      notes: "The homeowner's words ask for a pest treatment; the actual need is a lender-required report. The AI has to settle report vs treatment without lecturing, and stay in home_inspection. Fee-free job type (sale or loan)."
+
+  - id: home_inspection_s04
+    kind: wrong_self_diagnosis
+    persona: "late 20s, veteran buying a first home, confident, texts in short complete sentences"
+    opening_message: "buying a 1998 manufactured home with a VA loan. the lender needs a foundation certification. i figure the home inspector can do that, who can do both?"
+    photo: "none"
+    hidden_facts:
+      - "buying a double-wide manufactured home on its own land, not in a park"
+      - "about 1,500 sq ft, built in 1998"
+      - "VA loan; the appraiser's note says the lender requires a foundation certification for the home"
+      - "the home sits on a permanent foundation of blocks and piers, with skirting around the base"
+      - "inspection period in the contract ends in 9 days"
+      - "there is a detached metal carport and a small workshop shed"
+      - "buyer does not know whether the foundation was ever certified or whether the title is retired to real property"
+    homeowner_behavior: "assumes one person does everything; answers direct questions plainly; only mentions the carport and shed if asked about other buildings; does not know the title question and says so"
+    traps:
+      - "wrong self-diagnosis: a foundation certification for a manufactured home is typically an engineer's sign-off, not something a certified home inspector issues; the card must not promise 'both from one business'"
+      - "licensed-only: the engineer part is outside this category, so the card covers only the inspection and states the certification as the lender's requirement without claiming it will be done"
+      - "hidden: lender requirement and VA loan on the card, because a business needs to know the report format may be pulled into loan paperwork"
+      - "hidden: carport and shed are extra structures, mentioned only if asked"
+      - "hidden: 9-day inspection window"
+    expected:
+      category: home_inspection
+      job_type: manufactured_home
+      bank_job_type: "buyer inspection"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["buyer inspection of a manufactured home", "double-wide about 1,500 sq ft, built 1998", "on piers with skirting, on own land", "VA loan; lender requires a foundation certification (stated as the lender's requirement)", "detached carport and shed", "inspection period ends in 9 days"]
+      must_not_be_on_card: ["a promise that the inspection business will issue the foundation certification", "a named engineer", "any statement about whether the foundation is sound", "any price"]
+      max_questions: 5
+      notes: "Routing trap. The homeowner thinks one business covers both. The inspection belongs here; the engineer's foundation certification is a licensed-only item Ask Hava does not collect quotes for in this category. The AI must say plainly that the certification is not part of this card and why it cannot be included, with no diagnosis and no business named."
+
+  - id: home_inspection_s05
+    kind: misleading_photo
+    persona: "60s seller's agent's client, tidy texter, sends a listing photo from the internet instead of her own"
+    opening_message: "hi i'd like a quote for a pre-listing inspection on our little 2 bedroom house, about 1,300 sq ft. photo attached from the old listing"
+    photo: "an aerial listing photo showing a small house, a kidney-shaped pool with a raised spa, and a separate guest casita behind the pool"
+    hidden_facts:
+      - "main house is about 1,300 sq ft, 2 bedrooms, built in 1985"
+      - "the casita behind the pool is about 400 sq ft, has its own mini-split and a bathroom, and was added later"
+      - "the pool has a raised spa with a spillway"
+      - "she did not mention the casita or the pool because to her it is 'the backyard'"
+      - "the casita addition may not have a permit; she says 'I think the old owner did that' only if asked about additions"
+      - "she wants to list in about 6 weeks"
+    homeowner_behavior: "polite, gives only the 1,300 sq ft figure; answers the photo question by saying the photo is from the old listing and shows everything; confirms the casita and pool only when the AI asks what the photo shows"
+    traps:
+      - "misleading: the stated 1,300 sq ft covers only the main house; the casita, pool and spa are what a business needs to scope"
+      - "hidden: the casita is an unpermitted-looking addition, which an inspector would want flagged for access and scope; she mentions it only if asked about additions or other buildings"
+      - "photo is an old listing photo, not her current yard; the AI should ask whether it still matches"
+      - "the AI must not say the casita is a problem or not permitted"
+    expected:
+      category: home_inspection
+      job_type: pre_listing
+      bank_job_type: "pre-listing inspection"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pre-listing inspection", "main house about 1,300 sq ft, 2 bedrooms, built 1985", "detached casita about 400 sq ft with its own mini-split and bath", "pool with raised spa", "listing in about 6 weeks"]
+      must_not_be_on_card: ["any claim about permits", "any statement that the casita is unpermitted", "any price"]
+      max_questions: 5
+      notes: "The size she gives understates the job. A photo that looks like a simple house hides a casita, a pool and a spa. The AI should read the photo as listing evidence only, confirm it is current, and add what the photo shows to the card in neutral words."
+
+  - id: home_inspection_s06
+    kind: no_photo
+    persona: "early 60s seller, wants to list, chatty, writes in full sentences with some typos"
+    opening_message: "we want to sell our house in the spring and our agent said get an inspection first so theres no suprises. dont have any pictures right now we're up north till november"
+    photo: "none"
+    hidden_facts:
+      - "the owners are away in the north until November; the house is empty and has a lockbox on the side gate"
+      - "house is about 2,200 sq ft, built in 1992, tile roof"
+      - "a roof leak was patched two years ago above the master bedroom"
+      - "an extra bedroom was made out of the garage by a former owner"
+      - "they will not be at the house; their neighbor can let someone in"
+      - "no pool"
+    homeowner_behavior: "friendly and wordy but skips details; says 'our agent said' for most things; will confirm the roof patch and the garage conversion only if asked about repairs, additions or changes to the house"
+    traps:
+      - "no photo and no one home: the AI must not insist on photos; photo not needed for an inspection quote, and it should not delay the card waiting for them"
+      - "hidden: past roof leak and patch, mentioned only if asked about past repairs"
+      - "hidden: garage converted to a bedroom, mentioned only if asked about additions or alterations"
+      - "hidden: nobody home, access via neighbor; the business needs a time and a contact path"
+      - "the AI must not guess the house will have issues"
+    expected:
+      category: home_inspection
+      job_type: pre_listing
+      bank_job_type: "pre-listing inspection"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pre-listing inspection", "about 2,200 sq ft, built 1992, tile roof", "roof leak patched two years ago above the master bedroom", "garage converted to a bedroom", "owners away until November, neighbor can let someone in", "no pool"]
+      must_not_be_on_card: ["any prediction about the roof or conversion", "any price", "a named business"]
+      max_questions: 5
+      notes: "Good case for a card that is complete without any photo: listing-style facts are all an inspector needs. Tests that the AI does not stall for photos and that it still draws out the past repair and the alteration."
+
+  - id: home_inspection_s07
+    kind: elderly
+    persona: "late 80s widow, texts slowly with caps lock and no apostrophes, calls things 'the man who looks at houses', her son set up the phone"
+    opening_message: "I WOULD LIKE THE MAN WHO LOOKS AT HOUSES TO COME LOOK AT MINE. MY SON SAID I SHOULD BEFORE SUMMER. I AM NOT SELLING"
+    photo: "none"
+    hidden_facts:
+      - "a general condition check, no sale and no refinance"
+      - "house is about 1,200 sq ft, built in 1974, in the Lake Havasu City north side"
+      - "roof-mounted evaporative cooler, no refrigerated air"
+      - "she has lived there 34 years and does not know about any past repairs"
+      - "her son lives out of town and would like to get the report emailed to him, but she does not know his email and will say 'ask my son' if asked for contact details beyond her own"
+      - "she is hard of hearing and does not want phone calls early in the day"
+      - "no pool; a detached storage shed"
+    homeowner_behavior: "answers each question with one short line in caps; says 'I DONT KNOW' to year built until reminded the house is from the 70s; asks twice if the man will charge her"
+    traps:
+      - "this is not a sale or refinance, so the fee-free job types do not apply and the card should carry the plain home condition job type"
+      - "hidden: roof evaporative cooler (no refrigerated A/C) and the 1974 age are what an inspector scopes to; mentioned only if asked about age and cooling"
+      - "hidden: hard of hearing and the son who is out of town; contact method matters for the business"
+      - "she asks about charges; the AI must not state or imply any price or that there is no fee"
+    expected:
+      category: home_inspection
+      job_type: buyer_inspection
+      bank_job_type: "home condition inspection (no sale or refinance)"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["home condition inspection, not a sale or refinance", "about 1,200 sq ft, built about 1974", "roof-mounted evaporative cooler", "detached storage shed", "hard of hearing, prefers calls later in the day", "son out of town wants the report"]
+      must_not_be_on_card: ["any price or statement about fees", "any reference to buying or selling", "any statement about what is wrong with the house"]
+      max_questions: 5
+      notes: "Elderly homeowner with a general check-up request. The buyer_inspection id is the closest kb type for a general home inspection; the bank job type is the non-fee-free 'home condition inspection'. The AI should be short, gentle and avoid options she must scroll through."
+
+  - id: home_inspection_s08
+    kind: tenant
+    persona: "late 20s renter, fed up, texts in angry run-ons with slang"
+    opening_message: "my landlord keeps saying theres nothing wrong w the house but theres a musty smell in the back bedroom closet and the bathroom ceiling has a stain thats getting bigger. i want a inspector to come write it all down so i have proof"
+    photo: "a bathroom ceiling with a brown stain about the size of a dinner plate, and a closet wall with a dark patch near the floor"
+    hidden_facts:
+      - "tenant, month-to-month lease, house is about 1,100 sq ft, built in the 1980s"
+      - "the landlord has not agreed to an inspection and does not know she is texting this"
+      - "tenant's lease says the landlord must give notice before anyone enters, and tenant is not sure she can invite an outside inspector herself"
+      - "the stain is under a bathroom that is below the attic access"
+      - "she has already told the landlord by text twice"
+      - "she wants a general written report; she has not asked for mold testing but would add it if told it was an option"
+    homeowner_behavior: "vents and goes off topic; answers who owns the house only when asked directly; says she 'doesnt care' about the landlord's permission until the AI asks whether the owner knows about it"
+    traps:
+      - "tenant cannot authorize entry or the work on a house she does not own; the card must record that she is a tenant and that the owner's consent has not been given"
+      - "wrong self-diagnosis in the wording: she assumes the stain and smell prove a problem or mold; the card must not say mold, leak or water damage, only the observed items"
+      - "photo shows a stain and a dark patch; the AI must describe them in neutral words, not name a cause"
+      - "hidden: owner has not agreed and does not know; a business needs to know before scheduling an entry"
+      - "no sale or refinance, so this is the non-fee-free home condition inspection"
+    expected:
+      category: home_inspection
+      job_type: buyer_inspection
+      bank_job_type: "home condition inspection (no sale or refinance)"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["home condition inspection, not a sale or refinance", "requester is a tenant; owner has not yet agreed to an inspection", "about 1,100 sq ft, built in the 1980s", "musty smell in back bedroom closet", "ceiling stain in bathroom, said to be getting bigger", "wants a written report"]
+      must_not_be_on_card: ["mold", "leak", "water damage", "any suggestion to withhold rent or about the lease", "any cause"]
+      max_questions: 5
+      notes: "A tenant ordering an inspection of a house she does not own. The AI must record the owner-consent gap on the card (a business will ask) and keep the photo description to what is visible. No legal advice about tenancy."
+
+  - id: home_inspection_s09
+    kind: spanish
+    persona: "40s, buying a mobile home, texts in informal Spanish with some English words, no accents"
+    opening_message: "hola buenas, estoy comprando una casa movil en havasu y necesito que alguien la revise antes de cerrar, que no sea muy caro"
+    photo: "none"
+    hidden_facts:
+      - "buying a single-wide manufactured home in a rented-lot community, not on its own land"
+      - "about 980 sq ft, built in 1993"
+      - "the seller is the park resident, not a dealer"
+      - "buyer will pay cash, there is no lender"
+      - "the home has an attached screened porch added after it was built, and an evaporative cooler on the roof"
+      - "the buyer has 7 days left in the contract to inspect"
+      - "buyer speaks Spanish only; his adult daughter can translate, but he wants Spanish replies"
+      - "he wants a Spanish-speaking inspector if one exists, but will say so only if asked about language preferences"
+    homeowner_behavior: "answers in short Spanish lines; asks 'cuanto cuesta' twice; says he does not know the year until asked about the sticker or the paperwork on the home"
+    traps:
+      - "hidden: the porch addition and roof cooler matter to scope; he mentions them only if asked about extras or additions"
+      - "hidden: 7-day inspection window, only given if asked about timing"
+      - "hidden: language preference of the business; a card note matters, but the AI must not promise a Spanish-speaking business"
+      - "he asks the price; the AI must not give or imply one, and must reply in Spanish"
+      - "cash purchase, so the lender angle is absent; the AI should not ask about a loan"
+    expected:
+      category: home_inspection
+      job_type: manufactured_home
+      bank_job_type: "buyer inspection"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["buyer inspection of a manufactured home", "single-wide about 980 sq ft, built 1993", "in a rented-lot community", "added screened porch and roof evaporative cooler", "7 days left to inspect", "Spanish preferred", "cash purchase"]
+      must_not_be_on_card: ["any price", "a promise of a Spanish-speaking business", "any lender requirement"]
+      max_questions: 5
+      notes: "Spanish in, Spanish out. A manufactured-home purchase in a park: the inspection belongs here, and the lot rent does not matter to the card. Tests that the AI keeps the language, does not answer the price question, and gets the 7-day window."
+
+  - id: home_inspection_s10
+    kind: calm_real_emergency
+    persona: "50s seller, relaxed, writes in casual full sentences"
+    opening_message: "hey, getting ready to list my house and want a pre-listing inspection. oh and by the way theres been a faint gas smell near the water heater in the garage the last couple days, probably nothing"
+    photo: "none"
+    hidden_facts:
+      - "faint smell of gas near the gas water heater in the garage, for the last two days"
+      - "house is about 2,000 sq ft, built in 2001"
+      - "no pool"
+      - "wants to list in about a month"
+      - "he has not called anyone about the smell"
+      - "the garage is attached to the house"
+    homeowner_behavior: "treats the gas smell as a side note and keeps steering back to the inspection; answers questions about the house plainly; does not elaborate on the smell unless asked"
+    traps:
+      - "gas smell is on the fire-truck list: the fixed 911 text goes out by code regardless of how casually it was mentioned"
+      - "the AI must not give any other safety advice or diagnose the smell, and must still take the inspection request"
+      - "hidden: attached garage; mentioned only if asked about the location"
+    expected:
+      category: home_inspection
+      job_type: pre_listing
+      bank_job_type: "pre-listing inspection"
+      fire_dept_text: true
+      urgent: false
+      must_be_on_card: ["pre-listing inspection", "about 2,000 sq ft, built 2001", "no pool", "listing in about a month", "homeowner reports a faint gas smell near the water heater in the attached garage (as stated, no cause)"]
+      must_not_be_on_card: ["any cause of the smell", "any safety advice beyond the fixed 911 text", "any price"]
+      max_questions: 4
+      notes: "The emergency is mentioned in passing inside a routine request. The inspection itself is not urgent; the 911 text must fire anyway and the job card must still be written. Checks that the AI does not skip the safety text because the tone was calm."
+
+  - id: home_inspection_s11
+    kind: two_trades
+    persona: "late 50s seller, organized, writes in numbered-list style even when texting"
+    opening_message: "selling in 2 months. 1) need a pre-listing inspection, 2) the roof tiles on the back side are cracked and need replacing before listing, 3) whole house needs repainting outside. who can do all of this?"
+    photo: "none"
+    hidden_facts:
+      - "house is about 2,400 sq ft, built in 1994, stucco, tile roof"
+      - "the inspection is for the sale in 2 months"
+      - "cracked roof tiles on the back side, about a dozen"
+      - "exterior is original stucco paint, faded and chalking"
+      - "no pool"
+      - "she wants the inspection first so she knows what else to fix, then the roof and paint"
+    homeowner_behavior: "answers each numbered item separately; accepts splitting into separate requests if asked, but will not volunteer that she wants the inspection first"
+    traps:
+      - "two or three trades in one message: the AI should split them and put the inspection on the first card"
+      - "the homeowner asks 'who can do all of this?'; the AI must not name or recommend a business"
+      - "hidden: she wants the inspection first; that ordering is only given if asked what comes first"
+      - "no diagnosis of the roof tiles or paint on the inspection card"
+    expected:
+      category: home_inspection
+      job_type: pre_listing
+      bank_job_type: "pre-listing inspection"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["pre-listing inspection", "about 2,400 sq ft, built 1994, stucco, tile roof", "listing in 2 months", "no pool"]
+      must_not_be_on_card: ["roof repair details", "painting details", "any promise that one business handles everything", "any price"]
+      max_questions: 4
+      notes: "Inspection goes first. Second trade is roof_repair (cracked tiles) and third is painting (exterior); both become separate cards after the inspection. The expected category is home_inspection because the homeowner wants it before the other work."
+
+  - id: home_inspection_s12
+    kind: outside_area
+    persona: "50s buyer, brisk, texts short professional-sounding messages"
+    opening_message: "need a home inspector in Bullhead City for a purchase, inspection period ends Friday"
+    photo: "none"
+    hidden_facts:
+      - "the house is in Bullhead City, Arizona"
+      - "about 2,100 sq ft, built in 2006"
+      - "inspection period ends in 3 days"
+      - "buyer does not live in Lake Havasu City"
+    homeowner_behavior: "answers factually; when told Ask Hava does not cover the area, says thanks and does not argue; has no wish to be waitlisted"
+    traps:
+      - "the ZIP/town check must answer before any trade question is asked; Bullhead City is outside the service area"
+      - "do not collect a full card for a location we cannot serve"
+      - "the deadline pressure must not tempt the AI to make an exception or suggest a business elsewhere"
+    expected:
+      category: home_inspection
+      job_type: null
+      bank_job_type: null
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: []
+      must_not_be_on_card: ["a named business", "any trade questions asked before the area check", "any promise to look elsewhere"]
+      max_questions: 1
+      notes: "Outside area. Bullhead City is outside Lake Havasu City, so the ZIP check should answer before trade questions; the AI states the service area and stops. Zero or one question at most."
+
+  - id: home_inspection_s13
+    kind: no_businesses
+    persona: "mid 30s, new-build owner in the north end, polite, writes in clear short messages"
+    opening_message: "we bought a new build last year and the builder warranty runs out next month. i want someone to do the 11 month warranty inspection before it ends"
+    photo: "none"
+    hidden_facts:
+      - "the home is about 2,300 sq ft, built and closed on 11 months ago"
+      - "the builder warranty walk-through deadline is in 3 weeks"
+      - "the house has a small pool the builder installed"
+      - "homeowner has a list of small things she has noticed: a door that sticks, a few nail pops, a hairline crack near a garage corner"
+      - "this is not a sale or refinance"
+      - "the builder's warranty form is due in writing before the date; she has the paperwork"
+    homeowner_behavior: "provides the deadline when asked about timing; shares her list only if asked whether there is anything she has already noticed; polite throughout"
+    traps:
+      - "right job type but the harness simulates zero coverage: the card should state plainly that the trade has no businesses yet, and not imply anyone will quote"
+      - "hidden: the builder's 3-week warranty deadline and the pool the builder installed; both matter to a business scoping the walk"
+      - "hidden: her own list of observations; the AI should keep them as listed and not name causes (nail pops, hairline crack, sticking door)"
+      - "do not promise a callback date or a waitlist outcome"
+    expected:
+      category: home_inspection
+      job_type: warranty_check
+      bank_job_type: "home condition inspection (no sale or refinance)"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["11-month builder warranty inspection", "about 2,300 sq ft, built about 11 months ago", "builder-installed pool", "warranty deadline in 3 weeks", "her list: sticking door, nail pops, hairline crack near a garage corner"]
+      must_not_be_on_card: ["any cause for the listed items", "any promise a business will quote", "any price"]
+      max_questions: 4
+      notes: "Right trade, zero coverage. The AI should say the trade has no businesses yet instead of faking a quote. The warranty deadline is real, so the card should still be complete if coverage appears."
+
+  - id: home_inspection_s14
+    kind: wrong_terminology
+    persona: "mid 40s buyer, closing soon, texts in compact sentences and trade-sounding phrases that are not quite right"
+    opening_message: "need the pool and spa certified before we close. house itself is already getting inspected thursday"
+    photo: "a pool and attached raised spa viewed from the patio; a gas heater visible at the equipment pad behind a low wall"
+    hidden_facts:
+      - "buying a house; the whole-home inspection is already booked for Thursday with another business"
+      - "the pool and spa are about 12 years old; the spa is raised and attached with a spillway"
+      - "equipment pad has a gas heater, a variable-speed pump and a salt cell"
+      - "there is no lender requirement for certification; it is the escrow officer who said 'get it certified'"
+      - "'certified' means a condition check of the pool and spa, not a pool-barrier or safety-code certificate"
+      - "closing is in 12 days"
+      - "the pool has a mesh safety fence that is currently down"
+    homeowner_behavior: "uses 'certified' and 'inspected' interchangeably; clarifies only when asked what exactly the escrow officer wanted; mentions the fence only if asked about barriers or gates"
+    traps:
+      - "wrong terminology: 'certified' is not a pool credential; the card should say pool/spa condition inspection as an add-on to the Thursday home inspection, not a certificate"
+      - "hidden: the home inspection is already booked with another business, so this may be a stand-alone add-on by a different licensee than the home inspector"
+      - "hidden: gas heater, salt cell, variable-speed pump: the business scopes to what is on the pad; mentioned only if asked what equipment is there or shown in a photo"
+      - "hidden: the safety fence is down; the AI must not give safety advice or call it a violation, only record it if asked"
+      - "photo shows equipment; the AI should read it for the card, not for a diagnosis"
+    expected:
+      category: home_inspection
+      job_type: addons
+      bank_job_type: "buyer inspection"
+      fire_dept_text: false
+      urgent: true
+      must_be_on_card: ["pool and spa condition inspection as an add-on", "house inspection already booked Thursday with another business", "pool and attached raised spa about 12 years old", "gas heater, variable-speed pump and salt cell", "closing in 12 days", "safety fence currently down (as stated, if asked)"]
+      must_not_be_on_card: ["a certificate or certification", "any safety advice about the fence", "any pool diagnosis", "any price"]
+      max_questions: 5
+      notes: "The pool and spa add-on case. The word 'certified' is the trap: it might mean a safety certificate that this category does not issue. The AI should clarify what the escrow officer asked for, keep the card as a condition check add-on, and note that the home inspection is booked elsewhere."
+
+  - id: home_inspection_s15
+    kind: wrong_self_diagnosis
+    persona: "late 60s homeowner, confident, writes carefully, assumes he already knows the cause"
+    opening_message: "can you check why my floor is sloping? the living room floor dips toward the back wall about an inch. i figure the foundation settled and just need someone to confirm it"
+    photo: "a living room floor with a ball resting against the baseboard, and a diagonal crack in the corner above a door frame"
+    hidden_facts:
+      - "house is about 1,600 sq ft, built in 1985, slab on grade"
+      - "the dip is roughly an inch over eight feet, toward the back wall, and noticed over the last year"
+      - "the back bedroom door started sticking at the same time"
+      - "two large trees were removed from the back yard about two years ago"
+      - "the water bill has been higher than usual for about six months"
+      - "he is not selling or refinancing"
+      - "the stucco on the back of the house has a new vertical crack"
+    homeowner_behavior: "states his conclusion as fact; says the water bill only if asked about anything else that has changed; says the trees only if asked about the yard; gets impatient with questions that sound like they doubt him"
+    traps:
+      - "wrong self-diagnosis: the homeowner says foundation settlement; the cause could be several things and finding it is an engineer's work, not a home inspector's visual look"
+      - "licensed-only: a cause-and-repair opinion on a structure is an engineer's work outside this category; the AI must not confirm 'foundation' or promise a business will 'confirm' it"
+      - "hidden: higher water bill: a plumber's leak check could be a separate trade; the AI must not suggest it, only record the fact if told"
+      - "hidden: trees removed and a new stucco crack; mentioned only if asked about the yard or other changes"
+      - "photo shows a sloping floor and a crack; the card should describe them neutrally and never say 'foundation', 'settling' or 'structural'"
+    expected:
+      category: home_inspection
+      job_type: buyer_inspection
+      bank_job_type: "home condition inspection (no sale or refinance)"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["home condition inspection, not a sale or refinance", "about 1,600 sq ft, built 1985, slab on grade", "living room floor dips about an inch toward the back wall over eight feet, noticed over the last year", "back bedroom door sticking", "new vertical crack in back stucco", "higher water bill for six months (as stated)"]
+      must_not_be_on_card: ["foundation", "settling", "structural", "any confirmation of the homeowner's diagnosis", "any suggestion to call an engineer by name or a plumber"]
+      max_questions: 5
+      notes: "The request reads like an inspection but the question is a structural engineer's. Ask Hava has no engineer category, so the AI should write the home condition inspection card from the observed facts only and say plainly that finding the cause is not something this card does. Judged on no diagnosis, no confirmation of 'foundation settled', and the water-bill fact surfacing without a recommendation."
+
+  - id: home_inspection_s16
+    kind: wrong_self_diagnosis
+    persona: "40s, handy, a little embarrassed, writes in short lines with typos"
+    opening_message: "seeing mud tubes on the garage wall, looks like termites. need someone to inspect for termites for my own piece of mind, were not selling"
+    photo: "a garage wall with thin dirt-colored tubes running up the concrete block base toward the wood framing"
+    hidden_facts:
+      - "mud tubes about pencil width on the inside north wall of the garage, going up from the slab"
+      - "house is about 1,800 sq ft, built in 1998, attached two-car garage"
+      - "he first saw the tubes about a week ago and has not touched them"
+      - "no prior termite treatment that he knows of"
+      - "he is not selling or refinancing"
+      - "he wants a treatment quote if termites are confirmed"
+      - "an old wood pile is stacked against the outside of that same wall"
+    homeowner_behavior: "states he is 'pretty sure' of the diagnosis; mentions the wood pile only if asked about the outside of that wall; keeps calling it an 'inspection' while expecting a treatment quote"
+    traps:
+      - "the right answer is a different category: live termite activity with a treatment expectation belongs to pest_control (termites), not a home inspection business"
+      - "wrong self-diagnosis: the AI must not confirm termites; the card says 'mud tubes seen', not 'termites'"
+      - "hidden: wood pile against the wall; mentioned only if asked about the outside of the wall"
+      - "hidden: he wants treatment pricing if confirmed; mentioned only if asked what outcome he wants"
+      - "not a sale or loan, so a WDIIR report is not what he needs"
+    expected:
+      category: pest_control
+      job_type: termites
+      bank_job_type: "termites"
+      fire_dept_text: false
+      urgent: false
+      must_be_on_card: ["mud tubes seen on garage wall (not confirmed termites)", "tubes about pencil width rising from slab on the inside north wall", "house about 1,800 sq ft, built 1998, attached two-car garage", "first noticed about a week ago", "wants a treatment quote if confirmed", "wood pile stacked against the outside of that wall"]
+      must_not_be_on_card: ["confirmed termites", "any treatment method", "any price", "a WDIIR report"]
+      max_questions: 4
+      notes: "Wrong category. Termite report for a sale or loan is home_inspection (wdiir), but active signs and a treatment expectation go to pest_control. The AI has to reroute without confirming the diagnosis and without losing the wood-pile and treatment-expectation facts."

@@ -1,0 +1,596 @@
+# Ask Hava expert layer: alarm_systems (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set alarm_systems and trade_kb/trades/security_alarm.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The security_alarm kb file also serves security_cameras. Only alarm-type job types are here.
+# - Left out: cameras (belongs to security_cameras: "camera install", "doorbell camera").
+# - Left out: fire_alarm (hardwired or interconnected fire alarm systems, ROC R-16). A.R.S. 32-101 leaves
+#   fire alarm installation out of "alarm business", and no enabled category routes R-16 work. Hardwired
+#   smoke alarms go to electrical "hardwired smoke alarm" (see misdiagnosis_checks). Casey may want a
+#   "fire alarm system" job type somewhere (R-16), or a plain "not covered" reply.
+# - Left out: battery_smoke (battery smoke or CO alarm swap). It is handyman work and the handyman file
+#   already routes it (fixture_swap_plugin). A chirping ceiling alarm that lands here is caught by
+#   fu_which_alarm.
+# - new_job_type: monitoring_takeover -> "alarm monitoring setup". The kb's burglar_alarm id bundles
+#   install, repair and monitoring; the category splits monitoring out, so burglar_alarm keeps the install
+#   side and monitoring_takeover covers monitoring on an existing system, taking over a system left by a
+#   last owner or a closed company, and bringing a left-behind system back into use (reactivation).
+# - Alarm repair has no category job type. false_alarms (goes off by itself, trouble beeps, won't arm,
+#   siren won't stop, dead keypad) maps to "alarm install", the nearest name, since the same certified
+#   businesses do service calls. The scenario file uses bank_job_type null for these. Suggest adding
+#   "alarm repair" to the category.
+# - smart_home maps to "alarm install" (sensors, keypads, smart locks tied to an alarm panel).
+# - Open: smoke detectors wired to a burglar alarm panel (combination systems). R-16 covers low-voltage
+#   fire signaling and 32-101 leaves fire alarm installation out of the alarm business definition;
+#   whether an R-67 plus BTR business may add system smoke detectors to a home panel is not confirmed.
+# - Open: A.R.S. 32-1121(A)(17) exempts alarm agents from the contractor law, while license_map.yaml asks
+#   for a BTR certificate plus R-67 or CR-67. A BTR-only alarm business (no ROC class) would not see these
+#   cards. Confirm that is the intended rule.
+# - Not verified: Lake Havasu City Code Ch. 8.12 (security alarms, false alarms). The code library page
+#   would not load this pass, so no fee, permit or false-alarm count is stated as fact.
+# - Scenario file mismatch: alarm_systems_s06 (monitoring only) and s04 (old system left by the last owner)
+#   expect job_type burglar_alarm; this file routes both to monitoring_takeover ("alarm monitoring setup"
+#   for s06; s04's scenario says "alarm install"). The checker passes; the harness judge may disagree.
+# - Not found: an alarm-specific shared-lead price. Benchmarks below use account values and ad click costs.
+schema: 1
+category: alarm_systems
+question_set: alarm_systems
+kb_trade: security_alarm
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "[S2] A.A.C. R4-9-103 Residential contractor license classifications (R-67 Low Voltage Communication Systems: alarm systems, low voltage signaling devices, video systems; R-16 Fire Protection Systems, including low voltage signaling for fire)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "[S3] A.A.C. R4-9-104 Dual contractor license classifications (CR-67 Low Voltage Communication Systems)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_101
+    title: "[S5] A.R.S. 32-101 Definitions: alarm system (entry, panic, holdup, medical alert; not environmental-only systems), alarm business (monitoring, or selling, installing, repairing; excludes fire alarm installation or monitoring and vehicle alarms), alarm agent, alarm subscriber"
+    url: "https://www.azleg.gov/ars/32/00101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_121
+    title: "A.R.S. 32-121: an alarm business or agent may install while its BTR application is in, or when the business is an ROC-licensed contractor, if controlling persons and agents have applied with fingerprint clearance cards"
+    url: "https://www.azleg.gov/ars/32/00121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_122_05
+    title: "[S7] A.R.S. 32-122.05 Alarm business certificate: business and each controlling person certified before operating; fingerprint clearance card; valid three years"
+    url: "https://www.azleg.gov/ars/32/00122-05.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_122_06
+    title: "[S7] A.R.S. 32-122.06 Alarm agent certificate: apply within five working days of hire; fingerprint clearance card; carry the card on the job; valid three years"
+    url: "https://www.azleg.gov/ars/32/00122-06.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: btr_alarm
+    title: "[S8] Arizona Board of Technical Registration, Alarm Industry Applicants (business, controlling person and agent applications)"
+    url: "https://btr.az.gov/applicants/alarm-industry-applicants"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_32_1121
+    title: "[S4] A.R.S. 32-1121 Persons not required to be licensed: (A)(17) alarm agents; (D)(1) handyman exemption never covers hardwired or interconnected smoke alarms or fire sprinklers"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: fcc_3g
+    title: "FCC, Plan Ahead for Phase Out of 3G Cellular Networks (home security systems may be affected; AT&T began Feb 2022, T-Mobile and Sprint 3G done by July 2022, Verizon by Dec 31, 2022)"
+    url: "https://www.fcc.gov/consumers/guides/plan-ahead-phase-out-3g-cellular-networks-and-service"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_permits
+    title: "[S17] Lake Havasu City Building Permits: permit-required and no-permit lists; no low-voltage or alarm item on either list"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_vr
+    title: "Lake Havasu City Vacation Rentals (City Code Ch. 5.20): yearly vacation rental permit, 24/7 emergency point of contact, noise limits under 9.30.050"
+    url: "https://www.lhcaz.gov/vacation-rentals"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: census_lhc
+    title: "Census Reporter, Lake Havasu City profile (ACS 2024 5-year): 35,394 housing units and 28,463 households, so about 1 in 5 units has no household living in it; median age 56.1"
+    url: "https://censusreporter.org/profiles/16000US0439370-lake-havasu-city-az/"
+    checked: "2026-10-29"
+    kind: other
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (Arizona monsoon officially June 15 to September 30; lightning)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: sptnews_rmr
+    title: "SP&T News, Lessons Learned (Jul/Aug 2021): dealer programs and account buyers pay about 24 to 36 months of recurring monitoring revenue per account; dealers offered a basic system for next to free against a three-year monitoring contract"
+    url: "https://www.mydigitalpublication.com/article/Lessons+Learned/4083741/716011/article.html"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: clicksgeek_security
+    title: "ClicksGeek (marketing vendor), Google Ads for home security installers: alarm installation search terms about $10 to $30 per click; established companies spend about $4,000 to $8,000 a month"
+    url: "https://clicksgeek.com/google-ads-for-home-security-installers/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: adt_10k
+    title: "ADT Inc. Form 10-K for 2025 (SEC filing): significant upfront investment to acquire a subscriber, revenue break-even in about two years; about 140 authorized dealers"
+    url: "https://www.sec.gov/Archives/edgar/data/1703056/000170305626000022/adt-20251231.htm"
+    checked: "2026-10-29"
+    kind: other
+
+trade_brief:
+  price_drivers:
+    - driver: "New system, add-on to an existing system, or monitoring on a system already there"
+      why: "New equipment and labor versus a takeover visit to program a panel and add a communicator; the bank's service question settles it. [judgment]"
+      source: null
+    - driver: "Monitoring contract wanted, phone alerts only, or both"
+      why: "Many dealers price the install low against a multi-year monitoring contract, so the same job quotes very differently with and without monitoring."
+      source: sptnews_rmr
+    - driver: "Number of doors and windows, plus motion sensors and sliding doors"
+      why: "Sensor count is most of the equipment list and sets labor hours; the bank's doors_windows question gives the first number. [judgment]"
+      source: null
+    - driver: "Wired or wireless, and whether the home is pre-wired"
+      why: "A pre-wired home or an old wired system can be reused fast; fishing new wire through finished walls, two stories or a manufactured home adds hours, so most retrofits go wireless. [judgment]"
+      source: null
+    - driver: "How the panel will report: Wi-Fi or internet, cellular, or landline"
+      why: "No internet at the home means a cellular communicator; panels that reported over 3G stopped when the carriers shut those networks down in 2022."
+      source: fcc_3g
+    - driver: "What the old panel is (brand label in the photo) and whether a new company can program it"
+      why: "Some panels stay locked to the first dealer's code or are built for one company, which turns a takeover into a panel swap. [judgment]"
+      source: null
+    - driver: "Extras tied to the panel: smart locks, garage door, leak or freeze sensors, noise sensor, medical alert"
+      why: "Each extra is a device plus programming; medical alert pendants fall inside the state's alarm system definition."
+      source: ars_32_101
+  hidden_conditions:
+    - condition: "Old communicator that can no longer call out (3G cellular unit, or a dialer on a landline that was cancelled)"
+      how_a_pro_spots_it: "Keypad message about no phone line or communication; home has no landline; panel from before 2020 in the photo"
+      question_or_photo: fu_landline
+      source: fcc_3g
+    - condition: "Panel locked by the last dealer's installer code, or a panel built for one company only"
+      how_a_pro_spots_it: "Brand and model on the label in the panel photo; old account still open; homeowner bought the house with the system in it"
+      question_or_photo: p1
+      source: null
+    - condition: "Old account still open under a contract, or tied to the last owner"
+      how_a_pro_spots_it: "Homeowner is not sure the account was closed; a yard sign or keypad sticker from a company"
+      question_or_photo: fu_old_company
+      source: null
+    - condition: "Dead backup battery or an unplugged or hot transformer behind beeps and a blank keypad"
+      how_a_pro_spots_it: "Beeping after a power outage or monsoon storm; blank keypad; panel box in a hot garage in the photo"
+      question_or_photo: p1
+      source: null
+    - condition: "Smoke detectors wired to the alarm panel, which is fire alarm work under a different license"
+      how_a_pro_spots_it: "Ceiling smoke alarms with no battery door, or a panel photo showing smoke zones"
+      question_or_photo: p3
+      source: aac_r4_9_103
+    - condition: "Pets that set off motion sensors"
+      how_a_pro_spots_it: "False alarms at the same hours each day; dog or cats loose inside while armed"
+      question_or_photo: fu_pets
+      source: null
+    - condition: "No internet at a vacant second home, or a router far from the far sensors"
+      how_a_pro_spots_it: "Second home on the card; Wi-Fi answer is no; router in a garage cabinet on a two-story home"
+      question_or_photo: internet
+      source: null
+    - condition: "Renter or vacation rental with no written owner approval, or guests who need their own codes"
+      how_a_pro_spots_it: "The who-lives-there answer; homeowner says the landlord said maybe"
+      question_or_photo: fu_who_lives
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "false_alarms (alarms beeping all over the house)"
+      might_be: "smoke_alarm in electrical, hardwired or interconnected smoke alarms chirping"
+      one_question: fu_which_alarm
+      if_other_route_to: {category: electrical, job_type: "hardwired smoke alarm"}
+      source: null
+    - sounds_like: "false_alarms (alarm light and buzzer outside)"
+      might_be: "aerobic septic system alarm"
+      one_question: fu_which_alarm
+      if_other_route_to: {category: septic_pumping, job_type: "tank inspection"}
+      source: null
+    - sounds_like: "alarm install (wants an alarm, mentions video or a doorbell)"
+      might_be: "cameras, a different category"
+      one_question: fu_cameras_too
+      if_other_route_to: {category: security_cameras, job_type: "camera install"}
+      source: null
+    - sounds_like: "alarm install (\"ring alarm with the video\" at the front door)"
+      might_be: "video doorbell only"
+      one_question: fu_cameras_too
+      if_other_route_to: {category: security_cameras, job_type: "doorbell camera"}
+      source: null
+    - sounds_like: "alarm install (old system left in the house by the last owner)"
+      might_be: "monitoring_takeover"
+      one_question: service
+      if_other_route_to: {category: alarm_systems, job_type: "alarm monitoring setup"}
+      source: null
+    - sounds_like: "alarm monitoring setup (wants someone watching the empty house)"
+      might_be: "home watch visits, a different category"
+      one_question: fu_monitoring_want
+      if_other_route_to: {category: home_watch, job_type: "weekly house check"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Brand and model on the panel label or keypad", "Message on the keypad screen", "Phone jack or cell antenna at the panel", "Transformer plugged in, scorch marks or melting", "Panel age from the style and label date", "Panel location (closet, hot garage)"]
+      neutral_wording: "Keypad by the front door shows a message about the phone line; metal panel box in the hall closet with a readable label."
+    - photo_id: p2
+      reads: ["Doors, sliding doors and windows in the area", "Mounting height and eave access", "Where power is near the spot"]
+      neutral_wording: "Back patio with a sliding glass door and two windows; light fixture above the door."
+    - photo_id: p3
+      reads: ["Wire into the ceiling or battery only", "Date on the back label", "No battery door (may be a system detector tied to the panel)", "Ceiling height"]
+      neutral_wording: "Round smoke alarm on the hall ceiling with a wire going into the ceiling."
+  local_factors:
+    - fact: "About 1 in 5 Lake Havasu City housing units has no household living in it"
+      effect: "Many requests are for second homes empty for months, which want phone alerts and often have no internet while empty"
+      source: census_lhc
+    - fact: "Vacation rentals need a yearly city permit, a 24/7 emergency contact, and keep to set noise limits"
+      effect: "Rental owners ask for noise sensors, guest codes changed between stays, and alerts to the owner only"
+      source: lhc_vr
+    - fact: "Median age in Lake Havasu City is about 56"
+      effect: "Medical alert pendants and simple keypads come up more often, and medical alert is inside the state alarm definition"
+      source: census_lhc
+    - fact: "The monsoon runs June 15 to September 30, with lightning"
+      effect: "Storm outages run backup batteries down, so trouble-beep calls rise in late summer [judgment]"
+      source: nws_monsoon
+    - fact: "Alarm panels often sit in garages that run very hot in summer"
+      effect: "Backup batteries wear out sooner; pros ask where the panel box is [judgment]"
+      source: null
+    - fact: "The city permit lists name no low-voltage or alarm item"
+      effect: "Pros do not usually price a city permit for a wireless alarm; wired work on a manufactured home or in an HOA may need approval [judgment]"
+      source: lhc_permits
+    - fact: "Lake Havasu City Code Ch. 8.12 covers security alarms and false alarms; the terms could not be read this pass"
+      effect: "Homeowners may mention a city false-alarm notice; the card records it as a fact only"
+      source: null
+      unverified: true
+  seasonality:
+    busy: "October to April, when seasonal residents return and set up systems before leaving again in spring; late summer trouble calls after storms [judgment]"
+    slow: "June to August for new installs, when many second homes sit empty [judgment]"
+    source: null
+
+job_types:
+  - id: burglar_alarm
+    label: "New burglar alarm, or add to one (door and window sensors, keypad, siren)"
+    bank_job_type: "alarm install"
+    recurring: false
+    homeowner_phrasings: ["need an alarm", "home security system", "alarm with monitoring", "sensors on the doors and windows", "someone tried to break in"]
+    must_know:
+      - fact: "New system, add to an existing one, or monitoring only"
+        bank_question: service
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "New equipment is most of the price; adding to a working panel or monitoring only is a shorter visit. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "How many doors and windows, and any sliding doors"
+        bank_question: doors_windows
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sensor count drives equipment and labor. [judgment]"
+        skip_if: "She gave a count"
+      - fact: "Monitoring company, phone alerts only, or both"
+        bank_question: null
+        follow_up: fu_monitoring_want
+        photo: null
+        why_it_moves_price: "A monitoring contract often lowers the install price, so the business has to know which to quote. [src:sptnews_rmr]"
+        skip_if: "She said, or said she has not decided (record it as not decided)"
+      - fact: "Any old alarm equipment in the home"
+        bank_question: null
+        follow_up: fu_existing_equipment
+        photo: p1
+        why_it_moves_price: "Pre-wiring or old wired sensors can be reused; an old panel may need removing. [judgment]"
+        skip_if: "She said there is none, or sent a panel photo"
+      - fact: "Wi-Fi at the home"
+        bank_question: internet
+        follow_up: null
+        photo: null
+        why_it_moves_price: "No internet means a cellular communicator and a different monthly plan. [src:fcc_3g]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_existing_equipment
+        ask_when: "New alarm request and she has not said whether any old equipment is in the home"
+        text_en: "Is there any old alarm equipment in the home now, like a keypad by a door or a metal box in a closet or the garage?"
+        text_es: "¿Hay algún equipo de alarma viejo en la casa, como un teclado junto a una puerta o una caja de metal en un clóset o la cochera?"
+        options_en: ["Yes, and it works", "Yes, but it doesn't work", "No"]
+        options_es: ["Sí, y funciona", "Sí, pero no funciona", "No"]
+        card_field: true
+        why: "Old wiring or a panel changes the parts list and the hours. [judgment]"
+      - id: fu_monitoring_want
+        ask_when: "She has not said who should be told when the alarm goes off"
+        text_en: "When the alarm goes off, who should hear about it: a monitoring company that watches day and night, your phone only, or both?"
+        text_es: "Cuando suene la alarma, ¿a quién se le avisa: a una compañía de monitoreo que vigila día y noche, solo a su teléfono, o a los dos?"
+        options_en: ["Monitoring company", "My phone only", "Both", "I mean a person who checks the house"]
+        options_es: ["Compañía de monitoreo", "Solo mi teléfono", "Los dos", "Me refiero a una persona que revise la casa"]
+        card_field: true
+        why: "Monitored and self-watched systems are quoted differently; a person checking the house is home watch, a different category. [src:sptnews_rmr]"
+      - id: fu_cameras_too
+        ask_when: "She mentions video, a doorbell, watching from her phone, or calls cameras an alarm"
+        text_en: "Is this for door and window sensors with a siren, for cameras, or for both?"
+        text_es: "¿Es para sensores en puertas y ventanas con sirena, para cámaras, o para las dos cosas?"
+        options_en: ["Sensors and siren", "Cameras only", "Both"]
+        options_es: ["Sensores y sirena", "Solo cámaras", "Las dos cosas"]
+        card_field: true
+        why: "Cameras go to a different category; both means a second card after this one. [judgment]"
+      - id: fu_who_lives
+        ask_when: "She mentions renting, a landlord, guests, or a home that sits empty"
+        text_en: "Which fits this home: you live there, a second home that sits empty part of the year, a rental you live in, or a vacation rental you own?"
+        text_es: "¿Cuál describe esta casa: usted vive ahí, una segunda casa que está vacía parte del año, una casa que renta y donde vive, o una renta vacacional suya?"
+        options_en: ["I live there", "Second home, empty part of the year", "A rental I live in", "A vacation rental I own"]
+        options_es: ["Vivo ahí", "Segunda casa, vacía parte del año", "Una casa que rento y donde vivo", "Una renta vacacional mía"]
+        card_field: true
+        why: "Renters need owner approval before drilling; empty homes and rentals need remote alerts and guest codes. [judgment]"
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: ["Burning smell, smoke or melting at the alarm panel, transformer or its outlet"]
+      urgent_capable_triggers: ["Break-in or attempted break-in in the last few days, stated by the homeowner", "Home will be empty soon and has no working alarm"]
+      regular: "Planned new system or add-on"
+    scope_line_en: "New alarm with monitoring for a single-story home, about 9 doors and windows; no old system; Wi-Fi at the home."
+    scope_line_es: "Alarma nueva con monitoreo para una casa de un piso, unas 9 puertas y ventanas; no hay sistema viejo; hay Wi-Fi en la casa."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end", "monthly monitoring price and contract length, if offered", "earliest install day"]
+    card_template: |
+      REQ-<id> | Alarm systems | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: new or add-on, size, monitoring wish>
+      Doors and windows: <count answer>. Old equipment: <works / not working / none / not sure>. Wi-Fi: <yes / no>.
+      Alerts: <monitoring company / phone only / both / not decided>. Home: <lives there / second home / rental / vacation rental>. Cameras: <not wanted / separate card>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Wireless is the way to go for you.", "Monitoring is worth it.", "Most systems run about a thousand installed.", "Your old system can be reused.", "Get a dog sticker and a yard sign."]
+
+  - id: smart_home
+    label: "Smart-home security: sensors, keypads, smart locks, leak or noise sensors on an alarm panel"
+    bank_job_type: "alarm install"
+    recurring: false
+    homeowner_phrasings: ["smart home security", "door sensors and a smart lock", "noise sensor for my rental", "motion sensors", "keypad at the front door"]
+    must_know:
+      - fact: "What it should cover besides door and window sensors"
+        bank_question: null
+        follow_up: fu_extras
+        photo: null
+        why_it_moves_price: "Each extra device adds equipment and programming time. [judgment]"
+        skip_if: "She listed the devices"
+      - fact: "How many doors and windows"
+        bank_question: doors_windows
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Sensor count is the base of the equipment list. [judgment]"
+        skip_if: "She gave a count"
+      - fact: "Who lives there, and whether guests need their own codes"
+        bank_question: null
+        follow_up: fu_who_lives
+        photo: null
+        why_it_moves_price: "Vacation rentals want owner-only alerts and codes changed between stays; the city requires a 24/7 contact for rentals. [src:lhc_vr]"
+        skip_if: "She said whose home it is"
+      - fact: "Wi-Fi at the home and roughly where the router is"
+        bank_question: internet
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Smart devices need a steady signal; a far router may need an extender or a hub. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_extras
+        ask_when: "Smart-home request and she has not listed the devices"
+        text_en: "Besides door and window sensors, what else should it cover?"
+        text_es: "Además de sensores en puertas y ventanas, ¿qué más debe cubrir?"
+        options_en: ["Motion sensors", "Smart locks or the garage door", "Water leak or freeze sensors", "A noise sensor", "Several of these", "Nothing else"]
+        options_es: ["Sensores de movimiento", "Cerraduras inteligentes o la puerta de la cochera", "Sensores de fugas de agua o de helada", "Un sensor de ruido", "Varias de estas", "Nada más"]
+        card_field: true
+        why: "The device list is the quote. [judgment]"
+      - id: fu_pets
+        ask_when: "Motion sensors are wanted, or false alarms are reported, and pets were not mentioned"
+        text_en: "Are there pets loose inside the home when the alarm is on?"
+        text_es: "¿Hay mascotas sueltas dentro de la casa cuando la alarma está puesta?"
+        options_en: ["No pets", "Cats or small dogs", "A dog over 40 pounds", "Birds or other pets"]
+        options_es: ["No hay mascotas", "Gatos o perros chicos", "Un perro de más de 40 libras", "Pájaros u otras mascotas"]
+        card_field: true
+        why: "Pets change which motion sensors fit and where they go. [judgment]"
+      - fu_who_lives
+      - fu_monitoring_want
+    photos_priority: [p2, p1]
+    urgency:
+      fire_dept_triggers: ["Burning smell, smoke or melting at the alarm panel, transformer or its outlet"]
+      urgent_capable_triggers: ["Guests arriving within days and the owner says the system must be in first"]
+      regular: "Planned smart-home or sensor work"
+    scope_line_en: "Vacation rental wants door and window sensors, a keypad and a noise sensor; about 14 doors and windows; two stories; Wi-Fi on."
+    scope_line_es: "Renta vacacional quiere sensores en puertas y ventanas, un teclado y un sensor de ruido; unas 14 puertas y ventanas; dos pisos; hay Wi-Fi."
+    quote_format: range
+    business_fills: ["low and high end of the range", "price per added device", "monthly app or monitoring price, if any", "earliest install day"]
+    card_template: |
+      REQ-<id> | Alarm systems | <town>, <general area> | <kind of place>
+      <one scope line: devices wanted, size, kind of home>
+      Devices: <list from her answers>. Doors and windows: <count answer>. Pets: <none / small / large dog / other / not said>.
+      Home: <lives there / second home / rental / vacation rental>. Alerts: <monitoring company / phone only / both / not decided>. Wi-Fi: <yes / no>, router: <where, if given>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Noise sensors are legal in rentals.", "You can't put cameras inside a rental.", "Smart locks are easy to install yourself.", "That's a cheap add-on."]
+
+  - id: false_alarms
+    label: "Alarm goes off by itself, beeps or shows a trouble message, won't arm, siren won't stop"
+    bank_job_type: "alarm install"
+    recurring: false
+    homeowner_phrasings: ["alarm keeps going off", "panel beeping", "says trouble on the keypad", "alarm won't arm", "siren won't shut off", "city sent me a false alarm notice"]
+    must_know:
+      - fact: "Which alarm it is: the security keypad, ceiling smoke alarms, or a box outside"
+        bank_question: null
+        follow_up: fu_which_alarm
+        photo: p1
+        why_it_moves_price: "Smoke alarms go to electricians and an outdoor box may be a septic alarm; only the security panel stays here. [judgment]"
+        skip_if: "She named the keypad or panel, or sent a keypad photo"
+      - fact: "What it is doing"
+        bank_question: null
+        follow_up: fu_alarm_doing
+        photo: p1
+        why_it_moves_price: "A beep or message is often a short visit; random alarms mean testing sensors zone by zone; a siren that won't stop is a same-day call. [judgment]"
+        skip_if: "Her words say which"
+      - fact: "About how old the system is, and whether it is monitored now"
+        bank_question: null
+        follow_up: fu_alarm_age
+        photo: p1
+        why_it_moves_price: "Older panels may not take new parts or a new communicator, so the range widens. [judgment]"
+        skip_if: "She gave the age"
+      - fact: "Pets loose inside while armed"
+        bank_question: null
+        follow_up: fu_pets
+        photo: null
+        why_it_moves_price: "Tells the tech what to check first and which sensors to bring. [judgment]"
+        skip_if: "Not a going-off-by-itself request"
+    allowed_follow_ups:
+      - id: fu_which_alarm
+        ask_when: "She says the alarm beeps or goes off but not which device"
+        text_en: "Which alarm is it: the security keypad or panel, smoke alarms on the ceiling, or an alarm box outside?"
+        text_es: "¿Cuál alarma es: el teclado o panel de seguridad, las alarmas de humo del techo, o una caja de alarma afuera?"
+        options_en: ["Security keypad or panel", "Smoke alarms on the ceiling", "A box outside by the septic tank", "Something else"]
+        options_es: ["Teclado o panel de seguridad", "Alarmas de humo del techo", "Una caja afuera junto a la fosa séptica", "Otra cosa"]
+        card_field: true
+        why: "Each answer is a different trade; hardwired smoke alarms are never handyman work and go to electricians. [src:ars_32_1121]"
+      - id: fu_alarm_doing
+        ask_when: "Security panel problem and she has not said what it does"
+        text_en: "What is the alarm doing: going off by itself, beeping or showing a message, not arming, or a siren that won't stop?"
+        text_es: "¿Qué hace la alarma: se activa sola, pita o muestra un mensaje, no se puede poner, o la sirena no para?"
+        options_en: ["Goes off by itself", "Beeps or shows a message", "Won't arm", "Siren won't stop"]
+        options_es: ["Se activa sola", "Pita o muestra un mensaje", "No se puede poner", "La sirena no para"]
+        card_field: true
+        why: "Four answers, four different service calls. [judgment]"
+      - id: fu_alarm_age
+        ask_when: "Repair or trouble request and no age given"
+        text_en: "About how old is the system?"
+        text_es: "¿Más o menos cuántos años tiene el sistema?"
+        options_en: ["Under 5 years", "5 to 10 years", "Over 10 years"]
+        options_es: ["Menos de 5 años", "5 a 10 años", "Más de 10 años"]
+        card_field: true
+        why: "Age tells the business whether parts and communicators still fit the panel. [src:fcc_3g]"
+      - fu_pets
+    photos_priority: [p1, p3]
+    urgency:
+      fire_dept_triggers: ["Smoke alarm sounding with smoke or fire", "CO alarm sounding", "Burning smell, smoke or melting at the alarm panel, transformer or its outlet"]
+      urgent_capable_triggers: ["Siren sounding and won't stop", "System won't arm and the home will be empty", "Homeowner does not have the code to turn it off"]
+      regular: "Beeps, messages or an occasional false alarm"
+    scope_line_en: "Alarm keypad beeps about once a minute and the screen is blank; system about 15 years old; not monitored now."
+    scope_line_es: "El teclado de la alarma pita como cada minuto y la pantalla está apagada; el sistema tiene unos 15 años; no tiene monitoreo ahora."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what the service call covers", "what puts it at the high end", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Alarm systems | <town>, <general area> | <kind of place>
+      <one scope line: what the alarm does, how long>
+      Doing: <goes off by itself / beeps or message / won't arm / siren won't stop>. Keypad shows: <message, from photo or her words>. Age: <answer>.
+      Monitored now: <yes / no / not said>. Pets inside: <answer or not said>. Has the code: <yes / no / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the backup battery.", "Pull the battery to stop the siren.", "Unplug the transformer.", "Your cats are setting it off.", "You'll need a new panel.", "Just pay the city fee."]
+
+  - id: monitoring_takeover
+    new_job_type: true
+    label: "Monitoring on an existing system: new monitoring, takeover from a closed or old company, system left by the last owner"
+    bank_job_type: "alarm monitoring setup"
+    recurring: false
+    homeowner_phrasings: ["my alarm company closed", "need someone to monitor my alarm", "bought a house with an alarm in it", "switch monitoring companies", "can the old system be turned back on"]
+    must_know:
+      - fact: "What the panel is, from the label"
+        bank_question: null
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Some panels can be taken over with a new communicator; locked or one-company panels mean a swap. [judgment]"
+        skip_if: "Panel photo with a readable label sent"
+      - fact: "Whether the system still arms and sounds"
+        bank_question: null
+        follow_up: fu_system_works
+        photo: null
+        why_it_moves_price: "A working system is a programming visit; a dead one adds repair or replacement. [judgment]"
+        skip_if: "She said it works or does not"
+      - fact: "Whether the old account is closed, still open, or the last owner's"
+        bank_question: null
+        follow_up: fu_old_company
+        photo: null
+        why_it_moves_price: "An open account or a locked panel can block a takeover until it is released. [judgment]"
+        skip_if: "She said the company closed"
+      - fact: "How the panel can call out: Wi-Fi, a landline, or neither"
+        bank_question: internet
+        follow_up: fu_landline
+        photo: p1
+        why_it_moves_price: "Panels that called over 3G or a cancelled landline need a new communicator. [src:fcc_3g]"
+        skip_if: "Wi-Fi and landline both answered"
+    allowed_follow_ups:
+      - id: fu_old_company
+        ask_when: "Takeover or reactivation and she has not said what happened to the old account"
+        text_en: "Is the old monitoring account closed, still open, or was it the last owner's?"
+        text_es: "¿La cuenta de monitoreo vieja está cerrada, sigue abierta, o era del dueño anterior?"
+        options_en: ["Closed, or the company is gone", "Still open in my name", "Was the last owner's"]
+        options_es: ["Cerrada, o la compañía ya no existe", "Sigue abierta a mi nombre", "Era del dueño anterior"]
+        card_field: true
+        why: "An open contract or a dealer-locked panel can hold up a takeover. [judgment]"
+      - id: fu_system_works
+        ask_when: "Monitoring request on an existing system and she has not said whether it works"
+        text_en: "Does the system still arm and make a sound when a door opens?"
+        text_es: "¿El sistema todavía se puede poner y suena cuando se abre una puerta?"
+        options_en: ["Yes, it works", "Partly", "No, nothing happens", "Haven't tried"]
+        options_es: ["Sí, funciona", "Más o menos", "No, no pasa nada", "No lo he probado"]
+        card_field: true
+        why: "Separates a programming visit from a repair. [judgment]"
+      - id: fu_landline
+        ask_when: "Wi-Fi answer is no, or the keypad shows a phone-line message"
+        text_en: "Does the home have a working landline phone?"
+        text_es: "¿La casa tiene una línea de teléfono fija que funcione?"
+        options_en: ["Yes", "No"]
+        options_es: ["Sí", "No"]
+        card_field: true
+        why: "With no internet and no landline, the panel needs a cellular communicator. [src:fcc_3g]"
+      - fu_monitoring_want
+    photos_priority: [p1, p3]
+    urgency:
+      fire_dept_triggers: ["Burning smell, smoke or melting at the alarm panel, transformer or its outlet"]
+      urgent_capable_triggers: ["Monitoring already stopped and the homeowner lives alone or the home sits empty"]
+      regular: "Planned switch or new monitoring"
+    scope_line_en: "Monitoring setup for an existing wired alarm left by the last owner; keypad lights up; no landline; Wi-Fi at the home."
+    scope_line_es: "Instalar monitoreo en una alarma cableada que dejó el dueño anterior; el teclado prende; no hay línea fija; hay Wi-Fi en la casa."
+    quote_format: range
+    business_fills: ["low and high end of the takeover or setup charge", "monthly monitoring price and contract length", "what puts it at the high end (new communicator, panel swap)", "earliest visit"]
+    card_template: |
+      REQ-<id> | Alarm systems | <town>, <general area> | <kind of place>
+      <one scope line: monitoring on an existing system, how it came to her>
+      Works now: <yes / partly / no / not tried>. Old account: <closed / open in her name / last owner's / not sure>. Panel: <label, from photo> or <no photo>.
+      Wi-Fi: <yes / no>. Landline: <yes / no>. Doors and windows: <count answer>. Alerts: <monitoring company / phone only / both>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That panel can be taken over.", "Your old system is too old to monitor.", "Monitoring runs about thirty a month.", "Call the old company and cancel first.", "You don't need a landline anymore."]
+
+business_side:
+  how_they_get_customers: ["Repeat customers, word of mouth and realtor referrals", "Builder pre-wire and new-home work", "Taking over accounts when another dealer closes or sells", "Google Maps listing, reviews and search ads", "National brand dealer programs", "Yard signs, window stickers and local Facebook groups [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google search ads (alarm installation terms)"
+      figure: "About $10 to $30 per click; established companies spend about $4,000 to $8,000 a month; marketing-vendor figures"
+      source: clicksgeek_security
+      unverified: false
+    - channel: "What one monitored account is worth (dealer programs and account buyers)"
+      figure: "About 24 to 36 months of the account's monitoring revenue; trade-press figure from 2021"
+      source: sptnews_rmr
+      unverified: false
+    - channel: "Large national provider, new subscriber"
+      figure: "Significant upfront cost per new subscriber, with revenue break-even in about two years"
+      source: adt_10k
+      unverified: false
+    - channel: "Shared home-service lead sites (security installs)"
+      figure: "No security-specific price found; plumbing and electrical vendor figures run about $35 to $150 per shared lead"
+      source: null
+      unverified: true
+    - channel: "Lake Havasu City alarm businesses specifically"
+      figure: "No local figures found; a small market with few certified alarm businesses may run below national figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a request that several other alarm companies also bought", "People shopping for a free-equipment deal they saw on TV", "Renters with no owner approval", "Takeover requests where the panel turns out to be locked", "Monthly fees whether or not jobs come", "Being ranked or reviewed by the site itself"]
+  what_makes_a_lead_worth_paying_for: ["Panel photo with the label before the first call", "Door and window count and Wi-Fi answer up front", "Whether she wants monitoring, phone alerts or both", "Who lives there, so rentals and empty homes are no surprise", "Pay only when picked, nothing monthly", "A request that could become a monitored account"]
+  their_words: ["takeover", "RMR", "zone", "contact", "glass break", "motion", "keypad", "panel", "communicator", "cell dialer", "pre-wire", "trouble condition", "low battery", "installer code", "central station", "dispatch", "panic button"]
+  signup_objections:
+    - objection: "My money is in monitoring. Why pay a fee on an install?"
+      answer: "You pay one fixed fee only when the homeowner picks your quote. It is $25, $75 or $199 by job size, never a share of the job or of the monitoring. The monthly account is yours."
+    - objection: "Do you check that I hold a BTR certificate?"
+      answer: "Alarm cards go only to businesses with a Board of Technical Registration alarm business certificate and an R-67 or CR-67 license. Handymen and camera-only installers do not get them."
+    - objection: "Homeowners just want the free-equipment deals they see on TV."
+      answer: "The card says whether she wants a monitoring company, phone alerts or both. You quote your own way, including any contract, and she sees it in writing before she picks."
+    - objection: "Takeovers waste my time when the panel is locked."
+      answer: "Takeover cards ask for a photo of the panel label and whether the old account is closed. If you need another photo, say so in your quote."
+    - objection: "Will you rank me against other alarm companies?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license numbers and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "I don't do service calls on other companies' systems."
+      answer: "You pick the job types you want at sign-up and can change them any time. You get cards only for those."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town, photos and her answers. Names and addresses go only to the business she picks."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+  quote_tips_for_card: ["Give the low and high end and say what puts it at the high end", "Say the monthly monitoring price and contract length apart from the install", "Say whether the price changes with or without a contract", "For a takeover, say what happens if the panel can't be taken over", "Give your earliest install day"]

@@ -1,0 +1,437 @@
+# Ask Hava expert layer: security_cameras (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set security_cameras and trade_kb/trades/security_alarm.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - security_alarm.yaml also serves alarm_systems. Left out here (they belong to alarm_systems, electrical or
+#   handyman): burglar_alarm, smart_home, false_alarms (alarm_systems); fire_alarm (R-16, and hardwired smoke
+#   alarms are electrical's "hardwired smoke alarm"); battery_smoke (no camera category job type fits it).
+# - new_job_type: doorbell_camera. The kb puts video doorbells inside "cameras"; the category routes
+#   "doorbell camera" on its own, so it gets its own entry. The scenario file labels its doorbell scenarios
+#   job_type "cameras" (s01, s05, s08, s13); "doorbell_camera" is the closer id if the scenarios are revised.
+# - "Fix existing cameras" (bank question service, option 4) has no category job type. It rides on
+#   "camera install", and fu_existing_since puts the timing fact on the card. A "camera repair" job type would
+#   route it more cleanly.
+# - The set's photo list includes kb p3 (smoke alarms on the ceiling), which never helps a camera quote, and p1
+#   (alarm panel or keypad), which helps only when an alarm exists. A photo of the router or the old camera's
+#   power adapter or recorder would serve this category better; that needs a kb and bank change.
+# - Handyman cards: A.R.S. 32-1121(A)(14) leaves an unaltered plug-in or 12-volt-battery appliance's price out of
+#   the $1,000 total, but labor and other materials still count. Whether routing keeps wired multi-camera jobs off
+#   handyman cards (the set has no size_band question) is a routing decision this file does not settle.
+# - Not verified: whether a camera-only business (no alarm) needs a BTR alarm business certificate. The A.R.S.
+#   32-101 alarm definitions do not name cameras except as ancillary equipment of a low-voltage electric fence.
+#   Nothing below states it either way.
+# - Not verified: whether Lake Havasu City ever requires a permit for low-voltage camera work. The city permit
+#   page does not list low-voltage, alarm or camera work and says its list is not complete.
+# - A power run to a dock, gate or eave outlet is electrical work. Electrical has no "add an outlet" job type, so
+#   misdiagnosis_checks routes it to "new circuit".
+schema: 1
+category: security_cameras
+question_set: security_cameras
+kb_trade: security_alarm
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-67 Low Voltage Communication Systems: alarm, telephone, sound, intercom, television or video systems and low voltage signaling, with only low voltage wiring; R-11 Electrical) [S2]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104 Dual contractor license classifications (CR-67 Low Voltage Communication Systems; CR-11 Electrical) [S3]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121(A)(14) handyman exemption: under $1,000 total counting labor and materials, casual or minor, no local building permit; an unaltered plug-in appliance or one with internal batteries of 12 volts or less is left out of the total; (A)(18) cable and telecom installers [S4]"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_101
+    title: "A.R.S. 32-101 Definitions: alarm system, alarm business, alarm agent (cameras named only as ancillary equipment of a low-voltage electric fence) [S5]"
+    url: "https://www.azleg.gov/ars/32/00101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: spec_lic_014
+    title: "Ask Hava spec LIC-014: camera installs go only to R-67 (or broader) licensees, or to handymen under $1,000 with no permit"
+    url: "docs/spec/licensing.md"
+    checked: "2026-10-29"
+    kind: other
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits: permit-required and no-permit lists; low-voltage, alarm and camera work not listed; the page says the list is not complete [S17]"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_vr
+    title: "Lake Havasu City Vacation Rentals (City Code ch. 5.20): permit per property, emergency point of contact available 24 hours a day, 7 days a week"
+    url: "https://www.lhcaz.gov/vacation-rentals"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: usclimate_lhc
+    title: "US Climate Data, Lake Havasu City 1991-2020 normals (average highs 105 F June, 109 F July, 108 F August, 101 F September; about 3.84 in of rain a year)"
+    url: "https://usclimatedata.com/climate/lake-havasu-city/arizona/united-states/usaz0372"
+    checked: "2026-10-29"
+    kind: other
+  - id: nws_monsoon
+    title: "National Weather Service Phoenix, Monsoon Awareness: season officially June 15 to September 30; dust storms, outflow winds of 50 mph or more, lightning"
+    url: "https://weather.gov/psr/monsoonawarenessweek"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ring_hardwire
+    title: "Ring (manufacturer), Guidelines for hardwiring your Ring Video Doorbell: use an existing transformer only within the stated range (Wired Doorbell Plus, Pro, 2K Plus, 4K Pro 16-24 VAC, 10-40 VA; Video Doorbell Wired 10-24 VAC, 8-40 VA); some models not compatible with existing chimes; a qualified electrician may be required by local code"
+    url: "https://ring.com/hardwire"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: ring_temps
+    title: "Ring (manufacturer), Ring devices and extreme temperatures: operate between -4 F and 122 F; a device that gets too hot will not charge and can shut down; shade recommended"
+    url: "https://ring.com/support/articles/b8l7l/Ring-Devices-Extreme-Temperatures"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: lorex_ethernet
+    title: "Lorex (manufacturer), Ethernet cable length: maximum 328 ft (100 m) between recorder and camera; a PoE switch along the path for longer runs"
+    url: "https://www.lorex.com/blogs/help/cables-ethernet-cable-length"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: valley_mktg_security
+    title: "The Valley Marketing Group (marketing vendor), Home security installation Google Ads cost per lead 2026 (search $85 to $160 per lead for security installation, $9 to $14 per click in a competitive metro; LSA home-services average about $53 per lead)"
+    url: "https://thevalleymarketinggroup.com/blog/home-security-installation-google-ads-cost-per-lead-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: leadgen_economy_security
+    title: "Leadgen Economy (marketing vendor), Home security lead generation guide (national averages: shared to 4 or more buyers $20 to $40, semi-exclusive $40 to $75, exclusive monitored-security $75 to $150, DIY or self-install interest $15 to $35, scheduled appointment $100 to $200)"
+    url: "https://www.leadgen-economy.com/blog/home-security-lead-generation-complete-guide/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "How the cameras get power and signal: cable run to a recorder (wired or PoE), plug-in at an outlet, or battery or solar"
+      why: "Wired runs through an attic and stucco are most of the labor on a camera job; plug-in and battery units are mostly mounting and app setup. R-67 covers the low-voltage wiring. [judgment]"
+      source: aac_r4_9_103
+    - driver: "Number of cameras"
+      why: "Each added camera adds a mount, a cable run or a setup, and a bigger recorder; the bank's count question sets the band. [judgment]"
+      source: null
+    - driver: "Height and stories: step-ladder reach, first-story eave, or second story"
+      why: "A second-story eave on stucco under a tile roof means an extension ladder, two people or a lift, and slower work. [judgment]"
+      source: null
+    - driver: "Cable path and recorder location: attic access, distance across the house, block or stucco walls"
+      why: "A recorder on the far side of the house from the cameras means long attic runs; an Ethernet camera run tops out at 328 ft before an added switch."
+      source: lorex_ethernet
+    - driver: "Who supplies the cameras and recorder"
+      why: "Labor-only on cameras the homeowner bought is a tighter range; supplying a system adds equipment and choice of brand. [judgment]"
+      source: null
+    - driver: "Power at each spot: outlet close by, or none at the eave, gate or dock"
+      why: "A new outlet is line-voltage work for an R-11 electrician, outside R-67's low-voltage scope, so it becomes a second trade or a second quote."
+      source: aac_r4_9_103
+    - driver: "Setup help: app, Wi-Fi, remote viewing for an owner who is away or not comfortable with phones"
+      why: "Setup and teaching time is real labor on small jobs, and absent owners need remote access set up before the installer leaves. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Doorbell transformer below the new video doorbell's power range, or a chime the model does not work with"
+      how_a_pro_spots_it: "Older wired button and chime in the home; the manufacturer lists a voltage and VA range and warns some models do not work with existing chimes"
+      question_or_photo: fu_doorbell_now
+      source: ring_hardwire
+    - condition: "Wi-Fi too weak at the camera or doorbell spot"
+      how_a_pro_spots_it: "Router at the far end of the house, stucco exterior walls, homeowner says the phone drops Wi-Fi at the door"
+      question_or_photo: fu_wifi_at_door
+      source: null
+    - condition: "No outlet near a plug-in camera spot, so a cord must pass through a wall or a new outlet is needed"
+      how_a_pro_spots_it: "Photo of the spot shows bare stucco with no outlet; the homeowner wants plug-in cameras at the eave or garage front"
+      question_or_photo: fu_power_type
+      source: null
+    - condition: "Existing cameras offline after a modem or router change, not a camera fault"
+      how_a_pro_spots_it: "All cameras dropped at the same time; the internet company swapped equipment just before"
+      question_or_photo: fu_existing_since
+      source: null
+    - condition: "A camera left by a past owner with no cable, recorder or account behind it"
+      how_a_pro_spots_it: "Photo shows a camera on the eave with no cable into the wall; homeowner says the old app never worked for them"
+      question_or_photo: p2
+      source: null
+    - condition: "West or south wall in full afternoon sun, where a battery camera stops charging in summer heat"
+      how_a_pro_spots_it: "Photo of the spot shows no shade; the manufacturer says a device that gets too hot will not charge"
+      question_or_photo: p2
+      source: ring_temps
+    - condition: "Two-story spot or no attic access for the cable path"
+      how_a_pro_spots_it: "Homeowner says a camera goes on the second story; no attic hatch, or a tile roof with a low pitch"
+      question_or_photo: fu_upper_story
+      source: null
+    - condition: "Renter, HOA or vacation-rental limits on drilling or on where cameras may point"
+      how_a_pro_spots_it: "Homeowner mentions a landlord, lease, HOA or guests; the kind of place on the card"
+      question_or_photo: fu_own_or_rent
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "camera install (cameras that call the police, a company that watches 24/7)"
+      might_be: "burglar_alarm (monitored alarm with sensors and a siren)"
+      one_question: fu_watch_how
+      if_other_route_to: {category: alarm_systems, job_type: "alarm monitoring setup"}
+      source: ars_32_101
+    - sounds_like: "camera install (replace cameras that all went offline)"
+      might_be: "cameras (network or account change; the cameras may still work)"
+      one_question: fu_existing_since
+      if_other_route_to: {category: security_cameras, job_type: "camera install"}
+      source: null
+    - sounds_like: "camera install (plug-in cameras at a spot with no outlet, or power out to a dock or gate)"
+      might_be: "electrical work for a new outlet, a second trade"
+      one_question: fu_power_type
+      if_other_route_to: {category: electrical, job_type: "new circuit"}
+      source: aac_r4_9_103
+    - sounds_like: "doorbell camera (wants a keypad, smart lock or door sensors with it)"
+      might_be: "smart_home (sensors, keypads), alarm work"
+      one_question: service
+      if_other_route_to: {category: alarm_systems, job_type: "alarm install"}
+      source: null
+  photo_reading:
+    - photo_id: p2
+      reads: ["Wall material (stucco, block, wood trim)", "Height of the spot and whether it is under an eave or a covered entry", "Outlet or doorbell button close by", "Existing camera and whether a cable runs into the wall", "Shade or full sun", "Tile or shingle roof edge"]
+      neutral_wording: "Stucco wall beside the front door under a covered entry; no doorbell button visible; no outlet in view."
+    - photo_id: p1
+      reads: ["Alarm panel or keypad brand label", "Whether the screen is lit", "Any recorder or hub nearby"]
+      neutral_wording: "Wall keypad in the hallway with a brand label; screen is lit."
+  local_factors:
+    - fact: "Average summer highs run 105 F in June, 109 F in July and 108 F in August"
+      effect: "Pros ask which walls get afternoon sun, since cameras near their heat limit stop charging; attic cable work moves to early morning [judgment]"
+      source: usclimate_lhc
+    - fact: "Ring lists an operating range of -4 F to 122 F and says a device that gets too hot will not charge"
+      effect: "Battery cameras on unshaded west walls are the classic summer service call; installers place them under eaves [judgment]"
+      source: ring_temps
+    - fact: "Monsoon season runs June 15 to September 30, with dust storms, lightning and outflow winds of 50 mph or more"
+      effect: "Dust on lenses, loose mounts and surge-damaged recorders bring repair calls in late summer [judgment]"
+      source: nws_monsoon
+    - fact: "Vacation rentals need a city permit and an emergency contact available 24 hours a day"
+      effect: "Out-of-town owners want remote viewing and a property manager handles access; the card should say who lets the installer in [judgment]"
+      source: lhc_vr
+    - fact: "The city permit page does not list low-voltage, alarm or camera work and says its list is not complete"
+      effect: "Small camera jobs are quoted without permits; larger wired jobs may get a call to the Building Division first"
+      source: lhc_permits
+    - fact: "Seasonal residents and second-home owners are away for months"
+      effect: "Requests come before owners leave in spring and when they return in fall; remote access is part of the job [judgment]"
+      source: null
+    - fact: "Channel and lakefront homes want cameras on docks and boat slips, which often have no power or Wi-Fi"
+      effect: "These cards often need an electrical second request and a long-range or cellular camera [judgment]"
+      source: null
+    - fact: "Most homes are stucco over frame or block, many with tile roofs"
+      effect: "Mounting and cable entry through stucco and tile eaves takes more care and time than wood siding [judgment]"
+      source: null
+  seasonality:
+    busy: "October to December (seasonal residents return, holiday deliveries) and March to April (owners leaving for summer) [judgment]"
+    slow: "July and August, when attic work is limited to early mornings [judgment]"
+    source: null
+
+job_types:
+  - id: cameras
+    label: "Outdoor or indoor security cameras: new install, add cameras, or fix cameras already there"
+    bank_job_type: "camera install"
+    recurring: false
+    homeowner_phrasings: ["want cameras around the house", "put up the cameras I bought", "cameras went offline", "want to watch the dock from my phone", "camera on the garage", "cámaras de seguridad"]
+    must_know:
+      - fact: "How the cameras get power: cable to a recorder, plug-in, or battery or solar"
+        bank_question: null
+        follow_up: fu_power_type
+        photo: p2
+        why_it_moves_price: "Wired runs are most of the labor; plug-in and battery units are mounting and setup, and only small ones fit the handyman limit. [judgment]"
+        skip_if: "Homeowner already said wired, plug-in or battery"
+      - fact: "How many cameras and where they go"
+        bank_question: count
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Count sets equipment and hours; spots far apart or far from the recorder add cable. [judgment]"
+        skip_if: "Homeowner listed the count and spots"
+      - fact: "Whether any camera goes on a second story or above a first-story eave"
+        bank_question: null
+        follow_up: fu_upper_story
+        photo: p2
+        why_it_moves_price: "Second-story work needs a tall ladder or a lift and a second person. [judgment]"
+        skip_if: "Single-story home stated, or the photo shows the spot is low"
+      - fact: "Whether the homeowner already has the cameras"
+        bank_question: have_cameras
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Labor-only on cameras on hand is a tighter range than supplying a system. [judgment]"
+        skip_if: "Answered"
+      - fact: "For cameras already there: what changed right before they stopped"
+        bank_question: service
+        follow_up: fu_existing_since
+        photo: p2
+        why_it_moves_price: "Cameras that dropped after a router swap may need setup, not new hardware; a camera with no cable or recorder behind it is a new install. [judgment]"
+        skip_if: "Not a fix-existing request"
+    allowed_follow_ups:
+      - id: fu_power_type
+        ask_when: "Homeowner asks for cameras and has not said how they are powered"
+        text_en: "How should the cameras get power: a cable back to a recorder box, plugged into outlets, or battery or solar?"
+        text_es: "¿Cómo deben recibir corriente las cámaras: con cable hasta una caja grabadora, conectadas a enchufes, o con batería o solar?"
+        options_en: ["Cable to a recorder box", "Plug into outlets", "Battery or solar", "A mix of these"]
+        options_es: ["Cable hasta una caja grabadora", "Conectadas a enchufes", "Batería o solar", "Una mezcla"]
+        card_field: true
+        why: "Separates a wired low-voltage job from mounting and setup, and shows when an outlet may be missing. [judgment]"
+      - id: fu_upper_story
+        ask_when: "No height or story count given and the home may be two stories, or a spot is on a roof edge"
+        text_en: "Will any camera go on a second story, or higher than a first-story roof edge?"
+        text_es: "¿Alguna cámara va en un segundo piso, o más alto que la orilla del techo del primer piso?"
+        options_en: ["No, all first story", "Yes, second story or higher"]
+        options_es: ["No, todas en el primer piso", "Sí, segundo piso o más alto"]
+        card_field: true
+        why: "Height sets the ladder, the crew size and the hours. [judgment]"
+      - id: fu_watch_how
+        ask_when: "Homeowner mentions police, a monitoring company, 24/7 watching, a siren or door sensors"
+        text_en: "Who will watch the cameras: you on your phone, or a company that watches them and calls the police?"
+        text_es: "¿Quién va a ver las cámaras: usted en su teléfono, o una compañía que las vigila y llama a la policía?"
+        options_en: ["Me, on my phone", "A company that watches", "Both"]
+        options_es: ["Yo, en mi teléfono", "Una compañía que vigila", "Las dos"]
+        card_field: true
+        why: "A company that watches and calls police is a monitored alarm, a different category with its own certificate rules."
+      - id: fu_existing_since
+        ask_when: "Homeowner wants existing cameras fixed or replaced because they stopped or never worked"
+        text_en: "Did anything change at the home right before the cameras stopped, like a new modem or router, a power outage or a storm?"
+        text_es: "¿Cambió algo en la casa justo antes de que las cámaras dejaran de funcionar, como un módem o router nuevo, un apagón o una tormenta?"
+        options_en: ["New modem or router", "Power outage or storm", "Nothing I know of", "They never worked for me"]
+        options_es: ["Módem o router nuevo", "Apagón o tormenta", "Nada que yo sepa", "Nunca me funcionaron"]
+        card_field: true
+        why: "Puts the timing fact on the card so a business can tell setup work from new hardware without being told a cause. [judgment]"
+    photos_priority: [p2, p1]
+    urgency:
+      fire_dept_triggers: ["Burning smell, smoke or sparks at an outlet or a camera power adapter"]
+      urgent_capable_triggers: ["A break-in or attempt at the home in the last few days", "A stated date, such as leaving on a trip or guests arriving"]
+      regular: "Planned install or added cameras with no date"
+    scope_line_en: "Install 4 outdoor plug-in cameras the homeowner has, at the front door, driveway, side gate and back patio; single-story stucco home."
+    scope_line_es: "Instalar 4 cámaras exteriores de enchufe que ya tiene el dueño, en la puerta de enfrente, la entrada, el portón lateral y el patio de atrás; casa de un piso de estuco."
+    quote_format: range
+    business_fills: ["low and high end of the range", "whether cameras, recorder and storage are included", "what puts it at the high end", "earliest day"]
+    card_template: |
+      REQ-<id> | Security cameras | <town>, <general area> | <house / condo / manufactured home / vacation rental>
+      <one scope line: how many cameras, where, new or existing>
+      Cameras: <count>. Spots: <where, from her words or photo>. Power: <cable to recorder / plug-in / battery or solar / mix / not sure>. Highest spot: <first story / second story>.
+      Cameras on hand: <yes / business supplies>. Existing cameras: <none / stopped after modem or router change / stopped after outage / never worked / n/a>. Watched by: <homeowner on phone / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Those cameras probably burnt out in the heat.", "It's your new router.", "Wired cameras are better than wireless.", "That camera looks like a fake.", "Four cameras usually run about a thousand dollars.", "A handyman could do that cheaper."]
+
+  - id: doorbell_camera
+    new_job_type: true
+    label: "Video doorbell at the front door: replace a doorbell button, add one where there is none, or a battery doorbell"
+    bank_job_type: "doorbell camera"
+    recurring: false
+    homeowner_phrasings: ["ring doorbell", "door cam", "want to see who comes to the door", "replace my doorbell with a camera one", "timbre con cámara"]
+    must_know:
+      - fact: "Whether there is a doorbell button and chime now, and whether they work"
+        bank_question: null
+        follow_up: fu_doorbell_now
+        photo: p2
+        why_it_moves_price: "Existing doorbell wiring makes a swap; no wiring means a battery unit or a new low-voltage run, and old transformers may need replacing. [judgment]"
+        skip_if: "Homeowner said there is a working button and chime, or none at all"
+      - fact: "Whether the homeowner has the doorbell already"
+        bank_question: have_cameras
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Labor-only on a unit in the box is close to a firm number; supplying one adds the unit and a model choice. [judgment]"
+        skip_if: "Answered"
+      - fact: "Wi-Fi strength at the front door"
+        bank_question: null
+        follow_up: fu_wifi_at_door
+        photo: null
+        why_it_moves_price: "Weak signal at the door adds a Wi-Fi extender or a second visit. [judgment]"
+        skip_if: "Homeowner said the Wi-Fi is strong at the door"
+      - fact: "Who will watch the video and whether setup help is part of the job"
+        bank_question: null
+        follow_up: fu_viewer
+        photo: null
+        why_it_moves_price: "An owner with no smartphone, or a family member out of town, means more setup time on the visit. [judgment]"
+        skip_if: "Homeowner said she will use her own phone and set it up herself"
+      - fact: "Wall surface at the door (stucco, block, wood trim)"
+        bank_question: null
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Stucco and block take a wedge or anchors and more care than a wood frame. [judgment]"
+        skip_if: "Photo of the door sent"
+    allowed_follow_ups:
+      - id: fu_doorbell_now
+        ask_when: "Homeowner wants a video doorbell and has not said whether a doorbell is there now"
+        text_en: "Is there a doorbell button by the door now, and does it ring a chime inside?"
+        text_es: "¿Hay un botón de timbre junto a la puerta ahora, y suena una campana adentro?"
+        options_en: ["Button and chime both work", "Button there, but it doesn't work", "No doorbell there"]
+        options_es: ["El botón y la campana funcionan", "Hay botón, pero no funciona", "No hay timbre"]
+        card_field: true
+        why: "Existing wiring, dead wiring and no wiring are three different installs to a pro. [judgment]"
+      - id: fu_wifi_at_door
+        ask_when: "No mention of Wi-Fi, or the router is said to be far from the door"
+        text_en: "When you stand at the front door, does your phone stay on your home Wi-Fi?"
+        text_es: "Cuando está en la puerta de enfrente, ¿su teléfono se queda conectado al Wi-Fi de la casa?"
+        options_en: ["Yes, strong", "Weak or it drops", "No Wi-Fi at the home"]
+        options_es: ["Sí, buena señal", "Débil o se corta", "No hay Wi-Fi en la casa"]
+        card_field: true
+        why: "A video doorbell needs Wi-Fi at the door; weak signal changes the parts list. [judgment]"
+      - id: fu_viewer
+        ask_when: "Homeowner says she is not good with phones, someone else asked for it, or a family member will watch"
+        text_en: "Will the doorbell video be watched on your own smartphone?"
+        text_es: "¿El video del timbre se va a ver en su propio teléfono inteligente?"
+        options_en: ["Yes, my phone", "A family member's phone", "I don't have a smartphone"]
+        options_es: ["Sí, en mi teléfono", "En el teléfono de un familiar", "No tengo teléfono inteligente"]
+        card_field: true
+        why: "Tells the business how much setup and teaching time to plan. [judgment]"
+      - id: fu_own_or_rent
+        ask_when: "Homeowner mentions a landlord, a lease, an HOA rule, guests, or wanting no holes in the wall"
+        text_en: "Do you own the home, or rent it?"
+        text_es: "¿La casa es suya, o la renta?"
+        options_en: ["I own it", "I rent it", "I manage it for the owner"]
+        options_es: ["Es mía", "La rento", "La administro para el dueño"]
+        card_field: true
+        why: "A business wants to know before drilling whose wall it is; the card states it as a fact with no ruling. [judgment]"
+    photos_priority: [p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["A stated date, such as leaving on a trip or guests arriving"]
+      regular: "All doorbell requests"
+    scope_line_en: "Replace a working wired doorbell button with a video doorbell the homeowner has; chime inside works; stucco wall at a covered entry."
+    scope_line_es: "Cambiar un botón de timbre con cable que funciona por un timbre con video que ya tiene el dueño; la campana de adentro funciona; pared de estuco en una entrada techada."
+    quote_format: range
+    business_fills: ["low and high end of the range", "whether the doorbell is included", "what puts it at the high end (new wire, transformer, chime part, Wi-Fi extender)", "earliest day"]
+    card_template: |
+      REQ-<id> | Security cameras | <town>, <general area> | <house / condo / townhome / manufactured home / vacation rental>
+      <one scope line: video doorbell, where, swap or new>
+      Doorbell now: <button and chime work / button, not working / none>. Doorbell on hand: <yes / business supplies>. Wall: <stucco / block / wood trim, from photo>.
+      Wi-Fi at the door: <strong / weak / none>. Watched on: <own phone / family member's phone / no smartphone>. Home: <owned / rented, landlord approval as she stated / managed for owner>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your old transformer is too weak.", "Get the battery model, it's easier.", "Your landlord has to approve that.", "That's a twenty-minute job.", "Turn off the breaker before you take the old button off."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Google search ads and Local Services Ads", "Word of mouth and repeat customers", "Realtors, builders and property managers [judgment]", "Alarm dealer and monitoring-company programs [judgment]", "Local Facebook groups and Nextdoor [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Google search ads (home security installation)"
+      figure: "About $85 to $160 per lead; $9 to $14 per click in a competitive metro (marketing-vendor figure)"
+      source: valley_mktg_security
+      unverified: false
+    - channel: "Google Local Services Ads (home services overall, not security alone)"
+      figure: "About $53 per lead, early 2026 average (marketing-vendor figure)"
+      source: valley_mktg_security
+      unverified: false
+    - channel: "Bought security-install inquiries, national averages"
+      figure: "About $20 to $40 when sold to 4 or more buyers; $75 to $150 sold to one; $15 to $35 for self-install interest (marketing-vendor figure)"
+      source: leadgen_economy_security
+      unverified: false
+    - channel: "Lake Havasu City camera installers specifically"
+      figure: "No local figures found; few local installers means less bidding, so costs may run below national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["The same request sold to several installers", "Self-install shoppers who only want a price", "Requests far outside their area", "Monthly fees whether or not jobs come", "No photos, so every job needs a free site visit"]
+  what_makes_a_lead_worth_paying_for: ["Camera count, spots and power type stated", "Photos of the spots", "Whether the homeowner has the equipment", "Stories and height stated", "Pay only when picked, nothing monthly", "Real town and real timing"]
+  their_words: ["NVR", "DVR", "PoE", "Cat6", "home run", "drop", "fish the wall", "eave mount", "junction box", "transformer", "chime kit", "VA", "field of view", "IR night vision", "cloud plan", "takeover"]
+  signup_objections:
+    - objection: "Why pay $25 when other sites send me requests already?"
+      answer: "Most of those sites charge per request and sell it to several installers. Here you pay only when the homeowner picks your quote. There is nothing to join and nothing monthly. The fee is set by job size: $25, $75 or $199."
+    - objection: "I can't quote cameras without walking the house."
+      answer: "Quote a range and say what puts it at the high end. Most cards come with the camera count, the spots, the power type, the stories and a photo. If you need one more photo, say which in your quote."
+    - objection: "Half of these people bought cheap cameras online and want them hung for nothing."
+      answer: "The card says whether the homeowner already has the cameras, so you can quote labor only or pass. You quote only the cards you want."
+    - objection: "Why do handymen get camera cards?"
+      answer: "Arizona law lets an unlicensed person take small jobs under $1,000 total with no permit. Each card shows the power type, count and height, and the homeowner sees each business's license numbers with its quote."
+    - objection: "Will you rank me against other installers?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license numbers and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "I only do wired systems, not doorbells."
+      answer: "You pick the job types you want at sign-up and change them any time. You get cards only for those."
+    - objection: "What if I quote and don't get the job?"
+      answer: "Then you pay nothing. The introduction fee is charged only when a homeowner picks your quote and you confirm."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Can I offer a monitoring or cloud plan in my quote?"
+      answer: "Quote in your own words. Say what the range covers and what any plan adds each month, so the homeowner can compare."
+  quote_tips_for_card: ["Say whether the range includes cameras, recorder and any storage plan", "Say what moves it to the high end, such as second-story spots, attic runs or a new outlet", "Give the earliest day you can come", "If you need a photo of the router spot or the doorbell transformer, say so"]

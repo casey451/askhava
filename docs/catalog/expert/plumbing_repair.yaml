@@ -1,0 +1,931 @@
+# Ask Hava expert layer: plumbing_repair (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set plumbing_repair and trade_kb/trades/plumbing.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+schema: 1
+category: plumbing_repair
+question_set: plumbing_repair
+kb_trade: plumbing
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-37 Plumbing, Including Solar)"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1121
+    title: "A.R.S. 32-1121 Persons not required to be licensed (handyman exemption (A)(14), fuel-gas and fire-safety carve-outs (D))"
+    url: "https://www.azleg.gov/ars/32/01121.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_water
+    title: "Lake Havasu City Water Division: owner's line starts at the city meter; pressure regulators required; pressure entering a home below 60 PSI"
+    url: "https://www.lhcaz.gov/288/Water"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_wastewater
+    title: "Lake Havasu City Wastewater Division: owner's sewer lateral runs to the city main in the street"
+    url: "https://www.lhcaz.gov/289/Wastewater"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_permits
+    title: "Lake Havasu City Building Division: permit-required and no-permit lists"
+    url: "https://www.lhcaz.gov/development-permitting/building"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 grains per gallon, TDS about 753 ppm)"
+    url: "https://www.lhcaz.gov/288/Water"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ua_water_wise
+    title: "University of Arizona Water Wise: home water meter leak test"
+    url: "https://extension.arizona.edu/water-wise"
+    checked: "2026-10-29"
+    kind: other
+  - id: pipeline_plumbing_leads
+    title: "Pipeline (marketing vendor): lead costs for plumbing contractors, 2026 (Angi/HomeAdvisor $65-$150 per shared lead, Thumbtack $35-$85, Google Local Services Ads about $57 per lead and $263 per paying customer, Google Ads about $76 per lead)"
+    url: "https://pipelineon.com/blog/best-lead-generation-platforms-plumbing-contractors-2026/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "Is water running or sewage rising right now (same-day or after-hours call) or can it wait"
+      why: "Emergency and after-hours calls carry a higher visit rate; the bank's shut_off question and the timing answer settle this. [judgment]"
+      source: null
+    - driver: "Where the fault is: reachable (under a sink, at a toilet) or hidden (wall, slab, yard line)"
+      why: "A hidden leak needs finding first and may add concrete, drywall or digging; a reachable one is a parts-and-labor visit. [judgment]"
+      source: null
+    - driver: "One fixture or many"
+      why: "Several drains backing up points at the main line (camera, jetter, possible excavation) rather than a single trap. [judgment]"
+      source: null
+    - driver: "Pipe material in sight: gray flexible plastic (polybutylene), galvanized steel, Kitec, copper, PEX"
+      why: "Polybutylene and galvanized change the repair method and often turn a leak into a re-pipe conversation; the pro reads this off a photo. [judgment]"
+      source: null
+    - driver: "Slab, crawl space or manufactured home"
+      why: "Access under the floor sets labor hours; manufactured homes have their own alteration rules. [judgment]"
+      source: null
+    - driver: "Whether the homeowner already has the part or fixture"
+      why: "A like-for-like swap with the new part on site is a firm quote; sourcing a part is not. [judgment]"
+      source: null
+    - driver: "Permit-type work (add or move a fixture, re-pipe) versus replace in place"
+      why: "Lake Havasu City requires a permit for added or relocated fixtures and re-pipes, not for replacing an existing fixture."
+      source: lhc_permits
+  hidden_conditions:
+    - condition: "Shutoff valves (angle stops) crusted with scale that snap or will not close when turned"
+      how_a_pro_spots_it: "White crust on the valve in the under-sink photo; home age; the homeowner could not shut the water off"
+      question_or_photo: p2_under_sink
+      source: lhc_ccr
+    - condition: "Polybutylene or galvanized supply pipe behind the one leak"
+      how_a_pro_spots_it: "Gray flexible plastic with crimp rings, or gray threaded steel, in the pipe photo"
+      question_or_photo: p3_pipe_material
+      source: null
+    - condition: "The backup is in the city main or at the meter, not on the owner's side"
+      how_a_pro_spots_it: "Neighbors have it too, or the yard cleanout runs clear while the street side does not"
+      question_or_photo: fu_neighbors_too
+      source: lhc_wastewater
+    - condition: "Roots or a broken sewer lateral behind a repeat clog"
+      how_a_pro_spots_it: "Clogs that return within weeks; cleanout cap off with standing water in the yard photo"
+      question_or_photo: p5_cleanout
+      source: null
+    - condition: "Water damage already spreading (swollen cabinet floor, wet carpet, bubbling paint)"
+      how_a_pro_spots_it: "The damage photo; the homeowner says the floor is wet away from the fixture"
+      question_or_photo: p4_damage
+      source: null
+    - condition: "No pressure regulator, or one that has failed, behind banging pipes and repeat leaks"
+      how_a_pro_spots_it: "Hammering sound, leaks at several fixtures; the city requires a regulator and under 60 PSI at the house"
+      question_or_photo: null
+      source: lhc_water
+    - condition: "Shared lines in a condo or townhome, or an HOA rule on who may do the work"
+      how_a_pro_spots_it: "The bank's floor question and the kind of place on the card"
+      question_or_photo: foundation
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "toilet repair"
+      might_be: "main_line_backup"
+      one_question: fu_other_drains
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}
+      source: null
+    - sounds_like: "drain clearing"
+      might_be: "main_line_backup"
+      one_question: fu_other_drains
+      if_other_route_to: {category: plumbing_repair, job_type: "drain clearing"}
+      source: null
+    - sounds_like: "leak repair (wet floor by a wall)"
+      might_be: "slab_leak"
+      one_question: fu_warm_spot
+      if_other_route_to: {category: plumbing_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "faucet replacement (no hot water at one tap)"
+      might_be: "water_heater fault, a different category"
+      one_question: fu_hot_everywhere
+      if_other_route_to: {category: plumbing_repair, job_type: "water heater replacement"}
+      source: null
+    - sounds_like: "leak repair (ceiling stain)"
+      might_be: "roof leak, a different category"
+      one_question: fu_stain_when
+      if_other_route_to: {category: roof_repair, job_type: "leak repair"}
+      source: null
+    - sounds_like: "leak repair (water at the base of the water heater)"
+      might_be: "water_heater tank failure, licensed-only work in this category"
+      one_question: fu_where_exactly
+      if_other_route_to: {category: plumbing_repair, job_type: "water heater replacement"}
+      source: null
+  photo_reading:
+    - photo_id: p3_pipe_material
+      reads: ["Gray flexible plastic with crimp rings (polybutylene)", "Orange and blue pipe with brass fittings (Kitec)", "Gray threaded steel (galvanized)", "Green crust at copper joints", "Printing on the pipe"]
+      neutral_wording: "Visible supply pipe under the sink is gray flexible plastic with copper crimp rings."
+    - photo_id: p2_under_sink
+      reads: ["White crust on the shutoff valves", "Braided or plastic supply lines", "Swollen cabinet floor", "Disposal brand and whether it plugs in"]
+      neutral_wording: "White crust on both shutoff valves; cabinet floor looks swollen."
+    - photo_id: p1_leak_spot
+      reads: ["Drip at a nut or fitting versus a wet pipe body", "Water at a toilet base"]
+      neutral_wording: "Water dripping from the nut where the supply line meets the faucet."
+    - photo_id: p4_damage
+      reads: ["Size and spread of the wet area", "Buckled flooring, bubbling paint"]
+      neutral_wording: "Carpet wet in about a 3 by 4 foot area along the hallway wall."
+    - photo_id: p5_cleanout
+      reads: ["Cap off or on", "Standing water in the pipe", "Roots at the cap"]
+      neutral_wording: "Yard cleanout cap is off and water is standing in the pipe."
+    - photo_id: p6_meter
+      reads: ["Leak dial moving with everything off"]
+      neutral_wording: "Meter leak indicator appears to be turning with all fixtures off."
+    - photo_id: p7_fixture
+      reads: ["Brand and finish", "Number of holes in the sink", "Wall or deck mount", "New fixture already on site"]
+      neutral_wording: "Single-handle kitchen faucet, three-hole sink, homeowner has the new faucet in the box."
+  local_factors:
+    - fact: "City water hardness averages about 19 grains per gallon with TDS about 753 ppm"
+      effect: "Scale shortens the life of cartridges, valves, aerators and toilet fill parts, so pros ask about a softener and expect crusted shutoffs"
+      source: lhc_ccr
+    - fact: "The owner's water line starts at the city meter, and the owner's sewer line runs all the way to the city main in the street"
+      effect: "Most backups between house and street are on the owner's side; a pro asks whether neighbors have it too before rolling a truck"
+      source: lhc_wastewater
+    - fact: "Lake Havasu City requires a pressure regulator and under 60 PSI at the house"
+      effect: "Banging pipes and repeat leaks raise the regulator question in quotes"
+      source: lhc_water
+    - fact: "Many homes from the 1970s to 1990s sit on slabs over rocky or caliche soil"
+      effect: "Slab leaks show as warm floor spots or a high bill and cost more to reach [judgment]"
+      source: null
+    - fact: "Second homes sit empty for months; leaks are found on return"
+      effect: "Damage may be large by the time a pro sees it; the card should say how long the water ran, if known [judgment]"
+      source: null
+    - fact: "Rare winter hard freezes split exposed hose bibs and yard lines"
+      effect: "A winter run of outdoor spigot requests [judgment]"
+      source: null
+  seasonality:
+    busy: "June to September (heat, turnover in vacation rentals) and the first hard freeze"
+    slow: "Late January to February [judgment]"
+    source: null
+
+job_types:
+  - id: leak_active
+    label: "Water spraying or running now (burst pipe, broken supply line)"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["pipe burst", "water everywhere", "supply line blew", "gushing under the sink"]
+    must_know:
+      - fact: "Whether the water is off now, and where it was shut"
+        bank_question: shut_off
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Running water makes it a same-day call at a higher rate; a shut valve makes it a scheduled repair. [judgment]"
+        skip_if: "Homeowner already said the water is off"
+      - fact: "Where the water comes from"
+        bank_question: leak_where
+        follow_up: null
+        photo: p1_leak_spot
+        why_it_moves_price: "A supply line or fitting is a quick part; a pipe inside a wall is not. [judgment]"
+        skip_if: "Photo shows the leak point"
+      - fact: "Pipe material in sight"
+        bank_question: null
+        follow_up: null
+        photo: p3_pipe_material
+        why_it_moves_price: "Polybutylene or galvanized changes the fix and the conversation. [judgment]"
+        skip_if: "No pipe is visible"
+      - fact: "How far the water has spread"
+        bank_question: null
+        follow_up: fu_spread
+        photo: p4_damage
+        why_it_moves_price: "Tells the business whether to bring a wet-vac and how long the visit runs. [judgment]"
+        skip_if: "Damage photo sent"
+    allowed_follow_ups:
+      - id: fu_spread
+        ask_when: "Water was or is running and no damage photo was sent"
+        text_en: "Has the water reached the floor, a wall or a ceiling?"
+        text_es: "¿El agua llegó al piso, a una pared o al techo?"
+        options_en: ["Still in the cabinet or sink area", "On the floor", "In a wall or ceiling"]
+        options_es: ["Sigue en el gabinete o el área del lavabo", "En el piso", "En una pared o el techo"]
+        card_field: true
+        why: "Spread sets visit length and tells the business what to bring. [judgment]"
+      - id: fu_where_exactly
+        ask_when: "Homeowner names a wet spot near a water heater, washer or wall but not what is leaking"
+        text_en: "Where exactly is the water coming from: a hose or pipe, the bottom of a tank, or you can't tell?"
+        text_es: "¿De dónde sale el agua exactamente: de una manguera o tubo, de la base de un tanque, o no se ve?"
+        options_en: ["A hose or pipe", "The bottom of a tank", "Can't tell"]
+        options_es: ["De una manguera o tubo", "De la base de un tanque", "No se ve"]
+        card_field: true
+        why: "Water from the bottom of a tank is water-heater work, licensed only in this category. [judgment]"
+    photos_priority: [p1_leak_spot, p3_pipe_material, p4_damage]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water cannot be shut off", "Water in a wall, ceiling or spreading on the floor"]
+      regular: "Water is off at a valve and the drip has stopped"
+    scope_line_en: "Supply line under the kitchen sink burst; water is off at the valve under the sink."
+    scope_line_es: "Se rompió la línea de agua bajo el fregadero de la cocina; el agua está cerrada en la llave bajo el fregadero."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: what, where, water on or off>
+      Water now: <on / off at valve / off at main / can't shut off>. Shows at: <where>. Spread: <cabinet / floor / wall or ceiling>.
+      Pipe in sight: <material, neutral, from photo> or <not visible>. Floor: <slab / crawl space / manufactured>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's probably the supply line.", "Turn off the main and open a tap.", "That's usually a cheap fix.", "A plumber will charge about a hundred dollars for that."]
+
+  - id: leak_slow
+    label: "Slow drip or leak under a sink, behind a toilet, at a valve"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["drip under the sink", "wet cabinet", "angle stop weeping", "faucet won't stop dripping"]
+    must_know:
+      - fact: "Where the water shows: supply side, drain side or the fixture itself"
+        bank_question: leak_where
+        follow_up: fu_drip_when
+        photo: p2_under_sink
+        why_it_moves_price: "Supply-side parts are cheap and fast; a drain-side or fixture-body leak means a new part or fixture. [judgment]"
+        skip_if: "Under-sink photo shows the drip point"
+      - fact: "Whether the shutoff valve closes"
+        bank_question: shut_off
+        follow_up: null
+        photo: p2_under_sink
+        why_it_moves_price: "A crusted valve that will not close becomes a second repair. [judgment]"
+        skip_if: "Photo shows clean valves and the homeowner said water is off"
+      - fact: "Pipe and valve condition in sight"
+        bank_question: null
+        follow_up: null
+        photo: p3_pipe_material
+        why_it_moves_price: "Scale and pipe type set the parts list. [judgment]"
+        skip_if: "Under-sink photo covers it"
+    allowed_follow_ups:
+      - id: fu_drip_when
+        ask_when: "Homeowner says water shows under a sink or at a fixture but not when"
+        text_en: "Does it drip all the time, or only when the water is running or draining?"
+        text_es: "¿Gotea todo el tiempo, o solo cuando el agua está corriendo o drenando?"
+        options_en: ["All the time", "Only when running", "Only when draining"]
+        options_es: ["Todo el tiempo", "Solo cuando corre", "Solo cuando drena"]
+        card_field: true
+        why: "Separates a supply-side part from a drain-side part without naming either. [judgment]"
+      - fu_where_exactly
+      - id: fu_stain_when
+        ask_when: "Homeowner reports a stain or drip from a ceiling"
+        text_en: "Does the ceiling spot grow when it rains, or when someone uses the bathroom or shower above it?"
+        text_es: "¿La mancha del techo crece cuando llueve, o cuando alguien usa el baño o la regadera de arriba?"
+        options_en: ["When it rains", "When the bathroom above is used", "Both or not sure", "Nothing above it"]
+        options_es: ["Cuando llueve", "Cuando se usa el baño de arriba", "Ambas o no sé", "No hay nada arriba"]
+        card_field: true
+        why: "Rain points at the roof, a different category; use points at plumbing. [judgment]"
+      - id: fu_hot_everywhere
+        ask_when: "Homeowner mentions no hot water or weak hot water at a tap"
+        text_en: "Is the hot water weak at every tap in the house, or just this one?"
+        text_es: "¿El agua caliente sale débil en todas las llaves de la casa, o solo en esta?"
+        options_en: ["Every tap", "Just this one"]
+        options_es: ["En todas", "Solo en esta"]
+        card_field: true
+        why: "Every tap points at the water heater, licensed-only work; one tap is a fixture job. [judgment]"
+    photos_priority: [p2_under_sink, p1_leak_spot, p3_pipe_material]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Valve will not close and the drip is getting worse"]
+      regular: "Drip is caught in a bucket or the valve is off"
+    scope_line_en: "Slow drip under the bathroom sink at the cold shutoff valve; water is off there."
+    scope_line_es: "Goteo lento bajo el lavabo del baño en la llave de paso del agua fría; el agua está cerrada ahí."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: what drips, where, water on or off>
+      Drips: <all the time / when running / when draining>. Shows at: <where>. Valve: <closes / won't close / not tried>.
+      Pipe and valves in sight: <neutral, from photo> or <not visible>. Floor: <slab / crawl space / manufactured>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Sounds like the cartridge.", "Just tighten the nut.", "That's a quick fix.", "You'll need a new faucet."]
+
+  - id: slab_leak
+    label: "Possible leak under the floor or in a wall (warm floor spot, sound of running water, high bill)"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["warm spot on the tile", "hear water running and nothing is on", "wet carpet by the wall", "bill doubled"]
+    must_know:
+      - fact: "What the homeowner noticed: warm spot, sound, wet floor, high bill"
+        bank_question: leak_where
+        follow_up: fu_warm_spot
+        photo: p4_damage
+        why_it_moves_price: "Sets whether the business brings leak-detection gear and how many hours to plan. [judgment]"
+        skip_if: "Homeowner already listed the signs"
+      - fact: "Slab, crawl space or manufactured home"
+        bank_question: foundation
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Under a slab means concrete work or a re-route; a crawl space is reachable. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether the meter moves with everything off"
+        bank_question: null
+        follow_up: fu_meter_check
+        photo: p6_meter
+        why_it_moves_price: "A moving meter confirms water is going somewhere and justifies a detection visit. [judgment]"
+        skip_if: "Meter photo sent"
+    allowed_follow_ups:
+      - id: fu_warm_spot
+        ask_when: "Homeowner reports a wet area, a sound or a high bill with no visible leak"
+        text_en: "Which of these have you noticed: a warm spot on the floor, the sound of water with everything off, a wet floor by a wall, or a higher water bill?"
+        text_es: "¿Cuál de estas cosas ha notado: una parte tibia en el piso, ruido de agua con todo cerrado, piso mojado junto a una pared, o un recibo de agua más alto?"
+        options_en: ["Warm spot on the floor", "Sound of water with everything off", "Wet floor by a wall", "Higher water bill", "More than one of these"]
+        options_es: ["Parte tibia en el piso", "Ruido de agua con todo cerrado", "Piso mojado junto a una pared", "Recibo de agua más alto", "Más de una de estas"]
+        card_field: true
+        why: "These are the signs a pro asks for before quoting a leak search. [judgment]"
+      - id: fu_meter_check
+        ask_when: "No meter photo and the homeowner mentions a high bill or a hidden leak"
+        text_en: "If you have looked at your water meter with everything off, was the small dial moving?"
+        text_es: "Si ya revisó el medidor de agua con todo cerrado, ¿se movía la aguja pequeña?"
+        options_en: ["Yes, it was moving", "No, it was still", "Haven't checked"]
+        options_es: ["Sí, se movía", "No, estaba quieta", "No lo he revisado"]
+        card_field: true
+        why: "The meter test is how the city and the university extension tell a homeowner to confirm water is flowing somewhere."
+    photos_priority: [p4_damage, p6_meter, p3_pipe_material]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water on the floor spreading", "Sound of running water and the homeowner can't find a shutoff"]
+      regular: "Warm spot or high bill with no standing water"
+    scope_line_en: "Warm spot on the hallway tile and the sound of water with everything off; single-story slab home."
+    scope_line_es: "Parte tibia en el piso del pasillo y ruido de agua con todo cerrado; casa de un piso sobre losa."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (leak search)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: the signs noticed, where>
+      Signs: <warm spot / sound / wet floor / high bill>. Meter with everything off: <moving / still / not checked>.
+      Floor: <slab / crawl space / manufactured>. Water now: <on / off>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's a slab leak.", "You'll need to jackhammer the floor.", "Leak detection usually runs a few hundred.", "Shut off the main until someone comes."]
+
+  - id: clogged_drain
+    label: "One drain slow or clogged (sink, tub, shower, toilet)"
+    bank_job_type: "drain clearing"
+    recurring: false
+    homeowner_phrasings: ["sink won't drain", "tub drains slow", "toilet clogged", "snake didn't work"]
+    must_know:
+      - fact: "Which fixture, and whether it is only this one"
+        bank_question: fixture
+        follow_up: fu_other_drains
+        photo: null
+        why_it_moves_price: "One fixture is a cable job; more than one points at the main line, a different job. [judgment]"
+        skip_if: "Homeowner said it is only one drain"
+      - fact: "Whether anything has been tried (plunger, store snake, chemical)"
+        bank_question: null
+        follow_up: fu_tried
+        photo: null
+        why_it_moves_price: "Chemical drain cleaner in the line changes how the pro works and what they bring. [judgment]"
+        skip_if: "Homeowner said what was tried"
+      - fact: "Whether it has clogged before"
+        bank_question: null
+        follow_up: null
+        photo: p2_under_sink
+        why_it_moves_price: "Repeat clogs point at roots or a bad run, which a camera visit would check. [judgment]"
+        skip_if: "Not needed when the homeowner said it is the first time"
+    allowed_follow_ups:
+      - id: fu_other_drains
+        ask_when: "Homeowner mentions one slow or clogged drain, a gurgling toilet, or water coming up in a tub"
+        text_en: "Is it just this one drain, or do other drains in the house back up or gurgle too?"
+        text_es: "¿Es solo este desagüe, o otros desagües de la casa también se regresan o hacen ruido?"
+        options_en: ["Just this one", "Two or three", "All of them"]
+        options_es: ["Solo este", "Dos o tres", "Todos"]
+        card_field: true
+        why: "Separates a single clog from a main-line backup without naming either. [judgment]"
+      - id: fu_tried
+        ask_when: "Single drain and the homeowner did not say what they tried"
+        text_en: "Have you tried anything on it already, like a plunger, a store snake or a drain cleaner?"
+        text_es: "¿Ya intentó algo, como un destapador, una sonda de tienda o un líquido destapacaños?"
+        options_en: ["Nothing yet", "Plunger or store snake", "Drain cleaner liquid", "More than one of these"]
+        options_es: ["Nada todavía", "Destapador o sonda de tienda", "Líquido destapacaños", "Más de una de estas"]
+        card_field: true
+        why: "Drain cleaner in the line changes the pro's approach and gear. [judgment]"
+    photos_priority: [p2_under_sink]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Only toilet in the home is out of use", "Water rising and not draining at all"]
+      regular: "Slow drain, other fixtures work"
+    scope_line_en: "Kitchen sink draining slowly for a week; only this drain; plunger tried."
+    scope_line_es: "El fregadero de la cocina drena lento desde hace una semana; solo este desagüe; ya se usó destapador."
+    quote_format: firm
+    business_fills: ["price to clear the one drain", "what is included", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: which drain, how long, only this one>
+      Other drains: <fine / two or three / all>. Tried: <nothing / plunger or snake / drain cleaner>. Clogged before: <yes / no / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Pour some drain cleaner in.", "It's probably hair.", "A snake job is cheap.", "That's just a clog."]
+
+  - id: main_line_backup
+    label: "Several drains backing up, sewage coming up, yard cleanout overflowing"
+    bank_job_type: "drain clearing"
+    recurring: false
+    homeowner_phrasings: ["sewage in the tub", "every drain backs up", "cleanout overflowing", "toilet gurgles when the washer drains"]
+    must_know:
+      - fact: "How many fixtures are affected"
+        bank_question: fixture
+        follow_up: fu_other_drains
+        photo: null
+        why_it_moves_price: "Whole-house backup is a main-line job with a camera or jetter, priced differently from one trap. [judgment]"
+        skip_if: "Homeowner said all drains"
+      - fact: "Whether neighbors have the same problem"
+        bank_question: null
+        follow_up: fu_neighbors_too
+        photo: null
+        why_it_moves_price: "If the street is backing up, the city main is the place to call first and a plumber visit may be wasted. [judgment]"
+        skip_if: "Homeowner said neighbors are fine"
+      - fact: "Whether there is a yard cleanout and what it looks like"
+        bank_question: null
+        follow_up: null
+        photo: p5_cleanout
+        why_it_moves_price: "A cleanout gives access; none means pulling a toilet or roof access, more hours. [judgment]"
+        skip_if: "Cleanout photo sent"
+      - fact: "Whether sewage is inside the home"
+        bank_question: leak_where
+        follow_up: null
+        photo: p4_damage
+        why_it_moves_price: "Sewage indoors makes it a same-day call and may add cleanup. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - fu_other_drains
+      - id: fu_neighbors_too
+        ask_when: "More than one drain is backing up"
+        text_en: "Do you know if any neighbors have drains backing up today too?"
+        text_es: "¿Sabe si algún vecino también tiene los desagües regresándose hoy?"
+        options_en: ["Yes, neighbors too", "No, just us", "Don't know"]
+        options_es: ["Sí, los vecinos también", "No, solo nosotros", "No sé"]
+        card_field: true
+        why: "The owner's sewer line runs to the city main; a street-wide backup is the city's, and the business wants to know before driving out."
+    photos_priority: [p5_cleanout, p4_damage]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Sewage coming up inside the home", "No usable toilet"]
+      regular: "Gurgling only, drains still moving"
+    scope_line_en: "All drains backing up since this morning; water came up in the hall tub; yard cleanout is overflowing."
+    scope_line_es: "Todos los desagües se regresan desde esta mañana; subió agua en la tina del pasillo; el registro del patio se desborda."
+    quote_format: firm
+    business_fills: ["price to clear the main line", "what is included (camera, cleanout access)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: how many drains, since when, sewage indoors or not>
+      Drains affected: <two or three / all>. Neighbors: <also / no / don't know>. Yard cleanout: <seen, cap on / cap off and overflowing / none found>.
+      Inside the home: <sewage in tub or floor / none>. Floor: <slab / crawl space / manufactured>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's roots.", "Your sewer line is broken.", "Don't flush anything.", "Jetting runs about three hundred."]
+
+  - id: toilet_issue
+    label: "Toilet running, rocking, leaking at base, replace toilet"
+    bank_job_type: "toilet repair"
+    recurring: false
+    homeowner_phrasings: ["toilet keeps running", "toilet wobbles", "water around the base", "want a new toilet"]
+    must_know:
+      - fact: "What the toilet is doing: running, rocking, leaking at the base, or a replacement"
+        bank_question: fixture
+        follow_up: fu_toilet_what
+        photo: p1_leak_spot
+        why_it_moves_price: "A running toilet is tank parts; a rocking or base leak means pulling the toilet; a replacement is a fixture plus labor. [judgment]"
+        skip_if: "Homeowner's words already say which"
+      - fact: "Whether the homeowner has the new toilet already"
+        bank_question: null
+        follow_up: null
+        photo: p7_fixture
+        why_it_moves_price: "A replacement with the unit on site is a firm labor quote. [judgment]"
+        skip_if: "Not a replacement"
+      - fact: "Whether other drains gurgle too"
+        bank_question: null
+        follow_up: fu_other_drains
+        photo: null
+        why_it_moves_price: "A gurgling toilet with other drains affected is a main-line job, not a toilet job. [judgment]"
+        skip_if: "No gurgling mentioned"
+    allowed_follow_ups:
+      - id: fu_toilet_what
+        ask_when: "Homeowner says the toilet has a problem without saying which"
+        text_en: "What is the toilet doing: running or refilling on its own, rocking, water at the base, or you want it replaced?"
+        text_es: "¿Qué hace el inodoro: corre o se llena solo, se mueve, hay agua en la base, o quiere cambiarlo?"
+        options_en: ["Runs or refills on its own", "Rocks or wobbles", "Water around the base", "Want it replaced"]
+        options_es: ["Corre o se llena solo", "Se mueve o está flojo", "Agua alrededor de la base", "Quiero cambiarlo"]
+        card_field: true
+        why: "The four answers are four different jobs to a plumber. [judgment]"
+      - fu_other_drains
+    photos_priority: [p1_leak_spot, p7_fixture]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Only toilet in the home and it is unusable", "Water running onto the floor and the valve won't close"]
+      regular: "Running, rocking or a contained base leak"
+    scope_line_en: "Hall bathroom toilet refills on its own every few minutes; no water on the floor."
+    scope_line_es: "El inodoro del baño del pasillo se llena solo cada pocos minutos; no hay agua en el piso."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: which toilet, what it is doing>
+      Doing: <runs / rocks / water at base / replace>. Other drains gurgle: <yes / no / not said>. New toilet on site: <yes / no / n/a>.
+      Water now: <on / off at valve>. Floor: <slab / crawl space / manufactured>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["It's the flapper.", "The wax ring failed.", "A new fill valve is cheap.", "Just jiggle the handle."]
+
+  - id: fixture_replace
+    label: "Replace a faucet, sink, shower head or valve trim in the same spot"
+    bank_job_type: "faucet replacement"
+    recurring: false
+    homeowner_phrasings: ["new kitchen faucet", "swap the shower head", "install the faucet I bought", "replace the bathroom sink"]
+    must_know:
+      - fact: "Which fixture, and whether the new one is already on site"
+        bank_question: fixture
+        follow_up: fu_have_fixture
+        photo: p7_fixture
+        why_it_moves_price: "Labor-only with the part in hand is a firm quote; supplying the part is not. [judgment]"
+        skip_if: "Homeowner said they have it"
+      - fact: "What the old fixture and the sink look like (holes, mount)"
+        bank_question: null
+        follow_up: null
+        photo: p7_fixture
+        why_it_moves_price: "Hole count and mount type decide whether the new fixture fits without extra parts. [judgment]"
+        skip_if: "Fixture photo sent"
+      - fact: "Condition of the shutoff valves under the sink"
+        bank_question: null
+        follow_up: null
+        photo: p2_under_sink
+        why_it_moves_price: "Crusted valves often get replaced in the same visit; the pro wants to see them. [judgment]"
+        skip_if: "Under-sink photo sent"
+    allowed_follow_ups:
+      - id: fu_have_fixture
+        ask_when: "Homeowner wants a fixture replaced and did not say whether they have the new one"
+        text_en: "Do you already have the new one, or should the business supply it?"
+        text_es: "¿Ya tiene la pieza nueva, o prefiere que el negocio la traiga?"
+        options_en: ["I have it", "Business supplies it", "Either"]
+        options_es: ["Ya la tengo", "Que la traiga el negocio", "Cualquiera"]
+        card_field: true
+        why: "Decides whether the quote is labor only. [judgment]"
+    photos_priority: [p7_fixture, p2_under_sink]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "Any replace-in-place job"
+    scope_line_en: "Replace the kitchen faucet with a new single-handle faucet the homeowner has; three-hole sink."
+    scope_line_es: "Cambiar la llave de la cocina por una llave nueva de una manija que ya tiene el dueño; lavabo de tres orificios."
+    quote_format: firm
+    business_fills: ["price to replace", "whether the fixture is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: what to replace, where>
+      New fixture: <on site / business supplies / either>. Old fixture: <neutral, from photo: type, holes, mount>. Valves in sight: <neutral>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["That's an easy swap.", "Any plumber can do it in an hour.", "Those valves need replacing too.", "Faucet installs run about two hundred."]
+
+  - id: fixture_add_move
+    label: "Add or move a fixture (new sink, bathroom remodel, laundry move)"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["add a bathroom", "move the washer hookups", "ice maker line", "plumb a new sink"]
+    must_know:
+      - fact: "What is being added or moved, and how far from existing lines"
+        bank_question: fixture
+        follow_up: fu_distance
+        photo: p7_fixture
+        why_it_moves_price: "Distance to the nearest supply and drain sets the pipe run, and often whether a slab is cut. [judgment]"
+        skip_if: "Homeowner described the location"
+      - fact: "Slab, crawl space or manufactured home"
+        bank_question: foundation
+        follow_up: null
+        photo: null
+        why_it_moves_price: "A new drain under a slab means cutting concrete; manufactured homes need a licensed installer for alterations. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether a permit is expected"
+        bank_question: null
+        follow_up: null
+        photo: null
+        why_it_moves_price: "The city requires a permit for added or relocated fixtures; the business prices the permit in."
+        skip_if: "Always noted on the card by the template, never asked"
+    allowed_follow_ups:
+      - id: fu_distance
+        ask_when: "Homeowner wants a fixture added or moved and gave no location detail"
+        text_en: "About how far is the new spot from the nearest existing sink, toilet or washer hookup?"
+        text_es: "¿Más o menos a qué distancia está el lugar nuevo del lavabo, inodoro o conexión de lavadora más cercana?"
+        options_en: ["Same wall", "Next room", "Across the house or in the garage", "Not sure"]
+        options_es: ["La misma pared", "El cuarto de al lado", "Al otro lado de la casa o en la cochera", "No sé"]
+        card_field: true
+        why: "The pipe run is the biggest cost driver in an add-or-move job. [judgment]"
+    photos_priority: [p7_fixture, p3_pipe_material]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All add-or-move work"
+    scope_line_en: "Add a utility sink in the garage, on the wall next to the washer hookups; slab home."
+    scope_line_es: "Agregar un lavadero en la cochera, en la pared junto a las conexiones de la lavadora; casa sobre losa."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (measure and estimate)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: what is added or moved, where>
+      Distance from existing lines: <same wall / next room / across the house / not sure>. Floor: <slab / crawl space / manufactured>.
+      Fixture: <on site / business supplies / not said>. Permit: <only if she mentioned one, else leave off>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You'll have to cut the slab.", "That's a big job.", "A handyman can do that.", "Figure a couple thousand."]
+
+  - id: repipe
+    label: "Re-pipe the house (polybutylene, galvanized, many leaks)"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["gray plastic pipes", "poly b", "repipe the whole house", "third leak this year"]
+    must_know:
+      - fact: "Pipe material now"
+        bank_question: null
+        follow_up: null
+        photo: p3_pipe_material
+        why_it_moves_price: "The material and the reason for the re-pipe set the scope. [judgment]"
+        skip_if: "Pipe photo sent"
+      - fact: "Size of the house: bathrooms, stories, square feet"
+        bank_question: null
+        follow_up: fu_house_size
+        photo: null
+        why_it_moves_price: "Fixture count and stories drive a re-pipe quote more than anything else. [judgment]"
+        skip_if: "Homeowner gave the size"
+      - fact: "Slab, crawl space or manufactured home"
+        bank_question: foundation
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Sets how the new lines are run (attic, walls, under floor). [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_house_size
+        ask_when: "Homeowner asks about a whole-house re-pipe and gave no size"
+        text_en: "How many bathrooms does the house have, and is it one story or two?"
+        text_es: "¿Cuántos baños tiene la casa, y es de un piso o de dos?"
+        options_en: ["1 bath, one story", "2 baths, one story", "3 or more baths, one story", "Two stories"]
+        options_es: ["1 baño, un piso", "2 baños, un piso", "3 baños o más, un piso", "Dos pisos"]
+        card_field: true
+        why: "Bathroom count and stories are the first two numbers a re-pipe estimator writes down. [judgment]"
+    photos_priority: [p3_pipe_material]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["A leak is active right now (route as leak_active first)"]
+      regular: "Planning a re-pipe"
+    scope_line_en: "Whole-house re-pipe quote; gray flexible plastic supply pipe (photo); 2 baths, one story, slab."
+    scope_line_es: "Cotización para cambiar toda la tubería de la casa; tubería gris de plástico flexible (foto); 2 baños, un piso, sobre losa."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (walk-through and written estimate)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: re-pipe quote, pipe seen, size>
+      Pipe in sight: <neutral, from photo>. Size: <baths, stories, square feet if given>. Floor: <slab / crawl space / manufactured>.
+      Leaks so far: <homeowner's count, if given>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Polybutylene always fails.", "You need PEX.", "Re-pipes run eight to twelve thousand.", "Insurance won't cover you with those pipes."]
+
+  - id: water_pressure
+    label: "Low or very high water pressure, pressure regulator, banging pipes"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["no pressure in the shower", "pipes bang when the washer stops", "water hammer", "pressure regulator"]
+    must_know:
+      - fact: "Whether it is low or high pressure, or noise"
+        bank_question: null
+        follow_up: fu_pressure_which
+        photo: null
+        why_it_moves_price: "Three different visits: a flow problem, a regulator, or hammer arrestors. [judgment]"
+        skip_if: "Homeowner's words already say which"
+      - fact: "One fixture or the whole house"
+        bank_question: fixture
+        follow_up: null
+        photo: null
+        why_it_moves_price: "One tap is a fixture or aerator job; whole house is at the regulator or main. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether a regulator is in sight near the meter or hose bib"
+        bank_question: null
+        follow_up: null
+        photo: p3_pipe_material
+        why_it_moves_price: "The city requires a regulator; a missing or old one is the usual visit. [judgment]"
+        skip_if: "Photo of the regulator sent"
+    allowed_follow_ups:
+      - id: fu_pressure_which
+        ask_when: "Homeowner mentions pressure or noise without saying which kind"
+        text_en: "Is the pressure too low, too high, or is it mainly a banging noise in the pipes?"
+        text_es: "¿La presión es muy baja, muy alta, o es más bien un golpeteo en la tubería?"
+        options_en: ["Too low", "Too high", "Banging noise"]
+        options_es: ["Muy baja", "Muy alta", "Golpeteo"]
+        card_field: true
+        why: "Each answer is a different visit for a plumber. [judgment]"
+    photos_priority: [p3_pipe_material]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All pressure and noise requests"
+    scope_line_en: "Pipes bang when the washer shuts off; whole house; regulator location unknown."
+    scope_line_es: "La tubería golpea cuando la lavadora se apaga; toda la casa; no se sabe dónde está el regulador."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: low, high or noise; where>
+      Kind: <too low / too high / banging>. Affects: <one fixture / whole house>. Regulator: <seen in photo / not found / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Your regulator is shot.", "You need hammer arrestors.", "Turn the regulator screw.", "Regulators cost about three hundred installed."]
+
+  - id: outdoor_spigot_line
+    label: "Hose bib, yard water line, line from meter to house"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["outside faucet leaks", "spigot broke off", "wet spot in the yard", "line from the meter"]
+    must_know:
+      - fact: "Whether it is the spigot itself or a line in the yard"
+        bank_question: leak_where
+        follow_up: fu_spigot_or_yard
+        photo: p1_leak_spot
+        why_it_moves_price: "A spigot is a short visit; a yard line means locating and digging. [judgment]"
+        skip_if: "Photo shows it"
+      - fact: "Whether the water can be shut off"
+        bank_question: shut_off
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Running water in the yard is a same-day call. [judgment]"
+        skip_if: "Answered"
+      - fact: "Whether the wet spot is between the meter and the house"
+        bank_question: null
+        follow_up: null
+        photo: p4_damage
+        why_it_moves_price: "The owner's line starts at the city meter, so a wet spot on the street side is the city's."
+        skip_if: "Spigot job"
+    allowed_follow_ups:
+      - id: fu_spigot_or_yard
+        ask_when: "Homeowner reports outdoor water without saying whether it is the faucet or the ground"
+        text_en: "Is the water coming from the outside faucet itself, or from a wet spot in the ground?"
+        text_es: "¿El agua sale de la llave de afuera, o de una parte mojada en el suelo?"
+        options_en: ["The faucet itself", "A wet spot in the ground", "Both"]
+        options_es: ["De la llave", "De una parte mojada en el suelo", "De las dos"]
+        card_field: true
+        why: "A spigot and a buried line are different jobs and different gear. [judgment]"
+    photos_priority: [p1_leak_spot, p4_damage, p3_pipe_material]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Water running and cannot be shut off"]
+      regular: "Drip at the spigot, valve closes"
+    scope_line_en: "Front hose bib broke off at the wall; water is off at the main."
+    scope_line_es: "La llave de manguera del frente se rompió en la pared; el agua está cerrada en la principal."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the fee covers", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: spigot or yard line, where, water on or off>
+      Source: <faucet / wet spot in ground / both>. Water now: <on / off at main / can't shut off>. Wet spot: <house side of meter / street side / n/a>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["The line froze and split.", "That's the city's problem.", "Just cap it.", "Call 811 before anyone digs."]
+
+  - id: garbage_disposal
+    label: "Disposal jammed, leaking or replace"
+    bank_job_type: "faucet replacement"
+    recurring: false
+    homeowner_phrasings: ["disposal hums", "disposal leaking underneath", "replace the disposal", "sink won't drain and the disposal is stuck"]
+    must_know:
+      - fact: "What the disposal is doing: hums, dead, leaks, or wants replacing"
+        bank_question: fixture
+        follow_up: fu_disposal_what
+        photo: p2_under_sink
+        why_it_moves_price: "A hum is a short visit; a leak from the body is a replacement; a dead unit may be electrical. [judgment]"
+        skip_if: "Homeowner's words say which"
+      - fact: "Whether it plugs in or is hard-wired, and the brand"
+        bank_question: null
+        follow_up: null
+        photo: p2_under_sink
+        why_it_moves_price: "Plug-in swaps are plumber work; hard-wired may need an electrician, and brand sets the part. [judgment]"
+        skip_if: "Under-sink photo sent"
+    allowed_follow_ups:
+      - id: fu_disposal_what
+        ask_when: "Homeowner mentions the disposal without saying what it does"
+        text_en: "What is the disposal doing: humming but not turning, nothing at all, leaking underneath, or you want it replaced?"
+        text_es: "¿Qué hace el triturador: zumba pero no gira, nada en absoluto, gotea por abajo, o quiere cambiarlo?"
+        options_en: ["Hums but won't turn", "Nothing at all", "Leaks underneath", "Want it replaced"]
+        options_es: ["Zumba pero no gira", "Nada en absoluto", "Gotea por abajo", "Quiero cambiarlo"]
+        card_field: true
+        why: "Four answers, four different visits. [judgment]"
+    photos_priority: [p2_under_sink]
+    urgency:
+      fire_dept_triggers: ["Burning smell or smoke from the disposal or its outlet"]
+      urgent_capable_triggers: ["Leak under the sink that will not stop"]
+      regular: "Hum, dead unit or a replacement"
+    scope_line_en: "Kitchen disposal hums but does not turn; no leak; plugs into an outlet under the sink."
+    scope_line_es: "El triturador de la cocina zumba pero no gira; no gotea; se conecta a un enchufe bajo el fregadero."
+    quote_format: firm
+    business_fills: ["price for the visit or the replacement", "whether a new unit is included", "earliest day"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: what the disposal does>
+      Doing: <hums / dead / leaks underneath / replace>. Power: <plugs in / hard-wired / not visible>. Brand: <from photo or not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Press the reset button.", "Use the hex key underneath.", "It's seized.", "Disposals are about two hundred installed."]
+
+  - id: high_water_bill
+    label: "Water bill suddenly high, meter spinning with everything off"
+    bank_job_type: "leak repair"
+    recurring: false
+    homeowner_phrasings: ["bill tripled", "meter spins with everything off", "city says I used thousands of gallons"]
+    must_know:
+      - fact: "Whether the meter moves with everything off"
+        bank_question: null
+        follow_up: fu_meter_check
+        photo: p6_meter
+        why_it_moves_price: "Confirms water is flowing somewhere before anyone pays for a visit. [judgment]"
+        skip_if: "Meter photo sent"
+      - fact: "Anything already noticed: wet spots, running toilet, pool autofill, irrigation"
+        bank_question: null
+        follow_up: fu_bill_signs
+        photo: p4_damage
+        why_it_moves_price: "Points the visit at the yard, the pool fill or the house. [judgment]"
+        skip_if: "Homeowner listed the signs"
+      - fact: "Slab, crawl space or manufactured home"
+        bank_question: foundation
+        follow_up: null
+        photo: null
+        why_it_moves_price: "If the leak is under the home, access decides the cost. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - fu_meter_check
+      - id: fu_bill_signs
+        ask_when: "High bill and no signs given"
+        text_en: "Have you noticed any of these: a toilet that runs, a wet spot in the yard, a pool that keeps filling, or irrigation running at odd times?"
+        text_es: "¿Ha notado algo de esto: un inodoro que corre, una parte mojada en el patio, una alberca que se sigue llenando, o el riego encendido a deshoras?"
+        options_en: ["Running toilet", "Wet spot in the yard", "Pool keeps filling", "Irrigation at odd times", "None of these"]
+        options_es: ["Inodoro que corre", "Parte mojada en el patio", "Alberca que se sigue llenando", "Riego a deshoras", "Ninguno"]
+        card_field: true
+        why: "Each answer sends the visit to a different place. [judgment]"
+    photos_priority: [p6_meter, p4_damage]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Meter moving fast and water heard running with no shutoff found"]
+      regular: "High bill, nothing visible"
+    scope_line_en: "Water bill tripled this month; meter dial moves with everything off; no wet spots found; slab home."
+    scope_line_es: "El recibo de agua se triplicó este mes; la aguja del medidor se mueve con todo cerrado; no se ven partes mojadas; casa sobre losa."
+    quote_format: diagnostic_visit
+    business_fills: ["visit fee", "what the visit covers (leak search)", "earliest arrival"]
+    card_template: |
+      REQ-<id> | Plumbing repair | <town>, <general area> | <kind of place>
+      <one scope line: bill change, meter result>
+      Meter with everything off: <moving / still / not checked>. Signs: <running toilet / wet yard / pool fills / irrigation / none>.
+      Floor: <slab / crawl space / manufactured>. Irrigation or pool on the property: <yes / no / not said>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["You have a slab leak.", "It's your irrigation.", "The city will refund you.", "Shut off the main at night."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Repeat customers and word of mouth", "Google Local Services Ads and search ads", "Home-service lead marketplaces", "Truck signage, yard signs and local Facebook groups [judgment]"]
+  customer_acquisition_benchmarks:
+    - channel: "Angi and HomeAdvisor shared leads (plumbing)"
+      figure: "About $65 to $150 per lead, sold to 3 to 5 contractors at once"
+      source: pipeline_plumbing_leads
+      unverified: false
+    - channel: "Thumbtack (plumbing)"
+      figure: "About $35 to $85 per lead"
+      source: pipeline_plumbing_leads
+      unverified: false
+    - channel: "Google Local Services Ads (plumbing)"
+      figure: "About $57 per lead and about $263 per paying customer"
+      source: pipeline_plumbing_leads
+      unverified: false
+    - channel: "Google search ads (plumbing)"
+      figure: "About $76 per lead; non-branded search about $149 per lead"
+      source: pipeline_plumbing_leads
+      unverified: false
+    - channel: "Lake Havasu City plumbers specifically"
+      figure: "No local figures found; a small market has fewer bidders, so costs may run below national marketing-vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a lead that 4 other plumbers also bought", "Fake or test leads and wrong numbers", "Monthly fees whether or not jobs come", "Homeowners who only want a price over the phone", "Being ranked or reviewed by the lead site itself"]
+  what_makes_a_lead_worth_paying_for: ["Photos and a clear scope before the first call", "The homeowner already picked them, so no bidding war on the phone", "Pay only on the pick, nothing monthly", "Town and timing stated", "Water on or off stated, so they know whether to roll a truck now"]
+  their_words: ["service call", "trip charge", "diagnostic", "angle stop", "supply line", "P-trap", "cleanout", "cable", "jetter", "camera", "re-pipe", "rough-in", "trim-out", "PRV"]
+  signup_objections:
+    - objection: "Why pay $25 when the other sites send me leads for free?"
+      answer: "They don't. Shared-lead sites charge per lead, and four other plumbers get the same one. Here you pay only when the homeowner picks your quote, and nobody else gets that job. There is nothing to join and nothing monthly."
+    - objection: "I don't want to quote without seeing it."
+      answer: "You don't have to. Quote a visit fee and say what it covers. Most cards come with photos, where the water shows and whether it is shut off, so you can decide whether to roll a truck."
+    - objection: "How do I know these are real homeowners?"
+      answer: "Each request comes from a texted phone number we check, with a town, photos and answers to the questions a plumber asks. Names and addresses are shared only with the business the homeowner picks."
+    - objection: "What if I quote and don't get the job?"
+      answer: "Then you pay nothing. The introduction fee is charged only when a homeowner picks your quote and you confirm."
+    - objection: "Will you rank me against other plumbers?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license numbers and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "I only do service work, not re-pipes."
+      answer: "You pick the job types you want at sign-up and change them any time. You get cards only for those."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+  quote_tips_for_card: ["Say what the visit fee covers and whether it comes off the repair", "Give your earliest arrival", "If you need a photo of something else, say which", "State whether you handle water heaters and gas lines, since those cards go only to licensed plumbers"]

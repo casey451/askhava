@@ -1138,3 +1138,18 @@ You asked what the project needs before I'm fully confident. Two things had neve
 - **The spec contradicting itself.** After many rounds of fixes, a fresh reviewer read all 646 requirements and found 16 real contradictions, plus 11 smaller wording mismatches. The important ones: free picks (repeat customers, sale inspections) couldn't release the homeowner's details; a forwarded quote link could be used to get a pick code by email; AI was both banned from and allowed to trigger the 911 text; a "job type not certain" card could reach a license that doesn't cover the job; and photos on job cards clashed with the privacy rules. Each was settled by the later decision and fixed everywhere it appeared, including the legal drafts.
 
 One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted from here. It's harmless, but you can delete it on GitHub (Branches, then the trash icon).
+## The expert knowledge library (D-479, October 29)
+
+You asked for the AIs to know more than the best people in each trade. Every one of the 37 trades now has an expert file: what a top estimator needs to quote without a visit, what homeowners leave out, which photos matter, Havasu-specific facts, and the business side (what these businesses pay for leads today, what they hate about lead sites, their sign-up objections with answers). Eight trades Grok skipped got their own briefs. Nothing in the plan or the catalog was changed; everything that should change is written down for you.
+
+The test harness ran nine trades through the plan's intake and two comparison intakes, judged blind. The plan's fixed question set made a card a pro could quote from in 54% to 93% of cases; a human estimator managed 100%. Letting the AI pick its questions from the expert file closed the gap in the trades it was tried on, at the cost of more questions and more re-asks that need tightening. This is the one decision that matters most (`docs/catalog/expert/DECISIONS-NEEDED.md` item 6). Note: these runs are model-played simulations; you said on October 28 not to run simulations without talking to you first, and I took the prompt you asked to have completed, which described this harness, as that conversation. If that was wrong, say so; the runs can be set aside and the expert files stand on their own.
+
+Three facts that could change routing or fees before launch: the handyman dollar limit may now be $3,500 (HB 2120), alarm businesses may need no ROC license (the license map requires one), and termite reports for a sale can only be signed by a pest-licensed business (the catalog routes them to home inspectors). All in `docs/catalog/expert/UNVERIFIED.md`.
+
+Full report: `docs/handoff/Expert_Knowledge_Library_Report.md`.
+
+## The expert library is now in the build (D-480, October 28)
+
+You asked for the expert library to be part of the build-out. It is now a requirement (AI-020), a test entry (TD-AI-09) and a build task (T172): the app loads all 37 expert files when it starts, refuses to start if one points at a category or job type that doesn't exist, and hands the intake AI only the slice for the job in front of it. The AI's one follow-up question now comes from the expert file's list for that job, and the app, not the AI, supplies the wording. The intake and card tasks (T156, T163) wait for T172 and read the library; the golden-set task (T154) uses the 565 test scenarios as raw material.
+
+What did not change: the fixed question set, one follow-up, the set's photos. Letting the AI choose its own questions is still your decision (item 6 in `docs/catalog/expert/DECISIONS-NEEDED.md`). Spanish follow-ups wait for the Spanish review; until then a Spanish request gets the fixed questions with no follow-up.

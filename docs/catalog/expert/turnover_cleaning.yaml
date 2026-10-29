@@ -1,0 +1,500 @@
+# Ask Hava expert layer: turnover_cleaning (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set turnover_cleaning and trade_kb/trades/house_cleaning.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - Mapping. The kb file serves two categories: house_cleaning and this one. Kept here: str_turnover
+#   ("turnover clean"). Added with new_job_type: linen_change ("linen change") and restock ("restock"),
+#   because the kb has no linen-only or restock-only job type.
+# - Left out, because they belong to house_cleaning: recurring (regular cleaning), deep_clean (deep
+#   cleaning), move_out (move-out cleaning), post_construction (no catalog job type today; nearest is
+#   house_cleaning deep cleaning). specialty_route (sewage, mold, hoarding, biohazard) goes to restoration,
+#   which has no category; an active backup goes to plumbing_repair "drain clearing".
+# - Refused: rent collection, finding tenants or leasing (LIC-018). In Arizona those acts for another
+#   person are real estate broker acts (A.R.S. 32-2101(51)). fu_cleaning_only catches the ambiguous
+#   "someone to take care of my Airbnb" request.
+# - The bank's how_often question offers "Once", but this category has no one_time_job_types, so a one-off
+#   turnover still needs a period on its quote (REC-010). Suggest adding "turnover clean" to
+#   one_time_job_types for a "Once" answer, or dropping "Once" and sending one-offs to house_cleaning.
+# - Bank photos are [p1, p2, p3] (kitchen, main bath, living area). A turnover estimator also wants the
+#   bedrooms (bed count, bunks) and the laundry area. Suggest adding kb photos for "bedrooms" and
+#   "washer and dryer" and using them for linen_change.
+# - For linen_change the bank's linens question is answered by the job type itself; the AI should skip it.
+schema: 1
+category: turnover_cleaning
+question_set: turnover_cleaning
+kb_trade: house_cleaning
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: lhc_vr
+    title: "Lake Havasu City Vacation Rentals (City Code ch. 5.20): permit for each property before it is offered for rent, 250 dollar yearly fee, proof of a TPT license, a 24/7 Emergency Point of Contact, a posted city notice inside the front and primary backyard doors, trash in proper containers and out of public view until no more than 12 hours before collection"
+    url: "https://www.lhcaz.gov/vacation-rentals"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: ars_9_500_39
+    title: "A.R.S. 9-500.39 Vacation rentals and short-term rentals (cities may not prohibit them; may require a permit, an emergency contact who answers in a timely manner and in person if public safety requires, and neighbor notice before the first rental)"
+    url: "https://www.azleg.gov/ars/9/00500-39.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_1101
+    title: "A.R.S. 32-1101 Contractor definitions (construct, alter, repair, improve, move, wreck or demolish; cleaning is not listed)"
+    url: "https://www.azleg.gov/ars/32/01101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: ars_32_2101
+    title: "A.R.S. 32-2101(51) Real estate broker definition (rents or leases real estate, negotiates rentals, collects rent, procures prospects for a rental)"
+    url: "https://www.azleg.gov/ars/32/02101.htm"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_trash
+    title: "Lake Havasu City Trash and Recycling: carts at the street the night before, within 3 ft of the street; overflow bagged beside the full cart; extra carts for a monthly fee; household waste only in carts; landfill charges by weight, cash only"
+    url: "https://www.lhcaz.gov/water-sewer-trash/trash-recycling"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City annual drinking water quality report (total hardness 19 grains per gallon, range 18 to 20; TDS 753 ppm)"
+    url: "https://www.lhcaz.gov/DocumentCenter/View/3233"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: nws_monsoon
+    title: "National Weather Service Flagstaff, Monsoon information (season officially June 15 to September 30)"
+    url: "https://www.weather.gov/fgz/monsooninfo"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: rabbu_lhc
+    title: "Rabbu (STR data vendor), Lake Havasu City Airbnb market data as of April 27, 2026: 597 active listings, 50 percent average occupancy, peak months July, March and August, slowest November and December"
+    url: "https://rabbu.com/airbnb-data/lake-havasu-city-az"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: airbnb_cleaning_tips
+    title: "Airbnb Resource Center, How to put Airbnb's 5-step cleaning process into practice (start by stripping beds; keep spare sets of sheets and towels for same-day turnarounds; restock regularly; deep clean every two or three months)"
+    url: "https://www.airbnb.com/resources/hosting-homes/a/how-to-put-airbnbs-5-step-cleaning-process-into-practice-187"
+    checked: "2026-10-29"
+    kind: other
+  - id: airbnb_cleaning_fee
+    title: "Airbnb Resource Center, Everything you need to know about cleaning fees (host sets the fee; shown to guests as a separate charge at checkout; pays for housekeeping and supplies)"
+    url: "https://www.airbnb.com/resources/hosting-homes/a/everything-you-need-to-know-about-cleaning-fees-470"
+    checked: "2026-10-29"
+    kind: other
+  - id: airbnb_damage
+    title: "Airbnb Help, reimbursement for guest damage (file within 14 days of the guest's checkout; photos or videos, cleaning or repair estimates)"
+    url: "https://www.airbnb.com/help/article/279"
+    checked: "2026-10-29"
+    kind: other
+  - id: turno_blog
+    title: "Turno, What is Turno (host scheduling free; 5 percent commission on the cleaning price when Turno finds a marketplace cleaner)"
+    url: "https://turno.com/blog/what-is-turno/"
+    checked: "2026-10-29"
+    kind: other
+  - id: turno_fees
+    title: "Turno Help, fees for hosts (10 dollars per property per month, or 8 billed yearly; marketplace cleaners are charged a fee at the time of payment)"
+    url: "https://help.turno.com/en/articles/2142069-what-are-the-fees-for-using-turno-as-a-host"
+    checked: "2026-10-29"
+    kind: other
+  - id: zenmaid_lsa
+    title: "ZenMaid (cleaning-business software vendor), Google Local Services Ads for cleaning businesses, 2026 (about 66 dollars per lead; most cleaning companies 60 to 70)"
+    url: "https://www.zenmaid.com/magazine/google-local-services-ads-for-cleaning-businesses-2026-guide-with-real-screenshots/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: leadcapture_thumbtack
+    title: "LeadCapture (marketing vendor), Thumbtack lead cost (cleaning services 15 to 50 dollars per lead)"
+    url: "https://leadcapture.io/blog/thumbtack-lead-cost/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: golakehavasu_events
+    title: "Go Lake Havasu (city tourism bureau), Desert Storm annual event (April)"
+    url: "https://www.golakehavasu.com/events/annual-event-calendar/desert-storm"
+    checked: "2026-10-29"
+    kind: other
+
+trade_brief:
+  price_drivers:
+    - driver: "Bedrooms, bathrooms and total beds (bunks, sofa beds, pullouts)"
+      why: "Bathrooms are the slowest rooms and every bed is a strip and remake; a 3 bed house that sleeps 12 on bunks turns like a 5 bed. [judgment]"
+      source: null
+    - driver: "Linens: changed every stay or not, washed at the rental or taken off site, and how many sets are on hand"
+      why: "Laundry is the longest single task in a turn; with one set per bed the crew must wash and dry inside the window. Airbnb's own guidance is spare sets for same-day turnarounds."
+      source: airbnb_cleaning_tips
+    - driver: "Turnover window between check-out and check-in"
+      why: "Under 4 hours means a bigger crew on a fixed clock; a flexible day lets one cleaner do it. [judgment]"
+      source: null
+    - driver: "Turnovers a month and whether they run all year or only in season"
+      why: "A steady weekly account fits a route and prices lower per turn; a few scattered summer turns cost more each. The how_often answer carries it. [judgment]"
+      source: null
+    - driver: "Extras on each turn: patio and grill, hot tub wipe-down, trash cans, restocking, a photo report"
+      why: "Trash must stay in containers and out of public view until 12 hours before pickup, so turnover crews often handle bins; each extra adds minutes to every turn."
+      source: lhc_vr
+    - driver: "How guests leave the place: big lake groups, sand, boat gear, pets"
+      why: "Lake-season groups leave more dishes, sand and trash than a couple's weekend; owners who allow pets add hair removal every turn. [judgment]"
+      source: null
+    - driver: "Hard-water buildup on shower glass and fixtures"
+      why: "City water runs about 19 grains per gallon, so glass that is not kept up needs a first-visit catch-up before turns can run on time."
+      source: lhc_ccr
+    - driver: "Access and scheduling: lockbox or smart lock, booking calendar shared or dates by text"
+      why: "Self-entry and a shared calendar let a crew route turns without the owner; someone who must let them in adds wait time. [judgment]"
+      source: null
+  hidden_conditions:
+    - condition: "Only one set of sheets and towels per bed, so same-day turns depend on the rental's washer and dryer"
+      how_a_pro_spots_it: "Owner says linens are washed at the rental and the window is under 6 hours; no spare-set closet mentioned"
+      question_or_photo: fu_sets_on_hand
+      source: airbnb_cleaning_tips
+    - condition: "First turn is really a catch-up deep clean (last cleaner quit, unit sat empty, hard-water glass)"
+      how_a_pro_spots_it: "Bath photo shows white crust on the shower glass and fixtures; kitchen photo shows grease or clutter"
+      question_or_photo: p2
+      source: lhc_ccr
+    - condition: "Back-to-back same-day turns on holiday and event weekends"
+      how_a_pro_spots_it: "Window under 4 hours, weekly or more turnovers, owner mentions spring break, Desert Storm or the Fourth"
+      question_or_photo: fu_window
+      source: null
+    - condition: "Trash beyond the cart after big groups"
+      how_a_pro_spots_it: "Large rental, lake-season groups; overflow must be bagged beside the cart, and extra carts cost a monthly fee"
+      question_or_photo: p3
+      source: lhc_trash
+    - condition: "Guest damage or missing items the owner needs documented for a platform claim"
+      how_a_pro_spots_it: "Owner asks for photos after each clean; Airbnb gives hosts 14 days from checkout to file"
+      question_or_photo: p4
+      source: airbnb_damage
+    - condition: "Something found broken during the turn (leak, AC off in summer, clogged toilet)"
+      how_a_pro_spots_it: "Problem-area photo; owner is out of town and asks the cleaner to check things"
+      question_or_photo: p4
+      source: null
+    - condition: "Owner wants a manager, not a cleaner (bookings, guest messages, rent)"
+      how_a_pro_spots_it: "Words like 'take care of my Airbnb' or 'handle everything'"
+      question_or_photo: fu_cleaning_only
+      source: ars_32_2101
+  misdiagnosis_checks:
+    - sounds_like: "turnover clean (rental needs a big clean before the season)"
+      might_be: "deep_clean (house_cleaning): a one-time deep clean, not a per-stay turn"
+      one_question: fu_clean_kind
+      if_other_route_to: {category: house_cleaning, job_type: "deep cleaning"}
+      source: null
+    - sounds_like: "turnover clean (renter leaving the house)"
+      might_be: "move_out (house_cleaning): a long-term tenant moved out"
+      one_question: fu_clean_kind
+      if_other_route_to: {category: house_cleaning, job_type: "move-out cleaning"}
+      source: null
+    - sounds_like: "turnover clean (clean the second home between our visits)"
+      might_be: "recurring (house_cleaning): the owner's own second home, not rented to guests"
+      one_question: fu_clean_kind
+      if_other_route_to: {category: house_cleaning, job_type: "regular cleaning"}
+      source: null
+    - sounds_like: "turnover clean (someone to take care of my Airbnb)"
+      might_be: "leasing or rent collection: property management, never carded"
+      one_question: fu_cleaning_only
+      if_other_route_to: {category: turnover_cleaning, job_type: "rent collection, finding tenants or leasing"}
+      source: ars_32_2101
+    - sounds_like: "restock (stock the fridge before we get there)"
+      might_be: "arrival_departure (home_watch): getting the owner's own home ready, not a rental"
+      one_question: fu_clean_kind
+      if_other_route_to: {category: home_watch, job_type: "weekly house check"}
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Counter clutter and dish load", "Grease on the stove and hood", "Appliance count (dishwasher, ice maker, coffee maker)", "Whether a supply cabinet is visible"]
+      neutral_wording: "Kitchen with island and dishwasher; counters clear; coffee maker on the counter."
+    - photo_id: p2
+      reads: ["White crust on shower glass, fixtures and the toilet", "Tub and shower or shower only", "Towel count on the racks"]
+      neutral_wording: "Walk-in shower with glass door, white spots on the glass and the faucet."
+    - photo_id: p3
+      reads: ["Size of the main room", "Sofa bed or extra sleeping", "Hard floors or carpet", "Patio door, sand and lake gear"]
+      neutral_wording: "Open living room with tile floors, a sectional sofa and a sliding door to the patio."
+    - photo_id: p4
+      reads: ["Stains, damage or broken items", "Trash overflow", "Pet hair"]
+      neutral_wording: "Two full trash bags beside the bin by the garage."
+  local_factors:
+    - fact: "Every Lake Havasu City vacation rental needs a city permit before it is offered, proof of a TPT license, a 24/7 Emergency Point of Contact and a posted city notice inside the front and backyard doors"
+      effect: "Requests come from permitted owners and managers; the posted notice is part of a turn checklist to leave in place [judgment on the checklist]"
+      source: lhc_vr
+    - fact: "Arizona cities may not prohibit vacation rentals; they may require a permit, a contact who answers in a timely manner and in person when public safety requires, and neighbor notice before the first rental"
+      effect: "Some out-of-town owners ask their cleaner to be the local contact; that is the business's choice and goes on the card as the homeowner's words [judgment]"
+      source: ars_9_500_39
+    - fact: "Rental trash must stay in proper containers and out of public view until no more than 12 hours before collection"
+      effect: "Bins to and from the curb are a standing extra on turns that fall near pickup day"
+      source: lhc_vr
+    - fact: "Carts go to the street the night before pickup, overflow is bagged beside the full cart, and extra carts cost a monthly fee"
+      effect: "Big-group turns may need overflow bags staged or an extra cart; crews ask the pickup day [judgment]"
+      source: lhc_trash
+    - fact: "City water hardness is 19 grains per gallon"
+      effect: "Shower glass and fixtures spot fast; turn crews price glass upkeep and a first-visit descale"
+      source: lhc_ccr
+    - fact: "About 597 active Airbnb listings in Lake Havasu City as of April 2026, at about 50 percent occupancy"
+      effect: "A few hundred units rotate guests on short stays; a crew can build a route from a handful of owners [judgment on routes]"
+      source: rabbu_lhc
+    - fact: "Monsoon season runs June 15 to September 30"
+      effect: "Dust storms coat patios, sliders and outdoor furniture, so summer turns run longer outside [judgment]"
+      source: nws_monsoon
+    - fact: "Lake guests bring sand, boat gear, coolers and big groups; many owners live out of town"
+      effect: "Self-entry and a photo report matter more than in a normal home clean [judgment]"
+      source: null
+  seasonality:
+    busy: "March (spring break) through August, peak July, plus Desert Storm in April and holiday weekends [judgment on the event weekends]"
+    slow: "November and December"
+    source: rabbu_lhc
+
+job_types:
+  - id: str_turnover
+    label: "Vacation rental turnover clean between guests (clean, beds, towels, trash, reset)"
+    bank_job_type: "turnover clean"
+    recurring: true
+    homeowner_phrasings: ["airbnb turnover", "vrbo clean after each guest", "need a cleaner for my rental", "checkout clean", "limpieza de airbnb entre huéspedes", "my cleaner quit and I have guests Friday"]
+    must_know:
+      - fact: "Bedrooms and total beds"
+        bank_question: bedrooms
+        follow_up: null
+        photo: p3
+        why_it_moves_price: "Every bed is a strip and remake; bunks and sofa beds add work the bedroom count hides. [judgment]"
+        skip_if: "Homeowner gave bedrooms and beds"
+      - fact: "Bathrooms"
+        bank_question: bathrooms
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Bathrooms are the slowest rooms in a turn. [judgment]"
+        skip_if: "Answered"
+      - fact: "Time between check-out and check-in"
+        bank_question: null
+        follow_up: fu_window
+        photo: null
+        why_it_moves_price: "A short window means a bigger crew on a set clock. [judgment]"
+        skip_if: "Homeowner gave check-out and check-in times"
+      - fact: "Whether linens are changed, and where they are washed"
+        bank_question: linens
+        follow_up: fu_laundry_where
+        photo: null
+        why_it_moves_price: "Laundry on site inside the window and laundry taken away are priced differently; linens may be the biggest time item. [judgment]"
+        skip_if: "Homeowner said no linens, or said where they are washed"
+      - fact: "Turnovers a month, all year or in season"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Volume sets the price per turn and whether the account fits a route. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_window
+        ask_when: "Turnover or linen request and the homeowner gave no check-out and check-in times"
+        text_en: "How much time is there between check-out and the next check-in?"
+        text_es: "¿Cuánto tiempo hay entre la salida y la llegada de los siguientes huéspedes?"
+        options_en: ["Under 4 hours", "4 to 6 hours", "Same day, flexible", "A day or more"]
+        options_es: ["Menos de 4 horas", "4 a 6 horas", "El mismo día, con flexibilidad", "Un día o más"]
+        card_field: true
+        why: "The window sets crew size; the kb asks it for every rental turnover. [judgment]"
+      - id: fu_laundry_where
+        ask_when: "Linens are changed and the homeowner did not say where they are washed"
+        text_en: "Where should the sheets and towels be washed: at the rental, or taken off site?"
+        text_es: "¿Dónde se lavan las sábanas y toallas: en la casa de renta, o se llevan a lavar fuera?"
+        options_en: ["At the rental", "Taken off site", "Either one"]
+        options_es: ["En la casa de renta", "Se llevan fuera", "Cualquiera de las dos"]
+        card_field: true
+        why: "On-site laundry ties the crew to the dryer; off-site laundry adds pickup and a laundry cost. [judgment]"
+      - id: fu_clean_kind
+        ask_when: "The words fit a deep clean, a tenant moving out, or the owner's own second home as well as a turn between guests"
+        text_en: "What is this clean for?"
+        text_es: "¿Para qué es esta limpieza?"
+        options_en: ["Between guest stays", "A deep clean before or after the season", "A long-term tenant moved out", "My own second home, not rented"]
+        options_es: ["Entre huéspedes", "Limpieza profunda antes o después de la temporada", "Se fue un inquilino de largo plazo", "Mi propia segunda casa, no se renta"]
+        card_field: true
+        why: "Only the first answer is a turnover; the others route to house_cleaning or home_watch. [judgment]"
+      - id: fu_cleaning_only
+        ask_when: "Homeowner asks for someone to 'take care of' or 'handle' a rental without saying cleaning"
+        text_en: "Is this for the cleaning only, or are you also looking for someone to take bookings or collect rent?"
+        text_es: "¿Es solo para la limpieza, o también busca a alguien que tome reservaciones o cobre la renta?"
+        options_en: ["Cleaning only", "Bookings or rent too"]
+        options_es: ["Solo la limpieza", "También reservaciones o renta"]
+        card_field: false
+        why: "Rent collection, finding tenants and leasing are never carded (LIC-018); for another person they are real estate broker acts in Arizona."
+    photos_priority: [p2, p1, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Guests check in today and the unit has not been cleaned", "The usual cleaner did not show for a turn today"]
+      regular: "A standing schedule starting on a set date"
+    scope_line_en: "Turnover clean after each stay at a 3 bed, 2 bath house; about 5 hours between check-out and check-in; linens washed at the rental."
+    scope_line_es: "Limpieza entre huéspedes después de cada estancia en una casa de 3 recámaras y 2 baños; unas 5 horas entre la salida y la llegada; ropa de cama lavada en la casa."
+    quote_format: monthly
+    business_fills: ["price per turnover and the turnovers a month you expect, or a monthly price", "what each turnover includes (linens, trash, restock, photo report)", "earliest start date"]
+    card_template: |
+      REQ-<id> | Turnover cleaning | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: turnover after each stay, size, window>
+      Size: <bedrooms> bed, <bathrooms> bath, <total beds if given>. Turnovers: <once / a few a month / weekly or more / in season>. Window: <under 4 hours / 4 to 6 hours / same day, flexible / a day or more>.
+      Linens: <changed or not>, washed <at the rental / off site / either>. Access: <someone lets them in / lockbox, code on the call / smart lock>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["A place that size takes about four hours.", "Most cleaners charge around a hundred a turn.", "You should keep three sets of linens.", "Send me the lockbox code and I'll pass it on.", "Airbnb will cover any damage the guests left."]
+
+  - id: linen_change
+    new_job_type: true
+    label: "Linen change only: strip and remake beds, wash and replace towels between stays"
+    bank_job_type: "linen change"
+    recurring: true
+    homeowner_phrasings: ["just need the beds changed", "someone to do the sheets and towels", "laundry for my rental", "cambiar las sábanas entre huéspedes", "I clean it myself but need linens done"]
+    must_know:
+      - fact: "Total beds, counting bunks and sofa beds"
+        bank_question: bedrooms
+        follow_up: fu_bed_count
+        photo: p3
+        why_it_moves_price: "Linen work is priced by the bed, not the bedroom. [judgment]"
+        skip_if: "Homeowner gave the bed count"
+      - fact: "Where the linens are washed"
+        bank_question: null
+        follow_up: fu_laundry_where
+        photo: null
+        why_it_moves_price: "Off-site laundry adds pickup, drop-off and machine cost; on site ties the visit to the dryer. [judgment]"
+        skip_if: "Homeowner said where"
+      - fact: "Sets of sheets and towels on hand for each bed"
+        bank_question: null
+        follow_up: fu_sets_on_hand
+        photo: null
+        why_it_moves_price: "With spare sets the beds are made from clean stock and the dirty set is washed later; with one set the wash must finish before guests arrive."
+        skip_if: "Homeowner said how many sets"
+      - fact: "How often"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Turns a month set the monthly price. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_bed_count
+        ask_when: "Linen or turnover request and the homeowner gave bedrooms but not beds, or mentioned bunks or sofa beds"
+        text_en: "How many beds are there in all, counting bunks and sofa beds?"
+        text_es: "¿Cuántas camas hay en total, contando literas y sofás cama?"
+        options_en: ["1 to 3", "4 to 6", "7 or more"]
+        options_es: ["1 a 3", "4 a 6", "7 o más"]
+        card_field: true
+        why: "Bed count, not bedroom count, sets linen time. [judgment]"
+      - fu_laundry_where
+      - id: fu_sets_on_hand
+        ask_when: "Linens are changed and the homeowner did not say how many sets the rental has"
+        text_en: "How many full sets of sheets and towels does the rental have for each bed?"
+        text_es: "¿Cuántos juegos completos de sábanas y toallas hay en la casa para cada cama?"
+        options_en: ["One set", "Two sets", "Three or more"]
+        options_es: ["Un juego", "Dos juegos", "Tres o más"]
+        card_field: true
+        why: "One set forces the wash inside the window; spare sets let the crew remake beds at once."
+      - fu_window
+    photos_priority: [p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: ["Guests check in today and the beds are not made"]
+      regular: "A standing linen schedule"
+    scope_line_en: "Strip and remake 6 beds and replace towels after each stay at a 3 bed, 2 bath condo; washer and dryer at the rental; owner does the cleaning."
+    scope_line_es: "Quitar y tender 6 camas y cambiar toallas después de cada estancia en un condominio de 3 recámaras y 2 baños; lavadora y secadora en la casa; el dueño hace la limpieza."
+    quote_format: monthly
+    business_fills: ["price per linen change and the changes a month you expect, or a monthly price", "whether laundry is done at the rental or taken away", "earliest start date"]
+    card_template: |
+      REQ-<id> | Turnover cleaning | <town>, <general area> | <kind of place>
+      <one scope line: linen change only, beds, how often>
+      Beds: <1 to 3 / 4 to 6 / 7 or more>, <bedrooms> bedrooms. Washed: <at the rental / off site / either>. Sets per bed: <one / two / three or more>.
+      Turnovers: <once / a few a month / weekly or more / in season>. Window: <answer or not said>. Access: <someone lets them in / lockbox, code on the call / smart lock>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Linens usually run about ten a bed.", "You'll want a second set for each bed.", "Hotel sheets wash faster.", "Just leave the dirty sheets in the washer."]
+
+  - id: restock
+    new_job_type: true
+    label: "Restock guest supplies between stays (paper goods, soap, coffee, toiletries)"
+    bank_job_type: "restock"
+    recurring: true
+    homeowner_phrasings: ["restock the rental after each guest", "refill toilet paper and coffee", "someone to keep supplies stocked", "reponer papel y jabón en la casa de renta"]
+    must_know:
+      - fact: "Who buys the supplies"
+        bank_question: null
+        follow_up: fu_restock_who
+        photo: p1
+        why_it_moves_price: "A business that shops and bills adds store runs and a markup line; restocking from the owner's closet is labor only. [judgment]"
+        skip_if: "Homeowner said who buys"
+      - fact: "What gets restocked"
+        bank_question: null
+        follow_up: fu_restock_list
+        photo: p2
+        why_it_moves_price: "A short paper-and-soap list is minutes; a full kitchen and toiletry list is a shopping trip. [judgment]"
+        skip_if: "Homeowner listed the items"
+      - fact: "How often"
+        bank_question: how_often
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Visits a month set the monthly price. [judgment]"
+        skip_if: "Answered"
+      - fact: "Bathrooms"
+        bank_question: bathrooms
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Paper, soap and toiletry use scales with bathrooms and guests. [judgment]"
+        skip_if: "Answered"
+    allowed_follow_ups:
+      - id: fu_restock_who
+        ask_when: "Restock request and the homeowner did not say who buys the supplies"
+        text_en: "Who buys the supplies: the business buys them and adds them to the bill, or you keep a supply closet at the rental?"
+        text_es: "¿Quién compra los suministros: el negocio los compra y los cobra, o usted tiene un clóset de suministros en la casa?"
+        options_en: ["Business buys and bills", "I keep a supply closet there", "A mix of both"]
+        options_es: ["El negocio compra y cobra", "Tengo un clóset de suministros ahí", "Un poco de los dos"]
+        card_field: true
+        why: "Shopping and billing versus restocking from the owner's stock are two different services. [judgment]"
+      - id: fu_restock_list
+        ask_when: "Restock request with no item list"
+        text_en: "What should be restocked after each stay?"
+        text_es: "¿Qué hay que reponer después de cada estancia?"
+        options_en: ["Paper goods and soap", "Kitchen basics like coffee and dish soap", "Guest toiletries", "All of these"]
+        options_es: ["Papel y jabón", "Básicos de cocina como café y jabón de trastes", "Artículos de baño para huéspedes", "Todo esto"]
+        card_field: true
+        why: "The list sets how long each visit runs and whether a store run is needed. [judgment]"
+      - fu_clean_kind
+      - fu_cleaning_only
+    photos_priority: [p1, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All restock requests"
+    scope_line_en: "Restock paper goods, soap and coffee after each stay at a 2 bed, 2 bath condo; owner keeps a supply closet there."
+    scope_line_es: "Reponer papel, jabón y café después de cada estancia en un condominio de 2 recámaras y 2 baños; el dueño tiene un clóset de suministros ahí."
+    quote_format: monthly
+    business_fills: ["price per restock visit and the visits a month you expect, or a monthly price", "whether supplies are included or billed at cost", "earliest start date"]
+    card_template: |
+      REQ-<id> | Turnover cleaning | <town>, <general area> | <kind of place>
+      <one scope line: restock, what, with or without cleaning>
+      Supplies bought by: <business, billed / owner's closet at the rental / both>. List: <paper and soap / kitchen basics / toiletries / all>.
+      Size: <bedrooms> bed, <bathrooms> bath. Turnovers: <once / a few a month / weekly or more / in season>. Access: <someone lets them in / lockbox, code on the call / smart lock>.
+      Photos: <n> (<neutral description>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Guests expect a full coffee bar.", "Supplies run about twenty a stay.", "Buy in bulk at the warehouse store.", "You need a welcome basket for good reviews."]
+
+business_side:
+  how_they_get_customers: ["Word of mouth among rental owners and property managers", "Host scheduling apps with a cleaner marketplace (Turno and similar)", "Facebook groups for vacation-rental owners [judgment]", "Google Maps listing and reviews", "Home-service lead marketplaces such as Thumbtack and Google Local Services Ads"]
+  customer_acquisition_benchmarks:
+    - channel: "Google Local Services Ads (cleaning businesses)"
+      figure: "About 60 to 70 dollars per lead, about 66 on the vendor's own accounts (cleaning-software vendor figure, national)"
+      source: zenmaid_lsa
+      unverified: false
+    - channel: "Thumbtack (cleaning services)"
+      figure: "About 15 to 50 dollars per lead (marketing-vendor figure, national)"
+      source: leadcapture_thumbtack
+      unverified: false
+    - channel: "Turno cleaner marketplace"
+      figure: "Host pays a 5 percent commission when Turno finds the cleaner; marketplace cleaners also pay a fee at the time of payment (amount not published on the help page)"
+      source: turno_blog
+      unverified: false
+    - channel: "Lake Havasu City turnover cleaners specifically"
+      figure: "No local figures found; most local turnover work appears to move by owner and manager word of mouth"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Owners who want the lowest price per turn and switch every season", "Marketplace fees taken from every payment", "Shared requests sent to many cleaners at once", "One-off turns with no follow-on schedule", "Owners who expect property management (bookings, guest messages) for a cleaning price"]
+  what_makes_a_lead_worth_paying_for: ["Beds, baths, window and linen plan stated up front", "A standing schedule, not a single turn", "Self-entry stated, so no waiting on the owner", "Pay only when picked, nothing monthly", "A fee that stays small on a monthly account"]
+  their_words: ["turn", "turnover", "same-day turn", "flip", "strip and remake", "linen par", "par levels", "restock", "consumables", "damage report", "calendar sync", "lockbox", "deep reset", "checkout list"]
+  signup_objections:
+    - objection: "How is the fee figured when I price per turn?"
+      answer: "Quote your price per turn and how many turns a month you expect. That monthly total counts as 4 months, and the fee never goes over $75. Four turns a month at $100 is $400 a month, so the fee is $75, the cap."
+    - objection: "I already get my rentals through Turno."
+      answer: "Keep using it. Here you pay nothing to join and nothing monthly, and nothing is taken from your turn price. You pay one set fee only when an owner picks your quote."
+    - objection: "Owners just pick the cheapest cleaner."
+      answer: "The owner sees every quote in the order it came in, with what each one includes. Ask Hava never sorts, rates or scores a business. Say what your turn covers so the owner can compare."
+    - objection: "What if the owner sells the place or drops me after a month?"
+      answer: "If the owner cancels before you have spoken, the fee is refunded. Once you have started there is no partial refund if the account ends early."
+    - objection: "I don't want to manage bookings or guests."
+      answer: "You won't get those. Rent collection, finding tenants and leasing are never sent. Cards in this category are for cleaning, linens and restocking."
+    - objection: "How do I get in, and who gives me the lockbox code?"
+      answer: "The card says how you get in. Codes are never on the card. The owner gives them to you after the pick, along with the address."
+    - objection: "Do I need a contractor license?"
+      answer: "No. Cleaning is not contractor work under Arizona law. Check with the city about a business license."
+    - objection: "I only do linens, not full cleans."
+      answer: "You pick the job types you want at sign-up and change them any time. You get cards only for those."
+    - objection: "How do I know these are real owners?"
+      answer: "Each request comes from a phone number we check, with a town, photos and answers to the questions a turnover cleaner asks. The address goes only to the business the owner picks."
+  quote_tips_for_card: ["Give a price per turn and the turns a month you expect", "Say whether linens are washed at the rental or taken away", "Say whether trash cans, restocking and a photo report are included", "Say how short a window you can cover", "Give your earliest start date"]

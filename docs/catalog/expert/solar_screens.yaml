@@ -1,0 +1,417 @@
+# Ask Hava expert layer: solar_screens (schema 1, docs/catalog/expert/schema.yaml).
+# Extends question set solar_screens and trade_kb/trades/windows_doors.yaml. Fake data only.
+# Ask Hava never diagnoses, prices, judges safety or recommends a business; every string here keeps that.
+#
+# NOTES FOR REVIEW
+# - The kb file covers windows and doors broadly. Only two kb job types fit this category:
+#   screens -> "solar screens" and film_blinds -> "window film".
+# - Left out: glass_repair (broken or foggy glass). R-65 covers glass, but it is neither a screen
+#   nor a film job, and no category job type routes glass repair. The intake treats it as a
+#   misdiagnosis check with no category (if_other_route_to: null). If Casey wants glass repair
+#   offered, add a "glass repair" job type here (R-65, range) and map glass_repair to it.
+# - Left out as other trades with no enabled category: window_replace, slider_repair,
+#   door_replace, security_door, door_adjust (R-7 / R-60 work). window_replace and security_door
+#   appear below only as misdiagnosis checks routed to null.
+# - film_blinds also holds blinds and shutters (both in the R-65 scope). The category keywords and
+#   the bank's product question name only screens and film, so this entry is written for film.
+#   A blinds or shutters request would land on "window film", a poor fit. Recommend adding a
+#   "blinds and shutters" job type, or leaving blinds out of the keywords on purpose.
+# - The R-65 scope text names glass products, window film, blinds and shutters and glass-holding
+#   members. It does not name exterior solar screens (checked 2026-10-29). The categories.yaml
+#   review line already asks the attorney to confirm which class, if any, screen-only shops need.
+# - Photo p4 (tape measure across width and height) is in the kb file but not in the question
+#   set's photos [p1, p2, p3]. It is the most useful photo for both job types; recommend adding it.
+#   photo_reading covers p4 in case a homeowner sends one; photos_priority uses only p1 to p3.
+schema: 1
+category: solar_screens
+question_set: solar_screens
+kb_trade: windows_doors
+as_of: "2026-10-29"
+written_by: "Claude expert layer, Oct 29 2026. AI research, not legal advice."
+sources:
+  - id: aac_r4_9_103
+    title: "A.A.C. R4-9-103 Residential contractor license classifications (R-65 Glazing: weatherproofing, caulking, sealants and adhesives as needed to install and repair glass products, window film, window treatments such as blinds or shutters, and steel and aluminum glass-holding members; exterior solar screens not named) [S2]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-103"
+    checked: "2026-10-29"
+    kind: statute
+  - id: aac_r4_9_104
+    title: "A.A.C. R4-9-104 Dual contractor license classifications (CR-65 Glazing covers the C-65 and R-65 scopes) [S3]"
+    url: "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R4-9-104"
+    checked: "2026-10-29"
+    kind: statute
+  - id: lhc_permits
+    title: "Lake Havasu City Building Permits: permit required for window replacement when size is altered; no permit for minor repairs of non-structural items such as glass; window film and screens not named on either list [S17]"
+    url: "https://www.lhcaz.gov/229/Building-Permits"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: azsp_weather
+    title: "Arizona State Parks, Lake Havasu State Park weather: average daily highs about 103 F in June, 108 F in July, 106 F in August, 65 F in January (general guide)"
+    url: "https://azstateparks.com/lake-havasu/explore/weather"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: adwr_monsoon
+    title: "Arizona Department of Water Resources: monsoon season runs June 15 to September 30 (dates set by the National Weather Service in 2008) and brings dust storms"
+    url: "https://www.azwater.gov/news/articles/2024-05-28"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: lhc_ccr
+    title: "Lake Havasu City 2025 Annual Drinking Water Quality Report (hardness about 19 grains per gallon, TDS about 753 ppm)"
+    url: "https://www.lhcaz.gov/288/Water"
+    checked: "2026-10-29"
+    kind: regulator
+  - id: phifer_exterior
+    title: "Phifer (screen fabric maker), Exterior Solar Screen Fabrics: exterior fabrics absorb and dissipate 65 to 97 percent of the sun's heat and glare before it reaches the glass; 80/90 grade blocks 75 to 90 percent of the sun's rays"
+    url: "https://www.phifer.com/sun-control/exterior/"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: madico_warranty
+    title: "Madico (window film maker), Commercial and Residential film warranty: thermal-stress glass breakage coverage on approved installs; dual-pane seal failure covered only with an unexpired window maker's seal warranty; windows with existing seal failure excluded; some darker films need written approval or are prohibited on some glass"
+    url: "https://madico.com/wp-content/uploads/2023/08/M956144-Commercial_Residential-warrantydownload-8-1-2023-fillable.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: xpel_film_glass
+    title: "XPEL (window film maker), Vision film-to-glass chart: compatibility by single pane, dual pane, dual pane low-E, tinted, laminated and tempered glass; buildings with prior seal failure or thermal breakage not eligible"
+    url: "https://www.xpel.com/web-assets/downloads/vision-film-to-glass-chart-R022022.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: suntek_film_glass
+    title: "SunTek (window film maker), film-to-glass recommendations: wrong film choice can cause thermal stress to the glazing unit; panes of 50 to 100 sq ft add stress and over 100 sq ft is not recommended; tempered glass carries an etched mark, assume annealed if none"
+    url: "https://suntekfilms.com/content/dam/eastman/performance-films/suntek-films/documents/film-specifications/film-to-glass-recommendations.pdf"
+    checked: "2026-10-29"
+    kind: manufacturer
+  - id: pipeline_construction_leads
+    title: "Pipeline (marketing vendor), Construction Leads Guide 2026: shared marketplace leads (Angi, HomeAdvisor, Thumbtack) about $20 to $75, 5 to 12 contractors get the same one (citing Hook Agency); Google Local Services Ads about $53 per lead across home services (citing Searchlight Digital); Google Ads about $165 per lead in construction (citing LocaliQ)"
+    url: "https://pipelineon.com/blog/construction-leads-guide/"
+    checked: "2026-10-29"
+    kind: trade_publication
+  - id: hcp_thumbtack
+    title: "Housecall Pro (field-service software vendor): how Thumbtack works (pros report $10 to over $100 per lead by trade and market; homeowners contact several pros at once)"
+    url: "https://www.housecallpro.com/resources/what-is-thumbtack-how-it-works/"
+    checked: "2026-10-29"
+    kind: trade_publication
+
+trade_brief:
+  price_drivers:
+    - driver: "How many windows, and how many are sliding doors or large picture windows"
+      why: "Screens and film are priced per window or per square foot; one 8-foot slider can equal three bedroom windows. [judgment]"
+      source: null
+    - driver: "Screens outside or film inside, and for film, what the film is for"
+      why: "Exterior screens need custom frames per opening; film is sold by the square foot, and safety or security film costs more than heat or glare film. [judgment]"
+      source: null
+    - driver: "Height: one story, two stories, or glass over a roof, slope or pool"
+      why: "Upper windows mean tall ladders, a second person or a lift, and more hours per opening. [judgment]"
+      source: null
+    - driver: "Glass type for film: single pane, dual pane, low-E, tempered, very large panes"
+      why: "Film makers' film-to-glass charts limit which films go on which glass, and very large panes are outside the charts."
+      source: suntek_film_glass
+    - driver: "Mounting conditions outside the window: security bars, crank-out glass slats, stucco tight to the frame, plants or fences close by"
+      why: "Each one changes the frame, the clips or brackets, or whether a screen fits at all. [judgment]"
+      source: null
+    - driver: "Old film or old screens to remove first"
+      why: "Stripping baked-on film is slow scraping labor; old screen frames may be reused for a re-screen or hauled off. [judgment]"
+      source: null
+    - driver: "Screen fabric grade and color"
+      why: "Exterior fabrics run from about 65 to 97 percent heat and glare blocked; heavier fabrics and special colors cost more per opening. [judgment]"
+      source: phifer_exterior
+  hidden_conditions:
+    - condition: "Dual-pane glass with fog or haze between the panes before film goes on"
+      how_a_pro_spots_it: "White haze inside the glass in the window photo; the homeowner mentions cloudy windows. Film makers exclude windows with existing seal failure from their warranty."
+      question_or_photo: fu_glass_type
+      source: madico_warranty
+    - condition: "Panes too large for the film the homeowner wants"
+      how_a_pro_spots_it: "A wall of glass, floor-to-ceiling panes or a big slider; SunTek lists 50 to 100 sq ft panes as added stress and over 100 sq ft as not recommended"
+      question_or_photo: fu_big_openings
+      source: suntek_film_glass
+    - condition: "Security bars, crank-out glass slats or no frame lip, so a standard screen will not mount"
+      how_a_pro_spots_it: "Bars or slats in the outside photo; stucco running right to the glass edge"
+      question_or_photo: fu_in_the_way
+      source: null
+    - condition: "Old film that has to be stripped before new film goes on"
+      how_a_pro_spots_it: "Bubbling, peeling or purple film in the close-up photo"
+      question_or_photo: p2
+      source: null
+    - condition: "HOA color or placement rules, or a landlord who has not approved outside changes"
+      how_a_pro_spots_it: "The homeowner mentions an HOA, a rental or a lease; front-of-house windows in a planned community"
+      question_or_photo: fu_owner_approval
+      source: null
+    - condition: "Upper windows over a roof, a pool, a slope or a planter"
+      how_a_pro_spots_it: "Two-story answer plus the outside photo showing what is under the window"
+      question_or_photo: stories
+      source: null
+    - condition: "Bug screens already sitting in the window frame channel"
+      how_a_pro_spots_it: "Gray mesh visible in the frame in the outside photo; the installer decides whether the solar screen replaces it or mounts over it"
+      question_or_photo: p1
+      source: null
+  misdiagnosis_checks:
+    - sounds_like: "solar screens (torn screen on a patio door or window)"
+      might_be: "plain bug screen repair, handyman work"
+      one_question: fu_screen_kind
+      if_other_route_to: {category: handyman, job_type: "door repair"}
+      source: null
+    - sounds_like: "solar screens (screen door)"
+      might_be: "security_door, a windows_doors kb job type with no enabled category"
+      one_question: fu_screen_kind
+      if_other_route_to: null
+      source: null
+    - sounds_like: "window film (cloudy or foggy windows)"
+      might_be: "glass_repair, a windows_doors kb job type with no category job type"
+      one_question: fu_glass_type
+      if_other_route_to: null
+      source: null
+    - sounds_like: "window film or solar screens (hot, drafty old windows)"
+      might_be: "window_replace, a windows_doors kb job type with no enabled category"
+      one_question: product
+      if_other_route_to: null
+      source: null
+  photo_reading:
+    - photo_id: p1
+      reads: ["Window count on that wall and which are sliders or picture windows", "Frame color and material (aluminum, vinyl)", "Bug screens already in the frames", "Security bars, crank-out slats, plants or fences close to the glass", "Stucco tight to the frame with no lip", "What sits under upper windows"]
+      neutral_wording: "Two aluminum slider windows on a stucco wall, bug screens in place, a hedge about a foot from the lower window."
+    - photo_id: p2
+      reads: ["Tears, sagging mesh or bent frames on existing screens", "Dust on the mesh", "Bubbling, peeling or purple old film", "Haze between panes"]
+      neutral_wording: "Existing bronze screen mesh has a layer of dust; no tears seen."
+    - photo_id: p3
+      reads: ["Etched mark in the glass corner (tempered mark, maker)", "Spacer bar between two panes (dual pane)", "Any low-E or maker label"]
+      neutral_wording: "Etched mark in the lower corner of the glass; a metal spacer shows between two panes."
+    - photo_id: p4
+      reads: ["Width and height of each opening", "Whether the tape spans glass only or frame to frame"]
+      neutral_wording: "Tape shows the slider opening at about 72 by 48 inches, frame to frame."
+  local_factors:
+    - fact: "Average summer highs at Lake Havasu run about 103 F in June, 108 F in July and 106 F in August"
+      effect: "West and south glass drives most requests, and homeowners want the work done before or during the heat"
+      source: azsp_weather
+    - fact: "Monsoon season runs June 15 to September 30 and brings dust storms"
+      effect: "Dust coats screens and glass, wind days push back film installs, and storm wind can bend loose screen frames [judgment]"
+      source: adwr_monsoon
+    - fact: "The city's permit lists name window replacement only when size changes, and minor glass repair needs no permit; window film and screens are not on either list"
+      effect: "Screen and film jobs rarely raise a permit question; a size change is a different trade's job"
+      source: lhc_permits
+    - fact: "The R-65 Glazing scope names window film, blinds and shutters and glass; it does not name exterior solar screens"
+      effect: "Which license covers screen-only shops is open; the category routes both job types to R-65 and CR-65 holders for now"
+      source: aac_r4_9_103
+    - fact: "City water hardness averages about 19 grains per gallon"
+      effect: "Sprinkler overspray leaves white mineral spots on lower glass, which film installers have to clean off first [judgment]"
+      source: lhc_ccr
+    - fact: "Many older Havasu homes have single-pane aluminum windows set in block and stucco"
+      effect: "Single pane opens up more film choices; stucco walls change how screens mount [judgment]"
+      source: null
+    - fact: "Many planned communities have HOA rules on exterior colors"
+      effect: "Screen color and front-of-house placement may need approval before install [judgment]"
+      source: null
+    - fact: "Seasonal residents and vacant second homes"
+      effect: "Exterior screens can go on with nobody home; film needs someone to open the house [judgment]"
+      source: null
+  seasonality:
+    busy: "March to August, peaking before and in the first weeks of summer heat [judgment]"
+    slow: "November to January [judgment]"
+    source: null
+
+job_types:
+  - id: screens
+    label: "Exterior solar screens: new screens, or new mesh in existing solar screen frames"
+    bank_job_type: "solar screens"
+    recurring: false
+    homeowner_phrasings: ["sun screens", "solar screens on the west side", "shade screens for the windows", "the black mesh on the outside of the windows", "re-screen my sun screens", "mallas solares"]
+    must_know:
+      - fact: "How many windows, and roughly how big"
+        bank_question: count
+        follow_up: null
+        photo: p1
+        why_it_moves_price: "Screens are custom frames priced per opening or per square foot. [judgment]"
+        skip_if: "Homeowner gave a count"
+      - fact: "New screens, or new mesh in frames already on the house"
+        bank_question: product
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "A re-screen reuses straight frames and costs less per opening than a new frame. [judgment]"
+        skip_if: "Her words say new or re-screen"
+      - fact: "One story or two"
+        bank_question: stories
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Upper windows add ladder time, a second person or a lift. [judgment]"
+        skip_if: "Answered"
+      - fact: "Sliding doors or large picture windows in the count"
+        bank_question: null
+        follow_up: fu_big_openings
+        photo: p1
+        why_it_moves_price: "A slider takes a rolling screen door or a larger frame, priced well above a bedroom window. [judgment]"
+        skip_if: "Photo or her words cover every opening"
+      - fact: "Anything outside the window that changes the mount"
+        bank_question: null
+        follow_up: fu_in_the_way
+        photo: p1
+        why_it_moves_price: "Bars, crank-out slats or no frame lip mean brackets, a different screen or no screen on that window. [judgment]"
+        skip_if: "Outside photo shows the windows clearly"
+    allowed_follow_ups:
+      - id: fu_screen_kind
+        ask_when: "Homeowner mentions a torn or ripped screen, a screen door, or says screens without saying which kind"
+        text_en: "Which kind of screen do you mean: dark sun-blocking screens, regular bug screens, or a metal security screen door?"
+        text_es: "¿Qué tipo de malla quiere decir: mallas oscuras que bloquean el sol, mosquiteros normales, o una puerta de seguridad de metal?"
+        options_en: ["Sun-blocking screens", "Regular bug screens", "Metal security screen door"]
+        options_es: ["Mallas que bloquean el sol", "Mosquiteros normales", "Puerta de seguridad de metal"]
+        card_field: true
+        why: "Bug screen repair is handyman work and security doors have no category; only sun-blocking screens stay here. [judgment]"
+      - id: fu_big_openings
+        ask_when: "No photo shows all the openings and she has not said whether any are doors or large windows"
+        text_en: "Are any of them sliding doors or extra-large windows?"
+        text_es: "¿Alguna es puerta corrediza o ventana extra grande?"
+        options_en: ["A sliding patio door", "Large picture windows", "Both", "No, all regular size"]
+        options_es: ["Una puerta corrediza de patio", "Ventanas grandes fijas", "Las dos", "No, todas de tamaño normal"]
+        card_field: true
+        why: "Large openings and sliders change the frame type and the square footage. [judgment]"
+      - id: fu_in_the_way
+        ask_when: "No outside photo, or the photo does not show the window frames"
+        text_en: "Is there anything on or close to the windows outside, like security bars, crank-out glass slats, or plants or a fence?"
+        text_es: "¿Hay algo en las ventanas o cerca de ellas por fuera, como rejas, ventanas de tablillas de vidrio, o plantas o una barda?"
+        options_en: ["Security bars", "Crank-out glass slats", "Plants or a fence close by", "None of these"]
+        options_es: ["Rejas", "Ventanas de tablillas de vidrio", "Plantas o barda cerca", "Nada de esto"]
+        card_field: true
+        why: "Each item changes how a screen mounts, or whether it can. [judgment]"
+      - id: fu_owner_approval
+        ask_when: "Homeowner mentions an HOA, a rental, a lease or a landlord, or asks about colors"
+        text_en: "Does an HOA or a landlord need to approve changes to the windows first?"
+        text_es: "¿La asociación de vecinos (HOA) o el dueño de la casa tiene que aprobar cambios en las ventanas primero?"
+        options_en: ["Yes, an HOA", "Yes, a landlord", "Both", "No"]
+        options_es: ["Sí, la HOA", "Sí, el dueño", "Los dos", "No"]
+        card_field: true
+        why: "An approval step changes the color choices, which windows are in scope and the start date. [judgment]"
+    photos_priority: [p1, p2, p3]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All solar screen requests"
+    scope_line_en: "New solar screens for 7 windows on the west side, including one sliding door; two windows are upstairs."
+    scope_line_es: "Mallas solares nuevas para 7 ventanas del lado oeste, con una puerta corrediza; dos ventanas están en el segundo piso."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end", "earliest day to measure"]
+    card_template: |
+      REQ-<id> | Solar screens and window film | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: new screens or re-screen, how many, which sides>
+      Windows: <count answer>. Stories: <1 / 2 or more>. Large openings: <sliding door / picture windows / both / none / not said>.
+      Outside the windows: <security bars / crank-out slats / plants or fence close / none / not said>. Approval first: <HOA / landlord / both / no / not said>. Color or fabric: <her words or undecided>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Go with the 90 percent fabric.", "Your screens are just dirty.", "Screens will cut your power bill in half.", "Screens usually run about fifty a window.", "Your HOA will approve bronze."]
+
+  - id: film_blinds
+    label: "Window film on house glass for heat, glare, privacy or safety (blinds and shutters share this kb job type; see notes)"
+    bank_job_type: "window film"
+    recurring: false
+    homeowner_phrasings: ["tint the house windows", "heat film on the west windows", "glare on my TV", "privacy film for the bathroom window", "security film", "polarizado para las ventanas"]
+    must_know:
+      - fact: "How many panes, and how big"
+        bank_question: count
+        follow_up: fu_big_openings
+        photo: p1
+        why_it_moves_price: "Film is priced by the square foot; a glass wall or a slider can outweigh several small windows. [judgment]"
+        skip_if: "Photo or her words give the count and the large panes"
+      - fact: "Single or dual pane, and any fog between panes"
+        bank_question: null
+        follow_up: fu_glass_type
+        photo: p3
+        why_it_moves_price: "Film-to-glass charts limit which films go on dual-pane and low-E glass, and windows with fog between panes are excluded from film warranties. [judgment]"
+        skip_if: "Etched-corner photo or her words give the glass type"
+      - fact: "What the film is for"
+        bank_question: null
+        follow_up: fu_film_goal
+        photo: null
+        why_it_moves_price: "Heat, glare, privacy, decorative and safety films are different products at different prices per square foot. [judgment]"
+        skip_if: "Her words already say heat, glare, privacy or safety"
+      - fact: "One story or two"
+        bank_question: stories
+        follow_up: null
+        photo: null
+        why_it_moves_price: "Tall or upper panes need scaffolds or a lift inside. [judgment]"
+        skip_if: "Answered"
+      - fact: "Old film on the glass"
+        bank_question: null
+        follow_up: null
+        photo: p2
+        why_it_moves_price: "Stripping old film adds labor before the new film goes on. [judgment]"
+        skip_if: "She said the glass is bare"
+    allowed_follow_ups:
+      - id: fu_glass_type
+        ask_when: "Homeowner wants film and has not said what glass she has, or mentions cloudy or foggy windows"
+        text_en: "Is the glass single pane or dual pane, and is there any fog between the two panes?"
+        text_es: "¿El vidrio es sencillo o doble, y hay algo empañado entre los dos vidrios?"
+        options_en: ["Single pane", "Dual pane, clear", "Dual pane, some fog between panes", "A mix"]
+        options_es: ["Vidrio sencillo", "Vidrio doble, claro", "Vidrio doble, algo empañado entre los vidrios", "De los dos tipos"]
+        card_field: true
+        why: "Glass type sets which films a business can offer, and fog between panes is a glass job, not a film job. [judgment]"
+      - id: fu_film_goal
+        ask_when: "Homeowner asks for film or tint without saying what it is for"
+        text_en: "What do you want the film to do most?"
+        text_es: "¿Qué quiere que haga la película principalmente?"
+        options_en: ["Cut heat", "Cut glare", "Privacy", "Hold glass together if it breaks", "A decorative look"]
+        options_es: ["Bajar el calor", "Bajar el reflejo", "Privacidad", "Sostener el vidrio si se rompe", "Un toque decorativo"]
+        card_field: true
+        why: "Each answer is a different film line and price per square foot. [judgment]"
+      - fu_big_openings
+      - fu_owner_approval
+    photos_priority: [p1, p3, p2]
+    urgency:
+      fire_dept_triggers: []
+      urgent_capable_triggers: []
+      regular: "All window film requests"
+    scope_line_en: "Heat film on inside of 4 west windows and an 8-foot slider; dual-pane glass; one story."
+    scope_line_es: "Película contra el calor por dentro en 4 ventanas del oeste y una puerta corrediza de 8 pies; vidrio doble; un piso."
+    quote_format: range
+    business_fills: ["low and high end of the range", "what puts it at the high end (film line, old film removal, height)", "earliest day to measure"]
+    card_template: |
+      REQ-<id> | Solar screens and window film | <town>, <general area> | <house / condo / manufactured home>
+      <one scope line: film for what, how many panes, which rooms or sides>
+      Panes: <count answer>. Large panes: <slider / picture windows / glass wall / none / not said>. Stories: <1 / 2 or more>.
+      Glass: <single / dual, clear / dual, fog between panes / mix / not said>. Goal: <heat / glare / privacy / safety / decorative>. Old film: <seen in photo / none / not said>. Approval first: <HOA / landlord / both / no / not said>.
+      Photos: <n> (<neutral description of each>). Homeowner adds: <her words, scrubbed>.
+      Needed: <timing answer>.
+    never_say: ["Film on dual-pane glass will crack it.", "That fog means your seal failed.", "Get the darkest film for the most heat cut.", "Film runs about eight a square foot.", "Your landlord can't stop you from adding film."]
+
+business_side:
+  how_they_get_customers: ["Google Maps listing and reviews", "Repeat customers, neighbors and word of mouth", "Builders, realtors, property managers and HOA contacts [judgment]", "Local Facebook groups, yard signs and home shows [judgment]", "Home-service marketplaces (Angi, HomeAdvisor, Thumbtack)", "Google search and Local Services Ads"]
+  customer_acquisition_benchmarks:
+    - channel: "Shared marketplace requests (Angi, HomeAdvisor, Thumbtack), all home services"
+      figure: "About $20 to $75 per request, with 5 to 12 contractors getting the same one (marketing-vendor figure, not trade-specific)"
+      source: pipeline_construction_leads
+      unverified: false
+    - channel: "Thumbtack, all trades"
+      figure: "Pros report about $10 to over $100 per request depending on trade and market (software-vendor figure)"
+      source: hcp_thumbtack
+      unverified: false
+    - channel: "Google Local Services Ads, all home services"
+      figure: "About $53 per request on average (marketing-vendor figure citing Searchlight Digital)"
+      source: pipeline_construction_leads
+      unverified: false
+    - channel: "Google search ads, construction and contracting"
+      figure: "About $165 per request on average (marketing-vendor figure citing LocaliQ)"
+      source: pipeline_construction_leads
+      unverified: false
+    - channel: "Window film and solar screen shops specifically"
+      figure: "No trade-specific figure found; small-ticket trades likely sit near the low end of the shared-marketplace range"
+      source: null
+      unverified: true
+    - channel: "Lake Havasu City screen and film shops"
+      figure: "No local figures found; a small market with few shops may pay less than national vendor figures"
+      source: null
+      unverified: true
+  what_they_dislike_about_lead_services: ["Paying for a request that 5 other shops also bought", "Homeowners who want a price per window over the phone and never book a measure", "Requests from outside their area", "Monthly fees whether or not jobs come", "Being ranked or reviewed by the site itself"]
+  what_makes_a_lead_worth_paying_for: ["Window count, stories and large openings stated up front", "Photos of the windows outside, so they can see the frames and anything in the way", "Glass type stated for film jobs", "HOA or landlord approval stated before they drive out", "Pay only when picked, nothing monthly", "Real town and timing"]
+  their_words: ["re-screen", "solar screen", "sun screen", "80 or 90 percent fabric", "spline", "frame", "turn clips", "brackets", "per square foot", "film-to-glass", "thermal stress", "seal failure", "low-E", "dual pane", "VLT", "film removal", "measure"]
+  signup_objections:
+    - objection: "Why would I pay a fee when I can get the job myself?"
+      answer: "You pay only when the homeowner picks your quote. Nothing to join and nothing per month. The fee is set by job size: $25, $75 or $199."
+    - objection: "I can't price screens or film without measuring."
+      answer: "Quote a range and say what puts it at the high end. Each card lists the window count, stories, large openings and anything mounted outside the windows, with photos when she sends them. Your final price can follow your measure."
+    - objection: "How do I know these homeowners are serious?"
+      answer: "Each request comes from a texted phone number we check, with a town, answers to the questions a screen or film shop asks, and photos when she has them. Her name and address go only to the business she picks."
+    - objection: "What if I quote and don't get picked?"
+      answer: "Then you pay nothing. The introduction fee is charged only when a homeowner picks your quote and you confirm."
+    - objection: "Will you rank me against other shops?"
+      answer: "No. The homeowner sees every quote in the order it came in, with each business's name, license number and review links. Ask Hava never sorts, rates or scores a business."
+    - objection: "I only do screens, not film."
+      answer: "You pick the job types you want at sign-up and can change them any time. You get cards only for those."
+    - objection: "What if the homeowner cancels after I pay?"
+      answer: "If you haven't spoken with the homeowner yet, the fee is refunded."
+    - objection: "Which license do I need for these cards?"
+      answer: "Cards in this category go to businesses whose ROC license is R-65 or CR-65 Glazing. We check the license at sign-up and again at each pick."
+  quote_tips_for_card: ["Give a low and high end and say what moves it to the high end", "Say which fabric or film line the range is for", "Say whether removing old film or old screens is included", "Give your earliest day to measure", "Say if you need a photo of the window frames outside"]
