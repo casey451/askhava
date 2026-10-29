@@ -255,7 +255,7 @@ job_types:
         why_it_moves_price: "Tile edges are worked from a ladder, not by walking the roof; flat roofs drain through wall openings. [judgment]"
         skip_if: "Photo shows the roof edge"
       - fact: "Whether a service line runs over the gutters"
-        bank_question: stories
+        bank_question: null
         follow_up: fu_overhead_line
         photo: p2
         why_it_moves_price: "Crews keep ladders and poles 15 feet from overhead lines, which changes the setup at that corner."
