@@ -121,7 +121,10 @@ def owner_hours(now: datetime) -> bool:
 
 
 def _by_day(cfg: Config, ids: list[str], now: datetime) -> list[str]:
-    """Outside owner hours, drop the tasks whose PR needs Casey's review (D-511)."""
+    """Outside owner hours, drop the tasks whose PR needs Casey's review (D-511).
+
+    Off while kit/runner.json sets "owner_review" to false (D-512): with no code-owner review on the
+    ruleset, every task PR merges on its own after the Opus review and the required checks."""
     if not cfg.owner_paths or owner_hours(now):
         return ids
     graph = {t["id"]: t for t in cfg.graph}
