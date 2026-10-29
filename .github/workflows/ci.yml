@@ -38,6 +38,14 @@ jobs:
       - name: Sources unchanged (fingerprint)
         run: |
           sha256sum -c --quiet kit/sources.sha256
+
+      - name: Database roles the migrations grant to (askhava_app, askhava_migrate; D-092, D-491)
+        run: |
+          for role in askhava_app askhava_migrate; do
+            psql "$DATABASE_URL" -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
+              || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
           test "$(find sources -type f | wc -l)" -eq "$(wc -l < kit/sources.sha256)"
           echo "sources/ matches kit/sources.sha256"
 

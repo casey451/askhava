@@ -39,7 +39,7 @@
   "docs/threat-model.md": "ac3d1f653e3f5b8053acc4d7141f7ec3f7241f5f3aa60e65e34cfe0328a161aa",
   "kit/prompts/TEMPLATE.md": "42fb9a407d2fbd90bde0e68e37cba6e4bd4c1b4dcb4929a658064b887262eabd",
   "kit/sources.sha256": "ed9f15e377d96323a9d46609e0e78d93d4378e6b1ea9c7d6e2f66926317d863d",
-  "kit/tasks.json": "9a789252928f964e1115085b75e6b032a1054c05ca706065d2d5da4cc805146d",
+  "kit/tasks.json": "fc7c938fbd462ac8598f735acd4654f74e60168b0de284916c9d2cf739ad7099",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
   "scripts/check_catalog.py": "f515ad48bb327f1c39e32b4ba70327e8b349e6fcd286c54f6da1c0f474b9782b",
   "scripts/check_code_docs.py": "cb5df5710797e221ae5d5a5b2daa9d6c3612e9bca1ccd24f07ea07b34e470fbd",
@@ -55,10 +55,10 @@
   "scripts/pii_scan.py": "5fa8c202440d83c0645ac7013c72f36621562c9ad38c19aa52c67772edcdc3b6",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "d1cace9111244af5f26ddde33ac306abf69f3fb7cee1eb7035900dc69c5e14ec",
-  "scripts/smoke.sh": "7f84a8bb36fa8c0aa91937aff0e6f50f726a201e3e886c62b7a95fcd3d41e558",
+  "scripts/smoke.sh": "2c4c8898626f5feaa290b18fc45e2f893aaa15f158b7434035a4f306803fd92a",
   "scripts/stage_exit.py": "4017f49a6bdbd289b41c7a260a8d1916e4826ac389eca51860a39c093fc6c46c",
   "scripts/trace_spec.py": "6c36de51fd4faef8eabfaa5be73db88c7c5aae5fb36f495474c25e244f3b0049",
-  "scripts/validate_tasks.py": "141339fe5007b7699b202f637118f8ae8e4b3ef80af108635aee124c8d0d2933"
+  "scripts/validate_tasks.py": "690abf864528c2f7a21af54b923a866c8f050ad91687b8cc0348330b36d5906f"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1

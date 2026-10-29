@@ -176,7 +176,8 @@
   "app/recovery/src/status.rs",
   "app/portals/src/status.rs",
   "app/site/src/status.rs",
-  "app/server/src/status.rs"
+  "app/server/src/status.rs",
+  "kit/prompts/"
  ],
  "kit_outputs": [
   "kit/prompts/",
@@ -200,7 +201,7 @@
    "id": "T002",
    "slug": "catalog-license-scope",
    "title": "Per-job-type license scope in the catalog (R-37R drains only, R-39R cooling only)",
-   "goal": "K3 follow-up 1: categories.yaml gives each job type its license scope and check_catalog.py checks it, before any routing code.",
+   "goal": "K3 follow-up 1: every license subclass's job-type scope is in `docs/catalog/license_map.yaml` (LIC-043, D-392) and `check_catalog.py` checks each category's job types against it, before any routing code.",
    "type": "build",
    "phase": 1,
    "stage": "1",
@@ -215,7 +216,8 @@
    "owns": [
     "docs/catalog/categories.yaml",
     "scripts/check_catalog.py",
-    "tests/test_catalog_license_scope.py"
+    "tests/test_catalog_license_scope.py",
+    "docs/catalog/license_map.yaml"
    ],
    "reads": [
     "docs/architecture.md",
@@ -235,9 +237,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 300,
-    "context_pct": 18
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -246,13 +248,13 @@
    ],
    "branch": "claude/task/T002-catalog-license-scope",
    "prompt": "kit/prompts/T002.md",
-   "acceptance": "`python3 scripts/check_catalog.py` passes on the real catalog and fails on a planted job type with no license scope, on R-37R given a job type other than drains and on R-39R given a heating job type (`tests/test_catalog_license_scope.py`)."
+   "acceptance": "`python3 scripts/check_catalog.py` passes on the real catalog and fails on a planted job type with no license scope in `license_map.yaml`, on R-37R Sewers, Drains and Pipe Laying given a non-drain job type, and on R-39R Air Conditioning and Refrigeration given a heating job type (the subclasses are scoped per LIC-035)."
   },
   {
    "id": "T003",
    "slug": "matching-examples",
    "title": "docs/catalog/matching_examples.yaml (M01-M16) checked by scripts/check_catalog.py",
-   "goal": "K5 follow-up 2: an oracle for matching written before any routing code and before the twin's license table.",
+   "goal": "K5 follow-up 2: an oracle for matching written before any routing code and before the twin's license table. The M01 to M16 rows use the catalog's job-type names (map the table's names to them).",
    "type": "build",
    "phase": 1,
    "stage": "1",
@@ -276,7 +278,10 @@
     "docs/code-docs.md",
     "docs/spec/job-cards.md",
     "docs/spec/licensing.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/test-design.md",
+    "docs/catalog/categories.yaml",
+    "docs/catalog/license_map.yaml"
    ],
    "requirements": [
     "CARD-001",
@@ -299,7 +304,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -357,13 +362,14 @@
     "Ally"
    ],
    "branch": "claude/task/T004-spec-intake-decisions",
-   "prompt": "kit/prompts/T004.md"
+   "prompt": "kit/prompts/T004.md",
+   "acceptance": "`python3 scripts/trace_spec.py` is green; a `docs/decisions.md` entry names INT-012 to INT-015; `python3 scripts/gen_prompts.py` is run and the regenerated prompts and the rewritten `kit/plan.lock` are in the same PR (any task that changes a spec sentence does this, D-491)."
   },
   {
    "id": "T172",
    "slug": "twin-gate-into-repo",
    "title": "Twin into twin/: gate.py, waivers, self-tests, and twin.yml switched to the gate",
-   "goal": "Copy the twin from sources/01_spec/hhq_twin into twin/ unchanged except for the brand, fee and category values docs/sources.md lists as superseded; write twin/gate.py, twin/waivers.json (one pinned entry per current instance) and the self-tests and negative control of docs/twin-warnings.md sections 5 and 6; switch .github/workflows/twin.yml from the sources smoke run to `PYTHONHASHSEED=0 python3 twin/gate.py` so Twin fails on any unwaived instance. Done means: on main, twin/gate.py exists, twin.yml invokes it, and in the task report a deliberately broken waiver entry turned Twin red before being restored (D-479).",
+   "goal": "Copy the twin from sources/01_spec/hhq_twin into twin/ unchanged except for the brand (T007 applies the fee and category values); the PII scanner allowlists the twin's generator patterns (D-109), so this task owns `scripts/pii_scan.py` and its test; write twin/gate.py, twin/waivers.json (one pinned entry per current instance) and the self-tests and negative control of docs/twin-warnings.md sections 5 and 6; switch .github/workflows/twin.yml from the sources smoke run to `PYTHONHASHSEED=0 python3 twin/gate.py` so Twin fails on any unwaived instance. Done means: on main, twin/gate.py exists, twin.yml invokes it, and in the task report a deliberately broken waiver entry turned Twin red before being restored (D-479).",
    "type": "harness",
    "phase": 1,
    "stage": "1",
@@ -389,7 +395,9 @@
     "twin/review_tests.py",
     "tests/twin/test_gate.py",
     ".github/workflows/twin.yml",
-    "twin/chaos_baseline.json"
+    "twin/chaos_baseline.json",
+    "scripts/pii_scan.py",
+    "tests/test_pii_scan.py"
    ],
    "reads": [
     "docs/sources.md",
@@ -407,9 +415,9 @@
     "docs/twin-warnings.md:125"
    ],
    "budget": {
-    "files": 12,
+    "files": 14,
     "lines": 600,
-    "context_pct": 7
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -591,7 +599,8 @@
     "twin/twin_config.json",
     "twin/twin_scenarios.json",
     "twin/oracle/license_scope.json",
-    "twin/waivers.json"
+    "twin/waivers.json",
+    "twin/oracle/gen_license_scope.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -601,7 +610,9 @@
     "docs/spec/recurring.md",
     "docs/catalog/categories.yaml",
     "docs/twin-warnings.md",
-    "twin/"
+    "twin/",
+    "docs/catalog/license_map.yaml",
+    "docs/catalog/matching_examples.yaml"
    ],
    "requirements": [
     "CARD-001",
@@ -619,9 +630,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 500,
-    "context_pct": 17
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -677,7 +688,8 @@
     "Ally"
    ],
    "branch": "claude/task/T008-cleanup-stage1",
-   "prompt": "kit/prompts/T008.md"
+   "prompt": "kit/prompts/T008.md",
+   "acceptance": "`python3 scripts/check_catalog.py` and every stage-1 test pass; the stage-1 exit row in `docs/build-readiness.md` section 3 is recorded as passed in the task report; no TODO, dead code or stale doc line remains in the stage's files."
   },
   {
    "id": "T170",
@@ -699,7 +711,10 @@
    ],
    "owns": [
     "runner/outbox.py",
-    "tests/test_runner_logic.py"
+    "tests/test_runner_logic.py",
+    "runner/github_env.py",
+    "runner/cycle.py",
+    "tests/test_runner_live.py"
    ],
    "reads": [
     "BUILD_BRIEF.md",
@@ -716,9 +731,9 @@
     "BUILD_BRIEF.md:550"
    ],
    "budget": {
-    "files": 2,
+    "files": 5,
     "lines": 150,
-    "context_pct": 15
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -733,7 +748,7 @@
    "id": "T009",
    "slug": "app-skeleton",
    "title": "App skeleton: Cargo workspace, one crate per module, server and worker binaries, lints and policy files",
-   "goal": "The server and worker binaries start on an empty app from one Cargo workspace with the pinned toolchain, `unsafe_code` forbidden, clippy's 50-line and nesting limits, the cargo-deny policy and `[workspace.lints]` denying `missing_docs` with `missing_errors_doc` and `missing_panics_doc` on; `cargo build -p askhava-server --locked`, clippy with warnings denied and `cargo fmt --check` pass, and `app/core/CLAUDE.md` and `app/server/CLAUDE.md` follow `docs/code-docs.md` (D-453, D-473). Follow the skeleton trial (D-488): members `app/*` and `tests/integration` only, reqwest and sqlx with `default-features = false` (sqlx adds `sqlx-toml`), a logged `excessive-nesting-threshold`, `rustls` and `toml` with their decision entries, both wildcard denies in every `status.rs`, and `-p askhava-server` everywhere.",
+   "goal": "The server and worker binaries start on an empty app from one Cargo workspace with the pinned toolchain, `unsafe_code` forbidden, clippy's 50-line and nesting limits, the cargo-deny policy and `[workspace.lints]` denying `missing_docs` with `missing_errors_doc` and `missing_panics_doc` on; `cargo build -p askhava-server --locked`, clippy with warnings denied and `cargo fmt --check` pass, and `app/core/CLAUDE.md` and `app/server/CLAUDE.md` follow `docs/code-docs.md` (D-453, D-473). Follow the skeleton trial (D-488): members `[\"app/*\"]` only (T175 adds `tests/integration`, T168 and T010 their crates), reqwest and sqlx with `default-features = false` (sqlx adds `sqlx-toml`), a logged `excessive-nesting-threshold`, `rustls` and `toml` with their decision entries, both wildcard denies in every `status.rs`, and `-p askhava-server` everywhere.",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -793,7 +808,7 @@
    ],
    "branch": "claude/task/T009-app-skeleton",
    "prompt": "kit/prompts/T009.md",
-   "acceptance": "`bash scripts/smoke.sh` is green with the workspace in place: `cargo build -p askhava-server --locked`, clippy with warnings denied, `cargo fmt --check`, cargo-audit and cargo-deny all pass on the empty crates; the lint set rejects a planted 54-line function, a 5-deep nesting and an `unsafe` block (shown in the PR text, then removed); T175's architecture test is the test of record for TD-SEC-10."
+   "acceptance": "`bash scripts/smoke.sh --full` is green with the workspace in place: `cargo build -p askhava-server --locked`, clippy with warnings denied, `cargo fmt --check`, cargo-audit and cargo-deny all pass on the empty crates; the lint set rejects a planted 54-line function, a 5-deep nesting and an `unsafe` block (shown in the PR text, then removed); T175's architecture test is the test of record for TD-SEC-10."
   },
   {
    "id": "T219",
@@ -852,7 +867,7 @@
    "id": "T175",
    "slug": "architecture-test",
    "title": "Module-boundary architecture test: the integration test crate and the layer-table test",
-   "goal": "The integration test crate exists and its architecture test reads every crate's `Cargo.toml` and SQL, takes the layer table from `kit/layers.json` (never from the document), and fails on an upward or unlisted crate dependency, a crate without `unsafe_code = \"forbid\"`, a first-party package not named `askhava-<module>`, a cross-schema key, a non-literal `sqlx::query`, a route input that is not a `deny_unknown_fields` struct, and any crate but `payments` importing the payments adapter (D-453, D-479). Per the skeleton trial (D-488) the test also follows `package =` renames, requires `workspace = true` on every dependency, scans for `ReleaseMint`, `release_mint`, `SessionMint` and `session_mint` outside their crates, special-cases `server` and `core`, maps `tests/recovery` to `askhava-recovery-tests`, and plants its violations under `CARGO_TARGET_TMPDIR`.",
+   "goal": "The integration test crate exists and its architecture test reads every crate's `Cargo.toml` and SQL, takes the layer table from `kit/layers.json` (never from the document), and fails on an upward or unlisted crate dependency, a crate without `unsafe_code = \"forbid\"`, a first-party package not named `askhava-<module>`, a cross-schema key, a non-literal `sqlx::query`, a route input that is not a `deny_unknown_fields` struct, and any crate but `payments` importing the payments adapter (D-453, D-479). Per the skeleton trial (D-488) the test also follows `package =` renames, requires `workspace = true` on every dependency, scans for `ReleaseMint`, `release_mint`, `SessionMint` and `session_mint` outside their crates, special-cases `server` and `core`, maps `tests/recovery` to `askhava-recovery-tests`, and plants its violations under `CARGO_TARGET_TMPDIR`. This task adds `tests/integration` to the workspace members. The test also checks that every adapter method that acts outside takes an idempotency key (TD-SEC-03's architecture case, D-491). `test-control` on `core` is the one feature the visibility check allows.",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -898,7 +913,7 @@
    "cites": [],
    "budget": {
     "files": 2,
-    "lines": 200,
+    "lines": 450,
     "context_pct": 14
    },
    "checks": [
@@ -934,7 +949,7 @@
     "tests/fixtures/Cargo.toml",
     "tests/fixtures/src/lib.rs",
     "tests/fixtures/src/fake_data.rs",
-    "app/core/src/tests/fake_data.rs"
+    "tests/fixtures/tests/fake_data.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -963,7 +978,7 @@
    ],
    "branch": "claude/task/T010-test-fixtures",
    "prompt": "kit/prompts/T010.md",
-   "acceptance": "`cargo test -p askhava-core tests::fake_data` proves every generated name is on the fake list, every phone is in the 555-0100 to 555-0199 block, every email is at example.com and the sentinel values are fixed, and `python3 scripts/pii_scan.py` reports 0 findings."
+   "acceptance": "`cargo test -p askhava-fixtures --test fake_data` proves every generated name is on the fake list, every phone is in the 555-0100 to 555-0199 block, every email is at example.com and the sentinel values are fixed, and `python3 scripts/pii_scan.py` reports 0 findings."
   },
   {
    "id": "T011",
@@ -976,7 +991,8 @@
    "module": "core",
    "deps": [
     "T175",
-    "T168"
+    "T168",
+    "T010"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -1014,7 +1030,8 @@
    ],
    "tests": [
     "TD-SEC-15",
-    "TD-PRIV-13"
+    "TD-PRIV-13",
+    "TD-SEC-13"
    ],
    "decisions": [
     "D-480"
@@ -1089,7 +1106,7 @@
    ],
    "branch": "claude/task/T012-core-db-migrations",
    "prompt": "kit/prompts/T012.md",
-   "acceptance": "`cargo test -p askhava-integration --test migrations` shows the migrations apply in order on an empty database, the app role cannot alter tables or update or delete ledger and audit rows, and a status change with a stale expected status changes nothing (JOB-004)."
+   "acceptance": "`cargo test -p askhava-integration --test migrations` shows the migrations apply in order on an empty database; on a test append-only table in `core` the app role (`askhava_app`, created by `scripts/smoke.sh` and `Ci` before any migration, D-491) can INSERT and SELECT but its UPDATE and DELETE fail with a permission error; every GRANT in a migration is guarded so a missing role is reported, never silently skipped; a status change with a stale expected status changes nothing and returns none (JOB-004)."
   },
   {
    "id": "T013",
@@ -1174,7 +1191,8 @@
     "app/core/src/tests/ids.rs",
     "app/core/src/tests/prop_derived_ids.rs",
     "tests/integration/tests/webhook_dedupe.rs",
-    "app/jobs/src/quote_token.rs"
+    "app/jobs/src/quote_token.rs",
+    "migrations/0031_jobs_quote_tokens.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -1203,7 +1221,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 350,
     "context_pct": 12
    },
@@ -1325,7 +1343,8 @@
    ],
    "tests": [
     "TD-SEC-03",
-    "TD-CALL-01"
+    "TD-CALL-01",
+    "TD-SEC-13"
    ],
    "decisions": [
     "D-160"
@@ -1334,7 +1353,7 @@
    "budget": {
     "files": 8,
     "lines": 350,
-    "context_pct": 15
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -1417,11 +1436,11 @@
    "id": "T017",
    "slug": "ops-offdb-stream",
    "title": "ops: audit stream, request log and AI readings written off-database",
-   "goal": "The audit stream, the web request log and the AI structured readings are written to object storage as they happen through a write-only, prefix-scoped token, the audit stream carrying a hash chain verified nightly and the request log kept 30 days, so a restore can be replayed (OPS-010, OPS-011, PRIV-029).",
+   "goal": "The audit stream, the web request log and the AI structured readings are written to object storage as they happen through a write-only, prefix-scoped token, the audit stream carrying a hash chain verified nightly and the request log kept 30 days, so a restore can be replayed (OPS-010, OPS-011, PRIV-029). `ops` only enqueues the stream event on `core.task`; the writer is a `server`-registered handler (`app/server/src/offdb_stream.rs`) that calls the storage adapter, since `ops` may call nothing (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
-   "module": "ops",
+   "module": null,
    "deps": [
     "T015",
     "T176"
@@ -1434,7 +1453,7 @@
     "security"
    ],
    "owns": [
-    "app/ops/src/stream.rs",
+    "app/server/src/offdb_stream.rs",
     "tests/integration/tests/offdb_stream.rs"
    ],
    "reads": [
@@ -1451,8 +1470,7 @@
    ],
    "tests": [
     "TD-OPS-03",
-    "TD-OPS-19",
-    "TD-WORD-31"
+    "TD-OPS-19"
    ],
    "decisions": [
     "D-094",
@@ -1541,7 +1559,7 @@
    "id": "T019",
    "slug": "docker-image",
    "title": "Dockerfile pinned by digest; web and worker commands",
-   "goal": "The production image is built from a Dockerfile whose base images are pinned by digest, with separate web and worker commands, and a security test fails on an unpinned image; the audit tools and pinned Actions are part of the same supply-chain rule (SEC-021, SEC-045).",
+   "goal": "The production image is built from a Dockerfile whose base images are pinned by digest, with separate web and worker commands, and a security test fails on an unpinned image; the audit tools and pinned Actions are part of the same supply-chain rule (SEC-021, SEC-045). TD-SEC-24's docs test, in this task, covers the Dockerfile (base image by digest); the workflow `uses:` SHA cases are T169's and T121's (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -1597,7 +1615,7 @@
    "id": "T020",
    "slug": "e2e-harness",
    "title": "Test control router (test and CI only) and Playwright fixtures",
-   "goal": "The test-control router (clock advance, delivered-message reads) exists only under the `test-control` Cargo feature with a per-run bearer secret, every `/__test/*` route is 404 in the release build, and Playwright has its config, fixtures and the TypeScript tooling to drive it (SEC-002, SEC-035).",
+   "goal": "The test-control router (clock advance, delivered-message reads) exists only under the `test-control` Cargo feature with a per-run bearer secret, every `/__test/*` route is 404 in the release build, and Playwright has its config, fixtures and the TypeScript tooling to drive it (SEC-002, SEC-035). The delivered-message reads come from the stand-in sent log (T167), never from `messaging` tables; `test-control` is the one allowed Cargo feature, listed in T175's architecture test (D-491).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -1659,7 +1677,7 @@
    "id": "T021",
    "slug": "catalog-module",
    "title": "catalog: load categories, job types, license and fee rules, settings and switches",
-   "goal": "`catalog` loads `docs/catalog/categories.yaml` into its tables: each category's job types, license rule, recurring flag and switch; a category not confirmed in the K2b list, or on the not-at-launch list, stays off; the AI never sets a license class; and switching a category on or off is a logged settings change with no code change (LIC-001 to LIC-005, AI-017).",
+   "goal": "`catalog` loads `docs/catalog/categories.yaml` into its tables: each category's job types, license rule, recurring flag and switch; a category not confirmed in the K2b list, or on the not-at-launch list, stays off; the AI never sets a license class; and switching a category on or off is a logged settings change with no code change (LIC-001 to LIC-005, AI-017). The TD-LIC-01 card-field case is checked against `question_bank.yaml`'s flags; the not-offered reply is T024's intake behaviour.",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -1692,7 +1710,8 @@
     "docs/catalog/categories.yaml",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
-    "docs/brains/ai-intake.md"
+    "docs/brains/ai-intake.md",
+    "docs/catalog/question_bank.yaml"
    ],
    "requirements": [
     "AI-017",
@@ -1712,7 +1731,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -1881,7 +1900,9 @@
     "tests/security/ui/forge_session_proof_literal.rs",
     "tests/security/ui/forge_session_proof_literal.stderr",
     "tests/security/ui/forge_session_proof_clone.rs",
-    "tests/security/ui/forge_session_proof_clone.stderr"
+    "tests/security/ui/forge_session_proof_clone.stderr",
+    "tests/security/ui/forge_session_proof_default.rs",
+    "tests/security/ui/forge_session_proof_default.stderr"
    ],
    "reads": [
     "docs/architecture.md",
@@ -1901,7 +1922,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 150,
     "context_pct": 13
    },
@@ -3603,7 +3624,7 @@
    "id": "T220",
    "slug": "businesses-team-members",
    "title": "businesses: team members, roles and staff phones",
-   "goal": "The account owner adds, changes and removes team members with their roles (owner, Confirm and billing, member) and the staff phones linked to each (BIZ-023, CALL-012's storage), in `businesses.team_member` and `businesses.staff_phone`; removing a member unlinks their phones and enqueues the event that ends their sessions (portals handles it); every change is audited.",
+   "goal": "The account owner adds, changes and removes team members with their roles 'Cards and quotes' and 'Confirm and billing' (the owner always has both, BIZ-023) and the staff phones linked to each (BIZ-023, CALL-012's storage), in `businesses.team_member` and `businesses.staff_phone`; removing a member unlinks their phones and enqueues the event that ends their sessions (portals handles it); every change is audited.",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -13270,7 +13291,7 @@
    "id": "T154",
    "slug": "intake-golden-sets",
    "title": "catalog: write docs/catalog/intake_golden.yaml, about 20 fake sample requests per launch-open trade with the expected trade, job type and questions, and a test that loads it, before any routing code",
-   "goal": "`docs/catalog/intake_golden.yaml` holds about 20 fake sample requests per launch-open trade, each with the expected trade, job type and questions, and a test loads it and checks every row against the catalog before any routing code exists (INT-040).",
+   "goal": "`docs/catalog/intake_golden.yaml` holds about 10 fake sample requests per launch-open trade (37 trades, so about 370 rows; the set grows in the re-plan if OPS-040's run needs more), each with the expected trade, job type and questions, and a test loads it and checks every row against the catalog before any routing code exists (INT-040).",
    "type": "build",
    "phase": 1,
    "stage": "1",
@@ -13294,10 +13315,12 @@
     "docs/spec/intake.md",
     "docs/catalog/categories.yaml",
     "docs/catalog/question_bank.yaml",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/ops-recovery.md"
    ],
    "requirements": [
-    "INT-040"
+    "INT-040",
+    "OPS-040"
    ],
    "tests": [],
    "decisions": [
@@ -13306,7 +13329,7 @@
    "cites": [],
    "budget": {
     "files": 2,
-    "lines": 500,
+    "lines": 600,
     "context_pct": 20
    },
    "checks": [
@@ -13316,7 +13339,7 @@
    ],
    "branch": "claude/task/T154-intake-golden-sets",
    "prompt": "kit/prompts/T154.md",
-   "acceptance": "`python3 -m pytest tests/test_intake_golden.py` passes: every launch-open trade has about 20 rows, each row's trade, job type and questions exist in the catalog, and every value is fake."
+   "acceptance": "`python3 -m pytest tests/test_intake_golden.py` passes: every launch-open trade has about 10 rows, each row's trade, job type and questions exist in the catalog, and every value is fake."
   },
   {
    "id": "T155",
@@ -14097,7 +14120,8 @@
     "TD-WORD-09",
     "TD-CON-23",
     "TD-WEB-10",
-    "TD-WORD-11"
+    "TD-WORD-11",
+    "TD-WORD-31"
    ],
    "decisions": [
     "D-398",
@@ -14823,7 +14847,8 @@
    ],
    "owns": [
     "stand_ins/server.py",
-    "tests/contract/test_stand_in_server.py"
+    "tests/contract/test_stand_in_server.py",
+    "stand_ins/twilio.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14851,7 +14876,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 3,
     "lines": 500,
     "context_pct": 15
    },
@@ -14867,7 +14892,7 @@
    "id": "T168",
    "slug": "test-layer-crates",
    "title": "Test-layer crates: integration, security (with the compile-fail cases), recovery and fixtures, reached only through each module's api",
-   "goal": "Create the test crates tests/integration, tests/security (trybuild compile-fail cases in tests/security/ui), tests/recovery and tests/fixtures (the fake-data crate), each depending on the app crates it exercises and reaching them only through their `api`; there is no `testing` feature and no unit or property test crate (unit and property tests live in each crate under src/tests/, D-481). Each crate has a helpers library so later tasks add files without editing a shared manifest. Acceptance: a trybuild case that builds a `ReleaseProof` by struct literal, Default, Clone or any constructor from the security crate fails to compile. The recovery test crate is `askhava-recovery-tests` (D-488); each trybuild driver has one `TestCases` and globs only its own `ui/` cases, and a pass case documents that `release_mint()` compiles from any crate that depends on privacy.",
+   "goal": "Create the test crates tests/security (the trybuild driver crate, compile-fail cases live in tests/security/ui and are owned by the tasks that prove each type) and tests/recovery (`askhava-recovery-tests`), each depending on the app crates it exercises and reaching them only through their `api`; there is no `testing` feature. tests/integration is T175's and tests/fixtures is T010's. The recovery test crate is `askhava-recovery-tests` (D-488); each trybuild driver has one `TestCases` and globs only its own `ui/` cases.",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -14920,7 +14945,7 @@
    ],
    "branch": "claude/task/T168-test-layer-crates",
    "prompt": "kit/prompts/T168.md",
-   "acceptance": "A trybuild case that builds a `ReleaseProof` by struct literal, `Default`, `Clone` or any constructor from the security crate fails to compile, and `cargo test -p askhava-security` and `cargo test -p askhava-recovery` build."
+   "acceptance": "`cargo test -p askhava-security` and `cargo test -p askhava-recovery-tests` build and run (no cases yet) under the workspace lints; both crates have no features and depend only on app crates' `api`."
   },
   {
    "id": "T218",

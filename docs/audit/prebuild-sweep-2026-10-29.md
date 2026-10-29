@@ -13,9 +13,9 @@
 | 6 | 27 | 30 | 14 | 11 | 5 |
 | 7 | 27 | 28 | 9 | 12 | 7 |
 | 8 | 20 | 19 | 3 | 10 | 6 |
-| 1 | 27 | (in progress at the time of this report; its findings are folded in by the same decision when they land) | | | |
+| 1 | 30 | 25 | 3 | 9 | 13 |
 | Spec sweep | 713 requirements | 22 (8 contradictions, 9 gaps, 5 stale) | | | |
-| **Total (batches 2 to 8 and the sweep)** | | **203** | **49** | **81** | **51** |
+| **Total (all batches and the sweep)** | | **228** | **52** | **90** | **64** |
 
 A blocker is a task the worker could not finish as written; the plan's own validators (`validate_tasks.py`, `trace_spec.py`, `gen_prompts.py --check`) were green throughout, because none of these defects is visible to a structural check.
 
