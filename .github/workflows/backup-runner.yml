@@ -104,6 +104,8 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         env:
           RUNNER_STARTER: actions
+                       RUNNER_STARTER: actions
+             GH_TOKEN: ${{ github.token }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: --model claude-sonnet-5-5 --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
