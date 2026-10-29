@@ -163,12 +163,13 @@ jobs:
             You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now. The runner code (runner/) does the cycle; you do only the task it hands you (D-486).
 
             Do exactly this:
-            1. Run `python3 -m runner` (RUNNER_STARTER=actions is already set). It prints a result line and a JSON line.
+            1. Run `python3 -m runner` (RUNNER_STARTER=actions is already set) in the foreground with the Bash tool's longest timeout (600000 ms); never with run_in_background. It prints a result line and a JSON line. If a call still times out, run it again: the runner picks up where it stopped. Never end your turn before you have its result line: this job ends when you stop, and a runner still running is killed mid-cycle (D-510).
             2. If the result is anything but `handed_off`, stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
             3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models. Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists (when `prompt` is not a file path, as for FIX-MAIN, it is the prompt text itself: follow it, revert first); commit to the local branch; do not push it.
             3a. Run every subagent in the foreground (run_in_background: false) and wait for it to finish. Never end your turn while a subagent is running: this job ends when you stop, and anything still running is killed with it (D-503).
             4. Run the fresh-eyes reviewer subagent on the reviewer model over the diff and the task's spec files; findings go back to the worker once.
             5. Run `python3 -m runner --after --worker-agent <worker agent id> --reviewer-agent <reviewer agent id>` (add `--outcome tests_failed --log "<summary>"` if the work failed, `--outcome usage_limit` at a usage limit).
+            5a. Run `--after` the same way: foreground, longest timeout, and wait for its result line.
             6. While the task runs longer than 30 minutes, run `python3 -m runner --renew` every 30 minutes.
             7. Never edit kit/state.json, claude/kit-state or claude/lease yourself, never push to main, never force-push.
             8. Report the runner's output lines and stop.
