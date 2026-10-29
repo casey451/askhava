@@ -1,0 +1,164 @@
+# Run prompt: playbook_v2 (three proposed rule changes). Fake data only.
+# Rule 1: bank questions per job type (must_know bank_question or emergency: true only).
+#   Effect seen in this run: bedrooms is named by no recurring, move-out, post-construction or
+#   specialty must_know bank_question, so it is skipped for those job types.
+# Rule 2: up to two follow-ups per job type, by ask_when and must_know rank.
+# Rule 3: photo asks are the job type's photos_priority ids, in order (trade file wording).
+# Cap: 8 questions in total. A plain "no photo" ends photo asks.
+category: house_cleaning
+variant: playbook_v2
+model: "claude-haiku-5-5"
+run: "run-2026-10-29"
+results:
+  - scenario_id: house_cleaning_s01
+    transcript:
+      - {who: homeowner, text: "need a cleaner"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "What kind of cleaning? 1 Regular 2 Deep cleaning 3 Move-out", step: question}
+      - {who: homeowner, text: "1"}
+      - {who: intake, text: "How often? 1 Weekly 2 Every two weeks 3 Monthly", step: question}
+      - {who: homeowner, text: "2"}
+      - {who: intake, text: "How many bathrooms? 1 2 3 or more", step: question}
+      - {who: homeowner, text: "2"}
+      - {who: intake, text: "Any pets in the home? 1 Yes 2 No", step: question}
+      - {who: homeowner, text: "yes 3 dogs, one is a husky mix, they shed"}
+      - {who: intake, text: "When was the home last cleaned top to bottom? 1 Within the last month 2 1 to 6 months ago 3 Over 6 months ago 4 Never by a cleaner", step: follow_up}
+      - {who: homeowner, text: "about 5 months ago"}
+      - {who: intake, text: "Who uses the home: 1 We live here full time 2 Empty part of the year 3 Rented to long-term tenants 4 Rented to vacation guests", step: follow_up}
+      - {who: homeowner, text: "1 we live there"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "3"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Kitchen?", step: photo}
+      - {who: homeowner, text: "no pics"}
+    questions_asked: 8
+    follow_ups_used: [fu_last_clean, fu_occupancy]
+    skipped_bank_questions: [bedrooms, service_after_type_known]
+    routing: {category: house_cleaning, job_type: recurring, bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0101 | House cleaning | Lake Havasu City, area not said | not said
+      Regular cleaning every two weeks, 2 bath house, three dogs that shed; last full clean about 5 months ago.
+      Size: bedrooms not said / 2 bath. How often: every two weeks. Pets: yes, 3 dogs (one husky mix, sheds).
+      Last full clean: 1 to 6 months. Home: lived in full time. Extras: not said.
+      Photos: 0. Homeowner adds: none.
+      Needed: flexible.
+    facts_in_card_not_stated: []
+
+  - scenario_id: house_cleaning_s02
+    transcript:
+      - {who: homeowner, text: "looking for a deep clean crew for my airbnb. every time guests leave. also do u guys handle the booking and collecting rent from the guests? my last girl only did the cleaning"}
+      - {who: intake, text: "What town is the rental in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city, short term rental"}
+      - {who: intake, text: "Ask Hava sends cleaning only. Bookings and rent are not part of it.", step: read}
+      - {who: intake, text: "How many bedrooms? 1 or 2 / 3 / 4 or more", step: question}
+      - {who: homeowner, text: "3"}
+      - {who: intake, text: "How many bathrooms? 1 2 3 or more", step: question}
+      - {who: homeowner, text: "2"}
+      - {who: intake, text: "How often are there turnovers? 1 Once 2 A few times a month 3 Weekly or more 4 Only in season", step: question}
+      - {who: homeowner, text: "about 4 a month, more in summer"}
+      - {who: intake, text: "Are the linens changed between guests? 1 Yes 2 No", step: question}
+      - {who: homeowner, text: "yes"}
+      - {who: intake, text: "Where should the sheets and towels be washed: 1 At the rental 2 Taken off site 3 Either one", step: follow_up}
+      - {who: homeowner, text: "the washer and dryer are in the garage, so at the rental"}
+      - {who: intake, text: "How much time is there between check-out and the next check-in? 1 Under 4 hours 2 4 to 6 hours 3 Same day, flexible 4 A day or more", step: follow_up}
+      - {who: homeowner, text: "4 to 6 hours. about 5 on busy weekends"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Kitchen?", step: photo}
+      - {who: homeowner, text: "no pics"}
+    questions_asked: 8
+    follow_ups_used: [fu_laundry_where, fu_window]
+    skipped_bank_questions: [service_answered_by_words]
+    routing: {category: turnover_cleaning, job_type: str_turnover, bank_job_type: "turnover clean", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0102 | Turnover cleaning | Lake Havasu City, area not said | house
+      Vacation rental turnover clean, 3 bed 2 bath, about 4 turnovers a month, about 5 hours between guests on busy weekends.
+      Size: 3 bedrooms, 2 bath. Turnovers: a few a month. Window: 4 to 6 hours (about 5 on busy weekends).
+      Linens: changed, washed at the rental. Access: not said.
+      Photos: 0. Homeowner adds: cleaning only.
+      Needed: flexible.
+    facts_in_card_not_stated: []
+    # Note: the intake sent the cleaning-only line as a reply, not a question. Access (lockbox) is not in the turnover bank, so it is not asked.
+
+  - scenario_id: house_cleaning_s03
+    transcript:
+      - {who: homeowner, text: "need someone to deep clean my hall bathroom the floor around the toilet is always wet and smells nasty, the grout is just gross. i think it just needs a good scrub"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu city"}
+      - {who: intake, text: "Is this about house cleaning, or about plumbing?", step: read}
+      - {who: homeowner, text: "cleaning. its grime"}
+      - {who: intake, text: "How many bedrooms? 1 or 2 / 3 / 4 or more", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "How many bathrooms? 1 2 3 or more", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "When was the home last cleaned top to bottom? 1 Within the last month 2 1 to 6 months ago 3 Over 6 months ago 4 Never by a cleaner", step: follow_up}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "Is there anything in the home besides normal dirt and dust? 1 Just normal dirt and dust 2 Dust from a remodel or paint job 3 Dark spots on walls or ceiling 4 Sewage or dirty water 5 Droppings or nests 6 Piles of stored items", step: follow_up}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Kitchen?", step: photo}
+      - {who: homeowner, text: "no kitchen pic. the hall bath is the problem"}
+      - {who: intake, text: "Main bathroom, please.", step: photo}
+      - {who: homeowner, text: "sent"}
+      - {who: intake, text: "Main living area, or any problem area?", step: photo}
+      - {who: homeowner, text: "no"}
+    questions_asked: 8
+    follow_ups_used: [fu_last_clean, fu_problem_area]
+    skipped_bank_questions: [pets]
+    routing: {category: house_cleaning, job_type: deep_clean, bank_job_type: "deep cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0103 | House cleaning | Lake Havasu City, area not said | not said
+      One-time clean of a hall bathroom; floor around the toilet always wet and smells; grout dark.
+      Size: bedrooms not said / bathrooms not said (hall bathroom). Last full clean: not said. Extras: not said.
+      Photos: 1 (bathroom: damp ring on the floor at the toilet base; grout lines dark).
+      Homeowner adds: floor around the toilet is always wet and smells; grout is gross.
+      Needed: not said.
+    facts_in_card_not_stated: []
+    # Miss, logged: the wet-floor pattern is not surfaced. No allowed follow-up asks when the floor is wet, and the
+    # card reads as a deep clean. Pests and plumbing are not on the card. Pets were not asked (not a deep-clean must_know).
+
+  - scenario_id: house_cleaning_s04
+    transcript:
+      - {who: homeowner, text: "looking for a monthly house cleaning. here's my kitchen"}
+      - {who: homeowner, text: "[photo: kitchen]"}
+      - {who: intake, text: "What town is the home in?", step: coverage}
+      - {who: homeowner, text: "lake havasu"}
+      - {who: intake, text: "How many bathrooms? 1 2 3 or more", step: question}
+      - {who: homeowner, text: "3"}
+      - {who: intake, text: "Any pets in the home? 1 Yes 2 No", step: question}
+      - {who: homeowner, text: "yes, 4 cats, and litter boxes in the laundry room and the hall bath"}
+      - {who: intake, text: "When was the home last cleaned top to bottom? 1 Within the last month 2 1 to 6 months ago 3 Over 6 months ago 4 Never by a cleaner", step: follow_up}
+      - {who: homeowner, text: "over 6 months, about 9"}
+      - {who: intake, text: "Who uses the home: 1 We live here full time 2 Empty part of the year 3 Rented to long-term tenants 4 Rented to vacation guests", step: follow_up}
+      - {who: homeowner, text: "1"}
+      - {who: intake, text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", step: question}
+      - {who: homeowner, text: "not sure"}
+      - {who: intake, text: "A photo or two helps businesses quote. No photo is fine too. Main bathroom, please.", step: photo}
+      - {who: homeowner, text: "[photo: bathroom with a litter box on the floor by the toilet]"}
+      - {who: intake, text: "Main living area, please.", step: photo}
+      - {who: homeowner, text: "no other pics"}
+    questions_asked: 7
+    follow_ups_used: [fu_last_clean, fu_occupancy]
+    skipped_bank_questions: [bedrooms, how_often_answered_by_words]
+    routing: {category: house_cleaning, job_type: recurring, bank_job_type: "regular cleaning", unsure: false}
+    fire_dept_text: false
+    urgent: false
+    stopped_before_card: null
+    card: |
+      REQ-0104 | House cleaning | Lake Havasu City, area not said | not said
+      Monthly cleaning, 3 bath house; four cats; last full clean over 6 months ago.
+      Size: bedrooms not said / 3 bath. How often: monthly. Pets: yes, 4 cats (litter boxes in two rooms).
+      Last full clean: over 6 months. Home: lived in full time. Extras: not said.
+      Photos: 2 (kitchen: counters clear, stovetop wiped; bathroom: litter box on the floor by the toilet).
+      Homeowner adds: none.
+      Needed: not said.
+    facts_in_card_not_stated: []
+    # Miss, logged: the oven was never asked about (no extras follow-up was in the top two). Bedrooms skipped under rule 1.

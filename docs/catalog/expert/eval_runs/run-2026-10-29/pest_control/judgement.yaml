@@ -1,0 +1,844 @@
+category: pest_control
+run: run-2026-10-29
+judge_model: claude-opus-5-5
+panel:
+- owner
+- estimator
+- field_tech
+judge_notes:
+- "Scored blind by label from the three run files and scenarios/pest_control.yaml. docs/catalog/expert/pest_control.yaml was opened only for compliance code C10. It was opened after all run files had been read and before this panel block was written, so the order was not exactly what the prompt asks. Every panel score below rests only on the run files and the scenario file."
+- "The town on playbook cards is the harness default (the run file says so). It is not counted as a fact not stated. SUSPECT, CHECK ON SITE and TOLD OWNER lines on the human cards are the estimator's own read, which that variant is allowed. facts_not_stated covers only that variant's FACTS lines."
+- "routing_correct compares category plus job type and bank job type with expected. For s04, s05, s07, s10 and s16 the playbook routed to the right kb job type but set bank_job_type 'general pest service'. The scenario expects null for those (header note: bees, pigeons, rodents and bed bugs have no bank job type name). They are scored false. The playbook's run file follows its own expert file there, so the two files disagree. See where_playbook_lost_to_human."
+- "Baseline job_type labels count as correct when they name the scenario's job type, and null counts when the scenario expects a null bank job type (caller rule). s05 baseline_none's 'general pest service' is accepted under the scenario note, because its card records both the height and the flying insects."
+- "Stops for the expected reason (s13 outside_area, s14 no_businesses, s15 playbook routed to home_inspection) score quotable null and routing_correct true. Their traps are about the stop and score caught. Hidden facts behind the stop could not be reached and are not held against the run."
+- "s11: the playbook stopped at the 911 hold because the homeowner never replied SAFE ('ok. its probably nothing'). It scores quotable null and fire_dept_correct true (caller rule). baseline_none's homeowner replied 'SAFE'. Nothing in the scenario says she would, so that reply came from the run agent."
+- "urgent is not a scored field. Playbook: s10 true (correct), s14 false (expected true). baseline_none is false everywhere. The human set s10 and s14 true."
+- "'Droppings' (s07) appears on all three cards, but the homeowner said only 'little black things like rice' or 'pellets'. It is listed as not stated for all three, even though the scenario's must_be_on_card uses the word."
+scenarios:
+- scenario_id: pest_control_s01
+  labels: {A: playbook, B: baseline_human, C: baseline_none}
+  scores:
+    A:
+      quotable: 2
+      missing_facts:
+      - "toddler who crawls on the kitchen floor and a dog that eats in the laundry room"
+      - "access weekday evenings only"
+      - "single story (card has only the size band and 'about 2,200')"
+      - "seen at night: she said it, but the card dropped it and shows 'How often: not said'"
+      wasted_questions:
+      - "When do you need this? (answer: not sure)"
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Roaches inside, ongoing, about 2,200 sq ft: I can price a monthly plan with a first-visit charge, so I'd send the truck."
+        estimator: "No question about who lives there or when someone can get in. Both kid/pet traps were missed. Six questions, one over the scenario's max."
+        field_tech: "I'd show up in the daytime to an empty house and find out about the toddler on the floor and the dog bowl once I'm inside."
+    B:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Everything for a monthly price, plus the rock yard."
+        estimator: "Asked kids and pets and the access window in two short questions. Nothing missing."
+        field_tech: "Evening booking and the toddler and dog on the card, so I know to keep product off the floor."
+    C:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "When do you need this? (answer: not sure)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete card for a monthly price."
+        estimator: "All must-haves present, but seven questions for a homeowner who gets short at the sixth."
+        field_tech: "Evening access, toddler and dog: no surprises."
+- scenario_id: pest_control_s02
+  labels: {A: baseline_none, B: playbook, C: baseline_human}
+  scores:
+    A:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "When do you need this? (answer: not sure)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Crickets, garage and patio, 1,800 single story, damp rock from a drip leak: I can price a knockdown plus monthly."
+        estimator: "Got the entry and moisture question. Seven questions, over the max of 5."
+        field_tech: "Damp rock by the garage is on the card, so I know where to bait."
+    B:
+      quotable: 2
+      missing_facts:
+      - "drip line leak by the side of the garage keeps the rock damp"
+      - "single story (only the size band)"
+      wasted_questions: []
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "I can price crickets on a monthly plan. The fumigation request is recorded as his words, which is right."
+        estimator: "Never asked where they come in or what the ground is like, so the damp rock that is driving it is missing."
+        field_tech: "I'd find the wet rock on site. It changes what I'd treat and what I'd tell him."
+    C:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete. Told him tenting is not for crickets. That's allowed for this variant and doesn't count toward the score."
+        estimator: "Asked about wet spots directly. Nothing missing."
+        field_tech: "No surprises."
+- scenario_id: pest_control_s03
+  labels: {A: baseline_human, B: baseline_none, C: playbook}
+  scores:
+    A:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Trail to food from a window crack, no wood damage, never treated, slab: one-time ant price with a follow-up."
+        estimator: "Got wings, line start and end, wood signs, prior service, monsoon timing and slab. Told the owner it acts like ants (allowed here)."
+        field_tech: "I know to start at the window crack."
+    B:
+      quotable: 2
+      missing_facts:
+      - "first seen two days after the monsoon storm (minor)"
+      wasted_questions:
+      - "When do you need this? (she had already asked how fast someone can come)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete for a one-time price."
+        estimator: "All must-haves present. Seven questions, two over the max."
+        field_tech: "Window crack named, so I know where to look."
+    C:
+      quotable: 2
+      missing_facts:
+      - "no wings, single file (the card says 'in a line' but never 'no wings')"
+      - "line starts at a crack by the window over the sink"
+      - "slab, built early 2000s"
+      - "never had pest service (card: 'not said')"
+      wasted_questions:
+      - "When do you need this? (she had already asked how fast someone can come)"
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "It didn't escalate to termites, and the 'none of these' answer to wood and tubes is on the card. I can quote a one-time visit."
+        estimator: "One follow-up went to termite signs, which was right. Then 'where' was skipped, so the entry crack and prior service never came out."
+        field_tech: "I don't know where the trail comes in until I'm in the kitchen."
+- scenario_id: pest_control_s04
+  labels: {A: baseline_none, B: baseline_human, C: playbook}
+  scores:
+    A:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "When do you need this? (she had said asap)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Ankles only, clean mattress, outdoor cat off its collar, carpeted back bedroom: I know what to bring and can price it."
+        estimator: "Every fact I need, no verdict on the card. Seven questions, two over."
+        field_tech: "No surprises."
+    B:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete. Told her it looks like fleas and to treat the cat (allowed here)."
+        estimator: "Same facts as a full card, in five questions."
+        field_tech: "No surprises."
+    C:
+      quotable: 1
+      missing_facts:
+      - "bites only on ankles and lower legs, none on arms or neck"
+      - "no spots, stains or shed skins on the mattress or frame (card: 'not said')"
+      - "bites after walking through the carpeted back bedroom; tile elsewhere (card: 'not said')"
+      - "flea collar ran out about a month ago (minor)"
+      wasted_questions:
+      - "When do you need this? (she had said asap)"
+      trap_caught: false
+      routing_correct: false
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 4
+      stopped_before_card: null
+      panel_notes:
+        owner: "Bed bugs and fleas are different jobs at different prices. The only thing separating them on this card is the outdoor cat, so I'd call."
+        estimator: "The one follow-up went to pets. Where the bites are and whether the mattress is clean were never asked, and those are what I price on. Bank job type 'general pest service' where the scenario expects none."
+        field_tech: "I'd bring bed bug gear and find a flea job in a carpeted room."
+- scenario_id: pest_control_s05
+  labels: {A: playbook, B: baseline_none, C: baseline_human}
+  scores:
+    A:
+      quotable: 1
+      missing_facts:
+      - "small dark thin-waisted wasps fly in and out of the tubes (card: 'Flying insects: not asked')"
+      - "no damaged wood, sawdust or swarmers inside"
+      - "first noticed two weeks ago, more each week"
+      - "two-story, about 2,800 sq ft"
+      - "ladder access only; side yard gate with a latch"
+      wasted_questions:
+      - "A photo or two helps businesses quote. (she had already sent the photo with her first message)"
+      trap_caught: false
+      routing_correct: false
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 3
+      stopped_before_card: null
+      panel_notes:
+        owner: "Height and 'not at the foundation' are there, which is the main thing. I still don't know what lives in them, so I'd call before sending anyone."
+        estimator: "Termite signs was the one follow-up. After she picked 'mud high up', nobody asked what is flying. The run marked itself unsure and filed bees_wasps with bank 'general pest service'. Under the scenario, general pest is accepted only if the card shows the flyers, and it doesn't."
+        field_tech: "I don't know it's a two-story ladder job or that there's a gate."
+    B:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "When do you need this? (answer: not sure)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Height, wasps flying, no wood damage, two-story, ladder and gate: one-time eave visit priced from the card."
+        estimator: "Every hidden fact came out. Seven questions, two over."
+        field_tech: "I know to bring the long ladder."
+    C:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete. Told the owner they're mud dauber nests (allowed here)."
+        estimator: "Five questions, nothing missing."
+        field_tech: "Ladder size and the gate are on the card."
+- scenario_id: pest_control_s06
+  labels: {A: baseline_human, B: playbook, C: baseline_none}
+  scores:
+    A:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "Vacant lot with debris, the wall gap and the failed perimeter-only service: I price monthly plus exclusion, not a standard route stop."
+        estimator: "Asked what's around the house and what the last company did. Both traps caught."
+        field_tech: "I know it's the east wall and the gap."
+    B:
+      quotable: 2
+      missing_facts:
+      - "vacant dirt lot next door on the east side with concrete, lumber and brush piles; block wall gap at the bottom near the gate"
+      - "mostly the bedroom hallway and the bathroom nearest that side (card: 'Rooms: not said')"
+      - "previous provider sprayed only the outside perimeter, with no change"
+      - "two kids (6 and 9) and a small dog"
+      wasted_questions:
+      - "A photo or two helps businesses quote. (she had said she has no picture)"
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "I could quote monthly scorpion service from this, but it would be the same perimeter plan that already failed, and I'd lose the customer."
+        estimator: "The yard follow-up got 'block wall' and nothing about next door. She doesn't count the lot as her yard. No rooms, no kids or dog, no question on what the last company did."
+        field_tech: "I'd walk out to the east wall and see a debris lot nobody told me about."
+    C:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "When do you need this? (answer: not sure)"
+      - "A photo or two helps businesses quote. (she had said she has no picture)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete for a monthly plus exclusion price."
+        estimator: "Every trap caught. Seven questions, one over the max of 6."
+        field_tech: "No surprises."
+- scenario_id: pest_control_s07
+  labels: {A: baseline_none, B: playbook, C: baseline_human}
+  scores:
+    A:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "What kind of animal do you think it is? (answer: not sure)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - "'droppings': she said 'dark little pellets like rice'"
+      questions_asked: 8
+      stopped_before_card: null
+      panel_notes:
+        owner: "Noise overhead for 3 weeks, pellets in the garage, blocked hatch, walker, cat: I can quote a rodent inspection and trapping visit."
+        estimator: "Every fact came out, but eight questions for an elderly voice-texter, against a max of 5."
+        field_tech: "I know to bring someone to move the boxes."
+    B:
+      quotable: 2
+      missing_facts:
+      - "about 3 weeks"
+      - "attic hatch in the hallway closet with boxes stacked under it; she cannot move them or climb a ladder"
+      - "lives alone, indoor cat, uses a walker"
+      - "single story (only the size band)"
+      wasted_questions:
+      - "What are you seeing? 1 Scorpions 2 Ants or roaches ... (her opening had already described it; answer: not sure)"
+      trap_caught: false
+      routing_correct: false
+      fire_dept_correct: true
+      facts_not_stated:
+      - "'small dark droppings': she said 'little black things in the garage like rice'"
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "Clear enough for an inspection visit fee. Grandson on Sundays is useful."
+        estimator: "No attic access question, no who-lives-there question. A six-option menu and a long five-option follow-up for a homeowner who needs short, single questions. Bank job type 'general pest service' where the scenario expects none."
+        field_tech: "I'd find a blocked hatch, a walker and a cat once I'm inside, with no one to move the boxes."
+    C:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - "'droppings': she said 'little black things like rice'"
+      - "'Elderly, voice-texts': she never said her age or that she dictates"
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete, booked through the grandson."
+        estimator: "Short plain questions one at a time. Nothing missing."
+        field_tech: "Crew moves the boxes, and the walker and cat are flagged."
+- scenario_id: pest_control_s08
+  labels: {A: baseline_human, B: baseline_none, C: playbook}
+  scores:
+    A:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Shared wall, neighbor affected, landlord pays in writing: I write the landlord a one-unit and a both-units quote."
+        estimator: "All three hidden facts came out. Told the tenant 'German roaches' (allowed here)."
+        field_tech: "Snake tank and after-4 access are on the card."
+    B:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "When do you need this? (answer: not sure)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 8
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete. I know who signs."
+        estimator: "Every fact came out. Eight questions, two over the max of 6."
+        field_tech: "No surprises."
+    C:
+      quotable: 1
+      missing_facts:
+      - "shares a wall with the other unit, and that tenant has roaches too"
+      - "landlord owns both halves, pays if under his limit, needs the quote in writing"
+      - "pet snake in a tank in the bedroom"
+      - "access after 4 pm (tenant works nights)"
+      wasted_questions:
+      - "When do you need this? (answer: not sure)"
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "A tenant can't approve this. I don't know if I'm quoting one unit or two, or whether the landlord wants it in writing, so I'd call."
+        estimator: "The 'landlord decides' answer was dropped ('Schedule wanted: not said'). No question about other units, who pays, or pets."
+        field_tech: "I'd spray a bedroom with a snake tank in it and push the roaches into the other half."
+- scenario_id: pest_control_s09
+  labels: {A: playbook, B: baseline_human, C: baseline_none}
+  scores:
+    A:
+      quotable: 2
+      missing_facts:
+      - "previous owner's termite treatment paperwork from about 2011 (card: 'Past treatment: not said')"
+      - "built 1998, slab, stucco (card: 'Floor: not said')"
+      wasted_questions: []
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - "'floor edges': she said the bugs came out 'por las ventanas de la sala' (living room windows)"
+      - "'under the front window': neither her words nor the photo say front"
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "Wings, a tube behind the water heater and a hollow baseboard: inspection visit, then a treatment quote. Good card."
+        estimator: "The one follow-up caught the tube and the hollow baseboard. Paperwork and slab were never asked, and the 2011 paperwork is what tells me about a warranty."
+        field_tech: "I'd learn about the old treatment from her drawer on site."
+    B:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - "'Evening after the storm': she said only 'after yesterday's storm'"
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete. Inspection visit to price, paperwork read on site."
+        estimator: "All three hidden facts came out, in Spanish. Told her it sounds like a termite swarm (allowed here)."
+        field_tech: "Water heater spot and the hollow baseboard are flagged."
+    C:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "¿Cuándo necesita el servicio? (answer: no estoy segura)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated:
+      - "'window frames and floor edges': she said 'por las ventanas de la sala'"
+      - "'near the front window': not said or shown"
+      - "'the evening after a storm': she said 'after yesterday's storm'"
+      - "'garage stem wall': she said 'pared del garaje'"
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete for an inspection visit."
+        estimator: "All facts came out. Seven questions, two over. Several hidden-fact words leaked onto the card."
+        field_tech: "No surprises."
+- scenario_id: pest_control_s10
+  labels: {A: baseline_none, B: baseline_human, C: playbook}
+  scores:
+    A:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "How big is the home? (does not change a swarm removal)"
+      - "When do you need this? (he had said SEND SOMEONE NOW)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 8
+      stopped_before_card: null
+      panel_notes:
+        owner: "Swarm 6 ft up in a mesquite, nobody stung, garage access, live removal: same-day swarm price."
+        estimator: "Every fact came out, but eight questions against a max of 4 for a panicked dad. Urgent is false on a same-day swarm."
+        field_tech: "No surprises."
+    B:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete, flagged urgent."
+        estimator: "Five questions, one over. The card carries 'TOLD OWNER: keep everyone inside, don't spray'. That's allowed for this variant, but it's on the scenario's must-not list for a card."
+        field_tech: "Pool pad, gate and garage entry are on the card."
+    C:
+      quotable: 2
+      missing_facts:
+      - "nobody stung; kids and dog inside (card: 'Stung so far: not said')"
+      - "about 25 feet from the back door, near the pool equipment pad"
+      - "side gate locked; access through the garage"
+      - "live removal preferred (card: 'not said')"
+      - "homeowner home all day"
+      wasted_questions:
+      - "When do you need this? (he had said SEND SOMEONE NOW)"
+      trap_caught: false
+      routing_correct: false
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 3
+      stopped_before_card: null
+      panel_notes:
+        owner: "A hanging swarm since this morning, 6 ft up, urgent: I'd send someone on a swarm-removal fee."
+        estimator: "Three questions, but they went to how long and the timing he'd already given. Stung, access and live removal were never asked. Bank job type 'general pest service' where the scenario expects none. No 911 text, correctly."
+        field_tech: "I'd hit a locked side gate and not know a beekeeper was wanted."
+- scenario_id: pest_control_s11
+  labels: {A: baseline_human, B: playbook, C: baseline_none}
+  scores:
+    A:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "Has anyone looked at that propane smell yet? (does not change the ant quote)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 4
+      stopped_before_card: null
+      panel_notes:
+        owner: "Monthly ants priced from the card. The gas flag tells my crew to stay out of the garage."
+        estimator: "Gave its own safety message (not the fixed text) with advice, which is allowed for this variant. The card opens with a gas flag and advice, which the scenario says a pest card should not carry."
+        field_tech: "I know not to go near the water heater."
+    B:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: "911_hold"
+      panel_notes:
+        owner: "No card. The fixed 911 text went out on the propane smell, which is correct."
+        estimator: "Held for SAFE because she answered 'ok. its probably nothing'. The scenario says the ant intake can continue, so no ant card exists. That's a flow choice, not a scoring loss under the caller rule."
+        field_tech: "Nothing to show up to yet."
+    C:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "When do you need this? (answer: no rush, not sure)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Monthly ants priced from the card."
+        estimator: "The 911 text fired and the card has no advice. The homeowner's 'SAFE' reply was supplied by the run agent; the persona never says it. Six questions, two over the max of 4."
+        field_tech: "The smell is not on the card, so my crew walks into a garage with a propane smell. The scenario allows that as a design choice."
+- scenario_id: pest_control_s12
+  labels: {A: playbook, B: baseline_none, C: baseline_human}
+  scores:
+    A:
+      quotable: 1
+      missing_facts:
+      - "about half an acre of rock, front and back combined"
+      - "old landscape fabric torn in places"
+      - "palo verde, two agaves, an ocotillo and a drip line in the rock (the drip line is only in the photo description)"
+      wasted_questions: []
+      trap_caught: false
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 4
+      stopped_before_card: null
+      panel_notes:
+        owner: "Pre-emergent with no area. Half an acre and a small yard are very different prices. I'd call."
+        estimator: "The one follow-up went to weeds now. Area, fabric and plants were never asked. The yard-work part got 'need a separate request' and no second card."
+        field_tech: "I'd show up with enough product for a small yard and find desert plants and drip lines nobody mentioned."
+    B:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "When do you need this? (he had said before the winter weeds; answer: before the winter weeds come up)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Half an acre, torn fabric, plants and drip: twice-a-year price from the card."
+        estimator: "Every fact came out. Seven questions, two over. No second card was written for the yard work."
+        field_tech: "No surprises."
+    C:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 6
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete, and the yard work is sent as its own request."
+        estimator: "Got area, fabric and plants. Six questions, one over."
+        field_tech: "Plants and drip are flagged, and spring timing against the empty house is noted."
+- scenario_id: pest_control_s13
+  labels: {A: baseline_none, B: playbook, C: baseline_human}
+  scores:
+    A:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: "outside_area"
+      panel_notes: {owner: "Correct stop, no card.", estimator: "Outside-area reply before any pest question.", field_tech: "Nothing to show up to."}
+    B:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: "outside_area"
+      panel_notes: {owner: "Correct stop, no card.", estimator: "Outside-area reply from the town in the text, before any pest question.", field_tech: "Nothing to show up to."}
+    C:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: "outside_area"
+      panel_notes: {owner: "Correct stop, no card.", estimator: "Same outside-area reply.", field_tech: "Nothing to show up to."}
+- scenario_id: pest_control_s14
+  labels: {A: baseline_human, B: baseline_none, C: playbook}
+  scores:
+    A:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: "no_businesses"
+      panel_notes: {owner: "Correct stop. The message says plainly that there are no pest businesses yet.", estimator: "Asked the town first (not counted), then stopped. Set urgent true.", field_tech: "Nothing to show up to."}
+    B:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: "no_businesses"
+      panel_notes: {owner: "Correct stop.", estimator: "Coverage reply before any question.", field_tech: "Nothing to show up to."}
+    C:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: "no_businesses"
+      panel_notes: {owner: "Correct stop.", estimator: "Coverage reply before any question. kb job type bees_wasps is right. Urgent false where the scenario expects true (not scored).", field_tech: "Nothing to show up to."}
+- scenario_id: pest_control_s15
+  labels: {A: playbook, B: baseline_human, C: baseline_none}
+  scores:
+    A:
+      quotable: null
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 0
+      stopped_before_card: "other_category"
+      panel_notes:
+        owner: "Routed to home inspection's termite report for a sale or loan. That's the expected other category, so it's a correct stop under the caller rule."
+        estimator: "No inspection card exists in this run, so the escrow date, detached garage, patio cover and lockbox facts still have to be gathered by the home_inspection intake."
+        field_tech: "Nothing to show up to from this file."
+    B:
+      quotable: 3
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 4
+      stopped_before_card: null
+      panel_notes:
+        owner: "WDIIR on a 1,600 sq ft 2006 slab with a detached garage and patio cover: flat report fee, firm from the card."
+        estimator: "Four questions, everything there."
+        field_tech: "Lockbox through the agent; outbuildings flagged."
+    C:
+      quotable: 3
+      missing_facts: []
+      wasted_questions:
+      - "When do you need this? (he had said escrow timing; answer: by close, about 3 weeks)"
+      - "A photo or two helps businesses quote. (answer: no photos; not needed for a report)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 7
+      stopped_before_card: null
+      panel_notes:
+        owner: "Flat report fee, firm from the card."
+        estimator: "Every fact came out. Seven questions against a max of 4."
+        field_tech: "No surprises."
+- scenario_id: pest_control_s16
+  labels: {A: baseline_none, B: playbook, C: baseline_human}
+  scores:
+    A:
+      quotable: 2
+      missing_facts: []
+      wasted_questions:
+      - "Which do you want first? (answer: both, just get it done)"
+      - "How big is the home? (does not change panel screening)"
+      - "When do you need this? (answer: not sure, soon)"
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 8
+      stopped_before_card: null
+      panel_notes:
+        owner: "16 panels, tile, single story, no poison, warranty noted: cleanout and screening priced from the card."
+        estimator: "Everything came out. Eight questions, three over. Says panel cleaning is a separate request but writes no second card."
+        field_tech: "Tile roof and warranty are flagged."
+    B:
+      quotable: 2
+      missing_facts:
+      - "single story (card: 'Stories: not said')"
+      - "south side, every morning"
+      - "no poison; netting or screen preferred"
+      - "panels installed six years ago; installer warranty paperwork on file"
+      wasted_questions: []
+      trap_caught: false
+      routing_correct: false
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 3
+      stopped_before_card: null
+      panel_notes:
+        owner: "About 16 panels and the photo are enough for a screening range."
+        estimator: "Warranty and no-poison were never asked. The panel-cleaning request was dropped with no word to the homeowner and no second card. Bank job type 'general pest service' where the scenario expects none."
+        field_tech: "I wouldn't know about the installer warranty before clipping mesh to the array."
+    C:
+      quotable: 2
+      missing_facts: []
+      wasted_questions: []
+      trap_caught: true
+      routing_correct: true
+      fire_dept_correct: true
+      facts_not_stated: []
+      questions_asked: 5
+      stopped_before_card: null
+      panel_notes:
+        owner: "Complete, and panel washing is sent as its own request."
+        estimator: "Asked about the installer and warranty directly. Five questions."
+        field_tech: "Tile and single story are flagged."
+summary_by_variant:
+  playbook:
+    median_quotable: 2.0
+    quotable_share: 0.667
+    median_questions: 4.0
+    routing_correct_share: 0.688
+    fire_dept_correct_share: 1.0
+    trap_caught_share: 0.25
+    facts_not_stated_count: 3
+  baseline_none:
+    median_quotable: 2.0
+    quotable_share: 1.0
+    median_questions: 7.0
+    routing_correct_share: 1.0
+    fire_dept_correct_share: 1.0
+    trap_caught_share: 1.0
+    facts_not_stated_count: 5
+  baseline_human:
+    median_quotable: 2.0
+    quotable_share: 1.0
+    median_questions: 5.0
+    routing_correct_share: 1.0
+    fire_dept_correct_share: 1.0
+    trap_caught_share: 1.0
+    facts_not_stated_count: 3
+where_playbook_lost_to_human:
+- "Routing (s04, s05, s07, s10, s16): the playbook set bank_job_type 'general pest service' for bed_bugs_other, bees_wasps, rodents and pigeons_birds. The scenario file expects null for these (no bank job type name). The playbook followed its expert file, so the two files disagree. Fix: change one of them so the bank job type for these four kb types is the same in both."
+- "s01: never asked who lives there or when someone can get in, so the toddler, the dog and evening-only access are missing. The human asked 'Any kids or pets in the house?' and 'When can we get in?'. Fix: for general_pest with inside service, ask kids/pets and the access window. Keep 'at night' on the card when she says it."
+- "s02: never asked where they come in or whether anything stays wet, so the drip-line leak is missing. The human asked 'Anywhere around the house that stays wet?'. Fix: for crickets (and roaches), allow a moisture/entry follow-up."
+- "s03: 'where' was skipped after the termite-signs follow-up, so the window-crack entry, no wings, slab and 'never had service' are missing. The human asked where the line starts and ends, and about prior service. Fix: when fu_termite_signs comes back 'None of these', ask where the line starts, and ask fu_prior_service when the schedule is one-time to start."
+- "s04: the one follow-up went to pets. Where the bites are, whether the mattress is clean and which room has carpet were never asked. The human asked all three. Fix: make fu_bite_signs the first follow-up for bed_bugs_other (it already offers 'Bites only on ankles and legs'), and ask rooms and floors instead of home size."
+- "s05: the one follow-up was termite signs. After 'Mud high up under the roof edge', nobody asked what is flying, how long, home size, stories or ladder access. The human asked 'Is anything flying in and out of them?'. Fix: when that option is picked, the next question is 'Is anything flying in and out of it?', and the eave height and stories go on the card."
+- "s06: the yard follow-up got 'block wall' only. The vacant debris lot next door, the wall gap, the rooms, the kids and dog, and what the last company did were all missed. The human asked 'What's around the house on that side? Neighbors, desert, an empty lot?' and 'What did the last company do?'. Fix: add an empty lot or debris next door to fu_yard_features, and ask what the earlier service did when she says it didn't help."
+- "s07: no attic-access question and no who-lives-there question, so the blocked hatch, the walker and the cat are missing. The questions were long menus for an elderly homeowner. The human asked 'Where is the opening to your attic?' and 'Who lives with you? Any pets?'. Fix: for rodents, ask attic access and household/pets, in short single questions."
+- "s08: never asked about the other unit, who approves and pays, pets or access. The human asked all four. Fix: when she says she rents or lives in a duplex or apartment, ask 'Does the other unit have them too?' and 'Who approves and pays: you, the landlord or a manager?'. Keep 'landlord decides' on the card."
+- "s09: the earlier-treatment question and slab/year were never asked, so the 2011 paperwork is missing. The human asked 'Have you had the house treated before? Do you have paperwork?'. Fix: for termites, ask fu_prior_treatment along with fu_termite_signs."
+- "s10: stung, distance and location, gate access and live removal were never asked. The human asked about stings and access, and live or not. Fix: for a hanging swarm, ask 'Has anyone been stung?' as a fact question, plus access and fu_live_removal. Drop the timing question when he already said now."
+- "s12: rock area, fabric and plants were never asked, and the yard work got no second card. The human asked area, fabric and plants and sent the yard work on. Fix: for weed_control, ask area (fu_weed_area) and what is planted in the rock, and write or offer the landscape_maintenance request."
+- "s16: no-poison preference, stories and the installer warranty were never asked, and panel cleaning was dropped. The human asked 'Who installed the panels and how long ago?'. Fix: for pigeons under panels, ask installer/warranty and stories, and send panel cleaning as its own request."
+- "Timing question re-asked after the homeowner had already given timing (s04 'asap', s10 'NOW', s12 'before the winter weeds'). The photo ask was sent after she said she had no picture (s06) or had already sent one (s05). Fix: fill Needed and Photos from her own words."

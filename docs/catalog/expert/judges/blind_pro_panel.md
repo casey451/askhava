@@ -7,7 +7,7 @@ You judge how well three intakes scoped the same jobs. You have never seen Ask H
 - `docs/catalog/expert/scenarios/<category>.yaml`: for each scenario, the hidden facts, traps and expected outcome.
 - `docs/catalog/expert/eval_runs/<run>/<category>/playbook.yaml`, `baseline_none.yaml`, `baseline_human.yaml`.
 
-For each scenario, shuffle the variants into labels A, B, C (and D when a `playbook_v2.yaml` file exists in the folder; include it like the others). Write the mapping in the output, then score by label so the labels do not bias you. Use only file tools (Read, Write); never call a scheduling, reminder or messaging tool.
+For each scenario, shuffle the variants into labels A, B, C (and D for `playbook_v2.yaml` and E for `playbook_v3.yaml` when those files exist in the folder; include them like the others). Write the mapping in the output, then score by label so the labels do not bias you. Use only file tools (Read, Write); never call a scheduling, reminder or messaging tool.
 
 ## The panel
 
