@@ -624,3 +624,34 @@ where_playbook_lost_to_human:
   - "s14 and s15: the routed_elsewhere stop ends with no card. Both baselines carried on in the right trade and wrote quotable cards: pest control with 4,000 sq ft DG, dogs and a veg bed; plumbing with 'cannot shut off, water at the garage apron, 10 ft from the garage'. For an active flood, no card is the worst outcome. Fix: after the routing line, run the target category's question set and write that category's card."
   - "s08: the card is English only. The human wrote it in Spanish with an English section for the crew, as the scenario asks."
   - "s10: the outdoor gas smell at the meter was left off the card. Both baselines kept it as the homeowner's words. This is a harness decision; at minimum, add a neutral crew note quoting the homeowner."
+
+compliance:
+  # Playbook run only, checked against compliance_judge.md C1 to C12 and docs/ai_smell.yaml.
+  # C10: docs/catalog/expert/landscape_maintenance.yaml was opened only here. Each follow_up_used was checked against the
+  #   allowed_follow_ups of the job type the card template shows the intake landed on: s03 fu_water_issue (maintenance),
+  #   s04, s05 and s08 fu_access (lawn_mowing), s11 fu_water_issue (lawn_mowing lists it), s07 and s09 fu_pile_only (cleanup),
+  #   s16 fu_near_wires (shrub_tree_trim). Every one is allowed, and no scenario used more than one. No C10 violation.
+  # C3: the 911 text went out in s10 (gas smell, a fire-truck-list fact) and nowhere else. s15 (flood) and s16 (wire near a palm,
+  #   not down) correctly got none. No other safety, shutoff or repair advice.
+  # C4, C7, C8, C9, C12: no hits. No em dashes, exclamation marks or ai_smell words or patterns in any intake message (the 911 text is exempt under INT-004).
+  violations:
+    - {scenario_id: landscape_maintenance_s15, code: C1, where: "intake message 1 (read)", text: "This sounds like a leaking water line, not yard work."}
+    - {scenario_id: landscape_maintenance_s15, code: C5, where: "intake message 1 (read)", text: "It goes to plumbing repair, so I can't take it here.", note: "Tells the homeowner where her active flood goes, but the run stopped with no card, so nothing went to plumbing."}
+    - {scenario_id: landscape_maintenance_s14, code: C5, where: "intake message 1 (read)", text: "I can't take it here, so it goes to pest control.", note: "Same as s15: the run ended with no card, so nothing went to pest control."}
+    - {scenario_id: landscape_maintenance_s03, code: C1, where: "card line 4", text: "Homeowner adds: he says it is the monsoon washout", note: "A cause on the card. It is the homeowner's belief and labelled as his, but C1 bars a cause on the card. The standing rules should say whether a cause the homeowner states can be quoted."}
+    - {scenario_id: landscape_maintenance_s06, code: C2, where: "card line 5", text: "Homeowner adds: once a year is all she can afford.", note: "Cost or budget talk on the card. These are her words, but the scrub rule should drop them."}
+    - {scenario_id: landscape_maintenance_s09, code: C2, where: "card line 4", text: "Homeowner adds: wants it as soon as possible; will pay extra.", note: "Cost talk on the card that invites rush pricing, which the scenario lists in must_not_be_on_card."}
+    - {scenario_id: landscape_maintenance_s08, code: C6, where: "card line 1", text: "REQ-0108 | Yard maintenance | Lake Havasu City | house", note: "The homeowner never said what kind of place it is, and the photo shows only the back lawn, hedges and fence."}
+    - {scenario_id: landscape_maintenance_s02, code: C11, where: "intake message 6 (timing)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", note: "Her opening message already said asap. She replied 'asap, like I said'."}
+    - {scenario_id: landscape_maintenance_s05, code: C11, where: "intake message 2 (photo)", text: "A photo or two helps businesses quote. No photo is fine too. Send a photo of the whole area from a corner.", note: "His opening message said he can't send photos because his camera is broken. The photo ask counts as a question in questions_asked."}
+    - {scenario_id: landscape_maintenance_s06, code: C11, where: "intake message 3", text: "Should the trimmings be hauled away? 1 Yes 2 No", note: "Her opening message said 'take away the clippings'."}
+    - {scenario_id: landscape_maintenance_s09, code: C11, where: "intake message 5 (timing)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", note: "Her opening message said Saturday and 'TODAY or tomorrow at the latest'."}
+    - {scenario_id: landscape_maintenance_s11, code: C11, where: "intake message 3 (follow_up)", text: "Is anything wrong with the watering system right now, like a leak, a wet spot or a zone that won't come on?", note: "Her opening message said zone 3 doesn't come on anymore."}
+    - {scenario_id: landscape_maintenance_s16, code: C11, where: "intake message 5 (timing)", text: "When do you need this? 1 Today 2 This week 3 Flexible 4 By a date", note: "His opening message said 'b4 monsoon'. The card then reads 'Needed: not said'."}
+  count: 13
+  clean_scenarios: 6   # s01, s04, s07, s10, s12, s13
+  # Borderline, not counted: s02 re-asked the service question after she said 'mow'. The photo contradicted her, which is what the scenario
+  #   wants, so this is not counted as C11. s03 asked 'How often?' after 'been doing this every few weeks', which describes his own raking, not a service frequency.
+  # Fixes these point to: (1) apply the skip rule to the INT-030 timing question and the photo ask; (2) after a routed_elsewhere read, either run
+  #   the target category's intake and write its card, or don't tell the homeowner where it goes; (3) in the read line, drop 'sounds like' and say only which trade the request goes to;
+  #   (4) scrub budget and payment remarks out of 'Homeowner adds'; (5) leave the kind-of-place field 'not said' unless she said it or the photo shows it.

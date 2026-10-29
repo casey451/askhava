@@ -11,6 +11,7 @@
 # Label D (playbook_v2), added in a second pass from playbook_v2.yaml and the scenario file, with the same panel and rules.
 # - D is always playbook_v2 (fixed by the task, not shuffled), so the blind is weaker for D than for A to C.
 # - v2 asks the town as its coverage step; the town on its cards is homeowner-stated and not counted.
+# - "house" in a v2 card header is not counted in facts_not_stated, the same as "House (type not said)" on the first playbook run.
 # - The v2 timing question is a counted question (the run file counts it). It is listed as wasted only where its answer was lost.
 # - A card that claims a photo the transcript never shows (the ask was declined and no photo came with the opening) is counted
 #   in facts_not_stated. The run file's own facts_in_card_not_stated lists are all empty and were not trusted.
@@ -375,7 +376,7 @@ scenarios:
         trap_caught: false
         routing_correct: true
         fire_dept_correct: true
-        facts_not_stated: ["'house' in the card header (he never said the kind of place)"]
+        facts_not_stated: []
         questions_asked: 4
         stopped_before_card: null
         panel_notes:
