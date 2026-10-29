@@ -70,6 +70,10 @@ class Env(Protocol):
         """Run scripts/smoke.sh on main's head with the runner's own tool run: (green, head SHA)."""
         ...
 
+    def main_checks_green(self, head: str) -> bool | None:
+        """Whether `Ci`, `Twin` and `Ally` all passed on that commit of main (None when unknown)."""
+        ...
+
     def push_branch(self, branch: str, head_sha: str) -> bool:
         """Push the reviewed task branch (never force); called only after the review record is pushed."""
         ...
@@ -308,9 +312,43 @@ def _red_main_step(cfg: Config, env: Env, state: State, now: datetime) -> tuple[
         if not sha:
             return state, ""
         return set_main_red(state, cfg, "nightly", sha, offending_merge(state), now), "main_red"
+    red_sha = str(state["main_red"].get("sha", ""))
+    if _false_smoke_red(state) and _smoke_env_strikes(state, red_sha) < SMOKE_ENV_STRIKES and env.main_checks_green(red_sha) is True:
+        return clear_false_red(state, now), "false_red_cleared"
     if st.status(state, st.FIX_MAIN) != st.DONE:
         return state, ""
     return clear_main_red(state, env, now)
+
+
+def _false_smoke_red(state: State) -> bool:
+    """main_red came from a smoke run and FIX-MAIN has not started: still safe to withdraw."""
+    red = state.get("main_red") or {}
+    fix = st.entry(state, st.FIX_MAIN) or {}
+    return red.get("check") == "smoke" and fix.get("status") in (st.QUEUED, None) and not fix.get("attempts")
+
+
+def clear_false_red(state: State, now: datetime) -> State:
+    """Withdraw a smoke-set main_red that the head's own checks contradict: no revert, no blame (D-498).
+
+    The third Actions cycle under the OAuth token marked main red because the smoke test failed in a
+    runner image without the test's prerequisites while Ci, Twin and Ally were green on the same
+    commit; FIX-MAIN would have reverted an unrelated, older merge."""
+    red = dict(state["main_red"], cleared_at=st.iso(now), false_red=True)
+    out = dict(state, main_red=None, main_red_history=[*state.get("main_red_history", []), red])
+    out = st.with_task(out, st.FIX_MAIN, status=st.SKIPPED, reason="false red: the head's checks were green (D-498)")
+    return _note_smoke_env(out, str(red.get("sha", "")), now)
+
+
+SMOKE_ENV_STRIKES = 3  # smoke reds on one head that green checks excuse before the red is believed (D-498)
+
+
+def _smoke_env_strikes(state: State, head: str) -> int:
+    return sum(1 for n in state.get("smoke_env_problems", []) if n.get("sha") == head)
+
+
+def _note_smoke_env(state: State, head: str, now: datetime) -> State:
+    note = {"sha": head, "at": st.iso(now), "why": "smoke red while Ci, Twin and Ally were green on the head"}
+    return dict(state, smoke_env_problems=[*state.get("smoke_env_problems", [])[-9:], note])
 
 
 def _record_inbox(state: State, cfg: Config, items: list[tuple[str, str, str]], now: datetime) -> State:
@@ -402,6 +440,13 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     if ids[0] != st.FIX_MAIN:
         state, ok, head = _smoke(state, env, now, "start routine")  # BUILD_BRIEF.md:240
         if not ok:
+            if env.main_checks_green(head) is True and _smoke_env_strikes(state, head) < SMOKE_ENV_STRIKES:
+                # Ci, Twin and Ally passed on this very commit: the smoke failed in the runner's own
+                # environment (a missing tool or database), not on main. Record it and stop; nothing is
+                # claimed and main is not blamed (D-498). Three strikes on the same head and the red
+                # is believed after all: two green branches can still break main together.
+                state = _note_smoke_env(state, head, now)
+                return "smoke_env" if state == base or env.push_state(state, base) else "lost_race"
             red = set_main_red(state, cfg, "smoke", head, offending_merge(state), now)
             return "main_red" if env.push_state(red, base) else "lost_race"
     task, state = _paced_pick(cfg, state, ids, now)

@@ -353,6 +353,43 @@ class GitHubEnv:
         self.log.append(f"smoke on {head[:12]}: exit {code}; {tail[-1] if tail else ''}")
         return code == 0, head
 
+    def main_checks_green(self, head: str) -> bool | None:
+        """True when `Ci`, `Twin` and `Ally` all concluded success for that commit of main; False when
+        any of them failed; None when a required check is missing or still running (REST, read only).
+
+        A squash commit on main carries no check runs of its own (the check workflows run on `claude/**`
+        pushes and pull requests), so the verdict is read from the merged pull request's head, which
+        GitHub lists for the commit; a direct read of the commit comes first for a commit that has them."""
+        verdict = self._required_checks(head)
+        if verdict is not None:
+            return verdict
+        try:
+            pulls = self.gh_json(f"repos/{self.repo}/commits/{head}/pulls")
+        except RuntimeError as exc:
+            self.log.append(f"pulls for {head[:12]} unreadable: {exc}")
+            return None
+        merged = [p for p in pulls if str(p.get("merge_commit_sha") or "") == head and p.get("merged_at")]
+        if not merged:
+            return None
+        return self._required_checks(str(merged[0]["head"]["sha"]))
+
+    def _required_checks(self, sha: str) -> bool | None:
+        try:
+            runs = self.gh_json(f"repos/{self.repo}/commits/{sha}/check-runs?per_page=100").get("check_runs", [])
+        except RuntimeError as exc:
+            self.log.append(f"check-runs on {sha[:12]} unreadable: {exc}")
+            return None
+        latest: dict[str, str] = {}
+        for run in sorted(runs, key=lambda r: str(r.get("started_at") or "")):
+            done = run.get("status") == "completed"
+            latest[str(run.get("name"))] = str(run.get("conclusion") or "") if done else "running"
+        verdicts = [latest.get(name) for name in verify.REQUIRED_CHECKS]
+        if any(v in ("failure", "cancelled", "timed_out") for v in verdicts):
+            return False
+        if all(v == "success" for v in verdicts):
+            return True
+        return None
+
     # ---- pull requests (REST only)
 
     def gh_json(self, path: str) -> Any:
