@@ -1,444 +1,3421 @@
 {
-  "schema": 1,
-  "phase": "kit",
-  "current": "GATE-P",
-  "backup_runner": "on",
-  "ruleset_verified": true,
-  "lease": null,
-  "tasks": [
-    {
-      "id": "FIX1",
-      "slug": "fix-main-brief-citations",
-      "title": "Fix main: BUILD_BRIEF citations shifted by Gate P insert",
-      "type": "kit",
-      "deps": [],
-      "model": "claude-sonnet-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "branch": "claude/task/fix-main-brief-citations",
-      "pr": 15,
-      "head_sha": "3817a1180e38c242578a60c7ed38b0cfc7843af4",
-      "waits_on_owner": null,
-      "merged_sha": "cf319c3",
-      "evidence": "PR #15 merged; Ci/Twin/Ally success on head 3817a11; tree 2a171924 == squash cf319c3"
-    },
-    {
-      "id": "K0",
-      "slug": "setup",
-      "title": "Set up the kit repo: deny rules, sources fingerprint, workflows, state branch",
-      "type": "harness",
-      "deps": [],
-      "model": "claude-sonnet-5-5",
-      "effort": "medium",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-sonnet-5-5",
-      "branch": "claude/task/K0-setup",
-      "pr": 3,
-      "head_sha": "291cf8d370fb5ebd95d434dd52617e3fc8d42e29",
-      "waits_on_owner": null,
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "model_evidence": "subagent transcript: all 55 assistant records model=claude-sonnet-5-5",
-      "merged_sha": "4bab4c030493c9858909f51c100a184976051892",
-      "evidence": "PR #3 merged; Ci/Twin/Ally success on head 291cf8d; tree d4ee3cc9 == squash 4bab4c0"
-    },
-    {
-      "id": "K1",
-      "slug": "constitution",
-      "title": "docs/constitution.md and CLAUDE.md (<200 lines)",
-      "type": "kit",
-      "deps": [
-        "K0"
-      ],
-      "model": "claude-opus-5-5",
-      "effort": "high",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-opus-5-5",
-      "branch": "claude/task/K1-constitution",
-      "pr": 5,
-      "head_sha": "b2ddaa3e3c82e69b9b112271a45c071351cb9f83",
-      "waits_on_owner": null,
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "model_evidence": "subagent transcript: all 37 assistant records model=claude-opus-5-5 (first pass); fix round resumed same agent",
-      "merged_sha": "e0de672",
-      "evidence": "PR #5 merged; Ci/Twin/Ally success on head b2ddaa3; tree f7caed20 == squash e0de672"
-    },
-    {
-      "id": "K2",
-      "slug": "spec",
-      "title": "docs/spec/*.md numbered requirements, one area per session, plus traceability script",
-      "type": "kit",
-      "deps": [
-        "K1"
-      ],
-      "model": "claude-opus-5-5",
-      "effort": "medium",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-opus-5-5",
-      "branch": "claude/task/K2-spec",
-      "pr": 7,
-      "head_sha": "c0a03821495c12f65fe3adc867b0d0a3192eb18d",
-      "waits_on_owner": null,
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "model_evidence": "worker run with model=opus; not independently verified from transcript",
-      "merged_sha": "cea9a0f",
-      "evidence": "PR #7 merged; Ci/Twin/Ally success on head c0a0382; tree 14ded65f == squash cea9a0f"
-    },
-    {
-      "id": "K2b",
-      "slug": "catalog",
-      "title": "docs/catalog/ categories.yaml + worked_examples.yaml",
-      "type": "kit",
-      "deps": [
-        "K2"
-      ],
-      "model": "claude-opus-5-5",
-      "effort": "high",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-opus-5-5",
-      "branch": "claude/task/K2b-catalog",
-      "pr": 8,
-      "head_sha": "8cb43dd727c503435644bccc703f69d154ad0546",
-      "waits_on_owner": null,
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "model_evidence": "worker run with model=opus; not independently verified from transcript",
-      "merged_sha": "9981709",
-      "evidence": "PR #8 merged; Ci/Twin/Ally success on head 8cb43dd; tree 3da17a2b == squash 9981709"
-    },
-    {
-      "id": "K3",
-      "slug": "clarify",
-      "title": "Conflict check, docs/decisions.md, questions to Casey one at a time",
-      "type": "kit",
-      "deps": [
-        "K2",
-        "K2b"
-      ],
-      "model": "claude-opus-5-5",
-      "effort": "high",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-opus-5-5",
-      "branch": "claude/task/K3-clarify",
-      "pr": 9,
-      "head_sha": "f1234ada11363e247a9f9692b2a34310e7a0a13a",
-      "waits_on_owner": null,
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "model_evidence": "subagent transcript: 48 assistant records all claude-opus-5-5 (first pass); fix round resumed same agent",
-      "merged_sha": "52fa19d",
-      "evidence": "PR #9 merged; Ci/Twin/Ally success on head f1234ad; tree f114dc61 == squash 52fa19d"
-    },
-    {
-      "id": "K4",
-      "slug": "architecture",
-      "title": "docs/architecture.md, docs/threat-model.md, pinned stack versions",
-      "type": "kit",
-      "deps": [
-        "K3"
-      ],
-      "model": "claude-opus-5-5",
-      "effort": "high",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-opus-5-5",
-      "branch": "claude/task/K4-architecture",
-      "pr": 10,
-      "head_sha": "75610c482e8c2b293faf83d93ac6318736bfded8",
-      "waits_on_owner": null,
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "model_evidence": "subagent transcript: 79 assistant records all claude-opus-5-5 (first pass); fix round resumed same agent",
-      "merged_sha": "5b020c7",
-      "evidence": "PR #10 merged; Ci/Twin/Ally success on head 75610c4; tree 3f7f5847 == squash 5b020c7"
-    },
-    {
-      "id": "K5",
-      "slug": "test-design",
-      "title": "Test design; twin made hard-failing; deliberate-break tests",
-      "type": "kit",
-      "deps": [
-        "K4"
-      ],
-      "model": "claude-opus-5-5",
-      "effort": "high",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-opus-5-5",
-      "branch": "claude/task/K5-test-design",
-      "pr": 11,
-      "head_sha": "f4f17e023475439085775cf5ca18d52a3f69866b",
-      "waits_on_owner": null,
-      "models_note": "Opus designs, Sonnet writes, Haiku runs",
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "model_evidence": "subagent transcript: 129 assistant records all claude-opus-5-5 (first pass); fix round resumed same agent",
-      "merged_sha": "c8ffcc8",
-      "evidence": "PR #11 merged; Ci/Twin/Ally success on head f4f17e0; tree d94e5454 == squash c8ffcc8"
-    },
-    {
-      "id": "K6",
-      "slug": "task-graph",
-      "title": "kit/tasks.json build task graph with validator",
-      "type": "kit",
-      "deps": [
-        "K5"
-      ],
-      "model": "claude-opus-5-5",
-      "effort": "high",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-opus-5-5",
-      "branch": "claude/task/K6-task-graph",
-      "pr": 12,
-      "head_sha": "4e18e4cf165944337d272643bb621c1d35f1dea5",
-      "waits_on_owner": null,
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "model_evidence": "worker run with model=opus; not independently verified from transcript",
-      "merged_sha": "aa995a7",
-      "evidence": "PR #12 merged; Ci/Twin/Ally success on head 4e18e4c; tree 6738ea03 == squash aa995a7"
-    },
-    {
-      "id": "K7",
-      "slug": "prompts",
-      "title": "kit/prompts/T###.md from one template",
-      "type": "kit",
-      "deps": [
-        "K6"
-      ],
-      "model": "claude-sonnet-5-5",
-      "effort": "medium",
-      "reviewer_model": "claude-sonnet-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-sonnet-5-5",
-      "branch": "claude/task/K7-prompts",
-      "pr": 13,
-      "head_sha": "703f71d95e8577953eabba44356f8266a6fcde8f",
-      "waits_on_owner": null,
-      "check_model": "claude-haiku-5-5",
-      "reviewed_by": "claude-sonnet-5-5",
-      "review_rounds": 1,
-      "model_evidence": "subagent transcript: all 15 assistant records model=claude-sonnet-5-5 (first pass); fix round resumed same agent",
-      "haiku_check": "no discrepancies, 139 prompts",
-      "note": "auto-pr failed to enable auto-merge; runner enabled it via MCP. Merged main (PR #14) into branch, re-running checks.",
-      "merged_sha": "5489a99",
-      "evidence": "PR #13 merged; Ci/Twin/Ally success on head 703f71d; tree d4b8274e == squash 5489a99"
-    },
-    {
-      "id": "K8",
-      "slug": "harness",
-      "title": "Harness, runner, stand-ins, contract tests, failure drills",
-      "type": "harness",
-      "deps": [
-        "K7"
-      ],
-      "model": "claude-sonnet-5-5",
-      "effort": "medium",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-sonnet-5-5",
-      "branch": "claude/task/K8-harness",
-      "pr": 16,
-      "head_sha": "c4023edc86492f02f01341ac55d84dff661adf4b",
-      "waits_on_owner": null,
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "model_evidence": "worker transcript: all 91 assistant records model=claude-sonnet-5-5",
-      "merged_sha": "6d10456",
-      "evidence": "PR #16 merged; Ci/Twin/Ally success on head c4023ed; tree acbbe2d0 == squash 6d10456"
-    },
-    {
-      "id": "K9",
-      "slug": "rehearsal",
-      "title": "Rehearsal with three practice tasks; usage measured; kit/schedule.json",
-      "type": "harness",
-      "deps": [
-        "K8"
-      ],
-      "model": "claude-opus-5-5",
-      "effort": "high",
-      "reviewer_model": "claude-opus-5-5",
-      "status": "DONE",
-      "attempts": 1,
-      "model_used": "claude-opus-5-5",
-      "branch": "claude/task/K9-rehearsal",
-      "pr": 23,
-      "head_sha": "95e21eee7fa8d14df7ac426c22543e452e93119f",
-      "waits_on_owner": null,
-      "model_evidence": "report worker transcript: 46 records, all claude-opus-5-5",
-      "reviewed_by": "claude-opus-5-5",
-      "review_rounds": 1,
-      "merged_sha": "632c400",
-      "evidence": "PR #23 merged; Ci/Twin/Ally success on head 95e21ee; tree ee0348f9 == squash 632c400"
-    },
-    {
-      "id": "GATE-A",
-      "slug": "gate-a",
-      "title": "One-page summary and K9 proof; Casey says OK go",
-      "type": "gate",
-      "deps": [
-        "K9"
-      ],
-      "model": null,
-      "effort": null,
-      "reviewer_model": "claude-sonnet-5-5",
-      "status": "SKIPPED",
-      "attempts": 0,
-      "model_used": null,
-      "branch": null,
-      "pr": null,
-      "head_sha": null,
-      "waits_on_owner": "Casey replies 'OK go'",
-      "reason": "removed by Casey, Oct 27"
-    },
-    {
-      "id": "GATE-P",
-      "slug": "gate-p",
-      "title": "Casey reviews the investor presentation and says 'approved to build'",
-      "type": "gate",
-      "deps": [
-        "K9"
-      ],
-      "model": null,
-      "effort": null,
-      "reviewer_model": null,
-      "status": "WAITING_FOR_OWNER",
-      "attempts": 0,
-      "model_used": null,
-      "branch": null,
-      "pr": null,
-      "head_sha": null,
-      "waits_on_owner": "Casey replies 'approved to build' on the Gate P issue"
-    }
-  ],
-  "owner_waits": [],
-  "owner_answers": [
-    {
-      "issue": 6,
-      "file": "6-closed-40546715805.md",
-      "note": "Casey closed notify-test issue #6 (after replying \"Got it\"); no wait pending"
-    }
-  ],
-  "inbox_processed": [
-    "6-closed-40546715805.md"
-  ],
-  "usage": {
-    "last_reading": null
+ "schema": 1,
+ "phase": "kit",
+ "current": "GATE-P",
+ "backup_runner": "on",
+ "ruleset_verified": true,
+ "lease": null,
+ "tasks": [
+  {
+   "id": "FIX1",
+   "slug": "fix-main-brief-citations",
+   "title": "Fix main: BUILD_BRIEF citations shifted by Gate P insert",
+   "type": "kit",
+   "deps": [],
+   "model": "claude-sonnet-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "branch": "claude/task/fix-main-brief-citations",
+   "pr": 15,
+   "head_sha": "3817a1180e38c242578a60c7ed38b0cfc7843af4",
+   "waits_on_owner": null,
+   "merged_sha": "cf319c3",
+   "evidence": "PR #15 merged; Ci/Twin/Ally success on head 3817a11; tree 2a171924 == squash cf319c3"
   },
-  "updated_at": "2026-10-27T22:15:00Z",
-  "notes": [
-    "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
-    "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
-    "Phase 2: deny rules block curl/wget to vendor API hosts outright, test mode included; sandbox checks need another route (K0 review N7).",
-    "K8: add the PII scanner step to Ci (currently a visible 'skipped' stub).",
-    "Bare 'git push' while on main is not denied locally; the protect-main ruleset blocks it on GitHub (K0 review N7).",
-    "K1: docs/sources.md:29 says stop-and-ask on brief/changes conflict; overridden by BUILD_BRIEF \u00a716. Fix in a later docs task. Log in decisions.md (K3): check names Ci/Twin/Ally vs changes file; Insurance (business-reported) wording.",
-    "K7 review non-blocking, log in decisions.md by a later docs task: template makes app/main.py shared for all types; template stops-and-reports on red smoke test (Kit Plan says fix first); workers leave PROGRESS.md to the runner; twin/ added to protected list; 118 prompts have goal==title; CI could run gen_prompts.py --check (harness task).",
-    "2026-10-27 runner: main green (257 tests, pii_scan, validate_tasks, gen_prompts --check). K9 NOT claimed: no kit/prompts/K9.md exists and it needs scheduler-started sessions, real usage readings and practice PRs that a single in-session cycle cannot honestly produce. Needs a prompt/plan for K9 before it can be claimed.",
-    "2026-10-27 runner (webhook, PR #21 closed): P3 marked DONE. K9 lease still held by another session until 22:15Z; K9 report PR not claimed here.",
-    "K9 finding (D-171): two schedulers. Keep routine 'Ask Hava build runner' (fresh sessions, Sonnet, cron :50), delete 'Ask Hava build runner (hourly)' (persistent session). Awaiting Casey's go to delete; a live lease naming another session means stop."
-  ],
-  "build_hold": "Gate P: Casey reviews an investor-style presentation first; build tasks (T001+) wait for his 'approved to build' (set Oct 27)",
-  "k9_rehearsal": {
-    "plan": "Runner-run rehearsal (no K9 prompt file needed; kit steps K1-K8 had none either). Decided by Claude under BUILD_BRIEF section 16 autonomous mode; logged for docs/decisions.md in the K9 report PR.",
-    "practice": {
-      "P1": {
-        "goal": "pass end to end",
-        "status": "DONE",
-        "branch": "claude/task/P1-rehearsal-pass",
-        "pr": 18,
-        "head_sha": "8c0c51843cdd6b00faadd6f7dd70d798ab9ba1be",
-        "model": "claude-haiku-5-5",
-        "model_evidence": "subagent transcript: 6 records, all claude-haiku-5-5",
-        "evidence": "auto-pr opened #18; Ci/Twin/Ally green on head; auto-merged 19:13Z as 1cac5d7; tree 365b99d7 == head tree"
-      },
-      "P2": {
-        "goal": "fail on purpose, never merge",
-        "status": "BLOCKED",
-        "branch": "claude/task/P2-rehearsal-fail",
-        "pr": 17,
-        "head_sha": "78dd86bddfd4776e8646610da694ee07452e1dd6",
-        "model": "claude-haiku-5-5",
-        "model_evidence": "subagent transcript: 10 records, all claude-haiku-5-5",
-        "evidence": "Ci failure (deliberate failing test), Twin/Ally green; not merged; PR #17 closed by runner, branch kept for evidence. Retry/Opus-escalation path is covered offline by tests/test_failure_drills.py; a live retry would fail identically by design, so it was not spent."
-      },
-      "P3": {
-        "goal": "triggered twice + simulated usage-limit rejection",
-        "status": "DONE",
-        "reset_at": "2026-10-27T20:00:00Z",
-        "evidence_double_trigger": "19:15Z two claims pushed from the same base 3aab38a: first accepted (bf39373), second rejected non-fast-forward; the loser would exit",
-        "branch": "claude/task/P3-rehearsal-resume",
-        "pr": 21,
-        "head_sha": "eafe11428764f35889fb9ff3ff5dfad3af9d3158",
-        "model": "claude-haiku-5-5",
-        "evidence": "PR #21 merged 20:13Z; Ci/Twin/Ally success on head eafe114; tree 26e08630 == squash 65e3f6d. Resume-after-reset proven.",
-        "merged_sha": "65e3f6d"
-      }
-    },
-    "cloud_checks": {
-      "playwright": "OK in session: Node playwright launches pre-installed Chromium 153; Python playwright package not installed (pip install needed; browsers at /opt/pw-browsers)",
-      "stripe_mock": "FALLBACK: no Docker daemon in the session (docker.sock missing) -> stripe-mock runs in CI only; sessions use the twin's fake Stripe",
-      "merge_trigger": "FALLBACK: the scheduled task 'Ask Hava build runner (hourly)' has no GitHub merge trigger (created via API; only the claude.ai routines UI can add one) -> hourly run carries the chain",
-      "model_evidence": "CONFIRMED (D-122): subagent transcripts at ~/.claude/projects/<proj>/<session>/subagents/agent-<id>.jsonl are readable from the runner session and carry message.model with the full ID; the Agent call accepts aliases (haiku/sonnet/opus), not full IDs"
-    },
-    "usage_sample": {
-      "note": "Plan quota is not observable from a session; measured tokens from subagent transcripts in this session",
-      "K0_worker_sonnet": {
-        "turns": 29,
-        "output": 29914,
-        "cache_read": 2587807,
-        "cache_write": 116108
-      },
-      "K0_review_opus": {
-        "turns": 6,
-        "output": 15900,
-        "cache_read": 392149,
-        "cache_write": 93620
-      },
-      "P1_worker_haiku": {
-        "turns": 3,
-        "output": 1183,
-        "cache_read": 113521,
-        "cache_write": 59239
-      },
-      "P2_worker_haiku": {
-        "turns": 5,
-        "output": 2165,
-        "cache_read": 233242,
-        "cache_write": 60668
-      },
-      "kit_step_wall_clock_minutes": {
-        "K2": 16,
-        "K2b": 13,
-        "K3": 18,
-        "K4": 23,
-        "K5": 30,
-        "K6": 25,
-        "K7": 20,
-        "K8": 20
-      }
-    },
-    "deviations": [
-      "P1/P2 skipped the fresh-eyes reviewer (6-line rehearsal files reviewed by the runner)",
-      "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
-    ]
+  {
+   "id": "K0",
+   "slug": "setup",
+   "title": "Set up the kit repo: deny rules, sources fingerprint, workflows, state branch",
+   "type": "harness",
+   "deps": [],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-sonnet-5-5",
+   "branch": "claude/task/K0-setup",
+   "pr": 3,
+   "head_sha": "291cf8d370fb5ebd95d434dd52617e3fc8d42e29",
+   "waits_on_owner": null,
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "subagent transcript: all 55 assistant records model=claude-sonnet-5-5",
+   "merged_sha": "4bab4c030493c9858909f51c100a184976051892",
+   "evidence": "PR #3 merged; Ci/Twin/Ally success on head 291cf8d; tree d4ee3cc9 == squash 4bab4c0"
+  },
+  {
+   "id": "K1",
+   "slug": "constitution",
+   "title": "docs/constitution.md and CLAUDE.md (<200 lines)",
+   "type": "kit",
+   "deps": [
+    "K0"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-opus-5-5",
+   "branch": "claude/task/K1-constitution",
+   "pr": 5,
+   "head_sha": "b2ddaa3e3c82e69b9b112271a45c071351cb9f83",
+   "waits_on_owner": null,
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "subagent transcript: all 37 assistant records model=claude-opus-5-5 (first pass); fix round resumed same agent",
+   "merged_sha": "e0de672",
+   "evidence": "PR #5 merged; Ci/Twin/Ally success on head b2ddaa3; tree f7caed20 == squash e0de672"
+  },
+  {
+   "id": "K2",
+   "slug": "spec",
+   "title": "docs/spec/*.md numbered requirements, one area per session, plus traceability script",
+   "type": "kit",
+   "deps": [
+    "K1"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-opus-5-5",
+   "branch": "claude/task/K2-spec",
+   "pr": 7,
+   "head_sha": "c0a03821495c12f65fe3adc867b0d0a3192eb18d",
+   "waits_on_owner": null,
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "worker run with model=opus; not independently verified from transcript",
+   "merged_sha": "cea9a0f",
+   "evidence": "PR #7 merged; Ci/Twin/Ally success on head c0a0382; tree 14ded65f == squash cea9a0f"
+  },
+  {
+   "id": "K2b",
+   "slug": "catalog",
+   "title": "docs/catalog/ categories.yaml + worked_examples.yaml",
+   "type": "kit",
+   "deps": [
+    "K2"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-opus-5-5",
+   "branch": "claude/task/K2b-catalog",
+   "pr": 8,
+   "head_sha": "8cb43dd727c503435644bccc703f69d154ad0546",
+   "waits_on_owner": null,
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "worker run with model=opus; not independently verified from transcript",
+   "merged_sha": "9981709",
+   "evidence": "PR #8 merged; Ci/Twin/Ally success on head 8cb43dd; tree 3da17a2b == squash 9981709"
+  },
+  {
+   "id": "K3",
+   "slug": "clarify",
+   "title": "Conflict check, docs/decisions.md, questions to Casey one at a time",
+   "type": "kit",
+   "deps": [
+    "K2",
+    "K2b"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-opus-5-5",
+   "branch": "claude/task/K3-clarify",
+   "pr": 9,
+   "head_sha": "f1234ada11363e247a9f9692b2a34310e7a0a13a",
+   "waits_on_owner": null,
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "subagent transcript: 48 assistant records all claude-opus-5-5 (first pass); fix round resumed same agent",
+   "merged_sha": "52fa19d",
+   "evidence": "PR #9 merged; Ci/Twin/Ally success on head f1234ad; tree f114dc61 == squash 52fa19d"
+  },
+  {
+   "id": "K4",
+   "slug": "architecture",
+   "title": "docs/architecture.md, docs/threat-model.md, pinned stack versions",
+   "type": "kit",
+   "deps": [
+    "K3"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-opus-5-5",
+   "branch": "claude/task/K4-architecture",
+   "pr": 10,
+   "head_sha": "75610c482e8c2b293faf83d93ac6318736bfded8",
+   "waits_on_owner": null,
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "subagent transcript: 79 assistant records all claude-opus-5-5 (first pass); fix round resumed same agent",
+   "merged_sha": "5b020c7",
+   "evidence": "PR #10 merged; Ci/Twin/Ally success on head 75610c4; tree 3f7f5847 == squash 5b020c7"
+  },
+  {
+   "id": "K5",
+   "slug": "test-design",
+   "title": "Test design; twin made hard-failing; deliberate-break tests",
+   "type": "kit",
+   "deps": [
+    "K4"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-opus-5-5",
+   "branch": "claude/task/K5-test-design",
+   "pr": 11,
+   "head_sha": "f4f17e023475439085775cf5ca18d52a3f69866b",
+   "waits_on_owner": null,
+   "models_note": "Opus designs, Sonnet writes, Haiku runs",
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "subagent transcript: 129 assistant records all claude-opus-5-5 (first pass); fix round resumed same agent",
+   "merged_sha": "c8ffcc8",
+   "evidence": "PR #11 merged; Ci/Twin/Ally success on head f4f17e0; tree d94e5454 == squash c8ffcc8"
+  },
+  {
+   "id": "K6",
+   "slug": "task-graph",
+   "title": "kit/tasks.json build task graph with validator",
+   "type": "kit",
+   "deps": [
+    "K5"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-opus-5-5",
+   "branch": "claude/task/K6-task-graph",
+   "pr": 12,
+   "head_sha": "4e18e4cf165944337d272643bb621c1d35f1dea5",
+   "waits_on_owner": null,
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "worker run with model=opus; not independently verified from transcript",
+   "merged_sha": "aa995a7",
+   "evidence": "PR #12 merged; Ci/Twin/Ally success on head 4e18e4c; tree 6738ea03 == squash aa995a7"
+  },
+  {
+   "id": "K7",
+   "slug": "prompts",
+   "title": "kit/prompts/T###.md from one template",
+   "type": "kit",
+   "deps": [
+    "K6"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-sonnet-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-sonnet-5-5",
+   "branch": "claude/task/K7-prompts",
+   "pr": 13,
+   "head_sha": "703f71d95e8577953eabba44356f8266a6fcde8f",
+   "waits_on_owner": null,
+   "check_model": "claude-haiku-5-5",
+   "reviewed_by": "claude-sonnet-5-5",
+   "review_rounds": 1,
+   "model_evidence": "subagent transcript: all 15 assistant records model=claude-sonnet-5-5 (first pass); fix round resumed same agent",
+   "haiku_check": "no discrepancies, 139 prompts",
+   "note": "auto-pr failed to enable auto-merge; runner enabled it via MCP. Merged main (PR #14) into branch, re-running checks.",
+   "merged_sha": "5489a99",
+   "evidence": "PR #13 merged; Ci/Twin/Ally success on head 703f71d; tree d4b8274e == squash 5489a99"
+  },
+  {
+   "id": "K8",
+   "slug": "harness",
+   "title": "Harness, runner, stand-ins, contract tests, failure drills",
+   "type": "harness",
+   "deps": [
+    "K7"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-sonnet-5-5",
+   "branch": "claude/task/K8-harness",
+   "pr": 16,
+   "head_sha": "c4023edc86492f02f01341ac55d84dff661adf4b",
+   "waits_on_owner": null,
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "model_evidence": "worker transcript: all 91 assistant records model=claude-sonnet-5-5",
+   "merged_sha": "6d10456",
+   "evidence": "PR #16 merged; Ci/Twin/Ally success on head c4023ed; tree acbbe2d0 == squash 6d10456"
+  },
+  {
+   "id": "K9",
+   "slug": "rehearsal",
+   "title": "Rehearsal with three practice tasks; usage measured; kit/schedule.json",
+   "type": "harness",
+   "deps": [
+    "K8"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "status": "DONE",
+   "attempts": 1,
+   "model_used": "claude-opus-5-5",
+   "branch": "claude/task/K9-rehearsal",
+   "pr": 23,
+   "head_sha": "95e21eee7fa8d14df7ac426c22543e452e93119f",
+   "waits_on_owner": null,
+   "model_evidence": "report worker transcript: 46 records, all claude-opus-5-5",
+   "reviewed_by": "claude-opus-5-5",
+   "review_rounds": 1,
+   "merged_sha": "632c400",
+   "evidence": "PR #23 merged; Ci/Twin/Ally success on head 95e21ee; tree ee0348f9 == squash 632c400"
+  },
+  {
+   "id": "GATE-A",
+   "slug": "gate-a",
+   "title": "One-page summary and K9 proof; Casey says OK go",
+   "type": "gate",
+   "deps": [
+    "K9"
+   ],
+   "model": null,
+   "effort": null,
+   "reviewer_model": "claude-sonnet-5-5",
+   "status": "SKIPPED",
+   "attempts": 0,
+   "model_used": null,
+   "branch": null,
+   "pr": null,
+   "head_sha": null,
+   "waits_on_owner": "Casey replies 'OK go'",
+   "reason": "removed by Casey, Oct 27"
+  },
+  {
+   "id": "GATE-P",
+   "slug": "gate-p",
+   "title": "Casey reviews the investor presentation and says 'approved to build'",
+   "type": "gate",
+   "deps": [
+    "K9"
+   ],
+   "model": null,
+   "effort": null,
+   "reviewer_model": null,
+   "status": "WAITING_FOR_OWNER",
+   "attempts": 0,
+   "model_used": null,
+   "branch": null,
+   "pr": null,
+   "head_sha": null,
+   "waits_on_owner": "Casey replies 'approved to build' on the Gate P issue"
+  },
+  {
+   "id": "T002",
+   "deps": [],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "catalog-license-scope",
+   "type": "build",
+   "stage": "1"
+  },
+  {
+   "id": "T003",
+   "deps": [
+    "T002"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "matching-examples",
+   "type": "build",
+   "stage": "1"
+  },
+  {
+   "id": "T004",
+   "deps": [],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "spec-intake-decisions",
+   "type": "docs",
+   "stage": "1"
+  },
+  {
+   "id": "T172",
+   "deps": [
+    "T003"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "twin-gate-into-repo",
+   "type": "harness",
+   "stage": "1"
+  },
+  {
+   "id": "T005",
+   "deps": [
+    "T172"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "twin-intake-fixes",
+   "type": "harness",
+   "stage": "1"
+  },
+  {
+   "id": "T006",
+   "deps": [
+    "T005"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "twin-triage",
+   "type": "harness",
+   "stage": "1"
+  },
+  {
+   "id": "T007",
+   "deps": [
+    "T006"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "twin-changes-file",
+   "type": "harness",
+   "stage": "1"
+  },
+  {
+   "id": "T008",
+   "deps": [
+    "T002",
+    "T003",
+    "T004",
+    "T005",
+    "T006",
+    "T007",
+    "T154"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cleanup-stage1",
+   "type": "cleanup",
+   "stage": "1"
+  },
+  {
+   "id": "T170",
+   "deps": [
+    "T008"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "conditional-gate-answers",
+   "type": "harness",
+   "stage": "1"
+  },
+  {
+   "id": "T009",
+   "deps": [
+    "T008"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "app-skeleton",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T219",
+   "deps": [
+    "T009"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "rust-rules-scanner-gaps",
+   "type": "harness",
+   "stage": "2"
+  },
+  {
+   "id": "T175",
+   "deps": [
+    "T008",
+    "T009"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "architecture-test",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T226",
+   "deps": [
+    "T175"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "architecture-test-migrations-sql",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T010",
+   "deps": [
+    "T175",
+    "T168",
+    "T219"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "test-fixtures",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T011",
+   "deps": [
+    "T175",
+    "T168",
+    "T010"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "core-settings-clock",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T012",
+   "deps": [
+    "T011",
+    "T226"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "core-db-migrations",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T013",
+   "deps": [
+    "T012"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "core-task-queue",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T014",
+   "deps": [
+    "T012",
+    "T031",
+    "T017"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "core-ids-webhooks",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T015",
+   "deps": [
+    "T013"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ops-audit",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T016",
+   "deps": [
+    "T011",
+    "T167"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "adapters-protocols",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T176",
+   "deps": [
+    "T011",
+    "T167",
+    "T016"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "adapters-other-vendors",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T017",
+   "deps": [
+    "T015",
+    "T176"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ops-offdb-stream",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T018",
+   "deps": [
+    "T014",
+    "T176"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "webhook-security",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T019",
+   "deps": [
+    "T175",
+    "T168"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "docker-image",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T020",
+   "deps": [
+    "T013",
+    "T176"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-harness",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T021",
+   "deps": [
+    "T015"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "catalog-module",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T233",
+   "deps": [
+    "T008"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "catalog-job-type-kinds",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T177",
+   "deps": [
+    "T015",
+    "T021",
+    "T233"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "catalog-question-bank-load",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T022",
+   "deps": [
+    "T015",
+    "T169"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "privacy-vault",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T223",
+   "deps": [
+    "T022",
+    "T168"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "session-proof-compile-fail",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T217",
+   "deps": [
+    "T022",
+    "T010"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "sentinel-db-logs",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T023",
+   "deps": [
+    "T022",
+    "T177"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "privacy-scrubber",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T024",
+   "deps": [
+    "T023",
+    "T176"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ai-adapter",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T025",
+   "deps": [
+    "T024",
+    "T017"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ai-zero-retention",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T026",
+   "deps": [
+    "T177"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-templates",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T027",
+   "deps": [
+    "T026",
+    "T011"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-quiet-hours",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T028",
+   "deps": [
+    "T027",
+    "T023",
+    "T014",
+    "T016",
+    "T176"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-outbox",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T178",
+   "deps": [
+    "T027",
+    "T023",
+    "T014",
+    "T028"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-inbox-delivery",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T029",
+   "deps": [
+    "T178",
+    "T167"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-optout",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T030",
+   "deps": [
+    "T029"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-help-start",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T031",
+   "deps": [
+    "T015",
+    "T177"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "jobs-state-machine",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T179",
+   "deps": [
+    "T015",
+    "T177",
+    "T031"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "jobs-numbers-status-scan",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T032",
+   "deps": [
+    "T179",
+    "T178"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "jobs-timers",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T033",
+   "deps": [
+    "T032"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "jobs-races",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T034",
+   "deps": [
+    "T177",
+    "T169"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "licensing-agency-rules",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T035",
+   "deps": [
+    "T034"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "licensing-handyman",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T036",
+   "deps": [
+    "T035",
+    "T176"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "licensing-imports",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T180",
+   "deps": [
+    "T035",
+    "T176",
+    "T036"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "licensing-lookup-failures",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T037",
+   "deps": [
+    "T180"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "licensing-card-lines",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T038",
+   "deps": [
+    "T030",
+    "T179"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-consent",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T181",
+   "deps": [
+    "T030",
+    "T179",
+    "T038"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-consent-records",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T039",
+   "deps": [
+    "T181",
+    "T152",
+    "T041",
+    "T024"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-emergency",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T040",
+   "deps": [
+    "T039",
+    "T024"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-conversation",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T041",
+   "deps": [
+    "T180",
+    "T178"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-records",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T220",
+   "deps": [
+    "T041"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-team-members",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T182",
+   "deps": [
+    "T180",
+    "T178",
+    "T041",
+    "T220"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-pause-quiet-times",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T042",
+   "deps": [
+    "T040",
+    "T024",
+    "T035"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-trade-matching",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T183",
+   "deps": [
+    "T040",
+    "T024",
+    "T035",
+    "T042",
+    "T025"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-which-fits-best",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T043",
+   "deps": [
+    "T183",
+    "T182"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-routing-outcomes",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T044",
+   "deps": [
+    "T043",
+    "T037",
+    "T153"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-matching",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T184",
+   "deps": [
+    "T043",
+    "T037",
+    "T044"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-overflow-late-eligibility",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T045",
+   "deps": [
+    "T184"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-card-content",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T185",
+   "deps": [
+    "T184",
+    "T045"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-card-lines",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T046",
+   "deps": [
+    "T185",
+    "T025",
+    "T032"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-intake",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T186",
+   "deps": [
+    "T185",
+    "T025",
+    "T046"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-original-wording-card",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T047",
+   "deps": [
+    "T186",
+    "T032"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-homeowner-texts",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T048",
+   "deps": [
+    "T043",
+    "T032",
+    "T025",
+    "T047"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-timeouts",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T049",
+   "deps": [
+    "T048"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-close-cancel",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T050",
+   "deps": [
+    "T049"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-optout-jobs",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T051",
+   "deps": [
+    "T020",
+    "T012",
+    "T022"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-base-security",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T052",
+   "deps": [
+    "T051",
+    "T047",
+    "T050"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quote-page",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T053",
+   "deps": [
+    "T052"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "a11y-suite",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T169",
+   "deps": [
+    "T175",
+    "T168"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ci-rust-playwright",
+   "type": "harness",
+   "stage": "2"
+  },
+  {
+   "id": "T173",
+   "deps": [
+    "T169",
+    "T053",
+    "T019",
+    "T020",
+    "T167",
+    "T055",
+    "T227",
+    "T156",
+    "T208",
+    "T187"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ci-ally-e2e",
+   "type": "harness",
+   "stage": "2"
+  },
+  {
+   "id": "T054",
+   "deps": [
+    "T052",
+    "T176"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-code",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T227",
+   "deps": [
+    "T020",
+    "T051"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-webserver-config",
+   "type": "harness",
+   "stage": "2"
+  },
+  {
+   "id": "T055",
+   "deps": [
+    "T054",
+    "T053",
+    "T227"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-page-flow",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T187",
+   "deps": [
+    "T054",
+    "T053",
+    "T055"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-pick-code-contact",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T056",
+   "deps": [
+    "T035",
+    "T184",
+    "T050",
+    "T029",
+    "T027",
+    "T023",
+    "T173",
+    "T018"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "mutants-stage2",
+   "type": "harness",
+   "stage": "2"
+  },
+  {
+   "id": "T057",
+   "deps": [
+    "T175",
+    "T010",
+    "T011",
+    "T012",
+    "T013",
+    "T014",
+    "T015",
+    "T176",
+    "T017",
+    "T018",
+    "T019",
+    "T020",
+    "T177",
+    "T022",
+    "T023",
+    "T024",
+    "T025",
+    "T026",
+    "T027",
+    "T178",
+    "T029",
+    "T030",
+    "T179",
+    "T032",
+    "T033",
+    "T034",
+    "T035",
+    "T180",
+    "T037",
+    "T181",
+    "T039",
+    "T040",
+    "T182",
+    "T183",
+    "T043",
+    "T184",
+    "T185",
+    "T186",
+    "T047",
+    "T048",
+    "T049",
+    "T050",
+    "T051",
+    "T052",
+    "T053",
+    "T054",
+    "T187",
+    "T056",
+    "T153",
+    "T208",
+    "T213",
+    "T168",
+    "T173",
+    "T219",
+    "T217",
+    "T223",
+    "T226",
+    "T227"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cleanup-stage2",
+   "type": "cleanup",
+   "stage": "2"
+  },
+  {
+   "id": "T094",
+   "deps": [
+    "T028",
+    "T026",
+    "T057"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-retries-email",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T225",
+   "deps": [
+    "T057"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-ledger-append",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T058",
+   "deps": [
+    "T057",
+    "T225"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-fee-rules",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T188",
+   "deps": [
+    "T057",
+    "T058"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-four-month-rule",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T059",
+   "deps": [
+    "T188"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-customers-cards",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T060",
+   "deps": [
+    "T059"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-fee-at-pick",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T061",
+   "deps": [
+    "T060",
+    "T225"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-free-wins",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T062",
+   "deps": [
+    "T061",
+    "T094"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-charge",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T189",
+   "deps": [
+    "T061",
+    "T062"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-confirm-release-proof",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T224",
+   "deps": [
+    "T189",
+    "T051"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-confirm-and-pay-page",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T063",
+   "deps": [
+    "T189",
+    "T094"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-confirm-window",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T190",
+   "deps": [
+    "T189",
+    "T063"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-hold-emergency-away",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T064",
+   "deps": [
+    "T190",
+    "T066"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-late-success",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T065",
+   "deps": [
+    "T190"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-refund-rules",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T191",
+   "deps": [
+    "T064",
+    "T065",
+    "T080",
+    "T097"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-unreachable-refund",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T066",
+   "deps": [
+    "T065",
+    "T225"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-refunds-disputes",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T067",
+   "deps": [
+    "T066",
+    "T225"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-ledger-reconcile",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T068",
+   "deps": [
+    "T067",
+    "T094"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-receipts-flag",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T069",
+   "deps": [
+    "T067",
+    "T094"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-release",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T192",
+   "deps": [
+    "T067",
+    "T069"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "release-proof-compile-fail",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T070",
+   "deps": [
+    "T192"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-aftermath",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T071",
+   "deps": [
+    "T070",
+    "T068"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ledger-1000-jobs",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T072",
+   "deps": [
+    "T071"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ai-injection",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T073",
+   "deps": [
+    "T188",
+    "T061",
+    "T071",
+    "T169"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "mutants-stage3",
+   "type": "harness",
+   "stage": "3"
+  },
+  {
+   "id": "T074",
+   "deps": [
+    "T073",
+    "T072"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "twin-link-app",
+   "type": "harness",
+   "stage": "3"
+  },
+  {
+   "id": "T075",
+   "deps": [
+    "T188",
+    "T059",
+    "T060",
+    "T061",
+    "T189",
+    "T190",
+    "T064",
+    "T066",
+    "T067",
+    "T068",
+    "T192",
+    "T070",
+    "T071",
+    "T072",
+    "T073",
+    "T074",
+    "T169",
+    "T065",
+    "T094",
+    "T224",
+    "T225"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cleanup-stage3",
+   "type": "cleanup",
+   "stage": "3"
+  },
+  {
+   "id": "T076",
+   "deps": [
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "calls-pool",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T077",
+   "deps": [
+    "T076",
+    "T069"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "calls-pin-routing",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T078",
+   "deps": [
+    "T077"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "calls-logs",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T079",
+   "deps": [
+    "T078",
+    "T220",
+    "T094"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "calls-line-lifecycle",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T080",
+   "deps": [
+    "T079"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "calls-voice",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T081",
+   "deps": [
+    "T075",
+    "T094"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-signup-identity",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T193",
+   "deps": [
+    "T075",
+    "T081"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-signup-screens",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T082",
+   "deps": [
+    "T193"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-consent",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T083",
+   "deps": [
+    "T082",
+    "T094"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-complaints",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T084",
+   "deps": [
+    "T193",
+    "T094"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-business-signin",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T194",
+   "deps": [
+    "T193",
+    "T084",
+    "T220",
+    "T094"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-new-device-code",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T085",
+   "deps": [
+    "T194",
+    "T083",
+    "T078",
+    "T191"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-business-portal",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T195",
+   "deps": [
+    "T194",
+    "T083",
+    "T085"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-business-billing",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T086",
+   "deps": [
+    "T195"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-owner-auth",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T087",
+   "deps": [
+    "T086"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-homeowner-portal",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T088",
+   "deps": [
+    "T087",
+    "T195"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-auth-matrix",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T089",
+   "deps": [
+    "T088"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "security-rate-limits",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T090",
+   "deps": [
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "privacy-photos",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T091",
+   "deps": [
+    "T090"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-card-photos",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T092",
+   "deps": [
+    "T091",
+    "T083",
+    "T066"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "privacy-retention-purge",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T093",
+   "deps": [
+    "T092"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-log-retention",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T095",
+   "deps": [
+    "T094",
+    "T075",
+    "T208",
+    "T213"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-email-code",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T096",
+   "deps": [
+    "T095",
+    "T080"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-web-email-mode",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T097",
+   "deps": [
+    "T080"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "jobs-followups",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T230",
+   "deps": [
+    "T097",
+    "T084"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "feedback-page",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T231",
+   "deps": [
+    "T097",
+    "T094",
+    "T199"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "checkin-email-page",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T098",
+   "deps": [
+    "T097",
+    "T096",
+    "T088",
+    "T224"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-j1-homeowner",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T099",
+   "deps": [
+    "T098",
+    "T089",
+    "T196",
+    "T197",
+    "T198",
+    "T199",
+    "T155"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-j2-business",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T147",
+   "deps": [
+    "T094",
+    "T194",
+    "T082"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-notices-email",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T196",
+   "deps": [
+    "T094",
+    "T194",
+    "T082",
+    "T147"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-notice-email",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T148",
+   "deps": [
+    "T196",
+    "T190",
+    "T080",
+    "T079",
+    "T083",
+    "T195",
+    "T058",
+    "T189"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-actions-pick-call",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T197",
+   "deps": [
+    "T196",
+    "T190",
+    "T080",
+    "T079",
+    "T083",
+    "T195",
+    "T148"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-confirm-by-email",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T149",
+   "deps": [
+    "T196",
+    "T197"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-email-reliability",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T198",
+   "deps": [
+    "T196",
+    "T197",
+    "T149"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "messaging-open-cards-notice-log",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T150",
+   "deps": [
+    "T197",
+    "T198"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-calls-link-hardening",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T199",
+   "deps": [
+    "T197",
+    "T198",
+    "T150",
+    "T089"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-no-business-calls-safe-links",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T151",
+   "deps": [
+    "T204",
+    "T202",
+    "T082",
+    "T030"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "help-requests",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T200",
+   "deps": [
+    "T204",
+    "T202",
+    "T082",
+    "T030",
+    "T151",
+    "T108",
+    "T201"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "help-page-get-help-form",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T152",
+   "deps": [
+    "T181"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "safety-contacts",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T100",
+   "deps": [
+    "T076",
+    "T077",
+    "T078",
+    "T079",
+    "T080",
+    "T193",
+    "T082",
+    "T083",
+    "T194",
+    "T195",
+    "T086",
+    "T087",
+    "T088",
+    "T089",
+    "T090",
+    "T091",
+    "T092",
+    "T093",
+    "T094",
+    "T095",
+    "T096",
+    "T097",
+    "T098",
+    "T099",
+    "T196",
+    "T197",
+    "T198",
+    "T199",
+    "T207",
+    "T209",
+    "T212",
+    "T214",
+    "T215",
+    "T191",
+    "T162",
+    "T228",
+    "T232",
+    "T230",
+    "T231"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cleanup-stage4",
+   "type": "cleanup",
+   "stage": "4"
+  },
+  {
+   "id": "T101",
+   "deps": [
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-base",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T221",
+   "deps": [
+    "T101"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-legal-pages",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T102",
+   "deps": [
+    "T101"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-pages",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T201",
+   "deps": [
+    "T101",
+    "T102",
+    "T221"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-services-help-pages",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T202",
+   "deps": [
+    "T101",
+    "T201",
+    "T165"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-spanish-business-lines",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T103",
+   "deps": [
+    "T202"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-web-chat",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T222",
+   "deps": [
+    "T098",
+    "T099",
+    "T162",
+    "T156",
+    "T208",
+    "T212",
+    "T164",
+    "T214",
+    "T103",
+    "T165",
+    "T232",
+    "T230",
+    "T231"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "journeys-full-variants",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T104",
+   "deps": [
+    "T103"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "wording-scan",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T203",
+   "deps": [
+    "T103",
+    "T104"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "wording-statements-scan",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T105",
+   "deps": [
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ops-alerts-safe-mode",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T204",
+   "deps": [
+    "T100",
+    "T105"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ops-pushes-digest-security-alerts",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T106",
+   "deps": [
+    "T204",
+    "T221"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ops-health",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T107",
+   "deps": [
+    "T204"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "consent-records-alerts",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T108",
+   "deps": [
+    "T106",
+    "T107"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-portal-tools",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T205",
+   "deps": [
+    "T106",
+    "T107",
+    "T108"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portals-owner-refunds-audit",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T109",
+   "deps": [
+    "T100",
+    "T204",
+    "T151",
+    "T106"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "recovery-backup-export",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T110",
+   "deps": [
+    "T109"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "recovery-replay",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T206",
+   "deps": [
+    "T109",
+    "T110"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "recovery-local-drill",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T111",
+   "deps": [
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "terms-homeowner-business",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T112",
+   "deps": [
+    "T111",
+    "T221"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "privacy-sms-docs",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T113",
+   "deps": [
+    "T112"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "twilio-campaign",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T229",
+   "deps": [
+    "T113",
+    "T115"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "legal-drafts-plain-language",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T114",
+   "deps": [
+    "T113",
+    "T202"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-recurring-docs",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T115",
+   "deps": [
+    "T103"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "a11y-docs-statement",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T116",
+   "deps": [
+    "T114",
+    "T115",
+    "T221",
+    "T166",
+    "T216"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-stage05-dns",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T117",
+   "deps": [
+    "T206"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "runbook",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T118",
+   "deps": [
+    "T205"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-j3-operator",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T119",
+   "deps": [
+    "T118",
+    "T103"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-j4-outage",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T120",
+   "deps": [
+    "T119",
+    "T217"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "privacy-sentinel",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T121",
+   "deps": [
+    "T120"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "security-startup-supply",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T122",
+   "deps": [
+    "T116",
+    "T117"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "account-checklist",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T123",
+   "deps": [
+    "T122",
+    "T158",
+    "T210",
+    "T161",
+    "T166",
+    "T216",
+    "T218"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-guide",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T125",
+   "deps": [
+    "T123",
+    "T121",
+    "T203",
+    "T158",
+    "T210",
+    "T161",
+    "T166",
+    "T216",
+    "T218",
+    "T229"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "phase1-audit",
+   "type": "audit",
+   "stage": "5"
+  },
+  {
+   "id": "T126",
+   "deps": [
+    "T101",
+    "T202",
+    "T103",
+    "T203",
+    "T204",
+    "T106",
+    "T107",
+    "T205",
+    "T109",
+    "T206",
+    "T111",
+    "T112",
+    "T113",
+    "T114",
+    "T115",
+    "T116",
+    "T117",
+    "T118",
+    "T119",
+    "T120",
+    "T121",
+    "T122",
+    "T123",
+    "T125",
+    "T200",
+    "T210",
+    "T161",
+    "T216",
+    "T170",
+    "T218",
+    "T219",
+    "T222",
+    "T229"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cleanup-stage5",
+   "type": "cleanup",
+   "stage": "5"
+  },
+  {
+   "id": "T127",
+   "deps": [
+    "T126"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "account-checkpoint",
+   "type": "gate",
+   "stage": "checkpoint"
+  },
+  {
+   "id": "T128",
+   "deps": [
+    "T127"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "stage05-go",
+   "type": "gate",
+   "stage": "0.5"
+  },
+  {
+   "id": "T129",
+   "deps": [
+    "T127"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "sandbox-twilio-sms",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T130",
+   "deps": [
+    "T129"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "real-texts-go",
+   "type": "gate",
+   "stage": "6"
+  },
+  {
+   "id": "T131",
+   "deps": [
+    "T130"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "sandbox-twilio-voice-verify",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T132",
+   "deps": [
+    "T131"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "sandbox-stripe",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T133",
+   "deps": [
+    "T132"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "sandbox-resend-lob",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T134",
+   "deps": [
+    "T133"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "sandbox-license-storage",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T135",
+   "deps": [
+    "T134"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "deploy-test-project",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T136",
+   "deps": [
+    "T135"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-test-site",
+   "type": "docs",
+   "stage": "6"
+  },
+  {
+   "id": "T137",
+   "deps": [
+    "T136"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "real-ai-test",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T138",
+   "deps": [
+    "T137"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "zap-scan",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T139",
+   "deps": [
+    "T138"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "restore-drill-railway",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T140",
+   "deps": [
+    "T139"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "final-audit",
+   "type": "audit",
+   "stage": "6"
+  },
+  {
+   "id": "T141",
+   "deps": [
+    "T140",
+    "T159"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "handover-pack",
+   "type": "docs",
+   "stage": "6"
+  },
+  {
+   "id": "T171",
+   "deps": [
+    "T141"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cold-start-drill",
+   "type": "audit",
+   "stage": "6"
+  },
+  {
+   "id": "T142",
+   "deps": [
+    "T129",
+    "T131",
+    "T132",
+    "T133",
+    "T134",
+    "T135",
+    "T136",
+    "T137",
+    "T138",
+    "T139",
+    "T140",
+    "T141",
+    "T216",
+    "T171"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cleanup-stage6",
+   "type": "cleanup",
+   "stage": "6"
+  },
+  {
+   "id": "T143",
+   "deps": [
+    "T142"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "finished",
+   "type": "gate",
+   "stage": "6"
+  },
+  {
+   "id": "T144",
+   "deps": [
+    "T143"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "gate-b",
+   "type": "gate",
+   "stage": "6"
+  },
+  {
+   "id": "T145",
+   "deps": [
+    "T144"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "gate-c",
+   "type": "gate",
+   "stage": "7"
+  },
+  {
+   "id": "T146",
+   "deps": [
+    "T145"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "first-live-charge",
+   "type": "gate",
+   "stage": "7"
+  },
+  {
+   "id": "T153",
+   "deps": [
+    "T034",
+    "T177"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "licensing-class-map",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T154",
+   "deps": [
+    "T003"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-golden-sets",
+   "type": "build",
+   "stage": "1"
+  },
+  {
+   "id": "T155",
+   "deps": [
+    "T193",
+    "T153",
+    "T199"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-capability-setup",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T207",
+   "deps": [
+    "T193",
+    "T153",
+    "T155"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-license-change-reapply",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T156",
+   "deps": [
+    "T183",
+    "T154",
+    "T163",
+    "T044",
+    "T184"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-question-bank",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T208",
+   "deps": [
+    "T183",
+    "T154",
+    "T156",
+    "T163",
+    "T045",
+    "T044"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-card-approval-email-updates",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T157",
+   "deps": [
+    "T197",
+    "T189"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-backup-autoconfirm",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T209",
+   "deps": [
+    "T197",
+    "T189",
+    "T157",
+    "T199",
+    "T155"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-auto-confirm",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T158",
+   "deps": [
+    "T106",
+    "T067",
+    "T103"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-scorecard-money",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T210",
+   "deps": [
+    "T106",
+    "T067",
+    "T158"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-report-money-view",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T159",
+   "deps": [
+    "T140"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "safety-contacts-verify",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T161",
+   "deps": [
+    "T203",
+    "T202"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "wording-voice-scan",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T162",
+   "deps": [
+    "T208",
+    "T091",
+    "T212"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-photos-design",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T212",
+   "deps": [
+    "T208",
+    "T091",
+    "T148",
+    "T209"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-photo-asks-preview",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T163",
+   "deps": [
+    "T025"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ai-written-card",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T213",
+   "deps": [
+    "T208",
+    "T025",
+    "T185",
+    "T163"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-job-page-update-texts",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T164",
+   "deps": [
+    "T209",
+    "T190",
+    "T186",
+    "T212",
+    "T095"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-uniform-notes",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T214",
+   "deps": [
+    "T209",
+    "T190",
+    "T186",
+    "T164",
+    "T157",
+    "T148",
+    "T198"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-share-box-cant-take",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T232",
+   "deps": [
+    "T214",
+    "T224",
+    "T181",
+    "T094",
+    "T198"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "confirm-step-terms-accepted-quote",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T165",
+   "deps": [
+    "T207",
+    "T193",
+    "T155",
+    "T164"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-links-leaving",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T228",
+   "deps": [
+    "T165",
+    "T164",
+    "T157"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "businesses-leaving",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T215",
+   "deps": [
+    "T207",
+    "T193",
+    "T165"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pest-identity-coverage-email",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T166",
+   "deps": [
+    "T101"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-design-assets",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T216",
+   "deps": [
+    "T101",
+    "T166"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-textures",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T167",
+   "deps": [
+    "T008"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "stand-ins-http",
+   "type": "harness",
+   "stage": "1"
+  },
+  {
+   "id": "T168",
+   "deps": [
+    "T175"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "test-layer-crates",
+   "type": "build",
+   "stage": "2"
+  },
+  {
+   "id": "T218",
+   "deps": [
+    "T104",
+    "T026",
+    "T161"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brain-phrase-scans",
+   "type": "build",
+   "stage": "5"
   }
+ ],
+ "owner_waits": [],
+ "owner_answers": [
+  {
+   "issue": 6,
+   "file": "6-closed-40546715805.md",
+   "note": "Casey closed notify-test issue #6 (after replying \"Got it\"); no wait pending"
+  },
+  {
+   "file": "24-6502264289.md",
+   "outbox_id": "gate-p",
+   "note": "approved to build"
+  }
+ ],
+ "inbox_processed": [
+  "6-closed-40546715805.md",
+  "24-6502264289.md"
+ ],
+ "usage": {
+  "last_reading": null
+ },
+ "updated_at": "2026-10-29T16:38:15Z",
+ "notes": [
+  "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
+  "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
+  "Phase 2: deny rules block curl/wget to vendor API hosts outright, test mode included; sandbox checks need another route (K0 review N7).",
+  "K8: add the PII scanner step to Ci (currently a visible 'skipped' stub).",
+  "Bare 'git push' while on main is not denied locally; the protect-main ruleset blocks it on GitHub (K0 review N7).",
+  "K1: docs/sources.md:29 says stop-and-ask on brief/changes conflict; overridden by BUILD_BRIEF \u00a716. Fix in a later docs task. Log in decisions.md (K3): check names Ci/Twin/Ally vs changes file; Insurance (business-reported) wording.",
+  "K7 review non-blocking, log in decisions.md by a later docs task: template makes app/main.py shared for all types; template stops-and-reports on red smoke test (Kit Plan says fix first); workers leave PROGRESS.md to the runner; twin/ added to protected list; 118 prompts have goal==title; CI could run gen_prompts.py --check (harness task).",
+  "2026-10-27 runner: main green (257 tests, pii_scan, validate_tasks, gen_prompts --check). K9 NOT claimed: no kit/prompts/K9.md exists and it needs scheduler-started sessions, real usage readings and practice PRs that a single in-session cycle cannot honestly produce. Needs a prompt/plan for K9 before it can be claimed.",
+  "2026-10-27 runner (webhook, PR #21 closed): P3 marked DONE. K9 lease still held by another session until 22:15Z; K9 report PR not claimed here.",
+  "K9 finding (D-171): two schedulers. Keep routine 'Ask Hava build runner' (fresh sessions, Sonnet, cron :50), delete 'Ask Hava build runner (hourly)' (persistent session). Awaiting Casey's go to delete; a live lease naming another session means stop."
+ ],
+ "build_hold": "Gate P: Casey reviews an investor-style presentation first; build tasks (T001+) wait for his 'approved to build' (set Oct 27)",
+ "k9_rehearsal": {
+  "plan": "Runner-run rehearsal (no K9 prompt file needed; kit steps K1-K8 had none either). Decided by Claude under BUILD_BRIEF section 16 autonomous mode; logged for docs/decisions.md in the K9 report PR.",
+  "practice": {
+   "P1": {
+    "goal": "pass end to end",
+    "status": "DONE",
+    "branch": "claude/task/P1-rehearsal-pass",
+    "pr": 18,
+    "head_sha": "8c0c51843cdd6b00faadd6f7dd70d798ab9ba1be",
+    "model": "claude-haiku-5-5",
+    "model_evidence": "subagent transcript: 6 records, all claude-haiku-5-5",
+    "evidence": "auto-pr opened #18; Ci/Twin/Ally green on head; auto-merged 19:13Z as 1cac5d7; tree 365b99d7 == head tree"
+   },
+   "P2": {
+    "goal": "fail on purpose, never merge",
+    "status": "BLOCKED",
+    "branch": "claude/task/P2-rehearsal-fail",
+    "pr": 17,
+    "head_sha": "78dd86bddfd4776e8646610da694ee07452e1dd6",
+    "model": "claude-haiku-5-5",
+    "model_evidence": "subagent transcript: 10 records, all claude-haiku-5-5",
+    "evidence": "Ci failure (deliberate failing test), Twin/Ally green; not merged; PR #17 closed by runner, branch kept for evidence. Retry/Opus-escalation path is covered offline by tests/test_failure_drills.py; a live retry would fail identically by design, so it was not spent."
+   },
+   "P3": {
+    "goal": "triggered twice + simulated usage-limit rejection",
+    "status": "DONE",
+    "reset_at": "2026-10-27T20:00:00Z",
+    "evidence_double_trigger": "19:15Z two claims pushed from the same base 3aab38a: first accepted (bf39373), second rejected non-fast-forward; the loser would exit",
+    "branch": "claude/task/P3-rehearsal-resume",
+    "pr": 21,
+    "head_sha": "eafe11428764f35889fb9ff3ff5dfad3af9d3158",
+    "model": "claude-haiku-5-5",
+    "evidence": "PR #21 merged 20:13Z; Ci/Twin/Ally success on head eafe114; tree 26e08630 == squash 65e3f6d. Resume-after-reset proven.",
+    "merged_sha": "65e3f6d"
+   }
+  },
+  "cloud_checks": {
+   "playwright": "OK in session: Node playwright launches pre-installed Chromium 153; Python playwright package not installed (pip install needed; browsers at /opt/pw-browsers)",
+   "stripe_mock": "FALLBACK: no Docker daemon in the session (docker.sock missing) -> stripe-mock runs in CI only; sessions use the twin's fake Stripe",
+   "merge_trigger": "FALLBACK: the scheduled task 'Ask Hava build runner (hourly)' has no GitHub merge trigger (created via API; only the claude.ai routines UI can add one) -> hourly run carries the chain",
+   "model_evidence": "CONFIRMED (D-122): subagent transcripts at ~/.claude/projects/<proj>/<session>/subagents/agent-<id>.jsonl are readable from the runner session and carry message.model with the full ID; the Agent call accepts aliases (haiku/sonnet/opus), not full IDs"
+  },
+  "usage_sample": {
+   "note": "Plan quota is not observable from a session; measured tokens from subagent transcripts in this session",
+   "K0_worker_sonnet": {
+    "turns": 29,
+    "output": 29914,
+    "cache_read": 2587807,
+    "cache_write": 116108
+   },
+   "K0_review_opus": {
+    "turns": 6,
+    "output": 15900,
+    "cache_read": 392149,
+    "cache_write": 93620
+   },
+   "P1_worker_haiku": {
+    "turns": 3,
+    "output": 1183,
+    "cache_read": 113521,
+    "cache_write": 59239
+   },
+   "P2_worker_haiku": {
+    "turns": 5,
+    "output": 2165,
+    "cache_read": 233242,
+    "cache_write": 60668
+   },
+   "kit_step_wall_clock_minutes": {
+    "K2": 16,
+    "K2b": 13,
+    "K3": 18,
+    "K4": 23,
+    "K5": 30,
+    "K6": 25,
+    "K7": 20,
+    "K8": 20
+   }
+  },
+  "deviations": [
+   "P1/P2 skipped the fresh-eyes reviewer (6-line rehearsal files reviewed by the runner)",
+   "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
+  ]
+ },
+ "runner_sha": "a11936e88a59c60c28a75acaa8ae05239c23c03c",
+ "starter": "actions",
+ "lease_on": "claude/lease"
 }
