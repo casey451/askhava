@@ -382,3 +382,34 @@ def test_record_inbox_matches_a_lowercase_outbox_id(tmp_path: Path) -> None:
     out = cycle._record_inbox(s, Cfg(), [("24-1.md", "gate-p", "approved to build")], NOW)
     assert st.status(out, "GATE-P") == st.DONE and out["build_hold"] is None
     assert out["inbox_processed"] == ["24-1.md"] and out["owner_answers"][-1]["outbox_id"] == "gate-p"
+
+
+def test_owner_review_tasks_wait_for_daytime() -> None:
+    """D-511: a task whose PR needs Casey's code-owner review is claimed only 06:00-19:00 Arizona time."""
+    from datetime import datetime, timezone
+
+    from runner import cycle as cy
+
+    paths = (".github/", "runner/", "BUILD_BRIEF.md")
+    assert cy.needs_owner({"owns": [".github/workflows/twin.yml"]}, paths)
+    assert cy.needs_owner({"owns": ["BUILD_BRIEF.md"]}, paths)
+    assert not cy.needs_owner({"owns": ["app/catalog/src/lib.rs", "BUILD_BRIEF.md.bak"]}, paths)
+    night = datetime(2026, 10, 30, 6, 0, tzinfo=timezone.utc)  # 23:00 in Arizona
+    day = datetime(2026, 10, 30, 17, 0, tzinfo=timezone.utc)  # 10:00 in Arizona
+    assert not cy.owner_hours(night) and cy.owner_hours(day)
+    assert cy.owner_hours(datetime(2026, 10, 30, 13, 0, tzinfo=timezone.utc))  # 06:00
+    assert not cy.owner_hours(datetime(2026, 10, 31, 2, 0, tzinfo=timezone.utc))  # 19:00
+    graph = [{"id": "T1", "owns": [".github/workflows/x.yml"]}, {"id": "T2", "owns": ["app/x.rs"]}]
+    cfg = cy.Config(graph, {}, [], [], Path("."), "s", lambda: day, owner_paths=paths)
+    assert cy._by_day(cfg, ["T1", "T2"], night) == ["T2"]
+    assert cy._by_day(cfg, ["T1", "T2"], day) == ["T1", "T2"]
+    assert cy._by_day(cy.Config(graph, {}, [], [], Path("."), "s", lambda: day), ["T1", "T2"], night) == ["T1", "T2"]
+
+
+def test_owner_paths_read_from_codeowners(tmp_path: Path) -> None:
+    from runner import __main__ as entry
+
+    f = tmp_path / "CODEOWNERS"
+    f.write_text("# comment\n/.github/   @someone\n\n/runner/ @someone\n/BUILD_BRIEF.md @someone\n", encoding="utf-8")
+    assert entry.owner_paths(f) == (".github/", "runner/", "BUILD_BRIEF.md")
+    assert entry.owner_paths(tmp_path / "missing") == ()
