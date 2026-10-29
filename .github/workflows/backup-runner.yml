@@ -58,6 +58,25 @@ jobs:
     needs: gate
     if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
+    # The runner smokes main before every claim (scripts/smoke.sh) and the worker runs the same
+    # checks on its branch, so this job carries what Ci carries: Postgres 16, pytest and PyYAML.
+    # The first cycle under the token marked main red because none of these were here (D-498).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CI: "true"
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
     permissions:
       contents: write
       pull-requests: write
@@ -71,6 +90,17 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Smoke-test prerequisites (what Ci installs for itself)
+        run: |
+          python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
+          for role in askhava_app askhava_migrator; do
+            psql "$DATABASE_URL" -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
+              || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
       - uses: anthropics/claude-code-action@v1
         env:
           RUNNER_STARTER: actions

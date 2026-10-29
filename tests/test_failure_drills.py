@@ -51,6 +51,7 @@ class FakeEnv:
         self.nightly: dict[str, Any] | None = None
         self.head = "main0001"
         self.smoke_green = True
+        self.checks_green: bool | None = None
         self.smokes: list[str] = []
         self.branch_pushes: list[tuple[str, str]] = []
         self.auto_merges: list[tuple[str, str]] = []
@@ -94,6 +95,9 @@ class FakeEnv:
     def smoke_main(self) -> tuple[bool, str]:
         self.smokes.append(self.head)
         return self.smoke_green, self.head
+
+    def main_checks_green(self, head: str) -> bool | None:
+        return self.checks_green
 
     def push_branch(self, branch: str, head_sha: str) -> bool:
         self.branch_pushes.append((branch, head_sha))
@@ -741,3 +745,36 @@ def test_usage_feeds_the_pacing_windows(tmp_path: Path) -> None:
     cfg.on_usage = pacing.usage_recorder()
     cycle.run_cycle(cfg, env, NOW)
     assert env.store["usage"]["windows"]["five_hour"] == {"start": st.iso(NOW), "tokens": 2000}
+
+
+def test_drill_a_red_smoke_run_with_green_checks_on_the_head_blames_nobody(tmp_path: Path) -> None:
+    """D-498: Ci, Twin and Ally green on the commit the smoke failed on means the runner's own
+    environment is at fault; nothing is claimed and main is not marked red."""
+    env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
+    env.smoke_green, env.checks_green = False, True
+    assert cycle.run_cycle(cfg, env, NOW) == "smoke_env"
+    assert env.store.get("main_red") is None and env.runs == []
+    assert env.store["smoke_env_problems"][-1]["sha"] == env.head
+    assert not st.entry(env.store, st.FIX_MAIN)
+
+
+def test_drill_a_false_smoke_red_is_withdrawn_before_fix_main_runs(tmp_path: Path) -> None:
+    """D-498: a main_red that a smoke run set is withdrawn, and FIX-MAIN skipped, once the head's checks
+    read green; the blamed merge is not reverted and keeps its DONE record."""
+    env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
+    env.smoke_green = False
+    assert cycle.run_cycle(cfg, env, NOW) == "main_red"
+    assert st.status(env.store, st.FIX_MAIN) == st.QUEUED
+    env.smoke_green, env.checks_green = True, True
+    assert cycle.run_cycle(cfg, env, NOW) == "false_red_cleared"
+    assert env.store.get("main_red") is None and env.store["main_red_history"][-1]["false_red"] is True
+    assert st.status(env.store, st.FIX_MAIN) == st.SKIPPED and env.runs == []
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING and env.runs[0][0] == "T001"
+
+
+def test_drill_three_excused_smoke_reds_on_one_head_turn_main_red(tmp_path: Path) -> None:
+    """D-498: green checks excuse a smoke red twice; the third on the same head is believed."""
+    env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
+    env.smoke_green, env.checks_green = False, True
+    assert [cycle.run_cycle(cfg, env, NOW) for _ in range(3)] == ["smoke_env", "smoke_env", "smoke_env"]
+    assert cycle.run_cycle(cfg, env, NOW) == "main_red" and env.store["main_red"]["check"] == "smoke"
