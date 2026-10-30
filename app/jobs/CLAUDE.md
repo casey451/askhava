@@ -7,12 +7,12 @@ The layer-4 crate that owns every job's one status and the only code that change
 ## What it owns
 
 - `src/lib.rs`: the crate root; one `mod` line per file.
-- `src/api.rs`: the only public surface: `JobStatus`, `JobRow`, `JobsError`, `create`, `move_to`, `restart_timer`, `current`, `run_timer`, `TIMER_KIND`, `api::quote_token` (`issue`, `revoke`, `resolve`, `TokenError`), and `api::rules` (`check_move`, `timeout`, `Timeout`, `Wait`, `Refused`).
+- `src/api.rs`: the only public surface: `JobStatus`, `JobRow`, `JobsError`, `create`, `move_to`, `restart_timer`, `current`, `run_timer`, `TIMER_KIND`, `api::quote_token` (`issue`, `revoke`, `resolve`, `TokenError`: `NoRandom`, `Busy`, `Database`), and `api::rules` (`check_move`, `timeout`, `Timeout`, `Wait`, `Refused`).
 - `src/status.rs`: `JobStatus` (the twelve, `ALL`, `code`, `from_code`, `targets` = the arrows, `can_move_to`, `wait` = each status's timeout and target, `is_final`). Every `match` on a status lives here.
 - `src/rules.rs`: pure rules, no I/O: `check_move`, `timeout` (backstop timer per waiting status) and the timer constants.
 - `src/models.rs`: `JobsError`, `JobRow` and the queries (`insert_job`, `load`, `guarded_move`, `restart_wait`, `insert_history`).
 - `src/service.rs`: `create`, `move_to`, the version-fenced `apply`, `restart_timer`, `queue_timer`, `run_timer`.
-- `src/quote_token.rs` (T014, D-815): quote-page link tokens: `issue` (revokes the live token, inserts a new salt and hash, audits `quote_token_issued`), `revoke` (audits `quote_token_revoked`), `resolve` (live token hash to job ID; `None` is the page's 404).
+- `src/quote_token.rs` (T014, D-815): quote-page link tokens: `issue` (revokes the live token, inserts a new salt and hash, audits `quote_token_issued`), `revoke` (audits `quote_token_revoked`; stamped `GREATEST(at, issued_at)` so clock skew never blocks it, D-819), `resolve` (live token hash to job ID; `None` is the page's 404); a concurrent issue that loses the one-live-token race answers `TokenError::Busy`.
 - Migration `0032_jobs_quote_tokens.sql`: `jobs.quote_token` (salt 16 bytes, `key_version`, unique `token_hash` 32 bytes, `issued_at`, `revoked_at`; partial unique index: one live token per job).
 - Migration `0031_jobs_state_machine.sql`: the `jobs` schema and grants, `jobs.job` (status `CHECK` of the twelve codes, `version`, `emergency`, `status_at`, `timer_from`, `timer_version`), `jobs.status_history` (append-only).
 - `sqlx.toml`: `'TIMESTAMPTZ'` reads as `jiff_sqlx::Timestamp`.
@@ -53,4 +53,4 @@ The layer-4 crate that owns every job's one status and the only code that change
 
 - `src/tests/prop_job_machine.rs` (TD-JOB-01 property cases: arrows, one status, timeouts, and random runs through `move_to` on the database with one history and one audit row per change; JOB-001, JOB-002, JOB-003, JOB-005, JOB-006).
 - `src/tests/transitions.rs` (TD-JOB-01 database cases: history and audit rows, refused (logged once) and stale moves, timers surviving a restart and doing nothing after a move, restarted waits, the append-only history; JOB-001 to JOB-003, JOB-005, JOB-006). The per-status timer values and texts are TD-JOB-03's.
-- `tests/integration/tests/webhook_dedupe.rs` (TD-SEC-16: re-issue, revoke, replay from the stored salt, one audit row each; SEC-037).
+- `tests/integration/tests/webhook_dedupe.rs` (TD-SEC-16: re-issue, revoke, replay from the stored salt, one audit row each, a revoke stamped before the issue, the concurrent-issue race; SEC-037).

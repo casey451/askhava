@@ -22,6 +22,10 @@ pub enum TokenError {
     /// The OS random source failed, so no salt and no token were made.
     #[error("no random salt could be made")]
     NoRandom,
+    /// Another issue for the same job committed its live token first (the one-live-token index),
+    /// so nothing was written; the caller may issue again, which revokes that token.
+    #[error("another quote-token issue for this job won the race")]
+    Busy,
     /// The database refused the statement, or the audit row could not be written.
     #[error("the quote-token database statement failed")]
     Database,
@@ -32,7 +36,8 @@ pub enum TokenError {
 ///
 /// # Errors
 ///
-/// [`TokenError::NoRandom`] before anything is written, or [`TokenError::Database`].
+/// [`TokenError::NoRandom`] before anything is written, [`TokenError::Busy`] when a concurrent
+/// issue for `job` committed first, or [`TokenError::Database`].
 pub async fn issue(
     db: &mut PgConnection,
     secret: &IdSecret,
@@ -55,10 +60,23 @@ pub async fn issue(
     )
     .execute(&mut *tx)
     .await
-    .map_err(|_| TokenError::Database)?;
+    .map_err(insert_error)?;
     record(&mut tx, job, "quote_token_issued").await?;
     tx.commit().await.map_err(|_| TokenError::Database)?;
     Ok(token)
+}
+
+/// [`TokenError::Busy`] for a clash on the one-live-token index (a concurrent issue for the job
+/// committed first); [`TokenError::Database`] for anything else. Carries no database message.
+fn insert_error(err: sqlx::Error) -> TokenError {
+    let live_clash = err
+        .as_database_error()
+        .is_some_and(|db| db.is_unique_violation() && db.constraint() == Some("quote_token_live"));
+    if live_clash {
+        TokenError::Busy
+    } else {
+        TokenError::Database
+    }
 }
 
 /// Revokes `job`'s live quote-page token at `at`, audited (SEC-037). Returns false, writing
@@ -94,10 +112,13 @@ pub async fn resolve(db: &mut PgConnection, token: &LinkToken) -> Result<Option<
     .map_err(|_| TokenError::Database)
 }
 
-/// Marks `job`'s live token revoked at `at`; true if there was one.
+/// Marks `job`'s live token revoked at `at`, or at its `issued_at` if `at` is earlier (clock skew
+/// between app instances), so the `revoked_at >= issued_at` check never blocks revoking a leaked
+/// link; true if there was one.
 async fn revoke_live(db: &mut PgConnection, job: Uuid, at: Timestamp) -> Result<bool, TokenError> {
     let done = sqlx::query!(
-        "UPDATE jobs.quote_token SET revoked_at = $2 WHERE job_id = $1 AND revoked_at IS NULL",
+        "UPDATE jobs.quote_token SET revoked_at = GREATEST($2, issued_at) \
+         WHERE job_id = $1 AND revoked_at IS NULL",
         job,
         at.to_sqlx() as _,
     )

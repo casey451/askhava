@@ -136,9 +136,16 @@ pub fn pick_id(secret: &IdSecret, job: Uuid, quote: Uuid) -> Uuid {
 }
 
 /// A link's per-record 128-bit random salt, stored with the record and copied to the
-/// off-database stream so a replay reproduces the token (SEC-037).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// off-database stream so a replay reproduces the token (SEC-037). `Debug` prints only a marker,
+/// since the salt with the secret reproduces a live token.
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct LinkSalt([u8; 16]);
+
+impl fmt::Debug for LinkSalt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("LinkSalt([redacted])")
+    }
+}
 
 impl LinkSalt {
     /// A fresh salt from the operating system's random source (SEC-037).
@@ -193,8 +200,18 @@ impl LinkKind {
 
 /// A link token: 64 lower-case hex digits that reach a person in a URL (SEC-037). `Debug` prints
 /// only a marker and there is no `Display`, so it cannot reach a log by accident (SEC-033).
-#[derive(Clone, PartialEq, Eq)]
+/// Equality compares the SHA256 hashes, never the token text, so a comparison's timing reveals
+/// nothing about the token's characters.
+#[derive(Clone)]
 pub struct LinkToken(String);
+
+impl PartialEq for LinkToken {
+    fn eq(&self, other: &Self) -> bool {
+        self.hash() == other.hash()
+    }
+}
+
+impl Eq for LinkToken {}
 
 impl LinkToken {
     /// Parses a token presented in a URL; anything but 64 lower-case hex digits is refused before

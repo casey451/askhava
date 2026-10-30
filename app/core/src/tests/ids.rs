@@ -107,7 +107,8 @@ fn td_sec_16_tokens_parse_hash_and_refuse_bad_shapes() {
     assert_eq!(LinkSalt::from_bytes(&[0; 15]), Err(IdError::BadSalt));
 }
 
-/// SEC-037: a short or unversioned secret is refused, and no secret or token reaches `Debug`.
+/// SEC-037: a short or unversioned secret is refused, and no secret, token or salt reaches
+/// `Debug`.
 #[test]
 fn weak_secrets_are_refused_and_nothing_secret_is_printed() {
     let short = SecretString::from("fake-short".to_owned());
@@ -126,6 +127,10 @@ fn weak_secrets_are_refused_and_nothing_secret_is_printed() {
         &LinkSalt::from_bytes(&[2; 16]).unwrap(),
     );
     assert!(!format!("{token:?}").contains(token.as_str()));
+    let salt = LinkSalt::from_bytes(&[171; 16]).unwrap();
+    let shown = format!("{salt:?}");
+    assert_eq!(shown, "LinkSalt([redacted])");
+    assert!(!shown.contains("171") && !shown.contains("ab"));
 }
 
 /// TD-SEC-18: Twilio status pairs and voice steps are distinct keys; bad parts are refused.

@@ -2,8 +2,9 @@
 //! PICK-028, SEC-037; rust-production R17).
 //!
 //! For random record IDs, salts and secrets: an ID is a function of its inputs; distinct inputs
-//! or secrets give distinct IDs; and knowing the secret and the record ID alone, with no salt or
-//! a guessed one, never reproduces a stored token's hash. All values are fake.
+//! or secrets give distinct IDs; knowing the secret and the record ID with a zero or guessed salt
+//! never reproduces a stored token's hash, nor does the stored salt under another secret; the
+//! stored salt and the secret always do. All values are fake.
 
 use proptest::prelude::*;
 use secrecy::SecretString;
@@ -33,8 +34,9 @@ proptest! {
         }
     }
 
-    /// TD-SEC-16: knowing `ID_SECRET` and the job alone (no salt, a zero salt, or another salt)
-    /// never reproduces the stored token hash; the stored salt always does (replay).
+    /// TD-SEC-16: knowing `ID_SECRET` and the job with a zero or guessed salt never reproduces the
+    /// stored token hash, nor does the stored salt under another secret; the stored salt with the
+    /// secret always does (replay).
     #[test]
     fn secret_and_job_alone_never_reproduce_a_token(
         job in any::<u128>(), salt in any::<[u8; 16]>(), guess in any::<[u8; 16]>(), seed in any::<u64>(),
@@ -47,6 +49,12 @@ proptest! {
         prop_assert_eq!(replayed.hash(), stored);
         let guessed = link_token(&s, LinkKind::QuotePage, job, &LinkSalt::from_bytes(&guess).unwrap());
         prop_assert_ne!(guessed.hash(), stored);
-        prop_assert_ne!(derive_id(&s, IdKind::Card, &[job]).as_bytes().to_vec(), stored[..16].to_vec());
+        if salt != [0; 16] {
+            let zero = link_token(&s, LinkKind::QuotePage, job, &LinkSalt::from_bytes(&[0; 16]).unwrap());
+            prop_assert_ne!(zero.hash(), stored);
+        }
+        let other = secret_from(seed.wrapping_add(1));
+        let salt_alone = link_token(&other, LinkKind::QuotePage, job, &LinkSalt::from_bytes(&salt).unwrap());
+        prop_assert_ne!(salt_alone.hash(), stored);
     }
 }

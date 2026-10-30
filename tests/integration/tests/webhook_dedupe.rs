@@ -5,7 +5,9 @@
 //! that one event delivered 100 times, in turn or all at once, has one effect; that a Twilio
 //! status sequence queued, sent, delivered, delivered has 3; and that two voice steps of one call
 //! both apply. The quote-token cases prove a re-issued token replaces the old one, a revoked one
-//! resolves to nothing (the page's 404), and the stored salt reproduces the stored hash (replay).
+//! resolves to nothing (the page's 404), and the stored salt reproduces the stored hash (replay);
+//! a revoke stamped before the issue (clock skew) still revokes, and a concurrent issue that
+//! loses the one-live-token race answers `Busy`.
 //! All data is fake.
 
 use askhava_core::api::{Dedupe, EventKey, IdSecret, LinkKind, LinkSalt, LinkToken, link_token};
@@ -14,6 +16,7 @@ use askhava_ops::api::Actor;
 use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::PgPool;
+use std::time::Duration;
 
 /// Creates the probe module's `webhook_event` and effect tables, as a module's migration would.
 async fn probe_tables(pool: &PgPool) {
@@ -159,4 +162,78 @@ async fn td_sec_16_reissue_and_revoke_and_replay(pool: PgPool) {
     .await
     .unwrap();
     assert_eq!(audits, 3);
+}
+
+/// SEC-037: a revoke whose clock reads earlier than the issue's (skew between instances) still
+/// revokes, stamped at the issue time, so a leaked link can always be shut off.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_revoke_stamped_before_the_issue_still_revokes(pool: PgPool) {
+    let mut db = pool.acquire().await.unwrap();
+    let now = Timestamp::now();
+    let job = create(&mut db, now, false, Actor::System).await.unwrap();
+    let token = quote_token::issue(&mut db, &secret(), job, now)
+        .await
+        .unwrap();
+    let skewed = now - jiff::SignedDuration::from_secs(90);
+    assert!(quote_token::revoke(&mut db, job, skewed).await.unwrap());
+    assert_eq!(quote_token::resolve(&mut db, &token).await.unwrap(), None);
+    let same: bool =
+        sqlx::query_scalar("SELECT revoked_at = issued_at FROM jobs.quote_token WHERE job_id = $1")
+            .bind(job)
+            .fetch_one(&mut *db)
+            .await
+            .unwrap();
+    assert!(same);
+}
+
+/// True once a session in this test's database waits on a lock, polling for up to 10 seconds.
+async fn waits_on_a_lock(pool: &PgPool) -> bool {
+    for _ in 0..200 {
+        let waiting: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_stat_activity \
+             WHERE datname = current_database() AND wait_event_type = 'Lock'",
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap();
+        if waiting > 0 {
+            return true;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    false
+}
+
+/// SEC-037: two issues for one job at once; the one that inserts second waits on the
+/// one-live-token index and, when the first commits, answers `Busy` and writes nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_concurrent_issue_that_loses_the_race_answers_busy(pool: PgPool) {
+    let mut db = pool.acquire().await.unwrap();
+    let now = Timestamp::now();
+    let job = create(&mut db, now, false, Actor::System).await.unwrap();
+    let mut first = pool.begin().await.unwrap();
+    let won = quote_token::issue(&mut first, &secret(), job, now)
+        .await
+        .unwrap();
+    let racer = pool.clone();
+    let second = tokio::spawn(async move {
+        let mut db = racer.acquire().await.unwrap();
+        quote_token::issue(&mut db, &secret(), job, now).await
+    });
+    assert!(waits_on_a_lock(&pool).await);
+    first.commit().await.unwrap();
+    assert_eq!(
+        second.await.unwrap().unwrap_err(),
+        quote_token::TokenError::Busy
+    );
+    assert_eq!(
+        quote_token::resolve(&mut db, &won).await.unwrap(),
+        Some(job)
+    );
+    let rows: i64 = sqlx::query_scalar("SELECT count(*) FROM jobs.quote_token WHERE job_id = $1")
+        .bind(job)
+        .fetch_one(&mut *db)
+        .await
+        .unwrap();
+    assert_eq!(rows, 1);
 }
