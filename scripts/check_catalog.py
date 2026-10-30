@@ -482,10 +482,15 @@ def check_kinds(cat: dict[str, Any]) -> list[str]:
         if job not in kinds
     ]
     errors.extend(
-        f"category {cat_id}: job_type_kinds {job!r} must name a job type and one of "
+        f"category {cat_id}: job_type_kinds key {job!r} is not a job type (LIC-041)"
+        for job in kinds
+        if str(job) not in jobs
+    )
+    errors.extend(
+        f"category {cat_id}: job_type_kinds {job!r} kind {kind!r} is not one of "
         f"{sorted(JOB_KINDS)} (LIC-041)"
         for job, kind in kinds.items()
-        if str(job) not in jobs or str(kind) not in JOB_KINDS
+        if str(kind) not in JOB_KINDS
     )
     return errors
 
@@ -504,6 +509,11 @@ def check_job_kinds(cats: dict[str, dict[str, Any]]) -> list[str]:
         if not listed:
             errors.append(f"split category {name}: not in the catalog (LIC-041)")
             continue
+        errors.extend(
+            f"split category {name}: category {cat_id} not in the catalog (LIC-041)"
+            for cat_id in ids
+            if cat_id not in cats
+        )
         for cat in listed:
             errors.extend(check_kinds(cat))
         maps = [cat.get("job_type_kinds") for cat in listed]
