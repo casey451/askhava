@@ -12,7 +12,7 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 - `src/clock.rs`: `Clock`, `SystemClock`, `ManualClock`, `arizona()`, `arizona_time`, `zone`, `local_time`, `is_business_hours`, `add_business_minutes`.
 - `src/logging.rs`: `Redacted<T>`, `init` (re-exported as `init_logging`), `json_layer`, `request_span`, `sentry_options`, `scrub_event`, `scrub_breadcrumb`, `scrub_text` (D-689).
 - `src/db.rs`: `MIGRATOR` (every file in `migrations/`), `app_pool`, `migrate` (the `server migrate` step), `Guarded<T>`, `DbError` (D-698).
-- `build.rs`: rebuilds the crate when `migrations/` changes, so `MIGRATOR` sees a new file (D-488). `sqlx.toml`: `'TIMESTAMPTZ'` → `jiff_sqlx::Timestamp` (uppercase key).
+- `build.rs`: rebuilds the crate when `migrations/` changes, so `MIGRATOR` sees a new file (D-488). `sqlx.toml`: `'TIMESTAMPTZ'` → `jiff_sqlx::Timestamp` (uppercase key). `jiff-sqlx` is in `[workspace.dependencies]` but not yet in this crate's `Cargo.toml`: the first task whose `query!` reads or writes a `timestamptz` column adds `jiff-sqlx = { workspace = true }` to that crate first, or the macro fails to find `jiff_sqlx::Timestamp`.
 - Migration `0019_core_db_migrations.sql`: the `core` schema and the app role's grants. `scripts/bootstrap_roles.sql`: the two roles, their timeouts and grants (D-699).
 - Tables (from T013 on): the `core` schema only, `core.task` and `core.rate_limit` (D-090, D-091).
 
@@ -39,7 +39,8 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 - The app role owns nothing and cannot `UPDATE`, `DELETE` or `TRUNCATE` an append-only table: `tests/integration/tests/migrations.rs::app_role_cannot_rewrite_an_append_only_table`.
 - Every grant in a migration fails loudly on a missing role (never `IF EXISTS`), and a grant never sits in a `-- no-transaction` file: `migrations.rs::every_grant_reports_a_missing_role`.
 - Migrations write `ALTER DEFAULT PRIVILEGES IN SCHEMA x` with no `FOR ROLE`; they and `#[sqlx::test]` run as the database's one migration identity (`askhava_ci` in smoke and `Ci`, `askhava_migrator` on Railway); test database names are a hash shared across the cluster, so never mix roles (D-491, D-492).
-- `DbError` never carries a URL or the database's message.
+- `DbError` never carries a URL or the database's message, only a migration number (`Migration`, `Edited`, `Removed`, `Dirty`, D-701): `migrations.rs::server_migrate_names_the_migration_it_refuses`.
+- Every grant is a plain top-level statement that fails alone on a missing role; never inside a `DO` block or behind a `pg_roles` lookup (D-701).
 
 ## How to change
 

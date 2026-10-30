@@ -10,6 +10,9 @@
 -- Passwords come only from the environment through \getenv, never from this file or a log line;
 -- with none set a role keeps NOLOGIN. On a build or CI cluster add `-v test_cluster=1`, which lets the
 -- migrator create sqlx test databases and SET ROLE askhava_app (D-491 deviation 3).
+-- The passwords travel inside ALTER ROLE ... PASSWORD statements, so the server must not log them:
+-- run this only where log_statement is 'none' (the PostgreSQL default; check with SHOW log_statement)
+-- and log_min_duration_statement is -1, or the plain-text passwords land in the server log.
 \set ON_ERROR_STOP on
 \getenv migrator_password ASKHAVA_MIGRATOR_PASSWORD
 \getenv app_password ASKHAVA_APP_PASSWORD

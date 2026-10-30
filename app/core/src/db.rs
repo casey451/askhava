@@ -42,8 +42,18 @@ pub enum DbError {
     /// This migration failed and was rolled back; every migration before it stays applied.
     #[error("migration {0} failed")]
     Migration(i64),
-    /// The migrations could not run: the history table, a lock, or an applied migration that
-    /// was edited or removed (numbers are frozen once applied, D-491).
+    /// Migration `{0}` was applied and its file has changed since; applied migrations are
+    /// frozen (D-491).
+    #[error("applied migration {0} was edited")]
+    Edited(i64),
+    /// Migration `{0}` is in the history table but no longer in `migrations/` (D-491).
+    #[error("applied migration {0} is missing from migrations/")]
+    Removed(i64),
+    /// Migration `{0}` is recorded as partly applied and needs a hand fix before any other runs.
+    #[error("migration {0} is partly applied")]
+    Dirty(i64),
+    /// The migrations could not run for another reason: the history table, a lock or the
+    /// connection.
     #[error("the migrations could not run")]
     Migrate,
 }
@@ -98,8 +108,9 @@ pub fn app_pool(settings: &Settings) -> Result<PgPool, DbError> {
 ///
 /// # Errors
 ///
-/// [`DbError::BadUrl`], [`DbError::Connect`], [`DbError::Migration`] or [`DbError::Migrate`];
-/// none of them echoes the URL or the database's message.
+/// [`DbError::BadUrl`], [`DbError::Connect`], [`DbError::Migration`], [`DbError::Edited`],
+/// [`DbError::Removed`], [`DbError::Dirty`] or [`DbError::Migrate`]; none of them echoes the URL
+/// or the database's message.
 pub async fn migrate(migration_url: &SecretString) -> Result<(), DbError> {
     let pool = PgPoolOptions::new()
         .max_connections(1)
@@ -107,12 +118,21 @@ pub async fn migrate(migration_url: &SecretString) -> Result<(), DbError> {
         .connect_with(connect_options(migration_url)?)
         .await
         .map_err(|_| DbError::Connect)?;
-    let outcome = MIGRATOR.run(&pool).await.map_err(|err| match err {
-        MigrateError::ExecuteMigration(_, version) => DbError::Migration(version),
-        _ => DbError::Migrate,
-    });
+    let outcome = MIGRATOR.run(&pool).await.map_err(migrate_error);
     pool.close().await;
     outcome
+}
+
+/// Keeps the migration number sqlx reports and drops the driver's message, which can quote the
+/// URL or a value (SEC-001, PRIV-016).
+fn migrate_error(err: MigrateError) -> DbError {
+    match err {
+        MigrateError::ExecuteMigration(_, version) => DbError::Migration(version),
+        MigrateError::VersionMismatch(version) => DbError::Edited(version),
+        MigrateError::VersionMissing(version) => DbError::Removed(version),
+        MigrateError::Dirty(version) => DbError::Dirty(version),
+        _ => DbError::Migrate,
+    }
 }
 
 fn connect_options(url: &SecretString) -> Result<PgConnectOptions, DbError> {

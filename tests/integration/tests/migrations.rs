@@ -10,9 +10,11 @@
 
 use std::time::Duration;
 
-use askhava_core::api::{DbError, Guarded, MIGRATOR, Settings, SettingsError, migrate};
-use askhava_integration::{APP_ROLE, is_permission_denied, set_app_role};
-use secrecy::SecretString;
+use askhava_core::api::{DbError, Guarded, MIGRATOR, Settings, SettingsError, app_pool, migrate};
+use askhava_integration::{
+    APP_ROLE, Statement, is_permission_denied, set_app_role, split_statements,
+};
+use secrecy::{ExposeSecret, SecretString};
 use sqlx::{AssertSqlSafe, PgConnection, PgPool};
 
 /// A role name no cluster has, put in place of the app role to prove a missing role is reported.
@@ -46,12 +48,56 @@ async fn own_database_url(pool: &PgPool) -> SecretString {
         .await
         .expect("current database");
     let base = std::env::var("DATABASE_URL").expect("DATABASE_URL is set for database tests");
-    let (server, rest) = base
+    SecretString::from(with_database(&base, &name))
+}
+
+/// `base` with its database name replaced by `name`; the query string is set aside first, since
+/// it may hold a `/` (for example `?host=/run/postgresql`).
+fn with_database(base: &str, name: &str) -> String {
+    let (path, query) = base.split_once('?').unwrap_or((base, ""));
+    let (server, _) = path
         .rsplit_once('/')
         .expect("DATABASE_URL names a database");
-    let query = rest.split_once('?').map_or("", |(_, q)| q);
     let sep = if query.is_empty() { "" } else { "?" };
-    SecretString::from(format!("{server}/{name}{sep}{query}"))
+    format!("{server}/{name}{sep}{query}")
+}
+
+#[test]
+fn with_database_keeps_a_query_with_a_slash() {
+    assert_eq!(
+        with_database("postgres://u@h/db?host=/run/pg", "t"),
+        "postgres://u@h/t?host=/run/pg"
+    );
+    assert_eq!(with_database("postgres://u@h/db", "t"), "postgres://u@h/t");
+}
+
+#[sqlx::test(migrations = false)]
+async fn app_pool_is_lazy_and_capped(pool: PgPool) {
+    let url = own_database_url(&pool).await;
+    let settings = |db_url: &str| {
+        Settings::from_pairs(
+            [
+                ("ASKHAVA_APP_ENV", "dev"),
+                ("ASKHAVA_DATABASE_URL", db_url),
+                ("ASKHAVA_DB_POOL_MAX", "3"),
+            ]
+            .map(|(k, v)| (k.to_string(), v.to_string())),
+        )
+        .expect("settings parse")
+    };
+    let unreachable = app_pool(&settings("postgres://askhava_app@127.0.0.1:1/fake"));
+    let unreachable = unreachable.expect("a lazy pool does not connect at startup");
+    assert_eq!(unreachable.size(), 0);
+    let live = app_pool(&settings(url.expose_secret())).expect("app pool");
+    assert_eq!(live.options().get_max_connections(), 3);
+    assert_eq!(live.size(), 0, "the pool connected before first use");
+    let one: i32 = sqlx::query_scalar("SELECT 1")
+        .fetch_one(&live)
+        .await
+        .expect("first use connects");
+    assert_eq!(one, 1);
+    let bad = app_pool(&settings("not a url"));
+    assert!(matches!(bad, Err(DbError::BadUrl)), "{bad:?}");
 }
 
 #[sqlx::test(migrations = false)]
@@ -65,6 +111,68 @@ async fn server_migrate_applies_then_is_a_no_op(pool: PgPool) {
     assert_eq!(applied_versions(&pool).await, expected);
     let bad = migrate(&SecretString::from("not a url".to_string())).await;
     assert!(matches!(bad, Err(DbError::BadUrl)), "{bad:?}");
+}
+
+/// Runs `change` on the migration history, then `server migrate`, then undoes it with `undo`.
+async fn migrate_after(pool: &PgPool, url: &SecretString, change: &str, undo: &str) -> DbError {
+    sqlx::raw_sql(AssertSqlSafe(change.to_string()))
+        .execute(pool)
+        .await
+        .expect("change the history");
+    let outcome = migrate(url).await.expect_err("server migrate refuses");
+    sqlx::raw_sql(AssertSqlSafe(undo.to_string()))
+        .execute(pool)
+        .await
+        .expect("restore the history");
+    outcome
+}
+
+#[sqlx::test(migrations = false)]
+async fn server_migrate_names_the_migration_it_refuses(pool: PgPool) {
+    let url = own_database_url(&pool).await;
+    migrate(&url).await.expect("server migrate applies");
+    let first = MIGRATOR.iter().next().expect("a migration").version;
+    let set = |sql: &str| sql.replace("{v}", &first.to_string());
+    let edited = migrate_after(
+        &pool,
+        &url,
+        &set("UPDATE _sqlx_migrations SET checksum = '\\x00' WHERE version = {v}"),
+        "SELECT 1",
+    )
+    .await;
+    assert!(
+        matches!(edited, DbError::Edited(v) if v == first),
+        "{edited:?}"
+    );
+    sqlx::query("DELETE FROM _sqlx_migrations")
+        .execute(&pool)
+        .await
+        .expect("clear the history");
+    let removed = migrate_after(
+        &pool,
+        &url,
+        "INSERT INTO _sqlx_migrations (version, description, success, checksum, execution_time) \
+         VALUES (999999, 'gone', true, '\\x00', 0)",
+        "DELETE FROM _sqlx_migrations WHERE version = 999999",
+    )
+    .await;
+    assert!(matches!(removed, DbError::Removed(999_999)), "{removed:?}");
+    let dirty = migrate_after(
+        &pool,
+        &url,
+        &set("INSERT INTO _sqlx_migrations (version, description, success, checksum, execution_time) \
+              VALUES ({v}, 'half', false, '\\x00', 0)"),
+        "SELECT 1",
+    )
+    .await;
+    assert!(
+        matches!(dirty, DbError::Dirty(v) if v == first),
+        "{dirty:?}"
+    );
+    assert_eq!(
+        dirty.to_string(),
+        format!("migration {first} is partly applied")
+    );
 }
 
 #[test]
@@ -111,7 +219,7 @@ async fn every_grant_reports_a_missing_role(pool: PgPool) {
                 migration.version
             );
             assert_missing_role_reported(&pool, migration.version, sql).await;
-            checked += 1;
+            checked += assert_each_grant_fails_alone(&pool, migration.version, sql).await;
         }
         MIGRATOR
             .run_to(migration.version, &pool)
@@ -119,6 +227,87 @@ async fn every_grant_reports_a_missing_role(pool: PgPool) {
             .expect("the real migration applies");
     }
     assert!(checked > 0, "no migration grants to the app role");
+}
+
+/// True when the text holds a `GRANT` keyword, in any case.
+fn has_grant(text: &str) -> bool {
+    text.to_ascii_uppercase().contains("GRANT")
+}
+
+/// Fails when a grant hides inside dollar quotes, where an `IF EXISTS` or a `pg_roles` lookup
+/// could skip it, or when a grant statement looks a role up (D-491).
+fn assert_grants_are_plain(version: i64, statements: &[Statement]) {
+    for statement in statements {
+        assert!(
+            !has_grant(&statement.quoted),
+            "migration {version} grants inside a DO block or function body; a grant must be a plain statement: {}",
+            statement.text.trim()
+        );
+        let upper = statement.text.to_ascii_uppercase();
+        assert!(
+            !(has_grant(&upper) && (upper.contains("IF EXISTS") || upper.contains("PG_ROLES"))),
+            "migration {version} guards a grant with a role lookup: {}",
+            statement.text.trim()
+        );
+    }
+}
+
+/// Replays `sql` one statement at a time in a rolled-back transaction; each statement naming the
+/// app role is first run alone with the role renamed to [`ABSENT_ROLE`] and must fail naming it.
+/// Returns how many grant statements were proved.
+async fn assert_each_grant_fails_alone(pool: &PgPool, version: i64, sql: &str) -> usize {
+    let statements = split_statements(sql);
+    assert_grants_are_plain(version, &statements);
+    let mut tx = pool.begin().await.expect("begin");
+    let mut grants = 0;
+    for statement in &statements {
+        if statement.text.contains(APP_ROLE) {
+            sqlx::raw_sql("SAVEPOINT grant_probe")
+                .execute(&mut *tx)
+                .await
+                .expect("savepoint");
+            let renamed = statement.text.replace(APP_ROLE, ABSENT_ROLE);
+            let outcome = sqlx::raw_sql(AssertSqlSafe(renamed))
+                .execute(&mut *tx)
+                .await;
+            let message = outcome.map(|_| ()).err().map(|e| e.to_string());
+            assert!(
+                message.as_deref().is_some_and(|m| m.contains(ABSENT_ROLE)),
+                "migration {version} statement did not report the missing role: {}: {message:?}",
+                statement.text.trim()
+            );
+            sqlx::raw_sql("ROLLBACK TO SAVEPOINT grant_probe")
+                .execute(&mut *tx)
+                .await
+                .expect("rollback to savepoint");
+            grants += usize::from(has_grant(&statement.text));
+        }
+        sqlx::raw_sql(AssertSqlSafe(statement.text.clone()))
+            .execute(&mut *tx)
+            .await
+            .expect("the real statement applies");
+    }
+    tx.rollback().await.expect("rollback");
+    grants
+}
+
+#[test]
+fn a_grant_behind_a_role_lookup_is_caught() {
+    let guarded = "-- core (T999)\nCREATE SCHEMA x;\nDO $g$ BEGIN IF EXISTS (SELECT FROM pg_roles \
+                   WHERE rolname = 'askhava_app') THEN GRANT USAGE ON SCHEMA x TO askhava_app; \
+                   END IF; END $g$;\nGRANT USAGE ON SCHEMA x TO askhava_app;";
+    let statements = split_statements(guarded);
+    let texts: Vec<&str> = statements.iter().map(|s| s.text.trim()).collect();
+    assert_eq!(texts.len(), 3, "{texts:?}");
+    assert_eq!(texts[0], "CREATE SCHEMA x");
+    assert!(texts[1].starts_with("DO $g$") && texts[1].ends_with("END $g$"));
+    assert!(has_grant(&statements[1].quoted));
+    assert!(!has_grant(&statements[2].quoted) && has_grant(&statements[2].text));
+    let caught = std::panic::catch_unwind(|| assert_grants_are_plain(9999, &statements));
+    assert!(
+        caught.is_err(),
+        "a grant inside a DO block passed the check"
+    );
 }
 
 /// Runs `sql` with the app role renamed to [`ABSENT_ROLE`] in a rolled-back transaction and
@@ -235,6 +424,24 @@ async fn stale_expected_status_changes_nothing(pool: PgPool) {
     assert_eq!(fresh.applied().as_deref(), Some("quoted"));
 }
 
+/// Polls `pg_stat_activity` for up to 10 seconds until a session in this test's database waits on a
+/// heavyweight lock (`wait_event_type = 'Lock'`), the row lock the first writer holds.
+async fn waits_on_a_lock(pool: &PgPool) -> bool {
+    for _ in 0..200 {
+        let waiting: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock'",
+        )
+        .fetch_one(pool)
+        .await
+        .expect("read pg_stat_activity");
+        if waiting > 0 {
+            return true;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    false
+}
+
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn second_writer_waits_for_the_row_lock_then_moves_on(pool: PgPool) {
     create_status_probe(&pool).await;
@@ -248,10 +455,13 @@ async fn second_writer_waits_for_the_row_lock_then_moves_on(pool: PgPool) {
         tx.commit().await.expect("commit second");
         outcome
     });
-    tokio::time::sleep(Duration::from_millis(300)).await;
+    assert!(
+        waits_on_a_lock(&pool).await,
+        "the second writer never waited on the row lock"
+    );
     assert!(
         !second.is_finished(),
-        "the second writer did not wait for the row lock"
+        "the second writer finished while the row lock was held"
     );
     first.commit().await.expect("commit first");
     let lost = second.await.expect("second writer finishes");

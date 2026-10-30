@@ -26,6 +26,61 @@ pub async fn set_app_role(conn: &mut PgConnection) -> sqlx::Result<()> {
     Ok(())
 }
 
+/// One top-level statement of a migration: its SQL with comments removed, and everything it holds
+/// inside dollar quotes (a `DO` block or function body), where a grant could hide behind an
+/// `IF EXISTS` or a `pg_roles` lookup (D-491).
+#[derive(Debug, Default)]
+pub struct Statement {
+    /// The statement as it runs, without its `--` comments or the closing `;`.
+    pub text: String,
+    /// The text inside the statement's dollar quotes, concatenated.
+    pub quoted: String,
+}
+
+/// Splits `sql` into its top-level statements, honouring `--` comments, single quotes and
+/// dollar quotes, so the grant check reads the migration the way PostgreSQL does (D-491).
+#[must_use]
+pub fn split_statements(sql: &str) -> Vec<Statement> {
+    let mut out = Vec::new();
+    let mut current = Statement::default();
+    let mut rest = sql;
+    while let Some(c) = rest.chars().next() {
+        let taken = if rest.starts_with("--") {
+            rest.find('\n').unwrap_or(rest.len())
+        } else if c == '\'' {
+            let end = rest[1..].find('\'').map_or(rest.len(), |i| i + 2);
+            current.text.push_str(&rest[..end]);
+            end
+        } else if let Some(tag) = dollar_tag(rest) {
+            let body = &rest[tag.len()..];
+            let close = body.find(tag).unwrap_or(body.len());
+            current.quoted.push_str(&body[..close]);
+            let end = (tag.len() + close + tag.len()).min(rest.len());
+            current.text.push_str(&rest[..end]);
+            end
+        } else if c == ';' {
+            out.push(std::mem::take(&mut current));
+            1
+        } else {
+            current.text.push(c);
+            c.len_utf8()
+        };
+        rest = &rest[taken..];
+    }
+    out.push(current);
+    out.retain(|s| !s.text.trim().is_empty());
+    out
+}
+
+/// The dollar-quote opener (`$$` or `$tag$`) at the start of `sql`, if there is one.
+fn dollar_tag(sql: &str) -> Option<&str> {
+    let name_end = sql.strip_prefix('$')?.find('$')?;
+    let name = &sql[1..=name_end];
+    let valid = !name.starts_with(|c: char| c.is_ascii_digit())
+        && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+    valid.then(|| &sql[..name_end + 2])
+}
+
 /// True when `outcome` is the `insufficient_privilege` error (SQLSTATE 42501), the refusal an
 /// append-only table gives the app role's `UPDATE`, `DELETE` and `TRUNCATE` (D-092).
 pub fn is_permission_denied<T>(outcome: &sqlx::Result<T>) -> bool {
