@@ -226,3 +226,4 @@
 - 2026-10-30T15:09:08Z runner 49067eacf080 (actions): {"T176": "QUEUED -> IN_PROGRESS"}; T176 estimated 1.4M tokens (calibrated); five-hour window has 18.4M left, week 417.9M after 815k still running in another lane (ledger); claimed
 - 2026-10-30T15:25:58Z runner ec1162052d8b (actions): {}
 - 2026-10-30T15:26:07Z runner ec1162052d8b (actions): {"T176": "IN_PROGRESS -> MERGE_PENDING"}
+- 2026-10-30T15:29:45Z runner 49067eacf080 (actions): {"T176": "MERGE_PENDING -> QUEUED"}
