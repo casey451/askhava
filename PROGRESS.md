@@ -213,3 +213,4 @@
 - 2026-10-30T13:53:42Z runner cf6c76af7c68 (actions): {}
 - 2026-10-30T14:03:06Z runner cf6c76af7c68 (actions): {"T012": "QUEUED -> IN_PROGRESS"}; T012 estimated 1.0M tokens (calibrated); five-hour window has 22.8M left, week 422.4M (ledger); claimed
 - 2026-10-30T14:24:54Z runner fc2ec8b96a4d (actions): {}
+- 2026-10-30T14:25:50Z runner fc2ec8b96a4d (actions): {"T012": "IN_PROGRESS -> MERGE_PENDING"}
