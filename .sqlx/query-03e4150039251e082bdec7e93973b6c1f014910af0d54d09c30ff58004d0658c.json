@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "TRUNCATE jobs.status_history",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "03e4150039251e082bdec7e93973b6c1f014910af0d54d09c30ff58004d0658c"
+}

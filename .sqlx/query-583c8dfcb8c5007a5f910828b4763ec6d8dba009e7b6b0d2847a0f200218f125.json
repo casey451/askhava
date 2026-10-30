@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM jobs.status_history",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "583c8dfcb8c5007a5f910828b4763ec6d8dba009e7b6b0d2847a0f200218f125"
+}

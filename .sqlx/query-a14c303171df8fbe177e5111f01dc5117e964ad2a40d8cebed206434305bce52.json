@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT status, version, emergency, status_at, timer_from, timer_version FROM jobs.job WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "status",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "status"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "version"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "emergency",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "emergency"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "status_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "status_at"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "timer_from",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "timer_from"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "timer_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "timer_version"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a14c303171df8fbe177e5111f01dc5117e964ad2a40d8cebed206434305bce52"
+}
