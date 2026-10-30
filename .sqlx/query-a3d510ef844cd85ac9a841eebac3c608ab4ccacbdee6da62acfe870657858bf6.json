@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(alert_id) AS \"n!\" FROM ai.call_stat WHERE alert = 'ai.key_rejected'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "a3d510ef844cd85ac9a841eebac3c608ab4ccacbdee6da62acfe870657858bf6"
+}
