@@ -169,6 +169,11 @@ class Env(Protocol):
         a commit on main, tree the update merge's own (D-620); None when git cannot say."""
         ...
 
+    def checks_on(self, sha: str) -> dict[str, str] | None:
+        """{required check name: conclusion, or "running"} on that commit (REST, read only); None when
+        the checks cannot be read (D-630)."""
+        ...
+
 
 @dataclass
 class Config:
@@ -298,7 +303,7 @@ def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime) -> tuple
         lane = st.task_lane(st.entry(state, tid))
         state, result = _resolve_one(state, env, cfg, now, st.entry(state, tid))
         outcomes.append((tid, lane, result))
-        state = _lane_outcome(state, tid, lane, result, now)
+        state = _lane_outcome(state, tid, lane, result, now, env.checks_on)
     return state, outcomes
 
 
@@ -322,15 +327,17 @@ def _resolve_one(state: State, env: Env, cfg: Config, now: datetime, task: dict[
     return _merged(state, tid, pr, cfg, now, reviewed)
 
 
-def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime) -> State:
+def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime,
+                  reread: Callable[[str], dict[str, str] | None] = lambda sha: None) -> State:
     """Strikes for the lane fall back (D-620), only for an attempt that ended: a task on the lane DONE
     clears them; a required check that failed on an update merge after the same check passed on the
-    reviewed head before it (main's change broke it, `_broken_by_main`), or an update merge that
-    conflicted or could not be pushed for good, is a strike; any other failed check is the task's own
-    and clears them. A merge still waiting never strikes. Lane "1" never strikes."""
-    if lane == st.LANE_ONE:
+    reviewed head before it (main's change broke it, `_broken_by_main`, which reads a check that was
+    still running at the update again through `reread`), or an update merge that conflicted or could
+    not be pushed for good, is a strike; any other failed check is the task's own and clears them. A
+    merge still waiting never strikes. Lane "1" and the "fix" lane never strike."""
+    if lane in (st.LANE_ONE, st.FIX_LANE):
         return state
-    if result == "done" or (result == "check_failed" and not _broken_by_main(st.entry(state, tid))):
+    if result == "done" or (result == "check_failed" and not _broken_by_main(st.entry(state, tid), reread)):
         return lanes.clear_strikes(state, lane)
     if result in ("check_failed", "update_conflict", "update_push_failed"):
         why = str(st.entry(state, tid).get("last_failure") or st.entry(state, tid).get("reason") or result)
@@ -341,14 +348,18 @@ def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime)
 FAILED = ("failure", "cancelled", "timed_out")
 
 
-def _broken_by_main(task: dict[str, Any]) -> bool:
+def _broken_by_main(task: dict[str, Any], reread: Callable[[str], dict[str, str] | None]) -> bool:
     """Whether a check that failed on the attempt's last head had passed on the reviewed head the last
-    update merge started from: the failure came with main's change, not the task's own work (D-620)."""
+    update merge started from: the failure came with main's change, not the task's own work (D-620).
+    A check that had not finished when the update was recorded is read again now (`reread`, the Env's
+    `checks_on` of that head), so it is judged on its final conclusion (D-630)."""
     updates, history = task.get("update_merges") or [], task.get("history") or []
     if not updates or not history:
         return False
     failed = {str(c.get("name")) for c in history[-1].get("checks") or [] if c.get("conclusion") in FAILED}
-    before = updates[-1].get("checks") or {}
+    before = dict(updates[-1].get("checks") or {})
+    if any(before.get(name) in (None, "None") for name in failed) and updates[-1].get("from"):
+        before.update({k: v for k, v in (reread(str(updates[-1]["from"])) or {}).items() if before.get(k) in (None, "None")})
     return any(before.get(name) == "success" for name in failed)
 
 
@@ -476,7 +487,9 @@ def _head_checks(pr: dict[str, Any]) -> dict[str, str]:
     """{check name: conclusion} of the required checks on the PR's head, kept with an update merge so a
     later failure can be told apart from one main brought in (`_broken_by_main`, D-620)."""
     head = pr.get("head_sha")
-    return {str(c.get("name")): str(c.get("conclusion")) for c in pr.get("checks", []) if c.get("sha") == head and c.get("name") in verify.REQUIRED_CHECKS}
+    # Only finished checks: one still running is left out, and _broken_by_main reads it again later (D-630).
+    return {str(c.get("name")): str(c.get("conclusion")) for c in pr.get("checks", [])
+            if c.get("sha") == head and c.get("name") in verify.REQUIRED_CHECKS and c.get("conclusion")}
 
 
 def _update_failed(state: State, env: Env, tid: str, pr: dict[str, Any], reason: str, result: str) -> tuple[State, str]:
@@ -847,7 +860,13 @@ def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
             _drop_fallback_note(cfg)
             return "lost_race"
         base = state
-    lane = lanes.claim_lane(cfg.lanes, state, now, cfg.lane_hint)
+    lane = lanes.claim_lane(cfg.lanes, state, now, cfg.lane_hint) or lanes.fix_lane(state, now)
+    if lane is None and state.get("main_red"):
+        # No lane can claim, yet a red main must still be cleared once FIX-MAIN is DONE, or a task the
+        # red-main guard holds in a full lane would stall the build for good (D-630).
+        state, red = _red_main_step(cfg, env, state, now)
+        if red:
+            return red if state == base or env.push_state(state, base) else "lost_race"
     stop = _stop_result(outcomes, lane or cfg.lane_hint, lane is not None, (state, now))
     if stop:
         return stop
@@ -1249,8 +1268,10 @@ def _usage_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, Any
 
 def _windows_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
     """Pacing windows ({name: {start, tokens}}) with this attempt's tokens added to the fresh ones. A
-    window nobody else moved is taken from `ours`; otherwise the attempt's delta (all its tokens when
-    its window rolled over) is added to the fresh window, keeping the fresh window's start."""
+    window nobody else moved is taken from `ours`. Otherwise the result is the newer of the two windows
+    (by start; a window not started is the oldest), holding the fresh tokens only when the fresh window
+    is that window, plus this attempt's delta (all its tokens when its window rolled over) only when
+    its window is that window: tokens of a window that has rolled over no longer count (D-630)."""
     out = copy.deepcopy(fresh)
     for name, mine in ours.items():
         before, now = base.get(name) or {}, fresh.get(name) or {}
@@ -1259,9 +1280,11 @@ def _windows_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, A
         if now == before:
             out[name] = copy.deepcopy(mine)
             continue
+        start = max(str(mine.get("start") or ""), str(now.get("start") or "")) or None
         same = mine.get("start") == before.get("start")
         delta = int(mine.get("tokens") or 0) - (int(before.get("tokens") or 0) if same else 0)
-        out[name] = {"start": now.get("start") or mine.get("start"), "tokens": int(now.get("tokens") or 0) + delta}
+        tokens = (int(now.get("tokens") or 0) if now.get("start") == start else 0) + (delta if mine.get("start") == start else 0)
+        out[name] = {"start": start, "tokens": tokens}
     return out
 
 

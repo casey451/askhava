@@ -202,10 +202,11 @@ def task_lane(task: Task) -> str:
 def in_flight(state: State, now: datetime) -> dict[str, str]:
     """{task: lane} for every task in flight (D-620): a live lease on a numbered lane, or MERGE_PENDING
     (its lease was released at hand-in, so its lane is the task's own `lane`). A lane with a task in
-    flight is busy: nothing new is claimed on it until that task's pull request resolves."""
+    flight is busy: nothing new is claimed on it until that task's pull request resolves. The "fix"
+    lane is never a numbered lane, so FIX-MAIN on it (lease or MERGE_PENDING) takes no capacity (D-630)."""
     out = {str(lease["task"]): lane for lane, lease in live_leases(state, now).items() if lane != FIX_LANE}
     for task in state["tasks"]:
-        if task.get("status") == MERGE_PENDING and task["id"] not in out:
+        if task.get("status") == MERGE_PENDING and task["id"] not in out and task_lane(task) != FIX_LANE:
             out[task["id"]] = task_lane(task)
     return out
 

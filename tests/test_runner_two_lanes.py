@@ -643,7 +643,10 @@ def test_drill_red_main_holds_the_other_lanes_update_merge_and_auto_merge(tmp_pa
     env.prs["T002"] = dict(green_pr(head_of("T002"), merged=False), number=2, state="open", auto_merge=False)
     env.update = {"status": "pushed", "sha": "m-t002", "main": "main0002"}
     merges = list(env.auto_merges)
-    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "merge_pending"
+    env.worker = handed_off
+    # Both lanes are full, so FIX-MAIN takes the reserved fix lane (D-630); the held lanes move nothing.
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "handed_off"
+    assert st.lane_of(env.store, st.FIX_MAIN) == "fix"
     assert env.updates == [] and env.auto_merges == merges and st.entry(env.store, "T002")["reviewed_sha"] == head_of("T002")
     env.store = dict(env.store, main_red=None)
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=11)) == "branch_updated"  # once main is green it moves again
@@ -670,7 +673,8 @@ def test_finish_lays_only_its_own_usage_onto_a_state_another_lane_moved() -> Non
     assert out["by_task"] == {"T000": {"output_tokens": 1}, "T001": {"output_tokens": 50}, "T002": {"output_tokens": 30}}
     assert out["windows"]["five_hour"] == {"start": "s", "tokens": 180} and out["last_reading"] == {"task": "T001"}
     rolled = dict(ours, usage=dict(ours["usage"], windows={"five_hour": {"start": "t", "tokens": 40}}))
-    assert cycle._ours_onto(base, rolled, fresh)["usage"]["windows"]["five_hour"] == {"start": "s", "tokens": 170}
+    # Ours rolled over to a newer window: that window holds only our tokens; the old one no longer counts (D-630).
+    assert cycle._ours_onto(base, rolled, fresh)["usage"]["windows"]["five_hour"] == {"start": "t", "tokens": 40}
     alone = cycle._ours_onto(base, ours, base)["usage"]
     assert alone["windows"]["five_hour"] == {"start": "s", "tokens": 150}  # nobody else moved it: ours as it is
     strikes = cycle._ours_onto({"tasks": [], "lane_strikes": {"2": {"count": 1}}}, {"tasks": [], "lane_strikes": {"2": {"count": 0}}},
@@ -708,3 +712,128 @@ def test_the_lane_count_is_in_the_locked_blueprint() -> None:
     import check_plan_lock
 
     assert "kit/runner.json" in check_plan_lock.locked_paths(ROOT) and "kit/runner.json" in check_plan_lock.read_lock(ROOT)
+
+
+# ---- D-630: a red main is always fixable, whatever the lane capacity; pacing windows; strike evidence
+
+
+def _fix_main_hand_in(task: dict[str, Any], model: str, log: str) -> cycle.WorkerResult:
+    """FIX-MAIN's revert of T001's files, reviewed on Opus; other tasks hand in as by_head."""
+    if task["id"] == st.FIX_MAIN:
+        return reviewed(task, model, paths=["app/a/x.py"], head="fix0001")
+    return by_head(task, model, log)
+
+
+def _held_behind_red_main(tmp_path: Path, fallen_back: bool) -> tuple[FakeEnv, list[dict[str, Any]]]:
+    """T001 MERGE_PENDING on lane 1, T002 working on lane 2; T001's merge turns main red (T001 BLOCKED);
+    then T002 hands in (MERGE_PENDING, its PR open, held by the red-main guard). With `fallen_back`,
+    `lanes_fallback` is set first (capacity 1, both lanes still in flight)."""
+    graph = [staged("T001", owns=["app/a/"]), staged("T002", owns=["app/b/"])]
+    env = FakeEnv(by_head)
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s1", "1"), env, NOW) == st.MERGE_PENDING
+    env.worker = handed_off
+    cfg = two_lane(graph, tmp_path, "s2", "2")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == "handed_off"
+    if fallen_back:
+        env.store = dict(env.store, lanes_fallback={"at": st.iso(NOW), "lane": "2", "why": ["x", "y"]})
+    env.store = st.with_task(cycle.set_main_red(env.store, cfg, "tree", "sq0001", ("T001", "sq0001", ["app/a/x.py"]), NOW),
+                             "T001", status=st.BLOCKED, reason="squash commit tree differs from the tested head tree")
+    assert cycle.after_handoff(cfg, env, lambda t: by_head(t, MODELS["sonnet"], "")) == st.MERGE_PENDING
+    env.prs["T002"] = dict(green_pr(head_of("T002"), merged=False), number=2, state="open", auto_merge=False)
+    env.worker = _fix_main_hand_in
+    return env, graph
+
+
+@pytest.mark.parametrize("fallen_back", [True, False])
+def test_drill_red_main_with_a_held_task_in_a_full_lane_still_gets_fixed(tmp_path: Path, fallen_back: bool) -> None:
+    """N1: a fall back (capacity 1) with T002 held MERGE_PENDING by the red-main guard used to leave FIX-MAIN
+    unclaimable and main red for good. Without the fall back lane 1 is free and FIX-MAIN takes it, as before."""
+    env, graph = _held_behind_red_main(tmp_path, fallen_back)
+    cfg = two_lane(graph, tmp_path, "s3", "1")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "fix_main"
+    fix = st.entry(env.store, st.FIX_MAIN)
+    assert fix["status"] == st.MERGE_PENDING and st.task_lane(fix) == ("fix" if fallen_back else "1")
+    assert st.status(env.store, "T002") == st.MERGE_PENDING and env.auto_merges[-1][1] != head_of("T002")  # still held
+    if not fallen_back:
+        return
+    assert st.in_flight(env.store, NOW) == {"T002": "2"}  # the fix lane takes no capacity
+    assert cs.check(env.store, lanes=2, now=NOW + timedelta(minutes=5)) == []
+    env.prs[st.FIX_MAIN] = dict(green_pr("fix0001"), number=9, merged_sha="sq0009", merged_at="2026-11-01T12:20:00Z")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "main_cleared"
+    assert not env.store["main_red"] and st.status(env.store, st.FIX_MAIN) == st.DONE
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=21)) == "merge_pending"
+    assert env.auto_merges[-1] == ("claude/task/T002-x", head_of("T002"))  # the guard lifted with main green
+
+
+def test_drill_lanes_lowered_from_two_to_one_mid_flight_still_fix_a_red_main(tmp_path: Path) -> None:
+    graph = [staged("T001", owns=["app/a/"]), staged("T002", owns=["app/b/"])]
+    env = FakeEnv(by_head)
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s1", "1"), env, NOW) == st.MERGE_PENDING
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s2", "2"), env, NOW + timedelta(minutes=1)) == st.MERGE_PENDING
+    for tid, number in (("T001", 1), ("T002", 2)):
+        env.prs[tid] = dict(green_pr(head_of(tid), merged=False), number=number, state="open", auto_merge=False)
+    one = dataclasses.replace(config(graph, tmp_path, "s3"), lane_hint="1")  # kit/runner.json back to 1
+    env.store = cycle.set_main_red(env.store, one, "nightly", "bad0001", ("T000", "m0", ["app/z.rs"]), NOW)
+    env.worker = lambda t, m, log: reviewed(t, m, paths=["app/z.rs"], head="fix0001")
+    assert cycle.run_cycle(one, env, NOW + timedelta(minutes=5)) == "fix_main"
+    assert st.task_lane(st.entry(env.store, st.FIX_MAIN)) == "fix" and st.status(env.store, st.FIX_MAIN) == st.MERGE_PENDING
+    assert lanes.fix_lane(env.store, NOW) is None  # FIX-MAIN is in flight: nothing more to claim there
+
+
+def test_windows_onto_keeps_only_the_newest_window() -> None:
+    base = {"five_hour": {"start": "s", "tokens": 100}}
+    assert cycle._windows_onto(base, {"five_hour": {"start": "t", "tokens": 40}}, {"five_hour": {"start": "t", "tokens": 30}}) == \
+        {"five_hour": {"start": "t", "tokens": 70}}  # both rolled to the same window: both attempts count
+    assert cycle._windows_onto(base, {"five_hour": {"start": "s", "tokens": 150}}, {"five_hour": {"start": "u", "tokens": 30}}) == \
+        {"five_hour": {"start": "u", "tokens": 30}}  # only the fresh one rolled: ours were spent in the old window
+    assert cycle._windows_onto({}, {"five_hour": {"start": "t", "tokens": 40}}, {"five_hour": {"start": None, "tokens": 0}}) == \
+        {"five_hour": {"start": "t", "tokens": 40}}
+
+
+def test_head_checks_records_only_finished_checks() -> None:
+    pr = {"head_sha": "h", "checks": [{"name": "Ci", "sha": "h", "conclusion": None}, {"name": "Twin", "sha": "h", "conclusion": "success"},
+                                      {"name": "Ally", "sha": "old", "conclusion": "success"}]}
+    assert cycle._head_checks(pr) == {"Twin": "success"}
+
+
+def test_a_check_still_running_at_the_update_is_read_again_when_judging_a_strike() -> None:
+    failed = [{"attempt": 1, "checks": [{"name": "Ci", "conclusion": "failure"}]}]
+    update = {"from": "h-t002", "to": "m", "how": "runner", "at": "x", "checks": {"Twin": "success"}}
+    s = st.with_task(st.new_state(), "T002", lane="2", last_failure="Ci: failure", history=failed, update_merges=[update])
+    passed = cycle._lane_outcome(s, "T002", "2", "check_failed", NOW, lambda sha: {"Ci": "success"} if sha == "h-t002" else None)
+    assert passed["lane_strikes"]["2"]["count"] == 1
+    for later in ({"Ci": "running"}, {"Ci": "failure"}, None):
+        assert "lane_strikes" not in cycle._lane_outcome(s, "T002", "2", "check_failed", NOW, lambda sha, v=later: v)
+    legacy = st.with_task(s, "T002", update_merges=[dict(update, checks={"Ci": "None"})])  # recorded by D-620's first version
+    assert cycle._lane_outcome(legacy, "T002", "2", "check_failed", NOW, lambda sha: {"Ci": "success"})["lane_strikes"]["2"]["count"] == 1
+
+
+def test_drill_a_strike_judged_on_the_pre_update_heads_final_checks(tmp_path: Path) -> None:
+    env, graph = _two_merge_pending(tmp_path)
+    pending = dict(green_pr(head_of("T002"), merged=False), number=2, state="open", auto_merge=True)
+    pending["checks"] = [dict(c, conclusion=None) if c["name"] == "Ci" else c for c in pending["checks"]]
+    env.prs["T002"], env.update = pending, {"status": "pushed", "sha": "m-t002", "main": "main0002"}
+    cfg = two_lane(graph, tmp_path, "s3", "2")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "branch_updated"
+    assert "Ci" not in st.entry(env.store, "T002")["update_merges"][-1]["checks"]
+    red = dict(green_pr("m-t002", merged=False), number=2, state="open", auto_merge=True)
+    red["checks"] = [dict(c, conclusion="failure") if c["name"] == "Ci" else c for c in red["checks"]]
+    env.prs["T002"], env.update = red, {"status": "current"}
+    env.checks_of[head_of("T002")] = {"Ci": "success", "Twin": "success", "Ally": "success"}  # Ci passed there in the end
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "check_failed"
+    assert env.store["lane_strikes"]["2"]["count"] == 1
+
+
+def test_checks_on_reads_the_latest_run_of_each_required_check(tmp_path: Path) -> None:
+    from runner.github_env import GitHubEnv
+
+    runs = {"check_runs": [{"name": "Ci", "status": "completed", "conclusion": "failure", "started_at": "1"},
+                           {"name": "Ci", "status": "completed", "conclusion": "success", "started_at": "2"},
+                           {"name": "Twin", "status": "in_progress", "conclusion": None, "started_at": "1"},
+                           {"name": "Other", "status": "completed", "conclusion": "failure", "started_at": "1"}]}
+    answers = {"ok": (0, json.dumps(runs), ""), "fail": (1, "", "HTTP 500")}
+    mode = {"now": "ok"}
+    env = GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=lambda a, s, c: answers[mode["now"]])
+    assert env.checks_on("h") == {"Ci": "success", "Twin": "running"}
+    mode["now"] = "fail"
+    assert env.checks_on("h") is None and env.main_checks_green("h") is None
