@@ -1,11 +1,14 @@
 //! Shared pieces of every adapter: the derived idempotency key, the adapter
-//! error, and the Twilio-shaped HTTP client that the texting, voice and Verify
-//! adapters share (SEC-018, SEC-032).
+//! error, the Twilio-shaped HTTP client that the texting, voice and Verify
+//! adapters share, the JSON or form client of the other vendors, and the guard
+//! for fetching a URL a person or vendor supplied (SEC-018, SEC-032, SEC-041).
 //!
-//! There is one client and no fake code path: stand-in, sandbox and live differ
-//! only by the base URLs and credentials in [`TwilioConfig`] (D-453).
+//! There is one client per vendor and no fake code path: stand-in, sandbox and
+//! live differ only by the base URLs and credentials (D-453).
 
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::sync::Arc;
+use std::time::Duration;
 
 use hmac::{Hmac, KeyInit, Mac};
 use secrecy::{ExposeSecret, SecretString};
@@ -79,6 +82,9 @@ pub enum AdapterError {
     /// A vendor ID passed in is not of the vendor's form, so it never reaches a URL path.
     #[error("vendor ID has the wrong form")]
     InvalidId,
+    /// A base URL or object name was refused before any request (AI-009, SEC-032).
+    #[error("adapter setting refused")]
+    BadConfig,
 }
 
 /// Builds the texting, voice and Verify clients from one checked config; the
@@ -135,13 +141,8 @@ pub(crate) struct TwilioHttp {
 
 impl TwilioHttp {
     pub(crate) fn new(config: &TwilioConfig) -> Result<Self, AdapterError> {
-        let client = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(15))
-            .redirect(reqwest::redirect::Policy::none())
-            .build()
-            .map_err(|_| AdapterError::NotSent)?;
         Ok(Self {
-            client,
+            client: vendor_client()?,
             api_base: config.api_base().into(),
             verify_base: config.verify_base().into(),
             account_sid: config.account_sid().into(),
@@ -174,12 +175,7 @@ impl TwilioHttp {
                 .header("Idempotency-Key", key.as_str())
                 .header("X-Askhava-Message-Key", key.as_str());
         }
-        let response = request.send().await.map_err(|error| send_error(&error))?;
-        let status = response.status();
-        let bytes = response
-            .bytes()
-            .await
-            .map_err(|_| AdapterError::OutcomeUnknown)?;
+        let (status, bytes) = exchange(request).await?;
         if !status.is_success() {
             let code = serde_json::from_slice::<TwilioErrorBody>(&bytes)
                 .ok()
@@ -191,4 +187,347 @@ impl TwilioHttp {
         }
         serde_json::from_slice(&bytes).map_err(|_| AdapterError::Decode)
     }
+}
+
+/// The vendor HTTP client: a 15-second timeout and no redirects, so a
+/// credential never goes to another host (SEC-032).
+fn vendor_client() -> Result<reqwest::Client, AdapterError> {
+    reqwest::Client::builder()
+        .timeout(Duration::from_secs(15))
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .map_err(|_| AdapterError::NotSent)
+}
+
+/// Sends `request` and reads the whole answer (SEC-018 error sorting).
+async fn exchange(
+    request: reqwest::RequestBuilder,
+) -> Result<(reqwest::StatusCode, Vec<u8>), AdapterError> {
+    let response = request.send().await.map_err(|error| send_error(&error))?;
+    let status = response.status();
+    let bytes = response.bytes().await;
+    Ok((
+        status,
+        bytes.map_err(|_| AdapterError::OutcomeUnknown)?.to_vec(),
+    ))
+}
+
+/// How a non-Twilio vendor client proves who it is; the secret never reaches
+/// `Debug` (R6).
+#[derive(Debug, Clone)]
+pub(crate) enum Auth {
+    /// No credentials (public license lists).
+    None,
+    /// `Authorization: Bearer` (Stripe, Resend).
+    Bearer(Arc<SecretString>),
+    /// Basic auth with the key as user and no password (Lob).
+    BasicUser(Arc<SecretString>),
+    /// A named header (Claude's `x-api-key`).
+    Header(&'static str, Arc<SecretString>),
+}
+
+/// One HTTP client for a JSON or form vendor API under one base URL; path
+/// segments are percent-encoded one by one, so a caller's ID or address can
+/// never change the path (SEC-032).
+#[derive(Debug, Clone)]
+pub(crate) struct VendorHttp {
+    client: reqwest::Client,
+    base: reqwest::Url,
+    auth: Auth,
+}
+
+impl VendorHttp {
+    pub(crate) fn new(base: &str, auth: Auth) -> Result<Self, AdapterError> {
+        let base = reqwest::Url::parse(base).map_err(|_| AdapterError::BadConfig)?;
+        if !matches!(base.scheme(), "http" | "https") || base.cannot_be_a_base() {
+            return Err(AdapterError::BadConfig);
+        }
+        let client = vendor_client()?;
+        Ok(Self { client, base, auth })
+    }
+
+    /// A request to the base URL plus `segments`, authenticated, carrying
+    /// `key` in `Idempotency-Key` when the call acts outside (SEC-018).
+    pub(crate) fn request(
+        &self,
+        method: reqwest::Method,
+        segments: &[&str],
+        key: Option<&IdempotencyKey>,
+    ) -> reqwest::RequestBuilder {
+        let mut url = self.base.clone();
+        if let Ok(mut path) = url.path_segments_mut() {
+            path.pop_if_empty().extend(segments);
+        }
+        let mut request = self.client.request(method, url);
+        request = match &self.auth {
+            Auth::None => request,
+            Auth::Bearer(secret) => request.bearer_auth(secret.expose_secret()),
+            Auth::BasicUser(secret) => request.basic_auth(secret.expose_secret(), None::<&str>),
+            Auth::Header(name, secret) => request.header(*name, secret.expose_secret()),
+        };
+        match key {
+            Some(key) => request.header("Idempotency-Key", key.as_str()),
+            None => request,
+        }
+    }
+
+    /// Sends and returns the raw success body; an error status keeps only the
+    /// status (PRIV-016).
+    pub(crate) async fn send(
+        &self,
+        request: reqwest::RequestBuilder,
+    ) -> Result<Vec<u8>, AdapterError> {
+        let (status, bytes) = exchange(request).await?;
+        if !status.is_success() {
+            let status = status.as_u16();
+            return Err(AdapterError::Vendor { status, code: None });
+        }
+        Ok(bytes)
+    }
+
+    /// Sends and parses the success body as `T`.
+    pub(crate) async fn json<T: DeserializeOwned>(
+        &self,
+        request: reqwest::RequestBuilder,
+    ) -> Result<T, AdapterError> {
+        let bytes = self.send(request).await?;
+        serde_json::from_slice(&bytes).map_err(|_| AdapterError::Decode)
+    }
+}
+
+/// Whether `name` is safe as one file or object name: ASCII letters, digits,
+/// `_`, `-` and `.`, not starting with a dot, so it cannot climb out of a directory.
+pub(crate) fn is_safe_name(name: &str) -> bool {
+    !name.is_empty()
+        && !name.starts_with('.')
+        && name
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b"_-.".contains(&b))
+}
+
+/// The hosts Twilio serves MMS media from: the API, which redirects, and its
+/// media CDN (SEC-041). A listed host also allows its subdomains.
+pub const TWILIO_MEDIA_HOSTS: [&str; 2] = ["api.twilio.com", "twiliocdn.com"];
+/// The most redirects one guarded fetch follows, each re-checked (SEC-041).
+pub const MAX_REDIRECTS: usize = 3;
+
+/// The rules for one server-side fetch of a URL a person supplied (a business
+/// review link) or a vendor supplied (MMS media): the allowed hosts, a size cap
+/// and a timeout (SEC-041). Only `https` is fetched.
+#[derive(Debug, Clone)]
+pub struct FetchPolicy {
+    hosts: Vec<String>,
+    max_bytes: usize,
+    timeout: Duration,
+    loopback_for_tests: bool,
+}
+
+impl FetchPolicy {
+    /// A policy allowing exactly `hosts` (and their subdomains) (SEC-041).
+    #[must_use]
+    pub fn new(hosts: &[&str], max_bytes: usize, timeout: Duration) -> Self {
+        let hosts = hosts.iter().map(|host| host.to_ascii_lowercase()).collect();
+        let loopback_for_tests = false;
+        Self {
+            hosts,
+            max_bytes,
+            timeout,
+            loopback_for_tests,
+        }
+    }
+
+    /// MMS media: Twilio's hosts only, 10 MB, 20 seconds (SEC-041).
+    #[must_use]
+    pub fn twilio_media() -> Self {
+        Self::new(
+            &TWILIO_MEDIA_HOSTS,
+            10 * 1024 * 1024,
+            Duration::from_secs(20),
+        )
+    }
+
+    /// Tests only: also `http` and loopback addresses, so a local server can
+    /// play the remote host; private, link-local and metadata stay refused.
+    #[cfg(test)]
+    pub(crate) fn with_loopback_for_tests(mut self) -> Self {
+        self.loopback_for_tests = true;
+        self
+    }
+
+    fn host_allowed(&self, url: &reqwest::Url) -> Option<String> {
+        let scheme_ok =
+            url.scheme() == "https" || (self.loopback_for_tests && url.scheme() == "http");
+        let host = url
+            .host_str()?
+            .trim_start_matches('[')
+            .trim_end_matches(']');
+        let host = host.to_ascii_lowercase();
+        let listed = self.hosts.iter().any(|allowed| {
+            host == *allowed
+                || host
+                    .strip_suffix(allowed.as_str())
+                    .is_some_and(|sub| sub.ends_with('.'))
+        });
+        (scheme_ok && listed && url.username().is_empty()).then_some(host)
+    }
+
+    fn address_allowed(&self, ip: IpAddr) -> bool {
+        is_public_address(ip) || (self.loopback_for_tests && ip.is_loopback())
+    }
+}
+
+/// Why a guarded fetch stopped. No variant carries the URL (PRIV-016).
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum FetchError {
+    /// The URL did not parse, or a redirect had no usable `Location`.
+    #[error("URL is not usable")]
+    BadUrl,
+    /// The scheme or host is not on the policy's list (SEC-041).
+    #[error("host is not allowed")]
+    HostNotAllowed,
+    /// The host resolved to a private, loopback, link-local or metadata address (SEC-041).
+    #[error("address is not public")]
+    AddressRefused,
+    /// More than [`MAX_REDIRECTS`] redirects.
+    #[error("too many redirects")]
+    TooManyRedirects,
+    /// The body passed the size cap; reading stopped there (SEC-041).
+    #[error("body is over the size cap")]
+    TooLarge,
+    /// The host did not answer in time (SEC-041).
+    #[error("fetch timed out")]
+    TimedOut,
+    /// The host answered with this non-success status.
+    #[error("fetch answered status {0}")]
+    Status(u16),
+    /// Resolution or the connection failed.
+    #[error("fetch failed")]
+    Failed,
+}
+
+/// Fetches `url` under `policy` (SEC-041): every hop's host must be allowed,
+/// every address it resolves to must be public, the connection goes only to
+/// those checked addresses (no second lookup), at most [`MAX_REDIRECTS`]
+/// redirects are followed and each is checked the same way, and the body is
+/// read only up to the cap.
+///
+/// # Errors
+///
+/// A [`FetchError`] naming the rule that stopped it.
+pub async fn fetch_untrusted(policy: &FetchPolicy, url: &str) -> Result<Vec<u8>, FetchError> {
+    let mut url = reqwest::Url::parse(url).map_err(|_| FetchError::BadUrl)?;
+    for _ in 0..=MAX_REDIRECTS {
+        let response = fetch_hop(policy, &url).await?;
+        if !response.status().is_redirection() {
+            return read_capped(policy, response).await;
+        }
+        let location = response.headers().get(reqwest::header::LOCATION);
+        let location = location
+            .and_then(|value| value.to_str().ok())
+            .ok_or(FetchError::BadUrl)?;
+        url = url.join(location).map_err(|_| FetchError::BadUrl)?;
+    }
+    Err(FetchError::TooManyRedirects)
+}
+
+async fn fetch_hop(
+    policy: &FetchPolicy,
+    url: &reqwest::Url,
+) -> Result<reqwest::Response, FetchError> {
+    let host = policy.host_allowed(url).ok_or(FetchError::HostNotAllowed)?;
+    let port = url.port_or_known_default().ok_or(FetchError::BadUrl)?;
+    let found = tokio::net::lookup_host((host.as_str(), port)).await;
+    let addrs: Vec<SocketAddr> = found.map_err(|_| FetchError::Failed)?.collect();
+    if addrs.is_empty() || !addrs.iter().all(|addr| policy.address_allowed(addr.ip())) {
+        return Err(FetchError::AddressRefused);
+    }
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .timeout(policy.timeout)
+        .resolve_to_addrs(&host, &addrs)
+        .build()
+        .map_err(|_| FetchError::Failed)?;
+    client
+        .get(url.clone())
+        .send()
+        .await
+        .map_err(|error| fetch_error(&error))
+}
+
+async fn read_capped(
+    policy: &FetchPolicy,
+    mut response: reqwest::Response,
+) -> Result<Vec<u8>, FetchError> {
+    if !response.status().is_success() {
+        return Err(FetchError::Status(response.status().as_u16()));
+    }
+    if response
+        .content_length()
+        .is_some_and(|length| length > policy.max_bytes as u64)
+    {
+        return Err(FetchError::TooLarge);
+    }
+    let mut body = Vec::new();
+    while let Some(chunk) = response
+        .chunk()
+        .await
+        .map_err(|error| fetch_error(&error))?
+    {
+        if body.len() + chunk.len() > policy.max_bytes {
+            return Err(FetchError::TooLarge);
+        }
+        body.extend_from_slice(&chunk);
+    }
+    Ok(body)
+}
+
+fn fetch_error(error: &reqwest::Error) -> FetchError {
+    if error.is_timeout() {
+        FetchError::TimedOut
+    } else {
+        FetchError::Failed
+    }
+}
+
+/// Whether `ip` is a public unicast address: not private, loopback,
+/// link-local (169.254.0.0/16 holds the cloud metadata address), shared,
+/// benchmark, documentation, multicast, reserved or unspecified, including
+/// those carried inside an IPv4-mapped or NAT64 IPv6 address (SEC-041).
+#[must_use]
+pub fn is_public_address(ip: IpAddr) -> bool {
+    match ip {
+        IpAddr::V4(v4) => is_public_v4(v4),
+        IpAddr::V6(v6) => match (v6.to_ipv4(), v6.segments()) {
+            (Some(v4), _) => is_public_v4(v4),
+            (None, [0x64, 0xff9b, 0, 0, 0, 0, high, low]) => {
+                is_public_v4(Ipv4Addr::from((u32::from(high) << 16) | u32::from(low)))
+            }
+            (None, _) => is_public_v6(v6),
+        },
+    }
+}
+
+fn is_public_v4(ip: Ipv4Addr) -> bool {
+    let [a, b, ..] = ip.octets();
+    !(ip.is_private()
+        || ip.is_loopback()
+        || ip.is_link_local()
+        || ip.is_unspecified()
+        || ip.is_broadcast()
+        || ip.is_multicast()
+        || ip.is_documentation()
+        || a == 0
+        || a >= 240
+        || (a == 100 && (64..128).contains(&b))
+        || (a == 198 && (b == 18 || b == 19)))
+}
+
+fn is_public_v6(ip: Ipv6Addr) -> bool {
+    let first = ip.segments()[0];
+    !(ip.is_loopback()
+        || ip.is_unspecified()
+        || ip.is_multicast()
+        || ip.is_unique_local()
+        || ip.is_unicast_link_local()
+        || first == 0x2001 && ip.segments()[1] == 0x0db8)
 }
