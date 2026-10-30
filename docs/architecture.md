@@ -117,9 +117,10 @@ migrations/          SQL files `0NNN_<slug>.sql`, NNN the owning task's serial p
                      tested; SQLx applies
                      any not yet applied in number order, including a lower number added later (checked, D-453).
                      On a fresh database the files run in number order, not task order; the architecture test
-                     fails if two migrations that touch the same schema have a number order different from their
-                     tasks' dependency order, and each migration file names its owning module in a leading comment
-                     (D-481)
+                     (`tests/integration/tests/architecture_migrations.rs`, T226) fails if a migration's number is
+                     higher than that of a migration whose task depends on its own, whatever schemas they touch
+                     (two tasks that may run in either order never fail), and each migration file names its
+                     owning module in a leading comment (D-481, D-600)
 stand_ins/           Python fakes of Twilio, Stripe, Resend, Lob and the AI, served over HTTP by `stand_ins/server.py`
                      at the vendors' URL shapes, so the Rust adapters use the same client code everywhere (SEC-032)
 tests/               the Rust test-layer crates integration, security and recovery (package `askhava-recovery-tests`, since the
