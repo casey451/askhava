@@ -53,7 +53,7 @@ impl Scripted {
 }
 
 impl Transport for Scripted {
-    async fn post(&self, endpoint: Endpoint, _: Uuid, _: &Value) -> Result<Reply, Fault> {
+    async fn post(&self, endpoint: Endpoint, _: &str, _: Uuid, _: &Value) -> Result<Reply, Fault> {
         self.paths.lock().unwrap().push(endpoint.path());
         let step = self
             .steps
@@ -93,6 +93,7 @@ async fn run(steps: Vec<Step>) -> (Result<Reply, CallEnd>, u32, Duration, Script
     let (result, attempts) = send(
         &transport,
         &AiConfig::from_pairs([]).unwrap(),
+        "intake_reading",
         Uuid::nil(),
         &json!({}),
     )
@@ -338,7 +339,7 @@ async fn the_stand_in_answers_the_request_over_http() {
     let transport = AdapterTransport::new(client, SecretString::from("fake-id-secret"));
     let config = AiConfig::from_pairs([]).unwrap();
     let body = crate::service::intake_request(&config, &scrubbed("my faucet has a leak"));
-    let (result, attempts) = send(&transport, &config, Uuid::nil(), &body).await;
+    let (result, attempts) = send(&transport, &config, "intake_reading", Uuid::nil(), &body).await;
     let reply = result.unwrap();
     assert_eq!(attempts, 1);
     assert!(reply.request_id.is_some_and(|id| id.starts_with("msg_")));

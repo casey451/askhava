@@ -149,11 +149,12 @@ pub(crate) fn retry_wait(fault: Fault, attempts: u32) -> Option<Duration> {
     }
 }
 
-/// Sends `body` to `/v1/messages` with the AI-023 retries, all within the timeout setting;
-/// returns the result and the number of attempts made.
+/// Sends `body` for AI job `job` to `/v1/messages` with the AI-023 retries, all within the
+/// timeout setting; returns the result and the number of attempts made.
 pub(crate) async fn send<T: Transport>(
     transport: &T,
     config: &AiConfig,
+    job: &str,
     subject: Uuid,
     body: &Value,
 ) -> (Result<Reply, CallEnd>, u32) {
@@ -161,7 +162,7 @@ pub(crate) async fn send<T: Transport>(
     let run = async {
         loop {
             attempts += 1;
-            match transport.post(Endpoint::Messages, subject, body).await {
+            match transport.post(Endpoint::Messages, job, subject, body).await {
                 Ok(reply) => return Ok(reply),
                 Err(fault) => match retry_wait(fault, attempts) {
                     Some(wait) => tokio::time::sleep(wait).await,
@@ -249,7 +250,7 @@ pub async fn read_intake<T: Transport>(
         return Ok(Intake::AiOff(AiOff::DailyCap));
     }
     let body = intake_request(config, call.text);
-    let (sent, attempts) = send(transport, config, call.subject, &body).await;
+    let (sent, attempts) = send(transport, config, INTAKE_READING.job, call.subject, &body).await;
     let result = sent.and_then(|reply| {
         row.request_id = reply.request_id.filter(|id| is_request_id(id));
         reading_from_reply(&reply.body, call.open)

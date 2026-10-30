@@ -182,10 +182,13 @@ pub enum Fault {
 
 /// How `ai` reaches the Claude API (AI-001, AI-023, D-810): one POST to an allowed endpoint.
 pub trait Transport {
-    /// POSTs `body` to `endpoint`; `subject` is the record the call is about, for the derived key (SEC-018).
+    /// POSTs `body` to `endpoint`; `job` (the instruction's job code) and `subject` (the record
+    /// the call is about) derive the idempotency key, so two AI jobs on one record never share
+    /// a key (SEC-018).
     fn post(
         &self,
         endpoint: Endpoint,
+        job: &str,
         subject: Uuid,
         body: &serde_json::Value,
     ) -> impl Future<Output = Result<Reply, Fault>> + Send;
@@ -209,13 +212,15 @@ impl<A: AiAdapter + Sync> Transport for AdapterTransport<A> {
     async fn post(
         &self,
         endpoint: Endpoint,
+        job: &str,
         subject: Uuid,
         body: &serde_json::Value,
     ) -> Result<Reply, Fault> {
         if endpoint != Endpoint::Messages {
             return Err(Fault::Malformed);
         }
-        let key = IdempotencyKey::derive(&self.id_secret, "ai.messages", &[&subject.to_string()]);
+        let key =
+            IdempotencyKey::derive(&self.id_secret, "ai.messages", &[job, &subject.to_string()]);
         match self.adapter.create_message(&key, body).await {
             Ok(body) => {
                 let request_id = body["id"].as_str().map(str::to_owned);

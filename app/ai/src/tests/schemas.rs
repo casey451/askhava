@@ -1,14 +1,22 @@
 //! The schema triangle, the reading checks and the tag escaping (TD-AI-02, TD-AI-13, TD-AI-15;
 //! AI-001, AI-005, AI-010, AI-015, AI-022, AI-024, AI-025).
 
+use std::sync::{Arc, Mutex};
+
+use askhava_adapters::api::{AdapterError, AiAdapter, IdempotencyKey};
 use askhava_privacy::api::{CommonWords, Known, NameMemory, ScrubbedText, scrub};
 use proptest::prelude::*;
+use secrecy::SecretString;
 use serde_json::{Map, Value, json};
+use sqlx::types::Uuid;
 
-use crate::models::{AiConfig, DEFAULT_MODEL, Endpoint, INSTRUCTIONS, INTAKE_READING, MODEL_KEY};
+use crate::models::{
+    AdapterTransport, AiConfig, DEFAULT_MODEL, Endpoint, Fault, INSTRUCTIONS, INTAKE_READING,
+    MODEL_KEY, Transport,
+};
 use crate::schemas::{
-    Discard, FIELDS, FieldKind, Language, OpenTrades, SCHEMA_FILE, Tag, intake_schema,
-    parse_reading, wrap,
+    Discard, FIELDS, FieldKind, Language, MAX_MISSING_INFO, OpenTrades, SCHEMA_FILE, Tag,
+    intake_schema, parse_reading, wrap,
 };
 use crate::service::intake_request;
 
@@ -123,6 +131,29 @@ fn malformed_output_is_discarded_and_enums_are_normalized() {
     assert_eq!(with("trade", json!("handyman")), Err(Discard::Catalog));
 }
 
+/// TD-AI-02 (AI-005, AI-021, D-814): `missing_info` holds at most [`MAX_MISSING_INFO`] items, an
+/// item that fails the AI-021 screen is dropped, and the rest are normalized.
+#[test]
+fn missing_info_is_capped_and_screened() {
+    let with = |items: Value| {
+        let mut fields = reply_fields();
+        fields.insert("missing_info".to_owned(), items);
+        parse_reading(&Value::Object(fields).to_string(), &open())
+    };
+    let too_many: Vec<String> = (0..=MAX_MISSING_INFO)
+        .map(|n| format!("item {n}"))
+        .collect();
+    assert_eq!(with(json!(too_many)), Err(Discard::Schema));
+    let reading = with(json!([
+        " Where IS the leak ",
+        "see evil.com/pay",
+        "s\u{200B}ex"
+    ]))
+    .unwrap();
+    assert_eq!(reading.missing_info, vec!["where is the leak".to_owned()]);
+    assert_eq!(with(json!(["x".repeat(65)])), Err(Discard::Schema));
+}
+
 /// TD-AI-02 (AI-015): every instruction is a versioned constant in code, and the request carries it.
 #[test]
 fn instruction_versions_are_stored_in_code() {
@@ -138,7 +169,7 @@ fn instruction_versions_are_stored_in_code() {
 }
 
 /// TD-AI-13 (AI-024, AI-001): the model ID comes from the setting, Haiku 5.5 by default; a
-/// malformed ID is refused; only the two Messages paths exist and a planted other path is not one.
+/// malformed ID is refused; the two endpoints are exactly the Messages paths.
 #[test]
 fn model_comes_from_the_setting_and_paths_are_the_messages_endpoints() {
     let config =
@@ -154,11 +185,52 @@ fn model_comes_from_the_setting_and_paths_are_the_messages_endpoints() {
             "{bad}"
         );
     }
-    let allowed = ["/v1/messages", "/v1/messages/count_tokens"];
-    for endpoint in [Endpoint::Messages, Endpoint::CountTokens] {
-        assert!(allowed.contains(&endpoint.path()));
+    assert_eq!(Endpoint::Messages.path(), "/v1/messages");
+    assert_eq!(Endpoint::CountTokens.path(), "/v1/messages/count_tokens");
+}
+
+/// An adapter client that answers every call and keeps each key and body it was given.
+#[derive(Default)]
+struct Recording(Arc<Mutex<Vec<(String, Value)>>>);
+
+impl AiAdapter for Recording {
+    async fn create_message(
+        &self,
+        idempotency: &IdempotencyKey,
+        request: &Value,
+    ) -> Result<Value, AdapterError> {
+        let mut calls = self.0.lock().unwrap();
+        calls.push((idempotency.as_str().to_owned(), request.clone()));
+        Ok(json!({"id": "msg_fake01"}))
     }
-    assert!(!allowed.contains(&"/v1/complete"));
+}
+
+/// TD-AI-13 (AI-001, SEC-018): through `AdapterTransport` the adapter receives the request body
+/// exactly as built, only for `Messages`; `CountTokens` is refused before the adapter is reached;
+/// the idempotency key depends on the AI job as well as the record.
+#[tokio::test]
+async fn adapter_transport_sends_only_messages_with_a_job_keyed_id() {
+    let adapter = Recording::default();
+    let seen = Arc::clone(&adapter.0);
+    let transport = AdapterTransport::new(adapter, SecretString::from("fake-secret"));
+    let body = intake_request(&AiConfig::from_pairs([]).unwrap(), &scrubbed("leak"));
+    let subject = Uuid::nil();
+    let refused = transport
+        .post(Endpoint::CountTokens, "intake_reading", subject, &body)
+        .await;
+    assert_eq!(refused, Err(Fault::Malformed));
+    assert!(seen.lock().unwrap().is_empty());
+    for job in ["intake_reading", "intake_reading", "other_job"] {
+        let reply = transport
+            .post(Endpoint::Messages, job, subject, &body)
+            .await
+            .unwrap();
+        assert_eq!(reply.request_id.as_deref(), Some("msg_fake01"));
+    }
+    let calls = seen.lock().unwrap();
+    assert!(calls.iter().all(|(_, sent)| *sent == body));
+    assert_eq!(calls[0].0, calls[1].0);
+    assert_ne!(calls[0].0, calls[2].0);
 }
 
 fn text_with_tags() -> impl Strategy<Value = String> {
@@ -191,10 +263,18 @@ proptest! {
         prop_assert_eq!(count(content, "</homeowner_message>"), 1);
         prop_assert!(content.starts_with("<homeowner_message>\n"));
         prop_assert!(content.ends_with("\n</homeowner_message>"));
+        let homeowner = wrap(Tag::HomeownerMessage, &raw);
+        prop_assert_eq!(count(&homeowner, "homeowner_message"), 2);
+        prop_assert_eq!(count(&homeowner, "<homeowner_message>"), 1);
+        prop_assert_eq!(count(&homeowner, "</homeowner_message>"), 1);
+        prop_assert!(homeowner.starts_with("<homeowner_message>\n"));
+        prop_assert!(homeowner.ends_with("\n</homeowner_message>"));
         let quote = wrap(Tag::BusinessQuote, &raw);
         prop_assert_eq!(count(&quote, "business_quote"), 2);
         prop_assert_eq!(count(&quote, "<business_quote>"), 1);
         prop_assert_eq!(count(&quote, "</business_quote>"), 1);
+        prop_assert!(quote.starts_with("<business_quote>\n"));
+        prop_assert!(quote.ends_with("\n</business_quote>"));
     }
 }
 

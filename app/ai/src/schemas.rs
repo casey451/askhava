@@ -16,6 +16,7 @@ use serde::Deserialize;
 use serde_json::Value;
 #[cfg(test)]
 use serde_json::json;
+use unicode_normalization::UnicodeNormalization;
 
 /// The committed schema file, compiled in (AI-022).
 pub(crate) const SCHEMA_FILE: &str = include_str!("../../../schemas/intake_reading.json");
@@ -110,7 +111,9 @@ pub struct IntakeReading {
     pub language: Language,
     /// Whether the job reads as major work.
     pub major: bool,
-    /// What the request leaves out, each item trimmed, lower-case, at most 64 characters.
+    /// What the request leaves out: at most [`MAX_MISSING_INFO`] items, each through [`screen_text`]
+    /// (an item that fails is dropped), trimmed, lower-case, at most 64 characters. For records
+    /// and question choice only: never sent to a person or put into a template (D-814).
     pub missing_info: Vec<String>,
 }
 
@@ -155,6 +158,9 @@ pub(crate) fn normalize(value: &str) -> String {
     value.trim().to_lowercase()
 }
 
+/// The most `missing_info` items a reading may hold; more discards it (AI-005, D-814).
+pub(crate) const MAX_MISSING_INFO: usize = 8;
+
 /// Parses the model's JSON text into a checked reading (AI-005, AI-010, AI-022).
 pub(crate) fn parse_reading(text: &str, open: &OpenTrades) -> Result<IntakeReading, Discard> {
     let raw: RawReading = serde_json::from_str(text).map_err(|_| Discard::Schema)?;
@@ -164,9 +170,17 @@ pub(crate) fn parse_reading(text: &str, open: &OpenTrades) -> Result<IntakeReadi
         "es" => Language::Es,
         _ => return Err(Discard::Schema),
     };
-    let missing_info: Vec<String> = raw.missing_info.iter().map(|m| normalize(m)).collect();
+    let missing_info: Vec<String> = raw
+        .missing_info
+        .iter()
+        .filter_map(|m| match screen_text(TextKind::Question, m) {
+            Screened::Use(text) => Some(normalize(&text)),
+            Screened::Fallback(_) => None,
+        })
+        .collect();
     if !in_range(raw.trade_confidence)
         || !in_range(raw.job_type_confidence)
+        || raw.missing_info.len() > MAX_MISSING_INFO
         || missing_info.iter().any(|m| m.chars().count() > 64)
     {
         return Err(Discard::Schema);
@@ -284,30 +298,57 @@ impl Screened {
     }
 }
 
-/// Screens one AI-written text for the CARD-010 list, links and the length cap (AI-021).
+/// Screens one AI-written text for the CARD-010 list, links and the length cap (AI-021). The
+/// screen runs on a normalized copy (NFKC, format characters dropped, ideographic full stops as
+/// `.`), and that copy is the text returned, so what was checked is what is sent (D-814).
 #[must_use]
 pub fn screen_text(kind: TextKind, text: &str) -> Screened {
+    let text = screen_normalize(text);
     if text.chars().count() > kind.cap() {
         return Screened::Fallback(ScreenHit::TooLong);
     }
-    if let Some(entry) = restricted_match(text) {
+    if let Some(entry) = restricted_match(&text) {
         return Screened::Fallback(ScreenHit::Restricted(entry));
     }
     if text.split_whitespace().any(is_link) {
         return Screened::Fallback(ScreenHit::Url);
     }
-    Screened::Use(text.to_owned())
+    Screened::Use(text)
 }
 
-/// A word that is a link: a scheme, `www.`, or a bare domain whose last label is 2 to 24 letters.
+/// NFKC, Unicode format characters (category Cf) dropped and ideographic full stops written
+/// `.`, as `privacy`'s scrubber normalizes (AI-020, AI-021, D-814).
+fn screen_normalize(text: &str) -> String {
+    text.nfkc()
+        .filter(|c| !is_format(*c))
+        .map(|c| if c == '\u{3002}' { '.' } else { c })
+        .collect()
+}
+
+/// Unicode general category Cf (format characters), including the tag block: the same list as
+/// `privacy`'s scrubber, which does not export it (AI-020, D-814).
+fn is_format(c: char) -> bool {
+    matches!(u32::from(c),
+        0x00AD | 0x0600..=0x0605 | 0x061C | 0x06DD | 0x070F | 0x0890..=0x0891 | 0x08E2 | 0x180E
+        | 0x200B..=0x200F | 0x202A..=0x202E | 0x2060..=0x2064 | 0x2066..=0x206F | 0xFEFF
+        | 0xFFF9..=0xFFFB | 0x110BD | 0x110CD | 0x13430..=0x1343F | 0x1BCA0..=0x1BCA3
+        | 0x1D173..=0x1D17A | 0xE0001 | 0xE0020..=0xE007F)
+}
+
+/// A word that is or holds a link: a scheme, `www.`, or a bare domain (last label 2 to 24
+/// letters) in any piece of it cut at `/`, `?`, `#`, `:`, `@` or `,`, so `evil.com/pay` and
+/// `bit.ly?x=1` are caught.
 fn is_link(word: &str) -> bool {
-    let word = word
-        .trim_matches(|c: char| !c.is_alphanumeric())
-        .to_ascii_lowercase();
-    if word.contains("://") || word.starts_with("www.") {
+    let word = word.to_lowercase();
+    if word.contains("://") || word.contains("www.") {
         return true;
     }
-    let labels: Vec<&str> = word.split('.').collect();
+    word.split(['/', '?', '#', ':', '@', ','])
+        .any(|piece| is_domain(piece.trim_matches(|c: char| !c.is_alphanumeric())))
+}
+
+fn is_domain(piece: &str) -> bool {
+    let labels: Vec<&str> = piece.split('.').collect();
     labels.len() >= 2
         && labels.iter().all(|l| !l.is_empty())
         && labels.last().is_some_and(|tld| {

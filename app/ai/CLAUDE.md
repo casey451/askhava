@@ -16,10 +16,10 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 
 - AI-001: `models::Endpoint` holds only `/v1/messages` and `/v1/messages/count_tokens`; `service::send` posts to `Messages` only.
 - AI-004: every entry point takes `&ScrubbedText`, which only `privacy` can build.
-- AI-005, AI-022: `schemas::parse_reading`: exact fields, confidences 0 to 1, enums trimmed and lower-cased, trade open and job type under it, else discarded.
+- AI-005, AI-022: `schemas::parse_reading`: exact fields, confidences 0 to 1, enums trimmed and lower-cased, trade open and job type under it, at most `MAX_MISSING_INFO` `missing_info` items, else discarded; each `missing_info` item passes `screen_text` or is dropped (D-814).
 - AI-006: `service::intake_request` has no `tools` key; `reading_from_reply` reads only an `end_turn` stop with one text block; `api::quote_summary` is always `None` (PICK-003, D-373).
 - AI-015, AI-024: `models::INTAKE_READING` (versioned); the model ID is `AiConfig::model`; each `ai.call_stat` row holds model, instruction version and request ID.
-- AI-021: `schemas::screen_text` (CARD-010 list from `catalog::api::restricted_match`, links, `TextKind::cap`); `read_intake` makes no call for unverified web chat or past `ASKHAVA_AI_DAILY_CAP` (alert `ai.daily_cap`).
+- AI-021: `schemas::screen_text` (on an NFKC, format-character-free copy it returns: CARD-010 list from `catalog::api::restricted_match`, links with any path or query, `TextKind::cap`; D-814); `read_intake` makes no call for unverified web chat or past `ASKHAVA_AI_DAILY_CAP` (alert `ai.daily_cap`).
 - AI-023: `service::send` (whole call within the timeout setting, at most 2 retries: connection, 500, 504, 529 with 1 s then 2 s backoff, 429 with `retry-after` waits that long); `service::alert_for` (`ai.key_rejected` for 401 and 403, `ai.spend_limit` for a spend-limit 400 and a 429 without `retry-after`), once a day per kind.
 - AI-025: `schemas::wrap`: `&`, `<`, `>` become entities and the tag name, in any case, has its `_` written `&#95;`.
 
@@ -30,6 +30,8 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 - `ai` depends on no crate that sends, charges or releases: `tests/no_tools.rs::output_never_sends_charges_or_releases`.
 - No transaction is open during a network call; the call row and its alert commit together after it (R11).
 - `ai.call_stat` holds no text, only codes and IDs (PRIV-016).
+- `IntakeReading::missing_info` is for records and question choice only: never send it to a person or put it into a template (D-814).
+- `Transport::post` takes the AI job code; the idempotency key is derived from job and subject (SEC-018, D-814).
 - The adapter drops error headers and bodies, so through `AdapterTransport` a 429 counts as having no `retry-after` and any 400 as a spend limit; both fail toward the owner alert (D-810).
 
 ## How to change
@@ -42,6 +44,6 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 
 ## Tests that guard it
 
-- `src/tests/schemas.rs` (TD-AI-02, TD-AI-13, TD-AI-15): the schema triangle, reading checks, instruction versions, model setting and paths, the tag-escaping property.
-- `src/tests/no_tools.rs` (TD-AI-02, TD-AI-06, TD-AI-10): no tools, no send or release, no quote summary, the AI-021 screen and the CARD-010 list.
+- `src/tests/schemas.rs` (TD-AI-02, TD-AI-13, TD-AI-15): the schema triangle, reading checks, instruction versions, model setting and paths, `AdapterTransport` sending only `Messages` with a job-keyed ID, the `missing_info` cap and screen, the tag-escaping property for both tags.
+- `src/tests/no_tools.rs` (TD-AI-02, TD-AI-06, TD-AI-10): no tools, no send or release, no quote summary, the AI-021 screen (links with paths, disguised text) and the CARD-010 list.
 - `src/tests/adapter_calls.rs` (TD-AI-10, TD-AI-13, TD-AI-14): fault modes under a paused clock, AI-off endings, call records, daily cap, web-chat rule, and the stand-in over HTTP.

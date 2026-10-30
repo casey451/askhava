@@ -175,3 +175,58 @@ fn restricted_list_matches_whole_words_only() {
             .all(|w| restricted_match(w).is_some())
     );
 }
+
+/// TD-AI-10 (AI-021, D-814): a link with a path, query, fragment or port is caught, and a
+/// zero-width character, fullwidth letters or an ideographic full stop do not hide a restricted
+/// word or a domain; the text that passes is the normalized copy that was checked.
+#[test]
+fn links_with_paths_and_disguised_text_are_caught() {
+    for link in [
+        "pay at evil.com/pay now",
+        "bit.ly/abc",
+        "evil.com?ref=1",
+        "evil.com#top",
+        "evil.com:8080",
+        "(see evil.com/pay).",
+        "evil\u{3002}com",
+        "evil\u{FF0E}com/pay",
+        "evil\u{FF61}com",
+        "ev\u{200B}il.c\u{200B}om",
+        "\u{FF45}\u{FF56}\u{FF49}\u{FF4C}.\u{FF43}\u{FF4F}\u{FF4D}",
+    ] {
+        assert_eq!(
+            screen_text(TextKind::JobCard, link),
+            Screened::Fallback(ScreenHit::Url),
+            "{link:?}"
+        );
+    }
+    for hidden in [
+        "s\u{200B}ex",
+        "s\u{00AD}ex",
+        "\u{FF53}\u{FF45}\u{FF58}",
+        "to\u{2060}bacco",
+    ] {
+        assert!(
+            matches!(
+                screen_text(TextKind::JobCard, hidden),
+                Screened::Fallback(ScreenHit::Restricted(_))
+            ),
+            "{hidden:?}"
+        );
+    }
+    for fine in [
+        "the 1/2 inch pipe",
+        "at 8:30 or 9:00",
+        "and/or the valve",
+        "1.5/hr",
+    ] {
+        assert_eq!(
+            screen_text(TextKind::JobCard, fine),
+            Screened::Use(fine.to_owned())
+        );
+    }
+    assert_eq!(
+        screen_text(TextKind::JobCard, "\u{FF2C}eak\u{200B}"),
+        Screened::Use("Leak".to_owned())
+    );
+}
