@@ -8,7 +8,8 @@
 //! `search_path` naming another module's schema, with a separate message for `REFERENCES` (`core`
 //! may name `public`), in a migration or in a query macro's SQL under `app/`; and on SQL outside the
 //! query macros in `app/` (the function forms, `AssertSqlSafe`, `QueryBuilder`, `Executor`,
-//! `query_unchecked!`, a glob or alias of `sqlx`), found by a lexer scan (D-600).
+//! `query_unchecked!`, `copy_in_raw`/`copy_out_raw`, a glob or alias of `sqlx`, `self as`
+//! included), found by a lexer scan; and on `migrate!` in `app/` with no root `migrations/` (D-600).
 //!
 //! SQL is lexed with comments and `'…'` strings removed; unquoted names fold to lower case, quoted
 //! names keep their case, and dollar-quoted bodies are scanned as SQL so a function body cannot hide
@@ -24,7 +25,8 @@ use std::path::{Path, PathBuf};
 const FN_FORMS: [&str; 6] = ["query", "query_as", "query_scalar", "query_with", "query_as_with", "query_scalar_with"];
 
 /// Names that build or pass SQL outside the literal macros wherever they appear (SEC-029, D-491).
-const ALWAYS_FORBIDDEN: [&str; 3] = ["AssertSqlSafe", "QueryBuilder", "raw_sql"];
+#[rustfmt::skip]
+const ALWAYS_FORBIDDEN: [&str; 5] = ["AssertSqlSafe", "QueryBuilder", "raw_sql", "copy_in_raw", "copy_out_raw"];
 
 /// The query macros whose SQL is scanned for other modules' schemas; `query_file*` read the file.
 #[rustfmt::skip]
@@ -152,6 +154,17 @@ fn dollar_tag(c: &[char], i: usize) -> Option<usize> {
     (rest[end] == '$' && starts_ok).then_some(end + 2)
 }
 
+/// Lexes the body after the `$tag$` at `i` on its own up to the matching close, so an odd
+/// apostrophe inside cannot swallow the SQL after it; returns the index after the close (D-600).
+fn dollar_body(c: &[char], i: usize, len: usize, out: &mut Vec<String>) -> usize {
+    let tag = &c[i..i + len];
+    let start = i + len;
+    let close = (start..c.len()).find(|&k| c[k..].starts_with(tag));
+    let body: String = c[start..close.unwrap_or(c.len())].iter().collect();
+    out.extend(sql_tokens(&body));
+    close.map_or(c.len(), |k| k + len)
+}
+
 fn sql_step(c: &[char], i: usize, out: &mut Vec<String>) -> usize {
     let next = c.get(i + 1).copied().unwrap_or(' ');
     match (c[i], next) {
@@ -167,7 +180,7 @@ fn sql_step(c: &[char], i: usize, out: &mut Vec<String>) -> usize {
             out.push(body);
             end
         }
-        ('$', _) => i + dollar_tag(c, i).unwrap_or(1),
+        ('$', _) => dollar_tag(c, i).map_or(i + 1, |len| dollar_body(c, i, len, out)),
         ('e' | 'E', '\'') => {
             let (body, end) = delimited(c, i + 2, '\'', true);
             out.push(format!("'{body}"));
@@ -469,16 +482,16 @@ fn check_sql_forms(rel: &str, t: &[String], out: &mut Vec<String>) {
         .filter(|&k| forbidden_anywhere(&t[k]))
         .collect();
     for at in (0..t.len()).filter(|&k| t[k] == "sqlx") {
-        if t.get(at + 1).is_some_and(|s| s == "as") {
+        let path = sqlx_path(t, at);
+        let self_as = path
+            .iter()
+            .any(|&k| t[k] == "self" && t.get(k + 1).is_some_and(|s| s == "as"));
+        if self_as || t.get(at + 1).is_some_and(|s| s == "as") {
             out.push(format!(
                 "{rel}: `sqlx` renamed with `as` hides the SQL forms"
             ));
         }
-        hits.extend(
-            sqlx_path(t, at)
-                .into_iter()
-                .filter(|&k| forbidden_in_path(t, k)),
-        );
+        hits.extend(path.into_iter().filter(|&k| forbidden_in_path(t, k)));
     }
     for k in hits {
         out.push(format!("{rel}: SQL outside the query macros: `{}`", t[k]));
@@ -489,7 +502,9 @@ fn check_sql_forms(rel: &str, t: &[String], out: &mut Vec<String>) {
 fn check_query_schemas(plan: &Plan, dir: &Path, rel: &str, t: &[String], out: &mut Vec<String>) {
     let module = dir.file_name().unwrap_or_default().to_string_lossy();
     for k in 0..t.len().saturating_sub(2) {
-        if !(QUERY_MACROS.contains(&t[k].as_str()) && t[k + 1] == "!" && t[k + 2] == "(") {
+        if !(QUERY_MACROS.contains(&t[k].as_str()) && t[k + 1] == "!")
+            || !["(", "[", "{"].contains(&t[k + 2].as_str())
+        {
             continue;
         }
         let Some(body) = t[k + 3..].iter().find_map(|s| s.strip_prefix('"')) else {
@@ -519,7 +534,18 @@ fn rs_files(dir: &Path, found: &mut Vec<PathBuf>) {
     }
 }
 
+/// The migration checks pass on no files, so a missing root `migrations/` folder fails once `app/`
+/// embeds a migrator with `migrate!` (D-600).
+fn check_migrator(rel: &str, t: &[String], out: &mut Vec<String>) {
+    if t.windows(2).any(|w| w[0] == "migrate" && w[1] == "!") {
+        out.push(format!(
+            "{rel}: `migrate!` is used but there is no migrations/ folder at the repository root"
+        ));
+    }
+}
+
 fn check_app(plan: &Plan, root: &Path, out: &mut Vec<String>) {
+    let no_migrations = !root.join("migrations").is_dir();
     let Ok(entries) = fs::read_dir(root.join("app")) else {
         return;
     };
@@ -534,6 +560,9 @@ fn check_app(plan: &Plan, root: &Path, out: &mut Vec<String>) {
             let t = rust_tokens(&read(&path));
             check_sql_forms(&rel, &t, out);
             check_query_schemas(plan, dir, &rel, &t, out);
+            if no_migrations {
+                check_migrator(&rel, &t, out);
+            }
         }
     }
 }
@@ -570,19 +599,20 @@ const JOBS_SRC: &str = "app/jobs/src/lib.rs";
 /// others; the words in comments, strings and a quoted column must not count; a dollar-quoted body
 /// names only its own schema; the macros name only `jobs` (D-491, D-492).
 #[rustfmt::skip]
-const BASE: [(&str, &str); 6] = [
+const BASE: [(&str, &str); 7] = [
     ("kit/tasks.json", TASKS),
     ("migrations/0001_core_base.sql", "-- core (T001): lock down public\nREVOKE CREATE ON SCHEMA public FROM PUBLIC;\nCREATE SCHEMA IF NOT EXISTS core;\nCREATE TABLE core.task (id bigint);\n"),
     ("migrations/0002_jobs_job.sql", "-- no-transaction\n-- jobs (T002): jobs\nCREATE SCHEMA jobs;\nGRANT USAGE ON SCHEMA jobs TO askhava_app;\n-- picks.pick in a comment /* public.x */\nCREATE TABLE jobs.job (id bigint, note text DEFAULT 'picks.pick', \"quotes\" text, rate numeric DEFAULT 1.5);\nCREATE FUNCTION jobs.touch() RETURNS trigger AS $fn$ BEGIN RETURN NEW; END $fn$ LANGUAGE plpgsql SET search_path = jobs, pg_temp;\nSELECT E'it\\'s picks.x', $1;\n"),
     ("migrations/0004_picks_pick.sql", "-- picks (T003)\nCREATE TABLE picks.pick (id bigint);\n"),
-    (JOBS_SRC, "//! raw_sql and picks.pick in a comment\nfn f(p: &sqlx::PgPool) -> sqlx::Result<()> {\n    let a = sqlx::query!(\"SELECT id FROM jobs.job WHERE note = 'picks.x'\");\n    let b = sqlx::query_as!(Job, r#\"SELECT \"id\" FROM jobs.job -- picks.pick\"#);\n    let c = sqlx::query_file!(\"queries/job.sql\");\n    let s = \"sqlx::query(QueryBuilder)\";\n}\n"),
+    (JOBS_SRC, "//! raw_sql and picks.pick in a comment\nfn f(p: &sqlx::PgPool) -> sqlx::Result<()> {\n    let a = sqlx::query!(\"SELECT id FROM jobs.job WHERE note = 'picks.x'\");\n    let b = sqlx::query_as!(Job, r#\"SELECT \"id\" FROM jobs.job -- picks.pick\"#);\n    let c = sqlx::query_file!(\"queries/job.sql\");\n    let d = sqlx::query_file_as!(Job, \"queries/as.sql\");\n    let m = sqlx::migrate!(\"../../migrations\");\n    let s = \"sqlx::query(QueryBuilder)\";\n}\n"),
     ("app/jobs/queries/job.sql", "SELECT id FROM jobs.job\n"),
+    ("app/jobs/queries/as.sql", "SELECT id FROM jobs.job\n"),
 ];
 
 /// Planted violations: case, the file written over the clean tree, its text, and the one finding
 /// it must give, a substring of the only finding (TD-SEC-10, SEC-029, D-491).
 #[rustfmt::skip]
-const CASES: [(&str, &str, &str, &str); 27] = [
+const CASES: [(&str, &str, &str, &str); 38] = [
     ("bad_name", "migrations/12_jobs.sql", "-- jobs (T002)\n", "migrations/12_jobs.sql: not named 0NNN_<slug>.sql"),
     ("up_down", "migrations/0005_jobs_x.up.sql", "-- jobs (T002)\n", "migrations/0005_jobs_x.up.sql: not named"),
     ("duplicate", "migrations/0002_jobs_more.sql", "-- jobs (T002)\n", "migrations: number 0002 is used by 2 files"),
@@ -599,17 +629,28 @@ const CASES: [(&str, &str, &str, &str); 27] = [
     ("schema_word", NEXT, "-- jobs (T002)\nGRANT USAGE ON SCHEMA jobs, picks TO askhava_app;\n", "`schema picks` names another module's schema"),
     ("public_outside_core", NEXT, "-- jobs (T002)\nCREATE TABLE public.next (id bigint);\n", "`public.` names another module's schema"),
     ("search_path", NEXT, "-- jobs (T002)\nSET search_path = 'jobs,picks';\n", "`search_path picks` names another module's schema"),
+    ("dollar_odd_quote", NEXT, "-- jobs (T002)\nCREATE FUNCTION jobs.f() RETURNS text AS $q$ SELECT 'it $q$ LANGUAGE sql;\nSELECT id FROM picks.pick;\n", "`picks.` names another module's schema"),
     ("fn_form", JOBS_SRC, "fn f() { let q = sqlx::query(\"SELECT 1\"); }\n", "app/jobs/src/lib.rs: SQL outside the query macros: `query`"),
+    ("fn_scalar", JOBS_SRC, "fn f() { let q = sqlx::query_scalar(\"SELECT 1\"); }\n", "SQL outside the query macros: `query_scalar`"),
+    ("fn_with", JOBS_SRC, "fn f(a: A) { let q = sqlx::query_with(\"SELECT 1\", a); }\n", "SQL outside the query macros: `query_with`"),
+    ("fn_as_with", JOBS_SRC, "fn f(a: A) { let q = sqlx::query_as_with::<_, Job, _>(\"SELECT 1\", a); }\n", "SQL outside the query macros: `query_as_with`"),
+    ("use_query", JOBS_SRC, "use sqlx::query;\n", "SQL outside the query macros: `query`"),
     ("use_fn_form", JOBS_SRC, "use sqlx::{query_as, PgPool};\n", "SQL outside the query macros: `query_as`"),
     ("raw_sql", JOBS_SRC, "fn f(s: &str) { let q = raw_sql(s); }\n", "SQL outside the query macros: `raw_sql`"),
     ("assert_sql_safe", JOBS_SRC, "use sqlx::AssertSqlSafe;\n", "SQL outside the query macros: `AssertSqlSafe`"),
     ("query_builder", JOBS_SRC, "fn f() { let b = QueryBuilder::<Postgres>::new(\"SELECT \"); }\n", "SQL outside the query macros: `QueryBuilder`"),
     ("executor", JOBS_SRC, "use sqlx::{Executor as _, PgPool};\n", "SQL outside the query macros: `Executor`"),
+    ("copy_in_raw", JOBS_SRC, "fn f(c: C) { c.copy_in_raw(\"COPY t FROM STDIN\"); }\n", "SQL outside the query macros: `copy_in_raw`"),
+    ("copy_out_raw", JOBS_SRC, "fn f(c: C) { c.copy_out_raw(\"COPY t TO STDOUT\"); }\n", "SQL outside the query macros: `copy_out_raw`"),
     ("unchecked", JOBS_SRC, "fn f() { let r = sqlx::query_unchecked!(\"SELECT 1\"); }\n", "SQL outside the query macros: `query_unchecked`"),
     ("glob", JOBS_SRC, "use sqlx::prelude::*;\n", "SQL outside the query macros: `*`"),
     ("alias", JOBS_SRC, "use sqlx as db;\n", "app/jobs/src/lib.rs: `sqlx` renamed with `as`"),
+    ("self_alias", JOBS_SRC, "use sqlx::{self as db};\n", "app/jobs/src/lib.rs: `sqlx` renamed with `as`"),
+    ("macro_bracket", JOBS_SRC, "fn f() { let r = sqlx::query![\"SELECT id FROM picks.pick\"]; }\n", "app/jobs/src/lib.rs: `picks.` names another module's schema"),
+    ("macro_brace", JOBS_SRC, "fn f() { let r = sqlx::query_as!{Job, \"SELECT id FROM picks.pick\"}; }\n", "app/jobs/src/lib.rs: `picks.` names another module's schema"),
     ("macro_inline", JOBS_SRC, "fn f() { let r = sqlx::query!(\"SELECT id FROM picks.pick\"); }\n", "app/jobs/src/lib.rs: `picks.` names another module's schema"),
     ("macro_schema", "app/jobs/queries/job.sql", "SELECT id FROM picks.pick\n", "app/jobs/queries/job.sql: `picks.` names another module's schema"),
+    ("query_file_as", "app/jobs/queries/as.sql", "SELECT id FROM picks.pick\n", "app/jobs/queries/as.sql: `picks.` names another module's schema"),
 ];
 
 fn write(root: &Path, rel: &str, content: &str) {
@@ -656,4 +697,17 @@ fn td_sec_10_planted_violations_fail() {
             "{case}: no {want:?} in {findings:?}"
         );
     }
+}
+
+/// TD-SEC-10 (D-600): with `migrate!` in `app/` and no root `migrations/` folder, one finding.
+#[test]
+fn td_sec_10_missing_migrations_folder_fails() {
+    let root = plant("no_migrations");
+    fs::remove_dir_all(root.join("migrations")).expect("remove the planted migrations");
+    let findings = check_repo(&root);
+    assert_eq!(findings.len(), 1, "one finding, got {findings:?}");
+    assert!(
+        findings[0]
+            .contains("app/jobs/src/lib.rs: `migrate!` is used but there is no migrations/ folder")
+    );
 }
