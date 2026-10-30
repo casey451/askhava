@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO catalog.category (code, name, trade_group, enabled, recurring, after_hours_emergency, quote_format, keywords) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, trade_group = EXCLUDED.trade_group, recurring = EXCLUDED.recurring, after_hours_emergency = EXCLUDED.after_hours_emergency, quote_format = EXCLUDED.quote_format, keywords = EXCLUDED.keywords RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Text",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "e146d1806bfa6b3bbe4c77a0b6937780b24c1b3751a93a30ed89ae0c5f494dd9"
+}

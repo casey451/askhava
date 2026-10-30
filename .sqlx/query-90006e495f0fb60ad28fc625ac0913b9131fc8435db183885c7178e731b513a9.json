@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO catalog.fee_rule (category_id, trip_fee_tier) VALUES ($1, $2) ON CONFLICT (category_id) DO UPDATE SET trip_fee_tier = EXCLUDED.trip_fee_tier",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "90006e495f0fb60ad28fc625ac0913b9131fc8435db183885c7178e731b513a9"
+}
