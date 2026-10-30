@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://askhava.com/schemas/intake_reading.json",
+  "title": "Intake reading",
+  "description": "The AI-010 intake fields with a 0-to-1 confidence for trade and for job type and no other field (AI-022, D-492, D-493). The stand-in AI validates its output against this file, the Rust types are checked against it and the request's output_config sends it. Trade and job type are checked against the catalog in code (AI-005).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trade",
+    "trade_confidence",
+    "job_type",
+    "job_type_confidence",
+    "emergency",
+    "urgent",
+    "language",
+    "major",
+    "missing_info"
+  ],
+  "properties": {
+    "trade": {"type": "string"},
+    "trade_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "job_type": {"type": "string"},
+    "job_type_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "emergency": {"type": "boolean"},
+    "urgent": {"type": "boolean"},
+    "language": {"type": "string", "enum": ["en", "es"]},
+    "major": {"type": "boolean"},
+    "missing_info": {"type": "array", "items": {"type": "string"}}
+  }
+}
