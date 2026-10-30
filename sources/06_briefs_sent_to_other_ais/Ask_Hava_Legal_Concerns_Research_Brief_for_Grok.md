@@ -50,7 +50,7 @@ This is research for my attorney to review, not a substitute for one. A confiden
 - **Tags on job cards:** "Homeowner prefers Spanish" and "Requester is a tenant." Businesses may tick "skip tenant requests." Businesses may tick "We speak Spanish," which shows on their quote card. There is no routing by language.
 - **Emergencies:** For words like gas smell, sparking or flooding, Ask Hava first texts a fixed safety message (for example "a rotten-egg smell can mean a gas leak; leave the house and call 911 or the gas company"), then continues.
 - **Complaints:** We apologize, explain the business is independent, and send the business's phone, the job details and the ROC complaint link. A business is paused after 3 complaints in 90 days.
-- **Owner:** Casey Solomon is a police officer. Ask Hava is an off-duty side business, run as Ask Hava LLC (to be formed).
+- **Owner:** Casey Solomon has a full-time day job. Ask Hava is a side business, run as Ask Hava LLC (to be formed).
 - **Website:** English and Spanish, built to WCAG 2.2 AA.
 
 ---
@@ -213,13 +213,13 @@ Each item has an ID. Please answer every ID.
 
 **J4. Using the city's active business license spreadsheet** to check businesses: any restriction on use?
 
-**J5. Secondary employment.** The owner is a police officer. Without giving legal advice on his specific department policy, list the general rules that usually apply to off-duty businesses run by sworn officers in Arizona:
+**J5. Secondary employment.** The owner has a full-time day job. Without giving legal advice on his specific employer's policy, list the general rules that usually apply to side businesses run by full-time employees in Arizona:
 - typical secondary-employment approval requirements;
 - conflicts of interest;
 - no use of official position, title or databases;
 - whether mentioning his role in marketing is typically restricted.
 
-He will check his own department's policy; this is only so he knows what to ask.
+He will check his own employer's policy; this is only so he knows what to ask.
 
 ### K. Anything we missed
 
