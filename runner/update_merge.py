@@ -15,7 +15,8 @@ to be "the reviewed work plus main" (`reviewed_plus_main`, D-584):
    branch that did more than append, or appended a number main already has, is a real conflict;
 3. when both sides changed kit/plan.lock, or it conflicted, the lock is recomputed from the merged
    tree with scripts/check_plan_lock.py, but only when each side's own lock matched its own tree, so
-   a stale lock is never papered over; otherwise a conflicted lock stays a conflict.
+   a stale lock is never papered over, and never when either side changed check_plan_lock.py itself
+   (the runner's copy could compute a different lock); otherwise the lock is a real conflict.
 Any other conflicting path is a real conflict: nothing is resolved by guesswork.
 
 The commit's author and committer dates are main's commit date, so two runners that build the same
@@ -35,6 +36,7 @@ from runner import state as st
 Runner = Callable[[list[str], "str | None", Path], tuple[int, str, str]]
 DECISIONS = "docs/decisions.md"
 PLAN_LOCK = "kit/plan.lock"
+LOCK_TOOL = "scripts/check_plan_lock.py"
 LOCK_TREES = ("docs/", "scripts/", "kit/")  # where locked files live; root files are checked out too
 
 
@@ -103,6 +105,8 @@ class UpdateMerge:
             return None, sorted(conflicts)
         merged = self._replace(merged, writes)
         if PLAN_LOCK in conflicts or PLAN_LOCK in both:
+            if self._changed(base, reviewed, LOCK_TOOL) or self._changed(base, main, LOCK_TOOL):
+                return None, [PLAN_LOCK]  # the lock tool itself changed: the runner's copy cannot speak for the merge
             lock = self._relock(merged, reviewed, main)
             if lock is None and PLAN_LOCK in conflicts:
                 return None, [PLAN_LOCK]

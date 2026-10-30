@@ -9,7 +9,7 @@ Lane "1" is also kept in the old top-level `lease` key, without its "lane" field
 that knows only `lease` keeps working; `lease` is what lane "1" reads, and every writer goes
 through `with_lease`, which keeps the two in step. A state without `leases` (written before D-515)
 reads as lane "1" holding `lease`, and stays in that old shape while only lane "1" is written.
-The lane count is `lanes` in kit/runner.json (1 unless Casey sets 2, BUILD_BRIEF.md:222). A task in
+The lane count is `lanes` in kit/runner.json (1 unless Casey sets 2, BUILD_BRIEF.md:209). A task in
 flight occupies its lane: a live lease, or MERGE_PENDING on the task's own `lane` (D-620, in_flight).
 Times are UTC ISO strings ending in "Z". Every function returns a new state; nothing mutates
 its argument. Keys this runner adds (D-486, kit/state_schema.json): `main_red` (falsy, or the failing
@@ -211,16 +211,22 @@ def in_flight(state: State, now: datetime) -> dict[str, str]:
 
 
 def run_lane(state: State, now: datetime, lanes: int, task_id: str = "") -> str:
-    """The lane a backup-runner run serves (its concurrency group and RUNNER_LANE, D-620): the lane of
-    the task its event names when that lane holds no live lease, else the first numbered lane with no
-    live lease, else lane "1" (the run then queues behind lane 1's run, as before lanes)."""
-    held = live_leases(state, now)
-    numbered = [str(n) for n in range(1, max(lanes, 1) + 1)]
+    """The lane a backup-runner run serves (its concurrency group and RUNNER_LANE, D-620).
+
+    First a lane with no task in flight (`in_flight`), so the run can claim: the event's task's own
+    lane when it is free, else the first free lane. When none is free, a lane with no live lease (a
+    MERGE_PENDING task's, whose merge any run resolves): the event's task's lane first, else the first
+    such lane; else lane "1" (the run then queues behind lane 1's run, as before lanes). While
+    `lanes_fallback` is set only lane "1" is in use, so no run is started for another lane."""
+    count = 1 if state.get("lanes_fallback") else max(lanes, 1)
+    numbered = [str(n) for n in range(1, count + 1)]
+    busy, held = set(in_flight(state, now).values()), live_leases(state, now)
     task = entry(state, task_id) if task_id else {}
     mine = lane_of(state, task_id) or (task_lane(task) if task else "")
-    if mine in numbered and mine not in held:
-        return mine
-    return next((lane for lane in numbered if lane not in held), LANE_ONE)
+    for usable in ([n for n in numbered if n not in busy], [n for n in numbered if n not in held]):
+        if usable:
+            return mine if mine in usable else usable[0]
+    return LANE_ONE
 
 
 def _claim_refusal(state: State, task_id: str, now: datetime, lane: str) -> str:
@@ -269,7 +275,8 @@ def reserve_decisions(state: State, task_id: str, taken: set[int]) -> State:
 def claim(
     state: State, task_id: str, session: str, now: datetime, lane: str = LANE_ONE, taken: set[int] | None = None
 ) -> State:
-    """Claim a task on a lane. With one lane, one task is in flight at a time (BUILD_BRIEF.md:222).
+    """Claim a task on a lane. At most `lanes` tasks are in flight, one per lane; with one lane, one at a
+    time (BUILD_BRIEF.md:209, BUILD_BRIEF.md:224).
 
     With `taken` (the D-numbers on main's docs/decisions.md) the same write reserves the task's
     decision numbers (reserve_decisions, D-530); without it the claim reserves none."""

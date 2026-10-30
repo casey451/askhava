@@ -907,7 +907,9 @@ class AutoMergeRunner(FakeRunner):
 
 
 def am_env(tmp_path: Path, fake: AutoMergeRunner) -> GitHubEnv:
-    return GitHubEnv(tmp_path, [TASK], tmp_path, repo="o/r", starter="routine", runner_sha="x", run=fake)
+    env = GitHubEnv(tmp_path, [TASK], tmp_path, repo="o/r", starter="routine", runner_sha="x", run=fake)
+    env.sleep = lambda seconds: None  # enable_auto_merge's wait for a just-pushed head (D-620) takes no real time here
+    return env
 
 
 def test_auto_merge_tries_the_ccr_route_then_gh_pr_merge(tmp_path: Path) -> None:

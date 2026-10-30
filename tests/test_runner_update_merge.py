@@ -11,8 +11,14 @@ from pathlib import Path
 
 import check_plan_lock
 import check_pr_change
+import pytest
+
+from runner import github_env as ge
+from runner.github_env import GitHubEnv
 from runner.update_merge import decisions_after_main
-from test_runner_live import TASK, OfflineGh, commit_on, git, make_env, move_main, pushed_attempt, repo  # noqa: F401  # reason: `repo` is the shared fixture
+from test_runner_live import (  # noqa: F401  # reason: `repo` is the shared fixture
+    SESSION, TASK, AutoMergeRunner, OfflineGh, am_env, claimed_env, commit_on, git, make_env, move_main, pushed_attempt, repo,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 BRANCH = TASK["branch"]
@@ -201,6 +207,23 @@ def test_a_stale_lock_on_either_side_is_never_papered_over(repo: dict[str, Path]
     assert git(repo["origin"], "rev-parse", BRANCH) == stale
 
 
+def test_a_changed_lock_tool_on_either_side_makes_a_rewritten_lock_a_real_conflict(repo: dict[str, Path], tmp_path: Path) -> None:
+    """The runner's own check_plan_lock.py (main's, at its checkout) cannot speak for a merge in which
+    either side changed that script, so the lock is not recomputed (D-620)."""
+    _locked_main(repo)
+    reviewed = _relocked(repo["a"], BRANCH, "BUILD_BRIEF.md", "brief, the branch's version\n")
+    seed = repo["seed"]
+    git(seed, "fetch", "-q", "origin")
+    git(seed, "checkout", "-q", "-B", "main", "origin/main")
+    tool = seed / "scripts" / "check_plan_lock.py"
+    tool.write_text(tool.read_text(encoding="utf-8") + "\n# a harmless change to the lock tool\n")
+    _relocked(seed, None, "CLAUDE.md", "rules, main's version\n")
+    env = env_on(repo, tmp_path)
+    done = env.update_branch(BRANCH, reviewed)
+    assert done["status"] == "conflict" and done["paths"] == ["kit/plan.lock"]
+    assert git(repo["origin"], "rev-parse", BRANCH) == reviewed
+
+
 def test_without_the_lock_tool_a_conflicted_lock_stays_a_conflict(repo: dict[str, Path], tmp_path: Path) -> None:
     _locked_main(repo)
     reviewed = _relocked(repo["a"], BRANCH, "BUILD_BRIEF.md", "brief, the branch's version\n")
@@ -211,3 +234,94 @@ def test_without_the_lock_tool_a_conflicted_lock_stays_a_conflict(repo: dict[str
     assert raw.returncode == 1 and raw.stdout.splitlines()[1:] == ["kit/plan.lock"]  # the two lock lines are adjacent
     (repo["b"] / "scripts" / "check_plan_lock.py").unlink()  # the runner's own checkout has no lock tool
     assert env.updates.tree(reviewed, git(repo["b"], "rev-parse", "origin/main")) == (None, ["kit/plan.lock"])
+
+
+# ---- a retry's branch (prepare_branch) is merged the same way (D-620)
+
+
+def test_a_retrys_branch_keeps_mains_decisions_first(repo: dict[str, Path], tmp_path: Path) -> None:
+    push_main(repo, "docs/decisions.md", BASE_LOG)
+    first = push_branch(repo, "docs/decisions.md", BASE_LOG + "- **D-010** Question: attempt one's entry.\n")
+    main2 = push_main(repo, "docs/decisions.md", BASE_LOG + "- **D-005** Question: main's entry.\n")
+    env, _ = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": None}])
+    prep = env.prepare_branch(TASK, 2, SESSION)
+    assert prep["base"] == f"origin/{BRANCH}" and parents(repo["b"], prep["base_sha"]) == [first, main2]
+    merged = git(repo["b"], "show", f"{prep['base_sha']}:docs/decisions.md") + "\n"
+    assert merged == BASE_LOG + "- **D-005** Question: main's entry.\n- **D-010** Question: attempt one's entry.\n"
+
+
+# ---- update_merge_of: the same fork-point rule as reviewed_plus_main (D-584, D-620)
+
+
+def test_an_update_merge_built_on_main_older_than_the_reviewed_fork_is_refused(repo: dict[str, Path], tmp_path: Path) -> None:
+    seed = repo["seed"]
+    change = commit_on(seed, "main", "origin/main", "docs/x.md", "a change main later reverts\n")
+    git(seed, "revert", "--no-edit", "HEAD")
+    git(seed, "push", "-q", "origin", "main")
+    reviewed = pushed_attempt(repo)
+    env = env_on(repo, tmp_path)
+    tree, _ = env.updates.tree(reviewed, change)
+    crafted = git(repo["b"], "commit-tree", str(tree), "-p", reviewed, "-p", change, "-m", "an update merge onto an older main")
+    assert env.updates.is_update_merge(reviewed, crafted) == (True, change)  # shaped like one, and `change` is on main
+    assert env.update_merge_of(reviewed, crafted, 0) is False
+
+
+# ---- update pushes go out with the long-lived push token (workflow files from main need it, D-509)
+
+
+class Recording:
+    """A command runner that records every call and answers the few git reads update_branch makes."""
+
+    def __init__(self) -> None:
+        self.calls: list[list[str]] = []
+
+    def __call__(self, args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
+        self.calls.append(args)
+        return 0, "", ""
+
+
+def test_an_update_push_goes_through_the_push_token_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RUNNER_PUSH_TOKEN", "fake-push-token")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    fake = Recording()
+    env = GitHubEnv(tmp_path, [TASK], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=fake)
+    env.main_head = lambda: "main2"  # type: ignore[method-assign]  # reason: no remote here
+    env._remote_tip = lambda branch: "rev1"  # type: ignore[method-assign]  # reason: as above
+    env._is_ancestor = lambda older, newer: False  # type: ignore[method-assign]  # reason: main is not in the head
+    env.updates.commit = lambda reviewed, main, branch: ("merge1", [])  # type: ignore[method-assign]  # reason: the merge itself is tested over real git above
+    env.updates.is_update_merge = lambda reviewed, head: (True, "main2")  # type: ignore[method-assign]  # reason: as above
+    assert env.update_branch(BRANCH, "rev1") == {"status": "pushed", "sha": "merge1", "main": "main2"}
+    push = next(c for c in fake.calls if c[:2] == ["git", "push"])
+    assert push == ["git", "push", "--porcelain", "https://github.com/o/r.git", f"merge1:refs/heads/{BRANCH}"]
+    helper = ge._env_for(push) or {}
+    assert "RUNNER_PUSH_TOKEN" in helper.get("GIT_CONFIG_VALUE_2", "") and "fake-push-token" not in " ".join(push)
+    assert ge._long_token_args(["git", "ls-remote", "--exit-code", "origin", f"refs/heads/{BRANCH}"])[3] == "https://github.com/o/r.git"
+
+
+# ---- enable_auto_merge waits briefly for the PR to show a just-pushed head (D-620)
+
+
+class LaggingPulls(AutoMergeRunner):
+    """The PR lists the head before the update merge for the first `lag` reads."""
+
+    def __init__(self, lag: int) -> None:
+        super().__init__([{"number": 30, "head": {"sha": "old"}}], ccr_ok=True)
+        self.lag = lag
+
+    def __call__(self, args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
+        if args[:2] == ["gh", "api"] and "/pulls?head=" in args[-1]:
+            self.lag -= 1
+            self.open_prs = [{"number": 30, "head": {"sha": "old" if self.lag >= 0 else "m1"}}]
+        return super().__call__(args, stdin, cwd)
+
+
+def test_auto_merge_waits_a_bounded_time_for_the_pushed_head(tmp_path: Path) -> None:
+    waits: list[float] = []
+    env = am_env(tmp_path, LaggingPulls(lag=2))
+    env.sleep = waits.append  # type: ignore[assignment]  # reason: record the waits
+    assert env.enable_auto_merge(BRANCH, "m1") == (True, "auto-merge on #30 (ccr route)") and len(waits) == 2
+    never = am_env(tmp_path, LaggingPulls(lag=99))
+    never.sleep = waits.append  # type: ignore[assignment]  # reason: as above
+    waits.clear()
+    ok, why = never.enable_auto_merge(BRANCH, "m1")
+    assert not ok and "not the reviewed head" in why and len(waits) == ge.HEAD_POLLS

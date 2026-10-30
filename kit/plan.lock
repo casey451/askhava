@@ -1,6 +1,6 @@
 {
  "items": {
-  "BUILD_BRIEF.md": "670452230a876edb83f7ecb8120a096a8f759de2435f369fec25e65386908c7a",
+  "BUILD_BRIEF.md": "ad2c18d4d4d62ad30533c81b42630efbed487fc0db8f345e5cd606a47c195c0b",
   "CLAUDE.md": "0413240431347a46a9994ec89595768648b41c9feb006bd250f6120ba5e4e31b",
   "docs/architecture.md#3": "4516c6eb5687a675f22d0f31efd9ba27582b238d566c791adcab3ec6ced471c4",
   "docs/architecture.md#4": "7e91e998af692e306f9ecb696a36c03c7da107a6865a4e9996ed035bd88ace43",
@@ -14,7 +14,7 @@
   "docs/catalog/worked_examples.yaml": "81ad240453551a0fdfaa76b40df74346ebe327983ed9341911646dd9b48df5e4",
   "docs/code-docs.md": "b8a87cc6a1614fd558057c21581c4cd3093a155f30a6c6ddb3a473d6f34bc17a",
   "docs/constitution.md": "f63792319463ed4f575659363ea737a9a4858f8b58ba8b281a0dfc235b533dfc",
-  "docs/governance.md": "f83671af17ac7fd21c454f09bd2440dc2b3fb7705b4a2a2d478ac8f0a038c1aa",
+  "docs/governance.md": "e3748b4fdabc03804aff691568a05521d6c6ccbdb77dd51e0d01b195fd50fcc3",
   "docs/sources.md": "b2f42c566a97b33d85ec2310ca04a405dc85db921b1b4ad081797df837563ff0",
   "docs/spec/accessibility.md": "6c79d880396f086eff6319c505390b23c5f33749806b8244364da19a92b62d50",
   "docs/spec/ai.md": "caf48197027aba40318eaaf1e31e5278d074df23b2ee25c173e4c5169a24633e",
@@ -40,6 +40,7 @@
   "docs/test-design.md": "1f9a8db8602dab3865993f911e668e06af9f04f99051d502861c891d8f7b9569",
   "docs/threat-model.md": "ac3d1f653e3f5b8053acc4d7141f7ec3f7241f5f3aa60e65e34cfe0328a161aa",
   "kit/prompts/TEMPLATE.md": "ea38aee50efe448a6e41c1086f892429a3832346b56cc68061c213625dd69027",
+  "kit/runner.json": "f103cf4d5d2506af897b04fedba964abeedc30f1a63458766e0f8646ccc53a19",
   "kit/sources.sha256": "ed9f15e377d96323a9d46609e0e78d93d4378e6b1ea9c7d6e2f66926317d863d",
   "kit/tasks.json": "1f5f870bc802395cb67dfea7619a442de1da154a29fc88fa7bef636eb6b8d9c5",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
@@ -48,7 +49,7 @@
   "scripts/check_copy.py": "cde92b2b75bd96ec1c365e0c11161591a93e4010277ada417169c87a1a6db459",
   "scripts/check_crates.py": "6191806bd18621eb13b6ead908507c4150859ce587426670dd26d1c55a8666bc",
   "scripts/check_legal_docs.py": "d5e7cf0fad16d331f6d1010fc7a7e968440cdeafd09d8850a2adf83f0975dffd",
-  "scripts/check_plan_lock.py": "52f00a8c6618c86f9ff2425cdec156fee247afc5d0e103460de710e40cf46041",
+  "scripts/check_plan_lock.py": "15571e4da313f02b0a9931497e78057e29e218a16fc14ef6f3007b0611f97814",
   "scripts/check_pr_change.py": "0756834ecaf611e3fced804dba7c1b9daa4abb9addd7c6b71c2365b235419066",
   "scripts/check_rust_rules.py": "559029dff80fed3f8a701527b115660bbb19edf05e548b7d4d1caf86d57a573d",
   "scripts/check_state.py": "73952c1f7af2d2540086366631fd8fd0258ba9d37ea56a7895ca588aafa0fa26",

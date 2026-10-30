@@ -323,12 +323,14 @@ def _resolve_one(state: State, env: Env, cfg: Config, now: datetime, task: dict[
 
 
 def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime) -> State:
-    """Strikes for the lane fall back (D-620): a task on the lane DONE clears them; a required check that
-    failed after another lane's merge, or an update merge that conflicted or could not be pushed, is a
-    strike; any other failed check is the task's own and clears them. Lane "1" never strikes."""
+    """Strikes for the lane fall back (D-620), only for an attempt that ended: a task on the lane DONE
+    clears them; a required check that failed on an update merge after the same check passed on the
+    reviewed head before it (main's change broke it, `_broken_by_main`), or an update merge that
+    conflicted or could not be pushed for good, is a strike; any other failed check is the task's own
+    and clears them. A merge still waiting never strikes. Lane "1" never strikes."""
     if lane == st.LANE_ONE:
         return state
-    if result == "done" or (result == "check_failed" and not _after_other_lane_merge(state, tid, lane)):
+    if result == "done" or (result == "check_failed" and not _broken_by_main(st.entry(state, tid))):
         return lanes.clear_strikes(state, lane)
     if result in ("check_failed", "update_conflict", "update_push_failed"):
         why = str(st.entry(state, tid).get("last_failure") or st.entry(state, tid).get("reason") or result)
@@ -336,14 +338,18 @@ def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime)
     return state
 
 
-def _after_other_lane_merge(state: State, tid: str, lane: str) -> bool:
-    """Whether a task of another lane merged since this task's attempt started (it may have broken it)."""
-    started = str(st.entry(state, tid).get("attempt_started_at") or "")
-    return any(
-        t.get("status") == st.DONE and not t.get("empty_handin") and st.task_lane(t) != lane
-        and str(t.get("merged_at") or "") >= started
-        for t in state["tasks"] if t["id"] != tid
-    )
+FAILED = ("failure", "cancelled", "timed_out")
+
+
+def _broken_by_main(task: dict[str, Any]) -> bool:
+    """Whether a check that failed on the attempt's last head had passed on the reviewed head the last
+    update merge started from: the failure came with main's change, not the task's own work (D-620)."""
+    updates, history = task.get("update_merges") or [], task.get("history") or []
+    if not updates or not history:
+        return False
+    failed = {str(c.get("name")) for c in history[-1].get("checks") or [] if c.get("conclusion") in FAILED}
+    before = updates[-1].get("checks") or {}
+    return any(before.get(name) == "success" for name in failed)
 
 
 def _earlier_pr(task: dict[str, Any], pr: dict[str, Any], env: Env) -> bool:
@@ -386,6 +392,8 @@ def _open_pr_step(state: State, env: Env, tid: str, pr: dict[str, Any], reviewed
     if verify.checks_state(pr) == "failed":
         reason = pr.get("failure_log") or "required check failed on head"
         return _close_history(record_failure(state, tid, reason), tid, pr, "check_failed"), "check_failed"
+    if state.get("main_red") and tid != st.FIX_MAIN:
+        return state, "merge_pending"  # while main is red only FIX-MAIN moves: no update merge, no auto-merge (D-620)
     sha = str(task.get("reviewed_sha") or "")
     if sha and head != sha and head in _earlier_reviewed(task):
         return _update_wait(state, env, tid, pr, f"the pull request still shows {head[:12]}, the head before the update merge {sha[:12]}", now)
@@ -451,7 +459,7 @@ def _update_step(state: State, env: Env, tid: str, pr: dict[str, Any], now: date
     if status == "current":
         return (st.with_task(state, tid, update_waiting_since=None) if task.get("update_waiting_since") else state), ""
     if status == "pushed":
-        note = {"from": task.get("reviewed_sha"), "to": done["sha"], "main": done.get("main"), "how": "runner"}
+        note = {"from": task.get("reviewed_sha"), "to": done["sha"], "main": done.get("main"), "how": "runner", "checks": _head_checks(pr)}
         state = _adopt_update(state, tid, note, now)
         return (state if pr.get("auto_merge") else _auto_merge(state, env, tid, str(done["sha"]))), "branch_updated"
     if status == "conflict":
@@ -460,8 +468,15 @@ def _update_step(state: State, env: Env, tid: str, pr: dict[str, Any], now: date
         count = int(task.get("update_push_failures") or 0) + 1
         if count >= UPDATE_PUSH_LIMIT:
             return _update_failed(state, env, tid, pr, f"the update merge could not be pushed {count} times: {why[:300]} (D-620)", "update_push_failed")
-        return st.with_task(state, tid, update_push_failures=count), "update_push_failed"
+        return st.with_task(state, tid, update_push_failures=count), "merge_pending"  # not a strike until the attempt fails
     return _update_wait(state, env, tid, pr, why or str(status), now)
+
+
+def _head_checks(pr: dict[str, Any]) -> dict[str, str]:
+    """{check name: conclusion} of the required checks on the PR's head, kept with an update merge so a
+    later failure can be told apart from one main brought in (`_broken_by_main`, D-620)."""
+    head = pr.get("head_sha")
+    return {str(c.get("name")): str(c.get("conclusion")) for c in pr.get("checks", []) if c.get("sha") == head and c.get("name") in verify.REQUIRED_CHECKS}
 
 
 def _update_failed(state: State, env: Env, tid: str, pr: dict[str, Any], reason: str, result: str) -> tuple[State, str]:
@@ -829,6 +844,7 @@ def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
     if outcomes:
         _note_fallback(cfg, base, state)
         if state != base and not env.push_state(state, base):
+            _drop_fallback_note(cfg)
             return "lost_race"
         base = state
     lane = lanes.claim_lane(cfg.lanes, state, now, cfg.lane_hint)
@@ -1095,6 +1111,7 @@ def finish(
         merged = _auto_merge(reviewed, env, tid, res.head_sha)
         review = {k: st.entry(reviewed, tid)[k] for k in ("reviewed_sha", "review_lease", "branch")}
         final = st.with_task(_ours_onto(state, final, reviewed), tid, **review, auto_merge=st.entry(merged, tid)["auto_merge"])
+        final = _without(final, tid, *UPDATE_KEYS)  # as the review record dropped them (D-620)
         state = reviewed
     elif st.status(final, tid) in (st.QUEUED, st.BLOCKED) and lane != st.LANE_ONE:
         final = lanes.clear_strikes(final, lane)  # a failure of the task's own work breaks a run of strikes (D-620)
@@ -1124,8 +1141,13 @@ def record_strike(cfg: Config, env: Env, lane: str | None, why: str) -> None:
         return out
 
     if env.update_state(apply) is None:
-        for stale in cfg.outbox_dir.glob("lanes-fallback.md") if cfg.outbox_dir.exists() else ():
-            stale.unlink()  # the strike was not recorded, so neither is the fall back it would have set
+        _drop_fallback_note(cfg)  # the strike was not recorded, so neither is the fall back it would have set
+
+
+def _drop_fallback_note(cfg: Config) -> None:
+    """Remove a fall-back outbox item whose state write was lost (D-620): it must not reach Casey later
+    with a state that never fell back."""
+    (cfg.outbox_dir / "lanes-fallback.md").unlink(missing_ok=True)
 
 
 def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult) -> Callable[[State], State | None]:
@@ -1139,9 +1161,23 @@ def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult) -> Calla
         if held.get("task") != tid or held.get("session") != cfg.session or st.status(fresh, tid) != st.IN_PROGRESS:
             return None
         review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(held), "branch": res.branch, "head_check_since": None}
-        return st.with_task(fresh, tid, **review)
+        # A new review starts a new chain of update merges: an earlier attempt's never counts as reviewed (D-620).
+        return _without(st.with_task(fresh, tid, **review), tid, *UPDATE_KEYS)
 
     return apply
+
+
+UPDATE_KEYS = ("update_merges", "update_waiting_since", "update_push_failures")  # an attempt's update-merge record (D-620)
+
+
+def _without(state: State, tid: str, *keys: str) -> State:
+    """The state with those keys removed from the task's entry (absent keys are fine)."""
+    out = copy.deepcopy(state)
+    for task in out["tasks"]:
+        if task["id"] == tid:
+            for key in keys:
+                task.pop(key, None)
+    return out
 
 
 def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Callable[[State], State | None]:
@@ -1151,8 +1187,8 @@ def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Ca
     inbox record, a graph sync), it applies only what finish changed (the keys and task entries that
     differ from `base`) onto the fresh state, and only while this session still holds the task's
     lane lease and the task's status is still the one finish started from; otherwise it gives up.
-    What it applies replaces whole values (see _ours_onto): this task's own entry and the top-level
-    keys finish touched (`usage`, `pacing`), nothing else."""
+    What it applies (see _ours_onto): this task's own entry whole, and only this attempt's part of the
+    shared keys (its `usage` delta, its lane's strikes), so another lane's write is never undone."""
     tid, lane, session = holder
 
     def apply(fresh: State) -> State | None:
@@ -1167,22 +1203,65 @@ def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Ca
 
 
 def _ours_onto(base: State, ours: State, fresh: State) -> State:
-    """`fresh` with every top-level key and task entry that `ours` changed from `base` taken from `ours`.
+    """`fresh` with what `ours` changed from `base` laid onto it.
 
-    Replacement is whole, not field by field: a changed task entry replaces the fresh entry entirely,
-    and a changed top-level key (in finish: `usage`, and `pacing` if it moved) replaces the fresh value.
-    finish changes only its own task's entry and those keys, so another writer's tasks and keys stay;
-    the lease keys are never taken from `ours` (the caller sets the lane itself)."""
+    A changed task entry replaces the fresh entry whole, and a changed top-level key replaces the fresh
+    value, except the two keys both lanes write (D-620): `usage` takes only this attempt's delta
+    (`_usage_onto`) and `lane_strikes` only the lanes `ours` changed, so a concurrent write by the
+    other lane's attempt is kept. The lease keys are never taken from `ours` (the caller sets the lane)."""
     out = copy.deepcopy(fresh)
+    merged = {"usage": _usage_onto, "lane_strikes": _per_key_onto}
     for key in (set(base) | set(ours)) - {"tasks", "lease", "leases"}:
         if key in ours and ours[key] != base.get(key):
-            out[key] = copy.deepcopy(ours[key])
+            join = merged.get(key)
+            out[key] = join(base.get(key) or {}, ours[key] or {}, fresh.get(key) or {}) if join else copy.deepcopy(ours[key])
         elif key not in ours and key in base:
             out.pop(key, None)
     before = {t["id"]: t for t in base["tasks"]}
     for task in ours["tasks"]:
         if before.get(task["id"]) != task:
             out = _put_task(out, task)
+    return out
+
+
+def _per_key_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
+    """`fresh` with each entry `ours` changed from `base` taken from `ours`, and the rest left as fresh has them."""
+    out = copy.deepcopy(fresh)
+    for key, value in ours.items():
+        if value != base.get(key):
+            out[key] = copy.deepcopy(value)
+    return out
+
+
+def _usage_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
+    """This attempt's usage laid onto the fresh `usage` (D-620): the `by_task` entries it changed, the
+    other keys it changed (`last_reading`, `limit_hit`, `source`), and its tokens added to each pacing
+    window (`_windows_onto`) instead of replacing what another lane's attempt added meanwhile."""
+    out = _per_key_onto({k: v for k, v in base.items() if k not in ("by_task", "windows")},
+                        {k: v for k, v in ours.items() if k not in ("by_task", "windows")}, fresh)
+    out["by_task"] = _per_key_onto(base.get("by_task") or {}, ours.get("by_task") or {}, fresh.get("by_task") or {})
+    if "windows" in ours and ours["windows"] != base.get("windows"):
+        out["windows"] = _windows_onto(base.get("windows") or {}, ours["windows"], fresh.get("windows") or {})
+    if not out["by_task"] and "by_task" not in fresh and "by_task" not in ours:
+        out.pop("by_task")
+    return out
+
+
+def _windows_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
+    """Pacing windows ({name: {start, tokens}}) with this attempt's tokens added to the fresh ones. A
+    window nobody else moved is taken from `ours`; otherwise the attempt's delta (all its tokens when
+    its window rolled over) is added to the fresh window, keeping the fresh window's start."""
+    out = copy.deepcopy(fresh)
+    for name, mine in ours.items():
+        before, now = base.get(name) or {}, fresh.get(name) or {}
+        if mine == before:
+            continue
+        if now == before:
+            out[name] = copy.deepcopy(mine)
+            continue
+        same = mine.get("start") == before.get("start")
+        delta = int(mine.get("tokens") or 0) - (int(before.get("tokens") or 0) if same else 0)
+        out[name] = {"start": now.get("start") or mine.get("start"), "tokens": int(now.get("tokens") or 0) + delta}
     return out
 
 
@@ -1222,11 +1301,19 @@ def _push_failed(cfg: Config, env: Env, base: State, ours: State, tid: str, wher
     if history:
         history[-1]["result"] = st.status(out, tid)  # the attempt ended here, not MERGE_PENDING
     out = st.with_lease(st.with_task(out, tid, history=history), lane, None)
-    return "push_failed" if env.push_state(out, base) else "lost_race"
+    if env.push_state(out, base):
+        return "push_failed"
+    _drop_fallback_note(cfg)
+    return "lost_race"
 
 
-def requeue_refusal(state: State, tid: str, now: datetime) -> str:
-    """Why `python3 -m runner --requeue` must not move this task, '' when it may (D-583)."""
+def requeue_refusal(state: State, tid: str, now: datetime, cfg: Config | None = None) -> str:
+    """Why `python3 -m runner --requeue` must not move this task, '' when it may (D-583).
+
+    With one lane (or no `cfg`) any live lease refuses it, as before. With two or more lanes only a
+    live lease that matters refuses it (D-620): one on the task itself, or one whose task could not run
+    beside it (`lanes.refusal` minus the dependency rule: overlapping owned paths, another stage, a
+    cleanup task on either side), since re-queuing then could let the two meet."""
     if tid == st.FIX_MAIN:
         return "FIX-MAIN is never re-queued by hand; it clears only with main (docs/governance.md section 5)"
     if not any(t["id"] == tid for t in state.get("tasks", [])):
@@ -1238,22 +1325,32 @@ def requeue_refusal(state: State, tid: str, now: datetime) -> str:
         return f"{tid} has used all {MAX_ATTEMPTS} attempts; it stays BLOCKED for the end-of-build list (BUILD_BRIEF.md:540)"
     if not str(entry.get("reason") or "").startswith(REQUEUABLE):
         return f"{tid} is BLOCKED for its own work ({str(entry.get('reason'))[:120]}), not for a push, permission or proof"
-    held = st.live_leases(state, now)
+    held = _requeue_blockers(state, tid, now, cfg)
     if held:
-        return f"a live lease is held ({', '.join(str(l.get('task')) for l in held.values())}); try again once it ends"
+        return f"a live lease is held ({', '.join(held)}); try again once it ends"
     return ""
 
 
-def requeue(state: State, tid: str, reason: str, now: datetime, by: str) -> State | None:
+def _requeue_blockers(state: State, tid: str, now: datetime, cfg: Config | None) -> list[str]:
+    """The tasks whose live lease refuses a re-queue of `tid` (see requeue_refusal)."""
+    leased = [str(lease.get("task")) for lease in st.live_leases(state, now).values()]
+    if cfg is None or cfg.lanes < 2:
+        return leased
+    target = dict(_task_def(cfg, state, tid), deps=[])
+    return [other for other in leased if other == tid or lanes.refusal(target, [_task_def(cfg, state, other)], set(), cfg.locked)]
+
+
+def requeue(state: State, tid: str, reason: str, now: datetime, by: str, cfg: Config | None = None) -> State | None:
     """BLOCKED to QUEUED with `reason` cleared (D-583); None when refused (requeue_refusal).
 
     Only a task blocked for a cause outside its own work (a rejected push, no head, a permission
-    block, a missing stage proof) with attempts left, and only while no lease is live. `attempts` is
+    block, a missing stage proof) with attempts left, and only while no lease that matters is live
+    (any lease with one lane; with two, see requeue_refusal, D-620). `attempts` is
     left as it is, so the 3-attempt cap holds (BUILD_BRIEF.md:270, :540); the given reason is appended
     to `last_failure` as "re-queued: ...", so the retry sees both the earlier failure and why it was
     re-queued (D-584). The re-queue is kept in the task's `requeues` list (when, why, by whom, the old
     reason); `history` holds attempts only."""
-    if requeue_refusal(state, tid, now):
+    if requeue_refusal(state, tid, now, cfg):
         return None
     entry = st.entry(state, tid)
     note = {"at": st.iso(now), "reason": reason, "by": by, "was": entry.get("reason"), "attempts": int(entry.get("attempts", 0))}

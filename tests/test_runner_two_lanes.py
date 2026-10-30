@@ -266,12 +266,13 @@ def test_drill_update_push_failures_wait_then_fail_and_a_race_is_only_a_wait(tmp
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "merge_pending"
     assert not st.entry(env.store, "T002").get("update_push_failures")
     env.update = {"status": "push_failed", "why": "remote: Permission to fake-owner/fake-repo.git denied"}
-    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=11)) == "update_push_failed"
-    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=12)) == "update_push_failed"
-    assert env.store.get("lanes_fallback")  # two harness-type strikes in a row on lane 2
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=11)) == "merge_pending"
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=12)) == "merge_pending"
+    assert st.entry(env.store, "T002")["update_push_failures"] == 2 and "lane_strikes" not in env.store  # no strike while it waits
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=13)) == "update_push_failed"
     t2 = st.entry(env.store, "T002")
     assert t2["status"] == st.QUEUED and "could not be pushed 3 times" in t2["last_failure"] and t2["runner_closed_prs"] == [2]
+    assert env.store["lane_strikes"]["2"]["count"] == 1 and not env.store.get("lanes_fallback")  # one strike: the attempt failed once
 
 
 def test_drill_an_update_git_cannot_make_waits_at_most_two_hours(tmp_path: Path) -> None:
@@ -424,17 +425,34 @@ def test_a_lost_claim_race_is_retried_and_a_storm_is_a_strike(tmp_path: Path, mo
     assert entry.cycle_with_retries(two_lane(graph, tmp_path, "s1", "2"), env) == "lost_race" and len(results) == 1  # type: ignore[arg-type]  # reason: a worker command means no retry
 
 
-def test_lane_outcome_strikes_a_check_failure_only_after_another_lanes_merge() -> None:
-    s = st.with_task(st.with_task(st.new_state(), "T002", lane="2", attempt_started_at="2026-11-01T12:00:00Z", last_failure="Ci: failure"),
-                     "T001", status=st.DONE, merged_at="2026-11-01T12:30:00Z", merged_sha="m1")
+def test_lane_outcome_strikes_a_check_failure_only_when_the_same_check_passed_before_the_update() -> None:
+    failed = [{"attempt": 1, "checks": [{"name": "Ci", "conclusion": "failure"}, {"name": "Twin", "conclusion": "success"}]}]
+    update = {"from": "h", "to": "m", "how": "runner", "at": "x", "checks": {"Ci": "success", "Twin": "success", "Ally": "success"}}
+    s = st.with_task(st.new_state(), "T002", lane="2", last_failure="Ci: failure", history=failed, update_merges=[update])
     hit = cycle._lane_outcome(s, "T002", "2", "check_failed", NOW)
     assert hit["lane_strikes"]["2"]["count"] == 1 and "T002 check_failed: Ci: failure" in hit["lane_strikes"]["2"]["last"][0]["why"]
-    before = st.with_task(s, "T001", merged_at="2026-11-01T11:00:00Z")
-    assert cycle._lane_outcome(lanes.strike(before, "2", "x", NOW), "T002", "2", "check_failed", NOW)["lane_strikes"]["2"]["count"] == 0
-    same_lane = st.with_task(s, "T001", lane="2")
-    assert "lane_strikes" not in cycle._lane_outcome(same_lane, "T002", "2", "check_failed", NOW)
+    red_before = st.with_task(s, "T002", update_merges=[dict(update, checks={"Ci": "failure"})])
+    pending_before = st.with_task(s, "T002", update_merges=[dict(update, checks={"Ci": "None"})])
+    no_update = st.with_task(st.new_state(), "T002", lane="2", history=failed)
+    for own in (red_before, pending_before, no_update):  # the task's own failure: the run of strikes is broken
+        assert cycle._lane_outcome(lanes.strike(own, "2", "x", NOW), "T002", "2", "check_failed", NOW)["lane_strikes"]["2"]["count"] == 0
     assert cycle._lane_outcome(s, "T002", "1", "check_failed", NOW) is s
     assert cycle._lane_outcome(lanes.strike(s, "2", "x", NOW), "T002", "2", "done", NOW)["lane_strikes"]["2"]["count"] == 0
+    assert cycle._lane_outcome(s, "T002", "2", "merge_pending", NOW) is s  # a merge still waiting never strikes
+
+
+def test_drill_a_check_broken_by_mains_change_after_an_update_is_a_strike(tmp_path: Path) -> None:
+    env, graph = _two_merge_pending(tmp_path)
+    env.prs["T002"] = dict(green_pr(head_of("T002"), merged=False), number=2, state="open", auto_merge=True)
+    env.update = {"status": "pushed", "sha": "m-t002", "main": "main0002"}
+    cfg = two_lane(graph, tmp_path, "s3", "2")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "branch_updated"
+    assert st.entry(env.store, "T002")["update_merges"][-1]["checks"] == {"Ci": "success", "Twin": "success", "Ally": "success"}
+    red = dict(green_pr("m-t002", merged=False), number=2, state="open", auto_merge=True)
+    red["checks"] = [dict(c, conclusion="failure") if c["name"] == "Ci" else c for c in red["checks"]]
+    env.prs["T002"], env.update = red, {"status": "current"}
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "check_failed"
+    assert env.store["lane_strikes"]["2"]["count"] == 1
 
 
 def test_status_names_every_lanes_lease_and_a_fall_back() -> None:
@@ -533,6 +551,11 @@ def test_the_gate_picks_lane_one_with_one_lane_and_a_free_lane_with_two(tmp_path
     pending = st.with_lease(st.with_task(st.claim(held, "T002", "b", later, lane="2"), "T002", status=st.MERGE_PENDING), "2", None)
     assert _pick(tmp_path, pending, 2, "", "claude/task/T002-x") == ["2", "2", "2"]
     assert _pick(tmp_path, s, "2") == ["1", "1", "1"] and _pick(tmp_path, s, True) == ["1", "1", "1"]
+    # Lane 1's task is MERGE_PENDING (no lease) and lane 2 is free: an event for lane 1's task serves
+    # lane 2, which can claim, not the busy lane 1 (any run resolves lane 1's merge).
+    waiting = st.with_lease(st.with_task(st.claim(s, "T001", "a", later), "T001", status=st.MERGE_PENDING), "1", None)
+    assert _pick(tmp_path, waiting, 2, "", "claude/task/T001-x") == ["2", "2", "1", "2"]  # free lanes "1 2" (no live lease)
+    assert _pick(tmp_path, dict(held, lanes_fallback={"at": "x", "lane": "2", "why": []}), 2, "2") == ["1", "1", "-"]  # no lane 2 while fallen back
 
 
 def test_the_workflow_runs_one_backup_job_per_lane_and_passes_the_lane() -> None:
@@ -563,6 +586,11 @@ def _refill(rows: list[dict[str, Any]], run_id: str = "77") -> str:
 def test_the_chain_refills_free_lanes_only_after_a_result_that_moved_a_task() -> None:
     mine = {"at": "2026-11-01T12:05:00", "session": "actions-77"}
     assert _refill([dict(mine, result="handed_off", refill=[]), dict(mine, result="MERGE_PENDING", refill=["1"])]) == "1"
+    # What a real job writes: the cycle, renewals, the hand-in, and (on an older runner) the safety step's no-op.
+    real = [dict(mine, result="handed_off", refill=[]), dict(mine, result="renewed", refill=[]),
+            dict(mine, result="MERGE_PENDING", refill=["1"]), dict(mine, result="not_lease_holder", refill=[]),
+            dict(mine, result="T001 is MERGE_PENDING", refill=[]), dict(mine, result="renew_refused: x", refill=[])]
+    assert _refill(real) == "1"
     assert _refill([dict(mine, result="done", refill=["1", "2"])]) == "1 2"
     for quiet in ("idle", "paced", "lease_live", "no_free_lane", "merge_pending", "lost_race", "branch_updated"):
         assert _refill([dict(mine, result=quiet, refill=["2"])]) == ""
@@ -570,3 +598,113 @@ def test_the_chain_refills_free_lanes_only_after_a_result_that_moved_a_task() ->
     assert _refill([dict(mine, result="idle", refill=["2"]), other]) == ""  # another lane's job is not this one's
     assert _refill([{"at": "2026-11-01T11:00:00", "session": "actions-77", "result": "done", "refill": ["2"]}]) == ""
     assert _refill([dict(mine, result="QUEUED")]) == ""  # one lane: the report carries no refill
+
+
+def test_the_chain_reads_only_this_jobs_rows_for_a_cleared_red() -> None:
+    script = _step("backup", "Start the next cycle")["run"]
+    code = script.split("again=\"$(printf '%s' \"$log\" | SESSION=\"actions-${GITHUB_RUN_ID}\" python3 -c '", 1)[1].split("\n' ", 1)[0]
+    env = {"JOB_START": "2026-11-01T12:00:00", "SESSION": "actions-77", "PATH": "/usr/bin:/bin"}
+
+    def again(rows: list[dict[str, Any]]) -> str:
+        stdin = "".join(json.dumps(r) + "\n" for r in rows)
+        return subprocess.run([sys.executable, "-c", code], input=stdin, capture_output=True, text=True, env=env, check=True).stdout.strip()
+
+    assert again([{"at": "2026-11-01T12:05:00", "session": "actions-77", "result": "main_cleared"}]) == "yes"
+    assert again([{"at": "2026-11-01T12:05:00", "session": "actions-88", "result": "main_cleared"}]) == "no"
+
+
+def test_after_removes_the_hand_off_only_when_it_finished_the_task(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(entry, "ROOT", tmp_path)
+    (tmp_path / ".git").mkdir()
+    handoff = tmp_path / entry.HANDOFF
+    for kept in ("not_lease_holder", "lost_race", "state_invalid"):
+        handoff.write_text("{}")
+        entry.close_handoff(kept)
+        assert handoff.exists()  # the safety step must still free the lease
+    for finished in (st.MERGE_PENDING, st.QUEUED, "push_failed", "T001 is MERGE_PENDING"):
+        handoff.write_text("{}")
+        entry.close_handoff(finished)
+        assert not handoff.exists()  # so the safety step writes no second, empty --after row
+    entry.close_handoff(st.MERGE_PENDING)  # absent is fine
+
+
+def test_run_lane_prefers_a_lane_with_nothing_in_flight_and_honours_the_fall_back() -> None:
+    s = st.with_task(st.with_task(st.new_state(), "T001"), "T002")
+    waiting = st.with_lease(st.with_task(st.claim(s, "T001", "a", NOW), "T001", status=st.MERGE_PENDING), "1", None)
+    assert st.run_lane(waiting, NOW, 2, "T001") == "2" and st.run_lane(waiting, NOW, 2) == "2"
+    assert st.run_lane(waiting, NOW, 1, "T001") == "1"  # one lane: lane 1, as before
+    assert st.run_lane(dict(waiting, lanes_fallback={"at": "x"}), NOW, 2, "T001") == "1"
+
+
+def test_drill_red_main_holds_the_other_lanes_update_merge_and_auto_merge(tmp_path: Path) -> None:
+    env, graph = _two_merge_pending(tmp_path)
+    cfg = two_lane(graph, tmp_path, "s3", "2")
+    env.store = cycle.set_main_red(env.store, cfg, "nightly", "bad0001", ("T000", "m0", []), NOW)
+    env.prs["T002"] = dict(green_pr(head_of("T002"), merged=False), number=2, state="open", auto_merge=False)
+    env.update = {"status": "pushed", "sha": "m-t002", "main": "main0002"}
+    merges = list(env.auto_merges)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "merge_pending"
+    assert env.updates == [] and env.auto_merges == merges and st.entry(env.store, "T002")["reviewed_sha"] == head_of("T002")
+    env.store = dict(env.store, main_red=None)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=11)) == "branch_updated"  # once main is green it moves again
+
+
+def test_drill_a_new_review_drops_an_earlier_attempts_update_merges(tmp_path: Path) -> None:
+    env = FakeEnv(by_head)
+    old = [{"from": "h-old", "to": "m-old", "how": "runner", "at": "x"}]
+    env.store = st.with_task(st.sync_graph(env.store, [staged("T001", owns=["app/a/"])]), "T001", update_merges=old,
+                             update_waiting_since="2026-11-01T10:00:00Z", update_push_failures=2, attempts=1)
+    assert cycle.run_cycle(config([staged("T001", owns=["app/a/"])], tmp_path), env, NOW) == st.MERGE_PENDING
+    task = st.entry(env.store, "T001")
+    assert task["reviewed_sha"] == head_of("T001") and not {"update_merges", "update_waiting_since", "update_push_failures"} & set(task)
+    assert "h-old" not in cycle._earlier_reviewed(task)
+
+
+def test_finish_lays_only_its_own_usage_onto_a_state_another_lane_moved() -> None:
+    base = {"tasks": [], "usage": {"by_task": {"T000": {"output_tokens": 1}}, "windows": {"five_hour": {"start": "s", "tokens": 100}}}}
+    ours = {"tasks": [], "usage": {"by_task": {"T000": {"output_tokens": 1}, "T001": {"output_tokens": 50}},
+                                   "windows": {"five_hour": {"start": "s", "tokens": 150}}, "last_reading": {"task": "T001"}}}
+    fresh = {"tasks": [], "usage": {"by_task": {"T000": {"output_tokens": 1}, "T002": {"output_tokens": 30}},
+                                    "windows": {"five_hour": {"start": "s", "tokens": 130}}, "last_reading": {"task": "T002"}}}
+    out = cycle._ours_onto(base, ours, fresh)["usage"]
+    assert out["by_task"] == {"T000": {"output_tokens": 1}, "T001": {"output_tokens": 50}, "T002": {"output_tokens": 30}}
+    assert out["windows"]["five_hour"] == {"start": "s", "tokens": 180} and out["last_reading"] == {"task": "T001"}
+    rolled = dict(ours, usage=dict(ours["usage"], windows={"five_hour": {"start": "t", "tokens": 40}}))
+    assert cycle._ours_onto(base, rolled, fresh)["usage"]["windows"]["five_hour"] == {"start": "s", "tokens": 170}
+    alone = cycle._ours_onto(base, ours, base)["usage"]
+    assert alone["windows"]["five_hour"] == {"start": "s", "tokens": 150}  # nobody else moved it: ours as it is
+    strikes = cycle._ours_onto({"tasks": [], "lane_strikes": {"2": {"count": 1}}}, {"tasks": [], "lane_strikes": {"2": {"count": 0}}},
+                               {"tasks": [], "lane_strikes": {"2": {"count": 1}, "3": {"count": 1}}})
+    assert strikes["lane_strikes"] == {"2": {"count": 0}, "3": {"count": 1}}
+
+
+def test_a_fall_back_note_whose_state_write_was_lost_is_removed(tmp_path: Path) -> None:
+    env, graph = _two_merge_pending(tmp_path)
+    env.store = lanes.strike(env.store, "2", "an earlier strike", NOW)
+    env.prs["T002"] = dict(green_pr(head_of("T002"), merged=False), number=2, state="open", auto_merge=False)
+    env.update = {"status": "conflict", "paths": ["README.md"]}
+    env.push_state = lambda new, base: False  # type: ignore[method-assign]  # reason: every state push loses the race
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s3", "2"), env, NOW + timedelta(minutes=10)) == "lost_race"
+    assert not (tmp_path / "lanes-fallback.md").exists() and not env.store.get("lanes_fallback")
+
+
+def test_requeue_with_two_lanes_waits_only_for_a_lease_that_could_meet_the_task(tmp_path: Path) -> None:
+    graph = [staged("T001", owns=["app/a/"]), staged("T002", owns=["app/b/"]), staged("T003", owns=["app/a/x.rs"]),
+             staged("T004", "3", owns=["app/d/"])]
+    blocked = st.with_task(st.sync_graph(st.new_state(), graph), "T001", status=st.BLOCKED, attempts=1,
+                           reason="branch push rejected (denied); fix the push credential")
+    cfg = two_lane(graph, tmp_path, "s1", None)
+    side = st.claim(blocked, "T002", "b", NOW, lane="2")
+    assert cycle.requeue_refusal(side, "T001", NOW, cfg) == ""
+    assert cycle.requeue(side, "T001", "credential fixed", NOW, "me", cfg) is not None
+    assert "a live lease is held (T002)" in cycle.requeue_refusal(side, "T001", NOW)  # one lane (no cfg): any lease, as before
+    assert "a live lease is held (T002)" in cycle.requeue_refusal(side, "T001", NOW, dataclasses.replace(cfg, lanes=1))
+    for other in ("T003", "T004"):  # overlapping owned paths, another stage
+        held = st.claim(blocked, other, "c", NOW, lane="2")
+        assert f"a live lease is held ({other})" in cycle.requeue_refusal(held, "T001", NOW, cfg)
+
+
+def test_the_lane_count_is_in_the_locked_blueprint() -> None:
+    import check_plan_lock
+
+    assert "kit/runner.json" in check_plan_lock.locked_paths(ROOT) and "kit/runner.json" in check_plan_lock.read_lock(ROOT)

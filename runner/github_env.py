@@ -72,6 +72,7 @@ UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-515)
 UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError)  # a failed read or push: one lost try
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
 HEARTBEAT_SECONDS = 60
+HEAD_POLLS, HEAD_POLL_SECONDS = 6, 5.0  # enable_auto_merge waits up to 30 s for the PR to show a just-pushed head (D-620)
 ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
 FAILED_CONCLUSIONS = ("failure", "cancelled", "timed_out")
 # The retry worker's failure log (D-582): at most this many characters in all, and per failed job the
@@ -758,6 +759,11 @@ class GitHubEnv:
         if self.dry_run:
             return True, "dry-run"
         pr = self._open_pr(branch)
+        for _ in range(HEAD_POLLS):  # GitHub may still list the head before a push it just took (D-620)
+            if pr is None or str(pr["head"]["sha"]) == head_sha:
+                break
+            self.sleep(HEAD_POLL_SECONDS)
+            pr = self._open_pr(branch)
         if pr is None:
             return False, "no open PR for the branch"
         if str(pr["head"]["sha"]) != head_sha:
@@ -949,14 +955,12 @@ class GitHubEnv:
         return self._run(["git", "merge-base", "--is-ancestor", older, newer], None, self.root)[0] == 0
 
     def _merge_main(self, branch: str, remote: str, main: str) -> str | None:
-        """The merge commit of main into origin's task branch, built without a working tree
-        (`git merge-tree --write-tree`, git 2.38 or later); None on a conflict."""
-        code, out, err = self._run(["git", "merge-tree", "--write-tree", remote, main], None, self.root)
-        if code == 1:
+        """The merge commit of main into origin's task branch, built without a working tree; None on a
+        conflict. Its tree is the update merge's (`UpdateMerge.tree`, D-620), so a retry's branch also
+        keeps main's docs/decisions.md entries first and a plan lock both sides rewrote is recomputed."""
+        tree, _ = self.updates.tree(remote, main)
+        if tree is None:
             return None
-        if code != 0:
-            raise RuntimeError(f"git merge-tree failed: {err.strip()[:200]}")
-        tree = out.splitlines()[0].strip()
         message = f"Merge main into {branch} for the next attempt (D-583)"
         return self.git("commit-tree", tree, "-p", remote, "-p", main, "-m", message, env=self._identity())
 
@@ -1027,13 +1031,9 @@ class GitHubEnv:
         code, base, _ = self._run(["git", "merge-base", head, main], None, self.root)
         if code != 0:
             return False if code == 1 else None  # 1: no common history with main
-        # The base must not be older than the reviewed commit's own fork point from main: a head built on
-        # an older main commit could carry back a change main has since reverted (D-584).
-        code, fork, _ = self._run(["git", "merge-base", reviewed, main], None, self.root)
-        if code != 0:
-            return False if code == 1 else None
-        if not self._is_ancestor(fork.strip(), base.strip()):
-            return False
+        fresh = self._not_older_than_fork(reviewed, base.strip(), main)
+        if fresh is not True:
+            return fresh
         try:
             # The update merge's own tree (D-620): git's merge, with docs/decisions.md as main's entries then
             # the branch's, and kit/plan.lock recomputed when both sides rewrote it; None means a conflict.
@@ -1083,13 +1083,25 @@ class GitHubEnv:
         cannot say."""
         if number:
             self._run(["git", "fetch", "--quiet", "origin", f"+refs/pull/{number}/head:refs/runner/pr-{number}"], None, self.root)
-        if not self._has_commit(reviewed) or not self._has_commit(head):
+        tip = self.main_head()
+        if not tip or not self._has_commit(reviewed) or not self._has_commit(head):
             return None
         try:
             merged, main = self.updates.is_update_merge(reviewed, head)
         except RuntimeError:
             return None
-        return merged and self.in_main(main) is True
+        if not merged or self.in_main(main) is not True:
+            return False
+        return self._not_older_than_fork(reviewed, main, tip)  # as reviewed_plus_main checks its base (D-584)
+
+    def _not_older_than_fork(self, reviewed: str, base: str, main: str) -> bool | None:
+        """Whether `base` (the main commit a head was built on) is at or after the reviewed commit's own
+        fork point from main: a head built on an older main commit could carry back a change main has
+        since reverted (D-584). None when git cannot say."""
+        code, fork, _ = self._run(["git", "merge-base", reviewed, main], None, self.root)
+        if code != 0:
+            return False if code == 1 else None
+        return self._is_ancestor(fork.strip(), base)
 
     def _has_commit(self, sha: str) -> bool:
         return bool(sha) and self._run(["git", "cat-file", "-e", f"{sha}^{{commit}}"], None, self.root)[0] == 0

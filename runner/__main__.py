@@ -238,12 +238,12 @@ def requeue_task(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) ->
     tid, reason = str(args.requeue), args.reason.strip()
     if not reason:
         return "requeue_refused: --reason is empty"
-    why = cycle.requeue_refusal(env.read_state(), tid, now_utc())
+    why = cycle.requeue_refusal(env.read_state(), tid, now_utc(), cfg)
     if why:
         return f"requeue_refused: {why}"
-    done = env.update_state(lambda fresh: cycle.requeue(fresh, tid, reason, now_utc(), cfg.session))
+    done = env.update_state(lambda fresh: cycle.requeue(fresh, tid, reason, now_utc(), cfg.session, cfg))
     if done is None:
-        later = cycle.requeue_refusal(env.read_state(), tid, now_utc())
+        later = cycle.requeue_refusal(env.read_state(), tid, now_utc(), cfg)
         return f"requeue_refused: {later}" if later else "lost_race"
     return "requeued"
 
@@ -356,6 +356,8 @@ def main(argv: list[str] | None = None) -> int:
                                   "changed": cycle_diff(env), "log": env.log}
         if result == "handed_off":
             report["handoff"] = write_handoff(cfg, env)
+        if args.after and not args.dry_run:
+            close_handoff(result)
         if cfg.lanes >= 2:
             report["lane"], report["refill"] = cfg.lane_hint, refill(cfg, env)
         try:
@@ -365,6 +367,18 @@ def main(argv: list[str] | None = None) -> int:
     print(f"runner: {result}" + (" (dry run)" if args.dry_run else ""))
     print(json.dumps(report, sort_keys=True))
     return 2 if result == "state_invalid" else 0
+
+
+AFTER_KEEPS_HANDOFF = ("not_lease_holder", "lost_race", "state_invalid")
+
+
+def close_handoff(result: str) -> None:
+    """Remove the hand-off file once `--after` finished the task (D-620), so backup-runner.yml's safety
+    step sees no hand-off and writes no second, empty `--after` row after the real one; the chain step
+    reads that real row. A hand-off whose `--after` did not finish (not this session's lease, a lost
+    race, an invalid state) is kept, so the safety step still frees the lease."""
+    if result not in AFTER_KEEPS_HANDOFF:
+        (ROOT / HANDOFF).unlink(missing_ok=True)
 
 
 def cycle_diff(env: GitHubEnv) -> dict[str, Any]:
