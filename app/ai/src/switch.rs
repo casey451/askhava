@@ -2,7 +2,8 @@
 //! switch, and the AI-014 weekly counts (AI-008, AI-014, D-412, D-492).
 //!
 //! Outside the live project (build, `Ci`, the Railway test project on fake data) the AI may run.
-//! In live it runs only once a zero-retention agreement's signed date is recorded, or while the
+//! In live it runs only once the newest provider-terms row holds a zero-retention signed date on
+//! or before today in Arizona (a newer row without one closes the gate again), or while the
 //! switch is on and [`Readiness::missing`] finds nothing missing: the newest provider-terms row
 //! says inputs are not used for training and holds the flagged-content retention period and a
 //! Console spend limit of at most 3 times the expected monthly cost, and the privacy-policy version
@@ -101,7 +102,7 @@ async fn readiness(db: &mut PgConnection) -> Result<Readiness, AiError> {
           COALESCE((SELECT p.has_ai018_sentence FROM ai.privacy_policy_version p, d
             WHERE p.effective_on <= d.today ORDER BY p.effective_on DESC, p.recorded_at DESC
             LIMIT 1), false) AS "policy!",
-          EXISTS (SELECT 1 FROM ai.provider_terms p, d WHERE p.zero_retention_signed_on <= d.today)
+          COALESCE((SELECT t.zero_retention_signed_on <= d.today FROM t, d), false)
             AS "zero_retention!",
           COALESCE((SELECT turned_on FROM ai.switch_history ORDER BY seq DESC LIMIT 1), false)
             AS "switch_on!""#

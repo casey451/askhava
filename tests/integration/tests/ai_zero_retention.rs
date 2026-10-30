@@ -103,6 +103,23 @@ async fn policy(db: &mut PgConnection, version: &str, days: i32, sentence: bool)
     .unwrap();
 }
 
+/// Records a zero-retention signing date, today plus `days`, on the newest provider-terms row.
+async fn sign(db: &mut PgConnection, days: i32) {
+    sqlx::query(
+        "UPDATE ai.provider_terms \
+         SET zero_retention_signed_on = (now() AT TIME ZONE 'America/Phoenix')::date + $1 \
+         WHERE id = (SELECT max(id) FROM ai.provider_terms)",
+    )
+    .bind(days)
+    .execute(db)
+    .await
+    .unwrap();
+}
+
+async fn mode(db: &mut PgConnection) -> AiMode {
+    ai_mode(db, Environment::Live).await.unwrap()
+}
+
 async fn refused(db: &mut PgConnection) -> Option<Missing> {
     match set_ai_switch(db, true, OWNER).await {
         Ok(()) => None,
@@ -174,11 +191,14 @@ async fn the_switch_turns_on_only_once_every_record_holds(pool: PgPool) {
         "no photo before zero retention"
     );
     policy(&mut db, "2026.10c", 0, false).await;
-    assert_eq!(
-        ai_mode(&mut db, Environment::Live).await.unwrap(),
-        AiMode::KeywordOnly
-    );
+    assert_eq!(mode(&mut db).await, AiMode::KeywordOnly);
+    policy(&mut db, "2026.10d", 0, true).await;
+    assert_eq!(mode(&mut db).await, AiMode::Ai, "every record holds");
     set_ai_switch(&mut db, false, OWNER).await.unwrap();
+    assert_eq!(mode(&mut db).await, AiMode::KeywordOnly, "off closes it");
+    let off = intake(&mut db, &transport, Environment::Live).await;
+    assert_eq!(off, Intake::AiOff(AiOff::SwitchOff));
+    assert!(transport.0.lock().unwrap().is_empty(), "no call once off");
     let audited: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM ops.audit_log WHERE action IN ('ai.switch_on', 'ai.switch_off')",
     )
@@ -188,22 +208,45 @@ async fn the_switch_turns_on_only_once_every_record_holds(pool: PgPool) {
     assert_eq!(audited, 2);
 }
 
-/// TD-AI-07 (AI-008): a recorded zero-retention signing date opens the gate with the switch off.
+/// TD-AI-07 (AI-008): a recorded zero-retention signing date opens the gate with the switch off,
+/// but only once that date has come in Arizona.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn a_signed_zero_retention_agreement_opens_the_gate(pool: PgPool) {
     let mut db = pool.acquire().await.unwrap();
     terms(&mut db, true, Some(730), None).await;
-    sqlx::query(
-        "UPDATE ai.provider_terms \
-         SET zero_retention_signed_on = (now() AT TIME ZONE 'America/Phoenix')::date",
-    )
-    .execute(&mut *db)
-    .await
-    .unwrap();
+    sign(&mut db, 1).await;
+    assert_eq!(mode(&mut db).await, AiMode::KeywordOnly, "not signed yet");
+    sign(&mut db, 0).await;
+    assert_eq!(mode(&mut db).await, AiMode::Ai);
+}
+
+/// TD-AI-07 (AI-008, D-841): the gate reads only the newest provider-terms row, so a newer row
+/// without a zero-retention date, or one missing a switch record, closes an open gate.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_newer_incomplete_terms_row_closes_the_gate(pool: PgPool) {
+    let mut db = pool.acquire().await.unwrap();
+    terms(&mut db, true, Some(730), Some(6000)).await;
+    sign(&mut db, 0).await;
+    assert_eq!(mode(&mut db).await, AiMode::Ai);
+    terms(&mut db, true, Some(730), Some(6000)).await;
     assert_eq!(
-        ai_mode(&mut db, Environment::Live).await.unwrap(),
-        AiMode::Ai
+        mode(&mut db).await,
+        AiMode::KeywordOnly,
+        "older date ignored"
     );
+    policy(&mut db, "2026.10a", 0, true).await;
+    assert_eq!(refused(&mut db).await, None);
+    assert_eq!(mode(&mut db).await, AiMode::Ai);
+    terms(&mut db, true, None, Some(6000)).await;
+    assert_eq!(
+        mode(&mut db).await,
+        AiMode::KeywordOnly,
+        "newer row incomplete"
+    );
+    let transport = Counting::default();
+    let off = intake(&mut db, &transport, Environment::Live).await;
+    assert_eq!(off, Intake::AiOff(AiOff::SwitchOff));
+    assert!(transport.0.lock().unwrap().is_empty());
 }
 
 /// TD-AI-04 (AI-013, AI-014, PRIV-029): `ai.reading` has no text column; a reading is queued for

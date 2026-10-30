@@ -36,6 +36,7 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 - No transaction is open during a network call; the call row and its alert commit together after it (R11).
 - `ai.call_stat` holds no text, only codes and IDs (PRIV-016).
 - `ai.reading` has no text column; trade and job type leave only through the off-database stream (`ai_zero_retention.rs::readings_go_off_database_as_codes_and_the_week_is_counts`).
+- The gate reads only the newest `ai.provider_terms` row, its zero-retention date included; a newer incomplete row closes it (`ai_zero_retention.rs::a_newer_incomplete_terms_row_closes_the_gate`).
 - Other crates reach only the gated `read_intake`; never export `service::read_intake` (AI-008).
 - `IntakeReading::missing_info` is for records and question choice only: never send it to a person or put it into a template (D-814).
 - `Transport::post` takes the AI job code; the idempotency key is derived from job and subject (SEC-018, D-814).
@@ -55,4 +56,4 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 - `src/tests/schemas.rs` (TD-AI-02, TD-AI-13, TD-AI-15): the schema triangle, reading checks, instruction versions, model setting and paths, `AdapterTransport` sending only `Messages` with a job-keyed ID, the `missing_info` cap and screen, the tag-escaping property for both tags.
 - `src/tests/no_tools.rs` (TD-AI-02, TD-AI-06, TD-AI-10): no tools, no send or release, no quote summary, the AI-021 screen (links with paths, disguised text) and the CARD-010 list.
 - `src/tests/adapter_calls.rs` (TD-AI-10, TD-AI-13, TD-AI-14): fault modes under a paused clock, AI-off endings, call records, daily cap, web-chat rule, and the stand-in over HTTP.
-- `tests/integration/tests/ai_zero_retention.rs` (TD-AI-07, TD-AI-04): zero adapter calls with the switch off in live, each missing record refusing the switch, the policy day rule, zero retention, the no-text `ai.reading` schema, the stream payload and the weekly counts.
+- `tests/integration/tests/ai_zero_retention.rs` (TD-AI-07, TD-AI-04): zero adapter calls with the switch off in live, each missing record refusing the switch, the policy day rule, zero retention (newest row only, not future-dated), the no-text `ai.reading` schema, the stream payload and the weekly counts.

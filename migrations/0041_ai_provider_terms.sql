@@ -1,6 +1,6 @@
 -- ai (T025): the AI-008 gate's records, the switch's history and the structured readings (AI-008, AI-013, D-412, D-491, D-492).
 -- The owner enters the provider-terms rows (the account checklist) and the privacy-policy versions; the gate reads
--- the newest terms row, any signed zero-retention date and the policy version in force today in Arizona.
+-- the newest terms row (its signed zero-retention date included) and the policy version in force today in Arizona.
 -- ai.reading holds no text column: trade and job type go only to the off-database stream (AI-013, PRIV-029, D-842).
 -- Every table is new and empty and append-only for the app role.
 
