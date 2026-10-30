@@ -17,6 +17,7 @@ use thiserror::Error;
 const PREFIX: &str = "ASKHAVA_";
 const APP_ENV: &str = "ASKHAVA_APP_ENV";
 const DATABASE_URL: &str = "ASKHAVA_DATABASE_URL";
+const MIGRATION_DATABASE_URL: &str = "ASKHAVA_MIGRATION_DATABASE_URL";
 const DB_POOL_MAX: &str = "ASKHAVA_DB_POOL_MAX";
 const LOG_LEVEL: &str = "ASKHAVA_LOG_LEVEL";
 const SENTRY_DSN: &str = "ASKHAVA_SENTRY_DSN";
@@ -28,6 +29,7 @@ const ALLOW_LIST_LIVE: &str = "ASKHAVA_ALLOW_LIST_LIVE";
 const KEYS: &[&str] = &[
     APP_ENV,
     DATABASE_URL,
+    MIGRATION_DATABASE_URL,
     DB_POOL_MAX,
     LOG_LEVEL,
     SENTRY_DSN,
@@ -190,6 +192,7 @@ fn normalise_id(id: &str) -> String {
 pub struct Settings {
     environment: Environment,
     database_url: SecretString,
+    migration_database_url: Option<SecretString>,
     db_pool_max: u32,
     log_level: tracing::Level,
     sentry_dsn: Option<SecretString>,
@@ -223,6 +226,7 @@ impl Settings {
         Ok(Self {
             environment,
             database_url: required(&mut raw, DATABASE_URL)?.into(),
+            migration_database_url: raw.remove(MIGRATION_DATABASE_URL).map(SecretString::from),
             db_pool_max: pool_max(raw.remove(DB_POOL_MAX))?,
             log_level: log_level(raw.remove(LOG_LEVEL))?,
             sentry_dsn: raw.remove(SENTRY_DSN).map(SecretString::from),
@@ -241,6 +245,18 @@ impl Settings {
     #[must_use]
     pub fn database_url(&self) -> &SecretString {
         &self.database_url
+    }
+
+    /// The migration role's database URL (`ASKHAVA_MIGRATION_DATABASE_URL`), a secret set only
+    /// on the `migrate` service and read only by `server migrate` (D-092, SEC-052).
+    ///
+    /// # Errors
+    ///
+    /// [`SettingsError::Missing`] when the key is absent.
+    pub fn migration_database_url(&self) -> Result<&SecretString, SettingsError> {
+        self.migration_database_url
+            .as_ref()
+            .ok_or(SettingsError::Missing(MIGRATION_DATABASE_URL))
     }
 
     /// The pool's `max_connections` per process (`ASKHAVA_DB_POOL_MAX`, 1 to 100, default 10).
