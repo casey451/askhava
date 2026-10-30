@@ -4132,12 +4132,12 @@
    "deps": [
     "T008"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 2,
    "slug": "stand-ins-http",
    "type": "harness",
    "stage": "1",
-   "attempt_started_at": "2026-10-30T08:20:48Z",
+   "attempt_started_at": "2026-10-30T08:41:19Z",
    "decision_ids": [
     557,
     558,
@@ -4476,7 +4476,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T08:41:21Z",
+ "updated_at": "2026-10-30T08:43:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -4577,12 +4577,6 @@
  "runner_sha": "ae7233917821ca50290ab7c27c638cf576a1e2ce",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "9c281d8cfc2038c04e52a04fe1bea2052099877c",
-   "ok": false,
-   "at": "2026-10-29T21:25:44Z",
-   "why": "start routine"
-  },
   {
    "sha": "2261d1dee45a431424f6c86c34a4c71aff56ac9f",
    "ok": true,
@@ -4696,30 +4690,36 @@
    "ok": true,
    "at": "2026-10-30T08:20:48Z",
    "why": "start routine"
+  },
+  {
+   "sha": "ae7233917821ca50290ab7c27c638cf576a1e2ce",
+   "ok": true,
+   "at": "2026-10-30T08:41:19Z",
+   "why": "start routine"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T167 estimated 1.1M tokens (calibrated); five-hour window has 21.8M left, week 429.6M (ledger); claimed",
-  "at": "2026-10-30T08:20:48Z",
+  "last": "T167 estimated 1.1M tokens (calibrated); five-hour window has 21.5M left, week 429.4M (ledger); claimed",
+  "at": "2026-10-30T08:41:19Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "five_hour": {
-    "used": 5246367,
+    "used": 5520591,
     "budget": 27000000,
-    "left": 21753633,
+    "left": 21479409,
     "resets_at": "2026-10-30T10:33:02Z"
    },
    "week": {
-    "used": 20359536,
+    "used": 20633760,
     "budget": 450000000,
-    "left": 429640464,
+    "left": 429366240,
     "resets_at": "2026-11-05T18:38:52Z"
    }
   },
   "remaining_estimate": 176167946,
-  "projected_finish": "2026-11-02T02:06:58Z"
+  "projected_finish": "2026-11-02T02:27:29Z"
  },
  "main_red_history": [
   {
