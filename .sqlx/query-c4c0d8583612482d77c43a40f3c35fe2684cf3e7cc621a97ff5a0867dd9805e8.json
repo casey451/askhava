@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE privacy.read_count c SET alerted = true WHERE c.hour = $1 AND NOT c.alerted AND c.reads > $2::float8 * greatest($3::float8, (SELECT coalesce(sum(p.reads), 0) FROM privacy.read_count p WHERE p.action = c.action AND p.hour >= $1 - interval '14 days' AND p.hour < $1) / $4::float8) RETURNING c.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.read_count",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Float8",
+        "Float8",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c4c0d8583612482d77c43a40f3c35fe2684cf3e7cc621a97ff5a0867dd9805e8"
+}

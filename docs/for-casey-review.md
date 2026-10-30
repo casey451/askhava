@@ -1228,3 +1228,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Locked even in tests.** A test copy accepts remote-control requests only with a long random password made fresh for each test run, and it refuses to start the remote control on the Railway test or live sites.
 - **Nothing for you to do.** This is build plumbing; no customer sees it.
 - **Follow-up for the build checks (D-739, D-742).** The automatic checks on every change (`Ci`) still run these remote-control tests only in the shipped form of the app. A later build-system task should add one line to `Ci` that also runs them in the test form (`cargo test -p askhava-security --test control_router_absent --features askhava-core/test-control`); until then they run when someone runs that command by hand.
+
+## Homeowner contact details are locked in a vault (T022, D-749 to D-751, October 30)
+
+- **What it does.** Every homeowner's name, phone, email, street address and on-site contact is now stored scrambled, each piece on its own, under a key that is kept apart from the database password. Someone who copied the whole database would see only scrambled bytes, and a scrambled value moved to another person's record will not unscramble.
+- **Who can look.** Only the parts of the app that need a detail can read it, and only the pieces they need: texting and email, the call connector, the release to a paid business (which never includes the homeowner's phone), the homeowner's own page and your owner pages. Every read is written to the record log with who read it and why.
+- **An alarm for unusual reading.** If any part of the app reads contact details at more than three times its usual hourly rate, or tries to read for a reason that is not on the list, you get a High alert. The hourly check is built; a later task switches on its hourly run.
+- **Changing the key.** The key can be replaced without downtime: old and new keys both work while the app moves every record over, and phone lookups keep working throughout.
+- **Nothing for you to do now.** At the account checkpoint the deploy notes will say how to make the two vault keys and where to keep the sealed paper copy.

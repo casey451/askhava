@@ -1,0 +1,26 @@
+[package]
+name = "askhava-privacy"
+description = "Ask Hava privacy: the encrypted contact vault, its blind index, audited plaintext reads and the release and session capabilities (PRIV-001 to PRIV-004, PRIV-024, SEC-030, SEC-046, SEC-047)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+askhava-ops = { workspace = true }
+aes-gcm = { workspace = true }
+base64 = { workspace = true }
+hmac = { workspace = true }
+jiff = { workspace = true }
+jiff-sqlx = { workspace = true, features = ["postgres"] }
+secrecy = { workspace = true }
+sha2 = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+zeroize = { workspace = true }
+
+[dev-dependencies]
+askhava-core = { workspace = true }
+
+[lints]
+workspace = true
