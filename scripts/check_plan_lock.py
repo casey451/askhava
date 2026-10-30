@@ -38,6 +38,9 @@ LOCKED_FILES = (
     "kit/tasks.json",
     "kit/prompts/TEMPLATE.md",
     "kit/sources.sha256",
+    # The lane count and the owner-review switch: more lanes is a plan change with its own decision (D-620).
+    # Main's copy of this script may not know it yet; differences() never fails on a file a newer list locks.
+    "kit/runner.json",
     # kit/layers.json, kit/allowed_crates.txt and kit/superseded_decisions.json join this list in the plan
     # change after D-491 lands: the Governance check runs main's copy of this script against the branch, so
     # a lock that names a file main's list does not know fails until main knows it (D-491).

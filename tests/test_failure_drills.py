@@ -65,6 +65,9 @@ class FakeEnv:
         self.head_checks: list[tuple[str, str]] = []
         self.closed_prs: list[tuple[int, str]] = []  # close_pr calls (D-584)
         self.close_ok = True
+        self.update: dict[str, Any] = {"status": "current"}  # what update_branch reports (D-620)
+        self.updates: list[tuple[str, str]] = []
+        self.update_merge = False  # whether a differing head is an update merge of the reviewed one (D-620)
 
     def read_state(self) -> st.State:
         return copy.deepcopy(self.store)
@@ -148,6 +151,13 @@ class FakeEnv:
     def merge_main(self) -> str:
         self.main_merges += 1
         return "merged"
+
+    def update_branch(self, branch: str, reviewed: str) -> dict[str, Any]:
+        self.updates.append((branch, reviewed))
+        return copy.deepcopy(self.update)
+
+    def update_merge_of(self, reviewed: str, head: str, number: int) -> bool | None:
+        return self.update_merge
 
 
 def config(
