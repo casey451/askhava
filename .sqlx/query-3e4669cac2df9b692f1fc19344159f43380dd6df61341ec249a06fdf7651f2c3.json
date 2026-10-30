@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE catalog.category c SET enabled = false FROM catalog.license_rule l WHERE l.category_id = c.id AND c.enabled AND ( c.code <> ALL($2) OR replace(lower(btrim(c.code)), '_', ' ') = ANY($1) OR replace(lower(btrim(c.name)), '_', ' ') = ANY($1) OR (l.kind IN ('roc', 'roc_and_state_agency') AND cardinality(l.classes) = 0)) RETURNING c.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3e4669cac2df9b692f1fc19344159f43380dd6df61341ec249a06fdf7651f2c3"
+}

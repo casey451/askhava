@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM catalog.not_offered WHERE name <> ALL($1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "95e29cc1770dae101c2a13f37a97a09e65c048de280f84bd0bbaf97dd3c0029b"
+}

@@ -1,0 +1,184 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT c.id, c.code, c.name, c.enabled, c.recurring, c.after_hours_emergency, c.quote_format, c.keywords, l.kind AS license_kind, l.classes AS license_classes, l.agency, l.handyman_allowed, l.construction_type, f.trip_fee_tier FROM catalog.category c JOIN catalog.license_rule l ON l.category_id = c.id JOIN catalog.fee_rule f ON f.category_id = c.id WHERE c.code = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "code",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "code"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "enabled",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "enabled"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "recurring",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "recurring"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "after_hours_emergency",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "after_hours_emergency"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "quote_format",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "quote_format"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "keywords",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "keywords"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "license_kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.license_rule",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "license_classes",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "catalog.license_rule",
+            "name": "classes"
+          }
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "agency",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.license_rule",
+            "name": "agency"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "handyman_allowed",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.license_rule",
+            "name": "handyman_allowed"
+          }
+        }
+      },
+      {
+        "ordinal": 12,
+        "name": "construction_type",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.license_rule",
+            "name": "construction_type"
+          }
+        }
+      },
+      {
+        "ordinal": 13,
+        "name": "trip_fee_tier",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "catalog.fee_rule",
+            "name": "trip_fee_tier"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "abb82e55b48b5b7bb74108ea743e6776998d2e2fe2177d3705f09abe5c69cddd"
+}
