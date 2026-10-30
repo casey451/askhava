@@ -7,7 +7,8 @@ Occupancy lives in runner/state.py (`in_flight`: a live lease, or MERGE_PENDING 
 - `claim_lane`: at most `lanes` tasks are in flight (the effective count: 1 while `lanes_fallback` is
   set); a run started for one lane (RUNNER_LANE, from backup-runner.yml) claims only that lane, so a
   run never takes a lane another run's concurrency group serves; a run with no lane takes the first
-  free one.
+  free one. While `main` is red and no numbered lane can take FIX-MAIN, it takes the reserved "fix"
+  lane, which never counts against `lanes` (`fix_lane`, D-630).
 - `compatible`: beside a task in flight, a task may be claimed only when its dependencies are all DONE
   or SKIPPED (no proof-waiting exception, D-551), it is in the same stage as every task in flight, its
   owned paths overlap none of theirs (a task owning a locked file also owns `kit/plan.lock`, which it
@@ -56,6 +57,16 @@ def claim_lane(lanes: int, state: State, now: datetime, hint: str | None) -> str
     if hint:
         return hint if hint in free else None
     return free[0] if free else None
+
+
+def fix_lane(state: State, now: datetime) -> str | None:
+    """The reserved "fix" lane (D-515) when `main` is red, FIX-MAIN can be claimed and no numbered lane
+    can take it (D-630): tasks the red-main guard holds MERGE_PENDING, or a capacity lowered by a fall
+    back or by `lanes` going from 2 to 1, must never keep `main` red. None otherwise; with a numbered
+    lane free FIX-MAIN takes that, as before."""
+    if not state.get("main_red") or st.live_lease(state, now, st.FIX_LANE) is not None:
+        return None
+    return st.FIX_LANE if st.eligible(state, now) == [st.FIX_MAIN] else None
 
 
 def owned(task: dict[str, Any], locked: Locked | None) -> list[str]:

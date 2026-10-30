@@ -206,7 +206,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 
 **Shape:**
 - a scheduled runner runs the **runner** code: the Actions runner first, the Appendix A routine as safety net (D-483);
-- the runner does **one task per session**, and at most `lanes` sessions at a time (`kit/runner.json`, locked: 1 unless a logged plan change sets 2), each holding its own lane's lease; two tasks in flight never own the same file or sit in different stages, and a stage's cleanup task always runs alone (D-620);
+- the runner does **one task per session**, and at most `lanes` sessions at a time (`kit/runner.json`, locked: 1 unless a logged plan change sets 2), each holding its own lane's lease, plus FIX-MAIN on the reserved fix lane when no lane can take it while `main` is red (D-630); two tasks in flight never own the same file or sit in different stages, and a stage's cleanup task always runs alone (D-620);
 - beyond the lanes, parallelism exists only inside a session, as read-only review subagents.
 
 **What starts a runner session (D-483 swapped the first and third roles so the build acts under its own GitHub identity):**
@@ -221,7 +221,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 - the runner claims a task by committing a lease (task ID, session URL, expiry 3 hours) and pushing. It renews the lease every 30 minutes while working;
 - a rejected (non-fast-forward) push means another runner won, so this one exits (with two or more lanes it first tries again from a fresh read, at most twice, D-620). Git's own rule is the lock;
 - only the runner writes state. Worker subagents never touch `claude/kit-state`;
-- **nothing new is claimed on a lane while its task is `MERGE_PENDING`**, and at most `lanes` tasks are in flight; with one lane that is the old rule, one task at a time. When a task's branch falls behind `main` (another lane's merge, or Casey edited a file), the runner merges `main` into it with a normal merge commit whose tree must be exactly the reviewed work plus `main` (D-620); it never rebases and force-pushes, and a real conflict fails the attempt instead of being resolved by guesswork.
+- **nothing new is claimed on a lane while its task is `MERGE_PENDING`**, and at most `lanes` tasks are in flight (FIX-MAIN on the fix lane aside, D-630); with one lane that is the old rule, one task at a time. When a task's branch falls behind `main` (another lane's merge, or Casey edited a file), the runner merges `main` into it with a normal merge commit whose tree must be exactly the reviewed work plus `main` (D-620); it never rebases and force-pushes, and a real conflict fails the attempt instead of being resolved by guesswork.
 
 **Talking with Casey (the only channel), done through git so no session needs GitHub API access:**
 - **Why not post issues directly:** Claude's pushes and comments carry **Casey's own GitHub identity**. GitHub doesn't notify people about their own actions, and the runner couldn't tell its own comments from Casey's answers.
