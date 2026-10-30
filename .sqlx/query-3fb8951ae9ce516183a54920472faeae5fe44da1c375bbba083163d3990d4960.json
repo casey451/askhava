@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT outcome FROM ai.call_stat ORDER BY at, outcome",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "outcome",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ai.call_stat",
+            "name": "outcome"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3fb8951ae9ce516183a54920472faeae5fe44da1c375bbba083163d3990d4960"
+}
