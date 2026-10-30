@@ -38,7 +38,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from runner import cycle, state as st
+from runner import cycle, proof, state as st
 from runner.github_env import GitHubEnv, find_transcripts, state_diff
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -46,6 +46,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import check_state  # scripts/, standard library only
 import pacing
+import progress
 import stage_exit
 
 STARTERS = ("actions", "routine", "manual")
@@ -123,11 +124,25 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
         env.main_head()  # merges must be local for the ancestry check
         return stage_exit.passed_stages(kit["tasks"], state, env.read_nightly(), {}, stage_exit.git_is_ancestor(ROOT))
 
+    def stage_proof(state: st.State, stage: str) -> tuple[dict[str, Any] | None, list[str]]:
+        env.main_head()  # the nightly commit and the merges must be local for git to answer
+        nightly = env.read_nightly()
+        world = proof.World(nightly, stage_exit.git_is_ancestor(ROOT), git_has_file,
+                            lambda s: progress.compute(ROOT, s, nightly))
+        return proof.machine_proof(stage, kit["tasks"], state, world)
+
     cfg = cycle.Config(kit["tasks"], kit["models"], kit["protected_paths"], kit["shared_paths"], outbox_dir,
                        session_id(args, starter), now_utc, gate, pacing.make_pacer(kit["tasks"], ROOT), pacing.usage_recorder(ROOT),
                        owner_paths(ROOT / ".github" / "CODEOWNERS") if owner_review(ROOT / "kit" / "runner.json") else (),
-                       lanes(ROOT / "kit" / "runner.json"), env.decision_numbers)
+                       lanes(ROOT / "kit" / "runner.json"), env.decision_numbers,
+                       proof_stages=frozenset(proof.MACHINE_PROOFS), stage_proof=stage_proof)
     return cfg, env
+
+
+def git_has_file(sha: str, path: str) -> bool:
+    """Whether the commit holds the file (`git cat-file -e sha:path`), for runner/proof.py (D-551)."""
+    done = subprocess.run(["git", "cat-file", "-e", f"{sha}:{path}"], cwd=ROOT, capture_output=True, check=False)
+    return done.returncode == 0
 
 
 def owner_review(settings: Path) -> bool:

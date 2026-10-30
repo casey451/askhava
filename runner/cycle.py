@@ -14,7 +14,10 @@ from runner.state import State
 
 MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540
 HOURLY = timedelta(hours=1)
-WAIT_RESULTS = ("merge_pending", "not_done", "check_failed")
+WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes")
+# An empty hand-in (no commits on top of main): GitHub opens no pull request for it, so it can never
+# merge. Only a cleanup task may legitimately find nothing to change (D-551).
+NO_CHANGES = "no changes: the hand-in has no commits on top of main (only a cleanup task may hand in nothing, D-551)"
 
 
 @dataclass
@@ -22,8 +25,10 @@ class WorkerResult:
     """What a worker session reports. 'outcome' is one of: submitted, tests_failed,
     usage_limit, permission_blocked, vendor_outage, or handed_off (the starting session does the
     work itself and calls `python3 -m runner --after`; the lease stays held). A crash is an
-    exception, not a result. changed_paths, model_evidence, reviewer_evidence and usage are read by
-    the runner from git and the transcripts, never from what the worker says (BUILD_BRIEF.md:247-248).
+    exception, not a result. changed_paths, model_evidence, reviewer_evidence, usage and
+    commits_ahead are read by the runner from git and the transcripts, never from what the worker
+    says (BUILD_BRIEF.md:247-248). commits_ahead counts the head's commits that main lacks
+    (`git rev-list --count main..head`): 0 is an empty hand-in, None unknown (D-551).
     """
 
     outcome: str
@@ -35,6 +40,7 @@ class WorkerResult:
     head_sha: str = ""
     reviewer_evidence: list[str] = field(default_factory=list)
     usage: dict[str, int] = field(default_factory=dict)
+    commits_ahead: int | None = None
 
 
 class Env(Protocol):
@@ -80,6 +86,10 @@ class Env(Protocol):
         """Whether `Ci`, `Twin` and `Ally` all passed on that commit of main (None when unknown)."""
         ...
 
+    def in_main(self, sha: str) -> bool | None:
+        """Whether the commit is origin/main's head or one of its ancestors (None when git cannot say)."""
+        ...
+
     def push_branch(self, branch: str, head_sha: str) -> bool:
         """Push the reviewed task branch (never force); called only after the review record is pushed."""
         ...
@@ -111,6 +121,10 @@ class Config:
     # Reads the D-numbers on main's docs/decisions.md (None when unreadable). A claim reserves the
     # task's decision numbers only when this is set and returns a set (D-530).
     decisions: Callable[[], set[int] | None] | None = None
+    # The stages whose named proof the runner records itself (runner/proof.py, D-551), and the check that
+    # returns (the proof record, or None, and what the proof still waits for) for one of them.
+    proof_stages: frozenset[str] = frozenset()
+    stage_proof: Callable[[State, str], tuple[dict[str, Any] | None, list[str]]] | None = None
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -180,6 +194,8 @@ def _after_worker(
     problems += _review_problems(task, res, cfg)
     if problems:
         return record_failure(state, tid, "; ".join(problems))
+    if res.commits_ahead == 0 and task.get("type") != "cleanup":
+        return record_failure(state, tid, NO_CHANGES)
     return st.with_task(state, tid, status=st.MERGE_PENDING)
 
 
@@ -209,7 +225,7 @@ def _resolve_merge(state: State, env: Env, cfg: Config, now: datetime) -> tuple[
         tid = task["id"]
         pr = env.pr_for(tid)
         if pr is None:
-            return state, "merge_pending"
+            return _without_pr(state, env, task, now)
         checks = verify.checks_state(pr)
         if not pr.get("merged"):
             if checks == "failed":
@@ -237,13 +253,51 @@ def _merged(state: State, tid: str, pr: dict[str, Any], cfg: Config, now: dateti
         "merged_at": pr.get("merged_at", ""),  # read by scripts/progress.py (D-479)
         "files": list(pr.get("files", [])),  # what FIX-MAIN may touch if this merge turns main red
     }
+    return _mark_done(state, tid, pr, facts)
+
+
+def _mark_done(state: State, tid: str, pr: dict[str, Any], facts: dict[str, Any]) -> tuple[State, str]:
+    """DONE with the merge facts, or BLOCKED for a cleanup task whose stage proof is not recorded yet."""
     if not _proof_ok(state, tid):
         blocked = st.with_task(state, tid, status=st.BLOCKED, reason=PROOF_MISSING, **facts)
         return _close_history(blocked, tid, pr, "proof_missing"), "done"
     return _close_history(st.with_task(state, tid, status=st.DONE, **facts), tid, pr, "done"), "done"
 
 
-PROOF_MISSING = "stage proof missing"
+def _without_pr(state: State, env: Env, task: dict[str, Any], now: datetime) -> tuple[State, str]:
+    """MERGE_PENDING with no pull request. A reviewed head that main already contains is an empty
+    hand-in, for which GitHub opens no pull request, so it is resolved here instead of waiting
+    forever (T008 on October 30 stalled the build this way, D-551): a cleanup task's is resolved
+    by _resolve_empty, any other task's is a failed attempt. Otherwise the pull request is still to come."""
+    tid, head = task["id"], str(task.get("reviewed_sha") or "")
+    if not head or env.in_main(head) is not True:
+        return state, "merge_pending"
+    if task.get("type") != "cleanup":
+        failed = record_failure(state, tid, NO_CHANGES)
+        return _close_history(failed, tid, {"head_sha": head}, "no_changes"), "no_changes"
+    return _resolve_empty(state, env, tid, head, now)
+
+
+def _resolve_empty(state: State, env: Env, tid: str, head: str, now: datetime) -> tuple[State, str]:
+    """A cleanup task that found nothing to change certifies main as it was at hand-in, `head` (D-551).
+
+    Nothing merges, so `merged_sha` is that commit and no files move. It counts as DONE (or BLOCKED
+    for its stage proof, like any cleanup merge) once `Ci`, `Twin` and `Ally` are known green on it:
+    either it is a merge the runner already marked DONE from its pull request's green checks and equal
+    trees, or main's own checks say so (BUILD_BRIEF.md:261-263). Until then it waits, and says why."""
+    if not _green_on_main(state, env, head):
+        why = f"empty hand-in, nothing to merge; waiting for Ci, Twin and Ally green on main {head[:12]}"
+        return st.with_task(state, tid, auto_merge={"enabled": False, "why": why, "head": head}), "merge_pending"
+    facts = {"merged_sha": head, "merged_at": st.iso(now), "files": [], "empty_handin": True}
+    return _mark_done(state, tid, {"head_sha": head}, facts)
+
+
+def _green_on_main(state: State, env: Env, head: str) -> bool:
+    merges = {t.get("merged_sha") for t in state["tasks"] if t.get("status") == st.DONE and not t.get("empty_handin")}
+    return head in merges or env.main_checks_green(head) is True
+
+
+PROOF_MISSING = st.PROOF_MISSING
 
 
 def _proof_ok(state: State, tid: str) -> bool:
@@ -253,6 +307,30 @@ def _proof_ok(state: State, tid: str) -> bool:
         return True
     proof = (state.get("stage_proofs") or {}).get(str(task.get("stage"))) or {}
     return bool(str(proof.get("evidence", "")).strip())
+
+
+def record_proofs(cfg: Config, state: State, now: datetime) -> State:
+    """For each cleanup task waiting for its stage proof in a stage the runner proves itself
+    (cfg.proof_stages, runner/proof.py): record `stage_proofs[N]` once the check finds the evidence
+    true, else note on the task what the proof still waits for (`proof_waits_for`, shown in STATUS.md).
+    Nothing is ever recorded that the check did not find true (D-551)."""
+    if cfg.stage_proof is None:
+        return state
+    out = state
+    for task in state["tasks"]:
+        stage = str(task.get("stage"))
+        if not st.awaits_proof(task) or stage not in cfg.proof_stages or _proof_ok(out, task["id"]):
+            continue
+        try:
+            record, missing = cfg.stage_proof(out, stage)
+        except Exception as exc:  # noqa: BLE001  # reason: an unreadable nightly or git error must not stop the cycle (D-551)
+            record, missing = None, [f"the proof check failed: {str(exc)[:200]}"]
+        if record:
+            proofs = dict(out.get("stage_proofs") or {}, **{stage: dict(record, at=st.iso(now))})
+            out = st.with_task(dict(out, stage_proofs=proofs), task["id"], proof_waits_for=None)
+        elif task.get("proof_waits_for") != missing:
+            out = st.with_task(out, task["id"], proof_waits_for=missing)
+    return out
 
 
 def release_proven(state: State) -> State:
@@ -304,8 +382,12 @@ def set_main_red(
 
 
 def offending_merge(state: State) -> tuple[str, str, list[str]]:
-    """The latest DONE merge (task, squash SHA, files): what a red nightly or smoke run blames first."""
-    merged = [t for t in state["tasks"] if t.get("status") == st.DONE and t.get("merged_sha") and t["id"] != st.FIX_MAIN]
+    """The latest DONE merge (task, squash SHA, files): what a red nightly or smoke run blames first.
+    An empty hand-in merged nothing (its `merged_sha` is another task's merge), so it is never blamed (D-551)."""
+    merged = [
+        t for t in state["tasks"]
+        if t.get("status") == st.DONE and t.get("merged_sha") and t["id"] != st.FIX_MAIN and not t.get("empty_handin")
+    ]
     if not merged:
         return "", "", []
     last = max(merged, key=lambda t: str(t.get("merged_at", "")))
@@ -425,7 +507,7 @@ def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
     base = env.read_state()
     items = env.read_inbox()
     state = st.release_expired(_record_inbox(st.sync_graph(base, cfg.graph), cfg, items, now), now)
-    state = release_proven(state)
+    state = release_proven(record_proofs(cfg, state, now))
     state = _adopt_orphan_pr(base, state, env)
     if state != base:
         if not env.push_state(state, base):
@@ -473,7 +555,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     opened = _open_gate_p(cfg, state) or _next_gate(cfg, env, state)
     if opened is not None:
         return "gate_open" if env.push_state(opened, base) else "lost_race"
-    ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state)), now)
+    ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     if not ids:
         if state != base and not env.push_state(state, base):
             return "lost_race"
@@ -597,14 +679,21 @@ def finish(
 ) -> str:
     """After the worker: checks, history, usage; then the review gate: reviewed_sha and the lease are
     pushed to claude/kit-state, then the branch, then the runner itself turns on auto-merge for exactly
-    that head (so the merge is the runner's identity and starts workflows), then MERGE_PENDING (D-486)."""
+    that head (so the merge is the runner's identity and starts workflows), then MERGE_PENDING (D-486).
+    An empty hand-in (no commits on top of main) is a failed attempt, except a cleanup task's, which has
+    nothing to push and is resolved at once by _resolve_empty (D-551)."""
     tid = task["id"]
     lane = st.lane_of(state, tid) or st.LANE_ONE
     record = _history_entry(state, task, res, model, cfg)
     final = _after_worker(state, task, res, cfg, model, now)
     history = [*st.entry(state, tid).get("history", []), dict(record, result=st.status(final, tid))]
     final = _record_usage(st.with_task(final, tid, history=history), tid, model, res, now, cfg)
-    if st.status(final, tid) == st.MERGE_PENDING:
+    if st.status(final, tid) == st.MERGE_PENDING and res.commits_ahead == 0:
+        # An empty cleanup hand-in: nothing to push or merge (GitHub opens no pull request), so no
+        # branch push and no auto-merge; it is resolved now, or by _without_pr in a later cycle (D-551).
+        final = st.with_task(final, tid, reviewed_sha=res.head_sha, branch=res.branch)
+        final = _resolve_empty(final, env, tid, res.head_sha, now)[0]
+    elif st.status(final, tid) == st.MERGE_PENDING:
         reviewed = env.update_state(_review_record(tid, lane, cfg, res))
         if reviewed is None:
             return "lost_race"  # no review record, no branch push: the lease is not this session's (D-515)

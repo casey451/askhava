@@ -186,8 +186,14 @@ def _stage_counts(state: State) -> list[str]:
     return [f"- stage {s}: {d} of {n} done" for s, (d, n) in sorted(stages.items())]
 
 
+def _waits_for(task: dict[str, Any]) -> str:
+    """What a cleanup task's stage proof still waits for (runner.cycle.record_proofs, D-551), or ''."""
+    waits = task.get("proof_waits_for") or []
+    return f" (the proof waits for: {'; '.join(str(w) for w in waits)})" if waits else ""
+
+
 def _attention(state: State, now: datetime) -> list[str]:
-    lines = [f"- BLOCKED {t['id']}: {t.get('reason', '')}" for t in state.get("tasks", []) if t.get("status") == st.BLOCKED]
+    lines = [f"- BLOCKED {t['id']}: {t.get('reason', '')}{_waits_for(t)}" for t in state.get("tasks", []) if t.get("status") == st.BLOCKED]
     lines += [f"- Waiting for Casey: {t['id']}" for t in state.get("tasks", []) if t.get("status") == st.WAITING_FOR_OWNER]
     lines += [f"- Deviation {d.get('id')}: {d.get('rule')} ({d.get('owner')}, until {d.get('expiry')})" for d in st.open_deviations(state, now)]
     red = state.get("main_red")
@@ -494,6 +500,15 @@ class GitHubEnv:
     def main_head(self) -> str:
         return self._fetch("main") or ""
 
+    def in_main(self, sha: str) -> bool | None:
+        """Whether the commit is main's head or one of its ancestors (`git merge-base --is-ancestor`, after a
+        fresh fetch of main); None when git cannot say, as for a commit this clone does not have (D-551)."""
+        main = self.main_head()
+        if not main or not sha:
+            return None
+        code, _, _ = self._run(["git", "merge-base", "--is-ancestor", sha, main], None, self.root)
+        return {0: True, 1: False}.get(code)
+
     def decision_numbers(self) -> set[int] | None:
         """The D-numbers on main's docs/decisions.md (fetched fresh); claims reserve decision numbers
         above them (D-530). None when the file cannot be read or holds no entry, so a bad read never
@@ -672,6 +687,9 @@ class GitHubEnv:
     # ---- worker hand-off and evidence
 
     def push_branch(self, branch: str, head_sha: str) -> bool:
+        if not head_sha:
+            self.log.append(f"branch push refused: no head for {branch}")  # `:refs/heads/x` would delete it (D-551)
+            return False
         if self.dry_run:
             return True
         remote = f"https://github.com/{self.repo}.git" if os.environ.get("RUNNER_PUSH_TOKEN") else "origin"
@@ -688,12 +706,20 @@ class GitHubEnv:
         """A WorkerResult from what the runner reads itself: git diff --no-renames and the transcripts."""
         branch = self.branch_for(task["id"])
         base = self.main_head()
-        head = self.git("rev-parse", f"refs/heads/{branch}", check=False)
+        # No task branch at all: the hand-in is main as it was, an empty hand-in (D-551).
+        head = self.git("rev-parse", f"refs/heads/{branch}", check=False) or base
         changed = self.git("diff", "--no-renames", "--name-only", f"{base}...{head}", check=False) if head else ""
         evidence, usage = read_transcripts(transcripts)
         review, review_usage = read_transcripts(reviewer_transcripts)
         usage = {k: usage.get(k, 0) + review_usage.get(k, 0) for k in {*usage, *review_usage}}  # both count (pacing)
-        return WorkerResult(outcome, [p for p in changed.splitlines() if p], evidence, reset_at, log, branch, head, review, usage)
+        return WorkerResult(outcome, [p for p in changed.splitlines() if p], evidence, reset_at, log, branch, head, review, usage,
+                            self._commits_ahead(base, head))
+
+    def _commits_ahead(self, base: str, head: str) -> int | None:
+        """The head's commits that main lacks (`git rev-list --count base..head`); 0 is an empty hand-in,
+        None when git cannot say (D-551)."""
+        out = self.git("rev-list", "--count", f"{base}..{head}", check=False) if base and head else ""
+        return int(out) if out.isdigit() else None
 
     def run_worker(self, task: dict[str, Any], model: str, log: str, heartbeat: Callable[[], None]) -> WorkerResult:
         command = os.environ.get("RUNNER_WORKER_CMD", "")
