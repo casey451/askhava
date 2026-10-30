@@ -190,3 +190,4 @@
 - 2026-10-30T12:36:58Z runner 994cb71f6989 (actions): {"T010": "QUEUED -> IN_PROGRESS"}; T010 estimated 690k tokens (calibrated); five-hour window has 25.1M left, week 424.7M (ledger); claimed
 - 2026-10-30T12:41:55Z runner 994cb71f6989 (actions): {"T019": "QUEUED -> IN_PROGRESS"}; T019 estimated 289k tokens (calibrated); five-hour window has 24.4M left, week 424.0M after 690k still running in another lane (ledger); claimed
 - 2026-10-30T12:44:56Z runner 91b40c6070eb (actions): {}
+- 2026-10-30T12:45:05Z runner 91b40c6070eb (actions): {"T010": "IN_PROGRESS -> MERGE_PENDING"}
