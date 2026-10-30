@@ -126,7 +126,7 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
     cfg = cycle.Config(kit["tasks"], kit["models"], kit["protected_paths"], kit["shared_paths"], outbox_dir,
                        session_id(args, starter), now_utc, gate, pacing.make_pacer(kit["tasks"], ROOT), pacing.usage_recorder(ROOT),
                        owner_paths(ROOT / ".github" / "CODEOWNERS") if owner_review(ROOT / "kit" / "runner.json") else (),
-                       lanes(ROOT / "kit" / "runner.json"))
+                       lanes(ROOT / "kit" / "runner.json"), env.decision_numbers)
     return cfg, env
 
 
@@ -191,7 +191,8 @@ def _prompt_for(task: dict[str, Any], tid: str) -> str:
 
 
 def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
-    """Tell the session what it was handed, and remember the session for --after."""
+    """Tell the session what it was handed (task, branch, prompt, models, its reserved `decision_ids`),
+    and remember the session for --after."""
     state = env.last_state or {}
     tid = str((state.get("lease") or {}).get("task", ""))
     task = {**st.entry(state, tid), **next((t for t in cfg.graph if t["id"] == tid), {})}
@@ -199,6 +200,7 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         "session": cfg.session, "task": tid, "branch": env.branch_for(tid), "prompt": _prompt_for(task, tid),
         "model": cycle.attempt_model(task, int(task.get("attempts", 0)), cfg.models) if task.get("model") else None,
         "reviewer_model": task.get("reviewer_model"), "last_failure": task.get("last_failure"), "goal": task.get("goal"),
+        "decision_ids": list(task.get("decision_ids") or []),  # number new decision entries from these, in order (D-530)
     }
     if not env.dry_run:
         (ROOT / HANDOFF).write_text(json.dumps(info), encoding="utf-8")
