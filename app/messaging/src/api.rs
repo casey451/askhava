@@ -1,7 +1,12 @@
 //! The public face of `askhava-messaging`: everything other crates may call (D-481).
 //!
-//! Render a text from its template ID, pick the language it may use, and count its segments.
+//! Render a text from its template ID, pick the language it may use, count its segments, and decide
+//! when it may be sent (quiet hours).
 
+pub use crate::rules::{
+    AreaCodes, Channel, Decision, Held, Kind, Outgoing, QuietHoursError, Release, decide,
+    plan_release, retry,
+};
 pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,
 };

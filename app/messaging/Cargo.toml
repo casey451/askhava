@@ -1,15 +1,19 @@
 [package]
 name = "askhava-messaging"
-description = "Ask Hava messaging: fixed English and Spanish text templates chosen by ID and language (TXT-001 to TXT-008, TXT-010, TXT-039, BIZ-018, WORD-008)"
+description = "Ask Hava messaging: fixed English and Spanish text templates chosen by ID and language and quiet hours (TXT-001 to TXT-008, TXT-010, TXT-039, TXT-025, BIZ-018, WORD-008, QH-001 to QH-009)"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+jiff = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
 
 [lints]
 workspace = true
