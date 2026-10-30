@@ -6,7 +6,7 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 
 ## What it owns
 
-- `src/lib.rs`: `install_crypto_provider()`, `build_router()` (empty until a module adds routes), `shutdown_signal()` (SIGINT or SIGTERM); later `register_handlers()`.
+- `src/lib.rs`: `install_crypto_provider()`, `build_router()` (empty until a module adds routes), `shutdown_signal()` (SIGINT or SIGTERM); `register_handlers()` does not exist yet (T013, the handler-registry task, creates it).
 - `src/main.rs`: the `server` binary; binds `0.0.0.0:$PORT` and serves with graceful shutdown. Missing or bad `PORT` exits 1 without echoing the value (D-588).
 - `src/bin/worker.rs`: the `worker` binary; idles until a signal until T013 adds the claim loop (D-588).
 - No tables.
@@ -20,12 +20,13 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 - `install_crypto_provider()` runs first in both binaries, so sqlx and reqwest share the aws-lc-rs provider (D-481, D-488).
 - Both binaries exit 0 on SIGTERM; the web server drains in-flight requests first (D-491).
 - Errors at start never echo a setting's value.
+- Any future `src/status.rs` must start with `#![deny(clippy::wildcard_enum_match_arm, clippy::match_wildcard_for_single_variants)]` (SEC-031, D-488).
 - `/healthz` belongs to T106 (`src/healthz.rs`); do not add it here.
 
 ## How to change
 
 - Add a module's routes: merge its `routes()` in `build_router()` in `src/lib.rs`; add the path dependency to `Cargo.toml` with `workspace = true`.
-- Register a task handler: add it in `register_handlers()` (`src/lib.rs`) and `src/bin/worker.rs`.
+- Register a task handler: add it in `register_handlers()` (`src/lib.rs`; it does not exist yet, T013, the handler-registry task, creates it) and `src/bin/worker.rs`.
 - Run `cargo build -p askhava-server --locked`, `cargo clippy --workspace --all-targets -- -D warnings` and `bash scripts/smoke.sh`.
 
 ## Tests that guard it
