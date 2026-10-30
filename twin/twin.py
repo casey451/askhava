@@ -189,6 +189,12 @@ class Homeowner:
                 return j
         return self.jobs[-1] if self.jobs else dict(trade="plumbing", raw_text=body)
 
+    def asked_job(self):
+        """The job an intake question is about: the one whose conversation is open (D-517), else the latest."""
+        hid = self.sim.app.phone_to_ho.get(self.phone)
+        cv = self.sim.app.homeowners[hid]["convo"] if hid else None
+        return cv["_sim_truth"] if cv and cv.get("_sim_truth") in self.jobs else self.jobs[-1]
+
     def reply(self, body, delay):
         self.sim.later(delay, self._send, body)
 
@@ -245,20 +251,21 @@ class Homeowner:
         elif k == "intake_q" and "Which fits best?" in body:
             from app import JT_NAMES
             opts = re.findall(r"(\d)\) (.+?)(?= \d\) |\. Reply)", body)
-            truth_name = JT_NAMES.get(self.jobs[-1].get("job_type"), "")
+            truth_name = JT_NAMES.get(self.asked_job().get("job_type"), "")
             idx = next((int(n) for n, o in opts if o == truth_name), None)
             ans = idx if (idx is not None and rng.random() < 0.9) else rng.choice([int(n) for n, _ in opts] or [1])
             name = dict((int(n), o) for n, o in opts).get(ans, "")
             self.reply(f"the {name} one" if (name and rng.random() < 0.3) else str(ans), rng.uniform(1, 30))
-        elif k == "intake_q" and "Reply 1 or 2" in body:
+        elif k == "intake_q" and "is this mainly" in body:
+            # the trade question offers up to three numbered trades (D-104); a re-ask repeats them (D-103)
             names = {"hvac": "heating/AC", "plumbing": "plumbing", "electrical": "electrical", "pool": "pool", "handyman": "handyman"}
-            want = names.get(self.jobs[-1]["trade"], "")
-            opts = re.findall(r"[12]\) ([^?]+?)(?: or |\?)", body)
+            want = names.get(self.asked_job()["trade"], "")
+            opts = re.findall(r"\d\) ([^?]+?)(?=, \d\) | or \d\) |\?)", body)
             idx = next((i for i, o in enumerate(opts) if o.startswith(want)), None)
-            ans = (idx + 1) if (idx is not None and rng.random() < 0.95) else rng.choice([1, 2])
+            ans = (idx + 1) if (idx is not None and rng.random() < 0.95) else rng.choice(range(1, max(2, len(opts)) + 1))
             words = {"hvac": ["the AC one", "heating and air", "it's the AC"], "plumbing": ["plumbing", "it's a plumbing thing"], "electrical": ["electrical", "the electric one"],
                      "pool": ["pool"], "handyman": ["just a small repair", "handyman"]}
-            tr = self.jobs[-1]["trade"] if ans == (idx + 1 if idx is not None else -1) else None
+            tr = self.asked_job()["trade"] if ans == (idx + 1 if idx is not None else -1) else None
             self.reply(rng.choice(words.get(tr, [str(ans)])) if (tr and rng.random() < 0.4) else str(ans), rng.uniform(1, 30))
         elif k == "intake_q" and "ZIP" in body:
             self.reply(self.jobs[-1]["zip"], rng.uniform(1, 30))
@@ -1065,7 +1072,7 @@ def metrics(sim):
                 owner_minutes=round(sim.owner.minutes), owner_tasks=dict(sim.owner.handled), alerts=len(app.alerts),
                 texts=len(sim.sms.log), safe_mode_events=len(sim.backup_notified), legit_contractors_rejected=len(sim.legit_rejected),
                 license_lookups_per_day=round(getattr(sim.roc, "lookups", 0) / sim.cfg["days"], 1),
-                questions_per_request=round(sum(1 for m in sim.sms.log if m["kind"] == "intake_q" and ("Reply 1 or 2" in m["body"] or "Which fits best" in m["body"])) / max(1, len(app.requests)), 3),
+                questions_per_request=round(sum(1 for m in sim.sms.log if m["kind"] == "intake_q" and ("is this mainly" in m["body"] or "Which fits best" in m["body"])) / max(1, len(app.requests)), 3),
                 optout_rate_homeowners=round(len({f for f, b, t_, s in sim.sms.inbound_log if f in sim.homeowners and (b.strip().upper() in ("STOP", "CANCEL", "END", "QUIT", "UNSUBSCRIBE", "STOPALL") or "stop texting" in b.lower())}) / max(1, len({m["to"] for m in sim.sms.log if m["to"] in sim.homeowners})), 4),
                 active_contractors=sum(1 for c in app.contractors.values() if c["status"] == "active"))
 
