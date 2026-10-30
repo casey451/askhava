@@ -31,8 +31,9 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
+      actions: write
     outputs:
-      run: ${{ steps.check.outputs.run }}
+      run: ${{ steps.tick.outputs.run || steps.check.outputs.run }}
     steps:
       - uses: actions/checkout@v4
       - name: Read the flag on claude/kit-state
@@ -61,6 +62,16 @@ jobs:
             exit 0
           fi
           echo "run=true" >> "$GITHUB_OUTPUT"
+      - name: Hourly tick hands over to a dispatched run (D-518)
+        # A scheduled run cannot get the Claude App token (the OIDC exchange answers "User does not have
+        # write access"), while a dispatched run can; so the tick only dispatches the real cycle.
+        if: github.event_name == 'schedule' && steps.check.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY"
+          echo "run=false" >> "$GITHUB_OUTPUT"
+        id: tick
       - name: A task's checks finished - wait for its auto-merge (D-500)
         if: github.event_name == 'workflow_run' && steps.check.outputs.run == 'true'
         env:
