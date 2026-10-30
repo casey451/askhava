@@ -62,9 +62,10 @@ pub async fn create(
 /// Takes the next job number and gives it to job `id` for good, in the caller's transaction
 /// (JOB-024). The counter row's lock orders concurrent creates, and `jobs.job_number` is
 /// append-only with the number as its primary key, so a number already issued fails the create
-/// rather than being given to anyone else.
+/// rather than being given to anyone else. If the counter row is missing, nothing is inserted and
+/// the create fails with [`JobsError::Database`] instead of leaving the job unnumbered.
 async fn issue_number(db: &mut PgConnection, id: Uuid, at: Timestamp) -> Result<(), JobsError> {
-    sqlx::query!(
+    let done = sqlx::query!(
         "WITH taken AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n) \
          INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n, $1, $2 FROM taken",
         id,
@@ -73,7 +74,11 @@ async fn issue_number(db: &mut PgConnection, id: Uuid, at: Timestamp) -> Result<
     .execute(db)
     .await
     .map_err(|_| JobsError::Database)?;
-    Ok(())
+    if done.rows_affected() == 1 {
+        Ok(())
+    } else {
+        Err(JobsError::Database)
+    }
 }
 
 /// Job `id`'s number, the one its texts carry (JOB-024).

@@ -39,32 +39,38 @@ impl ProbeStatus {\n\
 }\n";
 
 /// Each planted shape, laid out as `cargo fmt` writes it (the scan reads arms line by line, and
-/// `cargo fmt --check` keeps every arm on its own line): (file, extra source, what it is).
-const PLANTS: [(&str, &str, &str); 5] = [
+/// `cargo fmt --check` keeps every arm on its own line): (file, extra source, what it is, the
+/// message the scan must print for it, so each plant proves its own shape is caught).
+const PLANTS: [(&str, &str, &str, &str); 5] = [
     (
         "service.rs",
         "fn f(s: ProbeStatus) -> u8 {\n    match s {\n        ProbeStatus::Open => 1,\n        _ => 2,\n    }\n}\n",
         "`_ =>` arm outside the module",
+        "catch-all arm in a match on a status enum (SEC-031)",
     ),
     (
         "service.rs",
         "fn f(s: ProbeStatus) -> bool { matches!(s, ProbeStatus::Open) }\n",
         "`matches!` outside the module",
+        "match, matches!, assert_eq!, if let or let-else on a status enum outside its status module (SEC-031)",
     ),
     (
         "service.rs",
         "fn f(s: ProbeStatus) -> u8 { if let ProbeStatus::Open = s { 1 } else { 2 } }\n",
         "`if let` outside the module",
+        "match, matches!, assert_eq!, if let or let-else on a status enum outside its status module (SEC-031)",
     ),
     (
         "status.rs",
         "fn g(s: ProbeStatus) -> u8 { match s {\n ProbeStatus::Open => 1,\n _ => 2 } }\n",
         "`_ =>` arm outside the impl",
+        "wildcard arm in a status module (SEC-031)",
     ),
     (
         "status.rs",
         "fn g(s: ProbeStatus) -> bool { matches!(s, ProbeStatus::Open) }\n",
         "`matches!` outside the impl",
+        "matches! on a status enum outside its impl (SEC-031)",
     ),
 ];
 
@@ -101,10 +107,13 @@ fn td_sec_12_the_repository_has_no_status_shortcut() {
 fn td_sec_12_the_scan_fails_on_each_planted_shape() {
     let (ok, text) = scan(&probe_tree("clean", None));
     assert!(ok, "helpers inside the enum's impl are allowed:\n{text}");
-    for (i, (file, extra, what)) in PLANTS.iter().enumerate() {
+    for (i, (file, extra, what, message)) in PLANTS.iter().enumerate() {
         let (ok, text) = scan(&probe_tree(&format!("plant{i}"), Some((file, extra))));
         assert!(!ok, "{what} in {file} was not caught");
-        assert!(text.contains("SEC-031"), "{what}: {text}");
+        assert!(
+            text.contains(message),
+            "{what} not reported as {message:?}: {text}"
+        );
     }
 }
 
