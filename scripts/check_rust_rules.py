@@ -14,7 +14,8 @@ fixtures included):
   variant, `if let` / `while let` / `let ... else` on one, a match arm on one and a catch-all
   binding arm in a match that also has such an arm;
 - in a Rust file, `#[template(... escape = "none" ...)]` or `ext = "txt"`; in any file under
-  `app/*/templates/`, `|safe`, `{% filter safe %}` or `escape = "none"` (D-481, D-590).
+  `app/*/templates/`, `|safe`, `{% filter safe %}`, `|e("none")` or `escape = "none"`; a `#[template]` with a
+  non-HTML `path` extension or `|safe` / `|e("none")` in an inline `source` (D-481, D-590).
 
 Nothing to scan (no app/ yet) exits 0. Usage: python3 scripts/check_rust_rules.py [--root .]
 """
@@ -32,13 +33,17 @@ BANNED_MACROS = re.compile(r"\b(todo|unimplemented|dbg)!\s*\(")
 BANNED_WORDS = re.compile(r"\b(TODO|FIXME)\b|\bXXX\b(?!-)")
 UNSAFE = re.compile(r"\bunsafe\s*(\{|fn\b|impl\b)")
 ENUM_DEF = re.compile(r"^\s*(?:pub(?:\([^)]*\))?\s+)?enum\s+(\w+)", re.M)
-WILDCARD_ARM = re.compile(r"(?:^|[,{])\s*_\s*(?:if\b[^=]*)?=>")
-BINDING_ARM = re.compile(r"^\s*(?:ref\s+|mut\s+)*[a-z]\w*\s*(?:if\b.*)?=>")
+WILDCARD_ARM = re.compile(r"(?:^|[,{])\s*\|?\s*_\s*(?:if\b[^=]*)?=>")
+BINDING_ARM = re.compile(r"^\s*\|?\s*(?:ref\s+|mut\s+)*(?!(?:true|false)\b)[a-z]\w*\s*(?:if\b.*)?=>")
 CHECKED_MACRO = re.compile(r"\b(matches|assert_eq|assert_ne|debug_assert_eq|debug_assert_ne)!\s*\(")
 USE_STMT = re.compile(r"\buse\b[^;]*;")
 TEMPLATE_ATTR = re.compile(r"#\[template\b.*?\)\s*\]", re.S)
-TEMPLATE_ATTR_UNSAFE = re.compile(r"escape\s*=\s*\"none\"|\bext\s*=\s*\"txt\"")
-TEMPLATE_UNSAFE = re.compile(r"\|\s*safe\b|escape\s*=\s*\"none\"|\{%-?\s*filter\s+safe\b")
+ESCAPE_NONE_FILTER = r"\|\s*(?:e|escape)\s*\(\s*\\?[\"']none"
+TEMPLATE_ATTR_UNSAFE = re.compile(
+    r"escape\s*=\s*\"none\"|\bext\s*=\s*\"txt\"|\bpath\s*=\s*\"[^\"]*\.(?!(?:html|htm|xml|svg)\")\w+\""
+    r"|\|\s*safe\b|" + ESCAPE_NONE_FILTER
+)
+TEMPLATE_UNSAFE = re.compile(r"\|\s*safe\b|escape\s*=\s*\"none\"|\{%-?\s*filter\s+safe\b|" + ESCAPE_NONE_FILTER)
 RAW_STRING = re.compile(r"b?r(#*)\"")
 CHAR_LITERAL = re.compile(r"'(?:\\[^']+|[^\\'])'")
 VENDOR_DIR = "app/adapters/"
@@ -192,14 +197,14 @@ def check_outside_status_module(bare: str, pattern: str, rel: str) -> list[str]:
             found[line_of(bare, use.start())] = "variant import of a status enum (SEC-031)"
         elif re.search(r"\b" + pattern + r"\s+as\b", body):
             found[line_of(bare, use.start())] = "alias import of a status enum (SEC-031)"
-    for m in re.finditer(r"[=!]=(?!>)\s*(?:\w+::)*" + pattern + r"::\w+|\b" + pattern + r"::\w+\s*[=!]=(?!>)", bare):
+    for m in re.finditer(r"[=!]=(?!>)\s*(?:&\s*|\w+\s*\(\s*|\w+::)*" + pattern + r"::\w+|\b" + pattern + r"::\w+\s*\)*\s*[=!]=(?!>)", bare):
         found[line_of(bare, m.start())] = "== or != on a status variant outside its status module (SEC-031)"
     for m in re.finditer(r"\blet\b[^=;]*\b" + pattern + r"::", bare):
         found[line_of(bare, m.start())] = acting
     for _macro, lineno, args in macro_calls(bare):
         if re.search(r"\b" + pattern + r"::", args):
             found[lineno] = acting
-    arm = re.compile(r"^\s*\|?\s*(?:\w+::)*" + pattern + r"::\w+.*=>")
+    arm = re.compile(r"^\s*[\w:\s@&(),|]*?\b" + pattern + r"::\w+.*=>")
     arm_depths: set[int] = set()
     depth = 0
     for lineno, line in enumerate(bare.splitlines(), start=1):

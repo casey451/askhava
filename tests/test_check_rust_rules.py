@@ -1,4 +1,7 @@
-"""Tests for scripts/check_rust_rules.py (source rules, BUILD_BRIEF.md section 12, SEC-031, D-479)."""
+"""Tests for scripts/check_rust_rules.py (source rules, BUILD_BRIEF.md section 12, SEC-031, D-479).
+
+TD-SEC-12 (SEC-031, D-590): every planted-case test below plants one shape the scanner must catch.
+"""
 
 from __future__ import annotations
 
@@ -166,3 +169,42 @@ def test_template_attribute_escape_ext_and_filter_safe_fail(tmp_path: Path) -> N
     assert messages(tmp_path) == []
     write(tmp_path, "app/site/templates/mail.txt", "{% filter safe %}x{% endfilter %}\n")
     assert any("disables escaping" in m for m in messages(tmp_path))
+
+
+def test_bool_arms_are_not_catch_all_and_leading_pipe_wildcard_is(tmp_path: Path) -> None:
+    ok = "fn f(s: JobStatus, b: bool) -> u8 {\n    match s {\n        JobStatus::Open => 1,\n        JobStatus::Done => 2,\n    }\n}\n"
+    assert planted(tmp_path, ok + "fn g(b: bool) -> u8 {\n    match b {\n        true => 1,\n        false => 0,\n    }\n}\n") == [
+        m for m in planted(tmp_path, ok)
+    ]
+    mixed = "fn f(s: JobStatus) -> u8 {\n    match s {\n        JobStatus::Open => 1,\n        true => 2,\n    }\n}\n"
+    assert not any("catch-all" in m for m in planted(tmp_path, mixed))
+    piped = "fn f(s: JobStatus) -> u8 {\n    match s {\n        JobStatus::Open => 1,\n        | other => 2,\n    }\n}\n"
+    assert any("catch-all" in m for m in planted(tmp_path, piped))
+    write(tmp_path, "app/jobs/src/status.rs", "pub enum JobStatus { Open }\nfn f(s: u8) -> u8 {\n    match s {\n        1 => 1,\n        | _ => 0,\n    }\n}\n")
+    assert any("wildcard arm" in m for m in messages(tmp_path))
+
+
+def test_template_non_html_path_inline_safe_and_escape_none_filter_fail(tmp_path: Path) -> None:
+    for attr in ('path = "mail.txt"', 'source = "{{ x|safe }}", ext = "html"', 'source = "{{ x|e(\\"none\\") }}", ext = "html"'):
+        write(tmp_path, "app/site/src/page.rs", f"#[template({attr})]\nstruct P;\n")
+        assert any("template attribute" in m for m in messages(tmp_path)), attr
+    write(tmp_path, "app/site/src/page.rs", '#[template(path = "p.html")]\nstruct P;\n#[template(source = "{{ x }}", ext = "html")]\nstruct Q;\n')
+    assert messages(tmp_path) == []
+    for body in ('{{ x|e("none") }}', "{{ x|escape('none') }}"):
+        write(tmp_path, "app/site/templates/page.html", body + "\n")
+        assert any("disables escaping" in m for m in messages(tmp_path)), body
+    write(tmp_path, "app/site/templates/page.html", "{{ x|e }}\n")
+    assert messages(tmp_path) == []
+
+
+def test_wrapped_tuple_binding_arms_and_ref_comparisons_fail(tmp_path: Path) -> None:
+    for arm in ("Some(JobStatus::Open) => 1,", "(JobStatus::Open, _) => 1,", "x @ JobStatus::Open => 1,", "Some(x @ JobStatus::Open) | None => 1,"):
+        body = f"fn f(s: JobStatus) -> u8 {{\n    match s {{\n        {arm}\n        _ => 0,\n    }}\n}}\n"
+        found = planted(tmp_path, body)
+        assert any("outside its status module" in m for m in found), arm
+        assert any("catch-all" in m for m in found), arm
+    for expr in ("s == &JobStatus::Open", "s != Some(JobStatus::Open)", "&JobStatus::Open == s", "Some(JobStatus::Open) != s"):
+        found = planted(tmp_path, f"fn f(s: JobStatus) -> bool {{ {expr} }}\n")
+        assert any("== or !=" in m for m in found), expr
+    returning = "fn f(x: u8) -> JobStatus {\n    match x {\n        1 => JobStatus::Open,\n        _ => JobStatus::Done,\n    }\n}\n"
+    assert planted(tmp_path, returning) == []
