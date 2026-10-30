@@ -257,6 +257,18 @@ def test_gateclears_only_on_its_phrase() -> None:
     assert st.entry(s, "T127")["answers"] == ["working on it", "Accounts DONE, thanks"]
 
 
+def test_conditional_gate_clears_on_yes_or_no_and_records_the_answer() -> None:
+    g = gate("T130")
+    g["gate"].update(conditional=True, resume="Casey answers 'yes' to that exact question")
+    for text, want in (("Yes", "yes"), ("no", "no"), ("No, thanks.", "no")):
+        s = outbox.apply_owner_answer(st.new_state(), g, text, NOW)
+        assert st.status(s, "T130") == st.DONE and st.entry(s, "T130")["answer"] == want
+    for text in ("maybe", "no, wait", "not yet", "yes and no", "yes " + "please " * 12):
+        s = outbox.apply_owner_answer(st.new_state(), g, text, NOW)
+        assert st.status(s, "T130") == st.QUEUED and "answer" not in st.entry(s, "T130")
+    assert not outbox.clears(gate("T130"), "no")  # a gate that is not conditional keeps its phrase
+
+
 def test_gate_without_a_quoted_phrase_needs_an_affirmative_word() -> None:
     odd = gate()
     odd["gate"]["resume"] = "Casey reports the results"

@@ -681,6 +681,8 @@ class GitHubEnv:
         lines += [f"- {step}" for step in spec.get("steps", [])]
         if spec.get("resume"):
             lines.append(f"To continue: {spec['resume']}.")
+        if spec.get("conditional"):
+            lines.append("Answering 'no' is a fine answer: the build then uses Twilio's test credentials and magic numbers only.")
         lines.append(f"Build status: https://github.com/{self.repo}/blob/{self.state_ref}/STATUS.md")
         return "\n".join(lines)
 
