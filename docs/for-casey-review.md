@@ -1268,3 +1268,5 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Past customers.** Ask Hava never texts someone whose request is finished unless she has written to Ask Hava since then.
 - **Business phones.** Each business's main and staff phones are kept only in a scrambled form that can be matched but not read, so an incoming text can be tied to its business.
 - **One note for the plan.** For now the code that queues a text tells the outbox whether the person's request is still open and when she last wrote; the later inbox task should take that over (D-846).
+- **Phone numbers and message text.** A homeowner's number is looked up in the locked contact store at the moment of sending, never handed in by other code, and the text of a message is wiped from the outbox once it has gone (D-849, D-850).
+- **Check with Twilio before going live.** If two workers ever send the same text at once, we rely on Twilio sending it only once because both carry the same tag; that needs confirming with Twilio before Gate C (D-847).

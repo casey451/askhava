@@ -21,6 +21,9 @@ pub enum OutboxError {
     /// carries the same key (TXT-011).
     #[error("the carrier did not confirm the send")]
     Carrier,
+    /// The homeowner's number could not be read from the vault for the row's recipient (D-849).
+    #[error("the recipient's number could not be read")]
+    Recipient,
     /// The outbox has no row with this ID.
     #[error("no such outbox row")]
     NotFound,
@@ -88,7 +91,7 @@ pub(crate) async fn claim(db: &mut PgConnection, id: Uuid) -> Result<Option<Clai
             template_id: row.template_id,
             recipient: row.recipient_id,
             subject: row.subject_ids,
-            body: row.body,
+            body: row.body.ok_or(OutboxError::Database)?,
         }));
     }
     let exists = sqlx::query_scalar!("SELECT id FROM messaging.outbox WHERE id = $1", id)
@@ -98,14 +101,15 @@ pub(crate) async fn claim(db: &mut PgConnection, id: Uuid) -> Result<Option<Clai
     exists.map(|_| None).ok_or(OutboxError::NotFound)
 }
 
-/// Marks row `id` sent with the carrier's message SID, only if it is still being sent (TXT-011).
+/// Marks row `id` sent with the carrier's message SID and clears its body, only if it is still
+/// being sent (TXT-011, D-850).
 pub(crate) async fn mark_sent(
     db: &mut PgConnection,
     id: Uuid,
     sid: &str,
 ) -> Result<(), OutboxError> {
     sqlx::query!(
-        "UPDATE messaging.outbox SET status = 'sent', provider_sid = $2, sent_at = now() \
+        "UPDATE messaging.outbox SET status = 'sent', provider_sid = $2, sent_at = now(), body = NULL \
          WHERE id = $1 AND status = 'sending'",
         id,
         sid

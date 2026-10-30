@@ -10,9 +10,9 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/templates.rs`: `Registry` (`parse`, `embedded`, `render`, `language_for`, `template`, `ids`), `count_segments`.
 - `area_codes.json`: the area-code table, `{zone: [codes]}`, US, territories and Canada only (D-100, D-139).
 - `src/rules.rs`: pure quiet-hours logic: `AreaCodes`, `decide`, `retry`, `plan_release`, `Kind`, `Outgoing`, `Decision`, `Held`, `Release`.
-- `src/service.rs`: the outbox (`enqueue`, `send`, `may_text`, `NewText`, `Relation`, `SEND_ACTION`) and the sender directory (`sender_add`, `sender_remove`, `sender_business`).
+- `src/service.rs`: the outbox (`enqueue`, `send`, `may_text`, `NewText`, `Relation`, `To`, `SEND_ACTION`) and the sender directory (`sender_add`, `sender_remove`, `sender_business`).
 - `src/models.rs`: `OutboxError` and the crate-private queries on `messaging.outbox` and `messaging.sender_directory`.
-- Migration `0042_messaging_outbox.sql`: the `messaging` schema and grants, `messaging.outbox` (unique `idempotency_key`, `subject_ids`, `status` queued/sending/sent, `attempts`, `provider_sid`), `messaging.sender_directory` (blind-index digests per key version, unique per digest).
+- Migration `0042_messaging_outbox.sql`: the `messaging` schema and grants, `messaging.outbox` (unique `idempotency_key`, `subject_ids`, `status` queued/sending/sent, `attempts`, `provider_sid`, `body` NULL once sent), `messaging.sender_directory` (blind-index digests per key version, unique per digest).
 - `src/api.rs`: the only public surface: `render`, `template_ids`, the quiet-hours functions, the outbox and sender-directory functions and the re-exported types.
 
 ## Rules it enforces
@@ -26,9 +26,11 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - QH-004, QH-005: `rules::night_exception` (the one list of night exceptions; emails and texts, homeowners and businesses alike).
 - QH-006, QH-008: `Decision::Hold { until }` is the next instant both zones are open; `rules::retry` is the same rule.
 - QH-007, TXT-025: `rules::plan_release` drops held texts for a closed job (the caller's `job_closed` check) except one that announces the close, and merges held `Kind::Update`s per job and recipient.
-- TXT-009: `service::may_text`; `enqueue` refuses `Relation::PastCustomer` unless `last_inbound` is strictly after `closed_at`; the caller supplies both times (D-846).
-- TXT-011, SEC-018: `enqueue` derives the key (`sms.send` over template ID, recipient ID, subject IDs) and inserts `ON CONFLICT DO NOTHING`; `send` claims in one statement, calls the carrier outside any transaction with the key re-derived from the stored IDs, then marks `sent` only if still `sending`; a sent row never reaches the carrier (D-847).
-- D-492, PRIV-024: `sender_add` normalizes the phone and stores only `IndexPurpose::SenderDir` digests, replacing the phone's earlier ones in one transaction; a number another phone holds is `SenderTaken`.
+- TXT-009: `service::may_text`; `enqueue` refuses `Relation::PastCustomer` unless `last_inbound` is strictly after `closed_at`, and `send` checks `To::Homeowner`'s relation again before claiming; the caller supplies both times (D-846).
+- PRIV-003, PRIV-004: `send` reads a homeowner's phone from the vault (`read_contact`, `Reader::Messaging`, `Purpose::Send`) for the row's `recipient_id`; only a business phone comes from the caller (D-849). `NewText`'s `Debug` omits the body.
+- SEC-037: `mark_sent` sets `body` to NULL, so a link token is not kept after the send (D-850).
+- TXT-011, SEC-018: `enqueue` derives the key (`sms.send` over template ID, recipient ID, subject IDs) and inserts `ON CONFLICT DO NOTHING`; `send` claims in one statement, calls the carrier outside any transaction with the key re-derived from the stored IDs, then marks `sent` only if still `sending`; a sent row never reaches the carrier (D-847). No lease: concurrent sends rely on the carrier's key dedupe, verify with vendor before Gate C.
+- D-492, PRIV-002: `sender_add` normalizes the phone and stores only `IndexPurpose::SenderDir` digests, replacing the phone's earlier ones in one transaction; a number another phone holds is `SenderTaken`.
 
 ## Never break
 
@@ -42,6 +44,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - A killed worker's resend carries the same key and the carrier delivers once: `tests/integration/tests/outbox.rs::td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once`.
 - No text to a past customer who has not written first: `td_txt_03_no_text_to_a_past_customer_who_has_not_written_first`.
 - No plaintext phone in the sender directory: `the_sender_directory_matches_linked_phones_only`.
+- A homeowner is re-checked at send, texted at her vault number, and a sent row keeps no body: `td_txt_03_a_homeowner_is_rechecked_and_texted_at_her_vault_number`.
 
 ## How to change
 

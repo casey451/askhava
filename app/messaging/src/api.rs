@@ -10,7 +10,7 @@ pub use crate::rules::{
     plan_release, retry,
 };
 pub use crate::service::{
-    NewText, Relation, SEND_ACTION, enqueue, may_text, send, sender_add, sender_business,
+    NewText, Relation, SEND_ACTION, To, enqueue, may_text, send, sender_add, sender_business,
     sender_remove,
 };
 pub use crate::templates::{

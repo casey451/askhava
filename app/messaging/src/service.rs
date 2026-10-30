@@ -4,14 +4,17 @@
 //! recipient ID and the record IDs it is about, and stores it once with those IDs: a second
 //! enqueue of the same text finds the first row. [`send`] claims the row in one short statement,
 //! calls the carrier outside any transaction with the key re-derived from the stored IDs (D-847),
-//! then marks it sent. A worker killed between the carrier's acceptance and the mark leaves it
-//! `sending`, and the resend carries the same key, which the carrier delivers once (TXT-011). A
-//! sent row is never handed to the carrier again.
+//! then marks it sent and clears its body (D-850). A worker killed between the carrier's acceptance
+//! and the mark leaves it `sending`, and the resend carries the same key, which the carrier delivers
+//! once (TXT-011). A sent row is never handed to the carrier again. A homeowner's number is read
+//! from the vault at send time for the row's recipient ID, never taken from the caller (D-849).
 
 use askhava_adapters::api::{IdempotencyKey, SentText, SmsAdapter};
-use askhava_privacy::api::{IndexPurpose, Vault, normalize_phone};
+use askhava_privacy::api::{
+    Field, IndexPurpose, Purpose, Reader, Vault, normalize_phone, read_contact,
+};
 use jiff::Timestamp;
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
@@ -37,8 +40,9 @@ pub enum Relation {
     },
 }
 
-/// One text to queue: the template, the records it is about and the rendered body (TXT-011).
-#[derive(Debug, Clone, Copy)]
+/// One text to queue: the template, the records it is about and the rendered body (TXT-011). Its
+/// `Debug` leaves the body out, which may hold a link token (PRIV-016, SEC-037).
+#[derive(Clone, Copy)]
 pub struct NewText<'a> {
     /// The template ID it was rendered from (TXT-004).
     pub template_id: &'a str,
@@ -51,6 +55,32 @@ pub struct NewText<'a> {
     pub relation: Relation,
     /// The rendered body.
     pub body: &'a str,
+}
+
+impl std::fmt::Debug for NewText<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NewText")
+            .field("template_id", &self.template_id)
+            .field("subject", &self.subject)
+            .field("recipient", &self.recipient)
+            .field("relation", &self.relation)
+            .finish_non_exhaustive()
+    }
+}
+
+/// Where a queued text goes, resolved at send time (D-849).
+#[derive(Clone, Copy)]
+pub enum To<'a> {
+    /// A homeowner: the row's recipient ID is her vault contact, whose phone is read under
+    /// `messaging`'s send grant (PRIV-004); `relation` is checked again before the send (TXT-009).
+    Homeowner {
+        /// The vault the number is read from.
+        vault: &'a Vault,
+        /// Who she is to Ask Hava now (TXT-009).
+        relation: Relation,
+    },
+    /// A business main or staff phone, not vault data; the caller reads it from `businesses`.
+    Business(&'a str),
 }
 
 /// Whether a text to someone with `relation` may go: never to a past customer unless she wrote
@@ -102,37 +132,69 @@ fn text_key(
 }
 
 /// Sends outbox row `id` from `from` to `to` through `carrier` under the key re-derived from the
-/// row's stored IDs, so every attempt carries the same key (TXT-011). Returns `None` when the row
-/// was already sent: the carrier is not called again. No transaction is open during the call (R11).
+/// row's stored IDs, so every attempt carries the same key (TXT-011). A homeowner is checked again
+/// against TXT-009 before the row is claimed, and her number read from the vault (D-849). Returns
+/// `None` when the row was already sent: the carrier is not called again. No transaction is open
+/// during the call (R11).
 ///
 /// # Errors
 ///
-/// [`OutboxError::NotFound`], [`OutboxError::Carrier`] (the row stays unsent; a resend carries the
+/// [`OutboxError::PastCustomer`] (the row stays queued), [`OutboxError::NotFound`],
+/// [`OutboxError::Recipient`], [`OutboxError::Carrier`] (the row stays unsent; a resend carries the
 /// same key) or [`OutboxError::Database`].
 pub async fn send(
     db: &mut PgConnection,
     (secret, carrier): (&SecretString, &impl SmsAdapter),
     id: Uuid,
-    (to, from): (&str, &str),
+    (to, from): (To<'_>, &str),
 ) -> Result<Option<SentText>, OutboxError> {
+    if let To::Homeowner { relation, .. } = to
+        && !may_text(relation)
+    {
+        return Err(OutboxError::PastCustomer);
+    }
     let Some(claim) = models::claim(db, id).await? else {
         return Ok(None);
     };
+    let number = recipient_phone(db, to, claim.recipient).await?;
     let key = text_key(
         secret,
         (&claim.template_id, claim.recipient, &claim.subject),
     );
     let sent = carrier
-        .send_text(&key, to, from, &claim.body)
+        .send_text(&key, number.expose_secret(), from, &claim.body)
         .await
         .map_err(|_| OutboxError::Carrier)?;
     models::mark_sent(db, id, &sent.sid).await?;
     Ok(Some(sent))
 }
 
+/// The number to text: a homeowner's from the vault for contact `recipient` (PRIV-003, PRIV-004,
+/// D-849), a business phone as the caller gave it.
+async fn recipient_phone(
+    db: &mut PgConnection,
+    to: To<'_>,
+    recipient: Uuid,
+) -> Result<SecretString, OutboxError> {
+    match to {
+        To::Business(phone) => Ok(SecretString::from(phone.to_owned())),
+        To::Homeowner { vault, .. } => read_contact(
+            db,
+            vault,
+            (Reader::Messaging, Purpose::Send),
+            recipient,
+            &[Field::Phone],
+        )
+        .await
+        .map_err(|_| OutboxError::Recipient)?
+        .phone
+        .ok_or(OutboxError::Recipient),
+    }
+}
+
 /// Links phone `phone_ref` (`phone` its number) to `business` in the sender directory, replacing
 /// any earlier number of that phone; T220 calls it for every main and staff phone added or changed
-/// (D-492). Only blind-index digests are stored (PRIV-024).
+/// (D-492). Only blind-index digests are stored, never the number (PRIV-002).
 ///
 /// # Errors
 ///
@@ -173,7 +235,8 @@ pub async fn sender_business(
     models::find_sender(db, &sender_digests(vault, phone)?).await
 }
 
-/// The sender-directory digests of `phone` under every index key version (PRIV-024).
+/// The digests of `phone` under the per-purpose `sender-dir` index key, one per key version, so a
+/// number still matches during an index-key rotation (PRIV-024).
 fn sender_digests(vault: &Vault, phone: &str) -> Result<Vec<(u16, [u8; 32])>, OutboxError> {
     let phone = normalize_phone(phone).map_err(|_| OutboxError::BadPhone)?;
     Ok(vault.blind_index(IndexPurpose::SenderDir, &phone))
