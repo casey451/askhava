@@ -23,7 +23,7 @@ line of JSON with what changed.
                                     give a task that used all its attempts exactly one more (on Opus)
                                     after a plan fix: D-### is new on main's docs/decisions.md since the
                                     task was blocked and its kit/tasks.json entry or prompt changed on
-                                    main since then; once per decision, never under a live lease (D-646)
+                                    main since then; once per decision, never under a live lease (D-677)
   python3 -m runner --restore-lanes end a fall back to one lane (`lanes_fallback`, D-620)
   RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
                                     claims only on that lane; unset, the first free lane (D-620)
@@ -258,7 +258,7 @@ def requeue_task(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) ->
 
 def plan_fix_requeue(tid: str, decision: str, reason: str, cfg: cycle.Config, env: GitHubEnv) -> str:
     """`--requeue T### --plan-fix D-### --reason TEXT`: one more attempt for a task that used all its
-    attempts, after a plan fix on main (D-646). The state-only checks run first; then main is read for
+    attempts, after a plan fix on main (D-677). The state-only checks run first; then main is read for
     the time the task was blocked (GitHubEnv.plan_evidence), and the move goes through update_state,
     which re-checks everything against the fresh state."""
     state = env.read_state()

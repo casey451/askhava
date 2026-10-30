@@ -67,7 +67,7 @@ NIGHTLY_FILE = "kit/nightly.json"
 RUNNER_LOG = "kit/runner_log.jsonl"  # one JSON line per cycle, the last 200 kept (D-499)
 ANSWERS_FILE = "kit/owner_answers.jsonl"
 DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbers (D-530)
-TASKS_FILE = "kit/tasks.json"  # read from main for a plan-fix re-queue (D-646)
+TASKS_FILE = "kit/tasks.json"  # read from main for a plan-fix re-queue (D-677)
 PUSH_RETRIES = 3
 UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-515)
 UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError)  # a failed read or push: one lost try
@@ -614,7 +614,7 @@ class GitHubEnv:
         return numbers or None
 
     def plan_evidence(self, task_id: str, prompt: str, since: str) -> dict[str, Any] | None:
-        """What `--requeue --plan-fix` checks on main (D-646): main's head (fetched fresh) and main's
+        """What `--requeue --plan-fix` checks on main (D-677): main's head (fetched fresh) and main's
         commit at `since`, the end of the attempt that blocked the task (`git rev-list -1 --first-parent
         --before`), with the task's plan fingerprint (verify.plan_fingerprint) and the D-numbers of
         docs/decisions.md at each. None when git cannot read main or finds no commit of main by then."""
@@ -630,7 +630,7 @@ class GitHubEnv:
                 "decisions_then": then[1], "decisions_now": now[1]}
 
     def _plan_at(self, commit: str, task_id: str, prompt: str) -> tuple[str | None, list[int]]:
-        """The task's plan fingerprint and the decision numbers at one commit of main (D-646)."""
+        """The task's plan fingerprint and the decision numbers at one commit of main (D-677)."""
         plan = verify.plan_fingerprint(self._show(commit, TASKS_FILE), self._show(commit, prompt), task_id)
         return plan, sorted(set(st.decision_numbers(self._show(commit, DECISIONS_FILE) or "")))
 

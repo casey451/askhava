@@ -13,7 +13,7 @@ from typing import Any, Protocol
 from runner import lanes, outbox, state as st, verify
 from runner.state import State
 
-MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-646)
+MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677)
 HOURLY = timedelta(hours=1)
 WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes", "unreviewed_head",
                 "branch_updated", "update_conflict", "update_push_failed")
@@ -51,7 +51,7 @@ HEAD_CHECK_WAIT = timedelta(hours=2)  # how long a merged head git cannot place 
 DROP_MARKER = "<!-- askhava-runner: closed to drop auto-merge (D-584) -->"
 # The BLOCKED reasons that are not the task's own fault, the only ones `--requeue` lifts (D-583).
 REQUEUABLE = ("branch push rejected", "no head to push", "permission blocked", st.PROOF_MISSING, "unchecked merge")
-# `--requeue T### --plan-fix D-###`: one more attempt for a capped task after a logged plan fix (D-646).
+# `--requeue T### --plan-fix D-###`: one more attempt for a capped task after a logged plan fix (D-677).
 PLAN_FIX_ID = re.compile(r"^D-\d{3,4}$")
 
 
@@ -1349,7 +1349,7 @@ def requeue_refusal(state: State, tid: str, now: datetime, cfg: Config | None = 
     entry = st.entry(state, tid)
     if int(entry.get("attempts", 0)) >= MAX_ATTEMPTS:
         return (f"{tid} has used all {MAX_ATTEMPTS} attempts; it stays BLOCKED for the end-of-build list (BUILD_BRIEF.md:540) "
-                "unless a logged plan fix changed its task entry or prompt: then --plan-fix D-### gives one more (D-646)")
+                "unless a logged plan fix changed its task entry or prompt: then --plan-fix D-### gives one more (D-677)")
     if not str(entry.get("reason") or "").startswith(REQUEUABLE):
         return f"{tid} is BLOCKED for its own work ({str(entry.get('reason'))[:120]}), not for a push, permission or proof"
     held = _requeue_blockers(state, tid, now, cfg)
@@ -1389,7 +1389,7 @@ def requeue(state: State, tid: str, reason: str, now: datetime, by: str, cfg: Co
 
 def blocked_at(entry: dict[str, Any]) -> str | None:
     """When a task that used all its attempts was blocked: the end of its last attempt, the
-    `ended_at` of its last `history` entry (D-646); None when the state has no such record."""
+    `ended_at` of its last `history` entry (D-677); None when the state has no such record."""
     history = entry.get("history") or []
     if not history:
         return None
@@ -1397,7 +1397,7 @@ def blocked_at(entry: dict[str, Any]) -> str | None:
 
 
 def plan_fix_precheck(state: State, tid: str, decision: str, now: datetime, cfg: Config | None = None) -> str:
-    """The state-only half of plan_fix_refusal (D-646): '' when main is worth reading."""
+    """The state-only half of plan_fix_refusal (D-677): '' when main is worth reading."""
     if tid == st.FIX_MAIN:
         return "FIX-MAIN is never re-queued by hand; it clears only with main (docs/governance.md section 5)"
     if not any(t["id"] == tid for t in state.get("tasks", [])):
@@ -1405,7 +1405,7 @@ def plan_fix_precheck(state: State, tid: str, decision: str, now: datetime, cfg:
     if st.status(state, tid) != st.BLOCKED:
         return f"{tid} is {st.status(state, tid)}, not BLOCKED"
     if not PLAN_FIX_ID.match(decision):
-        return f"--plan-fix needs a decision number like D-646, not {decision[:40]!r}"
+        return f"--plan-fix needs a decision number like D-677, not {decision[:40]!r}"
     entry = st.entry(state, tid)
     used = int(entry.get("attempts", 0))
     if used < MAX_ATTEMPTS:
@@ -1421,7 +1421,7 @@ def plan_fix_precheck(state: State, tid: str, decision: str, now: datetime, cfg:
 def plan_fix_refusal(
     state: State, tid: str, decision: str, evidence: dict[str, Any] | None, now: datetime, cfg: Config | None = None
 ) -> str:
-    """Why `python3 -m runner --requeue T### --plan-fix D-###` must not move this task, '' when it may (D-646).
+    """Why `python3 -m runner --requeue T### --plan-fix D-###` must not move this task, '' when it may (D-677).
 
     BUILD_BRIEF.md:271 and :540 keep a task that used all its attempts BLOCKED for the end-of-build
     list, with one exception: a logged plan fix gives it exactly one more attempt. That needs the task
@@ -1455,7 +1455,7 @@ def requeue_plan_fix(
     state: State, tid: str, reason: str, decision: str, evidence: dict[str, Any] | None, now: datetime, by: str,
     cfg: Config | None = None,
 ) -> State | None:
-    """BLOCKED to QUEUED for exactly one more attempt after a plan fix (D-646); None when refused
+    """BLOCKED to QUEUED for exactly one more attempt after a plan fix (D-677); None when refused
     (plan_fix_refusal). `attempts` stays as it is, so attempt_model keeps the attempt on Opus and its
     failure blocks the task again (record_failure); the re-queue is kept in `requeues` with the decision,
     main's commit at the block and now, and both plan fingerprints, so anyone can check it."""

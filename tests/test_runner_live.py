@@ -579,7 +579,7 @@ def tasks_json(goal: str) -> str:
 
 
 def test_plan_fix_requeue_reads_main_at_the_block_and_now(repo: dict[str, Path], tmp_path: Path) -> None:
-    """D-646 live: the decision must be new on main and K10's entry or prompt changed since its last attempt ended."""
+    """D-677 live: the decision must be new on main and K10's entry or prompt changed since its last attempt ended."""
     plan = {"kit/tasks.json": tasks_json("old goal"), "kit/prompts/K10.md": "old prompt\n", "docs/decisions.md": "- **D-100** old\n"}
     base = commit_main_at(repo, "2026-11-01T09:00:00Z", plan)
     env = make_env(repo["a"], tmp_path)

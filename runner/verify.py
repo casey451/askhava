@@ -196,7 +196,7 @@ def auto_merge_allowed(state: dict[str, Any], branch: str, head_sha: str, lease:
 
 def plan_fingerprint(tasks_text: str | None, prompt_text: str | None, task_id: str) -> str | None:
     """The sha256 of one task's plan at one commit: its `kit/tasks.json` entry (canonical JSON) and its
-    prompt file's text (D-646). `--requeue --plan-fix` compares the fingerprint on main when the task
+    prompt file's text (D-677). `--requeue --plan-fix` compares the fingerprint on main when the task
     was blocked with today's, so a capped task gets its extra attempt only when its plan really
     changed. None when `kit/tasks.json` is missing or is not a task graph at that commit."""
     if tasks_text is None:
