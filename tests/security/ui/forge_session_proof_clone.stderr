@@ -1,0 +1,11 @@
+error[E0599]: no method named `clone` found for struct `HomeownerSessionProof` in the current scope
+ --> ui/forge_session_proof_clone.rs:6:12
+  |
+6 |     (proof.clone(), proof)
+  |            ^^^^^ method not found in `HomeownerSessionProof`
+
+error[E0599]: no method named `clone` found for struct `OwnerSessionProof` in the current scope
+  --> ui/forge_session_proof_clone.rs:10:12
+   |
+10 |     (proof.clone(), proof)
+   |            ^^^^^ method not found in `OwnerSessionProof`

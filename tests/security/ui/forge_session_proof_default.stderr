@@ -1,0 +1,11 @@
+error[E0599]: no associated function or constant named `default` found for struct `HomeownerSessionProof` in the current scope
+ --> ui/forge_session_proof_default.rs:6:45
+  |
+6 |     let _homeowner = HomeownerSessionProof::default();
+  |                                             ^^^^^^^ associated function or constant not found in `HomeownerSessionProof`
+
+error[E0277]: the trait bound `OwnerSessionProof: Default` is not satisfied
+ --> ui/forge_session_proof_default.rs:7:37
+  |
+7 |     let _owner: OwnerSessionProof = Default::default();
+  |                                     ^^^^^^^^^^^^^^^^^^ the trait `Default` is not implemented for `OwnerSessionProof`
