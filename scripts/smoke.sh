@@ -42,8 +42,26 @@ local_database() {
   done
 }
 
+secret_scan() {
+  # Ci's gitleaks step, run over the files Ci sees (tracked and new, never ignored ones such as
+  # target/), copied to a scratch folder so a local build tree cannot cause a false hit (D-582).
+  if ! command -v gitleaks >/dev/null 2>&1; then
+    echo "skipped: no gitleaks on PATH (Ci runs it)"
+    return
+  fi
+  local scan
+  scan="$(mktemp -d)"
+  git ls-files -z --cached --others --exclude-standard \
+    | tar --null --files-from=- --ignore-failed-read -cf - 2>/dev/null | tar -xf - -C "${scan}"
+  (cd "${scan}" && gitleaks dir . --no-banner --redact --verbose --exit-code 1) || { rm -rf "${scan}"; exit 1; }
+  rm -rf "${scan}"
+}
+
 step "Sources unchanged"
 sha256sum -c --quiet kit/sources.sha256
+
+step "Secret scan (gitleaks)"
+secret_scan
 
 step "Plan and wording checks"
 for check in trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs pii_scan check_plan_lock check_rust_rules check_crates; do

@@ -45,6 +45,7 @@ import glob
 import json
 import os
 import random
+import re
 import shlex
 import subprocess
 import tempfile
@@ -71,6 +72,28 @@ UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError) 
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
 HEARTBEAT_SECONDS = 60
 ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
+FAILED_CONCLUSIONS = ("failure", "cancelled", "timed_out")
+# The retry worker's failure log (D-582): at most this many characters in all, and per failed job the
+# last EXCERPT_LINES lines of its failed step, each cut to EXCERPT_WIDTH characters.
+FAILURE_LOG_CAP = 1500
+EXCERPT_LINES = 15
+EXCERPT_WIDTH = 200
+JOB_URL = re.compile(r"/actions/runs/\d+/job/(\d+)")
+LOG_STAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z ")
+ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+# Defence in depth only: Actions already masks secrets as *** and gitleaks runs with --redact.
+TOKEN_LIKE = re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|x-access-token:[^@\s]+@")
+# A best-effort read or write (a failure detail, the branch preparation) that fails is left out, never raised.
+BEST_EFFORT_ERRORS = (RuntimeError, ValueError, TypeError, AttributeError, KeyError, OSError, subprocess.SubprocessError)
+NOT_BUILT_ON = ("the hand-in does not build on origin/{branch}: the remote task branch has commits this attempt "
+                "did not build on, so its push cannot fast-forward (D-583)")
+JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the job token (D-502, D-582)
+# The comments on a pull request the runner closes while preparing a retry's branch (D-583).
+AUTO_MERGE_NOTE = ("Closed by the runner before the next attempt: auto-merge was on for `{branch}`, so a push of "
+                   "unreviewed work could have merged. The attempt continues on this branch; the runner opens a "
+                   "fresh pull request after its review (D-583).")
+CONFLICT_NOTE = ("Closed by the runner: merging main into `{branch}` conflicted, so the next attempt starts fresh "
+                 "from main on `{new}` (D-583). This branch is kept for evidence.")
 
 
 def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
@@ -100,16 +123,22 @@ def _long_token_args(args: list[str]) -> list[str] | None:
     The Claude App's token lasts one hour, so a session whose worker runs longer could no longer
     fetch, push or call the API at hand-in (T005, October 29, 2026). Remote git calls name the
     repository URL instead of `origin` so the credential helper, not the action's header, answers;
-    gh calls other than check-run reads (RUNNER_CHECKS_TOKEN, D-502) use the token as GH_TOKEN."""
+    gh calls other than the job-token reads (check runs and Actions jobs, RUNNER_CHECKS_TOKEN, D-502,
+    D-582) use the token as GH_TOKEN."""
     token, repo = os.environ.get("RUNNER_PUSH_TOKEN", ""), os.environ.get("GITHUB_REPOSITORY", "")
     if not token or not repo:
         return None
     if args[:1] == ["git"] and len(args) > 1 and args[1] in REMOTE_GIT:
         url = f"https://github.com/{repo}.git"
         return [url if a == "origin" else a for a in args]
-    if args[:1] == ["gh"] and not (args[:2] == ["gh", "api"] and "/check-runs" in args[-1]):
+    if args[:1] == ["gh"] and not _job_token_read(args):
         return list(args)
     return None
+
+
+def _job_token_read(args: list[str]) -> bool:
+    """A `gh api` read of check runs (D-502) or of an Actions job and its log (D-582)."""
+    return args[:2] == ["gh", "api"] and any(part in args[-1] for part in JOB_TOKEN_READS)
 
 
 def _long_token_env(args: list[str]) -> dict[str, str]:
@@ -119,14 +148,15 @@ def _long_token_env(args: list[str]) -> dict[str, str]:
 
 
 def _env_for(args: list[str]) -> dict[str, str] | None:
-    """Check-run reads use the job's own token (D-502).
+    """Check-run and Actions-job reads use the job's own token (D-502, D-582).
 
     Inside the Claude Code action, GH_TOKEN is the Claude GitHub App's token, which has no Checks
     permission, so `commits/<sha>/check-runs` answers 403. The workflow passes the job token (which has
-    `checks: read`) as RUNNER_CHECKS_TOKEN; it is used only for those reads and never put in argv.
+    `checks: read`, and `actions: write`, which includes the read of a job and its log) as
+    RUNNER_CHECKS_TOKEN; it is used only for those reads and never put in argv.
     """
     token = os.environ.get("RUNNER_CHECKS_TOKEN", "")
-    if token and args[:2] == ["gh", "api"] and "/check-runs" in args[-1]:
+    if token and _job_token_read(args):
         return dict(os.environ, GH_TOKEN=token)
     return _push_env(args)
 
@@ -168,6 +198,61 @@ def parse_inbox_file(text: str) -> tuple[str, str]:
         if key.strip() == "outbox_id" and value.strip() not in ("", "null"):
             outbox_id = str(json.loads(value.strip())) if value.strip().startswith('"') else value.strip()
     return outbox_id, body.strip()
+
+
+def log_excerpt(text: str, lines: int = EXCERPT_LINES) -> list[str]:
+    """The last lines of a job log's failed step, up to and including its first `##[error]` line (D-582).
+
+    Timestamps and colour codes are dropped. Everything between `##[group]` and `##[endgroup]` is
+    left out: that is where Actions prints the step's command and its `env:` block, so no environment
+    dump reaches the excerpt. Token-shaped strings are replaced as a second guard. [] when the log
+    holds no error line."""
+    rows = [LOG_STAMP.sub("", ANSI.sub("", row)) for row in text.splitlines()]
+    end = next((i for i, row in enumerate(rows) if row.startswith("##[error]")), None)
+    if end is None:
+        return []
+    start = max((i for i in range(end) if rows[i].startswith("##[group]Run ")), default=0)
+    kept: list[str] = []
+    depth = 0  # a counter, not a toggle: a group opened inside a group never ends the outer one early
+    for row in rows[start:end + 1]:
+        if row.startswith(("##[group]", "##[endgroup]")):
+            depth = depth + 1 if row.startswith("##[group]") else max(depth - 1, 0)
+            continue
+        if not depth and row.strip():
+            kept.append(TOKEN_LIKE.sub("[redacted]", row)[:EXCERPT_WIDTH])
+    return kept[-lines:]
+
+
+def fit_failure_log(base: str, details: list[tuple[str, list[str]]], cap: int = FAILURE_LOG_CAP) -> str:
+    """`base` (the "name: conclusion" list) and, per failed job, its header line and log excerpt, in at
+    most `cap` characters (D-582). An excerpt that does not fit loses its oldest lines first, so the
+    error line at its end survives longest."""
+    parts = [base[:cap]]
+    for header, excerpt in details:
+        left = cap - len("\n".join(parts)) - 1
+        if left <= 0:
+            break
+        rows = list(excerpt)
+        while rows and len("\n".join([header, *rows])) > left:
+            rows.pop(0)
+        parts.append("\n".join([header, *rows])[:left])
+    return "\n".join(parts)
+
+
+def _pr_gone(pr: dict[str, Any], runner_closed: list[int]) -> str:
+    """'merged' or 'closed' when the branch's latest pull request ended it, '' when the branch can be
+    continued: no pull request, an open one, or one the runner closed itself to drop auto-merge (D-583)."""
+    if pr.get("merged_at"):
+        return "merged"
+    if pr.get("state") == "closed" and int(pr.get("number", 0)) not in runner_closed:
+        return "closed"
+    return ""
+
+
+def _job_id(run: dict[str, Any]) -> str | None:
+    """The Actions job behind a check run, from its details URL; None for a check from another app."""
+    found = JOB_URL.search(str(run.get("details_url") or ""))
+    return found.group(1) if found else None
 
 
 def state_diff(before: State, after: State) -> dict[str, Any]:
@@ -247,6 +332,8 @@ class GitHubEnv:
         self.log: list[str] = []
         self._progress: dict[str, str] = {}
         self.sleep: Callable[[float], None] = time.sleep  # update_state's wait between tries; tests replace it
+        self.prepared: dict[str, Any] = {}  # what prepare_branch made for this attempt, for the hand-off (D-583)
+        self.last_rejection = ""  # the last rejected branch push's git output (push_rejection, D-583)
 
     # ---- git plumbing
 
@@ -597,11 +684,42 @@ class GitHubEnv:
         checks = [{"name": r.get("name"), "sha": r.get("head_sha", head), "conclusion": r.get("conclusion")} for r in runs]
         out = {"number": int(pr["number"]), "merged": bool(pr.get("merged_at")), "head_sha": head, "checks": checks,
                "auto_merge": bool(pr.get("auto_merge"))}
-        failed = [f"{c['name']}: {c['conclusion']}" for c in checks if c["conclusion"] in ("failure", "cancelled", "timed_out")]
-        out["failure_log"] = "; ".join(failed)
+        out["failure_log"] = self._failure_log(runs)
         if out["merged"]:
             out.update(self._merge_facts(int(pr["number"]), head, str(pr.get("merge_commit_sha") or ""), str(pr["merged_at"])))
         return out
+
+    def _failure_log(self, runs: list[dict[str, Any]]) -> str:
+        """What failed on a PR head, as the retry worker gets it in `last_failure` (D-582).
+
+        First the "name: conclusion" list of every failed check run, as before. Then, once per check
+        name (its latest run), the Actions job's failed step names and the tail of that step's log
+        (`log_excerpt`), all within FAILURE_LOG_CAP characters. A detail that cannot be read is left
+        out, so on any API error the log is exactly the plain list."""
+        failed = [r for r in runs if r.get("conclusion") in FAILED_CONCLUSIONS]
+        base = "; ".join(f"{r.get('name')}: {r.get('conclusion')}" for r in failed)
+        latest: dict[str, dict[str, Any]] = {}
+        for run in sorted(failed, key=lambda r: str(r.get("started_at") or "")):
+            latest[str(run.get("name"))] = run
+        details = [d for d in (self._job_detail(run) for run in latest.values()) if d is not None]
+        return fit_failure_log(base, details)
+
+    def _job_detail(self, run: dict[str, Any]) -> tuple[str, list[str]] | None:
+        """(header naming the failed steps, log excerpt) for one failed check run, or None."""
+        job = _job_id(run)
+        if job is None:
+            return None
+        try:
+            steps = self.gh_json(f"repos/{self.repo}/actions/jobs/{job}").get("steps") or []
+            names = [str(s.get("name")) for s in steps if s.get("conclusion") in FAILED_CONCLUSIONS]
+            if not names:
+                return None
+            code, text, _ = self._run(["gh", "api", f"repos/{self.repo}/actions/jobs/{job}/logs"], None, self.root)
+        except BEST_EFFORT_ERRORS as exc:
+            self.log.append(f"job {job} detail unreadable: {str(exc)[:200]}")
+            return None
+        excerpt = log_excerpt(text) if code == 0 else []
+        return f"{run.get('name')} failed at step: {', '.join(names)}", excerpt
 
     def _merge_facts(self, number: int, head: str, merged: str, merged_at: str) -> dict[str, Any]:
         """Trees of the tested head and the squash commit, and the merge's files (--no-renames)."""
@@ -700,8 +818,156 @@ class GitHubEnv:
         code, out, err = self._run(["git", "push", "--porcelain", remote, f"{head_sha}:refs/heads/{branch}"], None, self.root)
         if code != 0:
             # --porcelain puts the rejection reason on stdout; stderr only says "failed to push" (D-509).
-            self.log.append(f"branch push rejected: {(out.strip() + ' ' + err.strip()).strip()[:400]}")
+            self.last_rejection = (out.strip() + " " + err.strip()).strip()[:400]
+            self.log.append(f"branch push rejected: {self.last_rejection}")
         return code == 0
+
+    def push_rejection(self) -> str:
+        """The git output of the last rejected push_branch ('' when none), so the cycle can tell a
+        non-fast-forward from a credential problem (D-583)."""
+        return self.last_rejection
+
+    # ---- the branch an attempt works on (D-583)
+
+    def prepare_branch(self, task: dict[str, Any], attempt: int, session: str) -> dict[str, Any]:
+        """Make the local task branch before the worker starts, so a retry builds on what an earlier
+        attempt pushed and its push fast-forwards (the runner never force-pushes, BUILD_BRIEF.md:303).
+
+        - origin has no task branch: the branch starts at main;
+        - origin has it and its latest pull request is open, absent, or one the runner closed itself to
+          drop auto-merge: the branch starts at origin's tip with main merged in (a normal merge commit;
+          none when main is already in it). An open pull request with auto-merge on is closed with a
+          comment first, so no push of unreviewed work can merge; the runner opens a fresh one after
+          review (`_open_pr`), and the closed number is recorded in the task's `runner_closed_prs`;
+        - its pull request was merged or closed by someone, its pull requests cannot be read, the
+          auto-merge one cannot be closed, or merging main conflicts: a fresh branch from main under a
+          new name (`<branch>-a<attempt>`); on a conflict the open pull request is closed with a
+          comment, and the old branch stays for evidence.
+        A pull request is closed only while `session` holds the task's live lease. Returns {"branch",
+        "branch_ready": True, "base", "base_sha", ...}, also kept as `prepared` for the hand-off; {} in a
+        dry run or when git fails (the attempt then goes on as before, and collect_result still refuses
+        a hand-in that does not build on origin's branch)."""
+        self.prepared = {}
+        if self.dry_run:
+            return {}
+        branch = self.branch_for(task["id"])
+        try:
+            self.prepared = self._prepare(task, branch, attempt, session)
+        except BEST_EFFORT_ERRORS as exc:
+            self.log.append(f"branch {branch} not prepared: {str(exc)[:200]}")
+        return self.prepared
+
+    def _prepare(self, task: dict[str, Any], branch: str, attempt: int, session: str) -> dict[str, Any]:
+        main = self.main_head()
+        if not main:
+            raise RuntimeError("main is unreadable")
+        remote = self._remote_tip(branch)
+        if remote is None:
+            return self._fresh(branch, main)
+        pr = self._latest_pr(branch)
+        gone = "unreadable" if pr is None else _pr_gone(pr, self._runner_closed(task["id"]))
+        if gone:
+            return self._fresh(self._new_name(task, attempt), main, renamed_from=branch, why=f"its pull request was {gone}")
+        tip = remote if self._is_ancestor(main, remote) else self._merge_main(branch, remote, main)
+        if tip is None:
+            new = self._new_name(task, attempt)
+            closed = self._close_open_pr(branch, CONFLICT_NOTE.format(branch=branch, new=new), task["id"], session)
+            return self._fresh(new, main, renamed_from=branch, why="merging main into it conflicted", closed_pr=closed)
+        extra: dict[str, Any] = {}
+        if pr and pr.get("state") == "open" and pr.get("auto_merge"):
+            dropped = self._close_open_pr(branch, AUTO_MERGE_NOTE.format(branch=branch), task["id"], session)
+            if dropped is None:
+                why = "its open pull request has auto-merge on and could not be closed"
+                return self._fresh(self._new_name(task, attempt), main, renamed_from=branch, why=why)
+            extra["dropped_pr"] = dropped
+        self.git("branch", "-f", branch, tip)
+        return {"branch": branch, "branch_ready": True, "base": f"origin/{branch}", "base_sha": tip, "remote_sha": remote, **extra}
+
+    def _remote_has(self, branch: str) -> bool:
+        """Whether origin has the branch (`git ls-remote --exit-code`: 0 yes, 2 no). Any other answer
+        raises, so a branch git could not see is never taken for absent or for a free name (D-583)."""
+        code, _, err = self._run(["git", "ls-remote", "--exit-code", "origin", f"refs/heads/{branch}"], None, self.root)
+        if code not in (0, 2):
+            raise RuntimeError(f"git ls-remote for {branch} failed (exit {code}): {err.strip()[:200]}")
+        return code == 0
+
+    def _remote_tip(self, branch: str) -> str | None:
+        """origin's tip of the branch, fetched so git can merge it; None only when origin lacks it."""
+        if not self._remote_has(branch):
+            return None
+        tip = self._fetch(branch)
+        if tip is None:
+            raise RuntimeError(f"git fetch of {branch} failed")
+        return tip
+
+    def _runner_closed(self, task_id: str) -> list[int]:
+        """The pull requests the runner closed itself to drop auto-merge (`runner_closed_prs`, D-583)."""
+        return [int(n) for n in st.entry(self.last_state or {"tasks": []}, task_id).get("runner_closed_prs") or []]
+
+    def _holds_lease(self, task_id: str, session: str) -> bool:
+        """Whether, on a fresh read, `session` holds a live lease on the task."""
+        fresh = self.read_state()
+        return any(l.get("task") == task_id and l.get("session") == session for l in st.live_leases(fresh, self.clock()).values())
+
+    def _fresh(self, name: str, main: str, **extra: Any) -> dict[str, Any]:
+        self.git("branch", "-f", name, main)
+        return {"branch": name, "branch_ready": True, "base": "main", "base_sha": main, **extra}
+
+    def _is_ancestor(self, older: str, newer: str) -> bool:
+        return self._run(["git", "merge-base", "--is-ancestor", older, newer], None, self.root)[0] == 0
+
+    def _merge_main(self, branch: str, remote: str, main: str) -> str | None:
+        """The merge commit of main into origin's task branch, built without a working tree
+        (`git merge-tree --write-tree`, git 2.38 or later); None on a conflict."""
+        code, out, err = self._run(["git", "merge-tree", "--write-tree", remote, main], None, self.root)
+        if code == 1:
+            return None
+        if code != 0:
+            raise RuntimeError(f"git merge-tree failed: {err.strip()[:200]}")
+        tree = out.splitlines()[0].strip()
+        message = f"Merge main into {branch} for the next attempt (D-583)"
+        return self.git("commit-tree", tree, "-p", remote, "-p", main, "-m", message, env=self._identity())
+
+    def _latest_pr(self, branch: str) -> dict[str, Any] | None:
+        """The branch's latest pull request ({} when it has none); None when the API cannot say."""
+        owner = self.repo.split("/")[0]
+        try:
+            pulls = self.gh_json(f"repos/{self.repo}/pulls?head={owner}:{branch}&state=all&per_page=20")
+        except (RuntimeError, ValueError) as exc:
+            self.log.append(f"pull requests for {branch} unreadable: {str(exc)[:200]}")
+            return None
+        return dict(max(pulls, key=lambda p: int(p["number"]))) if pulls else {}
+
+    def _new_name(self, task: dict[str, Any], attempt: int) -> str:
+        """`<the task's branch>-a<n>` for the first n from the attempt number that origin does not have."""
+        known = next((t.get("branch") for t in self.graph if t.get("id") == task["id"]), None)
+        base = str(known or f"claude/task/{task['id']}")
+        first = max(attempt, 2)
+        for n in range(first, first + 10):
+            if not self._remote_has(f"{base}-a{n}"):
+                return f"{base}-a{n}"
+        raise RuntimeError(f"no free branch name up to {base}-a{first + 9}")
+
+    def _close_open_pr(self, branch: str, body: str, task_id: str, session: str) -> int | None:
+        """Close the branch's open pull request with a comment (REST), only while `session` still holds
+        the task's live lease; its number, or None when there was none or it could not be closed."""
+        owner = self.repo.split("/")[0]
+        try:
+            pulls = self.gh_json(f"repos/{self.repo}/pulls?head={owner}:{branch}&state=open")
+        except (RuntimeError, ValueError):
+            return None
+        if not pulls:
+            return None
+        number = int(pulls[0]["number"])
+        if not self._holds_lease(task_id, session):
+            self.log.append(f"pull request #{number} left open: {session} no longer holds the lease on {task_id}")
+            return None
+        self._run(["gh", "api", f"repos/{self.repo}/issues/{number}/comments", "-f", f"body={body}"], None, self.root)
+        closed = self._run(["gh", "api", "-X", "PATCH", f"repos/{self.repo}/pulls/{number}", "-f", "state=closed"], None, self.root)
+        if closed[0] != 0:
+            self.log.append(f"pull request #{number} not closed: {closed[2].strip()[:200]}")
+            return None
+        return number
 
     def collect_result(
         self, task: dict[str, Any], outcome: str, transcripts: list[str], reviewer_transcripts: list[str],
@@ -715,6 +981,10 @@ class GitHubEnv:
             # No task branch: work left on a detached HEAD or another branch must never pass as an empty
             # hand-in that certifies main, so the attempt fails (D-551).
             return WorkerResult("tests_failed", log=f"no task branch {branch} to hand in", branch=branch)
+        remote = self._fetch(branch) if outcome == "submitted" else None
+        if remote and not self._is_ancestor(remote, head):
+            # The push would be rejected as a non-fast-forward, and the runner never force-pushes (D-583).
+            return WorkerResult("tests_failed", log=NOT_BUILT_ON.format(branch=branch), branch=branch, head_sha=head)
         changed = self.git("diff", "--no-renames", "--name-only", f"{base}...{head}", check=False) if head else ""
         evidence, usage = read_transcripts(transcripts)
         review, review_usage = read_transcripts(reviewer_transcripts)

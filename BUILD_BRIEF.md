@@ -243,7 +243,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 3. **Delegate the work** to a subagent:
    - it runs on the **model named in the task** (Haiku, Sonnet or Opus, passed explicitly as a full model ID);
    - it gets only the task prompt `kit/prompts/T###.md` plus the files it lists;
-   - it works on branch `claude/task/T###-<slug>`, created from the latest `main`;
+   - it works on branch `claude/task/T###-<slug>`, created from the latest `main`; a retry whose earlier attempt pushed that branch continues it with the latest `main` merged in (a merge commit, never a rebase or force-push), and when that cannot be done (its pull request was closed or merged, or `main` conflicts) starts fresh from the latest `main` on `claude/task/T###-<slug>-a<n>` (D-583);
    - **model check:** the runner confirms which model actually ran from evidence it can inspect itself (session or usage records), not from what the subagent says. K8 establishes which evidence is reliable and which model-ID format the subagent call accepts. A substituted model fails the attempt.
    - **path check:** before handing in, the runner checks the diff against the task's owned files and the protected paths (§2, rule 7).
 4. **Fresh-eyes review:** a reviewer subagent (Opus for money, privacy, security and recovery tasks; Sonnet otherwise) sees only the diff and the task's spec files. It checks for:
