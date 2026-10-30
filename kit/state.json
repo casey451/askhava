@@ -4132,7 +4132,7 @@
    "deps": [
     "T008"
    ],
-   "status": "IN_PROGRESS",
+   "status": "BLOCKED",
    "attempts": 1,
    "slug": "stand-ins-http",
    "type": "harness",
@@ -4205,7 +4205,8 @@
     "why": "auto-merge on #94 (gh pr merge)",
     "head": "ca099c544306c9384c0c0c70ae5cf059c8417819"
    },
-   "last_failure": "Ci: failure; Ci: failure"
+   "last_failure": "Ci: failure; Ci: failure",
+   "reason": "branch push rejected; fix the push credential, then set the task back to QUEUED"
   },
   {
    "id": "T168",
@@ -4417,7 +4418,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T07:25:32Z",
+ "updated_at": "2026-10-30T07:25:35Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
