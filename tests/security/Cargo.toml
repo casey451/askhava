@@ -1,12 +1,16 @@
 [package]
 name = "askhava-security"
-description = "Ask Hava security test layer: the trybuild driver for the compile-fail cases in ui/ (SEC-029, SEC-030, D-488)"
+description = "Ask Hava security test layer: the trybuild driver for the compile-fail cases in ui/ (SEC-029, SEC-030, D-488) and the SEC-035 control-router checks"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
 [dev-dependencies]
+askhava-core = { workspace = true }
+axum = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
 trybuild = { workspace = true }
 
 [lints]

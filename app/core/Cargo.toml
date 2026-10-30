@@ -10,6 +10,7 @@ publish.workspace = true
 axum = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
+reqwest = { workspace = true, optional = true }
 secrecy = { workspace = true }
 sentry = { workspace = true }
 serde = { workspace = true }
@@ -19,6 +20,11 @@ thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+
+# The one allowed feature (SEC-035, D-491): the test-control router. Never enabled by a
+# dependency line or the Docker build; e2e builds pass `--features askhava-core/test-control`.
+[features]
+test-control = ["dep:reqwest"]
 
 [dev-dependencies]
 proptest = { workspace = true }

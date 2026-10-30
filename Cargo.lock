@@ -245,6 +245,7 @@ dependencies = [
  "jiff",
  "jiff-sqlx",
  "proptest",
+ "reqwest",
  "secrecy",
  "sentry",
  "serde",
@@ -303,6 +304,10 @@ version = "0.1.0"
 name = "askhava-security"
 version = "0.1.0"
 dependencies = [
+ "askhava-core",
+ "axum",
+ "tokio",
+ "tower",
  "trybuild",
 ]
 
