@@ -9,6 +9,7 @@
 //! field below (D-493).
 
 use std::collections::{BTreeSet, HashMap};
+use std::net::{Ipv4Addr, Ipv6Addr};
 
 use secrecy::{ExposeSecret, SecretString};
 use thiserror::Error;
@@ -43,8 +44,6 @@ const KEYS: &[&str] = &[
 const LIVE_MARKERS: &[&str] = &["sk_live_", "rk_live_", "pk_live_"];
 /// Key prefixes that only a vendor's test mode issues (SEC-002).
 const TEST_MARKERS: &[&str] = &["sk_test_", "rk_test_", "pk_test_"];
-/// Hosts the stand-ins run on, which the live app must never call (SEC-032).
-const LOOPBACK_HOSTS: &[&str] = &["localhost", "127.", "[::1]", "0.0.0.0"];
 const DEFAULT_POOL_MAX: u32 = 10;
 
 /// Why startup refused the settings. Each variant names a key, never its value (SEC-001).
@@ -150,6 +149,8 @@ impl Vendor {
 
 /// One environment's account identifiers, from a list such as
 /// `twilio:AC1,stripe:acct_1,resend:mail.example.com,bucket:askhava-test` (SEC-036).
+/// Entries are held, and looked up, in [`normalise_id`] form, so a stray space
+/// or a case change cannot carry an identifier past the other list.
 #[derive(Debug, Default)]
 struct AllowList(BTreeSet<(Vendor, String)>);
 
@@ -166,14 +167,21 @@ impl AllowList {
                 .into_iter()
                 .find(|vendor| vendor.tag() == tag.trim())
                 .ok_or(SettingsError::Invalid(key))?;
-            entries.insert((vendor, id.trim().to_owned()));
+            entries.insert((vendor, normalise_id(id)));
         }
         Ok(Self(entries))
     }
 
     fn contains(&self, vendor: Vendor, id: &str) -> bool {
-        self.0.contains(&(vendor, id.to_owned()))
+        self.0.contains(&(vendor, normalise_id(id)))
     }
+}
+
+/// The comparison form of an account identifier (SEC-036): trimmed and
+/// lower-cased. Domains and bucket names are case-insensitive; folding Twilio
+/// and Stripe IDs too errs toward refusing, never toward letting one through.
+fn normalise_id(id: &str) -> String {
+    id.trim().to_lowercase()
 }
 
 /// The app's configuration, built only by [`Settings::from_pairs`], so every
@@ -268,7 +276,9 @@ impl Settings {
 
 /// Checks a vendor base URL for its environment (SEC-002, SEC-032; TD-SEC-13):
 /// live accepts only `https://` to a non-local host; elsewhere `http://`,
-/// `https://` and a `file://` stand-in directory are allowed (D-493).
+/// `https://` and a `file://` stand-in directory are allowed (D-493). The host
+/// is read after any `user:pass@`, lower-cased, and an IPv4 or bracketed IPv6
+/// loopback or unspecified address counts as local (D-690).
 ///
 /// # Errors
 ///
@@ -283,11 +293,43 @@ pub fn check_base_url(
     if !matches!(scheme, "https" | "http" | "file") {
         return Err(SettingsError::Invalid(key));
     }
-    let local = LOOPBACK_HOSTS.iter().any(|host| rest.starts_with(host));
-    if environment == Environment::Live && (scheme != "https" || local) {
+    if environment == Environment::Live && (scheme != "https" || is_local_host(&url_host(rest))) {
         return Err(SettingsError::StandInInLive(key));
     }
     Ok(())
+}
+
+/// The lower-cased host of a URL's remainder after `://`, with any userinfo,
+/// port, path, query and fragment removed; an IPv6 host keeps no brackets.
+fn url_host(rest: &str) -> String {
+    let authority = rest.split(['/', '?', '#']).next().unwrap_or_default();
+    let host_port = authority
+        .rsplit_once('@')
+        .map_or(authority, |(_, host)| host);
+    let host = match host_port.strip_prefix('[') {
+        Some(bracketed) => bracketed.split(']').next().unwrap_or_default(),
+        None => host_port.split(':').next().unwrap_or_default(),
+    };
+    host.trim_end_matches('.').to_ascii_lowercase()
+}
+
+/// Whether a host is where a stand-in runs (SEC-032): `localhost` or a
+/// subdomain of it, any `127.` address, or a loopback, unspecified or
+/// IPv4-mapped loopback address.
+fn is_local_host(host: &str) -> bool {
+    if host == "localhost" || host.ends_with(".localhost") || host.starts_with("127.") {
+        return true;
+    }
+    if let Ok(ip) = host.parse::<Ipv4Addr>() {
+        return ip.is_loopback() || ip.is_unspecified();
+    }
+    host.parse::<Ipv6Addr>().is_ok_and(|ip| {
+        ip.is_loopback()
+            || ip.is_unspecified()
+            || ip
+                .to_ipv4_mapped()
+                .is_some_and(|v4| v4.is_loopback() || v4.is_unspecified())
+    })
 }
 
 fn collect<I>(pairs: I) -> Result<HashMap<&'static str, String>, SettingsError>
@@ -334,8 +376,9 @@ fn check_key_markers(
     Ok(())
 }
 
-/// SEC-036, SEC-003: live needs every identifier and both lists; test needs its
-/// own list; dev and CI only refuse a live identifier.
+/// SEC-036, SEC-003: live needs every identifier and both lists, so the
+/// foreign-account check always runs there; test needs its own list; dev and
+/// CI only refuse a live identifier.
 fn check_accounts(
     environment: Environment,
     raw: &mut HashMap<&'static str, String>,
@@ -343,7 +386,10 @@ fn check_accounts(
     let test = optional_list(raw, ALLOW_LIST_TEST)?;
     let live = optional_list(raw, ALLOW_LIST_LIVE)?;
     let (own, other) = match environment {
-        Environment::Live => (Some(require_list(live, ALLOW_LIST_LIVE)?), test),
+        Environment::Live => (
+            Some(require_list(live, ALLOW_LIST_LIVE)?),
+            Some(require_list(test, ALLOW_LIST_TEST)?),
+        ),
         Environment::Test => (Some(require_list(test, ALLOW_LIST_TEST)?), live),
         Environment::Dev | Environment::Ci => (None, live),
     };
@@ -364,7 +410,7 @@ fn check_accounts(
         if own.as_ref().is_some_and(|list| !list.contains(vendor, &id)) {
             return Err(SettingsError::NotAllowed(vendor.key()));
         }
-        accounts.insert(vendor, id);
+        accounts.insert(vendor, id.trim().to_owned());
     }
     Ok(accounts)
 }

@@ -6,14 +6,15 @@
 //! the URI, so tokens in paths never reach a log (PRIV-028, rust-production
 //! R15). Contact values live in [`Redacted`], whose `Debug` and `Display` print
 //! a marker (R6). Sentry runs with `send_default_pii` off and every event and
-//! breadcrumb passes [`scrub_event`] first (PRIV-017).
+//! breadcrumb passes [`scrub_event`] first; Sentry's own log forwarding is
+//! switched off, since the JSON log on stdout is the only log store (PRIV-017).
 
 use std::fmt;
 use std::sync::Arc;
 
 use axum::extract::MatchedPath;
 use axum::http::Request;
-use sentry::protocol::{Breadcrumb, Event, Stacktrace};
+use sentry::protocol::{Breadcrumb, Context, Event, Stacktrace};
 use serde::{Deserialize, Deserializer};
 use thiserror::Error;
 use tracing::Subscriber;
@@ -131,8 +132,9 @@ where
         .with_writer(writer)
 }
 
-/// Sentry's options: default PII off, no request bodies, and the scrubber on
-/// every event and breadcrumb (PRIV-017).
+/// Sentry's options: default PII off, no request bodies, the scrubber on every
+/// event and breadcrumb, and every Sentry log record dropped, so no log body
+/// is ever forwarded unscrubbed (PRIV-017, D-690).
 pub fn sentry_options(dsn: sentry::types::Dsn, environment: Environment) -> sentry::ClientOptions {
     let mut options = sentry::ClientOptions::default();
     options.dsn = Some(dsn);
@@ -141,6 +143,7 @@ pub fn sentry_options(dsn: sentry::types::Dsn, environment: Environment) -> sent
     options.max_request_body_size = sentry::MaxRequestBodySize::None;
     options.before_send = Some(Arc::new(|event| Some(scrub_event(event))));
     options.before_breadcrumb = Some(Arc::new(|crumb| Some(scrub_breadcrumb(crumb))));
+    options.before_send_log = Some(Arc::new(|_log| None));
     options
 }
 
@@ -173,8 +176,9 @@ fn is_safe_request_id(id: &str) -> bool {
 /// Removes what may hold personal data from a Sentry event (PRIV-017): the
 /// user, the request (URL, query, headers, cookies, body), the transaction
 /// name (it may hold a raw path with a token), the server name, extra data,
-/// every context but the system ones, local variables in stack frames and log parameters; and
-/// scrubs every remaining text with [`scrub_text`].
+/// every context but the system ones, the trace context's span description and
+/// data, local variables in stack frames and log parameters; and scrubs every
+/// remaining text with [`scrub_text`].
 #[must_use]
 pub fn scrub_event(mut event: Event<'static>) -> Event<'static> {
     event.user = None;
@@ -185,6 +189,7 @@ pub fn scrub_event(mut event: Event<'static>) -> Event<'static> {
     event
         .contexts
         .retain(|name, _| SYSTEM_CONTEXTS.contains(&name.as_str()));
+    event.contexts.values_mut().for_each(clear_trace_context);
     scrub_option(&mut event.message);
     scrub_option(&mut event.culprit);
     if let Some(entry) = event.logentry.as_mut() {
@@ -272,6 +277,14 @@ fn flush_run(out: &mut String, run: &mut String) {
 fn scrub_option(text: &mut Option<String>) {
     if let Some(value) = text.as_mut() {
         *value = scrub_text(value);
+    }
+}
+
+/// A span's description can hold a raw URI and its data any span field (PRIV-017).
+fn clear_trace_context(context: &mut Context) {
+    if let Context::Trace(trace) = context {
+        trace.description = None;
+        trace.data.clear();
     }
 }
 

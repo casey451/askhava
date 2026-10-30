@@ -214,6 +214,38 @@ fn identifier_off_the_allow_list_stops_startup() {
     assert_eq!(err, SettingsError::Missing("ASKHAVA_ALLOW_LIST_TEST"));
 }
 
+/// SEC-036, D-688: live without the test list stops startup, so the foreign-account check always runs.
+#[test]
+fn live_without_test_list_stops_startup() {
+    let mut no_test_list = live_pairs(&[("ASKHAVA_STORAGE_BUCKET", "askhava-test")]);
+    no_test_list.retain(|(k, _)| k != "ASKHAVA_ALLOW_LIST_TEST");
+    assert_eq!(
+        Settings::from_pairs(no_test_list).unwrap_err(),
+        SettingsError::Missing("ASKHAVA_ALLOW_LIST_TEST")
+    );
+}
+
+/// SEC-036, D-690: spacing or case cannot carry a live identifier past the live list in dev or CI.
+#[test]
+fn identifier_compare_ignores_spacing_and_case() {
+    for id in [" askhava-live ", "ASKHAVA-LIVE", "\taskhava-Live"] {
+        let extra = [
+            ("ASKHAVA_ALLOW_LIST_LIVE", LIVE_LIST),
+            ("ASKHAVA_STORAGE_BUCKET", id),
+        ];
+        for env in ["dev", "ci"] {
+            let err = Settings::from_pairs(pairs(&extra, env)).unwrap_err();
+            assert_eq!(err, SettingsError::ForeignAccount("ASKHAVA_STORAGE_BUCKET"));
+        }
+    }
+    let ok = Settings::from_pairs(live_pairs(&[(
+        "ASKHAVA_RESEND_DOMAIN",
+        " Mail.Example.com ",
+    )]))
+    .unwrap();
+    assert_eq!(ok.account(Vendor::Resend), Some("Mail.Example.com"));
+}
+
 /// TD-SEC-13; SEC-032, SEC-002: a stand-in URL with `APP_ENV=live` stops startup.
 #[test]
 fn stand_in_url_in_live_stops_startup() {
@@ -245,4 +277,35 @@ fn stand_in_url_in_live_stops_startup() {
         check_base_url(Environment::Ci, key, "ftp://example.com"),
         Err(SettingsError::Invalid(key))
     );
+}
+
+/// TD-SEC-13; SEC-032, D-690: case, userinfo and other loopback spellings are still refused in live.
+#[test]
+fn disguised_local_url_in_live_stops_startup() {
+    let key = "ASKHAVA_FAKE_BASE_URL";
+    for url in [
+        "https://LOCALHOST:4010",
+        "https://fake:fake@localhost/v1",
+        "https://user@127.0.0.1",
+        "https://[::1]:4010",
+        "https://[0:0:0:0:0:0:0:1]/v1",
+        "https://[::ffff:127.0.0.1]",
+        "https://[::]",
+        "https://0.0.0.0",
+        "https://stand-in.localhost",
+        "https://localhost.",
+    ] {
+        assert_eq!(
+            check_base_url(Environment::Live, key, url),
+            Err(SettingsError::StandInInLive(key)),
+            "{url}"
+        );
+    }
+    for url in [
+        "https://localhost.example.com",
+        "https://fake@api.example.com/v1",
+        "https://[2001:db8::1]:443",
+    ] {
+        assert_eq!(check_base_url(Environment::Live, key, url), Ok(()), "{url}");
+    }
 }

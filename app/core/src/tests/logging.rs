@@ -11,14 +11,20 @@ use axum::Router;
 use axum::body::Body;
 use axum::http::Request;
 use axum::routing::get;
-use sentry::protocol::{Breadcrumb, Context, Event, Exception, Request as SentryRequest, User};
+use sentry::protocol::{
+    Breadcrumb, Context, Event, Exception, Log, LogLevel, Request as SentryRequest, TraceContext,
+    User,
+};
 use serde::Deserialize;
 use serde_json::Value;
 use tower::ServiceExt;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::layer::SubscriberExt;
 
-use crate::logging::{REDACTED, Redacted, json_layer, request_span, scrub_event, scrub_text};
+use crate::logging::{
+    REDACTED, Redacted, json_layer, request_span, scrub_event, scrub_text, sentry_options,
+};
+use crate::settings::Environment;
 
 const SENTINEL_NAME: &str = "Zelda Canary";
 const SENTINEL_PHONE: &str = "+19285550199";
@@ -195,6 +201,16 @@ fn event_full_of_contact_data() -> Event<'static> {
         "Rust Tracing Fields".to_owned(),
         Context::Other(fields.into_iter().collect()),
     );
+    let trace = TraceContext {
+        description: Some(format!("GET /q/{FAKE_TOKEN}")),
+        data: [("to".to_owned(), Value::from(SENTINEL_PHONE))]
+            .into_iter()
+            .collect(),
+        ..Default::default()
+    };
+    event
+        .contexts
+        .insert("trace".to_owned(), Context::Trace(Box::new(trace)));
     event.breadcrumbs.values.push(Breadcrumb {
         message: Some(SENTINEL_EMAIL.to_owned()),
         ..Default::default()
@@ -211,6 +227,28 @@ fn sentry_event_leaves_with_no_sentinel() {
     assert!(!json.contains(FAKE_TOKEN));
     assert!(scrubbed.user.is_none() && scrubbed.request.is_none());
     assert_eq!(scrubbed.message.as_deref(), Some("panic for [redacted]"));
+    assert!(matches!(
+        scrubbed.contexts.get("trace"),
+        Some(Context::Trace(_))
+    ));
+}
+
+/// PRIV-017, D-690: Sentry's options drop every log record, so no log body is forwarded.
+#[test]
+fn sentry_options_drop_every_log_record() {
+    let dsn = "https://fakepublic@example.com/1".parse().unwrap();
+    let options = sentry_options(dsn, Environment::Ci);
+    assert!(!options.send_default_pii);
+    let log = Log {
+        level: LogLevel::Error,
+        body: format!("could not text {SENTINEL_PHONE}"),
+        trace_id: None,
+        timestamp: std::time::SystemTime::UNIX_EPOCH,
+        severity_number: None,
+        attributes: Default::default(),
+    };
+    let before_send_log = options.before_send_log.as_ref().unwrap();
+    assert!(before_send_log(log).is_none());
 }
 
 /// PRIV-017: the scrubber keeps ordinary words and short numbers.
