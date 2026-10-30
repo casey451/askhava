@@ -1,0 +1,28 @@
+[package]
+name = "askhava-ai"
+description = "Ask Hava AI: the intake reading through the AI adapter, strict schemas, no tools, versioned instructions and the AI-021 output screen (AI-001, AI-005, AI-006, AI-010, AI-015, AI-021 to AI-025)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+askhava-adapters = { workspace = true }
+askhava-catalog = { workspace = true }
+askhava-core = { workspace = true }
+askhava-ops = { workspace = true }
+askhava-privacy = { workspace = true }
+secrecy = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+unicode-normalization = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+tokio = { workspace = true, features = ["test-util"] }
+
+[lints]
+workspace = true

@@ -146,6 +146,7 @@ twin/                the twin (Python) and its hard-failing gate, calling the Ru
 ```
 
 - Sentinel scan: `tests/security/tests/sentinel_db_logs.rs` (T217) writes the fixture sentinels (`askhava-fixtures`) through the vault, sends a request carrying them through the `build_router` layers and runs the off-database stream, then searches every table but `privacy.contact` (bytea as hex too), the JSON log, the stream's stand-in objects and a capturing Sentry transport for them; T120 repeats it after J1 to J4 (TD-PRIV-02, PRIV-016, PRIV-019, D-795).
+- AI calls: `app/ai` sends only `ScrubbedText` through its `Transport` (over `adapters`' `StandInAi` in the build) to `/v1/messages`, with the versioned instruction, the text inside one escaped `<homeowner_message>` tag, `schemas/intake_reading.json` as `output_config` and no tools; it retries per AI-023 within the `ASKHAVA_AI_TIMEOUT_SECONDS` budget, stops at `ASKHAVA_AI_DAILY_CAP`, writes one `ai.call_stat` row per call (model, instruction version, request ID, outcome, alert ID) and screens AI-written text with `catalog`'s CARD-010 list, a link ban and length caps, on a normalized copy (T024, D-810 to D-814).
 - Text templates: `app/messaging/templates/en.json` and `es.json` are the registry of every fixed text (TXT-001, TXT-004), one key per template ID with both languages and a recorded `segments` count; each task adds only its own keys (D-759, D-491).
 
 ## 3. Modules, what each owns, and its tables
@@ -361,7 +362,7 @@ Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_s
 | serde-saphyr | 2.0.0 (2026-10-13) | MIT OR Apache-2.0 | Reading the catalog YAML (`serde_yaml` is unmaintained) |
 | sqlx (`default-features = false`; `postgres`, `runtime-tokio`, `tls-rustls-aws-lc-rs`, `macros`, `migrate`, `uuid`, `json`, `sqlx-toml`) | 0.9.0 (2026-05-21) | MIT OR Apache-2.0 | Postgres pool, compile-checked queries, migrations; the aws-lc-rs provider so sqlx and reqwest share one rustls provider, installed as the process default first thing in both binaries (D-481) |
 | jiff-sqlx | 0.2.0 (2026-05-26) | Unlicense OR MIT | `timestamptz` columns as jiff types in `query!` through each crate's `sqlx.toml` `[macros.type-overrides]` `'TIMESTAMPTZ' = "jiff_sqlx::Timestamp"` (uppercase key; sqlx has no jiff feature, D-481, D-488) |
-| unicode-normalization | 0.1.24 | MIT OR Apache-2.0 | The scrubber's NFKC fold before the plain-code patterns run (AI-020, T023; D-491) |
+| unicode-normalization | 0.1.24 | MIT OR Apache-2.0 | The scrubber's NFKC fold before the plain-code patterns run (AI-020, T023; D-491); `ai`'s same fold before the AI-021 screen (T024, D-814) |
 | rustls (`default-features = false`; `aws_lc_rs`, `std`) | 0.23.46 | Apache-2.0 OR ISC OR MIT | `CryptoProvider::install_default()` at the top of both binaries; the one provider sqlx and reqwest share (D-488) |
 | askama_web (`axum-0.8`) | 0.16.0 | MIT OR Apache-2.0 | Askama templates as axum responses (`askama_axum` is discontinued, D-481) |
 | reqwest (`default-features = false`; `rustls`, `json`, `form`) | 0.13.5 (2026-09-08) | MIT OR Apache-2.0 | Every vendor API client |

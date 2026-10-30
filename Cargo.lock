@@ -265,6 +265,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "askhava-ai"
+version = "0.1.0"
+dependencies = [
+ "askhava-adapters",
+ "askhava-catalog",
+ "askhava-core",
+ "askhava-ops",
+ "askhava-privacy",
+ "proptest",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "unicode-normalization",
+]
+
+[[package]]
 name = "askhava-catalog"
 version = "0.1.0"
 dependencies = [
