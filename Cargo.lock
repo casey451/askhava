@@ -328,6 +328,7 @@ name = "askhava-integration"
 version = "0.1.0"
 dependencies = [
  "askhava-adapters",
+ "askhava-ai",
  "askhava-catalog",
  "askhava-core",
  "askhava-jobs",

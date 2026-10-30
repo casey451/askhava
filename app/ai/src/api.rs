@@ -1,7 +1,8 @@
 //! The public face of `askhava-ai`: everything other crates may call (D-481).
 //!
-//! [`read_intake`] reads one scrubbed request through the AI adapter (AI-001, AI-005, AI-010,
-//! AI-021, AI-023 to AI-025); [`open_trades`] gives it the catalog's open trades (AI-005);
+//! [`read_intake`] reads one scrubbed request through the AI adapter once the AI-008 gate
+//! ([`ai_mode`], [`set_ai_switch`]) allows it (AI-001, AI-005, AI-008, AI-010, AI-013, AI-021,
+//! AI-023 to AI-025); [`weekly_counts`] gives the weekly summary's counts (AI-014); [`open_trades`] gives it the catalog's open trades (AI-005);
 //! [`screen_text`] screens any AI-written text before use (AI-021); [`quote_summary`] returns no
 //! summary while AI quote summaries are off (AI-006, PICK-003, D-373). Nothing here sends a text,
 //! moves money, releases a detail or chooses a recipient (AI-006).
@@ -16,7 +17,10 @@ pub use crate::models::{
 pub use crate::schemas::{
     IntakeReading, Language, OpenTrades, ScreenHit, Screened, Tag, TextKind, screen_text,
 };
-pub use crate::service::{AiOff, Intake, IntakeCall, Origin, read_intake};
+pub use crate::service::{AiOff, Intake, IntakeCall, Origin};
+pub use crate::switch::{
+    AiMode, Missing, SwitchError, WeeklyCounts, ai_mode, read_intake, set_ai_switch, weekly_counts,
+};
 
 /// The categories switched on in the catalog with their job types, for the AI-005 check.
 ///
