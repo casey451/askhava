@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT name, one_time, fee_free, kind, quote_format FROM catalog.job_type WHERE category_id = $1 ORDER BY name",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.job_type",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "one_time",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.job_type",
+            "name": "one_time"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "fee_free",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.job_type",
+            "name": "fee_free"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.job_type",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "quote_format",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.job_type",
+            "name": "quote_format"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "312340faf39bee12f5d9603c666bb86bcd538edccf70783ddab091e7a18f8013"
+}

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM catalog.job_type WHERE category_id = $1 AND name <> ALL($2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fb505f1a4bd4b4c03c306382a9b2538bfae740f7578ed0d700f1cf24ac89af4b"
+}
