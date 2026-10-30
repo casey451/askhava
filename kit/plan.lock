@@ -40,7 +40,7 @@
   "docs/test-design.md": "1f9a8db8602dab3865993f911e668e06af9f04f99051d502861c891d8f7b9569",
   "docs/threat-model.md": "ac3d1f653e3f5b8053acc4d7141f7ec3f7241f5f3aa60e65e34cfe0328a161aa",
   "kit/prompts/TEMPLATE.md": "ea38aee50efe448a6e41c1086f892429a3832346b56cc68061c213625dd69027",
-  "kit/runner.json": "f103cf4d5d2506af897b04fedba964abeedc30f1a63458766e0f8646ccc53a19",
+  "kit/runner.json": "396b0cde648cdf0e2ac5e4de9792f7848f39ff59ccc2439803d4ebf4917b35bc",
   "kit/sources.sha256": "ed9f15e377d96323a9d46609e0e78d93d4378e6b1ea9c7d6e2f66926317d863d",
   "kit/tasks.json": "1f5f870bc802395cb67dfea7619a442de1da154a29fc88fa7bef636eb6b8d9c5",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
