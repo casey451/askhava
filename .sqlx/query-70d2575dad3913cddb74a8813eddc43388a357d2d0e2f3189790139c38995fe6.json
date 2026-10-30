@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.read_count (hour, action, reads) VALUES (date_trunc('hour', now(), 'UTC'), $1, 1) ON CONFLICT (action, hour) DO UPDATE SET reads = privacy.read_count.reads + 1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "70d2575dad3913cddb74a8813eddc43388a357d2d0e2f3189790139c38995fe6"
+}
