@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT max(a.id) AS \"id!\" FROM ops.audit_log a JOIN ops.pause_switch s\n           ON a.subject_kind = 'ops.pause_switch' AND a.subject_id = s.id\n           WHERE s.name = $1 AND s.scope_id IS NOT DISTINCT FROM $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "778d2c23b1d2083f2956993d3bebaef484fe77e41e57950eae086a9c3a77b566"
+}
