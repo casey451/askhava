@@ -3874,7 +3874,15 @@
     797,
     798,
     799
-   ]
+   ],
+   "reviewed_sha": "fe854181aea1d82a75bd83cd99986531bd2ea9d5",
+   "review_lease": {
+    "task": "T217",
+    "session": "actions-41117072370",
+    "expires": "2026-10-30T22:40:55Z"
+   },
+   "branch": "claude/task/T217-sentinel-db-logs",
+   "head_check_since": null
   },
   {
    "id": "T023",
@@ -7643,7 +7651,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T19:58:45Z",
+ "updated_at": "2026-10-30T20:01:26Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -7741,7 +7749,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "688215aad68e22232abeeb4e4b2a6bdc3368ecfc",
+ "runner_sha": "fe854181aea1d82a75bd83cd99986531bd2ea9d5",
  "starter": "actions",
  "smoke_runs": [
   {
