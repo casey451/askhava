@@ -6,12 +6,24 @@
 # PR merged into main by a person, by hand, and hourly as a safety net; a cycle that clears a red main
 # or a false red starts the next one at once (D-500). So the next task starts within minutes of the
 # last one finishing, never on a fixed clock (BUILD_BRIEF.md:213).
-# The concurrency group keeps two starts from overlapping; the lease on claude/lease is the real lock.
+# The concurrency group keeps two starts of one lane from overlapping; the lease on claude/lease is the
+# real lock. Lanes (D-620): kit/runner.json "lanes" says how many tasks may be in flight. The gate picks
+# the lane a run serves (`run_lane` in runner/state.py: the lane of the task its event names, else the
+# first lane with no live lease, else lane 1); the backup job's concurrency group is per lane (lane 1
+# keeps the old name `backup-runner`), the runner gets the lane as RUNNER_LANE and claims only on it, and
+# with two or more lanes the hourly tick and the chain step start one run per lane that needs one. With
+# "lanes": 1 every run serves lane 1 and every step behaves exactly as before.
 name: backup-runner
 on:
   schedule:
     - cron: "37 * * * *"
   workflow_dispatch:
+    inputs:
+      lane:
+        description: "The lane this run serves (D-620); empty lets the gate pick"
+        required: false
+        default: ""
+        type: string
   pull_request:
     types: [closed]
   workflow_run:
@@ -34,6 +46,7 @@ jobs:
       actions: write
     outputs:
       run: ${{ steps.tick.outputs.run || steps.check.outputs.run }}
+      lane: ${{ steps.lane.outputs.lane || '1' }}
     steps:
       - uses: actions/checkout@v4
       - name: Read the flag on claude/kit-state
@@ -62,14 +75,65 @@ jobs:
             exit 0
           fi
           echo "run=true" >> "$GITHUB_OUTPUT"
+      - name: Pick the lane this run serves (D-620)
+        id: lane
+        if: steps.check.outputs.run == 'true'
+        env:
+          WANTED: ${{ github.event.inputs.lane || '' }}
+          BRANCH: ${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref || '' }}
+        run: |
+          set -u
+          # lease.json on claude/lease holds the lane map; state.json was saved by the step above.
+          if ! { git fetch --quiet --depth=1 origin claude/lease 2>/dev/null && git show FETCH_HEAD:lease.json > "$RUNNER_TEMP/lease.json" 2>/dev/null; }; then
+            echo '{"lease": null}' > "$RUNNER_TEMP/lease.json"
+          fi
+          picked="$(python3 -I -c '
+          import importlib.util, json, re, sys
+          from datetime import datetime, timezone
+          spec = importlib.util.spec_from_file_location("runner_state_main", sys.argv[1])
+          mod = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+          state = json.load(open(sys.argv[2]))
+          doc = json.load(open(sys.argv[3]))
+          state["lease"] = doc.get("lease")
+          state["leases"] = doc.get("leases") if isinstance(doc.get("leases"), dict) else {}
+          try:
+              lanes = json.load(open(sys.argv[4])).get("lanes", 1)
+          except (OSError, ValueError):
+              lanes = 1
+          lanes = lanes if isinstance(lanes, int) and not isinstance(lanes, bool) and lanes >= 1 else 1
+          now = datetime.now(timezone.utc)
+          held = mod.live_leases(state, now) if hasattr(mod, "live_leases") else {}
+          free = [str(n) for n in range(1, lanes + 1) if str(n) not in held]
+          wanted, found = sys.argv[5].strip(), re.match(r"^claude/task/(FIX-MAIN|[A-Za-z]+[0-9]+[A-Za-z]?)", sys.argv[6])
+          if wanted.isdigit() and 1 <= int(wanted) <= lanes:
+              lane = wanted
+          elif hasattr(mod, "run_lane"):
+              lane = mod.run_lane(state, now, lanes, found.group(1) if found else "")
+          else:
+              lane = "1"
+          print(lane, lanes, " ".join(free) or "-")
+          ' runner/state.py "$RUNNER_TEMP/state.json" "$RUNNER_TEMP/lease.json" kit/runner.json "$WANTED" "$BRANCH" 2>/dev/null || echo "1 1 -")"
+          read -r lane lanes free <<< "$picked"
+          { echo "lane=${lane}"; echo "lanes=${lanes}"; echo "free=${free}"; } >> "$GITHUB_OUTPUT"
+          echo "lane ${lane} of ${lanes}; lanes with no live lease: ${free}"
       - name: Hourly tick hands over to a dispatched run (D-518)
         # A scheduled run cannot get the Claude App token (the OIDC exchange answers "User does not have
-        # write access"), while a dispatched run can; so the tick only dispatches the real cycle.
+        # write access"), while a dispatched run can; so the tick only dispatches the real cycle. With two
+        # or more lanes it dispatches one run for each lane that holds no live lease (D-620).
         if: github.event_name == 'schedule' && steps.check.outputs.run == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          LANES: ${{ steps.lane.outputs.lanes || '1' }}
+          FREE: ${{ steps.lane.outputs.free || '-' }}
         run: |
-          gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY"
+          if [ "$LANES" = "1" ]; then
+            gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY"
+          else
+            for n in $FREE; do
+              [ "$n" = "-" ] || gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$n"
+            done
+          fi
           echo "run=false" >> "$GITHUB_OUTPUT"
         id: tick
       - name: A task's checks finished - wait for its auto-merge (D-500)
@@ -95,9 +159,10 @@ jobs:
     name: backup
     needs: gate
     # On the job, not the workflow: a gate waiting for a merge must not hold up the group. One backup
-    # job runs at a time and at most one waits; the lease on claude/lease is the real lock.
+    # job per lane runs at a time and at most one waits; the lease on claude/lease is the real lock.
+    # Lane 1 keeps the group name it always had (D-620).
     concurrency:
-      group: backup-runner
+      group: ${{ needs.gate.outputs.lane == '1' && 'backup-runner' || format('backup-runner-lane-{0}', needs.gate.outputs.lane) }}
       cancel-in-progress: false
     if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
@@ -175,6 +240,8 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         env:
           RUNNER_STARTER: actions
+          # The lane this run serves: the runner claims only on it (D-620).
+          RUNNER_LANE: ${{ needs.gate.outputs.lane }}
           GH_TOKEN: ${{ github.token }}
           # The action replaces GH_TOKEN with the Claude App's token, which cannot read check runs;
           # the runner uses this job token (checks: read) for those reads only (D-502).
@@ -214,6 +281,7 @@ jobs:
         id: safety
         env:
           RUNNER_STARTER: actions
+          RUNNER_LANE: ${{ needs.gate.outputs.lane }}
           GH_TOKEN: ${{ github.token }}
           RUNNER_CHECKS_TOKEN: ${{ github.token }}
           RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
@@ -251,4 +319,24 @@ jobs:
           echo "chain: ${again}"
           # A safety hand-in (D-503) frees the lease for the task's retry; the runner's retry ladder bounds it.
           if [ "${{ steps.safety.outputs.released }}" = "yes" ]; then again=yes; fi
-          if [ "$again" = "yes" ]; then gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY"; fi
+          # Two or more lanes (D-620): this run's last report names the free lanes a task could be claimed on
+          # (`refill`); after a result that moved a task (an attempt handed in or failed, a merge resolved, a
+          # red main cleared), one run is started per such lane. A run that then claims nothing reports
+          # idle, paced, lease_live or no_free_lane and starts nothing, so the chain never spins; the
+          # lane's concurrency group and the lease keep a second start from doing anything twice.
+          refill="$(printf '%s' "$log" | SESSION="actions-${GITHUB_RUN_ID}" python3 -c '
+          import json, os, sys
+          start, session = os.environ.get("JOB_START", "9999"), os.environ.get("SESSION", "")
+          moved = {"MERGE_PENDING", "QUEUED", "BLOCKED", "DONE", "RETRY_LATER", "RETRY_AFTER_RESET", "done", "check_failed",
+                   "no_changes", "unreviewed_head", "not_done", "push_failed", "update_conflict", "update_push_failed",
+                   "main_cleared", "false_red_cleared", "main_red"}
+          rows = [json.loads(l) for l in sys.stdin if l.strip()]
+          mine = [r for r in rows if str(r.get("at", "")) >= start and r.get("session") == session]
+          last = mine[-1] if mine else {}
+          lanes = [str(n) for n in last.get("refill") or [] if str(n).isdigit()] if last.get("result") in moved else []
+          print(" ".join(lanes))
+          ' 2>/dev/null || true)"
+          if [ -n "$refill" ]; then
+            echo "refill lanes: ${refill}"
+            for n in $refill; do gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$n"; done
+          elif [ "$again" = "yes" ]; then gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY"; fi

@@ -1,6 +1,6 @@
 {
  "items": {
-  "BUILD_BRIEF.md": "3a9271e4461dddd5d395976c45298172479f097085850783c175fa399f42cbcf",
+  "BUILD_BRIEF.md": "670452230a876edb83f7ecb8120a096a8f759de2435f369fec25e65386908c7a",
   "CLAUDE.md": "0413240431347a46a9994ec89595768648b41c9feb006bd250f6120ba5e4e31b",
   "docs/architecture.md#3": "4516c6eb5687a675f22d0f31efd9ba27582b238d566c791adcab3ec6ced471c4",
   "docs/architecture.md#4": "7e91e998af692e306f9ecb696a36c03c7da107a6865a4e9996ed035bd88ace43",
@@ -14,7 +14,7 @@
   "docs/catalog/worked_examples.yaml": "81ad240453551a0fdfaa76b40df74346ebe327983ed9341911646dd9b48df5e4",
   "docs/code-docs.md": "b8a87cc6a1614fd558057c21581c4cd3093a155f30a6c6ddb3a473d6f34bc17a",
   "docs/constitution.md": "f63792319463ed4f575659363ea737a9a4858f8b58ba8b281a0dfc235b533dfc",
-  "docs/governance.md": "34c84f2484a3f5e1a635a88060e8bca6da77fa7478e7e4aac7fde574b54fd3ce",
+  "docs/governance.md": "f83671af17ac7fd21c454f09bd2440dc2b3fb7705b4a2a2d478ac8f0a038c1aa",
   "docs/sources.md": "b2f42c566a97b33d85ec2310ca04a405dc85db921b1b4ad081797df837563ff0",
   "docs/spec/accessibility.md": "6c79d880396f086eff6319c505390b23c5f33749806b8244364da19a92b62d50",
   "docs/spec/ai.md": "caf48197027aba40318eaaf1e31e5278d074df23b2ee25c173e4c5169a24633e",
@@ -53,7 +53,7 @@
   "scripts/check_rust_rules.py": "559029dff80fed3f8a701527b115660bbb19edf05e548b7d4d1caf86d57a573d",
   "scripts/check_state.py": "73952c1f7af2d2540086366631fd8fd0258ba9d37ea56a7895ca588aafa0fa26",
   "scripts/gen_prompts.py": "c1c03ddbcb20feadd6de02e474682243b7ba0c6a98f66f16f82b753f8a85fb5e",
-  "scripts/pacing.py": "fe5615e7411ab47fcb3258ca58a634e3379e7ae119a4a59f77460bf80adae66e",
+  "scripts/pacing.py": "a6a8df5d6ed8464ea2b4301ff05dcf46069d5bcd6b11b632f33ffe74355aace0",
   "scripts/pii_scan.py": "26bf4685dcd9d3fc67ea8c6446a23d3e45e50ea2cce3aaed76773a3745b57379",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "d1cace9111244af5f26ddde33ac306abf69f3fb7cee1eb7035900dc69c5e14ec",

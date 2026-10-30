@@ -50,7 +50,7 @@ A rule enforced only by a document is a rule a tired session can skip. The matri
 | An owner gate clears only on a short, unnegated reply carrying its phrase; a comment performed through a GitHub App is never an owner answer | `runner/outbox.py`; `inbox.yml`. **Reader** for a session posting as the owner through other means until E-1 |
 | Live keys, live hosts, `main`, force-push, `claude/kit-state` deletion, issue comments, statuses, check runs and rulesets are unreachable from a session | Deny rules in `.claude/settings.json` (pattern rules; a session that edits a protected file could widen them, which the path rule catches) |
 | "Fix main": revert, never patch over; `main_red` clears only on a verified green run | Runner code (`runner/cycle.py`: FIX-MAIN task, `smoke_runs`, `main_red_history`; drills in `tests/test_failure_drills.py`, D-486) |
-| One task in flight; nothing claimed while MERGE_PENDING; a lease is honoured | Runner code: the lease ref `claude/lease` pushed atomically with the state (D-486) |
+| At most `lanes` tasks in flight (`kit/runner.json`, 1 unless Casey sets 2), one per lane; nothing claimed on a lane while its task is MERGE_PENDING; tasks side by side never own the same file, sit in different stages or include a cleanup task; a lease is honoured; a branch brought up to date with `main` carries exactly the reviewed work plus `main` | Runner code: the lease ref `claude/lease` pushed atomically with the state (D-486); `runner/lanes.py`, `runner/update_merge.py` and the per-lane concurrency groups of `backup-runner.yml` (D-620) |
 | The conflict rule (changes file wins on what, brief on how) | **Reader**, tightened in section 4 |
 | Progress is counted in verified requirements | `scripts/progress.py --markdown`, written into STATUS.md on every state commit (D-486) |
 
@@ -113,7 +113,7 @@ A fresh session needs these, and nothing in chat:
 | Casey's view: progress, blocks, next owner action | `STATUS.md` on `claude/kit-state` | the runner only |
 | Nightly result on `main` | `kit/nightly.json` on `claude/kit-state` | the `nightly-main` workflow |
 | Every choice and why | `docs/decisions.md` on `main` | the task or plan-change PR that made it |
-| The approved blueprint's fingerprint | `kit/plan.lock` on `main` | the plan-change PR |
+| The approved blueprint's fingerprint | `kit/plan.lock` on `main` | the plan-change PR; when `main` is merged into a task branch and both sides rewrote it, the runner's update merge recomputes it, only from two locks that each matched their own tree (D-620) |
 | Open risks, owners and resolution criteria | `docs/risk-register.md` on `main` | plan-change PRs and audits |
 | Readiness verdict and stage exit tests | `docs/build-readiness.md` on `main` | plan-change PRs and audits |
 | How to operate as a session | `docs/ai-operating-manual.md` on `main` | plan-change PRs |

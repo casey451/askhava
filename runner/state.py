@@ -9,7 +9,8 @@ Lane "1" is also kept in the old top-level `lease` key, without its "lane" field
 that knows only `lease` keeps working; `lease` is what lane "1" reads, and every writer goes
 through `with_lease`, which keeps the two in step. A state without `leases` (written before D-515)
 reads as lane "1" holding `lease`, and stays in that old shape while only lane "1" is written.
-The lane count is `lanes` in kit/runner.json (1 for now: one task in flight, BUILD_BRIEF.md:222).
+The lane count is `lanes` in kit/runner.json (1 unless Casey sets 2, BUILD_BRIEF.md:222). A task in
+flight occupies its lane: a live lease, or MERGE_PENDING on the task's own `lane` (D-620, in_flight).
 Times are UTC ISO strings ending in "Z". Every function returns a new state; nothing mutates
 its argument. Keys this runner adds (D-486, kit/state_schema.json): `main_red` (falsy, or the failing
 check, SHA and offending merge: docs/governance.md section 5), `stage_proofs`, `smoke_runs`,
@@ -193,8 +194,38 @@ def _lease_for(task_id: str, session: str, now: datetime) -> Task:
     return {"task": task_id, "session": session, "expires": iso(now + timedelta(hours=LEASE_HOURS))}
 
 
+def task_lane(task: Task) -> str:
+    """The lane a task was last claimed on: its `lane` field, lane "1" when it has none (D-620)."""
+    return str(task.get("lane") or LANE_ONE)
+
+
+def in_flight(state: State, now: datetime) -> dict[str, str]:
+    """{task: lane} for every task in flight (D-620): a live lease on a numbered lane, or MERGE_PENDING
+    (its lease was released at hand-in, so its lane is the task's own `lane`). A lane with a task in
+    flight is busy: nothing new is claimed on it until that task's pull request resolves."""
+    out = {str(lease["task"]): lane for lane, lease in live_leases(state, now).items() if lane != FIX_LANE}
+    for task in state["tasks"]:
+        if task.get("status") == MERGE_PENDING and task["id"] not in out:
+            out[task["id"]] = task_lane(task)
+    return out
+
+
+def run_lane(state: State, now: datetime, lanes: int, task_id: str = "") -> str:
+    """The lane a backup-runner run serves (its concurrency group and RUNNER_LANE, D-620): the lane of
+    the task its event names when that lane holds no live lease, else the first numbered lane with no
+    live lease, else lane "1" (the run then queues behind lane 1's run, as before lanes)."""
+    held = live_leases(state, now)
+    numbered = [str(n) for n in range(1, max(lanes, 1) + 1)]
+    task = entry(state, task_id) if task_id else {}
+    mine = lane_of(state, task_id) or (task_lane(task) if task else "")
+    if mine in numbered and mine not in held:
+        return mine
+    return next((lane for lane in numbered if lane not in held), LANE_ONE)
+
+
 def _claim_refusal(state: State, task_id: str, now: datetime, lane: str) -> str:
-    """Why a claim of the task on this lane must not go ahead; '' when it may."""
+    """Why a claim of the task on this lane must not go ahead; '' when it may. A MERGE_PENDING task
+    keeps its own lane busy (D-620); with one lane that is the old rule: nothing new while any is."""
     held = live_lease(state, now, lane)
     if held is not None:
         return f"lease on {held['task']} is live"
@@ -202,8 +233,8 @@ def _claim_refusal(state: State, task_id: str, now: datetime, lane: str) -> str:
     if other is not None:
         return f"{task_id} already holds lane {other}"
     for task in state["tasks"]:
-        if task.get("status") == MERGE_PENDING:
-            return f"{task['id']} is MERGE_PENDING; nothing new is claimed"
+        if task.get("status") == MERGE_PENDING and task_lane(task) == lane:
+            return f"{task['id']} is MERGE_PENDING on lane {lane}; nothing new is claimed there"
     if status(state, task_id) not in RETRYABLE:
         return f"{task_id} is {status(state, task_id)}, not claimable"
     return ""
@@ -245,7 +276,10 @@ def claim(
     refusal = _claim_refusal(state, task_id, now, lane)
     if refusal:
         raise LeaseError(refusal)
-    out = with_task(state, task_id, status=IN_PROGRESS, attempt_started_at=iso(now))
+    # The task remembers its lane, so a MERGE_PENDING task keeps that lane busy after its lease is
+    # released (D-620); lane "1" is the default and is not written, so a one-lane state is unchanged.
+    placed = {"lane": lane} if lane != LANE_ONE or "lane" in entry(state, task_id) else {}
+    out = with_task(state, task_id, status=IN_PROGRESS, attempt_started_at=iso(now), **placed)
     out = with_lease(out, lane, _lease_for(task_id, session, now))
     out["current"] = task_id
     return out if taken is None else reserve_decisions(out, task_id, taken)

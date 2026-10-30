@@ -206,8 +206,8 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 
 **Shape:**
 - a scheduled runner runs the **runner** code: the Actions runner first, the Appendix A routine as safety net (D-483);
-- the runner does **one task per session, one session at a time**. There's no parallel building, so there are no state races or merge conflicts;
-- parallelism exists only inside a session, as read-only review subagents.
+- the runner does **one task per session**, and at most `lanes` sessions at a time (`kit/runner.json`, 1 unless Casey sets 2), each holding its own lane's lease; two tasks in flight never own the same file or sit in different stages, and a stage's cleanup task always runs alone (D-620);
+- beyond the lanes, parallelism exists only inside a session, as read-only review subagents.
 
 **What starts a runner session (D-483 swapped the first and third roles so the build acts under its own GitHub identity):**
 1. **Primary:** `.github/workflows/backup-runner.yml` runs hourly through the Claude Code GitHub Action with `CLAUDE_CODE_OAUTH_TOKEN` (subscription, not pay-per-use). It leaves `github_token` unset, so it pushes and comments as the Claude GitHub App, never as Casey; that is what makes the owner-only inbox filter and the code-owner review real. D-486 sets `"backup_runner": "on"` in `kit/state.json` once the secret exists and the rehearsal has run under it.
@@ -219,9 +219,9 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 **State and lease:**
 - `kit/state.json`, STATUS.md and PROGRESS.md live on the `claude/kit-state` branch;
 - the runner claims a task by committing a lease (task ID, session URL, expiry 3 hours) and pushing. It renews the lease every 30 minutes while working;
-- a rejected (non-fast-forward) push means another runner won, so this one exits. Git's own rule is the lock;
+- a rejected (non-fast-forward) push means another runner won, so this one exits (with two or more lanes it first tries again from a fresh read, at most twice, D-620). Git's own rule is the lock;
 - only the runner writes state. Worker subagents never touch `claude/kit-state`;
-- **nothing new is claimed while any task is `MERGE_PENDING`.** One task is in flight at a time, so a branch can never fall behind another task's merge. If `main` moved anyway (for example, Casey edited a file), the runner merges `main` into the task branch with a normal merge commit; it never rebases and force-pushes.
+- **nothing new is claimed on a lane while its task is `MERGE_PENDING`**, and at most `lanes` tasks are in flight; with one lane that is the old rule, one task at a time. When a task's branch falls behind `main` (another lane's merge, or Casey edited a file), the runner merges `main` into it with a normal merge commit whose tree must be exactly the reviewed work plus `main` (D-620); it never rebases and force-pushes, and a real conflict fails the attempt instead of being resolved by guesswork.
 
 **Talking with Casey (the only channel), done through git so no session needs GitHub API access:**
 - **Why not post issues directly:** Claude's pushes and comments carry **Casey's own GitHub identity**. GitHub doesn't notify people about their own actions, and the runner couldn't tell its own comments from Casey's answers.
