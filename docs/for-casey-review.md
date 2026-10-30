@@ -1221,3 +1221,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What it does.** The app's database now has two logins: one that sets up the tables when a new version ships, and one the website and worker use every day. The everyday login can add records and read them, but it cannot change or erase the money and history records, and it owns nothing it could rewrite. A test checks this on every change.
 - **Two people editing one job.** When two changes to the same job arrive at once, the second waits, sees the job has already moved on, and changes nothing.
 - **Nothing for you to do now.** At the account checkpoint the deploy notes will say how to run the one-time setup script on each Railway database and which two passwords to paste.
+
+## A test-only remote control that cannot ship (T020, D-739 to D-741, October 30)
+
+- **What it does.** The automated website tests can now fast-forward the app's clock (to test timers such as reminders) and read the texts the fake phone carrier "received". That remote control is only built into test copies of the app; the copy that runs the real site does not contain it at all, and every remote-control address there answers "page not found".
+- **Locked even in tests.** A test copy accepts remote-control requests only with a long random password made fresh for each test run, and it refuses to start the remote control on the Railway test or live sites.
+- **Nothing for you to do.** This is build plumbing; no customer sees it.
+- **Follow-up for the build checks (D-739, D-742).** The automatic checks on every change (`Ci`) still run these remote-control tests only in the shipped form of the app. A later build-system task should add one line to `Ci` that also runs them in the test form (`cargo test -p askhava-security --test control_router_absent --features askhava-core/test-control`); until then they run when someone runs that command by hand.

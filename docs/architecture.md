@@ -83,6 +83,11 @@ app/
                      so a new migration file is seen without a clean build (T012); `src/db.rs` holds `MIGRATOR`, `app_pool`,
                      `migrate` (run by `server migrate` over `ASKHAVA_MIGRATION_DATABASE_URL`) and `Guarded<T>` (D-698, D-700);
                      `sqlx.toml` maps `'TIMESTAMPTZ'` to `jiff_sqlx::Timestamp` (D-488)
+                     `src/test_control.rs` is the test-control router (`/__test/clock`, `/__test/clock/advance`,
+                     `/__test/messages`, proxied to the Twilio stand-in's sent log) and the clock both binaries run on;
+                     the routes compile only under core's `test-control` feature, the one Cargo feature allowed, which
+                     no manifest and no Docker build enables (e2e builds pass `--features askhava-core/test-control`),
+                     and need a per-run bearer secret on every `/__test/` request (SEC-035, D-739, D-740, D-742)
   <module>/          one crate per module in section 3, package name `askhava-<module>` (lib `askhava_<module>`), so
                      no first-party crate shadows Rust's built-in `core` or another standard name (D-484)
     Cargo.toml       depends only on the lower crates section 4 allows (the compiler refuses anything else)
@@ -133,6 +138,8 @@ tests/               the Rust test-layer crates integration, security and recove
                      compile-fail cases with their expected `.stderr` in tests/security/ui/, built by trybuild in a
                      crate with no feature on, so a proof type's privacy is tested as production sees it;
                      `tests/fixtures` (T010) is the fake-data crate; Playwright in TypeScript for e2e and a11y;
+                     `tests/e2e/fixtures.ts` gives every spec the `control` fixture over the test-control router, and
+                     `package.json`, `tsconfig.json` and `eslint.config.js` at the root pin the TypeScript tooling (D-741);
                      pytest for docs and contract. Every database test uses `#[sqlx::test(migrator = ...)]`, one
                      fresh database per test (D-481)
 twin/                the twin (Python) and its hard-failing gate, calling the Rust rules through rules_bridge
