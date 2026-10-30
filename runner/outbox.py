@@ -79,14 +79,17 @@ def conditional_answer(text: str) -> str | None:
 
     A conditional gate (the real-texts question) is cleared by either answer: 'no' means the
     dependent task uses Twilio's test credentials only. A long reply, a reply holding both words
-    and a reply with any other negation ("no, wait", "not yet") answer nothing.
+    and a reply with any other negation ("no, wait", "not yet") answer nothing; only a 'no' may also
+    carry "don't", "do not" or "never" ("No. Do not text me."), and a 'yes' carries no negation at all.
     """
     plain = _plain(text)
     words = plain.split()
-    others = [n for n in NEGATIONS if n != "no" and re.search(rf"\b{re.escape(n)}\b", plain)]
-    if len(words) > MAX_ANSWER_WORDS or others or ("yes" in words) == ("no" in words):
+    if len(words) > MAX_ANSWER_WORDS or ("yes" in words) == ("no" in words):
         return None
-    return "yes" if "yes" in words else "no"
+    if "no" in words:  # a plain 'no' may carry "don't" or "never" ("No, don't text me"), nothing else
+        plain = re.sub(r"\b(?:do not|don't|dont|never)\b", " ", plain)
+    others = [n for n in NEGATIONS if n != "no" and re.search(rf"\b{re.escape(n)}\b", plain)]
+    return None if others else ("yes" if "yes" in words else "no")
 
 
 def apply_owner_answer(state: State, gate: dict[str, Any], text: str, now: datetime) -> State:
