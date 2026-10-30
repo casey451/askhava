@@ -1241,3 +1241,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 
 - **What it does.** Texts and business emails go only between 8 a.m. and 8 p.m. in Arizona and in the zone of the person's phone area code. A number whose area code is not in our table is never texted.
 - **What to check.** The table was written from memory of the public plan. Before Gate C, compare `app/messaging/area_codes.json` with the official NANPA area-code list (new codes such as 382, 683, 327, 861, 357 and 728 were left out because the zone was not certain, so those numbers are refused), and check codes that span time zones (928, 850, 208, 541 and the other split codes in D-765). A missing code only means no text; a wrong zone could mean a text at a bad hour.
+
+## Names, numbers and emails are cut before any AI sees a message (T023, D-800 to D-802, October 30)
+
+- **What it does.** Before any message or business quote goes to the AI, plain code removes names people give ("I'm Steve", "me llamo Ana", "Thanks, Steve"), phone numbers however they are written (with dashes, spelled out, in Spanish, in odd digit styles), emails (also "steve at gmail dot com"), social handles, web addresses, street numbers and gate codes. A name given earlier in the chat is removed from later messages too. On a test set of 228 tricky English and Spanish messages it catches every contact detail; the build fails if that drops below 99%.
+- **Possible over-cutting.** After "I'm" or "it's", an unusual word may be cut ("it's flooding" loses "flooding"). That costs the AI a word, never a homeowner's privacy.
+- **Emails.** Inbound email is accepted only with the email provider's signature. A sender whose email fails the standard sender checks can only unsubscribe, never act on a job or change details.
+- **One gap for the plan.** Saving the raw message text in its locked store needs a database table that no task builds yet; the runner has the note (D-801).
