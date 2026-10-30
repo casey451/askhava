@@ -50,12 +50,15 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 /// The app's router: every module's routes, merged once here (D-481), under
 /// the request-ID and tracing layers, so every request log line carries the
 /// request ID and the matched route template, never the URI (PRIV-016,
-/// PRIV-028), and every request queues its request-log line for the off-database stream over
-/// `pool` (OPS-011, D-734). Merge routes before the layers so they apply to them.
+/// PRIV-028), and every request hands its request-log line to a background writer that queues it
+/// for the off-database stream over `pool`, so no response waits on the database (OPS-011, D-734,
+/// D-737). Call it inside the runtime (it spawns that writer). Merge routes before the layers so
+/// they apply to them.
 pub fn build_router(pool: PgPool) -> Router {
+    let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
         .layer(axum::middleware::from_fn_with_state(
-            pool,
+            log,
             offdb_stream::log_request,
         ))
         .layer(TraceLayer::new_for_http().make_span_with(request_span::<Body>))

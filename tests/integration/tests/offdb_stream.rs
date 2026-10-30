@@ -26,8 +26,8 @@ use axum::body::Body;
 use axum::http::Request;
 use jiff::{SignedDuration, Timestamp};
 use offdb_stream::{
-    ChainError, OffDbStream, audit_name, log_request, purge_request_log, register, schedule_verify,
-    verify_audit_chain,
+    ChainError, OffDbStream, RequestLog, audit_name, log_request, purge_request_log, register,
+    schedule_verify, verify_audit_chain,
 };
 use sqlx::PgPool;
 use sqlx::types::Uuid;
@@ -42,18 +42,42 @@ const JOB: Uuid = Uuid::from_u128(0x0000_7e57_0000_0000_0000_0000_0000_0011);
 const READING: Uuid = Uuid::from_u128(0x0000_7e57_0000_0000_0000_0000_0000_0012);
 const OWNER: Uuid = Uuid::from_u128(0x0000_7e57_0000_0000_0000_0000_0000_0013);
 
+/// A fresh temporary directory, removed when the test ends, pass or fail.
+struct TempDir(PathBuf);
+
+impl TempDir {
+    fn new(test: &str) -> Self {
+        let root =
+            std::env::temp_dir().join(format!("askhava-offdb-{test}-{}", std::process::id()));
+        let _fresh = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(&root).expect("temporary directory");
+        Self(root)
+    }
+}
+
+impl std::ops::Deref for TempDir {
+    type Target = Path;
+    fn deref(&self) -> &Path {
+        &self.0
+    }
+}
+
+impl Drop for TempDir {
+    fn drop(&mut self) {
+        let _gone = std::fs::remove_dir_all(&self.0);
+    }
+}
+
 /// A fresh stand-in directory, a stream over it with a clock three hours ahead (past the settle
 /// time and the nightly lag), and the registry holding its handlers.
-fn setup(test: &str) -> (PathBuf, Arc<OffDbStream<LocalStorage>>, Registry) {
-    let root = std::env::temp_dir().join(format!("askhava-offdb-{test}-{}", std::process::id()));
-    let _fresh = std::fs::remove_dir_all(&root);
-    std::fs::create_dir_all(&root).expect("stand-in directory");
+fn setup(test: &str) -> (TempDir, Arc<OffDbStream<LocalStorage>>, Registry) {
+    let root = TempDir::new(test);
     let base = format!("file://{}", root.display());
     let pairs = [
         ("ASKHAVA_APP_ENV", "dev"),
         ("ASKHAVA_DATABASE_URL", "postgres://fake@localhost/fake"),
         ("ASKHAVA_STORAGE_BASE_URL", base.as_str()),
-        ("ASKHAVA_ID_SECRET", "fake-id-secret-for-tests"),
+        ("ASKHAVA_ID_SECRET", " fake-id-secret-for-tests\n"),
     ]
     .map(|(k, v)| (k.to_owned(), v.to_owned()));
     let settings = Settings::from_pairs(pairs.clone()).expect("settings");
@@ -161,15 +185,21 @@ async fn a_request_line_holds_the_route_template_not_the_path(pool: PgPool) {
     let request = Request::get("/q/fake-token-7e57")
         .body(Body::empty())
         .expect("request");
+    let (log, writer) = RequestLog::spawn(pool.clone());
     let router = Router::new()
         .layer(axum::middleware::from_fn_with_state(
-            pool.clone(),
+            log.clone(),
             log_request,
         ))
         .layer(PropagateRequestIdLayer::x_request_id())
         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid));
     let response = router.oneshot(request).await;
     let response = response.expect("response");
+    assert_eq!(log.dropped(), 0, "the line was handed over");
+    drop(log);
+    writer
+        .await
+        .expect("the writer queued the handed-over line and ended");
     let request_id = response.headers()["x-request-id"]
         .to_str()
         .expect("id")
@@ -232,13 +262,19 @@ async fn a_tampered_audit_object_fails_the_nightly_chain_check(pool: PgPool) {
     .await
     .expect("alerts");
     assert_eq!(alerts, 1);
+    let queued: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM core.task WHERE kind = 'ops.offdb_verify' AND done_at IS NULL",
+    )
+    .fetch_one(&mut *conn)
+    .await
+    .expect("queued runs");
+    assert!(queued >= 1, "the next night's run is queued");
 }
 
 /// TD-OPS-19 (PRIV-029): the request-log purge removes days older than 30 and keeps the rest.
 #[test]
 fn the_request_log_purge_keeps_thirty_days() {
-    let root = std::env::temp_dir().join(format!("askhava-offdb-purge-{}", std::process::id()));
-    let _fresh = std::fs::remove_dir_all(&root);
+    let root = TempDir::new("purge");
     let now: Timestamp = "2026-10-30T12:00:00Z".parse().expect("time");
     for day in ["2026-09-29", "2026-09-30", "2026-10-29"] {
         let dir = root.join("request").join(day);

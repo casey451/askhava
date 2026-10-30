@@ -7,7 +7,7 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 ## What it owns
 
 - `src/lib.rs`: the crate root; one `mod` line per file.
-- `src/api.rs`: the only public surface; also holds the off-database stream entry points (T017, D-734): `StreamEvent` (`Audit`, `Request`, `AiReading`), `stream_event` (enqueues an `ops.offdb_stream` `core.task`, `STREAM_KIND`), and the `audit` and `set_switch` wrappers over `service` that enqueue the audit row's copy in the same transaction.
+- `src/api.rs`: the only public surface; also holds the off-database stream entry points (T017, D-734): `StreamEvent` (`Audit`, `Request`, `AiReading`), `stream_event` (enqueues an `ops.offdb_stream` `core.task`, `STREAM_KIND`), and the `audit` and `set_switch` wrappers over `service` that enqueue the audit row's copy in the same transaction, and `previous_audit_id` (the `max(id) < n` lookup the chain writer links to, D-735).
 - `src/models.rs`: `AuditEntry` (`status_change`, `check`), `Change`, `Actor`, `AuditRow` (`to_json`), `NewAlert`, `Severity`, `Switch`, `OpsError`, `is_code_name`.
 - `src/service.rs`: `audit`, `export_audit` (cursor, `EXPORT_PAGE_MAX`), `raise_alert`, `is_paused`, `set_switch`.
 - Migration `0021_ops_audit.sql`: the `ops` schema and its grants, `ops.audit_log` (append-only), `ops.alert`, `ops.pause_switch`, `ops.switch_history` (append-only).

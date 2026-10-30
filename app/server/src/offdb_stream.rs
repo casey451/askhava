@@ -6,12 +6,16 @@
 //! may call nothing (D-491, D-734). Audit row `n` becomes `audit/<n>.json` holding the row's JSON
 //! line, the ID of the row before it and the sha256 of that row's line, so editing, removing or
 //! inserting an object breaks a link that [`verify_audit_chain`] finds; the nightly
-//! `ops.offdb_verify` task runs it, raises a High alert on a break and, on the local stand-in,
-//! purges request lines older than 30 days (the bucket lifecycle rule in Phase 2). Request lines go
-//! to `request/<date>/<task id>.json`, AI readings to `ai_reading/<id>.json` (D-734, D-735).
+//! `ops.offdb_verify` task queues the next night's run first, then runs it, purges request lines
+//! older than 30 days on the local stand-in (the bucket lifecycle rule in Phase 2) and raises a High
+//! alert on a break last. Request lines go to `request/<date>/<task id>.json`, through
+//! [`RequestLog`]'s background writer so no response waits on the database; AI readings go to
+//! `ai_reading/<id>.json` (D-734, D-735, D-737).
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Duration;
 
 use askhava_adapters::api::{IdempotencyKey, LocalStorage, StorageAdapter};
 use askhava_core::api::{
@@ -20,7 +24,7 @@ use askhava_core::api::{
 };
 use askhava_ops::api::{
     AuditRow, EXPORT_PAGE_MAX, NewAlert, STREAM_KIND, Severity, StreamEvent, export_audit,
-    raise_alert, stream_event,
+    previous_audit_id, raise_alert, stream_event,
 };
 use axum::extract::{MatchedPath, Request, State};
 use axum::middleware::Next;
@@ -31,6 +35,8 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
+use tokio::sync::mpsc;
+use tokio::task::JoinHandle;
 
 /// The `core.task` kind of the nightly hash-chain check and request-log purge (PRIV-029).
 pub const VERIFY_KIND: &str = "ops.offdb_verify";
@@ -44,6 +50,10 @@ const SETTLE: SignedDuration = SignedDuration::from_mins(2);
 const VERIFY_LAG: SignedDuration = SignedDuration::from_hours(1);
 const BASE_URL: &str = "ASKHAVA_STORAGE_BASE_URL";
 const ID_SECRET: &str = "ASKHAVA_ID_SECRET";
+/// How many request lines may wait for the background writer before new ones are dropped.
+const REQUEST_QUEUE: usize = 1024;
+/// How long the background writer waits for a connection and the insert of one request line.
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 const GENESIS: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
 /// What the stream handlers need: the store, the `ID_SECRET` for idempotency keys (SEC-018), the
@@ -78,7 +88,7 @@ impl OffDbStream<LocalStorage> {
         for (name, value) in pairs.into_iter().filter(|(_, v)| !v.trim().is_empty()) {
             match name.as_str() {
                 BASE_URL => base = Some(value.trim().to_owned()),
-                ID_SECRET => secret = Some(SecretString::from(value)),
+                ID_SECRET => secret = Some(SecretString::from(value.trim().to_owned())),
                 _ => {}
             }
         }
@@ -144,29 +154,39 @@ impl<S: StorageAdapter + Send + Sync> OffDbStream<S> {
     /// it (PRIV-029). While the row before is missing and `id` is younger than [`SETTLE`], it
     /// fails so the task retries: identity IDs can commit out of order (D-729, D-735).
     async fn chain_link(&self, conn: &mut PgConnection, id: i64) -> Result<Value, HandlerError> {
-        let rows = export_audit(conn, id.saturating_sub(EXPORT_PAGE_MAX), EXPORT_PAGE_MAX)
+        let row = audit_row(conn, id)
+            .await?
+            .ok_or(HandlerError("audit row missing"))?;
+        let prev_id = previous_audit_id(conn, id)
             .await
             .map_err(|_| HandlerError(DB))?;
-        let row = rows
-            .iter()
-            .find(|r| r.id == id)
-            .ok_or(HandlerError("audit row missing"))?;
-        let prev = rows.iter().rev().find(|r| r.id < id);
+        let prev = match prev_id {
+            Some(p) => audit_row(conn, p).await?,
+            None => None,
+        };
         let settled = self.clock.now().duration_since(row.at) >= SETTLE;
-        if id > 1 && prev.is_none_or(|p| p.id != id - 1) && !settled {
+        if id > 1 && prev_id != Some(id - 1) && !settled {
             return Err(HandlerError("an earlier audit row may still commit"));
         }
-        Ok(link(row, prev))
+        Ok(link(&row, prev.as_ref()))
     }
 
-    /// The nightly run: checks the audit chain (a High alert on a break), purges request lines
-    /// older than 30 days from the stand-in, and queues tomorrow's run (PRIV-029).
+    /// The nightly run (PRIV-029, D-737): first queues tomorrow's run, so a run that fails for
+    /// good never ends the schedule; then checks the audit chain and purges request lines older
+    /// than 30 days from the stand-in; the High alert on a break comes last, so a retry of an
+    /// earlier failed step never raises it twice.
     async fn nightly(&self, pool: &PgPool) -> Result<(), HandlerError> {
         let now = self.clock.now();
         let mut conn = pool.acquire().await.map_err(|_| HandlerError(DB))?;
+        schedule_verify(&mut conn, now)
+            .await
+            .map_err(|_| HandlerError(DB))?;
         let checked = verify_audit_chain(&mut conn, &self.storage, now).await;
         if checked == Err(ChainError::Database) {
             return Err(HandlerError(DB));
+        }
+        if let Some(root) = &self.purge_root {
+            purge_request_log(root, now).map_err(|_| HandlerError("request log purge failed"))?;
         }
         if checked.is_err() {
             let alert = NewAlert {
@@ -178,16 +198,7 @@ impl<S: StorageAdapter + Send + Sync> OffDbStream<S> {
                 .await
                 .map_err(|_| HandlerError(DB))?;
         }
-        if let Some(root) = &self.purge_root {
-            purge_request_log(root, now).map_err(|_| HandlerError("request log purge failed"))?;
-        }
-        schedule_verify(
-            &mut conn,
-            now.checked_add(SignedDuration::from_hours(24))
-                .unwrap_or(now),
-        )
-        .await
-        .map_err(|_| HandlerError(DB))
+        Ok(())
     }
 }
 
@@ -198,6 +209,14 @@ const BAD: HandlerError = HandlerError("bad stream payload");
 #[must_use]
 pub fn audit_name(id: i64) -> String {
     format!("audit/{id:019}.json")
+}
+
+/// Audit row `id`, if it exists.
+async fn audit_row(conn: &mut PgConnection, id: i64) -> Result<Option<AuditRow>, HandlerError> {
+    let rows = export_audit(conn, id.saturating_sub(1), 1)
+        .await
+        .map_err(|_| HandlerError(DB))?;
+    Ok(rows.into_iter().find(|r| r.id == id))
 }
 
 /// The sha256, in hex, of a row's JSON line.
@@ -288,30 +307,106 @@ pub fn purge_request_log(root: &Path, now: Timestamp) -> std::io::Result<usize> 
     Ok(removed)
 }
 
-/// Queues the nightly check for 3 a.m. Arizona time on or after `after`'s day, once per day
-/// (dedupe key by date); the worker calls it at start and each run queues the next (PRIV-029).
+/// Queues the nightly check for 3 a.m. Arizona time on `now`'s day and on the day after, once per
+/// day (dedupe key by date, so calling it again is a no-op). The worker calls it at start and each
+/// run calls it before its work, so tomorrow's run is queued even when today's dead-letters
+/// (PRIV-029, D-737).
 ///
 /// # Errors
 ///
-/// The queue's error when the insert fails.
+/// The queue's error when an insert fails.
 pub async fn schedule_verify(
     db: &mut PgConnection,
-    after: Timestamp,
+    now: Timestamp,
 ) -> Result<(), askhava_core::api::TaskError> {
-    let day = after.to_zoned(arizona()).date();
-    let run_at = day
-        .at(3, 0, 0, 0)
-        .to_zoned(arizona())
-        .map_or(after, |z| z.timestamp());
-    let mut task = NewTask::new(VERIFY_KIND, json!({}), run_at);
-    task.dedupe_key = Some(format!("offdb.verify.{day}"));
-    enqueue(db, &task).await.map(|_| ())
+    let today = now.to_zoned(arizona()).date();
+    for day in [Some(today), today.tomorrow().ok()].into_iter().flatten() {
+        let run_at = day
+            .at(3, 0, 0, 0)
+            .to_zoned(arizona())
+            .map_or(now, |z| z.timestamp());
+        let mut task = NewTask::new(VERIFY_KIND, json!({}), run_at);
+        task.dedupe_key = Some(format!("offdb.verify.{day}"));
+        enqueue(db, &task).await?;
+    }
+    Ok(())
 }
 
-/// Middleware: queues one request-log line per request with its request ID, route template and
-/// status, never the path or a header value (OPS-011, PRIV-016, rust brain R15). A queue failure
-/// is logged once and the response still goes out.
-pub async fn log_request(State(pool): State<PgPool>, request: Request, next: Next) -> Response {
+/// One request's log line, waiting for the background writer.
+struct RequestLine {
+    request_id: Option<Uuid>,
+    route: String,
+    status: u16,
+    at: Timestamp,
+}
+
+/// The request log's hand-off: the middleware puts each line on a bounded channel and never waits;
+/// one background task queues the lines on `core.task`, at most [`REQUEST_TIMEOUT`] each. A line
+/// that finds the channel full, or that cannot be queued in time, is dropped and counted
+/// (OPS-011, D-737). Lines still waiting when the process stops are lost.
+#[derive(Clone)]
+pub struct RequestLog {
+    lines: mpsc::Sender<RequestLine>,
+    dropped: Arc<AtomicU64>,
+}
+
+impl RequestLog {
+    /// Starts the background writer over `pool`. It ends when every clone of the returned log is
+    /// dropped, after queuing the lines already handed over (OPS-011).
+    #[must_use]
+    pub fn spawn(pool: PgPool) -> (Self, JoinHandle<()>) {
+        let (lines, waiting) = mpsc::channel(REQUEST_QUEUE);
+        let log = Self {
+            lines,
+            dropped: Arc::new(AtomicU64::new(0)),
+        };
+        let writer = tokio::spawn(write_lines(pool, waiting, Arc::clone(&log.dropped)));
+        (log, writer)
+    }
+
+    /// How many request lines were dropped so far (OPS-011).
+    #[must_use]
+    pub fn dropped(&self) -> u64 {
+        self.dropped.load(Ordering::Relaxed)
+    }
+}
+
+/// Counts one dropped line, warning at the 1st, 2nd, 4th, 8th... so a flood logs little.
+fn count_drop(dropped: &AtomicU64) {
+    let total = dropped.fetch_add(1, Ordering::Relaxed).saturating_add(1);
+    if total.is_power_of_two() {
+        tracing::warn!(dropped = total, "request log lines were dropped");
+    }
+}
+
+/// The background writer: queues each line as a stream event, bounded by [`REQUEST_TIMEOUT`].
+async fn write_lines(
+    pool: PgPool,
+    mut waiting: mpsc::Receiver<RequestLine>,
+    dropped: Arc<AtomicU64>,
+) {
+    while let Some(line) = waiting.recv().await {
+        let event = StreamEvent::Request {
+            request_id: line.request_id,
+            route: &line.route,
+            status: line.status,
+            at: line.at,
+        };
+        let queued = tokio::time::timeout(REQUEST_TIMEOUT, async {
+            let mut conn = pool.acquire().await.ok()?;
+            stream_event(&mut conn, &event).await.ok()
+        });
+        if !matches!(queued.await, Ok(Some(()))) {
+            count_drop(&dropped);
+        }
+    }
+}
+
+/// Middleware: hands one request-log line per request, with its request ID, route template and
+/// status and never the path or a header value, to [`RequestLog`] without waiting (OPS-011,
+/// PRIV-016, rust brain R15, D-737). A full channel drops and counts the line; the response goes
+/// out either way.
+pub async fn log_request(State(log): State<RequestLog>, request: Request, next: Next) -> Response {
     let request_id = request
         .headers()
         .get("x-request-id")
@@ -322,19 +417,14 @@ pub async fn log_request(State(pool): State<PgPool>, request: Request, next: Nex
         .get::<MatchedPath>()
         .map_or_else(|| "unmatched".to_owned(), |p| p.as_str().to_owned());
     let response = next.run(request).await;
-    let status = response.status().as_u16();
-    let event = StreamEvent::Request {
+    let line = RequestLine {
         request_id,
-        route: &route,
-        status,
+        route,
+        status: response.status().as_u16(),
         at: Timestamp::now(),
     };
-    let queued = match pool.acquire().await {
-        Ok(mut conn) => stream_event(&mut conn, &event).await.is_ok(),
-        Err(_) => false,
-    };
-    if !queued {
-        tracing::warn!("the request log line could not be queued");
+    if log.lines.try_send(line).is_err() {
+        count_drop(&log.dropped);
     }
     response
 }

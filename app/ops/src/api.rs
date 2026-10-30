@@ -11,6 +11,8 @@ use serde_json::{Map, Value, json};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+// `service::audit` writes the row without its off-database copy: inside `ops` call it only
+// through [`audit`] below, never directly, or the row never reaches the stream (OPS-011, D-734).
 use crate::service;
 
 pub use crate::models::{
@@ -121,6 +123,19 @@ pub async fn audit(db: &mut PgConnection, entry: &AuditEntry) -> Result<i64, Ops
     let id = service::audit(db, entry).await?;
     stream_event(db, &StreamEvent::Audit(id)).await?;
     Ok(id)
+}
+
+/// The ID of the newest audit row below `id`, the row the off-database chain links `id` to
+/// (PRIV-029, D-735); none when `id` is the first. One indexed lookup, however far below it is.
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn previous_audit_id(db: &mut PgConnection, id: i64) -> Result<Option<i64>, OpsError> {
+    sqlx::query_scalar!("SELECT max(id) FROM ops.audit_log WHERE id < $1", id)
+        .fetch_one(db)
+        .await
+        .map_err(|_| OpsError::Database)
 }
 
 /// Turns `switch` on or off, logging the change with its actor in `ops.switch_history` and
