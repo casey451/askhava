@@ -7,6 +7,10 @@ name = "askhava-core"
 version = "0.1.0"
 
 [[package]]
+name = "askhava-fixtures"
+version = "0.1.0"
+
+[[package]]
 name = "askhava-integration"
 version = "0.1.0"
 dependencies = [
