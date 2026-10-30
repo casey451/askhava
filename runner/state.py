@@ -47,6 +47,7 @@ SATISFIED = (DONE, SKIPPED)
 BUILD_TASK = re.compile(r"^T\d+$")  # the tasks Gate P holds
 DECISION_BLOCK = 5  # D-numbers reserved per claimed task (D-530)
 DECISION_ENTRY = re.compile(r"^- \*\*D-(\d+)\*\*", re.M)  # an entry line of docs/decisions.md
+PROOF_MISSING = "stage proof missing"  # the BLOCKED reason of a cleanup task waiting only for its stage proof
 
 
 class LeaseError(Exception):
@@ -337,16 +338,34 @@ def _fix_main_ids(state: State) -> list[str]:
     return [FIX_MAIN] if not fix or fix.get("status", QUEUED) in RETRYABLE else []
 
 
-def eligible(state: State, now: datetime, passed: set[str] | None = None) -> list[str]:
+def awaits_proof(task: Task) -> bool:
+    """A cleanup task that merged (or handed in nothing to merge) and is BLOCKED only for its stage's
+    named proof (runner.cycle, docs/governance.md section 6)."""
+    return task.get("type") == "cleanup" and task.get("status") == BLOCKED and task.get("reason") == PROOF_MISSING
+
+
+def _deps_met(task: Task, done: set[str], early: dict[str, str]) -> bool:
+    """Every dependency DONE or SKIPPED, or a proof-waiting cleanup task of this task's own stage (D-551)."""
+    stage = str(task.get("stage"))
+    return all(dep in done or early.get(dep) == stage for dep in task.get("deps", []))
+
+
+def eligible(
+    state: State, now: datetime, passed: set[str] | None = None, proof_stages: frozenset[str] = frozenset()
+) -> list[str]:
     """IDs claimable now, in state order; a BLOCKED task holds only its dependents.
 
     While `build_hold` is set (Gate P) the T### build tasks wait; kit tasks do not. With `passed`
     (the stages whose exit test passed) a task of stage N waits for stage N-1's exit test, not for
-    every task of stage N-1 through a dependency chain (D-486).
+    every task of stage N-1 through a dependency chain (D-486). In a stage of `proof_stages` (those
+    whose proof the runner records itself from the whole stage's results, runner/proof.py) a cleanup
+    task waiting only for that proof does not hold the later tasks of its own stage, whose work the
+    proof needs; tasks of later stages still wait for the stage exit test (D-551).
     """
     if state.get("main_red"):
         return _fix_main_ids(state)
     done = {t["id"] for t in state["tasks"] if t.get("status") in SATISFIED}
+    early = {t["id"]: str(t.get("stage")) for t in state["tasks"] if awaits_proof(t) and str(t.get("stage")) in proof_stages}
     held = bool(state.get("build_hold"))
     return [
         t["id"]
@@ -354,7 +373,7 @@ def eligible(state: State, now: datetime, passed: set[str] | None = None) -> lis
         if t.get("type") != "gate"
         and t["id"] != FIX_MAIN
         and not (held and BUILD_TASK.match(t["id"]))
-        and set(t.get("deps", [])) <= done
+        and _deps_met(t, done, early)
         and _stage_open(state, t, passed)
         and _ready(state, t["id"], now)
     ]
