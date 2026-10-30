@@ -15,6 +15,7 @@ mod email;
 mod letters;
 mod license_sources;
 mod payments;
+mod signatures;
 mod sms;
 mod storage;
 #[cfg(test)]
