@@ -2008,7 +2008,16 @@
     705,
     706,
     707
-   ]
+   ],
+   "reviewed_sha": "54695ce72f672f43ed20fb09c2ceb084c15645f3",
+   "review_lease": {
+    "task": "T016",
+    "session": "actions-41071648911",
+    "expires": "2026-10-30T17:28:59Z",
+    "lane": "2"
+   },
+   "branch": "claude/task/T016-adapters-protocols",
+   "head_check_since": null
   },
   {
    "id": "T176",
@@ -5861,7 +5870,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T14:37:43Z",
+ "updated_at": "2026-10-30T14:46:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -5959,7 +5968,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b06fd2bac4be431cbce4d38ed39f319ef30483fb",
+ "runner_sha": "54695ce72f672f43ed20fb09c2ceb084c15645f3",
  "starter": "actions",
  "smoke_runs": [
   {
