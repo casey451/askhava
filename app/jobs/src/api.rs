@@ -1,14 +1,14 @@
 //! The public face of `askhava-jobs`: everything other crates may call (D-481).
 //!
 //! The twelve statuses and their arrows (JOB-001, JOB-002), creating and moving a job with its
-//! history, audit row and timer (JOB-005, JOB-006), and the timer handler `server` registers under
-//! [`TIMER_KIND`] (JOB-003, JOB-006).
+//! history, audit row and timer (JOB-005, JOB-006), restarting a wait (D-807), and the timer
+//! handler `server` registers under [`TIMER_KIND`] (JOB-003, JOB-006).
 
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 pub use crate::models::{JobRow, JobsError};
-pub use crate::service::{TIMER_KIND, create, move_to, run_timer};
+pub use crate::service::{TIMER_KIND, create, move_to, restart_timer, run_timer};
 pub use crate::status::JobStatus;
 
 /// The pure lifecycle rules, callable without a database (D-481).

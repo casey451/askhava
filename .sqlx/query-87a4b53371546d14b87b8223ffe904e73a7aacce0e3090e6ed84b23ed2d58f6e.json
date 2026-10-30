@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE jobs.job SET status = $3, version = version + 1, status_at = $4 WHERE id = $1 AND status = $2 AND ($5::integer IS NULL OR version = $5) RETURNING version, emergency",
+  "query": "UPDATE jobs.job SET timer_from = $3, timer_version = timer_version + 1 WHERE id = $1 AND status = $2 AND timer_from <= $3 RETURNING version, timer_version, emergency",
   "describe": {
     "columns": [
       {
@@ -16,6 +16,17 @@
       },
       {
         "ordinal": 1,
+        "name": "timer_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "timer_version"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
         "name": "emergency",
         "type_info": "Bool",
         "origin": {
@@ -30,15 +41,14 @@
       "Left": [
         "Uuid",
         "Text",
-        "Text",
-        "Timestamptz",
-        "Int4"
+        "Timestamptz"
       ]
     },
     "nullable": [
       false,
+      false,
       false
     ]
   },
-  "hash": "9effa1a1b0538cc35db4c7631bd139dc80337de0c3b32f73a112a2badfd16eee"
+  "hash": "87a4b53371546d14b87b8223ffe904e73a7aacce0e3090e6ed84b23ed2d58f6e"
 }

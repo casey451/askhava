@@ -7,12 +7,12 @@ The layer-4 crate that owns every job's one status and the only code that change
 ## What it owns
 
 - `src/lib.rs`: the crate root; one `mod` line per file.
-- `src/api.rs`: the only public surface: `JobStatus`, `JobRow`, `JobsError`, `create`, `move_to`, `current`, `run_timer`, `TIMER_KIND`, and `api::rules` (`check_move`, `timeout`, `Timeout`, `Wait`, `Refused`).
+- `src/api.rs`: the only public surface: `JobStatus`, `JobRow`, `JobsError`, `create`, `move_to`, `restart_timer`, `current`, `run_timer`, `TIMER_KIND`, and `api::rules` (`check_move`, `timeout`, `Timeout`, `Wait`, `Refused`).
 - `src/status.rs`: `JobStatus` (the twelve, `ALL`, `code`, `from_code`, `targets` = the arrows, `can_move_to`, `wait` = each status's timeout and target, `is_final`). Every `match` on a status lives here.
 - `src/rules.rs`: pure rules, no I/O: `check_move`, `timeout` (backstop timer per waiting status) and the timer constants.
-- `src/models.rs`: `JobsError`, `JobRow` and the queries (`insert_job`, `load`, `guarded_move`, `insert_history`).
-- `src/service.rs`: `create`, `move_to`, the version-fenced `apply`, `queue_timer`, `run_timer`.
-- Migration `0031_jobs_state_machine.sql`: the `jobs` schema and grants, `jobs.job` (status `CHECK` of the twelve codes, `version`, `emergency`, `status_at`), `jobs.status_history` (append-only).
+- `src/models.rs`: `JobsError`, `JobRow` and the queries (`insert_job`, `load`, `guarded_move`, `restart_wait`, `insert_history`).
+- `src/service.rs`: `create`, `move_to`, the version-fenced `apply`, `restart_timer`, `queue_timer`, `run_timer`.
+- Migration `0031_jobs_state_machine.sql`: the `jobs` schema and grants, `jobs.job` (status `CHECK` of the twelve codes, `version`, `emergency`, `status_at`, `timer_from`, `timer_version`), `jobs.status_history` (append-only).
 - `sqlx.toml`: `'TIMESTAMPTZ'` reads as `jiff_sqlx::Timestamp`.
 
 ## Rules it enforces
@@ -22,7 +22,8 @@ The layer-4 crate that owns every job's one status and the only code that change
 - JOB-003: `status::JobStatus::wait` and `rules::timeout`: every non-final status has a timer, queued on entry by `service::queue_timer` (D-805).
 - JOB-004 (the pattern; its race tests are TD-JOB-02's): `models::guarded_move` updates only `WHERE status = from`, returning `Guarded::MovedOn` otherwise.
 - JOB-005: `service::apply` writes `jobs.status_history` and `ops::api::audit` (`status_changed`) in the move's transaction; `create` audits `created`.
-- JOB-006: a timer is a `core.task` (`jobs.timeout`, payload `{job, status, version}`, dedupe key `jobs.timeout.<job>.<version>`); `service::run_timer` re-checks the version first and does nothing if the job moved on; the move it makes is fenced on status and version and stamped at the timer's due time (D-806).
+- JOB-006: a timer is a `core.task` (`jobs.timeout`, payload `{job, status, version, timer}`, dedupe key `jobs.timeout.<job>.<version>.<timer>`); `service::run_timer` re-checks the version and timer version first and does nothing if the job moved on or its wait was restarted; the move it makes is fenced on status, version and timer version and stamped at the timer's due time (D-806).
+- D-807: a wait the spec counts from a later event or extends or pauses (INT-019, JOB-014, JOB-015, FEE-018, FEE-038, PICK-043, BIZ-034) is re-timed by the owning task with `restart_timer(db, id, (status, from))`; it never shortens a wait (`from` must not be before `timer_from`); a pause is a restart at `timer_from` plus the paused time.
 
 ## Never break
 
@@ -30,6 +31,8 @@ The layer-4 crate that owns every job's one status and the only code that change
 - A refused or stale move writes nothing: `src/tests/transitions.rs::a_refused_or_stale_move_changes_nothing`.
 - One history row and one audit row per move: `every_move_writes_one_history_and_one_audit_row`.
 - A timer for a job that moved on, or run twice, does nothing more: `a_timer_for_a_job_that_moved_on_does_nothing`.
+- A restarted wait supersedes the pending timer: `a_restarted_wait_supersedes_the_pending_timer`.
+- `jobs.status_history` is append-only for `askhava_app`: `the_app_role_cannot_rewrite_the_history`.
 - Every waiting status times out along an arrow; finals never: `prop_job_machine.rs::every_waiting_status_times_out`.
 - Nothing outside `status.rs` matches on or compares a `JobStatus` (`scripts/check_rust_rules.py`, SEC-031).
 - `JobsError` never carries a value or the database's message (PRIV-016).
@@ -44,5 +47,5 @@ The layer-4 crate that owns every job's one status and the only code that change
 
 ## Tests that guard it
 
-- `src/tests/prop_job_machine.rs` (TD-JOB-01 property cases: arrows, one status, audit per change, timeouts; JOB-001, JOB-002, JOB-003, JOB-005, JOB-006).
-- `src/tests/transitions.rs` (TD-JOB-01 database cases: history and audit rows, refused and stale moves, timers surviving a restart and doing nothing after a move; JOB-001 to JOB-003, JOB-005, JOB-006). The per-status timer values and texts are TD-JOB-03's.
+- `src/tests/prop_job_machine.rs` (TD-JOB-01 property cases: arrows, one status, timeouts, and random runs through `move_to` on the database with one history and one audit row per change; JOB-001, JOB-002, JOB-003, JOB-005, JOB-006).
+- `src/tests/transitions.rs` (TD-JOB-01 database cases: history and audit rows, refused (logged once) and stale moves, timers surviving a restart and doing nothing after a move, restarted waits, the append-only history; JOB-001 to JOB-003, JOB-005, JOB-006). The per-status timer values and texts are TD-JOB-03's.

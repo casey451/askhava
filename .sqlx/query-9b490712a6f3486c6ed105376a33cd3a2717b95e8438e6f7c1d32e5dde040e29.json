@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO jobs.job (status, emergency, created_at, status_at) VALUES ($1, $2, $3, $3) RETURNING id",
+  "query": "INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from) VALUES ($1, $2, $3, $3, $3) RETURNING id",
   "describe": {
     "columns": [
       {
@@ -26,5 +26,5 @@
       false
     ]
   },
-  "hash": "a27974e6be10ef01e8380d48b4a868cef5d411a46efb1505ff726d009b58ba4e"
+  "hash": "9b490712a6f3486c6ed105376a33cd3a2717b95e8438e6f7c1d32e5dde040e29"
 }

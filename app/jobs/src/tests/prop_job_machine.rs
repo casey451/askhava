@@ -2,15 +2,22 @@
 //!
 //! Random runs of quotes, picks, confirms, declines, calls, replies, cancels, closes and clock
 //! advances against an oracle copied by hand from the diagram in `docs/architecture.md` section 6:
-//! one status at a time, only the oracle's arrows, one audit entry per change, and every waiting
-//! status times out along an arrow. The timer firing cases with a database are in `transitions.rs`;
-//! the per-status timer values are TD-JOB-03's (D-492).
+//! one status at a time, only the oracle's arrows, and every waiting status times out along an
+//! arrow. The same random event runs also drive `move_to` against the database, which must write
+//! exactly one history row and one audit row per applied change. The timer firing cases with a
+//! database are in `transitions.rs`; the per-status timer values are TD-JOB-03's (D-492).
 
+use askhava_core::api::Guarded;
+use askhava_ops::api::Actor;
 use jiff::{SignedDuration, Timestamp};
 use proptest::prelude::*;
+use proptest::strategy::ValueTree;
+use proptest::test_runner::TestRunner;
+use sqlx::{PgConnection, PgPool};
 
-use crate::api::JobStatus;
+use super::transitions::{audited_moves, history};
 use crate::api::rules::{check_move, timeout};
+use crate::api::{JobStatus, JobsError, create, current, move_to};
 
 /// The section 6 arrows, by code, written out independently of `JobStatus::targets`.
 const ORACLE: &[(&str, &str)] = &[
@@ -163,5 +170,51 @@ fn the_arrows_are_the_architectures() {
                 "{from:?} to {to:?}"
             );
         }
+    }
+}
+
+/// Drives one run of `events` through `move_to` from Intake and returns the changes the oracle
+/// expects, checking each result and the stored status on the way (JOB-001, JOB-002).
+async fn drive(
+    db: &mut PgConnection,
+    events: Vec<usize>,
+) -> (sqlx::types::Uuid, Vec<(String, String)>) {
+    let at: Timestamp = "2026-11-02T17:00:00Z".parse().expect("instant");
+    let id = create(db, at, false, Actor::System).await.expect("job");
+    let (mut status, mut changes) = (JobStatus::Intake, vec![]);
+    for i in events {
+        let to = EVENTS[i].1;
+        let result = move_to(db, id, (status, to), at, Actor::System).await;
+        if oracle_allows(status, to) {
+            assert_eq!(result, Ok(Guarded::Applied(())));
+            changes.push((status.code().to_owned(), to.code().to_owned()));
+            status = to;
+        } else {
+            assert_eq!(
+                result,
+                Err(JobsError::RefusedMove(status.code(), to.code()))
+            );
+        }
+        assert_eq!(
+            current(db, id).await.expect("job").status.code(),
+            status.code()
+        );
+    }
+    (id, changes)
+}
+
+/// TD-JOB-01 against the database: random event runs through `move_to` write exactly one
+/// `jobs.status_history` row and one `status_changed` audit row per applied change, in order, and
+/// nothing for a refused one (JOB-002, JOB-005).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn every_applied_move_writes_one_audit_row(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let mut runner = TestRunner::deterministic();
+    let runs = proptest::collection::vec(0..EVENTS.len(), 1..40);
+    for _ in 0..24 {
+        let events = runs.new_tree(&mut runner).expect("case").current();
+        let (id, changes) = drive(&mut db, events).await;
+        assert_eq!(audited_moves(&mut db, id).await, changes);
+        assert_eq!(history(&mut db, id).await, changes);
     }
 }
