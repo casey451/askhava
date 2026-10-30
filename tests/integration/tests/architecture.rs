@@ -5,7 +5,7 @@
 //! does not stop: a first-party dependency the layer table does not allow (followed through
 //! `package =` renames and direct paths), a dependency without `workspace = true` or missing from
 //! `[workspace.dependencies]`, a member that does not inherit `unsafe_code = "forbid"`, a feature
-//! (only `test-control` on `core` is allowed), a package not named `askhava-<module>` (test-layer
+//! or `optional = true` dependency (only `test-control` on `core` is allowed), a package not named `askhava-<module>` (test-layer
 //! crates have fixed names; `tests/recovery` is `askhava-recovery-tests`), an `unsafe` keyword, the
 //! release and session mints named outside their crates, the payments adapter named outside
 //! `payments`, a route input that is not a `deny_unknown_fields` struct, and an adapter trait method
@@ -47,10 +47,9 @@ const TEST_CRATES: [(&str, &str); 4] = [
 /// wires it (FEE-032, D-595).
 const PAYMENTS_ADAPTER_USERS: [&str; 3] = ["adapters", "payments", "server"];
 
-/// Adapter method name prefixes that only read and so take no idempotency key (SEC-018, D-596).
-const READ_ONLY_PREFIXES: [&str; 7] = [
-    "fetch_", "get_", "list_", "read_", "check_", "verify_", "lookup_",
-];
+/// Adapter method name prefixes that only read and so take no idempotency key; not `verify_`, as
+/// the verify adapter sends codes (SEC-018, D-596).
+const READ_ONLY_PREFIXES: [&str; 6] = ["fetch_", "get_", "list_", "read_", "check_", "lookup_"];
 
 /// Axum extractors whose type parameter is parsed from the request (SEC-010).
 const INPUT_EXTRACTORS: [&str; 3] = ["Form", "Json", "Query"];
@@ -329,11 +328,23 @@ fn check_lints(ws: &Workspace, m: &Member, out: &mut Vec<String>) {
     }
 }
 
-/// No feature may widen visibility; `test-control` on `core` is the one exception (SEC-029, D-481).
+/// No feature may widen visibility, nor an `optional` dependency (an implicit feature); `test-control`
+/// on `core` is the one exception (SEC-029, D-481).
 fn check_features(m: &Member, out: &mut Vec<String>) {
+    let core = !m.test_layer && m.module == "core";
     for name in table(&m.manifest, "features").keys() {
-        if m.test_layer || m.module != "core" || name != "test-control" {
+        if !core || name != "test-control" {
             out.push(format!("{}: feature `{name}` is not allowed", m.rel));
+        }
+    }
+    for (_, deps) in dep_tables(&m.manifest) {
+        for (key, spec) in &deps {
+            if !core && spec.get("optional").and_then(Value::as_bool) == Some(true) {
+                out.push(format!(
+                    "{}: optional dependency `{key}` is a feature",
+                    m.rel
+                ));
+            }
         }
     }
 }
@@ -507,7 +518,7 @@ fn params(t: &[String], at: usize) -> &[String] {
     }
 }
 
-/// Identifiers of the path that starts after `askhava_adapters` (a `use` tree or a qualified name).
+/// Identifiers and globs of the path after `askhava_adapters` (a `use` tree or a qualified name).
 fn path_idents(t: &[String]) -> Vec<&str> {
     let mut depth = 0;
     let mut out = Vec::new();
@@ -517,8 +528,10 @@ fn path_idents(t: &[String]) -> Vec<&str> {
             "}" if depth == 0 => break,
             "}" => depth -= 1,
             "," if depth == 0 => break,
-            ":" | "," | "*" => {}
-            w if w.starts_with(|ch: char| ch.is_alphabetic() || ch == '_') => out.push(w),
+            ":" | "," => {}
+            w if w == "*" || w.starts_with(|ch: char| ch.is_alphabetic() || ch == '_') => {
+                out.push(w)
+            }
             _ => break,
         }
     }
@@ -574,13 +587,16 @@ fn check_mints(m: &Member, f: &Source, out: &mut Vec<String>) {
 }
 
 /// Only `payments` imports the payments adapter; money moves only through `payments` (FEE-032).
+/// Elsewhere an alias (`as`) or a glob (`*`) of an adapters path could hide it, so both fail (D-595).
 fn check_payments_adapter(m: &Member, f: &Source, out: &mut Vec<String>) {
     if !m.test_layer && PAYMENTS_ADAPTER_USERS.contains(&m.module.as_str()) {
         return;
     }
     let t = &f.tokens;
-    let names_adapter =
-        |w: &&str| w.to_lowercase() == "payments" || w.to_lowercase().contains("stripe");
+    let names_adapter = |w: &&str| {
+        let w = w.to_lowercase();
+        w == "payments" || w.contains("stripe") || w == "as" || w == "*"
+    };
     let hit = (0..t.len())
         .filter(|&i| t[i] == "askhava_adapters")
         .any(|i| path_idents(&t[i + 1..]).iter().any(names_adapter));
@@ -730,7 +746,7 @@ const FORBID_OFF: &str =
 /// Planted violations: case, the file written over the clean tree, its text, and the findings it
 /// must give, each a substring of one finding and nothing more (TD-SEC-10, TD-FEE-16, TD-SEC-03).
 #[rustfmt::skip]
-const CASES: [(&str, &str, &str, &[&str]); 20] = [
+const CASES: [(&str, &str, &str, &[&str]); 24] = [
     ("upward", JOBS, pkg!("askhava-jobs", "askhava-picks = { workspace = true }"), &["app/jobs: `askhava-picks` is not a dependency the layer table allows for `jobs`"]),
     ("rename", JOBS, pkg!("askhava-jobs", "pk = { workspace = true, package = \"askhava-picks\" }"), &["`pk` is a rename of package `askhava-picks`", "allows for `jobs`"]),
     ("path", JOBS, pkg!("askhava-jobs", "pk = { path = \"../picks\" }"), &["`pk` lacks `workspace = true`", "`pk` is a rename", "allows for `jobs`"]),
@@ -740,6 +756,7 @@ const CASES: [(&str, &str, &str, &[&str]); 20] = [
     ("no_lints", JOBS, "[package]\nname = \"askhava-jobs\"\n", &["app/jobs: unsafe_code = \"forbid\" not inherited"]),
     ("forbid_off", "Cargo.toml", FORBID_OFF, &["app/core: unsafe_code = \"forbid\" not inherited"]),
     ("feature", JOBS, pkg!("askhava-jobs", "", "\n[features]\ntesting = []\n"), &["app/jobs: feature `testing` is not allowed"]),
+    ("optional_dep", JOBS, pkg!("askhava-jobs", "serde = { workspace = true, optional = true }"), &["app/jobs: optional dependency `serde` is a feature"]),
     ("bad_name", "app/picks/Cargo.toml", pkg!("picks", ""), &["app/picks: package must be named `askhava-picks`"]),
     ("recovery_name", "tests/recovery/Cargo.toml", pkg!("askhava-recovery", ""), &["tests/recovery: package must be named `askhava-recovery-tests`"]),
     ("unknown_module", "app/billing/Cargo.toml", pkg!("askhava-billing", ""), &["app/billing: not a module in kit/layers.json"]),
@@ -748,9 +765,12 @@ const CASES: [(&str, &str, &str, &[&str]); 20] = [
     ("session_mint", "tests/recovery/tests/drill.rs", "fn f(m: SessionMint) {}\n", &["tests/recovery/tests/drill.rs: `SessionMint` named outside"]),
     ("payments_adapter", JOBS_SRC, "use askhava_adapters::api::{sms, payments::Charge};\n", &["app/jobs/src/lib.rs: imports the payments adapter"]),
     ("stripe_adapter", "app/picks/src/lib.rs", "fn f(c: askhava_adapters::api::StripeClient) {}\n", &["app/picks/src/lib.rs: imports the payments adapter"]),
+    ("alias_adapter", JOBS_SRC, "use askhava_adapters as ad;\n", &["app/jobs/src/lib.rs: imports the payments adapter"]),
+    ("glob_adapter", JOBS_SRC, "use askhava_adapters::api::*;\n", &["app/jobs/src/lib.rs: imports the payments adapter"]),
     ("loose_input", JOBS_SRC, "#[derive(Deserialize)]\npub struct Loose { a: u8 }\nasync fn h(Form(f): Form<Loose>) {}\n", &["app/jobs/src/lib.rs: route input `Loose` is not a deny_unknown_fields struct"]),
     ("map_input", JOBS_SRC, "async fn h(Query(q): Query<HashMap<String, String>>) {}\n", &["app/jobs/src/lib.rs: route input `HashMap`"]),
     ("no_idempotency", "app/adapters/src/sms.rs", "pub trait Sms {\n    async fn send_text(&self, to: &str);\n}\n", &["app/adapters/src/sms.rs: adapter method `send_text` takes no idempotency key"]),
+    ("verify_send_code", "app/adapters/src/verify.rs", "pub trait Verify {\n    fn verify_send_code(&self, to: &str);\n}\n", &["app/adapters/src/verify.rs: adapter method `verify_send_code` takes no idempotency key"]),
 ];
 
 fn write(root: &Path, rel: &str, content: &str) {
