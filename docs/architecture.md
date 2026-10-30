@@ -53,7 +53,8 @@ Dockerfile           multi-stage: cargo-chef planner, a builder that cooks the d
                      committed; every build and `Ci` run with SQLX_OFFLINE=true, and `Ci` fails on a stale entry
                      through `cargo sqlx prepare --check` after `sqlx migrate run` (D-481)
 rust-toolchain.toml  the pinned Rust release (section 11)
-clippy.toml          too-many-lines-threshold = 50, excessive-nesting-threshold
+clippy.toml          too-many-lines-threshold = 50, excessive-nesting-threshold = 4 (an unset or 0 threshold turns the
+                     lint off, D-488, D-585)
 deny.toml            cargo-deny policy: license allow-list, crates.io only, banned crates, yanked and unknown
                      sources denied, every ignore with a reason and expiry (SEC-021, SEC-045)
 app/
@@ -64,8 +65,10 @@ app/
     src/main.rs      the `web` binary: installs the rustls crypto provider, builds the router, binds
                      `0.0.0.0:$PORT`, serves with graceful shutdown on SIGINT and SIGTERM (a container stop sends
                      SIGTERM; without the handler the exit is 137, D-491); `server migrate` runs `sqlx::migrate!` as
-                     the release step (section 9)
-    src/bin/worker.rs        the worker binary: same provider install, one Tokio runtime, the claim loop (section 5)
+                     the release step (section 9); a missing or bad `PORT` exits 1 without echoing the value, and
+                     `/healthz` is left to T106 (D-588)
+    src/bin/worker.rs        the worker binary: same provider install, one Tokio runtime, the claim loop (section 5); until T013
+                             adds it, the worker idles until SIGINT or SIGTERM and exits 0 (D-588)
     src/bin/rules_bridge.rs  JSON-in, JSON-out door to each crate's `api::rules` for the twin (T074): one
                      long-lived process, one JSON object per line each way, requests `{id, call, args}`, answers
                      `{"ok": {id, result}}` or `{"error": {id, code}}` (about 0.05 ms a call measured, D-491); plain

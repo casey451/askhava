@@ -1,0 +1,5 @@
+# Clippy thresholds for the workspace lints in Cargo.toml (SEC-029, BUILD_BRIEF.md:486, D-585).
+# Functions stay under 50 lines. Nesting deeper than 4 blocks fails; an unset or 0 threshold turns
+# excessive_nesting off, so this line must stay (D-488).
+too-many-lines-threshold = 50
+excessive-nesting-threshold = 4

@@ -1,0 +1,20 @@
+[package]
+name = "askhava-server"
+description = "Ask Hava composition root: the web and worker binaries (docs/architecture.md section 2)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+[dependencies]
+askhava-core = { workspace = true }
+axum = { workspace = true }
+rustls = { workspace = true }
+tokio = { workspace = true }
+
+[lints]
+workspace = true
