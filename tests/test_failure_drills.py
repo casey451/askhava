@@ -68,6 +68,7 @@ class FakeEnv:
         self.update: dict[str, Any] = {"status": "current"}  # what update_branch reports (D-620)
         self.updates: list[tuple[str, str]] = []
         self.update_merge = False  # whether a differing head is an update merge of the reviewed one (D-620)
+        self.checks_of: dict[str, dict[str, str]] = {}  # checks_on answers by commit (D-630)
 
     def read_state(self) -> st.State:
         return copy.deepcopy(self.store)
@@ -158,6 +159,9 @@ class FakeEnv:
 
     def update_merge_of(self, reviewed: str, head: str, number: int) -> bool | None:
         return self.update_merge
+
+    def checks_on(self, sha: str) -> dict[str, str] | None:
+        return copy.deepcopy(self.checks_of.get(sha))
 
 
 def config(

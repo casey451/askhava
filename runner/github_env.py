@@ -649,7 +649,9 @@ class GitHubEnv:
             return None
         return self._required_checks(str(merged[0]["head"]["sha"]))
 
-    def _required_checks(self, sha: str) -> bool | None:
+    def checks_on(self, sha: str) -> dict[str, str] | None:
+        """{check name: conclusion, or "running"} for the required checks on a commit, each from its
+        latest run (REST, read only, the job token); None when the check runs cannot be read (D-630)."""
         try:
             runs = self.gh_json(f"repos/{self.repo}/commits/{sha}/check-runs?per_page=100").get("check_runs", [])
         except RuntimeError as exc:
@@ -659,6 +661,12 @@ class GitHubEnv:
         for run in sorted(runs, key=lambda r: str(r.get("started_at") or "")):
             done = run.get("status") == "completed"
             latest[str(run.get("name"))] = str(run.get("conclusion") or "") if done else "running"
+        return {name: latest[name] for name in verify.REQUIRED_CHECKS if name in latest}
+
+    def _required_checks(self, sha: str) -> bool | None:
+        latest = self.checks_on(sha)
+        if latest is None:
+            return None
         verdicts = [latest.get(name) for name in verify.REQUIRED_CHECKS]
         if any(v in ("failure", "cancelled", "timed_out") for v in verdicts):
             return False
