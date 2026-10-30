@@ -326,6 +326,8 @@ dependencies = [
 name = "askhava-messaging"
 version = "0.1.0"
 dependencies = [
+ "jiff",
+ "proptest",
  "serde",
  "serde_json",
  "thiserror",
