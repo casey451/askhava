@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-30T22:47:51Z by runner 7b33af643334 (actions).
+Updated 2026-10-30T22:48:00Z by runner 7b33af643334 (actions).
 
 **Requirements verified:** 3 of 725 (0.4%) · partial 125 · unstarted 597
 **Tasks merged (throughput only):** 40 of 221
@@ -47,10 +47,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T028 (lease until 2026-10-31T01:29:29Z)
-- lane 2: T025 (lease until 2026-10-31T01:22:49Z)
 
 ## Needs attention
 - nothing
 
 ## Last usage reading
-- {"task": "T024", "at": "2026-10-30T22:11:05Z", "input_tokens": 136, "cache_creation_input_tokens": 295190, "output_tokens": 28339, "cache_read_input_tokens": 3808632}
+- {"task": "T025", "at": "2026-10-30T22:47:51Z", "input_tokens": 105, "output_tokens": 32724, "cache_creation_input_tokens": 200676, "cache_read_input_tokens": 2120776}
