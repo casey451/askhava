@@ -1,0 +1,10 @@
+[package]
+name = "askhava-recovery-tests"
+description = "Ask Hava recovery test layer: restore and failure-recovery tests through each module's api (SEC-029, D-488)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
