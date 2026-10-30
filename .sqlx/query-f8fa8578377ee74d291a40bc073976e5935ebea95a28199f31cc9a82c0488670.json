@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO ops.pause_switch AS s (name, scope_id, paused) VALUES ($1, $2, true) ON CONFLICT (name, scope_id) DO UPDATE SET paused = true, changed_at = now() WHERE NOT s.paused RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.pause_switch",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f8fa8578377ee74d291a40bc073976e5935ebea95a28199f31cc9a82c0488670"
+}

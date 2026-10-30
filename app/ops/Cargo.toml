@@ -1,0 +1,17 @@
+[package]
+name = "askhava-ops"
+description = "Ask Hava ops: the append-only audit log, alerts and pause switches (JOB-005, OPS-003, OPS-010, PRIV-028)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+jiff = { workspace = true }
+jiff-sqlx = { workspace = true, features = ["postgres"] }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+
+[lints]
+workspace = true
