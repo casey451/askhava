@@ -708,6 +708,27 @@ def test_requeue_with_two_lanes_waits_only_for_a_lease_that_could_meet_the_task(
         assert f"a live lease is held ({other})" in cycle.requeue_refusal(held, "T001", NOW, cfg)
 
 
+def test_plan_fix_requeue_with_two_lanes_waits_only_for_a_lease_that_could_meet_the_task(tmp_path: Path) -> None:
+    """D-677 with lanes 2 (kit/runner.json on main): the same lease rule as --requeue (D-620)."""
+    graph = [staged("T001", owns=["app/a/"]), staged("T002", owns=["app/b/"]), staged("T003", owns=["app/a/x.rs"]),
+             staged("T004", "3", owns=["app/d/"])]
+    ended = st.iso(NOW - timedelta(hours=1))
+    capped = st.with_task(st.sync_graph(st.new_state(), graph), "T001", status=st.BLOCKED, attempts=3, reason="smoke red",
+                          history=[{"attempt": 3, "ended_at": ended, "result": "BLOCKED"}])
+    evidence = {"since": ended, "base": "b" * 40, "head": "h" * 40, "plan_then": "1" * 64, "plan_now": "2" * 64,
+                "decisions_then": [646], "decisions_now": [646, 677], "task_decisions_then": [], "task_decisions_now": ["D-677"]}
+    cfg = two_lane(graph, tmp_path, "s1", None)
+    side = st.claim(capped, "T002", "b", NOW, lane="2")
+    assert cycle.plan_fix_refusal(side, "T001", "D-677", evidence, NOW, cfg) == ""
+    moved = cycle.requeue_plan_fix(side, "T001", "plan fixed", "D-677", evidence, NOW, "me", cfg)
+    assert moved is not None and st.status(moved, "T001") == st.QUEUED and st.entry(moved, "T001")["attempts"] == 3
+    assert "a live lease is held (T002)" in cycle.plan_fix_refusal(side, "T001", "D-677", evidence, NOW, dataclasses.replace(cfg, lanes=1))
+    for other in ("T003", "T004"):  # overlapping owned paths, another stage
+        held = st.claim(capped, other, "c", NOW, lane="2")
+        assert f"a live lease is held ({other})" in cycle.plan_fix_refusal(held, "T001", "D-677", evidence, NOW, cfg)
+        assert cycle.requeue_plan_fix(held, "T001", "x", "D-677", evidence, NOW, "me", cfg) is None
+
+
 def test_the_lane_count_is_in_the_locked_blueprint() -> None:
     import check_plan_lock
 
