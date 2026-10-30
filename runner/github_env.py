@@ -62,7 +62,7 @@ LEASE_FILE = "lease.json"
 NIGHTLY_FILE = "kit/nightly.json"
 RUNNER_LOG = "kit/runner_log.jsonl"  # one JSON line per cycle, the last 200 kept (D-499)
 ANSWERS_FILE = "kit/owner_answers.jsonl"
-DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbers (D-525)
+DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbers (D-530)
 PUSH_RETRIES = 3
 UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-515)
 UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError)  # a failed read or push: one lost try
@@ -495,10 +495,11 @@ class GitHubEnv:
         return self._fetch("main") or ""
 
     def decision_numbers(self) -> set[int] | None:
-        """The D-numbers on main's docs/decisions.md (fetched fresh), or None when it cannot be read;
-        claims reserve decision numbers above them (D-525)."""
-        text = self._show(self.main_head() or None, DECISIONS_FILE)
-        return None if text is None else set(st.decision_numbers(text))
+        """The D-numbers on main's docs/decisions.md (fetched fresh); claims reserve decision numbers
+        above them (D-530). None when the file cannot be read or holds no entry, so a bad read never
+        makes a claim hand out D-001 to D-005."""
+        numbers = set(st.decision_numbers(self._show(self.main_head() or None, DECISIONS_FILE) or ""))
+        return numbers or None
 
     def smoke_main(self) -> tuple[bool, str]:
         """bash scripts/smoke.sh in a detached worktree of main's head (the runner's own tool run)."""

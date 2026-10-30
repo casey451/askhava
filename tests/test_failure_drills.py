@@ -992,12 +992,12 @@ def test_drill_one_transient_renewal_failure_then_a_good_beat_submits_normally(t
 
 
 def _numbered(cfg: cycle.Config, main: set[int] | None) -> cycle.Config:
-    """The config with main's docs/decisions.md numbers wired in, as runner/__main__.py does (D-525)."""
+    """The config with main's docs/decisions.md numbers wired in, as runner/__main__.py does (D-530)."""
     return dataclasses.replace(cfg, decisions=lambda: main)
 
 
 def test_drill_a_claim_reserves_decision_numbers_and_a_retry_reuses_them(tmp_path: Path) -> None:
-    """D-525: the claim's own state write reserves the block; a failed attempt's retry keeps it; the next
+    """D-530: the claim's own state write reserves the block; a failed attempt's retry keeps it; the next
     task's block starts above it, so work in flight never shares a number."""
     graph = [make_task("T001"), make_task("T002")]
     failing = {"left": 1}

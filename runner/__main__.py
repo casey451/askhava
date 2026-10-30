@@ -200,7 +200,7 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         "session": cfg.session, "task": tid, "branch": env.branch_for(tid), "prompt": _prompt_for(task, tid),
         "model": cycle.attempt_model(task, int(task.get("attempts", 0)), cfg.models) if task.get("model") else None,
         "reviewer_model": task.get("reviewer_model"), "last_failure": task.get("last_failure"), "goal": task.get("goal"),
-        "decision_ids": list(task.get("decision_ids") or []),  # number new decision entries from these, in order (D-525)
+        "decision_ids": list(task.get("decision_ids") or []),  # number new decision entries from these, in order (D-530)
     }
     if not env.dry_run:
         (ROOT / HANDOFF).write_text(json.dumps(info), encoding="utf-8")

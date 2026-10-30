@@ -1,4 +1,4 @@
-"""Reserved decision numbers (D-525): each claim gives the task a block of D-numbers in `decision_ids`
+"""Reserved decision numbers (D-530): each claim gives the task a block of D-numbers in `decision_ids`
 and advances `next_decision` in the same state write, so parallel work never takes one number twice.
 Covers runner/state.py's reservation, the hand-off field and scripts/check_state.py's cross-check.
 Fake data only.
@@ -94,7 +94,7 @@ def test_the_handoff_carries_the_tasks_decision_ids() -> None:
 
 def test_check_state_validates_the_counter_and_the_blocks() -> None:
     base = {"schema": 1, "lease": None, "tasks": [{"id": "T001"}, {"id": "T002"}]}
-    assert cs.check(base) == []  # a state written before D-525 stays valid
+    assert cs.check(base) == []  # a state written before D-530 stays valid
     good = {"schema": 1, "next_decision": 532, "tasks": [{"id": "T001", "decision_ids": [522, 523]}, {"id": "T002", "decision_ids": [527]}]}
     assert cs.check(good) == []
     assert cs.check(dict(good, next_decision="532")) == ["state.next_decision: expected integer, got str"]

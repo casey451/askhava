@@ -237,7 +237,7 @@ def test_trailer_must_name_a_new_entry_exactly(tmp_path: Path, capsys) -> None:
 
 
 def test_a_d_number_used_twice_fails_with_a_clear_message(tmp_path: Path, capsys) -> None:
-    """D-525: two pieces of work that took one number; the change that lands second fails."""
+    """D-530: two pieces of work that took one number; the change that lands second fails."""
     root = repo(tmp_path)
     add_decision(root, "- **D-002** Question: one lane. Choice: c.\n- **D-002** Question: other lane. Choice: d.\n")
     commit(root)
@@ -248,7 +248,7 @@ def test_a_d_number_used_twice_fails_with_a_clear_message(tmp_path: Path, capsys
 
 
 def test_gaps_in_decision_numbers_pass(tmp_path: Path) -> None:
-    """Reserved blocks leave unused numbers behind; a gap is never an error (D-525)."""
+    """Reserved blocks leave unused numbers behind; a gap is never an error (D-530)."""
     root = repo(tmp_path)
     add_decision(root, "- **D-004** Question: q. Choice: c.\n- **D-009** Question: r. Choice: d.\n")
     commit(root)
@@ -270,3 +270,20 @@ def test_two_branches_appending_decisions_merge_cleanly_locally(tmp_path: Path) 
     git(root, "merge", "-q", "--no-edit", "other")
     text = (root / "docs/decisions.md").read_text(encoding="utf-8")
     assert "- **D-002** Question: work." in text and "- **D-007** Question: other." in text and "<<<<<<<" not in text
+
+
+def test_a_stale_branch_whose_number_main_took_meanwhile_fails(tmp_path: Path, capsys) -> None:
+    """D-530: the branch appended D-002 on an old base; main has since merged its own D-002."""
+    root = repo(tmp_path)
+    add_decision(root, "- **D-002** Question: branch. Choice: c.\n")
+    commit(root)
+    git(root, "checkout", "-q", "main")
+    add_decision(root, "- **D-002** Question: landed first. Choice: d.\n")
+    commit(root)
+    git(root, "checkout", "-q", "work")
+    assert run(root) == 1
+    assert "D-002 is new on this branch but main already has a D-002 entry" in capsys.readouterr().err
+    (root / "docs/decisions.md").write_text(DECISIONS + "- **D-003** Question: branch. Choice: c.\n", encoding="utf-8")
+    commit(root)
+    assert run(root) == 0
+    assert cc.decisions_not_taken_on_main(DECISIONS, DECISIONS, DECISIONS) == []

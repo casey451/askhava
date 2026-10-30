@@ -14,7 +14,7 @@ Times are UTC ISO strings ending in "Z". Every function returns a new state; not
 its argument. Keys this runner adds (D-486, kit/state_schema.json): `main_red` (falsy, or the failing
 check, SHA and offending merge: docs/governance.md section 5), `stage_proofs`, `smoke_runs`,
 `deviations`, `usage.by_task`, `runner_sha`/`starter`, and per task `history`, `reviewed_sha`.
-Decision numbers (D-525): `next_decision` is the next D-number the runner may hand out, and each
+Decision numbers (D-530): `next_decision` is the next D-number the runner may hand out, and each
 claimed task carries `decision_ids`, the block of DECISION_BLOCK numbers its worker numbers new
 docs/decisions.md entries from, so parallel work never takes the same number twice.
 """
@@ -45,7 +45,7 @@ FIX_MAIN = "FIX-MAIN"  # the only task while main is red (BUILD_BRIEF.md:240)
 RETRYABLE = (QUEUED, RETRY_AFTER_RESET, RETRY_LATER)
 SATISFIED = (DONE, SKIPPED)
 BUILD_TASK = re.compile(r"^T\d+$")  # the tasks Gate P holds
-DECISION_BLOCK = 5  # D-numbers reserved per claimed task (D-525)
+DECISION_BLOCK = 5  # D-numbers reserved per claimed task (D-530)
 DECISION_ENTRY = re.compile(r"^- \*\*D-(\d+)\*\*", re.M)  # an entry line of docs/decisions.md
 
 
@@ -219,7 +219,7 @@ def _reserved(state: State) -> list[int]:
 
 
 def reserve_decisions(state: State, task_id: str, taken: set[int]) -> State:
-    """Give the task a block of DECISION_BLOCK D-numbers and advance `next_decision` (D-525).
+    """Give the task a block of DECISION_BLOCK D-numbers and advance `next_decision` (D-530).
 
     `taken` is every D-number on main's docs/decisions.md. A task that already holds a block keeps
     it (a re-claim) unless one of its numbers is on main by now. A new block starts above main's
@@ -240,7 +240,7 @@ def claim(
     """Claim a task on a lane. With one lane, one task is in flight at a time (BUILD_BRIEF.md:222).
 
     With `taken` (the D-numbers on main's docs/decisions.md) the same write reserves the task's
-    decision numbers (reserve_decisions, D-525); without it the claim reserves none."""
+    decision numbers (reserve_decisions, D-530); without it the claim reserves none."""
     refusal = _claim_refusal(state, task_id, now, lane)
     if refusal:
         raise LeaseError(refusal)

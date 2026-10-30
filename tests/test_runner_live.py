@@ -467,13 +467,18 @@ def test_fix_main_handoff_carries_its_goal_as_the_prompt() -> None:
 
 
 def test_a_live_claim_reserves_decision_numbers_above_mains_file(repo: dict[str, Path], tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """D-525: the real Env reads main's docs/decisions.md fresh; the claim's state push carries the block."""
+    """D-530: the real Env reads main's docs/decisions.md fresh; the claim's state push carries the block."""
     monkeypatch.delenv("RUNNER_WORKER_CMD", raising=False)
     env = make_env(repo["a"], tmp_path)
     assert env.decision_numbers() is None  # no decisions file on main: claims reserve nothing
     seed = repo["seed"]
     git(seed, "checkout", "-q", "main")
     (seed / "docs").mkdir()
+    (seed / "docs" / "decisions.md").write_text("# Decisions\n\nNo entries yet; D-040 in prose is not one.\n")
+    git(seed, "add", "-A")
+    git(seed, "commit", "-qm", "empty decisions")
+    git(seed, "push", "-q", "origin", "main")
+    assert env.decision_numbers() is None  # a file with no entry never starts the counter at D-001
     (seed / "docs" / "decisions.md").write_text("# Decisions\n\n- **D-001** a.\n- **D-040** b.\n")
     git(seed, "add", "-A")
     git(seed, "commit", "-qm", "decisions")

@@ -109,7 +109,7 @@ class Config:
     owner_paths: tuple[str, ...] = ()  # .github/CODEOWNERS entries: a PR touching one waits for Casey (D-511)
     lanes: int = 1  # kit/runner.json "lanes"; only lane "1" is ever claimed until a later stage (D-515)
     # Reads the D-numbers on main's docs/decisions.md (None when unreadable). A claim reserves the
-    # task's decision numbers only when this is set and returns a set (D-525).
+    # task's decision numbers only when this is set and returns a set (D-530).
     decisions: Callable[[], set[int] | None] | None = None
 
 
