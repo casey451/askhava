@@ -1090,7 +1090,17 @@
    "files": [],
    "empty_handin": true,
    "proof_waits_for": [
-    "T167 is MERGE_PENDING"
+    "a green nightly-main run containing T002's merge 739f29a31cec (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T003's merge 7161be09784c (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T004's merge 36b13e66ddf4 (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T172's merge 189cfe54c716 (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T005's merge f55fa02095c0 (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T006's merge 1e9c2dbb261b (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T007's merge d57693ea8e79 (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T008's merge d57693ea8e79 (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T170's merge 1cdbd960f712 (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T154's merge b4f7265f01d2 (last green run: c2cee3a0b56e)",
+    "a green nightly-main run containing T167's merge 5d45d8ef0bee (last green run: c2cee3a0b56e)"
    ]
   },
   {
@@ -4544,7 +4554,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T09:00:57Z",
+ "updated_at": "2026-10-30T09:02:23Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
