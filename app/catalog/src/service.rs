@@ -1,15 +1,16 @@
 //! Storing the catalog and switching categories (LIC-001, LIC-002, LIC-003, LIC-004, AI-017).
 //!
-//! Every function takes the caller's connection. Loading never changes an existing category's
-//! switch: the switch is the owner's setting, and the file only decides where a new category starts
-//! (LIC-003). Switching writes the new state and an `ops` audit row in one transaction (LIC-002).
+//! Every function takes the caller's connection. Loading never switches an existing category on:
+//! the switch is the owner's setting, and the file only decides where a new category starts
+//! (LIC-003). It does switch off, with a system audit row, a category that is now not offered, has
+//! a ROC kind with no classes, or is gone from the file (LIC-003, LIC-004, AI-017). Switching writes the new state and an `ops` audit row in one transaction (LIC-002).
 
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::loader::normalize;
-use crate::models::{Catalog, CatalogError, Category, CategoryDef};
+use crate::models::{Catalog, CatalogError, Category, CategoryDef, JobType};
 
 fn db<T>(r: Result<T, sqlx::Error>) -> Result<T, CatalogError> {
     r.map_err(|_| CatalogError::Database)
@@ -35,7 +36,69 @@ pub(crate) async fn load(
     for def in &catalog.categories {
         store_category(&mut tx, def).await?;
     }
+    drop_stale_not_offered(&mut tx, catalog).await?;
+    switch_off_unsafe(&mut tx, catalog).await?;
     db(tx.commit().await)
+}
+
+/// Removes not-offered names the file no longer lists, so the stored list is the file's list.
+async fn drop_stale_not_offered(
+    tx: &mut PgConnection,
+    catalog: &Catalog,
+) -> Result<(), CatalogError> {
+    let names: Vec<String> = catalog
+        .not_offered_at_launch
+        .iter()
+        .map(|n| normalize(n))
+        .collect();
+    db(sqlx::query!(
+        "DELETE FROM catalog.not_offered WHERE name <> ALL($1)",
+        &names
+    )
+    .execute(&mut *tx)
+    .await)?;
+    Ok(())
+}
+
+/// Switches off, with a system audit row each, every stored category that may not stay on after a
+/// reload: one now on the not-offered list, a ROC kind with no classes, or one the file no longer
+/// lists. A reload never switches anything on (LIC-002, LIC-003, LIC-004, AI-017).
+async fn switch_off_unsafe(tx: &mut PgConnection, catalog: &Catalog) -> Result<(), CatalogError> {
+    let blocked: Vec<String> = catalog
+        .not_offered_at_launch
+        .iter()
+        .map(|n| normalize(n))
+        .collect();
+    let listed: Vec<String> = catalog.categories.iter().map(|d| d.id.clone()).collect();
+    let ids = db(sqlx::query_scalar!(
+        "UPDATE catalog.category c SET enabled = false FROM catalog.license_rule l \
+         WHERE l.category_id = c.id AND c.enabled AND ( \
+           c.code <> ALL($2) \
+           OR replace(lower(btrim(c.code)), '_', ' ') = ANY($1) \
+           OR replace(lower(btrim(c.name)), '_', ' ') = ANY($1) \
+           OR (l.kind IN ('roc', 'roc_and_state_agency') AND cardinality(l.classes) = 0)) \
+         RETURNING c.id",
+        &blocked,
+        &listed,
+    )
+    .fetch_all(&mut *tx)
+    .await)?;
+    for id in ids {
+        let entry = AuditEntry {
+            actor: Actor::System,
+            action: "catalog.category_switched",
+            subject_kind: "catalog.category",
+            subject_id: id,
+            change: Change::Status {
+                from: "on",
+                to: "off",
+            },
+        };
+        audit(&mut *tx, &entry)
+            .await
+            .map_err(|_| CatalogError::Database)?;
+    }
+    Ok(())
 }
 
 async fn store_category(tx: &mut PgConnection, def: &CategoryDef) -> Result<(), CatalogError> {
@@ -121,26 +184,40 @@ pub(crate) async fn category(
     code: &str,
 ) -> Result<Option<Category>, CatalogError> {
     let row = db(sqlx::query!(
-        "SELECT c.id, c.code, c.name, c.enabled, c.recurring, l.kind AS license_kind, \
-         l.classes AS license_classes, f.trip_fee_tier, \
-         ARRAY(SELECT j.name FROM catalog.job_type j WHERE j.category_id = c.id ORDER BY j.name) \
-         AS \"job_types!\" \
+        "SELECT c.id, c.code, c.name, c.enabled, c.recurring, c.after_hours_emergency, \
+         c.quote_format, c.keywords, l.kind AS license_kind, l.classes AS license_classes, \
+         l.agency, l.handyman_allowed, l.construction_type, f.trip_fee_tier \
          FROM catalog.category c JOIN catalog.license_rule l ON l.category_id = c.id \
          JOIN catalog.fee_rule f ON f.category_id = c.id WHERE c.code = $1",
         code
     )
-    .fetch_optional(conn)
+    .fetch_optional(&mut *conn)
     .await)?;
-    Ok(row.map(|r| Category {
+    let Some(r) = row else { return Ok(None) };
+    let job_types = db(sqlx::query_as!(
+        JobType,
+        "SELECT name, one_time, fee_free, kind, quote_format FROM catalog.job_type \
+         WHERE category_id = $1 ORDER BY name",
+        r.id
+    )
+    .fetch_all(conn)
+    .await)?;
+    Ok(Some(Category {
         id: r.id,
         code: r.code,
         name: r.name,
         enabled: r.enabled,
         recurring: r.recurring,
+        after_hours_emergency: r.after_hours_emergency,
+        quote_format: r.quote_format,
+        keywords: r.keywords,
         license_kind: r.license_kind,
         license_classes: r.license_classes,
+        agency: r.agency,
+        handyman_allowed: r.handyman_allowed,
+        construction_type: r.construction_type,
         trip_fee_tier: r.trip_fee_tier,
-        job_types: r.job_types,
+        job_types,
     }))
 }
 
@@ -196,13 +273,17 @@ pub(crate) async fn set_enabled(
         }
     }
     let mut tx = db(conn.begin().await)?;
-    db(sqlx::query!(
-        "UPDATE catalog.category SET enabled = $2 WHERE id = $1",
+    let changed = db(sqlx::query!(
+        "UPDATE catalog.category SET enabled = $2 WHERE id = $1 AND enabled = NOT $2",
         cat.id,
         on
     )
     .execute(&mut *tx)
-    .await)?;
+    .await)?
+    .rows_affected();
+    if changed == 0 {
+        return Ok(false);
+    }
     let (from, to) = if on { ("off", "on") } else { ("on", "off") };
     let entry = AuditEntry {
         actor,

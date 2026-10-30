@@ -8,7 +8,7 @@
 
 use std::collections::BTreeSet;
 
-use crate::models::{Catalog, CatalogError, CategoryDef};
+use crate::models::{Catalog, CatalogError, CategoryDef, LicenseRule};
 
 /// The reviewed catalog file, compiled in.
 const EMBEDDED: &str = include_str!("../../../docs/catalog/categories.yaml");
@@ -79,9 +79,17 @@ fn check(def: &CategoryDef) -> Result<(), CatalogError> {
             .chain(def.job_type_kinds.keys())
             .chain(def.job_type_formats.keys())
             .all(|j| def.job_types.contains(j));
-    if ok {
+    if ok && license_fits(&def.license) {
         Ok(())
     } else {
         Err(CatalogError::Invalid)
     }
+}
+
+/// The license rule's own shape, as the table's CHECK constraints hold it: an agency exactly for
+/// the agency kinds, classes only for the ROC kinds.
+fn license_fits(rule: &LicenseRule) -> bool {
+    let agency_kind = matches!(rule.kind.as_str(), "state_agency" | "roc_and_state_agency");
+    let roc_kind = matches!(rule.kind.as_str(), "roc" | "roc_and_state_agency");
+    agency_kind == rule.agency.is_some() && (roc_kind || rule.classes.is_empty())
 }

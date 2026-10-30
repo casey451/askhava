@@ -77,3 +77,35 @@ fn an_unknown_license_kind_or_fee_tier_is_refused() {
         assert!(parse(&bad).is_err(), "{bad}");
     }
 }
+
+/// AI-017, LIC-001: a license rule the tables' CHECK constraints would refuse is refused at parse.
+#[test]
+fn a_license_rule_with_a_stray_or_missing_agency_or_class_is_refused() {
+    let good = def("pets", "Pets", true);
+    for bad_rule in [
+        "{kind: state_agency}",
+        "{kind: roc_and_state_agency, classes: [R-1]}",
+        "{kind: none, agency: Someone}",
+        "{kind: roc, classes: [R-1], agency: Someone}",
+        "{kind: none, classes: [R-1]}",
+        "{kind: state_agency, classes: [R-1], agency: Someone}",
+    ] {
+        let bad = good.replace("{kind: none}", bad_rule);
+        assert_eq!(
+            parse(&bad),
+            Err(crate::models::CatalogError::Invalid),
+            "{bad_rule}"
+        );
+    }
+    for ok_rule in [
+        "{kind: state_agency, agency: Someone}",
+        "{kind: roc, classes: [R-1]}",
+        "{kind: roc}",
+        "{kind: roc_and_state_agency, classes: [R-1], agency: Someone}",
+    ] {
+        assert!(
+            parse(&good.replace("{kind: none}", ok_rule)).is_ok(),
+            "{ok_rule}"
+        );
+    }
+}

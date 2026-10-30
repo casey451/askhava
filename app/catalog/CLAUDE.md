@@ -22,14 +22,14 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 
 ## Never break
 
-- Loading again never changes an existing category's switch: `an_unresolved_class_and_a_non_owner_cannot_switch_on`.
+- Loading again never switches a category on; it switches off, with a system audit row, one now not offered, ROC with no classes, or dropped from the file (D-747): `an_unresolved_class_and_a_non_owner_cannot_switch_on`, `a_reload_with_no_classes_switches_a_roc_category_off`, `a_reload_applies_a_changed_not_offered_list`, `a_category_dropped_from_the_file_is_switched_off`.
 - A repeat switch writes no audit row: `switching_a_category_is_logged`.
 - `CatalogError` carries no value or database message (PRIV-016).
 - `catalog` calls `ops` only (`kit/layers.json`).
 
 ## How to change
 
-- Add or change a category: edit the file (a `docs/decisions.md` entry and `scripts/check_catalog.py`), then `load_embedded` (the server does not call it yet; wiring it into start-up is the composition's job); a changed `enabled` for an existing category does not apply, switch it through `set_category_enabled`.
+- Add or change a category: edit the file (a `docs/decisions.md` entry and `scripts/check_catalog.py`), then `load_embedded` (the server does not call it yet; D-748 says the first task with a start-up pool calls it); a changed `enabled` for an existing category does not apply, switch it through `set_category_enabled`.
 - Add a column: a new migration starting `-- catalog (T###)`, update `service.rs`, regenerate `.sqlx/`.
 - Run `cargo test -p askhava-catalog`, `cargo test -p askhava-integration --test catalog_settings`, clippy and `bash scripts/smoke.sh`.
 

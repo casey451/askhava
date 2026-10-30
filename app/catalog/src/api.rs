@@ -10,7 +10,7 @@ use sqlx::PgConnection;
 use crate::{loader, service};
 
 pub use crate::loader::{normalize, parse};
-pub use crate::models::{Catalog, CatalogError, Category};
+pub use crate::models::{Catalog, CatalogError, Category, JobType};
 
 /// Parses the catalog file compiled into the build and stores it (LIC-001). Run it at start-up and
 /// after the file changes; it is safe to run again and never changes an existing category's switch,

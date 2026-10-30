@@ -5,17 +5,19 @@
 //! donation pickup on; that a category not in the file is not stored; that the eight not-offered
 //! kinds are known and cannot be switched on; that a licensed category with no resolved class
 //! cannot be switched on; that only the owner switches, and each real switch is one audit row;
-//! and that loading again keeps the owner's switch. Fake data only.
+//! that loading again keeps the owner's switch but switches off, with a logged row, a category
+//! that became unsafe or left the file. Fake data only.
 
 use askhava_catalog::api::{
-    CatalogError, category, enabled_categories, is_enabled, is_not_offered, load_embedded,
-    set_category_enabled,
+    CatalogError, category, enabled_categories, is_enabled, is_not_offered, load, load_embedded,
+    parse, set_category_enabled,
 };
 use askhava_integration::set_app_role;
 use askhava_ops::api::{Actor, export_audit};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
+const FILE: &str = include_str!("../../../docs/catalog/categories.yaml");
 const OWNER: Uuid = Uuid::from_u128(0x0000_7e57_0000_0000_0000_0000_0000_0021);
 
 async fn loaded(pool: &PgPool) -> sqlx::pool::PoolConnection<sqlx::Postgres> {
@@ -49,11 +51,72 @@ async fn a_category_loads_with_its_fields(pool: PgPool) {
         (25, false, true)
     );
     assert_eq!(plumbing.job_types.len(), 4);
+    assert_eq!(
+        (
+            plumbing.after_hours_emergency,
+            plumbing.handyman_allowed,
+            plumbing.construction_type
+        ),
+        (true, true, true)
+    );
+    assert_eq!(plumbing.quote_format, "diagnostic_visit");
+    assert!(plumbing.keywords.contains(&"faucet".to_owned()));
+    assert_eq!(plumbing.agency, None);
+    let faucet = &plumbing.job_types[0];
+    assert_eq!(
+        (
+            faucet.name.as_str(),
+            faucet.kind.as_deref(),
+            faucet.quote_format.as_deref()
+        ),
+        ("drain clearing", Some("repair"), Some("firm"))
+    );
+    let leak = plumbing
+        .job_types
+        .iter()
+        .find(|j| j.name == "leak repair")
+        .expect("job type");
+    assert_eq!(
+        (leak.kind.as_deref(), leak.quote_format.as_deref()),
+        (Some("repair"), None)
+    );
     let pool_cleaning = category(&mut conn, "pool_cleaning")
         .await
         .expect("read")
         .expect("stored");
     assert!(pool_cleaning.recurring);
+    let one_time: Vec<_> = pool_cleaning
+        .job_types
+        .iter()
+        .filter(|j| j.one_time)
+        .collect();
+    assert_eq!(one_time.len(), 1);
+    assert_eq!(one_time[0].name, "green pool cleanup");
+    assert!(
+        pool_cleaning
+            .job_types
+            .iter()
+            .all(|j| !j.fee_free && j.kind.is_none())
+    );
+    assert_eq!(pool_cleaning.quote_format, "monthly");
+    let pest = category(&mut conn, "pest_control")
+        .await
+        .expect("read")
+        .expect("stored");
+    assert_eq!(pest.license_kind, "state_agency");
+    assert!(pest.license_classes.is_empty());
+    assert_eq!(
+        pest.agency.as_deref(),
+        Some("AZ Department of Agriculture (pest management)")
+    );
+    let inspection = category(&mut conn, "home_inspection")
+        .await
+        .expect("read")
+        .expect("stored");
+    assert_eq!(
+        inspection.job_types.iter().filter(|j| j.fee_free).count(),
+        4
+    );
     assert!(
         category(&mut conn, "window_tint")
             .await
@@ -163,4 +226,74 @@ async fn an_unresolved_class_and_a_non_owner_cannot_switch_on(pool: PgPool) {
         is_enabled(&mut conn, "junk_removal").await.expect("read"),
         "a reload keeps the switch"
     );
+}
+
+async fn reload_with(
+    conn: &mut PgConnection,
+    edit: impl FnOnce(&mut askhava_catalog::api::Catalog),
+) {
+    let mut catalog = parse(FILE).expect("parses");
+    edit(&mut catalog);
+    load(conn, &catalog).await.expect("reload");
+}
+
+/// LIC-003, AI-017: a reload that empties a ROC category's classes switches it off and logs it.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_reload_with_no_classes_switches_a_roc_category_off(pool: PgPool) {
+    let mut conn = loaded(&pool).await;
+    assert!(
+        is_enabled(&mut conn, "plumbing_repair")
+            .await
+            .expect("read")
+    );
+    reload_with(&mut conn, |c| {
+        let def = c
+            .categories
+            .iter_mut()
+            .find(|d| d.id == "plumbing_repair")
+            .expect("listed");
+        def.license.classes = vec![];
+    })
+    .await;
+    assert!(
+        !is_enabled(&mut conn, "plumbing_repair")
+            .await
+            .expect("read")
+    );
+    assert_eq!(switch_rows(&mut conn).await, 1);
+    let rows = export_audit(&mut conn, 0, 100).await.expect("export");
+    assert_eq!(
+        (
+            rows[0].actor_id,
+            rows[0].from_status.as_deref(),
+            rows[0].to_status.as_deref()
+        ),
+        (None, Some("on"), Some("off"))
+    );
+}
+
+/// LIC-004: a kind newly on the not-offered list is switched off by a reload, and a kind taken off
+/// the list is no longer reported as not offered.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_reload_applies_a_changed_not_offered_list(pool: PgPool) {
+    let mut conn = loaded(&pool).await;
+    reload_with(&mut conn, |c| {
+        c.not_offered_at_launch.retain(|n| n != "towing");
+        c.not_offered_at_launch.push("Handyman".to_owned());
+    })
+    .await;
+    assert!(!is_enabled(&mut conn, "handyman").await.expect("read"));
+    assert!(is_not_offered(&mut conn, "handyman").await.expect("read"));
+    assert!(!is_not_offered(&mut conn, "towing").await.expect("read"));
+    assert_eq!(switch_rows(&mut conn).await, 1);
+}
+
+/// LIC-003: a category dropped from the file is switched off and logged, and its code reads as off.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_category_dropped_from_the_file_is_switched_off(pool: PgPool) {
+    let mut conn = loaded(&pool).await;
+    reload_with(&mut conn, |c| c.categories.retain(|d| d.id != "handyman")).await;
+    assert!(!is_enabled(&mut conn, "handyman").await.expect("read"));
+    assert_eq!(switch_rows(&mut conn).await, 1);
+    assert_eq!(enabled_categories(&mut conn).await.expect("list").len(), 36);
 }

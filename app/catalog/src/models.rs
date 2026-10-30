@@ -99,6 +99,21 @@ pub struct Catalog {
     pub categories: Vec<CategoryDef>,
 }
 
+/// A stored job type with its flags (LIC-001).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct JobType {
+    /// The job type name.
+    pub name: String,
+    /// True for a one-time job in a recurring category.
+    pub one_time: bool,
+    /// True when the pick charges no introduction fee (FEE-045).
+    pub fee_free: bool,
+    /// `repair`, `replace` or `install`, where the category sets one.
+    pub kind: Option<String>,
+    /// The quote format when it differs from the category's.
+    pub quote_format: Option<String>,
+}
+
 /// A stored category with its license rule and fee rule (LIC-001).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Category {
@@ -112,12 +127,24 @@ pub struct Category {
     pub enabled: bool,
     /// Whether the fee basis is 4 months of the monthly price.
     pub recurring: bool,
+    /// Whether the category takes after-hours emergency requests.
+    pub after_hours_emergency: bool,
+    /// The category's quote format.
+    pub quote_format: String,
+    /// The words that match a request to this category.
+    pub keywords: Vec<String>,
     /// The license kind: `none`, `roc`, `state_agency` or `roc_and_state_agency`.
     pub license_kind: String,
     /// The ROC classes; empty means unresolved for a ROC kind.
     pub license_classes: Vec<String>,
+    /// The other state agency, for the agency kinds.
+    pub agency: Option<String>,
+    /// Whether handymen may also receive cards.
+    pub handyman_allowed: bool,
+    /// Whether the $1,000 handyman limit applies.
+    pub construction_type: bool,
     /// The set introduction fee by job size for a trip-fee quote, in dollars.
     pub trip_fee_tier: i32,
-    /// The job type names, sorted.
-    pub job_types: Vec<String>,
+    /// The job types, sorted by name.
+    pub job_types: Vec<JobType>,
 }

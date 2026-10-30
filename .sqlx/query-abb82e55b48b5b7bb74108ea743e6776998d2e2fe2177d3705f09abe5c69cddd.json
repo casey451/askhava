@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT c.id, c.code, c.name, c.enabled, c.recurring, l.kind AS license_kind, l.classes AS license_classes, f.trip_fee_tier, ARRAY(SELECT j.name FROM catalog.job_type j WHERE j.category_id = c.id ORDER BY j.name) AS \"job_types!\" FROM catalog.category c JOIN catalog.license_rule l ON l.category_id = c.id JOIN catalog.fee_rule f ON f.category_id = c.id WHERE c.code = $1",
+  "query": "SELECT c.id, c.code, c.name, c.enabled, c.recurring, c.after_hours_emergency, c.quote_format, c.keywords, l.kind AS license_kind, l.classes AS license_classes, l.agency, l.handyman_allowed, l.construction_type, f.trip_fee_tier FROM catalog.category c JOIN catalog.license_rule l ON l.category_id = c.id JOIN catalog.fee_rule f ON f.category_id = c.id WHERE c.code = $1",
   "describe": {
     "columns": [
       {
@@ -60,6 +60,39 @@
       },
       {
         "ordinal": 5,
+        "name": "after_hours_emergency",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "after_hours_emergency"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "quote_format",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "quote_format"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "keywords",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "catalog.category",
+            "name": "keywords"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
         "name": "license_kind",
         "type_info": "Text",
         "origin": {
@@ -70,7 +103,7 @@
         }
       },
       {
-        "ordinal": 6,
+        "ordinal": 9,
         "name": "license_classes",
         "type_info": "TextArray",
         "origin": {
@@ -81,7 +114,40 @@
         }
       },
       {
-        "ordinal": 7,
+        "ordinal": 10,
+        "name": "agency",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "catalog.license_rule",
+            "name": "agency"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "handyman_allowed",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.license_rule",
+            "name": "handyman_allowed"
+          }
+        }
+      },
+      {
+        "ordinal": 12,
+        "name": "construction_type",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "catalog.license_rule",
+            "name": "construction_type"
+          }
+        }
+      },
+      {
+        "ordinal": 13,
         "name": "trip_fee_tier",
         "type_info": "Int4",
         "origin": {
@@ -90,12 +156,6 @@
             "name": "trip_fee_tier"
           }
         }
-      },
-      {
-        "ordinal": 8,
-        "name": "job_types!",
-        "type_info": "TextArray",
-        "origin": "Expression"
       }
     ],
     "parameters": {
@@ -112,8 +172,13 @@
       false,
       false,
       false,
-      null
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
     ]
   },
-  "hash": "b956f33e2c63ee6e235d3aa2753bd32780f5c3e7d4c846eeec4039c35c56c5c7"
+  "hash": "abb82e55b48b5b7bb74108ea743e6776998d2e2fe2177d3705f09abe5c69cddd"
 }
