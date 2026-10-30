@@ -19,6 +19,9 @@ line of JSON with what changed.
                                     permission, stage proof) back to QUEUED, attempts unchanged and
                                     the reason as its last_failure (refused for FIX-MAIN, a task out of
                                     attempts, or while any lease is live; recorded in `requeues`, D-583)
+  python3 -m runner --restore-lanes end a fall back to one lane (`lanes_fallback`, D-620)
+  RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
+                                    claims only on that lane; unset, the first free lane (D-620)
   --dry-run                         compute everything, push nothing, run no smoke test or worker
   --session ID                      the lease's session (default: the hand-off file, RUNNER_SESSION,
                                     or <starter>-<GITHUB_RUN_ID or random>)
@@ -33,23 +36,26 @@ claude/kit-state.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import os
+import random
 import subprocess
 import sys
 import tempfile
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
-from runner import cycle, proof, state as st
+from runner import cycle, lanes as lane_policy, proof, state as st
 from runner.github_env import GitHubEnv, find_transcripts, state_diff
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import check_state  # scripts/, standard library only
+import check_plan_lock  # scripts/, standard library only
+import check_state
 import pacing
 import progress
 import stage_exit
@@ -80,6 +86,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--evidence", default="")
     ap.add_argument("--requeue")
     ap.add_argument("--reason", default="")
+    ap.add_argument("--restore-lanes", action="store_true")
     return ap.parse_args(argv)
 
 
@@ -142,8 +149,27 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        session_id(args, starter), now_utc, gate, pacing.make_pacer(kit["tasks"], ROOT), pacing.usage_recorder(ROOT),
                        owner_paths(ROOT / ".github" / "CODEOWNERS") if owner_review(ROOT / "kit" / "runner.json") else (),
                        lanes(ROOT / "kit" / "runner.json"), env.decision_numbers,
-                       proof_stages=frozenset(proof.MACHINE_PROOFS), stage_proof=stage_proof)
+                       proof_stages=frozenset(proof.MACHINE_PROOFS), stage_proof=stage_proof,
+                       lane_hint=lane_hint(os.environ.get("RUNNER_LANE", "")), locked=locked_path)
     return cfg, env
+
+
+def lane_hint(raw: str) -> str | None:
+    """RUNNER_LANE from backup-runner.yml's gate: the lane this run serves (D-620); None when unset or not a lane."""
+    value = raw.strip()
+    return value if value.isdigit() and int(value) >= 1 else None
+
+
+def locked_path(path: str) -> bool:
+    """Whether an owned path (a file, or a folder ending "/") holds a locked blueprint file
+    (scripts/check_plan_lock.py's lists), so its task also rewrites kit/plan.lock (D-620)."""
+    pure = PurePosixPath(path.rstrip("/"))
+    if path.endswith("/"):
+        return any(name.startswith(path) for name in (*check_plan_lock.LOCKED_FILES, *check_plan_lock.LOCKED_GLOBS))
+    if path in check_plan_lock.LOCKED_FILES:
+        return True
+    return any(pure.parent == PurePosixPath(glob).parent and fnmatch.fnmatch(pure.name, PurePosixPath(glob).name)
+               for glob in check_plan_lock.LOCKED_GLOBS)
 
 
 def git_file(sha: str, path: str) -> str | None:
@@ -160,8 +186,8 @@ def owner_review(settings: Path) -> bool:
 
 
 def lanes(settings: Path) -> int:
-    """How many tasks may be in flight at once (D-515): kit/runner.json "lanes", 1 when unset or not a
-    whole number of at least 1. Only lane "1" is claimed until a later stage uses more."""
+    """How many tasks may be in flight at once (D-515, D-620): kit/runner.json "lanes", 1 when unset or not
+    a whole number of at least 1. Changing it is the whole switch to more lanes (D-620)."""
     if not settings.is_file():
         return 1
     value = json.loads(settings.read_text(encoding="utf-8")).get("lanes", 1)
@@ -212,14 +238,22 @@ def requeue_task(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) ->
     tid, reason = str(args.requeue), args.reason.strip()
     if not reason:
         return "requeue_refused: --reason is empty"
-    why = cycle.requeue_refusal(env.read_state(), tid, now_utc())
+    why = cycle.requeue_refusal(env.read_state(), tid, now_utc(), cfg)
     if why:
         return f"requeue_refused: {why}"
-    done = env.update_state(lambda fresh: cycle.requeue(fresh, tid, reason, now_utc(), cfg.session))
+    done = env.update_state(lambda fresh: cycle.requeue(fresh, tid, reason, now_utc(), cfg.session, cfg))
     if done is None:
-        later = cycle.requeue_refusal(env.read_state(), tid, now_utc())
+        later = cycle.requeue_refusal(env.read_state(), tid, now_utc(), cfg)
         return f"requeue_refused: {later}" if later else "lost_race"
     return "requeued"
+
+
+def restore_lanes(env: GitHubEnv) -> str:
+    """`--restore-lanes`: end a fall back to one lane through update_state, so every lane in
+    kit/runner.json is used again (D-620); the fall back is kept in `lanes_fallback_history`."""
+    if not env.read_state().get("lanes_fallback"):
+        return "restore_refused: no lane fall back is set"
+    return "lanes_restored" if env.update_state(lane_policy.restore) is not None else "lost_race"
 
 
 def branch_note(prep: dict[str, Any]) -> str:
@@ -243,7 +277,8 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
     """Tell the session what it was handed (task, branch, prompt, models, its reserved `decision_ids`),
     and remember the session for --after."""
     state = env.last_state or {}
-    tid = str((state.get("lease") or {}).get("task", ""))
+    mine = next((lease for lease in st.leases_of(state).values() if lease and lease.get("session") == cfg.session), None)
+    tid = str((mine or state.get("lease") or {}).get("task", ""))  # the lane this session claimed (D-620)
     task = {**st.entry(state, tid), **next((t for t in cfg.graph if t["id"] == tid), {})}
     info = {
         "session": cfg.session, "task": tid, "branch": env.branch_for(tid), "prompt": _prompt_for(task, tid),
@@ -272,7 +307,44 @@ def run(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
         return record_proof(args, env)
     if args.requeue:
         return requeue_task(args, cfg, env)
-    return cycle.run_cycle(cfg, env, now_utc())
+    if args.restore_lanes:
+        return restore_lanes(env)
+    return cycle_with_retries(cfg, env)
+
+
+LOST_RACE_RETRIES = 2  # extra cycles after a lost race, with two lanes and a handed-off worker (D-620)
+
+
+def cycle_with_retries(cfg: cycle.Config, env: GitHubEnv) -> str:
+    """One cycle; with two or more lanes a lost race (another lane's run wrote first, the usual way two
+    runs started together collide) is tried again from a fresh read, up to LOST_RACE_RETRIES times after
+    a short random wait, so the second lane still claims. Only when the worker is handed off
+    (RUNNER_WORKER_CMD unset, as in backup-runner.yml), where a cycle never runs a worker, so a retry can
+    never start a second task in one session. A storm that outlasts the retries is a strike on this
+    run's lane (D-620)."""
+    result = cycle.run_cycle(cfg, env, now_utc())
+    if cfg.lanes < 2 or os.environ.get("RUNNER_WORKER_CMD"):
+        return result
+    for _ in range(LOST_RACE_RETRIES):
+        if result != "lost_race":
+            return result
+        env.sleep(random.uniform(1.0, 5.0))
+        result = cycle.run_cycle(cfg, env, now_utc())
+    if result == "lost_race":
+        cycle.record_strike(cfg, env, cfg.lane_hint, f"lane {cfg.lane_hint}: {LOST_RACE_RETRIES + 1} lost races in a row in one run")
+    return result
+
+
+def refill(cfg: cycle.Config, env: GitHubEnv) -> list[str]:
+    """The lanes the backup-runner chain step should start a run for (D-620), from the last state this
+    run saw; [] with one lane (the chain then works exactly as before) or when it cannot be worked out."""
+    if cfg.lanes < 2 or not env.last_state:
+        return []
+    try:
+        return cycle.refill_lanes(cfg, env.last_state, now_utc())
+    except Exception as exc:  # noqa: BLE001  # reason: a failed outlook must never change the cycle's result (D-620)
+        print(f"runner: refill lanes not worked out: {str(exc)[:200]}")
+        return []
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -284,6 +356,10 @@ def main(argv: list[str] | None = None) -> int:
                                   "changed": cycle_diff(env), "log": env.log}
         if result == "handed_off":
             report["handoff"] = write_handoff(cfg, env)
+        if args.after and not args.dry_run:
+            close_handoff(result)
+        if cfg.lanes >= 2:
+            report["lane"], report["refill"] = cfg.lane_hint, refill(cfg, env)
         try:
             env.write_cycle_log({k: v for k, v in report.items() if k != "handoff"})
         except Exception as exc:  # noqa: BLE001  # reason: a lost log line must never change the cycle's result (D-499)
@@ -291,6 +367,18 @@ def main(argv: list[str] | None = None) -> int:
     print(f"runner: {result}" + (" (dry run)" if args.dry_run else ""))
     print(json.dumps(report, sort_keys=True))
     return 2 if result == "state_invalid" else 0
+
+
+AFTER_KEEPS_HANDOFF = ("not_lease_holder", "lost_race", "state_invalid")
+
+
+def close_handoff(result: str) -> None:
+    """Remove the hand-off file once `--after` finished the task (D-620), so backup-runner.yml's safety
+    step sees no hand-off and writes no second, empty `--after` row after the real one; the chain step
+    reads that real row. A hand-off whose `--after` did not finish (not this session's lease, a lost
+    race, an invalid state) is kept, so the safety step still frees the lease."""
+    if result not in AFTER_KEEPS_HANDOFF:
+        (ROOT / HANDOFF).unlink(missing_ok=True)
 
 
 def cycle_diff(env: GitHubEnv) -> dict[str, Any]:

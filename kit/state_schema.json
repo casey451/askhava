@@ -293,6 +293,70 @@
             "items": {
               "type": "integer"
             }
+          },
+          "lane": {
+            "type": "string",
+            "pattern": "^([1-9][0-9]*|fix)$"
+          },
+          "update_merges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "from",
+                "to",
+                "how",
+                "at"
+              ],
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "to": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "how": {
+                  "type": "string",
+                  "enum": [
+                    "runner",
+                    "adopted"
+                  ]
+                },
+                "at": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "lanes_fallback": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "at",
+        "lane",
+        "why"
+      ]
+    },
+    "lane_strikes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "count"
+        ],
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "last": {
+            "type": "array"
           }
         }
       }

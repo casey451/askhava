@@ -28,6 +28,10 @@ even an empty window (the runner then claims it anyway at the start of a window:
 help, and a rejected run is RETRY_AFTER_RESET). A usage-limit rejection whose reset is still ahead
 (state.usage.limit_hit) means wait until that reset whatever the ledger says.
 
+**Lanes** (D-620): with two lanes another attempt may be running at a claim; its usage reaches the
+ledger only at its hand-in, so `used` also counts the estimate recorded at its claim for every other
+IN_PROGRESS task (`in_flight_tokens`). With one lane that is always 0.
+
 Usage: python3 scripts/pacing.py [--state PATH] [--task ID]
 """
 
@@ -150,8 +154,22 @@ def read_quota(command: str | None = None) -> dict[str, Any] | None:
     return reading if ok else None
 
 
-def standing(state: State, cfg: dict[str, Any], now: datetime, quota: dict[str, Any] | None) -> tuple[dict[str, dict[str, Any]], str]:
-    """Per window: used, effective budget, left and reset time; plus the source used."""
+def in_flight_tokens(state: State, task_id: str = "") -> int:
+    """Estimated weighted tokens of the attempts still running (D-620): every IN_PROGRESS task but
+    `task_id`, at the estimate recorded when it was claimed (usage.by_task[tid].estimated_tokens). A
+    running attempt's usage reaches the ledger only at its hand-in, so with two lanes the other lane's
+    work is counted against the windows as if spent; a quota reading already holds part of it, so this
+    errs on the side of waiting. With one lane nothing else is running at a claim, so it is 0."""
+    by_task = (state.get("usage") or {}).get("by_task") or {}
+    running = [t["id"] for t in state.get("tasks", []) if t.get("status") == "IN_PROGRESS" and t["id"] != task_id]
+    return sum(int((by_task.get(tid) or {}).get("estimated_tokens", 0) or 0) for tid in running)
+
+
+def standing(
+    state: State, cfg: dict[str, Any], now: datetime, quota: dict[str, Any] | None, reserved: int = 0
+) -> tuple[dict[str, dict[str, Any]], str]:
+    """Per window: used (plus `reserved`, the attempts still running), effective budget, left and reset
+    time; plus the source used."""
     out: dict[str, dict[str, Any]] = {}
     ledger = windows(state, cfg, now)
     for w in WINDOWS:
@@ -162,6 +180,7 @@ def standing(state: State, cfg: dict[str, Any], now: datetime, quota: dict[str, 
             start = ledger[w]["start"]
             used = float(ledger[w]["tokens"])
             reset = iso(parse(start) + timedelta(hours=float(cfg["window_hours"][w]))) if start else None
+        used += reserved
         eff = budget * (1 - float(cfg["headroom"]))
         out[w] = {"used": int(used), "budget": int(eff), "left": int(eff - used), "resets_at": reset}
     return out, "quota_cmd" if quota else "ledger"
@@ -192,10 +211,12 @@ def assess(
     """decide() with its working: estimate, bytes, basis, standing, source."""
     cfg, now = config or load_config(), now or datetime.now(timezone.utc)
     need, size, basis = estimate(task, state, cfg, root)
-    stand, source = standing(state, cfg, now, quota)
+    reserved = in_flight_tokens(state, str(task.get("id", "")))
+    stand, source = standing(state, cfg, now, quota, reserved)
     hit = ((state.get("usage") or {}).get("limit_hit") or {}).get("reset_at")
     decision = ("wait", hit) if hit and parse(hit) > now else _verdict(need, stand, now)
-    return {"decision": decision, "estimate": need, "bytes": size, "basis": basis, "standing": stand, "source": source}
+    found = {"decision": decision, "estimate": need, "bytes": size, "basis": basis, "standing": stand, "source": source}
+    return found | ({"in_flight": reserved} if reserved else {})
 
 
 def _k(tokens: float) -> str:
@@ -207,7 +228,8 @@ def line(tid: str, found: dict[str, Any]) -> str:
     stand, (verdict, detail) = found["standing"], found["decision"]
     left = f"five-hour window has {_k(stand['five_hour']['left'])} left, week {_k(stand['week']['left'])}"
     outcome = {"claim": "claimed", "wait": f"waiting until {detail}", "defer": f"claimed anyway ({detail})"}[verdict]
-    return f"{tid} estimated {_k(found['estimate'])} tokens ({found['basis']}); {left} ({found['source']}); {outcome}"
+    running = f" after {_k(found['in_flight'])} still running in another lane" if found.get("in_flight") else ""
+    return f"{tid} estimated {_k(found['estimate'])} tokens ({found['basis']}); {left}{running} ({found['source']}); {outcome}"
 
 
 def projected_finish(state: State, graph: list[dict[str, Any]], cfg: dict[str, Any], now: datetime, root: Path = ROOT) -> tuple[int, str]:

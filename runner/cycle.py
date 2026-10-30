@@ -9,12 +9,25 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
-from runner import outbox, state as st, verify
+from runner import lanes, outbox, state as st, verify
 from runner.state import State
 
 MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540
 HOURLY = timedelta(hours=1)
-WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes", "unreviewed_head")
+WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes", "unreviewed_head",
+                "branch_updated", "update_conflict", "update_push_failed")
+# Stage C (D-620): a reviewed head that fell behind main is brought up to date by the runner's own update
+# merge. A real conflict is never resolved here: the attempt fails and the retry starts from the branch.
+UPDATE_CONFLICT = ("merging main into the task branch conflicts in {paths}: the runner resolves only docs/decisions.md "
+                   "and a plan lock both sides kept true, so this attempt fails and the next one starts from the "
+                   "branch with main merged in, or fresh from main when that still conflicts (D-583, D-620)")
+UPDATE_PUSH_LIMIT = 3  # rejected update-merge pushes (not races) before the attempt fails (D-620)
+UPDATE_WAIT = timedelta(hours=2)  # how long an update merge git cannot make waits before the attempt fails (D-620)
+UPDATE_STUCK = "the branch could not be brought up to date with main for {wait}: {why} (D-620)"
+UPDATE_CLOSE = ("Closed by the runner: this branch could not be brought up to date with main, and auto-merge was on "
+                "({why}). The next attempt continues this branch with main merged in, or starts fresh when that "
+                "still conflicts (D-620).")
+NO_FREE_LANE = "no_free_lane"  # a run whose lane is busy or above the lanes in use, with nothing else to do (D-620)
 # An empty hand-in (no commits on top of main): GitHub opens no pull request for it, so it can never
 # merge. Only a cleanup task may legitimately find nothing to change (D-551).
 NO_CHANGES = "no changes: the hand-in has no commits on top of main (only a cleanup task may hand in nothing, D-551)"
@@ -145,6 +158,17 @@ class Env(Protocol):
         """Merge main into claude/kit-state with a normal merge commit (BUILD_BRIEF.md Appendix B, K0 step 4)."""
         ...
 
+    def update_branch(self, branch: str, reviewed: str) -> dict[str, Any]:
+        """Merge main into a task branch whose head is the reviewed head and push it (stage C, D-620):
+        {"status": "current" | "pushed" (with "sha", "main") | "conflict" (with "paths") | "push_failed"
+        (with "why") | "moved" | "error"}; runner/github_env.py documents each."""
+        ...
+
+    def update_merge_of(self, reviewed: str, head: str, number: int) -> bool | None:
+        """Whether `head` is an update merge of the reviewed head: parents exactly the reviewed commit and
+        a commit on main, tree the update merge's own (D-620); None when git cannot say."""
+        ...
+
 
 @dataclass
 class Config:
@@ -159,7 +183,7 @@ class Config:
     pacer: Callable[[State, dict[str, Any], datetime], tuple[str, str | None, State]] | None = None  # scripts/pacing.py
     on_usage: Callable[[State, dict[str, Any], datetime], State] | None = None  # usage windows (scripts/pacing.py)
     owner_paths: tuple[str, ...] = ()  # .github/CODEOWNERS entries: a PR touching one waits for Casey (D-511)
-    lanes: int = 1  # kit/runner.json "lanes"; only lane "1" is ever claimed until a later stage (D-515)
+    lanes: int = 1  # kit/runner.json "lanes": how many tasks may be in flight at once (D-515, D-620)
     # Reads the D-numbers on main's docs/decisions.md (None when unreadable). A claim reserves the
     # task's decision numbers only when this is set and returns a set (D-530).
     decisions: Callable[[], set[int] | None] | None = None
@@ -167,6 +191,12 @@ class Config:
     # returns (the proof record, or None, and what the proof still waits for) for one of them.
     proof_stages: frozenset[str] = frozenset()
     stage_proof: Callable[[State, str], tuple[dict[str, Any] | None, list[str]]] | None = None
+    # The lane a backup-runner run serves (RUNNER_LANE, from the workflow's gate); a run with one claims
+    # only that lane. None (a manual or routine run) claims the first free lane (D-620).
+    lane_hint: str | None = None
+    # Whether a path is in the locked blueprint (scripts/check_plan_lock.py): a task owning one also owns
+    # kit/plan.lock, so two such tasks never run side by side (D-620).
+    locked: Callable[[str], bool] | None = None
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -260,27 +290,66 @@ def _close_history(state: State, tid: str, pr: dict[str, Any], result: str) -> S
     return st.with_task(state, tid, history=history)
 
 
-def _resolve_merge(state: State, env: Env, cfg: Config, now: datetime) -> tuple[State, str]:
-    for task in state["tasks"]:
-        if task.get("status") != st.MERGE_PENDING:
-            continue
-        tid = task["id"]
-        pr = env.pr_for(tid)
-        if pr is not None and _earlier_pr(task, pr, env):
-            pr = None  # an earlier attempt's PR beside an empty hand-in already on main (D-584)
-        if pr is None:
-            return _without_pr(state, env, task, now)
-        reviewed = _head_reviewed(state, env, tid, pr)
-        if reviewed is not None and task.get("head_check_since"):
-            state = st.with_task(state, tid, head_check_since=None)  # the head was placed: the wait is over (D-584)
-        if not pr.get("merged"):
-            return _open_pr_step(state, env, tid, pr, reviewed)
-        if verify.checks_state(pr) == "pending":
-            return state, "merge_pending"
-        if reviewed is None:
-            return _unplaced_merge(state, cfg, tid, pr, now)
-        return _merged(state, tid, pr, cfg, now, reviewed)
-    return state, ""
+def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime) -> tuple[State, list[tuple[str, str, str]]]:
+    """Resolve every MERGE_PENDING task, each on its own lane (D-620); [(task, lane, result)] in state
+    order. With one lane there is at most one, exactly as before."""
+    outcomes: list[tuple[str, str, str]] = []
+    for tid in [t["id"] for t in state["tasks"] if t.get("status") == st.MERGE_PENDING]:
+        lane = st.task_lane(st.entry(state, tid))
+        state, result = _resolve_one(state, env, cfg, now, st.entry(state, tid))
+        outcomes.append((tid, lane, result))
+        state = _lane_outcome(state, tid, lane, result, now)
+    return state, outcomes
+
+
+def _resolve_one(state: State, env: Env, cfg: Config, now: datetime, task: dict[str, Any]) -> tuple[State, str]:
+    """One MERGE_PENDING task: its pull request merged (DONE or a red main), still open, or absent."""
+    tid = task["id"]
+    pr = env.pr_for(tid)
+    if pr is not None and _earlier_pr(task, pr, env):
+        pr = None  # an earlier attempt's PR beside an empty hand-in already on main (D-584)
+    if pr is None:
+        return _without_pr(state, env, task, now)
+    reviewed = _head_reviewed(state, env, tid, pr)
+    if reviewed is not None and task.get("head_check_since"):
+        state = st.with_task(state, tid, head_check_since=None)  # the head was placed: the wait is over (D-584)
+    if not pr.get("merged"):
+        return _open_pr_step(state, env, tid, pr, reviewed, now)
+    if verify.checks_state(pr) == "pending":
+        return state, "merge_pending"
+    if reviewed is None:
+        return _unplaced_merge(state, cfg, tid, pr, now)
+    return _merged(state, tid, pr, cfg, now, reviewed)
+
+
+def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime) -> State:
+    """Strikes for the lane fall back (D-620), only for an attempt that ended: a task on the lane DONE
+    clears them; a required check that failed on an update merge after the same check passed on the
+    reviewed head before it (main's change broke it, `_broken_by_main`), or an update merge that
+    conflicted or could not be pushed for good, is a strike; any other failed check is the task's own
+    and clears them. A merge still waiting never strikes. Lane "1" never strikes."""
+    if lane == st.LANE_ONE:
+        return state
+    if result == "done" or (result == "check_failed" and not _broken_by_main(st.entry(state, tid))):
+        return lanes.clear_strikes(state, lane)
+    if result in ("check_failed", "update_conflict", "update_push_failed"):
+        why = str(st.entry(state, tid).get("last_failure") or st.entry(state, tid).get("reason") or result)
+        return lanes.strike(state, lane, f"{tid} {result}: {why[:200]}", now)
+    return state
+
+
+FAILED = ("failure", "cancelled", "timed_out")
+
+
+def _broken_by_main(task: dict[str, Any]) -> bool:
+    """Whether a check that failed on the attempt's last head had passed on the reviewed head the last
+    update merge started from: the failure came with main's change, not the task's own work (D-620)."""
+    updates, history = task.get("update_merges") or [], task.get("history") or []
+    if not updates or not history:
+        return False
+    failed = {str(c.get("name")) for c in history[-1].get("checks") or [] if c.get("conclusion") in FAILED}
+    before = updates[-1].get("checks") or {}
+    return any(before.get(name) == "success" for name in failed)
 
 
 def _earlier_pr(task: dict[str, Any], pr: dict[str, Any], env: Env) -> bool:
@@ -296,39 +365,140 @@ def _head_reviewed(state: State, env: Env, tid: str, pr: dict[str, Any]) -> bool
     (GitHub's "Update branch", by merge or rebase); True when the task has no `reviewed_sha` to compare
     with; None when git cannot say (D-583, D-584)."""
     reviewed, head = str(st.entry(state, tid).get("reviewed_sha") or ""), str(pr.get("head_sha") or "")
-    if not reviewed or head == reviewed:
+    if not reviewed or head == reviewed or head in _earlier_reviewed(st.entry(state, tid)):
         return True
     return env.reviewed_plus_main(reviewed, head, int(pr.get("number") or 0))
 
 
-def _open_pr_step(state: State, env: Env, tid: str, pr: dict[str, Any], reviewed: bool | None) -> tuple[State, str]:
+def _earlier_reviewed(task: dict[str, Any]) -> set[str]:
+    """The task's reviewed heads before its update merges (D-620): reviewed work on an older main. A PR
+    still showing one just after an update merge was pushed is GitHub catching up, not new work."""
+    return {str(u.get("from")) for u in task.get("update_merges") or [] if u.get("from")}
+
+
+def _open_pr_step(state: State, env: Env, tid: str, pr: dict[str, Any], reviewed: bool | None, now: datetime) -> tuple[State, str]:
     """An unmerged PR (D-584). A head nobody reviewed (or one git cannot place) is a failed attempt,
     never a wait for an auto-merge the runner refuses; if auto-merge is on, the PR is closed first so
     GitHub cannot merge that head, and if the close fails the task stays MERGE_PENDING so `_merged`
-    still judges whatever merges. A reviewed head updated from main merges only if auto-merge is
-    already on; with it off the runner cannot turn it on for that head, so that too is a failed
-    attempt. Otherwise as before: red checks fail the attempt, and auto-merge is turned on."""
+    still judges whatever merges. Red checks fail the attempt. An update merge of the reviewed head
+    (the runner's own whose record was lost, or GitHub's "Update branch" by merge) becomes the reviewed
+    head, and a reviewed head that fell behind main is brought up to date (`_update_step`, D-620).
+    Another reviewed head updated from main merges only if auto-merge is already on; with it off the
+    runner cannot turn it on for that head, so that too is a failed attempt. Otherwise auto-merge is
+    turned on."""
     head, task = str(pr.get("head_sha") or ""), st.entry(state, tid)
     if not reviewed:
-        if pr.get("auto_merge"):
-            closed = env.close_pr(int(pr.get("number") or 0), UNREVIEWED_CLOSE.format(head=head[:12]) + "\n\n" + DROP_MARKER)
-            if not closed or (env.pr_for(tid) or {}).get("merged"):
-                # The close failed, or GitHub merged it just before the close (a close of a merged PR can
-                # still answer 200): the task stays MERGE_PENDING so `_merged` judges the merge (D-584).
-                why = f"PR head {head[:12]} is not the reviewed head and its auto-merge could not be turned off in time; waiting so any merge is judged"
-                return st.with_task(state, tid, auto_merge={"enabled": True, "why": why, "head": head}), "merge_pending"
-            state = st.with_task(state, tid, runner_closed_prs=[*(task.get("runner_closed_prs") or []), pr.get("number")])
-        why = UNREVIEWED_HEAD.format(head=head[:12], reviewed=str(task.get("reviewed_sha"))[:12])
-        return _close_history(record_failure(state, tid, why), tid, pr, "unreviewed_head"), "unreviewed_head"
+        return _unreviewed_step(state, env, tid, pr, head)
     if verify.checks_state(pr) == "failed":
         reason = pr.get("failure_log") or "required check failed on head"
         return _close_history(record_failure(state, tid, reason), tid, pr, "check_failed"), "check_failed"
+    if state.get("main_red") and tid != st.FIX_MAIN:
+        return state, "merge_pending"  # while main is red only FIX-MAIN moves: no update merge, no auto-merge (D-620)
+    sha = str(task.get("reviewed_sha") or "")
+    if sha and head != sha and head in _earlier_reviewed(task):
+        return _update_wait(state, env, tid, pr, f"the pull request still shows {head[:12]}, the head before the update merge {sha[:12]}", now)
+    if sha and head != sha and env.update_merge_of(sha, head, int(pr.get("number") or 0)) is True:
+        state, sha = _adopt_update(state, tid, {"from": sha, "to": head, "how": "adopted"}, now), head
+    if sha and head == sha:
+        state, stepped = _update_step(state, env, tid, pr, now)
+        if stepped:
+            return state, stepped
     if pr.get("auto_merge"):
         return state, "merge_pending"
-    if task.get("reviewed_sha") and head != task.get("reviewed_sha"):
-        why = UPDATED_HEAD.format(head=head[:12], reviewed=str(task.get("reviewed_sha"))[:12])
+    if sha and head != sha:
+        why = UPDATED_HEAD.format(head=head[:12], reviewed=sha[:12])
         return _close_history(record_failure(state, tid, why), tid, pr, "unreviewed_head"), "unreviewed_head"
     return _auto_merge(state, env, tid, head), "merge_pending"
+
+
+def _unreviewed_step(state: State, env: Env, tid: str, pr: dict[str, Any], head: str) -> tuple[State, str]:
+    """A PR head nobody reviewed: close it first when auto-merge is on, then fail the attempt (D-584)."""
+    task = st.entry(state, tid)
+    state, closed = _drop_auto_merge(state, env, tid, pr, UNREVIEWED_CLOSE.format(head=head[:12]))
+    if not closed:
+        why = f"PR head {head[:12]} is not the reviewed head and its auto-merge could not be turned off in time; waiting so any merge is judged"
+        return st.with_task(state, tid, auto_merge={"enabled": True, "why": why, "head": head}), "merge_pending"
+    why = UNREVIEWED_HEAD.format(head=head[:12], reviewed=str(task.get("reviewed_sha"))[:12])
+    return _close_history(record_failure(state, tid, why), tid, pr, "unreviewed_head"), "unreviewed_head"
+
+
+def _drop_auto_merge(state: State, env: Env, tid: str, pr: dict[str, Any], body: str) -> tuple[State, bool]:
+    """Close a PR whose auto-merge is on (closing clears it), with the DROP_MARKER comment, and record it
+    in `runner_closed_prs` so the retry continues the branch (D-584). (state, False) when the close
+    failed or GitHub merged it just before (a close of a merged PR can still answer 200): the task then
+    stays MERGE_PENDING so `_merged` judges whatever merged. A PR without auto-merge is left open."""
+    if not pr.get("auto_merge"):
+        return state, True
+    closed = env.close_pr(int(pr.get("number") or 0), body + "\n\n" + DROP_MARKER)
+    if not closed or (env.pr_for(tid) or {}).get("merged"):
+        return state, False
+    known = st.entry(state, tid).get("runner_closed_prs") or []
+    return st.with_task(state, tid, runner_closed_prs=[*known, pr.get("number")]), True
+
+
+def _adopt_update(state: State, tid: str, note: dict[str, Any], now: datetime) -> State:
+    """The update merge `note["to"]` of the reviewed head `note["from"]` becomes the task's `reviewed_sha`:
+    it holds exactly the reviewed work plus main (checked by the caller against `UpdateMerge.tree`), so
+    `_merged`, the unreviewed-head path and auto-merge treat it as reviewed (D-584, D-620)."""
+    task = st.entry(state, tid)
+    record = {**note, "at": st.iso(now)}
+    return st.with_task(state, tid, reviewed_sha=note["to"], update_merges=[*(task.get("update_merges") or []), record][-10:],
+                        update_waiting_since=None, update_push_failures=None)
+
+
+def _update_step(state: State, env: Env, tid: str, pr: dict[str, Any], now: datetime) -> tuple[State, str]:
+    """Keep the reviewed head current with main (stage C, D-620); the result is '' when it already is.
+
+    A clean merge is pushed by `env.update_branch` and becomes the reviewed head, and auto-merge stays
+    on (or is turned on) for it. A real conflict fails the attempt (after closing a PR whose auto-merge
+    is on), and the retry starts from the branch (prepare_branch, D-583). A rejected push that is not a
+    race counts toward UPDATE_PUSH_LIMIT; a merge git cannot make waits at most UPDATE_WAIT."""
+    task = st.entry(state, tid)
+    done = env.update_branch(str(task.get("branch") or ""), str(task.get("reviewed_sha") or ""))
+    status, why = done.get("status"), str(done.get("why") or "")
+    if status == "current":
+        return (st.with_task(state, tid, update_waiting_since=None) if task.get("update_waiting_since") else state), ""
+    if status == "pushed":
+        note = {"from": task.get("reviewed_sha"), "to": done["sha"], "main": done.get("main"), "how": "runner", "checks": _head_checks(pr)}
+        state = _adopt_update(state, tid, note, now)
+        return (state if pr.get("auto_merge") else _auto_merge(state, env, tid, str(done["sha"]))), "branch_updated"
+    if status == "conflict":
+        return _update_failed(state, env, tid, pr, UPDATE_CONFLICT.format(paths=", ".join(done.get("paths") or ["?"])), "update_conflict")
+    if status == "push_failed" and not ("non-fast-forward" in why or "fetch first" in why):
+        count = int(task.get("update_push_failures") or 0) + 1
+        if count >= UPDATE_PUSH_LIMIT:
+            return _update_failed(state, env, tid, pr, f"the update merge could not be pushed {count} times: {why[:300]} (D-620)", "update_push_failed")
+        return st.with_task(state, tid, update_push_failures=count), "merge_pending"  # not a strike until the attempt fails
+    return _update_wait(state, env, tid, pr, why or str(status), now)
+
+
+def _head_checks(pr: dict[str, Any]) -> dict[str, str]:
+    """{check name: conclusion} of the required checks on the PR's head, kept with an update merge so a
+    later failure can be told apart from one main brought in (`_broken_by_main`, D-620)."""
+    head = pr.get("head_sha")
+    return {str(c.get("name")): str(c.get("conclusion")) for c in pr.get("checks", []) if c.get("sha") == head and c.get("name") in verify.REQUIRED_CHECKS}
+
+
+def _update_failed(state: State, env: Env, tid: str, pr: dict[str, Any], reason: str, result: str) -> tuple[State, str]:
+    """The update merge failed for good: close the PR first when its auto-merge is on (so nothing merges
+    while the task is back in the queue), then fail the attempt; a failed close keeps it MERGE_PENDING."""
+    state, closed = _drop_auto_merge(state, env, tid, pr, UPDATE_CLOSE.format(why=reason[:300]))
+    if not closed:
+        head = str(pr.get("head_sha") or "")
+        why = f"{reason[:300]}; its auto-merge could not be turned off in time, so it waits and any merge is judged"
+        return st.with_task(state, tid, auto_merge={"enabled": True, "why": why, "head": head}), "merge_pending"
+    failed = st.with_task(record_failure(state, tid, reason), tid, update_waiting_since=None, update_push_failures=None)
+    return _close_history(failed, tid, pr, result), result
+
+
+def _update_wait(state: State, env: Env, tid: str, pr: dict[str, Any], why: str, now: datetime) -> tuple[State, str]:
+    """An update merge git could not make or push for a passing reason (origin moved, a push race, a git
+    error): wait, saying why, for at most UPDATE_WAIT; a behind branch can never merge, so after that the
+    attempt fails instead of stalling the build."""
+    since = str(st.entry(state, tid).get("update_waiting_since") or st.iso(now))
+    if now - st.parse(since) >= UPDATE_WAIT:
+        return _update_failed(state, env, tid, pr, UPDATE_STUCK.format(wait=UPDATE_WAIT, why=why[:300]), "update_push_failed")
+    return st.with_task(state, tid, update_waiting_since=since), "merge_pending"
 
 
 def _unplaced_merge(state: State, cfg: Config, tid: str, pr: dict[str, Any], now: datetime) -> tuple[State, str]:
@@ -670,19 +840,59 @@ def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
             return "lost_race"  # inbox files stay put and are read again next cycle
         base = state
     env.ack_inbox([file_id for file_id, _, _ in items])
-    if st.live_lease(state, now) is not None:
-        return "lease_live"
-    state, result = _resolve_merge(state, env, cfg, now)
-    if result in WAIT_RESULTS or result == "done":
+    state, outcomes = _resolve_merges(state, env, cfg, now)
+    if outcomes:
+        _note_fallback(cfg, base, state)
         if state != base and not env.push_state(state, base):
+            _drop_fallback_note(cfg)
             return "lost_race"
-        if result in WAIT_RESULTS:
-            return result
         base = state
+    lane = lanes.claim_lane(cfg.lanes, state, now, cfg.lane_hint)
+    stop = _stop_result(outcomes, lane or cfg.lane_hint, lane is not None, (state, now))
+    if stop:
+        return stop
     state, red = _red_main_step(cfg, env, state, now)
     if red:
         return red if state == base or env.push_state(state, base) else "lost_race"
-    return _next_step(cfg, env, state, base, now, result)
+    done = next((r for _, _, r in outcomes if r == "done"), "")
+    return _next_step(cfg, env, state, base, now, done, str(lane))
+
+
+def _stop_result(outcomes: list[tuple[str, str, str]], lane: str | None, claims: bool, at: tuple[State, datetime]) -> str:
+    """Why the cycle ends after resolving merges, '' when it goes on to claim (D-620).
+
+    `lane` is the lane this cycle claims on, or (when `claims` is false) the lane its run serves, if
+    any. A waiting or failed result on that lane ends the cycle, as with one lane (where every task is
+    on lane "1"); one on another lane does not, so a run serving a free lane still claims. With nothing
+    to claim, the cycle ends with its own lane's result, else the first waiting result, else
+    "lease_live" (a live lease holds the lane), else NO_FREE_LANE."""
+    waits = [(task_lane, r) for _, task_lane, r in outcomes if r in WAIT_RESULTS]
+    own = [r for task_lane, r in waits if lane is None or task_lane == lane]
+    if own:
+        return own[0]
+    if claims:
+        return ""
+    if waits:
+        return waits[0][1]
+    state, now = at
+    return "lease_live" if st.live_leases(state, now) else NO_FREE_LANE
+
+
+def _note_fallback(cfg: Config, before: State, after: State) -> None:
+    """The write that sets `lanes_fallback` tells Casey why, through the outbox (D-620)."""
+    if lanes.fell_back(before, after):
+        outbox.write_outbox(cfg.outbox_dir, "lanes-fallback", "Runner: back to one lane", "info", lanes.fallback_note(after))
+
+
+def refill_lanes(cfg: Config, state: State, now: datetime) -> list[str]:
+    """The free lanes a new run should be started for, at most one per task that could be claimed beside
+    the tasks in flight (pacing aside); the backup-runner chain step dispatches one run per lane (D-620)."""
+    free = lanes.free_lanes(cfg.lanes, state, now)
+    if not free:
+        return []
+    ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
+    ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked)
+    return free[: len(ready)]
 
 
 def _open_gate_p(cfg: Config, state: State) -> State | None:
@@ -707,11 +917,13 @@ def _passed(cfg: Config, state: State) -> set[str] | None:
     return cfg.stage_gate(state) if cfg.stage_gate else None
 
 
-def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, result: str) -> str:
+def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, result: str, lane: str = st.LANE_ONE) -> str:
+    """Open a gate, or claim the first eligible task that may run beside the tasks in flight on `lane`."""
     opened = _open_gate_p(cfg, state) or _next_gate(cfg, env, state)
     if opened is not None:
         return "gate_open" if env.push_state(opened, base) else "lost_race"
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
+    ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked)
     if not ids:
         if state != base and not env.push_state(state, base):
             return "lost_race"
@@ -731,7 +943,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     task, state = _paced_pick(cfg, state, ids, now)
     if task is None:
         return "paced" if state == base or env.push_state(state, base) else "lost_race"
-    claimed = st.claim(state, task["id"], cfg.session, now, taken=cfg.decisions() if cfg.decisions else None)
+    claimed = st.claim(state, task["id"], cfg.session, now, lane, taken=cfg.decisions() if cfg.decisions else None)
     if not env.push_state(claimed, base):
         return "lost_race"
     done = _work(cfg, env, claimed, task, now)
@@ -782,7 +994,7 @@ def _work(cfg: Config, env: Env, claimed: State, task: dict[str, Any], now: date
         A transient failure (None after every try, or any other error) changes nothing: update_state
         put its heads back, so the next beat simply tries again (D-515)."""
         moment = cfg.clock()
-        if current["lost"] or not st.renewal_due(current["state"], moment):
+        if current["lost"] or not st.renewal_due(current["state"], moment, lane):
             return
         try:
             renewed = env.update_state(lambda fresh: st.renew(fresh, tid, cfg.session, moment, lane))
@@ -893,17 +1105,49 @@ def finish(
     elif st.status(final, tid) == st.MERGE_PENDING:
         reviewed = env.update_state(_review_record(tid, lane, cfg, res))
         if reviewed is None:
-            return "lost_race"  # no review record, no branch push: the lease is not this session's (D-515)
+            return _lost_writes(cfg, env, tid, lane, "its review record")  # no review record, no branch push (D-515)
         if not env.push_branch(res.branch, res.head_sha):
-            return _push_failed(env, reviewed, _ours_onto(state, final, reviewed), tid, (lane, res.head_sha))
+            return _push_failed(cfg, env, reviewed, _ours_onto(state, final, reviewed), tid, (lane, res.head_sha))
         merged = _auto_merge(reviewed, env, tid, res.head_sha)
         review = {k: st.entry(reviewed, tid)[k] for k in ("reviewed_sha", "review_lease", "branch")}
         final = st.with_task(_ours_onto(state, final, reviewed), tid, **review, auto_merge=st.entry(merged, tid)["auto_merge"])
+        final = _without(final, tid, *UPDATE_KEYS)  # as the review record dropped them (D-620)
         state = reviewed
+    elif st.status(final, tid) in (st.QUEUED, st.BLOCKED) and lane != st.LANE_ONE:
+        final = lanes.clear_strikes(final, lane)  # a failure of the task's own work breaks a run of strikes (D-620)
     final = st.with_lease(final, lane, None)
     if env.update_state(_release_onto(state, final, (tid, lane, cfg.session))) is None:
-        return "lost_race"
+        return _lost_writes(cfg, env, tid, lane, "its lease release")
     return str(st.entry(final, tid)["status"])
+
+
+def _lost_writes(cfg: Config, env: Env, tid: str, lane: str, what: str) -> str:
+    """finish could not write `what` (a lost race, or the lease is not this session's): "lost_race".
+    On a lane above 1 that is a harness-type strike (D-620)."""
+    record_strike(cfg, env, lane, f"{tid}: the attempt could not write {what} (lost race)")
+    return "lost_race"
+
+
+def record_strike(cfg: Config, env: Env, lane: str | None, why: str) -> None:
+    """A harness-type failure on a lane above 1, recorded on the fresh state through update_state when it
+    can be; the strike that sets `lanes_fallback` also writes the outbox item (D-620). Lane "1" never strikes."""
+    if not lane or lane == st.LANE_ONE:
+        return
+    now = cfg.clock()
+
+    def apply(fresh: State) -> State:
+        out = lanes.strike(fresh, lane, why, now)
+        _note_fallback(cfg, fresh, out)
+        return out
+
+    if env.update_state(apply) is None:
+        _drop_fallback_note(cfg)  # the strike was not recorded, so neither is the fall back it would have set
+
+
+def _drop_fallback_note(cfg: Config) -> None:
+    """Remove a fall-back outbox item whose state write was lost (D-620): it must not reach Casey later
+    with a state that never fell back."""
+    (cfg.outbox_dir / "lanes-fallback.md").unlink(missing_ok=True)
 
 
 def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult) -> Callable[[State], State | None]:
@@ -917,9 +1161,23 @@ def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult) -> Calla
         if held.get("task") != tid or held.get("session") != cfg.session or st.status(fresh, tid) != st.IN_PROGRESS:
             return None
         review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(held), "branch": res.branch, "head_check_since": None}
-        return st.with_task(fresh, tid, **review)
+        # A new review starts a new chain of update merges: an earlier attempt's never counts as reviewed (D-620).
+        return _without(st.with_task(fresh, tid, **review), tid, *UPDATE_KEYS)
 
     return apply
+
+
+UPDATE_KEYS = ("update_merges", "update_waiting_since", "update_push_failures")  # an attempt's update-merge record (D-620)
+
+
+def _without(state: State, tid: str, *keys: str) -> State:
+    """The state with those keys removed from the task's entry (absent keys are fine)."""
+    out = copy.deepcopy(state)
+    for task in out["tasks"]:
+        if task["id"] == tid:
+            for key in keys:
+                task.pop(key, None)
+    return out
 
 
 def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Callable[[State], State | None]:
@@ -929,8 +1187,8 @@ def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Ca
     inbox record, a graph sync), it applies only what finish changed (the keys and task entries that
     differ from `base`) onto the fresh state, and only while this session still holds the task's
     lane lease and the task's status is still the one finish started from; otherwise it gives up.
-    What it applies replaces whole values (see _ours_onto): this task's own entry and the top-level
-    keys finish touched (`usage`, `pacing`), nothing else."""
+    What it applies (see _ours_onto): this task's own entry whole, and only this attempt's part of the
+    shared keys (its `usage` delta, its lane's strikes), so another lane's write is never undone."""
     tid, lane, session = holder
 
     def apply(fresh: State) -> State | None:
@@ -945,22 +1203,65 @@ def _release_onto(base: State, final: State, holder: tuple[str, str, str]) -> Ca
 
 
 def _ours_onto(base: State, ours: State, fresh: State) -> State:
-    """`fresh` with every top-level key and task entry that `ours` changed from `base` taken from `ours`.
+    """`fresh` with what `ours` changed from `base` laid onto it.
 
-    Replacement is whole, not field by field: a changed task entry replaces the fresh entry entirely,
-    and a changed top-level key (in finish: `usage`, and `pacing` if it moved) replaces the fresh value.
-    finish changes only its own task's entry and those keys, so another writer's tasks and keys stay;
-    the lease keys are never taken from `ours` (the caller sets the lane itself)."""
+    A changed task entry replaces the fresh entry whole, and a changed top-level key replaces the fresh
+    value, except the two keys both lanes write (D-620): `usage` takes only this attempt's delta
+    (`_usage_onto`) and `lane_strikes` only the lanes `ours` changed, so a concurrent write by the
+    other lane's attempt is kept. The lease keys are never taken from `ours` (the caller sets the lane)."""
     out = copy.deepcopy(fresh)
+    merged = {"usage": _usage_onto, "lane_strikes": _per_key_onto}
     for key in (set(base) | set(ours)) - {"tasks", "lease", "leases"}:
         if key in ours and ours[key] != base.get(key):
-            out[key] = copy.deepcopy(ours[key])
+            join = merged.get(key)
+            out[key] = join(base.get(key) or {}, ours[key] or {}, fresh.get(key) or {}) if join else copy.deepcopy(ours[key])
         elif key not in ours and key in base:
             out.pop(key, None)
     before = {t["id"]: t for t in base["tasks"]}
     for task in ours["tasks"]:
         if before.get(task["id"]) != task:
             out = _put_task(out, task)
+    return out
+
+
+def _per_key_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
+    """`fresh` with each entry `ours` changed from `base` taken from `ours`, and the rest left as fresh has them."""
+    out = copy.deepcopy(fresh)
+    for key, value in ours.items():
+        if value != base.get(key):
+            out[key] = copy.deepcopy(value)
+    return out
+
+
+def _usage_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
+    """This attempt's usage laid onto the fresh `usage` (D-620): the `by_task` entries it changed, the
+    other keys it changed (`last_reading`, `limit_hit`, `source`), and its tokens added to each pacing
+    window (`_windows_onto`) instead of replacing what another lane's attempt added meanwhile."""
+    out = _per_key_onto({k: v for k, v in base.items() if k not in ("by_task", "windows")},
+                        {k: v for k, v in ours.items() if k not in ("by_task", "windows")}, fresh)
+    out["by_task"] = _per_key_onto(base.get("by_task") or {}, ours.get("by_task") or {}, fresh.get("by_task") or {})
+    if "windows" in ours and ours["windows"] != base.get("windows"):
+        out["windows"] = _windows_onto(base.get("windows") or {}, ours["windows"], fresh.get("windows") or {})
+    if not out["by_task"] and "by_task" not in fresh and "by_task" not in ours:
+        out.pop("by_task")
+    return out
+
+
+def _windows_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
+    """Pacing windows ({name: {start, tokens}}) with this attempt's tokens added to the fresh ones. A
+    window nobody else moved is taken from `ours`; otherwise the attempt's delta (all its tokens when
+    its window rolled over) is added to the fresh window, keeping the fresh window's start."""
+    out = copy.deepcopy(fresh)
+    for name, mine in ours.items():
+        before, now = base.get(name) or {}, fresh.get(name) or {}
+        if mine == before:
+            continue
+        if now == before:
+            out[name] = copy.deepcopy(mine)
+            continue
+        same = mine.get("start") == before.get("start")
+        delta = int(mine.get("tokens") or 0) - (int(before.get("tokens") or 0) if same else 0)
+        out[name] = {"start": now.get("start") or mine.get("start"), "tokens": int(now.get("tokens") or 0) + delta}
     return out
 
 
@@ -972,7 +1273,7 @@ def _put_task(state: State, task: dict[str, Any]) -> State:
     return dict(state, tasks=tasks)
 
 
-def _push_failed(env: Env, base: State, ours: State, tid: str, where: tuple[str, str]) -> str:
+def _push_failed(cfg: Config, env: Env, base: State, ours: State, tid: str, where: tuple[str, str]) -> str:
     """A rejected branch push, with the lease released at once either way.
 
     `base` is the state with the review record (what is pushed onto), `ours` the same with this
@@ -983,9 +1284,12 @@ def _push_failed(env: Env, base: State, ours: State, tid: str, where: tuple[str,
     credential or permission problem, not the worker's: retrying would spend a whole attempt to fail
     the same way, so the task is BLOCKED (only its dependents wait) until a person fixes the cause and
     re-queues it with `--requeue` (D-513). With no head at all the push was refused before it ran,
-    because git could not read the branch or main; that gets its own reason (D-551)."""
+    because git could not read the branch or main; that gets its own reason (D-551). On a lane above 1
+    either is a harness-type strike toward the fall back to one lane (D-620)."""
     lane, head = where
     why = env.push_rejection()
+    ours = lanes.strike(ours, lane, f"{tid}: branch push rejected ({why[:200] or 'no reason given'})", cfg.clock())
+    _note_fallback(cfg, base, ours)
     if head and ("non-fast-forward" in why or "fetch first" in why):
         out = record_failure(ours, tid, PUSH_NOT_FAST_FORWARD)
     else:
@@ -997,11 +1301,19 @@ def _push_failed(env: Env, base: State, ours: State, tid: str, where: tuple[str,
     if history:
         history[-1]["result"] = st.status(out, tid)  # the attempt ended here, not MERGE_PENDING
     out = st.with_lease(st.with_task(out, tid, history=history), lane, None)
-    return "push_failed" if env.push_state(out, base) else "lost_race"
+    if env.push_state(out, base):
+        return "push_failed"
+    _drop_fallback_note(cfg)
+    return "lost_race"
 
 
-def requeue_refusal(state: State, tid: str, now: datetime) -> str:
-    """Why `python3 -m runner --requeue` must not move this task, '' when it may (D-583)."""
+def requeue_refusal(state: State, tid: str, now: datetime, cfg: Config | None = None) -> str:
+    """Why `python3 -m runner --requeue` must not move this task, '' when it may (D-583).
+
+    With one lane (or no `cfg`) any live lease refuses it, as before. With two or more lanes only a
+    live lease that matters refuses it (D-620): one on the task itself, or one whose task could not run
+    beside it (`lanes.refusal` minus the dependency rule: overlapping owned paths, another stage, a
+    cleanup task on either side), since re-queuing then could let the two meet."""
     if tid == st.FIX_MAIN:
         return "FIX-MAIN is never re-queued by hand; it clears only with main (docs/governance.md section 5)"
     if not any(t["id"] == tid for t in state.get("tasks", [])):
@@ -1013,22 +1325,32 @@ def requeue_refusal(state: State, tid: str, now: datetime) -> str:
         return f"{tid} has used all {MAX_ATTEMPTS} attempts; it stays BLOCKED for the end-of-build list (BUILD_BRIEF.md:540)"
     if not str(entry.get("reason") or "").startswith(REQUEUABLE):
         return f"{tid} is BLOCKED for its own work ({str(entry.get('reason'))[:120]}), not for a push, permission or proof"
-    held = st.live_leases(state, now)
+    held = _requeue_blockers(state, tid, now, cfg)
     if held:
-        return f"a live lease is held ({', '.join(str(l.get('task')) for l in held.values())}); try again once it ends"
+        return f"a live lease is held ({', '.join(held)}); try again once it ends"
     return ""
 
 
-def requeue(state: State, tid: str, reason: str, now: datetime, by: str) -> State | None:
+def _requeue_blockers(state: State, tid: str, now: datetime, cfg: Config | None) -> list[str]:
+    """The tasks whose live lease refuses a re-queue of `tid` (see requeue_refusal)."""
+    leased = [str(lease.get("task")) for lease in st.live_leases(state, now).values()]
+    if cfg is None or cfg.lanes < 2:
+        return leased
+    target = dict(_task_def(cfg, state, tid), deps=[])
+    return [other for other in leased if other == tid or lanes.refusal(target, [_task_def(cfg, state, other)], set(), cfg.locked)]
+
+
+def requeue(state: State, tid: str, reason: str, now: datetime, by: str, cfg: Config | None = None) -> State | None:
     """BLOCKED to QUEUED with `reason` cleared (D-583); None when refused (requeue_refusal).
 
     Only a task blocked for a cause outside its own work (a rejected push, no head, a permission
-    block, a missing stage proof) with attempts left, and only while no lease is live. `attempts` is
+    block, a missing stage proof) with attempts left, and only while no lease that matters is live
+    (any lease with one lane; with two, see requeue_refusal, D-620). `attempts` is
     left as it is, so the 3-attempt cap holds (BUILD_BRIEF.md:270, :540); the given reason is appended
     to `last_failure` as "re-queued: ...", so the retry sees both the earlier failure and why it was
     re-queued (D-584). The re-queue is kept in the task's `requeues` list (when, why, by whom, the old
     reason); `history` holds attempts only."""
-    if requeue_refusal(state, tid, now):
+    if requeue_refusal(state, tid, now, cfg):
         return None
     entry = st.entry(state, tid)
     note = {"at": st.iso(now), "reason": reason, "by": by, "was": entry.get("reason"), "attempts": int(entry.get("attempts", 0))}
@@ -1038,11 +1360,16 @@ def requeue(state: State, tid: str, reason: str, now: datetime, by: str) -> Stat
                         requeues=[*entry.get("requeues", []), note])
 
 
+def session_lease(state: State, session: str, now: datetime) -> dict[str, Any] | None:
+    """The live lease this session holds, on any numbered lane or "fix", or None (D-620)."""
+    return next((lease for lease in st.live_leases(state, now).values() if lease.get("session") == session), None)
+
+
 def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], WorkerResult]) -> str:
-    """`python3 -m runner --after`: finish the task this session holds the lease on."""
+    """`python3 -m runner --after`: finish the task this session holds the lease on, on whichever lane."""
     state = env.read_state()
-    lease = st.live_lease(state, cfg.clock())
-    if lease is None or lease.get("session") != cfg.session:
+    lease = session_lease(state, cfg.session, cfg.clock())
+    if lease is None:
         return "not_lease_holder"
     tid = str(lease["task"])
     graph_def = next((t for t in cfg.graph if t["id"] == tid), {})

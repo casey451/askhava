@@ -57,6 +57,7 @@ from typing import Any
 
 from runner import state as st, verify
 from runner.cycle import DROP_MARKER, WorkerResult
+from runner.update_merge import UpdateMerge
 from runner.state import State
 
 Runner = Callable[[list[str], str | None, Path], tuple[int, str, str]]
@@ -71,6 +72,7 @@ UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-515)
 UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError)  # a failed read or push: one lost try
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
 HEARTBEAT_SECONDS = 60
+HEAD_POLLS, HEAD_POLL_SECONDS = 6, 5.0  # enable_auto_merge waits up to 30 s for the PR to show a just-pushed head (D-620)
 ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
 FAILED_CONCLUSIONS = ("failure", "cancelled", "timed_out")
 # The retry worker's failure log (D-582): at most this many characters in all, and per failed job the
@@ -282,16 +284,27 @@ def _attention(state: State, now: datetime) -> list[str]:
     return lines or ["- nothing"]
 
 
+def _running(state: State) -> list[str]:
+    """The "Running" lines: lane 1's lease as before, then every other lane's lease, named (D-620)."""
+    lease = state.get("lease") or {}
+    lines = [f"- {lease.get('task', 'nothing')}" + (f" (lease until {lease['expires']})" if lease else "")]
+    for lane, held in sorted(st.leases_of(state).items()):
+        if lane != st.LANE_ONE and held:
+            lines.append(f"- lane {lane}: {held.get('task')} (lease until {held.get('expires')})")
+    if state.get("lanes_fallback"):
+        lines.append(f"- one lane only since {state['lanes_fallback'].get('at')} (lane fall back; `python3 -m runner --restore-lanes`)")
+    return lines
+
+
 def render_status(state: State, progress_md: str, now: datetime, pacing: str = "") -> str:
     """STATUS.md: progress in verified requirements first (governance 6), the pacing line (window used and
     left, next reset, projected finish; scripts/pacing.py), then BUILD_BRIEF.md:276-281."""
-    lease = state.get("lease") or {}
     usage = (state.get("usage") or {}).get("last_reading")
     parts = [
         "# Ask Hava build status", "", f"Updated {st.iso(now)} by runner {str(state.get('runner_sha', ''))[:12]} ({state.get('starter', '')}).",
         "", progress_md.strip() or "Progress unavailable.", "", "## Pacing", f"- {pacing or 'no reading yet'}",
         "", "## Tasks done (throughput)", *_stage_counts(state),
-        "", "## Running", f"- {lease.get('task', 'nothing')}" + (f" (lease until {lease['expires']})" if lease else ""),
+        "", "## Running", *_running(state),
         "", "## Needs attention", *_attention(state, now), "", "## Last usage reading", f"- {json.dumps(usage) if usage else 'none yet'}", "",
     ]
     return "\n".join(parts)
@@ -327,6 +340,7 @@ class GitHubEnv:
         self.sleep: Callable[[float], None] = time.sleep  # update_state's wait between tries; tests replace it
         self.prepared: dict[str, Any] = {}  # what prepare_branch made for this attempt, for the hand-off (D-583)
         self.last_rejection = ""  # the last rejected branch push's git output (push_rejection, D-583)
+        self.updates = UpdateMerge(self._run, self.root, self._identity)  # stage C's update merge (D-620)
 
     # ---- git plumbing
 
@@ -400,7 +414,7 @@ class GitHubEnv:
         stamped = dict(new, runner_sha=self.runner_sha, starter=self.starter, updated_at=st.iso(now), lease=None, lease_on=self.lease_ref)
         stamped.pop("leases", None)  # the lanes live in lease.json only, like the lease (D-515)
         pace = self.pacing_line(new) if self.pacing_line else ""
-        status = render_status(stamped | {"lease": new.get("lease")}, self.progress_markdown(new), now, pace)
+        status = render_status(stamped | {"lease": new.get("lease"), "leases": st.leases_of(new)}, self.progress_markdown(new), now, pace)
         writes = {STATE_FILE: json.dumps(stamped, indent=1) + "\n", "STATUS.md": status}
         progress = self._show(self.state_head, "PROGRESS.md") or "# Progress\n"
         line = f"- {st.iso(now)} runner {self.runner_sha[:12]} ({self.starter}): {json.dumps(state_diff(base, new)['tasks'])}"
@@ -745,6 +759,11 @@ class GitHubEnv:
         if self.dry_run:
             return True, "dry-run"
         pr = self._open_pr(branch)
+        for _ in range(HEAD_POLLS):  # GitHub may still list the head before a push it just took (D-620)
+            if pr is None or str(pr["head"]["sha"]) == head_sha:
+                break
+            self.sleep(HEAD_POLL_SECONDS)
+            pr = self._open_pr(branch)
         if pr is None:
             return False, "no open PR for the branch"
         if str(pr["head"]["sha"]) != head_sha:
@@ -936,14 +955,12 @@ class GitHubEnv:
         return self._run(["git", "merge-base", "--is-ancestor", older, newer], None, self.root)[0] == 0
 
     def _merge_main(self, branch: str, remote: str, main: str) -> str | None:
-        """The merge commit of main into origin's task branch, built without a working tree
-        (`git merge-tree --write-tree`, git 2.38 or later); None on a conflict."""
-        code, out, err = self._run(["git", "merge-tree", "--write-tree", remote, main], None, self.root)
-        if code == 1:
+        """The merge commit of main into origin's task branch, built without a working tree; None on a
+        conflict. Its tree is the update merge's (`UpdateMerge.tree`, D-620), so a retry's branch also
+        keeps main's docs/decisions.md entries first and a plan lock both sides rewrote is recomputed."""
+        tree, _ = self.updates.tree(remote, main)
+        if tree is None:
             return None
-        if code != 0:
-            raise RuntimeError(f"git merge-tree failed: {err.strip()[:200]}")
-        tree = out.splitlines()[0].strip()
         message = f"Merge main into {branch} for the next attempt (D-583)"
         return self.git("commit-tree", tree, "-p", remote, "-p", main, "-m", message, env=self._identity())
 
@@ -997,8 +1014,9 @@ class GitHubEnv:
     def reviewed_plus_main(self, reviewed: str, head: str, number: int) -> bool | None:
         """Whether `head` holds exactly the reviewed work combined with main: its tree equals the clean
         automatic merge (`git merge-tree --write-tree`) of `reviewed` with the main commit `head` is based
-        on (their merge base). That accepts GitHub's "Update branch" whether it merges main in or rebases
-        onto it, and rejects a new commit, a merge of anything else, and a merge that adds content of its
+        on (their merge base), as the runner's own update merge builds it (`UpdateMerge.tree`, D-620).
+        That accepts the runner's update merge and GitHub's "Update branch" whether it merges main in or
+        rebases onto it, and rejects a new commit, a merge of anything else, and a merge that adds content of its
         own (an "evil merge"). That base must be at or after the reviewed commit's fork point from main,
         so a head crafted on an older main commit is never trusted. The reviewed commit and the pull
         request's head are fetched first, since a fresh checkout may lack them; None when git still
@@ -1013,17 +1031,77 @@ class GitHubEnv:
         code, base, _ = self._run(["git", "merge-base", head, main], None, self.root)
         if code != 0:
             return False if code == 1 else None  # 1: no common history with main
-        # The base must not be older than the reviewed commit's own fork point from main: a head built on
-        # an older main commit could carry back a change main has since reverted (D-584).
+        fresh = self._not_older_than_fork(reviewed, base.strip(), main)
+        if fresh is not True:
+            return fresh
+        try:
+            # The update merge's own tree (D-620): git's merge, with docs/decisions.md as main's entries then
+            # the branch's, and kit/plan.lock recomputed when both sides rewrote it; None means a conflict.
+            tree, _ = self.updates.tree(reviewed, base.strip())
+        except RuntimeError:
+            return None
+        return tree is not None and tree == self.git("rev-parse", f"{head}^{{tree}}", check=False)
+
+    def update_branch(self, branch: str, reviewed: str) -> dict[str, Any]:
+        """Merge main into a task branch whose head is the reviewed head (stage C, D-620).
+
+        {"status": "current"} when main is already in it; "moved" when origin's branch is not the
+        reviewed head (someone pushed: the next cycle judges the new head); "conflict" with `paths`
+        when a path other than docs/decisions.md and a lock both sides kept true conflicts (never
+        resolved here); "pushed" with `sha` and `main` once the merge commit, checked against
+        `UpdateMerge.tree` first, was pushed as a fast-forward (never forced); "push_failed" with the
+        rejection; "error" when git cannot say. A dry run builds nothing."""
+        if self.dry_run:
+            return {"status": "current"}
+        try:
+            return self._update_branch(branch, reviewed)
+        except BEST_EFFORT_ERRORS as exc:
+            self.log.append(f"update merge of {branch} not made: {str(exc)[:200]}")
+            return {"status": "error", "why": str(exc)[:200]}
+
+    def _update_branch(self, branch: str, reviewed: str) -> dict[str, Any]:
+        main = self.main_head()
+        remote = self._remote_tip(branch) if main else None
+        if not main or remote != reviewed:
+            return {"status": "moved", "why": f"origin/{branch} is {str(remote)[:12]}, not the reviewed head {reviewed[:12]}"}
+        if self._is_ancestor(main, reviewed):
+            return {"status": "current"}
+        sha, conflicts = self.updates.commit(reviewed, main, branch)
+        if sha is None:
+            return {"status": "conflict", "paths": conflicts, "main": main}
+        if self.updates.is_update_merge(reviewed, sha) != (True, main):
+            return {"status": "error", "why": f"the update merge {sha[:12]} failed its own tree check"}
+        if not self.push_branch(branch, sha):
+            return {"status": "push_failed", "why": self.last_rejection, "main": main}
+        self.log.append(f"update merge: main {main[:12]} merged into {branch} as {sha[:12]}")
+        return {"status": "pushed", "sha": sha, "main": main}
+
+    def update_merge_of(self, reviewed: str, head: str, number: int) -> bool | None:
+        """Whether `head` is an update merge of the reviewed head: its parents are exactly the reviewed
+        commit and a commit on main, and its tree is `UpdateMerge.tree` of the two (D-620). The runner's
+        own update merge whose record was lost, or GitHub's "Update branch" by merge. None when git
+        cannot say."""
+        if number:
+            self._run(["git", "fetch", "--quiet", "origin", f"+refs/pull/{number}/head:refs/runner/pr-{number}"], None, self.root)
+        tip = self.main_head()
+        if not tip or not self._has_commit(reviewed) or not self._has_commit(head):
+            return None
+        try:
+            merged, main = self.updates.is_update_merge(reviewed, head)
+        except RuntimeError:
+            return None
+        if not merged or self.in_main(main) is not True:
+            return False
+        return self._not_older_than_fork(reviewed, main, tip)  # as reviewed_plus_main checks its base (D-584)
+
+    def _not_older_than_fork(self, reviewed: str, base: str, main: str) -> bool | None:
+        """Whether `base` (the main commit a head was built on) is at or after the reviewed commit's own
+        fork point from main: a head built on an older main commit could carry back a change main has
+        since reverted (D-584). None when git cannot say."""
         code, fork, _ = self._run(["git", "merge-base", reviewed, main], None, self.root)
         if code != 0:
             return False if code == 1 else None
-        if not self._is_ancestor(fork.strip(), base.strip()):
-            return False
-        code, out, _ = self._run(["git", "merge-tree", "--write-tree", reviewed, base.strip()], None, self.root)
-        if code != 0:
-            return False if code == 1 else None  # 1: they conflict, so no clean combination exists
-        return out.splitlines()[0].strip() == self.git("rev-parse", f"{head}^{{tree}}", check=False)
+        return self._is_ancestor(fork.strip(), base)
 
     def _has_commit(self, sha: str) -> bool:
         return bool(sha) and self._run(["git", "cat-file", "-e", f"{sha}^{{commit}}"], None, self.root)[0] == 0
