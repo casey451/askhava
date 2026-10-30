@@ -1,7 +1,8 @@
 //! The `web` process: the `server` binary (`docs/architecture.md` section 2; SEC-029).
 //!
 //! Installs the TLS provider, refuses to start on bad settings (SEC-002),
-//! starts the JSON log, builds the router over the app pool (each request queues its request-log
+//! starts the JSON log, builds the router over the app pool (with the test-control routes only in a
+//! `test-control` build, SEC-035) (each request queues its request-log
 //! line, OPS-011) and serves it on
 //! `0.0.0.0:$PORT` (the host sets `PORT`) until SIGINT or SIGTERM, then
 //! finishes the requests in flight and exits 0. `server migrate` instead
@@ -11,6 +12,7 @@
 use std::io;
 use std::net::Ipv4Addr;
 
+use askhava_core::api::TestControl;
 use tokio::net::TcpListener;
 
 #[tokio::main]
@@ -23,9 +25,14 @@ async fn main() -> io::Result<()> {
     let port = port_from_env()?;
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
     let pool = askhava_core::api::app_pool(&settings).map_err(io::Error::other)?;
-    axum::serve(listener, askhava_server::build_router(pool))
-        .with_graceful_shutdown(askhava_server::shutdown_signal()?)
-        .await
+    let control =
+        TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;
+    axum::serve(
+        listener,
+        askhava_server::build_router(pool, control.router()),
+    )
+    .with_graceful_shutdown(askhava_server::shutdown_signal()?)
+    .await
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app

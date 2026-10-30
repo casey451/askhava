@@ -54,6 +54,9 @@ const KEYS: &[&str] = &[
     // Parsed by `askhava_server::offdb_stream::OffDbStream::from_settings` (T017, D-734).
     "ASKHAVA_STORAGE_BASE_URL",
     "ASKHAVA_ID_SECRET",
+    // Parsed by `test_control::TestControl::from_settings`, only under `test-control` (T020, SEC-035).
+    "ASKHAVA_TEST_CONTROL_SECRET",
+    "ASKHAVA_TEST_CONTROL_CLOCK_FILE",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
