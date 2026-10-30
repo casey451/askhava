@@ -180,3 +180,4 @@
 - 2026-10-30T11:33:48Z runner ef74c9a216eb (actions): {}
 - 2026-10-30T11:49:23Z runner ece277d09f5e (actions): {"T233": "IN_PROGRESS -> QUEUED"}
 - 2026-10-30T11:56:15Z runner ef74c9a216eb (actions): {"T233": "QUEUED -> IN_PROGRESS"}; T233 estimated 499k tokens (calibrated); five-hour window has 25.6M left, week 425.2M (ledger); claimed
+- 2026-10-30T12:05:38Z runner 4ed333ef3cc4 (actions): {"T233": "IN_PROGRESS -> BLOCKED"}
