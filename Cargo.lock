@@ -233,6 +233,7 @@ name = "askhava-integration"
 version = "0.1.0"
 dependencies = [
  "askhava-core",
+ "askhava-ops",
  "axum",
  "jiff",
  "secrecy",
@@ -240,6 +241,17 @@ dependencies = [
  "sqlx",
  "tokio",
  "toml 1.1.8+spec-1.1.0",
+]
+
+[[package]]
+name = "askhava-ops"
+version = "0.1.0"
+dependencies = [
+ "jiff",
+ "jiff-sqlx",
+ "serde_json",
+ "sqlx",
+ "thiserror",
 ]
 
 [[package]]

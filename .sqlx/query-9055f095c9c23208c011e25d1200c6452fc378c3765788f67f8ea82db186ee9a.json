@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE ops.pause_switch SET paused = false, changed_at = now() WHERE name = $1 AND scope_id IS NOT DISTINCT FROM $2 AND paused RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.pause_switch",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "9055f095c9c23208c011e25d1200c6452fc378c3765788f67f8ea82db186ee9a"
+}
