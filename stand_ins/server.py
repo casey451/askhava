@@ -5,11 +5,15 @@ between stand-in, sandbox and live: `/twilio` (api.twilio.com and verify.twilio.
 (api.stripe.com), `/resend` (api.resend.com), `/lob` (api.lob.com) and `/anthropic`
 (api.anthropic.com). Below the prefix every path, form or JSON body, auth header, error envelope
 and Idempotency-Key behaves as the in-process fake in `stand_ins/<vendor>.py` does, so the
-contract tests hold over HTTP. A live-looking key (`sk_live_`, `live_`) is refused. Paths under
-`/_stand_in/` drive what the vendor would do on its own (an inbound text, the code on the phone,
-a status callback); a real vendor has none of them. The derived key of a text travels in the
-`X-Askhava-Message-Key` header and the sent log is `GET .../Messages.json?MessageKey=` (OPS-017).
-It binds to 127.0.0.1 only and holds fake data only.
+contract tests hold over HTTP. Only stand-in credentials pass (D-557, D-561): Twilio's Basic user
+must be the stand-in account SID (`AC` and 32 zeros), Stripe's key must start `sk_test_`, Resend's
+`re_stand_in_`, Lob's `test_`, and a Claude API key starting `sk-ant-` is refused, so a real key
+put in a setting by mistake gets the vendor's 401. Paths under `/_stand_in/` drive what the vendor
+would do on its own (an inbound text, the code on the phone, a status callback, a dispute, a
+letter's next tracking step, a signed webhook for an event); a real vendor has none of them. The
+derived key of a text travels in the `X-Askhava-Message-Key` header and the sent log is
+`GET .../Messages.json?MessageKey=` (OPS-017); the provider's own opt-out replies are listed only
+with `Direction=outbound-reply`. It binds to 127.0.0.1 only and holds fake data only.
 
 Usage: python3 -m stand_ins.server [--port 4010]
 """
@@ -21,6 +25,7 @@ import base64
 import json
 import re
 import threading
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -28,9 +33,11 @@ from typing import Any
 from urllib.parse import parse_qsl, urlsplit
 
 from stand_ins import ai, lob, resend, stripe, twilio
+from stand_ins.common import fake_id
 
 Out = tuple[int, Any, dict[str, str]]
 AC = r"/twilio/2010-04-01/Accounts/(?P<ac>AC\w{32})"
+RESEND_KEY_PREFIX = "re_stand_in_"
 
 
 @dataclass
@@ -70,19 +77,20 @@ def _bearer(req: Request) -> str:
     return req.headers.get("authorization", "").removeprefix("Bearer ")
 
 
-def auth_problem(req: Request) -> Out | None:
-    """The vendor's own 401 when the credentials are missing or live-looking."""
+def auth_problem(s: StandIns, req: Request) -> Out | None:
+    """The vendor's own 401 unless the credentials are the stand-in's own kind (D-557, D-561)."""
     vendor = req.path.split("/")[1]
-    if vendor == "twilio" and not _basic_user(req).startswith("AC"):
+    if vendor == "twilio" and _basic_user(req) != s.twilio.account_sid:
         return (*twilio.error(20003, "Authenticate", 401), {})
     if vendor == "stripe" and not _bearer(req).startswith("sk_test_"):
         return (*stripe.error("invalid_request_error", "api_key_invalid", "Invalid API Key provided", 401), {})
-    if vendor == "resend" and not _bearer(req).startswith("re_"):
-        return (*resend.error(401, "missing_api_key", "Missing API key in the authorization header"), {})
+    if vendor == "resend" and not _bearer(req).startswith(RESEND_KEY_PREFIX):
+        return (*resend.error(401, "validation_error", "API key is invalid"), {})
     if vendor == "lob" and not _basic_user(req).startswith("test_"):
         return (*lob.error(401, "Your API key is not valid. Please sign up on lob.com to get a valid api key."), {})
-    if vendor == "anthropic" and not req.headers.get("x-api-key"):
-        return ai.api_error(401, "authentication_error", "x-api-key header is required")
+    key = req.headers.get("x-api-key", "")
+    if vendor == "anthropic" and (not key or key.startswith("sk-ant-")):
+        return ai.api_error(401, "authentication_error", "invalid x-api-key")
     return None
 
 
@@ -108,14 +116,19 @@ def twilio_send(s: StandIns, req: Request, m: re.Match[str]) -> Out:
 
 
 def twilio_list(s: StandIns, req: Request, m: re.Match[str]) -> Out:
-    sent = s.twilio.sent_log(req.query.get("MessageKey"), req.query.get("To"))
+    """App sends only; `Direction=outbound-reply` lists the provider's opt-out replies (D-561)."""
+    replies = req.query.get("Direction") == "outbound-reply"
+    sent = s.twilio.sent_log(req.query.get("MessageKey"), req.query.get("To"), replies)
     return 200, {"messages": sent, "page": 0, "page_size": 50, "next_page_uri": None}, {}
 
 
 def twilio_media(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """Bytes without a suffix, the Media resource JSON with `.json`, DELETE either way (D-492, D-561)."""
     path = req.path.removeprefix("/twilio").removesuffix(".json")
     if req.method == "DELETE":
         return (*s.twilio.delete_media(path), {})
+    if req.path.endswith(".json"):
+        return (*s.twilio.media_resource(path), {})
     if path not in s.twilio.media:
         return (*twilio.error(20404, "The requested resource was not found", 404), {})
     return 200, s.twilio.media[path], {"content-type": "image/jpeg"}
@@ -155,6 +168,52 @@ def control_code(s: StandIns, req: Request, m: re.Match[str]) -> Out:
 def control_status(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     b = req.json()
     return 200, {"params": s.twilio.status_callback(b["sid"], b["status"], b.get("error_code"))}, {}
+
+
+def _stamp(body: dict[str, Any]) -> int:
+    return int(body.get("timestamp") or time.time())
+
+
+def control_dispute(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """The cardholder disputes a charge: a dispute object and its charge.dispute.created event."""
+    pi = req.json()["payment_intent"]
+    if s.stripe.objects.get(pi, {}).get("object") != "payment_intent":
+        return (*stripe.error("invalid_request_error", "resource_missing", "No such payment_intent", 404), {})
+    return 200, s.stripe.open_dispute(pi), {}
+
+
+def control_stripe_webhook(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """The signed delivery of one event: the raw payload and its Stripe-Signature."""
+    b = req.json()
+    event = next(e for e in s.stripe.events if e["id"] == b["id"])
+    payload, signature = s.stripe.webhook(event, _stamp(b))
+    return 200, {"payload": payload, "headers": {"stripe-signature": signature}}, {}
+
+
+def control_resend_webhooks(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """Svix-signed deliveries of every event of one email (the test addresses drive bounce and complaint)."""
+    b = req.json()
+    stamp, out = _stamp(b), []
+    for n, event in enumerate(s.resend.events):
+        if event["data"]["email_id"] == b["email_id"]:
+            payload, msg_id = json.dumps(event, sort_keys=True), fake_id("msg_", n + 1, 16)
+            signature = resend.sign(s.resend.secret, msg_id, stamp, payload)
+            headers = {"svix-id": msg_id, "svix-timestamp": str(stamp), "svix-signature": signature}
+            out.append({"payload": payload, "headers": headers})
+    return 200, {"webhooks": out}, {}
+
+
+def control_lob_advance(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """Move a letter to its next tracking step; 400 once it is delivered."""
+    return 200, {"event": s.lob.advance(req.json()["id"])}, {}
+
+
+def control_lob_webhooks(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """Signed deliveries (lob-signature) of every tracking event of one letter."""
+    b = req.json()
+    stamp = str(_stamp(b))
+    signed = [s.lob.signed_webhook(e, stamp) for e in s.lob.events if e["body"]["id"] == b["id"]]
+    return 200, {"webhooks": [{"payload": p, "headers": h} for p, h in signed]}, {}
 
 
 def stripe_create(s: StandIns, req: Request, m: re.Match[str]) -> Out:
@@ -211,6 +270,11 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
         ("POST", r"/_stand_in/twilio/inbound", control_inbound),
         ("GET", r"/_stand_in/twilio/code", control_code),
         ("POST", r"/_stand_in/twilio/status", control_status),
+        ("POST", r"/_stand_in/stripe/disputes", control_dispute),
+        ("POST", r"/_stand_in/stripe/webhook", control_stripe_webhook),
+        ("POST", r"/_stand_in/resend/webhooks", control_resend_webhooks),
+        ("POST", r"/_stand_in/lob/advance", control_lob_advance),
+        ("POST", r"/_stand_in/lob/webhooks", control_lob_webhooks),
         ("POST", r"/stripe/v1/(?P<kind>customers|setup_intents|payment_intents|refunds)", stripe_create),
         ("GET", r"/stripe/v1/(payment_intents|customers|refunds)/(?P<id>\w+)", stripe_fetch),
         ("GET", r"/stripe/v1/events", stripe_events),
@@ -227,24 +291,33 @@ def dispatch(s: StandIns, req: Request) -> Out:
     for methods, pattern, handler in ROUTES:
         match = pattern.match(req.path)
         if match and req.method in methods.split("|"):
-            problem = None if req.path.startswith("/_stand_in/") else auth_problem(req)
+            problem = None if req.path.startswith("/_stand_in/") else auth_problem(s, req)
             with s.lock:
                 return problem or handler(s, req, match)
     return 404, {"error": f"no stand-in route for {req.method} {req.path}"}, {}
+
+
+def body_length(value: str | None) -> int:
+    """Content-Length as a non-negative integer; anything else raises ValueError, answered 400."""
+    text = (value or "0").strip()
+    if not text.isdigit():
+        raise ValueError("bad content-length")
+    return int(text)
 
 
 def make_handler(state: StandIns) -> type[BaseHTTPRequestHandler]:
     class StandInHandler(BaseHTTPRequestHandler):
         def _serve(self) -> None:
             url = urlsplit(self.path)
-            raw = self.rfile.read(int(self.headers.get("content-length") or 0))
             headers = {k.lower(): v for k, v in self.headers.items()}
-            base = f"http://{self.headers.get('host', '127.0.0.1')}"
-            req = Request(self.command, url.path, dict(parse_qsl(url.query)), headers, raw, base)
+            base = "http://{}:{}".format(*self.server.server_address[:2])
             try:
+                raw = self.rfile.read(body_length(self.headers.get("content-length")))
+                req = Request(self.command, url.path, dict(parse_qsl(url.query)), headers, raw, base)
                 status, body, extra = dispatch(state, req)
-            except (KeyError, ValueError, TypeError) as exc:
+            except (KeyError, ValueError, TypeError, StopIteration) as exc:
                 status, body, extra = 400, {"error": f"bad stand-in request: {type(exc).__name__}"}, {}
+                self.close_connection = True
             data = body if isinstance(body, bytes) else json.dumps(body).encode()
             data = b"" if status == 204 else data
             self.send_response(status)

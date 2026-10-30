@@ -8,8 +8,9 @@ permission (21408), +15005550004 blocked (21610), +15005550009 cannot receive SM
 Advanced Opt-Out comes from `stand_ins/provider_optout.json` (CON-030, D-492, D-493): an inbound
 text that is exactly one of its opt-out words blocks later sends (21610) and gets the file's
 CON-009 reply (Spanish for the Spanish words) until START or UNSTOP (no YES); the webhook then
-carries OptOutType. Inbound picture texts carry NumMedia and MediaUrl{n}; DELETE on a media URL
-removes it. Each sent message keeps the app's derived key, and `sent_log` finds it, for OPS-017's
+carries OptOutType. Those provider replies are kept apart in `replies`, so `sent_log` counts only
+the app's own sends. Inbound picture texts carry NumMedia and MediaUrl{n}; GET on a media URL gives
+the bytes, with `.json` the Media resource, and DELETE removes it. Each sent message keeps the app's derived key, and `sent_log` finds it, for OPS-017's
 "nothing sent twice" check; Calls stand in for the masked voice session (D-491). Webhooks carry
 X-Twilio-Signature: base64(HMAC-SHA1(auth token, URL + sorted key+value pairs)). Verify: POST
 /v2/Services/{sid}/Verifications and /VerificationCheck.
@@ -94,6 +95,8 @@ class FakeTwilio:
         self.callbacks: list[dict[str, str]] = []
         self.keys: dict[str, str] = {}
         self.media: dict[str, bytes] = {}
+        self.media_types: dict[str, str] = {}
+        self.replies: list[dict[str, Any]] = []
         self.calls: list[dict[str, Any]] = []
 
     def create_message(self, to: str, frm: str, body: str, key: str | None = None) -> Reply:
@@ -116,11 +119,12 @@ class FakeTwilio:
             self.keys[msg["sid"]] = key
         return 201, dict(msg)
 
-    def sent_log(self, key: str | None = None, to: str | None = None) -> list[dict[str, Any]]:
-        """Sent messages, filtered by the app's derived key and/or To (OPS-017, D-491)."""
+    def sent_log(self, key: str | None = None, to: str | None = None, replies: bool = False) -> list[dict[str, Any]]:
+        """The app's sends (or, with `replies`, the provider's own opt-out replies), filtered by the
+        app's derived key and/or To (OPS-017, D-491, D-561)."""
         return [
             dict(m)
-            for m in self.messages
+            for m in (self.replies if replies else self.messages)
             if key in (None, self.keys.get(m["sid"])) and to in (None, m["to"])
         ]
 
@@ -134,11 +138,11 @@ class FakeTwilio:
         else:
             return None
         reply = {**self._resource(to, frm, text), "direction": "outbound-reply"}
-        self.messages.append(reply)
+        self.replies.append(reply)
         return "STOP" if word in OPT_OUT else "START"
 
     def _resource(self, to: str, frm: str, body: str) -> dict[str, Any]:
-        sid = fake_id("SM", len(self.messages) + 1, 32)
+        sid = fake_id("SM", len(self.messages) + len(self.replies) + 1, 32)
         return {
             "sid": sid,
             "account_sid": self.account_sid,
@@ -178,7 +182,7 @@ class FakeTwilio:
         params["NumMedia"] = str(len(media or []))
         for n, content_type in enumerate(media or []):
             path = f"/2010-04-01/Accounts/{self.account_sid}/Messages/{sid}/Media/{fake_id('ME', n, 32)}"
-            self.media[path] = b"fake-image-bytes"
+            self.media[path], self.media_types[path] = b"fake-image-bytes", content_type
             params[f"MediaUrl{n}"], params[f"MediaContentType{n}"] = path, content_type
         opt_type = self._auto_reply(word, frm, to)
         if opt_type:
@@ -188,9 +192,24 @@ class FakeTwilio:
 
     def delete_media(self, path: str) -> Reply:
         """DELETE a stored inbound picture; 204, then 404 for any later fetch (D-492)."""
-        if self.media.pop(path.removesuffix(".json"), None) is None:
+        path = path.removesuffix(".json")
+        if self.media.pop(path, None) is None:
             return error(20404, "The requested resource was not found", 404)
+        del self.media_types[path]
         return 204, {}
+
+    def media_resource(self, path: str) -> Reply:
+        """The Media resource JSON for a stored picture (GET `.../Media/ME....json`), 404 once deleted."""
+        if path not in self.media:
+            return error(20404, "The requested resource was not found", 404)
+        parts = path.split("/")
+        return 200, {
+            "sid": parts[-1],
+            "account_sid": self.account_sid,
+            "parent_sid": parts[-3],
+            "content_type": self.media_types[path],
+            "uri": path + ".json",
+        }
 
     def create_call(self, to: str, frm: str) -> Reply:
         """Open a voice session (the masked call line stand-in, D-491)."""
