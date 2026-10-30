@@ -57,6 +57,7 @@ class FakeEnv:
         self.branch_pushes: list[tuple[str, str]] = []
         self.auto_merges: list[tuple[str, str]] = []
         self.main_merges = 0
+        self.main_commits: set[str] = set()  # older commits of main, besides its head (D-551)
 
     def read_state(self) -> st.State:
         return copy.deepcopy(self.store)
@@ -110,6 +111,9 @@ class FakeEnv:
 
     def main_checks_green(self, head: str) -> bool | None:
         return self.checks_green
+
+    def in_main(self, sha: str) -> bool | None:
+        return sha == self.head or sha in self.main_commits
 
     def push_branch(self, branch: str, head_sha: str) -> bool:
         self.branch_pushes.append((branch, head_sha))
@@ -1026,3 +1030,167 @@ def test_drill_fix_main_gets_a_block_and_unreadable_numbers_reserve_none(tmp_pat
     env2 = FakeEnv()
     assert cycle.run_cycle(_numbered(config([make_task("T001")], tmp_path), None), env2, NOW) == st.MERGE_PENDING
     assert "decision_ids" not in st.entry(env2.store, "T001") and "next_decision" not in env2.store
+
+
+# ---- D-551 drills: an empty hand-in (no commits on top of main) never waits for a pull request
+
+
+def empty(task: dict[str, Any], model: str, head: str = "main0001") -> cycle.WorkerResult:
+    """A hand-in whose head main already contains: GitHub opens no pull request for it."""
+    return dataclasses.replace(reviewed(task, model, paths=[], head=head), commits_ahead=0)
+
+
+def stage_one() -> list[dict[str, Any]]:
+    """Stage 1's shape: the cleanup task T008 comes before T167, which depends on it; T009 is stage 2."""
+    return [
+        make_task("T007", stage="1"), make_task("T008", ["T007"], stage="1", type="cleanup"),
+        make_task("T167", ["T008"], stage="1"), make_task("T009", ["T008"], stage="2"),
+    ]
+
+
+def proving(
+    env: FakeEnv, tmp_path: Path, worker: Callable[[dict[str, Any], str, str], cycle.WorkerResult]
+) -> tuple[cycle.Config, dict[str, Any]]:
+    """The wiring of runner/__main__.py with a scripted proof check: the runner proves stage 1 itself."""
+    graph = stage_one()
+    env.worker = worker
+    env.nightly = {"conclusion": "success", "sha": "n1"}
+    env.store = st.with_task(st.sync_graph(env.store, graph), "T007", status=st.DONE, merged_sha="main0001")
+    proof: dict[str, Any] = {"record": None, "waits": ["T167 is QUEUED"]}
+
+    def check(state: st.State, stage: str) -> tuple[dict[str, Any] | None, list[str]]:
+        return proof["record"], [] if proof["record"] else list(proof["waits"])
+
+    cfg = dataclasses.replace(config(graph, tmp_path), proof_stages=frozenset({"1"}), stage_proof=check)
+    cfg.stage_gate = stage_gate(env, graph)
+    return cfg, proof
+
+
+def test_drill_an_empty_cleanup_hand_in_resolves_without_a_pr_and_the_runner_records_its_proof(tmp_path: Path) -> None:
+    """The cleanup task finds nothing to change: no branch push, no auto-merge, no wait for a PR. It is
+    BLOCKED only for its stage proof, which does not hold its own stage's later task (T167), while the
+    next stage (T009) waits for the stage exit test; once the runner's check finds the proof true it is
+    recorded, the cleanup task is DONE and stage 2 opens."""
+    env = FakeEnv()
+    cfg, proof = proving(env, tmp_path, lambda t, m, log: empty(t, m) if t["id"] == "T008" else reviewed(t, m, head="h167"))
+    assert cycle.run_cycle(cfg, env, NOW) == st.BLOCKED
+    entry = st.entry(env.store, "T008")
+    assert entry["reason"] == "stage proof missing" and entry["merged_sha"] == "main0001" and entry["files"] == []
+    assert entry["empty_handin"] is True and entry["history"][-1]["result"] == "proof_missing"
+    assert env.branch_pushes == [] and env.auto_merges == [] and env.store["lease"] is None
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == st.MERGE_PENDING and env.runs[-1][0] == "T167"
+    assert st.entry(env.store, "T008")["proof_waits_for"] == ["T167 is QUEUED"]
+    env.prs["T167"] = dict(green_pr(sha="h167"), merged_sha="m167")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=2)) == "done"
+    assert "T009" not in [r[0] for r in env.runs] and "stage_proofs" not in env.store
+    proof["record"] = {"evidence": "nightly n1 green with every stage-1 merge", "main_sha": "n1", "by": "runner"}
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=3)) == st.MERGE_PENDING and env.runs[-1][0] == "T009"
+    assert env.store["stage_proofs"]["1"]["evidence"].startswith("nightly n1") and env.store["stage_proofs"]["1"]["at"]
+    assert st.status(env.store, "T008") == st.DONE and st.entry(env.store, "T008")["proof_waits_for"] is None
+
+
+def test_drill_a_task_stuck_merge_pending_on_an_empty_hand_in_heals_itself(tmp_path: Path) -> None:
+    """The live state of October 30 (D-551): T008 MERGE_PENDING, its reviewed head main's tip at hand-in,
+    no PR (GitHub opens none without a diff), auto-merge 'no open PR for the branch'. The next cycle
+    resolves it from code, with no hand edit of claude/kit-state, and claims T167 in the same cycle."""
+    env = FakeEnv()
+    cfg, _ = proving(env, tmp_path, lambda t, m, log: reviewed(t, m, head="h167"))
+    stuck = {"enabled": False, "why": "no open PR for the branch", "head": "main0001"}
+    history = [{"attempt": 1, "head_sha": "main0001", "pr": None, "checks": None, "result": "MERGE_PENDING"}]
+    env.store = st.with_task(env.store, "T008", status=st.MERGE_PENDING, reviewed_sha="main0001", auto_merge=stuck, history=history)
+    env.head, env.main_commits = "main0002", {"main0001"}  # main moved on since the hand-in
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    assert st.status(env.store, "T008") == st.BLOCKED and st.entry(env.store, "T008")["reason"] == "stage proof missing"
+    assert st.entry(env.store, "T008")["history"][-1]["result"] == "proof_missing"
+    assert [r[0] for r in env.runs] == ["T167"] and env.branch_pushes == [("claude/task/T167-x", "h167")]
+
+
+def test_drill_an_empty_cleanup_hand_in_waits_until_mains_checks_are_known_green(tmp_path: Path) -> None:
+    graph = [make_task("T057", stage="2", type="cleanup")]
+    env, cfg = FakeEnv(lambda t, m, log: empty(t, m)), config(graph, tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING  # main0001 is no DONE merge and its checks are unknown
+    assert "waiting for Ci, Twin and Ally green on main main0001" in st.entry(env.store, "T057")["auto_merge"]["why"]
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == "merge_pending" and env.branch_pushes == []
+    assert st.entry(env.store, "T057")["empty_since"] == st.iso(NOW)  # the attempt's end
+    env.checks_green = True
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=2)) == "done"
+    assert st.entry(env.store, "T057")["reason"] == "stage proof missing"  # no proof check for stage 2: --record-proof
+
+
+def test_drill_an_empty_cleanup_hand_in_on_a_red_main_is_a_failed_attempt(tmp_path: Path) -> None:
+    """A check that failed on the head it would certify: the next attempt runs on the newer main (D-551 review)."""
+    graph = [make_task("T057", stage="2", type="cleanup")]
+    env, cfg = FakeEnv(lambda t, m, log: empty(t, m)), config(graph, tmp_path)
+    env.checks_green = False
+    assert cycle.run_cycle(cfg, env, NOW) == st.QUEUED
+    entry = st.entry(env.store, "T057")
+    assert entry["attempts"] == 1 and entry["last_failure"] == "empty hand-in: Ci, Twin or Ally failed on main main0001"
+    assert entry["history"][-1]["result"] == "check_failed" and env.branch_pushes == []
+    env.store = st.with_task(env.store, "T057", status=st.MERGE_PENDING, reviewed_sha="main0001")  # the self-heal path too
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == "check_failed"
+    assert st.entry(env.store, "T057")["attempts"] == 2
+
+
+def test_drill_an_empty_cleanup_hand_in_stops_waiting_for_unknown_checks_after_a_few_hours(tmp_path: Path) -> None:
+    """Checks that never become known (a commit with no PR checks) must not stall the build either."""
+    graph = [make_task("T057", stage="2", type="cleanup"), make_task("T058", stage="2")]
+    env, cfg = FakeEnv(lambda t, m, log: empty(t, m)), config(graph, tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    almost = NOW + cycle.EMPTY_WAIT - timedelta(minutes=1)
+    assert cycle.run_cycle(cfg, env, almost) == "merge_pending" and env.runs == [("T057", MODELS["sonnet"], "")]
+    assert cycle.run_cycle(cfg, env, NOW + cycle.EMPTY_WAIT) == "check_failed"
+    entry = st.entry(env.store, "T057")
+    assert entry["status"] == st.QUEUED and "still unknown on main main0001" in entry["last_failure"]
+    assert entry["empty_since"] is None
+    env.worker = lambda t, m, log: reviewed(t, m)
+    assert cycle.run_cycle(cfg, env, NOW + cycle.EMPTY_WAIT + timedelta(minutes=1)) == st.MERGE_PENDING
+
+
+def test_drill_a_push_with_no_head_gets_its_own_blocked_reason(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head=""))
+    env.push_branch = lambda branch, head: bool(head)  # type: ignore[method-assign]  # reason: GitHubEnv refuses an empty head
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == "push_failed"
+    assert st.entry(env.store, "T001")["reason"].startswith("no head to push: git could not read the task branch or main")
+
+
+def test_drill_an_empty_hand_in_from_any_other_task_is_a_failed_attempt(tmp_path: Path) -> None:
+    """No commits is no work: the retry ladder runs (same model, same model with the log, Opus), then
+    BLOCKED holds only the dependents. Nothing is pushed and the task never waits for a PR."""
+    graph = [make_task("T001"), make_task("T002", ["T001"]), make_task("T003")]
+    env, cfg = FakeEnv(lambda t, m, log: empty(t, m) if t["id"] == "T001" else reviewed(t, m)), config(graph, tmp_path)
+    for minute in range(3):
+        assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=minute)) in (st.QUEUED, st.BLOCKED)
+    assert [r[1] for r in env.runs] == [MODELS["sonnet"], MODELS["sonnet"], MODELS["opus"]]
+    assert env.runs[1][2] == cycle.NO_CHANGES and st.entry(env.store, "T001")["reason"] == cycle.NO_CHANGES
+    assert st.status(env.store, "T001") == st.BLOCKED and env.branch_pushes == []
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=3)) == st.MERGE_PENDING and env.runs[-1][0] == "T003"
+
+
+def test_drill_a_stuck_empty_hand_in_from_a_build_task_goes_back_for_a_retry(tmp_path: Path) -> None:
+    env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
+    env.store = st.with_task(st.sync_graph(env.store, cfg.graph), "T001", status=st.MERGE_PENDING, reviewed_sha="old0001")
+    assert cycle.run_cycle(cfg, env, NOW) == "merge_pending"  # a head main lacks: its PR is still to come
+    env.main_commits = {"old0001"}
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == "no_changes"
+    entry = st.entry(env.store, "T001")
+    assert entry["status"] == st.QUEUED and entry["attempts"] == 1 and entry["last_failure"] == cycle.NO_CHANGES
+
+
+def test_a_failing_proof_check_is_noted_and_never_records_a_proof(tmp_path: Path) -> None:
+    env = FakeEnv()
+    cfg, _ = proving(env, tmp_path, lambda t, m, log: reviewed(t, m))
+
+    def broken(state: st.State, stage: str) -> tuple[dict[str, Any] | None, list[str]]:
+        raise RuntimeError("git fetch failed")
+
+    cfg = dataclasses.replace(cfg, stage_proof=broken)
+    env.store = st.with_task(env.store, "T008", status=st.BLOCKED, reason="stage proof missing", merged_sha="main0001")
+    cycle.run_cycle(cfg, env, NOW)
+    assert st.entry(env.store, "T008")["proof_waits_for"] == ["the proof check failed: git fetch failed"]
+    assert "stage_proofs" not in env.store and st.status(env.store, "T008") == st.BLOCKED
+
+
+def test_an_empty_hand_in_is_never_blamed_for_a_red_main() -> None:
+    state = st.with_task(st.new_state(), "T007", status=st.DONE, merged_sha="m7", merged_at="2026-11-01T10:00:00Z", files=["a"])
+    state = st.with_task(state, "T008", status=st.DONE, merged_sha="m7", merged_at="2026-11-01T11:00:00Z", files=[], empty_handin=True)
+    assert cycle.offending_merge(state) == ("T007", "m7", ["a"])

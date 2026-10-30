@@ -29,7 +29,7 @@ The earlier verdict (October 28) read NOT READY for two deliberate reasons, the 
 
 ## 3. Stage exit tests (milestone completion criteria)
 
-A stage is complete only when every line in its row is true, verified by a tool run recorded in `PROGRESS.md`. The stage's cleanup task prompt names this row, and the runner will not mark the cleanup task DONE without the proof (`docs/governance.md` section 6).
+A stage is complete only when every line in its row is true, verified by a tool run recorded in `PROGRESS.md`. The stage's cleanup task prompt names this row, and the runner will not mark the cleanup task DONE without the proof (`docs/governance.md` section 6). Stage 1's row is all tests in the nightly suite, so the runner records that proof itself once a green nightly run contains every stage-1 merge, T167's HTTP contract tests among them (`runner/proof.py`, D-551).
 
 The task list of each stage is the set of tasks whose `stage` value in `kit/tasks.json` equals the row (never a range); `python3 -c "import json;..."` or `scripts/progress.py --json` lists them (D-482).
 

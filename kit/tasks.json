@@ -15899,7 +15899,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 16
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -15907,7 +15907,8 @@
     "Ally"
    ],
    "branch": "claude/task/T167-stand-ins-http",
-   "prompt": "kit/prompts/T167.md"
+   "prompt": "kit/prompts/T167.md",
+   "acceptance": "Every contract test passes over HTTP (`python3 -m pytest tests/contract -q -p no:cacheprovider`), and `tests/contract/test_stand_in_server.py` has no skip path (no `pytest.skip`, `skipif`, `importorskip`, `xfail` or `SkipTest`): the runner records stage 1's exit proof only from a green nightly run in which that file ran with no way to skip (D-551)."
   },
   {
    "id": "T168",
