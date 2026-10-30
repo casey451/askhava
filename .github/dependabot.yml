@@ -1,0 +1,12 @@
+# Dependabot watches the Actions pins and the Dockerfile's base-image digests, so a new digest or
+# action commit opens a pull request that runs the full checks (SEC-021, SEC-045, D-492).
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"

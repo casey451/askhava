@@ -1,4 +1,6 @@
 # Required check "Ci" (ruleset protect-main). Job name must stay exactly "Ci".
+# Three jobs: "Checks" (everything except coverage) and "Coverage" (branch coverage against
+# tests/coverage_floor.json, D-694) run in parallel; "Ci" is the gate, green only when both are.
 name: ci
 on:
   push:
@@ -7,14 +9,21 @@ on:
   workflow_call:
 permissions:
   contents: read
+env:
+  # Incremental artifacts are not reused across runs and bloat the cache; Cargo.toml [profile.dev] sets
+  # debug = "line-tables-only" to keep the cached target small (D-693).
+  CARGO_INCREMENTAL: "0"
+  CARGO_TERM_COLOR: always
 jobs:
-  ci:
-    name: "Ci"
+  checks:
+    name: "Checks"
     runs-on: ubuntu-latest
-    # Postgres for the Rust integration tests (D-453); T169 pins the image by digest.
+    timeout-minutes: 25
+    # Postgres for the Rust integration tests (D-453), pinned by digest (SEC-021, SEC-045). Dependabot's
+    # docker ecosystem opens a PR when the digest moves (.github/dependabot.yml, D-492).
     services:
       postgres:
-        image: postgres:16
+        image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
         env:
           POSTGRES_USER: askhava_ci
           POSTGRES_HOST_AUTH_METHOD: trust
@@ -30,7 +39,7 @@ jobs:
       GITLEAKS_VERSION: "8.28.0"
       GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
           fetch-depth: 200
@@ -76,7 +85,7 @@ jobs:
           python3 scripts/check_plan_lock.py
           python3 scripts/check_pr_change.py --base origin/main --branch "$HEAD_BRANCH"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
 
@@ -121,43 +130,95 @@ jobs:
         run: |
           python3 scripts/check_crates.py
 
-      - name: Rust build cache (D-514)
-        # Registry, git deps, installed tools and target/ keyed on the toolchain and Cargo.lock. Cargo's own
-        # fingerprints decide what rebuilds, so a cache can only save time, never change a result; a
-        # changed lockfile or toolchain starts a fresh key.
-        if: steps.changes.outputs.rust == 'true' && hashFiles('Cargo.lock') != ''
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/git/db
-            ~/.cargo/bin
-            target
-          key: rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
-          restore-keys: rust-${{ runner.os }}-
+      - name: Rust toolchain (the pinned release from rust-toolchain.toml)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
 
-      - name: Rust format, lint and tests (once the workspace exists, D-453)
+      - name: Rust build cache (registry, git deps and target/, D-693)
+        id: rust-cache
+        # Keyed by the action on Cargo.lock, rust-toolchain.toml and the rustc version. target/tests/trybuild
+        # (the compile-fail scratch project, 1.7 GB, 400 s cold; D-488) is named so it is kept with target/.
+        # Cargo's own fingerprints decide what rebuilds, so a cache can only save time, never change a result.
+        if: steps.changes.outputs.rust == 'true' && hashFiles('Cargo.lock') != ''
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: checks
+          cache-directories: target/tests/trybuild
+
+      - name: The cache keeps target/tests/trybuild (a cold pass costs 400 s more without it, D-488)
+        if: steps.rust-cache.outputs.cache-hit == 'true' && hashFiles('tests/security/ui/*.rs') != ''
+        run: |
+          # Checked straight after the restore, before any build or test recreates the directory.
+          test -d target/tests/trybuild || { echo "the cache lost target/tests/trybuild"; exit 1; }
+
+      - name: Prebuilt tools (cargo-audit, cargo-deny) from pinned musl release tarballs (D-693)
+        if: steps.changes.outputs.rust == 'true'
+        env:
+          AUDIT_URL: https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-x86_64-unknown-linux-musl-v0.22.2.tgz
+          AUDIT_SHA256: 7fb9497f8594b389e5fce5ef9b92db08432996895b2e0c5a0167a69ed445c428
+          DENY_URL: https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
+          DENY_SHA256: 9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f
+        run: |
+          bin="$RUNNER_TEMP/tools/bin"; mkdir -p "$bin"
+          for tool in AUDIT DENY; do
+            url="${tool}_URL"; sum="${tool}_SHA256"; name="cargo-${tool,,}"
+            curl -sSfL -o "$RUNNER_TEMP/$tool.tgz" "${!url}"
+            echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c -
+            # Only this tool's binary: GNU tar exits 2 when a named pattern matches nothing.
+            tar -xzf "$RUNNER_TEMP/$tool.tgz" -C "$bin" --strip-components=1 --wildcards "*/$name"
+          done
+          echo "$bin" >> "$GITHUB_PATH"
+
+      - name: sqlx-cli (no release binaries exist upstream; built once, then restored from the cache, D-693)
+        id: sqlx-cli-cache
+        if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cargo/sqlx-cli
+          key: sqlx-cli-0.9.0-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}
+
+      - name: Install sqlx-cli 0.9.0 on a cache miss
+        if: steps.sqlx-cli-cache.outputs.cache-hit != 'true' && steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        run: |
+          cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features postgres,rustls,sqlx-toml --root ~/.cargo/sqlx-cli
+
+      - name: Put sqlx-cli on the path
+        if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        run: |
+          echo "$HOME/.cargo/sqlx-cli/bin" >> "$GITHUB_PATH"
+
+      - name: Rust format and lint (clippy once, before the build, D-488)
         if: steps.changes.outputs.rust == 'true'
         run: |
           if [ -f Cargo.toml ]; then
-            rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
             cargo fmt --all --check
             cargo clippy --workspace --all-targets --locked -- -D warnings -F clippy::allow_attributes_without_reason
+          else
+            echo "rust checks skipped: no Cargo workspace yet"
+          fi
+
+      - name: Migrations and offline query data (stale .sqlx fails, D-488)
+        if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        run: |
+          # Apply the migrations to the pinned Postgres, then compare the committed .sqlx entries with what
+          # the query macros produce now; a stale or missing entry fails here and not at the build.
+          sqlx migrate run
+          cargo sqlx prepare --workspace --check -- --all-targets --all-features
+
+      - name: Rust build (the one boundary build) and tests
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          if [ -f Cargo.toml ]; then
             # The binaries' own dependency graph builds with the lockfile (D-481, D-488).
             cargo build -p askhava-server --locked
             cargo test --workspace --locked
-          else
-            echo "rust checks skipped: no Cargo workspace yet"
           fi
 
       - name: Rust dependency audit (cargo-audit, cargo-deny)
         if: steps.changes.outputs.rust == 'true'
         run: |
           if [ -f Cargo.lock ]; then
-            # Installed once into the cached ~/.cargo/bin; reinstalled only when a version changes (D-514).
-            cargo audit --version 2>/dev/null | grep -q '0.22.2' || cargo install --locked cargo-audit@0.22.2
-            cargo deny --version 2>/dev/null | grep -q '0.20.2' || cargo install --locked cargo-deny@0.20.2
             cargo audit
             cargo deny check licenses bans sources advisories
           else
@@ -175,3 +236,163 @@ jobs:
           else
             echo "npm checks skipped: no package-lock.json yet"
           fi
+
+  coverage:
+    name: "Coverage"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
+      # Branch mode needs a nightly. It is used to measure only, pinned by date; builds and tests use the
+      # stable release in rust-toolchain.toml (D-453, D-694). Moving the date is a decision.
+      NIGHTLY: nightly-2026-10-15
+      LLVM_COV_URL: https://github.com/taiki-e/cargo-llvm-cov/releases/download/v0.9.1/cargo-llvm-cov-x86_64-unknown-linux-musl.tar.gz
+      LLVM_COV_SHA256: 3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 200
+
+      - name: Does this change touch Rust? (same rule as Checks, D-489)
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "rust=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base="$(git merge-base origin/main HEAD)"
+          rust=false
+          git diff --no-renames --name-only "$base" HEAD \
+            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          echo "rust=$rust" >> "$GITHUB_OUTPUT"
+
+      - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          for role in askhava_app askhava_migrator; do
+            psql "$DATABASE_URL" -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
+              || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
+
+      - name: Rust toolchain (the pinned release from rust-toolchain.toml, selected before the cache key is made)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+
+      - name: Apply the migrations when any exist (same database as Checks; plain SQL, applied in file order)
+        if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        run: |
+          for f in $(ls migrations/*.sql | sort); do psql "$DATABASE_URL" -q -v ON_ERROR_STOP=1 -f "$f"; done
+
+      - name: Rust build cache (separate from Checks, as the nightly builds its own target dir, D-693)
+        if: steps.changes.outputs.rust == 'true'
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: coverage
+          key: ${{ env.NIGHTLY }}
+          workspaces: ". -> target/llvm-cov-target"
+
+      - name: Measuring toolchain and cargo-llvm-cov 0.9.1 (pinned nightly, pinned musl tarball)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          rustup toolchain install "$NIGHTLY" --profile minimal -c llvm-tools-preview
+          curl -sSfL -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL"
+          echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/tools/bin"
+          tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/tools/bin" cargo-llvm-cov
+          echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"
+
+      - name: Branch coverage (cargo llvm-cov on the pinned nightly)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          # The two trybuild drivers are left out: their .stderr files are tied to the stable rustc (D-488).
+          cargo "+$NIGHTLY" llvm-cov --workspace --locked --branch --json --summary-only \
+            --exclude askhava-security --exclude askhava-recovery-tests \
+            --ignore-filename-regex '(/tests/|/bin/)' --output-path "$RUNNER_TEMP/coverage.json"
+
+      - name: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)
+        if: steps.changes.outputs.rust == 'true'
+        env:
+          COVERAGE_JSON: ${{ runner.temp }}/coverage.json
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess, sys
+
+          def percent(part):
+              """Branch coverage; a part with no branches yet is measured by its lines."""
+              unit = part["branches"] if part["branches"]["count"] else part["lines"]
+              return (100.0 * unit["covered"] / unit["count"]) if unit["count"] else None
+
+          def add(parts, key, summary):
+              slot = parts.setdefault(key, {k: {"count": 0, "covered": 0} for k in ("branches", "lines")})
+              for kind in slot:
+                  slot[kind]["count"] += summary[kind]["count"]
+                  slot[kind]["covered"] += summary[kind]["covered"]
+
+          floors = json.load(open("tests/coverage_floor.json"))
+          data = json.load(open(os.environ["COVERAGE_JSON"]))["data"][0]
+          root = os.getcwd() + "/"
+          crates, floored = {}, {}
+          for f in data["files"]:
+              rel = f["filename"].removeprefix(root)
+              add(crates, "/".join(rel.split("/")[:2]), f["summary"])
+              for prefix in floors["floors"]:
+                  if rel.startswith(prefix):
+                      add(floored, prefix, f["summary"])
+          failures = []
+          for name, part in sorted(crates.items()):
+              print(f"{name}: {percent(part)}")
+          total = percent(data["totals"])
+          print(f"total: {total} (floor {floors['total']})")
+          if total is not None and total + 0.005 < floors["total"]:
+              failures.append(f"total {total:.2f} is below the floor {floors['total']}")
+          for prefix, floor in floors["floors"].items():
+              got = percent(floored[prefix]) if prefix in floored else None
+              print(f"{prefix}: {got} (floor {floor})")
+              if got is not None and got + 0.005 < floor:
+                  failures.append(f"{prefix} {got:.2f} is below the floor {floor}")
+          base = subprocess.run(["git", "show", "origin/main:tests/coverage_floor.json"], capture_output=True, text=True)
+          if base.returncode == 0:
+              old = json.loads(base.stdout)
+              flat = lambda d: {"total": d["total"], **d["floors"]}
+              lowered = [k for k, v in flat(old).items() if flat(floors).get(k, -1) < v]
+              diff = subprocess.run(["git", "diff", "origin/main", "HEAD", "--", "docs/decisions.md"], capture_output=True, text=True).stdout
+              if lowered and "coverage floor" not in diff.lower():
+                  failures.append(f"floor lowered without a docs/decisions.md entry: {lowered}")
+          for line in failures:
+              print("FAIL:", line)
+          sys.exit(1 if failures else 0)
+          PY
+
+  ci:
+    # The required check. Green only when Checks and Coverage both are (a skipped step inside them is green).
+    name: "Ci"
+    needs: [checks, coverage]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Both jobs passed
+        env:
+          CHECKS: ${{ needs.checks.result }}
+          COVERAGE: ${{ needs.coverage.result }}
+        run: |
+          echo "Checks: $CHECKS, Coverage: $COVERAGE"
+          [ "$CHECKS" = "success" ] && [ "$COVERAGE" = "success" ]
