@@ -1,10 +1,11 @@
 //! Reads and checks `docs/catalog/categories.yaml` before anything is stored (LIC-001, LIC-003,
-//! LIC-004, AI-017).
+//! LIC-004, LIC-042, AI-017).
 //!
 //! The file is compiled in, so the running service never depends on a folder at run time. Parsing is
 //! pure: a category whose code or name is on the not-offered list is forced off here, and a duplicate
 //! code, an unknown license kind, quote format or job-type kind, or a fee tier outside $25 to $75 is
-//! refused, so the tables never hold a value the review did not set.
+//! refused, and a category, job type or keyword that covers a warranty, protection plan or guarantee is
+//! refused (LIC-042), so the tables never hold a value the review did not set.
 
 use std::collections::BTreeSet;
 
@@ -21,6 +22,24 @@ const JOB_KINDS: [&str; 3] = ["repair", "replace", "install"];
 #[must_use]
 pub fn normalize(name: &str) -> String {
     name.trim().to_lowercase().replace('_', " ")
+}
+
+/// Words that mean a warranty, protection plan or guarantee (LIC-042, D-376).
+const WARRANTY_WORDS: [&str; 6] = [
+    "warrant",
+    "protection plan",
+    "service contract",
+    "guarantee",
+    "guaranty",
+    "garantía",
+];
+
+/// True when `text` names a home warranty, protection plan, service contract or guarantee, which no
+/// category, job type or offer may cover (LIC-042).
+#[must_use]
+pub fn covers_warranty(text: &str) -> bool {
+    let lower = normalize(text);
+    WARRANTY_WORDS.iter().any(|w| lower.contains(w))
 }
 
 /// The catalog compiled into the build (LIC-001).
@@ -72,6 +91,7 @@ fn check(def: &CategoryDef) -> Result<(), CatalogError> {
             .values()
             .all(|k| JOB_KINDS.contains(&k.as_str()))
         && !def.job_types.is_empty()
+        && !covers_warranty_any(def)
         && def
             .one_time_job_types
             .iter()
@@ -84,6 +104,15 @@ fn check(def: &CategoryDef) -> Result<(), CatalogError> {
     } else {
         Err(CatalogError::Invalid)
     }
+}
+
+/// True when the category's code, name, job types or keywords cover a warranty (LIC-042).
+fn covers_warranty_any(def: &CategoryDef) -> bool {
+    [&def.id, &def.name]
+        .into_iter()
+        .chain(&def.job_types)
+        .chain(&def.keywords)
+        .any(|t| covers_warranty(t))
 }
 
 /// The license rule's own shape, as the table's CHECK constraints hold it: an agency exactly for

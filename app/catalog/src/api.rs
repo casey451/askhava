@@ -11,6 +11,7 @@ use crate::{loader, service};
 
 pub use crate::loader::{normalize, parse};
 pub use crate::models::{Catalog, CatalogError, Category, JobType};
+pub use crate::question_bank::{AskIf, Question, QuestionBank, QuestionSet};
 
 /// Parses the catalog file compiled into the build and stores it (LIC-001). Run it at start-up and
 /// after the file changes; it is safe to run again and never changes an existing category's switch,
@@ -21,6 +22,25 @@ pub use crate::models::{Catalog, CatalogError, Category, JobType};
 /// [`CatalogError::Invalid`] or [`CatalogError::Database`].
 pub async fn load_embedded(db: &mut PgConnection) -> Result<(), CatalogError> {
     service::load(db, &loader::embedded()?).await
+}
+
+/// The question bank compiled into the build, checked against the compiled-in catalog: every enabled
+/// category has a set of 3 to 8 questions in both languages (LIC-040, TD-LIC-24).
+///
+/// # Errors
+///
+/// [`CatalogError::Invalid`].
+pub fn question_bank() -> Result<QuestionBank, CatalogError> {
+    crate::question_bank::embedded_bank(&loader::embedded()?)
+}
+
+/// Parses question-bank text against a parsed catalog, refusing a malformed set (LIC-040).
+///
+/// # Errors
+///
+/// [`CatalogError::Invalid`].
+pub fn parse_question_bank(text: &str, catalog: &Catalog) -> Result<QuestionBank, CatalogError> {
+    crate::question_bank::parse_bank(text, catalog)
 }
 
 /// Stores an already parsed catalog (LIC-001); see [`load_embedded`].
