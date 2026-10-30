@@ -38,6 +38,9 @@ pub enum TestControlError {
     /// A test-control setting is missing or invalid.
     #[error(transparent)]
     Settings(#[from] SettingsError),
+    /// The client for the stand-in's sent log could not be built.
+    #[error("the test-control HTTP client could not be built")]
+    HttpClient,
 }
 
 /// The test-control routes and the clock both binaries use (SEC-035).
@@ -102,15 +105,18 @@ mod enabled {
     //! The routes themselves, compiled only under the `test-control` feature (SEC-035).
 
     use std::collections::HashMap;
-    use std::path::PathBuf;
+    use std::fs::{self, File};
+    use std::io::{self, ErrorKind};
+    use std::path::{Path, PathBuf};
     use std::sync::Arc;
     use std::sync::atomic::{AtomicI64, Ordering};
+    use std::time::Duration;
 
     use axum::extract::{Query, Request, State};
     use axum::http::{StatusCode, header::AUTHORIZATION};
     use axum::middleware::{self, Next};
     use axum::response::{IntoResponse, Response};
-    use axum::routing::{get, post};
+    use axum::routing::{any, get, post};
     use axum::{Json, Router};
     use jiff::{SignedDuration, Timestamp};
     use secrecy::{ExposeSecret, SecretString};
@@ -132,6 +138,8 @@ mod enabled {
     const MIN_SECRET_LEN: usize = 32;
     /// One advance moves at most a year, which covers every timer in the spec.
     const MAX_ADVANCE_SECONDS: u32 = 366 * 24 * 3_600;
+    /// The stand-in answers locally; a hung read must not hang the e2e run.
+    const SENT_LOG_TIMEOUT: Duration = Duration::from_secs(10);
 
     struct Control {
         secret: SecretString,
@@ -170,7 +178,7 @@ mod enabled {
         let control = Arc::new(Control {
             secret: secret.into(),
             clock: Arc::clone(&clock),
-            http: reqwest::Client::new(),
+            http: client()?,
             messages_url: format!(
                 "{}/2010-04-01/Accounts/{account_sid}/Messages.json",
                 base.trim_end_matches('/')
@@ -182,6 +190,15 @@ mod enabled {
             router: routes(control),
             clock,
         })
+    }
+
+    /// A bounded client that ignores `HTTP(S)_PROXY` and `ALL_PROXY` (D-727).
+    fn client() -> Result<reqwest::Client, TestControlError> {
+        reqwest::Client::builder()
+            .timeout(SENT_LOG_TIMEOUT)
+            .no_proxy()
+            .build()
+            .map_err(|_| TestControlError::HttpClient)
     }
 
     fn read<I>(pairs: I) -> HashMap<&'static str, String>
@@ -198,13 +215,16 @@ mod enabled {
             .collect()
     }
 
-    /// Every route sits behind the bearer check; an unmatched path is 404 anyway.
+    /// Every request under `/__test/` meets the bearer check first: `layer`, not
+    /// `route_layer`, so a wrong method is 404 rather than 405, and the catch-all
+    /// answers any other `/__test/` path 404 whatever the app's fallback does.
     fn routes(control: Arc<Control>) -> Router {
         Router::new()
             .route("/__test/clock", get(now))
             .route("/__test/clock/advance", post(advance))
             .route("/__test/messages", get(messages))
-            .route_layer(middleware::from_fn_with_state(Arc::clone(&control), bearer))
+            .route("/__test/{*rest}", any(|| async { StatusCode::NOT_FOUND }))
+            .layer(middleware::from_fn_with_state(Arc::clone(&control), bearer))
             .with_state(control)
     }
 
@@ -311,7 +331,8 @@ mod enabled {
 
     /// System time plus a forward-only offset in seconds, shared through a
     /// file when one is set (D-740). The file read is a few bytes and runs only
-    /// in test-control builds.
+    /// in test-control builds. `offset` is the largest offset seen, so an
+    /// unreadable or garbled file never moves the clock back (D-742).
     struct OffsetClock {
         file: Option<PathBuf>,
         offset: AtomicI64,
@@ -319,24 +340,49 @@ mod enabled {
 
     impl OffsetClock {
         fn offset(&self) -> i64 {
-            match &self.file {
-                Some(path) => std::fs::read_to_string(path)
-                    .ok()
-                    .and_then(|text| text.trim().parse().ok())
-                    .unwrap_or(0),
-                None => self.offset.load(Ordering::SeqCst),
+            let known = self.offset.load(Ordering::SeqCst);
+            match self.file.as_deref().map(read_offset) {
+                Some(Ok(Some(seen))) => self.offset.fetch_max(seen, Ordering::SeqCst).max(seen),
+                _ => known,
             }
         }
 
-        fn advance(&self, seconds: i64) -> std::io::Result<()> {
-            let next = self.offset().saturating_add(seconds);
-            self.offset.store(next, Ordering::SeqCst);
+        /// Under an exclusive lock on `<file>.lock`, so two advances both count;
+        /// a garbled file fails the advance instead of being overwritten.
+        fn advance(&self, seconds: i64) -> io::Result<()> {
             let Some(path) = &self.file else {
+                self.offset.fetch_add(seconds, Ordering::SeqCst);
                 return Ok(());
             };
+            let lock = File::options()
+                .create(true)
+                .truncate(false)
+                .write(true)
+                .open(path.with_extension("lock"))?;
+            lock.lock()?;
+            let known = self.offset.load(Ordering::SeqCst);
+            let next = read_offset(path)?
+                .unwrap_or(0)
+                .max(known)
+                .saturating_add(seconds);
             let staging = path.with_extension("next");
-            std::fs::write(&staging, next.to_string())?;
-            std::fs::rename(staging, path)
+            fs::write(&staging, next.to_string())?;
+            fs::rename(staging, path)?;
+            self.offset.fetch_max(next, Ordering::SeqCst);
+            lock.unlock()
+        }
+    }
+
+    /// `None` when the file does not exist yet; an error when it cannot be read or parsed.
+    fn read_offset(path: &Path) -> io::Result<Option<i64>> {
+        match fs::read_to_string(path) {
+            Ok(text) => text
+                .trim()
+                .parse()
+                .map(Some)
+                .map_err(|_| io::Error::from(ErrorKind::InvalidData)),
+            Err(error) if error.kind() == ErrorKind::NotFound => Ok(None),
+            Err(error) => Err(error),
         }
     }
 

@@ -87,7 +87,7 @@ app/
                      `/__test/messages`, proxied to the Twilio stand-in's sent log) and the clock both binaries run on;
                      the routes compile only under core's `test-control` feature, the one Cargo feature allowed, which
                      no manifest and no Docker build enables (e2e builds pass `--features askhava-core/test-control`),
-                     and need a per-run bearer secret (SEC-035, D-739, D-740)
+                     and need a per-run bearer secret on every `/__test/` request (SEC-035, D-739, D-740, D-742)
   <module>/          one crate per module in section 3, package name `askhava-<module>` (lib `askhava_<module>`), so
                      no first-party crate shadows Rust's built-in `core` or another standard name (D-484)
     Cargo.toml       depends only on the lower crates section 4 allows (the compiler refuses anything else)

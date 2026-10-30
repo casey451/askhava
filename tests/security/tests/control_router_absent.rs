@@ -6,8 +6,10 @@
 //! a release build cannot pick it up by feature unification. With the feature
 //! (`cargo test -p askhava-security --test control_router_absent --features askhava-core/test-control`)
 //! the router refuses `test` and `live`, a missing or short secret, and any request without the
-//! per-run bearer secret, and the delivered-message read comes from the stand-in's sent log. The
-//! cases for the other build return early, so both commands pass. Fake values only.
+//! per-run bearer secret (a wrong method or unknown `/__test/` path included), and the
+//! delivered-message read comes from the stand-in's sent log. Requests go through the real
+//! app (`askhava_server::build_router`), so a later fallback cannot open a route. The cases for
+//! the other build return early, so both commands pass. Fake values only.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -16,6 +18,7 @@ use askhava_core::api::{
     Clock, Settings, SettingsError, SystemClock, TEST_CONTROL_COMPILED, TestControl,
     TestControlError,
 };
+use askhava_server::build_router;
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::extract::RawQuery;
@@ -31,6 +34,13 @@ const ROUTES: [(&str, &str); 3] = [
     ("GET", "/__test/clock"),
     ("POST", "/__test/clock/advance"),
     ("GET", "/__test/messages?to=%2B15205550100"),
+];
+/// Wrong methods on real routes and a path no route names.
+const ODD: [(&str, &str); 4] = [
+    ("DELETE", "/__test/clock"),
+    ("GET", "/__test/clock/advance"),
+    ("POST", "/__test/messages"),
+    ("GET", "/__test/unknown"),
 ];
 
 /// A per-run secret built at run time, so no secret-shaped literal sits in the source.
@@ -68,6 +78,11 @@ fn control(env: &str, extra: &[(&str, String)]) -> Result<TestControl, TestContr
     TestControl::from_settings(&settings, pairs)
 }
 
+/// The app exactly as `server` builds it, test-control routes merged in.
+fn app(control: &TestControl) -> Router {
+    build_router(control.router())
+}
+
 async fn call(
     router: &Router,
     method: &str,
@@ -98,7 +113,7 @@ async fn call(
 
 async fn every_route(router: &Router, bearer: Option<&str>) -> Vec<StatusCode> {
     let mut statuses = Vec::new();
-    for (method, uri) in ROUTES {
+    for (method, uri) in ROUTES.iter().chain(&ODD) {
         statuses.push(call(router, method, uri, bearer).await.0);
     }
     statuses
@@ -151,10 +166,10 @@ async fn td_sec_15_release_build_has_no_control_routes_under_any_app_env() {
     }
     for env in ["dev", "ci", "test", "live"] {
         let control = control(env, &[]).expect("the release build never refuses");
-        let router = control.router();
+        let router = app(&control);
         for bearer in [None, Some(secret())] {
             let statuses = every_route(&router, bearer.as_deref()).await;
-            assert_eq!(statuses, [StatusCode::NOT_FOUND; 3], "{env}");
+            assert_eq!(statuses, [StatusCode::NOT_FOUND; 7], "{env}");
         }
         let drift = control.clock().now().duration_since(SystemClock.now());
         assert!(
@@ -193,17 +208,18 @@ async fn td_sec_15_control_router_needs_the_per_run_bearer() {
     if !TEST_CONTROL_COMPILED {
         return;
     }
-    let router = control("ci", &[]).expect("ci starts").router();
+    let router = app(&control("ci", &[]).expect("ci starts"));
     let wrong = format!("{}1", &secret()[1..]);
     for bearer in [None, Some(wrong.as_str()), Some("")] {
         let statuses = every_route(&router, bearer).await;
-        assert_eq!(statuses, [StatusCode::NOT_FOUND; 3], "a bad bearer passed");
+        assert_eq!(statuses, [StatusCode::NOT_FOUND; 7], "a bad bearer passed");
     }
     let (status, _) = call(&router, "GET", "/__test/clock", Some(&secret())).await;
     assert_eq!(status, StatusCode::OK);
 }
 
-/// SEC-035: an advance moves the clock both processes read when they share the clock file.
+/// SEC-035, D-742: an advance moves the clock both processes read when they share the clock file,
+/// advances from both add up, and a garbled file never moves the clock back.
 #[tokio::test]
 async fn td_sec_15_clock_advance_reaches_every_process_on_the_file() {
     if !TEST_CONTROL_COMPILED {
@@ -217,19 +233,24 @@ async fn td_sec_15_clock_advance_reaches_every_process_on_the_file() {
     )];
     let web = control("ci", &extra).expect("web starts");
     let worker = control("ci", &extra).expect("worker starts");
-    let (status, _) = call(
-        &web.router(),
-        "POST",
-        "/__test/clock/advance",
-        Some(&secret()),
-    )
-    .await;
+    let (status, _) = call(&app(&web), "POST", "/__test/clock/advance", Some(&secret())).await;
     assert_eq!(status, StatusCode::OK);
     let ahead = worker.clock().now().duration_since(SystemClock.now());
     assert!(
         (3_595..=3_605).contains(&ahead.as_secs()),
         "worker clock not advanced"
     );
+    let advance = "/__test/clock/advance";
+    let (status, _) = call(&app(&worker), "POST", advance, Some(&secret())).await;
+    assert_eq!(status, StatusCode::OK);
+    fs::write(&file, "garbled").expect("file writes");
+    let ahead = worker.clock().now().duration_since(SystemClock.now());
+    assert!(
+        (7_195..=7_205).contains(&ahead.as_secs()),
+        "a garbled file moved the clock back"
+    );
+    let (status, _) = call(&app(&web), "POST", advance, Some(&secret())).await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
     let _ = fs::remove_file(&file);
 }
 
@@ -256,9 +277,7 @@ async fn td_sec_15_messages_come_from_the_stand_in_sent_log() {
     );
     let server = tokio::spawn(async move { axum::serve(listener, fake).await });
     let base = format!("http://127.0.0.1:{port}/twilio");
-    let router = control("ci", &[("ASKHAVA_TWILIO_BASE_URL", base)])
-        .expect("ci starts")
-        .router();
+    let router = app(&control("ci", &[("ASKHAVA_TWILIO_BASE_URL", base)]).expect("ci starts"));
     let (status, body) = call(&router, "GET", ROUTES[2].1, Some(&secret())).await;
     server.abort();
     assert_eq!(status, StatusCode::OK);

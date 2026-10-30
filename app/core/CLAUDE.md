@@ -61,7 +61,7 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 - Change a role timeout: `scripts/bootstrap_roles.sql` and D-699 first; rerun the script on each cluster.
 - Add a task kind: write the handler in its module (re-check status first, fixed error sentences), register it in `register_handlers()` in `app/server/src/lib.rs`, enqueue with `enqueue(&mut tx, …)` in the state change's transaction and a derived `dedupe_key`; then `cargo test -p askhava-integration --test task_queue`.
 - Change backoff, lease or worker limits: `BACKOFF_FIRST`/`BACKOFF_MAX` and `Lease::WORKER`, `WORKER_CONCURRENCY` and `POLL_MIN`/`POLL_MAX` in `src/tasks.rs`, `DRAIN` in `app/server/src/bin/worker.rs`, with a decision entry.
-- Add a test-control route: inside `mod enabled` in `src/test_control.rs` only (behind the bearer `route_layer`, input structs `deny_unknown_fields`), a case in `control_router_absent.rs`, a method in `tests/e2e/fixtures.ts`; run that test with and without `--features askhava-core/test-control`.
+- Add a test-control route: inside `mod enabled` in `src/test_control.rs` only (above the `/__test/{*rest}` catch-all, behind the bearer `layer`, input structs `deny_unknown_fields`), a case in `control_router_absent.rs`, a method in `tests/e2e/fixtures.ts`; run that test with and without `--features askhava-core/test-control`.
 - Change business hours: `BUSINESS_OPEN_HOUR` and `BUSINESS_CLOSE_HOUR` in `src/clock.rs` (JOB-007 and D-004 first), then `cargo test -p askhava-core tests::clock`.
 - Run `cargo clippy --workspace --all-targets -- -D warnings`, `cargo fmt --all --check` and `bash scripts/smoke.sh`.
 
