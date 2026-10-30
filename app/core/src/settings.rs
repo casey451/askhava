@@ -40,6 +40,14 @@ const KEYS: &[&str] = &[
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
     "ASKHAVA_STORAGE_BUCKET",
+    // Parsed by `askhava_adapters::api::TwilioConfig` (T016, D-703).
+    "ASKHAVA_ADAPTER_MODE_TWILIO",
+    "ASKHAVA_TWILIO_BASE_URL",
+    "ASKHAVA_TWILIO_VERIFY_BASE_URL",
+    "ASKHAVA_TWILIO_AUTH_TOKEN",
+    "ASKHAVA_TWILIO_VERIFY_SERVICE_SID",
+    "ASKHAVA_MASKED_POOL_SIZE",
+    "ASKHAVA_MASKED_NUMBERS",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
