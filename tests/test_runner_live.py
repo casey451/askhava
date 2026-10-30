@@ -421,6 +421,24 @@ def test_reviewed_plus_main_accepts_an_updated_branch_and_nothing_else(repo: dic
     assert env.reviewed_plus_main(reviewed, "f" * 40, 0) is None
 
 
+def test_reviewed_plus_main_refuses_a_head_built_on_main_older_than_the_reviewed_fork(repo: dict[str, Path], tmp_path: Path) -> None:
+    """T1 (D-584): main added a change X and then reverted it (R); the task forked after R. A head made of
+    the reviewed tree on X (`commit-tree <reviewed tree> -p X`) has X as its base, and the clean merge of
+    the reviewed commit with X is the reviewed tree, so the tree test alone would trust it. Its base is
+    older than the reviewed fork point (R), so it is refused."""
+    seed = repo["seed"]
+    change = commit_on(seed, "main", "origin/main", "docs/x.md", "a change main later reverts\n")
+    git(seed, "revert", "--no-edit", "HEAD")
+    git(seed, "push", "-q", "origin", "main")
+    reviewed = pushed_attempt(repo)
+    a = repo["a"]
+    crafted = git(a, "commit-tree", f"{reviewed}^{{tree}}", "-p", change, "-m", "the reviewed tree on an older main")
+    assert git(a, "merge-tree", "--write-tree", reviewed, change).splitlines()[0] == git(a, "rev-parse", f"{reviewed}^{{tree}}")
+    env = make_env(a, tmp_path, run=OfflineGh([]))
+    env.read_state()
+    assert env.reviewed_plus_main(reviewed, crafted, 0) is False
+
+
 def test_reviewed_plus_main_accepts_a_rebased_update_and_fetches_the_reviewed_commit(repo: dict[str, Path], tmp_path: Path) -> None:
     """R2b (D-584): "Update with rebase" replaces the reviewed commit, which a fresh checkout does not
     even have; it is fetched, and the rebased head is accepted by its tree. A rebase that adds a change is not."""

@@ -30,13 +30,13 @@ UPDATED_HEAD = ("pull request head {head} is the reviewed head {reviewed} update
                 "runner turns it on only for a reviewed head; the next attempt continues the branch (D-584)")
 UNREVIEWED_CLOSE = ("Closed by the runner: head `{head}` is not the head its review approved, and auto-merge was on, "
                     "so it could have merged unreviewed work. The next attempt continues this branch and is reviewed again (D-584).")
-HEAD_UNPLACED = ("merged head {head} (merge {merge}) could not be checked against the reviewed head for {wait}; "
-                 "a person must look at that merge, then re-queue the task (D-584)")
+HEAD_UNPLACED = ("unchecked merge: merged head {head} (merge {merge}) could not be checked against the reviewed head "
+                 "for {wait}; a person must look at that merge, then re-queue the task with --requeue (D-584)")
 HEAD_CHECK_WAIT = timedelta(hours=2)  # how long a merged head git cannot place waits before it is BLOCKED (D-584)
 # The marker the runner's GitHubEnv puts in an auto-merge closing comment (runner/github_env.py DROP_MARKER).
 DROP_MARKER = "<!-- askhava-runner: closed to drop auto-merge (D-584) -->"
 # The BLOCKED reasons that are not the task's own fault, the only ones `--requeue` lifts (D-583).
-REQUEUABLE = ("branch push rejected", "no head to push", "permission blocked", st.PROOF_MISSING)
+REQUEUABLE = ("branch push rejected", "no head to push", "permission blocked", st.PROOF_MISSING, "unchecked merge")
 
 
 @dataclass
@@ -271,6 +271,8 @@ def _resolve_merge(state: State, env: Env, cfg: Config, now: datetime) -> tuple[
         if pr is None:
             return _without_pr(state, env, task, now)
         reviewed = _head_reviewed(state, env, tid, pr)
+        if reviewed is not None and task.get("head_check_since"):
+            state = st.with_task(state, tid, head_check_since=None)  # the head was placed: the wait is over (D-584)
         if not pr.get("merged"):
             return _open_pr_step(state, env, tid, pr, reviewed)
         if verify.checks_state(pr) == "pending":
@@ -309,8 +311,11 @@ def _open_pr_step(state: State, env: Env, tid: str, pr: dict[str, Any], reviewed
     head, task = str(pr.get("head_sha") or ""), st.entry(state, tid)
     if not reviewed:
         if pr.get("auto_merge"):
-            if not env.close_pr(int(pr.get("number") or 0), UNREVIEWED_CLOSE.format(head=head[:12]) + "\n\n" + DROP_MARKER):
-                why = f"PR head {head[:12]} is not the reviewed head and its auto-merge could not be turned off; waiting so any merge is judged"
+            closed = env.close_pr(int(pr.get("number") or 0), UNREVIEWED_CLOSE.format(head=head[:12]) + "\n\n" + DROP_MARKER)
+            if not closed or (env.pr_for(tid) or {}).get("merged"):
+                # The close failed, or GitHub merged it just before the close (a close of a merged PR can
+                # still answer 200): the task stays MERGE_PENDING so `_merged` judges the merge (D-584).
+                why = f"PR head {head[:12]} is not the reviewed head and its auto-merge could not be turned off in time; waiting so any merge is judged"
                 return st.with_task(state, tid, auto_merge={"enabled": True, "why": why, "head": head}), "merge_pending"
             state = st.with_task(state, tid, runner_closed_prs=[*(task.get("runner_closed_prs") or []), pr.get("number")])
         why = UNREVIEWED_HEAD.format(head=head[:12], reviewed=str(task.get("reviewed_sha"))[:12])
@@ -911,7 +916,7 @@ def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult) -> Calla
         held = st.live_lease(fresh, cfg.clock(), lane) or {}
         if held.get("task") != tid or held.get("session") != cfg.session or st.status(fresh, tid) != st.IN_PROGRESS:
             return None
-        review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(held), "branch": res.branch}
+        review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(held), "branch": res.branch, "head_check_since": None}
         return st.with_task(fresh, tid, **review)
 
     return apply

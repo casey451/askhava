@@ -999,8 +999,10 @@ class GitHubEnv:
         automatic merge (`git merge-tree --write-tree`) of `reviewed` with the main commit `head` is based
         on (their merge base). That accepts GitHub's "Update branch" whether it merges main in or rebases
         onto it, and rejects a new commit, a merge of anything else, and a merge that adds content of its
-        own (an "evil merge"). The reviewed commit and the pull request's head are fetched first, since a
-        fresh checkout may lack them; None when git still cannot say (D-584)."""
+        own (an "evil merge"). That base must be at or after the reviewed commit's fork point from main,
+        so a head crafted on an older main commit is never trusted. The reviewed commit and the pull
+        request's head are fetched first, since a fresh checkout may lack them; None when git still
+        cannot say (D-584)."""
         if number:
             self._run(["git", "fetch", "--quiet", "origin", f"+refs/pull/{number}/head:refs/runner/pr-{number}"], None, self.root)
         if not self._has_commit(reviewed):
@@ -1011,6 +1013,13 @@ class GitHubEnv:
         code, base, _ = self._run(["git", "merge-base", head, main], None, self.root)
         if code != 0:
             return False if code == 1 else None  # 1: no common history with main
+        # The base must not be older than the reviewed commit's own fork point from main: a head built on
+        # an older main commit could carry back a change main has since reverted (D-584).
+        code, fork, _ = self._run(["git", "merge-base", reviewed, main], None, self.root)
+        if code != 0:
+            return False if code == 1 else None
+        if not self._is_ancestor(fork.strip(), base.strip()):
+            return False
         code, out, _ = self._run(["git", "merge-tree", "--write-tree", reviewed, base.strip()], None, self.root)
         if code != 0:
             return False if code == 1 else None  # 1: they conflict, so no clean combination exists

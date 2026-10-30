@@ -802,9 +802,45 @@ def test_drill_an_unknown_merged_head_waits_instead_of_turning_main_red(tmp_path
     assert cycle.run_cycle(cfg, env, almost) == "merge_pending" and not (tmp_path / "T001-merged-head.md").exists()
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5) + cycle.HEAD_CHECK_WAIT) == "not_done"
     t1 = st.entry(env.store, "T001")
-    assert t1["status"] == st.BLOCKED and t1["reason"].startswith("merged head late0002 (merge m1) could not be checked")
+    assert t1["status"] == st.BLOCKED and t1["reason"].startswith("unchecked merge: merged head late0002 (merge m1) could not be checked")
     note = (tmp_path / "T001-merged-head.md").read_text(encoding="utf-8")
     assert "kind: blocked" in note and "revert it if it holds work nobody reviewed" in note and not env.store.get("main_red")
+    assert cycle.requeue_refusal(env.store, "T001", NOW) == ""  # L2: the re-queue the outbox asks for is allowed
+
+
+def test_drill_a_head_placed_after_a_wait_clears_the_wait(tmp_path: Path) -> None:
+    """L1 (D-584): once git can place the merged head, `head_check_since` is cleared, so a later wait starts afresh."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.update_merges = None
+    env.prs["T001"] = dict(green_pr(sha="upd00002"), merged_sha="m1", files=["app/t001/x.py"])
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    assert st.entry(env.store, "T001")["head_check_since"] == st.iso(NOW + timedelta(minutes=5))
+    env.update_merges = True
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "done"
+    assert st.entry(env.store, "T001")["head_check_since"] is None and st.status(env.store, "T001") == st.DONE
+
+
+def test_drill_a_pr_merged_just_before_the_close_is_still_judged(tmp_path: Path) -> None:
+    """(b) (D-584): GitHub merged the unreviewed head between the read and the close, and closing a merged
+    PR still answered success; the PR is read again, the task stays MERGE_PENDING, and the next cycle's
+    `_merged` judges that merge (main red with check "review")."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.prs["T001"] = dict(green_pr(sha="hand0002", merged=False), auto_merge=True, number=41, state="open")
+
+    def merged_meanwhile(number: int, body: str) -> bool:
+        env.prs["T001"] = dict(green_pr(sha="hand0002"), merged_sha="m1", files=["app/t001/x.py"], number=41, state="closed")
+        return True
+
+    env.close_pr = merged_meanwhile  # type: ignore[method-assign]  # reason: GitHub merges between the read and the close
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.MERGE_PENDING and "runner_closed_prs" not in t1 and t1.get("attempts", 0) == 0
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "not_done"
+    assert st.status(env.store, "T001") == st.BLOCKED and env.store["main_red"]["check"] == "review"
 
 
 def test_drill_an_unreviewed_head_with_auto_merge_on_is_closed_before_the_attempt_fails(tmp_path: Path) -> None:
