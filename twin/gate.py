@@ -16,16 +16,16 @@ Usage: PYTHONHASHSEED=0 python3 twin/gate.py [--seeds N] [--no-pinned] [--scenar
 
 The license oracle (D-107, D-541): the twin's matching checks read `twin/oracle/license_scope.json`, generated
 from the catalog by `twin/oracle/gen_license_scope.py`. Before any run the gate exits 2 if the oracle is stale
-(its recorded catalog fingerprints differ), if twin.py reads the app's own license table, or if the oracle
-disagrees with a row of `docs/catalog/matching_examples.yaml` it can express (the self-test, D-110).
-Standard library only, except PyYAML for that one file (D-541).
+(it differs from a fresh generation, so a hand edit of any section is caught), if twin.py reads the app's own
+license table, or if the oracle disagrees with a row of `docs/catalog/matching_examples.yaml` it can express (the self-test, D-110).
+Standard library only, except PyYAML for that file and the generator (D-541).
 """
 
 from __future__ import annotations
 
 import argparse
 import copy
-import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -180,31 +180,39 @@ def _homeowner_answered_wrong(sim: object, check: str, ref: str) -> bool:
     return any(s == r["trade"] or s in r.get("job_types", []) for s in sent)
 
 
-def _reach_windows(sim: object, check: str, ref: str) -> list[tuple[str, float, float, str | None]]:
-    """D-544: (phone, from, to, request) for the contact an instance says never reached a homeowner; the 9 p.m.
-    promise's window ends at 9 p.m. the day after the request (the twin's check)."""
+Window = tuple[str, float, float, str | None, float]  # phone, from, to, request, deadline
+
+
+def _reach_windows(sim: object, check: str, ref: str) -> list[Window]:
+    """D-544: (phone, from, to, request, deadline) for the contact an instance says never reached a homeowner. The
+    deadline is the check's: 5 minutes after HELP, 24 hours after a new job, 9 p.m. the day after the request for the
+    promise, the closing for a quote link; a call-back may come up to a day after a quote link's closing."""
     app = sim.app  # type: ignore[attr-defined]
     if m := re.match(r"HELP from \.\.\.(\d{4})$", ref):
         inbound = sim.sms.inbound_log  # type: ignore[attr-defined]
-        return [(f, t, t + 5, None) for f, b, t, _ in inbound if f.endswith(m.group(1)) and b.strip().upper() == "HELP"]
+        return [(f, t, t + 5, None, t + 5) for f, b, t, _ in inbound if f.endswith(m.group(1)) and b.strip().upper() == "HELP"]
     if m := re.match(r"(\d{4}) asked for help on day (\d+) ", ref):
         jobs = sim.truth_jobs  # type: ignore[attr-defined]
         day = int(m.group(2))
-        return [(p, j["started"], j["started"] + 1440, None) for p, j in jobs if p.endswith(m.group(1)) and int(j["started"] // 1440) == day]
+        return [(p, j["started"], j["started"] + 1440, None, j["started"] + 1440) for p, j in jobs if p.endswith(m.group(1)) and int(j["started"] // 1440) == day]
     r = app.requests.get(m.group(1)) if (m := re.match(r"request (\w+)$", ref)) else None
     if not r:
         return []
-    end = r["created"] - r["created"] % 1440 + 1440 + 21 * 60 if check == "promise_missed" else r["history"][-1][0] + 1440
-    return [(app.phone_of(r), r["created"], end, r["id"])]
+    if check == "promise_missed":
+        end = r["created"] - r["created"] % 1440 + 1440 + 21 * 60
+        return [(app.phone_of(r), r["created"], end, r["id"], end)]
+    closed = r["history"][-1][0]
+    return [(app.phone_of(r), r["created"], closed + 1440, r["id"], closed)]
 
 
-def _unreached_in(sim: object, check: str, window: tuple[str, float, float, str | None]) -> bool:
-    """D-544: no text that could have arrived (every attempt failed at the carrier, texting was suspended, or the number
-    had opted out and a call-back was raised); for anything but HELP also no email on file, and for a reply or the
-    9 p.m. promise no call from Casey that talked to them (a quote link needs a text or an email)."""
+def _unreached_in(sim: object, check: str, window: Window) -> bool:
+    """D-544: no text that could have arrived (every attempt failed at the carrier, texting was suspended before the
+    check's deadline ran out, or the number had opted out and a call-back was raised); for anything but HELP also no
+    email on file, and for a reply or the 9 p.m. promise no call from Casey that talked to them (a quote link needs a
+    text or an email)."""
     app = sim.app  # type: ignore[attr-defined]
-    phone, t0, t1, rid = window
-    paused = any(a["kind"] == "texting_suspended" and a["t"] <= t1 for a in app.alerts)
+    phone, t0, t1, rid, deadline = window
+    paused = any(a["kind"] == "texting_suspended" and a["t"] < deadline for a in app.alerts)
     if check == "help_not_answered":
         return paused
     hid = app.phone_to_ho.get(phone)
@@ -338,17 +346,25 @@ def print_report(instances: list[dict], result: dict, missing_control: list[str]
         print(f"NEGATIVE CONTROL did not fire: {key}")
 
 
-def oracle_problems(oracle: dict, root: Path) -> list[str]:
-    """D-541: the oracle is a fresh generation from the current catalog and crosswalk, and twin.py never reads the
-    app's own license table (docs/twin-warnings.md section 2)."""
+def load_generator(root: Path) -> object:
+    """The oracle generator under `root` (`twin/oracle/gen_license_scope.py`), loaded as a module."""
+    path = root / "twin" / "oracle" / "gen_license_scope.py"
+    spec = importlib.util.spec_from_file_location("gen_license_scope", path)
+    if spec is None or spec.loader is None:
+        raise GateError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def oracle_problems(text: str, root: Path) -> list[str]:
+    """D-541: the committed oracle is byte for byte a fresh generation from the current catalog and crosswalk (so a
+    hand edit of any section, the `twin` one included, is caught), and twin.py never reads the app's own license
+    table (docs/twin-warnings.md section 2)."""
     problems = []
-    for rel, digest in oracle["sources"].items():
-        name, _, part = rel.partition("#")
-        data = (root / name).read_bytes()
-        if part:
-            data = json.dumps(json.loads(data)[part], sort_keys=True).encode()
-        if hashlib.sha256(data).hexdigest() != digest:
-            problems.append(f"license_scope.json is stale for {rel}: run python3 twin/oracle/gen_license_scope.py")
+    gen = load_generator(root)
+    if text != gen.render(gen.generate(root)):  # type: ignore[attr-defined]
+        problems.append("license_scope.json is stale or hand-edited: run python3 twin/oracle/gen_license_scope.py")
     if "CLASS_ALLOWS" in (root / "twin" / "twin.py").read_text(encoding="utf-8"):
         problems.append("twin.py reads the app's license table CLASS_ALLOWS; its checks must use the oracle")
     return problems
@@ -372,13 +388,14 @@ def self_test_problems(oracle: dict, examples: list[dict]) -> list[str]:
 
 def check_oracle(root: Path = HERE.parent) -> None:
     """The oracle checks that come before any run; any problem is a GateError (exit 2)."""
-    oracle = json.loads((root / "twin" / "oracle" / "license_scope.json").read_text(encoding="utf-8"))
+    text = (root / "twin" / "oracle" / "license_scope.json").read_text(encoding="utf-8")
+    oracle = json.loads(text)
     try:
         import yaml  # type: ignore[import-untyped]  # reason: PyYAML ships no stubs; only safe_load is used
     except ImportError as err:
         raise GateError("PyYAML is needed to read docs/catalog/matching_examples.yaml (D-541)") from err
     examples = yaml.safe_load((root / "docs" / "catalog" / "matching_examples.yaml").read_text(encoding="utf-8"))
-    problems = oracle_problems(oracle, root) + self_test_problems(oracle, examples["examples"])
+    problems = oracle_problems(text, root) + self_test_problems(oracle, examples["examples"])
     if problems:
         raise GateError("license oracle: " + "; ".join(problems))
 

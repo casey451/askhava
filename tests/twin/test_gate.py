@@ -246,7 +246,7 @@ def test_license_oracle_is_a_fresh_generation_from_the_catalog() -> None:
     cmd = [sys.executable, str(TWIN / "oracle" / "gen_license_scope.py"), "--check"]
     out = subprocess.run(cmd, capture_output=True, text=True, timeout=60, check=False)
     assert out.returncode == 0, out.stdout
-    assert gate.oracle_problems(oracle(), ROOT) == []
+    assert gate.oracle_problems((TWIN / "oracle" / "license_scope.json").read_text(), ROOT) == []
 
 
 def test_oracle_agrees_with_every_matching_example_it_can_express() -> None:
@@ -274,6 +274,16 @@ def test_stale_oracle_exits_2(tmp_path: Path) -> None:
     lmap.write_text(lmap.read_text() + "# a catalog change with no regenerated oracle\n")
     out = run_gate(twin_dir, "--scenarios", "normal_fixed", "--seeds", "1")
     assert out.returncode == 2 and "stale" in out.stdout
+
+
+def test_hand_edit_of_the_oracles_twin_section_exits_2(tmp_path: Path) -> None:
+    twin_dir = copy_twin(tmp_path)
+    scope = twin_dir / "oracle" / "license_scope.json"
+    data = json.loads(scope.read_text())
+    data["twin"]["R-39R-ac"].append("heating_repair")  # the catalog's inputs are untouched, so the fingerprints still match
+    scope.write_text(gate.load_generator(ROOT).render(data))
+    out = run_gate(twin_dir, "--scenarios", "normal_fixed", "--seeds", "1")
+    assert out.returncode == 2 and "hand-edited" in out.stdout
 
 
 def test_twin_reading_the_apps_license_table_exits_2(tmp_path: Path) -> None:
