@@ -7,7 +7,12 @@
 //! then marks it sent and clears its body (D-850). A worker killed between the carrier's acceptance
 //! and the mark leaves it `sending`, and the resend carries the same key, which the carrier delivers
 //! once (TXT-011). A sent row is never handed to the carrier again. A homeowner's number is read
-//! from the vault at send time for the row's recipient ID, never taken from the caller (D-849).
+//! from the vault at send time for the row's recipient ID, never taken from the caller (D-849);
+//! each row records whether it was queued for a homeowner or a business, and a send naming the
+//! other kind is refused, so a homeowner's row never skips the vault read or the TXT-009 check.
+//! A send refused before the claim (TXT-009, wrong kind) leaves the row `queued`; a failed vault
+//! read or carrier call leaves it `sending`. Neither is ever made terminal here: the retry task
+//! (TXT-014, TXT-015) decides when an unsent row is given up.
 
 use askhava_adapters::api::{IdempotencyKey, SentText, SmsAdapter};
 use askhava_privacy::api::{
@@ -68,7 +73,24 @@ impl std::fmt::Debug for NewText<'_> {
     }
 }
 
-/// Where a queued text goes, resolved at send time (D-849).
+impl Relation {
+    /// The recipient kind stored on the row: `business` for [`Relation::Business`], else
+    /// `homeowner` (D-849).
+    fn kind(self) -> &'static str {
+        match self {
+            Self::Business => KIND_BUSINESS,
+            Self::OpenRequest | Self::PastCustomer { .. } => KIND_HOMEOWNER,
+        }
+    }
+}
+
+/// The stored kind of a row queued for a homeowner's vault contact (D-849).
+const KIND_HOMEOWNER: &str = "homeowner";
+/// The stored kind of a row queued for a business main or staff phone (D-849).
+const KIND_BUSINESS: &str = "business";
+
+/// Where a queued text goes, resolved at send time; it must name the kind the row was queued for
+/// (D-849).
 #[derive(Clone, Copy)]
 pub enum To<'a> {
     /// A homeowner: the row's recipient ID is her vault contact, whose phone is read under
@@ -81,6 +103,16 @@ pub enum To<'a> {
     },
     /// A business main or staff phone, not vault data; the caller reads it from `businesses`.
     Business(&'a str),
+}
+
+impl To<'_> {
+    /// The recipient kind a row must have been queued for to go to this destination (D-849).
+    fn kind(self) -> &'static str {
+        match self {
+            Self::Homeowner { .. } => KIND_HOMEOWNER,
+            Self::Business(_) => KIND_BUSINESS,
+        }
+    }
 }
 
 /// Whether a text to someone with `relation` may go: never to a past customer unless she wrote
@@ -97,8 +129,9 @@ pub fn may_text(relation: Relation) -> bool {
 }
 
 /// Queues `text` once (TXT-009, TXT-011): refused for a past customer who has not written first;
-/// otherwise stored under its derived key, `secret` being the `ID_SECRET`. Returns the row ID and
-/// whether this call created it (`false`: the same text was already queued).
+/// otherwise stored under its derived key, `secret` being the `ID_SECRET`, with the recipient kind
+/// its `relation` implies (D-849). Returns the row ID and whether this call created it (`false`:
+/// the same text was already queued).
 ///
 /// # Errors
 ///
@@ -113,17 +146,20 @@ pub async fn enqueue(
     }
     let ids = (text.template_id, text.recipient, text.subject);
     let key = text_key(secret, ids);
-    models::insert_text(db, key.as_str(), ids, text.body).await
+    models::insert_text(db, key.as_str(), ids, text.relation.kind(), text.body).await
 }
 
 /// The key of a text: [`SEND_ACTION`] over the template ID, the recipient ID and the subject IDs,
-/// so the same text always gets the same key and no personal data is in it (SEC-018, TXT-011).
+/// so the same text always gets the same key and no personal data is in it (SEC-018, TXT-011). The
+/// subject IDs are sorted first, so the order a caller lists them in does not change the key.
 fn text_key(
     secret: &SecretString,
     (template_id, recipient, subject): (&str, Uuid, &[Uuid]),
 ) -> IdempotencyKey {
     let recipient = recipient.to_string();
-    let subject: Vec<String> = subject.iter().map(Uuid::to_string).collect();
+    let mut sorted = subject.to_vec();
+    sorted.sort_unstable();
+    let subject: Vec<String> = sorted.iter().map(Uuid::to_string).collect();
     let ids: Vec<&str> = [template_id, recipient.as_str()]
         .into_iter()
         .chain(subject.iter().map(String::as_str))
@@ -133,15 +169,17 @@ fn text_key(
 
 /// Sends outbox row `id` from `from` to `to` through `carrier` under the key re-derived from the
 /// row's stored IDs, so every attempt carries the same key (TXT-011). A homeowner is checked again
-/// against TXT-009 before the row is claimed, and her number read from the vault (D-849). Returns
-/// `None` when the row was already sent: the carrier is not called again. No transaction is open
-/// during the call (R11).
+/// against TXT-009 before the row is claimed, and her number read from the vault; `to` must name
+/// the recipient kind the row was queued for (D-849). Returns `None` when the row was already sent:
+/// the carrier is not called again. No transaction is open during the call (R11). No error makes
+/// the row terminal; the retry task decides when to give it up (TXT-014, TXT-015).
 ///
 /// # Errors
 ///
-/// [`OutboxError::PastCustomer`] (the row stays queued), [`OutboxError::NotFound`],
-/// [`OutboxError::Recipient`], [`OutboxError::Carrier`] (the row stays unsent; a resend carries the
-/// same key) or [`OutboxError::Database`].
+/// [`OutboxError::PastCustomer`] and [`OutboxError::RecipientKind`] (the row is left as it was,
+/// normally `queued`), [`OutboxError::NotFound`], [`OutboxError::Recipient`] and
+/// [`OutboxError::Carrier`] (the row stays `sending`; a resend carries the same key) or
+/// [`OutboxError::Database`].
 pub async fn send(
     db: &mut PgConnection,
     (secret, carrier): (&SecretString, &impl SmsAdapter),
@@ -153,7 +191,7 @@ pub async fn send(
     {
         return Err(OutboxError::PastCustomer);
     }
-    let Some(claim) = models::claim(db, id).await? else {
+    let Some(claim) = models::claim(db, id, to.kind()).await? else {
         return Ok(None);
     };
     let number = recipient_phone(db, to, claim.recipient).await?;
@@ -194,7 +232,9 @@ async fn recipient_phone(
 
 /// Links phone `phone_ref` (`phone` its number) to `business` in the sender directory, replacing
 /// any earlier number of that phone; T220 calls it for every main and staff phone added or changed
-/// (D-492). Only blind-index digests are stored, never the number (PRIV-002).
+/// (D-492). The phone's earlier rows are replaced whatever business they named, so re-adding a
+/// `phone_ref` under another business moves it there; the caller owns which business a phone
+/// record belongs to. Only blind-index digests are stored, never the number (PRIV-002).
 ///
 /// # Errors
 ///

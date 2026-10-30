@@ -12,7 +12,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/rules.rs`: pure quiet-hours logic: `AreaCodes`, `decide`, `retry`, `plan_release`, `Kind`, `Outgoing`, `Decision`, `Held`, `Release`.
 - `src/service.rs`: the outbox (`enqueue`, `send`, `may_text`, `NewText`, `Relation`, `To`, `SEND_ACTION`) and the sender directory (`sender_add`, `sender_remove`, `sender_business`).
 - `src/models.rs`: `OutboxError` and the crate-private queries on `messaging.outbox` and `messaging.sender_directory`.
-- Migration `0042_messaging_outbox.sql`: the `messaging` schema and grants, `messaging.outbox` (unique `idempotency_key`, `subject_ids`, `status` queued/sending/sent, `attempts`, `provider_sid`, `body` NULL once sent), `messaging.sender_directory` (blind-index digests per key version, unique per digest).
+- Migration `0042_messaging_outbox.sql`: the `messaging` schema and grants, `messaging.outbox` (unique `idempotency_key`, `subject_ids`, `recipient_kind` homeowner/business, `status` queued/sending/sent, `attempts`, `provider_sid`, `body` NULL once sent), `messaging.sender_directory` (blind-index digests per key version, unique per digest).
 - `src/api.rs`: the only public surface: `render`, `template_ids`, the quiet-hours functions, the outbox and sender-directory functions and the re-exported types.
 
 ## Rules it enforces
@@ -27,10 +27,10 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - QH-006, QH-008: `Decision::Hold { until }` is the next instant both zones are open; `rules::retry` is the same rule.
 - QH-007, TXT-025: `rules::plan_release` drops held texts for a closed job (the caller's `job_closed` check) except one that announces the close, and merges held `Kind::Update`s per job and recipient.
 - TXT-009: `service::may_text`; `enqueue` refuses `Relation::PastCustomer` unless `last_inbound` is strictly after `closed_at`, and `send` checks `To::Homeowner`'s relation again before claiming; the caller supplies both times (D-846).
-- PRIV-003, PRIV-004: `send` reads a homeowner's phone from the vault (`read_contact`, `Reader::Messaging`, `Purpose::Send`) for the row's `recipient_id`; only a business phone comes from the caller (D-849). `NewText`'s `Debug` omits the body.
+- PRIV-003, PRIV-004: `send` reads a homeowner's phone from the vault (`read_contact`, `Reader::Messaging`, `Purpose::Send`) for the row's `recipient_id`; only a business phone comes from the caller (D-849). Each row stores `recipient_kind` (from the `Relation` at enqueue) and `send` refuses a `To` of the other kind with `RecipientKind`, so a homeowner's row cannot skip the vault read or TXT-009. `NewText`'s `Debug` omits the body.
 - SEC-037: `mark_sent` sets `body` to NULL, so a link token is not kept after the send (D-850).
-- TXT-011, SEC-018: `enqueue` derives the key (`sms.send` over template ID, recipient ID, subject IDs) and inserts `ON CONFLICT DO NOTHING`; `send` claims in one statement, calls the carrier outside any transaction with the key re-derived from the stored IDs, then marks `sent` only if still `sending`; a sent row never reaches the carrier (D-847). No lease: concurrent sends rely on the carrier's key dedupe, verify with vendor before Gate C.
-- D-492, PRIV-002: `sender_add` normalizes the phone and stores only `IndexPurpose::SenderDir` digests, replacing the phone's earlier ones in one transaction; a number another phone holds is `SenderTaken`.
+- TXT-011, SEC-018: `enqueue` derives the key (`sms.send` over template ID, recipient ID, subject IDs) and inserts `ON CONFLICT DO NOTHING`; `send` claims in one statement, calls the carrier outside any transaction with the key re-derived from the stored IDs, then marks `sent` only if still `sending`; a sent row never reaches the carrier (D-847). Subject IDs are sorted before hashing. No lease: the killed-worker resend and concurrent sends both rely on the carrier's key dedupe, verify with vendor before Gate C. No error makes a row terminal: a TXT-009 or kind refusal leaves it `queued`, a vault or carrier failure leaves it `sending`; the retry task decides when to give up.
+- D-492, PRIV-002: `sender_add` normalizes the phone and stores only `IndexPurpose::SenderDir` digests, replacing the phone's earlier ones in one transaction (whatever business they named, so re-adding a `phone_ref` under another business moves it); a number another phone holds is `SenderTaken`.
 
 ## Never break
 
@@ -45,6 +45,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - No text to a past customer who has not written first: `td_txt_03_no_text_to_a_past_customer_who_has_not_written_first`.
 - No plaintext phone in the sender directory: `the_sender_directory_matches_linked_phones_only`.
 - A homeowner is re-checked at send, texted at her vault number, and a sent row keeps no body: `td_txt_03_a_homeowner_is_rechecked_and_texted_at_her_vault_number`.
+- A row goes only to its recipient kind; subject order does not change the key: `a_row_goes_only_to_its_recipient_kind_and_subject_order_is_one_text`.
 
 ## How to change
 

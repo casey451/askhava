@@ -24,6 +24,10 @@ pub enum OutboxError {
     /// The homeowner's number could not be read from the vault for the row's recipient (D-849).
     #[error("the recipient's number could not be read")]
     Recipient,
+    /// The row was queued for the other kind of recipient (homeowner or business) than the send
+    /// names; the row is left as it was (D-849).
+    #[error("the text was queued for another kind of recipient")]
+    RecipientKind,
     /// The outbox has no row with this ID.
     #[error("no such outbox row")]
     NotFound,
@@ -40,21 +44,23 @@ pub(crate) struct Claim {
     pub(crate) body: String,
 }
 
-/// Inserts a queued text unless its key is taken; returns the row's ID either way and whether it
-/// is new (TXT-011).
+/// Inserts a queued text for a recipient of `kind` (`homeowner` or `business`) unless its key is
+/// taken; returns the row's ID either way and whether it is new (TXT-011, D-849).
 pub(crate) async fn insert_text(
     db: &mut PgConnection,
     key: &str,
     (template_id, recipient, subject): (&str, Uuid, &[Uuid]),
+    kind: &str,
     body: &str,
 ) -> Result<(Uuid, bool), OutboxError> {
     let new = sqlx::query_scalar!(
         "INSERT INTO messaging.outbox \
-         (idempotency_key, template_id, recipient_id, subject_ids, body) \
-         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id",
+         (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body) \
+         VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id",
         key,
         template_id,
         recipient,
+        kind,
         subject,
         body
     )
@@ -74,14 +80,20 @@ pub(crate) async fn insert_text(
     Ok((id, false))
 }
 
-/// Claims row `id` for one attempt unless it was already sent: counts the attempt and returns the
-/// key's IDs and the body; `None` when it is sent (TXT-011).
-pub(crate) async fn claim(db: &mut PgConnection, id: Uuid) -> Result<Option<Claim>, OutboxError> {
+/// Claims row `id` for one attempt unless it was already sent or was queued for another
+/// recipient `kind`: counts the attempt and returns the key's IDs and the body; `None` when it is
+/// sent (TXT-011). A kind mismatch is [`OutboxError::RecipientKind`] and changes nothing (D-849).
+pub(crate) async fn claim(
+    db: &mut PgConnection,
+    id: Uuid,
+    kind: &str,
+) -> Result<Option<Claim>, OutboxError> {
     let row = sqlx::query!(
         "UPDATE messaging.outbox SET status = 'sending', attempts = attempts + 1 \
-         WHERE id = $1 AND status <> 'sent' \
+         WHERE id = $1 AND status <> 'sent' AND recipient_kind = $2 \
          RETURNING template_id, recipient_id, subject_ids, body",
-        id
+        id,
+        kind
     )
     .fetch_optional(&mut *db)
     .await
@@ -94,11 +106,18 @@ pub(crate) async fn claim(db: &mut PgConnection, id: Uuid) -> Result<Option<Clai
             body: row.body.ok_or(OutboxError::Database)?,
         }));
     }
-    let exists = sqlx::query_scalar!("SELECT id FROM messaging.outbox WHERE id = $1", id)
-        .fetch_optional(db)
-        .await
-        .map_err(|_| OutboxError::Database)?;
-    exists.map(|_| None).ok_or(OutboxError::NotFound)
+    let stored = sqlx::query_scalar!(
+        "SELECT recipient_kind FROM messaging.outbox WHERE id = $1",
+        id
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    match stored {
+        None => Err(OutboxError::NotFound),
+        Some(stored) if stored != kind => Err(OutboxError::RecipientKind),
+        Some(_) => Ok(None),
+    }
 }
 
 /// Marks row `id` sent with the carrier's message SID and clears its body, only if it is still

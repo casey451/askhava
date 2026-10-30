@@ -5,8 +5,9 @@
 //! delivers it once; that the same text queued twice is one row and a sent row never reaches the
 //! carrier again; that no text is queued to a past customer unless she wrote after her request
 //! closed, nor sent to one; that a homeowner's number comes from the vault and a sent row keeps no
-//! body (D-849, D-850); and that the sender directory matches a linked business phone by its blind
-//! index only.
+//! body (D-849, D-850); that a row goes only to the recipient kind it was queued for and the
+//! order of its subject IDs does not change its key; and that the sender directory matches a
+//! linked business phone by its blind index only.
 //! The fake carrier keeps Twilio's rule for a repeated `Idempotency-Key`. All data is fake.
 
 use std::collections::HashMap;
@@ -80,17 +81,17 @@ fn vault() -> Vault {
 }
 
 async fn queue(pool: &PgPool, relation: Relation, job: Uuid) -> Result<(Uuid, bool), OutboxError> {
-    queue_to(pool, (Uuid::from_u128(0x0c0), relation), job).await
+    queue_to(pool, (Uuid::from_u128(0x0c0), relation), &[job]).await
 }
 
 async fn queue_to(
     pool: &PgPool,
     (recipient, relation): (Uuid, Relation),
-    job: Uuid,
+    subject: &[Uuid],
 ) -> Result<(Uuid, bool), OutboxError> {
     let new = NewText {
         template_id: "first_quote",
-        subject: &[job],
+        subject,
         recipient,
         relation,
         body: "Ask Hava: fake body",
@@ -111,7 +112,7 @@ async fn status(pool: &PgPool, id: Uuid) -> (String, i32) {
 /// carries the same key and the fake carrier delivers once.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once(pool: PgPool) {
-    let (id, _) = queue(&pool, Relation::OpenRequest, Uuid::from_u128(1))
+    let (id, _) = queue(&pool, Relation::Business, Uuid::from_u128(1))
         .await
         .expect("queued");
     let dying = FakeCarrier {
@@ -149,15 +150,10 @@ async fn td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once(
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_txt_04_a_text_is_queued_once_and_never_sent_twice(pool: PgPool) {
     let job = Uuid::from_u128(2);
-    let (id, new) = queue(&pool, Relation::OpenRequest, job)
-        .await
-        .expect("first");
+    let (id, new) = queue(&pool, Relation::Business, job).await.expect("first");
     assert!(new);
-    assert_eq!(
-        queue(&pool, Relation::OpenRequest, job).await,
-        Ok((id, false))
-    );
-    let (other, _) = queue(&pool, Relation::OpenRequest, Uuid::from_u128(3))
+    assert_eq!(queue(&pool, Relation::Business, job).await, Ok((id, false)));
+    let (other, _) = queue(&pool, Relation::Business, Uuid::from_u128(3))
         .await
         .expect("other");
     assert_ne!(other, id, "another job is another text");
@@ -227,7 +223,7 @@ async fn td_txt_03_a_homeowner_is_rechecked_and_texted_at_her_vault_number(pool:
     let her = store_contact(&mut db, &vault, &contact)
         .await
         .expect("contact");
-    let (id, _) = queue_to(&pool, (her, Relation::OpenRequest), Uuid::from_u128(30))
+    let (id, _) = queue_to(&pool, (her, Relation::OpenRequest), &[Uuid::from_u128(30)])
         .await
         .expect("queued");
     let closed_at = Timestamp::from_second(1_790_000_000).expect("time");
@@ -260,6 +256,48 @@ async fn td_txt_03_a_homeowner_is_rechecked_and_texted_at_her_vault_number(pool:
         .expect("queued");
     let unknown = send(&mut db, (&secret(), &carrier), stranger, (open, FROM)).await;
     assert_eq!(unknown.err(), Some(OutboxError::Recipient));
+}
+
+/// D-849, TXT-011: a row goes only to the recipient kind it was queued for, a refused send leaves
+/// it queued and untouched, and the order of the subject IDs does not change the text's key.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_row_goes_only_to_its_recipient_kind_and_subject_order_is_one_text(pool: PgPool) {
+    let vault = vault();
+    let carrier = FakeCarrier::default();
+    let (homeowner_row, _) = queue(&pool, Relation::OpenRequest, Uuid::from_u128(40))
+        .await
+        .expect("queued");
+    let (business_row, _) = queue(&pool, Relation::Business, Uuid::from_u128(41))
+        .await
+        .expect("queued");
+    let mut db = pool.acquire().await.expect("connection");
+    let to_business = (To::Business(TO), FROM);
+    let wrong = send(&mut db, (&secret(), &carrier), homeowner_row, to_business).await;
+    assert_eq!(wrong.err(), Some(OutboxError::RecipientKind));
+    let homeowner = To::Homeowner {
+        vault: &vault,
+        relation: Relation::OpenRequest,
+    };
+    let wrong = send(
+        &mut db,
+        (&secret(), &carrier),
+        business_row,
+        (homeowner, FROM),
+    )
+    .await;
+    assert_eq!(wrong.err(), Some(OutboxError::RecipientKind));
+    assert!(
+        carrier.calls.lock().expect("lock").is_empty(),
+        "nothing sent"
+    );
+    for row in [homeowner_row, business_row] {
+        assert_eq!(status(&pool, row).await, ("queued".to_owned(), 0));
+    }
+    let (a, b) = (Uuid::from_u128(42), Uuid::from_u128(43));
+    let to = (Uuid::from_u128(0x0c0), Relation::Business);
+    let (first, _) = queue_to(&pool, to, &[a, b]).await.expect("first");
+    let second = queue_to(&pool, to, &[b, a]).await;
+    assert_eq!(second, Ok((first, false)), "one text whatever the order");
 }
 
 /// D-492, PRIV-024: a linked phone matches its business by blind index only; a change, a

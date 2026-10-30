@@ -2,7 +2,9 @@
 -- messaging.outbox holds one row per text, unique on its idempotency key, an HMAC of the action and
 -- the record IDs the text identifies, never a phone or a body word (SEC-018, PRIV-002); a resend
 -- re-derives the same key from the stored IDs, so the carrier delivers it once (TXT-011). The
--- recipient is an opaque ID (a vault contact or a business address), never the number (TXT-019).
+-- recipient is an opaque ID (a vault contact or a business address), never the number (TXT-019);
+-- `recipient_kind` records which it is at enqueue, and a send to the other kind is refused, so a
+-- homeowner's row cannot skip the vault read and the TXT-009 check (D-849).
 -- The body is kept only until the send is marked; a sent row's body is NULL, so a link token in it
 -- does not outlive the send (SEC-037, D-850).
 -- messaging.sender_directory holds each linked business main or staff phone as blind-index digests
@@ -21,6 +23,7 @@ CREATE TABLE messaging.outbox (
   idempotency_key text NOT NULL UNIQUE CHECK (idempotency_key ~ '^[0-9a-f]{64}$'),
   template_id text NOT NULL CHECK (template_id ~ '^[a-z][a-z0-9_.]{0,63}$'),
   recipient_id uuid NOT NULL,
+  recipient_kind text NOT NULL CHECK (recipient_kind IN ('homeowner', 'business')),
   subject_ids uuid[] NOT NULL,
   body text CHECK (status = 'sent' OR body IS NOT NULL),
   status text NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'sending', 'sent')),
