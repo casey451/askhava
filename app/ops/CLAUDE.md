@@ -7,7 +7,7 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 ## What it owns
 
 - `src/lib.rs`: the crate root; one `mod` line per file.
-- `src/api.rs`: the only public surface.
+- `src/api.rs`: the only public surface; also holds the off-database stream entry points (T017, D-734): `StreamEvent` (`Audit`, `Request`, `AiReading`), `stream_event` (enqueues an `ops.offdb_stream` `core.task`, `STREAM_KIND`), and the `audit` and `set_switch` wrappers over `service` that enqueue the audit row's copy in the same transaction, and `previous_audit_id` (the `max(id) < n` lookup the chain writer links to, D-735).
 - `src/models.rs`: `AuditEntry` (`status_change`, `check`), `Change`, `Actor`, `AuditRow` (`to_json`), `NewAlert`, `Severity`, `Switch`, `OpsError`, `is_code_name`.
 - `src/service.rs`: `audit`, `export_audit` (cursor, `EXPORT_PAGE_MAX`), `raise_alert`, `is_paused`, `set_switch`.
 - Migration `0021_ops_audit.sql`: the `ops` schema and its grants, `ops.audit_log` (append-only), `ops.alert`, `ops.pause_switch`, `ops.switch_history` (append-only).
@@ -17,7 +17,8 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 
 - JOB-005: `service::audit` takes the caller's connection, so a module calls it with `&mut *tx` in the transaction that changes status; `AuditEntry::status_change` is the row for a status move.
 - OPS-010: `ops.audit_log` revokes `UPDATE`, `DELETE`, `TRUNCATE` from `askhava_app`; `service::export_audit` is a paged export by `id` cursor, `AuditRow::to_json` is the line format.
-- OPS-011: the off-database copy is T017's. It must not read `export_audit`'s cursor: identity IDs can commit out of order, so a row can land below a cursor already read. T017 uses a per-row `core.task` or outbox row inserted in the audit row's transaction, or reads only below a safe horizon (D-729).
+- OPS-011: every audit row is copied off the database through a per-row `core.task` inserted in its own transaction (`api::audit`, `api::set_switch` call `api::stream_event`), never through `export_audit`'s cursor, since identity IDs can commit out of order (D-729, D-734). `ops` only enqueues; `app/server/src/offdb_stream.rs` writes to storage. Call `api::audit`, never `service::audit` directly, or the row is not streamed.
+- PRIV-029: a stream event holds IDs, code names, a route template, a status code and a time only; an AI reading's fields must each be a code name and value (`api::code_fields`), so no AI-written text enters the stream.
 - PRIV-028: actors and subjects are UUIDs; every name is a `&'static str` written in code and checked by `models::is_code_name` and the table's `CHECK`s, so no phone, email or street address fits; a field edit logs the field name only (`Change::Field`).
 - OPS-003, SEC-006: `service::set_switch` changes a switch only if it differs and, in one transaction, logs the change with its actor in the append-only `ops.switch_history` and as an `ops.audit_log` row (`switch_on`/`switch_off`, subject `ops.pause_switch` by its UUID); `service::is_paused` (a switch never set is off).
 
@@ -29,7 +30,8 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 - The export returns every row exactly once in `id` order: `the_export_returns_every_row_once_in_order`.
 - A switch change writes history and audit together, a repeat writes nothing: `a_pause_switch_logs_each_change_once`, `a_repeat_switch_change_writes_nothing`.
 - `OpsError` never carries a value or the database's message (PRIV-016).
-- `ops` depends on no first-party crate (layer 1, `kit/layers.json`); it sends nothing itself.
+- `ops` depends on `core` only (for `enqueue`; layer 1, `kit/layers.json`); it sends nothing itself.
+- A stream event commits or rolls back with its row: `tests/integration/tests/offdb_stream.rs::every_stream_event_reaches_storage_as_it_happens`.
 
 ## How to change
 
@@ -40,4 +42,4 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 
 ## Tests that guard it
 
-- `tests/integration/tests/audit_log.rs` (TD-OPS-03 append-only and export cases, TD-PRIV-13 audit-row case; JOB-005, OPS-003, PRIV-028, SEC-006). T017 adds the off-database stream cases of TD-OPS-03.
+- `tests/integration/tests/audit_log.rs` (TD-OPS-03 append-only and export cases, TD-PRIV-13 audit-row case; JOB-005, OPS-003, PRIV-028, SEC-006). `tests/integration/tests/offdb_stream.rs` (TD-OPS-03 stream cases, TD-OPS-19 chain and purge cases; OPS-010, OPS-011, PRIV-029).

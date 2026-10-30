@@ -1,7 +1,8 @@
 //! The `web` process: the `server` binary (`docs/architecture.md` section 2; SEC-029).
 //!
 //! Installs the TLS provider, refuses to start on bad settings (SEC-002),
-//! starts the JSON log, builds the router and serves it on
+//! starts the JSON log, builds the router over the app pool (each request queues its request-log
+//! line, OPS-011) and serves it on
 //! `0.0.0.0:$PORT` (the host sets `PORT`) until SIGINT or SIGTERM, then
 //! finishes the requests in flight and exits 0. `server migrate` instead
 //! applies the pending migrations as the migration role and exits: the
@@ -21,7 +22,8 @@ async fn main() -> io::Result<()> {
     }
     let port = port_from_env()?;
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
-    axum::serve(listener, askhava_server::build_router())
+    let pool = askhava_core::api::app_pool(&settings).map_err(io::Error::other)?;
+    axum::serve(listener, askhava_server::build_router(pool))
         .with_graceful_shutdown(askhava_server::shutdown_signal()?)
         .await
 }

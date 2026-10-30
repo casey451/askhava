@@ -232,21 +232,27 @@ version = "0.1.0"
 name = "askhava-integration"
 version = "0.1.0"
 dependencies = [
+ "askhava-adapters",
  "askhava-core",
  "askhava-ops",
  "axum",
  "jiff",
  "secrecy",
  "serde_json",
+ "sha2 0.11.1",
  "sqlx",
  "tokio",
  "toml 1.1.8+spec-1.1.0",
+ "tower",
+ "tower-http 0.7.1",
+ "tracing",
 ]
 
 [[package]]
 name = "askhava-ops"
 version = "0.1.0"
 dependencies = [
+ "askhava-core",
  "jiff",
  "jiff-sqlx",
  "serde_json",
@@ -269,11 +275,19 @@ dependencies = [
 name = "askhava-server"
 version = "0.1.0"
 dependencies = [
+ "askhava-adapters",
  "askhava-core",
+ "askhava-ops",
  "axum",
+ "jiff",
  "rustls",
+ "secrecy",
+ "serde_json",
+ "sha2 0.11.1",
+ "sqlx",
  "tokio",
  "tower-http 0.7.1",
+ "tracing",
 ]
 
 [[package]]
