@@ -9,7 +9,9 @@ with `main`. It makes four governance rules machine-enforced (docs/governance.md
    runner makes (runner/verify.py); here it runs where a worker cannot skip it.
 2. **The decisions log is append-only.** Every `D-###` entry line in the base copy of
    `docs/decisions.md` is still there, byte for byte and in the same order, and new entries
-   come only after the last base entry.
+   come only after the last base entry. No D-number appears on two entries of the head copy,
+   and no new entry uses a number the `--base` ref's current copy already has (a stale branch);
+   gaps in the numbering are allowed (numbers are reserved per task, D-530).
 3. **A change to the locked blueprint needs a decision.** When any locked file or locked
    architecture section (scripts/check_plan_lock.py) changed, `kit/plan.lock` changed too
    and `docs/decisions.md` gained at least one new `D-###` entry. When a requirement line
@@ -37,13 +39,14 @@ import json
 import re
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import check_plan_lock  # noqa: E402
-from runner import verify  # noqa: E402
+from runner import state as runner_state, verify  # noqa: E402
 
 TASK_BRANCH = re.compile(r"^claude/task/(?P<id>T\d{3})-")
 DECISION = re.compile(r"^- \*\*(D-\d{3})\*\*")
@@ -102,6 +105,30 @@ def decisions_append_only(base_text: str | None, head_text: str | None) -> list[
         if i >= len(head_entries) or head_entries[i] != line:
             return [f"docs/decisions.md is append-only; entry {i + 1} was changed, moved or removed: {line[:80]}"]
     return ["docs/decisions.md is append-only; base entries are not an unchanged prefix of the head"]
+
+
+def decisions_unique(head_text: str | None) -> list[str]:
+    """Each D-number names one entry of the head's docs/decisions.md; gaps are fine (D-530)."""
+    counts = Counter(runner_state.decision_numbers(head_text or ""))
+    return [
+        f"docs/decisions.md has D-{n:03d} on {count} entries; renumber the newer one to a free number "
+        "(the handoff's decision_ids, or one above main's highest entry and the state's next_decision)"
+        for n, count in sorted(counts.items())
+        if count > 1
+    ]
+
+
+def decisions_not_taken_on_main(base_text: str | None, main_text: str | None, head_text: str | None) -> list[str]:
+    """No new head entry (a number absent from the merge base's copy) uses a number main's current copy
+    already has: a stale branch whose numbers main took meanwhile fails before it merges (D-530)."""
+    old = set(runner_state.decision_numbers(base_text or ""))
+    on_main = set(runner_state.decision_numbers(main_text or ""))
+    added = set(runner_state.decision_numbers(head_text or "")) - old
+    return [
+        f"docs/decisions.md: D-{n:03d} is new on this branch but main already has a D-{n:03d} entry; "
+        "renumber this branch's entry above main's highest entry and the state's next_decision"
+        for n in sorted(added & on_main)
+    ]
 
 
 def new_decisions(base_text: str | None, head_text: str | None) -> list[str]:
@@ -246,6 +273,8 @@ def main(argv: list[str] | None = None) -> int:
     base_dec = show(root, base, DECISIONS)
     head_dec = show(root, "HEAD", DECISIONS)
     errors += decisions_append_only(base_dec, head_dec)
+    errors += decisions_unique(head_dec)
+    errors += decisions_not_taken_on_main(base_dec, show(root, args.base, DECISIONS), head_dec)
     added = new_decisions(base_dec, head_dec)
     errors += locked_change_check(root, base, changed, added)
     errors += lock_rewrite_check(root, args.branch, changed)
