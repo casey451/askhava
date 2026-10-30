@@ -722,7 +722,7 @@
    "deps": [
     "T172"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "twin-intake-fixes",
    "type": "harness",
@@ -742,6 +742,13 @@
      "started_at": "2026-10-29T23:41:23Z",
      "ended_at": "2026-10-30T00:17:50Z",
      "result": "QUEUED"
+    }
+   ],
+   "stale_leases": [
+    {
+     "task": "T005",
+     "session": "actions-40978809423",
+     "expires": "2026-10-29T17:00:00Z"
     }
    ]
   },
@@ -3794,7 +3801,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T00:57:12Z",
+ "updated_at": "2026-10-30T01:42:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -3892,7 +3899,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5d91bf59fdeed69752c68d19072fc949f13753a5",
+ "runner_sha": "ef07eed50d33756100b2d2b8239a1b77b90abae3",
  "starter": "actions",
  "smoke_runs": [
   {
