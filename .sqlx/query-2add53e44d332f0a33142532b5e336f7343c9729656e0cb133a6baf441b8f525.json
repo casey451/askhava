@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE jobs.quote_token SET revoked_at = GREATEST($2, issued_at) WHERE job_id = $1 AND revoked_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2add53e44d332f0a33142532b5e336f7343c9729656e0cb133a6baf441b8f525"
+}
