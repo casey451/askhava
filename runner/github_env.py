@@ -83,7 +83,10 @@ LOG_STAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z ")
 ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 # Defence in depth only: Actions already masks secrets as *** and gitleaks runs with --redact.
 TOKEN_LIKE = re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|x-access-token:[^@\s]+@")
-DETAIL_ERRORS = (RuntimeError, ValueError, TypeError, AttributeError, KeyError, OSError, subprocess.SubprocessError)
+# A best-effort read or write (a failure detail, the branch preparation) that fails is left out, never raised.
+BEST_EFFORT_ERRORS = (RuntimeError, ValueError, TypeError, AttributeError, KeyError, OSError, subprocess.SubprocessError)
+NOT_BUILT_ON = ("the hand-in does not build on origin/{branch}: the remote task branch has commits this attempt "
+                "did not build on, so its push cannot fast-forward (D-583)")
 JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the job token (D-502, D-582)
 
 
@@ -313,6 +316,8 @@ class GitHubEnv:
         self.log: list[str] = []
         self._progress: dict[str, str] = {}
         self.sleep: Callable[[float], None] = time.sleep  # update_state's wait between tries; tests replace it
+        self.prepared: dict[str, Any] = {}  # what prepare_branch made for this attempt, for the hand-off (D-583)
+        self.last_rejection = ""  # the last rejected branch push's git output (push_rejection, D-583)
 
     # ---- git plumbing
 
@@ -694,7 +699,7 @@ class GitHubEnv:
             if not names:
                 return None
             code, text, _ = self._run(["gh", "api", f"repos/{self.repo}/actions/jobs/{job}/logs"], None, self.root)
-        except DETAIL_ERRORS as exc:
+        except BEST_EFFORT_ERRORS as exc:
             self.log.append(f"job {job} detail unreadable: {str(exc)[:200]}")
             return None
         excerpt = log_excerpt(text) if code == 0 else []
@@ -797,8 +802,119 @@ class GitHubEnv:
         code, out, err = self._run(["git", "push", "--porcelain", remote, f"{head_sha}:refs/heads/{branch}"], None, self.root)
         if code != 0:
             # --porcelain puts the rejection reason on stdout; stderr only says "failed to push" (D-509).
-            self.log.append(f"branch push rejected: {(out.strip() + ' ' + err.strip()).strip()[:400]}")
+            self.last_rejection = (out.strip() + " " + err.strip()).strip()[:400]
+            self.log.append(f"branch push rejected: {self.last_rejection}")
         return code == 0
+
+    def push_rejection(self) -> str:
+        """The git output of the last rejected push_branch ('' when none), so the cycle can tell a
+        non-fast-forward from a credential problem (D-583)."""
+        return self.last_rejection
+
+    # ---- the branch an attempt works on (D-583)
+
+    def prepare_branch(self, task: dict[str, Any], attempt: int) -> dict[str, Any]:
+        """Make the local task branch before the worker starts, so a retry builds on what an earlier
+        attempt pushed and its push fast-forwards (the runner never force-pushes, BUILD_BRIEF.md:303).
+
+        - origin has no task branch: the branch starts at main;
+        - origin has it and its pull request is open (or there is none): the branch starts at origin's
+          tip with main merged in (a normal merge commit; none when main is already in it);
+        - its pull request was merged or closed, or merging main conflicts: a fresh branch from main
+          under a new name (`<branch>-a<attempt>`); on a conflict the open pull request is closed with
+          a comment, and the old branch stays for evidence.
+        Returns {"branch", "branch_ready": True, "base", "base_sha", ...}, also kept as `prepared` for the
+        hand-off; {} in a dry run or when git or the API fails (the attempt then goes on as before, and
+        collect_result still refuses a hand-in that does not build on origin's branch)."""
+        self.prepared = {}
+        if self.dry_run:
+            return {}
+        branch = self.branch_for(task["id"])
+        try:
+            self.prepared = self._prepare(task, branch, attempt)
+        except BEST_EFFORT_ERRORS as exc:
+            self.log.append(f"branch {branch} not prepared: {str(exc)[:200]}")
+        return self.prepared
+
+    def _prepare(self, task: dict[str, Any], branch: str, attempt: int) -> dict[str, Any]:
+        main = self.main_head()
+        if not main:
+            raise RuntimeError("main is unreadable")
+        remote = self._fetch(branch)
+        if remote is None:
+            return self._fresh(branch, main)
+        pr_state = self._pr_state(branch)
+        if pr_state in ("merged", "closed"):
+            return self._fresh(self._new_name(task, attempt), main, renamed_from=branch, why=f"its pull request was {pr_state}")
+        tip = remote if self._is_ancestor(main, remote) else self._merge_main(branch, remote, main)
+        if tip is None:
+            new = self._new_name(task, attempt)
+            closed = self._close_stale_pr(branch, new)
+            return self._fresh(new, main, renamed_from=branch, why="merging main into it conflicted", closed_pr=closed)
+        self.git("branch", "-f", branch, tip)
+        return {"branch": branch, "branch_ready": True, "base": f"origin/{branch}", "base_sha": tip, "remote_sha": remote}
+
+    def _fresh(self, name: str, main: str, **extra: Any) -> dict[str, Any]:
+        self.git("branch", "-f", name, main)
+        return {"branch": name, "branch_ready": True, "base": "main", "base_sha": main, **extra}
+
+    def _is_ancestor(self, older: str, newer: str) -> bool:
+        return self._run(["git", "merge-base", "--is-ancestor", older, newer], None, self.root)[0] == 0
+
+    def _merge_main(self, branch: str, remote: str, main: str) -> str | None:
+        """The merge commit of main into origin's task branch, built without a working tree
+        (`git merge-tree --write-tree`, git 2.38 or later); None on a conflict."""
+        code, out, err = self._run(["git", "merge-tree", "--write-tree", remote, main], None, self.root)
+        if code == 1:
+            return None
+        if code != 0:
+            raise RuntimeError(f"git merge-tree failed: {err.strip()[:200]}")
+        tree = out.splitlines()[0].strip()
+        message = f"Merge main into {branch} for the next attempt (D-583)"
+        return self.git("commit-tree", tree, "-p", remote, "-p", main, "-m", message, env=self._identity())
+
+    def _pr_state(self, branch: str) -> str | None:
+        """'open', 'closed' or 'merged' for the branch's latest pull request; None when it has none or
+        the API cannot say (the branch is then continued)."""
+        owner = self.repo.split("/")[0]
+        try:
+            pulls = self.gh_json(f"repos/{self.repo}/pulls?head={owner}:{branch}&state=all&per_page=20")
+        except (RuntimeError, ValueError) as exc:
+            self.log.append(f"pull requests for {branch} unreadable: {str(exc)[:200]}")
+            return None
+        if not pulls:
+            return None
+        pr = max(pulls, key=lambda p: int(p["number"]))
+        return "merged" if pr.get("merged_at") else str(pr.get("state"))
+
+    def _new_name(self, task: dict[str, Any], attempt: int) -> str:
+        """`<the task's branch>-a<n>` for the first n from the attempt number that origin does not have."""
+        known = next((t.get("branch") for t in self.graph if t.get("id") == task["id"]), None)
+        base = str(known or f"claude/task/{task['id']}")
+        first = max(attempt, 2)
+        for n in range(first, first + 10):
+            if self._fetch(f"{base}-a{n}") is None:
+                return f"{base}-a{n}"
+        raise RuntimeError(f"no free branch name up to {base}-a{first + 9}")
+
+    def _close_stale_pr(self, branch: str, new: str) -> int | None:
+        """Close the branch's open pull request with a comment saying where the work went (REST)."""
+        owner = self.repo.split("/")[0]
+        try:
+            pulls = self.gh_json(f"repos/{self.repo}/pulls?head={owner}:{branch}&state=open")
+        except (RuntimeError, ValueError):
+            return None
+        if not pulls:
+            return None
+        number = int(pulls[0]["number"])
+        body = (f"Closed by the runner: merging main into `{branch}` conflicted, so the next attempt starts fresh "
+                f"from main on `{new}` (D-583). This branch is kept for evidence.")
+        self._run(["gh", "api", f"repos/{self.repo}/issues/{number}/comments", "-f", f"body={body}"], None, self.root)
+        closed = self._run(["gh", "api", "-X", "PATCH", f"repos/{self.repo}/pulls/{number}", "-f", "state=closed"], None, self.root)
+        if closed[0] != 0:
+            self.log.append(f"stale pull request #{number} not closed: {closed[2].strip()[:200]}")
+            return None
+        return number
 
     def collect_result(
         self, task: dict[str, Any], outcome: str, transcripts: list[str], reviewer_transcripts: list[str],
@@ -812,6 +928,10 @@ class GitHubEnv:
             # No task branch: work left on a detached HEAD or another branch must never pass as an empty
             # hand-in that certifies main, so the attempt fails (D-551).
             return WorkerResult("tests_failed", log=f"no task branch {branch} to hand in", branch=branch)
+        remote = self._fetch(branch) if outcome == "submitted" else None
+        if remote and not self._is_ancestor(remote, head):
+            # The push would be rejected as a non-fast-forward, and the runner never force-pushes (D-583).
+            return WorkerResult("tests_failed", log=NOT_BUILT_ON.format(branch=branch), branch=branch, head_sha=head)
         changed = self.git("diff", "--no-renames", "--name-only", f"{base}...{head}", check=False) if head else ""
         evidence, usage = read_transcripts(transcripts)
         review, review_usage = read_transcripts(reviewer_transcripts)

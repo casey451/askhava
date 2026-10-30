@@ -12,6 +12,7 @@ import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -239,6 +240,151 @@ def test_a_cleared_conditional_gates_answer_reaches_the_dependent_task_as_gate_a
     env.run_worker = lambda task, model, log, beat: seen.append(task) or cycle.WorkerResult("handed_off")  # type: ignore[method-assign]  # reason: capture the task the worker gets
     assert cycle.run_cycle(dataclasses.replace(live_config("session-g", tmp_path, env), graph=[gate, dependent]), env, NOW) == "handed_off"
     assert seen[0]["id"] == "K10" and seen[0]["gate_answers"] == {"G10": "no"}
+
+
+# ---- D-583: a retry continues the branch an earlier attempt pushed, so its push fast-forwards
+
+
+class OfflineGh:
+    """run_command for git; `gh` answers from a fixed pull-request list and is recorded (no network)."""
+
+    def __init__(self, pulls: list[dict[str, Any]]) -> None:
+        self.pulls, self.calls = pulls, []  # type: list[dict[str, Any]], list[list[str]]
+
+    def __call__(self, args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
+        if args[0] != "gh":
+            return run_command(args, stdin, cwd)
+        self.calls.append(args)
+        return 0, json.dumps(self.pulls) if "/pulls?head=" in args[-1] else "{}", ""
+
+
+def commit_on(root: Path, branch: str, start: str, path: str, text: str) -> str:
+    """A commit of `path` on `branch`, started fresh at `start` (what a worker does)."""
+    git(root, "fetch", "-q", "origin")
+    git(root, "checkout", "-q", "-B", branch, start)
+    target = root / path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(text)
+    git(root, "add", "-A")
+    git(root, "commit", "-qm", f"change {path}")
+    return git(root, "rev-parse", "HEAD")
+
+
+def pushed_attempt(repo: dict[str, Path], path: str = "docs/k10/one.md", text: str = "attempt one\n") -> str:
+    """Attempt 1 committed on the task branch and pushed it (T167's 6cf73dd, ca099c5)."""
+    head = commit_on(repo["a"], TASK["branch"], "origin/main", path, text)
+    git(repo["a"], "push", "-q", "origin", TASK["branch"])
+    return head
+
+
+def move_main(repo: dict[str, Path], text: str) -> str:
+    """Another task merged meanwhile: main's README changes."""
+    head = commit_on(repo["seed"], "main", "origin/main", "README.md", text)
+    git(repo["seed"], "push", "-q", "origin", "main")
+    return head
+
+
+def test_drill_t167_a_retry_builds_on_the_pushed_attempt_and_its_push_fast_forwards(repo: dict[str, Path], tmp_path: Path) -> None:
+    """T167, October 30, 2026: attempt 1 pushed the task branch (PR open); attempt 2 must start from it,
+    with the newer main merged in by a normal merge commit, so its push fast-forwards (never forced)."""
+    first = pushed_attempt(repo)
+    main2 = move_main(repo, "fake repo, main moved\n")
+    gh = OfflineGh([{"number": 94, "state": "open", "merged_at": None}])
+    env = make_env(repo["b"], tmp_path, "b", run=gh)
+    env.read_state()
+    prep = env.prepare_branch(TASK, 2)
+    assert prep == {"branch": TASK["branch"], "branch_ready": True, "base": f"origin/{TASK['branch']}",
+                    "base_sha": prep["base_sha"], "remote_sha": first} and env.prepared == prep
+    assert git(repo["b"], "rev-list", "--parents", "-n", "1", prep["base_sha"]).split()[1:] == [first, main2]
+    git(repo["b"], "switch", "-q", TASK["branch"])  # what the hand-off's branch_note tells the session
+    (repo["b"] / "docs/k10/two.md").write_text("attempt two\n")
+    git(repo["b"], "add", "-A")
+    git(repo["b"], "commit", "-qm", "attempt two")
+    head = git(repo["b"], "rev-parse", "HEAD")
+    res = env.collect_result(TASK, "submitted", [], [])
+    assert res.outcome == "submitted" and res.head_sha == head and sorted(res.changed_paths) == ["docs/k10/one.md", "docs/k10/two.md"]
+    assert env.push_branch(TASK["branch"], head) is True and git(repo["origin"], "rev-parse", TASK["branch"]) == head
+    assert not any("PATCH" in call for call in gh.calls)  # the open pull request stays open
+
+
+def test_drill_t167_a_hand_in_rebuilt_from_main_fails_honestly_and_is_never_forced(repo: dict[str, Path], tmp_path: Path) -> None:
+    """The original bug: attempt 2 recreated the branch from main. Its hand-in is a failed attempt that
+    says why, and a push of it is rejected as non-fast-forward (which _push_failed now reports as such)."""
+    first = pushed_attempt(repo)
+    env = make_env(repo["b"], tmp_path, "b", run=OfflineGh([]))
+    env.read_state()
+    head = commit_on(repo["b"], TASK["branch"], "origin/main", "docs/k10/two.md", "attempt two\n")
+    res = env.collect_result(TASK, "submitted", [], [])
+    assert res.outcome == "tests_failed" and res.log == ge.NOT_BUILT_ON.format(branch=TASK["branch"])
+    assert env.push_branch(TASK["branch"], head) is False
+    assert "non-fast-forward" in env.push_rejection() or "fetch first" in env.push_rejection()
+    assert git(repo["origin"], "rev-parse", TASK["branch"]) == first
+
+
+def test_a_first_attempt_starts_from_main_and_a_dry_run_makes_nothing(repo: dict[str, Path], tmp_path: Path) -> None:
+    env = make_env(repo["a"], tmp_path, run=OfflineGh([]))
+    env.read_state()
+    prep = env.prepare_branch(TASK, 1)
+    assert prep == {"branch": TASK["branch"], "branch_ready": True, "base": "main", "base_sha": env.main_head()}
+    assert git(repo["a"], "rev-parse", f"refs/heads/{TASK['branch']}") == env.main_head()
+    assert make_env(repo["b"], tmp_path, "b", dry_run=True).prepare_branch(TASK, 1) == {}
+
+
+@pytest.mark.parametrize(("pr", "why"), [({"state": "closed", "merged_at": None}, "its pull request was closed"),
+                                         ({"state": "closed", "merged_at": "2026-10-30T07:00:00Z"}, "its pull request was merged")])
+def test_a_closed_or_merged_pull_request_means_a_fresh_branch_under_a_new_name(
+    repo: dict[str, Path], tmp_path: Path, pr: dict[str, Any], why: str
+) -> None:
+    pushed_attempt(repo)
+    git(repo["a"], "push", "-q", "origin", f"{TASK['branch']}:{TASK['branch']}-a2")  # -a2 is taken: the next free name
+    env = make_env(repo["b"], tmp_path, "b", run=OfflineGh([{"number": 94, **pr}]))
+    env.read_state()
+    prep = env.prepare_branch(TASK, 2)
+    assert prep["branch"] == f"{TASK['branch']}-a3" and prep["base"] == "main" and prep["renamed_from"] == TASK["branch"]
+    assert prep["why"] == why and git(repo["b"], "rev-parse", f"refs/heads/{TASK['branch']}-a3") == env.main_head()
+
+
+def test_a_conflict_with_main_means_a_fresh_branch_and_the_stale_pull_request_closed(repo: dict[str, Path], tmp_path: Path) -> None:
+    first = pushed_attempt(repo, "README.md", "attempt one's readme\n")
+    move_main(repo, "main's own readme\n")
+    gh = OfflineGh([{"number": 94, "state": "open", "merged_at": None}])
+    env = make_env(repo["b"], tmp_path, "b", run=gh)
+    env.read_state()
+    prep = env.prepare_branch(TASK, 2)
+    assert prep["branch"] == f"{TASK['branch']}-a2" and prep["base"] == "main" and prep["closed_pr"] == 94
+    assert prep["why"] == "merging main into it conflicted"
+    assert ["gh", "api", "-X", "PATCH", "repos/fake-owner/fake-repo/pulls/94", "-f", "state=closed"] in gh.calls
+    comment = next(c for c in gh.calls if c[2] == "repos/fake-owner/fake-repo/issues/94/comments")
+    assert f"`{TASK['branch']}-a2`" in comment[-1] and "kept for evidence" in comment[-1]
+    assert git(repo["origin"], "rev-parse", TASK["branch"]) == first  # the old branch stays, never forced
+
+
+def test_the_handoff_says_the_branch_is_made_and_must_not_be_recreated() -> None:
+    state = st.claim(st.with_task(st.new_state(), "K10"), "K10", "a", NOW)
+    cfg = SimpleNamespace(session="a", graph=[TASK], models=MODELS)
+    prep = {"branch": TASK["branch"], "branch_ready": True, "base": f"origin/{TASK['branch']}"}
+    env = SimpleNamespace(last_state=state, dry_run=True, branch_for=lambda tid: TASK["branch"], prepared=prep)
+    info = entry.write_handoff(cfg, env)  # type: ignore[arg-type]  # reason: a stand-in for Config and GitHubEnv
+    assert info["branch_ready"] is True and info["base"] == f"origin/{TASK['branch']}"
+    assert f"`git switch {TASK['branch']}`" in info["branch_note"] and "never create, reset or rebase it" in info["branch_note"]
+    assert "earlier attempt's work" in info["branch_note"]
+    moved = dict(prep, base="main", renamed_from="claude/task/K10-old", why="its pull request was closed")
+    assert "claude/task/K10-old is kept for evidence: its pull request was closed" in entry.branch_note(moved)
+    assert entry.write_handoff(cfg, SimpleNamespace(**{**vars(env), "prepared": {}}))["branch_note"] == ""  # type: ignore[arg-type]  # reason: as above
+
+
+def test_requeue_command_moves_a_blocked_task_through_update_state(repo: dict[str, Path], tmp_path: Path) -> None:
+    env = make_env(repo["a"], tmp_path)
+    env.update_state(lambda s: st.with_task(s, "K10", status=st.BLOCKED, attempts=3, reason="branch push rejected"))
+    cfg = live_config("manual-1", tmp_path, env)
+    assert entry.requeue_task(entry.parse_args(["--requeue", "K10"]), cfg, env) == "requeue_refused: --reason is empty"
+    args = entry.parse_args(["--requeue", "K10", "--reason", "the branch is fixed"])
+    assert entry.requeue_task(args, cfg, env) == "requeued"
+    task = st.entry(json.loads(origin_file(repo, "claude/kit-state", "kit/state.json")), "K10")
+    assert task["status"] == st.QUEUED and task["attempts"] == 2 and task["reason"] is None
+    assert task["requeues"][0]["reason"] == "the branch is fixed" and task["requeues"][0]["by"] == "manual-1"
+    assert entry.requeue_task(args, cfg, env) == "requeue_refused: K10 is QUEUED, not BLOCKED"
+    assert entry.requeue_task(entry.parse_args(["--requeue", "FIX-MAIN", "--reason", "x"]), cfg, env).startswith("requeue_refused:")
 
 
 def test_after_from_a_session_without_the_lease_is_refused(repo: dict[str, Path], tmp_path: Path) -> None:

@@ -14,6 +14,10 @@ line of JSON with what changed.
   python3 -m runner --renew         renew this session's lease (every 30 minutes while working)
   python3 -m runner --record-proof N --evidence TEXT
                                     record stage N's named proof for scripts/stage_exit.py
+  python3 -m runner --requeue T### --reason TEXT
+                                    move a BLOCKED task back to QUEUED with at least one attempt left
+                                    (refused for FIX-MAIN, a task that is not BLOCKED, or one holding a
+                                    live lease; recorded in the task's `requeues`, D-583)
   --dry-run                         compute everything, push nothing, run no smoke test or worker
   --session ID                      the lease's session (default: the hand-off file, RUNNER_SESSION,
                                     or <starter>-<GITHUB_RUN_ID or random>)
@@ -73,6 +77,8 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--reviewer-agent", action="append", default=[])
     ap.add_argument("--record-proof")
     ap.add_argument("--evidence", default="")
+    ap.add_argument("--requeue")
+    ap.add_argument("--reason", default="")
     return ap.parse_args(argv)
 
 
@@ -199,6 +205,33 @@ def record_proof(args: argparse.Namespace, env: GitHubEnv) -> str:
     return "proof_recorded" if env.push_state(dict(state, stage_proofs=proofs), state) else "lost_race"
 
 
+def requeue_task(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
+    """`--requeue T### --reason TEXT`: BLOCKED to QUEUED through update_state, which re-reads and
+    re-checks on a lost race, so nobody edits claude/kit-state by hand (D-583)."""
+    tid, reason = str(args.requeue), args.reason.strip()
+    if not reason:
+        return "requeue_refused: --reason is empty"
+    why = cycle.requeue_refusal(env.read_state(), tid, now_utc())
+    if why:
+        return f"requeue_refused: {why}"
+    done = env.update_state(lambda fresh: cycle.requeue(fresh, tid, reason, now_utc(), cfg.session))
+    if done is None:
+        later = cycle.requeue_refusal(env.read_state(), tid, now_utc())
+        return f"requeue_refused: {later}" if later else "lost_race"
+    return "requeued"
+
+
+def branch_note(prep: dict[str, Any]) -> str:
+    """What the session must do with the branch prepare_branch made (D-583), '' when it made none."""
+    if not prep.get("branch_ready"):
+        return ""
+    name = prep["branch"]
+    where = "the latest main" if prep.get("base") == "main" else f"origin/{name} (the earlier attempt's work) with the latest main merged in"
+    moved = f" The old branch {prep['renamed_from']} is kept for evidence: {prep.get('why')}." if prep.get("renamed_from") else ""
+    return (f"The runner made the local branch {name} from {where}.{moved} Run `git switch {name}` and commit there; "
+            "never create, reset or rebase it, whatever step 6 of the prompt's start routine says (D-583).")
+
+
 def _prompt_for(task: dict[str, Any], tid: str) -> str:
     """The prompt file, or for FIX-MAIN (which has no file under kit/prompts) its goal text itself (D-501)."""
     path = str(task.get("prompt", f"kit/prompts/{tid}.md"))
@@ -216,6 +249,9 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         "model": cycle.attempt_model(task, int(task.get("attempts", 0)), cfg.models) if task.get("model") else None,
         "reviewer_model": task.get("reviewer_model"), "last_failure": task.get("last_failure"), "goal": task.get("goal"),
         "decision_ids": list(task.get("decision_ids") or []),  # number new decision entries from these, in order (D-530)
+        # The branch is already made, on top of an earlier pushed attempt when there is one: never recreate it (D-583).
+        "branch_ready": bool(env.prepared.get("branch_ready")), "base": env.prepared.get("base"),
+        "branch_note": branch_note(env.prepared),
     }
     if not env.dry_run:
         (ROOT / HANDOFF).write_text(json.dumps(info), encoding="utf-8")
@@ -233,6 +269,8 @@ def run(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
         return renew(cfg, env)
     if args.record_proof:
         return record_proof(args, env)
+    if args.requeue:
+        return requeue_task(args, cfg, env)
     return cycle.run_cycle(cfg, env, now_utc())
 
 

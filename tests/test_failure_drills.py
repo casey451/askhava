@@ -58,6 +58,9 @@ class FakeEnv:
         self.auto_merges: list[tuple[str, str]] = []
         self.main_merges = 0
         self.main_commits: set[str] = set()  # older commits of main, besides its head (D-551)
+        self.rejection = ""  # the git output of a rejected branch push (D-583)
+        self.prep: dict[str, Any] = {}  # what prepare_branch reports making (D-583)
+        self.prepared_for: list[tuple[str, int]] = []
 
     def read_state(self) -> st.State:
         return copy.deepcopy(self.store)
@@ -118,6 +121,13 @@ class FakeEnv:
     def push_branch(self, branch: str, head_sha: str) -> bool:
         self.branch_pushes.append((branch, head_sha))
         return True
+
+    def push_rejection(self) -> str:
+        return self.rejection
+
+    def prepare_branch(self, task: dict[str, Any], attempt: int) -> dict[str, Any]:
+        self.prepared_for.append((task["id"], attempt))
+        return copy.deepcopy(self.prep)
 
     def enable_auto_merge(self, branch: str, head_sha: str) -> tuple[bool, str]:
         self.auto_merges.append((branch, head_sha))
@@ -1194,3 +1204,86 @@ def test_an_empty_hand_in_is_never_blamed_for_a_red_main() -> None:
     state = st.with_task(st.new_state(), "T007", status=st.DONE, merged_sha="m7", merged_at="2026-11-01T10:00:00Z", files=["a"])
     state = st.with_task(state, "T008", status=st.DONE, merged_sha="m7", merged_at="2026-11-01T11:00:00Z", files=[], empty_handin=True)
     assert cycle.offending_merge(state) == ("T007", "m7", ["a"])
+
+
+# ---- D-583: a retry builds on the pushed attempt; an honest non-fast-forward; --requeue
+
+
+def test_drill_a_renamed_branch_is_recorded_before_the_worker_runs(tmp_path: Path) -> None:
+    """The old pull request was closed (or main conflicted): prepare_branch made `<branch>-a2`. The task's
+    `branch` is recorded under the lease before the worker starts, and the worker is told the branch is made."""
+    seen: list[tuple[dict[str, Any], str | None]] = []
+    env = FakeEnv(lambda t, m, log: seen.append((t, st.entry(env.store, "T001").get("branch"))) or cycle.WorkerResult("handed_off"))
+    env.prep = {"branch": "claude/task/T001-x-a2", "branch_ready": True, "base": "main", "renamed_from": "claude/task/T001-x",
+                "why": "its pull request was closed"}
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == "handed_off"
+    task, recorded = seen[0]
+    assert recorded == "claude/task/T001-x-a2" and task["branch"] == "claude/task/T001-x-a2" and task["branch_prep"]["branch_ready"]
+    assert env.prepared_for == [("T001", 1)] and st.status(env.store, "T001") == st.IN_PROGRESS
+
+
+def test_drill_a_retry_is_prepared_with_its_attempt_number(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("handed_off"))
+    env.store = st.with_task(st.sync_graph(env.store, [make_task("T001")]), "T001", attempts=1, last_failure="Ci: failure")
+    env.prep = {"branch": "claude/task/T001-x", "branch_ready": True, "base": "origin/claude/task/T001-x"}
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == "handed_off"
+    assert env.prepared_for == [("T001", 2)] and "branch" not in st.entry(env.store, "T001")  # same name: nothing recorded
+
+
+def test_drill_a_non_fast_forward_push_is_a_failed_attempt_not_a_credential_block(tmp_path: Path) -> None:
+    """T167, October 30, 2026: attempt 2 rebuilt the branch from main and its push was rejected as a
+    non-fast-forward; the runner blamed the credential and BLOCKED the task. Now it is a failed attempt
+    whose reason says what happened, the lease is freed, and the next attempt starts from origin's branch."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001"), make_task("T002")], tmp_path)
+    env.push_branch = lambda branch, head: False  # type: ignore[method-assign]  # reason: a rejected push
+    env.rejection = "To https://github.com/o/r.git\n!\tgood0001:refs/heads/claude/task/T001-x\t[rejected] (non-fast-forward)"
+    assert cycle.run_cycle(cfg, env, NOW) == "push_failed"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.QUEUED and t1["attempts"] == 1 and t1["last_failure"] == cycle.PUSH_NOT_FAST_FORWARD
+    assert "credential" not in t1["last_failure"] and env.store["lease"] is None
+    env.rejection = "!\tgood0001:refs/heads/claude/task/T001-x\t[rejected] (fetch first)"
+    env.store = st.with_task(env.store, "T001", attempts=2)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == "push_failed"
+    assert st.status(env.store, "T001") == st.BLOCKED  # the last attempt failed: the normal ladder ends BLOCKED
+
+
+def test_drill_a_credential_rejection_still_blocks_and_names_the_requeue_command(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    env.push_branch = lambda branch, head: False  # type: ignore[method-assign]  # reason: a rejected push
+    env.rejection = "remote: Permission to o/r.git denied to fake-app."
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == "push_failed"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.BLOCKED and "fix the push credential" in t1["reason"] and "Permission to o/r.git denied" in t1["reason"]
+    assert "--requeue" in t1["reason"] and t1.get("attempts", 0) == 0
+
+
+def _blocked(attempts: int) -> st.State:
+    state = st.sync_graph(st.new_state(), [make_task("T001"), make_task("T002")])
+    return st.with_task(state, "T001", status=st.BLOCKED, attempts=attempts, reason="branch push rejected")
+
+
+def test_requeue_gives_an_exhausted_task_exactly_one_more_attempt_on_opus() -> None:
+    out = cycle.requeue(_blocked(3), "T001", "push credential fixed", NOW, "manual-1")
+    assert out is not None
+    t1 = st.entry(out, "T001")
+    assert t1["status"] == st.QUEUED and t1["reason"] is None and t1["attempts"] == cycle.MAX_ATTEMPTS - 1
+    assert cycle.attempt_model(make_task("T001"), t1["attempts"], MODELS) == MODELS["opus"]
+    assert t1["requeues"] == [{"at": st.iso(NOW), "reason": "push credential fixed", "by": "manual-1",
+                               "was": "branch push rejected", "attempts_before": 3}]
+    assert st.eligible(out, NOW)[0] == "T001"
+    assert st.status(cycle.record_failure(out, "T001", "again"), "T001") == st.BLOCKED  # exactly one attempt was left
+    early = cycle.requeue(_blocked(1), "T001", "x", NOW, "m")
+    assert early is not None and st.entry(early, "T001")["attempts"] == 1  # never takes attempts away
+
+
+def test_requeue_refuses_what_it_must_not_move() -> None:
+    assert cycle.requeue_refusal(_blocked(3), "T002", NOW) == "T002 is QUEUED, not BLOCKED"
+    assert cycle.requeue_refusal(_blocked(3), "T999", NOW) == "no task T999 in the state"
+    fix = st.with_task(_blocked(3), st.FIX_MAIN, status=st.BLOCKED, reason="revert failed")
+    assert cycle.requeue_refusal(fix, st.FIX_MAIN, NOW).startswith("FIX-MAIN is never re-queued")
+    held = st.with_lease(_blocked(3), st.LANE_ONE, {"task": "T001", "session": "s9", "expires": st.iso(NOW + timedelta(hours=1))})
+    assert cycle.requeue_refusal(held, "T001", NOW) == "T001 holds a live lease"
+    expired = st.with_lease(_blocked(3), st.LANE_ONE, {"task": "T001", "session": "s9", "expires": st.iso(NOW - timedelta(hours=1))})
+    assert cycle.requeue_refusal(expired, "T001", NOW) == ""
+    assert cycle.requeue(held, "T001", "x", NOW, "m") is None and cycle.requeue(_blocked(3), "T002", "x", NOW, "m") is None

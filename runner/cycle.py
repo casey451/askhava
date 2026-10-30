@@ -18,6 +18,10 @@ WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes")
 # An empty hand-in (no commits on top of main): GitHub opens no pull request for it, so it can never
 # merge. Only a cleanup task may legitimately find nothing to change (D-551).
 NO_CHANGES = "no changes: the hand-in has no commits on top of main (only a cleanup task may hand in nothing, D-551)"
+# A branch push rejected as not a fast-forward is the attempt's fault, never the credential's (D-583).
+PUSH_NOT_FAST_FORWARD = ("branch push rejected as not a fast-forward: the remote task branch has commits this attempt "
+                         "did not build on (the next attempt starts from it, D-583)")
+REQUEUE_HINT = 'run `python3 -m runner --requeue <task> --reason "..."` (D-583)'
 
 
 @dataclass
@@ -92,6 +96,17 @@ class Env(Protocol):
 
     def push_branch(self, branch: str, head_sha: str) -> bool:
         """Push the reviewed task branch (never force); called only after the review record is pushed."""
+        ...
+
+    def push_rejection(self) -> str:
+        """The git output of the last rejected push_branch, '' when none or unknown (D-583)."""
+        ...
+
+    def prepare_branch(self, task: dict[str, Any], attempt: int) -> dict[str, Any]:
+        """Make the local task branch the attempt works on before the worker starts: on top of origin's
+        task branch (main merged in) when an earlier attempt pushed one, else from main; a new name when
+        that branch's pull request was closed or merged or main does not merge cleanly. Returns what it
+        made ({"branch", "branch_ready", "base", "renamed_from"?, ...}), {} when it made nothing (D-583)."""
         ...
 
     def enable_auto_merge(self, branch: str, head_sha: str) -> tuple[bool, str]:
@@ -666,12 +681,44 @@ def _work(cfg: Config, env: Env, claimed: State, task: dict[str, Any], now: date
     answers = {d: a for d in task.get("deps", []) if (a := st.entry(claimed, d).get("answer"))}
     if answers:
         task = dict(task, gate_answers=answers)  # a conditional gate's yes or no reaches its dependent task (T170)
-    res = env.run_worker(task, model, str(entry.get("last_failure", "")), heartbeat)
+    prepared = _prepare_branch(cfg, env, current, task, lane)
+    if prepared is None:
+        return "lost_race"  # the lease is not this session's any more: write nothing else (D-515)
+    res = env.run_worker(prepared, model, str(entry.get("last_failure", "")), heartbeat)
     if res.outcome == "handed_off":
         return "handed_off"  # the session works the task and calls `python3 -m runner --after`
     if current["lost"]:
         return "lost_race"  # the lease may belong to another session now: write nothing (D-515)
     return finish(cfg, env, current["state"], task, res, model, now)
+
+
+def _prepare_branch(cfg: Config, env: Env, current: dict[str, Any], task: dict[str, Any], lane: str) -> dict[str, Any] | None:
+    """The task as the worker gets it, after env.prepare_branch made its local branch (D-583).
+
+    A retry continues the branch an earlier attempt pushed, so its push fast-forwards. A new branch
+    name (the old pull request was closed or merged, or main did not merge cleanly) is recorded as the
+    task's `branch` while this session holds the lease, so `--after` and auto-merge use it; None when
+    that write finds the lease gone."""
+    tid = task["id"]
+    prep = env.prepare_branch(task, int(st.entry(current["state"], tid).get("attempts", 0)) + 1)
+    if prep.get("renamed_from"):
+        renamed = env.update_state(_branch_record(tid, lane, cfg, str(prep["branch"])))
+        if renamed is None:
+            return None
+        current["state"] = renamed
+    return dict(task, branch=prep["branch"], branch_prep=prep) if prep else task
+
+
+def _branch_record(tid: str, lane: str, cfg: Config, branch: str) -> Callable[[State], State | None]:
+    """The transform that records a renamed task branch, only while this session holds the lane's live lease."""
+
+    def apply(fresh: State) -> State | None:
+        held = st.live_lease(fresh, cfg.clock(), lane) or {}
+        if held.get("task") != tid or held.get("session") != cfg.session:
+            return None
+        return st.with_task(fresh, tid, branch=branch)
+
+    return apply
 
 
 def _history_entry(state: State, task: dict[str, Any], res: WorkerResult, model: str, cfg: Config) -> dict[str, Any]:
@@ -804,16 +851,53 @@ def _put_task(state: State, task: dict[str, Any]) -> State:
 
 
 def _push_failed(env: Env, state: State, tid: str, lane: str = st.LANE_ONE, head: str | None = None) -> str:
-    """A rejected branch push is a credential or permission problem, not the worker's: retrying would
-    spend a whole attempt to fail the same way. The task is BLOCKED with the reason (only its dependents
-    wait), the lease is released at once and the build moves on; a person fixes the cause and re-queues
-    the task (D-513). With no head at all the push was refused before it ran, because git could not
-    read the branch or main; that gets its own reason (D-551)."""
-    reason = "branch push rejected; fix the push credential, then set the task back to QUEUED"
+    """A rejected branch push, with the lease released at once either way.
+
+    Rejected as not a fast-forward (origin's task branch has commits the attempt did not build on): a
+    failed attempt on the normal retry ladder, since the next attempt starts from origin's branch
+    (prepare_branch, D-583). Any other rejection is a credential or permission problem, not the
+    worker's: retrying would spend a whole attempt to fail the same way, so the task is BLOCKED (only
+    its dependents wait) until a person fixes the cause and re-queues it with `--requeue` (D-513). With
+    no head at all the push was refused before it ran, because git could not read the branch or main;
+    that gets its own reason (D-551)."""
+    why = env.push_rejection()
+    if head and ("non-fast-forward" in why or "fetch first" in why):
+        failed = st.with_lease(record_failure(state, tid, PUSH_NOT_FAST_FORWARD), lane, None)
+        return "push_failed" if env.push_state(failed, state) else "lost_race"
+    reason = f"branch push rejected ({why or 'no reason given'}); fix the push credential or permission, then {REQUEUE_HINT}"
     if head == "":
-        reason = "no head to push: git could not read the task branch or main; fix that, then set the task back to QUEUED"
-    blocked = st.with_lease(st.with_task(state, tid, status=st.BLOCKED, reason=reason), lane, None)
+        reason = f"no head to push: git could not read the task branch or main; fix that, then {REQUEUE_HINT}"
+    blocked = st.with_lease(st.with_task(state, tid, status=st.BLOCKED, reason=reason[:600]), lane, None)
     return "push_failed" if env.push_state(blocked, state) else "lost_race"
+
+
+def requeue_refusal(state: State, tid: str, now: datetime) -> str:
+    """Why `python3 -m runner --requeue` must not move this task, '' when it may (D-583)."""
+    if tid == st.FIX_MAIN:
+        return "FIX-MAIN is never re-queued by hand; it clears only with main (docs/governance.md section 5)"
+    if not any(t["id"] == tid for t in state.get("tasks", [])):
+        return f"no task {tid} in the state"
+    if st.status(state, tid) != st.BLOCKED:
+        return f"{tid} is {st.status(state, tid)}, not BLOCKED"
+    if any(lease.get("task") == tid for lease in st.live_leases(state, now).values()):
+        return f"{tid} holds a live lease"
+    return ""
+
+
+def requeue(state: State, tid: str, reason: str, now: datetime, by: str) -> State | None:
+    """BLOCKED to QUEUED with `reason` cleared and at least one attempt left (D-583); None when refused.
+
+    `attempts` drops to at most MAX_ATTEMPTS - 1, so an exhausted task gets exactly one more attempt,
+    on Opus (attempt_model), and a task blocked early keeps the attempts it had. The re-queue is kept
+    in the task's `requeues` list (when, why, by whom, the old reason and attempt count); `history`
+    holds attempts only."""
+    if requeue_refusal(state, tid, now):
+        return None
+    entry = st.entry(state, tid)
+    before = int(entry.get("attempts", 0))
+    note = {"at": st.iso(now), "reason": reason, "by": by, "was": entry.get("reason"), "attempts_before": before}
+    return st.with_task(state, tid, status=st.QUEUED, reason=None, attempts=min(before, MAX_ATTEMPTS - 1),
+                        requeues=[*entry.get("requeues", []), note])
 
 
 def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], WorkerResult]) -> str:
