@@ -908,13 +908,27 @@ def _note_fallback(cfg: Config, before: State, after: State) -> None:
 
 def refill_lanes(cfg: Config, state: State, now: datetime) -> list[str]:
     """The free lanes a new run should be started for, at most one per task that could be claimed beside
-    the tasks in flight (pacing aside); the backup-runner chain step dispatches one run per lane (D-620)."""
+    the tasks in flight; the backup-runner chain step dispatches one run per lane (D-620). None while the
+    pacer's last decision is still a wait (`pacing.waiting_until` in the future): nothing fits the usage
+    windows then, so a started run would only report `paced` (D-723)."""
     free = lanes.free_lanes(cfg.lanes, state, now)
-    if not free:
+    if not free or _pacer_waiting(state, now):
         return []
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked)
     return free[: len(ready)]
+
+
+def _pacer_waiting(state: State, now: datetime) -> bool:
+    """True while the recorded pacing decision is a wait whose `waiting_until` is still ahead (D-723)."""
+    pace = state.get("pacing") or {}
+    until = pace.get("waiting_until")
+    if pace.get("decision") != "wait" or not isinstance(until, str):
+        return False
+    try:
+        return st.parse(until) > now
+    except ValueError:
+        return False
 
 
 def _open_gate_p(cfg: Config, state: State) -> State | None:
