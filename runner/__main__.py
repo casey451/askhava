@@ -15,9 +15,10 @@ line of JSON with what changed.
   python3 -m runner --record-proof N --evidence TEXT
                                     record stage N's named proof for scripts/stage_exit.py
   python3 -m runner --requeue T### --reason TEXT
-                                    move a BLOCKED task back to QUEUED with at least one attempt left
-                                    (refused for FIX-MAIN, a task that is not BLOCKED, or one holding a
-                                    live lease; recorded in the task's `requeues`, D-583)
+                                    move a task BLOCKED outside its own work (push, no head,
+                                    permission, stage proof) back to QUEUED, attempts unchanged and
+                                    the reason as its last_failure (refused for FIX-MAIN, a task out of
+                                    attempts, or while any lease is live; recorded in `requeues`, D-583)
   --dry-run                         compute everything, push nothing, run no smoke test or worker
   --session ID                      the lease's session (default: the hand-off file, RUNNER_SESSION,
                                     or <starter>-<GITHUB_RUN_ID or random>)

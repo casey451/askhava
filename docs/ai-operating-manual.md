@@ -96,7 +96,7 @@ A session can die at any moment (usage limit, timeout, compaction). Design every
 - the runner's lease expires on its own; a stale branch stays for evidence; a lost push means another runner won: exit;
 - never hold work only in memory: commit to your task branch early and often (the auto-pr workflow only opens a pull request on the first push, and `Ci` runs on every push);
 - if you find a task branch for your task that you did not create, read its last commit and its `Ci` result before deciding whether to continue it or start over; say which in `PROGRESS.md`. When the runner's hand-off says `branch_ready`, the runner made the branch for you (on top of an earlier attempt's pushed work, with `main` merged in, when there is one): switch to it and never create, reset or rebase it, because the runner never force-pushes and a branch rebuilt from `main` cannot be pushed (D-583);
-- a BLOCKED task goes back to the queue only through `python3 -m runner --requeue T### --reason "..."` once its cause is fixed, never by editing `claude/kit-state` (D-583);
+- a task BLOCKED by something outside its own work (a rejected push, no head, a permission block, a missing stage proof) goes back to the queue only through `python3 -m runner --requeue T### --reason "..."` once its cause is fixed, never by editing `claude/kit-state`; it keeps its attempt count and waits while any lease is live (D-583);
 - if `kit/state.json` and the repository disagree (a task DONE whose files are not on `main`), stop and write an outbox message: that is a hands-on stop.
 
 ## 9. Reporting

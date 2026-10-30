@@ -88,6 +88,12 @@ BEST_EFFORT_ERRORS = (RuntimeError, ValueError, TypeError, AttributeError, KeyEr
 NOT_BUILT_ON = ("the hand-in does not build on origin/{branch}: the remote task branch has commits this attempt "
                 "did not build on, so its push cannot fast-forward (D-583)")
 JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the job token (D-502, D-582)
+# The comments on a pull request the runner closes while preparing a retry's branch (D-583).
+AUTO_MERGE_NOTE = ("Closed by the runner before the next attempt: auto-merge was on for `{branch}`, so a push of "
+                   "unreviewed work could have merged. The attempt continues on this branch; the runner opens a "
+                   "fresh pull request after its review (D-583).")
+CONFLICT_NOTE = ("Closed by the runner: merging main into `{branch}` conflicted, so the next attempt starts fresh "
+                 "from main on `{new}` (D-583). This branch is kept for evidence.")
 
 
 def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
@@ -207,12 +213,12 @@ def log_excerpt(text: str, lines: int = EXCERPT_LINES) -> list[str]:
         return []
     start = max((i for i in range(end) if rows[i].startswith("##[group]Run ")), default=0)
     kept: list[str] = []
-    inside = False
+    depth = 0  # a counter, not a toggle: a group opened inside a group never ends the outer one early
     for row in rows[start:end + 1]:
         if row.startswith(("##[group]", "##[endgroup]")):
-            inside = row.startswith("##[group]")
+            depth = depth + 1 if row.startswith("##[group]") else max(depth - 1, 0)
             continue
-        if not inside and row.strip():
+        if not depth and row.strip():
             kept.append(TOKEN_LIKE.sub("[redacted]", row)[:EXCERPT_WIDTH])
     return kept[-lines:]
 
@@ -231,6 +237,16 @@ def fit_failure_log(base: str, details: list[tuple[str, list[str]]], cap: int = 
             rows.pop(0)
         parts.append("\n".join([header, *rows])[:left])
     return "\n".join(parts)
+
+
+def _pr_gone(pr: dict[str, Any], runner_closed: list[int]) -> str:
+    """'merged' or 'closed' when the branch's latest pull request ended it, '' when the branch can be
+    continued: no pull request, an open one, or one the runner closed itself to drop auto-merge (D-583)."""
+    if pr.get("merged_at"):
+        return "merged"
+    if pr.get("state") == "closed" and int(pr.get("number", 0)) not in runner_closed:
+        return "closed"
+    return ""
 
 
 def _job_id(run: dict[str, Any]) -> str | None:
@@ -813,46 +829,85 @@ class GitHubEnv:
 
     # ---- the branch an attempt works on (D-583)
 
-    def prepare_branch(self, task: dict[str, Any], attempt: int) -> dict[str, Any]:
+    def prepare_branch(self, task: dict[str, Any], attempt: int, session: str) -> dict[str, Any]:
         """Make the local task branch before the worker starts, so a retry builds on what an earlier
         attempt pushed and its push fast-forwards (the runner never force-pushes, BUILD_BRIEF.md:303).
 
         - origin has no task branch: the branch starts at main;
-        - origin has it and its pull request is open (or there is none): the branch starts at origin's
-          tip with main merged in (a normal merge commit; none when main is already in it);
-        - its pull request was merged or closed, or merging main conflicts: a fresh branch from main
-          under a new name (`<branch>-a<attempt>`); on a conflict the open pull request is closed with
-          a comment, and the old branch stays for evidence.
-        Returns {"branch", "branch_ready": True, "base", "base_sha", ...}, also kept as `prepared` for the
-        hand-off; {} in a dry run or when git or the API fails (the attempt then goes on as before, and
-        collect_result still refuses a hand-in that does not build on origin's branch)."""
+        - origin has it and its latest pull request is open, absent, or one the runner closed itself to
+          drop auto-merge: the branch starts at origin's tip with main merged in (a normal merge commit;
+          none when main is already in it). An open pull request with auto-merge on is closed with a
+          comment first, so no push of unreviewed work can merge; the runner opens a fresh one after
+          review (`_open_pr`), and the closed number is recorded in the task's `runner_closed_prs`;
+        - its pull request was merged or closed by someone, its pull requests cannot be read, the
+          auto-merge one cannot be closed, or merging main conflicts: a fresh branch from main under a
+          new name (`<branch>-a<attempt>`); on a conflict the open pull request is closed with a
+          comment, and the old branch stays for evidence.
+        A pull request is closed only while `session` holds the task's live lease. Returns {"branch",
+        "branch_ready": True, "base", "base_sha", ...}, also kept as `prepared` for the hand-off; {} in a
+        dry run or when git fails (the attempt then goes on as before, and collect_result still refuses
+        a hand-in that does not build on origin's branch)."""
         self.prepared = {}
         if self.dry_run:
             return {}
         branch = self.branch_for(task["id"])
         try:
-            self.prepared = self._prepare(task, branch, attempt)
+            self.prepared = self._prepare(task, branch, attempt, session)
         except BEST_EFFORT_ERRORS as exc:
             self.log.append(f"branch {branch} not prepared: {str(exc)[:200]}")
         return self.prepared
 
-    def _prepare(self, task: dict[str, Any], branch: str, attempt: int) -> dict[str, Any]:
+    def _prepare(self, task: dict[str, Any], branch: str, attempt: int, session: str) -> dict[str, Any]:
         main = self.main_head()
         if not main:
             raise RuntimeError("main is unreadable")
-        remote = self._fetch(branch)
+        remote = self._remote_tip(branch)
         if remote is None:
             return self._fresh(branch, main)
-        pr_state = self._pr_state(branch)
-        if pr_state in ("merged", "closed"):
-            return self._fresh(self._new_name(task, attempt), main, renamed_from=branch, why=f"its pull request was {pr_state}")
+        pr = self._latest_pr(branch)
+        gone = "unreadable" if pr is None else _pr_gone(pr, self._runner_closed(task["id"]))
+        if gone:
+            return self._fresh(self._new_name(task, attempt), main, renamed_from=branch, why=f"its pull request was {gone}")
         tip = remote if self._is_ancestor(main, remote) else self._merge_main(branch, remote, main)
         if tip is None:
             new = self._new_name(task, attempt)
-            closed = self._close_stale_pr(branch, new)
+            closed = self._close_open_pr(branch, CONFLICT_NOTE.format(branch=branch, new=new), task["id"], session)
             return self._fresh(new, main, renamed_from=branch, why="merging main into it conflicted", closed_pr=closed)
+        extra: dict[str, Any] = {}
+        if pr and pr.get("state") == "open" and pr.get("auto_merge"):
+            dropped = self._close_open_pr(branch, AUTO_MERGE_NOTE.format(branch=branch), task["id"], session)
+            if dropped is None:
+                why = "its open pull request has auto-merge on and could not be closed"
+                return self._fresh(self._new_name(task, attempt), main, renamed_from=branch, why=why)
+            extra["dropped_pr"] = dropped
         self.git("branch", "-f", branch, tip)
-        return {"branch": branch, "branch_ready": True, "base": f"origin/{branch}", "base_sha": tip, "remote_sha": remote}
+        return {"branch": branch, "branch_ready": True, "base": f"origin/{branch}", "base_sha": tip, "remote_sha": remote, **extra}
+
+    def _remote_has(self, branch: str) -> bool:
+        """Whether origin has the branch (`git ls-remote --exit-code`: 0 yes, 2 no). Any other answer
+        raises, so a branch git could not see is never taken for absent or for a free name (D-583)."""
+        code, _, err = self._run(["git", "ls-remote", "--exit-code", "origin", f"refs/heads/{branch}"], None, self.root)
+        if code not in (0, 2):
+            raise RuntimeError(f"git ls-remote for {branch} failed (exit {code}): {err.strip()[:200]}")
+        return code == 0
+
+    def _remote_tip(self, branch: str) -> str | None:
+        """origin's tip of the branch, fetched so git can merge it; None only when origin lacks it."""
+        if not self._remote_has(branch):
+            return None
+        tip = self._fetch(branch)
+        if tip is None:
+            raise RuntimeError(f"git fetch of {branch} failed")
+        return tip
+
+    def _runner_closed(self, task_id: str) -> list[int]:
+        """The pull requests the runner closed itself to drop auto-merge (`runner_closed_prs`, D-583)."""
+        return [int(n) for n in st.entry(self.last_state or {"tasks": []}, task_id).get("runner_closed_prs") or []]
+
+    def _holds_lease(self, task_id: str, session: str) -> bool:
+        """Whether, on a fresh read, `session` holds a live lease on the task."""
+        fresh = self.read_state()
+        return any(l.get("task") == task_id and l.get("session") == session for l in st.live_leases(fresh, self.clock()).values())
 
     def _fresh(self, name: str, main: str, **extra: Any) -> dict[str, Any]:
         self.git("branch", "-f", name, main)
@@ -873,19 +928,15 @@ class GitHubEnv:
         message = f"Merge main into {branch} for the next attempt (D-583)"
         return self.git("commit-tree", tree, "-p", remote, "-p", main, "-m", message, env=self._identity())
 
-    def _pr_state(self, branch: str) -> str | None:
-        """'open', 'closed' or 'merged' for the branch's latest pull request; None when it has none or
-        the API cannot say (the branch is then continued)."""
+    def _latest_pr(self, branch: str) -> dict[str, Any] | None:
+        """The branch's latest pull request ({} when it has none); None when the API cannot say."""
         owner = self.repo.split("/")[0]
         try:
             pulls = self.gh_json(f"repos/{self.repo}/pulls?head={owner}:{branch}&state=all&per_page=20")
         except (RuntimeError, ValueError) as exc:
             self.log.append(f"pull requests for {branch} unreadable: {str(exc)[:200]}")
             return None
-        if not pulls:
-            return None
-        pr = max(pulls, key=lambda p: int(p["number"]))
-        return "merged" if pr.get("merged_at") else str(pr.get("state"))
+        return dict(max(pulls, key=lambda p: int(p["number"]))) if pulls else {}
 
     def _new_name(self, task: dict[str, Any], attempt: int) -> str:
         """`<the task's branch>-a<n>` for the first n from the attempt number that origin does not have."""
@@ -893,12 +944,13 @@ class GitHubEnv:
         base = str(known or f"claude/task/{task['id']}")
         first = max(attempt, 2)
         for n in range(first, first + 10):
-            if self._fetch(f"{base}-a{n}") is None:
+            if not self._remote_has(f"{base}-a{n}"):
                 return f"{base}-a{n}"
         raise RuntimeError(f"no free branch name up to {base}-a{first + 9}")
 
-    def _close_stale_pr(self, branch: str, new: str) -> int | None:
-        """Close the branch's open pull request with a comment saying where the work went (REST)."""
+    def _close_open_pr(self, branch: str, body: str, task_id: str, session: str) -> int | None:
+        """Close the branch's open pull request with a comment (REST), only while `session` still holds
+        the task's live lease; its number, or None when there was none or it could not be closed."""
         owner = self.repo.split("/")[0]
         try:
             pulls = self.gh_json(f"repos/{self.repo}/pulls?head={owner}:{branch}&state=open")
@@ -907,12 +959,13 @@ class GitHubEnv:
         if not pulls:
             return None
         number = int(pulls[0]["number"])
-        body = (f"Closed by the runner: merging main into `{branch}` conflicted, so the next attempt starts fresh "
-                f"from main on `{new}` (D-583). This branch is kept for evidence.")
+        if not self._holds_lease(task_id, session):
+            self.log.append(f"pull request #{number} left open: {session} no longer holds the lease on {task_id}")
+            return None
         self._run(["gh", "api", f"repos/{self.repo}/issues/{number}/comments", "-f", f"body={body}"], None, self.root)
         closed = self._run(["gh", "api", "-X", "PATCH", f"repos/{self.repo}/pulls/{number}", "-f", "state=closed"], None, self.root)
         if closed[0] != 0:
-            self.log.append(f"stale pull request #{number} not closed: {closed[2].strip()[:200]}")
+            self.log.append(f"pull request #{number} not closed: {closed[2].strip()[:200]}")
             return None
         return number
 

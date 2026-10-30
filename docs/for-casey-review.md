@@ -2,6 +2,13 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock, the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Worth a look first: a build rule changed so retries can push (D-583, October 30)
+
+- **What happened.** T167's first try pushed its work. The second try started a brand-new branch from `main`, as the task's instructions said, so its push clashed with the first try's work. The runner never overwrites a branch, so the push was refused, and the runner wrongly said the push key was at fault and blocked the task.
+- **The rule that changed.** The build brief said every task branch is "created from the latest `main`", and it also forbids overwriting a branch. On a retry both can't be true. The brief (`BUILD_BRIEF.md:246`) now says a retry carries on from its earlier branch with the latest `main` merged in, and starts clean on a new branch name (ending `-a2`, `-a3`, and so on) when that can't be done. This is the change most worth your second look; the decision log quotes the old and new lines.
+- **How it works now.** Before each try, the runner prepares the branch itself. If the old pull request was set to merge on its own, the runner closes it first, with a note, so nothing unreviewed can slip in; it opens a fresh one after the review. If a merged pull request ever turns out not to be the reviewed one, the task is blocked for you to look at instead of being marked done. A refused push now says what really happened.
+- **Unblocking.** A task blocked by something outside its own work (a refused push, a permission, a missing proof) goes back in line with `python3 -m runner --requeue T### --reason "..."`. It never adds tries beyond the usual three, and it waits while any task is running.
+
 ## How legal, tax and insurance items are handled now (October 28, 2026)
 
 You've decided not to hire a lawyer, a CPA or an insurance broker for now, to rely on AI research instead, and to accept that risk yourself. So, throughout this file (D-367):
@@ -1174,9 +1181,3 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What happened.** T167's pull request failed the secret scan in `Ci`: the scanner mistook two harmless test arguments for passwords. Its log said only "leaks found: 2", the runner passed the retry just "Ci: failure", and the local smoke test doesn't run the scanner, so the next try had nothing to go on.
 - **The fix.** The scanner now names the rule, file and line of each finding (the value itself stays hidden). When a check fails, the runner tells the retry which step failed and adds the last few lines of that step's log, kept short and with no settings or keys in it. The smoke test runs the same scan when the scanner is installed, and the runner's Actions job now installs it, so a worker catches this before handing in.
 - **Nothing for you to do.** No check got weaker; the scanner and its pinned version are the same as before.
-
-## Why T167 was blocked on its second try, and how retries work now (D-583, October 30)
-
-- **What happened.** T167's first try pushed its work. The second try started a brand-new branch from `main`, as the task's instructions say, so its push clashed with the first try's work. The runner never overwrites a branch, so the push was refused, and the runner wrongly said the push key was at fault and blocked the task.
-- **The fix.** Before each try, the runner now prepares the branch itself. A retry carries on from the earlier try's pushed work, with the latest `main` merged in, so its push simply adds to it. If the earlier pull request was closed, or the latest `main` clashes with the old work, the retry starts clean on a new branch name (ending `-a2`, `-a3`, and so on); in the clash case the runner closes the old pull request with a note saying where the work went. A refused push now says what really happened. A blocked task goes back in line with one command, `python3 -m runner --requeue T### --reason "..."`, instead of anyone editing the build's records by hand.
-- **Worth a second look.** The build rules say a task branch is "created from the latest `main`". A retry now carries on from its earlier branch instead, with the latest `main` merged into it. Following the old rule exactly would mean overwriting the branch, which the rules also forbid. The decision log records both lines.

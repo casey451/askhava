@@ -284,15 +284,24 @@ def move_main(repo: dict[str, Path], text: str) -> str:
     return head
 
 
+SESSION = "session-retry"
+
+
+def claimed_env(repo: dict[str, Path], tmp_path: Path, pulls: list[dict[str, Any]], **state: Any) -> tuple[GitHubEnv, OfflineGh]:
+    """Attempt 2's runner in clone b: K10 claimed by SESSION (closing a pull request needs the lease)."""
+    gh = OfflineGh(pulls)
+    env = make_env(repo["b"], tmp_path, "b", run=gh)
+    env.update_state(lambda s: st.claim(st.with_task(s, "K10", attempts=1, **state), "K10", SESSION, NOW))
+    return env, gh
+
+
 def test_drill_t167_a_retry_builds_on_the_pushed_attempt_and_its_push_fast_forwards(repo: dict[str, Path], tmp_path: Path) -> None:
     """T167, October 30, 2026: attempt 1 pushed the task branch (PR open); attempt 2 must start from it,
     with the newer main merged in by a normal merge commit, so its push fast-forwards (never forced)."""
     first = pushed_attempt(repo)
     main2 = move_main(repo, "fake repo, main moved\n")
-    gh = OfflineGh([{"number": 94, "state": "open", "merged_at": None}])
-    env = make_env(repo["b"], tmp_path, "b", run=gh)
-    env.read_state()
-    prep = env.prepare_branch(TASK, 2)
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": None}])
+    prep = env.prepare_branch(TASK, 2, SESSION)
     assert prep == {"branch": TASK["branch"], "branch_ready": True, "base": f"origin/{TASK['branch']}",
                     "base_sha": prep["base_sha"], "remote_sha": first} and env.prepared == prep
     assert git(repo["b"], "rev-list", "--parents", "-n", "1", prep["base_sha"]).split()[1:] == [first, main2]
@@ -304,7 +313,33 @@ def test_drill_t167_a_retry_builds_on_the_pushed_attempt_and_its_push_fast_forwa
     res = env.collect_result(TASK, "submitted", [], [])
     assert res.outcome == "submitted" and res.head_sha == head and sorted(res.changed_paths) == ["docs/k10/one.md", "docs/k10/two.md"]
     assert env.push_branch(TASK["branch"], head) is True and git(repo["origin"], "rev-parse", TASK["branch"]) == head
-    assert not any("PATCH" in call for call in gh.calls)  # the open pull request stays open
+    assert not any("PATCH" in call for call in gh.calls)  # without auto-merge the open pull request stays open
+
+
+def test_an_open_pull_request_with_auto_merge_is_closed_before_the_retry_continues(repo: dict[str, Path], tmp_path: Path) -> None:
+    """B1 (PR #94 had auto-merge on): once the branch is a fast-forward of origin, a mid-work push could
+    merge unreviewed work, so the PR is closed with a comment first and recorded; the branch is still continued."""
+    first = pushed_attempt(repo)
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": {"merge_method": "squash"}}])
+    prep = env.prepare_branch(TASK, 2, SESSION)
+    assert prep["branch"] == TASK["branch"] and prep["base"] == f"origin/{TASK['branch']}" and prep["dropped_pr"] == 94
+    assert ["gh", "api", "-X", "PATCH", "repos/fake-owner/fake-repo/pulls/94", "-f", "state=closed"] in gh.calls
+    comment = next(c for c in gh.calls if c[2] == "repos/fake-owner/fake-repo/issues/94/comments")
+    assert "auto-merge was on" in comment[-1] and git(repo["origin"], "rev-parse", TASK["branch"]) == first
+    # The next attempt sees #94 closed, but by the runner: the branch is continued, not renamed.
+    env.update_state(lambda s: st.with_task(s, "K10", runner_closed_prs=[94]))
+    gh.pulls = [{"number": 94, "state": "closed", "merged_at": None, "auto_merge": None}]
+    again = env.prepare_branch(TASK, 3, SESSION)
+    assert again["branch"] == TASK["branch"] and "renamed_from" not in again and "dropped_pr" not in again
+
+
+def test_an_auto_merge_pull_request_is_left_alone_without_the_lease(repo: dict[str, Path], tmp_path: Path) -> None:
+    """L1: no lease, no closing; the attempt then starts a fresh branch, so the old head can never take its work."""
+    pushed_attempt(repo)
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": {"merge_method": "squash"}}])
+    prep = env.prepare_branch(TASK, 2, "someone-else")
+    assert prep["branch"] == f"{TASK['branch']}-a2" and prep["why"] == "its open pull request has auto-merge on and could not be closed"
+    assert not any("PATCH" in call for call in gh.calls) and any("left open" in line for line in env.log)
 
 
 def test_drill_t167_a_hand_in_rebuilt_from_main_fails_honestly_and_is_never_forced(repo: dict[str, Path], tmp_path: Path) -> None:
@@ -324,22 +359,42 @@ def test_drill_t167_a_hand_in_rebuilt_from_main_fails_honestly_and_is_never_forc
 def test_a_first_attempt_starts_from_main_and_a_dry_run_makes_nothing(repo: dict[str, Path], tmp_path: Path) -> None:
     env = make_env(repo["a"], tmp_path, run=OfflineGh([]))
     env.read_state()
-    prep = env.prepare_branch(TASK, 1)
+    prep = env.prepare_branch(TASK, 1, SESSION)
     assert prep == {"branch": TASK["branch"], "branch_ready": True, "base": "main", "base_sha": env.main_head()}
     assert git(repo["a"], "rev-parse", f"refs/heads/{TASK['branch']}") == env.main_head()
-    assert make_env(repo["b"], tmp_path, "b", dry_run=True).prepare_branch(TASK, 1) == {}
+    assert make_env(repo["b"], tmp_path, "b", dry_run=True).prepare_branch(TASK, 1, SESSION) == {}
+
+
+def test_a_failed_remote_lookup_prepares_nothing_and_never_picks_a_name(repo: dict[str, Path], tmp_path: Path) -> None:
+    """M2: only `git ls-remote --exit-code` answering 2 means "absent"; any other failure stops preparing."""
+    offline = OfflineGh([])
+
+    def flaky(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
+        if args[:2] == ["git", "ls-remote"]:
+            return 128, "", "fatal: unable to access the remote"  # a network failure, not "absent"
+        return offline(args, stdin, cwd)
+
+    env = make_env(repo["a"], tmp_path, run=flaky)
+    env.read_state()
+    assert env.prepare_branch(TASK, 2, SESSION) == {}
+    assert any("ls-remote for claude/task/K10-practice failed (exit 128)" in line for line in env.log)
+    assert git(repo["a"], "branch", "--list", f"{TASK['branch']}*") == ""
+    real = make_env(repo["b"], tmp_path, "b", run=offline)
+    assert real._remote_has("claude/task/no-such-branch") is False and real._remote_has("main") is True
 
 
 @pytest.mark.parametrize(("pr", "why"), [({"state": "closed", "merged_at": None}, "its pull request was closed"),
-                                         ({"state": "closed", "merged_at": "2026-10-30T07:00:00Z"}, "its pull request was merged")])
-def test_a_closed_or_merged_pull_request_means_a_fresh_branch_under_a_new_name(
-    repo: dict[str, Path], tmp_path: Path, pr: dict[str, Any], why: str
+                                         ({"state": "closed", "merged_at": "2026-10-30T07:00:00Z"}, "its pull request was merged"),
+                                         (None, "its pull request was unreadable")])
+def test_a_closed_merged_or_unreadable_pull_request_means_a_fresh_branch_under_a_new_name(
+    repo: dict[str, Path], tmp_path: Path, pr: dict[str, Any] | None, why: str
 ) -> None:
     pushed_attempt(repo)
     git(repo["a"], "push", "-q", "origin", f"{TASK['branch']}:{TASK['branch']}-a2")  # -a2 is taken: the next free name
-    env = make_env(repo["b"], tmp_path, "b", run=OfflineGh([{"number": 94, **pr}]))
-    env.read_state()
-    prep = env.prepare_branch(TASK, 2)
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, **pr}] if pr else [], runner_closed_prs=[90])
+    if pr is None:
+        env.gh_json = lambda path: (_ for _ in ()).throw(RuntimeError("HTTP 502"))  # type: ignore[method-assign]  # reason: the API is down
+    prep = env.prepare_branch(TASK, 2, SESSION)
     assert prep["branch"] == f"{TASK['branch']}-a3" and prep["base"] == "main" and prep["renamed_from"] == TASK["branch"]
     assert prep["why"] == why and git(repo["b"], "rev-parse", f"refs/heads/{TASK['branch']}-a3") == env.main_head()
 
@@ -347,10 +402,8 @@ def test_a_closed_or_merged_pull_request_means_a_fresh_branch_under_a_new_name(
 def test_a_conflict_with_main_means_a_fresh_branch_and_the_stale_pull_request_closed(repo: dict[str, Path], tmp_path: Path) -> None:
     first = pushed_attempt(repo, "README.md", "attempt one's readme\n")
     move_main(repo, "main's own readme\n")
-    gh = OfflineGh([{"number": 94, "state": "open", "merged_at": None}])
-    env = make_env(repo["b"], tmp_path, "b", run=gh)
-    env.read_state()
-    prep = env.prepare_branch(TASK, 2)
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": None}])
+    prep = env.prepare_branch(TASK, 2, SESSION)
     assert prep["branch"] == f"{TASK['branch']}-a2" and prep["base"] == "main" and prep["closed_pr"] == 94
     assert prep["why"] == "merging main into it conflicted"
     assert ["gh", "api", "-X", "PATCH", "repos/fake-owner/fake-repo/pulls/94", "-f", "state=closed"] in gh.calls
@@ -375,13 +428,13 @@ def test_the_handoff_says_the_branch_is_made_and_must_not_be_recreated() -> None
 
 def test_requeue_command_moves_a_blocked_task_through_update_state(repo: dict[str, Path], tmp_path: Path) -> None:
     env = make_env(repo["a"], tmp_path)
-    env.update_state(lambda s: st.with_task(s, "K10", status=st.BLOCKED, attempts=3, reason="branch push rejected"))
+    env.update_state(lambda s: st.with_task(s, "K10", status=st.BLOCKED, attempts=1, reason="branch push rejected; fix the push credential"))
     cfg = live_config("manual-1", tmp_path, env)
     assert entry.requeue_task(entry.parse_args(["--requeue", "K10"]), cfg, env) == "requeue_refused: --reason is empty"
     args = entry.parse_args(["--requeue", "K10", "--reason", "the branch is fixed"])
     assert entry.requeue_task(args, cfg, env) == "requeued"
     task = st.entry(json.loads(origin_file(repo, "claude/kit-state", "kit/state.json")), "K10")
-    assert task["status"] == st.QUEUED and task["attempts"] == 2 and task["reason"] is None
+    assert task["status"] == st.QUEUED and task["attempts"] == 1 and task["reason"] is None and task["last_failure"] == "the branch is fixed"
     assert task["requeues"][0]["reason"] == "the branch is fixed" and task["requeues"][0]["by"] == "manual-1"
     assert entry.requeue_task(args, cfg, env) == "requeue_refused: K10 is QUEUED, not BLOCKED"
     assert entry.requeue_task(entry.parse_args(["--requeue", "FIX-MAIN", "--reason", "x"]), cfg, env).startswith("requeue_refused:")
@@ -599,6 +652,8 @@ def test_log_excerpt_needs_an_error_line_and_drops_groups() -> None:
     rows = ge.log_excerpt("\n".join(f"out {i}" for i in range(30)) + "\n##[error]boom")
     assert len(rows) == ge.EXCERPT_LINES and rows[-1] == "##[error]boom" and rows[0] == "out 16"
     assert ge.log_excerpt("##[group]Run x\nsecret-ish env\n##[endgroup]\n" + "y" * 500 + "\n##[error]e") == ["y" * ge.EXCERPT_WIDTH, "##[error]e"]
+    nested = "##[group]Run x\n##[group]inner\na\n##[endgroup]\n  FAKE_ENV: still inside\n##[endgroup]\nout\n##[endgroup]\nafter\n##[error]e"
+    assert ge.log_excerpt(nested) == ["out", "after", "##[error]e"]  # a depth counter: the inner end does not reopen the excerpt
 
 
 def test_actions_job_reads_use_the_job_token(monkeypatch: pytest.MonkeyPatch) -> None:
