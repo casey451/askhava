@@ -84,12 +84,12 @@ def test_fix_main_gets_a_block_too() -> None:
 
 def test_the_handoff_carries_the_tasks_decision_ids() -> None:
     s = st.claim(two_tasks(), "T001", "a", NOW, taken=MAIN)
-    env = SimpleNamespace(last_state=s, dry_run=True, branch_for=lambda tid: f"claude/task/{tid}-x")
+    env = SimpleNamespace(last_state=s, dry_run=True, branch_for=lambda tid: f"claude/task/{tid}-x", prepared={})
     cfg = SimpleNamespace(session="a", graph=[{"id": "T001", "deps": []}], models={})
     info = entry.write_handoff(cfg, env)  # type: ignore[arg-type]  # reason: a stand-in for Config and GitHubEnv
     assert info["task"] == "T001" and info["decision_ids"] == [522, 523, 524, 525, 526]
     old = st.claim(two_tasks(), "T001", "a", NOW)
-    assert entry.write_handoff(cfg, SimpleNamespace(last_state=old, dry_run=True, branch_for=env.branch_for))["decision_ids"] == []  # type: ignore[arg-type]  # reason: as above
+    assert entry.write_handoff(cfg, SimpleNamespace(last_state=old, dry_run=True, branch_for=env.branch_for, prepared={}))["decision_ids"] == []  # type: ignore[arg-type]  # reason: as above
 
 
 def test_check_state_validates_the_counter_and_the_blocks() -> None:
