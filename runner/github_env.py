@@ -91,6 +91,7 @@ BEST_EFFORT_ERRORS = (RuntimeError, ValueError, TypeError, AttributeError, KeyEr
 NOT_BUILT_ON = ("the hand-in does not build on origin/{branch}: the remote task branch has commits this attempt "
                 "did not build on, so its push cannot fast-forward (D-583)")
 JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the job token (D-502, D-582)
+RUNNER_WORKFLOW = "backup-runner.yml"  # the workflow a refill run is dispatched on, one run per lane (D-723)
 # The comments on a pull request the runner closes while preparing a retry's branch (D-583). They are
 # posted only once the pull request is closed. The marker lets a later attempt recognise a pull request
 # the runner closed to drop auto-merge even when recording its number in the state failed (DROP_MARKER, in
@@ -129,15 +130,15 @@ def _long_token_args(args: list[str]) -> list[str] | None:
     The Claude App's token lasts one hour, so a session whose worker runs longer could no longer
     fetch, push or call the API at hand-in (T005, October 29, 2026). Remote git calls name the
     repository URL instead of `origin` so the credential helper, not the action's header, answers;
-    gh calls other than the job-token reads (check runs and Actions jobs, RUNNER_CHECKS_TOKEN, D-502,
-    D-582) use the token as GH_TOKEN."""
+    gh calls other than the job-token calls (check runs and Actions jobs, RUNNER_CHECKS_TOKEN, D-502,
+    D-582, and the refill dispatch, D-723) use the token as GH_TOKEN."""
     token, repo = os.environ.get("RUNNER_PUSH_TOKEN", ""), os.environ.get("GITHUB_REPOSITORY", "")
     if not token or not repo:
         return None
     if args[:1] == ["git"] and len(args) > 1 and args[1] in REMOTE_GIT:
         url = f"https://github.com/{repo}.git"
         return [url if a == "origin" else a for a in args]
-    if args[:1] == ["gh"] and not _job_token_read(args):
+    if args[:1] == ["gh"] and not _job_token_call(args):
         return list(args)
     return None
 
@@ -145,6 +146,12 @@ def _long_token_args(args: list[str]) -> list[str] | None:
 def _job_token_read(args: list[str]) -> bool:
     """A `gh api` read of check runs (D-502) or of an Actions job and its log (D-582)."""
     return args[:2] == ["gh", "api"] and any(part in args[-1] for part in JOB_TOKEN_READS)
+
+
+def _job_token_call(args: list[str]) -> bool:
+    """A call made with the job token: a job-token read, or a `gh workflow run` of the runner's own
+    workflow, which the job token may start (`actions: write`, as the workflow's chain step does, D-723)."""
+    return _job_token_read(args) or args[:4] == ["gh", "workflow", "run", RUNNER_WORKFLOW]
 
 
 def _long_token_env(args: list[str]) -> dict[str, str]:
@@ -159,10 +166,11 @@ def _env_for(args: list[str]) -> dict[str, str] | None:
     Inside the Claude Code action, GH_TOKEN is the Claude GitHub App's token, which has no Checks
     permission, so `commits/<sha>/check-runs` answers 403. The workflow passes the job token (which has
     `checks: read`, and `actions: write`, which includes the read of a job and its log) as
-    RUNNER_CHECKS_TOKEN; it is used only for those reads and never put in argv.
+    RUNNER_CHECKS_TOKEN; it is used only for those reads and the refill dispatch (D-723), and never put
+    in argv.
     """
     token = os.environ.get("RUNNER_CHECKS_TOKEN", "")
-    if token and _job_token_read(args):
+    if token and _job_token_call(args):
         return dict(os.environ, GH_TOKEN=token)
     return _push_env(args)
 
@@ -699,6 +707,20 @@ class GitHubEnv:
         if all(v == "success" for v in verdicts):
             return True
         return None
+
+    def dispatch_lane(self, lane: str) -> bool:
+        """Start one backup-runner run for a lane (`gh workflow run backup-runner.yml -f lane=<n>`) with
+        the job token, as the chain step does, so a free lane is refilled while this run's worker is still
+        busy (D-723). False, with nothing started, in a dry run, without the job token (a routine or a
+        local run) or when gh fails; GitHub keeps at most one waiting job per lane, so a second start
+        replaces the first rather than adding one."""
+        if self.dry_run or not lane.isdigit() or not os.environ.get("RUNNER_CHECKS_TOKEN"):
+            return False
+        args = ["gh", "workflow", "run", RUNNER_WORKFLOW, "--ref", "main", "--repo", self.repo, "-f", f"lane={lane}"]
+        code, _, err = self._run(args, None, self.root)
+        why = TOKEN_LIKE.sub("[redacted]", err.strip())[:200]
+        self.log.append(f"refill: run started for lane {lane}" if code == 0 else f"refill: lane {lane} not started: {why}")
+        return code == 0
 
     # ---- pull requests (REST only)
 
