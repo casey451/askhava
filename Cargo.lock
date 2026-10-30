@@ -372,6 +372,7 @@ name = "askhava-security"
 version = "0.1.0"
 dependencies = [
  "askhava-core",
+ "askhava-privacy",
  "axum",
  "tokio",
  "tower",
