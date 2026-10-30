@@ -61,6 +61,10 @@ class FakeEnv:
         self.rejection = ""  # the git output of a rejected branch push (D-583)
         self.prep: dict[str, Any] = {}  # what prepare_branch reports making (D-583)
         self.prepared_for: list[tuple[str, int]] = []
+        self.update_merges: bool | None = False  # whether a differing PR head is only merges of main (D-584)
+        self.head_checks: list[tuple[str, str]] = []
+        self.closed_prs: list[tuple[int, str]] = []  # close_pr calls (D-584)
+        self.close_ok = True
 
     def read_state(self) -> st.State:
         return copy.deepcopy(self.store)
@@ -124,6 +128,14 @@ class FakeEnv:
 
     def push_rejection(self) -> str:
         return self.rejection
+
+    def reviewed_plus_main(self, reviewed: str, head: str, number: int) -> bool | None:
+        self.head_checks.append((reviewed, head))
+        return self.update_merges
+
+    def close_pr(self, number: int, body: str) -> bool:
+        self.closed_prs.append((number, body))
+        return self.close_ok
 
     def prepare_branch(self, task: dict[str, Any], attempt: int, session: str) -> dict[str, Any]:
         self.prepared_for.append((task["id"], attempt))
@@ -383,7 +395,11 @@ def test_crash_after_merge_before_merge_pending_is_adopted_not_redone(tmp_path: 
     env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
 
     def crashing(task: dict[str, Any], model: str, log: str) -> cycle.WorkerResult:
-        env.prs["T001"] = green_pr()
+        # The crash comes after finish's review record (reviewed_sha under this lease) and the merge, the
+        # only way a task PR merges; an unreviewed PR is never adopted (D-584, the next test).
+        held = st.lease_in(env.store)
+        env.store = st.with_task(env.store, "T001", reviewed_sha="abc1234", review_lease=held)
+        env.prs["T001"] = dict(green_pr(sha="abc1234"), number=7, state="closed")
         raise Crash
 
     env.worker = crashing
@@ -392,6 +408,46 @@ def test_crash_after_merge_before_merge_pending_is_adopted_not_redone(tmp_path: 
     later = NOW + timedelta(hours=3, minutes=1)
     assert cycle.run_cycle(config([make_task("T001")], tmp_path, "s2"), env, later) == "done"
     assert st.status(env.store, "T001") == st.DONE and len(env.runs) == 1
+
+
+@pytest.mark.parametrize("pr", [
+    dict(green_pr(sha="abc1234", merged=False), number=7, state="closed"),  # closed with its checks: never adopted
+    dict(green_pr(sha="late0002", merged=False), number=8, state="open"),  # pushed after the review by a dying session
+    dict(green_pr(sha="abc1234", merged=False), number=6, state="open"),  # closed by the runner (runner_closed_prs)
+])
+def test_crash_leaves_a_pr_this_attempt_did_not_finish_for_the_retry(tmp_path: Path, pr: dict[str, Any]) -> None:
+    """N1 (D-584): only an open PR whose head is the reviewed head of the attempt that died is adopted;
+    anything else leaves the task QUEUED for its retry, which continues the branch and is reviewed again."""
+    env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
+
+    def crashing(task: dict[str, Any], model: str, log: str) -> cycle.WorkerResult:
+        held = st.lease_in(env.store)
+        env.store = st.with_task(env.store, "T001", reviewed_sha="abc1234", review_lease=held, runner_closed_prs=[6])
+        env.prs["T001"] = pr
+        raise Crash
+
+    env.worker = crashing
+    with pytest.raises(Crash):
+        cycle.run_cycle(cfg, env, NOW)
+    env.worker = lambda t, m, log: cycle.WorkerResult("handed_off")
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path, "s2"), env, NOW + timedelta(hours=3, minutes=1)) == "handed_off"
+    assert len(env.runs) == 2 and st.status(env.store, "T001") == st.IN_PROGRESS  # retried, not MERGE_PENDING
+
+
+def test_an_earlier_attempts_review_is_never_taken_for_the_dead_one(tmp_path: Path) -> None:
+    env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
+
+    def crashing(task: dict[str, Any], model: str, log: str) -> cycle.WorkerResult:
+        old = {"task": "T001", "session": "s0", "expires": st.iso(NOW)}  # attempt 1's review, not this lease's
+        env.store = st.with_task(env.store, "T001", reviewed_sha="abc1234", review_lease=old)
+        env.prs["T001"] = dict(green_pr(sha="abc1234", merged=False), number=5, state="open")
+        raise Crash
+
+    env.worker = crashing
+    with pytest.raises(Crash):
+        cycle.run_cycle(cfg, env, NOW)
+    env.worker = lambda t, m, log: cycle.WorkerResult("handed_off")
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path, "s2"), env, NOW + timedelta(hours=3, minutes=1)) == "handed_off"
 
 
 # ---- inbox answers survive an early exit
@@ -707,13 +763,146 @@ def test_drill_runner_enables_auto_merge_only_for_the_reviewed_head(tmp_path: Pa
     assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
     assert env.auto_merges == [("claude/task/T001-x", "good0001")]
     assert st.entry(env.store, "T001")["auto_merge"]["enabled"] is True
-    env.prs["T001"] = dict(green_pr(sha="hand0002", merged=False), auto_merge=False)  # someone pushed by hand
-    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
-    assert env.auto_merges == [("claude/task/T001-x", "good0001")]  # not re-enabled for the unreviewed head
-    assert "no runner review record for hand0002" in st.entry(env.store, "T001")["auto_merge"]["why"]
     env.prs["T001"] = dict(green_pr(sha="good0001", merged=False), auto_merge=False)  # an earlier enable failed
-    cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10))
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
     assert env.auto_merges[-1] == ("claude/task/T001-x", "good0001")
+    env.prs["T001"] = dict(green_pr(sha="hand0002", merged=False), auto_merge=False)  # someone pushed by hand
+    # D-584: auto-merge is never enabled for that head, and waiting for it would stall the build forever,
+    # so the attempt fails with the reason; the retry continues the branch and is reviewed again.
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "unreviewed_head"
+    assert env.auto_merges == [("claude/task/T001-x", "good0001")] * 2  # never enabled for the unreviewed head
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.QUEUED and t1["attempts"] == 1 and t1["last_failure"].startswith("pull request head hand0002")
+
+
+def test_drill_a_pr_updated_from_main_after_the_review_still_merges(tmp_path: Path) -> None:
+    """N2 (D-584): GitHub's "Update branch" adds only a merge of main on top of the reviewed head; that is
+    not unreviewed work, so it neither fails the attempt nor blocks the merge."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.update_merges = True
+    env.prs["T001"] = dict(green_pr(sha="upd00002", merged=False), auto_merge=True)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    env.prs["T001"] = dict(green_pr(sha="upd00002"), merged_sha="m1", files=["app/t001/x.py"])
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "done" and st.status(env.store, "T001") == st.DONE
+    assert env.head_checks[-1] == ("good0001", "upd00002") and not env.store.get("main_red")
+
+
+def test_drill_an_unknown_merged_head_waits_instead_of_turning_main_red(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.update_merges = None  # git cannot place the merged head yet
+    env.prs["T001"] = dict(green_pr(sha="late0002"), merged_sha="m1", files=["app/t001/x.py"])
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    assert st.status(env.store, "T001") == st.MERGE_PENDING and not env.store.get("main_red")
+    # The wait has an end (D-584): after HEAD_CHECK_WAIT the task is BLOCKED and an outbox item asks a person.
+    almost = NOW + timedelta(minutes=5) + cycle.HEAD_CHECK_WAIT - timedelta(minutes=1)
+    assert cycle.run_cycle(cfg, env, almost) == "merge_pending" and not (tmp_path / "T001-merged-head.md").exists()
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5) + cycle.HEAD_CHECK_WAIT) == "not_done"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.BLOCKED and t1["reason"].startswith("unchecked merge: merged head late0002 (merge m1) could not be checked")
+    note = (tmp_path / "T001-merged-head.md").read_text(encoding="utf-8")
+    assert "kind: blocked" in note and "revert it if it holds work nobody reviewed" in note and not env.store.get("main_red")
+    assert cycle.requeue_refusal(env.store, "T001", NOW) == ""  # L2: the re-queue the outbox asks for is allowed
+
+
+def test_drill_a_head_placed_after_a_wait_clears_the_wait(tmp_path: Path) -> None:
+    """L1 (D-584): once git can place the merged head, `head_check_since` is cleared, so a later wait starts afresh."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.update_merges = None
+    env.prs["T001"] = dict(green_pr(sha="upd00002"), merged_sha="m1", files=["app/t001/x.py"])
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    assert st.entry(env.store, "T001")["head_check_since"] == st.iso(NOW + timedelta(minutes=5))
+    env.update_merges = True
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "done"
+    assert st.entry(env.store, "T001")["head_check_since"] is None and st.status(env.store, "T001") == st.DONE
+
+
+def test_drill_a_pr_merged_just_before_the_close_is_still_judged(tmp_path: Path) -> None:
+    """(b) (D-584): GitHub merged the unreviewed head between the read and the close, and closing a merged
+    PR still answered success; the PR is read again, the task stays MERGE_PENDING, and the next cycle's
+    `_merged` judges that merge (main red with check "review")."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.prs["T001"] = dict(green_pr(sha="hand0002", merged=False), auto_merge=True, number=41, state="open")
+
+    def merged_meanwhile(number: int, body: str) -> bool:
+        env.prs["T001"] = dict(green_pr(sha="hand0002"), merged_sha="m1", files=["app/t001/x.py"], number=41, state="closed")
+        return True
+
+    env.close_pr = merged_meanwhile  # type: ignore[method-assign]  # reason: GitHub merges between the read and the close
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.MERGE_PENDING and "runner_closed_prs" not in t1 and t1.get("attempts", 0) == 0
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "not_done"
+    assert st.status(env.store, "T001") == st.BLOCKED and env.store["main_red"]["check"] == "review"
+
+
+def test_drill_an_unreviewed_head_with_auto_merge_on_is_closed_before_the_attempt_fails(tmp_path: Path) -> None:
+    """R1 (D-584): someone pushed hand0002 after the review while auto-merge was on (GitHub keeps it on).
+    The PR is closed first, so GitHub cannot merge that head once its checks go green; then the attempt
+    fails, with the PR recorded as closed by the runner so the retry continues the branch."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    pending = [{"name": n, "sha": "hand0002", "conclusion": None} for n in ("Ci", "Twin", "Ally")]
+    env.prs["T001"] = {"merged": False, "head_sha": "hand0002", "checks": pending, "auto_merge": True, "number": 41, "state": "open"}
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "unreviewed_head"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.QUEUED and t1["runner_closed_prs"] == [41] and t1["last_failure"].startswith("pull request head hand0002")
+    number, body = env.closed_prs[0]
+    assert number == 41 and cycle.DROP_MARKER in body and "hand0002" in body
+
+
+def test_drill_when_the_close_fails_the_task_waits_so_any_merge_is_judged(tmp_path: Path) -> None:
+    """R1 (D-584): auto-merge could not be turned off, so the task stays MERGE_PENDING; when GitHub then
+    merges the unreviewed head, `_merged` judges it: BLOCKED and main red, so FIX-MAIN reverts it."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.close_ok = False
+    env.prs["T001"] = dict(green_pr(sha="hand0002", merged=False), auto_merge=True, number=41, state="open")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    assert st.status(env.store, "T001") == st.MERGE_PENDING and "could not be turned off" in st.entry(env.store, "T001")["auto_merge"]["why"]
+    env.prs["T001"] = dict(green_pr(sha="hand0002"), merged_sha="m1", files=["app/t001/x.py"], number=41)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "not_done"
+    assert st.status(env.store, "T001") == st.BLOCKED and env.store["main_red"]["check"] == "review"
+
+
+def test_drill_an_updated_head_without_auto_merge_fails_instead_of_waiting_forever(tmp_path: Path) -> None:
+    """R3 (D-584): the head is the reviewed work plus main, but auto-merge is off, and the runner turns
+    it on only for the reviewed head itself; waiting would never end, so the attempt fails and the
+    retry continues the branch."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.update_merges = True
+    env.prs["T001"] = dict(green_pr(sha="upd00002", merged=False), auto_merge=False, number=41, state="open")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "unreviewed_head"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.QUEUED and t1["last_failure"].startswith("pull request head upd00002 is the reviewed head good0001 updated")
+    assert env.auto_merges == [("claude/task/T001-x", "good0001")] and env.closed_prs == []
+
+
+def test_drill_an_empty_cleanup_hand_in_ignores_the_branchs_earlier_merged_pr(tmp_path: Path) -> None:
+    """D-584: the cleanup task's branch had an earlier attempt's PR merged; its empty hand-in (main's own
+    head) must go through _without_pr and _resolve_empty, never be judged by that old merge."""
+    graph = [make_task("T057", stage="2", type="cleanup")]
+    env, cfg = FakeEnv(lambda t, m, log: empty(t, m)), config(graph, tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.prs["T057"] = dict(green_pr(sha="old0001", tree="t-old"), merge_tree="t-other", merged_sha="m0", files=["a"], number=3)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    assert not env.store.get("main_red") and env.head_checks == []
+    env.checks_green = True
+    cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10))
+    t57 = st.entry(env.store, "T057")
+    assert t57["status"] == st.BLOCKED and t57["reason"] == st.PROOF_MISSING and t57["empty_handin"] is True
+    assert not env.store.get("main_red")
 
 
 def test_drill_cleanup_needs_its_stage_proof_to_be_done(tmp_path: Path) -> None:
@@ -1282,7 +1471,19 @@ def test_drill_a_merged_head_that_was_not_reviewed_is_never_done(tmp_path: Path)
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "not_done"
     t1 = st.entry(env.store, "T001")
     assert t1["status"] == st.BLOCKED and t1["reason"].startswith("merged head late0002 is not the reviewed head head0001")
-    assert "merged_sha" not in t1
+    assert "merged_sha" not in t1 and env.head_checks == [("head0001", "late0002")]
+    # N2 (D-584): a person must see it and it must have a way out: main is red with check "review", FIX-MAIN
+    # reverts the merge, and once main is green again the task returns to the queue with its attempt counted.
+    red = env.store["main_red"]
+    assert red["check"] == "review" and red["task"] == "T001" and red["revert_sha"] == "m1"
+    assert st.eligible(env.store, NOW) == [st.FIX_MAIN]
+    env.worker = lambda t, m, log: reviewed(t, m, ["app/t001/x.py"], head="revert01")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "fix_main"
+    env.prs[st.FIX_MAIN] = green_pr(sha="revert01", tree="t-revert")
+    env.head = "main0002"
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "main_cleared"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.QUEUED and t1["attempts"] == 1 and t1["last_failure"].startswith("reverted by FIX-MAIN (review red")
     env2 = FakeEnv(lambda t, m, log: reviewed(t, m, head="head0001"))
     assert cycle.run_cycle(cfg, env2, NOW) == st.MERGE_PENDING
     env2.prs["T001"] = dict(green_pr(sha="head0001"), merged_sha="m1", files=["app/t001/x.py"])
@@ -1303,7 +1504,7 @@ def test_requeue_lifts_a_block_outside_the_tasks_work_and_keeps_the_attempt_cap(
     assert out is not None
     t1 = st.entry(out, "T001")
     assert t1["status"] == st.QUEUED and t1["reason"] is None and t1["attempts"] == 1  # attempts unchanged
-    assert t1["last_failure"] == "the push credential is fixed"  # the retry sees why it was re-queued
+    assert t1["last_failure"] == "Ci: failure\nre-queued: the push credential is fixed"  # the retry sees both (D-584)
     assert t1["requeues"] == [{"at": st.iso(NOW), "reason": "the push credential is fixed", "by": "manual-1", "was": reason, "attempts": 1}]
     assert st.eligible(out, NOW)[0] == "T001"
 

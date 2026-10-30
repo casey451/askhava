@@ -56,7 +56,7 @@ from pathlib import Path
 from typing import Any
 
 from runner import state as st, verify
-from runner.cycle import WorkerResult
+from runner.cycle import DROP_MARKER, WorkerResult
 from runner.state import State
 
 Runner = Callable[[list[str], str | None, Path], tuple[int, str, str]]
@@ -88,10 +88,13 @@ BEST_EFFORT_ERRORS = (RuntimeError, ValueError, TypeError, AttributeError, KeyEr
 NOT_BUILT_ON = ("the hand-in does not build on origin/{branch}: the remote task branch has commits this attempt "
                 "did not build on, so its push cannot fast-forward (D-583)")
 JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the job token (D-502, D-582)
-# The comments on a pull request the runner closes while preparing a retry's branch (D-583).
+# The comments on a pull request the runner closes while preparing a retry's branch (D-583). They are
+# posted only once the pull request is closed. The marker lets a later attempt recognise a pull request
+# the runner closed to drop auto-merge even when recording its number in the state failed (DROP_MARKER, in
+# runner/cycle.py, which also puts it on a pull request closed for an unreviewed head; D-584).
 AUTO_MERGE_NOTE = ("Closed by the runner before the next attempt: auto-merge was on for `{branch}`, so a push of "
                    "unreviewed work could have merged. The attempt continues on this branch; the runner opens a "
-                   "fresh pull request after its review (D-583).")
+                   "fresh pull request after its review (D-583).\n\n" + DROP_MARKER)
 CONFLICT_NOTE = ("Closed by the runner: merging main into `{branch}` conflicted, so the next attempt starts fresh "
                  "from main on `{new}` (D-583). This branch is kept for evidence.")
 
@@ -237,16 +240,6 @@ def fit_failure_log(base: str, details: list[tuple[str, list[str]]], cap: int = 
             rows.pop(0)
         parts.append("\n".join([header, *rows])[:left])
     return "\n".join(parts)
-
-
-def _pr_gone(pr: dict[str, Any], runner_closed: list[int]) -> str:
-    """'merged' or 'closed' when the branch's latest pull request ended it, '' when the branch can be
-    continued: no pull request, an open one, or one the runner closed itself to drop auto-merge (D-583)."""
-    if pr.get("merged_at"):
-        return "merged"
-    if pr.get("state") == "closed" and int(pr.get("number", 0)) not in runner_closed:
-        return "closed"
-    return ""
 
 
 def _job_id(run: dict[str, Any]) -> str | None:
@@ -683,7 +676,7 @@ class GitHubEnv:
         runs = self.gh_json(f"repos/{self.repo}/commits/{head}/check-runs?per_page=100").get("check_runs", [])
         checks = [{"name": r.get("name"), "sha": r.get("head_sha", head), "conclusion": r.get("conclusion")} for r in runs]
         out = {"number": int(pr["number"]), "merged": bool(pr.get("merged_at")), "head_sha": head, "checks": checks,
-               "auto_merge": bool(pr.get("auto_merge"))}
+               "auto_merge": bool(pr.get("auto_merge")), "state": str(pr.get("state") or "open")}  # state: D-584
         out["failure_log"] = self._failure_log(runs)
         if out["merged"]:
             out.update(self._merge_facts(int(pr["number"]), head, str(pr.get("merge_commit_sha") or ""), str(pr["merged_at"])))
@@ -865,7 +858,7 @@ class GitHubEnv:
         if remote is None:
             return self._fresh(branch, main)
         pr = self._latest_pr(branch)
-        gone = "unreadable" if pr is None else _pr_gone(pr, self._runner_closed(task["id"]))
+        gone = "unreadable" if pr is None else self._pr_end(pr, task["id"])
         if gone:
             return self._fresh(self._new_name(task, attempt), main, renamed_from=branch, why=f"its pull request was {gone}")
         tip = remote if self._is_ancestor(main, remote) else self._merge_main(branch, remote, main)
@@ -904,9 +897,35 @@ class GitHubEnv:
         """The pull requests the runner closed itself to drop auto-merge (`runner_closed_prs`, D-583)."""
         return [int(n) for n in st.entry(self.last_state or {"tasks": []}, task_id).get("runner_closed_prs") or []]
 
+    def _pr_end(self, pr: dict[str, Any], task_id: str) -> str:
+        """'merged' or 'closed' when the branch's latest pull request ended it, '' when the branch can be
+        continued: no pull request, an open one, or one the runner closed itself to drop auto-merge,
+        known from the task's `runner_closed_prs` or, when that record was lost, from the marker in the
+        runner's closing comment (D-583, D-584)."""
+        if pr.get("merged_at"):
+            return "merged"
+        if pr.get("state") != "closed":
+            return ""
+        number = int(pr.get("number", 0))
+        return "" if number in self._runner_closed(task_id) or self._closed_by_runner(number) else "closed"
+
+    def _closed_by_runner(self, number: int) -> bool:
+        """Whether the pull request carries the runner's auto-merge closing comment (DROP_MARKER)."""
+        try:
+            comments = self.gh_json(f"repos/{self.repo}/issues/{number}/comments?per_page=100")
+        except (RuntimeError, ValueError):
+            return False  # unknown: the attempt starts a fresh branch, which is always safe
+        return isinstance(comments, list) and any(DROP_MARKER in str(c.get("body", "")) for c in comments if isinstance(c, dict))
+
     def _holds_lease(self, task_id: str, session: str) -> bool:
-        """Whether, on a fresh read, `session` holds a live lease on the task."""
-        fresh = self.read_state()
+        """Whether, on a fresh read, `session` holds a live lease on the task. The read leaves the cached
+        heads, blob and states as they were (like update_state), so a later push_state still pushes onto
+        the state this attempt read, and a race is still caught (D-584)."""
+        saved = (self.state_head, self.lease_head, self.state_blob, self.last_state, self.first_state)
+        try:
+            fresh = self.read_state()
+        finally:
+            self.state_head, self.lease_head, self.state_blob, self.last_state, self.first_state = saved
         return any(l.get("task") == task_id and l.get("session") == session for l in st.live_leases(fresh, self.clock()).values())
 
     def _fresh(self, name: str, main: str, **extra: Any) -> dict[str, Any]:
@@ -949,8 +968,9 @@ class GitHubEnv:
         raise RuntimeError(f"no free branch name up to {base}-a{first + 9}")
 
     def _close_open_pr(self, branch: str, body: str, task_id: str, session: str) -> int | None:
-        """Close the branch's open pull request with a comment (REST), only while `session` still holds
-        the task's live lease; its number, or None when there was none or it could not be closed."""
+        """Close the branch's open pull request (REST), only while `session` still holds the task's live
+        lease, and then comment on it; its number, or None when there was none or it could not be closed.
+        The comment goes only on a pull request that did close, so it never says what did not happen (D-584)."""
         owner = self.repo.split("/")[0]
         try:
             pulls = self.gh_json(f"repos/{self.repo}/pulls?head={owner}:{branch}&state=open")
@@ -962,12 +982,51 @@ class GitHubEnv:
         if not self._holds_lease(task_id, session):
             self.log.append(f"pull request #{number} left open: {session} no longer holds the lease on {task_id}")
             return None
-        self._run(["gh", "api", f"repos/{self.repo}/issues/{number}/comments", "-f", f"body={body}"], None, self.root)
+        return number if self.close_pr(number, body) else None
+
+    def close_pr(self, number: int, body: str) -> bool:
+        """Close a pull request through REST, then comment on it; the comment goes only on one that did
+        close, so it never says what did not happen (D-584). Closing also clears its auto-merge."""
         closed = self._run(["gh", "api", "-X", "PATCH", f"repos/{self.repo}/pulls/{number}", "-f", "state=closed"], None, self.root)
         if closed[0] != 0:
             self.log.append(f"pull request #{number} not closed: {closed[2].strip()[:200]}")
+            return False
+        self._run(["gh", "api", f"repos/{self.repo}/issues/{number}/comments", "-f", f"body={body}"], None, self.root)
+        return True
+
+    def reviewed_plus_main(self, reviewed: str, head: str, number: int) -> bool | None:
+        """Whether `head` holds exactly the reviewed work combined with main: its tree equals the clean
+        automatic merge (`git merge-tree --write-tree`) of `reviewed` with the main commit `head` is based
+        on (their merge base). That accepts GitHub's "Update branch" whether it merges main in or rebases
+        onto it, and rejects a new commit, a merge of anything else, and a merge that adds content of its
+        own (an "evil merge"). That base must be at or after the reviewed commit's fork point from main,
+        so a head crafted on an older main commit is never trusted. The reviewed commit and the pull
+        request's head are fetched first, since a fresh checkout may lack them; None when git still
+        cannot say (D-584)."""
+        if number:
+            self._run(["git", "fetch", "--quiet", "origin", f"+refs/pull/{number}/head:refs/runner/pr-{number}"], None, self.root)
+        if not self._has_commit(reviewed):
+            self._run(["git", "fetch", "--quiet", "origin", reviewed], None, self.root)
+        main = self.main_head()
+        if not main or not self._has_commit(reviewed) or not self._has_commit(head):
             return None
-        return number
+        code, base, _ = self._run(["git", "merge-base", head, main], None, self.root)
+        if code != 0:
+            return False if code == 1 else None  # 1: no common history with main
+        # The base must not be older than the reviewed commit's own fork point from main: a head built on
+        # an older main commit could carry back a change main has since reverted (D-584).
+        code, fork, _ = self._run(["git", "merge-base", reviewed, main], None, self.root)
+        if code != 0:
+            return False if code == 1 else None
+        if not self._is_ancestor(fork.strip(), base.strip()):
+            return False
+        code, out, _ = self._run(["git", "merge-tree", "--write-tree", reviewed, base.strip()], None, self.root)
+        if code != 0:
+            return False if code == 1 else None  # 1: they conflict, so no clean combination exists
+        return out.splitlines()[0].strip() == self.git("rev-parse", f"{head}^{{tree}}", check=False)
+
+    def _has_commit(self, sha: str) -> bool:
+        return bool(sha) and self._run(["git", "cat-file", "-e", f"{sha}^{{commit}}"], None, self.root)[0] == 0
 
     def collect_result(
         self, task: dict[str, Any], outcome: str, transcripts: list[str], reviewer_transcripts: list[str],
