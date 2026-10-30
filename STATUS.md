@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-30T14:27:52Z by runner 7dd485a187c4 (actions).
+Updated 2026-10-30T14:32:22Z by runner 7dd485a187c4 (actions).
 
 **Requirements verified:** 1 of 725 (0.1%) · partial 53 · unstarted 671
 **Tasks merged (throughput only):** 21 of 221
@@ -31,7 +31,7 @@ Updated 2026-10-30T14:27:52Z by runner 7dd485a187c4 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (ledger): five-hour: 4.2M used, 22.8M left, resets 2026-10-30T15:47:18Z; week: 27.6M used, 422.4M left, resets 2026-11-05T18:38:52Z; projected finish 2026-11-02T11:16:06Z.
+- Pacing (ledger): five-hour: 5.0M used, 22.0M left, resets 2026-10-30T15:47:18Z; week: 28.4M used, 421.6M left, resets 2026-11-05T18:38:52Z; projected finish 2026-11-02T12:09:23Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -47,6 +47,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T016 (lease until 2026-10-30T17:28:59Z)
 
 ## Needs attention
 - nothing
