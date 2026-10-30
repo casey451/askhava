@@ -8,6 +8,8 @@
 //! each is made only by its mint, and each mint can be taken once per process: [`release_mint`]
 //! by `server` for `payments` (T189), [`session_mint`] by `server` for `portals`' session
 //! extractors. The architecture test fails any other crate that names a mint (TD-SEC-10, D-597).
+//! Raw homeowner text enters only through [`read_inbound`] and [`read_inbound_email`] (PRIV-026),
+//! and [`scrub`] is the only maker of [`ScrubbedText`] (AI-002 to AI-004, AI-020).
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -20,6 +22,14 @@ use crate::vault;
 pub use crate::models::{
     ContactDetails, Field, GRANTS, Grant, IndexPurpose, NewContact, OwnerPurpose, Purpose, Reader,
     VaultError, grant_for, normalize_phone,
+};
+pub use crate::reader::{
+    EmailAuth, EmailContext, Flags, Inbound, InboundEmail, InboundError, InboundWords, SenderIndex,
+    SignedDelivery, Standing, WEBHOOK_TOLERANCE_SECS, email_index, read_inbound,
+    read_inbound_email,
+};
+pub use crate::scrub::{
+    CommonWords, DEFAULT_COMMON_WORDS, Known, NameMemory, REMOVED, ScrubbedText, scrub,
 };
 pub use crate::vault::{
     BASELINE_FLOOR, BASELINE_HOURS, RATE_MULTIPLE, Vault, check_read_rates, find_by_phone,
