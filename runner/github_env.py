@@ -615,9 +615,10 @@ class GitHubEnv:
 
     def plan_evidence(self, task_id: str, prompt: str, since: str) -> dict[str, Any] | None:
         """What `--requeue --plan-fix` checks on main (D-677): main's head (fetched fresh) and main's
-        commit at `since`, the end of the attempt that blocked the task (`git rev-list -1 --first-parent
-        --before`), with the task's plan fingerprint (verify.plan_fingerprint) and the D-numbers of
-        docs/decisions.md at each. None when git cannot read main or finds no commit of main by then."""
+        commit at `since`, the start of the task's last attempt (cycle.plan_since; `git rev-list -1
+        --first-parent --before`), with, at each, the task's plan fingerprint (verify.plan_fingerprint),
+        the task's own `decisions` list (verify.task_decisions) and the D-numbers of docs/decisions.md.
+        None when git cannot read main or finds no commit of main by then."""
         head = self.main_head()
         if not head:
             return None
@@ -626,13 +627,16 @@ class GitHubEnv:
         if not base:
             return None
         then, now = self._plan_at(base, task_id, prompt), self._plan_at(head, task_id, prompt)
-        return {"since": since, "base": base, "head": head, "plan_then": then[0], "plan_now": now[0],
-                "decisions_then": then[1], "decisions_now": now[1]}
+        return {"since": since, "base": base, "head": head, **{f"{k}_then": v for k, v in then.items()},
+                **{f"{k}_now": v for k, v in now.items()}}
 
-    def _plan_at(self, commit: str, task_id: str, prompt: str) -> tuple[str | None, list[int]]:
-        """The task's plan fingerprint and the decision numbers at one commit of main (D-677)."""
-        plan = verify.plan_fingerprint(self._show(commit, TASKS_FILE), self._show(commit, prompt), task_id)
-        return plan, sorted(set(st.decision_numbers(self._show(commit, DECISIONS_FILE) or "")))
+    def _plan_at(self, commit: str, task_id: str, prompt: str) -> dict[str, Any]:
+        """At one commit of main (D-677): the task's plan fingerprint (`plan`), its `decisions` list in
+        kit/tasks.json (`task_decisions`) and the D-numbers of docs/decisions.md (`decisions`)."""
+        tasks = self._show(commit, TASKS_FILE)
+        return {"plan": verify.plan_fingerprint(tasks, self._show(commit, prompt), task_id),
+                "task_decisions": verify.task_decisions(tasks, task_id),
+                "decisions": sorted(set(st.decision_numbers(self._show(commit, DECISIONS_FILE) or "")))}
 
     def smoke_main(self) -> tuple[bool, str]:
         """bash scripts/smoke.sh in a detached worktree of main's head (the runner's own tool run)."""

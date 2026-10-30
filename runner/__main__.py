@@ -21,9 +21,10 @@ line of JSON with what changed.
                                     attempts, or while any lease is live; recorded in `requeues`, D-583)
   python3 -m runner --requeue T### --plan-fix D-### --reason TEXT
                                     give a task that used all its attempts exactly one more (on Opus)
-                                    after a plan fix: D-### is new on main's docs/decisions.md since the
-                                    task was blocked and its kit/tasks.json entry or prompt changed on
-                                    main since then; once per decision, never under a live lease (D-677)
+                                    after a plan fix: since its last attempt started, D-### is new on
+                                    main in docs/decisions.md and in the task's own `decisions` list, and
+                                    its kit/tasks.json entry or prompt changed on main; once per decision,
+                                    never under a lease that matters (D-677)
   python3 -m runner --restore-lanes end a fall back to one lane (`lanes_fallback`, D-620)
   RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
                                     claims only on that lane; unset, the first free lane (D-620)
@@ -259,14 +260,14 @@ def requeue_task(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) ->
 def plan_fix_requeue(tid: str, decision: str, reason: str, cfg: cycle.Config, env: GitHubEnv) -> str:
     """`--requeue T### --plan-fix D-### --reason TEXT`: one more attempt for a task that used all its
     attempts, after a plan fix on main (D-677). The state-only checks run first; then main is read for
-    the time the task was blocked (GitHubEnv.plan_evidence), and the move goes through update_state,
-    which re-checks everything against the fresh state."""
+    the start of the task's last attempt (cycle.plan_since, GitHubEnv.plan_evidence), and the move goes
+    through update_state, which re-checks everything against the fresh state."""
     state = env.read_state()
     why = cycle.plan_fix_precheck(state, tid, decision, now_utc(), cfg)
     if why:
         return f"requeue_refused: {why}"
     task = {**st.entry(state, tid), **next((t for t in cfg.graph if t["id"] == tid), {})}
-    since = str(cycle.blocked_at(st.entry(state, tid)))
+    since = str(cycle.plan_since(st.entry(state, tid)))
     evidence = env.plan_evidence(tid, str(task.get("prompt") or f"kit/prompts/{tid}.md"), since)
     why = cycle.plan_fix_refusal(state, tid, decision, evidence, now_utc(), cfg)
     if why:

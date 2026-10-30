@@ -1540,21 +1540,25 @@ def test_requeue_refuses_what_it_must_not_move() -> None:
 
 # ---- D-677: one more attempt for a capped task after a logged plan fix
 
+STARTED = st.iso(NOW - timedelta(hours=2))
 ENDED = st.iso(NOW - timedelta(hours=1))
 OWN_WORK = "smoke red only because a protected generated file is stale"
 
 
 def _capped(attempts: int = 3, **extra: Any) -> st.State:
-    """T001 BLOCKED for its own work with every attempt used; its last attempt ended at ENDED."""
+    """T001 BLOCKED for its own work with every attempt used; its last attempt ran from STARTED to ENDED."""
     state = _blocked(attempts, OWN_WORK)
-    history = [{"attempt": n, "ended_at": ENDED, "result": "BLOCKED" if n == attempts else "QUEUED"} for n in range(1, attempts + 1)]
+    history = [{"attempt": n, "started_at": STARTED, "ended_at": ENDED, "result": "BLOCKED" if n == attempts else "QUEUED"}
+               for n in range(1, attempts + 1)]
     return st.with_task(state, "T001", history=history, **extra)
 
 
 def _evidence(**over: Any) -> dict[str, Any]:
-    """What GitHubEnv.plan_evidence reports when the plan fix D-677 changed T001's entry after the block."""
-    found = {"since": ENDED, "base": "base0001" * 5, "head": "head0001" * 5, "plan_then": "a" * 64, "plan_now": "b" * 64,
-             "decisions_then": [630, 646], "decisions_now": [630, 646, 677]}
+    """What GitHubEnv.plan_evidence reports when the plan fix D-677 changed T001's entry, and listed D-677 in it,
+    after its last attempt started."""
+    found = {"since": STARTED, "base": "base0001" * 5, "head": "head0001" * 5, "plan_then": "a" * 64, "plan_now": "b" * 64,
+             "decisions_then": [630, 646], "decisions_now": [630, 646, 677],
+             "task_decisions_then": ["D-493"], "task_decisions_now": ["D-493", "D-677"]}
     return {**found, **over}
 
 
@@ -1566,7 +1570,7 @@ def test_plan_fix_requeue_gives_a_capped_task_exactly_one_more_attempt() -> None
     assert t1["last_failure"] == "Ci: failure\nre-queued after plan fix D-677: T233 now owns the oracle"
     note = t1["requeues"][-1]
     assert note == {"at": st.iso(NOW), "reason": "T233 now owns the oracle", "by": "manual-1", "was": OWN_WORK, "attempts": 3,
-                    "plan_fix": "D-677", "plan_base": "base0001" * 5, "plan_head": "head0001" * 5,
+                    "plan_fix": "D-677", "plan_since": STARTED, "plan_base": "base0001" * 5, "plan_head": "head0001" * 5,
                     "plan_then": "a" * 64, "plan_now": "b" * 64}
     assert st.eligible(out, NOW)[0] == "T001"
     assert cycle.attempt_model(make_task("T001"), t1["attempts"], MODELS) == MODELS["opus"]  # the last attempt stays on Opus
@@ -1581,16 +1585,41 @@ def test_plan_fix_requeue_refuses_without_the_decision_or_a_changed_plan() -> No
     no_decision = _evidence(decisions_now=[630])
     assert cycle.plan_fix_refusal(capped, "T001", "D-677", no_decision, NOW) == "D-677 is not in docs/decisions.md on main"
     old = cycle.plan_fix_refusal(capped, "T001", "D-630", _evidence(), NOW)
-    assert old.startswith("D-630 was already on main when T001 was blocked")
+    assert old.startswith("D-630 was already on main when T001's last attempt started")
     unchanged = cycle.plan_fix_refusal(capped, "T001", "D-677", _evidence(plan_now="a" * 64), NOW)
-    assert unchanged.startswith("T001's kit/tasks.json entry and prompt file are unchanged on main since it was blocked")
+    assert unchanged.startswith(f"T001's kit/tasks.json entry and prompt file are unchanged on main since its last attempt started at {STARTED}")
     assert cycle.plan_fix_refusal(capped, "T001", "D-677", _evidence(plan_then=None), NOW).startswith("kit/tasks.json could not be read")
     assert cycle.plan_fix_refusal(capped, "T001", "D-677", None, NOW).startswith("git could not read main")
     moved = cycle.plan_fix_refusal(capped, "T001", "D-677", _evidence(since=st.iso(NOW)), NOW)
-    assert moved.startswith(f"main was read for {st.iso(NOW)}, but T001 was blocked at {ENDED}")
+    assert moved.startswith(f"main was read for {st.iso(NOW)}, but T001's last attempt started at {STARTED}")
     for evidence in (no_decision, _evidence(plan_now="a" * 64), None):
         assert cycle.requeue_plan_fix(capped, "T001", "x", "D-677", evidence, NOW, "m") is None
     assert cycle.plan_fix_refusal(capped, "T001", "D-677", _evidence(), NOW) == ""
+
+
+def test_plan_fix_requeue_needs_the_decision_newly_listed_in_the_tasks_own_decisions() -> None:
+    """An unrelated decision (a prompt-wide regeneration changes every prompt) never frees a capped task."""
+    capped = _capped()
+    unlisted = _evidence(task_decisions_now=["D-493"])
+    assert cycle.plan_fix_refusal(capped, "T001", "D-677", unlisted, NOW) == (
+        "D-677 is not in T001's decisions list in kit/tasks.json on main; the plan fix must list it there")
+    listed_before = _evidence(task_decisions_then=["D-493", "D-677"])
+    assert cycle.plan_fix_refusal(capped, "T001", "D-677", listed_before, NOW) == (
+        "D-677 was already in T001's decisions list when its last attempt started (main base0001base)")
+    for evidence in (unlisted, listed_before):
+        assert cycle.requeue_plan_fix(capped, "T001", "x", "D-677", evidence, NOW, "m") is None
+
+
+def test_plan_fix_requeue_counts_a_fix_merged_while_the_last_attempt_ran() -> None:
+    """Measured from the last attempt's start: a fix merged between its start and its end still counts;
+    an attempt with no recorded start falls back to its end."""
+    assert cycle.plan_since(st.entry(_capped(), "T001")) == STARTED
+    assert cycle.requeue_plan_fix(_capped(), "T001", "fixed mid-attempt", "D-677", _evidence(), NOW, "m") is not None
+    assert cycle.plan_fix_refusal(_capped(), "T001", "D-677", _evidence(since=ENDED), NOW).startswith(
+        f"main was read for {ENDED}, but T001's last attempt started at {STARTED}")
+    no_start = st.with_task(_capped(), "T001", history=[{"attempt": 3, "ended_at": ENDED, "result": "BLOCKED"}])
+    assert cycle.plan_since(st.entry(no_start, "T001")) == ENDED
+    assert cycle.plan_fix_refusal(no_start, "T001", "D-677", _evidence(since=ENDED), NOW) == ""
 
 
 def test_plan_fix_requeue_refuses_twice_a_live_lease_and_what_plain_requeue_refuses() -> None:
@@ -1607,8 +1636,8 @@ def test_plan_fix_requeue_refuses_twice_a_live_lease_and_what_plain_requeue_refu
     assert cycle.plan_fix_precheck(_capped(), "T001", "677", NOW).startswith("--plan-fix needs a decision number like D-677")
     fix = st.with_task(_capped(), st.FIX_MAIN, status=st.BLOCKED, attempts=3)
     assert cycle.plan_fix_precheck(fix, st.FIX_MAIN, "D-677", NOW).startswith("FIX-MAIN is never re-queued")
-    no_record = _blocked(3, OWN_WORK)  # no history: no record of when it was blocked
-    assert cycle.plan_fix_precheck(no_record, "T001", "D-677", NOW) == "no record of when T001 was blocked (its last attempt has no end time)"
+    no_record = _blocked(3, OWN_WORK)  # no history: no record of its last attempt
+    assert cycle.plan_fix_precheck(no_record, "T001", "D-677", NOW) == "no record of when T001's last attempt started or ended"
     assert cycle.requeue_refusal(_capped(), "T001", NOW).endswith("then --plan-fix D-### gives one more (D-677)")
 
 
@@ -1618,8 +1647,8 @@ def test_drill_plan_fix_requeue_runs_one_opus_attempt_and_blocks_again(tmp_path:
     for minute in range(3):
         cycle.run_cycle(cfg, env, NOW + timedelta(minutes=minute))
     assert st.status(env.store, "T001") == st.BLOCKED and st.entry(env.store, "T001")["attempts"] == 3
-    since = cycle.blocked_at(st.entry(env.store, "T001"))
-    assert since == st.iso(NOW)  # the end of the attempt that used the last of the three
+    since = cycle.plan_since(st.entry(env.store, "T001"))
+    assert since and since == st.entry(env.store, "T001")["history"][-1]["started_at"]  # the start of the third attempt
     fixed = env.update_state(lambda s: cycle.requeue_plan_fix(s, "T001", "plan fixed", "D-677", _evidence(since=since), NOW, "manual-1"))
     assert fixed is not None and st.status(env.store, "T001") == st.QUEUED
     env.runs.clear()
@@ -1627,9 +1656,10 @@ def test_drill_plan_fix_requeue_runs_one_opus_attempt_and_blocks_again(tmp_path:
     assert env.runs == [("T001", MODELS["opus"], "oracle stale\nre-queued after plan fix D-677: plan fixed")]
     t1 = st.entry(env.store, "T001")
     assert t1["attempts"] == 4 and len(t1["history"]) == 4 and t1["history"][-1]["model"] == MODELS["opus"]
-    later = cycle.blocked_at(t1)
+    later = cycle.plan_since(t1)
     assert cycle.plan_fix_refusal(env.store, "T001", "D-677", _evidence(since=later), NOW).startswith("T001 was already re-queued once")
-    unchanged = _evidence(since=later, decisions_then=[630, 646, 677], decisions_now=[630, 646, 677, 680], plan_then="b" * 64, plan_now="b" * 64)
+    unchanged = _evidence(since=later, decisions_then=[630, 646, 677], decisions_now=[630, 646, 677, 680],
+                          task_decisions_now=["D-493", "D-677", "D-680"], plan_then="b" * 64, plan_now="b" * 64)
     assert "unchanged on main" in cycle.plan_fix_refusal(env.store, "T001", "D-680", unchanged, NOW)
 
 

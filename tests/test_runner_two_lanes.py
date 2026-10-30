@@ -716,7 +716,7 @@ def test_plan_fix_requeue_with_two_lanes_waits_only_for_a_lease_that_could_meet_
     capped = st.with_task(st.sync_graph(st.new_state(), graph), "T001", status=st.BLOCKED, attempts=3, reason="smoke red",
                           history=[{"attempt": 3, "ended_at": ended, "result": "BLOCKED"}])
     evidence = {"since": ended, "base": "b" * 40, "head": "h" * 40, "plan_then": "1" * 64, "plan_now": "2" * 64,
-                "decisions_then": [646], "decisions_now": [646, 677]}
+                "decisions_then": [646], "decisions_now": [646, 677], "task_decisions_then": [], "task_decisions_now": ["D-677"]}
     cfg = two_lane(graph, tmp_path, "s1", None)
     side = st.claim(capped, "T002", "b", NOW, lane="2")
     assert cycle.plan_fix_refusal(side, "T001", "D-677", evidence, NOW, cfg) == ""

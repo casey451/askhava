@@ -1387,13 +1387,16 @@ def requeue(state: State, tid: str, reason: str, now: datetime, by: str, cfg: Co
                         requeues=[*entry.get("requeues", []), note])
 
 
-def blocked_at(entry: dict[str, Any]) -> str | None:
-    """When a task that used all its attempts was blocked: the end of its last attempt, the
-    `ended_at` of its last `history` entry (D-677); None when the state has no such record."""
+def plan_since(entry: dict[str, Any]) -> str | None:
+    """The moment a capped task's plan is measured from (D-677): the start of its last attempt (the
+    `started_at` of its last `history` entry), or that attempt's `ended_at` when no start was recorded.
+    The start, not the end, so a plan fix merged while the final attempt ran still counts. None when the
+    state has no such record."""
     history = entry.get("history") or []
     if not history:
         return None
-    return str(history[-1].get("ended_at") or "") or None
+    last = history[-1]
+    return str(last.get("started_at") or last.get("ended_at") or "") or None
 
 
 def plan_fix_precheck(state: State, tid: str, decision: str, now: datetime, cfg: Config | None = None) -> str:
@@ -1412,8 +1415,8 @@ def plan_fix_precheck(state: State, tid: str, decision: str, now: datetime, cfg:
         return f"{tid} has attempts left ({used} of {MAX_ATTEMPTS} used); --plan-fix is only for a task that used them all"
     if any(r.get("plan_fix") == decision for r in entry.get("requeues") or []):
         return f"{tid} was already re-queued once for {decision}; a plan fix gives exactly one more attempt"
-    if not blocked_at(entry):
-        return f"no record of when {tid} was blocked (its last attempt has no end time)"
+    if not plan_since(entry):
+        return f"no record of when {tid}'s last attempt started or ended"
     held = _requeue_blockers(state, tid, now, cfg)
     return f"a live lease is held ({', '.join(held)}); try again once it ends" if held else ""
 
@@ -1427,27 +1430,38 @@ def plan_fix_refusal(
     list, with one exception: a logged plan fix gives it exactly one more attempt. That needs the task
     BLOCKED with every attempt used, no earlier plan-fix re-queue for this decision, no lease that
     matters live (as for `--requeue`), and, on main (`evidence`, GitHubEnv.plan_evidence read for
-    the time the task was blocked): the decision in docs/decisions.md now but not then, and the task's
-    plan (its kit/tasks.json entry and its prompt file, verify.plan_fingerprint) changed since then."""
+    `plan_since`, the start of the task's last attempt), the checks of _plan_fix_main_refusal."""
     first = plan_fix_precheck(state, tid, decision, now, cfg)
     if first:
         return first
     if evidence is None:
-        return f"git could not read main at the time {tid} was blocked; nothing was re-queued"
-    since, base = blocked_at(st.entry(state, tid)), str(evidence.get("base"))[:12]
+        return f"git could not read main at the start of {tid}'s last attempt; nothing was re-queued"
+    since = plan_since(st.entry(state, tid))
     if evidence.get("since") != since:
-        return f"main was read for {evidence.get('since')}, but {tid} was blocked at {since}; try again"
-    number = int(decision[2:])
+        return f"main was read for {evidence.get('since')}, but {tid}'s last attempt started at {since}; try again"
+    return _plan_fix_main_refusal(tid, decision, evidence)
+
+
+def _plan_fix_main_refusal(tid: str, decision: str, evidence: dict[str, Any]) -> str:
+    """D-677 on main, then (main's commit at `plan_since`) against now: the decision is in docs/decisions.md
+    and in the task's own `decisions` list in kit/tasks.json now and in neither then, and the task's plan
+    (its kit/tasks.json entry and prompt file, verify.plan_fingerprint) changed. The list check keeps an
+    unrelated decision, after a regeneration of every prompt for example, from freeing a capped task."""
+    since, base, number = evidence.get("since"), str(evidence.get("base"))[:12], int(decision[2:])
     if number not in evidence.get("decisions_now", []):
         return f"{decision} is not in docs/decisions.md on main"
     if number in evidence.get("decisions_then", []):
-        return f"{decision} was already on main when {tid} was blocked (main {base}); name the plan fix's own decision"
+        return f"{decision} was already on main when {tid}'s last attempt started (main {base}); name the plan fix's own decision"
+    if decision not in evidence.get("task_decisions_now", []):
+        return f"{decision} is not in {tid}'s decisions list in kit/tasks.json on main; the plan fix must list it there"
+    if decision in evidence.get("task_decisions_then", []):
+        return f"{decision} was already in {tid}'s decisions list when its last attempt started (main {base})"
     then, later = evidence.get("plan_then"), evidence.get("plan_now")
     if not then or not later:
         return f"kit/tasks.json could not be read on main (then {base} or now); nothing was re-queued"
     if then == later:
-        return (f"{tid}'s kit/tasks.json entry and prompt file are unchanged on main since it was blocked at {since} "
-                f"(main {base}); a plan fix must change one of them")
+        return (f"{tid}'s kit/tasks.json entry and prompt file are unchanged on main since its last attempt started at "
+                f"{since} (main {base}); a plan fix must change one of them")
     return ""
 
 
@@ -1458,12 +1472,13 @@ def requeue_plan_fix(
     """BLOCKED to QUEUED for exactly one more attempt after a plan fix (D-677); None when refused
     (plan_fix_refusal). `attempts` stays as it is, so attempt_model keeps the attempt on Opus and its
     failure blocks the task again (record_failure); the re-queue is kept in `requeues` with the decision,
-    main's commit at the block and now, and both plan fingerprints, so anyone can check it."""
+    the moment measured from (`plan_since`), main's commit then and now, and both plan fingerprints, so
+    anyone can check it."""
     if evidence is None or plan_fix_refusal(state, tid, decision, evidence, now, cfg):
         return None
     entry = st.entry(state, tid)
     note = {"at": st.iso(now), "reason": reason, "by": by, "was": entry.get("reason"), "attempts": int(entry.get("attempts", 0)),
-            "plan_fix": decision, "plan_base": evidence["base"], "plan_head": evidence["head"],
+            "plan_fix": decision, "plan_since": evidence["since"], "plan_base": evidence["base"], "plan_head": evidence["head"],
             "plan_then": evidence["plan_then"], "plan_now": evidence["plan_now"]}
     earlier = str(entry.get("last_failure") or "")
     line = f"re-queued after plan fix {decision}: {reason}"
