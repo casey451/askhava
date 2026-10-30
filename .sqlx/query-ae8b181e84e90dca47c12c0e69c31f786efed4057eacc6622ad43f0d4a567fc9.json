@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE core.task SET dead_at = $1, lease_owner = NULL, lease_until = NULL, last_error = $2 WHERE done_at IS NULL AND dead_at IS NULL AND attempts >= max_attempts AND lease_until < $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ae8b181e84e90dca47c12c0e69c31f786efed4057eacc6622ad43f0d4a567fc9"
+}

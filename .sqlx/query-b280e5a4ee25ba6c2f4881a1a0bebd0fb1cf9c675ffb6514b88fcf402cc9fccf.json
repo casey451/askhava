@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE core.task SET lease_owner = NULL, lease_until = NULL, attempts = attempts - 1 WHERE lease_owner = $1 AND done_at IS NULL AND dead_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b280e5a4ee25ba6c2f4881a1a0bebd0fb1cf9c675ffb6514b88fcf402cc9fccf"
+}

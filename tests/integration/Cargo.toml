@@ -11,6 +11,8 @@ sqlx = { workspace = true }
 
 [dev-dependencies]
 askhava-core = { workspace = true }
+axum = { workspace = true }
+jiff = { workspace = true }
 secrecy = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
