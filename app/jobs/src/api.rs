@@ -3,13 +3,16 @@
 //! The twelve statuses and their arrows (JOB-001, JOB-002), creating and moving a job with its
 //! history, audit row and timer (JOB-005, JOB-006), restarting a wait (D-807), and the timer
 //! handler `server` registers under [`TIMER_KIND`] (JOB-003, JOB-006), and the quote-page link
-//! tokens: issue, revoke and resolve (SEC-037, PICK-028).
+//! tokens: issue, revoke and resolve (SEC-037, PICK-028), and job numbers, never reused, even after
+//! a restore (JOB-024).
 
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 pub use crate::models::{JobRow, JobsError};
-pub use crate::service::{TIMER_KIND, create, move_to, restart_timer, run_timer};
+pub use crate::service::{
+    TIMER_KIND, create, job_number, move_to, raise_number_floor, restart_timer, run_timer,
+};
 pub use crate::status::JobStatus;
 
 /// Quote-page link tokens (SEC-037, PICK-028, D-491).
