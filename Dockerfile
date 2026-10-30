@@ -3,7 +3,7 @@
 # ecosystem proposes new digests. There is deliberately no `# syntax=` line
 # (it would pull another image, D-491). Web: `askhava-server` (the default).
 # Worker: start the same image with the entrypoint `worker`. Never enable
-# `test-control` here (SEC-035).
+# `test-control` here (SEC-035). Running the worker needs the entrypoint override.
 
 FROM rust:1.99.0-slim-trixie@sha256:2752b332db73fdbb7dc576f06c82ed1f312005784ef913d7e04a28f5f55dc581 AS chef
 # rustup would otherwise fetch clippy and rustfmt for rust-toolchain.toml.
@@ -16,6 +16,8 @@ COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS builder
+# SQLx must never reach for a database during the build (offline query data).
+ENV SQLX_OFFLINE=true
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --locked --recipe-path recipe.json -p askhava-server
 COPY . .

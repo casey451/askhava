@@ -368,7 +368,7 @@ Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_s
 | @axe-core/playwright | 4.13.0 (2026-08-11) | MPL-2.0 | axe in Playwright; 4.14.0 is past the cutoff |
 | eslint / typescript-eslint | 10.12.0 / 8.71.2 | MIT | TypeScript lint |
 | gitleaks | 8.28.0 (pinned with its SHA-256 in `ci.yml` and `backup-runner.yml`, run with `--redact --verbose`, D-582) | MIT | Secret scan |
-| stripe/stripe-mock image, OWASP ZAP image, Docker base image | **verify at T009 / T019** | — | Pinned by digest (SEC-021); the base is a Debian slim image with `libssl3` and CA certificates |
+| stripe/stripe-mock image, OWASP ZAP image, Docker base image | `rust:1.99.0-slim-trixie` and `debian:trixie-slim` (digests in `Dockerfile`, D-652); stripe-mock and ZAP images **verify at T009** | — | Pinned by digest (SEC-021); the runtime is a Debian slim image with `libssl3t64` and CA certificates |
 
 The architecture test's own helpers (a TOML reader, `regex`, `walkdir` or `cargo_metadata`) are pinned by T175 under the new-library rule and added to `kit/allowed_crates.txt` in the same decision (D-481). `Ci` caches the Cargo registry and `target/` with `Swatinem/rust-cache` pinned by commit SHA, keyed on `Cargo.lock` and the toolchain, with `CARGO_INCREMENTAL=0` and `[profile.dev] debug = "line-tables-only"`; the per-crate clippy runs are dropped in favour of the single `cargo build -p askhava-server` boundary build; the audit tools install prebuilt and pinned; coverage runs in its own parallel job; a warm run must finish in 15 minutes or less, and the Actions-minutes budget is confirmed with Casey before T001 (D-481).
 

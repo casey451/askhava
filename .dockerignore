@@ -5,8 +5,8 @@
 .env.*
 **/.env
 **/.env.*
-*.pem
-*.key
+**/*.pem
+**/*.key
 target
 node_modules
 sources

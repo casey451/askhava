@@ -38,10 +38,7 @@ fn unpinned_images(text: &str) -> Vec<String> {
             .find(|w| !w.starts_with("--"))
             .copied()
             .unwrap_or("");
-        let pinned = image
-            .split_once("@sha256:")
-            .is_some_and(|(_, digest)| is_sha256_hex(digest));
-        if !pinned && !stages.iter().any(|s| s == image) {
+        if !is_pinned(image) && !stages.iter().any(|s| s == image) {
             bad.push(image.to_string());
         }
         let stage = words
@@ -53,6 +50,105 @@ fn unpinned_images(text: &str) -> Vec<String> {
         }
     }
     bad
+}
+
+/// True for a `FROM`-style image reference pinned by a 64-hex digest.
+fn is_pinned(image: &str) -> bool {
+    image
+        .split_once("@sha256:")
+        .is_some_and(|(_, digest)| is_sha256_hex(digest))
+}
+
+/// The value of a `from=` or `--from=` option in a line, if any.
+fn from_option(line: &str) -> Option<&str> {
+    line.split(|c: char| c.is_whitespace() || c == ',')
+        .find_map(|w| {
+            w.strip_prefix("--from=")
+                .or_else(|| w.strip_prefix("from="))
+        })
+}
+
+/// Returns each `COPY --from=` or `RUN --mount ... from=` source that is
+/// neither an earlier stage name nor pinned by digest.
+fn unpinned_sources(text: &str) -> Vec<String> {
+    let mut stages: Vec<String> = Vec::new();
+    let mut bad = Vec::new();
+    for line in text.lines().map(str::trim_start) {
+        let words: Vec<&str> = line.split_whitespace().collect();
+        if let Some(src) = from_option(line)
+            && !is_pinned(src)
+            && !stages.iter().any(|s| s == src)
+        {
+            bad.push(src.to_string());
+        }
+        let name = words
+            .iter()
+            .position(|w| w.eq_ignore_ascii_case("AS"))
+            .and_then(|pos| words.get(pos + 1));
+        if let (true, Some(name)) = (
+            words
+                .first()
+                .is_some_and(|w| w.eq_ignore_ascii_case("FROM")),
+            name,
+        ) {
+            stages.push((*name).to_string());
+        }
+    }
+    bad
+}
+
+/// Returns each cargo line that turns on features (SEC-035).
+fn feature_lines(text: &str) -> Vec<String> {
+    text.lines()
+        .filter(|l| !l.trim_start().starts_with('#'))
+        .filter(|l| l.contains("cargo "))
+        .filter(|l| l.contains("--features") || l.contains("--all-features"))
+        .map(str::to_string)
+        .collect()
+}
+
+/// True when `USER 10001` follows the last `FROM`.
+fn runs_as_10001(text: &str) -> bool {
+    let lines: Vec<&str> = text.lines().map(str::trim).collect();
+    let last_from = lines
+        .iter()
+        .rposition(|l| l.to_ascii_uppercase().starts_with("FROM "));
+    last_from.is_some_and(|i| lines[i..].contains(&"USER 10001"))
+}
+
+#[test]
+fn td_sec_24_copy_and_mount_sources_are_stages_or_pinned() {
+    assert_eq!(unpinned_sources(&dockerfile()), Vec::<String>::new());
+}
+
+#[test]
+fn td_sec_24_source_checker_fails_on_an_unpinned_source() {
+    let digest = "a".repeat(64);
+    let sample = format!(
+        "FROM rust@sha256:{digest} AS b\n\
+         COPY --from=b /x /x\n\
+         COPY --from=alpine:3 /y /y\n\
+         RUN --mount=type=bind,from=busybox,target=/z true\n\
+         COPY --from=ok@sha256:{digest} /w /w\n"
+    );
+    assert_eq!(unpinned_sources(&sample), vec!["alpine:3", "busybox"]);
+}
+
+#[test]
+fn td_sec_24_no_cargo_features_in_the_image() {
+    assert_eq!(feature_lines(&dockerfile()), Vec::<String>::new());
+    let sample = "RUN cargo build --features test-control\n\
+                  RUN cargo build --all-features\n\
+                  RUN cargo build --locked\n# cargo --features\n";
+    assert_eq!(feature_lines(sample).len(), 2);
+}
+
+#[test]
+fn td_sec_24_image_runs_as_user_10001_in_the_last_stage() {
+    assert!(runs_as_10001(&dockerfile()));
+    assert!(!runs_as_10001("FROM a\nUSER 10001\nFROM b\n"));
+    assert!(!runs_as_10001("FROM a\nUSER root\n"));
+    assert!(runs_as_10001("FROM a\nFROM b\nUSER 10001\n"));
 }
 
 #[test]
