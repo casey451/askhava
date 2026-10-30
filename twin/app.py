@@ -147,7 +147,6 @@ class App:
         self.view_tokens = {}          # quote-page link token -> request id (view only)
         self.violations_inline = []
         self.last_inbound = {}         # phone -> time of their last text to us (for the 'direct reply' quiet-hours rule)
-        self.prev_inbound = {}         # phone -> time of the text before that (INT-010's window for joining an open job)
         self.timers = {}               # timer table (lives in the database): id -> (due time, action, args)
         self.replaying = False
         self.replay_sent = None
@@ -352,7 +351,6 @@ class App:
             self.log("inbound_duplicate_ignored", phone=frm)
             return
         self.processed_inbound.add(key)
-        self.prev_inbound[frm] = self.last_inbound.get(frm, -1e9)
         self.last_inbound[frm] = self.sim.now
         b = body.strip()
         up = b.upper()
@@ -422,14 +420,17 @@ class App:
             h["_em_at"] = self.sim.now
             if cv:
                 cv["emergency_sent"] = True
-        if self.fx("v93") and cv and cv["stage"] == "consent" and self.sim.now - cv["started"] > DAY:
-            h["convo"] = cv = None                    # never answered the consent text: a day later, a message is a new request (CON-001, INT-023)
         if H and cv and cv["stage"] == "consent":
-            if re.match(r"^(OK|OKAY|YES|Y|SI|SÍ|SURE)\b", up):
+            ok_ = re.match(r"^(OK|OKAY|YES|Y|SI|SÍ|SURE)\b", up)
+            if not ok_:
+                cv["text"] += " " + b                 # extra details: keep them with the first message
+            # CON-027: no reply is ever needed and the consent text is never sent twice for one request, so a message
+            # a day after an unanswered consent text goes on with this request, first message kept (INT-023)
+            go_on = self.fx("v93") and self.sim.now - cv["started"] > DAY
+            if ok_ or go_on:
                 h["consented"] = True
                 h["consent_record"] = dict(at=self.sim.now, reply=b, prompt_version="v9.3")
                 return self.run_intake(h, phone)
-            cv["text"] += " " + b                     # extra details: keep them, ask once more
             if not cv.get("reprompted"):
                 cv["reprompted"] = True
                 self.text(phone, "Got it. Reply OK to start (it's free; terms: askhava.example/terms).", "consent_again", conversational=True)
@@ -448,17 +449,19 @@ class App:
             asked = [self.requests[x] for x in h["requests"] if self.requests[x].get("onsite_asked") and not self.requests[x].get("onsite")
                      and (not self.fx("v93") or self.requests[x]["status"] not in TERMINAL)]
             if asked:
-                asked[-1]["onsite"] = b; return
+                asked[-1]["onsite"] = b; asked[-1]["last_ho_msg"] = self.sim.now; return
         if up == "LINK":
             for rid in reversed(h["requests"]):
                 r = self.requests[rid]
                 if r["status"] not in TERMINAL:
+                    r["last_ho_msg"] = self.sim.now
                     self.send_quote_link(r, conversational=True); return
             return
         if up == "LIST":
             for rid in reversed(h["requests"]):
                 r = self.requests[rid]
                 if r["status"] in ("QUOTES_READY", "AWAITING_YES"):
+                    r["last_ho_msg"] = self.sim.now
                     return self.send_quote_list(r, phone)
             return
         if self.fx("v93"):
@@ -515,7 +518,7 @@ class App:
             return
         # a new request
         truth = self.sim.truth_for(phone, b)          # opaque: only the fake AI uses it, to decide when to make a mistake
-        h["convo"] = dict(stage="consent" if not h["consented"] else "new", text=b, media=media, _sim_truth=truth, started=self.sim.now, prev_msg=self.prev_inbound.get(phone, -1e9),
+        h["convo"] = dict(stage="consent" if not h["consented"] else "new", text=b, media=media, _sim_truth=truth, started=self.sim.now,
                           zip=(re.search(r"\b(86\d{3})\b", b).group(1) if re.search(r"\b(86\d{3})\b", b) else None))
         if H and h.get("_em_at") == self.sim.now:
             h["convo"]["emergency_sent"] = True
@@ -696,8 +699,9 @@ class App:
         # duplicate check: same phone + trade + property, still open
         for rid in h["requests"][:-1]:
             o = self.requests[rid]
-            # INT-010 (D-485): the 2 hours run from the open job's last homeowner message, not from when it was opened
-            window = self.sim.now - o["created"] < 120 or (self.fx("v93") and cv["started"] - 120 < cv["prev_msg"] and cv["prev_msg"] >= o["created"])
+            # INT-010 (D-485): the 2 hours run from that open job's own last homeowner message, not from when it was
+            # opened nor from a message about another job
+            window = self.sim.now - o["created"] < 120 or (self.fx("v93") and cv["started"] - o.get("last_ho_msg", -1e9) < 120)
             same_job = o["trade"] == r["trade"] or (self.cfg.get("fixes", {}).get("dup_ignore_trade_2h") and window)
             if self.fx("v93") and same_job and not window:
                 # past 2 hours, the same trade is only the same job if the words mostly match (a different leak is a new job)
@@ -707,6 +711,7 @@ class App:
             if (same_job and o["zip"] == r["zip"] and o["status"] not in TERMINAL) or resent:
                 self.set_status(r, "DUPLICATE")
                 r["merged_into"] = rid
+                o["last_ho_msg"] = cv["started"]
                 self.text(phone, f"Looks like this is the same job as request {rid}, so we've added it there.", "duplicate", rid, conversational=True)
                 return
         self.set_status(r, "OPEN")
@@ -1151,10 +1156,12 @@ class App:
         for rid in reversed(h["requests"]):
             r = self.requests[rid]
             if r["status"] == "AWAITING_YES" and n is None:
+                r["last_ho_msg"] = self.sim.now
                 return self.start_pick(r, r["pending_choice"]["qid"], phone)
             if r["status"] in ("QUOTES_READY", "AWAITING_YES") and n is not None and r.get("list_mode"):
                 listed = r.get("list_qids") or self.visible_quotes(r)
                 if 1 <= n <= len(listed):
+                    r["last_ho_msg"] = self.sim.now
                     if listed[n - 1] not in self.visible_quotes(r):
                         return self.send_quote_list(r, phone)     # the quote that number named is gone: list them again
                     if r["status"] == "QUOTES_READY":

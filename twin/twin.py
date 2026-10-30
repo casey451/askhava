@@ -813,9 +813,9 @@ def check(sim):
         if body.strip().upper() in ("HELP", "INFO"):
             help_at[frm].append(t)
     def help_reply(m):
-        """The HELP reply, which an opted-out number still gets (CON-018, D-131): judged from the carrier log."""
-        b_ = m["body"].lower()
-        return "ask hava" in b_ and ("@" in b_ or "555" in b_) and any(0 <= m["at"] - t <= 5 for t in help_at.get(m["to"], []))
+        """The HELP reply, which an opted-out number still gets (CON-018, D-131): the carrier log's kind, sent within
+        5 minutes of a HELP or INFO from that number."""
+        return m["kind"] == "help" and any(0 <= m["at"] - t <= 5 for t in help_at.get(m["to"], []))
     stop_at = {}
     for frm, body, t, sid in sim.sms.inbound_log:
         if body.strip().upper() in ("STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"):
@@ -894,7 +894,8 @@ def check(sim):
         if not any(s_ == "OPEN" for _, s_ in r["history"]) or r["_sim_truth"].get("emergency"):
             continue
         jt = r["_sim_truth"].get("job_type")
-        # a restore replay re-stamps the app's card records, so the carrier's earlier send time counts (D-525)
+        # the carrier's send time counts in every scenario; it differs from the app's card record only when a restore
+        # replay re-stamped that record later (D-525)
         first_cards = [app.cards[k]["at"] for k in r["cards"]] + card_sent.get(r["id"], [])
         t_send = min(first_cards) if first_cards else r["created"]
         carded = {app.cards[k]["co"] for k in r["cards"]}
@@ -948,7 +949,8 @@ def check(sim):
             closed_first = any(s_ == "CANCELLED" and t <= dl for t, s_ in r["history"])
             if dl < end and not closed_first:
                 msgs = [m for m in sim.sms.log if m["meta"].get("ref") == r["id"] and m["kind"] in ("quote_link", "no_quotes_yet", "not_covered") and m["at"] <= dl and m["status"] == "delivered"]
-                msgs += [e for e in sim.email_deliveries if e["ref"] == r["id"] and e["kind"] in ("quote_link", "no_quotes_yet") and e["t"] <= dl]
+                # the same three answers count by email as by text: "not covered" too (D-525)
+                msgs += [e for e in sim.email_deliveries if e["ref"] == r["id"] and e["kind"] in ("quote_link", "no_quotes_yet", "not_covered") and e["t"] <= dl]
                 msgs += [c for c in sim.manual_contacts if c["ref"] == r["id"] and c["t"] <= dl]
                 if not msgs:
                     bad("promise_missed", f"request {r['id']}")
