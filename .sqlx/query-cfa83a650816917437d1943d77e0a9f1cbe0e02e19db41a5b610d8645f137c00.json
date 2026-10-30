@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT i.contact_id FROM privacy.contact_index i JOIN unnest($2::int4[], $3::bytea[]) AS k(v, d) ON i.key_version = k.v AND i.digest = k.d WHERE i.purpose = $1 LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "contact_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.contact_index",
+            "name": "contact_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4Array",
+        "ByteaArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "cfa83a650816917437d1943d77e0a9f1cbe0e02e19db41a5b610d8645f137c00"
+}

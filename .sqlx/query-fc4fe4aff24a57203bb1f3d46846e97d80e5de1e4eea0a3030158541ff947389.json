@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE privacy.contact SET name = $2, phone = $3, email = $4, address = $5, onsite_contact = $6 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bytea",
+        "Bytea",
+        "Bytea",
+        "Bytea",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fc4fe4aff24a57203bb1f3d46846e97d80e5de1e4eea0a3030158541ff947389"
+}

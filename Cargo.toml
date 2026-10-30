@@ -18,6 +18,7 @@ askhava-core = { path = "app/core" }
 askhava-ops = { path = "app/ops" }
 askhava-catalog = { path = "app/catalog" }
 askhava-adapters = { path = "app/adapters" }
+askhava-privacy = { path = "app/privacy" }
 axum = { version = "=0.8.9", features = ["multipart"] }
 axum-extra = { version = "=0.12.6", features = ["cookie"] }
 tokio = { version = "=1.53.3", features = ["macros", "rt-multi-thread", "signal", "net", "time", "sync"] }

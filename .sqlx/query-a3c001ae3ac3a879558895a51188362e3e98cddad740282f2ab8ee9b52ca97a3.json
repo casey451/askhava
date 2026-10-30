@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT coalesce(current_setting('askhava.vault_probe', true), '') = 'open' AS \"open!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "open!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "a3c001ae3ac3a879558895a51188362e3e98cddad740282f2ab8ee9b52ca97a3"
+}

@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT name, phone, email, address, onsite_contact FROM privacy.contact WHERE id = $1 FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "privacy.contact",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "phone",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "privacy.contact",
+            "name": "phone"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "email",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "privacy.contact",
+            "name": "email"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "address",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "privacy.contact",
+            "name": "address"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "onsite_contact",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "privacy.contact",
+            "name": "onsite_contact"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "a4b83b9d317aeb99b39a4f68c98b3b51dfb3cfe265abc466e598c71731b297fa"
+}
