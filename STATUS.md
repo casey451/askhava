@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-30T07:09:08Z by runner ca099c544306 (actions).
+Updated 2026-10-30T07:09:16Z by runner ca099c544306 (actions).
 
 **Requirements verified:** 0 of 725 (0.0%) · partial 36 · unstarted 689
 **Tasks merged (throughput only):** 9 of 221
@@ -46,10 +46,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 13 of 15 done
 
 ## Running
-- T167 (lease until 2026-10-30T09:50:01Z)
+- nothing
 
 ## Needs attention
 - BLOCKED T008: stage proof missing (the proof waits for: T170 is MERGE_PENDING; T167 is QUEUED)
 
 ## Last usage reading
-- {"task": "T170", "at": "2026-10-30T06:45:00Z", "cache_read_input_tokens": 1377353, "cache_creation_input_tokens": 123314, "input_tokens": 80, "output_tokens": 23942}
+- {"task": "T167", "at": "2026-10-30T07:09:08Z", "input_tokens": 185, "output_tokens": 106682, "cache_read_input_tokens": 7426156, "cache_creation_input_tokens": 345700}
