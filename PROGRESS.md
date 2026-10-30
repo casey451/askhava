@@ -201,3 +201,4 @@
 - 2026-10-30T13:23:34Z runner 1546cc4fc217 (actions): {"T233": "QUEUED -> IN_PROGRESS"}; T233 estimated 532k tokens (calibrated); five-hour window has 23.6M left, week 423.2M after 862k still running in another lane (ledger); claimed
 - 2026-10-30T13:23:38Z runner 1546cc4fc217 (actions): {}
 - 2026-10-30T13:25:03Z runner c9ed5f01225f (actions): {}
+- 2026-10-30T13:25:10Z runner c9ed5f01225f (actions): {"T011": "IN_PROGRESS -> MERGE_PENDING"}
