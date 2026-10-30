@@ -150,7 +150,7 @@ The required disclosures stay word for word; only the brand name changes.
 2. An invite to every service business already listed on Ask Hava. That's about 690 businesses, contacted by email or a listing-page notice, never by unsolicited texts.
 3. Small flyers or QR cards for vacation-rental owners and property managers. ("Turnover cleaner cancelled? Text Ask Hava.")
 4. A simple "How Hava works" short video for Facebook.
-5. A local news or radio angle: "A Havasu officer builds a free way for neighbors to get repair quotes without phone tag." Use only if you're comfortable with your role being mentioned.
+5. A local news or radio angle: "A Havasu local builds a free way for neighbors to get repair quotes without phone tag." Use only if you're comfortable with your role being mentioned.
 
 **Trust builders (only true ones)**
 1. A public "How we make money" page: businesses pay $25, $75 or $199 when picked; homeowners never pay; no paid rankings.

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import os
 import re
 import subprocess
 import sys
@@ -556,6 +557,79 @@ def test_requeue_command_moves_a_blocked_task_through_update_state(repo: dict[st
     assert task["requeues"][0]["reason"] == "the branch is fixed" and task["requeues"][0]["by"] == "manual-1"
     assert entry.requeue_task(args, cfg, env) == "requeue_refused: K10 is QUEUED, not BLOCKED"
     assert entry.requeue_task(entry.parse_args(["--requeue", "FIX-MAIN", "--reason", "x"]), cfg, env).startswith("requeue_refused:")
+
+
+def commit_main_at(repo: dict[str, Path], when: str, files: dict[str, str]) -> str:
+    """A commit on origin's main dated `when` (author and committer), as a merged plan change would be."""
+    seed = repo["seed"]
+    git(seed, "checkout", "-q", "main")
+    git(seed, "pull", "-q", "origin", "main")
+    for path, text in files.items():
+        (seed / path).parent.mkdir(parents=True, exist_ok=True)
+        (seed / path).write_text(text)
+    git(seed, "add", "-A")
+    dated = {**os.environ, "GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when}
+    subprocess.run(["git", "commit", "-qm", f"main at {when}"], cwd=seed, check=True, env=dated)
+    git(seed, "push", "-q", "origin", "main")
+    return git(seed, "rev-parse", "HEAD")
+
+
+def tasks_json(goal: str, decisions: list[str] | None = None, other: str = "another task") -> str:
+    return json.dumps({"tasks": [{**TASK, "goal": goal, "decisions": decisions or ["D-100"]}, {"id": "K11", "goal": other}]})
+
+
+def test_plan_fix_requeue_reads_main_at_the_last_attempts_start_and_now(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-677 live: since K10's last attempt started (fixes merged while it ran count), the decision must be new on
+    main and newly listed in K10's own decisions, and K10's entry or prompt must have changed."""
+    plan = {"kit/tasks.json": tasks_json("old goal"), "kit/prompts/K10.md": "old prompt\n", "docs/decisions.md": "- **D-100** old\n"}
+    base = commit_main_at(repo, "2026-11-01T09:00:00Z", plan)
+    env = make_env(repo["a"], tmp_path)
+    started, ended = "2026-11-01T10:00:00Z", "2026-11-01T12:00:00Z"
+    env.update_state(lambda s: st.with_task(s, "K10", status=st.BLOCKED, attempts=3, reason="smoke red: stale oracle",
+                                            history=[{"attempt": 3, "started_at": started, "ended_at": ended, "result": "BLOCKED"}]))
+    cfg = live_config("manual-1", tmp_path, env)
+
+    def requeue(decision: str) -> str:
+        return entry.requeue_task(entry.parse_args(["--requeue", "K10", "--plan-fix", decision, "--reason", "plan fixed"]), cfg, env)
+
+    assert requeue("D-101") == "requeue_refused: D-101 is not in docs/decisions.md on main"
+    commit_main_at(repo, "2026-11-01T10:30:00Z", {"docs/decisions.md": "- **D-100** old\n- **D-101** fix\n",
+                                                  "kit/tasks.json": tasks_json("old goal", other="changed"),
+                                                  "kit/prompts/K10.md": "regenerated with every other prompt\n"})
+    assert requeue("D-100").startswith("requeue_refused: D-100 was already on main when K10's last attempt started")
+    assert requeue("D-101") == ("requeue_refused: D-101 is not in K10's decisions list in kit/tasks.json on main; "
+                                "the plan fix must list it there")  # its prompt moved, but D-101 is not K10's
+    head = commit_main_at(repo, "2026-11-01T11:00:00Z", {"kit/tasks.json": tasks_json("owns the oracle", ["D-100", "D-101"], "changed")})
+    assert requeue("D-101") == "requeued_after_plan_fix"  # merged at 11:00, while the last attempt (10:00 to 12:00) ran
+    task = st.entry(json.loads(origin_file(repo, "claude/kit-state", "kit/state.json")), "K10")
+    assert task["status"] == st.QUEUED and task["attempts"] == 3 and task["reason"] is None
+    note = task["requeues"][-1]
+    assert note["plan_fix"] == "D-101" and note["plan_since"] == started and note["by"] == "manual-1"
+    assert note["plan_base"] == base and note["plan_head"] == head and note["plan_then"] != note["plan_now"]
+    assert requeue("D-101") == "requeue_refused: K10 is QUEUED, not BLOCKED"
+
+
+def test_plan_evidence_reads_the_tasks_own_decisions_at_both_commits(repo: dict[str, Path], tmp_path: Path) -> None:
+    commit_main_at(repo, "2026-11-01T09:00:00Z", {"kit/tasks.json": tasks_json("g"), "docs/decisions.md": "- **D-100** a\n"})
+    commit_main_at(repo, "2026-11-01T11:00:00Z", {"kit/tasks.json": tasks_json("g", ["D-100", "D-101"]),
+                                                  "docs/decisions.md": "- **D-100** a\n- **D-101** b\n"})
+    found = make_env(repo["a"], tmp_path).plan_evidence("K10", "kit/prompts/K10.md", "2026-11-01T10:00:00Z")
+    assert found is not None and found["since"] == "2026-11-01T10:00:00Z"
+    assert found["task_decisions_then"] == ["D-100"] and found["task_decisions_now"] == ["D-100", "D-101"]
+    assert found["decisions_then"] == [100] and found["decisions_now"] == [100, 101]
+    assert make_env(repo["a"], tmp_path).plan_evidence("K10", "kit/prompts/K10.md", "2000-01-01T00:00:00Z") is None  # no commit of main by then
+
+
+def test_plan_fingerprint_moves_only_with_the_tasks_own_entry_or_prompt() -> None:
+    first = verify.plan_fingerprint(tasks_json("old goal"), "prompt\n", "K10")
+    assert first and first == verify.plan_fingerprint(tasks_json("old goal").replace("another task", "x"), "prompt\n", "K10")
+    assert first != verify.plan_fingerprint(tasks_json("new goal"), "prompt\n", "K10")
+    assert first != verify.plan_fingerprint(tasks_json("old goal"), "prompt, regenerated\n", "K10")
+    assert verify.plan_fingerprint(None, "prompt\n", "K10") is None and verify.plan_fingerprint("not json", None, "K10") is None
+    assert verify.plan_fingerprint("[]", None, "K10") is None
+    assert verify.task_decisions(tasks_json("g", ["D-100", "D-101"]), "K10") == ["D-100", "D-101"]
+    assert verify.task_decisions(tasks_json("g"), "K11") == [] and verify.task_decisions(None, "K10") == []
+    assert verify.task_decisions("not json", "K10") == [] and verify.task_decisions('{"tasks": 3}', "K10") == []
 
 
 def test_after_from_a_session_without_the_lease_is_refused(repo: dict[str, Path], tmp_path: Path) -> None:
