@@ -1,9 +1,9 @@
 # Ask Hava build status
 
-Updated 2026-10-30T13:40:28Z by runner 1b96c0fc4dcc (actions).
+Updated 2026-10-30T13:48:01Z by runner cf6c76af7c68 (actions).
 
-**Requirements verified:** 1 of 725 (0.1%) · partial 45 · unstarted 679
-**Tasks merged (throughput only):** 19 of 221
+**Requirements verified:** 1 of 725 (0.1%) · partial 53 · unstarted 671
+**Tasks merged (throughput only):** 20 of 221
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -16,14 +16,14 @@ Updated 2026-10-30T13:40:28Z by runner 1b96c0fc4dcc (actions).
 | intake | 0 | 8 | 33 | 41 |
 | job-cards | 0 | 3 | 19 | 22 |
 | licensing | 0 | 10 | 38 | 48 |
-| lifecycle | 0 | 0 | 28 | 28 |
+| lifecycle | 0 | 1 | 27 | 28 |
 | messaging | 0 | 1 | 44 | 45 |
 | ops-recovery | 1 | 1 | 52 | 54 |
-| privacy | 0 | 2 | 29 | 31 |
+| privacy | 0 | 5 | 26 | 31 |
 | quiet-hours | 0 | 0 | 9 | 9 |
 | quotes-pick | 0 | 3 | 53 | 56 |
 | recurring | 0 | 2 | 9 | 11 |
-| security | 0 | 6 | 48 | 54 |
+| security | 0 | 10 | 44 | 54 |
 | terms | 0 | 0 | 35 | 35 |
 | website | 0 | 0 | 28 | 28 |
 | wording | 0 | 0 | 31 | 31 |
@@ -36,7 +36,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
-- stage 2: 8 of 78 done
+- stage 2: 9 of 78 done
 - stage 3: 0 of 25 done
 - stage 4: 0 of 50 done
 - stage 5: 0 of 42 done
