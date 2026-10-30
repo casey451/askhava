@@ -64,10 +64,26 @@ JT_NAMES = {"leak_repair": "a leak", "toilet_fixture": "toilet, sink or faucet",
             "outlets_breakers": "outlets or breakers", "fixture_install": "installing a light or fan", "panel_upgrade": "electrical panel upgrade",
             "electrical_other": "other electrical", "pool_equipment": "pool pump, filter or equipment", "pool_remodel": "pool resurfacing or remodel",
             "pool_other": "other pool work", "drywall": "drywall", "mounting": "hanging or mounting things", "doors": "doors", "handyman_other": "other small repair"}
-TRADE_WORDS = {"plumbing": r"plumb|pipe|leak|water|drain|toilet|faucet|fontaner|plomer", "hvac": r"\bac\b|a/c|air|heat|cool|hvac|furnace|aire|calefacc",
-               "electrical": r"electric|outlet|breaker|wire|light|panel|electric", "pool": r"pool|spa|piscina",
+TRADE_WORDS = {"plumbing": r"plumb|pipe|repip|re-pip|leak|water|drain|toilet|faucet|fontaner|plomer", "hvac": r"\bac\b|a/c|air|heat|cool|hvac|furnace|aire|calefacc",
+               "electrical": r"electric|outlet|breaker|wire|light|panel|ceiling fan", "pool": r"pool|spa|piscina",
                "handyman": r"handyman|drywall|\bdoor|shel(f|ves)|mirror|\bpatch|\bhang\b"}
 CLASS_TRADE = {k: next(t for t, v in JOB_TYPES.items() if CLASS_ALLOWS[k] <= set(v)) for k in CLASS_ALLOWS}
+JT_TRADE = {jt: t for t, v in JOB_TYPES.items() for jt in v}
+TRADE_NAMES = {"hvac": "heating/AC", "plumbing": "plumbing", "electrical": "electrical", "pool": "pool", "handyman": "handyman (small repairs)"}
+
+
+def keyword_trades(text):
+    """AI-011: the trades whose plain keywords start a word of the text, so "repair" never reads as "air" (D-103)."""
+    low = text.lower()
+    return [t for t, pat in TRADE_WORDS.items() if re.search(rf"\b(?:{pat})", low)]
+
+
+def boundary_types(text):
+    """D-105, D-517: the keyword job types that mark a license boundary, kept whatever trade is read or answered. The
+    twin's keyword patterns are trade-relative (a bare "heater" or "install"), so one counts when the homeowner's words
+    also name its trade, the stand-in for the catalog's trade-specific keyword lists (LIC-001) until T007."""
+    low, named = text.lower(), keyword_trades(text)
+    return {jt for pat, jt in KEYWORD_TYPES if re.search(pat, low) and JT_TRADE[jt] in named}
 
 # allowed request status changes (anything else is a bug)
 EDGES = {
@@ -484,34 +500,9 @@ class App:
                 self.text(phone, "Sorry, I need the 5-digit ZIP code where the work is (e.g. 86403).", "intake_q", conversational=True)
             return
         if cv and cv["stage"] == "jt_q":
-            m1 = re.match(r"^\s*([123])\b", b)
-            words_ = [jt for jt in cv["jt_options"] if JT_NAMES.get(jt, jt).lower() in b.lower()]
-            if m1 and int(m1.group(1)) <= len(cv["jt_options"]):
-                cv["jt_choice"] = cv["jt_options"][int(m1.group(1)) - 1]
-            elif len(words_) == 1:
-                cv["jt_choice"] = words_[0]
-            elif not cv.get("jt_reasked"):
-                cv["jt_reasked"] = True
-                self.text(phone, "Sorry, which number fits best?", "intake_q", conversational=True)
-                return
-            else:
-                cv["jt_choice"] = None                               # still unclear: keep every candidate (conservative)
-            cv["stage"] = "new"
-            return self.run_intake(h, phone, onsite_done=cv.get("onsite_done", False))
+            return self.jt_answer(h, phone, cv, b)
         if cv and cv["stage"] == "trade_q":
-            pick_ = None
-            m1 = re.match(r"^\s*([12])\b", b)
-            if m1:
-                pick_ = cv["trade_options"][int(m1.group(1)) - 1]
-            else:
-                hits = [t for t in cv["trade_options"] if re.search(TRADE_WORDS[t], b.lower())]
-                pick_ = hits[0] if len(hits) == 1 else None
-            if pick_ is None and not cv.get("trade_reasked"):
-                cv["trade_reasked"] = True
-                self.text(phone, "Sorry, which one? Reply 1 or 2.", "intake_q", conversational=True)
-                return
-            cv["trade_choice"] = pick_ or cv["trade_options"][0]; cv["stage"] = "new"      # still unclear: go with the first reading
-            return self.run_intake(h, phone, onsite_done=cv.get("onsite_done", False))
+            return self.trade_answer(h, phone, cv, b)
         if cv and cv["stage"] == "onsite":
             cv["onsite"] = b
             return self.run_intake(h, phone, onsite_done=True)
@@ -541,6 +532,75 @@ class App:
                 self.safety(h, phone)
             return
         return self.run_intake(h, phone)
+
+    @staticmethod
+    def numbered_answer(b, options):
+        """INT-012: a reply that starts with one of the question's option numbers, as that option, else None."""
+        m1 = re.match(r"^\s*(\d)\b", b)
+        return options[int(m1.group(1)) - 1] if m1 and 1 <= int(m1.group(1)) <= len(options) else None
+
+    @staticmethod
+    def trade_question(options):
+        """INT-013 (D-104): the numbered trade question; the re-ask repeats it whole (D-103)."""
+        listed = [f"{i + 1}) {TRADE_NAMES.get(t, t)}" for i, t in enumerate(options)]
+        return f"Quick question so the right people see it: is this mainly {', '.join(listed[:-1])} or {listed[-1]}? Reply with the number."
+
+    @staticmethod
+    def jt_question(options):
+        """INT-014: the numbered "Which fits best?" question; the re-ask repeats it whole (D-103)."""
+        opts = " ".join(f"{i + 1}) {JT_NAMES.get(jt, jt)}" for i, jt in enumerate(options))
+        return f"Which fits best? {opts}. Reply with the number."
+
+    def trade_answer(self, h, phone, cv, b):
+        """INT-013, INT-015 (D-103): a number, or whole words of exactly one option's keywords or label. One re-ask that
+        repeats the options; after a second unusable reply (or "Not sure"), the keyword trade if exactly one trade matched,
+        otherwise the first reading. The license-boundary job types stay either way (D-105, `boundary_types`)."""
+        options, low = cv["trade_options"], b.lower()
+        words = set(re.findall(r"[a-z]+", low))
+        hits = [t for t in options if re.search(rf"\b(?:{TRADE_WORDS.get(t, t)})\b", low)
+                or words & set(re.findall(r"[a-z]+", TRADE_NAMES.get(t, t).lower()))]
+        pick_ = self.numbered_answer(b, options) or (hits[0] if len(hits) == 1 else None)
+        if pick_ is None and not cv.get("trade_reasked") and not re.search(r"\bnot sure\b", low):
+            cv["trade_reasked"] = True
+            self.text(phone, "Sorry, I didn't catch that. " + self.trade_question(options), "intake_q", conversational=True)
+            return
+        if pick_ is None:
+            kw = keyword_trades(cv["text"])
+            pick_ = kw[0] if len(kw) == 1 else options[0]
+        cv["trade_choice"] = pick_; cv["stage"] = "new"
+        return self.run_intake(h, phone, onsite_done=cv.get("onsite_done", False))
+
+    def jt_answer(self, h, phone, cv, b):
+        """INT-014, INT-015 (D-103): a number, or the whole words of exactly one option's label. One re-ask that repeats
+        the options; after a second unusable reply (or "Not sure") every candidate stays (conservative)."""
+        options, low = cv["jt_options"], b.lower()
+        words_ = [jt for jt in options if re.search(rf"\b{re.escape(JT_NAMES.get(jt, jt).lower())}\b", low)]
+        choice = self.numbered_answer(b, options) or (words_[0] if len(words_) == 1 else None)
+        if choice is None and not cv.get("jt_reasked") and not re.search(r"\bnot sure\b", low):
+            cv["jt_reasked"] = True
+            self.text(phone, "Sorry, I didn't catch that. " + self.jt_question(options), "intake_q", conversational=True)
+            return
+        cv["jt_choice"] = choice; cv["stage"] = "new"
+        return self.run_intake(h, phone, onsite_done=cv.get("onsite_done", False))
+
+    def trade_options(self, cv, ai):
+        """INT-013, AI-011 (D-104): ask when the two readings disagree or the keyword trades leave out the reading's;
+        offer every distinct trade of the two readings and the keyword rules, up to three."""
+        kw, second = keyword_trades(cv["text"]), cv["ai2"].get("trade")
+        if (not second or second == ai["trade"]) and (not kw or ai["trade"] in kw):
+            return []
+        return list(dict.fromkeys(t for t in (ai["trade"], second, *kw) if t))[:3]
+
+    @staticmethod
+    def jt_options(cv, cands):
+        """INT-014 (D-102, D-105): ask when the candidates fall under different licenses, or when a trade answer left
+        only `<trade>_other` for that trade, whose job types are then listed in its place."""
+        broad = f"{cv.get('trade_choice')}_other"
+        if broad in cands:
+            return list(dict.fromkeys(jt for c in cands for jt in (JOB_TYPES[cv["trade_choice"]] if c == broad else [c])))[:9]
+        if len(cands) > 1 and len({frozenset(k for k, v in CLASS_ALLOWS.items() if jt in v) for jt in cands}) > 1:
+            return cands[:9]
+        return []
 
     def consent_text(self):
         base = "Hi, this is Ask Hava. We gather quotes so you don't have to make the calls. It's free, and we'll never ask you for money or card details. Reply OK to start (terms: askhava.example/terms)."
@@ -585,26 +645,24 @@ class App:
             self.sim.intake_log[key_] = dict(ai={k: v for k, v in cv["ai"].items() if k != "tool_request"}, ai2={k: v for k, v in cv["ai2"].items() if k != "tool_request"})
             if cv.get("trade_choice"):
                 ai["trade"] = cv["trade_choice"]
-            else:
-                # a second opinion that doesn't come from the AI: plain keywords for each trade
-                kw = [t_ for t_ in TRADE_WORDS if re.search(TRADE_WORDS[t_], cv["text"].lower())]
-                other = cv["ai2"]["trade"] if cv["ai2"].get("trade") and cv["ai2"]["trade"] != ai["trade"] else (kw[0] if kw and ai["trade"] not in kw else None)
-            if not cv.get("trade_choice") and other:
+            # a second opinion that doesn't come from the AI: plain keywords for each trade
+            options = [] if cv.get("trade_choice") else self.trade_options(cv, ai)
+            if options:
                 # the readings disagree on the trade: ask instead of guessing
-                cv["stage"] = "trade_q"; cv["trade_options"] = [ai["trade"], other]
-                names = {"hvac": "heating/AC", "plumbing": "plumbing", "electrical": "electrical", "pool": "pool", "handyman": "handyman (small repairs)"}
-                self.text(phone, f"Quick question so the right people see it: is this mainly 1) {names.get(ai['trade'], ai['trade'])} or 2) {names.get(other, other)}? Reply 1 or 2.", "intake_q", conversational=True)
+                cv["stage"] = "trade_q"; cv["trade_options"] = options
+                self.text(phone, self.trade_question(options), "intake_q", conversational=True)
                 return
         if self.cfg.get("fixes", {}).get("conservative_emergency") and any(w in cv["text"].lower() for w in ("smell", "burning", "alarm", "head hurts", "dizzy", "smoke", "hot outlet", "buzzing panel")):
             ai["emergency"] = True
         if self.fx("v93") and not ai["emergency"] and not cv.get("emergency_sent") and "jt_choice" not in cv:
             # if the possible job types fall under different licenses, ask the homeowner which fits (they know their job)
-            cands = self.job_types_for(cv, ai)
-            if len(cands) > 1 and len({frozenset(k for k, v in CLASS_ALLOWS.items() if jt in v) for jt in cands}) > 1:
-                cv["stage"] = "jt_q"; cv["jt_options"] = cands[:3]
-                opts = " ".join(f"{i+1}) {JT_NAMES.get(jt, jt)}" for i, jt in enumerate(cands[:3]))
-                self.text(phone, f"Which fits best? {opts}. Reply with the number.", "intake_q", conversational=True)
+            options = self.jt_options(cv, self.job_types_for(cv, ai))
+            if options:
+                cv["stage"] = "jt_q"; cv["jt_options"] = options
+                self.text(phone, self.jt_question(options), "intake_q", conversational=True)
                 return
+        if cv.get("jt_choice"):
+            ai["trade"] = JT_TRADE.get(cv["jt_choice"], ai["trade"])         # the job type the homeowner chose names its trade, so its licenses get the card (D-105, CARD-001)
         if ai.get("tool_request"):
             self.log("ai_tool_request_ignored", request=ai["tool_request"])     # never acted on
         if ai["emergency"] or cv.get("emergency_sent"):
@@ -698,8 +756,9 @@ class App:
         if cv.get("jt_choice"):
             return [cv["jt_choice"]]
         types = self._job_types_for(cv, ai)
-        specific = [t_ for t_ in types if not t_.endswith("_other")]
-        return specific or types                      # an 'other' reading only means 'not sure'; a specific reading wins
+        specific = {JT_TRADE.get(t_) for t_ in types if not t_.endswith("_other")}
+        # an 'other' reading only means 'not sure'; a specific reading of the same trade wins
+        return [t_ for t_ in types if not (t_.endswith("_other") and JT_TRADE.get(t_) in specific)]
 
     def _job_types_for(self, cv, ai):
         """v9.3: the job type is read twice, independently. If the two readings disagree, or either is unsure,
@@ -707,28 +766,26 @@ class App:
         if not ai.get("job_type"):
             return []
         types = {ai["job_type"]}
+        low, boundary = cv["text"].lower(), boundary_types(cv["text"]) if self.fx("v93") else set()
         if self.fx("v93"):
             # plain-code guardrails for job types where a license boundary matters (added whatever the AI says)
-            low = cv["text"].lower()
-            for pat, jt in KEYWORD_TYPES:
-                if re.search(pat, low) and jt in JOB_TYPES.get(ai["trade"], []):
-                    types.add(jt)
+            types |= {jt for pat, jt in KEYWORD_TYPES if re.search(pat, low) and jt in JOB_TYPES.get(ai["trade"], [])}
         if ai.get("job_type_conf", 1) < 0.8 and ai.get("alt_job_type"):
             types.add(ai["alt_job_type"])
         if self.fx("v93"):
             ai2 = cv.get("ai2") or self.sim.ai_intake.classify_intake(cv["text"], cv["_sim_truth"])
             if cv.get("trade_choice"):
-                # the homeowner chose the trade: keep only readings of that trade, otherwise the broad type for it
-                types = set()
-                for rd in (cv.get("ai") or {}, ai2):
-                    if rd.get("trade") == cv["trade_choice"] and rd.get("job_type"):
-                        types.add(rd["job_type"])
-                types = types or {f"{cv['trade_choice']}_other"}
+                # the homeowner chose the trade: keep the readings and plain-keyword job types of that trade (D-102),
+                # otherwise the broad type for it, whose job types "Which fits best?" then lists (jt_options)
+                chosen = cv["trade_choice"]
+                types = {rd["job_type"] for rd in (cv.get("ai") or {}, ai2) if rd.get("trade") == chosen and rd.get("job_type")}
+                types |= {jt for pat, jt in KEYWORD_TYPES if re.search(pat, low) and JT_TRADE[jt] == chosen}
+                types = types or {f"{chosen}_other"}
             if ai2.get("job_type") and ai2.get("trade") == ai["trade"]:
                 types.add(ai2["job_type"])
                 if ai2.get("job_type_conf", 1) < 0.8 and ai2.get("alt_job_type"):
                     types.add(ai2["alt_job_type"])
-        return sorted(types)
+        return sorted(types | boundary)               # license-boundary keyword types stay whatever the trade (D-105)
 
     def final_text_gate(self, text, trade):
         """v9.3: last plain-code pass (no AI). Anything that still looks like a name, contact phrase or a run of
