@@ -367,6 +367,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "askhava-licensing"
+version = "0.1.0"
+dependencies = [
+ "askhava-catalog",
+ "serde",
+ "serde-saphyr",
+ "thiserror",
+]
+
+[[package]]
 name = "askhava-messaging"
 version = "0.1.0"
 dependencies = [
