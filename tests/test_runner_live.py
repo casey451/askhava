@@ -495,3 +495,139 @@ def test_task_branch_push_uses_the_push_token(monkeypatch: pytest.MonkeyPatch) -
     assert "RUNNER_PUSH_TOKEN" in env["GIT_CONFIG_VALUE_2"] and "fake-push-token" not in env["GIT_CONFIG_VALUE_2"]
     assert github_env._env_for(["git", "push", "--porcelain", "origin", "abc:refs/heads/claude/kit-state"]) is None
     assert github_env._env_for(["git", "fetch", "https://github.com/o/r.git"]) is None
+
+
+# ---- D-515: the lane map in lease.json, and update_state over real git
+
+
+def push_lease_file(repo: dict[str, Path], text: str) -> None:
+    """Write lease.json on claude/lease the way a runner from before D-515 would."""
+    seed = repo["seed"]
+    git(seed, "fetch", "-q", "origin", "claude/lease")
+    git(seed, "checkout", "-q", "-B", "lease-edit", "FETCH_HEAD")
+    (seed / "lease.json").write_text(text)
+    git(seed, "commit", "-qam", "old lease file")
+    git(seed, "push", "-q", "origin", "HEAD:claude/lease")
+    git(seed, "checkout", "-q", "claude/kit-state")
+
+
+def claimed_on_origin(repo: dict[str, Path], tmp_path: Path) -> GitHubEnv:
+    env = make_env(repo["a"], tmp_path)
+    base = env.read_state()
+    assert env.push_state(st.claim(st.with_task(base, "K10"), "K10", "session-a", NOW), base)
+    return env
+
+
+def test_lease_file_carries_the_lane_map_and_an_old_file_still_reads(repo: dict[str, Path], tmp_path: Path) -> None:
+    assert make_env(repo["a"], tmp_path).read_state()["leases"] == {"1": None}
+    claimed_on_origin(repo, tmp_path)
+    doc = json.loads(origin_file(repo, "claude/lease", "lease.json"))
+    assert doc["leases"] == {"1": dict(doc["lease"], lane="1")}
+    assert "leases" not in json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    push_lease_file(repo, json.dumps({"lease": doc["lease"], "seq": doc["seq"]}))
+    state = make_env(repo["b"], tmp_path, "b").read_state()
+    assert state["lease"]["session"] == "session-a" and state["leases"] == {"1": dict(doc["lease"], lane="1")}
+
+
+def test_update_state_retries_after_a_lost_race(repo: dict[str, Path], tmp_path: Path) -> None:
+    env, rival = make_env(repo["a"], tmp_path), make_env(repo["b"], tmp_path, "b")
+    base = env.read_state()
+    assert env.push_state(st.with_task(base, "K10"), base)
+    waits: list[float] = []
+    env.sleep = waits.append  # no real waiting in tests
+    calls = {"n": 0}
+
+    def claim_k10(fresh: st.State) -> st.State:
+        calls["n"] += 1
+        if calls["n"] == 1:  # a rival moves the state and the lease ref between this read and this push
+            theirs = rival.read_state()
+            assert rival.push_state(st.with_task(theirs, "K11"), theirs)
+        return st.claim(fresh, "K10", "session-a", NOW)
+
+    assert env.update_state(claim_k10) is not None
+    assert calls["n"] == 2 and len(waits) == 1 and 0.5 <= waits[0] <= 2.0
+    stored = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    assert {t["id"] for t in stored["tasks"]} == {"K10", "K11"}
+    assert json.loads(origin_file(repo, "claude/lease", "lease.json"))["lease"]["session"] == "session-a"
+
+
+def test_update_state_gives_up_after_five_lost_races(repo: dict[str, Path], tmp_path: Path) -> None:
+    env, rival = make_env(repo["a"], tmp_path), make_env(repo["b"], tmp_path, "b")
+    waits: list[float] = []
+    env.sleep = waits.append  # no real waiting in tests
+    calls = {"n": 0}
+
+    def always_beaten(fresh: st.State) -> st.State:
+        calls["n"] += 1
+        theirs = rival.read_state()
+        assert rival.push_state(dict(theirs, rival_note=calls["n"]), theirs)
+        return dict(fresh, mine=True)
+
+    assert env.update_state(always_beaten) is None
+    assert calls["n"] == 5 and len(waits) == 4
+    assert all(0.5 * (i + 1) <= w <= 2.0 * (i + 1) for i, w in enumerate(waits))
+    stored = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    assert "mine" not in stored and stored["rival_note"] == 5
+    assert env.update_state(lambda fresh: None) is None  # a transform that gives up pushes nothing
+
+
+def test_renew_command_renews_on_the_fresh_state(repo: dict[str, Path], tmp_path: Path) -> None:
+    env = claimed_on_origin(repo, tmp_path)
+    rival = make_env(repo["b"], tmp_path, "b")
+    theirs = rival.read_state()
+    assert rival.push_state(st.with_task(theirs, "K11"), theirs)  # the state moved since session-a's claim
+    later = NOW + timedelta(minutes=31)
+    cfg = cycle.Config([TASK], MODELS, [], [], env.outbox_dir, "session-a", lambda: later)
+    assert entry.renew(cfg, env) == "renewed"
+    doc = json.loads(origin_file(repo, "claude/lease", "lease.json"))
+    assert doc["lease"]["expires"] == "2026-11-01T15:31:00Z" and doc["leases"]["1"] == dict(doc["lease"], lane="1")
+    stranger = cycle.Config([TASK], MODELS, [], [], env.outbox_dir, "nobody", lambda: later)
+    assert entry.renew(stranger, env).startswith("renew_refused")
+
+
+def test_update_state_survives_a_failed_read_and_restores_the_heads(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-515 review, medium: a fetch or read failure is a lost try, never an exception."""
+    env = make_env(repo["a"], tmp_path)
+    env.read_state()
+    heads = (env.state_head, env.lease_head)
+    waits: list[float] = []
+    env.sleep = waits.append  # no real waiting in tests
+    env.state_ref = "claude/missing"  # kit/state.json not found: read_state raises RuntimeError
+    assert env.update_state(lambda fresh: dict(fresh, mine=True)) is None
+    assert len(waits) == 4 and (env.state_head, env.lease_head) == heads
+    assert sum("read failed" in line for line in env.log) == 5
+
+
+def test_update_state_gives_up_without_moving_the_base_a_stale_push_needs(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-515 review, blocking: after update_state gives up or its transform raises, the heads are back
+    where they were, so a push against the older base is still rejected as a lost race."""
+    env, rival = claimed_on_origin(repo, tmp_path), make_env(repo["b"], tmp_path, "b")
+    stale = env.read_state()
+    theirs = rival.read_state()
+    assert rival.push_state(st.with_task(theirs, "K11"), theirs)
+    assert env.update_state(lambda fresh: None) is None
+    with pytest.raises(st.LeaseError):
+        env.update_state(lambda fresh: st.renew(fresh, "K10", "nobody", NOW))
+    assert env.push_state(st.with_task(stale, "K10", note="stale"), stale) is False
+
+
+def test_drill_finish_after_the_lease_was_reclaimed_writes_no_review_and_pushes_no_branch(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-515 review, blocking, over real git: the runner stalls past three hours, another session releases
+    the lease and claims the task again, the heartbeat's renewal fails, then the worker finishes."""
+    env, rival = claimed_on_origin(repo, tmp_path), make_env(repo["b"], tmp_path, "b")
+    stale = env.read_state()
+    later = NOW + timedelta(hours=3, minutes=1)
+    theirs = rival.read_state()
+    assert rival.push_state(st.claim(st.release_expired(theirs, later), "K10", "session-b", later), theirs)
+    with pytest.raises(st.LeaseError):  # what the heartbeat's renewal meets
+        env.update_state(lambda fresh: st.renew(fresh, "K10", "session-a", later))
+    head = worker_commit(repo["a"], TASK["branch"], "docs/k10/note.md")
+    res = cycle.WorkerResult("submitted", ["docs/k10/note.md"], [MODELS["sonnet"]], branch=TASK["branch"], head_sha=head,
+                             reviewer_evidence=[MODELS["opus"]])
+    cfg = cycle.Config([TASK], MODELS, [], [], env.outbox_dir, "session-a", lambda: later)
+    env.enable_auto_merge = lambda b, h: (_ for _ in ()).throw(AssertionError("no auto-merge"))  # type: ignore[method-assign]  # reason: must not be reached
+    assert cycle.finish(cfg, env, stale, TASK, res, MODELS["sonnet"], later) == "lost_race"
+    state = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    assert "reviewed_sha" not in st.entry(state, "K10")
+    assert json.loads(origin_file(repo, "claude/lease", "lease.json"))["lease"]["session"] == "session-b"
+    assert git(repo["origin"], "branch", "--list", TASK["branch"]) == ""

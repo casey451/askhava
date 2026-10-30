@@ -4,7 +4,9 @@ The runner runs this at start (`python3 -m runner`); a state that fails is never
 cycle stops and reports. The schema is a small subset of JSON Schema (type, enum, required,
 properties, items, additionalProperties as a schema, pattern, minLength) checked here with the
 standard library only. Unknown keys are allowed, because the runner keeps every key it does not
-know (D-121). On top of the schema: task IDs are unique and a lease names a task in the list.
+know (D-121). On top of the schema: task IDs are unique and a lease names a task in the list; with
+the lane map `leases` (D-515), each lane lease names a task, no task holds two lanes, at most `lanes`
+live leases sit outside the "fix" lane, and `lease` mirrors lane "1".
 
 Usage: python3 scripts/check_state.py [--state PATH] [--schema PATH]
 Exit status 0 when valid; otherwise each problem is printed as `path: problem` and the status is 1.
@@ -16,6 +18,7 @@ import argparse
 import json
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -82,11 +85,41 @@ def _cross_checks(state: dict[str, Any]) -> list[str]:
     return problems
 
 
-def check(state: Any, schema: dict[str, Any] | None = None) -> list[str]:
-    """Every problem with a kit/state.json value (schema plus cross checks)."""
+def _expires(lease: dict[str, Any]) -> datetime:
+    return datetime.fromisoformat(str(lease["expires"]).replace("Z", "+00:00"))
+
+
+def _lane_checks(state: dict[str, Any], lanes: int, now: datetime) -> list[str]:
+    """The lane map (D-515): each lease names a real task, no task holds two lanes, at most `lanes`
+    live leases outside the "fix" lane, and `lease` equal to lane "1" without its "lane" field."""
+    leases = state.get("leases")
+    if not isinstance(leases, dict):
+        return []
+    ids = {t.get("id") for t in state.get("tasks", []) if isinstance(t, dict)}
+    held = {str(lane): lease for lane, lease in leases.items() if isinstance(lease, dict)}
+    problems = [f"state.leases.{lane}: names {lease.get('task')}, which is not in tasks" for lane, lease in held.items() if lease.get("task") not in ids]
+    tasks = [lease.get("task") for lease in held.values()]
+    problems += [f"state.leases: {tid} holds more than one lane" for tid in sorted({str(t) for t in tasks if tasks.count(t) > 1})]
+    live = [lane for lane, lease in held.items() if lane != "fix" and _expires(lease) > now]
+    if len(live) > lanes:
+        problems.append(f"state.leases: {len(live)} live leases ({', '.join(sorted(live))}) but lanes is {lanes}")
+    one = {k: v for k, v in (held.get("1") or {}).items() if k != "lane"} or None
+    if state.get("lease") != one:
+        problems.append("state.lease: differs from state.leases.1 (lane 1 must mirror the top-level lease)")
+    return problems
+
+
+def check(state: Any, schema: dict[str, Any] | None = None, lanes: int | None = None, now: datetime | None = None) -> list[str]:
+    """Every problem with a kit/state.json value (schema plus cross checks).
+
+    `lanes` is the lane count (kit/runner.json, D-515); when not given, the state's own `lanes`, else 1.
+    `now` decides which leases are live (default: the current UTC time)."""
     schema = schema or json.loads(SCHEMA.read_text(encoding="utf-8"))
     problems = validate(state, schema)
-    return problems if problems or not isinstance(state, dict) else _cross_checks(state)
+    if problems or not isinstance(state, dict):
+        return problems
+    count = lanes if lanes is not None else state.get("lanes", 1)
+    return _cross_checks(state) + _lane_checks(state, int(count), now or datetime.now(timezone.utc))
 
 
 def main(argv: list[str] | None = None) -> int:
