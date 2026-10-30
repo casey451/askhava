@@ -1893,7 +1893,7 @@
    "deps": [
     "T008"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "catalog-job-type-kinds",
    "type": "build",
@@ -1988,11 +1988,26 @@
     "why": "auto-merge on #103 (gh pr merge)",
     "head": "f52cc719ec551420d5d960da2de81825908bf309"
    },
-   "last_failure": "T233 acceptance passes (check_catalog, test_check_catalog 77 passed) but Twin/Ci/smoke fail: twin/oracle/license_scope.json (protected) is stale after categories.yaml change; a harness task must run twin/oracle/gen_license_scope.py (D-606)",
+   "last_failure": "T233 acceptance passes (check_catalog, test_check_catalog 77 passed) but Twin/Ci/smoke fail: twin/oracle/license_scope.json (protected) is stale after categories.yaml change; a harness task must run twin/oracle/gen_license_scope.py (D-606)\nre-queued after plan fix D-677: D-677: T233 is now a harness task that owns twin/oracle/license_scope.json; run twin/oracle/gen_license_scope.py after the categories change and commit the output",
    "runner_closed_prs": [
     103
    ],
-   "reason": "T233 acceptance passes (check_catalog, test_check_catalog 77 passed); smoke red only because protected twin/oracle/license_scope.json is stale; a harness task must run twin/oracle/gen_license_scope.py (D-606)"
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-10-30T13:13:36Z",
+     "reason": "D-677: T233 is now a harness task that owns twin/oracle/license_scope.json; run twin/oracle/gen_license_scope.py after the categories change and commit the output",
+     "by": "overseer-casey-approved",
+     "was": "T233 acceptance passes (check_catalog, test_check_catalog 77 passed); smoke red only because protected twin/oracle/license_scope.json is stale; a harness task must run twin/oracle/gen_license_scope.py (D-606)",
+     "attempts": 3,
+     "plan_fix": "D-677",
+     "plan_since": "2026-10-30T11:50:51Z",
+     "plan_base": "ef74c9a216eb55a8a222b420ae4105ceff0118d1",
+     "plan_head": "ec9db4c1e1a4a7423d3fc53998c434a6a1f91001",
+     "plan_then": "382eb9b200c644700e3915ea9ed13c402d080b0df5a5935b42133bb2db4a541d",
+     "plan_now": "e1122079c787661f71365a6939e1ac8f5f09b8bbf43694b907317e87860b2294"
+    }
+   ]
   },
   {
    "id": "T177",
@@ -5323,7 +5338,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T13:04:02Z",
+ "updated_at": "2026-10-30T13:13:36Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -5421,8 +5436,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "16519ec88143409ba2ed657e9e740f28391e88cf",
- "starter": "actions",
+ "runner_sha": "ec9db4c1e1a4a7423d3fc53998c434a6a1f91001",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "c96dfb98580d3abd1fe3e40db6a66a0a480713d8",

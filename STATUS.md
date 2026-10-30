@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-30T13:04:02Z by runner 16519ec88143 (actions).
+Updated 2026-10-30T13:13:36Z by runner ec9db4c1e1a4 (manual).
 
 **Requirements verified:** 1 of 725 (0.1%) · partial 42 · unstarted 682
 **Tasks merged (throughput only):** 17 of 221
@@ -49,7 +49,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T011 (lease until 2026-10-30T15:59:19Z)
 
 ## Needs attention
-- BLOCKED T233: T233 acceptance passes (check_catalog, test_check_catalog 77 passed); smoke red only because protected twin/oracle/license_scope.json is stale; a harness task must run twin/oracle/gen_license_scope.py (D-606)
+- nothing
 
 ## Last usage reading
 - {"task": "T019", "at": "2026-10-30T12:53:47Z", "cache_read_input_tokens": 552766, "input_tokens": 40, "cache_creation_input_tokens": 77441, "output_tokens": 18898}
