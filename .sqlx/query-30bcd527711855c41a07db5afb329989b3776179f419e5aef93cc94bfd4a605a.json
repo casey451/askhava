@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH taken AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n) INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n, $1, $2 FROM taken",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "30bcd527711855c41a07db5afb329989b3776179f419e5aef93cc94bfd4a605a"
+}
