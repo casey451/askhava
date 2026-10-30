@@ -250,11 +250,17 @@ class OfflineGh:
 
     def __init__(self, pulls: list[dict[str, Any]]) -> None:
         self.pulls, self.calls = pulls, []  # type: list[dict[str, Any]], list[list[str]]
+        self.comments: list[dict[str, Any]] = []  # what a PR's comments read returns (D-584)
+        self.close_fails = False
 
     def __call__(self, args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
         if args[0] != "gh":
             return run_command(args, stdin, cwd)
         self.calls.append(args)
+        if "PATCH" in args and self.close_fails:
+            return 1, "", "HTTP 403: Resource not accessible by integration"
+        if "/comments?per_page=" in args[-1]:
+            return 0, json.dumps(self.comments), ""
         return 0, json.dumps(self.pulls) if "/pulls?head=" in args[-1] else "{}", ""
 
 
@@ -340,6 +346,62 @@ def test_an_auto_merge_pull_request_is_left_alone_without_the_lease(repo: dict[s
     prep = env.prepare_branch(TASK, 2, "someone-else")
     assert prep["branch"] == f"{TASK['branch']}-a2" and prep["why"] == "its open pull request has auto-merge on and could not be closed"
     assert not any("PATCH" in call for call in gh.calls) and any("left open" in line for line in env.log)
+
+
+def test_a_failed_close_posts_no_comment_and_the_attempt_moves_to_a_new_branch(repo: dict[str, Path], tmp_path: Path) -> None:
+    """N4 (D-584): the pull request is closed first and commented on only once closed, so a comment never
+    says "the attempt continues on this branch" when it moved to `-a2`."""
+    pushed_attempt(repo)
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": {"merge_method": "squash"}}])
+    gh.close_fails = True
+    prep = env.prepare_branch(TASK, 2, SESSION)
+    assert prep["branch"] == f"{TASK['branch']}-a2" and prep["why"] == "its open pull request has auto-merge on and could not be closed"
+    assert any("PATCH" in call for call in gh.calls) and not any(call[2].endswith("/issues/94/comments") for call in gh.calls)
+
+
+def test_a_pull_request_closed_by_the_runner_is_known_by_its_comment_when_the_record_was_lost(repo: dict[str, Path], tmp_path: Path) -> None:
+    """N4 (D-584): the close happened but recording #94 in runner_closed_prs lost the lease; the runner's
+    closing comment carries a marker, so the next attempt still continues the branch."""
+    pushed_attempt(repo)
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "closed", "merged_at": None, "auto_merge": None}])
+    gh.comments = [{"body": "a reviewer's note"}, {"body": ge.AUTO_MERGE_NOTE.format(branch=TASK["branch"])}]
+    prep = env.prepare_branch(TASK, 3, SESSION)
+    assert prep["branch"] == TASK["branch"] and "renamed_from" not in prep
+    gh.comments = [{"body": "closed by hand: wrong approach"}]  # someone else closed it: a fresh branch
+    assert env.prepare_branch(TASK, 3, SESSION)["why"] == "its pull request was closed"
+
+
+def test_checking_the_lease_leaves_the_cached_state_refs_alone(repo: dict[str, Path], tmp_path: Path) -> None:
+    """N3 (D-584): _holds_lease reads fresh without moving the heads and blob a later push builds on."""
+    env, _ = claimed_env(repo, tmp_path, [])
+    before = (env.state_head, env.lease_head, env.state_blob, json.dumps(env.last_state, sort_keys=True))
+    push_side_file(repo, "kit/state.json", json.dumps({"schema": 1, "lease": None, "tasks": [{"id": "X1"}]}))
+    assert env._holds_lease("K10", SESSION) is True
+    assert (env.state_head, env.lease_head, env.state_blob, json.dumps(env.last_state, sort_keys=True)) == before
+    assert env.push_state(st.with_task(env.last_state or {}, "K10", note="x"), env.last_state or {}) is False  # the race is still caught
+
+
+def test_only_main_merges_tells_an_updated_branch_from_unreviewed_work(repo: dict[str, Path], tmp_path: Path) -> None:
+    """N2 (D-584): the reviewed head plus GitHub's "Update branch" merge of main is accepted; a new commit,
+    or a merge of anything not on main, is not; a head git does not have is unknown."""
+    reviewed = pushed_attempt(repo)
+    move_main(repo, "fake repo, main moved\n")
+    env = make_env(repo["a"], tmp_path, run=OfflineGh([]))
+    env.read_state()
+    git(repo["a"], "fetch", "-q", "origin")
+    git(repo["a"], "checkout", "-q", TASK["branch"])
+    git(repo["a"], "merge", "-q", "--no-edit", "origin/main")
+    updated = git(repo["a"], "rev-parse", "HEAD")
+    assert env.only_main_merges(reviewed, updated, 0) is True
+    (repo["a"] / "docs/k10/late.md").write_text("pushed after the review\n")
+    git(repo["a"], "add", "-A")
+    git(repo["a"], "commit", "-qm", "late work")
+    assert env.only_main_merges(reviewed, git(repo["a"], "rev-parse", "HEAD"), 0) is False
+    side = commit_on(repo["a"], "side", reviewed, "docs/k10/side.md", "not on main\n")
+    git(repo["a"], "checkout", "-q", "-B", "merged-side", reviewed)
+    git(repo["a"], "merge", "-q", "--no-ff", "--no-edit", side)
+    assert env.only_main_merges(reviewed, git(repo["a"], "rev-parse", "HEAD"), 0) is False
+    assert env.only_main_merges(reviewed, "f" * 40, 0) is None
 
 
 def test_drill_t167_a_hand_in_rebuilt_from_main_fails_honestly_and_is_never_forced(repo: dict[str, Path], tmp_path: Path) -> None:
@@ -434,7 +496,7 @@ def test_requeue_command_moves_a_blocked_task_through_update_state(repo: dict[st
     args = entry.parse_args(["--requeue", "K10", "--reason", "the branch is fixed"])
     assert entry.requeue_task(args, cfg, env) == "requeued"
     task = st.entry(json.loads(origin_file(repo, "claude/kit-state", "kit/state.json")), "K10")
-    assert task["status"] == st.QUEUED and task["attempts"] == 1 and task["reason"] is None and task["last_failure"] == "the branch is fixed"
+    assert task["status"] == st.QUEUED and task["attempts"] == 1 and task["reason"] is None and task["last_failure"] == "re-queued: the branch is fixed"
     assert task["requeues"][0]["reason"] == "the branch is fixed" and task["requeues"][0]["by"] == "manual-1"
     assert entry.requeue_task(args, cfg, env) == "requeue_refused: K10 is QUEUED, not BLOCKED"
     assert entry.requeue_task(entry.parse_args(["--requeue", "FIX-MAIN", "--reason", "x"]), cfg, env).startswith("requeue_refused:")

@@ -9,6 +9,12 @@ These are decisions Claude made on its own and logged so the build never waits (
 - **How it works now.** Before each try, the runner prepares the branch itself. If the old pull request was set to merge on its own, the runner closes it first, with a note, so nothing unreviewed can slip in; it opens a fresh one after the review. If a merged pull request ever turns out not to be the reviewed one, the task is blocked for you to look at instead of being marked done. A refused push now says what really happened.
 - **Unblocking.** A task blocked by something outside its own work (a refused push, a permission, a missing proof) goes back in line with `python3 -m runner --requeue T### --reason "..."`. It never adds tries beyond the usual three, and it waits while any task is running.
 
+## Follow-up: unreviewed work can't sneak in, and nothing waits forever (D-584, October 30)
+
+- **If a merge ever brings in work nobody reviewed**, the build now treats `main` as broken: it undoes that merge automatically, then puts the task back in line. STATUS.md shows it at the top. Before, the task just sat blocked. A merge that only brings the branch up to date with `main` (GitHub's "Update branch" button) is fine and isn't flagged.
+- **If a try dies halfway**, the runner only picks up its pull request when it's exactly what was reviewed. Otherwise the task simply gets its next try. Before, it could pick up the wrong pull request, or wait forever on one it would never merge.
+- **Nothing for you to do.**
+
 ## How legal, tax and insurance items are handled now (October 28, 2026)
 
 You've decided not to hire a lawyer, a CPA or an insurance broker for now, to rely on AI research instead, and to accept that risk yourself. So, throughout this file (D-367):

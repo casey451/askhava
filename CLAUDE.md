@@ -31,7 +31,7 @@ Short rules loaded into every session. The full rules live elsewhere; read them,
 
 ## Working rules
 
-- Work only on your task branch `claude/task/T###-<slug>`, created from the latest `main` (`BUILD_BRIEF.md:246`).
+- Work only on your task branch `claude/task/T###-<slug>`, created from the latest `main`; on a retry, the branch the runner prepared (the earlier attempt's pushed branch with `main` merged in, or a fresh `-a<n>` one): switch to it, never recreate, reset or rebase it (`BUILD_BRIEF.md:246`).
 - Touch only the files your task owns. Small PRs (`BUILD_BRIEF.md:485`).
 - Workers never touch `claude/kit-state`; only the runner writes state (`BUILD_BRIEF.md:223`).
 - Never push to `main`, never force-push, never rebase-and-force-push (`BUILD_BRIEF.md:224`, `BUILD_BRIEF.md:303`).

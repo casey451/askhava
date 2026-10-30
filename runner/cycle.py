@@ -14,7 +14,7 @@ from runner.state import State
 
 MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540
 HOURLY = timedelta(hours=1)
-WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes")
+WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes", "unreviewed_head")
 # An empty hand-in (no commits on top of main): GitHub opens no pull request for it, so it can never
 # merge. Only a cleanup task may legitimately find nothing to change (D-551).
 NO_CHANGES = "no changes: the hand-in has no commits on top of main (only a cleanup task may hand in nothing, D-551)"
@@ -22,8 +22,10 @@ NO_CHANGES = "no changes: the hand-in has no commits on top of main (only a clea
 PUSH_NOT_FAST_FORWARD = ("branch push rejected as not a fast-forward: the remote task branch has commits this attempt "
                          "did not build on (the next attempt starts from it, D-583)")
 REQUEUE_HINT = 'run `python3 -m runner --requeue <task> --reason "..."` (D-583)'
-UNREVIEWED_MERGE = ("merged head {head} is not the reviewed head {reviewed}: work nobody reviewed was merged; check that "
-                    "merge on main, then decide (D-583)")
+UNREVIEWED_MERGE = ("merged head {head} is not the reviewed head {reviewed}: work nobody reviewed was merged, so main "
+                    "is red and FIX-MAIN reverts it (D-583, D-584)")
+UNREVIEWED_HEAD = ("pull request head {head} is not the reviewed head {reviewed}: commits were pushed after the review, "
+                   "so auto-merge is refused for it; the next attempt continues the branch and is reviewed again (D-584)")
 # The BLOCKED reasons that are not the task's own fault, the only ones `--requeue` lifts (D-583).
 REQUEUABLE = ("branch push rejected", "no head to push", "permission blocked", st.PROOF_MISSING)
 
@@ -104,6 +106,11 @@ class Env(Protocol):
 
     def push_rejection(self) -> str:
         """The git output of the last rejected push_branch, '' when none or unknown (D-583)."""
+        ...
+
+    def only_main_merges(self, reviewed: str, head: str, number: int) -> bool | None:
+        """Whether a PR head is the reviewed head plus only merges of main (GitHub's "Update branch"):
+        True or False, None when git cannot say (D-584)."""
         ...
 
     def prepare_branch(self, task: dict[str, Any], attempt: int, session: str) -> dict[str, Any]:
@@ -247,32 +254,48 @@ def _resolve_merge(state: State, env: Env, cfg: Config, now: datetime) -> tuple[
         if pr is None:
             return _without_pr(state, env, task, now)
         checks = verify.checks_state(pr)
+        reviewed = _head_reviewed(state, env, tid, pr)
         if not pr.get("merged"):
+            if not reviewed:
+                # Pushed after the review (a session that died mid-work), or git cannot tell: auto-merge is
+                # refused for this head, so waiting would stall the build; it is a failed attempt (D-584).
+                why = UNREVIEWED_HEAD.format(head=str(pr.get("head_sha"))[:12], reviewed=str(task.get("reviewed_sha"))[:12])
+                return _close_history(record_failure(state, tid, why), tid, pr, "unreviewed_head"), "unreviewed_head"
             if checks == "failed":
                 reason = pr.get("failure_log") or "required check failed on head"
                 return _close_history(record_failure(state, tid, reason), tid, pr, "check_failed"), "check_failed"
             return _auto_merge(state, env, tid, pr.get("head_sha", "")) if not pr.get("auto_merge") else state, "merge_pending"
-        if checks == "pending":
-            return state, "merge_pending"
-        return _merged(state, tid, pr, cfg, now)
+        if checks == "pending" or reviewed is None:
+            return state, "merge_pending"  # a merged head git cannot place yet is never blamed on a guess
+        return _merged(state, tid, pr, cfg, now, reviewed)
     return state, ""
 
 
-def _merged(state: State, tid: str, pr: dict[str, Any], cfg: Config, now: datetime) -> tuple[State, str]:
-    """A merged PR: DONE only from check_done; otherwise main is red (governance section 5). A merged
-    head that is not the task's `reviewed_sha` (work pushed after the review merged on its own) is
-    never DONE: the task is BLOCKED for a person to look at (D-583)."""
+def _head_reviewed(state: State, env: Env, tid: str, pr: dict[str, Any]) -> bool | None:
+    """Whether the PR's head is the task's `reviewed_sha`, or that head plus only merges of main
+    (GitHub's "Update branch"); True when the task has no `reviewed_sha` to compare with; None when git
+    cannot say (D-583, D-584)."""
     reviewed, head = str(st.entry(state, tid).get("reviewed_sha") or ""), str(pr.get("head_sha") or "")
-    if reviewed and head != reviewed:
-        out = st.with_task(state, tid, status=st.BLOCKED, reason=UNREVIEWED_MERGE.format(head=head[:12], reviewed=reviewed[:12]))
-        return _close_history(out, tid, pr, "not_done"), "not_done"
+    if not reviewed or head == reviewed:
+        return True
+    return env.only_main_merges(reviewed, head, int(pr.get("number") or 0))
+
+
+def _merged(state: State, tid: str, pr: dict[str, Any], cfg: Config, now: datetime, reviewed: bool = True) -> tuple[State, str]:
+    """A merged PR: DONE only from check_done and a reviewed head; otherwise main is red (governance
+    section 5). A merged head nobody reviewed (work pushed after the review that merged on its own) is
+    treated like a tree mismatch: the task is BLOCKED and main is red with check "review", so FIX-MAIN
+    reverts the merge and the task then returns to the queue with its attempt counted (D-583, D-584)."""
     problems = verify.check_done(pr, pr.get("head_tree", ""), pr.get("merge_tree", ""))
+    if not reviewed:
+        entry_sha = str(st.entry(state, tid).get("reviewed_sha") or "")
+        problems = [UNREVIEWED_MERGE.format(head=str(pr.get("head_sha"))[:12], reviewed=entry_sha[:12]), *problems]
     if problems and tid == st.FIX_MAIN:
         return _close_history(record_failure(state, tid, "; ".join(problems)), tid, pr, "not_done"), "not_done"
     if problems:
         out = st.with_task(state, tid, status=st.BLOCKED, reason="; ".join(problems))
         merge = str(pr.get("merged_sha", ""))
-        out = set_main_red(out, cfg, "tree", merge, (tid, merge, list(pr.get("files", []))), now)
+        out = set_main_red(out, cfg, "tree" if reviewed else "review", merge, (tid, merge, list(pr.get("files", []))), now)
         return _close_history(out, tid, pr, "not_done"), "not_done"
     facts = {
         "merged_sha": pr.get("merged_sha", ""),
@@ -541,15 +564,33 @@ def _record_inbox(state: State, cfg: Config, items: list[tuple[str, str, str]], 
 
 
 def _adopt_orphan_pr(before: State, after: State, env: Env) -> State:
-    """A worker that died after opening a PR but before MERGE_PENDING: look at the PR, don't redo the work.
+    """A worker that died after its reviewed head was pushed but before MERGE_PENDING: look at the PR,
+    don't redo the work.
 
-    Every lane's lease is looked at (D-515); with one lane that is the single lease, as before."""
+    Every lane's lease is looked at (D-515). Only a PR this very attempt finished is adopted (D-584): it
+    is open (or already merged) and not one the runner closed itself (`runner_closed_prs`), its head is the task's
+    `reviewed_sha`, and that review was made under the lease that died (`review_lease`). Any other PR
+    (a closed one with red checks, a head nobody reviewed, an earlier attempt's) leaves the task QUEUED
+    for its retry, which continues the branch and is reviewed again."""
     for lease in st.leases_of(before).values():
         if not lease or st.status(before, lease["task"]) != st.IN_PROGRESS:
             continue
-        if st.status(after, lease["task"]) == st.QUEUED and env.pr_for(lease["task"]) is not None:
-            after = st.with_task(after, lease["task"], status=st.MERGE_PENDING)
+        tid = lease["task"]
+        if st.status(after, tid) != st.QUEUED:
+            continue
+        pr = env.pr_for(tid)
+        if pr is not None and _finished_by(st.entry(after, tid), pr, lease):
+            after = st.with_task(after, tid, status=st.MERGE_PENDING)
     return after
+
+
+def _finished_by(task: dict[str, Any], pr: dict[str, Any], lease: dict[str, Any]) -> bool:
+    """Whether the PR carries the head this lease's attempt reviewed, and is open or already merged (D-584)."""
+    closed = pr.get("state", "open") != "open" or pr.get("number") in (task.get("runner_closed_prs") or [])
+    if closed and not pr.get("merged"):
+        return False
+    reviewed = str(task.get("reviewed_sha") or "")
+    return bool(reviewed) and pr.get("head_sha") == reviewed and (task.get("review_lease") or {}).get("session") == lease.get("session")
 
 
 def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
@@ -919,14 +960,17 @@ def requeue(state: State, tid: str, reason: str, now: datetime, by: str) -> Stat
 
     Only a task blocked for a cause outside its own work (a rejected push, no head, a permission
     block, a missing stage proof) with attempts left, and only while no lease is live. `attempts` is
-    left as it is, so the 3-attempt cap holds (BUILD_BRIEF.md:270, :540); the given reason becomes
-    `last_failure`, so the retry sees why it was re-queued. The re-queue is kept in the task's
-    `requeues` list (when, why, by whom, the old reason); `history` holds attempts only."""
+    left as it is, so the 3-attempt cap holds (BUILD_BRIEF.md:270, :540); the given reason is appended
+    to `last_failure` as "re-queued: ...", so the retry sees both the earlier failure and why it was
+    re-queued (D-584). The re-queue is kept in the task's `requeues` list (when, why, by whom, the old
+    reason); `history` holds attempts only."""
     if requeue_refusal(state, tid, now):
         return None
     entry = st.entry(state, tid)
     note = {"at": st.iso(now), "reason": reason, "by": by, "was": entry.get("reason"), "attempts": int(entry.get("attempts", 0))}
-    return st.with_task(state, tid, status=st.QUEUED, reason=None, last_failure=reason,
+    earlier = str(entry.get("last_failure") or "")
+    last = f"{earlier}\nre-queued: {reason}" if earlier else f"re-queued: {reason}"
+    return st.with_task(state, tid, status=st.QUEUED, reason=None, last_failure=last,
                         requeues=[*entry.get("requeues", []), note])
 
 
