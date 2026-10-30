@@ -355,7 +355,7 @@ jobs:
           mine = [r for r in rows if str(r.get("at", "")) >= start and r.get("session") == session and not quiet(r)]
           last = mine[-1] if mine else {}
           # A row moved a task by its result, or by the tasks it changed: a run whose own lane still waits
-          # (merge_pending) may have resolved another lane's merge and freed that lane (D-723).
+          # (merge_pending) may have resolved the merge of another lane and freed that lane (D-723).
           went = last.get("result") in moved or bool((last.get("changed") or {}).get("tasks"))
           lanes = [str(n) for n in last.get("refill") or [] if str(n).isdigit()] if went else []
           print(" ".join(lanes))
