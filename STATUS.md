@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-30T05:47:30Z by runner d57693ea8e79 (actions).
+Updated 2026-10-30T06:34:14Z by runner f6bc02d10bed (actions).
 
 **Requirements verified:** 0 of 725 (0.0%) · partial 36 · unstarted 689
 **Tasks merged (throughput only):** 8 of 221
@@ -49,7 +49,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 
 ## Needs attention
-- nothing
+- BLOCKED T008: stage proof missing
 
 ## Last usage reading
 - {"task": "T008", "at": "2026-10-30T05:47:24Z", "cache_creation_input_tokens": 43932, "input_tokens": 22, "output_tokens": 5322, "cache_read_input_tokens": 184104}

@@ -1044,7 +1044,7 @@
     "T007",
     "T154"
    ],
-   "status": "MERGE_PENDING",
+   "status": "BLOCKED",
    "attempts": 0,
    "slug": "cleanup-stage1",
    "type": "cleanup",
@@ -1064,12 +1064,12 @@
      "model_evidence_count": 7,
      "head_sha": "d57693ea8e79a18c4371d87c13ef7a17fa2e4383",
      "pr": null,
-     "checks": null,
+     "checks": [],
      "reviewer_model": "claude-sonnet-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-30T05:38:35Z",
      "ended_at": "2026-10-30T05:47:24Z",
-     "result": "MERGE_PENDING"
+     "result": "proof_missing"
     }
    ],
    "reviewed_sha": "d57693ea8e79a18c4371d87c13ef7a17fa2e4383",
@@ -1083,7 +1083,12 @@
     "enabled": false,
     "why": "no open PR for the branch",
     "head": "d57693ea8e79a18c4371d87c13ef7a17fa2e4383"
-   }
+   },
+   "reason": "stage proof missing",
+   "merged_sha": "d57693ea8e79a18c4371d87c13ef7a17fa2e4383",
+   "merged_at": "2026-10-30T06:34:06Z",
+   "files": [],
+   "empty_handin": true
   },
   {
    "id": "T170",
@@ -4235,7 +4240,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T05:47:30Z",
+ "updated_at": "2026-10-30T06:34:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -4333,7 +4338,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d57693ea8e79a18c4371d87c13ef7a17fa2e4383",
+ "runner_sha": "f6bc02d10bedb76fde3b6f21990d10fbee59fbac",
  "starter": "actions",
  "smoke_runs": [
   {

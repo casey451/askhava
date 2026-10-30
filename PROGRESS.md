@@ -125,3 +125,4 @@
 - 2026-10-30T05:41:58Z runner d57693ea8e79 (actions): {"T008": "QUEUED -> IN_PROGRESS"}; T008 estimated 189k tokens (default); five-hour window has 23.3M left, week 431.2M (ledger); claimed
 - 2026-10-30T05:47:25Z runner d57693ea8e79 (actions): {}
 - 2026-10-30T05:47:30Z runner d57693ea8e79 (actions): {"T008": "IN_PROGRESS -> MERGE_PENDING"}
+- 2026-10-30T06:34:14Z runner f6bc02d10bed (actions): {"T008": "MERGE_PENDING -> BLOCKED"}
