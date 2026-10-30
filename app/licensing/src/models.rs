@@ -295,6 +295,8 @@ pub enum NoCardReason {
     AgencyUnmapped,
     /// Its ROC classes do not cover the job type.
     RocNotCovered,
+    /// A handyman-category job for a business not signed up as a handyman (LIC-014, LIC-028).
+    NotHandyman,
     /// A termite or pre-emergent job without the attested record category (LIC-012).
     PestCategoryMissing(PestRecordCategory),
     /// A homeowner reported its pest license wrong (LIC-047).

@@ -206,18 +206,21 @@ fn sale_related_inspections_are_fee_free_and_go_to_inspectors() {
         } else {
             InspectionFee::Normal
         };
+        let inspection = job("home_inspection", job_type);
         assert_eq!(
-            inspection_fee(SaleAnswer::No, fee_free),
+            inspection_fee(&inspection, SaleAnswer::No, fee_free),
             expected,
             "{job_type}"
         );
-        assert_eq!(inspection_fee(SaleAnswer::NotAnswered, fee_free), expected);
         assert_eq!(
-            inspection_fee(SaleAnswer::Yes, fee_free),
+            inspection_fee(&inspection, SaleAnswer::NotAnswered, fee_free),
+            expected
+        );
+        assert_eq!(
+            inspection_fee(&inspection, SaleAnswer::Yes, fee_free),
             InspectionFee::FeeFree
         );
         assert_eq!(fee_free, job_type != general, "{job_type}");
-        let inspection = job("home_inspection", job_type);
         assert_eq!(
             eligibility(&inspection, &agency(Agency::HomeInspector)),
             Eligibility::Card
@@ -232,6 +235,19 @@ fn sale_related_inspections_are_fee_free_and_go_to_inspectors() {
                 }
             ),
             missing
+        );
+    }
+}
+
+/// LIC-015, FEE-045: the fee-free rule is the home-inspection category's alone; a sale-question
+/// yes or a fee-free flag on any other job keeps the normal fee.
+#[test]
+fn only_home_inspections_are_fee_free() {
+    let pest_job = job("pest_control", "termites");
+    for answer in [SaleAnswer::Yes, SaleAnswer::No, SaleAnswer::NotAnswered] {
+        assert_eq!(
+            inspection_fee(&pest_job, answer, true),
+            InspectionFee::Normal
         );
     }
 }
@@ -310,8 +326,10 @@ fn pending_until_a_later_list_shows_the_name() {
         eligibility(&vent, &waiting),
         no_card(NoCardReason::CityListPending)
     );
+    let nameless = record("", None, Some("  "), None);
+    let blank_owner = [record("Unrelated Test LLC", None, Some(""), None)];
     assert_eq!(
-        city_list_standing(&business, &monday),
+        city_list_standing(&nameless, &blank_owner),
         CityListStanding::Pending
     );
     assert_eq!(
@@ -345,6 +363,10 @@ fn vent_and_lights_split_between_no_license_handyman_and_electrician() {
     assert_eq!(
         eligibility(&reroute, &handyman()),
         Eligibility::HandymanCard
+    );
+    assert_eq!(
+        eligibility(&reroute, &on_city_list()),
+        no_card(NoCardReason::NotHandyman)
     );
     assert_eq!(
         eligibility(

@@ -11,6 +11,9 @@ use crate::models::{
     NoCardReason, PestRecordCategory, SaleAnswer,
 };
 
+/// The catalog code of the only category LIC-015's fee-free rule applies to.
+const HOME_INSPECTION: &str = "home_inspection";
+
 /// Whether `holder` may receive `job`'s card on its licenses (LIC-011 to LIC-016, LIC-028 to
 /// LIC-031, LIC-047).
 ///
@@ -35,14 +38,19 @@ pub fn eligibility(job: &Job, holder: &Holder) -> Eligibility {
 
 /// LIC-011, LIC-028, LIC-029, LIC-031: a no-license job needs a city-list match; a job type the
 /// category refuses (a new outlet for holiday lights, a vent reroute for vent cleaning) is not
-/// no-license work.
+/// no-license work; the handyman category's jobs go only to a business signed up as a handyman.
 fn no_license(job: &Job, holder: &Holder) -> Eligibility {
     if !job.listed {
         return Eligibility::NoCard(NoCardReason::RefusedJobType);
     }
     match holder.city_list {
         CityListStanding::Pending => Eligibility::NoCard(NoCardReason::CityListPending),
-        CityListStanding::Matched if job.handyman_allowed => Eligibility::HandymanCard,
+        CityListStanding::Matched if job.handyman_allowed && holder.handyman => {
+            Eligibility::HandymanCard
+        }
+        CityListStanding::Matched if job.handyman_allowed => {
+            Eligibility::NoCard(NoCardReason::NotHandyman)
+        }
         CityListStanding::Matched => Eligibility::Card,
     }
 }
@@ -106,12 +114,15 @@ fn roc_and_agency(job: &Job, holder: &Holder) -> Eligibility {
     }
 }
 
-/// LIC-015, FEE-045: an inspection is fee-free when intake's sale question was answered yes or the
-/// request names a fee-free job type (buyer, pre-listing or refinance inspection, a termite report
-/// for a sale or loan: the catalog's `fee_free_job_types`); a general condition inspection keeps
-/// the normal introduction fee by job size.
+/// LIC-015, FEE-045: a home-inspection job is fee-free when intake's sale question was answered yes
+/// or the request names a fee-free job type (buyer, pre-listing or refinance inspection, a termite
+/// report for a sale or loan: the catalog's `fee_free_job_types`); a general condition inspection,
+/// and any job outside the `home_inspection` category, keeps the normal introduction fee by job size.
 #[must_use]
-pub fn inspection_fee(answer: SaleAnswer, job_type_fee_free: bool) -> InspectionFee {
+pub fn inspection_fee(job: &Job, answer: SaleAnswer, job_type_fee_free: bool) -> InspectionFee {
+    if job.category != HOME_INSPECTION {
+        return InspectionFee::Normal;
+    }
     match answer {
         SaleAnswer::Yes => InspectionFee::FeeFree,
         SaleAnswer::No | SaleAnswer::NotAnswered if job_type_fee_free => InspectionFee::FeeFree,

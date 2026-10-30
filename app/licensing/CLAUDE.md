@@ -17,17 +17,17 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - LIC-012, LIC-047: `rules::pest` (attestation only, termites need wood-destroying, pre-emergent needs weed control, a reported license pauses); `models::PestAttestation::new` (ticked box and a number).
 - LIC-013: `rules::roc_and_agency` (Board alarm certificate and ROC cover).
 - LIC-014, LIC-030, LIC-031: `rules::handyman` (listed job type of a handyman-allowed category, handyman on the city list, `HandymanCard`).
-- LIC-015: `rules::agency_only` (certified inspectors) and `rules::inspection_fee` (a yes or a fee-free job type is `FeeFree`).
+- LIC-015: `rules::agency_only` (certified inspectors) and `rules::inspection_fee` (for a `home_inspection` job, a yes or a fee-free job type is `FeeFree`; any other category is `Normal`).
 - LIC-016: `rules::agency_only` (ADEQ septage hauler).
-- LIC-028, LIC-029, LIC-031: `rules::no_license` (listed no-license job types only; refused ones such as a new outlet or vent reroute are `RefusedJobType`; the handyman category gives `HandymanCard`).
+- LIC-028, LIC-029, LIC-031: `rules::no_license` (listed no-license job types only; refused ones such as a new outlet or vent reroute are `RefusedJobType`; the handyman category gives `HandymanCard` to a business signed up as a handyman, else `NotHandyman`).
 
 ## Never break
 
-- Pest work opens only through `Holder::pest`, never through `agencies`, an ROC class or the city list (D-417): `tests/agency_rules.rs::pest_jobs_go_only_to_attested_pest_licensees`.
-- A no-license business still pending on the city list gets no card: `tests/agency_rules.rs::pending_until_a_later_list_shows_the_name`.
-- A refused job type never reaches a handyman or no-license business: `tests/agency_rules.rs::appliances_and_pools_split_between_licensed_handyman_and_no_license`.
-- `Agency` stays equal to the license map's `agencies`, the catalog's agency kinds and the migration's codes: `tests/scope_examples.rs`.
-- Matching examples M09 to M12 hold: `tests/scope_examples.rs::matching_examples_for_agency_rules_hold`.
+- Pest work opens only through `Holder::pest`, never through `agencies`, an ROC class or the city list (D-417): `src/tests/agency_rules.rs::pest_jobs_go_only_to_attested_pest_licensees`.
+- A no-license business still pending on the city list gets no card: `src/tests/agency_rules.rs::pending_until_a_later_list_shows_the_name`.
+- A refused job type never reaches a handyman or no-license business: `src/tests/agency_rules.rs::appliances_and_pools_split_between_licensed_handyman_and_no_license`.
+- `Agency` stays equal to the license map's `agencies`, the catalog's agency kinds and the migration's codes: `src/tests/scope_examples.rs`.
+- Matching examples M09 to M12 hold: `src/tests/scope_examples.rs::matching_examples_for_agency_rules_hold`.
 - `Holder::roc_covers` means the license map covers this job type (T153); this crate never reads a class name to decide ROC cover.
 
 ## How to change
