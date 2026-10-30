@@ -6,6 +6,9 @@ A stage passes only when all of these hold (D-486, D-479):
   2. kit/nightly.json (written by nightly-main on claude/kit-state) is green on a commit that contains
      every cleanup merge of the stage: each cleanup task's `merged_sha` is an ancestor of the nightly
      SHA (`git merge-base --is-ancestor`, D-484), or every merge when the stage has no cleanup task;
+     a cleanup task that handed in nothing records as `merged_sha` the main commit it certified, so
+     for stage 1 "the nightly contains all the stage's merges" rests on runner/proof.py, which records
+     that stage's proof only from a nightly commit containing every stage-1 merge (D-551);
   3. the stage's named proof (its row in docs/build-readiness.md section 3) is recorded in state as
      `stage_proofs[N]` with a non-empty `evidence` string (the runner's `--record-proof`);
   4. the coverage and mutant flags Ci recorded (a results file, and `ci_flags` in state) are green

@@ -1111,9 +1111,46 @@ def test_drill_an_empty_cleanup_hand_in_waits_until_mains_checks_are_known_green
     assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING  # main0001 is no DONE merge and its checks are unknown
     assert "waiting for Ci, Twin and Ally green on main main0001" in st.entry(env.store, "T057")["auto_merge"]["why"]
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == "merge_pending" and env.branch_pushes == []
+    assert st.entry(env.store, "T057")["empty_since"] == st.iso(NOW)  # the attempt's end
     env.checks_green = True
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=2)) == "done"
     assert st.entry(env.store, "T057")["reason"] == "stage proof missing"  # no proof check for stage 2: --record-proof
+
+
+def test_drill_an_empty_cleanup_hand_in_on_a_red_main_is_a_failed_attempt(tmp_path: Path) -> None:
+    """A check that failed on the head it would certify: the next attempt runs on the newer main (D-551 review)."""
+    graph = [make_task("T057", stage="2", type="cleanup")]
+    env, cfg = FakeEnv(lambda t, m, log: empty(t, m)), config(graph, tmp_path)
+    env.checks_green = False
+    assert cycle.run_cycle(cfg, env, NOW) == st.QUEUED
+    entry = st.entry(env.store, "T057")
+    assert entry["attempts"] == 1 and entry["last_failure"] == "empty hand-in: Ci, Twin or Ally failed on main main0001"
+    assert entry["history"][-1]["result"] == "check_failed" and env.branch_pushes == []
+    env.store = st.with_task(env.store, "T057", status=st.MERGE_PENDING, reviewed_sha="main0001")  # the self-heal path too
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == "check_failed"
+    assert st.entry(env.store, "T057")["attempts"] == 2
+
+
+def test_drill_an_empty_cleanup_hand_in_stops_waiting_for_unknown_checks_after_a_few_hours(tmp_path: Path) -> None:
+    """Checks that never become known (a commit with no PR checks) must not stall the build either."""
+    graph = [make_task("T057", stage="2", type="cleanup"), make_task("T058", stage="2")]
+    env, cfg = FakeEnv(lambda t, m, log: empty(t, m)), config(graph, tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    almost = NOW + cycle.EMPTY_WAIT - timedelta(minutes=1)
+    assert cycle.run_cycle(cfg, env, almost) == "merge_pending" and env.runs == [("T057", MODELS["sonnet"], "")]
+    assert cycle.run_cycle(cfg, env, NOW + cycle.EMPTY_WAIT) == "check_failed"
+    entry = st.entry(env.store, "T057")
+    assert entry["status"] == st.QUEUED and "still unknown on main main0001" in entry["last_failure"]
+    assert entry["empty_since"] is None
+    env.worker = lambda t, m, log: reviewed(t, m)
+    assert cycle.run_cycle(cfg, env, NOW + cycle.EMPTY_WAIT + timedelta(minutes=1)) == st.MERGE_PENDING
+
+
+def test_drill_a_push_with_no_head_gets_its_own_blocked_reason(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head=""))
+    env.push_branch = lambda branch, head: bool(head)  # type: ignore[method-assign]  # reason: GitHubEnv refuses an empty head
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == "push_failed"
+    assert st.entry(env.store, "T001")["reason"].startswith("no head to push: git could not read the task branch or main")
 
 
 def test_drill_an_empty_hand_in_from_any_other_task_is_a_failed_attempt(tmp_path: Path) -> None:

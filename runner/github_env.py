@@ -706,8 +706,11 @@ class GitHubEnv:
         """A WorkerResult from what the runner reads itself: git diff --no-renames and the transcripts."""
         branch = self.branch_for(task["id"])
         base = self.main_head()
-        # No task branch at all: the hand-in is main as it was, an empty hand-in (D-551).
-        head = self.git("rev-parse", f"refs/heads/{branch}", check=False) or base
+        head = self.git("rev-parse", f"refs/heads/{branch}", check=False)
+        if outcome == "submitted" and not head:
+            # No task branch: work left on a detached HEAD or another branch must never pass as an empty
+            # hand-in that certifies main, so the attempt fails (D-551).
+            return WorkerResult("tests_failed", log=f"no task branch {branch} to hand in", branch=branch)
         changed = self.git("diff", "--no-renames", "--name-only", f"{base}...{head}", check=False) if head else ""
         evidence, usage = read_transcripts(transcripts)
         review, review_usage = read_transcripts(reviewer_transcripts)
@@ -716,8 +719,8 @@ class GitHubEnv:
                             self._commits_ahead(base, head))
 
     def _commits_ahead(self, base: str, head: str) -> int | None:
-        """The head's commits that main lacks (`git rev-list --count base..head`); 0 is an empty hand-in,
-        None when git cannot say (D-551)."""
+        """The head's commits that main lacks (`git rev-list --count base..head`); 0 is an empty hand-in
+        (only ever for a task branch that exists), None when git cannot say (D-551)."""
         out = self.git("rev-list", "--count", f"{base}..{head}", check=False) if base and head else ""
         return int(out) if out.isdigit() else None
 

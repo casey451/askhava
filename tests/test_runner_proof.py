@@ -46,10 +46,13 @@ def rows(*extra: Row) -> list[Row]:
 
 
 def world(nightly: dict[str, Any] | None = None, outside: set[str] | None = None, missing: set[str] | None = None,
-          extra: tuple[Row, ...] = ()) -> proof.World:
+          extra: tuple[Row, ...] = (), texts: dict[str, str] | None = None) -> proof.World:
     run = nightly if nightly is not None else {"conclusion": "success", "sha": "n" * 40}
-    return proof.World(run, lambda older, newer: older not in (outside or set()), lambda sha, path: path not in (missing or set()),
-                       lambda state: rows(*extra))
+
+    def read(sha: str, path: str) -> str | None:
+        return None if path in (missing or set()) else (texts or {}).get(path, "def test_fake() -> None:\n    assert True\n")
+
+    return proof.World(run, lambda older, newer: older not in (outside or set()), read, lambda state: rows(*extra))
 
 
 def test_every_condition_true_records_the_proof_with_its_evidence() -> None:
@@ -69,7 +72,7 @@ def test_an_open_task_of_the_stage_keeps_the_proof_unrecorded() -> None:
 def test_a_red_or_missing_nightly_keeps_the_proof_unrecorded() -> None:
     for run in ({"conclusion": "failure", "sha": "n1"}, {"conclusion": "success"}):
         assert proof.machine_proof("1", graph(), done_state(), world(nightly=run))[0] is None
-    record, waits = proof.machine_proof("1", graph(), done_state(), proof.World(None, lambda a, b: True, lambda a, b: True, lambda s: []))
+    record, waits = proof.machine_proof("1", graph(), done_state(), proof.World(None, lambda a, b: True, lambda a, b: "", lambda s: []))
     assert record is None and waits == ["a green nightly-main run on main (kit/nightly.json)"]
 
 
@@ -85,6 +88,21 @@ def test_a_missing_merge_or_test_file_or_unverified_requirement_keeps_the_proof_
     assert record is None and waits == [f"tests/contract/test_stand_in_server.py in nightly commit {'n' * 12}"]
     record, waits = proof.machine_proof("1", graph(), done_state(), world(extra=(Row("LIC-001", ["T002"], verified=False),)))
     assert record is None and waits == ["requirement LIC-001 verified"]
+
+
+def test_a_named_test_that_can_skip_itself_keeps_the_proof_unrecorded() -> None:
+    """A test that skips is green without checking anything (D-551 review)."""
+    server = "tests/contract/test_stand_in_server.py"
+    for body in ("pytest.skip('no server')", "@pytest.mark.skipif(True, reason='x')", "pytest.importorskip('x')",
+                 "@pytest.mark.xfail", "raise unittest.SkipTest('x')"):
+        record, waits = proof.machine_proof("1", graph(), done_state(), world(texts={server: f"import pytest\n{body}\n"}))
+        assert record is None and waits == [f"{server} with no skip path (pytest.skip, skipif, importorskip, xfail) in nightly commit {'n' * 12}"]
+
+
+def test_the_committed_row_tests_have_no_skip_path() -> None:
+    for path in TESTS:
+        if (ROOT / path).is_file():
+            assert not proof.SKIP_PATHS.search((ROOT / path).read_text(encoding="utf-8")), path
 
 
 def test_a_stage_not_listed_is_proved_by_hand() -> None:

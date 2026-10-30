@@ -284,17 +284,42 @@ def _resolve_empty(state: State, env: Env, tid: str, head: str, now: datetime) -
     Nothing merges, so `merged_sha` is that commit and no files move. It counts as DONE (or BLOCKED
     for its stage proof, like any cleanup merge) once `Ci`, `Twin` and `Ally` are known green on it:
     either it is a merge the runner already marked DONE from its pull request's green checks and equal
-    trees, or main's own checks say so (BUILD_BRIEF.md:261-263). Until then it waits, and says why."""
-    if not _green_on_main(state, env, head):
+    trees, or main's own checks say so (BUILD_BRIEF.md:261-263). A check that failed on it is a failed
+    attempt (the next one runs on the newer main); while the checks are unknown it waits, saying why,
+    for at most EMPTY_WAIT after the attempt ended, then that too is a failed attempt, so it never
+    stalls the build the way the missing pull request did."""
+    green = _green_on_main(state, env, head)
+    if green is False:
+        return _empty_failed(state, tid, head, f"empty hand-in: Ci, Twin or Ally failed on main {head[:12]}")
+    if green is None:
+        since = _empty_since(state, tid, now)
+        if now - st.parse(since) >= EMPTY_WAIT:
+            return _empty_failed(state, tid, head, f"empty hand-in: Ci, Twin and Ally still unknown on main {head[:12]} after {EMPTY_WAIT}")
         why = f"empty hand-in, nothing to merge; waiting for Ci, Twin and Ally green on main {head[:12]}"
-        return st.with_task(state, tid, auto_merge={"enabled": False, "why": why, "head": head}), "merge_pending"
+        return st.with_task(state, tid, auto_merge={"enabled": False, "why": why, "head": head}, empty_since=since), "merge_pending"
     facts = {"merged_sha": head, "merged_at": st.iso(now), "files": [], "empty_handin": True}
     return _mark_done(state, tid, {"head_sha": head}, facts)
 
 
-def _green_on_main(state: State, env: Env, head: str) -> bool:
+EMPTY_WAIT = timedelta(hours=4)  # how long an empty hand-in waits for main's checks to be known (D-551)
+
+
+def _green_on_main(state: State, env: Env, head: str) -> bool | None:
+    """True for a merge the runner marked DONE (not an empty hand-in), else main's checks on it (None: unknown)."""
     merges = {t.get("merged_sha") for t in state["tasks"] if t.get("status") == st.DONE and not t.get("empty_handin")}
-    return head in merges or env.main_checks_green(head) is True
+    return True if head in merges else env.main_checks_green(head)
+
+
+def _empty_since(state: State, tid: str, now: datetime) -> str:
+    """When the empty hand-in started waiting: kept on the task, else its attempt's end, else now."""
+    task = st.entry(state, tid)
+    history = task.get("history") or [{}]
+    return str(task.get("empty_since") or history[-1].get("ended_at") or st.iso(now))
+
+
+def _empty_failed(state: State, tid: str, head: str, reason: str) -> tuple[State, str]:
+    failed = st.with_task(record_failure(state, tid, reason), tid, empty_since=None)
+    return _close_history(failed, tid, {"head_sha": head}, "check_failed"), "check_failed"
 
 
 PROOF_MISSING = st.PROOF_MISSING
@@ -698,7 +723,7 @@ def finish(
         if reviewed is None:
             return "lost_race"  # no review record, no branch push: the lease is not this session's (D-515)
         if not env.push_branch(res.branch, res.head_sha):
-            return _push_failed(env, reviewed, tid, lane)
+            return _push_failed(env, reviewed, tid, lane, res.head_sha)
         merged = _auto_merge(reviewed, env, tid, res.head_sha)
         review = {k: st.entry(reviewed, tid)[k] for k in ("reviewed_sha", "review_lease", "branch")}
         final = st.with_task(_ours_onto(state, final, reviewed), tid, **review, auto_merge=st.entry(merged, tid)["auto_merge"])
@@ -775,12 +800,15 @@ def _put_task(state: State, task: dict[str, Any]) -> State:
     return dict(state, tasks=tasks)
 
 
-def _push_failed(env: Env, state: State, tid: str, lane: str = st.LANE_ONE) -> str:
+def _push_failed(env: Env, state: State, tid: str, lane: str = st.LANE_ONE, head: str | None = None) -> str:
     """A rejected branch push is a credential or permission problem, not the worker's: retrying would
     spend a whole attempt to fail the same way. The task is BLOCKED with the reason (only its dependents
     wait), the lease is released at once and the build moves on; a person fixes the cause and re-queues
-    the task (D-513)."""
+    the task (D-513). With no head at all the push was refused before it ran, because git could not
+    read the branch or main; that gets its own reason (D-551)."""
     reason = "branch push rejected; fix the push credential, then set the task back to QUEUED"
+    if head == "":
+        reason = "no head to push: git could not read the task branch or main; fix that, then set the task back to QUEUED"
     blocked = st.with_lease(st.with_task(state, tid, status=st.BLOCKED, reason=reason), lane, None)
     return "push_failed" if env.push_state(blocked, state) else "lost_race"
 

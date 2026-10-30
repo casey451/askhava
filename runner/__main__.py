@@ -127,7 +127,7 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
     def stage_proof(state: st.State, stage: str) -> tuple[dict[str, Any] | None, list[str]]:
         env.main_head()  # the nightly commit and the merges must be local for git to answer
         nightly = env.read_nightly()
-        world = proof.World(nightly, stage_exit.git_is_ancestor(ROOT), git_has_file,
+        world = proof.World(nightly, stage_exit.git_is_ancestor(ROOT), git_file,
                             lambda s: progress.compute(ROOT, s, nightly))
         return proof.machine_proof(stage, kit["tasks"], state, world)
 
@@ -139,10 +139,10 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
     return cfg, env
 
 
-def git_has_file(sha: str, path: str) -> bool:
-    """Whether the commit holds the file (`git cat-file -e sha:path`), for runner/proof.py (D-551)."""
-    done = subprocess.run(["git", "cat-file", "-e", f"{sha}:{path}"], cwd=ROOT, capture_output=True, check=False)
-    return done.returncode == 0
+def git_file(sha: str, path: str) -> str | None:
+    """The file's text in that commit (`git show sha:path`), None when absent, for runner/proof.py (D-551)."""
+    done = subprocess.run(["git", "show", f"{sha}:{path}"], cwd=ROOT, capture_output=True, text=True, check=False)
+    return done.stdout if done.returncode == 0 else None
 
 
 def owner_review(settings: Path) -> bool:

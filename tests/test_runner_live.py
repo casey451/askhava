@@ -253,15 +253,22 @@ def test_worker_command_contract(repo: dict[str, Path], tmp_path: Path, monkeypa
 
 
 def test_collect_result_counts_the_commits_main_lacks_and_in_main_answers_from_git(repo: dict[str, Path], tmp_path: Path) -> None:
-    """D-551: a hand-in with no commits on top of main (a branch at main, or no branch at all) is an empty
-    hand-in (commits_ahead 0); in_main says whether main contains a commit."""
+    """D-551: a task branch with no commits on top of main is an empty hand-in (commits_ahead 0); no task
+    branch at all is a failed attempt, never an empty hand-in, so work left on a detached HEAD or another
+    branch is not certified away; in_main says whether main contains a commit."""
     env = make_env(repo["a"], tmp_path)
     env.read_state()
     main = env.main_head()
+    git(repo["a"], "checkout", "-q", "--detach", main)
+    (repo["a"] / "lost.md").write_text("work on a detached HEAD\n")
+    git(repo["a"], "add", "-A")
+    git(repo["a"], "commit", "-qm", "detached work")
     no_branch = env.collect_result(TASK, "submitted", [], [])
-    assert no_branch.commits_ahead == 0 and no_branch.head_sha == main and no_branch.changed_paths == []
+    assert no_branch.outcome == "tests_failed" and no_branch.commits_ahead is None
+    assert no_branch.log == f"no task branch {TASK['branch']} to hand in"
     git(repo["a"], "branch", "-f", TASK["branch"], main)
-    assert env.collect_result(TASK, "submitted", [], []).commits_ahead == 0
+    at_main = env.collect_result(TASK, "submitted", [], [])
+    assert at_main.outcome == "submitted" and at_main.commits_ahead == 0 and at_main.head_sha == main and at_main.changed_paths == []
     head = worker_commit(repo["a"], TASK["branch"], "docs/k10/note.md")
     assert env.collect_result(TASK, "submitted", [], []).commits_ahead == 1
     assert env.in_main(main) is True and env.in_main(head) is False and env.in_main("0" * 40) is None and env.in_main("") is None

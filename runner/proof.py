@@ -9,7 +9,8 @@ only when all of these hold on the state and kit/nightly.json it reads:
      only for this proof (runner.state.awaits_proof);
   2. kit/nightly.json is green on a commit of main that contains the merge of every task of the stage
      (`git merge-base --is-ancestor`), so that run tested all of the stage's work;
-  3. each test file named for the stage exists in that commit, so the clause it checks ran there;
+  3. each test file named for the stage exists in that commit with no skip path (SKIP_PATHS), so the
+     clause it checks ran there and could not pass by skipping;
   4. every requirement owned only by tasks of this stage or earlier (naming it, or owning a test
      entry that covers it) is verified by scripts/progress.py's rule.
 
@@ -21,6 +22,7 @@ stage, a listed stage's cleanup task waiting for it does not hold its own stage'
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Any
@@ -48,8 +50,25 @@ class World:
 
     nightly: dict[str, Any] | None
     is_ancestor: Callable[[str, str], bool | None]
-    has_file: Callable[[str, str], bool]
+    read_file: Callable[[str, str], str | None]  # (commit, path) -> the file's text there, None when absent
     rows: Callable[[State], Iterable[Any]]
+
+
+# A test that can skip itself can be green without checking anything, so a named test file must have
+# no skip path at all (D-551).
+SKIP_PATHS = re.compile(r"pytest\.skip|skipif|importorskip|mark\.skip|xfail|SkipTest|unittest\.skip")
+
+
+def _test_gaps(sha: str, tests: tuple[str, ...], world: World) -> list[str]:
+    """Each named test file missing from the nightly commit, or holding a skip path there."""
+    gaps = []
+    for path in tests:
+        text = world.read_file(sha, path)
+        if text is None:
+            gaps.append(f"{path} in nightly commit {sha[:12]}")
+        elif SKIP_PATHS.search(text):
+            gaps.append(f"{path} with no skip path (pytest.skip, skipif, importorskip, xfail) in nightly commit {sha[:12]}")
+    return gaps
 
 
 def _numeric(stage: Any) -> float | None:
@@ -116,7 +135,7 @@ def machine_proof(stage: str, graph: list[dict[str, Any]], state: State, world: 
     sha, waits = _nightly_gaps(tasks, state, world)
     if waits:
         return None, waits
-    waits = [f"{path} in nightly commit {sha[:12]}" for path in tests if not world.has_file(sha, path)]
+    waits = _test_gaps(sha, tests, world)
     owned = owned_up_to(graph, world.rows(state), stage)
     waits += [f"requirement {row.req_id} verified" for row in owned if not row.verified]
     if waits:
