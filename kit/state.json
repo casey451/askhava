@@ -3380,7 +3380,14 @@
      "ended_at": "2026-10-30T02:38:38Z",
      "result": "QUEUED"
     }
-   ]
+   ],
+   "reviewed_sha": "12633e5f1f48c456d282f0a1c15f20a9bbb7b3ab",
+   "review_lease": {
+    "task": "T154",
+    "session": "actions-40992765162",
+    "expires": "2026-10-30T05:40:00Z"
+   },
+   "branch": "claude/task/T154-intake-golden-sets"
   },
   {
    "id": "T155",
@@ -3848,7 +3855,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T02:42:37Z",
+ "updated_at": "2026-10-30T02:52:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -3946,7 +3953,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5fc02adeaaefc821cf69f8df206760401d2600b4",
+ "runner_sha": "12633e5f1f48c456d282f0a1c15f20a9bbb7b3ab",
  "starter": "actions",
  "smoke_runs": [
   {
