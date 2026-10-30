@@ -1236,3 +1236,8 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **An alarm for unusual reading.** If any part of the app reads contact details at more than three times its usual hourly rate, or tries to read for a reason that is not on the list, you get a High alert. The hourly check is built; a later task switches on its hourly run.
 - **Changing the key.** The key can be replaced without downtime: old and new keys both work while the app moves every record over, and phone lookups keep working throughout.
 - **Nothing for you to do now.** At the account checkpoint the deploy notes will say how to make the two vault keys and where to keep the sealed paper copy.
+
+## Check the phone area-code table before going live (T027, D-765, October 30)
+
+- **What it does.** Texts and business emails go only between 8 a.m. and 8 p.m. in Arizona and in the zone of the person's phone area code. A number whose area code is not in our table is never texted.
+- **What to check.** The table was written from memory of the public plan. Before Gate C, compare `app/messaging/area_codes.json` with the official NANPA area-code list (new codes such as 382, 683, 327, 861, 357 and 728 were left out because the zone was not certain, so those numbers are refused), and check codes that span time zones (928, 850, 208, 541 and the other split codes in D-765). A missing code only means no text; a wrong zone could mean a text at a bad hour.
