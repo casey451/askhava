@@ -8,11 +8,14 @@
 # last one finishing, never on a fixed clock (BUILD_BRIEF.md:213).
 # The concurrency group keeps two starts of one lane from overlapping; the lease on claude/lease is the
 # real lock. Lanes (D-620): kit/runner.json "lanes" says how many tasks may be in flight. The gate picks
-# the lane a run serves (`run_lane` in runner/state.py: the lane of the task its event names, else the
-# first lane with no live lease, else lane 1); the backup job's concurrency group is per lane (lane 1
-# keeps the old name `backup-runner`), the runner gets the lane as RUNNER_LANE and claims only on it, and
-# with two or more lanes the hourly tick and the chain step start one run per lane that needs one. With
-# "lanes": 1 every run serves lane 1 and every step behaves exactly as before.
+# the lane a run serves (`run_lane` in runner/state.py: a merged pull request's own lane when it holds no
+# live lease, D-723; else a lane with no task in flight, the event's task's first, then a lane with no
+# live lease, else lane 1); the backup job's concurrency group is per lane (lane 1 keeps the old name
+# `backup-runner`), the runner gets the lane as RUNNER_LANE and claims only on it, and with two or more
+# lanes the hourly tick and the chain step start one run per lane that needs one, and a cycle that hands
+# off starts its refill runs at once (D-723). GitHub keeps one pending job per group and cancels the
+# older, so a dropped run is always replaced by a newer run for the same lane. With "lanes": 1 every run
+# serves lane 1 and every step behaves exactly as before.
 name: backup-runner
 on:
   schedule:
@@ -81,6 +84,9 @@ jobs:
         env:
           WANTED: ${{ github.event.inputs.lane || '' }}
           BRANCH: ${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref || '' }}
+          # A merged pull request's run serves its task's own lane, which that merge frees (D-723); a
+          # closed pull request that did not merge is not one.
+          MERGED: ${{ github.event.pull_request.merged == true }}
         run: |
           set -u
           # lease.json on claude/lease holds the lane map; state.json was saved by the step above.
@@ -107,14 +113,19 @@ jobs:
           held = mod.live_leases(state, now) if hasattr(mod, "live_leases") else {}
           free = [str(n) for n in range(1, lanes + 1) if str(n) not in held]
           wanted, found = sys.argv[5].strip(), re.match(r"^claude/task/(FIX-MAIN|[A-Za-z]+[0-9]+[A-Za-z]?)", sys.argv[6])
+          merged = len(sys.argv) > 7 and sys.argv[7] == "true"
           if wanted.isdigit() and 1 <= int(wanted) <= lanes:
               lane = wanted
           elif hasattr(mod, "run_lane"):
-              lane = mod.run_lane(state, now, lanes, found.group(1) if found else "")
+              task = found.group(1) if found else ""
+              try:
+                  lane = mod.run_lane(state, now, lanes, task, merged=merged)
+              except TypeError:  # a checkout whose runner/state.py predates `merged` (D-723)
+                  lane = mod.run_lane(state, now, lanes, task)
           else:
               lane = "1"
           print(lane, lanes, " ".join(free) or "-")
-          ' runner/state.py "$RUNNER_TEMP/state.json" "$RUNNER_TEMP/lease.json" kit/runner.json "$WANTED" "$BRANCH" 2>/dev/null || echo "1 1 -")"
+          ' runner/state.py "$RUNNER_TEMP/state.json" "$RUNNER_TEMP/lease.json" kit/runner.json "$WANTED" "$BRANCH" "$MERGED" 2>/dev/null || echo "1 1 -")"
           read -r lane lanes free <<< "$picked"
           { echo "lane=${lane}"; echo "lanes=${lanes}"; echo "free=${free}"; } >> "$GITHUB_OUTPUT"
           echo "lane ${lane} of ${lanes}; lanes with no live lease: ${free}"
@@ -324,9 +335,11 @@ jobs:
           if [ "${{ steps.safety.outputs.released }}" = "yes" ]; then again=yes; fi
           # Two or more lanes (D-620): this run's last report names the free lanes a task could be claimed on
           # (`refill`); after a result that moved a task (an attempt handed in or failed, a merge resolved, a
-          # red main cleared), one run is started per such lane. A run that then claims nothing reports
-          # idle, paced, lease_live or no_free_lane and starts nothing, so the chain never spins; the
-          # lane's concurrency group and the lease keep a second start from doing anything twice. Rows that
+          # red main cleared), or a row whose `changed.tasks` shows any task moved (D-723), one run is
+          # started per such lane (a cycle that hands off has already started its refill runs itself,
+          # D-723). A run that then claims nothing reports idle, paced, lease_live or no_free_lane and
+          # starts nothing, so the chain never spins; the lane's concurrency group and the lease keep a
+          # second start from doing anything twice. Rows that
           # did nothing (a lease renewal, an `--after` from a session holding no lease) are skipped, so the
           # hand-in's own row decides.
           refill="$(printf '%s' "$log" | SESSION="actions-${GITHUB_RUN_ID}" python3 -c '
@@ -341,7 +354,10 @@ jobs:
           rows = [json.loads(l) for l in sys.stdin if l.strip()]
           mine = [r for r in rows if str(r.get("at", "")) >= start and r.get("session") == session and not quiet(r)]
           last = mine[-1] if mine else {}
-          lanes = [str(n) for n in last.get("refill") or [] if str(n).isdigit()] if last.get("result") in moved else []
+          # A row moved a task by its result, or by the tasks it changed: a run whose own lane still waits
+          # (merge_pending) may have resolved another lane's merge and freed that lane (D-723).
+          went = last.get("result") in moved or bool((last.get("changed") or {}).get("tasks"))
+          lanes = [str(n) for n in last.get("refill") or [] if str(n).isdigit()] if went else []
           print(" ".join(lanes))
           ' 2>/dev/null || true)"
           if [ -n "$refill" ]; then

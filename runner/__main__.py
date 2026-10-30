@@ -27,7 +27,9 @@ line of JSON with what changed.
                                     never under a lease that matters (D-677)
   python3 -m runner --restore-lanes end a fall back to one lane (`lanes_fallback`, D-620)
   RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
-                                    claims only on that lane; unset, the first free lane (D-620)
+                                    claims only on that lane; unset, the first free lane (D-620);
+                                    with two or more lanes a cycle that hands off starts one run
+                                    per refill lane at once, with the job token (D-723)
   --dry-run                         compute everything, push nothing, run no smoke test or worker
   --session ID                      the lease's session (default: the hand-off file, RUNNER_SESSION,
                                     or <starter>-<GITHUB_RUN_ID or random>)
@@ -378,6 +380,25 @@ def refill(cfg: cycle.Config, env: GitHubEnv) -> list[str]:
         return []
 
 
+def start_refill(lanes: list[str], env: GitHubEnv) -> list[str]:
+    """Start one backup-runner run per refill lane now, when this cycle handed a task off (D-723).
+
+    The chain step starts refill runs only when its job ends, and a handed-off job ends only after its
+    worker's whole session, so a lane freed by this cycle's resolved merges (or left free beside the
+    claim) would sit idle that long. Only a hand-off starts runs here: every other result ends the job
+    within minutes and the chain step refills. The refill lanes never include this run's own lane (its
+    new lease holds it), and a started run that claims nothing reports a result that starts nothing,
+    so this cannot loop. Returns the lanes started; a failed start never changes the result."""
+    started = []
+    for lane in lanes:
+        try:
+            if env.dispatch_lane(lane):
+                started.append(lane)
+        except Exception as exc:  # noqa: BLE001  # reason: a refill that could not start must never change the cycle's result (D-723)
+            print(f"runner: refill run for lane {lane} not started: {str(exc)[:200]}")
+    return started
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     with tempfile.TemporaryDirectory() as outbox:
@@ -391,6 +412,8 @@ def main(argv: list[str] | None = None) -> int:
             close_handoff(result)
         if cfg.lanes >= 2:
             report["lane"], report["refill"] = cfg.lane_hint, refill(cfg, env)
+            if result == "handed_off" and not args.dry_run:
+                report["dispatched"] = start_refill(report["refill"], env)
         try:
             env.write_cycle_log({k: v for k, v in report.items() if k != "handoff"})
         except Exception as exc:  # noqa: BLE001  # reason: a lost log line must never change the cycle's result (D-499)
