@@ -1261,3 +1261,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Limits you can change in settings.** Each AI call gets 20 seconds; the app stops calling the AI after 2,000 calls in one Arizona day and alerts you once; a rejected key or a spending limit also alerts you once a day.
 - **Words it will not send.** Any AI-written question or card holding a carrier-banned word (sex, hate, alcohol, guns, tobacco, cannabis and drugs, English and Spanish), a link, or too many characters is replaced by the fixed wording. Everyday trade words like "weed", "nail gun" and "wine fridge" are deliberately not on the list (D-813).
 - **Two notes for the plan.** The AI connector does not yet pass back the "try again in N seconds" signal, so for now the app treats every rate-limit as a spending problem and alerts you (D-810); and the practice AI uses trade names that do not match the catalog yet (D-812).
+
+## The AI stays off in the live app until you switch it on (T025, D-841 to D-843, October 30)
+
+- **What it does.** In the live app no message goes to the AI until either the zero-retention agreement is signed or you turn on "AI on scrubbed text". With it off, requests are sorted by keyword rules and the fixed questions, and nothing is sent to the AI at all.
+- **What the switch needs first.** The switch won't turn on until the account checklist holds the AI provider's terms: the link, the date you checked them, that they don't train on what we send, how long they keep it, how long they may keep text their safety systems flag, and a monthly spend limit set in their Console at no more than 3 times the expected AI cost. The privacy policy in force that day must also carry the matching AI sentence. If a later policy version drops that sentence, the AI stops the day it takes effect.
+- **What gets kept.** For each AI reading the database keeps only the confidence numbers and yes/no flags; the trade and job type go to the outside record copy. The weekly summary gets counts only.
+- **One note for the plan.** Until the owner page for the checklist is built, those records are entered directly in the database (D-841).

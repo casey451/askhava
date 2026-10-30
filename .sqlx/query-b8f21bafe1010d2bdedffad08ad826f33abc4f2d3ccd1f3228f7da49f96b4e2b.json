@@ -1,0 +1,49 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n          (SELECT count(*) FROM ai.call_stat WHERE at > now() - interval '7 days'\n             AND outcome <> 'daily_cap') AS \"calls!\",\n          (SELECT count(*) FROM ai.call_stat WHERE at > now() - interval '7 days'\n             AND outcome NOT IN ('ok', 'daily_cap')) AS \"ended!\",\n          count(*) AS \"readings!\", count(*) FILTER (WHERE emergency) AS \"emergencies!\",\n          count(*) FILTER (WHERE spanish) AS \"spanish!\"\n        FROM ai.reading WHERE at > now() - interval '7 days'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "calls!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "ended!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "readings!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "emergencies!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "spanish!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "b8f21bafe1010d2bdedffad08ad826f33abc4f2d3ccd1f3228f7da49f96b4e2b"
+}

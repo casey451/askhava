@@ -10,6 +10,7 @@ publish.workspace = true
 sqlx = { workspace = true }
 
 [dev-dependencies]
+askhava-ai = { workspace = true }
 askhava-core = { workspace = true }
 askhava-ops = { workspace = true }
 askhava-catalog = { workspace = true }

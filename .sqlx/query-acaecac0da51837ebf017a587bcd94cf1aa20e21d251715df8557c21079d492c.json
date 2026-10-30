@@ -1,0 +1,63 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH t AS (SELECT * FROM ai.provider_terms ORDER BY id DESC LIMIT 1),\n           d AS (SELECT (now() AT TIME ZONE 'America/Phoenix')::date AS today)\n        SELECT EXISTS (SELECT 1 FROM t) AS \"terms!\",\n          COALESCE((SELECT inputs_not_used_for_training FROM t), false) AS \"training_free!\",\n          COALESCE((SELECT flagged_retention_days IS NOT NULL FROM t), false) AS \"flagged!\",\n          COALESCE((SELECT spend_limit_cents <= 3 * expected_monthly_cents FROM t), false) AS \"spend!\",\n          COALESCE((SELECT p.has_ai018_sentence FROM ai.privacy_policy_version p, d\n            WHERE p.effective_on <= d.today ORDER BY p.effective_on DESC, p.recorded_at DESC\n            LIMIT 1), false) AS \"policy!\",\n          COALESCE((SELECT t.zero_retention_signed_on <= d.today FROM t, d), false)\n            AS \"zero_retention!\",\n          COALESCE((SELECT turned_on FROM ai.switch_history ORDER BY seq DESC LIMIT 1), false)\n            AS \"switch_on!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "terms!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "training_free!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "flagged!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "spend!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "policy!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 5,
+        "name": "zero_retention!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 6,
+        "name": "switch_on!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "acaecac0da51837ebf017a587bcd94cf1aa20e21d251715df8557c21079d492c"
+}
