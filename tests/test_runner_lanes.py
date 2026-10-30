@@ -202,4 +202,7 @@ def test_lanes_setting_defaults_to_one(tmp_path: Path) -> None:
         f.write_text(raw)
         assert entry.lanes(f) == want
     repo_settings = Path(__file__).resolve().parent.parent / "kit" / "runner.json"
-    assert entry.lanes(repo_settings) == 1
+    # Casey's switch (D-620): 1 or 2, the lane counts the drills cover, written as a number so it can
+    # never fall back to 1 unnoticed.
+    assert json.loads(repo_settings.read_text(encoding="utf-8"))["lanes"] in (1, 2)
+    assert entry.lanes(repo_settings) in (1, 2)
