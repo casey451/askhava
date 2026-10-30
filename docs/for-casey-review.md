@@ -1268,3 +1268,12 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What the switch needs first.** The switch won't turn on until the account checklist holds the AI provider's terms: the link, the date you checked them, that they don't train on what we send, how long they keep it, how long they may keep text their safety systems flag, and a monthly spend limit set in their Console at no more than 3 times the expected AI cost. The privacy policy in force that day must also carry the matching AI sentence. If a later policy version drops that sentence, the AI stops the day it takes effect.
 - **What gets kept.** For each AI reading the database keeps only the confidence numbers and yes/no flags; the trade and job type go to the outside record copy. The weekly summary gets counts only.
 - **One note for the plan.** Until the owner page for the checklist is built, those records are entered directly in the database (D-841).
+
+## A text is never sent twice, and past customers are left alone (T028, D-846 to D-850, October 30)
+
+- **What it does.** Every text waits in one outbox with a tag made from what it is about (which message, which job, which person), never from a phone number. If the app crashes just after the texting service took a text, the retry carries the same tag, so the service sends it only once.
+- **Past customers.** Ask Hava never texts someone whose request is finished unless she has written to Ask Hava since then.
+- **Business phones.** Each business's main and staff phones are kept only in a scrambled form that can be matched but not read, so an incoming text can be tied to its business.
+- **One note for the plan.** For now the code that queues a text tells the outbox whether the person's request is still open and when she last wrote; the later inbox task should take that over (D-846).
+- **Phone numbers and message text.** A homeowner's number is looked up in the locked contact store at the moment of sending, never handed in by other code, and the text of a message is wiped from the outbox once it has gone (D-849, D-850).
+- **Check with Twilio before going live.** Two things rely on Twilio sending a text only once when it gets the same tag twice: the retry after the app crashed just after Twilio took the text, and two workers sending the same text at once. That needs confirming with Twilio before Gate C; if Twilio doesn't honour the tag, the crash retry could send a text twice and needs another guard (D-847).
