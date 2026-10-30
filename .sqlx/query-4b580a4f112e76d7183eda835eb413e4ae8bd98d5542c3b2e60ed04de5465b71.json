@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM ai.call_stat",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "4b580a4f112e76d7183eda835eb413e4ae8bd98d5542c3b2e60ed04de5465b71"
+}

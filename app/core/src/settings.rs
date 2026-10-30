@@ -57,6 +57,10 @@ const KEYS: &[&str] = &[
     // Parsed by `test_control::TestControl::from_settings`, only under `test-control` (T020, SEC-035).
     "ASKHAVA_TEST_CONTROL_SECRET",
     "ASKHAVA_TEST_CONTROL_CLOCK_FILE",
+    // Parsed by `askhava_ai::api::AiConfig::from_pairs` (T024, AI-021, AI-023, AI-024).
+    "ASKHAVA_AI_MODEL",
+    "ASKHAVA_AI_TIMEOUT_SECONDS",
+    "ASKHAVA_AI_DAILY_CAP",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
