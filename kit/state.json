@@ -852,7 +852,14 @@
    "slug": "twin-triage",
    "type": "harness",
    "stage": "1",
-   "attempt_started_at": "2026-10-30T03:59:31Z"
+   "attempt_started_at": "2026-10-30T03:59:31Z",
+   "reviewed_sha": "c7700c9105c92ccd47729e029e9dedc7fb2d3b3b",
+   "review_lease": {
+    "task": "T006",
+    "session": "actions-41000136788",
+    "expires": "2026-10-30T06:59:31Z"
+   },
+   "branch": "claude/task/T006-twin-triage"
   },
   {
    "id": "T007",
@@ -4009,7 +4016,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T04:02:46Z",
+ "updated_at": "2026-10-30T04:49:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -4107,7 +4114,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f55fa02095c074dc2c37133f89b9d9e6e2dc8017",
+ "runner_sha": "c7700c9105c92ccd47729e029e9dedc7fb2d3b3b",
  "starter": "actions",
  "smoke_runs": [
   {
