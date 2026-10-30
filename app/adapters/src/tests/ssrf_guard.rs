@@ -154,14 +154,17 @@ async fn media_from_a_non_twilio_host_is_refused() {
 /// TD-SEC-20; SEC-041: a URL with a user name or password, or a port other than 443, is refused before any lookup.
 #[tokio::test]
 async fn userinfo_and_other_ports_are_refused() {
+    // The userinfo cases use a reserved example host (PRIV-019) that the policy
+    // allows, so only the user name or password can cause the refusal.
+    let fake = FetchPolicy::new(&["media.example.com"], MB, Duration::from_secs(2));
     let media = FetchPolicy::twilio_media();
-    for url in [
-        "https://user@api.twilio.com/photo.jpg",
-        "https://:secret@api.twilio.com/photo.jpg",
-        "https://api.twilio.com:8443/photo.jpg",
+    for (policy, url) in [
+        (&fake, "https://user@media.example.com/photo.jpg"),
+        (&fake, "https://:secret@media.example.com/photo.jpg"),
+        (&media, "https://api.twilio.com:8443/photo.jpg"),
     ] {
         assert_eq!(
-            fetch_untrusted(&media, url).await,
+            fetch_untrusted(policy, url).await,
             Err(FetchError::HostNotAllowed),
             "{url}"
         );
