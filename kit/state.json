@@ -1044,7 +1044,7 @@
     "T007",
     "T154"
    ],
-   "status": "BLOCKED",
+   "status": "DONE",
    "attempts": 0,
    "slug": "cleanup-stage1",
    "type": "cleanup",
@@ -1084,24 +1084,12 @@
     "why": "no open PR for the branch",
     "head": "d57693ea8e79a18c4371d87c13ef7a17fa2e4383"
    },
-   "reason": "stage proof missing",
+   "reason": null,
    "merged_sha": "d57693ea8e79a18c4371d87c13ef7a17fa2e4383",
    "merged_at": "2026-10-30T06:34:06Z",
    "files": [],
    "empty_handin": true,
-   "proof_waits_for": [
-    "a green nightly-main run containing T002's merge 739f29a31cec (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T003's merge 7161be09784c (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T004's merge 36b13e66ddf4 (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T172's merge 189cfe54c716 (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T005's merge f55fa02095c0 (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T006's merge 1e9c2dbb261b (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T007's merge d57693ea8e79 (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T008's merge d57693ea8e79 (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T170's merge 1cdbd960f712 (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T154's merge b4f7265f01d2 (last green run: c2cee3a0b56e)",
-    "a green nightly-main run containing T167's merge 5d45d8ef0bee (last green run: c2cee3a0b56e)"
-   ]
+   "proof_waits_for": null
   },
   {
    "id": "T170",
@@ -4554,7 +4542,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T09:02:23Z",
+ "updated_at": "2026-10-30T09:13:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -4652,7 +4640,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5d45d8ef0bee8d8e290462e58aa81c580bf57c1e",
+ "runner_sha": "ddc0c699dfc2ea37baaf6aa18d7afd21e3ba310e",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -4824,5 +4812,13 @@
   }
  ],
  "next_decision": 562,
+ "stage_proofs": {
+  "1": {
+   "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
+   "main_sha": "5d45d8ef0bee8d8e290462e58aa81c580bf57c1e",
+   "by": "runner",
+   "at": "2026-10-30T09:13:38Z"
+  }
+ },
  "lease_on": "claude/lease"
 }
