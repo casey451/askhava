@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-10-30T04:49:59Z by runner c7700c9105c9 (actions).
+Updated 2026-10-30T05:01:15Z by runner 1e9c2dbb261b (actions).
 
-**Requirements verified:** 0 of 725 (0.0%) · partial 20 · unstarted 705
-**Tasks merged (throughput only):** 6 of 221
+**Requirements verified:** 0 of 725 (0.0%) · partial 32 · unstarted 693
+**Tasks merged (throughput only):** 7 of 221
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 0 | 0 | 35 | 35 |
 | ai | 0 | 1 | 26 | 27 |
 | businesses | 0 | 0 | 57 | 57 |
-| calls | 0 | 0 | 25 | 25 |
-| consent | 0 | 0 | 35 | 35 |
-| fees | 0 | 0 | 53 | 53 |
-| intake | 0 | 5 | 36 | 41 |
+| calls | 0 | 1 | 24 | 25 |
+| consent | 0 | 1 | 34 | 35 |
+| fees | 0 | 2 | 51 | 53 |
+| intake | 0 | 8 | 33 | 41 |
 | job-cards | 0 | 3 | 19 | 22 |
 | licensing | 0 | 9 | 39 | 48 |
 | lifecycle | 0 | 0 | 28 | 28 |
-| messaging | 0 | 0 | 45 | 45 |
+| messaging | 0 | 1 | 44 | 45 |
 | ops-recovery | 0 | 2 | 52 | 54 |
-| privacy | 0 | 0 | 31 | 31 |
+| privacy | 0 | 1 | 30 | 31 |
 | quiet-hours | 0 | 0 | 9 | 9 |
-| quotes-pick | 0 | 0 | 56 | 56 |
+| quotes-pick | 0 | 3 | 53 | 56 |
 | recurring | 0 | 0 | 11 | 11 |
 | security | 0 | 0 | 54 | 54 |
 | terms | 0 | 0 | 35 | 35 |
@@ -35,7 +35,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
-- stage 1: 6 of 11 done
+- stage 1: 7 of 11 done
 - stage 2: 0 of 78 done
 - stage 3: 0 of 25 done
 - stage 4: 0 of 50 done
