@@ -1,0 +1,387 @@
+# Intake golden set (T154; INT-040, OPS-040, OPS-053; D-395, D-492). Fake data only.
+#
+# Fake homeowner requests, about 10 per launch-open trade in docs/catalog/categories.yaml,
+# written before any routing code. Each row gives the answer intake must reach with no human:
+#   id        <trade>-<nn>, unique
+#   trade     the category id (categories.yaml) the request belongs to
+#   job_type  one of that category's job_types
+#   question  the first question intake asks: the first question in the trade's set in
+#             docs/catalog/question_bank.yaml that has no ask_if
+#   lang      en | es; at least a quarter of each trade's rows are es (OPS-053)
+#   text      the request as a homeowner might type it; no names, phones, addresses or photos
+# The intake golden run (OPS-040, T156) runs every row on each catalog change and reports the
+# share that reaches the right job type with no human against the 90% target.
+# Checked by tests/test_intake_golden.py. A row changes only with the catalog it mirrors.
+
+version: 1
+rows:
+  - {id: plumbing_repair-01, trade: plumbing_repair, job_type: "leak repair", question: fixture, lang: en, text: "Water is dripping from the pipe under my kitchen sink"}
+  - {id: plumbing_repair-02, trade: plumbing_repair, job_type: "leak repair", question: fixture, lang: en, text: "There's a wet spot spreading on the hallway ceiling below the bathroom"}
+  - {id: plumbing_repair-03, trade: plumbing_repair, job_type: "toilet repair", question: fixture, lang: en, text: "My toilet keeps running all night and won't stop filling"}
+  - {id: plumbing_repair-04, trade: plumbing_repair, job_type: "toilet repair", question: fixture, lang: en, text: "The toilet rocks and water leaks around the base when we flush"}
+  - {id: plumbing_repair-05, trade: plumbing_repair, job_type: "drain clearing", question: fixture, lang: en, text: "Shower drain is clogged and the water stands for an hour"}
+  - {id: plumbing_repair-06, trade: plumbing_repair, job_type: "faucet replacement", question: fixture, lang: en, text: "I bought a new kitchen faucet and need someone to put it in"}
+  - {id: plumbing_repair-07, trade: plumbing_repair, job_type: "drain clearing", question: fixture, lang: en, text: "Bathroom sink drains really slow even after I used drain cleaner"}
+  - {id: plumbing_repair-08, trade: plumbing_repair, job_type: "leak repair", question: fixture, lang: es, text: "Hay una fuga de agua debajo del lavabo del baño"}
+  - {id: plumbing_repair-09, trade: plumbing_repair, job_type: "toilet repair", question: fixture, lang: es, text: "El inodoro no deja de correr y se tapa seguido"}
+  - {id: plumbing_repair-10, trade: plumbing_repair, job_type: "faucet replacement", question: fixture, lang: es, text: "Quiero cambiar la llave de la cocina, gotea mucho"}
+  - {id: hvac_repair-01, trade: hvac_repair, job_type: "AC not cooling", question: system_type, lang: en, text: "AC is running but blowing warm air and the house is 88 inside"}
+  - {id: hvac_repair-02, trade: hvac_repair, job_type: "AC not cooling", question: system_type, lang: en, text: "The outside unit hums but the fan won't spin and no cold air"}
+  - {id: hvac_repair-03, trade: hvac_repair, job_type: "thermostat", question: system_type, lang: en, text: "Thermostat screen is blank and the system won't turn on"}
+  - {id: hvac_repair-04, trade: hvac_repair, job_type: "duct repair", question: system_type, lang: en, text: "One bedroom gets no air, I think a duct came loose in the attic"}
+  - {id: hvac_repair-05, trade: hvac_repair, job_type: "furnace repair", question: system_type, lang: en, text: "Furnace clicks on and then shuts off after a minute"}
+  - {id: hvac_repair-06, trade: hvac_repair, job_type: "evaporative (swamp) cooler repair", question: system_type, lang: en, text: "Swamp cooler pads are dry and the pump isn't pushing water"}
+  - {id: hvac_repair-07, trade: hvac_repair, job_type: "AC not cooling", question: system_type, lang: en, text: "Water is leaking from the indoor AC unit and it stopped cooling"}
+  - {id: hvac_repair-08, trade: hvac_repair, job_type: "AC not cooling", question: system_type, lang: es, text: "El aire acondicionado no enfría y hace mucho calor en la casa"}
+  - {id: hvac_repair-09, trade: hvac_repair, job_type: "furnace repair", question: system_type, lang: es, text: "La calefacción no prende desde que empezó el frío"}
+  - {id: hvac_repair-10, trade: hvac_repair, job_type: "evaporative (swamp) cooler repair", question: system_type, lang: es, text: "El enfriador evaporativo hace ruido y no echa aire fresco"}
+  - {id: hvac_replacement-01, trade: hvac_replacement, job_type: "full system replacement", question: system_type, lang: en, text: "Our AC is 20 years old and we want quotes on a whole new system"}
+  - {id: hvac_replacement-02, trade: hvac_replacement, job_type: "full system replacement", question: system_type, lang: en, text: "Looking to replace the package unit on the roof with a new one"}
+  - {id: hvac_replacement-03, trade: hvac_replacement, job_type: "condenser replacement", question: system_type, lang: en, text: "Tech said the condenser coil is shot, need a new outside unit"}
+  - {id: hvac_replacement-04, trade: hvac_replacement, job_type: "full system replacement", question: system_type, lang: en, text: "Want to switch from the old heat pump to a new high efficiency system"}
+  - {id: hvac_replacement-05, trade: hvac_replacement, job_type: "condenser replacement", question: system_type, lang: en, text: "The compressor failed, need a replacement condenser installed"}
+  - {id: hvac_replacement-06, trade: hvac_replacement, job_type: "full system replacement", question: system_type, lang: en, text: "Buying a new AC and furnace for a 1,800 square foot house"}
+  - {id: hvac_replacement-07, trade: hvac_replacement, job_type: "condenser replacement", question: system_type, lang: en, text: "Outside unit got damaged in the storm, needs replacing"}
+  - {id: hvac_replacement-08, trade: hvac_replacement, job_type: "full system replacement", question: system_type, lang: es, text: "Quiero cambiar todo el sistema de aire, ya está muy viejo"}
+  - {id: hvac_replacement-09, trade: hvac_replacement, job_type: "condenser replacement", question: system_type, lang: es, text: "Necesito una unidad de afuera nueva, el compresor ya no sirve"}
+  - {id: hvac_replacement-10, trade: hvac_replacement, job_type: "full system replacement", question: system_type, lang: es, text: "Busco precio para un sistema de aire central nuevo"}
+  - {id: electrical-01, trade: electrical, job_type: "outlet repair", question: what, lang: en, text: "Two outlets in the living room stopped working"}
+  - {id: electrical-02, trade: electrical, job_type: "breaker trips", question: what, lang: en, text: "The breaker for the kitchen keeps tripping when the microwave runs"}
+  - {id: electrical-03, trade: electrical, job_type: "light fixture", question: what, lang: en, text: "Need a ceiling fan installed where an old light fixture is"}
+  - {id: electrical-04, trade: electrical, job_type: "panel upgrade", question: what, lang: en, text: "Want to upgrade my 100 amp panel to 200 amps"}
+  - {id: electrical-05, trade: electrical, job_type: "new circuit", question: what, lang: en, text: "Need a new 240 volt circuit in the garage for a car charger"}
+  - {id: electrical-06, trade: electrical, job_type: "hardwired smoke alarm", question: what, lang: en, text: "The hardwired smoke alarms keep chirping and need replacing"}
+  - {id: electrical-07, trade: electrical, job_type: "outlet repair", question: what, lang: en, text: "An outlet in the bathroom is warm and the cover looks scorched"}
+  - {id: electrical-08, trade: electrical, job_type: "breaker trips", question: what, lang: es, text: "El breaker se bota cada vez que prendo el aire"}
+  - {id: electrical-09, trade: electrical, job_type: "light fixture", question: what, lang: es, text: "Quiero cambiar la lámpara del comedor por una nueva"}
+  - {id: electrical-10, trade: electrical, job_type: "new circuit", question: what, lang: es, text: "Necesito un enchufe nuevo en el patio para el jacuzzi"}
+  - {id: pool_repair-01, trade: pool_repair, job_type: "pump repair", question: pool_or_spa, lang: en, text: "Pool pump makes a loud grinding noise and then shuts off"}
+  - {id: pool_repair-02, trade: pool_repair, job_type: "pump repair", question: pool_or_spa, lang: en, text: "The pump runs but there's no water flow to the returns"}
+  - {id: pool_repair-03, trade: pool_repair, job_type: "filter repair", question: pool_or_spa, lang: en, text: "Cartridge filter housing is cracked and leaking"}
+  - {id: pool_repair-04, trade: pool_repair, job_type: "pool leak", question: pool_or_spa, lang: en, text: "Pool loses about two inches of water a day"}
+  - {id: pool_repair-05, trade: pool_repair, job_type: "equipment replacement", question: pool_or_spa, lang: en, text: "Need a new pool heater, the old one won't fire"}
+  - {id: pool_repair-06, trade: pool_repair, job_type: "filter repair", question: pool_or_spa, lang: en, text: "Pressure on the filter gauge is way high even after cleaning"}
+  - {id: pool_repair-07, trade: pool_repair, job_type: "pool leak", question: pool_or_spa, lang: en, text: "I see water pooling near the equipment pad by the pool"}
+  - {id: pool_repair-08, trade: pool_repair, job_type: "pump repair", question: pool_or_spa, lang: es, text: "La bomba de la alberca no prende"}
+  - {id: pool_repair-09, trade: pool_repair, job_type: "pool leak", question: pool_or_spa, lang: es, text: "La alberca pierde agua todos los días"}
+  - {id: pool_repair-10, trade: pool_repair, job_type: "equipment replacement", question: pool_or_spa, lang: es, text: "Necesito cambiar el filtro y la bomba de la piscina"}
+  - {id: handyman-01, trade: handyman, job_type: "drywall patch", question: what, lang: en, text: "Need a fist-sized hole in the drywall patched and painted"}
+  - {id: handyman-02, trade: handyman, job_type: "door repair", question: what, lang: en, text: "Bedroom door won't latch and drags on the carpet"}
+  - {id: handyman-03, trade: handyman, job_type: "shelves", question: what, lang: en, text: "Want four floating shelves hung in the living room"}
+  - {id: handyman-04, trade: handyman, job_type: "fence repair", question: what, lang: en, text: "A few boards on the wood fence fell off in the wind"}
+  - {id: handyman-05, trade: handyman, job_type: "dryer vent reroute", question: what, lang: en, text: "Need the dryer vent moved so it goes out the side wall"}
+  - {id: handyman-06, trade: handyman, job_type: "drywall patch", question: what, lang: en, text: "Water damage left a soft spot in the drywall, already fixed the leak"}
+  - {id: handyman-07, trade: handyman, job_type: "door repair", question: what, lang: en, text: "The sliding closet door keeps coming off its track"}
+  - {id: handyman-08, trade: handyman, job_type: "drywall patch", question: what, lang: es, text: "Necesito tapar unos hoyos en la pared y pintarlos"}
+  - {id: handyman-09, trade: handyman, job_type: "fence repair", question: what, lang: es, text: "La cerca de madera está rota en dos partes"}
+  - {id: handyman-10, trade: handyman, job_type: "shelves", question: what, lang: es, text: "Quiero instalar repisas en el garaje"}
+  - {id: pool_cleaning-01, trade: pool_cleaning, job_type: "weekly pool service", question: service, lang: en, text: "Looking for weekly pool cleaning service"}
+  - {id: pool_cleaning-02, trade: pool_cleaning, job_type: "weekly pool service", question: service, lang: en, text: "Need someone to skim, brush and vacuum the pool every week"}
+  - {id: pool_cleaning-03, trade: pool_cleaning, job_type: "chemical balancing", question: service, lang: en, text: "Pool water is cloudy and I can't get the chlorine right"}
+  - {id: pool_cleaning-04, trade: pool_cleaning, job_type: "green pool cleanup", question: service, lang: en, text: "Pool turned green while we were away for the summer"}
+  - {id: pool_cleaning-05, trade: pool_cleaning, job_type: "chemical balancing", question: service, lang: en, text: "Need chemicals checked and balanced, the pH keeps going up"}
+  - {id: pool_cleaning-06, trade: pool_cleaning, job_type: "weekly pool service", question: service, lang: en, text: "Want regular pool service for a pool and spa"}
+  - {id: pool_cleaning-07, trade: pool_cleaning, job_type: "green pool cleanup", question: service, lang: en, text: "Bought a house with a swamp of a pool, needs a full cleanup"}
+  - {id: pool_cleaning-08, trade: pool_cleaning, job_type: "weekly pool service", question: service, lang: es, text: "Busco servicio semanal para limpiar la alberca"}
+  - {id: pool_cleaning-09, trade: pool_cleaning, job_type: "green pool cleanup", question: service, lang: es, text: "La piscina está verde y necesita limpieza"}
+  - {id: pool_cleaning-10, trade: pool_cleaning, job_type: "chemical balancing", question: service, lang: es, text: "El agua de la alberca está turbia, necesito balancear los químicos"}
+  - {id: landscape_maintenance-01, trade: landscape_maintenance, job_type: "mowing", question: service, lang: en, text: "Need the lawn mowed every other week"}
+  - {id: landscape_maintenance-02, trade: landscape_maintenance, job_type: "trimming", question: service, lang: en, text: "Bushes and palm trees in front need trimming"}
+  - {id: landscape_maintenance-03, trade: landscape_maintenance, job_type: "yard cleanup", question: service, lang: en, text: "Backyard is full of weeds and debris, need a one-time cleanup"}
+  - {id: landscape_maintenance-04, trade: landscape_maintenance, job_type: "gravel raking", question: service, lang: en, text: "Want the rock in the front yard raked and the weeds pulled"}
+  - {id: landscape_maintenance-05, trade: landscape_maintenance, job_type: "mowing", question: service, lang: en, text: "Looking for weekly mowing and edging"}
+  - {id: landscape_maintenance-06, trade: landscape_maintenance, job_type: "trimming", question: service, lang: en, text: "Oleanders along the wall are overgrown and need cutting back"}
+  - {id: landscape_maintenance-07, trade: landscape_maintenance, job_type: "yard cleanup", question: service, lang: en, text: "Need dead plants and palm fronds hauled away"}
+  - {id: landscape_maintenance-08, trade: landscape_maintenance, job_type: "mowing", question: service, lang: es, text: "Necesito que corten el pasto cada semana"}
+  - {id: landscape_maintenance-09, trade: landscape_maintenance, job_type: "yard cleanup", question: service, lang: es, text: "Quiero limpiar el patio de atrás, hay mucha hierba"}
+  - {id: landscape_maintenance-10, trade: landscape_maintenance, job_type: "trimming", question: service, lang: es, text: "Hay que podar los arbustos y las palmas"}
+  - {id: house_cleaning-01, trade: house_cleaning, job_type: "regular cleaning", question: service, lang: en, text: "Looking for someone to clean the house every two weeks"}
+  - {id: house_cleaning-02, trade: house_cleaning, job_type: "deep cleaning", question: service, lang: en, text: "Need a deep clean before family comes to visit"}
+  - {id: house_cleaning-03, trade: house_cleaning, job_type: "move-out cleaning", question: service, lang: en, text: "Moving out next week and need the place cleaned for the deposit"}
+  - {id: house_cleaning-04, trade: house_cleaning, job_type: "regular cleaning", question: service, lang: en, text: "Want weekly cleaning for a 3 bedroom house"}
+  - {id: house_cleaning-05, trade: house_cleaning, job_type: "deep cleaning", question: service, lang: en, text: "Haven't cleaned in a while, need baseboards, oven and fridge done"}
+  - {id: house_cleaning-06, trade: house_cleaning, job_type: "move-out cleaning", question: service, lang: en, text: "Need an empty rental cleaned after tenants left"}
+  - {id: house_cleaning-07, trade: house_cleaning, job_type: "regular cleaning", question: service, lang: en, text: "Monthly housekeeping, we have two dogs"}
+  - {id: house_cleaning-08, trade: house_cleaning, job_type: "regular cleaning", question: service, lang: es, text: "Busco limpieza de casa cada dos semanas"}
+  - {id: house_cleaning-09, trade: house_cleaning, job_type: "deep cleaning", question: service, lang: es, text: "Necesito una limpieza profunda de toda la casa"}
+  - {id: house_cleaning-10, trade: house_cleaning, job_type: "move-out cleaning", question: service, lang: es, text: "Me voy a mudar y necesito limpiar la casa"}
+  - {id: pest_control-01, trade: pest_control, job_type: "general pest service", question: pest, lang: en, text: "Seeing lots of ants and spiders, want regular pest service"}
+  - {id: pest_control-02, trade: pest_control, job_type: "scorpions", question: pest, lang: en, text: "Found three scorpions in the house this week"}
+  - {id: pest_control-03, trade: pest_control, job_type: "termites", question: pest, lang: en, text: "Mud tubes on the garage wall, worried about termites"}
+  - {id: pest_control-04, trade: pest_control, job_type: "pre-emergent weed control", question: pest, lang: en, text: "Want pre-emergent sprayed on the rock yard to stop weeds"}
+  - {id: pest_control-05, trade: pest_control, job_type: "general pest service", question: pest, lang: en, text: "Need quarterly bug spraying inside and out"}
+  - {id: pest_control-06, trade: pest_control, job_type: "scorpions", question: pest, lang: en, text: "Scorpions keep coming in under the back door"}
+  - {id: pest_control-07, trade: pest_control, job_type: "termites", question: pest, lang: en, text: "Wings piling up by the window sill, could be termites"}
+  - {id: pest_control-08, trade: pest_control, job_type: "scorpions", question: pest, lang: es, text: "Hay alacranes en la casa, necesito fumigar"}
+  - {id: pest_control-09, trade: pest_control, job_type: "general pest service", question: pest, lang: es, text: "Quiero servicio de control de plagas cada mes"}
+  - {id: pest_control-10, trade: pest_control, job_type: "termites", question: pest, lang: es, text: "Creo que hay termitas en la madera del garaje"}
+  - {id: dog_waste_pickup-01, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Need weekly dog poop pickup in the backyard"}
+  - {id: dog_waste_pickup-02, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Two dogs, looking for someone to scoop the yard every week"}
+  - {id: dog_waste_pickup-03, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Want pet waste removal service twice a week"}
+  - {id: dog_waste_pickup-04, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Backyard needs a cleanup and then weekly dog waste pickup"}
+  - {id: dog_waste_pickup-05, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Looking for a pooper scooper service for a big dog"}
+  - {id: dog_waste_pickup-06, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Need dog waste picked up from a gravel yard weekly"}
+  - {id: dog_waste_pickup-07, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Three dogs, small yard, need regular poop scooping"}
+  - {id: dog_waste_pickup-08, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: es, text: "Necesito que recojan el popó de los perros cada semana"}
+  - {id: dog_waste_pickup-09, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: es, text: "Busco servicio para limpiar el patio de los perros"}
+  - {id: dog_waste_pickup-10, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: es, text: "Tengo dos perros y quiero limpieza semanal del patio"}
+  - {id: trash_can_cleaning-01, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: en, text: "Our trash cans stink, want them washed and sanitized"}
+  - {id: trash_can_cleaning-02, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: en, text: "Looking for monthly garbage bin cleaning"}
+  - {id: trash_can_cleaning-03, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: en, text: "Need the trash and recycle bins power washed"}
+  - {id: trash_can_cleaning-04, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: en, text: "Maggots in the trash can, need it cleaned"}
+  - {id: trash_can_cleaning-05, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: en, text: "Want trash can cleaning after pickup day every month"}
+  - {id: trash_can_cleaning-06, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: en, text: "Need two bins cleaned once"}
+  - {id: trash_can_cleaning-07, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: en, text: "Garbage can is sticky and smells, can someone wash it"}
+  - {id: trash_can_cleaning-08, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: es, text: "Quiero que laven los botes de basura"}
+  - {id: trash_can_cleaning-09, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: es, text: "Los botes de basura huelen muy mal, necesito limpieza"}
+  - {id: trash_can_cleaning-10, trade: trash_can_cleaning, job_type: "bin washing", question: bins, lang: es, text: "Busco lavado de botes de basura cada mes"}
+  - {id: turnover_cleaning-01, trade: turnover_cleaning, job_type: "turnover clean", question: bedrooms, lang: en, text: "Need cleaning between guests at my vacation rental"}
+  - {id: turnover_cleaning-02, trade: turnover_cleaning, job_type: "linen change", question: bedrooms, lang: en, text: "Want sheets and towels swapped after each rental stay"}
+  - {id: turnover_cleaning-03, trade: turnover_cleaning, job_type: "restock", question: bedrooms, lang: en, text: "Need someone to restock toilet paper and soap after checkouts"}
+  - {id: turnover_cleaning-04, trade: turnover_cleaning, job_type: "turnover clean", question: bedrooms, lang: en, text: "Short-term rental needs a same-day clean between bookings"}
+  - {id: turnover_cleaning-05, trade: turnover_cleaning, job_type: "turnover clean", question: bedrooms, lang: en, text: "Looking for a turnover cleaner for weekend guests"}
+  - {id: turnover_cleaning-06, trade: turnover_cleaning, job_type: "linen change", question: bedrooms, lang: en, text: "Need beds made with fresh linens between renters"}
+  - {id: turnover_cleaning-07, trade: turnover_cleaning, job_type: "restock", question: bedrooms, lang: en, text: "Want supplies restocked and a checklist done after each guest"}
+  - {id: turnover_cleaning-08, trade: turnover_cleaning, job_type: "turnover clean", question: bedrooms, lang: es, text: "Necesito limpieza entre huéspedes en mi casa de renta"}
+  - {id: turnover_cleaning-09, trade: turnover_cleaning, job_type: "linen change", question: bedrooms, lang: es, text: "Quiero cambio de sábanas y toallas después de cada visita"}
+  - {id: turnover_cleaning-10, trade: turnover_cleaning, job_type: "turnover clean", question: bedrooms, lang: es, text: "Busco limpieza para renta vacacional los fines de semana"}
+  - {id: car_detailing-01, trade: car_detailing, job_type: "interior detail", question: vehicle, lang: en, text: "Need the inside of my truck detailed, lots of dog hair"}
+  - {id: car_detailing-02, trade: car_detailing, job_type: "exterior detail", question: vehicle, lang: en, text: "Want my car washed, clayed and waxed"}
+  - {id: car_detailing-03, trade: car_detailing, job_type: "full detail", question: vehicle, lang: en, text: "Looking for a full detail inside and out on an SUV"}
+  - {id: car_detailing-04, trade: car_detailing, job_type: "RV detailing", question: vehicle, lang: en, text: "Need my 32 foot RV washed and waxed"}
+  - {id: car_detailing-05, trade: car_detailing, job_type: "interior detail", question: vehicle, lang: en, text: "Spilled coffee on the seats, need shampoo and cleaning"}
+  - {id: car_detailing-06, trade: car_detailing, job_type: "full detail", question: vehicle, lang: en, text: "Getting ready to sell my car, want a complete detail"}
+  - {id: car_detailing-07, trade: car_detailing, job_type: "RV detailing", question: vehicle, lang: en, text: "Motorhome roof and sides need cleaning after the season"}
+  - {id: car_detailing-08, trade: car_detailing, job_type: "interior detail", question: vehicle, lang: es, text: "Necesito limpiar el interior de mi carro"}
+  - {id: car_detailing-09, trade: car_detailing, job_type: "full detail", question: vehicle, lang: es, text: "Quiero un detallado completo de mi camioneta"}
+  - {id: car_detailing-10, trade: car_detailing, job_type: "exterior detail", question: vehicle, lang: es, text: "Busco lavado y encerado del carro por fuera"}
+  - {id: boat_detailing-01, trade: boat_detailing, job_type: "hull cleaning", question: length, lang: en, text: "Boat hull has a waterline stain, need it cleaned"}
+  - {id: boat_detailing-02, trade: boat_detailing, job_type: "interior detail", question: length, lang: en, text: "Need the boat seats and carpet cleaned"}
+  - {id: boat_detailing-03, trade: boat_detailing, job_type: "waxing", question: length, lang: en, text: "Want the boat compounded and waxed before summer"}
+  - {id: boat_detailing-04, trade: boat_detailing, job_type: "hull cleaning", question: length, lang: en, text: "Pontoons are dirty, need them cleaned"}
+  - {id: boat_detailing-05, trade: boat_detailing, job_type: "interior detail", question: length, lang: en, text: "Mildew on the vinyl seats of our wake boat"}
+  - {id: boat_detailing-06, trade: boat_detailing, job_type: "waxing", question: length, lang: en, text: "Gelcoat is chalky and faded, need oxidation removal and wax"}
+  - {id: boat_detailing-07, trade: boat_detailing, job_type: "hull cleaning", question: length, lang: en, text: "Need the hull scrubbed while the boat is on the trailer"}
+  - {id: boat_detailing-08, trade: boat_detailing, job_type: "waxing", question: length, lang: es, text: "Quiero encerar mi lancha"}
+  - {id: boat_detailing-09, trade: boat_detailing, job_type: "interior detail", question: length, lang: es, text: "Necesito limpiar los asientos de la lancha"}
+  - {id: boat_detailing-10, trade: boat_detailing, job_type: "hull cleaning", question: length, lang: es, text: "El casco de la lancha está sucio, necesito limpieza"}
+  - {id: boat_repair-01, trade: boat_repair, job_type: "engine repair", question: work, lang: en, text: "Inboard engine overheats after 10 minutes on the lake"}
+  - {id: boat_repair-02, trade: boat_repair, job_type: "outboard service", question: work, lang: en, text: "Outboard needs its yearly service and impeller change"}
+  - {id: boat_repair-03, trade: boat_repair, job_type: "trailer repair", question: work, lang: en, text: "Trailer lights don't work and a bearing is noisy"}
+  - {id: boat_repair-04, trade: boat_repair, job_type: "canvas and upholstery repair", question: work, lang: en, text: "Bimini top is torn and a seat cover is split"}
+  - {id: boat_repair-05, trade: boat_repair, job_type: "engine repair", question: work, lang: en, text: "Boat won't start, the engine cranks but won't turn over"}
+  - {id: boat_repair-06, trade: boat_repair, job_type: "outboard service", question: work, lang: en, text: "Outboard runs rough at idle, needs a tune-up"}
+  - {id: boat_repair-07, trade: boat_repair, job_type: "trailer repair", question: work, lang: en, text: "Need new tires and brakes on the boat trailer"}
+  - {id: boat_repair-08, trade: boat_repair, job_type: "engine repair", question: work, lang: es, text: "El motor de la lancha no arranca"}
+  - {id: boat_repair-09, trade: boat_repair, job_type: "outboard service", question: work, lang: es, text: "Necesito servicio para el motor fuera de borda"}
+  - {id: boat_repair-10, trade: boat_repair, job_type: "canvas and upholstery repair", question: work, lang: es, text: "Los asientos de la lancha están rotos, necesito tapicería"}
+  - {id: window_cleaning-01, trade: window_cleaning, job_type: "inside and outside windows", question: count, lang: en, text: "Want all windows cleaned inside and out"}
+  - {id: window_cleaning-02, trade: window_cleaning, job_type: "screens", question: count, lang: en, text: "Need window screens cleaned"}
+  - {id: window_cleaning-03, trade: window_cleaning, job_type: "hard-water removal", question: count, lang: en, text: "Sprinklers left hard-water spots on the windows"}
+  - {id: window_cleaning-04, trade: window_cleaning, job_type: "inside and outside windows", question: count, lang: en, text: "Two-story house needs the windows washed"}
+  - {id: window_cleaning-05, trade: window_cleaning, job_type: "screens", question: count, lang: en, text: "Screens are dusty and torn, want them cleaned"}
+  - {id: window_cleaning-06, trade: window_cleaning, job_type: "hard-water removal", question: count, lang: en, text: "Glass shower door and patio windows have heavy water spots"}
+  - {id: window_cleaning-07, trade: window_cleaning, job_type: "inside and outside windows", question: count, lang: en, text: "Need window cleaning before a party"}
+  - {id: window_cleaning-08, trade: window_cleaning, job_type: "inside and outside windows", question: count, lang: es, text: "Necesito lavar las ventanas por dentro y por fuera"}
+  - {id: window_cleaning-09, trade: window_cleaning, job_type: "hard-water removal", question: count, lang: es, text: "Las ventanas tienen manchas de agua dura"}
+  - {id: window_cleaning-10, trade: window_cleaning, job_type: "screens", question: count, lang: es, text: "Quiero limpiar los mosquiteros de las ventanas"}
+  - {id: pressure_washing-01, trade: pressure_washing, job_type: "driveway", question: surface, lang: en, text: "Driveway has oil stains, need it pressure washed"}
+  - {id: pressure_washing-02, trade: pressure_washing, job_type: "patio", question: surface, lang: en, text: "Back patio pavers need power washing"}
+  - {id: pressure_washing-03, trade: pressure_washing, job_type: "house wash", question: surface, lang: en, text: "Want the outside of the house washed, lots of dust"}
+  - {id: pressure_washing-04, trade: pressure_washing, job_type: "driveway", question: surface, lang: en, text: "Need driveway and sidewalk pressure cleaned"}
+  - {id: pressure_washing-05, trade: pressure_washing, job_type: "patio", question: surface, lang: en, text: "Pool deck is dirty and slippery, needs washing"}
+  - {id: pressure_washing-06, trade: pressure_washing, job_type: "house wash", question: surface, lang: en, text: "Stucco is stained from the sprinklers, want a soft wash"}
+  - {id: pressure_washing-07, trade: pressure_washing, job_type: "driveway", question: surface, lang: en, text: "Rust stains on the driveway from the irrigation water"}
+  - {id: pressure_washing-08, trade: pressure_washing, job_type: "driveway", question: surface, lang: es, text: "Necesito lavar la entrada del carro con presión"}
+  - {id: pressure_washing-09, trade: pressure_washing, job_type: "patio", question: surface, lang: es, text: "Quiero lavar el patio con máquina de presión"}
+  - {id: pressure_washing-10, trade: pressure_washing, job_type: "house wash", question: surface, lang: es, text: "Necesito lavar las paredes de afuera de la casa"}
+  - {id: solar_screens-01, trade: solar_screens, job_type: "solar screens", question: product, lang: en, text: "Want solar screens on the west-facing windows"}
+  - {id: solar_screens-02, trade: solar_screens, job_type: "window film", question: product, lang: en, text: "Looking for heat-blocking window film on the patio door"}
+  - {id: solar_screens-03, trade: solar_screens, job_type: "solar screens", question: product, lang: en, text: "Need sun screens for all windows to cut the heat"}
+  - {id: solar_screens-04, trade: solar_screens, job_type: "solar screens", question: product, lang: en, text: "Old solar screens are torn and faded, want new ones"}
+  - {id: solar_screens-05, trade: solar_screens, job_type: "window film", question: product, lang: en, text: "Want tint film on the front windows for privacy and heat"}
+  - {id: solar_screens-06, trade: solar_screens, job_type: "solar screens", question: product, lang: en, text: "Need quotes on solar screens for 12 windows"}
+  - {id: solar_screens-07, trade: solar_screens, job_type: "window film", question: product, lang: en, text: "Looking for UV film on the sunroom windows"}
+  - {id: solar_screens-08, trade: solar_screens, job_type: "solar screens", question: product, lang: es, text: "Quiero pantallas solares para las ventanas"}
+  - {id: solar_screens-09, trade: solar_screens, job_type: "window film", question: product, lang: es, text: "Busco película para las ventanas contra el calor"}
+  - {id: solar_screens-10, trade: solar_screens, job_type: "solar screens", question: product, lang: es, text: "Necesito mallas solares nuevas, las viejas están rotas"}
+  - {id: roof_repair-01, trade: roof_repair, job_type: "leak repair", question: roof_type, lang: en, text: "Roof leaked in the last monsoon, stain on the ceiling"}
+  - {id: roof_repair-02, trade: roof_repair, job_type: "tile replacement", question: roof_type, lang: en, text: "A few roof tiles are cracked and slipped down"}
+  - {id: roof_repair-03, trade: roof_repair, job_type: "re-roof", question: roof_type, lang: en, text: "Shingle roof is 25 years old, want quotes on a new roof"}
+  - {id: roof_repair-04, trade: roof_repair, job_type: "leak repair", question: roof_type, lang: en, text: "Water drips by the skylight when it rains"}
+  - {id: roof_repair-05, trade: roof_repair, job_type: "tile replacement", question: roof_type, lang: en, text: "Wind blew some tiles off the roof"}
+  - {id: roof_repair-06, trade: roof_repair, job_type: "re-roof", question: roof_type, lang: en, text: "Flat roof coating is cracked everywhere and needs redoing"}
+  - {id: roof_repair-07, trade: roof_repair, job_type: "leak repair", question: roof_type, lang: en, text: "Wet spot in the garage ceiling after the storm"}
+  - {id: roof_repair-08, trade: roof_repair, job_type: "leak repair", question: roof_type, lang: es, text: "El techo gotea cuando llueve"}
+  - {id: roof_repair-09, trade: roof_repair, job_type: "tile replacement", question: roof_type, lang: es, text: "Se quebraron unas tejas del techo"}
+  - {id: roof_repair-10, trade: roof_repair, job_type: "re-roof", question: roof_type, lang: es, text: "Necesito un techo nuevo, el viejo ya está muy dañado"}
+  - {id: painting-01, trade: painting, job_type: "interior painting", question: where, lang: en, text: "Want the living room and two bedrooms painted"}
+  - {id: painting-02, trade: painting, job_type: "exterior painting", question: where, lang: en, text: "House stucco is faded, need the outside painted"}
+  - {id: painting-03, trade: painting, job_type: "cabinet painting", question: where, lang: en, text: "Want the kitchen cabinets painted white"}
+  - {id: painting-04, trade: painting, job_type: "interior painting", question: where, lang: en, text: "Need the whole inside painted before we move in"}
+  - {id: painting-05, trade: painting, job_type: "exterior painting", question: where, lang: en, text: "Trim and garage door are peeling, need repainting"}
+  - {id: painting-06, trade: painting, job_type: "cabinet painting", question: where, lang: en, text: "Bathroom vanity cabinets need painting"}
+  - {id: painting-07, trade: painting, job_type: "interior painting", question: where, lang: en, text: "Need ceilings and walls painted after a patch job"}
+  - {id: painting-08, trade: painting, job_type: "interior painting", question: where, lang: es, text: "Quiero pintar el interior de la casa"}
+  - {id: painting-09, trade: painting, job_type: "exterior painting", question: where, lang: es, text: "Necesito pintar la casa por fuera"}
+  - {id: painting-10, trade: painting, job_type: "cabinet painting", question: where, lang: es, text: "Quiero pintar los gabinetes de la cocina"}
+  - {id: local_moving-01, trade: local_moving, job_type: "in-town move", question: service, lang: en, text: "Moving across town, 2 bedroom house, need movers"}
+  - {id: local_moving-02, trade: local_moving, job_type: "loading help", question: service, lang: en, text: "Need help loading a rental truck"}
+  - {id: local_moving-03, trade: local_moving, job_type: "in-state move", question: service, lang: en, text: "Moving to Phoenix, need movers for a 3 bedroom"}
+  - {id: local_moving-04, trade: local_moving, job_type: "in-town move", question: service, lang: en, text: "Need a couch and a dresser moved to a new apartment in town"}
+  - {id: local_moving-05, trade: local_moving, job_type: "loading help", question: service, lang: en, text: "Need two guys to unload a storage pod"}
+  - {id: local_moving-06, trade: local_moving, job_type: "in-town move", question: service, lang: en, text: "Moving from a condo upstairs to a house in town"}
+  - {id: local_moving-07, trade: local_moving, job_type: "in-state move", question: service, lang: en, text: "Need movers from here to Tucson next month"}
+  - {id: local_moving-08, trade: local_moving, job_type: "in-town move", question: service, lang: es, text: "Me voy a mudar dentro de la ciudad, necesito ayuda"}
+  - {id: local_moving-09, trade: local_moving, job_type: "loading help", question: service, lang: es, text: "Necesito ayuda para cargar un camión de mudanza"}
+  - {id: local_moving-10, trade: local_moving, job_type: "in-state move", question: service, lang: es, text: "Me mudo a otra ciudad de Arizona, busco mudanza"}
+  - {id: appliance_repair-01, trade: appliance_repair, job_type: "washer", question: appliance, lang: en, text: "Washer won't drain and shows an error code"}
+  - {id: appliance_repair-02, trade: appliance_repair, job_type: "dryer", question: appliance, lang: en, text: "Dryer runs but doesn't heat"}
+  - {id: appliance_repair-03, trade: appliance_repair, job_type: "refrigerator", question: appliance, lang: en, text: "Fridge is warm but the freezer still works"}
+  - {id: appliance_repair-04, trade: appliance_repair, job_type: "dishwasher repair", question: appliance, lang: en, text: "Dishwasher leaves water in the bottom after a cycle"}
+  - {id: appliance_repair-05, trade: appliance_repair, job_type: "washer", question: appliance, lang: en, text: "Washing machine shakes and bangs on spin"}
+  - {id: appliance_repair-06, trade: appliance_repair, job_type: "refrigerator", question: appliance, lang: en, text: "Ice maker stopped working and the fridge is leaking"}
+  - {id: appliance_repair-07, trade: appliance_repair, job_type: "dryer", question: appliance, lang: en, text: "Dryer makes a squealing noise and stops"}
+  - {id: appliance_repair-08, trade: appliance_repair, job_type: "washer", question: appliance, lang: es, text: "La lavadora no saca el agua"}
+  - {id: appliance_repair-09, trade: appliance_repair, job_type: "refrigerator", question: appliance, lang: es, text: "El refrigerador no enfría"}
+  - {id: appliance_repair-10, trade: appliance_repair, job_type: "dishwasher repair", question: appliance, lang: es, text: "El lavaplatos no lava bien y gotea"}
+  - {id: dryer_vent_cleaning-01, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: en, text: "Clothes take forever to dry, think the vent is clogged"}
+  - {id: dryer_vent_cleaning-02, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: en, text: "Need the dryer vent cleaned out"}
+  - {id: dryer_vent_cleaning-03, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: en, text: "Dryer vent goes through the roof and hasn't been cleaned"}
+  - {id: dryer_vent_cleaning-04, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: en, text: "Burning lint smell when the dryer runs"}
+  - {id: dryer_vent_cleaning-05, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: en, text: "Want yearly dryer vent cleaning"}
+  - {id: dryer_vent_cleaning-06, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: en, text: "Bird nest might be in the dryer vent outside"}
+  - {id: dryer_vent_cleaning-07, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: en, text: "Dryer shuts off hot, need the duct cleaned"}
+  - {id: dryer_vent_cleaning-08, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: es, text: "Necesito limpiar el ducto de la secadora"}
+  - {id: dryer_vent_cleaning-09, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: es, text: "La secadora tarda mucho en secar la ropa"}
+  - {id: dryer_vent_cleaning-10, trade: dryer_vent_cleaning, job_type: "dryer vent cleaning", question: where_vent, lang: es, text: "Quiero limpieza del tubo de ventilación de la secadora"}
+  - {id: holiday_lights-01, trade: holiday_lights, job_type: "plug-in light hanging", question: service, lang: en, text: "Want Christmas lights hung on the roofline"}
+  - {id: holiday_lights-02, trade: holiday_lights, job_type: "take-down", question: service, lang: en, text: "Need our holiday lights taken down after New Year"}
+  - {id: holiday_lights-03, trade: holiday_lights, job_type: "plug-in light hanging", question: service, lang: en, text: "Looking for someone to put up lights on the house and palm trees"}
+  - {id: holiday_lights-04, trade: holiday_lights, job_type: "plug-in light hanging", question: service, lang: en, text: "Need help hanging my own string lights on a two-story house"}
+  - {id: holiday_lights-05, trade: holiday_lights, job_type: "take-down", question: service, lang: en, text: "Lights need to come down and be boxed up"}
+  - {id: holiday_lights-06, trade: holiday_lights, job_type: "plug-in light hanging", question: service, lang: en, text: "Want holiday lights on the front of the house"}
+  - {id: holiday_lights-07, trade: holiday_lights, job_type: "take-down", question: service, lang: en, text: "Need someone to remove the Christmas lights from the roof"}
+  - {id: holiday_lights-08, trade: holiday_lights, job_type: "plug-in light hanging", question: service, lang: es, text: "Quiero que pongan las luces de Navidad en la casa"}
+  - {id: holiday_lights-09, trade: holiday_lights, job_type: "take-down", question: service, lang: es, text: "Necesito que quiten las luces navideñas"}
+  - {id: holiday_lights-10, trade: holiday_lights, job_type: "plug-in light hanging", question: service, lang: es, text: "Busco quien instale luces en el techo y las palmas"}
+  - {id: estate_cleanout-01, trade: estate_cleanout, job_type: "whole-house cleanout", question: size, lang: en, text: "Need my parents' house cleared out after they moved"}
+  - {id: estate_cleanout-02, trade: estate_cleanout, job_type: "sorting for donation", question: size, lang: en, text: "Want help sorting a house full of stuff for donation"}
+  - {id: estate_cleanout-03, trade: estate_cleanout, job_type: "whole-house cleanout", question: size, lang: en, text: "Rental was left full of junk, need it all removed"}
+  - {id: estate_cleanout-04, trade: estate_cleanout, job_type: "whole-house cleanout", question: size, lang: en, text: "Need an estate cleanout before the house is listed"}
+  - {id: estate_cleanout-05, trade: estate_cleanout, job_type: "sorting for donation", question: size, lang: en, text: "Need someone to sort furniture and clothes to donate"}
+  - {id: estate_cleanout-06, trade: estate_cleanout, job_type: "whole-house cleanout", question: size, lang: en, text: "Garage and house are packed, want everything hauled out"}
+  - {id: estate_cleanout-07, trade: estate_cleanout, job_type: "sorting for donation", question: size, lang: en, text: "Want things sorted into keep, donate and trash"}
+  - {id: estate_cleanout-08, trade: estate_cleanout, job_type: "whole-house cleanout", question: size, lang: es, text: "Necesito vaciar toda la casa"}
+  - {id: estate_cleanout-09, trade: estate_cleanout, job_type: "sorting for donation", question: size, lang: es, text: "Quiero separar cosas para donar"}
+  - {id: estate_cleanout-10, trade: estate_cleanout, job_type: "whole-house cleanout", question: size, lang: es, text: "Hay que sacar todos los muebles y cosas de la casa"}
+  - {id: donation_pickup-01, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: en, text: "Have a couch and a table to donate, need them picked up"}
+  - {id: donation_pickup-02, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: en, text: "Need a dresser taken to a donation center"}
+  - {id: donation_pickup-03, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: en, text: "Want an old sofa picked up and donated"}
+  - {id: donation_pickup-04, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: en, text: "Have a bed frame and chairs to donate, can't haul them"}
+  - {id: donation_pickup-05, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: en, text: "Need donation pickup for a recliner from upstairs"}
+  - {id: donation_pickup-06, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: en, text: "Looking for someone to pick up furniture for charity"}
+  - {id: donation_pickup-07, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: en, text: "Dining set to donate, need it hauled away"}
+  - {id: donation_pickup-08, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: es, text: "Quiero donar un sofá, necesito que lo recojan"}
+  - {id: donation_pickup-09, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: es, text: "Tengo muebles para donar, busco quien los lleve"}
+  - {id: donation_pickup-10, trade: donation_pickup, job_type: "furniture donation pickup", question: items, lang: es, text: "Necesito que recojan una mesa y sillas para donar"}
+  - {id: septic_pumping-01, trade: septic_pumping, job_type: "tank pumping", question: service, lang: en, text: "Septic tank needs pumping, it's been five years"}
+  - {id: septic_pumping-02, trade: septic_pumping, job_type: "tank inspection", question: service, lang: en, text: "Want a septic inspection to check the tank"}
+  - {id: septic_pumping-03, trade: septic_pumping, job_type: "tank pumping", question: service, lang: en, text: "Drains are backing up, think the septic is full"}
+  - {id: septic_pumping-04, trade: septic_pumping, job_type: "tank pumping", question: service, lang: en, text: "Need routine septic pumping"}
+  - {id: septic_pumping-05, trade: septic_pumping, job_type: "tank inspection", question: service, lang: en, text: "Want the septic checked before summer guests"}
+  - {id: septic_pumping-06, trade: septic_pumping, job_type: "tank pumping", question: service, lang: en, text: "Septic smell in the yard, need it pumped"}
+  - {id: septic_pumping-07, trade: septic_pumping, job_type: "tank inspection", question: service, lang: en, text: "Need someone to look at the septic tank and baffles"}
+  - {id: septic_pumping-08, trade: septic_pumping, job_type: "tank pumping", question: service, lang: es, text: "Necesito vaciar la fosa séptica"}
+  - {id: septic_pumping-09, trade: septic_pumping, job_type: "tank inspection", question: service, lang: es, text: "Quiero una inspección de la fosa séptica"}
+  - {id: septic_pumping-10, trade: septic_pumping, job_type: "tank pumping", question: service, lang: es, text: "La fosa séptica está llena, necesito bombeo"}
+  - {id: alarm_systems-01, trade: alarm_systems, job_type: "alarm install", question: service, lang: en, text: "Want a home alarm system installed"}
+  - {id: alarm_systems-02, trade: alarm_systems, job_type: "alarm monitoring setup", question: service, lang: en, text: "Need monitoring set up on our existing alarm panel"}
+  - {id: alarm_systems-03, trade: alarm_systems, job_type: "alarm install", question: service, lang: en, text: "Looking for door and window sensors and a keypad"}
+  - {id: alarm_systems-04, trade: alarm_systems, job_type: "alarm install", question: service, lang: en, text: "Want a burglar alarm for a vacation home"}
+  - {id: alarm_systems-05, trade: alarm_systems, job_type: "alarm monitoring setup", question: service, lang: en, text: "Alarm came with the house, want it connected to monitoring"}
+  - {id: alarm_systems-06, trade: alarm_systems, job_type: "alarm install", question: service, lang: en, text: "Need a wireless security alarm installed"}
+  - {id: alarm_systems-07, trade: alarm_systems, job_type: "alarm monitoring setup", question: service, lang: en, text: "Want my alarm set up so I get alerts on my phone"}
+  - {id: alarm_systems-08, trade: alarm_systems, job_type: "alarm install", question: service, lang: es, text: "Quiero instalar una alarma en la casa"}
+  - {id: alarm_systems-09, trade: alarm_systems, job_type: "alarm monitoring setup", question: service, lang: es, text: "Necesito conectar la alarma a monitoreo"}
+  - {id: alarm_systems-10, trade: alarm_systems, job_type: "alarm install", question: service, lang: es, text: "Busco sistema de alarma con sensores en puertas y ventanas"}
+  - {id: security_cameras-01, trade: security_cameras, job_type: "camera install", question: service, lang: en, text: "Want four security cameras around the house"}
+  - {id: security_cameras-02, trade: security_cameras, job_type: "doorbell camera", question: service, lang: en, text: "Need a video doorbell installed"}
+  - {id: security_cameras-03, trade: security_cameras, job_type: "camera install", question: service, lang: en, text: "Looking to have outdoor cameras mounted on the garage"}
+  - {id: security_cameras-04, trade: security_cameras, job_type: "doorbell camera", question: service, lang: en, text: "Bought a doorbell camera, need it wired in"}
+  - {id: security_cameras-05, trade: security_cameras, job_type: "camera install", question: service, lang: en, text: "Want cameras covering the driveway and backyard"}
+  - {id: security_cameras-06, trade: security_cameras, job_type: "camera install", question: service, lang: en, text: "Need a camera system with a recorder"}
+  - {id: security_cameras-07, trade: security_cameras, job_type: "doorbell camera", question: service, lang: en, text: "Replace the old doorbell with a camera doorbell"}
+  - {id: security_cameras-08, trade: security_cameras, job_type: "camera install", question: service, lang: es, text: "Quiero instalar cámaras de seguridad"}
+  - {id: security_cameras-09, trade: security_cameras, job_type: "doorbell camera", question: service, lang: es, text: "Necesito instalar un timbre con cámara"}
+  - {id: security_cameras-10, trade: security_cameras, job_type: "camera install", question: service, lang: es, text: "Busco cámaras para la entrada y el patio"}
+  - {id: home_inspection-01, trade: home_inspection, job_type: "home condition inspection (no sale or refinance)", question: sale, lang: en, text: "Want a general inspection of my house, not selling"}
+  - {id: home_inspection-02, trade: home_inspection, job_type: "buyer inspection", question: sale, lang: en, text: "Buying a house and need an inspection before closing"}
+  - {id: home_inspection-03, trade: home_inspection, job_type: "pre-listing inspection", question: sale, lang: en, text: "Selling soon and want an inspection before listing"}
+  - {id: home_inspection-04, trade: home_inspection, job_type: "refinance inspection", question: sale, lang: en, text: "Lender wants an inspection for our refinance"}
+  - {id: home_inspection-05, trade: home_inspection, job_type: "termite report for a sale or loan", question: sale, lang: en, text: "Need a termite report for the home sale"}
+  - {id: home_inspection-06, trade: home_inspection, job_type: "buyer inspection", question: sale, lang: en, text: "Under contract on a house, need an inspector this week"}
+  - {id: home_inspection-07, trade: home_inspection, job_type: "home condition inspection (no sale or refinance)", question: sale, lang: en, text: "House is 30 years old, want a full checkup"}
+  - {id: home_inspection-08, trade: home_inspection, job_type: "buyer inspection", question: sale, lang: es, text: "Voy a comprar una casa y necesito inspección"}
+  - {id: home_inspection-09, trade: home_inspection, job_type: "pre-listing inspection", question: sale, lang: es, text: "Quiero inspeccionar la casa antes de venderla"}
+  - {id: home_inspection-10, trade: home_inspection, job_type: "termite report for a sale or loan", question: sale, lang: es, text: "Necesito un reporte de termitas para la venta"}
+  - {id: home_watch-01, trade: home_watch, job_type: "weekly house check", question: schedule, lang: en, text: "We leave for the summer and want someone to check the house weekly"}
+  - {id: home_watch-02, trade: home_watch, job_type: "storm check", question: schedule, lang: en, text: "Need someone to check the house after storms while we're away"}
+  - {id: home_watch-03, trade: home_watch, job_type: "weekly house check", question: schedule, lang: en, text: "Snowbird home needs weekly checks, run the water and look around"}
+  - {id: home_watch-04, trade: home_watch, job_type: "weekly house check", question: schedule, lang: en, text: "Want house checks every week while I travel"}
+  - {id: home_watch-05, trade: home_watch, job_type: "storm check", question: schedule, lang: en, text: "After a monsoon, want someone to look for damage"}
+  - {id: home_watch-06, trade: home_watch, job_type: "weekly house check", question: schedule, lang: en, text: "Need home watch for a second home"}
+  - {id: home_watch-07, trade: home_watch, job_type: "storm check", question: schedule, lang: en, text: "Want a storm check on the roof and yard when it blows hard"}
+  - {id: home_watch-08, trade: home_watch, job_type: "weekly house check", question: schedule, lang: es, text: "Necesito que revisen mi casa cada semana mientras no estoy"}
+  - {id: home_watch-09, trade: home_watch, job_type: "storm check", question: schedule, lang: es, text: "Quiero que revisen la casa después de una tormenta"}
+  - {id: home_watch-10, trade: home_watch, job_type: "weekly house check", question: schedule, lang: es, text: "Busco servicio para cuidar la casa en el verano"}
+  - {id: water_treatment-01, trade: water_treatment, job_type: "softener install", question: system, lang: en, text: "Want a water softener installed, the water is so hard"}
+  - {id: water_treatment-02, trade: water_treatment, job_type: "RO system", question: system, lang: en, text: "Need a reverse osmosis system under the kitchen sink"}
+  - {id: water_treatment-03, trade: water_treatment, job_type: "misting system", question: system, lang: en, text: "Want a misting system on the back patio"}
+  - {id: water_treatment-04, trade: water_treatment, job_type: "softener install", question: system, lang: en, text: "Old softener died, need a new one put in"}
+  - {id: water_treatment-05, trade: water_treatment, job_type: "RO system", question: system, lang: en, text: "Looking for a drinking water filter system"}
+  - {id: water_treatment-06, trade: water_treatment, job_type: "misting system", question: system, lang: en, text: "Misting nozzles on the patio are clogged and the pump is out"}
+  - {id: water_treatment-07, trade: water_treatment, job_type: "softener install", question: system, lang: en, text: "Scale on all the faucets, want a softener"}
+  - {id: water_treatment-08, trade: water_treatment, job_type: "softener install", question: system, lang: es, text: "Quiero instalar un suavizador de agua"}
+  - {id: water_treatment-09, trade: water_treatment, job_type: "RO system", question: system, lang: es, text: "Necesito un sistema de ósmosis inversa para tomar agua"}
+  - {id: water_treatment-10, trade: water_treatment, job_type: "misting system", question: system, lang: es, text: "Quiero un sistema de nebulizadores en el patio"}
+  - {id: gutters-01, trade: gutters, job_type: "gutter install", question: service, lang: en, text: "Want rain gutters installed on the back of the house"}
+  - {id: gutters-02, trade: gutters, job_type: "gutter repair", question: service, lang: en, text: "Gutter is sagging and pulling away from the fascia"}
+  - {id: gutters-03, trade: gutters, job_type: "gutter install", question: service, lang: en, text: "Need new gutters and downspouts on the whole house"}
+  - {id: gutters-04, trade: gutters, job_type: "gutter repair", question: service, lang: en, text: "Downspout came loose in the wind"}
+  - {id: gutters-05, trade: gutters, job_type: "gutter install", question: service, lang: en, text: "Monsoon rain pours off the roof onto the patio, want gutters"}
+  - {id: gutters-06, trade: gutters, job_type: "gutter repair", question: service, lang: en, text: "Gutter seams are leaking at the corners"}
+  - {id: gutters-07, trade: gutters, job_type: "gutter install", question: service, lang: en, text: "Want seamless gutters along the front"}
+  - {id: gutters-08, trade: gutters, job_type: "gutter install", question: service, lang: es, text: "Quiero instalar canaletas en la casa"}
+  - {id: gutters-09, trade: gutters, job_type: "gutter repair", question: service, lang: es, text: "La canaleta está caída y necesita reparación"}
+  - {id: gutters-10, trade: gutters, job_type: "gutter repair", question: service, lang: es, text: "El bajante del agua se rompió"}
+  - {id: insulation-01, trade: insulation, job_type: "attic insulation", question: where, lang: en, text: "Attic has very little insulation, want more added"}
+  - {id: insulation-02, trade: insulation, job_type: "blown-in insulation", question: where, lang: en, text: "Want blown-in insulation in the attic"}
+  - {id: insulation-03, trade: insulation, job_type: "attic insulation", question: where, lang: en, text: "Upstairs is so hot, need the attic insulated"}
+  - {id: insulation-04, trade: insulation, job_type: "blown-in insulation", question: where, lang: en, text: "Need old insulation topped up with blown-in"}
+  - {id: insulation-05, trade: insulation, job_type: "attic insulation", question: where, lang: en, text: "Rodents got into the attic insulation, need it replaced"}
+  - {id: insulation-06, trade: insulation, job_type: "blown-in insulation", question: where, lang: en, text: "Want quotes for blown-in insulation for 1,500 square feet"}
+  - {id: insulation-07, trade: insulation, job_type: "attic insulation", question: where, lang: en, text: "Electric bill is high, want better attic insulation"}
+  - {id: insulation-08, trade: insulation, job_type: "attic insulation", question: where, lang: es, text: "Quiero poner aislante en el ático"}
+  - {id: insulation-09, trade: insulation, job_type: "blown-in insulation", question: where, lang: es, text: "Necesito aislamiento soplado en el ático"}
+  - {id: insulation-10, trade: insulation, job_type: "attic insulation", question: where, lang: es, text: "La casa está muy caliente, necesito más aislante en el techo"}
+  - {id: pavers_hardscape-01, trade: pavers_hardscape, job_type: "paver patio", question: project, lang: en, text: "Want a paver patio in the backyard"}
+  - {id: pavers_hardscape-02, trade: pavers_hardscape, job_type: "walkway", question: project, lang: en, text: "Need a paver walkway from the driveway to the front door"}
+  - {id: pavers_hardscape-03, trade: pavers_hardscape, job_type: "irrigation install", question: project, lang: en, text: "Want drip irrigation installed for new plants"}
+  - {id: pavers_hardscape-04, trade: pavers_hardscape, job_type: "paver patio", question: project, lang: en, text: "Looking to extend the patio with pavers by the pool"}
+  - {id: pavers_hardscape-05, trade: pavers_hardscape, job_type: "walkway", question: project, lang: en, text: "Want a flagstone path along the side of the house"}
+  - {id: pavers_hardscape-06, trade: pavers_hardscape, job_type: "irrigation install", question: project, lang: en, text: "Need a sprinkler and drip system put in"}
+  - {id: pavers_hardscape-07, trade: pavers_hardscape, job_type: "paver patio", question: project, lang: en, text: "Want pavers and a fire pit area in the backyard"}
+  - {id: pavers_hardscape-08, trade: pavers_hardscape, job_type: "paver patio", question: project, lang: es, text: "Quiero un patio de adoquines"}
+  - {id: pavers_hardscape-09, trade: pavers_hardscape, job_type: "walkway", question: project, lang: es, text: "Necesito un camino de piedra en el jardín"}
+  - {id: pavers_hardscape-10, trade: pavers_hardscape, job_type: "irrigation install", question: project, lang: es, text: "Quiero instalar riego por goteo"}
+  - {id: epoxy_floors-01, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: en, text: "Want an epoxy coating on the garage floor"}
+  - {id: epoxy_floors-02, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: en, text: "Garage floor has oil stains, want epoxy with flakes"}
+  - {id: epoxy_floors-03, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: en, text: "Need the two-car garage floor coated"}
+  - {id: epoxy_floors-04, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: en, text: "Old garage epoxy is peeling, want it redone"}
+  - {id: epoxy_floors-05, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: en, text: "Looking for a polyaspartic or epoxy garage floor"}
+  - {id: epoxy_floors-06, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: en, text: "Want the garage floor sealed and coated"}
+  - {id: epoxy_floors-07, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: en, text: "Need cracks filled and epoxy put on the garage slab"}
+  - {id: epoxy_floors-08, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: es, text: "Quiero epóxico en el piso del garaje"}
+  - {id: epoxy_floors-09, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: es, text: "Necesito recubrir el piso del garaje"}
+  - {id: epoxy_floors-10, trade: epoxy_floors, job_type: "garage floor epoxy", question: size, lang: es, text: "El piso del garaje está manchado, quiero epóxico"}
