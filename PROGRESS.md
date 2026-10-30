@@ -110,3 +110,4 @@
 - 2026-10-30T03:00:13Z runner b4f7265f01d2 (actions): {}; T005 estimated 3.4M tokens (calibrated); five-hour window has 832k left, week 124.5M (ledger); waiting until 2026-10-30T05:17:50Z
 - 2026-10-30T03:03:09Z runner b4f7265f01d2 (actions): {}
 - 2026-10-30T03:10:11Z runner 0db77311e01a (actions): {}
+- 2026-10-30T03:16:08Z runner c96dfb98580d (actions): {"T005": "QUEUED -> IN_PROGRESS"}; T005 estimated 3.4M tokens (calibrated); five-hour window has 20.6M left, week 439.5M (ledger); claimed
