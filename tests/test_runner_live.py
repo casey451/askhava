@@ -631,3 +631,42 @@ def test_drill_finish_after_the_lease_was_reclaimed_writes_no_review_and_pushes_
     assert "reviewed_sha" not in st.entry(state, "K10")
     assert json.loads(origin_file(repo, "claude/lease", "lease.json"))["lease"]["session"] == "session-b"
     assert git(repo["origin"], "branch", "--list", TASK["branch"]) == ""
+
+
+def test_long_token_for_remote_calls(monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-519: remote git and gh calls are retried with RUNNER_PUSH_TOKEN first; local git and
+    check-run reads are left alone; nothing applies without the token."""
+    from runner import github_env as ge
+
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    fetch = ["git", "fetch", "--quiet", "origin", "+refs/heads/x:refs/y"]
+    assert ge._long_token_args(fetch) is None
+    monkeypatch.setenv("RUNNER_PUSH_TOKEN", "fake-push-token")
+    assert ge._long_token_args(fetch) == ["git", "fetch", "--quiet", "https://github.com/o/r.git", "+refs/heads/x:refs/y"]
+    assert ge._long_token_args(["git", "show", "a:b"]) is None
+    assert ge._long_token_args(["gh", "api", "repos/o/r/commits/abc/check-runs?per_page=100"]) is None
+    pulls = ["gh", "api", "repos/o/r/pulls"]
+    assert ge._long_token_args(pulls) == pulls
+    assert ge._long_token_env(pulls)["GH_TOKEN"] == "fake-push-token"
+    env = ge._long_token_env(ge._long_token_args(fetch) or [])
+    assert env["GIT_CONFIG_COUNT"] == "3" and "fake-push-token" not in env["GIT_CONFIG_VALUE_2"]
+
+
+def test_run_command_falls_back_when_the_long_token_is_refused(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    monkeypatch.setenv("RUNNER_PUSH_TOKEN", "fake-push-token")
+    calls: list[list[str]] = []
+
+    class Done:
+        def __init__(self, code: int) -> None:
+            self.returncode, self.stdout, self.stderr = code, "", ""
+
+    def fake_run(args: list[str], stdin: Any, cwd: Any, env: Any) -> Done:
+        calls.append(list(args))
+        return Done(1 if len(calls) == 1 else 0)
+
+    monkeypatch.setattr(ge, "_run", fake_run)
+    assert ge.run_command(["git", "push", "--porcelain", "origin", "a:refs/heads/b"], None, tmp_path)[0] == 0
+    assert calls[0][3] == "https://github.com/o/r.git" and calls[1][3] == "origin"
