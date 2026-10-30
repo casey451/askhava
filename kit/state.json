@@ -2874,12 +2874,12 @@
     "T013",
     "T176"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "slug": "e2e-harness",
    "type": "build",
    "stage": "2",
-   "attempt_started_at": "2026-10-30T16:32:10Z",
+   "attempt_started_at": "2026-10-30T17:08:47Z",
    "decision_ids": [
     739,
     740,
@@ -2963,7 +2963,8 @@
     "why": "auto-merge on #128 (gh pr merge)",
     "head": "030b05333fe35205865dace8ba77913810551f09"
    },
-   "last_failure": "Ci: failure; Ci: failure; Checks: failure; Coverage: failure; Coverage: failure; Checks: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\nChecks failed at step: Rust build (the one boundary build) and tests\nCi failed at step: Both jobs passed"
+   "last_failure": "Ci: failure; Ci: failure; Checks: failure; Coverage: failure; Coverage: failure; Checks: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\nChecks failed at step: Rust build (the one boundary build) and tests\nCi failed at step: Both jobs passed",
+   "lane": "2"
   },
   {
    "id": "T021",
@@ -6667,8 +6668,8 @@
     "last_model": "claude-opus-5-5"
    },
    "T020": {
-    "estimated_bytes": 221007,
-    "estimated_tokens": 818895,
+    "estimated_bytes": 224197,
+    "estimated_tokens": 847244,
     "output_tokens": 108436,
     "cache_creation_input_tokens": 329559,
     "input_tokens": 220,
@@ -6687,7 +6688,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T17:08:51Z",
+ "updated_at": "2026-10-30T17:13:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -6788,12 +6789,6 @@
  "runner_sha": "276d8e133a05c33dccd87cae60d99e3be6ff7653",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "7e9e844cf1c04f94f0ede7c4b57bc4140da84865",
-   "ok": true,
-   "at": "2026-10-30T09:58:57Z",
-   "why": "start routine"
-  },
   {
    "sha": "b2935f9fc3add03f113c4bf473b4c98d525632bd",
    "ok": true,
@@ -6907,30 +6902,36 @@
    "ok": true,
    "at": "2026-10-30T16:32:10Z",
    "why": "start routine"
+  },
+  {
+   "sha": "276d8e133a05c33dccd87cae60d99e3be6ff7653",
+   "ok": true,
+   "at": "2026-10-30T17:08:47Z",
+   "why": "start routine"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T020 estimated 819k tokens (calibrated); five-hour window has 25.2M left, week 414.4M after 715k still running in another lane (ledger); claimed",
-  "at": "2026-10-30T16:32:10Z",
+  "last": "T020 estimated 847k tokens (calibrated); five-hour window has 22.4M left, week 411.6M (ledger); claimed",
+  "at": "2026-10-30T17:08:47Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "five_hour": {
-    "used": 1831019,
+    "used": 4569433,
     "budget": 27000000,
-    "left": 25168981,
+    "left": 22430567,
     "resets_at": "2026-10-30T20:59:41Z"
    },
    "week": {
-    "used": 35630343,
+    "used": 38368757,
     "budget": 450000000,
-    "left": 414369657,
+    "left": 411631243,
     "resets_at": "2026-11-05T18:38:52Z"
    }
   },
-  "remaining_estimate": 173743862,
-  "projected_finish": "2026-11-02T09:24:01Z"
+  "remaining_estimate": 179831449,
+  "projected_finish": "2026-11-02T12:17:01Z"
  },
  "main_red_history": [
   {
