@@ -1188,3 +1188,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What happened.** T167's pull request failed the secret scan in `Ci`: the scanner mistook two harmless test arguments for passwords. Its log said only "leaks found: 2", the runner passed the retry just "Ci: failure", and the local smoke test doesn't run the scanner, so the next try had nothing to go on.
 - **The fix.** The scanner now names the rule, file and line of each finding (the value itself stays hidden). When a check fails, the runner tells the retry which step failed and adds the last few lines of that step's log, kept short and with no settings or keys in it. The smoke test runs the same scan when the scanner is installed, and the runner's Actions job now installs it, so a worker catches this before handing in.
 - **Nothing for you to do.** No check got weaker; the scanner and its pinned version are the same as before.
+
+## The wall between modules is now tested (T175, D-595 to D-597, October 30)
+
+- **What it does.** A new test reads every part of the code and fails if a part reaches up to a part it should not, skips the shared safety settings, adds an unapproved library, or names the "release contact details" key outside the three places allowed to hold it. It reads the allowed-calls table from the build's own file, not from the written description, so the two can't drift apart quietly.
+- **Money and duplicates.** Only the payments part may talk to the card processor, and every adapter action that sends or charges something must carry a repeat-proof key, so a retry never sends or charges twice.
+- **Nothing for you to do.** These are build rules; no customer sees them.
