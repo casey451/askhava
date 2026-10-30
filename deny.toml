@@ -1,0 +1,49 @@
+# cargo-deny policy (docs/architecture.md section 11; SEC-021, SEC-045, D-481, D-588).
+# Run: cargo deny check licenses bans sources advisories. Every ignore carries a reason and a
+# review date; a new library also needs its docs/decisions.md entry (BUILD_BRIEF.md:122).
+
+[graph]
+all-features = false
+
+[advisories]
+yanked = "deny"
+ignore = [
+    { id = "RUSTSEC-2026-0374", reason = "basic-toml is unmaintained; askama_derive reads askama.toml with it at compile time only, never at run time (docs/architecture.md section 11). Review by 2027-04-30 or when askama drops it." },
+]
+
+[licenses]
+# Section 11's runtime licenses plus the permissive licenses their dependencies use.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "Unlicense",
+    "MPL-2.0",
+    "MIT-0",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "CDLA-Permissive-2.0",
+]
+confidence-threshold = 0.93
+# The list covers crates later tasks add, so a license unused today is not an error.
+unused-allowed-license = "allow"
+
+[licenses.private]
+# First-party crates are unpublished (publish = false) and carry no license field.
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+allow-wildcard-paths = true
+deny = [
+    { crate = "askama_axum", reason = "discontinued; askama_web serves templates (D-481)" },
+    { crate = "serde_yaml", reason = "unmaintained; serde-saphyr reads the catalog (section 11)" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
