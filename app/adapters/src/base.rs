@@ -56,9 +56,15 @@ impl IdempotencyKey {
 /// vendor message, only codes (R5, PRIV-016).
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum AdapterError {
-    /// The HTTP client could not be built or the request did not complete.
-    #[error("vendor request did not complete")]
-    Transport,
+    /// The request was never sent: the HTTP client could not be built or the
+    /// connection could not be made, so a retry cannot duplicate the action.
+    #[error("vendor request was not sent")]
+    NotSent,
+    /// The request may have reached the vendor but no complete answer came
+    /// back (timeout, dropped connection, unreadable body); the action may have
+    /// happened, so the caller checks its sent log before any resend (SEC-018).
+    #[error("vendor request outcome is unknown")]
+    OutcomeUnknown,
     /// The vendor answered with an error status and, when it sent one, its error code.
     #[error("vendor refused the request with status {status}")]
     Vendor {
@@ -81,7 +87,7 @@ pub enum AdapterError {
 ///
 /// # Errors
 ///
-/// [`AdapterError::Transport`] when the HTTP client cannot be built.
+/// [`AdapterError::NotSent`] when the HTTP client cannot be built.
 pub fn twilio_clients(
     config: &TwilioConfig,
 ) -> Result<(TwilioSms, TwilioVoice, TwilioVerify), AdapterError> {
@@ -91,6 +97,16 @@ pub fn twilio_clients(
         TwilioVoice { http: http.clone() },
         TwilioVerify { http },
     ))
+}
+
+/// Sorts a send failure: a build or connect error means nothing left this
+/// process, anything later means the vendor may have acted (SEC-018).
+fn send_error(error: &reqwest::Error) -> AdapterError {
+    if error.is_builder() || error.is_connect() {
+        AdapterError::NotSent
+    } else {
+        AdapterError::OutcomeUnknown
+    }
 }
 
 /// Whether `id` is a Twilio SID with the given two-letter prefix and 32 hex or
@@ -121,8 +137,9 @@ impl TwilioHttp {
     pub(crate) fn new(config: &TwilioConfig) -> Result<Self, AdapterError> {
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(15))
+            .redirect(reqwest::redirect::Policy::none())
             .build()
-            .map_err(|_| AdapterError::Transport)?;
+            .map_err(|_| AdapterError::NotSent)?;
         Ok(Self {
             client,
             api_base: config.api_base().into(),
@@ -157,12 +174,12 @@ impl TwilioHttp {
                 .header("Idempotency-Key", key.as_str())
                 .header("X-Askhava-Message-Key", key.as_str());
         }
-        let response = request.send().await.map_err(|_| AdapterError::Transport)?;
+        let response = request.send().await.map_err(|error| send_error(&error))?;
         let status = response.status();
         let bytes = response
             .bytes()
             .await
-            .map_err(|_| AdapterError::Transport)?;
+            .map_err(|_| AdapterError::OutcomeUnknown)?;
         if !status.is_success() {
             let code = serde_json::from_slice::<TwilioErrorBody>(&bytes)
                 .ok()

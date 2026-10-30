@@ -18,7 +18,7 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 ## Rules it enforces
 
 - SEC-018: `base::IdempotencyKey::derive`; every trait method that acts outside takes `idempotency: &IdempotencyKey` (read-only prefixes `fetch_`, `get_`, `list_`, `read_`, `check_`, `lookup_` excepted, D-596).
-- SEC-002, SEC-032: `config::TwilioConfig::from_settings` (`live` mode only in live, `stand_in` never there; base URLs through `askhava_core::api::check_base_url`).
+- SEC-002, SEC-032: `config::TwilioConfig::from_settings` (`live` mode only in live, `stand_in` and `sandbox` never there; base URLs through `askhava_core::api::check_base_url`).
 - CALL-017, D-160: `config::MaskedPool` is exactly `ASKHAVA_MASKED_POOL_SIZE` (default 10) distinct numbers from `ASKHAVA_MASKED_NUMBERS`; `voice::VoiceAdapter::open_call` takes only a `PoolNumber`.
 
 ## Never break
@@ -26,6 +26,8 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 - No adapter has a separate fake code path; the stand-in is reached over HTTP like the vendor (D-453): `tests/adapter_config.rs::texting_client_talks_to_the_stand_in_over_http`.
 - The voice adapter never buys, provisions or releases a number: `tests/adapter_config.rs::voice_adapter_has_no_buy_number_method`.
 - Every outside action takes a derived key with no personal data: `every_outside_action_takes_an_idempotency_key`, `idempotency_key_is_derived_from_what_it_identifies`.
+- Twilio ignores the `Idempotency-Key` header: for Twilio the derived key is only a sent-log marker (`X-Askhava-Message-Key`, OPS-017). Duplicate protection comes from the caller's outbox checking the sent log for the key before any resend, never from Twilio (SEC-018, D-703).
+- `AdapterError::NotSent` (client build or connect failure) is the only error after which a resend cannot duplicate; after `OutcomeUnknown` the caller checks the sent log first. The HTTP client follows no redirects (`redirect::Policy::none()`), so credentials never go to another host.
 - `AdapterError` carries codes only, never a URL, number or vendor message (PRIV-016).
 - A vendor ID from a caller is checked before it goes into a URL path (`base::is_sid`).
 - `adapters` depends only on `core` and the HTTP and crypto crates (`kit/layers.json`).

@@ -71,7 +71,7 @@ fn base_urls_come_from_settings() {
     assert_eq!(sandbox.verify_base(), "https://verify.twilio.com");
 }
 
-/// TD-SEC-13; SEC-002: `live` mode outside live, and a stand-in mode or URL in live, stop startup.
+/// TD-SEC-13; SEC-002: `live` mode outside live, and a stand-in or sandbox mode or a stand-in URL in live, stop startup.
 #[test]
 fn mode_and_stand_in_urls_are_checked_against_the_environment() {
     let live_mode = config("dev", &[("ASKHAVA_ADAPTER_MODE_TWILIO", "live")]);
@@ -87,6 +87,11 @@ fn mode_and_stand_in_urls_are_checked_against_the_environment() {
     let live = live_settings();
     let stand_in = TwilioConfig::from_settings(&live, [mode("stand_in")]);
     assert!(matches!(stand_in, Err(SettingsError::StandInInLive(_))));
+    let sandbox = TwilioConfig::from_settings(&live, [mode("sandbox")]);
+    assert!(matches!(
+        sandbox,
+        Err(SettingsError::TestKeyInLive("ASKHAVA_ADAPTER_MODE_TWILIO"))
+    ));
     let local = TwilioConfig::from_settings(
         &live,
         [(
@@ -332,4 +337,19 @@ async fn verify_client_sends_and_checks_over_http() {
     let code = get_json(&code_url).await;
     let right = verify.check_code(TO, code["code"].as_str().unwrap());
     assert!(right.await.unwrap());
+}
+
+/// SEC-018: a refused connection is `NotSent`, so the caller knows a retry cannot duplicate the text.
+#[tokio::test]
+async fn unreachable_vendor_is_not_sent() {
+    let port = TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap()
+        .port();
+    let (sms, _, _) = twilio_clients(&stand_in_config(port)).unwrap();
+    let result = sms
+        .send_text(&key("sms.send", "outbox-3"), TO, FROM, "Ask Hava: test")
+        .await;
+    assert_eq!(result, Err(AdapterError::NotSent));
 }

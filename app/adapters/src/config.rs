@@ -1,7 +1,8 @@
 //! Adapter mode and Twilio settings, parsed once at startup (SEC-002, SEC-032, CALL-017; D-160).
 //!
 //! `ASKHAVA_ADAPTER_MODE_TWILIO` picks `stand_in`, `sandbox` or `live`; `live`
-//! is accepted only with `APP_ENV=live` and `stand_in` never there (SEC-002).
+//! is accepted only with `APP_ENV=live`, and neither `stand_in` nor `sandbox`
+//! (test credentials) is accepted there (SEC-002).
 //! The mode only picks the default base URLs; a base URL setting overrides
 //! them and passes `check_base_url`, so a stand-in URL stops a live startup
 //! (TD-SEC-13). The masked-number pool is a fixed list from settings whose
@@ -90,8 +91,8 @@ impl TwilioConfig {
     ///
     /// # Errors
     ///
-    /// A missing or invalid key; `live` mode outside live or `stand_in` in live
-    /// (SEC-002); a stand-in or local base URL in live (SEC-032); a pool list
+    /// A missing or invalid key; `live` mode outside live, or `stand_in` or
+    /// `sandbox` in live (SEC-002); a stand-in or local base URL in live (SEC-032); a pool list
     /// that is not exactly the pool size of distinct E.164 numbers (CALL-017).
     pub fn from_settings<I>(settings: &Settings, pairs: I) -> Result<Self, SettingsError>
     where
@@ -180,8 +181,8 @@ impl TwilioConfig {
     }
 }
 
-/// SEC-002: live mode only in live, the stand-in never there; the default is
-/// `live` in live and `stand_in` everywhere else.
+/// SEC-002: live mode only in live; neither the stand-in nor the sandbox (a
+/// test key) there; the default is `live` in live and `stand_in` everywhere else.
 fn parse_mode(environment: Environment, raw: Option<String>) -> Result<AdapterMode, SettingsError> {
     let live = environment == Environment::Live;
     let mode = match raw.as_deref() {
@@ -194,6 +195,7 @@ fn parse_mode(environment: Environment, raw: Option<String>) -> Result<AdapterMo
     match (live, mode) {
         (false, AdapterMode::Live) => Err(SettingsError::LiveKeyOutsideLive(MODE)),
         (true, AdapterMode::StandIn) => Err(SettingsError::StandInInLive(MODE)),
+        (true, AdapterMode::Sandbox) => Err(SettingsError::TestKeyInLive(MODE)),
         _ => Ok(mode),
     }
 }
