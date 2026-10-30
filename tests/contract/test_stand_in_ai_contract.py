@@ -1,7 +1,13 @@
-"""Contract tests for the stand-in AI: schema-validated fixed fields, no tools (AI-005, AI-006, AI-010)."""
+"""Contract tests for the stand-in AI: schema-validated fixed fields, no tools (AI-005, AI-006, AI-010, AI-022).
+
+TD-SEC-13: the reading validates against `schemas/intake_reading.json`, carries trade and job-type
+confidences and no `rental` field (D-492, D-493).
+"""
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -15,8 +21,11 @@ def read(text: str) -> dict[str, Any]:
 
 def test_returns_exactly_the_listed_fields() -> None:
     reading = read("my kitchen sink leaks")
-    assert set(reading) == {"trade", "job_type", "emergency", "urgent", "language", "rental", "major", "missing_info"}
-    assert reading["trade"] == "plumbing"
+    assert set(reading) == {
+        *("trade", "trade_confidence", "job_type", "job_type_confidence"),
+        *("emergency", "urgent", "language", "major", "missing_info"),
+    }
+    assert reading["trade"] == "plumbing" and "rental" not in reading
 
 
 def test_deterministic() -> None:
@@ -25,7 +34,7 @@ def test_deterministic() -> None:
 
 def test_flags() -> None:
     reading = read("tenant here, need to replace the AC asap")
-    assert reading["trade"] == "heating_ac" and reading["rental"] and reading["major"] and reading["urgent"]
+    assert reading["trade"] == "heating_ac" and reading["major"] and reading["urgent"]
     assert read("smell of gas near the stove")["emergency"] is True
     assert read("hola necesito arreglar una fuga")["language"] == "es"
 
@@ -33,6 +42,7 @@ def test_flags() -> None:
 def test_unknown_trade_asks_for_missing_info() -> None:
     reading = read("something is weird")
     assert reading["trade"] == "other" and reading["missing_info"] == ["trade"]
+    assert reading["trade_confidence"] < read("sink leak")["trade_confidence"]
 
 
 def test_plain_text_is_refused() -> None:
@@ -64,3 +74,19 @@ def test_schema_rejects_extra_missing_and_wrong_values() -> None:
         ai.validate({**good, "language": "fr"})
     with pytest.raises(ai.SchemaError):
         ai.validate("not a dict")
+    with pytest.raises(ai.SchemaError):
+        ai.validate({**good, "rental": True})
+    for bad in (1.5, -0.1, True, "0.5"):
+        with pytest.raises(ai.SchemaError):
+            ai.validate({**good, "trade_confidence": bad})
+    with pytest.raises(ai.SchemaError):
+        ai.validate({**good, "missing_info": [3]})
+
+
+def test_committed_schema_is_the_ai_010_fields_and_two_confidences() -> None:
+    """AI-022: one schema at the repository root; every field required, nothing extra allowed."""
+    schema = json.loads((Path(__file__).resolve().parents[2] / "schemas" / "intake_reading.json").read_text())
+    assert schema == ai.SCHEMA and schema["additionalProperties"] is False
+    assert set(schema["required"]) == set(schema["properties"]) == set(ai.FIELDS)
+    for name in ("trade_confidence", "job_type_confidence"):
+        assert schema["properties"][name] == {"type": "number", "minimum": 0, "maximum": 1}
