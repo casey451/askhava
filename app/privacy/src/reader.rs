@@ -6,7 +6,8 @@
 //! returns the flags plus [`ScrubbedText`]; the raw text itself never leaves. Inbound email arrives
 //! only through the email provider's Svix-signed webhook into [`read_inbound_email`], which checks
 //! the signature and its age, reads SPF, DKIM and DMARC, limits a sender failing any of them to an
-//! opt-out, and gives the sender's per-purpose email blind index (PRIV-026). Storing the raw body
+//! opt-out (a missing auth block counts as failing; D-804), and gives the sender's per-purpose
+//! email blind index (PRIV-026). Storing the raw body
 //! in `privacy.message_body` waits for that table's migration, which no task owns yet (D-801).
 
 use base64::Engine as _;
@@ -193,10 +194,13 @@ struct Envelope {
 struct Received {
     from: String,
     text: String,
+    #[serde(default)]
     auth: Results,
 }
 
-#[derive(Deserialize)]
+/// A missing block or result reads as empty, which is not a pass: `OptOutOnly` (PRIV-026).
+#[derive(Deserialize, Default)]
+#[serde(default)]
 struct Results {
     spf: String,
     dkim: String,
@@ -205,6 +209,7 @@ struct Results {
 
 /// Reads one inbound email from the signed webhook (PRIV-026, D-480, D-801): refuses a bad or
 /// stale signature, then returns flags, scrubbed body, SPF/DKIM/DMARC, standing and sender index.
+/// It does not deduplicate: the caller drops a repeated `svix-id` before calling (D-804).
 ///
 /// # Errors
 ///
@@ -236,13 +241,34 @@ pub fn read_inbound_email(
         _ => Standing::OptOutOnly,
     };
     let inbound = read_inbound(&text, &ctx.words, &ctx.known, memory);
+    let flags = email_flags(inbound.flags, &text, &ctx.words, standing);
     Ok(InboundEmail {
-        flags: inbound.flags,
+        flags,
         text: inbound.text,
         auth,
         standing,
         sender: sender_index(ctx.vault, &from),
     })
+}
+
+/// An email also opts out when its first non-empty line is one opt-out word, whatever signature
+/// or quoted reply follows; a sender limited to `OptOutOnly` loses the HELP and START flags, so
+/// only the opt-out acts (the emergency flag, a safety notice and no change, stays; PRIV-026).
+fn email_flags(raw: Flags, text: &str, words: &InboundWords<'_>, standing: Standing) -> Flags {
+    let first = text
+        .lines()
+        .find(|l| !l.trim().is_empty())
+        .unwrap_or_default();
+    let opt_out = raw.opt_out || flags(first, words).opt_out;
+    match standing {
+        Standing::Authenticated => Flags { opt_out, ..raw },
+        Standing::OptOutOnly => Flags {
+            opt_out,
+            help: false,
+            start: false,
+            ..raw
+        },
+    }
 }
 
 /// Svix: HMAC-SHA256 under the decoded `whsec_` key over `<id>.<timestamp>.<body>`, compared in

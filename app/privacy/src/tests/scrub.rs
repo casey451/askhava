@@ -1,9 +1,10 @@
 //! The scrubber's fixed cases and the adversarial corpus (TD-AI-01, TD-AI-05, TD-AI-09; AI-002, AI-003, AI-004, AI-009, AI-020).
 //!
-//! The corpus is 57 English and Spanish contact snippets (fullwidth and Arabic-Indic digits,
-//! zero-width characters inside numbers, spelled-out and mixed numbers, "at"/"dot" emails,
-//! @handles, bare domains, cross streets, gate codes, sign-offs, "mi nombre es"), each placed in
-//! four message frames: 228 cases. Recall on the listed contact tokens must be at least 99%, or
+//! The corpus is 63 English and Spanish contact snippets (fullwidth and Arabic-Indic digits,
+//! zero-width characters inside numbers, spelled-out, compound ("twenty-eight", "double five")
+//! and mixed numbers, "O"/"l" for 0/1, "at"/"dot" emails, @handles, bare domains, cross streets,
+//! house numbers without a suffix, gate codes, sign-offs, "mi nombre es"), each placed in four
+//! message frames: 252 cases. Recall on the listed contact tokens must be at least 99%, or
 //! this test, and so `Ci`, fails (AI-020). All names, numbers and addresses are fake.
 
 use secrecy::SecretString;
@@ -81,6 +82,18 @@ const CONTACTS: &[(&str, &[&str])] = &[
         "corner of Mesa Test Rd & Ocotillo Test Ln",
         &["mesa", "ocotillo"],
     ),
+    (
+        "call nine twenty-eight five five five zero one six one",
+        &["twenty-eight", "zero one six one"],
+    ),
+    (
+        "nine two eight double five five zero one six two",
+        &["double five", "zero one six two"],
+    ),
+    ("text 928 555 O1l3", &["555", "o1l3"]),
+    ("cel 928 555 0l64", &["555", "0l64"]),
+    ("I'm at 2150 Mesquite", &["2150", "mesquite"]),
+    ("vivo en 3301 Palo Verde", &["3301", "palo", "verde"]),
     ("gate code 4321", &["4321"]),
     ("código del portón 9876", &["9876"]),
     ("pin #2468", &["2468"]),
@@ -160,6 +173,39 @@ fn the_vault_name_is_removed() {
         out.as_str(),
         "[removed] here, [removed] of a leak? [removed] sink"
     );
+}
+
+/// TD-AI-01 (AI-003): every vault-name word goes, even one on the common-words list.
+#[test]
+fn a_vault_name_on_the_common_list_is_still_removed() {
+    let vault = SecretString::from("Joy Early");
+    let out = run_with(
+        "Joy says call early",
+        Some(&vault),
+        &mut NameMemory::default(),
+    );
+    assert_eq!(out.as_str(), "[removed] says call [removed]");
+}
+
+/// TD-AI-09 (AI-020): both words of a two-word name are remembered for later turns.
+#[test]
+fn both_words_of_a_stated_name_are_remembered() {
+    let mut memory = NameMemory::default();
+    run_with("my name is Rosa Tester", None, &mut memory);
+    let out = run_with("Tester here, and Rosa says hi", None, &mut memory);
+    assert_eq!(out.as_str(), "[removed] here, and [removed] says hi");
+}
+
+/// D-093, AI-002: everyday numbers and words stay; only phone-length runs and named houses go.
+#[test]
+fn everyday_numbers_stay() {
+    for text in [
+        "the 1200 sq ft house is twenty years old",
+        "once a week, 2 o 3 times",
+        "CLOSE 1042 YES",
+    ] {
+        assert_eq!(run(text).as_str(), text);
+    }
 }
 
 /// TD-AI-09 (AI-020): a name given at the second turn is absent from the fourth turn's text.

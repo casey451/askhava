@@ -3,7 +3,8 @@
 //! Proves through `privacy::api` alone that an inbound text yields flags and `ScrubbedText` only;
 //! that inbound email is accepted only with a valid, fresh Svix signature; that a sentinel body's
 //! contact details appear nowhere in what the reader returns; that a sender failing SPF, DKIM or
-//! DMARC may only opt out; and that the email blind index matches a sender to a business and to a
+//! DMARC, or carrying no auth block, may only opt out; that an opt-out word on an email's first
+//! line opts out; and that the email blind index matches a sender to a business and to a
 //! homeowner under separate derivations. Storage in `privacy.message_body` and the day-31 cut are
 //! TD-PRIV-11's later cases (D-801). All data, keys and secrets are fake.
 
@@ -151,6 +152,34 @@ fn a_dmarc_failure_may_only_opt_out() {
         None,
     );
     assert_eq!(change.expect("signed").standing, Standing::OptOutOnly);
+}
+
+/// PRIV-026 (D-804): a missing auth block is a failure, and an `OptOutOnly` sender's HELP and
+/// START words carry no flag, so only the opt-out holds.
+#[test]
+fn a_missing_auth_block_or_failed_sender_may_only_opt_out() {
+    let bare = br#"{"type":"email.received","data":{"from":"a@example.com","text":"STOP"}}"#;
+    let email = read(bare, NOW, None).expect("signed");
+    assert_eq!(email.standing, Standing::OptOutOnly);
+    assert!(email.flags.opt_out && !email.auth.spf);
+    for word in ["HELP", "START"] {
+        let email = read(&body("a@example.com", word, "fail"), NOW, None).expect("signed");
+        assert!(!email.flags.help && !email.flags.start, "{word} acted");
+    }
+    let trusted = read(&body("a@example.com", "HELP", "pass"), NOW, None).expect("signed");
+    assert!(trusted.flags.help);
+}
+
+/// CON-008 (D-804): an opt-out word alone on an email's first line opts out despite the signature
+/// and quoted reply below it; "cancel" inside a sentence does not.
+#[test]
+fn an_email_opts_out_from_its_first_line() {
+    let reply = "Cancel\n\n--\nSent from my phone\n> On Monday Ask Hava wrote: your quotes";
+    let email = read(&body("a@example.com", reply, "pass"), NOW, None).expect("signed");
+    assert!(email.flags.opt_out);
+    let sentence = "cancel my visit tomorrow\nthanks";
+    let email = read(&body("a@example.com", sentence, "pass"), NOW, None).expect("signed");
+    assert!(!email.flags.opt_out);
 }
 
 /// PRIV-026: a bad, missing or stale signature and a wrong event type are refused.

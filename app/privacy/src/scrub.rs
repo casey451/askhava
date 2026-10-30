@@ -6,8 +6,9 @@
 //! apostrophes made straight (AI-020). It then removes, each run replaced by [`REMOVED`]: up to two
 //! words after "this is", "my name is", "I'm", "im", "it's", "soy", "me llamo" or "mi nombre es"
 //! unless the first is a common word (D-146); any phone-shaped run of 7 or more digits, digits and
-//! English or Spanish number words mixed ("nine two eight", "9two8"); emails, "at"/"dot" spelled
-//! emails, @handles, links and bare domains; street numbers with their street names; gate codes;
+//! English or Spanish number words mixed ("nine two eight", "9two8", "twenty-eight", "double
+//! five", "555-O1l2"); emails, "at"/"dot" spelled emails, @handles, links and bare domains; street
+//! numbers with their street names or a capitalised name ("2150 Mesquite"); gate codes;
 //! sign-off names; and the vault name and every name the person stated earlier (AI-003, AI-020).
 //! [`ScrubbedText`] has a private field and no public constructor, so only this crate can make one
 //! and `ai` never receives unscrubbed text (AI-004; `tests/security/ui/forge_scrubbed_text.rs`).
@@ -215,29 +216,66 @@ const SIGN_OFFS: &[&str] = &[
     "atentamente",
     "sincerely",
 ];
-const NUMBER_WORDS: &[(&str, char)] = &[
-    ("zero", '0'),
-    ("cero", '0'),
-    ("oh", '0'),
-    ("one", '1'),
-    ("uno", '1'),
-    ("two", '2'),
-    ("dos", '2'),
-    ("three", '3'),
-    ("tres", '3'),
-    ("four", '4'),
-    ("cuatro", '4'),
-    ("five", '5'),
-    ("cinco", '5'),
-    ("six", '6'),
-    ("seis", '6'),
-    ("seven", '7'),
-    ("siete", '7'),
-    ("eight", '8'),
-    ("ocho", '8'),
-    ("nine", '9'),
-    ("nueve", '9'),
+/// Number words and the digits each spells; a tens word ("twenty", "veinte") spells two digits,
+/// its zero taken by a unit word joined to it ("twenty-eight" is 28).
+const NUMBER_WORDS: &[(&str, &str)] = &[
+    ("zero", "0"),
+    ("cero", "0"),
+    ("oh", "0"),
+    ("one", "1"),
+    ("uno", "1"),
+    ("two", "2"),
+    ("dos", "2"),
+    ("three", "3"),
+    ("tres", "3"),
+    ("four", "4"),
+    ("cuatro", "4"),
+    ("five", "5"),
+    ("cinco", "5"),
+    ("six", "6"),
+    ("seis", "6"),
+    ("seven", "7"),
+    ("siete", "7"),
+    ("eight", "8"),
+    ("ocho", "8"),
+    ("nine", "9"),
+    ("nueve", "9"),
+    ("ten", "10"),
+    ("diez", "10"),
+    ("eleven", "11"),
+    ("once", "11"),
+    ("twelve", "12"),
+    ("doce", "12"),
+    ("thirteen", "13"),
+    ("trece", "13"),
+    ("fourteen", "14"),
+    ("catorce", "14"),
+    ("fifteen", "15"),
+    ("quince", "15"),
+    ("sixteen", "16"),
+    ("seventeen", "17"),
+    ("eighteen", "18"),
+    ("nineteen", "19"),
+    ("twenty", "20"),
+    ("veinte", "20"),
+    ("veinti", "20"),
+    ("thirty", "30"),
+    ("treinta", "30"),
+    ("forty", "40"),
+    ("cuarenta", "40"),
+    ("fifty", "50"),
+    ("cincuenta", "50"),
+    ("sixty", "60"),
+    ("sesenta", "60"),
+    ("seventy", "70"),
+    ("setenta", "70"),
+    ("eighty", "80"),
+    ("ochenta", "80"),
+    ("ninety", "90"),
+    ("noventa", "90"),
 ];
+/// "double five" is 55, "triple oh" is 000 (AI-020).
+const MULTIPLIERS: &[(&str, usize)] = &[("double", 2), ("doble", 2), ("triple", 3)];
 const TLDS: &[&str] = &[
     "com", "net", "org", "edu", "gov", "us", "io", "co", "mx", "info", "biz", "me", "app", "dev",
 ];
@@ -355,6 +393,7 @@ pub fn scrub(raw: &str, known: &Known<'_>, memory: &mut NameMemory) -> ScrubbedT
     mark_digit_runs(&tokens, &mut cut);
     mark_spelled_emails(&tokens, &mut cut);
     mark_streets(&tokens, known.common, &mut cut);
+    mark_bare_houses(&tokens, known.common, &mut cut);
     mark_codes(&tokens, &mut cut);
     let stated = mark_stated(&tokens, known.common, &mut cut);
     for name in stated {
@@ -444,35 +483,60 @@ fn is_domain(key: &str) -> bool {
         && labels.last().is_some_and(|tld| TLDS.contains(tld))
 }
 
-/// The digits a token spells, mixing digits, separators and number words ("9two8"), if it spells
-/// nothing else (AI-020).
+/// The digits a token spells, mixing digits, separators, number words ("9two8", "twenty-eight")
+/// and, beside a digit, "o" for zero and "l" for one ("555-O1l2"), if it spells nothing else (AI-020).
 fn digit_form(key: &str) -> Option<String> {
-    let mut rest = key;
-    let mut out = String::new();
+    let lookalikes = key.len() == 1 || key.contains(|c: char| c.is_ascii_digit());
+    let (mut rest, mut out, mut tens) = (key, String::new(), false);
     while let Some(c) = rest.chars().next() {
-        if c.is_ascii_digit() || ".-()/+#".contains(c) {
-            out.extend(c.is_ascii_digit().then_some(c));
-            rest = &rest[c.len_utf8()..];
+        if let Some((word, digits)) = number_word(rest) {
+            if tens && digits.len() == 1 {
+                out.pop();
+            }
+            out.push_str(digits);
+            tens = digits.len() == 2 && digits.ends_with('0') && digits != "10";
+            rest = &rest[word.len()..];
             continue;
         }
-        let (word, digit) = NUMBER_WORDS.iter().find(|(w, _)| rest.starts_with(w))?;
-        out.push(*digit);
-        rest = &rest[word.len()..];
+        let digit = match c {
+            '0'..='9' => Some(c),
+            'o' if lookalikes => Some('0'),
+            'l' if lookalikes => Some('1'),
+            _ if ".-()/+#".contains(c) => None,
+            _ => return None,
+        };
+        if let Some(d) = digit {
+            out.push(d);
+            tens = false;
+        }
+        rest = &rest[c.len_utf8()..];
     }
     (!out.is_empty()).then_some(out)
 }
 
-/// Runs of number-spelling tokens (separator-only tokens between them allowed) that together hold
-/// 7 or more digits: a phone number in any spelling (AI-002, AI-020).
+/// The longest number word `rest` starts with ("seventeen" before "seven").
+fn number_word(rest: &str) -> Option<(&'static str, &'static str)> {
+    NUMBER_WORDS
+        .iter()
+        .filter(|(w, _)| rest.starts_with(w))
+        .max_by_key(|(w, _)| w.len())
+        .copied()
+}
+
+/// Runs of number-spelling tokens (separator-only tokens and "double"/"triple" between them
+/// allowed) that together hold 7 or more digits: a phone number in any spelling (AI-002, AI-020).
 fn mark_digit_runs(tokens: &[Token], cut: &mut [bool]) {
     let mut start = 0;
     while start < tokens.len() {
-        let (mut end, mut digits, mut last) = (start, 0, None);
+        let (mut end, mut digits, mut last, mut times) = (start, 0, None, 1);
         while end < tokens.len() {
-            match digit_form(&tokens[end].key) {
-                Some(d) => (digits, last) = (digits + d.len(), Some(end)),
-                None if tokens[end].key.is_empty() && last.is_some() => {}
-                None => break,
+            let key = tokens[end].key.as_str();
+            let repeat = MULTIPLIERS.iter().find(|(w, _)| *w == key);
+            match (repeat, digit_form(key)) {
+                (Some(&(_, n)), _) => times = n,
+                (None, Some(d)) => (digits, last, times) = (digits + d.len() * times, Some(end), 1),
+                (None, None) if key.is_empty() && last.is_some() => {}
+                (None, None) => break,
             }
             end += 1;
         }
@@ -537,6 +601,34 @@ fn mark_streets(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) {
     }
 }
 
+/// A house number of 3 to 6 digits followed by one or two capitalised names and no suffix
+/// ("I'm at 2150 Mesquite") (AI-002).
+fn mark_bare_houses(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) {
+    for (i, t) in tokens.iter().enumerate() {
+        let digits = t.key.chars().take_while(char::is_ascii_digit).count();
+        if digits < 3 || !is_house_number(&t.key) {
+            continue;
+        }
+        let names = (i + 1..tokens.len().min(i + 3))
+            .take_while(|&j| titled(&tokens[j], common))
+            .count();
+        if names > 0 {
+            cut[i..=i + names].fill(true);
+        }
+    }
+}
+
+/// A capitalised, not all-capitals, uncommon word ("Mesquite", not "YES" or "The").
+fn titled(t: &Token, common: &CommonWords) -> bool {
+    let mut chars = t
+        .text
+        .trim_start_matches(|c: char| !c.is_alphanumeric())
+        .chars();
+    chars.next().is_some_and(char::is_uppercase)
+        && chars.any(char::is_lowercase)
+        && is_wordish(&t.key, common)
+}
+
 fn ordinal(key: &str) -> bool {
     let digits = key.chars().take_while(char::is_ascii_digit).count();
     digits > 0 && ["st", "nd", "rd", "th"].contains(&&key[digits..])
@@ -559,7 +651,7 @@ fn mark_codes(tokens: &[Token], cut: &mut [bool]) {
 }
 
 /// Names after the AI-002 phrases (up to two words, the first not a common word, D-146) and after
-/// a sign-off at the message's end (AI-020); returns the first word of each, lower-cased.
+/// a sign-off at the message's end (AI-020); returns every word removed, lower-cased.
 fn mark_stated(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) -> Vec<String> {
     let mut names = Vec::new();
     for i in 0..tokens.len() {
@@ -588,6 +680,7 @@ fn mark_stated(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) -> Vec<
                 .is_some_and(|t| is_wordish(&t.key, common))
         {
             cut[n + 1] = true;
+            names.push(tokens[n + 1].key.clone());
         }
     }
     names
@@ -604,7 +697,8 @@ fn sign_off(tokens: &[Token], i: usize) -> Option<usize> {
     (cue && (1..=2).contains(&left)).then_some(i + 1)
 }
 
-/// Every word of the vault name and of each remembered name (AI-003, AI-020).
+/// Every word of the vault name, common words too ("Joy Early"), and of each remembered name
+/// (AI-003, AI-020).
 fn mark_known(tokens: &[Token], known: &Known<'_>, memory: &NameMemory, cut: &mut [bool]) {
     let vault = known.vault_name.map(|n| n.expose_secret().to_owned());
     let mut names: Vec<String> = vault
@@ -617,7 +711,7 @@ fn mark_known(tokens: &[Token], known: &Known<'_>, memory: &NameMemory, cut: &mu
         })
         .collect();
     names.extend(memory.names.iter().map(|n| n.expose_secret().to_owned()));
-    names.retain(|n| n.chars().count() >= 2 && !known.common.has(n));
+    names.retain(|n| n.chars().count() >= 2);
     for (i, t) in tokens.iter().enumerate() {
         let bare = t.key.strip_suffix("'s").unwrap_or(&t.key);
         if names.iter().any(|n| n == bare) {

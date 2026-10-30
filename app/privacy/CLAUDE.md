@@ -22,9 +22,9 @@ The layer-2 crate that holds every homeowner contact detail (name, phone, email,
 - PRIV-003, PRIV-004: `vault::read` writes one `ops.audit_log` row per field (`vault_read.<reader>.<purpose>`) and the hourly count in the read's transaction, before returning plaintext, and refuses (`InTransaction`) on a connection already inside a transaction, by sqlx's counter or a raw `BEGIN` (`ensure_bare`'s transaction-local probe, D-753); `read_for_release` consumes its proof, opens only the contact the proof names, and adds a row with subject `picks.pick` and the proof's pick ID (D-752, D-753); `models::GRANTS` lists each reader, purpose and the fields it may open (D-093, D-749); the phone is never released (PICK-023).
 - SEC-030, SEC-046: proofs have private fields and no `Clone` or `Default`; the mints are not `Clone` and each is taken once per process (`AtomicBool`, a second call panics).
 - SEC-047: `vault::refuse` refuses a connection inside a transaction first (D-753), then alerts at once on a read outside every grant, subject kind `vault_read.<reader>.<purpose>` and the contact (D-752); `check_read_rates` rounds its time down to the UTC hour and alerts once per hour and action above 3 times the 14-day baseline, floored at 1 read an hour (D-750, D-753).
-- AI-002, AI-003, AI-020: `scrub::scrub` (NFKC, Cf stripped, other-script digits; names after the trigger phrases unless the first word is common, sign-offs, digit runs of 7+ in digits or number words, emails, spelled emails, handles, links, bare domains, streets, gate codes, vault and remembered names; D-800).
+- AI-002, AI-003, AI-020: `scrub::scrub` (NFKC, Cf stripped, other-script digits; names after the trigger phrases unless the first word is common, sign-offs, digit runs of 7+ in digits, number words, compound and "double" forms and "o"/"l" look-alikes, emails, spelled emails, handles, links, bare domains, streets, house numbers before a capitalised name, gate codes, every vault-name word and every remembered word of a stated name; D-800, D-803).
 - AI-004: `ScrubbedText`'s field is private and it has no `Default`, `From` or public constructor.
-- PRIV-026, D-093: `reader::read_inbound` (flags on the raw text, then the scrub) and `read_inbound_email` (Svix signature and 5-minute window, `OptOutOnly` unless SPF, DKIM and DMARC all pass, `business|`/`homeowner|` email blind index; D-802). Raw body storage waits for `privacy.message_body` (D-801).
+- PRIV-026, D-093: `reader::read_inbound` (flags on the raw text, then the scrub) and `read_inbound_email` (Svix signature and 5-minute window, `OptOutOnly` unless SPF, DKIM and DMARC all pass, a missing auth block failing, HELP and START cleared for `OptOutOnly`, an opt-out word alone on the first line opting out, `business|`/`homeowner|` email blind index; D-802, D-804). It does not deduplicate: callers must drop a repeated `svix-id` before calling `read_inbound_email` (D-804). Raw body storage waits for `privacy.message_body` (D-801).
 
 ## Never break
 
@@ -39,7 +39,7 @@ The layer-2 crate that holds every homeowner contact detail (name, phone, email,
 - No crate but `privacy` builds `ScrubbedText`: `tests/security/tests/scrubbed_text_compile_fail.rs`.
 - The corpus keeps at least 200 cases and 99% recall: `src/tests/scrub.rs::the_corpus_scores_at_least_99_percent_recall`.
 - "I'm having a leak" keeps every word; short commands survive: `src/tests/scrub.rs`.
-- An inbound email failing SPF, DKIM or DMARC may only opt out; a bad or stale signature is refused: `tests/integration/tests/read_inbound.rs`.
+- An inbound email failing SPF, DKIM or DMARC, or without an auth block, may only opt out (no HELP or START flag); a bad or stale signature is refused: `tests/integration/tests/read_inbound.rs`.
 
 ## How to change
 
