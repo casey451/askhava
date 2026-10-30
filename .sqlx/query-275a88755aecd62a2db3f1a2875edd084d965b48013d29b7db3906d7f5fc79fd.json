@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO catalog.job_type (category_id, name, one_time, fee_free, kind, quote_format) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (category_id, name) DO UPDATE SET one_time = EXCLUDED.one_time, fee_free = EXCLUDED.fee_free, kind = EXCLUDED.kind, quote_format = EXCLUDED.quote_format",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Bool",
+        "Bool",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "275a88755aecd62a2db3f1a2875edd084d965b48013d29b7db3906d7f5fc79fd"
+}

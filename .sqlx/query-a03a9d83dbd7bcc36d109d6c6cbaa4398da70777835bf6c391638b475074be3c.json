@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE catalog.category SET enabled = $2 WHERE id = $1 AND enabled = NOT $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a03a9d83dbd7bcc36d109d6c6cbaa4398da70777835bf6c391638b475074be3c"
+}

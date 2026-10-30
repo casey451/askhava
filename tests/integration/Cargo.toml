@@ -12,6 +12,7 @@ sqlx = { workspace = true }
 [dev-dependencies]
 askhava-core = { workspace = true }
 askhava-ops = { workspace = true }
+askhava-catalog = { workspace = true }
 askhava-adapters = { workspace = true }
 axum = { workspace = true }
 jiff = { workspace = true }
