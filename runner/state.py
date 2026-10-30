@@ -211,19 +211,25 @@ def in_flight(state: State, now: datetime) -> dict[str, str]:
     return out
 
 
-def run_lane(state: State, now: datetime, lanes: int, task_id: str = "") -> str:
+def run_lane(state: State, now: datetime, lanes: int, task_id: str = "", merged: bool = False) -> str:
     """The lane a backup-runner run serves (its concurrency group and RUNNER_LANE, D-620).
 
-    First a lane with no task in flight (`in_flight`), so the run can claim: the event's task's own
-    lane when it is free, else the first free lane. When none is free, a lane with no live lease (a
-    MERGE_PENDING task's, whose merge any run resolves): the event's task's lane first, else the first
-    such lane; else lane "1" (the run then queues behind lane 1's run, as before lanes). While
-    `lanes_fallback` is set only lane "1" is in use, so no run is started for another lane."""
+    A merged pull request's run (`merged`) serves its task's own lane whenever that lane holds no live
+    lease: the task's MERGE_PENDING is what keeps the lane busy, this run resolves it and can then
+    claim there, and another lane that only looks free may be one whose run is about to claim, behind
+    which this run would wait a whole session (D-723). Otherwise first a lane with no task in flight
+    (`in_flight`), so the run can claim: the event's task's own lane when it is free, else the first
+    free lane. When none is free, a lane with no live lease (a MERGE_PENDING task's, whose merge any
+    run resolves): the event's task's lane first, else the first such lane; else lane "1" (the run
+    then queues behind lane 1's run, as before lanes). While `lanes_fallback` is set only lane "1" is
+    in use, so no run is started for another lane."""
     count = 1 if state.get("lanes_fallback") else max(lanes, 1)
     numbered = [str(n) for n in range(1, count + 1)]
     busy, held = set(in_flight(state, now).values()), live_leases(state, now)
     task = entry(state, task_id) if task_id else {}
     mine = lane_of(state, task_id) or (task_lane(task) if task else "")
+    if merged and mine in numbered and mine not in held:
+        return mine
     for usable in ([n for n in numbered if n not in busy], [n for n in numbered if n not in held]):
         if usable:
             return mine if mine in usable else usable[0]

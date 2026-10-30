@@ -528,15 +528,16 @@ def _step(job: str, name_part: str) -> dict[str, Any]:
     return next(s for s in _workflow()["jobs"][job]["steps"] if name_part in str(s.get("name", "")))
 
 
-def _pick(tmp_path: Path, state: st.State, lanes_setting: object, wanted: str = "", branch: str = "") -> list[str]:
-    """Run the gate's lane-pick snippet over runner/state.py, as the workflow does."""
+def _pick(tmp_path: Path, state: st.State, lanes_setting: object, wanted: str = "", branch: str = "", *more: str,
+          module: Path = ROOT / "runner" / "state.py") -> list[str]:
+    """Run the gate's lane-pick snippet over runner/state.py (or `module`), as the workflow does (`more`: MERGED, D-723)."""
     script = _step("gate", "Pick the lane")["run"]
     code = script.split("python3 -I -c '", 1)[1].split("\n' ", 1)[0]
     (tmp_path / "state.json").write_text(json.dumps({k: v for k, v in state.items() if k not in ("lease", "leases")}))
     (tmp_path / "lease.json").write_text(json.dumps({"lease": state.get("lease"), "leases": st.leases_of(state)}))
     (tmp_path / "runner.json").write_text(json.dumps({"lanes": lanes_setting}))
-    args = [sys.executable, "-I", "-c", code, str(ROOT / "runner" / "state.py"), str(tmp_path / "state.json"),
-            str(tmp_path / "lease.json"), str(tmp_path / "runner.json"), wanted, branch]
+    args = [sys.executable, "-I", "-c", code, str(module), str(tmp_path / "state.json"),
+            str(tmp_path / "lease.json"), str(tmp_path / "runner.json"), wanted, branch, *more]
     return subprocess.run(args, capture_output=True, text=True, check=True).stdout.split()
 
 
@@ -858,3 +859,147 @@ def test_checks_on_reads_the_latest_run_of_each_required_check(tmp_path: Path) -
     assert env.checks_on("h") == {"Ci": "success", "Twin": "running"}
     mode["now"] = "fail"
     assert env.checks_on("h") is None and env.main_checks_green("h") is None
+
+
+# ---- refill after another lane's merge (D-723): the October 30, 2026 stall, where T169's merge on lane 2
+# was routed to a lane-1 group already busy with a claim, and the run that finally resolved it reported
+# `merge_pending` for its own lane, so the chain step dropped its refill of lane 2.
+
+
+def _incident() -> st.State:
+    """Lane 2's task MERGE_PENDING with no lease (its pull request just merged), lane 1 empty."""
+    s = st.with_task(st.with_task(st.with_task(st.new_state(), "T001"), "T002"), "T003")
+    return st.with_lease(st.with_task(st.claim(s, "T002", "b", NOW, lane="2"), "T002", status=st.MERGE_PENDING), "2", None)
+
+
+def test_run_lane_serves_a_merged_pull_requests_own_lane() -> None:
+    s = _incident()
+    assert st.run_lane(s, NOW, 2, "T002") == "1"  # a ci event (not yet merged) still goes to the free lane (D-630)
+    assert st.run_lane(s, NOW, 2, "T002", merged=True) == "2"  # the merge frees lane 2: serve it
+    assert st.run_lane(s, NOW, 1, "T002", merged=True) == "1"  # one lane: lane 1, as before
+    assert st.run_lane(dict(s, lanes_fallback={"at": "x"}), NOW, 2, "T002", merged=True) == "1"
+    assert st.run_lane(s, NOW, 2, "", merged=True) == "1" and st.run_lane(s, NOW, 2, "T999", merged=True) == "1"
+    again = st.claim(st.with_task(s, "T002", status=st.QUEUED), "T002", "c", NOW, lane="2")  # lane 2 holds a live lease
+    assert st.run_lane(again, NOW, 2, "T002", merged=True) == "1"
+
+
+def test_the_gate_sends_a_merged_pull_request_to_its_own_lane(tmp_path: Path) -> None:
+    later = NOW.replace(year=2030)  # the snippet uses the real clock: leases far in the future are live
+    s = st.with_task(st.with_task(st.new_state(), "T001"), "T002")
+    pending = st.with_lease(st.with_task(st.claim(s, "T002", "b", later, lane="2"), "T002", status=st.MERGE_PENDING), "2", None)
+    assert _pick(tmp_path, pending, 2, "", "claude/task/T002-x", "false") == ["1", "2", "1", "2"]
+    assert _pick(tmp_path, pending, 2, "", "claude/task/T002-x", "true") == ["2", "2", "1", "2"]
+    assert _pick(tmp_path, pending, 2, "", "claude/task/T002-x") == ["1", "2", "1", "2"]  # no MERGED argument: as before
+    assert _pick(tmp_path, pending, 1, "", "claude/task/T002-x", "true") == ["1", "1", "1"]
+    assert _pick(tmp_path, pending, 2, "1", "claude/task/T002-x", "true") == ["1", "2", "1", "2"]  # a dispatched lane wins
+    step = _step("gate", "Pick the lane")
+    assert step["env"]["MERGED"] == "${{ github.event.pull_request.merged == true }}"  # not every closed pull request
+    assert '"$WANTED" "$BRANCH" "$MERGED"' in step["run"]
+
+
+def test_the_chain_refills_after_a_row_that_moved_another_lanes_task() -> None:
+    mine = {"at": "2026-11-01T12:05:00", "session": "actions-77"}
+    resolved = dict(mine, result="merge_pending", refill=["2"], changed={"keys": {}, "tasks": {"T002": "MERGE_PENDING -> DONE"}})
+    assert _refill([resolved]) == "2"  # the row the 14:28 run wrote: its own lane waits, lane 2 was freed
+    assert _refill([dict(resolved, changed={"keys": {}, "tasks": {}})]) == ""
+    assert _refill([dict(resolved, changed=None)]) == ""
+    assert _refill([dict(resolved, result="lease_live")]) == "2"
+    assert _refill([dict(resolved, session="actions-88")]) == ""  # another job's row is never this one's
+
+
+class _Dispatcher:
+    """A stand-in for GitHubEnv.dispatch_lane: records each lane, fails or raises on the named ones."""
+
+    def __init__(self, fail: tuple[str, ...] = (), boom: tuple[str, ...] = ()) -> None:
+        self.fail, self.boom, self.calls = fail, boom, []
+
+    def dispatch_lane(self, lane: str) -> bool:
+        self.calls.append(lane)
+        if lane in self.boom:
+            raise RuntimeError("gh exploded")
+        return lane not in self.fail
+
+
+def test_start_refill_starts_one_run_per_lane_and_never_raises() -> None:
+    env = _Dispatcher(fail=("3",), boom=("4",))
+    assert entry.start_refill(["2", "3", "4", "5"], env) == ["2", "5"]  # type: ignore[arg-type]
+    assert env.calls == ["2", "3", "4", "5"]
+    assert entry.start_refill([], env) == []  # type: ignore[arg-type]
+
+
+def _main_with(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, result: str, lanes_setting: int,
+               argv: list[str]) -> tuple[_Dispatcher, list[dict[str, Any]]]:
+    """Run entry.main with the cycle stubbed to `result` and a refill of lane 2; the rows it logs."""
+    env, rows = _Dispatcher(), []
+    fake = dict(starter="actions", runner_sha="x", log=[], first_state={}, last_state={},
+                write_cycle_log=staticmethod(rows.append), dispatch_lane=staticmethod(env.dispatch_lane))
+    cfg = dataclasses.replace(config([], tmp_path, "s1"), lanes=lanes_setting, lane_hint="1")
+    monkeypatch.setattr(entry, "build", lambda args, outbox: (cfg, type("E", (), fake)()))
+    monkeypatch.setattr(entry, "run", lambda args, c, e: result)
+    monkeypatch.setattr(entry, "refill", lambda c, e: ["2"])
+    monkeypatch.setattr(entry, "write_handoff", lambda c, e: {})
+    monkeypatch.setattr(entry, "close_handoff", lambda r: None)
+    assert entry.main(argv) == 0
+    return env, rows
+
+
+def test_a_cycle_that_hands_off_starts_its_refill_runs_at_once(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    env, rows = _main_with(monkeypatch, tmp_path, "handed_off", 2, [])
+    assert env.calls == ["2"] and rows[-1]["dispatched"] == ["2"] and rows[-1]["refill"] == ["2"]
+    for result in ("merge_pending", "idle", st.MERGE_PENDING):  # these end the job within minutes: the chain step refills
+        env, rows = _main_with(monkeypatch, tmp_path, result, 2, [])
+        assert env.calls == [] and "dispatched" not in rows[-1]
+    env, rows = _main_with(monkeypatch, tmp_path, "handed_off", 1, [])
+    assert env.calls == [] and "refill" not in rows[-1]  # one lane: nothing new
+    env, rows = _main_with(monkeypatch, tmp_path, "handed_off", 2, ["--dry-run"])
+    assert env.calls == []
+
+
+def test_dispatch_lane_uses_the_job_token_and_reports_what_happened(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from runner import github_env as ge
+    from runner.github_env import GitHubEnv
+
+    calls: list[list[str]] = []
+    answer = {"now": (0, "", "")}
+
+    def fake(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
+        calls.append(args)
+        return answer["now"]
+
+    env = GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=fake)
+    assert env.dispatch_lane("2") is False and calls == []  # no job token (a routine or local run): nothing started
+    monkeypatch.setenv("RUNNER_CHECKS_TOKEN", "fake-job-token")
+    assert env.dispatch_lane("2") is True
+    assert calls[-1] == ["gh", "workflow", "run", "backup-runner.yml", "--ref", "main", "--repo", "o/r", "-f", "lane=2"]
+    assert env.log[-1] == "refill: run started for lane 2"
+    answer["now"] = (1, "", "HTTP 403 for ghp_" + "a" * 30)
+    assert env.dispatch_lane("1") is False and "lane 1 not started" in env.log[-1] and "[redacted]" in env.log[-1]
+    assert env.dispatch_lane("fix") is False and len(calls) == 2
+    dry = GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=fake, dry_run=True)
+    assert dry.dispatch_lane("2") is False and len(calls) == 2
+    monkeypatch.setenv("RUNNER_PUSH_TOKEN", "fake-push-token")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    assert ge._long_token_args(calls[0]) is None  # never with the long-lived token
+    assert ge._env_for(calls[0])["GH_TOKEN"] == "fake-job-token"
+    assert ge._env_for(["gh", "workflow", "run", "other.yml"]) is None  # only the runner's own workflow
+
+
+def test_the_gate_still_picks_a_lane_with_a_state_module_that_predates_merged(tmp_path: Path) -> None:
+    older = tmp_path / "old_state.py"  # a pull request checkout carrying runner/state.py from before D-723
+    older.write_text("def live_leases(state, now):\n    return {}\n\n\n"
+                     "def run_lane(state, now, lanes, task_id=''):\n    return '2' if task_id == 'T002' else '1'\n")
+    s = st.with_task(st.with_task(st.new_state(), "T001"), "T002")
+    assert _pick(tmp_path, s, 2, "", "claude/task/T002-x", "true", module=older) == ["2", "2", "1", "2"]
+    assert _pick(tmp_path, s, 2, "", "claude/task/T001-x", "false", module=older) == ["1", "2", "1", "2"]
+
+
+def test_refill_lanes_names_no_lane_while_the_pacer_waits(tmp_path: Path) -> None:
+    graph = [staged("T001", owns=["app/a/"]), staged("T003", owns=["app/c/"])]
+    cfg = two_lane(graph, tmp_path, "s1", None)
+    s = st.claim(st.sync_graph(st.new_state(), graph), "T001", "a", NOW)
+    ahead, behind = st.iso(NOW + timedelta(hours=1)), st.iso(NOW - timedelta(minutes=1))
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "wait", "waiting_until": ahead}), NOW) == []
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "wait", "waiting_until": behind}), NOW) == ["2"]  # the wait is over
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "claim", "waiting_until": None}), NOW) == ["2"]
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "wait", "waiting_until": "not a time"}), NOW) == ["2"]
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "wait", "waiting_until": None}), NOW) == ["2"]
