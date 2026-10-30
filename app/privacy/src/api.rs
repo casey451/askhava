@@ -296,12 +296,8 @@ mod realm_tests {
         let reads = rows
             .iter()
             .filter(|r| r.action == "vault_read.portals_homeowner.own_record");
-        assert!(
-            reads.clone().count() == 5
-                && reads
-                    .clone()
-                    .all(|r| r.subject_id == own && r.actor_id == Some(own))
-        );
+        let readers: Vec<_> = reads.map(|r| (r.subject_id, r.actor_id)).collect();
+        assert_eq!(readers, [(own, Some(own)); 5]);
     }
 
     /// SEC-030, PICK-023: a release proof opens name, email, address and on-site contact, never the phone.
@@ -386,9 +382,8 @@ mod realm_tests {
         let owner = rows
             .iter()
             .filter(|r| r.action.starts_with("vault_read.portals_owner."));
-        assert!(
-            owner.clone().count() == 2 && owner.clone().all(|r| r.actor_id == Some(Uuid::max()))
-        );
+        let owners: Vec<_> = owner.map(|r| r.actor_id).collect();
+        assert_eq!(owners, [Some(Uuid::max()); 2]);
     }
 
     /// SEC-046, D-488: the session mint makes both proofs and can be taken once per process.

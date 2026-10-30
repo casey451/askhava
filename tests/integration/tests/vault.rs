@@ -161,12 +161,26 @@ fn the_vault_keys_are_separate_from_the_database_credential() {
         "VAULT_KEY and VAULT_INDEX_KEY share a key",
     ));
     assert_eq!(refused(&seal, &key(2, 0x11), &secret(DB_URL)), shared);
-    for bad in ["", "1", "x:AAAA", "0:AAAA", "1:@@@", "1:AAAA"] {
+    let version_zero = key(0, 0x11);
+    for bad in [
+        "",
+        "1",
+        "x:AAAA",
+        "0:AAAA",
+        "1:@@@",
+        "1:AAAA",
+        &version_zero,
+    ] {
         assert!(
             refused(bad, &key(1, 0x21), &secret(DB_URL)).is_some(),
             "{bad:?}"
         );
     }
+    assert_eq!(
+        refused(&version_zero, &key(1, 0x21), &secret(DB_URL)),
+        Some(VaultError::Keys("bad or repeated version")),
+        "a well-formed key at version 0"
+    );
     let repeated = format!("{},{}", key(1, 0x11), key(1, 0x12));
     assert!(refused(&repeated, &key(1, 0x21), &secret(DB_URL)).is_some());
 }
@@ -252,6 +266,41 @@ async fn a_phone_taken_in_a_race_is_phone_taken(pool: PgPool) {
     assert_eq!(raced.err(), Some(VaultError::PhoneTaken));
     let contacts = count(&mut first, "SELECT count(*) FROM privacy.contact").await;
     assert_eq!(contacts, 1, "the loser stored nothing");
+}
+
+/// PRIV-002, D-752: a blind-index insert that fails for any other reason (here a lock wait past
+/// `lock_timeout` behind an uncommitted digest) is a database error, never `PhoneTaken`, and
+/// stores nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_failed_index_insert_is_a_database_error(pool: PgPool) {
+    use sqlx::Connection as _;
+    let vault = v1();
+    let mut first = app_conn(&pool).await;
+    let holder = store_contact(&mut first, &vault, &NewContact::default())
+        .await
+        .expect("holder");
+    let (version, digest) = vault.blind_index(IndexPurpose::HomeownerPhone, "+19285550101")[0];
+    let mut tx = first.begin().await.expect("begin");
+    sqlx::query(
+        "INSERT INTO privacy.contact_index (purpose, key_version, digest, contact_id) VALUES ($1, $2, $3, $4)",
+    )
+    .bind(IndexPurpose::HomeownerPhone.label())
+    .bind(i32::from(version))
+    .bind(&digest[..])
+    .bind(holder)
+    .execute(&mut *tx)
+    .await
+    .expect("hold the digest uncommitted");
+    let mut second = app_conn(&pool).await;
+    sqlx::query("SET lock_timeout = '200ms'")
+        .execute(&mut *second)
+        .await
+        .expect("lock timeout");
+    let stalled = store_contact(&mut second, &vault, &zelda(PHONE)).await;
+    assert_eq!(stalled.err(), Some(VaultError::Database));
+    tx.rollback().await.expect("rollback");
+    let contacts = count(&mut first, "SELECT count(*) FROM privacy.contact").await;
+    assert_eq!(contacts, 1, "the stalled contact stored nothing");
 }
 
 /// TD-PRIV-01, PRIV-003, PRIV-004: every plaintext read writes one audit row per field naming the
