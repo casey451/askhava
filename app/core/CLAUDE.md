@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-0 crate every module may call: settings, the database pool and guarded updates, the clock, derived IDs, webhook dedupe, the `core.task` queue and rate limits (`docs/architecture.md` section 5, D-090). It is not a business module and owns no business data. T011 added settings, the clock and logging; T012 the pool, migrations and `Guarded<T>`; T013 and T014 add the rest.
+The layer-0 crate every module may call: settings, the database pool and guarded updates, the clock, derived IDs, webhook dedupe, the `core.task` queue and rate limits (`docs/architecture.md` section 5, D-090). It is not a business module and owns no business data. T011 added settings, the clock and logging; T012 the pool, migrations and `Guarded<T>`; T013 the queue and rate limits; T014 derived IDs and webhook dedupe.
 
 ## What it owns
 
@@ -16,6 +16,8 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 - `src/tasks.rs`: `NewTask`, `enqueue`, `claim`, `finish`, `renew`, `fail`, `release_leases`, `reap_expired`, `backoff`, `WorkerId`, `Lease`, `Claimed`, `Outcome`, `Registry` (`register`, `run`), `Worker` (`run`: the claim loop the `worker` binary starts, D-710), `WORKER_CONCURRENCY`, `HandlerError`, `TaskError`, and the fixed `last_error` sentences `NO_HANDLER`, `TIMED_OUT`, `LEASE_EXPIRED` (D-708).
 - `src/rate_limit.rs`: `ClientIpPolicy` (`from_pairs` over `ASKHAVA_CLIENT_IP_HEADER` and `ASKHAVA_PROXIED_HOSTS`, `client_ip`), `CLOUDFLARE_RANGES`, `hit` (re-exported as `rate_limit_hit`), `prune` (as `prune_rate_limits`), `ip_bucket`, `RateDecision`, `RateLimitError` (D-709).
 - `src/test_control.rs`: `TestControl` (`from_settings`, `router`, `clock`), `TestControlError`, `TEST_CONTROL_COMPILED`. The routes (`/__test/clock`, `/__test/clock/advance`, `/__test/messages`) compile only under the `test-control` feature, which turns on the optional `reqwest` dependency (D-739, D-740).
+- `src/ids.rs` (T014, D-815): `IdSecret` (versioned `ID_SECRET`, 32+ bytes, redacted `Debug`), `IdKind`, `derive_id`, `card_id`, `quote_id`, `pick_id`, `LinkKind`, `LinkSalt` (`generate` from the OS source, `from_bytes`), `LinkToken` (`parse`, `as_str`, `hash`; no `Display`), `link_token`, `IdError`.
+- `src/webhooks.rs` (T014, D-815): `Dedupe` (`First`, `Repeat`, `from_returning`, `is_first`), `EventKey` (`new`, `pair`, `as_str`), `WebhookError`; the module docs hold the `webhook_event` table shape and the insert each module writes.
 - Migration `0020_core_task_queue.sql`: `core.task` (partial due index, unique `dedupe_key`, 2% autovacuum) and `core.rate_limit` (bucket, window start, hits).
 - Migration `0019_core_db_migrations.sql`: the `core` schema and the app role's grants. `scripts/bootstrap_roles.sql`: the two roles, their timeouts and grants (D-699).
 - Tables (from T013 on): the `core` schema only, `core.task` and `core.rate_limit` (D-090, D-091).
@@ -31,6 +33,8 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 - SEC-040, SEC-014: `rate_limit::hit` is one atomic upsert; `ClientIpPolicy::client_ip` reads only the edge header the setting names, and `CF-Connecting-IP` only on a proxied hostname from Cloudflare's ranges; never `X-Forwarded-For`.
 - PRIV-017: `logging::sentry_options` (`send_default_pii` off) and `logging::scrub_event`.
 - SEC-035: `test_control` (no routes and the system clock without the feature; with it, dev and CI only, a per-run bearer secret of 32+ characters, wrong secret answered 404, messages read from the Twilio stand-in's sent log, never `messaging` tables).
+- CARD-017, PICK-028, SEC-037: `ids` (HMAC-SHA256 over the secret version, a kind label and length-prefixed record IDs; link tokens add a 16-byte OS-random salt and are stored only as SHA256).
+- SEC-017, SEC-039: `webhooks::Dedupe::from_returning` over each module's own `INSERT … ON CONFLICT (source, event_key) DO NOTHING RETURNING event_key`; `EventKey::pair` for Twilio (MessageSid, MessageStatus) and (CallSid, step).
 - SEC-029: one crate per module with `unsafe_code` forbidden and the workspace lints on (`[lints] workspace = true` in `Cargo.toml`).
 
 ## Never break
@@ -50,6 +54,9 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 - A task payload holds IDs only and `last_error` is a `&'static str`; a rate-limit bucket is an IP or a blind-index hash, never a plaintext phone or email (PRIV-002, D-491).
 - A queue claim commits before its handler runs, and no `finish`/`fail`/`renew` drops the owner-and-attempt fence: `tests/integration/tests/task_queue.rs::an_expired_lease_is_reclaimed_and_the_old_owner_is_fenced`.
 - `test-control` is the one feature (T175's architecture test) and is enabled only on the command line, never in a manifest or the Dockerfile: `tests/security/tests/control_router_absent.rs::td_sec_15_no_manifest_turns_the_feature_on`, `image_pinned.rs`.
+- A derived ID or token never changes for the same inputs, secret and version (replay depends on it): `src/tests/ids.rs`, `src/tests/prop_derived_ids.rs`. Never change a kind label or the field encoding in `ids.rs` without a recovery plan.
+- No `IdSecret` or `LinkToken` value reaches `Debug`: `tests/ids.rs::weak_secrets_are_refused_and_nothing_secret_is_printed`.
+- One event delivered 100 times has one effect: `tests/integration/tests/webhook_dedupe.rs::one_event_delivered_100_times_changes_nothing_after_the_first`.
 - Every grant is a plain top-level statement that fails alone on a missing role; never inside a `DO` block or behind a `pg_roles` lookup (D-701).
 
 ## How to change
@@ -67,4 +74,4 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 
 ## Tests that guard it
 
-- `src/tests/settings.rs` (TD-SEC-15, TD-SEC-13), `src/tests/clock.rs` (JOB-007, with property tests), `src/tests/logging.rs` (TD-PRIV-13). `tests/integration/tests/migrations.rs` (JOB-004, D-092: migration order, missing-role reporting, append-only as the app role, stale status and row-lock wait). `tests/integration/tests/task_queue.rs` (JOB-006, TD-SEC-19: exactly once for 100 and 1000 tasks over two workers, lease reclaim and fencing, dedupe, backoff and dead-letter, the real `Worker::run` loop running every task once and giving its leases back on shutdown, 5 of 20 concurrent hits, the client IP). `tests/security/tests/control_router_absent.rs` (TD-SEC-15, SEC-035; its feature-on cases run with `--features askhava-core/test-control`). T014 adds its own files; T175's architecture test (TD-SEC-10) checks the layer rule and `[lints] workspace = true`.
+- `src/tests/settings.rs` (TD-SEC-15, TD-SEC-13), `src/tests/clock.rs` (JOB-007, with property tests), `src/tests/logging.rs` (TD-PRIV-13). `tests/integration/tests/migrations.rs` (JOB-004, D-092: migration order, missing-role reporting, append-only as the app role, stale status and row-lock wait). `tests/integration/tests/task_queue.rs` (JOB-006, TD-SEC-19: exactly once for 100 and 1000 tasks over two workers, lease reclaim and fencing, dedupe, backoff and dead-letter, the real `Worker::run` loop running every task once and giving its leases back on shutdown, 5 of 20 concurrent hits, the client IP). `tests/security/tests/control_router_absent.rs` (TD-SEC-15, SEC-035; its feature-on cases run with `--features askhava-core/test-control`). `src/tests/ids.rs` and `src/tests/prop_derived_ids.rs` (TD-CARD-06, TD-PICK-12, TD-SEC-16, TD-SEC-18 key cases) and `tests/integration/tests/webhook_dedupe.rs` (SEC-017, TD-SEC-18 Twilio pairs, TD-SEC-16 re-issue, revoke and replay); T175's architecture test (TD-SEC-10) checks the layer rule and `[lints] workspace = true`.

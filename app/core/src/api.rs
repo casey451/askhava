@@ -5,13 +5,18 @@
 //! (JOB-004, D-092), and logging with `Redacted` contact values and the Sentry
 //! scrubber (PRIV-016, PRIV-017, PRIV-028), the task queue (JOB-006) and the rate-limit counters with
 //! the client IP they are keyed on (SEC-014, SEC-040), and the test-control router and clock,
-//! whose routes exist only under the `test-control` feature (SEC-035).
+//! whose routes exist only under the `test-control` feature (SEC-035), derived IDs and link tokens
+//! (CARD-017, PICK-028, SEC-037) and the webhook dedupe outcome and event key (SEC-017, SEC-039).
 
 pub use crate::clock::{
     BUSINESS_CLOSE_HOUR, BUSINESS_OPEN_HOUR, Clock, ClockError, ManualClock, SystemClock,
     add_business_minutes, arizona, arizona_time, is_business_hours, local_time, zone,
 };
 pub use crate::db::{DbError, Guarded, MIGRATOR, app_pool, migrate};
+pub use crate::ids::{
+    IdError, IdKind, IdSecret, LinkKind, LinkSalt, LinkToken, card_id, derive_id, link_token,
+    pick_id, quote_id,
+};
 pub use crate::logging::{
     LogGuard, LoggingError, REDACTED, Redacted, init as init_logging, json_layer, request_span,
     scrub_breadcrumb, scrub_event, scrub_text, sentry_options,
@@ -27,3 +32,4 @@ pub use crate::tasks::{
     backoff, claim, enqueue, fail, finish, reap_expired, release_leases, renew,
 };
 pub use crate::test_control::{TEST_CONTROL_COMPILED, TestControl, TestControlError};
+pub use crate::webhooks::{Dedupe, EventKey, WebhookError};

@@ -1248,3 +1248,8 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Possible over-cutting.** After "I'm" or "it's", an unusual word may be cut ("it's flooding" loses "flooding"). That costs the AI a word, never a homeowner's privacy.
 - **Emails.** Inbound email is accepted only with the email provider's signature. A sender whose email fails the standard sender checks can only unsubscribe, never act on a job or change details.
 - **One gap for the plan.** Saving the raw message text in its locked store needs a database table that no task builds yet; the runner has the note (D-801).
+
+## Links and IDs cannot be guessed, and a vendor message counts once (T014, D-815 to D-817, October 30)
+
+- **What it does.** Every job card, quote, pick and quote-page link gets an ID made from a secret key plus what it is about, so nobody can guess one, and a rebuild from backups gives the same IDs. A quote-page link also mixes in a random value saved with the job, so one link can be replaced or switched off without touching anything else; an old or switched-off link shows "not found". When Stripe, Twilio or another service sends the same notice twice (or 100 times), only the first one does anything.
+- **One gap for the plan.** The random value behind each link is saved in the database but not yet copied to the off-site record, because that record has no slot for it yet; the runner has the note (D-817).
