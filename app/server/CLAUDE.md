@@ -6,9 +6,9 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 
 ## What it owns
 
-- `src/lib.rs`: `install_crypto_provider()`, `start_up()` (settings from `std::env::vars()`, then the JSON log and Sentry; D-689), `build_router()` (no routes yet, under the request-ID and `TraceLayer` layers that log the route template only), `shutdown_signal()` (SIGINT or SIGTERM); `register_handlers()` does not exist yet (T013, the handler-registry task, creates it).
+- `src/lib.rs`: `install_crypto_provider()`, `start_up()` (settings from `std::env::vars()`, then the JSON log and Sentry; D-689), `build_router()` (no routes yet, under the request-ID and `TraceLayer` layers that log the route template only), `shutdown_signal()` (SIGINT or SIGTERM), `register_handlers()` (the `core::api::Registry` of every task handler; empty until a module registers one, T013).
 - `src/main.rs`: the `server` binary; binds `0.0.0.0:$PORT` and serves with graceful shutdown. `server migrate` instead applies pending migrations over `ASKHAVA_MIGRATION_DATABASE_URL` (via `askhava_core::api::migrate`) and exits (D-700, SEC-052). Missing or bad `PORT` exits 1 without echoing the value (D-588).
-- `src/bin/worker.rs`: the `worker` binary; idles until a signal until T013 adds the claim loop (D-588).
+- `src/bin/worker.rs`: the `worker` binary; the claim loop over `core.task` (4 at once, idle poll 200 ms to 5 s, the reaper when idle), and on a signal a 20-second drain, then `release_leases` (JOB-006, D-708).
 - No tables.
 
 ## Rules it enforces
@@ -22,14 +22,15 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 - Errors at start never echo a setting's value; both binaries call `start_up()` right after the TLS provider, so a bad setting exits 1 before anything is served or claimed (SEC-002).
 - Routes are merged before the layers in `build_router()`, so every route gets the request ID and the route-template span (PRIV-016, PRIV-028).
 - Any future `src/status.rs` must start with `#![deny(clippy::wildcard_enum_match_arm, clippy::match_wildcard_for_single_variants)]` (SEC-031, D-488).
+- The worker gives back its leases after the drain on every signal, so a deploy never strands a task for a lease length (rust brain R14).
 - `/healthz` belongs to T106 (`src/healthz.rs`); do not add it here.
 
 ## How to change
 
 - Add a module's routes: merge its `routes()` in `build_router()` in `src/lib.rs`; add the path dependency to `Cargo.toml` with `workspace = true`.
-- Register a task handler: add it in `register_handlers()` (`src/lib.rs`; it does not exist yet, T013, the handler-registry task, creates it) and `src/bin/worker.rs`.
+- Register a task handler: one `registry.register(kind, handler)` line in `register_handlers()` (`src/lib.rs`); the worker runs whatever it returns.
 - Run `cargo build -p askhava-server --locked`, `cargo clippy --workspace --all-targets -- -D warnings` and `bash scripts/smoke.sh`.
 
 ## Tests that guard it
 
-- None yet. T175's architecture test (TD-SEC-10) checks the layer table and lints; T106 adds the health check.
+- `tests/integration/tests/task_queue.rs` runs `core`'s `Registry::run`, which the worker calls. T175's architecture test (TD-SEC-10) checks the layer table and lints; T106 adds the health check.

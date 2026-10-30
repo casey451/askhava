@@ -67,8 +67,10 @@ app/
                      SIGTERM; without the handler the exit is 137, D-491); `server migrate` runs `sqlx::migrate!` as
                      the release step (section 9); a missing or bad `PORT` exits 1 without echoing the value, and
                      `/healthz` is left to T106 (D-588)
-    src/bin/worker.rs        the worker binary: same provider install, one Tokio runtime, the claim loop (section 5); until T013
-                             adds it, the worker idles until SIGINT or SIGTERM and exits 0 (D-588)
+    src/bin/worker.rs        the worker binary: same provider install, one Tokio runtime, the claim loop (section 5):
+                             4 tasks at once in a `JoinSet`, polling 200 ms to 5 s while idle, runs through
+                             `register_handlers()`; on SIGINT or SIGTERM it stops claiming, drains for 20 s, gives
+                             back its leases and exits 0 (T013, D-708)
     src/bin/rules_bridge.rs  JSON-in, JSON-out door to each crate's `api::rules` for the twin (T074): one
                      long-lived process, one JSON object per line each way, requests `{id, call, args}`, answers
                      `{"ok": {id, result}}` or `{"error": {id, code}}` (about 0.05 ms a call measured, D-491); plain

@@ -209,6 +209,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "jiff",
+ "jiff-sqlx",
  "proptest",
  "secrecy",
  "sentry",
@@ -232,6 +233,8 @@ name = "askhava-integration"
 version = "0.1.0"
 dependencies = [
  "askhava-core",
+ "axum",
+ "jiff",
  "secrecy",
  "serde_json",
  "sqlx",
@@ -257,6 +260,7 @@ dependencies = [
  "askhava-core",
  "axum",
  "rustls",
+ "sqlx",
  "tokio",
  "tower-http 0.7.1",
 ]
@@ -1438,6 +1442,16 @@ checksum = "5e52fe76043ccecc9005d2305ebaadf7d7fc0cc89ca6baa10a94d6bc68c7128c"
 dependencies = [
  "defmt",
  "log",
+]
+
+[[package]]
+name = "jiff-sqlx"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07f07e4e3efb45ce1507e32af3b1e8f31d33d5edbf041ffeda3180042c3abc58"
+dependencies = [
+ "jiff",
+ "sqlx",
 ]
 
 [[package]]
