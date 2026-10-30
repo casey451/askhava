@@ -1,8 +1,10 @@
-"""Self-tests of twin/gate.py (D-107; docs/twin-warnings.md section 6.5, the parts that need no oracle file).
+"""Self-tests of twin/gate.py (D-107; docs/twin-warnings.md section 6.5) and of its license oracle (D-541).
 
 Waiver logic is tested on synthetic instances; exit codes and the deliberate breaks of the twin's
-rules run the real gate in a subprocess on a temporary copy of twin/, so twin/ itself never changes.
-The license-oracle checks are T007's (D-491).
+rules run the real gate in a subprocess on a temporary copy of twin/ and docs/catalog/, so neither
+ever changes. The oracle tests prove twin/oracle/license_scope.json is a fresh generation from the
+catalog (CARD-001, LIC-001) and agrees with docs/catalog/matching_examples.yaml (D-110); the fee
+tests pin the twin's introduction fee by job size (FEE-001, FEE-002, REC-001, REC-003; D-542).
 """
 
 from __future__ import annotations
@@ -16,6 +18,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml  # type: ignore[import-untyped]  # reason: PyYAML ships no stubs; only safe_load is used
 
 ROOT = Path(__file__).resolve().parents[2]
 TWIN = ROOT / "twin"
@@ -155,7 +158,7 @@ def test_committed_waiver_file_is_valid_and_names_known_causes() -> None:
         "scenarios": set(names),
     }
     data = gate.validate_waivers(json.loads((TWIN / "waivers.json").read_text()), known)
-    assert data["pinned"] and all(e["until"] == "T007" for e in data["pinned"])
+    assert data["class"] and not data["pinned"]  # stage 1 is done only with no pinned entry left (D-544)
 
 
 def test_decision_missing_from_the_log_next_to_the_twin_exits_2(tmp_path: Path) -> None:
@@ -175,7 +178,7 @@ def test_twin_declares_every_required_check() -> None:
 def copy_twin(tmp_path: Path) -> Path:
     dest = tmp_path / "twin"
     shutil.copytree(TWIN, dest, ignore=shutil.ignore_patterns("__pycache__", "results"))
-    (tmp_path / "docs").mkdir()
+    shutil.copytree(ROOT / "docs" / "catalog", tmp_path / "docs" / "catalog")  # the oracle's inputs (D-541)
     shutil.copy(ROOT / "docs" / "decisions.md", tmp_path / "docs" / "decisions.md")  # the gate reads ../docs only
     return dest
 
@@ -212,15 +215,110 @@ def test_unchanged_twin_passes_on_one_scenario(tmp_path: Path) -> None:
     assert out.returncode == 0, out.stdout[-2000:]
 
 
-def test_broken_waiver_entry_turns_the_gate_red(tmp_path: Path) -> None:
+def test_lowered_class_ceiling_turns_the_gate_red(tmp_path: Path) -> None:
     twin_dir = copy_twin(tmp_path)
     data = json.loads((twin_dir / "waivers.json").read_text())
-    first = data["pinned"][0]
-    first["ref"] += " (edited)"
+    entry = next(e for e in data["class"] if e["id"] == "WV-HO-ANSWER")
+    entry["max_per_seed"]["normal_fixed"] = 0
     (twin_dir / "waivers.json").write_text(json.dumps(data))
-    out = run_gate(twin_dir, "--scenarios", first["scenario"], "--seeds", str(first["seed"]))
-    assert out.returncode == 1
-    assert f"STALE pinned waiver {first['id']}" in out.stdout and "UNWAIVED" in out.stdout
+    out = run_gate(twin_dir, "--scenarios", "normal_fixed", "--seeds", "2")  # seed 2 has wrong homeowner answers
+    assert out.returncode == 1 and "CEILING exceeded WV-HO-ANSWER normal_fixed seed 2" in out.stdout
+
+
+def test_stale_pinned_entry_in_a_real_run_exits_2(tmp_path: Path) -> None:
+    twin_dir = copy_twin(tmp_path)
+    data = json.loads((twin_dir / "waivers.json").read_text())
+    data["pinned"] = [pinned(ref="request 9999 (doors) not sent to Nobody", until="never")]
+    (twin_dir / "waivers.json").write_text(json.dumps(data))
+    out = run_gate(twin_dir, "--scenarios", "normal_fixed", "--seeds", "1")
+    assert out.returncode == 2 and "STALE pinned waiver WV-0001" in out.stdout
+
+
+def oracle() -> dict:
+    return json.loads((TWIN / "oracle" / "license_scope.json").read_text())
+
+
+def examples() -> list[dict]:
+    return yaml.safe_load((ROOT / "docs" / "catalog" / "matching_examples.yaml").read_text())["examples"]
+
+
+def test_license_oracle_is_a_fresh_generation_from_the_catalog() -> None:
+    cmd = [sys.executable, str(TWIN / "oracle" / "gen_license_scope.py"), "--check"]
+    out = subprocess.run(cmd, capture_output=True, text=True, timeout=60, check=False)
+    assert out.returncode == 0, out.stdout
+    assert gate.oracle_problems((TWIN / "oracle" / "license_scope.json").read_text(), ROOT) == []
+
+
+def test_oracle_agrees_with_every_matching_example_it_can_express() -> None:
+    expressed = [e for e in examples() if [*e["business"]["roc"], *e["business"]["agencies"]]]
+    assert len(expressed) >= 9 and all(n in oracle()["grants"] for e in expressed for n in e["business"]["roc"])
+    assert gate.self_test_problems(oracle(), examples()) == []
+
+
+def test_oracle_that_disagrees_with_an_example_fails_the_self_test() -> None:
+    broken = oracle()
+    broken["grants"]["R-39R Air Conditioning and Refrigeration"]["hvac_repair"].append("furnace repair")
+    problems = gate.self_test_problems(broken, examples())
+    assert [p.split(":")[0] for p in problems] == ["M02", "M15"]
+
+
+def test_oracle_matches_the_twins_license_classes() -> None:
+    twin_scope = oracle()["twin"]
+    assert "heating_repair" not in twin_scope["R-39R-ac"] and "heating_repair" in twin_scope["R-39"]
+    assert twin_scope["R-37R-drains"] == ["drain_sewer"] and "water_heater" in twin_scope["R-37"]
+
+
+def test_stale_oracle_exits_2(tmp_path: Path) -> None:
+    twin_dir = copy_twin(tmp_path)
+    lmap = tmp_path / "docs" / "catalog" / "license_map.yaml"
+    lmap.write_text(lmap.read_text() + "# a catalog change with no regenerated oracle\n")
+    out = run_gate(twin_dir, "--scenarios", "normal_fixed", "--seeds", "1")
+    assert out.returncode == 2 and "stale" in out.stdout
+
+
+def test_hand_edit_of_the_oracles_twin_section_exits_2(tmp_path: Path) -> None:
+    twin_dir = copy_twin(tmp_path)
+    scope = twin_dir / "oracle" / "license_scope.json"
+    data = json.loads(scope.read_text())
+    data["twin"]["R-39R-ac"].append("heating_repair")  # the catalog's inputs are untouched, so the fingerprints still match
+    scope.write_text(gate.load_generator(ROOT).render(data))
+    out = run_gate(twin_dir, "--scenarios", "normal_fixed", "--seeds", "1")
+    assert out.returncode == 2 and "hand-edited" in out.stdout
+
+
+def test_twin_reading_the_apps_license_table_exits_2(tmp_path: Path) -> None:
+    twin_dir = copy_twin(tmp_path)
+    replace_in(twin_dir, "twin.py", "from app import App,", "from app import CLASS_ALLOWS, App,")
+    out = run_gate(twin_dir, "--scenarios", "normal_fixed", "--seeds", "1")
+    assert out.returncode == 2 and "CLASS_ALLOWS" in out.stdout
+
+
+def fee_functions() -> list:
+    sys.path.insert(0, str(TWIN))
+    import app as twin_app
+    import twin as twin_sim
+
+    return [twin_app.fee_by_job_size, twin_sim.fee_by_job_size]
+
+
+@pytest.mark.parametrize(
+    "quote, fee",
+    [
+        ({"type": "firm", "amount": 499.99}, 25),
+        ({"type": "firm", "amount": 500}, 75),
+        ({"type": "firm", "amount": 1500}, 75),
+        ({"type": "firm", "amount": 1500.01}, 199),
+        ({"type": "firm", "amount": 9000}, 199),
+        ({"type": "range", "amount": 400, "high": 700}, 75),
+        ({"type": "range", "amount": 1400, "high": 1700}, 199),
+        ({"type": "trip", "amount": 95}, 25),
+        ({"type": "firm", "amount": 150, "period": "month"}, 75),
+        ({"type": "firm", "amount": 124.99, "period": "month"}, 25),
+    ],
+)
+def test_fee_by_job_size_in_the_app_and_the_oracle(quote: dict, fee: int) -> None:
+    """FEE-001, FEE-002 (fixed tiers, never a percentage), FEE-003, FEE-004, REC-001, REC-003 ($150 a month: $75)."""
+    assert [f(quote) for f in fee_functions()] == [fee, fee]
 
 
 def replace_in(twin_dir: Path, name: str, old: str, new: str) -> None:
@@ -256,10 +354,21 @@ BREAKS = {
         "job_card_to_unlicensed_contractor",
     ),
     "job-type matching off": (no_job_matching, "normal_fixed", "1", "job_card_outside_license"),
+    "AC-only sub-license given heating repair": (  # LIC-035: the break the old twin could not see (section 2)
+        lambda d: replace_in(
+            d,
+            "app.py",
+            '"R-39R-ac": {"ac_repair", "thermostat", "system_replacement"}',
+            '"R-39R-ac": {"ac_repair", "heating_repair", "thermostat", "system_replacement"}',
+        ),
+        "normal_fixed",
+        "1",
+        "job_card_outside_license",
+    ),
     "opt-out check removed from sending": (
         lambda d: replace_in(d, "app.py", 'if phone in self.stopped and kind not in ("stop_confirm",):', "if False:"),
-        "adversarial_fixed",
-        "2",  # D-517: seed 2 is where a text reaches an opted-out homeowner once the opt-out check is gone
+        "busy_fixed",
+        "1",  # D-544: after T007's changes seed 1 of busy_fixed is where a text reaches an opted-out homeowner
         "text_after_stop",
     ),
     "quiet-hours check removed": (

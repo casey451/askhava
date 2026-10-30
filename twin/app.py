@@ -25,8 +25,22 @@ OPEN_H, CLOSE_H = 8, 21
 ZIP_TOWN = {"86403": "Lake Havasu City", "86404": "Lake Havasu City", "86405": "Lake Havasu City", "86406": "Lake Havasu City",
             "86429": "Bullhead City", "86442": "Bullhead City", "86426": "Fort Mohave", "86401": "Kingman", "86409": "Kingman"}
 
-FEES = {"plumbing": 45, "electrical": 45, "hvac": 59, "handyman": 29, "pool": 45, "appliance": 29}
-MAJOR_FEE = 149
+TRIP_FEE = 25          # FEE-004: the set tier for a visit-fee quote (the catalog's trip_fee_tier, $25 by default)
+RECURRING_MONTHS = 4   # REC-002: a monthly quote's fee basis is 4 months of its price
+
+
+def fee_by_job_size(q):
+    """FEE-001 to FEE-005, REC-002, REC-003: the introduction fee by job size, set from the chosen quote alone: $25 under a
+    $500.00 fee basis, $75 from $500.00 to $1,500.00, $199 over; never a percentage (FEE-002). The basis is a firm price,
+    a range's midpoint (FEE-003) or 4 months of a monthly price (a $150-a-month pool account: $600, so $75)."""
+    if q.get("type") == "trip":
+        return TRIP_FEE
+    cents = round(100 * (q.get("amount") or 0))
+    if q.get("type") == "range" and q.get("high"):
+        cents = (cents + round(100 * q["high"])) // 2
+    if q.get("period") == "month":
+        cents *= RECURRING_MONTHS
+    return 25 if cents < 50000 else (75 if cents <= 150000 else 199)
 
 # v9.3 job types and which Arizona residential license classes may do them (Ariz. Admin. Code R4-9-103).
 # This table must be reviewed with the attorney / ROC before launch; it is deliberately conservative.
@@ -34,7 +48,7 @@ JOB_TYPES = {
     "plumbing": ["leak_repair", "toilet_fixture", "water_heater", "drain_sewer", "repipe", "plumbing_other"],
     "hvac": ["ac_repair", "heating_repair", "thermostat", "system_replacement", "hvac_other"],
     "electrical": ["outlets_breakers", "fixture_install", "panel_upgrade", "electrical_other"],
-    "pool": ["pool_equipment", "pool_remodel", "pool_other"],
+    "pool": ["pool_equipment", "pool_leak", "pool_other"],
     "handyman": ["drywall", "mounting", "doors", "handyman_other"],
 }
 CLASS_ALLOWS = {
@@ -43,11 +57,11 @@ CLASS_ALLOWS = {
     "R-39": set(JOB_TYPES["hvac"]),                          # air conditioning and heating
     "R-39R-ac": {"ac_repair", "thermostat", "system_replacement"},
     "R-11": set(JOB_TYPES["electrical"]),                    # electrical
-    "R-6": {"pool_equipment", "pool_other"},                 # pool service and minor repair only
+    "R-6": set(JOB_TYPES["pool"]),                           # pool service and repair
     "B-6": set(JOB_TYPES["pool"]),                           # pools and spas
     "HANDYMAN": set(JOB_TYPES["handyman"]),                  # no state license: small non-trade jobs under $1,000
 }
-KEYWORD_TYPES = [(r"\b(remodel|resurfac|replaster|re-plaster|new pool|pool build)", "pool_remodel"),
+KEYWORD_TYPES = [(r"\b(pool level|losing water|pool leak)", "pool_leak"),
                  (r"\b(repipe|re-pipe|whole house (plumbing|pipes))", "repipe"),
                  (r"\b(panel upgrade|new panel|upgrade (the )?panel|200 ?amp)", "panel_upgrade"),
                  (r"\b(new (ac|a/c|unit|system|furnace)|replace (the )?(ac|a/c|unit|system|furnace)|whole new)", "system_replacement"),
@@ -62,7 +76,7 @@ JT_NAMES = {"leak_repair": "a leak", "toilet_fixture": "toilet, sink or faucet",
             "repipe": "replacing the pipes", "plumbing_other": "other plumbing", "ac_repair": "AC repair", "heating_repair": "heating repair",
             "thermostat": "thermostat", "system_replacement": "replacing the whole AC/heating system", "hvac_other": "other heating/AC",
             "outlets_breakers": "outlets or breakers", "fixture_install": "installing a light or fan", "panel_upgrade": "electrical panel upgrade",
-            "electrical_other": "other electrical", "pool_equipment": "pool pump, filter or equipment", "pool_remodel": "pool resurfacing or remodel",
+            "electrical_other": "other electrical", "pool_equipment": "pool pump, filter or equipment", "pool_leak": "pool leak",
             "pool_other": "other pool work", "drywall": "drywall", "mounting": "hanging or mounting things", "doors": "doors", "handyman_other": "other small repair"}
 TRADE_WORDS = {"plumbing": r"plumb|pipe|repip|re-pip|leak|water|drain|toilet|faucet|fontaner|plomer", "hvac": r"\bac\b|a/c|air|heat|cool|hvac|furnace|aire|calefacc",
                "electrical": r"electric|outlet|breaker|wire|light|panel|ceiling fan", "pool": r"pool|spa|piscina",
@@ -447,7 +461,8 @@ class App:
             onsite_like = up == "ME" or re.match(r"^[A-Za-z]+\b.*(agree|tenant|renter|ok)", b, re.I)
         if cv is None and h["requests"] and self.fx("hardening") and onsite_like:
             asked = [self.requests[x] for x in h["requests"] if self.requests[x].get("onsite_asked") and not self.requests[x].get("onsite")
-                     and (not self.fx("v93") or self.requests[x]["status"] not in TERMINAL)]
+                     and (not self.fx("v93") or self.requests[x]["status"] not in TERMINAL
+                          or self.sim.now - self.requests[x]["history"][-1][0] < DAY)]   # a late answer to a just-closed job (INT-010)
             if asked:
                 asked[-1]["onsite"] = b; asked[-1]["last_ho_msg"] = self.sim.now; return
         if up == "LINK":
@@ -505,6 +520,8 @@ class App:
                 cv["zip_reasked"] = True
                 self.text(phone, "Sorry, I need the 5-digit ZIP code where the work is (e.g. 86403).", "intake_q", conversational=True)
             return
+        if cv and cv["stage"] in ("jt_q", "trade_q"):
+            cv.setdefault("answers", []).append(b.strip().lower())
         if cv and cv["stage"] == "jt_q":
             return self.jt_answer(h, phone, cv, b)
         if cv and cv["stage"] == "trade_q":
@@ -512,6 +529,8 @@ class App:
         if cv and cv["stage"] == "onsite":
             cv["onsite"] = b
             return self.run_intake(h, phone, onsite_done=True)
+        if self.fx("v93") and cv is None and self.late_answer(h, b):
+            return
         if self.fx("v93") and cv is None and len(re.findall(r"[A-Za-z]{2,}", b)) < 3:
             # one- or two-word replies never open a new job
             self.text(phone, "Sorry, I didn't catch that. To get quotes for a new job, describe the problem in a few words.", "help", None, conversational=True)
@@ -556,6 +575,19 @@ class App:
         """INT-014: the numbered "Which fits best?" question; the re-ask repeats it whole (D-103)."""
         opts = " ".join(f"{i + 1}) {JT_NAMES.get(jt, jt)}" for i, jt in enumerate(options))
         return f"Which fits best? {opts}. Reply with the number."
+
+    def late_answer(self, h, b):
+        """INT-009, INT-010 (D-543): a short reply that answers a question an open job already had answered (the carrier
+        delivered the re-ask late) joins that job instead of opening a second job for the same trade and property."""
+        low = b.strip().lower()
+        for r in (self.requests[x] for x in h["requests"]):
+            opts = r.get("asked_trades", [])
+            named = [t for t in opts if re.search(rf"\b(?:{TRADE_WORDS.get(t, t)})\b", low)]
+            answers = low in r.get("intake_answers", ()) or (len(low.split()) <= 4 and len(named) == 1)
+            if r["status"] not in TERMINAL and answers:
+                r["last_ho_msg"] = self.sim.now
+                return True
+        return False
 
     def trade_answer(self, h, phone, cv, b):
         """INT-013, INT-015 (D-103): a number, or whole words of exactly one option's keywords or label. One re-ask that
@@ -755,8 +787,8 @@ class App:
                  zip=cv.get("zip"), town=ZIP_TOWN.get(cv.get("zip") or ""), desc=scrubbed, photos=photos, created=self.sim.now,
                  cards=[], quotes=[], pick=None, picks=[], _sim_truth=cv["_sim_truth"], onsite=cv.get("onsite"), lang=ai["lang"],
                  major=ai.get("major", False), first_status_sent=None, status_msgs=[], original_text=cv["text"],
-                 job_types=self.job_types_for(cv, ai))
-        r["fee"] = MAJOR_FEE if r["major"] else FEES.get(r["trade"], 45)
+                 job_types=self.job_types_for(cv, ai), intake_answers=cv.get("answers", []),
+                 asked_trades=cv.get("trade_options", []))
         self.requests[rid] = r
         h["requests"].append(rid)
         self.log("request_created", request=rid, status=status)
@@ -1181,12 +1213,7 @@ class App:
             self.set_status(r, "QUOTES_READY" if rest else "CLOSED_NONE")
             self.text(self.phone_of(r), f"Sorry, {c0['business']} can't take new jobs right now." + (f" Please choose another quote: askhava.example/q/{r['token']}" if rest else " Text us anytime to try again."), "reoffer" if rest else "reoffer_none", r["id"], conversational=True)
             return
-        if self.fx("hardening"):
-            # $149 tier only when the AI flagged a major job AND the chosen quote is $1,500+, or the quote itself is $3,000+
-            top = (q.get("amount") or 0) if q.get("type") == "firm" else max(q.get("amount") or 0, q.get("high") or 0)
-            r["fee"] = MAJOR_FEE if ((r["major"] and top >= 1500) or top >= 3000) else FEES.get(r["trade"], 45)
-            if r["fee"] != MAJOR_FEE and r["major"]:
-                self.log("major_fee_not_applied", request=r["id"], quote=top)
+        r["fee"] = fee_by_job_size(q)                     # FEE-005: from the chosen quote alone, no AI flag
         n_prev = sum(1 for x in self.picks.values() if x["req"] == r["id"] and x["co"] == q["co"])
         pid = self.stable_id("P", r["id"], q["co"], n_prev) if self.fx("v93") else self.new_id("P", len(self.picks))
         deadline = self.add_business(self.sim.now, self.cfg["confirm_window_business_min"])
