@@ -12,6 +12,7 @@ jiff = { workspace = true }
 secrecy = { workspace = true }
 sentry = { workspace = true }
 serde = { workspace = true }
+sqlx = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }

@@ -1,0 +1,23 @@
+[package]
+name = "askhava-adapters"
+description = "Ask Hava vendor adapters: one trait per vendor, stand-in, sandbox or live by settings (SEC-018, SEC-032)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+askhava-core = { workspace = true }
+hmac = { workspace = true }
+reqwest = { workspace = true }
+secrecy = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+
+[lints]
+workspace = true
