@@ -1,0 +1,15 @@
+error[E0451]: field `contact_id` of struct `HomeownerSessionProof` is private
+ --> ui/forge_session_proof_literal.rs:7:9
+  |
+6 |     let _homeowner = HomeownerSessionProof {
+  |                      --------------------- in this type
+7 |         contact_id: Default::default(),
+  |         ^^^^^^^^^^ private field
+
+error[E0451]: field `owner_id` of struct `OwnerSessionProof` is private
+  --> ui/forge_session_proof_literal.rs:10:9
+   |
+ 9 |     let _owner = OwnerSessionProof {
+   |                  ----------------- in this type
+10 |         owner_id: Default::default(),
+   |         ^^^^^^^^ private field
