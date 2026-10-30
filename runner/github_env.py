@@ -25,7 +25,9 @@ The worker hook (`run_worker`): if RUNNER_WORKER_CMD is unset the runner hands t
 the session that started it (outcome `handed_off`; the session works it and calls
 `python3 -m runner --after`). If it is set, it is run as a command (split like a shell, no shell)
 with these variables:
-  RUNNER_TASK_FILE    JSON of the task (kit/tasks.json entry merged with its state entry)
+  RUNNER_TASK_FILE    JSON of the task (kit/tasks.json entry merged with its state entry, plus
+                      `gate_answers`: {gate id: "yes"|"no"} for each cleared conditional gate it
+                      depends on, T170)
   RUNNER_MODEL        the full model ID the attempt must run on
   RUNNER_MODEL_ALIAS  haiku | sonnet | opus (the worker call takes only the alias, D-170)
   RUNNER_LOG_FILE     the previous attempt's failure log (may be empty)
@@ -681,6 +683,8 @@ class GitHubEnv:
         lines += [f"- {step}" for step in spec.get("steps", [])]
         if spec.get("resume"):
             lines.append(f"To continue: {spec['resume']}.")
+        if spec.get("conditional"):
+            lines.append("Answering 'no' is a fine answer: the build then uses Twilio's test credentials and magic numbers only.")
         lines.append(f"Build status: https://github.com/{self.repo}/blob/{self.state_ref}/STATUS.md")
         return "\n".join(lines)
 

@@ -62,6 +62,8 @@ def clears(gate: dict[str, Any], text: str) -> bool:
     and "don't go live yet" clear nothing: a negation anywhere in the reply, or a reply longer
     than MAX_ANSWER_WORDS, keeps the gate closed and the answer is only recorded.
     """
+    if gate["gate"].get("conditional"):
+        return conditional_answer(text) is not None
     plain = _plain(text)
     words = plain.split()
     if len(words) > MAX_ANSWER_WORDS or any(re.search(rf"\b{re.escape(n)}\b", plain) for n in NEGATIONS):
@@ -72,11 +74,30 @@ def clears(gate: dict[str, Any], text: str) -> bool:
     return any(w in words for w in DEFAULT_WORDS)
 
 
+def conditional_answer(text: str) -> str | None:
+    """'yes' or 'no' for a short reply to a conditional gate, else None (T170, BUILD_BRIEF.md:190).
+
+    A conditional gate (the real-texts question) is cleared by either answer: 'no' means the
+    dependent task uses Twilio's test credentials only. A long reply, a reply holding both words
+    and a reply with any other negation ("no, wait", "not yet") answer nothing; only a 'no' may also
+    carry "don't", "do not" or "never" ("No. Do not text me."), and a 'yes' carries no negation at all.
+    """
+    plain = _plain(text)
+    words = plain.split()
+    if len(words) > MAX_ANSWER_WORDS or ("yes" in words) == ("no" in words):
+        return None
+    if "no" in words:  # a plain 'no' may carry "don't" or "never" ("No, don't text me"), nothing else
+        plain = re.sub(r"\b(?:do not|don't|dont|never)\b", " ", plain)
+    others = [n for n in NEGATIONS if n != "no" and re.search(rf"\b{re.escape(n)}\b", plain)]
+    return None if others else ("yes" if "yes" in words else "no")
+
+
 def apply_owner_answer(state: State, gate: dict[str, Any], text: str, now: datetime) -> State:
     """Clear a gate only on its exact phrase; any other answer is recorded and the gate stays."""
     answers = list(entry(state, gate["id"]).get("answers", [])) + [text]
     if clears(gate, text):
-        return with_task(state, gate["id"], status="DONE", answers=answers, cleared=now.isoformat())
+        fields = {"answer": conditional_answer(text)} if gate["gate"].get("conditional") else {}
+        return with_task(state, gate["id"], status="DONE", answers=answers, cleared=now.isoformat(), **fields)
     return with_task(state, gate["id"], answers=answers)
 
 

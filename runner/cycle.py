@@ -663,6 +663,9 @@ def _work(cfg: Config, env: Env, claimed: State, task: dict[str, Any], now: date
         if renewed is not None:
             current["state"] = renewed
 
+    answers = {d: a for d in task.get("deps", []) if (a := st.entry(claimed, d).get("answer"))}
+    if answers:
+        task = dict(task, gate_answers=answers)  # a conditional gate's yes or no reaches its dependent task (T170)
     res = env.run_worker(task, model, str(entry.get("last_failure", "")), heartbeat)
     if res.outcome == "handed_off":
         return "handed_off"  # the session works the task and calls `python3 -m runner --after`
