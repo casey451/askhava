@@ -1,0 +1,10 @@
+{
+  "measured_with": "cargo-llvm-cov 0.9.1 --branch on nightly-2026-10-15 over app/ (trybuild drivers and tests excluded); a part with no branches yet is measured by its lines (D-694)",
+  "total": 0.0,
+  "floors": {
+    "app/payments/": 95.0,
+    "app/catalog/src/rules.rs": 95.0,
+    "app/privacy/": 95.0,
+    "app/licensing/": 95.0
+  }
+}
