@@ -4,7 +4,10 @@
 //!
 //! A local server on 127.0.0.1 plays the remote host under the test-only
 //! loopback allowance; private, link-local and metadata addresses stay refused
-//! under it. All data is fake.
+//! under it. The suppression removal runs against a one-request recording
+//! server, because the stand-in has no suppression route until T133 (D-492);
+//! the proxy case re-runs this test binary with proxy variables set (no
+//! `set_var`, R16). All data is fake.
 
 use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, TcpListener, TcpStream};
@@ -15,8 +18,8 @@ use secrecy::SecretString;
 
 use crate::api::{
     AdapterError, AiAdapter, Charge, Email, EmailAdapter, FetchError, FetchPolicy, IdempotencyKey,
-    LocalStorage, PaymentsAdapter, ResendEmail, StandInAi, StorageAdapter, StripePayments,
-    fetch_untrusted, is_public_address,
+    LettersAdapter, LicenseLists, LicenseSource, LobLetters, LocalStorage, PaymentsAdapter,
+    ResendEmail, StandInAi, StorageAdapter, StripePayments, fetch_untrusted, is_public_address,
 };
 
 const MB: usize = 1024 * 1024;
@@ -88,6 +91,12 @@ fn only_public_addresses_pass() {
         "fe80::1",
         "fd00:ec2::254",
         "64:ff9b::a9fe:a9fe",
+        "192.0.0.170",
+        "2002:a9fe:a9fe::1",
+        "2001:0:4136:e378:8000:63bf:3fff:fdd2",
+        "fec0::1",
+        "100::1",
+        "64:ff9b:1::a9fe:a9fe",
     ];
     for ip in refused {
         assert!(!is_public_address(ip.parse::<IpAddr>().unwrap()), "{ip}");
@@ -138,8 +147,83 @@ async fn media_from_a_non_twilio_host_is_refused() {
         );
     }
     let local = FetchPolicy::new(&["localhost"], MB, Duration::from_secs(2));
-    let got = fetch_untrusted(&local, "https://localhost:9/photo.jpg").await;
+    let got = fetch_untrusted(&local, "https://localhost/photo.jpg").await;
     assert_eq!(got, Err(FetchError::AddressRefused));
+}
+
+/// TD-SEC-20; SEC-041: a URL with a user name or password, or a port other than 443, is refused before any lookup.
+#[tokio::test]
+async fn userinfo_and_other_ports_are_refused() {
+    let media = FetchPolicy::twilio_media();
+    for url in [
+        "https://user@api.twilio.com/photo.jpg",
+        "https://:secret@api.twilio.com/photo.jpg",
+        "https://api.twilio.com:8443/photo.jpg",
+    ] {
+        assert_eq!(
+            fetch_untrusted(&media, url).await,
+            Err(FetchError::HostNotAllowed),
+            "{url}"
+        );
+    }
+}
+
+const PROXY_CHILD: &str = "ASKHAVA_TEST_PROXY_CHILD";
+
+/// SEC-041, SEC-032: proxy variables in the environment are ignored, so the pinned addresses are the ones dialled.
+#[tokio::test]
+async fn fetch_and_vendor_clients_ignore_proxy_settings() {
+    if std::env::var_os(PROXY_CHILD).is_some() {
+        let port = remote_host();
+        let url = format!("http://127.0.0.1:{port}/ok");
+        let got = fetch_untrusted(&test_policy(2000), &url).await;
+        assert_eq!(got, Ok(b"fake media".to_vec()));
+        let lists = LicenseLists::new(&format!("http://127.0.0.1:{port}/lists")).unwrap();
+        assert_eq!(
+            lists.fetch_daily_list("daily.csv").await.unwrap(),
+            b"fake media"
+        );
+        return;
+    }
+    let (proxy, seen) = counting_proxy();
+    let status = Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "tests::ssrf_guard::fetch_and_vendor_clients_ignore_proxy_settings",
+        ])
+        .env(PROXY_CHILD, "1")
+        .envs(
+            [
+                "HTTP_PROXY",
+                "HTTPS_PROXY",
+                "ALL_PROXY",
+                "http_proxy",
+                "https_proxy",
+                "all_proxy",
+            ]
+            .map(|name| (name, proxy.as_str())),
+        )
+        .env_remove("NO_PROXY")
+        .env_remove("no_proxy")
+        .stdout(Stdio::null())
+        .status()
+        .unwrap();
+    assert!(status.success());
+    assert_eq!(seen.load(std::sync::atomic::Ordering::SeqCst), 0);
+}
+
+fn counting_proxy() -> (String, std::sync::Arc<std::sync::atomic::AtomicUsize>) {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    let seen = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let count = seen.clone();
+    std::thread::spawn(move || {
+        for mut stream in listener.incoming().flatten() {
+            count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            let _ = stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 9\r\n\r\nvia proxy");
+        }
+    });
+    (url, seen)
 }
 
 /// TD-SEC-20; SEC-041: a 30 MB body is cut at the 10 MB cap; a hanging host times out.
@@ -165,6 +249,8 @@ fn ai_client_reaches_only_the_stand_in() {
         "https://api.anthropic.com",
         "http://10.0.0.1:4010/anthropic",
         "file:///tmp",
+        "http://localhost:4010/anthropic",
+        "http://127.0.0.1.example.com:4010/anthropic",
     ] {
         assert_eq!(
             StandInAi::new(url).err(),
@@ -196,7 +282,92 @@ async fn storage_writes_once_and_refuses_unsafe_names() {
     );
     let bad = store.put_object(&k, "../escape.bin", Vec::new()).await;
     assert_eq!(bad, Err(AdapterError::InvalidId));
+    let left: Vec<_> = std::fs::read_dir(dir.join("stream/2026-10-30"))
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name())
+        .collect();
+    assert_eq!(left, ["a.bin"]);
     let _ = std::fs::remove_dir_all(dir);
+}
+
+/// SEC-032: license lists read fixture files under a `file://` base and the same paths over HTTP; unsafe names never reach either.
+#[tokio::test]
+async fn license_lists_read_files_and_http() {
+    let dir = std::env::temp_dir().join(format!("askhava-lists-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("lookup")).unwrap();
+    std::fs::write(dir.join("daily.csv"), "ROC000001,Fake Plumbing LLC").unwrap();
+    std::fs::write(dir.join("lookup/ROC000001"), "active").unwrap();
+    let files = LicenseLists::new(&format!("file://{}", dir.display())).unwrap();
+    assert_eq!(
+        files.fetch_daily_list("daily.csv").await.unwrap(),
+        b"ROC000001,Fake Plumbing LLC"
+    );
+    assert_eq!(files.lookup_license("ROC000001").await.unwrap(), b"active");
+    let missing = files.fetch_daily_list("none.csv").await;
+    assert_eq!(
+        missing,
+        Err(AdapterError::Vendor {
+            status: 404,
+            code: None
+        })
+    );
+    for bad in ["../daily.csv", "", ".hidden"] {
+        assert_eq!(
+            files.lookup_license(bad).await,
+            Err(AdapterError::InvalidId),
+            "{bad}"
+        );
+    }
+    let _ = std::fs::remove_dir_all(dir);
+    let port = remote_host();
+    let web = LicenseLists::new(&format!("http://127.0.0.1:{port}/lists")).unwrap();
+    assert_eq!(
+        web.lookup_license("ROC000001").await.unwrap(),
+        b"fake media"
+    );
+    assert_eq!(
+        web.fetch_daily_list("a/b").await,
+        Err(AdapterError::InvalidId)
+    );
+}
+
+/// A fake vendor that answers one request with `{}` and hands back its port
+/// and the request line and headers it received.
+fn recording_vendor() -> (u16, std::sync::mpsc::Receiver<String>) {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let (send, heads) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let stream = listener.incoming().flatten().next().unwrap();
+        let mut reader = BufReader::new(stream);
+        let mut head = String::new();
+        while reader.read_line(&mut head).is_ok_and(|n| n > 2) {}
+        let _ = reader
+            .into_inner()
+            .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}");
+        let _ = send.send(head);
+    });
+    (port, heads)
+}
+
+/// BIZ-056, SEC-018: removing a suppression is one authenticated DELETE of the address as one encoded segment, with the derived key.
+#[tokio::test]
+async fn remove_suppression_deletes_one_encoded_address() {
+    let (port, heads) = recording_vendor();
+    let base = format!("http://127.0.0.1:{port}/resend");
+    let resend = ResendEmail::new(&base, SecretString::from("re_stand_in_fake")).unwrap();
+    let k = key("email.unsuppress", "biz-1");
+    resend
+        .remove_suppression(&k, "owner/x@example.com")
+        .await
+        .unwrap();
+    let head = heads.recv().unwrap().to_ascii_lowercase();
+    assert!(
+        head.starts_with("delete /resend/suppressions/owner%2fx@example.com http/1.1"),
+        "{head}"
+    );
+    assert!(head.contains(&format!("idempotency-key: {}", k.as_str())));
+    assert!(head.contains("authorization: bearer re_stand_in_fake"));
 }
 
 fn key(action: &str, id: &str) -> IdempotencyKey {
@@ -233,7 +404,7 @@ fn stand_in() -> StandIn {
     panic!("stand-in server did not start");
 }
 
-/// SEC-018, SEC-032: payments talk to the stand-in over HTTP; a repeated key returns the same charge.
+/// SEC-018, SEC-032, PICK-022: payments talk to the stand-in over HTTP; a repeated key returns the same charge and refund.
 #[tokio::test]
 async fn payments_client_talks_to_the_stand_in() {
     let server = stand_in();
@@ -259,14 +430,94 @@ async fn payments_client_talks_to_the_stand_in() {
         .await
         .unwrap();
     assert_eq!(again.id, paid.id);
-    assert_eq!(stripe.fetch_payment_intent(&paid.id).await.unwrap(), paid);
-    assert!(
-        stripe
-            .create_refund(&key("refund", "pick-1"), &paid.id)
-            .await
-            .unwrap()
-            .starts_with("re_")
+    assert_eq!(
+        (paid.currency.as_str(), paid.customer.as_str()),
+        ("usd", customer.as_str())
     );
+    assert_eq!(
+        (paid.metadata.pick_id.as_str(), paid.livemode),
+        ("pick-1", None)
+    );
+    assert_eq!(stripe.fetch_payment_intent(&paid.id).await.unwrap(), paid);
+    refund_replays_once(&stripe, &paid.id).await;
+}
+
+/// FEE-026, SEC-018: a refund repeated under the same key returns the same
+/// refund; a second refund under a new key is refused by the vendor.
+async fn refund_replays_once(stripe: &StripePayments, payment_intent: &str) {
+    let refund = stripe
+        .create_refund(&key("refund", "pick-1"), payment_intent)
+        .await
+        .unwrap();
+    assert!(refund.starts_with("re_"));
+    let replay = stripe
+        .create_refund(&key("refund", "pick-1"), payment_intent)
+        .await;
+    assert_eq!(replay, Ok(refund));
+    let second = stripe
+        .create_refund(&key("refund", "pick-1b"), payment_intent)
+        .await;
+    let refused = AdapterError::Vendor {
+        status: 400,
+        code: None,
+    };
+    assert_eq!(second, Err(refused));
+}
+
+/// SEC-032: payment and letter IDs not of the vendor's form never reach a path or a form.
+#[tokio::test]
+async fn malformed_vendor_ids_are_refused() {
+    let stripe = StripePayments::new(
+        "http://127.0.0.1:9/stripe",
+        SecretString::from("sk_test_fake"),
+    )
+    .unwrap();
+    let lob = LobLetters::new("http://127.0.0.1:9/lob", SecretString::from("test_fake")).unwrap();
+    for bad in ["", "pi_", "pi_../customers", "pi_a.b", "ch_123", "ltr_x/y"] {
+        assert_eq!(
+            stripe.fetch_payment_intent(bad).await,
+            Err(AdapterError::InvalidId),
+            "{bad}"
+        );
+        let refund = stripe.create_refund(&key("refund", "pick-2"), bad).await;
+        assert_eq!(refund, Err(AdapterError::InvalidId), "{bad}");
+        assert_eq!(
+            lob.fetch_letter(bad).await,
+            Err(AdapterError::InvalidId),
+            "{bad}"
+        );
+    }
+    let charge = Charge {
+        customer: "cus_1",
+        payment_method: "pm_a.b",
+        amount_cents: 2500,
+        pick_id: "pick-2",
+    };
+    let got = stripe
+        .create_payment_intent(&key("charge", "pick-2"), charge)
+        .await;
+    assert_eq!(got, Err(AdapterError::InvalidId));
+}
+
+/// SEC-018, SEC-032: letters go to the stand-in Lob; a repeated key returns the same letter, which reads back.
+#[tokio::test]
+async fn letters_client_talks_to_the_stand_in() {
+    let server = stand_in();
+    let base = format!("http://127.0.0.1:{}/lob", server.1);
+    let lob = LobLetters::new(&base, SecretString::from("test_fake")).unwrap();
+    let address = |name: &str| serde_json::json!({"name": name, "address_line1": "100 Example St", "address_city": "Lake Havasu City", "address_state": "AZ", "address_zip": "86403"});
+    let letter = serde_json::json!({"to": address("Fake Plumbing LLC"), "from": address("Ask Hava"), "file": "<p>Fake code 000000</p>", "color": false});
+    let sent = lob
+        .send_letter(&key("letter", "biz-1"), &letter)
+        .await
+        .unwrap();
+    assert!(sent.id.starts_with("ltr_"));
+    let again = lob
+        .send_letter(&key("letter", "biz-1"), &letter)
+        .await
+        .unwrap();
+    assert_eq!(again, sent);
+    assert_eq!(lob.fetch_letter(&sent.id).await.unwrap(), sent);
 }
 
 /// SEC-018, SEC-032, AI-009: email and the stand-in AI talk to the stand-in over HTTP with derived keys.

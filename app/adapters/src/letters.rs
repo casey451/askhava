@@ -10,7 +10,7 @@ use std::sync::Arc;
 use reqwest::Method;
 use secrecy::SecretString;
 
-use crate::base::{AdapterError, Auth, IdempotencyKey, VendorHttp};
+use crate::base::{AdapterError, Auth, IdempotencyKey, VendorHttp, is_vendor_id};
 
 /// What Lob says about a letter.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
@@ -31,7 +31,8 @@ pub trait LettersAdapter {
         letter: &serde_json::Value,
     ) -> impl Future<Output = Result<SentLetter, AdapterError>> + Send;
 
-    /// Reads one letter back.
+    /// Reads one letter back; `id` must be `ltr_…` or the call fails with
+    /// [`AdapterError::InvalidId`] (SEC-032).
     fn fetch_letter(
         &self,
         id: &str,
@@ -69,6 +70,9 @@ impl LettersAdapter for LobLetters {
     }
 
     async fn fetch_letter(&self, id: &str) -> Result<SentLetter, AdapterError> {
+        if !is_vendor_id(id, "ltr_") {
+            return Err(AdapterError::InvalidId);
+        }
         let request = self.http.request(Method::GET, &["v1", "letters", id], None);
         self.http.json(request).await
     }

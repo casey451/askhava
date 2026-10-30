@@ -122,6 +122,17 @@ pub(crate) fn is_sid(id: &str, prefix: &str) -> bool {
         .is_some_and(|tail| tail.len() == 32 && tail.bytes().all(|b| b.is_ascii_alphanumeric()))
 }
 
+/// Whether `id` is a vendor object ID of the form `<prefix><tail>` (Stripe's
+/// `pi_…`, Lob's `ltr_…`): a non-empty tail of ASCII letters, digits and `_`,
+/// at most 255 characters in all, so no dot, slash or space can reach a URL
+/// path or a form (SEC-032).
+pub(crate) fn is_vendor_id(id: &str, prefix: &str) -> bool {
+    id.len() <= 255
+        && id.strip_prefix(prefix).is_some_and(|tail| {
+            !tail.is_empty() && tail.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')
+        })
+}
+
 #[derive(serde::Deserialize)]
 struct TwilioErrorBody {
     code: Option<i64>,
@@ -189,12 +200,13 @@ impl TwilioHttp {
     }
 }
 
-/// The vendor HTTP client: a 15-second timeout and no redirects, so a
-/// credential never goes to another host (SEC-032).
+/// The vendor HTTP client: a 15-second timeout, no redirects and no proxy
+/// from the environment, so a credential never goes to another host (SEC-032).
 fn vendor_client() -> Result<reqwest::Client, AdapterError> {
     reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
         .redirect(reqwest::redirect::Policy::none())
+        .no_proxy()
         .build()
         .map_err(|_| AdapterError::NotSent)
 }
@@ -313,7 +325,8 @@ pub const MAX_REDIRECTS: usize = 3;
 
 /// The rules for one server-side fetch of a URL a person supplied (a business
 /// review link) or a vendor supplied (MMS media): the allowed hosts, a size cap
-/// and a timeout (SEC-041). Only `https` is fetched.
+/// and a timeout (SEC-041). Only `https` on port 443 is fetched, and never a
+/// URL carrying a user name or password.
 #[derive(Debug, Clone)]
 pub struct FetchPolicy {
     hosts: Vec<String>,
@@ -346,17 +359,20 @@ impl FetchPolicy {
         )
     }
 
-    /// Tests only: also `http` and loopback addresses, so a local server can
-    /// play the remote host; private, link-local and metadata stay refused.
+    /// Tests only: also `http`, any port and loopback addresses, so a local
+    /// server can play the remote host; private, link-local and metadata stay refused.
     #[cfg(test)]
     pub(crate) fn with_loopback_for_tests(mut self) -> Self {
         self.loopback_for_tests = true;
         self
     }
 
+    /// The lower-case host of `url` when its scheme, port, userinfo and host
+    /// pass the policy (SEC-041).
     fn host_allowed(&self, url: &reqwest::Url) -> Option<String> {
-        let scheme_ok =
-            url.scheme() == "https" || (self.loopback_for_tests && url.scheme() == "http");
+        let scheme_ok = (url.scheme() == "https" && url.port_or_known_default() == Some(443))
+            || (self.loopback_for_tests && matches!(url.scheme(), "http" | "https"));
+        let no_userinfo = url.username().is_empty() && url.password().is_none();
         let host = url
             .host_str()?
             .trim_start_matches('[')
@@ -368,7 +384,7 @@ impl FetchPolicy {
                     .strip_suffix(allowed.as_str())
                     .is_some_and(|sub| sub.ends_with('.'))
         });
-        (scheme_ok && listed && url.username().is_empty()).then_some(host)
+        (scheme_ok && no_userinfo && listed).then_some(host)
     }
 
     fn address_allowed(&self, ip: IpAddr) -> bool {
@@ -382,7 +398,8 @@ pub enum FetchError {
     /// The URL did not parse, or a redirect had no usable `Location`.
     #[error("URL is not usable")]
     BadUrl,
-    /// The scheme or host is not on the policy's list (SEC-041).
+    /// The scheme, port or host is not allowed, or the URL carries a user
+    /// name or password (SEC-041).
     #[error("host is not allowed")]
     HostNotAllowed,
     /// The host resolved to a private, loopback, link-local or metadata address (SEC-041).
@@ -406,7 +423,8 @@ pub enum FetchError {
 }
 
 /// Fetches `url` under `policy` (SEC-041): every hop's host must be allowed,
-/// every address it resolves to must be public, the connection goes only to
+/// the lookup must finish within the policy's timeout, every address it
+/// resolves to must be public, the connection goes only to
 /// those checked addresses (no second lookup), at most [`MAX_REDIRECTS`]
 /// redirects are followed and each is checked the same way, and the body is
 /// read only up to the cap.
@@ -436,13 +454,16 @@ async fn fetch_hop(
 ) -> Result<reqwest::Response, FetchError> {
     let host = policy.host_allowed(url).ok_or(FetchError::HostNotAllowed)?;
     let port = url.port_or_known_default().ok_or(FetchError::BadUrl)?;
-    let found = tokio::net::lookup_host((host.as_str(), port)).await;
+    let lookup = tokio::net::lookup_host((host.as_str(), port));
+    let found = tokio::time::timeout(policy.timeout, lookup).await;
+    let found = found.map_err(|_| FetchError::TimedOut)?;
     let addrs: Vec<SocketAddr> = found.map_err(|_| FetchError::Failed)?.collect();
     if addrs.is_empty() || !addrs.iter().all(|addr| policy.address_allowed(addr.ip())) {
         return Err(FetchError::AddressRefused);
     }
     let client = reqwest::Client::builder()
         .redirect(reqwest::redirect::Policy::none())
+        .no_proxy()
         .timeout(policy.timeout)
         .resolve_to_addrs(&host, &addrs)
         .build()
@@ -491,8 +512,11 @@ fn fetch_error(error: &reqwest::Error) -> FetchError {
 
 /// Whether `ip` is a public unicast address: not private, loopback,
 /// link-local (169.254.0.0/16 holds the cloud metadata address), shared,
-/// benchmark, documentation, multicast, reserved or unspecified, including
-/// those carried inside an IPv4-mapped or NAT64 IPv6 address (SEC-041).
+/// IETF protocol (192.0.0.0/24), benchmark, documentation, multicast, reserved
+/// or unspecified, including those carried inside an IPv4-mapped or NAT64 IPv6
+/// address, and not an IPv6 tunnel or translation prefix that can carry an
+/// IPv4 address (6to4 2002::/16, Teredo 2001::/32, local NAT64 64:ff9b:1::/48),
+/// site-local fec0::/10 or discard 100::/64 (SEC-041).
 #[must_use]
 pub fn is_public_address(ip: IpAddr) -> bool {
     match ip {
@@ -508,7 +532,7 @@ pub fn is_public_address(ip: IpAddr) -> bool {
 }
 
 fn is_public_v4(ip: Ipv4Addr) -> bool {
-    let [a, b, ..] = ip.octets();
+    let [a, b, c, _] = ip.octets();
     !(ip.is_private()
         || ip.is_loopback()
         || ip.is_link_local()
@@ -519,15 +543,20 @@ fn is_public_v4(ip: Ipv4Addr) -> bool {
         || a == 0
         || a >= 240
         || (a == 100 && (64..128).contains(&b))
+        || (a == 192 && b == 0 && c == 0)
         || (a == 198 && (b == 18 || b == 19)))
 }
 
 fn is_public_v6(ip: Ipv6Addr) -> bool {
-    let first = ip.segments()[0];
+    let [first, second, third, fourth, ..] = ip.segments();
     !(ip.is_loopback()
         || ip.is_unspecified()
         || ip.is_multicast()
         || ip.is_unique_local()
         || ip.is_unicast_link_local()
-        || first == 0x2001 && ip.segments()[1] == 0x0db8)
+        || first & 0xffc0 == 0xfec0
+        || first == 0x2002
+        || (first == 0x2001 && (second == 0 || second == 0x0db8))
+        || (first == 0x0064 && second == 0xff9b && third == 1)
+        || [first, second, third, fourth] == [0x0100, 0, 0, 0])
 }

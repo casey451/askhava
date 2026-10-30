@@ -15,7 +15,7 @@ pub use crate::config::{AdapterMode, DEFAULT_POOL_SIZE, MaskedPool, PoolNumber, 
 pub use crate::email::{Email, EmailAdapter, ResendEmail};
 pub use crate::letters::{LettersAdapter, LobLetters, SentLetter};
 pub use crate::license_sources::{LicenseLists, LicenseSource};
-pub use crate::payments::{Charge, PaymentIntent, PaymentsAdapter, StripePayments};
+pub use crate::payments::{Charge, IntentMetadata, PaymentIntent, PaymentsAdapter, StripePayments};
 pub use crate::sms::{SentText, SmsAdapter, TwilioSms};
 pub use crate::storage::{LocalStorage, StorageAdapter};
 pub use crate::verify::{CodeChannel, TwilioVerify, VerifyAdapter};

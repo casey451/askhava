@@ -10,7 +10,7 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 - `src/api.rs`: the only public surface.
 - `src/config.rs`: `TwilioConfig::from_settings`, `AdapterMode`, `MaskedPool`, `PoolNumber`, `DEFAULT_POOL_SIZE`.
 - `src/base.rs`: `IdempotencyKey::derive`, `AdapterError`, `twilio_clients`, the shared Twilio HTTP client, `VendorHttp` (the other vendors' client), `is_safe_name`, and the SEC-041 guard: `fetch_untrusted`, `FetchPolicy`, `FetchError`, `is_public_address`, `TWILIO_MEDIA_HOSTS`, `MAX_REDIRECTS`.
-- `src/payments.rs`: `PaymentsAdapter`, `StripePayments`, `Charge`, `PaymentIntent`.
+- `src/payments.rs`: `PaymentsAdapter`, `StripePayments`, `Charge`, `PaymentIntent`, `IntentMetadata`.
 - `src/ai.rs`: `AiAdapter`, `StandInAi`.
 - `src/email.rs`: `EmailAdapter`, `ResendEmail`, `Email` (with `remove_suppression`, BIZ-056).
 - `src/letters.rs`: `LettersAdapter`, `LobLetters`, `SentLetter`.
@@ -25,8 +25,9 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 
 - SEC-018: `base::IdempotencyKey::derive`; every trait method that acts outside takes `idempotency: &IdempotencyKey` (read-only prefixes `fetch_`, `get_`, `list_`, `read_`, `check_`, `lookup_` excepted, D-596).
 - SEC-002, SEC-032: `config::TwilioConfig::from_settings` (`live` mode only in live, `stand_in` and `sandbox` never there; base URLs through `askhava_core::api::check_base_url`).
-- SEC-041, D-724: `base::fetch_untrusted` is the only way to fetch a URL a person or vendor supplied: listed https hosts only, every resolved address public and pinned, at most 3 re-checked redirects, size cap, timeout.
-- AI-009: `ai::StandInAi::new` accepts only a loopback `http` base URL and holds no key.
+- SEC-041, D-724: `base::fetch_untrusted` is the only way to fetch a URL a person or vendor supplied: listed https hosts on port 443 only, no userinfo, no environment proxy, lookup under the timeout, every resolved address public and pinned, at most 3 re-checked redirects, size cap, timeout (D-727).
+- AI-009: `ai::StandInAi::new` accepts only an `http` base URL on a loopback IP literal (not `localhost`) and holds no key.
+- PICK-022, SEC-030: `payments::PaymentIntent` carries currency, customer and `metadata.pick_id`; `livemode` is `Option<bool>` and `None` is never test mode (D-728). Vendor IDs pass `base::is_vendor_id` before a path or form.
 - BIZ-056: `email::EmailAdapter::remove_suppression`; the caller writes the audit row.
 - CALL-017, D-160: `config::MaskedPool` is exactly `ASKHAVA_MASKED_POOL_SIZE` (default 10) distinct numbers from `ASKHAVA_MASKED_NUMBERS`; `voice::VoiceAdapter::open_call` takes only a `PoolNumber`.
 
@@ -40,7 +41,8 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 - `AdapterError` carries codes only, never a URL, number or vendor message (PRIV-016).
 - A vendor ID from a caller is checked before it goes into a URL path (`base::is_sid`), or pushed as one percent-encoded segment (`VendorHttp::request`).
 - `FetchPolicy::with_loopback_for_tests` stays `#[cfg(test)]`; private, link-local and metadata addresses are refused even under it: `tests/ssrf_guard.rs`.
-- Stored objects are write-once and names cannot climb out of the directory (`storage::LocalStorage`, D-726).
+- Stored objects are write-once (hard link, never rename) and names cannot climb out of the directory (`storage::LocalStorage`, D-726, D-728).
+- Every HTTP client is built with `no_proxy()`: `tests/ssrf_guard.rs::fetch_and_vendor_clients_ignore_proxy_settings` (D-727).
 - `adapters` depends only on `core` and the HTTP and crypto crates (`kit/layers.json`).
 
 ## How to change
@@ -52,4 +54,4 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 
 ## Tests that guard it
 
-- `src/tests/adapter_config.rs` (TD-SEC-03, TD-CALL-01, TD-SEC-13): settings, mode and pool cases, and the texting, voice and Verify clients over HTTP against `python3 -m stand_ins.server` (needs `python3` on the path). `src/tests/ssrf_guard.rs` (TD-SEC-20, TD-AI-01, D-724 to D-726): the guarded fetch against a local fake host, the AI stand-in-only rule, storage, and the payments, email and AI clients over HTTP against the stand-in. T018 adds `tests/security/tests/idempotency_keys.rs`; T175's architecture test checks the trait rule across crates.
+- `src/tests/adapter_config.rs` (TD-SEC-03, TD-CALL-01, TD-SEC-13): settings, mode and pool cases, and the texting, voice and Verify clients over HTTP against `python3 -m stand_ins.server` (needs `python3` on the path). `src/tests/ssrf_guard.rs` (TD-SEC-20, TD-AI-01, D-724 to D-728): the guarded fetch against a local fake host, the AI stand-in-only rule, storage, license lists, malformed IDs, suppression removal against a recording server, and the payments, letters, email and AI clients over HTTP against the stand-in. T018 adds `tests/security/tests/idempotency_keys.rs`; T175's architecture test checks the trait rule across crates.

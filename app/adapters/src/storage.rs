@@ -62,8 +62,10 @@ impl LocalStorage {
     }
 }
 
-/// Writes `bytes` to a temporary file named by the key, then renames it into
-/// place unless the object already exists (write-once, SEC-018).
+/// Writes `bytes` to a temporary file named by the key, then hard-links it
+/// into place; the link fails when the object exists, so an object is never
+/// replaced, even by a racing writer, and the temporary file is removed either
+/// way (write-once, SEC-018, D-727).
 fn write_once(path: &std::path::Path, key: &str, bytes: &[u8]) -> std::io::Result<()> {
     if path.exists() {
         return Ok(());
@@ -73,7 +75,12 @@ fn write_once(path: &std::path::Path, key: &str, bytes: &[u8]) -> std::io::Resul
     }
     let temporary = path.with_extension(format!("{key}.part"));
     std::fs::write(&temporary, bytes)?;
-    std::fs::rename(&temporary, path)
+    let linked = std::fs::hard_link(&temporary, path);
+    std::fs::remove_file(&temporary)?;
+    match linked {
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => Ok(()),
+        other => other,
+    }
 }
 
 impl StorageAdapter for LocalStorage {

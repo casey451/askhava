@@ -12,9 +12,12 @@ use std::sync::Arc;
 use reqwest::Method;
 use secrecy::SecretString;
 
-use crate::base::{AdapterError, Auth, IdempotencyKey, VendorHttp};
+use crate::base::{AdapterError, Auth, IdempotencyKey, VendorHttp, is_vendor_id};
 
-/// The fields of a Stripe PaymentIntent the app reads back (PICK-022 re-fetch).
+/// The fields of a Stripe PaymentIntent the release check compares after the
+/// re-fetch: livemode, customer, amount, currency and pick (PICK-022, SEC-030,
+/// SEC-039). Every field but `livemode` is required, so a body missing one
+/// fails with [`AdapterError::Decode`].
 #[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
 pub struct PaymentIntent {
     /// `pi_…`.
@@ -23,9 +26,23 @@ pub struct PaymentIntent {
     pub status: String,
     /// The amount in cents.
     pub amount: i64,
-    /// `true` only for a live-mode object (SEC-030 checks it).
-    #[serde(default)]
-    pub livemode: bool,
+    /// The three-letter currency, `usd`.
+    pub currency: String,
+    /// The Stripe customer charged (`cus_…`).
+    pub customer: String,
+    /// The metadata Ask Hava set on the create.
+    pub metadata: IntentMetadata,
+    /// Stripe's `livemode`; `None` when the body did not say (the stand-in
+    /// omits it, D-727). The release check (SEC-030) treats `None` as a
+    /// mismatch in every mode, never as test mode.
+    pub livemode: Option<bool>,
+}
+
+/// The metadata on a PaymentIntent: the pick it pays for (PICK-022).
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
+pub struct IntentMetadata {
+    /// The pick's record ID, compared with the pick being released.
+    pub pick_id: String,
 }
 
 #[derive(serde::Deserialize)]
@@ -62,13 +79,14 @@ pub trait PaymentsAdapter {
         charge: Charge<'_>,
     ) -> impl Future<Output = Result<PaymentIntent, AdapterError>> + Send;
 
-    /// Re-fetches a PaymentIntent before release (PICK-022).
+    /// Re-fetches a PaymentIntent before release (PICK-022); `id` must be
+    /// `pi_…` or the call fails with [`AdapterError::InvalidId`].
     fn fetch_payment_intent(
         &self,
         id: &str,
     ) -> impl Future<Output = Result<PaymentIntent, AdapterError>> + Send;
 
-    /// Refunds a PaymentIntent in full (FEE-026); returns `re_…`.
+    /// Refunds the PaymentIntent `pi_…` in full (FEE-026); returns `re_…`.
     fn create_refund(
         &self,
         idempotency: &IdempotencyKey,
@@ -120,6 +138,9 @@ impl PaymentsAdapter for StripePayments {
         idempotency: &IdempotencyKey,
         charge: Charge<'_>,
     ) -> Result<PaymentIntent, AdapterError> {
+        if !is_vendor_id(charge.customer, "cus_") || !is_vendor_id(charge.payment_method, "pm_") {
+            return Err(AdapterError::InvalidId);
+        }
         let amount = charge.amount_cents.to_string();
         let form = [
             ("amount", amount.as_str()),
@@ -133,6 +154,9 @@ impl PaymentsAdapter for StripePayments {
     }
 
     async fn fetch_payment_intent(&self, id: &str) -> Result<PaymentIntent, AdapterError> {
+        if !is_vendor_id(id, "pi_") {
+            return Err(AdapterError::InvalidId);
+        }
         let request = self
             .http
             .request(Method::GET, &["v1", "payment_intents", id], None);
@@ -144,6 +168,9 @@ impl PaymentsAdapter for StripePayments {
         idempotency: &IdempotencyKey,
         payment_intent: &str,
     ) -> Result<String, AdapterError> {
+        if !is_vendor_id(payment_intent, "pi_") {
+            return Err(AdapterError::InvalidId);
+        }
         let form = [("payment_intent", payment_intent)];
         let created: Created = self.post("refunds", &form, idempotency).await?;
         Ok(created.id)
