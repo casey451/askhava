@@ -324,6 +324,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "askhava-jobs"
+version = "0.1.0"
+dependencies = [
+ "askhava-core",
+ "askhava-ops",
+ "jiff",
+ "jiff-sqlx",
+ "proptest",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "askhava-messaging"
 version = "0.1.0"
 dependencies = [
@@ -403,6 +419,7 @@ version = "0.1.0"
 dependencies = [
  "askhava-adapters",
  "askhava-core",
+ "askhava-jobs",
  "askhava-ops",
  "axum",
  "jiff",

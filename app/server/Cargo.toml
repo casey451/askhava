@@ -13,6 +13,7 @@ path = "src/main.rs"
 [dependencies]
 askhava-adapters = { workspace = true }
 askhava-core = { workspace = true }
+askhava-jobs = { workspace = true }
 askhava-ops = { workspace = true }
 axum = { workspace = true }
 rustls = { workspace = true }

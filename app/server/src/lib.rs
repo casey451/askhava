@@ -71,7 +71,8 @@ pub fn build_router(pool: PgPool, test_control: Router) -> Router {
 /// Every module's `core.task` handlers, one `register` call per kind (D-481, D-491). The worker
 /// runs what it returns; tests hold it in a `OnceLock`. A kind with no handler is failed with
 /// `NO_HANDLER` and dead-lettered after its attempts (JOB-006). `stream` is the off-database
-/// stream writer and its nightly check (OPS-011, PRIV-029, D-734).
+/// stream writer and its nightly check (OPS-011, PRIV-029, D-734); `jobs` runs the job status
+/// timers (JOB-003, JOB-006).
 #[must_use]
 pub fn register_handlers<S>(stream: Arc<offdb_stream::OffDbStream<S>>) -> Registry
 where
@@ -79,6 +80,7 @@ where
 {
     let mut registry = Registry::new();
     offdb_stream::register(&mut registry, stream);
+    registry.register(askhava_jobs::api::TIMER_KIND, askhava_jobs::api::run_timer);
     registry
 }
 

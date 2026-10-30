@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE jobs.status_history SET to_status = 'done'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "53c1a3e0a21c393f6de98b36dc91ddf2bbf582fbd7cd79792d09a43a65c6af90"
+}
