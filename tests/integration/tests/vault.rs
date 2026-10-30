@@ -12,8 +12,8 @@
 use askhava_integration::set_app_role;
 use askhava_ops::api::export_audit;
 use askhava_privacy::api::{
-    BASELINE_HOURS, Field, NewContact, Purpose, Reader, Vault, VaultError, check_read_rates,
-    find_by_phone, read_contact, rotate_batch, store_contact,
+    BASELINE_HOURS, Field, IndexPurpose, NewContact, Purpose, Reader, Vault, VaultError,
+    check_read_rates, find_by_phone, read_contact, rotate_batch, store_contact,
 };
 use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
@@ -169,6 +169,89 @@ fn the_vault_keys_are_separate_from_the_database_credential() {
     }
     let repeated = format!("{},{}", key(1, 0x11), key(1, 0x12));
     assert!(refused(&repeated, &key(1, 0x21), &secret(DB_URL)).is_some());
+}
+
+/// TD-PRIV-01, PRIV-002, D-752: a key percent-encoded, unpadded or URL-safe in the credential is
+/// still found there; a stray `%` is not a key.
+#[test]
+fn a_key_hidden_by_url_encoding_is_still_refused() {
+    let seal = key(1, 0xfb);
+    let b64 = &seal[2..];
+    assert!(b64.contains('+') && b64.contains('/') && b64.ends_with('='));
+    let upper = b64
+        .replace('+', "%2B")
+        .replace('/', "%2F")
+        .replace('=', "%3D");
+    let lower = b64.replace('/', "%2f").replace('=', "%3d");
+    let unpadded = b64.trim_end_matches('=').to_owned();
+    let url_safe = unpadded.replace('+', "-").replace('/', "_");
+    let msg = Some(VaultError::Keys("a key is inside the database credential"));
+    for hidden in [upper, lower, unpadded, url_safe] {
+        let url = secret(&format!("postgres://app:{hidden}@db.invalid/askhava"));
+        let err = Vault::new(&secret(&seal), &secret(&key(1, 0x21)), &url).err();
+        assert_eq!(err, msg, "{hidden}");
+    }
+    let stray = secret("postgres://app:pa%zz%2@db.invalid/askhava");
+    assert!(Vault::new(&secret(&seal), &secret(&key(1, 0x21)), &stray).is_ok());
+}
+
+/// PRIV-003, D-752: a plaintext read on a connection already inside a transaction is refused, so
+/// the caller's rollback can never undo the audit rows of plaintext that left.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_read_inside_the_callers_transaction_is_refused(pool: PgPool) {
+    use sqlx::Connection as _;
+    let vault = v1();
+    let mut conn = app_conn(&pool).await;
+    let id = store_contact(&mut conn, &vault, &zelda(PHONE))
+        .await
+        .expect("store");
+    let mut tx = conn.begin().await.expect("begin");
+    let read = read_contact(&mut tx, &vault, SEND, id, &[Field::Name]).await;
+    assert_eq!(read.err(), Some(VaultError::InTransaction));
+    tx.rollback().await.expect("rollback");
+    let read = read_contact(&mut conn, &vault, SEND, id, &[Field::Name]).await;
+    assert!(read.is_ok(), "a bare connection reads");
+}
+
+/// PRIV-002, D-752: two contacts racing for one phone: the one whose blind-index insert meets the
+/// other's committed digest gets `PhoneTaken`, not a database error.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_phone_taken_in_a_race_is_phone_taken(pool: PgPool) {
+    use sqlx::Connection as _;
+    let vault = v1();
+    let mut first = app_conn(&pool).await;
+    let holder = store_contact(&mut first, &vault, &NewContact::default())
+        .await
+        .expect("holder");
+    let (version, digest) = vault.blind_index(IndexPurpose::HomeownerPhone, "+19285550101")[0];
+    let mut tx = first.begin().await.expect("begin");
+    sqlx::query(
+        "INSERT INTO privacy.contact_index (purpose, key_version, digest, contact_id) VALUES ($1, $2, $3, $4)",
+    )
+    .bind(IndexPurpose::HomeownerPhone.label())
+    .bind(i32::from(version))
+    .bind(&digest[..])
+    .bind(holder)
+    .execute(&mut *tx)
+    .await
+    .expect("plant the racing digest");
+    let mut second = app_conn(&pool).await;
+    let racer = tokio::spawn(async move { store_contact(&mut second, &v1(), &zelda(PHONE)).await });
+    let mut watch = pool.acquire().await.expect("watch");
+    while count(
+        &mut watch,
+        "SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock'",
+    )
+    .await
+        == 0
+    {
+        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+    }
+    tx.commit().await.expect("commit");
+    let raced = racer.await.expect("join");
+    assert_eq!(raced.err(), Some(VaultError::PhoneTaken));
+    let contacts = count(&mut first, "SELECT count(*) FROM privacy.contact").await;
+    assert_eq!(contacts, 1, "the loser stored nothing");
 }
 
 /// TD-PRIV-01, PRIV-003, PRIV-004: every plaintext read writes one audit row per field naming the
@@ -397,6 +480,26 @@ async fn an_unregistered_purpose_is_refused_and_alerted_at_once(pool: PgPool) {
         alerts(&mut conn, "privacy.vault_read_unregistered").await,
         5
     );
+    let subjects: Vec<(String, Uuid)> = sqlx::query_as(
+        "SELECT subject_kind, subject_id FROM ops.alert WHERE kind = 'privacy.vault_read_unregistered'",
+    )
+    .fetch_all(&mut *conn)
+    .await
+    .expect("subjects");
+    let mut kinds: Vec<_> = subjects.iter().map(|(k, _)| k.as_str()).collect();
+    kinds.sort_unstable();
+    assert_eq!(
+        kinds,
+        [
+            "vault_read.calls.call_readback",
+            "vault_read.calls.send",
+            "vault_read.picks.release",
+            "vault_read.portals_owner.callback_alert",
+            "vault_read.privacy.rotation",
+        ],
+        "each alert names its reader and purpose (D-752)"
+    );
+    assert!(subjects.iter().all(|(_, s)| *s == id));
     let reads = count(
         &mut conn,
         "SELECT count(*) FROM ops.audit_log WHERE action LIKE 'vault_read.%'",

@@ -16,10 +16,10 @@ The layer-2 crate that holds every homeowner contact detail (name, phone, email,
 ## Rules it enforces
 
 - PRIV-001: contact fields exist only as `privacy.contact` columns; `store_contact` is the way in.
-- PRIV-002, PRIV-024: `Vault::seal`/`open` (AES-GCM, 256-bit key, random nonce, key version and associated data `privacy.contact|<column>|<id>|v<version>`); `Vault::new` refuses keys shared between `VAULT_KEY` and `VAULT_INDEX_KEY` or inside the database credential; `blind_index` derives a key per `IndexPurpose` (`homeowner-phone|vN`); `rotate_batch` moves rows and digests to the active versions while both stay readable.
-- PRIV-003, PRIV-004: `vault::read` writes one `ops.audit_log` row per field (`vault_read.<reader>.<purpose>`) and the hourly count in the read's transaction, before returning plaintext; `models::GRANTS` lists each reader, purpose and the fields it may open (D-093, D-749); the phone is never released (PICK-023).
+- PRIV-002, PRIV-024: `Vault::seal`/`open` (AES-GCM, 256-bit key, random nonce, key version and associated data `privacy.contact|<column>|<id>|v<version>`); `Vault::new` refuses keys shared between `VAULT_KEY` and `VAULT_INDEX_KEY` or inside the database credential, plain, percent-encoded, unpadded or URL-safe (D-752); a blind-index unique violation from a race is `PhoneTaken`; only `rotate_batch` locks a row; `blind_index` derives a key per `IndexPurpose` (`homeowner-phone|vN`); `rotate_batch` moves rows and digests to the active versions while both stay readable.
+- PRIV-003, PRIV-004: `vault::read` writes one `ops.audit_log` row per field (`vault_read.<reader>.<purpose>`) and the hourly count in the read's transaction, before returning plaintext, and refuses (`InTransaction`) on a connection already inside a transaction; `read_for_release` consumes its proof and adds a row with subject `picks.pick` and the proof's pick ID (D-752); `models::GRANTS` lists each reader, purpose and the fields it may open (D-093, D-749); the phone is never released (PICK-023).
 - SEC-030, SEC-046: proofs have private fields and no `Clone` or `Default`; the mints are not `Clone` and each is taken once per process (`AtomicBool`, a second call panics).
-- SEC-047: `vault::refuse` alerts at once on a read outside every grant; `check_read_rates` alerts once per hour and action above 3 times the 14-day baseline, floored at 1 read an hour (D-750).
+- SEC-047: `vault::refuse` alerts at once on a read outside every grant, subject kind `vault_read.<reader>.<purpose>` and the contact (D-752); `check_read_rates` alerts once per hour and action above 3 times the 14-day baseline, floored at 1 read an hour (D-750).
 
 ## Never break
 

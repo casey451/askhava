@@ -36,6 +36,11 @@ pub enum VaultError {
     /// The `ops` audit or alert write failed, so nothing was read.
     #[error("the vault read could not be audited")]
     Audit,
+    /// The caller's connection is already inside a transaction, whose rollback could undo the
+    /// read's audit rows after the plaintext left; a plaintext read runs on a bare connection
+    /// (PRIV-003, D-752).
+    #[error("a vault read must not run inside the caller's transaction")]
+    InTransaction,
     /// The database refused or dropped the statement.
     #[error("the vault database statement failed")]
     Database,
@@ -96,6 +101,31 @@ pub enum Reader {
     Privacy,
 }
 
+impl Reader {
+    /// Every reader.
+    pub const ALL: [Self; 6] = [
+        Self::Messaging,
+        Self::Picks,
+        Self::Calls,
+        Self::PortalsHomeowner,
+        Self::PortalsOwner,
+        Self::Privacy,
+    ];
+
+    /// The reader's code name, as in its grants' actions.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Messaging => "messaging",
+            Self::Picks => "picks",
+            Self::Calls => "calls",
+            Self::PortalsHomeowner => "portals_homeowner",
+            Self::PortalsOwner => "portals_owner",
+            Self::Privacy => "privacy",
+        }
+    }
+}
+
 /// Why a reader reads (PRIV-004).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Purpose {
@@ -117,6 +147,37 @@ pub enum Purpose {
     HelpRequest,
     /// Re-seal under a new key version (PRIV-024).
     Rotation,
+}
+
+impl Purpose {
+    /// Every purpose.
+    pub const ALL: [Self; 9] = [
+        Self::Send,
+        Self::Inbound,
+        Self::BridgeCall,
+        Self::CallReadback,
+        Self::Release,
+        Self::OwnRecord,
+        Self::CallbackAlert,
+        Self::HelpRequest,
+        Self::Rotation,
+    ];
+
+    /// The purpose's code name, as in its grants' actions.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Send => "send",
+            Self::Inbound => "inbound",
+            Self::BridgeCall => "bridge_call",
+            Self::CallReadback => "call_readback",
+            Self::Release => "release",
+            Self::OwnRecord => "own_record",
+            Self::CallbackAlert => "callback_alert",
+            Self::HelpRequest => "help_request",
+            Self::Rotation => "rotation",
+        }
+    }
 }
 
 /// Why the owner realm reads; the purpose an `OwnerSessionProof` read carries (SEC-046).

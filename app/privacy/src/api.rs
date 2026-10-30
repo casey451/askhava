@@ -156,32 +156,34 @@ pub async fn read_contact(
 ) -> Result<ContactDetails, VaultError> {
     let service = matches!(reader, Reader::Messaging | Reader::Calls);
     match grant_for(reader, purpose, fields).filter(|_| service) {
-        Some(grant) => vault::read(db, vault, (grant, Actor::System), id, fields).await,
-        None => vault::refuse(db).await,
+        Some(grant) => vault::read(db, vault, (grant, Actor::System, None), id, fields).await,
+        None => vault::refuse(db, (reader, purpose), id).await,
     }
 }
 
-/// Reads the release fields of contact `id` for the pick `proof` names (SEC-030, PRIV-005). The
-/// phone is never released (PICK-023).
+/// Reads the release fields of contact `id` for the pick `proof` names, consuming the proof so it
+/// opens one release only; besides the per-field rows, an audit row with subject `picks.pick` and
+/// the proof's pick ID ties the read to its pick (SEC-030, PRIV-003, PRIV-005, D-752). The phone is
+/// never released (PICK-023).
 ///
 /// # Errors
 ///
-/// As [`read_contact`].
+/// As [`read_contact`], and [`VaultError::InTransaction`].
 pub async fn read_for_release(
     db: &mut PgConnection,
     vault: &Vault,
-    _proof: &ReleaseProof,
+    proof: ReleaseProof,
     id: Uuid,
     fields: &[Field],
 ) -> Result<ContactDetails, VaultError> {
-    gated(
-        db,
-        vault,
-        (Reader::Picks, Purpose::Release, Actor::System),
-        id,
-        fields,
-    )
-    .await
+    let access = (Reader::Picks, Purpose::Release);
+    match grant_for(access.0, access.1, fields) {
+        Some(grant) => {
+            let gate = (grant, Actor::System, Some(proof.pick_id));
+            vault::read(db, vault, gate, id, fields).await
+        }
+        None => vault::refuse(db, access, id).await,
+    }
 }
 
 /// Reads `fields` of the signed-in homeowner's own contact, the only one the proof names (PRIV-021,
@@ -234,8 +236,8 @@ async fn gated(
     fields: &[Field],
 ) -> Result<ContactDetails, VaultError> {
     match grant_for(reader, purpose, fields) {
-        Some(grant) => vault::read(db, vault, (grant, actor), id, fields).await,
-        None => vault::refuse(db).await,
+        Some(grant) => vault::read(db, vault, (grant, actor, None), id, fields).await,
+        None => vault::refuse(db, (reader, purpose), id).await,
     }
 }
 
@@ -309,13 +311,14 @@ mod realm_tests {
         let id = store_contact(&mut db, &vault, &contact("928-555-0113"))
             .await
             .expect("store");
-        let proof = ReleaseMint { _private: () }.mint(Uuid::max(), ReleaseBasis::NoFeeDue);
+        let mint = ReleaseMint { _private: () };
+        let proof = mint.mint(Uuid::max(), ReleaseBasis::NoFeeDue);
         assert_eq!(
             (proof.pick_id(), proof.basis()),
             (Uuid::max(), ReleaseBasis::NoFeeDue)
         );
         let read =
-            read_for_release(&mut db, &vault, &proof, id, &[Field::Name, Field::Address]).await;
+            read_for_release(&mut db, &vault, proof, id, &[Field::Name, Field::Address]).await;
         assert_eq!(
             read.expect("release")
                 .name
@@ -323,8 +326,36 @@ mod realm_tests {
                 .as_deref(),
             Some("Ada Example")
         );
-        let phone = read_for_release(&mut db, &vault, &proof, id, &[Field::Phone]).await;
+        let proof = mint.mint(Uuid::max(), ReleaseBasis::PaidCharge);
+        let phone = read_for_release(&mut db, &vault, proof, id, &[Field::Phone]).await;
         assert_eq!(phone.err(), Some(VaultError::UnregisteredPurpose));
+    }
+
+    /// SEC-030, PRIV-003, D-752: a release read is audited against the pick its proof names.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn a_release_read_is_audited_against_its_pick(pool: PgPool) {
+        let (vault, mut db) = (vault(), pool.acquire().await.expect("connection"));
+        let id = store_contact(&mut db, &vault, &contact("928-555-0115"))
+            .await
+            .expect("store");
+        let pick = Uuid::from_u128(0x22);
+        let proof = ReleaseMint { _private: () }.mint(pick, ReleaseBasis::PaidCharge);
+        read_for_release(&mut db, &vault, proof, id, &[Field::Name])
+            .await
+            .expect("release");
+        let rows = export_audit(&mut db, 0, 100).await.expect("export");
+        let release: Vec<_> = rows
+            .iter()
+            .filter(|r| r.action == "vault_read.picks.release")
+            .map(|r| (r.subject_kind.as_str(), r.subject_id, r.field.as_deref()))
+            .collect();
+        assert_eq!(
+            release,
+            [
+                ("privacy.contact", id, Some("name")),
+                ("picks.pick", pick, None)
+            ]
+        );
     }
 
     /// SEC-046, OPS-036: the owner realm reads with its purpose, audited as the owner, within its fields.

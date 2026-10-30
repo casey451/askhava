@@ -10,6 +10,7 @@
 //! the read's own transaction and counts toward the hourly SEC-047 check, [`check_read_rates`].
 
 use std::collections::BTreeMap;
+use std::sync::LazyLock;
 
 use aes_gcm::aead::{Aead, Generate, Nonce, Payload};
 use aes_gcm::{Aes256Gcm, Key};
@@ -76,7 +77,7 @@ impl Vault {
         if parts
             .chain(index_key.expose_secret().split(','))
             .filter_map(|entry| entry.split_once(':'))
-            .any(|(_, b64)| url.contains(b64.trim()))
+            .any(|(_, b64)| in_credential(url, b64))
         {
             return Err(VaultError::Keys("a key is inside the database credential"));
         }
@@ -177,6 +178,44 @@ impl Vault {
     }
 }
 
+/// Whether the base64 key `b64` sits in the credential `url` as written or percent-encoded (`%2B`,
+/// `%2F`, `%3D`, either case), with or without its `=` padding, in the standard or URL-safe
+/// alphabet (PRIV-002, D-752).
+fn in_credential(url: &str, b64: &str) -> bool {
+    let decoded = percent_decode(url);
+    let bare = b64.trim().trim_end_matches('=');
+    let url_safe = bare.replace('+', "-").replace('/', "_");
+    [url, decoded.as_str()]
+        .iter()
+        .any(|u| u.contains(bare) || u.contains(url_safe.as_str()))
+}
+
+/// `s` with every `%` and two hex digits replaced by the byte they name; kept zeroized, as it may
+/// hold the database password.
+fn percent_decode(s: &str) -> Zeroizing<String> {
+    let bytes = s.as_bytes();
+    let mut out = Zeroizing::new(Vec::with_capacity(bytes.len()));
+    let mut i = 0;
+    while i < bytes.len() {
+        let hex = bytes
+            .get(i + 1..i + 3)
+            .filter(|h| h.iter().all(u8::is_ascii_hexdigit))
+            .and_then(|h| std::str::from_utf8(h).ok())
+            .and_then(|h| u8::from_str_radix(h, 16).ok());
+        match (bytes[i], hex) {
+            (b'%', Some(byte)) => {
+                out.push(byte);
+                i += 3;
+            }
+            (byte, _) => {
+                out.push(byte);
+                i += 1;
+            }
+        }
+    }
+    Zeroizing::new(String::from_utf8_lossy(&out).into_owned())
+}
+
 /// HMAC-SHA256 of `msg` under `key`.
 fn hmac(key: &[u8], msg: &[u8]) -> [u8; 32] {
     let mut mac = <Hmac<Sha256> as KeyInit>::new_from_slice(key).unwrap_or_else(|_| unreachable!());
@@ -216,6 +255,15 @@ fn parse_keys(value: &str) -> Result<BTreeMap<u16, KeyBytes>, VaultError> {
 
 fn db_err(_: sqlx::Error) -> VaultError {
     VaultError::Database
+}
+
+/// A unique violation on the blind index is another contact taking the same phone in a race with
+/// this one; anything else is a database failure (PRIV-002, D-752).
+fn index_err(error: sqlx::Error) -> VaultError {
+    match error {
+        sqlx::Error::Database(e) if e.is_unique_violation() => VaultError::PhoneTaken,
+        _ => VaultError::Database,
+    }
 }
 
 /// Stores a new contact, every field sealed and the phone blind-indexed, and audits the creation;
@@ -299,7 +347,7 @@ async fn index_phone(
     )
     .execute(db)
     .await
-    .map_err(db_err)?;
+    .map_err(index_err)?;
     Ok(())
 }
 
@@ -333,16 +381,42 @@ pub async fn find_by_phone(
     .map_err(db_err)
 }
 
-/// Refuses a read that matches no grant and raises a High alert at once (SEC-047).
+/// Every reader and purpose's `vault_read.<reader>.<purpose>` code name, built once, so a refusal's
+/// alert can name both in its `'static` subject kind (SEC-047, D-752).
+static READ_NAMES: LazyLock<Vec<(Reader, Purpose, String)>> = LazyLock::new(|| {
+    Reader::ALL
+        .into_iter()
+        .flat_map(|r| {
+            Purpose::ALL
+                .into_iter()
+                .map(move |p| (r, p, format!("vault_read.{}.{}", r.label(), p.label())))
+        })
+        .collect()
+});
+
+/// The `vault_read.<reader>.<purpose>` code name of `reader` and `purpose` (SEC-047).
+fn read_name(reader: Reader, purpose: Purpose) -> &'static str {
+    READ_NAMES
+        .iter()
+        .find(|(r, p, _)| *r == reader && *p == purpose)
+        .map_or(UNREGISTERED_ALERT, |(.., name)| name.as_str())
+}
+
+/// Refuses a read of contact `id` that matches no grant and raises a High alert at once, its
+/// subject kind `vault_read.<reader>.<purpose>` and its subject the contact (SEC-047, D-752).
 ///
 /// # Errors
 ///
 /// Always [`VaultError::UnregisteredPurpose`], or [`VaultError::Audit`] if the alert failed.
-pub(crate) async fn refuse(db: &mut PgConnection) -> Result<ContactDetails, VaultError> {
+pub(crate) async fn refuse(
+    db: &mut PgConnection,
+    (reader, purpose): (Reader, Purpose),
+    id: Uuid,
+) -> Result<ContactDetails, VaultError> {
     let alert = NewAlert {
         kind: UNREGISTERED_ALERT,
         severity: Severity::High,
-        subject: None,
+        subject: Some((read_name(reader, purpose), id)),
     };
     raise_alert(db, &alert)
         .await
@@ -351,48 +425,72 @@ pub(crate) async fn refuse(db: &mut PgConnection) -> Result<ContactDetails, Vaul
 }
 
 /// Reads `fields` of contact `id` under `grant`: one audit row per field naming the reader and
-/// purpose (the grant's action) and the read counted for SEC-047, all in one transaction that
-/// commits before any plaintext is returned (PRIV-003, PRIV-004).
+/// purpose (the grant's action), one more naming the pick when `pick` is a release's, and the read
+/// counted for SEC-047, all in one transaction that commits before any plaintext is returned
+/// (PRIV-003, PRIV-004, SEC-030). Refused on a connection already in a transaction, whose later
+/// rollback would undo the audit rows after the plaintext left (D-752).
 ///
 /// # Errors
 ///
-/// [`VaultError::NotFound`], [`VaultError::Sealed`], [`VaultError::Audit`] or [`VaultError::Database`].
+/// [`VaultError::InTransaction`], [`VaultError::NotFound`], [`VaultError::Sealed`],
+/// [`VaultError::Audit`] or [`VaultError::Database`].
 pub(crate) async fn read(
     db: &mut PgConnection,
     vault: &Vault,
-    access: (&Grant, Actor),
+    (grant, actor, pick): (&Grant, Actor, Option<Uuid>),
     id: Uuid,
     fields: &[Field],
 ) -> Result<ContactDetails, VaultError> {
+    if db.is_in_transaction() {
+        return Err(VaultError::InTransaction);
+    }
     let mut tx = db.begin().await.map_err(db_err)?;
-    let details = open_row(&mut tx, vault, id, fields).await?;
-    audit_read(&mut tx, access, id, fields).await?;
+    let details = open_row(&mut tx, vault, id, fields, false).await?;
+    audit_read(&mut tx, (grant, actor), id, fields).await?;
+    if let Some(pick) = pick {
+        let entry = AuditEntry {
+            actor,
+            action: grant.action,
+            subject_kind: "picks.pick",
+            subject_id: pick,
+            change: Change::Action,
+        };
+        audit(&mut tx, &entry)
+            .await
+            .map_err(|_| VaultError::Audit)?;
+    }
     tx.commit().await.map_err(db_err)?;
     Ok(details)
 }
 
-/// Opens `fields` of contact `id`, locking the row for the transaction.
+/// Opens `fields` of contact `id`; with `lock`, the row is locked for the transaction, which only
+/// [`rotate_batch`]'s re-seal needs.
 async fn open_row(
     db: &mut PgConnection,
     vault: &Vault,
     id: Uuid,
     fields: &[Field],
+    lock: bool,
 ) -> Result<ContactDetails, VaultError> {
-    let row = sqlx::query!(
-        "SELECT name, phone, email, address, onsite_contact FROM privacy.contact WHERE id = $1 FOR UPDATE",
-        id,
-    )
-    .fetch_optional(db)
-    .await
+    let sealed = if lock {
+        sqlx::query!(
+            "SELECT name, phone, email, address, onsite_contact FROM privacy.contact WHERE id = $1 FOR UPDATE",
+            id,
+        )
+        .fetch_optional(db)
+        .await
+        .map(|r| r.map(|r| [r.name, r.phone, r.email, r.address, r.onsite_contact]))
+    } else {
+        sqlx::query!(
+            "SELECT name, phone, email, address, onsite_contact FROM privacy.contact WHERE id = $1",
+            id,
+        )
+        .fetch_optional(db)
+        .await
+        .map(|r| r.map(|r| [r.name, r.phone, r.email, r.address, r.onsite_contact]))
+    }
     .map_err(db_err)?
     .ok_or(VaultError::NotFound)?;
-    let sealed = [
-        row.name,
-        row.phone,
-        row.email,
-        row.address,
-        row.onsite_contact,
-    ];
     let mut details = ContactDetails {
         id,
         ..ContactDetails::default()
@@ -464,7 +562,7 @@ pub async fn rotate_batch(
     .map_err(db_err)?;
     for id in &ids {
         let mut tx = db.begin().await.map_err(db_err)?;
-        let details = open_row(&mut tx, vault, *id, &Field::ALL).await?;
+        let details = open_row(&mut tx, vault, *id, &Field::ALL, true).await?;
         audit_read(
             &mut tx,
             (own_grant(Purpose::Rotation), Actor::System),
