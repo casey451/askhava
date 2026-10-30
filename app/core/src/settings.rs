@@ -48,6 +48,9 @@ const KEYS: &[&str] = &[
     "ASKHAVA_TWILIO_VERIFY_SERVICE_SID",
     "ASKHAVA_MASKED_POOL_SIZE",
     "ASKHAVA_MASKED_NUMBERS",
+    // Parsed by `rate_limit::ClientIpPolicy::from_pairs` (T013, SEC-040).
+    "ASKHAVA_CLIENT_IP_HEADER",
+    "ASKHAVA_PROXIED_HOSTS",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).

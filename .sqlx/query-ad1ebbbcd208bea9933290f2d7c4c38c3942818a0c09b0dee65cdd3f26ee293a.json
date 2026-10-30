@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO core.rate_limit (bucket, window_start, hits) VALUES ($1, $2, 1) ON CONFLICT (bucket, window_start) DO UPDATE SET hits = core.rate_limit.hits + 1 RETURNING hits",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "hits",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "core.rate_limit",
+            "name": "hits"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "ad1ebbbcd208bea9933290f2d7c4c38c3942818a0c09b0dee65cdd3f26ee293a"
+}

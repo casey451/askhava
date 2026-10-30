@@ -8,7 +8,7 @@
 
 use std::io;
 
-use askhava_core::api::{LogGuard, Settings, init_logging, request_span};
+use askhava_core::api::{LogGuard, Registry, Settings, init_logging, request_span};
 use axum::Router;
 use axum::body::Body;
 use tokio::signal::unix::{SignalKind, signal};
@@ -51,6 +51,14 @@ pub fn build_router() -> Router {
         .layer(TraceLayer::new_for_http().make_span_with(request_span::<Body>))
         .layer(PropagateRequestIdLayer::x_request_id())
         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
+}
+
+/// Every module's `core.task` handlers, one `register` call per kind (D-481, D-491). The worker
+/// runs what it returns; tests hold it in a `OnceLock`. A kind with no handler is failed with
+/// `NO_HANDLER` and dead-lettered after its attempts (JOB-006).
+#[must_use]
+pub fn register_handlers() -> Registry {
+    Registry::new()
 }
 
 /// Registers SIGINT and SIGTERM now and returns a future that finishes on the

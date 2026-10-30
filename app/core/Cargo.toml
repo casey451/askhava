@@ -9,18 +9,19 @@ publish.workspace = true
 [dependencies]
 axum = { workspace = true }
 jiff = { workspace = true }
+jiff-sqlx = { workspace = true, features = ["postgres"] }
 secrecy = { workspace = true }
 sentry = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
+tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
-serde_json = { workspace = true }
-tokio = { workspace = true }
 tower = { workspace = true }
 tower-http = { workspace = true }
 

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE core.task SET lease_owner = NULL, lease_until = NULL, last_error = $4, run_at = $5,\n             dead_at = CASE WHEN attempts >= max_attempts THEN $6::timestamptz END\n           WHERE id = $1 AND lease_owner = $2 AND attempts = $3 AND done_at IS NULL AND dead_at IS NULL\n           RETURNING dead_at IS NOT NULL AS \"dead!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "dead!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Uuid",
+        "Int4",
+        "Text",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "6aac18e86725d862257028821613fcc89267b067213f1a268f698760468257e6"
+}
