@@ -99,3 +99,4 @@
 - 2026-10-30T01:42:05Z runner ef07eed50d33 (actions): {"T005": "IN_PROGRESS -> QUEUED"}
 - 2026-10-30T01:44:43Z runner ef07eed50d33 (actions): {"T005": "QUEUED -> IN_PROGRESS"}
 - 2026-10-30T02:23:17Z runner cbd7dbe7b929 (actions): {"T005": "IN_PROGRESS -> QUEUED"}
+- 2026-10-30T02:27:32Z runner ef07eed50d33 (actions): {"T154": "QUEUED -> IN_PROGRESS"}; T154 estimated 229k tokens (default); five-hour window has 1.4M left, week 125.0M (ledger); claimed
