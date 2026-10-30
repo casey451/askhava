@@ -6,10 +6,13 @@
 //! version; when it fires it re-checks all three and does nothing if the job moved on (JOB-006).
 //! A later task that must count a wait from a later event (a reply, a decline, a visit date, the end
 //! of a HOLD or a pause) calls [`restart_timer`], which supersedes the pending timer (D-807).
+//! Every job gets its number in the transaction that creates it and keeps it for ever; after a
+//! restore the replay raises the counter with [`raise_number_floor`] (JOB-024, D-851).
 
 use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::Timestamp;
+use jiff_sqlx::ToSqlx;
 use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
@@ -26,8 +29,8 @@ const SUBJECT: &str = "jobs.job";
 const BAD_PAYLOAD: &str = "bad jobs timer payload";
 const DB: &str = "the jobs database statement failed";
 
-/// Creates a job in Intake at `at`, audited, with its Intake timer queued (JOB-001, JOB-003,
-/// JOB-005). Returns the job's ID.
+/// Creates a job in Intake at `at`, numbered, audited, with its Intake timer queued (JOB-001,
+/// JOB-003, JOB-005, JOB-024). Returns the job's ID; [`job_number`] reads its number.
 ///
 /// # Errors
 ///
@@ -40,6 +43,7 @@ pub async fn create(
 ) -> Result<Uuid, JobsError> {
     let mut tx = db.begin().await.map_err(|_| JobsError::Database)?;
     let id = models::insert_job(&mut tx, at, emergency).await?;
+    issue_number(&mut tx, id, at).await?;
     let entry = AuditEntry {
         actor,
         action: "created",
@@ -53,6 +57,63 @@ pub async fn create(
     queue_timer(&mut tx, id, JobStatus::Intake, (0, 0, emergency), at).await?;
     tx.commit().await.map_err(|_| JobsError::Database)?;
     Ok(id)
+}
+
+/// Takes the next job number and gives it to job `id` for good, in the caller's transaction
+/// (JOB-024). The counter row's lock orders concurrent creates, and `jobs.job_number` is
+/// append-only with the number as its primary key, so a number already issued fails the create
+/// rather than being given to anyone else. If the counter row is missing, nothing is inserted and
+/// the create fails with [`JobsError::Database`] instead of leaving the job unnumbered.
+async fn issue_number(db: &mut PgConnection, id: Uuid, at: Timestamp) -> Result<(), JobsError> {
+    let done = sqlx::query!(
+        "WITH taken AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n) \
+         INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n, $1, $2 FROM taken",
+        id,
+        at.to_sqlx() as _,
+    )
+    .execute(db)
+    .await
+    .map_err(|_| JobsError::Database)?;
+    if done.rows_affected() == 1 {
+        Ok(())
+    } else {
+        Err(JobsError::Database)
+    }
+}
+
+/// Job `id`'s number, the one its texts carry (JOB-024).
+///
+/// # Errors
+///
+/// [`JobsError::NotFound`] or [`JobsError::Database`].
+pub async fn job_number(db: &mut PgConnection, id: Uuid) -> Result<i64, JobsError> {
+    sqlx::query_scalar!("SELECT number FROM jobs.job_number WHERE job_id = $1", id)
+        .fetch_optional(db)
+        .await
+        .map_err(|_| JobsError::Database)?
+        .ok_or(JobsError::NotFound)
+}
+
+/// After a restore, makes every later job number higher than `highest_texted`, the highest job
+/// number the replay found in the vendors' sent-message records (JOB-024, OPS-015, D-851). The
+/// restored counter only moves up, so a number texted after the backup is never issued again.
+/// The replay (T110) calls it before the app takes new jobs.
+///
+/// # Errors
+///
+/// [`JobsError::Database`].
+pub async fn raise_number_floor(
+    db: &mut PgConnection,
+    highest_texted: i64,
+) -> Result<(), JobsError> {
+    sqlx::query!(
+        "UPDATE jobs.job_number_next SET next = GREATEST(next, $1::bigint + 1)",
+        highest_texted
+    )
+    .execute(db)
+    .await
+    .map_err(|_| JobsError::Database)?;
+    Ok(())
 }
 
 /// Moves job `id` from `from` to `to` at `at` (JOB-002, JOB-004, JOB-005, JOB-006). A move with no
