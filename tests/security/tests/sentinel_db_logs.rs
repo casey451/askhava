@@ -99,18 +99,29 @@ const HELD: [&str; 6] = [
 /// The sentinel phone's spellings other than the typed one: digits, dashes, spaces and dots.
 const PHONE_SPELLINGS: [&str; 5] = ["9285550199", "555-0199", "555 0199", "555.0199", "5550199"];
 
-/// The sentinel spellings searched for, lower case, and each one's hex for bytea columns.
+/// The sentinel spellings searched for, lower case, and for bytea columns the hex of each one in
+/// both its original and its lower case, since hex digits do not fold with letter case.
 fn needles() -> Vec<String> {
-    let names = [SENTINEL_NAME, "zelda", SENTINEL_EMAIL, SENTINEL_STREET];
-    let plain: Vec<String> = names
+    let encoded = [
+        SENTINEL_STREET.replace(' ', "%20"),
+        SENTINEL_STREET.replace(' ', "+"),
+    ];
+    let original: Vec<String> = [SENTINEL_NAME, "Zelda", SENTINEL_EMAIL, SENTINEL_STREET]
         .into_iter()
         .chain(PHONE_SPELLINGS)
-        .map(str::to_lowercase)
+        .map(str::to_owned)
+        .chain(encoded)
         .collect();
-    let hex = plain
+    let lower: Vec<String> = original.iter().map(|n| n.to_lowercase()).collect();
+    let hex: Vec<String> = original
         .iter()
-        .map(|n| n.bytes().map(|b| format!("{b:02x}")).collect());
-    plain.iter().cloned().chain(hex).collect()
+        .chain(&lower)
+        .map(|n| n.bytes().map(|b| format!("{b:02x}")).collect())
+        .collect();
+    let mut all: Vec<String> = lower.into_iter().chain(hex).collect();
+    all.sort();
+    all.dedup();
+    all
 }
 
 /// PRIV-016, PRIV-019: the sentinels found in `text`, in any letter case.
@@ -272,6 +283,8 @@ async fn sentinels_written_through_the_vault_leak_nowhere(pool: PgPool) {
     let _logging = tracing::subscriber::set_default(subscriber);
     let root = std::env::temp_dir().join(format!("askhava-sentinel-{}", std::process::id()));
     let _fresh = std::fs::remove_dir_all(&root);
+    // The Sentry hub is bound to this future only: a task it spawns (the request log writer)
+    // reports to the process hub, which has no client, so only the JSON log sees its events.
     let ran = async {
         use_the_vault(&pool).await;
         send_a_request(&pool).await;
