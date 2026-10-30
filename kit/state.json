@@ -4964,8 +4964,8 @@
     "T016",
     "T176"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "messaging-outbox",
    "type": "build",
    "stage": "2",
@@ -4983,13 +4983,34 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 45,
      "head_sha": "2d4aa07eed60ad2775b8fc591035c0eb8f929b46",
-     "pr": null,
-     "checks": null,
+     "pr": 148,
+     "checks": [
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-30T22:29:29Z",
      "ended_at": "2026-10-30T23:14:51Z",
-     "result": "MERGE_PENDING"
+     "result": "update_conflict"
     }
    ],
    "reviewed_sha": "2d4aa07eed60ad2775b8fc591035c0eb8f929b46",
@@ -5003,7 +5024,13 @@
     "enabled": true,
     "why": "auto-merge on #148 (gh pr merge)",
     "head": "2d4aa07eed60ad2775b8fc591035c0eb8f929b46"
-   }
+   },
+   "runner_closed_prs": [
+    148
+   ],
+   "last_failure": "merging main into the task branch conflicts in docs/architecture.md, docs/for-casey-review.md: the runner resolves only docs/decisions.md and a plan lock both sides kept true, so this attempt fails and the next one starts from the branch with main merged in, or fresh from main when that still conflicts (D-583, D-620)",
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T178",
@@ -8718,7 +8745,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T23:15:26Z",
+ "updated_at": "2026-10-30T23:17:35Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -8816,7 +8843,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0a0906dd33f1e43cb5020721446cfb33af00a58b",
+ "runner_sha": "96f1b407f0f80253588f89f182761076b05b2d80",
  "starter": "actions",
  "smoke_runs": [
   {
