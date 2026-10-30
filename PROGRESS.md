@@ -175,3 +175,4 @@
 - 2026-10-30T11:07:39Z runner ef74c9a216eb (actions): {"T233": "QUEUED -> IN_PROGRESS"}; T233 estimated 499k tokens (calibrated); five-hour window has 26.3M left, week 425.9M (ledger); claimed
 - 2026-10-30T11:23:46Z runner f52cc719ec55 (actions): {}
 - 2026-10-30T11:23:54Z runner f52cc719ec55 (actions): {"T233": "IN_PROGRESS -> MERGE_PENDING"}
+- 2026-10-30T11:25:27Z runner ef74c9a216eb (actions): {"T233": "MERGE_PENDING -> QUEUED"}
