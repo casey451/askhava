@@ -1,0 +1,10 @@
+[package]
+name = "askhava-fixtures"
+description = "Ask Hava fake-data fixtures: fake names, 555-01xx phones, example.com emails, fake streets and fixed sentinel values (PRIV-019, D-109)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
