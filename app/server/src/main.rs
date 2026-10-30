@@ -3,7 +3,9 @@
 //! Installs the TLS provider, refuses to start on bad settings (SEC-002),
 //! starts the JSON log, builds the router and serves it on
 //! `0.0.0.0:$PORT` (the host sets `PORT`) until SIGINT or SIGTERM, then
-//! finishes the requests in flight and exits 0.
+//! finishes the requests in flight and exits 0. `server migrate` instead
+//! applies the pending migrations as the migration role and exits: the
+//! release step of the `migrate` service (D-092, SEC-052).
 
 use std::io;
 use std::net::Ipv4Addr;
@@ -13,12 +15,26 @@ use tokio::net::TcpListener;
 #[tokio::main]
 async fn main() -> io::Result<()> {
     askhava_server::install_crypto_provider()?;
-    let (_settings, _log_guard) = askhava_server::start_up()?;
+    let (settings, _log_guard) = askhava_server::start_up()?;
+    if std::env::args().nth(1).as_deref() == Some("migrate") {
+        return run_migrations(&settings).await;
+    }
     let port = port_from_env()?;
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
     axum::serve(listener, askhava_server::build_router())
         .with_graceful_shutdown(askhava_server::shutdown_signal()?)
         .await
+}
+
+/// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app
+/// role's URL, so the app role owns nothing (D-092, SEC-052). Errors name no value.
+async fn run_migrations(settings: &askhava_core::api::Settings) -> io::Result<()> {
+    let url = settings
+        .migration_database_url()
+        .map_err(io::Error::other)?;
+    askhava_core::api::migrate(url)
+        .await
+        .map_err(io::Error::other)
 }
 
 /// Reads the listening port from `PORT`. The error never echoes the value.

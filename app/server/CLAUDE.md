@@ -7,7 +7,7 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 ## What it owns
 
 - `src/lib.rs`: `install_crypto_provider()`, `start_up()` (settings from `std::env::vars()`, then the JSON log and Sentry; D-689), `build_router()` (no routes yet, under the request-ID and `TraceLayer` layers that log the route template only), `shutdown_signal()` (SIGINT or SIGTERM); `register_handlers()` does not exist yet (T013, the handler-registry task, creates it).
-- `src/main.rs`: the `server` binary; binds `0.0.0.0:$PORT` and serves with graceful shutdown. Missing or bad `PORT` exits 1 without echoing the value (D-588).
+- `src/main.rs`: the `server` binary; binds `0.0.0.0:$PORT` and serves with graceful shutdown. `server migrate` instead applies pending migrations over `ASKHAVA_MIGRATION_DATABASE_URL` (via `askhava_core::api::migrate`) and exits (D-700, SEC-052). Missing or bad `PORT` exits 1 without echoing the value (D-588).
 - `src/bin/worker.rs`: the `worker` binary; idles until a signal until T013 adds the claim loop (D-588).
 - No tables.
 

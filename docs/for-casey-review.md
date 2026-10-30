@@ -1209,3 +1209,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Logs.** Every log line is one tidy line that Railway can read, carrying a request number and the page pattern (such as `/q/{token}`), never the full web address, a phone number or an email. Error reports to Sentry have personal details stripped first.
 - **Business hours.** Timers count only 8 a.m. to 8 p.m. Arizona time, every day of the week.
 - **Nothing for you to do now.** At the account checkpoint each Railway site gets a short list of its own account names (Twilio, Stripe, Resend, storage bucket); the deploy notes will say exactly what to paste.
+
+## The database has two separate keys (T012, D-698 to D-700, October 30)
+
+- **What it does.** The app's database now has two logins: one that sets up the tables when a new version ships, and one the website and worker use every day. The everyday login can add records and read them, but it cannot change or erase the money and history records, and it owns nothing it could rewrite. A test checks this on every change.
+- **Two people editing one job.** When two changes to the same job arrive at once, the second waits, sees the job has already moved on, and changes nothing.
+- **Nothing for you to do now.** At the account checkpoint the deploy notes will say how to run the one-time setup script on each Railway database and which two passwords to paste.

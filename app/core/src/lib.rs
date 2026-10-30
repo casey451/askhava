@@ -8,6 +8,7 @@
 
 pub mod api;
 mod clock;
+mod db;
 mod logging;
 mod settings;
 #[cfg(test)]
