@@ -146,6 +146,12 @@ jobs:
           shared-key: checks
           cache-directories: target/tests/trybuild
 
+      - name: The cache keeps target/tests/trybuild (a cold pass costs 400 s more without it, D-488)
+        if: steps.rust-cache.outputs.cache-hit == 'true' && hashFiles('tests/security/ui/*.rs') != ''
+        run: |
+          # Checked straight after the restore, before any build or test recreates the directory.
+          test -d target/tests/trybuild || { echo "the cache lost target/tests/trybuild"; exit 1; }
+
       - name: Prebuilt tools (cargo-audit, cargo-deny) from pinned musl release tarballs (D-693)
         if: steps.changes.outputs.rust == 'true'
         env:
@@ -156,10 +162,11 @@ jobs:
         run: |
           bin="$RUNNER_TEMP/tools/bin"; mkdir -p "$bin"
           for tool in AUDIT DENY; do
-            url="${tool}_URL"; sum="${tool}_SHA256"
+            url="${tool}_URL"; sum="${tool}_SHA256"; name="cargo-${tool,,}"
             curl -sSfL -o "$RUNNER_TEMP/$tool.tgz" "${!url}"
             echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c -
-            tar -xzf "$RUNNER_TEMP/$tool.tgz" -C "$bin" --strip-components=1 --wildcards '*/cargo-audit' '*/cargo-deny'
+            # Only this tool's binary: GNU tar exits 2 when a named pattern matches nothing.
+            tar -xzf "$RUNNER_TEMP/$tool.tgz" -C "$bin" --strip-components=1 --wildcards "*/$name"
           done
           echo "$bin" >> "$GITHUB_PATH"
 
@@ -207,12 +214,6 @@ jobs:
             cargo build -p askhava-server --locked
             cargo test --workspace --locked
           fi
-
-      - name: The cache keeps target/tests/trybuild (a cold pass costs 400 s more without it, D-488)
-        if: steps.rust-cache.outputs.cache-hit == 'true' && hashFiles('tests/security/ui/*.rs') != ''
-        run: |
-          # An exact cache hit restored target/ before the tests ran: the scratch project must be there.
-          test -d target/tests/trybuild || { echo "the cache lost target/tests/trybuild"; exit 1; }
 
       - name: Rust dependency audit (cargo-audit, cargo-deny)
         if: steps.changes.outputs.rust == 'true'
@@ -290,6 +291,16 @@ jobs:
               || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
             psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
           done
+
+      - name: Rust toolchain (the pinned release from rust-toolchain.toml, selected before the cache key is made)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+
+      - name: Apply the migrations when any exist (same database as Checks; plain SQL, applied in file order)
+        if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        run: |
+          for f in $(ls migrations/*.sql | sort); do psql "$DATABASE_URL" -q -v ON_ERROR_STOP=1 -f "$f"; done
 
       - name: Rust build cache (separate from Checks, as the nightly builds its own target dir, D-693)
         if: steps.changes.outputs.rust == 'true'
