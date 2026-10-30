@@ -260,7 +260,6 @@ dependencies = [
  "askhava-core",
  "axum",
  "rustls",
- "sqlx",
  "tokio",
  "tower-http 0.7.1",
 ]

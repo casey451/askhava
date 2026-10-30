@@ -22,6 +22,6 @@ pub use crate::rate_limit::{
 pub use crate::settings::{Environment, Settings, SettingsError, Vendor, check_base_url};
 pub use crate::tasks::{
     Claimed, DEFAULT_MAX_ATTEMPTS, HandlerError, HandlerFuture, LEASE_EXPIRED, Lease, NO_HANDLER,
-    NewTask, Outcome, Registry, TIMED_OUT, TaskError, WorkerId, backoff, claim, enqueue, fail,
-    finish, reap_expired, release_leases, renew,
+    NewTask, Outcome, Registry, TIMED_OUT, TaskError, WORKER_CONCURRENCY, Worker, WorkerId,
+    backoff, claim, enqueue, fail, finish, reap_expired, release_leases, renew,
 };

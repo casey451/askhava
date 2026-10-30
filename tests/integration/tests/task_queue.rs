@@ -4,18 +4,20 @@
 //! run every one of 100 and of 1000 tasks exactly once; that an expired lease is reclaimed and the
 //! old owner's finish, renew and fail are fenced out; that a second enqueue with one dedupe key is
 //! refused; that a failing task backs off, then is dead-lettered with its fixed error; that an
-//! unregistered kind, a released lease and a lease lost on the last attempt end as designed; and
+//! unregistered kind, a released lease and a lease lost on the last attempt end as designed; that
+//! the worker's own claim loop runs every task once, at most four at a time, and on shutdown
+//! aborts what still runs and gives its leases back; and
 //! that 20 concurrent hits from two pools on one bucket allow exactly 5, with the client IP taken
 //! only from the edge header or, on a proxied hostname, from Cloudflare. All data is fake.
 
 use std::net::IpAddr;
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
 use askhava_core::api::{
     Claimed, ClientIpPolicy, Clock, HandlerError, LEASE_EXPIRED, Lease, ManualClock, NO_HANDLER,
-    NewTask, Outcome, RateDecision, Registry, SystemClock, TaskError, WorkerId, claim, enqueue,
-    fail, finish, rate_limit_hit, reap_expired, release_leases, renew,
+    NewTask, Outcome, RateDecision, Registry, SystemClock, TaskError, Worker, WorkerId, claim,
+    enqueue, fail, finish, rate_limit_hit, reap_expired, release_leases, renew,
 };
 use axum::http::HeaderMap;
 use jiff::{SignedDuration, Timestamp};
@@ -25,6 +27,7 @@ use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 const PROBE: &str = "probe.run";
 const SLOW: &str = "probe.slow";
 const FAILS: &str = "probe.fail";
+const HANGS: &str = "probe.hang";
 const PROBE_ERROR: &str = "probe asked to fail";
 const LEASE: SignedDuration = SignedDuration::from_secs(30);
 
@@ -38,6 +41,10 @@ fn registry() -> &'static Registry {
             record(pool, task, Duration::from_millis(20))
         });
         registry.register(FAILS, |_, _| async { Err(HandlerError(PROBE_ERROR)) });
+        registry.register(HANGS, |_, _| async {
+            tokio::time::sleep(Duration::from_secs(60)).await;
+            Ok(())
+        });
         registry
     })
 }
@@ -142,6 +149,59 @@ async fn two_workers_run_100_slow_tasks_exactly_once(opts: PgPoolOptions, conn: 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn two_workers_run_1000_tasks_exactly_once(opts: PgPoolOptions, conn: PgConnectOptions) {
     exactly_once(opts, conn, PROBE, 1000).await;
+}
+
+/// Finishes once `sql` returns `want`: the shutdown signal a test hands the worker loop.
+async fn until(pool: PgPool, sql: &'static str, want: i64) {
+    while scalar(&pool, sql).await != want {
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+}
+
+async fn real_worker(pool: &PgPool) -> Worker {
+    Worker {
+        pool: pool.clone(),
+        registry: Arc::new(registry().clone()),
+        clock: Arc::new(SystemClock),
+        owner: WorkerId::new(pool).await.expect("worker id"),
+    }
+}
+
+/// JOB-006, D-710: the worker's claim loop runs each of 30 tasks once, and a clean shutdown after
+/// the queue empties has no lease to give back.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn the_worker_loop_runs_every_task_once(pool: PgPool) {
+    probe_table(&pool).await;
+    enqueue_many(&pool, SLOW, 30).await;
+    let done = until(
+        pool.clone(),
+        "SELECT count(*) FROM core.task WHERE done_at IS NOT NULL",
+        30,
+    );
+    let worker = real_worker(&pool).await;
+    let run = worker.run(done, Duration::from_secs(5));
+    let released = tokio::time::timeout(Duration::from_secs(60), run).await;
+    assert_eq!(released.expect("the loop finishes"), Ok(0));
+    let runs = scalar(&pool, "SELECT count(*) FROM core.probe_run").await;
+    let distinct = scalar(&pool, "SELECT count(DISTINCT task_id) FROM core.probe_run").await;
+    assert_eq!((runs, distinct), (30, 30));
+}
+
+/// JOB-006, R14, D-710: the loop holds at most four tasks; on shutdown it aborts handlers still
+/// running after the drain and gives back each lease and its attempt, so they are due at once.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn the_worker_loop_gives_back_its_leases_on_shutdown(pool: PgPool) {
+    enqueue_many(&pool, HANGS, 6).await;
+    let leased = "SELECT count(*) FROM core.task WHERE lease_owner IS NOT NULL";
+    let worker = real_worker(&pool).await;
+    let run = worker.run(until(pool.clone(), leased, 4), Duration::from_millis(50));
+    let released = tokio::time::timeout(Duration::from_secs(30), run).await;
+    assert_eq!(released.expect("the loop stops"), Ok(4));
+    let attempts = "SELECT coalesce(sum(attempts), 0)::bigint FROM core.task";
+    assert_eq!(
+        (scalar(&pool, leased).await, scalar(&pool, attempts).await),
+        (0, 0)
+    );
 }
 
 fn start() -> Timestamp {

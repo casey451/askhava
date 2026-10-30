@@ -14,7 +14,6 @@ path = "src/main.rs"
 askhava-core = { workspace = true }
 axum = { workspace = true }
 rustls = { workspace = true }
-sqlx = { workspace = true }
 tokio = { workspace = true }
 tower-http = { workspace = true }
 

@@ -24,6 +24,12 @@ These are decisions Claude made on its own and logged so the build never waits (
 - **If someone pushes to a pull request after its review** while it's set to merge on its own, the runner closes that pull request first, so the unreviewed version can't merge, and the task gets another try.
 - **Nothing for you to do**, unless the runner sends you a note that it couldn't check a merge after two hours of trying. That note says what to look at.
 
+## Two loose ends from the task queue and rate limits (D-708 to D-710, October 30)
+
+- **The visitor's address on Railway is a guess for now.** Rate limits count requests per visitor address. The app reads that address from a header Railway's front door sets, assumed to be `X-Real-IP`. Nobody has checked this on the test project yet. If it's wrong, every visitor shares one count and gets limited sooner. That's the safer way to be wrong, but it still needs fixing. It gets checked and written down in `docs/deploy.md` when the test project is set up (OPS-050). Nothing for you to do.
+- **Old rate-limit counts aren't cleaned up yet.** The cleanup code exists, but nothing runs it yet. The task that adds the first nightly job will hook it up. Until then the old counts just take a little database space.
+- **A stop or deploy doesn't use up a task's tries.** When the worker shuts down cleanly, any task it was still running goes back in line as if it never started. If a task was cut off halfway, it runs again from the start. Every task is built to be safe to run twice.
+
 ## How legal, tax and insurance items are handled now (October 28, 2026)
 
 You've decided not to hire a lawyer, a CPA or an insurance broker for now, to rely on AI research instead, and to accept that risk yourself. So, throughout this file (D-367):

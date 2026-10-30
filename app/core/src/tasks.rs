@@ -10,7 +10,8 @@
 //! `max_attempts`; a lease that expires on the last attempt is dead-lettered by [`reap_expired`].
 //! Every "now" comes from the injected clock and each lease end is computed here in Rust (D-491).
 //! [`Registry`] maps a kind to its handler; `app/server/src/lib.rs` builds it in
-//! `register_handlers()` and `app/server/src/bin/worker.rs` runs the claim loop. Every handler
+//! `register_handlers()`; [`Worker::run`] is the claim loop, which `app/server/src/bin/worker.rs`
+//! starts with that registry and the shutdown signal (D-710). Every handler
 //! first re-checks the current status and does nothing if the job has moved on (JOB-006), so a
 //! second run is harmless.
 
@@ -26,6 +27,7 @@ use jiff_sqlx::ToSqlx;
 use sqlx::types::{JsonValue, Uuid};
 use sqlx::{PgConnection, PgPool};
 use thiserror::Error;
+use tokio::task::JoinSet;
 
 use crate::clock::Clock;
 
@@ -421,12 +423,145 @@ async fn hold_lease(
     loop {
         tokio::select! {
             done = &mut work => return done.unwrap_or(Err(HandlerError(TIMED_OUT))),
-            () = tokio::time::sleep(every) => {
-                let until = later(clock.now(), lease.length);
-                if renew(pool, owner, task, until).await == Ok(false) {
-                    return Err(HandlerError(LEASE_LOST));
-                }
+            () = tokio::time::sleep(every) => keep_lease(pool, clock, owner, task, lease).await?,
+        }
+    }
+}
+
+/// Renews the lease once. A lost lease stops the handler; a database error is logged once with a
+/// fixed sentence (rust brain R5) and the handler goes on, since the lease may still hold.
+async fn keep_lease(
+    pool: &PgPool,
+    clock: &dyn Clock,
+    owner: WorkerId,
+    task: &Claimed,
+    lease: Lease,
+) -> Result<(), HandlerError> {
+    let until = later(clock.now(), lease.length);
+    match renew(pool, owner, task, until).await {
+        Ok(true) => Ok(()),
+        Ok(false) => Err(HandlerError(LEASE_LOST)),
+        Err(_) => {
+            tracing::warn!(task = task.id, "the lease could not be renewed");
+            Ok(())
+        }
+    }
+}
+
+/// Runs one worker process starts at once.
+pub const WORKER_CONCURRENCY: usize = 4;
+/// The shortest and longest wait between claims while the queue is empty.
+const POLL_MIN: Duration = Duration::from_millis(200);
+const POLL_MAX: Duration = Duration::from_secs(5);
+
+/// One worker process: its pool, the handlers from `register_handlers()`, the clock and its lease
+/// owner ID. `app/server/src/bin/worker.rs` builds it and calls [`Worker::run`] (D-491).
+#[derive(Clone)]
+pub struct Worker {
+    /// The app-role pool every claim and handler uses.
+    pub pool: PgPool,
+    /// Which handler runs each kind.
+    pub registry: Arc<Registry>,
+    /// Where every "now" comes from.
+    pub clock: Arc<dyn Clock>,
+    /// This process's lease owner ID.
+    pub owner: WorkerId,
+}
+
+impl fmt::Debug for Worker {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Worker")
+            .field("owner", &self.owner)
+            .finish()
+    }
+}
+
+impl Worker {
+    /// The claim loop (JOB-006, rust brain R12, R14): claims due tasks with `SKIP LOCKED` up to
+    /// [`WORKER_CONCURRENCY`], runs each through [`Registry::run`], polls with a backoff while the
+    /// queue is empty and reaps expired last attempts. When `shutdown` finishes it stops claiming,
+    /// waits up to `drain` for running handlers, aborts the rest and gives back its leases with
+    /// [`release_leases`]. Returns how many leases it gave back.
+    ///
+    /// # Errors
+    ///
+    /// [`TaskError::Db`] when the leases cannot be given back; they then expire on their own.
+    pub async fn run(
+        &self,
+        shutdown: impl Future<Output = ()>,
+        drain: Duration,
+    ) -> Result<u64, TaskError> {
+        let mut running = self.claim_loop(shutdown).await;
+        if tokio::time::timeout(drain, join_all(&mut running))
+            .await
+            .is_err()
+        {
+            running.abort_all();
+            join_all(&mut running).await;
+        }
+        release_leases(&self.pool, self.owner).await
+    }
+
+    /// Claims and spawns tasks until `shutdown` finishes; returns the runs still going.
+    async fn claim_loop(&self, shutdown: impl Future<Output = ()>) -> JoinSet<()> {
+        let mut shutdown = std::pin::pin!(shutdown);
+        let mut running = JoinSet::new();
+        let mut idle = POLL_MIN;
+        loop {
+            while running.try_join_next().is_some() {}
+            let free = WORKER_CONCURRENCY.saturating_sub(running.len());
+            let started = if free == 0 {
+                0
+            } else {
+                self.spawn_due(&mut running, free).await
+            };
+            let wait = if started > 0 { Duration::ZERO } else { idle };
+            idle = if started > 0 {
+                POLL_MIN
+            } else {
+                (idle * 2).min(POLL_MAX)
+            };
+            let full = running.len() >= WORKER_CONCURRENCY;
+            tokio::select! {
+                () = &mut shutdown => return running,
+                Some(_) = running.join_next(), if full => {}
+                () = tokio::time::sleep(wait), if !full => {}
             }
         }
     }
+
+    /// Claims up to `free` due tasks and spawns a run for each; on an empty queue it reaps leases
+    /// that expired on a last attempt. Returns how many runs started. A database error is logged
+    /// once with a fixed sentence (rust brain R5) and counts as an empty queue.
+    async fn spawn_due(&self, running: &mut JoinSet<()>, free: usize) -> usize {
+        let now = self.clock.now();
+        let limit = i64::try_from(free).unwrap_or(1);
+        let tasks = claim(&self.pool, self.owner, now, Lease::WORKER.length, limit)
+            .await
+            .unwrap_or_else(|_| {
+                tracing::warn!("the worker could not claim tasks");
+                Vec::new()
+            });
+        if tasks.is_empty() && reap_expired(&self.pool, now).await.is_err() {
+            tracing::warn!("the worker could not reap expired leases");
+        }
+        let started = tasks.len();
+        for task in tasks {
+            let worker = self.clone();
+            running.spawn(async move {
+                let clock = worker.clock.as_ref();
+                let run =
+                    worker
+                        .registry
+                        .run(&worker.pool, clock, worker.owner, task, Lease::WORKER);
+                let _logged_by_run = run.await;
+            });
+        }
+        started
+    }
+}
+
+/// Waits for every run in `running` to end.
+async fn join_all(running: &mut JoinSet<()>) {
+    while running.join_next().await.is_some() {}
 }
