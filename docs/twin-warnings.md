@@ -160,25 +160,36 @@ A pinned waiver that no longer matches any instance is **stale** and fails the g
 - The negative control replaced by a scenario that reports nothing → exit 1.
 - **Deliberate breaks of the twin's rules** (each in a temporary copy) must make the gate exit 1: the AC-only sub-license given `heating_repair` (section 2); the license check at card time removed; job-type matching switched off (`job_matching: false`); the opt-out check removed from sending; the quiet-hours check removed; the per-attempt Stripe idempotency key reused across picks so a business is charged twice (`double_charge`); contact details released before payment succeeds (`details_released_wrongly`). The first one is exactly the break the current twin cannot see.
 
-## 7. Other failures in the v9.3 scenarios (not investigated in K5)
+## 7. Other failures in the v9.3 scenarios (triaged by T006, D-525)
 
-The rule in section 6 also catches these, from the committed 5-seed results (reproduced in this session). K5 did not trace their causes. Each is pinned by instance at K8 with cause code **R-TRIAGE** and must be resolved, or documented with a decision, by the stage 1 twin task. The first two are money and privacy invariants and go first.
+The rule in section 6 also catches these, from the committed 5-seed results (reproduced in K5, which did not trace their causes). K8 pinned each instance with cause code **R-TRIAGE**; T006 traced every one in a scratch run, money and privacy first, and fixed it or documented it with D-525. **Gate result after T006:** `PYTHONHASHSEED=0 python3 twin/gate.py` exits 0 with 550 instances over the 11 `_fixed` scenarios, seeds 1 to 5, none unwaived: 335 C2a and C3 pins (D-106, re-traced to a wrong homeowner answer with the truth offered) and 215 R-TRIAGE pins, every one naming D-525 and one of the documented causes below. A pinned R-TRIAGE entry now means "triaged and documented", not "not yet looked at"; T007 must still end with no pinned entry (section 6.2).
 
-| Check | Scenarios (per run) | Rule it protects |
+| Check | Rule it protects | Cause found | Status |
+|---|---|---|---|
+| `details_released_to_unlicensed` | PRIV-005, PICK-020 | (a) a license whose stored end date passed in the minute between Confirm and the payment was still released; (b) the simulated owner approved a fraudulent sign-up (below) | (a) **fixed**: no release, the fee is refunded and the job re-offered; none left. (b) **documented** |
+| `charged_but_not_introduced` | FEE-006, FEE-021 | a business confirmed in its portal while texting was suspended; the release text was never sent, the fee was kept and the pick counted as a no-show (seen at `texting_suspended_fixed` seed 11 after T005) | **fixed**: refunded at 72 hours as not introduced; none in seeds 1 to 20 |
+| `call_blocked_unlinked_staff_phone` | CALL-011 (D-078) | (a) the staff call came in quiet hours, so the LINK and "call from your main phone" texts waited for 8 a.m. and the 3 hours ran out overnight; (b) the business ignored both texts | (a) **fixed** in the oracle: the 3 hours run from 8 a.m. for a call placed in quiet hours (D-003); (b) **documented** (1 instance) |
+| `texter_never_answered` | INT-023, TXT-023 | (a) a message a day after an unanswered consent text got no reply; (b) an emergency during a texting suspension never reached Casey's call list; (c) during a suspension, a homeowner with no email whom Casey's calls did not reach; (d) an opted-out number (no text allowed, CON-013) whose call-back went unanswered | (a), (b) **fixed**; (c), (d) **documented** (3 and 1 instances) |
+| `promise_missed` | the twin's 9 p.m. promise (T007 re-states it for D-011 and D-030) | during a suspension: (a) a "not covered" answer Casey gave on the call that took the request was not recorded against it; (b) a homeowner with no email whom Casey's calls did not reach before 9 p.m. | (a) **fixed**; (b) **documented** (1 instance) |
+| `help_not_answered` | CON-018 | (a) an opted-out number's HELP got no reply (D-131 requires one); (b) HELP during a carrier suspension, when no text can be sent | (a) **fixed**, with the oracle no longer counting that reply as a text after STOP; (b) **documented** (5 instances) |
+| `duplicate_open_requests` | INT-009, INT-010 | a late second answer to the on-site question ("Me, I'll be home") opened a new job, because the 2-hour window ran from the job's opening, not its last homeowner message | **fixed** (INT-010, D-485); none left |
+| `pick_not_intended_by_homeowner` | PICK-013, PICK-015 | "1 YES" picked whatever was first in the list at reply time; a quote that had dropped out shifted the numbers | **fixed**: the number names the quote as listed; none left |
+
+Further R-TRIAGE checks that T005's moved random path reached (D-517):
+
+| Check | Cause found | Status |
 |---|---|---|
-| `details_released_to_unlicensed` | `crowded_fixed` 0.2 | PRIV-005, PICK-020: details reach only a licensed business on a paid pick |
-| `charged_but_not_introduced` | `texting_suspended_fixed` 0.4 | FEE-006, FEE-021: every kept charge bought an introduction |
-| `call_blocked_unlinked_staff_phone` | 0.2–0.4 in 9 of the 11 `_fixed` scenarios | CALL-011 (changed by D-078) |
-| `texter_never_answered` | `texting_suspended_fixed` 2.2; `busy_fixed`, `adversarial_fixed`, `crowded_fixed` 0.2 | INT-023, TXT-023 |
-| `promise_missed` | `texting_suspended_fixed` 2.0 | The twin's 9 p.m. promise; the stage 1 twin re-states it for D-011 and D-030 |
-| `help_not_answered` | `texting_suspended_fixed` 0.6 | CON-018 |
-| `duplicate_open_requests` | `races_fixed` 0.4, `crowded_fixed` 0.2 | INT-009, INT-010 |
-| `pick_not_intended_by_homeowner` | `races_fixed` 0.2 | PICK-013, PICK-015 |
+| `fraudulent_contractor_activated`, `job_card_to_unlicensed_contractor`, `details_released_to_unlicensed` (b) | the simulated owner approves a fraudulent sign-up despite the mailed code (`p_fooled_with_postcard`, 0.5%); once approved, a borrowed license looks valid to every app check | **documented** (`db_restore_fixed` seed 3, `vendor_chaos_fixed` seed 2: 202 instances) |
+| `identifying_photo_in_job_card` | a photo all three screens missed (assumed recall: AI 90% twice, local 85%) | **documented** (2 instances) |
+| `unreached_homeowner_no_refund` | (a) the homeowner closed the job after the business started calling, which skipped the 96-hour decision; (b) the oracle applies v9.3's refund rule, while FEE-022 owes nothing for an attempt outside 8 a.m. to 8 p.m. or after a DONE | (a) **fixed**; (b) **documented** until T007 restates the rule (none in seeds 1 to 5) |
+| `qualified_business_left_out` (R-TRIAGE, `db_restore_fixed`) | a restore replay re-stamped a request's card time to after a business that joined later | **fixed** in the oracle: the carrier's earlier send time counts; none left |
+| `request_left_open_after_stop` | `NOT_COVERED`, terminal in the app, was missing from the oracle's closed list | **fixed** in the oracle |
+| `quotes_never_reached_homeowner` | during a suspension, Casey got an email on a call but the quote link was not sent to it | **fixed** |
 
 ## 8. What the stage 1 twin task inherits
 
 - Fix C1 (D-102), C2b and C2c (D-103), C2d (D-104) and C2e (D-105) in the twin's rules, and the same rules in the app's intake through its tests (`docs/test-design.md`, TD-INT-03 to TD-INT-06).
-- Triage every R-TRIAGE item in section 7 to resolve or document.
+- Triage every R-TRIAGE item in section 7 to resolve or document (done by T006, D-525; T007 turns the documented pins into evidence-based class waivers or removes them).
 - Run as a `harness` task with an Opus review, since all of `twin/` is protected.
 - Re-measure the D-106 class-waiver ceilings after the fixes.
 - Pass `gate.py --no-pinned`: no pinned waiver left, only the D-106 class waiver.

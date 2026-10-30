@@ -673,7 +673,12 @@ class Owner:
                 reached, info, voicemail = ho.answer_casey()
                 if reached or voicemail:
                     self.sim.manual_contacts.append(dict(t=self.sim.now, phone=phone, ref=rid, kind=kind, talked=reached))
+                before = set(app.requests)
                 app.owner_logged_call(kind, phone, rid, reached, info)
+                # a request Casey takes on this call and finds not covered is answered on the same call (TXT-023)
+                told = [x for x in app.requests if x not in before and app.requests[x]["status"] == "NOT_COVERED"]
+                if reached and told:
+                    self.sim.manual_contacts.append(dict(t=self.sim.now, phone=phone, ref=told[0], kind="not_covered", talked=True))
         self.sim.later(180, self.call_round)
 
 
@@ -781,8 +786,12 @@ def check(sim):
             if status_at(r, c["at"], sim) == "CANCELLED":
                 bad("call_after_homeowner_closed", f"request {r['id']}")
         if c["rejected"] == "unlinked_phone":
-            later_ok = any(c2["sid"] == c["sid"] and not c2["rejected"] and 0 < c2["at"] - c["at"] <= 180 for c2 in sim.voice.calls)
-            if not later_ok and c["at"] < end - 180:
+            # the 3 hours run from when the business may first be texted about it: at once, or 8 a.m. after a call
+            # placed in quiet hours, when CALL-011's LINK and "call from your main phone" texts are held (D-525)
+            h_ = (c["at"] % DAY) / 60
+            t_from = c["at"] if 8 <= h_ < 21 else c["at"] - c["at"] % DAY + (h_ >= 21) * DAY + 8 * 60
+            later_ok = any(c2["sid"] == c["sid"] and not c2["rejected"] and 0 < c2["at"] - c["at"] and c2["at"] - t_from <= 180 for c2 in sim.voice.calls)
+            if not later_ok and t_from < end - 180:
                 bad("call_blocked_unlinked_staff_phone", f"{c['sid']}: staff phone blocked and no call got through within 3 hours")
 
     # --- job cards stay anonymous
@@ -799,6 +808,14 @@ def check(sim):
                 bad("photo_location_not_stripped", f"card {k['id']}")
 
     # --- texting rules, judged from the carrier log: night texts only as a direct reply (they texted in the last 15 min)
+    help_at = defaultdict(list)
+    for frm, body, t, sid in sim.sms.inbound_log:
+        if body.strip().upper() in ("HELP", "INFO"):
+            help_at[frm].append(t)
+    def help_reply(m):
+        """The HELP reply, which an opted-out number still gets (CON-018, D-131): judged from the carrier log."""
+        b_ = m["body"].lower()
+        return "ask hava" in b_ and ("@" in b_ or "555" in b_) and any(0 <= m["at"] - t <= 5 for t in help_at.get(m["to"], []))
     stop_at = {}
     for frm, body, t, sid in sim.sms.inbound_log:
         if body.strip().upper() in ("STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"):
@@ -808,7 +825,7 @@ def check(sim):
         if not (8 <= h < 21) and m["kind"] not in ("safety", "stop_confirm", "pick_code"):
             if not any(0 <= m["at"] - t <= 15 for t in inbound_by_phone.get(m["to"], [])):
                 bad("text_in_quiet_hours", f"{m['kind']} at {int(h)}:{int((h%1)*60):02d}")
-        if m["to"] in stop_at and m["at"] > stop_at[m["to"]] + 1 and m["kind"] != "stop_confirm":
+        if m["to"] in stop_at and m["at"] > stop_at[m["to"]] + 1 and m["kind"] != "stop_confirm" and not help_reply(m):
             later_start = [t for frm, body, t, sid in sim.sms.inbound_log if frm == m["to"] and body.strip().upper() in ("START", "UNSTOP") and t > stop_at[m["to"]]]
             if not later_start:
                 bad("text_after_stop", f"{m['kind']} to a STOPped phone")
@@ -869,11 +886,16 @@ def check(sim):
             if cid == coid and tt <= when:
                 st = s_
         return st
+    card_sent = defaultdict(list)
+    for m in sim.sms.log:
+        if m["kind"] == "job_card" and m["meta"].get("ref"):
+            card_sent[m["meta"]["ref"]].append(m["at"])
     for r in app.requests.values():
         if not any(s_ == "OPEN" for _, s_ in r["history"]) or r["_sim_truth"].get("emergency"):
             continue
         jt = r["_sim_truth"].get("job_type")
-        first_cards = [app.cards[k]["at"] for k in r["cards"]]
+        # a restore replay re-stamps the app's card records, so the carrier's earlier send time counts (D-525)
+        first_cards = [app.cards[k]["at"] for k in r["cards"]] + card_sent.get(r["id"], [])
         t_send = min(first_cards) if first_cards else r["created"]
         carded = {app.cards[k]["co"] for k in r["cards"]}
         for coid, c in app.contractors.items():
@@ -1026,7 +1048,7 @@ def check(sim):
                 bad("help_not_answered", f"HELP from ...{frm[-4:]}")
         natural = re.search(r"stop (texting|sending)|please stop", body.lower()) and upb not in ("STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT")
         if natural or upb in ("STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"):
-            later = [m for m in sim.sms.log if m["to"] == frm and m["at"] > t + 5 and m["kind"] not in ("stop_confirm", "optout_confirm")]
+            later = [m for m in sim.sms.log if m["to"] == frm and m["at"] > t + 5 and m["kind"] not in ("stop_confirm", "optout_confirm") and not help_reply(m)]
             resumed = any(f2 == frm and t2 > t and b2.strip().upper() in ("START", "UNSTOP") for f2, b2, t2, s2 in sim.sms.inbound_log)
             if natural and later and not resumed:
                 bad("natural_optout_ignored", f"'{body[:30]}' then {later[0]['kind']}")
@@ -1051,7 +1073,7 @@ def check(sim):
     return V_
 
 
-TERMINAL_ST = {"EMERGENCY", "INELIGIBLE", "DUPLICATE", "CANCELLED", "ABANDONED", "CLOSED_NO_QUOTES", "CLOSED_NONE", "DONE", "CLOSED"}
+TERMINAL_ST = {"NOT_COVERED", "EMERGENCY", "INELIGIBLE", "DUPLICATE", "CANCELLED", "ABANDONED", "CLOSED_NO_QUOTES", "CLOSED_NONE", "DONE", "CLOSED"}
 
 
 def metrics(sim):
