@@ -288,3 +288,4 @@
 - 2026-10-30T19:46:38Z runner 660f106afb46 (actions): {"T217": "QUEUED -> IN_PROGRESS"}; T217 estimated 702k tokens (calibrated); five-hour window has 17.4M left, week 406.6M (ledger); claimed
 - 2026-10-30T19:58:45Z runner 688215aad68e (actions): {"T023": "QUEUED -> IN_PROGRESS"}; T023 estimated 1.2M tokens (calibrated); five-hour window has 16.7M left, week 405.9M after 702k still running in another lane (ledger); claimed
 - 2026-10-30T20:01:26Z runner fe854181aea1 (actions): {}
+- 2026-10-30T20:01:34Z runner fe854181aea1 (actions): {"T217": "IN_PROGRESS -> MERGE_PENDING"}
