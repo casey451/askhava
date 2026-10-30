@@ -5,6 +5,7 @@ Fake data only.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import subprocess
 import sys
@@ -221,6 +222,22 @@ def test_rehearsal_handoff_lease_live_after_and_review_gate(repo: dict[str, Path
     names = git(repo["origin"], "ls-tree", "-r", "--name-only", "claude/kit-state").splitlines()
     assert "README.md" in names and "kit/state.json" in names  # main was merged into claude/kit-state
     assert not verify.auto_merge_allowed(state, TASK["branch"], "0" * 40, lease)
+
+
+def test_a_cleared_conditional_gates_answer_reaches_the_dependent_task_as_gate_answers(repo: dict[str, Path], tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """T170: the worker's task file carries {gate id: answer} for each DONE conditional gate the task depends on."""
+    monkeypatch.delenv("RUNNER_WORKER_CMD", raising=False)
+    gate = {"id": "G10", "deps": [], "type": "gate", "owns": [], "gate": {"conditional": True}}
+    dependent = dict(TASK, deps=["G10"])
+    env = GitHubEnv(repo["a"], [gate, dependent], tmp_path / "outbox-g", repo="fake-owner/fake-repo", starter="routine",
+                    runner_sha="feedc0de" * 5, clock=lambda: NOW)
+    (tmp_path / "outbox-g").mkdir()
+    env.smoke_main = lambda: (True, env.main_head())  # type: ignore[method-assign]  # reason: no smoke.sh in the fake repo
+    env.update_state(lambda s: st.with_task(s, "G10", status=st.DONE, answer="no"))
+    seen: list[dict[str, Any]] = []
+    env.run_worker = lambda task, model, log, beat: seen.append(task) or cycle.WorkerResult("handed_off")  # type: ignore[method-assign]  # reason: capture the task the worker gets
+    assert cycle.run_cycle(dataclasses.replace(live_config("session-g", tmp_path, env), graph=[gate, dependent]), env, NOW) == "handed_off"
+    assert seen[0]["id"] == "K10" and seen[0]["gate_answers"] == {"G10": "no"}
 
 
 def test_after_from_a_session_without_the_lease_is_refused(repo: dict[str, Path], tmp_path: Path) -> None:
