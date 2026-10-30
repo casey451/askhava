@@ -12,6 +12,10 @@ import vendors as V
 from app import App, DAY, ZIP_TOWN, PHONE_RE
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# The license oracle (D-107, D-541): generated from the catalog by oracle/gen_license_scope.py, never imported from app.py.
+# The checks judge cards against it and the simulated businesses tick job types from it (docs/twin-warnings.md 6.3 item 4).
+with open(os.path.join(HERE, "oracle", "license_scope.json"), encoding="utf-8") as _f:
+    LICENSE_SCOPE = {k: set(v) for k, v in json.load(_f)["twin"].items()}
 TOWN_ZIPS = defaultdict(list)
 for z, t in ZIP_TOWN.items():
     TOWN_ZIPS[t].append(z)
@@ -23,7 +27,7 @@ JOB_TEXT = {
     "hvac": ["AC blowing warm air", "AC not turning on", "Heater makes a loud rattle", "Thermostat blank, no cooling"],
     "electrical": ["Half the outlets in the garage stopped working", "Need a ceiling fan installed", "Breaker keeps tripping"],
     "handyman": ["Patch drywall in hallway", "Hang shelves and a mirror", "Fix sticking door"],
-    "pool": ["Pool pump making grinding noise", "Pool filter needs replacing", "Want the pool resurfaced and remodeled"],
+    "pool": ["Pool pump making grinding noise", "Pool filter needs replacing", "Pool level drops an inch a day"],
 }
 EMERGENCY_TEXT = ["I smell gas near the water heater", "CO alarm going off in the hallway", "Breaker panel is sparking",
                   "Pilot light smells funny and my head hurts", "Burning plastic smell from an outlet", "Water everywhere from a burst pipe in the wall"]
@@ -33,7 +37,7 @@ JOB_TYPE_OF = {"Water leaking under the kitchen sink": "leak_repair", "Toilet ke
                "Thermostat blank, no cooling": "thermostat", "Half the outlets in the garage stopped working": "outlets_breakers",
                "Need a ceiling fan installed": "fixture_install", "Breaker keeps tripping": "outlets_breakers", "Patch drywall in hallway": "drywall",
                "Hang shelves and a mirror": "mounting", "Fix sticking door": "doors", "Pool pump making grinding noise": "pool_equipment",
-               "Pool filter needs replacing": "pool_equipment", "Want the pool resurfaced and remodeled": "pool_remodel"}
+               "Pool filter needs replacing": "pool_equipment", "Pool level drops an inch a day": "pool_leak"}
 MAJOR_TYPE = {"hvac": "system_replacement", "plumbing": "repipe", "electrical": "panel_upgrade"}
 LICENSE_MIX = {"plumbing": {"R-37": 0.8, "R-37R-drains": 0.2}, "hvac": {"R-39": 0.85, "R-39R-ac": 0.15}, "electrical": {"R-11": 1.0},
                "pool": {"R-6": 0.7, "B-6": 0.3}, "handyman": {"HANDYMAN": 1.0}}
@@ -255,6 +259,8 @@ class Homeowner:
             idx = next((int(n) for n, o in opts if o == truth_name), None)
             ans = idx if (idx is not None and rng.random() < 0.9) else rng.choice([int(n) for n, _ in opts] or [1])
             name = dict((int(n), o) for n, o in opts).get(ans, "")
+            if idx is not None and name and name != truth_name:   # D-106 evidence (truth offered): the job type it sent
+                self.asked_job().setdefault("wrong_answers", []).append(next((k for k, v in JT_NAMES.items() if v == name), name))
             self.reply(f"the {name} one" if (name and rng.random() < 0.3) else str(ans), rng.uniform(1, 30))
         elif k == "intake_q" and "is this mainly" in body:
             # the trade question offers up to three numbered trades (D-104); a re-ask repeats them (D-103)
@@ -266,6 +272,9 @@ class Homeowner:
             words = {"hvac": ["the AC one", "heating and air", "it's the AC"], "plumbing": ["plumbing", "it's a plumbing thing"], "electrical": ["electrical", "the electric one"],
                      "pool": ["pool"], "handyman": ["just a small repair", "handyman"]}
             tr = self.asked_job()["trade"] if ans == (idx + 1 if idx is not None else -1) else None
+            sent = next((t for t, n in names.items() if 0 < ans <= len(opts) and opts[ans - 1].startswith(n)), None)
+            if idx is not None and tr is None and sent:   # D-106 evidence (truth offered): the trade it sent
+                self.asked_job().setdefault("wrong_answers", []).append(sent)
             self.reply(rng.choice(words.get(tr, [str(ans)])) if (tr and rng.random() < 0.4) else str(ans), rng.uniform(1, 30))
         elif k == "intake_q" and "ZIP" in body:
             self.reply(self.jobs[-1]["zip"], rng.uniform(1, 30))
@@ -432,8 +441,7 @@ class Contractor:
         sim.sms.handsets[self.phone] = self.on_sms
         mix = LICENSE_MIX[trade]
         self.license_class = sim.rng.choices(list(mix), list(mix.values()))[0]
-        from app import CLASS_ALLOWS
-        allowed = sorted(CLASS_ALLOWS[self.license_class])
+        allowed = sorted(LICENSE_SCOPE[self.license_class])
         self.checklist = [jt for jt in allowed if sim.rng.random() < 0.8] or allowed[:1]     # job types they tick at sign-up
         self.overflow = sim.rng.random() < 0.85                                              # most leave the default on
         if trade != "handyman":
@@ -697,6 +705,17 @@ def status_at(r, t, sim=None):
     return st
 
 
+def fee_by_job_size(q):
+    """The oracle's fee for the chosen quote (FEE-001, FEE-003, FEE-004, REC-002), written apart from the app's: $25 for a
+    visit-fee quote, else by the fee basis (a firm price, a range's midpoint, 4 months of a monthly price)."""
+    if q.get("type") == "trip":
+        return 25
+    low = q.get("amount") or 0
+    high = q.get("high") if q.get("type") == "range" and q.get("high") else low
+    basis = (low + high) / 2 * (4 if q.get("period") == "month" else 1)
+    return 25 if basis < 500 else (75 if basis <= 1500 else 199)
+
+
 def check(sim):
     app, V_ = sim.app, []
     def bad(key, ex):
@@ -868,18 +887,17 @@ def check(sim):
             bad("handyman_over_1000", f"quote {q['id']} ${q.get('amount')}-{q.get('high')}")
     for p in app.picks.values():
         r = app.requests[p["req"]]
-        if p["fee"] == 149 and not r["_sim_truth"].get("major"):
-            bad("major_fee_on_small_job", f"request {r['id']}")
+        if p["fee"] != fee_by_job_size(app.quotes[p["qid"]]):
+            bad("major_fee_on_small_job", f"request {r['id']}: fee ${p['fee']} is not the fee by job size")
         if r["_sim_truth"].get("rental") and not r.get("onsite") and p.get("released_at"):
             bad("rental_without_onsite_contact", f"request {r['id']}")
 
     # --- job cards go only to businesses whose license covers the job; every qualified business that asked gets it
-    from app import CLASS_ALLOWS
     for k in app.cards.values():
         r = app.requests[k["req"]]; a = sim.contractors[k["co"]]
         jt = r["_sim_truth"].get("job_type")
-        if jt and jt not in CLASS_ALLOWS.get(a.license_class, set()):
-            bad("job_card_outside_license", f"{jt} job to a {a.license_class} license ({a.business})")
+        if jt and jt not in LICENSE_SCOPE.get(a.license_class, set()):
+            bad("job_card_outside_license", f"request {r['id']}: {jt} job to a {a.license_class} license ({a.business})")
     def co_status_at(coid, when):
         st = None
         for tt, cid, s_ in sim.co_stream:
@@ -903,7 +921,7 @@ def check(sim):
             a = sim.contractors[coid]
             if co_status_at(coid, t_send) != "active" or not a.legit or not a.license_true_active(t_send):
                 continue
-            if r["town"] in c["towns"] and jt in CLASS_ALLOWS.get(a.license_class, set()) and jt in a.checklist and coid not in carded:
+            if r["town"] in c["towns"] and jt in LICENSE_SCOPE.get(a.license_class, set()) and jt in a.checklist and coid not in carded:
                 bad("qualified_business_left_out", f"request {r['id']} ({jt}) not sent to {a.business}")
 
     # --- money records: app ledger vs Stripe, payment by payment

@@ -121,5 +121,42 @@
   "p_fooled_by_fraud_checklist": 0.03,
   "p_fooled_with_postcard": 0.005
  },
- "p_shared_entity": 0.08
+ "p_shared_entity": 0.08,
+ "catalog": {
+  "_about": "T007 (D-541): the twin's names in the catalog's terms, read only by twin/oracle/gen_license_scope.py. license_classes: twin class -> license_map.yaml rows; job_types: twin job type -> [category, job type] pairs, '*' meaning every job type of that category.",
+  "license_classes": {
+   "R-37": ["R-37"],
+   "R-37R-drains": ["R-37R Sewers, Drains and Pipe Laying"],
+   "R-39": ["R-39"],
+   "R-39R-ac": ["R-39R Air Conditioning and Refrigeration"],
+   "R-11": ["R-11"],
+   "R-6": ["R-6"],
+   "B-6": ["B-6"],
+   "HANDYMAN": ["Lake Havasu City business license list (no-license categories)"]
+  },
+  "job_types": {
+   "leak_repair": [["plumbing_repair", "leak repair"]],
+   "toilet_fixture": [["plumbing_repair", "toilet repair"], ["plumbing_repair", "faucet replacement"]],
+   "water_heater": [["plumbing_repair", "water heater replacement"]],
+   "drain_sewer": [["plumbing_repair", "drain clearing"]],
+   "repipe": [["plumbing_repair", "*"]],
+   "plumbing_other": [["plumbing_repair", "*"]],
+   "ac_repair": [["hvac_repair", "AC not cooling"]],
+   "heating_repair": [["hvac_repair", "furnace repair"]],
+   "thermostat": [["hvac_repair", "thermostat"]],
+   "system_replacement": [["hvac_replacement", "full system replacement"]],
+   "hvac_other": [["hvac_repair", "*"]],
+   "outlets_breakers": [["electrical", "outlet repair"], ["electrical", "breaker trips"]],
+   "fixture_install": [["electrical", "light fixture"]],
+   "panel_upgrade": [["electrical", "panel upgrade"]],
+   "electrical_other": [["electrical", "*"]],
+   "pool_equipment": [["pool_repair", "pump repair"], ["pool_repair", "filter repair"], ["pool_repair", "equipment replacement"]],
+   "pool_leak": [["pool_repair", "pool leak"]],
+   "pool_other": [["pool_repair", "*"]],
+   "drywall": [["handyman", "drywall patch"]],
+   "mounting": [["handyman", "shelves"]],
+   "doors": [["handyman", "door repair"]],
+   "handyman_other": [["handyman", "*"]]
+  }
+ }
 }

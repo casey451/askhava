@@ -13,13 +13,19 @@ Exit 2: PYTHONHASHSEED is not 0, a required check is missing from the twin, or a
         stale pinned entry).
 
 Usage: PYTHONHASHSEED=0 python3 twin/gate.py [--seeds N] [--no-pinned] [--scenarios a,b] [--report PATH]
-Standard library only. The license oracle check and its self-test are T007's (D-491).
+
+The license oracle (D-107, D-541): the twin's matching checks read `twin/oracle/license_scope.json`, generated
+from the catalog by `twin/oracle/gen_license_scope.py`. Before any run the gate exits 2 if the oracle is stale
+(it differs from a fresh generation, so a hand edit of any section is caught), if twin.py reads the app's own
+license table, or if the oracle disagrees with a row of `docs/catalog/matching_examples.yaml` it can express (the self-test, D-110).
+Standard library only, except PyYAML for that file and the generator (D-541).
 """
 
 from __future__ import annotations
 
 import argparse
 import copy
+import importlib.util
 import json
 import os
 import re
@@ -30,6 +36,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 DECISIONS = HERE.parent / "docs" / "decisions.md"
+PROMISE_KINDS = ("quote_link", "no_quotes_yet", "not_covered")
 GATE_SEEDS = 5  # pinned entries exist only for seeds 1-5 (section 6.1)
 MATCHING = ("job_card_outside_license", "qualified_business_left_out")
 NEGATIVE_CONTROL = ("normal", 1, MATCHING)  # a v9.1 scenario: its matching checks must fire (section 5)
@@ -163,16 +170,103 @@ def validate_waivers(data: object, known: dict[str, set[str]]) -> dict:
     return data
 
 
-def _homeowner_answered_wrong(sim: object, ref: str) -> bool:
-    """D-106: the request's simulated homeowner recorded a wrong answer and the stored trade or job type
-    is the option it sent. The twin records `wrong_answer` once T007 adds actor evidence (section 6.3)."""
-    m = re.match(r"request (\S+)", ref)
+def _homeowner_answered_wrong(sim: object, check: str, ref: str) -> bool:
+    """D-106: the request's simulated homeowner recorded a wrong answer with the truth offered (`wrong_answers`,
+    written by twin.py where it answers the trade and "Which fits best?" questions) and the stored trade or a
+    stored job type is an option it sent."""
+    m = re.match(r"request (\w+)", ref)
     r = sim.app.requests.get(m.group(1)) if m else None  # type: ignore[attr-defined]
-    sent = r["_sim_truth"].get("wrong_answer") if r else None
-    return bool(sent) and (sent == r["trade"] or sent in r.get("job_types", []))
+    sent = r["_sim_truth"].get("wrong_answers", []) if r else []
+    return any(s == r["trade"] or s in r.get("job_types", []) for s in sent)
 
 
-EVIDENCE = {"homeowner_answered_wrong": _homeowner_answered_wrong}
+Window = tuple[str, float, float, str | None, float]  # phone, from, to, request, deadline
+
+
+def _reach_windows(sim: object, check: str, ref: str) -> list[Window]:
+    """D-544: (phone, from, to, request, deadline) for the contact an instance says never reached a homeowner. The
+    deadline is the check's: 5 minutes after HELP, 24 hours after a new job, 9 p.m. the day after the request for the
+    promise, the closing for a quote link; a call-back may come up to a day after a quote link's closing."""
+    app = sim.app  # type: ignore[attr-defined]
+    if m := re.match(r"HELP from \.\.\.(\d{4})$", ref):
+        inbound = sim.sms.inbound_log  # type: ignore[attr-defined]
+        return [(f, t, t + 5, None, t + 5) for f, b, t, _ in inbound if f.endswith(m.group(1)) and b.strip().upper() == "HELP"]
+    if m := re.match(r"(\d{4}) asked for help on day (\d+) ", ref):
+        jobs = sim.truth_jobs  # type: ignore[attr-defined]
+        day = int(m.group(2))
+        return [(p, j["started"], j["started"] + 1440, None, j["started"] + 1440) for p, j in jobs if p.endswith(m.group(1)) and int(j["started"] // 1440) == day]
+    r = app.requests.get(m.group(1)) if (m := re.match(r"request (\w+)$", ref)) else None
+    if not r:
+        return []
+    if check == "promise_missed":
+        end = r["created"] - r["created"] % 1440 + 1440 + 21 * 60
+        return [(app.phone_of(r), r["created"], end, r["id"], end)]
+    closed = r["history"][-1][0]
+    return [(app.phone_of(r), r["created"], closed + 1440, r["id"], closed)]
+
+
+def _unreached_in(sim: object, check: str, window: Window) -> bool:
+    """D-544: no text that could have arrived (every attempt failed at the carrier, texting was suspended before the
+    check's deadline ran out, or the number had opted out and a call-back was raised); for anything but HELP also no
+    email on file, and for a reply or the 9 p.m. promise no call from Casey that talked to them (a quote link needs a
+    text or an email)."""
+    app = sim.app  # type: ignore[attr-defined]
+    phone, t0, t1, rid, deadline = window
+    paused = any(a["kind"] == "texting_suspended" and a["t"] < deadline for a in app.alerts)
+    if check == "help_not_answered":
+        return paused
+    hid = app.phone_to_ho.get(phone)
+    talked = [c for c in sim.manual_contacts if c["phone"] == phone and c["talked"]]  # type: ignore[attr-defined]
+    if hid is None or (app.homeowners[hid].get("email") and not any(c["t"] > t1 for c in talked)):
+        return False  # an email on file, unless it may have come on a call after the window
+    calls = [c for c in talked if t0 <= c["t"] <= t1 and (rid is None or c["ref"] == rid)]
+    if calls and check != "quotes_never_reached_homeowner":
+        return False
+    tried = [
+        m
+        for m in sim.sms.log  # type: ignore[attr-defined]
+        if m["to"] == phone and t0 <= m["at"] <= t1 and (rid is None or (m["meta"].get("ref") == rid and m["kind"] in PROMISE_KINDS))
+    ]
+    if any(m["status"] == "delivered" for m in tried):
+        return False
+    opted_out = phone in app.stopped and any(a["kind"] == "call_back" and a["ref"] == phone and a["t"] <= t1 for a in app.alerts)
+    return bool(tried) or paused or opted_out
+
+
+def _homeowner_unreachable(sim: object, check: str, ref: str) -> bool:
+    """D-544 (documented by D-525): the homeowner could be reached by no channel the app has (section 7)."""
+    return any(_unreached_in(sim, check, w) for w in _reach_windows(sim, check, ref))
+
+
+def _photo_passed_every_screen(sim: object, check: str, ref: str) -> bool:
+    """D-544 (documented by D-525): an identifying photo on a card that the AI screen (twice) and the local screen
+    all passed, so the miss is the screens' assumed recall, not a skipped screen."""
+    m = re.match(r"card (\w+)$", ref)
+    card = sim.app.cards.get(m.group(1)) if m else None  # type: ignore[attr-defined]
+    fixes = sim.app.cfg.get("fixes", {})  # type: ignore[attr-defined]
+    on = fixes.get("double_photo_screen") and fixes.get("v93")
+    return bool(on and card) and all(p.get("screened_ok") for p in card["photos"])
+
+
+def _two_jobs_in_one_request(sim: object, check: str, ref: str) -> bool:
+    """D-543 (INT-010): the request's text holds another job the same homeowner sent within its intake, so its
+    candidates span two jobs."""
+    m = re.match(r"request (\w+)", ref)
+    r = sim.app.requests.get(m.group(1)) if m else None  # type: ignore[attr-defined]
+    if not r:
+        return False
+    own = r["_sim_truth"]["raw_text"].split(" 86")[0]
+    phone = sim.app.phone_of(r)  # type: ignore[attr-defined]
+    others = {j["raw_text"].split(" 86")[0] for p, j in sim.truth_jobs if p == phone} - {own}  # type: ignore[attr-defined]
+    return any(text in r["original_text"] for text in others)
+
+
+EVIDENCE = {
+    "homeowner_answered_wrong": _homeowner_answered_wrong,
+    "homeowner_unreachable": _homeowner_unreachable,
+    "photo_passed_every_screen": _photo_passed_every_screen,
+    "two_jobs_in_one_request": _two_jobs_in_one_request,
+}
 
 
 def run_scenario(twin: object, name: str, seed: int) -> list[dict]:
@@ -188,7 +282,7 @@ def run_scenario(twin: object, name: str, seed: int) -> list[dict]:
             "seed": seed,
             "check": key,
             "ref": str(ref),
-            "evidence": {e for e, f in EVIDENCE.items() if f(sim, str(ref))},
+            "evidence": {e for e, f in EVIDENCE.items() if f(sim, key, str(ref))},
         }
         for key, ref in twin.check(sim)  # type: ignore[attr-defined]
     ]
@@ -252,6 +346,60 @@ def print_report(instances: list[dict], result: dict, missing_control: list[str]
         print(f"NEGATIVE CONTROL did not fire: {key}")
 
 
+def load_generator(root: Path) -> object:
+    """The oracle generator under `root` (`twin/oracle/gen_license_scope.py`), loaded as a module."""
+    path = root / "twin" / "oracle" / "gen_license_scope.py"
+    spec = importlib.util.spec_from_file_location("gen_license_scope", path)
+    if spec is None or spec.loader is None:
+        raise GateError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def oracle_problems(text: str, root: Path) -> list[str]:
+    """D-541: the committed oracle is byte for byte a fresh generation from the current catalog and crosswalk (so a
+    hand edit of any section, the `twin` one included, is caught), and twin.py never reads the app's own license
+    table (docs/twin-warnings.md section 2)."""
+    problems = []
+    gen = load_generator(root)
+    if text != gen.render(gen.generate(root)):  # type: ignore[attr-defined]
+        problems.append("license_scope.json is stale or hand-edited: run python3 twin/oracle/gen_license_scope.py")
+    if "CLASS_ALLOWS" in (root / "twin" / "twin.py").read_text(encoding="utf-8"):
+        problems.append("twin.py reads the app's license table CLASS_ALLOWS; its checks must use the oracle")
+    return problems
+
+
+def self_test_problems(oracle: dict, examples: list[dict]) -> list[str]:
+    """D-110: every matching example whose licenses the oracle names agrees with it on `map_covers` (CARD-001,
+    LIC-035, LIC-043). Rows with no license (handyman, city list only, map_covers null) are not expressible."""
+    problems = []
+    for ex in examples:
+        names = [*ex["business"]["roc"], *ex["business"]["agencies"]]
+        if not names or not all(n in oracle["grants"] for n in names):
+            continue
+        cat = ex["job"]["category"]
+        held = {j for n in names for j in oracle["grants"][n].get(cat, [])}
+        covered = all(j in held for j in ex["job"]["candidates"])
+        if covered != ex["expected"]["map_covers"]:
+            problems.append(f"{ex['id']}: the oracle gives map_covers {covered}, matching_examples.yaml {ex['expected']['map_covers']}")
+    return problems
+
+
+def check_oracle(root: Path = HERE.parent) -> None:
+    """The oracle checks that come before any run; any problem is a GateError (exit 2)."""
+    text = (root / "twin" / "oracle" / "license_scope.json").read_text(encoding="utf-8")
+    oracle = json.loads(text)
+    try:
+        import yaml  # type: ignore[import-untyped]  # reason: PyYAML ships no stubs; only safe_load is used
+    except ImportError as err:
+        raise GateError("PyYAML is needed to read docs/catalog/matching_examples.yaml (D-541)") from err
+    examples = yaml.safe_load((root / "docs" / "catalog" / "matching_examples.yaml").read_text(encoding="utf-8"))
+    problems = oracle_problems(text, root) + self_test_problems(oracle, examples["examples"])
+    if problems:
+        raise GateError("license oracle: " + "; ".join(problems))
+
+
 def load_twin() -> object:
     sys.path.insert(0, str(HERE))
     import twin
@@ -266,6 +414,7 @@ def setup(args: argparse.Namespace) -> tuple[list[str], dict]:
     missing = sorted(REQUIRED_CHECKS - declared_checks(HERE))
     if missing:
         raise GateError(f"required checks missing from the twin: {missing}")
+    check_oracle()
     all_fixed = [
         n for n in json.loads((HERE / "twin_scenarios.json").read_text(encoding="utf-8")) if n.endswith("_fixed")
     ]
