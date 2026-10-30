@@ -528,14 +528,15 @@ def _step(job: str, name_part: str) -> dict[str, Any]:
     return next(s for s in _workflow()["jobs"][job]["steps"] if name_part in str(s.get("name", "")))
 
 
-def _pick(tmp_path: Path, state: st.State, lanes_setting: object, wanted: str = "", branch: str = "", *more: str) -> list[str]:
-    """Run the gate's lane-pick snippet over runner/state.py, as the workflow does (`more`: MERGED, D-723)."""
+def _pick(tmp_path: Path, state: st.State, lanes_setting: object, wanted: str = "", branch: str = "", *more: str,
+          module: Path = ROOT / "runner" / "state.py") -> list[str]:
+    """Run the gate's lane-pick snippet over runner/state.py (or `module`), as the workflow does (`more`: MERGED, D-723)."""
     script = _step("gate", "Pick the lane")["run"]
     code = script.split("python3 -I -c '", 1)[1].split("\n' ", 1)[0]
     (tmp_path / "state.json").write_text(json.dumps({k: v for k, v in state.items() if k not in ("lease", "leases")}))
     (tmp_path / "lease.json").write_text(json.dumps({"lease": state.get("lease"), "leases": st.leases_of(state)}))
     (tmp_path / "runner.json").write_text(json.dumps({"lanes": lanes_setting}))
-    args = [sys.executable, "-I", "-c", code, str(ROOT / "runner" / "state.py"), str(tmp_path / "state.json"),
+    args = [sys.executable, "-I", "-c", code, str(module), str(tmp_path / "state.json"),
             str(tmp_path / "lease.json"), str(tmp_path / "runner.json"), wanted, branch, *more]
     return subprocess.run(args, capture_output=True, text=True, check=True).stdout.split()
 
@@ -892,7 +893,7 @@ def test_the_gate_sends_a_merged_pull_request_to_its_own_lane(tmp_path: Path) ->
     assert _pick(tmp_path, pending, 1, "", "claude/task/T002-x", "true") == ["1", "1", "1"]
     assert _pick(tmp_path, pending, 2, "1", "claude/task/T002-x", "true") == ["1", "2", "1", "2"]  # a dispatched lane wins
     step = _step("gate", "Pick the lane")
-    assert step["env"]["MERGED"] == "${{ github.event_name == 'pull_request' }}"
+    assert step["env"]["MERGED"] == "${{ github.event.pull_request.merged == true }}"  # not every closed pull request
     assert '"$WANTED" "$BRANCH" "$MERGED"' in step["run"]
 
 
@@ -981,3 +982,24 @@ def test_dispatch_lane_uses_the_job_token_and_reports_what_happened(tmp_path: Pa
     assert ge._long_token_args(calls[0]) is None  # never with the long-lived token
     assert ge._env_for(calls[0])["GH_TOKEN"] == "fake-job-token"
     assert ge._env_for(["gh", "workflow", "run", "other.yml"]) is None  # only the runner's own workflow
+
+
+def test_the_gate_still_picks_a_lane_with_a_state_module_that_predates_merged(tmp_path: Path) -> None:
+    older = tmp_path / "old_state.py"  # a pull request checkout carrying runner/state.py from before D-723
+    older.write_text("def live_leases(state, now):\n    return {}\n\n\n"
+                     "def run_lane(state, now, lanes, task_id=''):\n    return '2' if task_id == 'T002' else '1'\n")
+    s = st.with_task(st.with_task(st.new_state(), "T001"), "T002")
+    assert _pick(tmp_path, s, 2, "", "claude/task/T002-x", "true", module=older) == ["2", "2", "1", "2"]
+    assert _pick(tmp_path, s, 2, "", "claude/task/T001-x", "false", module=older) == ["1", "2", "1", "2"]
+
+
+def test_refill_lanes_names_no_lane_while_the_pacer_waits(tmp_path: Path) -> None:
+    graph = [staged("T001", owns=["app/a/"]), staged("T003", owns=["app/c/"])]
+    cfg = two_lane(graph, tmp_path, "s1", None)
+    s = st.claim(st.sync_graph(st.new_state(), graph), "T001", "a", NOW)
+    ahead, behind = st.iso(NOW + timedelta(hours=1)), st.iso(NOW - timedelta(minutes=1))
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "wait", "waiting_until": ahead}), NOW) == []
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "wait", "waiting_until": behind}), NOW) == ["2"]  # the wait is over
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "claim", "waiting_until": None}), NOW) == ["2"]
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "wait", "waiting_until": "not a time"}), NOW) == ["2"]
+    assert cycle.refill_lanes(cfg, dict(s, pacing={"decision": "wait", "waiting_until": None}), NOW) == ["2"]
