@@ -91,7 +91,7 @@ app/
     src/rules.rs     pure decision logic (no I/O), the main target of unit and property tests
     src/status.rs    the crate's status enums and every `match` on them, with clippy
                      `wildcard_enum_match_arm` and `match_wildcard_for_single_variants` denied on this module only (SEC-031, D-488); nothing outside it compares a
-                     status with `==` or glob-imports one (`scripts/check_rust_rules.py`)
+                     status with `==` or glob-imports one (`scripts/check_rust_rules.py`; D-590 lists the shapes it catches)
     src/service.rs   orchestration: transactions, calls to lower crates' api, audit rows; errors are a
                      `thiserror` enum per crate (no anyhow), mapped once in `server` to responses, never carrying a
                      `Redacted` value in `Display`

@@ -1,4 +1,7 @@
-"""Tests for scripts/check_rust_rules.py (source rules, BUILD_BRIEF.md section 12, SEC-031, D-479)."""
+"""Tests for scripts/check_rust_rules.py (source rules, BUILD_BRIEF.md section 12, SEC-031, D-479).
+
+TD-SEC-12 (SEC-031, D-590): every planted-case test below plants one shape the scanner must catch.
+"""
 
 from __future__ import annotations
 
@@ -56,11 +59,6 @@ def test_non_status_module_may_use_wildcards(tmp_path: Path) -> None:
     assert rr.run(tmp_path) == []
 
 
-def test_trybuild_fixtures_are_skipped(tmp_path: Path) -> None:
-    write(tmp_path, "tests/security/ui/release_proof.rs", "fn main() { todo!(); }\n")
-    assert rr.run(tmp_path) == []
-
-
 def test_status_glob_import_and_comparison_outside_status_module_fail(tmp_path: Path) -> None:
     write(tmp_path, "app/jobs/src/service.rs", "use crate::status::JobStatus::*;\nfn f(s: JobStatus) -> bool { s == JobStatus::Open }\n")
     problems = rr.run(tmp_path)
@@ -82,3 +80,131 @@ def test_status_matches_if_let_and_arms_outside_status_module_fail(tmp_path: Pat
     write(tmp_path, "app/picks/src/service.rs", "fn f(s: PickStatus) {\n    if let PickStatus::Paid = s {}\n    let _ = matches!(s, PickStatus::Free);\n    match s {\n        PickStatus::Paid => {}\n    }\n}\n")
     problems = rr.run(tmp_path)
     assert len([p for p in problems if "outside its status module" in p]) == 3
+
+
+STATUS_RS = "pub enum JobStatus { Open, Done }\n"
+
+
+def messages(root: Path) -> list[str]:
+    return [p.split(": ", 1)[1] for p in rr.run(root)]
+
+
+def planted(tmp_path: Path, body: str, rel: str = "app/jobs/src/service.rs") -> list[str]:
+    write(tmp_path, "app/jobs/src/status.rs", STATUS_RS)
+    write(tmp_path, rel, body)
+    return messages(tmp_path)
+
+
+def test_alias_and_variant_imports_fail(tmp_path: Path) -> None:
+    assert any("alias import" in m for m in planted(tmp_path, "use crate::status::JobStatus as S;\n"))
+    assert any("alias import" in m for m in planted(tmp_path, "use crate::status::{PickStatus, JobStatus as S};\n"))
+    assert any("variant import" in m for m in planted(tmp_path, "use crate::status::JobStatus::Open;\n"))
+    assert any("variant import" in m for m in planted(tmp_path, "use crate::status::JobStatus::{Open, Done};\n"))
+    assert planted(tmp_path, "use crate::status::JobStatus;\n") == []
+
+
+def test_let_else_and_split_matches_fail(tmp_path: Path) -> None:
+    assert planted(tmp_path, "fn f(s: JobStatus) {\n    let JobStatus::Open = s else { return };\n}\n")
+    split = "fn f(s: JobStatus) -> bool {\n    matches!(\n        s,\n        JobStatus::Open\n    )\n}\n"
+    assert planted(tmp_path, split)
+    assert planted(tmp_path, "fn f(s: JobStatus) -> bool { matches!(s, Some(1)) }\n") == []
+
+
+def test_reversed_comparison_and_assert_eq_fail(tmp_path: Path) -> None:
+    assert any("== or !=" in m for m in planted(tmp_path, "fn f(s: JobStatus) -> bool { JobStatus::Open == s }\n"))
+    assert any("== or !=" in m for m in planted(tmp_path, "fn f(s: JobStatus) -> bool { JobStatus::Open != s }\n"))
+    assert planted(tmp_path, "fn f(s: JobStatus) {\n    assert_eq!(s, JobStatus::Open);\n}\n")
+    assert planted(tmp_path, "fn f(s: JobStatus) {\n    assert_ne!(\n        s,\n        JobStatus::Open\n    );\n}\n")
+    assert planted(tmp_path, "fn f(a: u8) {\n    assert_eq!(a, 1);\n}\n") == []
+
+
+def test_catch_all_binding_arm_fails(tmp_path: Path) -> None:
+    body = "pub enum JobStatus { Open, Done }\npub fn f(s: JobStatus) -> u8 {\n    match s {\n        JobStatus::Open => 1,\n        other => 2,\n    }\n}\n"
+    write(tmp_path, "app/jobs/src/status.rs", body)
+    assert any("wildcard arm" in m for m in messages(tmp_path))
+    write(tmp_path, "app/jobs/src/status.rs", STATUS_RS)
+    outside = "fn f(s: JobStatus) -> u8 {\n    match s {\n        JobStatus::Open => 1,\n        other => 2,\n    }\n}\n"
+    write(tmp_path, "app/jobs/src/service.rs", outside)
+    assert any("catch-all arm" in m for m in messages(tmp_path))
+    write(tmp_path, "app/jobs/src/service.rs", "fn f(x: Option<u8>) -> u8 {\n    match x {\n        Some(1) => 1,\n        other => 2,\n    }\n}\n")
+    assert messages(tmp_path) == []
+
+
+def test_status_enum_not_named_status_defined_in_status_rs(tmp_path: Path) -> None:
+    write(tmp_path, "app/picks/src/status.rs", "pub enum Stage { Open, Done }\n")
+    write(tmp_path, "app/picks/src/service.rs", "fn f(s: Stage) -> bool { s == Stage::Open }\n")
+    assert any("== or !=" in m for m in messages(tmp_path))
+    write(tmp_path, "app/picks/src/status.rs", "pub enum Stage { Open, Done }\nfn f(s: Stage) -> u8 {\n    match s {\n        Stage::Open => 1,\n        _ => 0,\n    }\n}\n")
+    write(tmp_path, "app/picks/src/service.rs", "")
+    assert any("wildcard arm" in m for m in messages(tmp_path))
+
+
+def test_vendor_status_enum_file_is_not_a_status_module(tmp_path: Path) -> None:
+    body = "pub enum TransferStatus { Pending }\nfn f(x: Option<u8>) -> u8 {\n    match x {\n        Some(v) => v,\n        _ => 0,\n    }\n}\n"
+    write(tmp_path, "app/adapters/src/stripe.rs", body)
+    assert rr.run(tmp_path) == []
+
+
+def test_ui_paths_are_scanned(tmp_path: Path) -> None:
+    write(tmp_path, "tests/security/ui/release_proof.rs", "fn main() { unsafe { x() } }\n")
+    assert any("unsafe" in m for m in messages(tmp_path))
+    write(tmp_path, "tests/security/ui/release_proof.rs", "")
+    write(tmp_path, "app/jobs/src/ui/page.rs", "use JobStatus::*;\n")
+    assert any("glob import" in m for m in messages(tmp_path))
+
+
+def test_block_comment_todo_fails_and_unsafe_in_comment_passes(tmp_path: Path) -> None:
+    write(tmp_path, "app/jobs/src/a.rs", "/* TODO later */\nfn a() {}\n")
+    assert any("TODO" in m for m in messages(tmp_path))
+    ok = '// unsafe { x }\n/* unsafe { y }\n   unsafe fn z */\nconst S: &str = "unsafe { w }";\nfn a() {}\n'
+    write(tmp_path, "app/jobs/src/a.rs", ok)
+    assert messages(tmp_path) == []
+
+
+def test_template_attribute_escape_ext_and_filter_safe_fail(tmp_path: Path) -> None:
+    for attr in ('escape = "none"', 'ext = "txt"'):
+        write(tmp_path, "app/site/src/page.rs", f'#[derive(Template)]\n#[template(\n    path = "p.html",\n    {attr}\n)]\nstruct P;\n')
+        assert any("template attribute" in m for m in messages(tmp_path)), attr
+    write(tmp_path, "app/site/src/page.rs", '#[template(path = "p.html")]\nstruct P;\n')
+    assert messages(tmp_path) == []
+    write(tmp_path, "app/site/templates/mail.txt", "{% filter safe %}x{% endfilter %}\n")
+    assert any("disables escaping" in m for m in messages(tmp_path))
+
+
+def test_bool_arms_are_not_catch_all_and_leading_pipe_wildcard_is(tmp_path: Path) -> None:
+    ok = "fn f(s: JobStatus, b: bool) -> u8 {\n    match s {\n        JobStatus::Open => 1,\n        JobStatus::Done => 2,\n    }\n}\n"
+    assert planted(tmp_path, ok + "fn g(b: bool) -> u8 {\n    match b {\n        true => 1,\n        false => 0,\n    }\n}\n") == [
+        m for m in planted(tmp_path, ok)
+    ]
+    mixed = "fn f(s: JobStatus) -> u8 {\n    match s {\n        JobStatus::Open => 1,\n        true => 2,\n    }\n}\n"
+    assert not any("catch-all" in m for m in planted(tmp_path, mixed))
+    piped = "fn f(s: JobStatus) -> u8 {\n    match s {\n        JobStatus::Open => 1,\n        | other => 2,\n    }\n}\n"
+    assert any("catch-all" in m for m in planted(tmp_path, piped))
+    write(tmp_path, "app/jobs/src/status.rs", "pub enum JobStatus { Open }\nfn f(s: u8) -> u8 {\n    match s {\n        1 => 1,\n        | _ => 0,\n    }\n}\n")
+    assert any("wildcard arm" in m for m in messages(tmp_path))
+
+
+def test_template_non_html_path_inline_safe_and_escape_none_filter_fail(tmp_path: Path) -> None:
+    for attr in ('path = "mail.txt"', 'source = "{{ x|safe }}", ext = "html"', 'source = "{{ x|e(\\"none\\") }}", ext = "html"'):
+        write(tmp_path, "app/site/src/page.rs", f"#[template({attr})]\nstruct P;\n")
+        assert any("template attribute" in m for m in messages(tmp_path)), attr
+    write(tmp_path, "app/site/src/page.rs", '#[template(path = "p.html")]\nstruct P;\n#[template(source = "{{ x }}", ext = "html")]\nstruct Q;\n')
+    assert messages(tmp_path) == []
+    for body in ('{{ x|e("none") }}', "{{ x|escape('none') }}"):
+        write(tmp_path, "app/site/templates/page.html", body + "\n")
+        assert any("disables escaping" in m for m in messages(tmp_path)), body
+    write(tmp_path, "app/site/templates/page.html", "{{ x|e }}\n")
+    assert messages(tmp_path) == []
+
+
+def test_wrapped_tuple_binding_arms_and_ref_comparisons_fail(tmp_path: Path) -> None:
+    for arm in ("Some(JobStatus::Open) => 1,", "(JobStatus::Open, _) => 1,", "x @ JobStatus::Open => 1,", "Some(x @ JobStatus::Open) | None => 1,"):
+        body = f"fn f(s: JobStatus) -> u8 {{\n    match s {{\n        {arm}\n        _ => 0,\n    }}\n}}\n"
+        found = planted(tmp_path, body)
+        assert any("outside its status module" in m for m in found), arm
+        assert any("catch-all" in m for m in found), arm
+    for expr in ("s == &JobStatus::Open", "s != Some(JobStatus::Open)", "&JobStatus::Open == s", "Some(JobStatus::Open) != s"):
+        found = planted(tmp_path, f"fn f(s: JobStatus) -> bool {{ {expr} }}\n")
+        assert any("== or !=" in m for m in found), expr
+    returning = "fn f(x: u8) -> JobStatus {\n    match x {\n        1 => JobStatus::Open,\n        _ => JobStatus::Done,\n    }\n}\n"
+    assert planted(tmp_path, returning) == []
