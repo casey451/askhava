@@ -73,7 +73,7 @@ A rule enforced only by a document is a rule a tired session can skip. The matri
 
 ## 5. Red `main`
 
-`main` is red when `Ci`, `Twin` or `Ally` fails on `main`'s head, the nightly run fails, the runner finds the squash tree differs from the tested head, or a task's merged head is not the head the runner reviewed (nor that head plus only merges of `main`), so work nobody reviewed is reverted (D-584).
+`main` is red when `Ci`, `Twin` or `Ally` fails on `main`'s head, the nightly run fails, the runner finds the squash tree differs from the tested head, or a task's merged head is not the head the runner reviewed (nor exactly that work combined with `main`, as GitHub's "Update branch" makes it), so work nobody reviewed is reverted (D-584).
 
 1. The runner sets `main_red` in `kit/state.json` with the failing check and SHA. No task is eligible but `FIX-MAIN`.
 2. `FIX-MAIN` is a harness-class task: Sonnet worker, Opus reviewer, allowed to change only the files of the offending merge, and its first option is always `git revert` of that squash commit. Patching over is allowed only when the revert itself would break `main` (the entry says why).

@@ -13,7 +13,8 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 - **If a merge ever brings in work nobody reviewed**, the build now treats `main` as broken: it undoes that merge automatically, then puts the task back in line. STATUS.md shows it at the top. Before, the task just sat blocked. A merge that only brings the branch up to date with `main` (GitHub's "Update branch" button) is fine and isn't flagged.
 - **If a try dies halfway**, the runner only picks up its pull request when it's exactly what was reviewed. Otherwise the task simply gets its next try. Before, it could pick up the wrong pull request, or wait forever on one it would never merge.
-- **Nothing for you to do.**
+- **If someone pushes to a pull request after its review** while it's set to merge on its own, the runner closes that pull request first, so the unreviewed version can't merge, and the task gets another try.
+- **Nothing for you to do**, unless the runner sends you a note that it couldn't check a merge after two hours of trying. That note says what to look at.
 
 ## How legal, tax and insurance items are handled now (October 28, 2026)
 

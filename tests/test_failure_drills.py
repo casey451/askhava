@@ -63,6 +63,8 @@ class FakeEnv:
         self.prepared_for: list[tuple[str, int]] = []
         self.update_merges: bool | None = False  # whether a differing PR head is only merges of main (D-584)
         self.head_checks: list[tuple[str, str]] = []
+        self.closed_prs: list[tuple[int, str]] = []  # close_pr calls (D-584)
+        self.close_ok = True
 
     def read_state(self) -> st.State:
         return copy.deepcopy(self.store)
@@ -127,9 +129,13 @@ class FakeEnv:
     def push_rejection(self) -> str:
         return self.rejection
 
-    def only_main_merges(self, reviewed: str, head: str, number: int) -> bool | None:
+    def reviewed_plus_main(self, reviewed: str, head: str, number: int) -> bool | None:
         self.head_checks.append((reviewed, head))
         return self.update_merges
+
+    def close_pr(self, number: int, body: str) -> bool:
+        self.closed_prs.append((number, body))
+        return self.close_ok
 
     def prepare_branch(self, task: dict[str, Any], attempt: int, session: str) -> dict[str, Any]:
         self.prepared_for.append((task["id"], attempt))
@@ -791,6 +797,76 @@ def test_drill_an_unknown_merged_head_waits_instead_of_turning_main_red(tmp_path
     env.prs["T001"] = dict(green_pr(sha="late0002"), merged_sha="m1", files=["app/t001/x.py"])
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
     assert st.status(env.store, "T001") == st.MERGE_PENDING and not env.store.get("main_red")
+    # The wait has an end (D-584): after HEAD_CHECK_WAIT the task is BLOCKED and an outbox item asks a person.
+    almost = NOW + timedelta(minutes=5) + cycle.HEAD_CHECK_WAIT - timedelta(minutes=1)
+    assert cycle.run_cycle(cfg, env, almost) == "merge_pending" and not (tmp_path / "T001-merged-head.md").exists()
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5) + cycle.HEAD_CHECK_WAIT) == "not_done"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.BLOCKED and t1["reason"].startswith("merged head late0002 (merge m1) could not be checked")
+    note = (tmp_path / "T001-merged-head.md").read_text(encoding="utf-8")
+    assert "kind: blocked" in note and "revert it if it holds work nobody reviewed" in note and not env.store.get("main_red")
+
+
+def test_drill_an_unreviewed_head_with_auto_merge_on_is_closed_before_the_attempt_fails(tmp_path: Path) -> None:
+    """R1 (D-584): someone pushed hand0002 after the review while auto-merge was on (GitHub keeps it on).
+    The PR is closed first, so GitHub cannot merge that head once its checks go green; then the attempt
+    fails, with the PR recorded as closed by the runner so the retry continues the branch."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    pending = [{"name": n, "sha": "hand0002", "conclusion": None} for n in ("Ci", "Twin", "Ally")]
+    env.prs["T001"] = {"merged": False, "head_sha": "hand0002", "checks": pending, "auto_merge": True, "number": 41, "state": "open"}
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "unreviewed_head"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.QUEUED and t1["runner_closed_prs"] == [41] and t1["last_failure"].startswith("pull request head hand0002")
+    number, body = env.closed_prs[0]
+    assert number == 41 and cycle.DROP_MARKER in body and "hand0002" in body
+
+
+def test_drill_when_the_close_fails_the_task_waits_so_any_merge_is_judged(tmp_path: Path) -> None:
+    """R1 (D-584): auto-merge could not be turned off, so the task stays MERGE_PENDING; when GitHub then
+    merges the unreviewed head, `_merged` judges it: BLOCKED and main red, so FIX-MAIN reverts it."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.close_ok = False
+    env.prs["T001"] = dict(green_pr(sha="hand0002", merged=False), auto_merge=True, number=41, state="open")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    assert st.status(env.store, "T001") == st.MERGE_PENDING and "could not be turned off" in st.entry(env.store, "T001")["auto_merge"]["why"]
+    env.prs["T001"] = dict(green_pr(sha="hand0002"), merged_sha="m1", files=["app/t001/x.py"], number=41)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "not_done"
+    assert st.status(env.store, "T001") == st.BLOCKED and env.store["main_red"]["check"] == "review"
+
+
+def test_drill_an_updated_head_without_auto_merge_fails_instead_of_waiting_forever(tmp_path: Path) -> None:
+    """R3 (D-584): the head is the reviewed work plus main, but auto-merge is off, and the runner turns
+    it on only for the reviewed head itself; waiting would never end, so the attempt fails and the
+    retry continues the branch."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    cfg = config([make_task("T001")], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.update_merges = True
+    env.prs["T001"] = dict(green_pr(sha="upd00002", merged=False), auto_merge=False, number=41, state="open")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "unreviewed_head"
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.QUEUED and t1["last_failure"].startswith("pull request head upd00002 is the reviewed head good0001 updated")
+    assert env.auto_merges == [("claude/task/T001-x", "good0001")] and env.closed_prs == []
+
+
+def test_drill_an_empty_cleanup_hand_in_ignores_the_branchs_earlier_merged_pr(tmp_path: Path) -> None:
+    """D-584: the cleanup task's branch had an earlier attempt's PR merged; its empty hand-in (main's own
+    head) must go through _without_pr and _resolve_empty, never be judged by that old merge."""
+    graph = [make_task("T057", stage="2", type="cleanup")]
+    env, cfg = FakeEnv(lambda t, m, log: empty(t, m)), config(graph, tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.prs["T057"] = dict(green_pr(sha="old0001", tree="t-old"), merge_tree="t-other", merged_sha="m0", files=["a"], number=3)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending"
+    assert not env.store.get("main_red") and env.head_checks == []
+    env.checks_green = True
+    cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10))
+    t57 = st.entry(env.store, "T057")
+    assert t57["status"] == st.BLOCKED and t57["reason"] == st.PROOF_MISSING and t57["empty_handin"] is True
+    assert not env.store.get("main_red")
 
 
 def test_drill_cleanup_needs_its_stage_proof_to_be_done(tmp_path: Path) -> None:

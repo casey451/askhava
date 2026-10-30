@@ -56,7 +56,7 @@ from pathlib import Path
 from typing import Any
 
 from runner import state as st, verify
-from runner.cycle import WorkerResult
+from runner.cycle import DROP_MARKER, WorkerResult
 from runner.state import State
 
 Runner = Callable[[list[str], str | None, Path], tuple[int, str, str]]
@@ -90,8 +90,8 @@ NOT_BUILT_ON = ("the hand-in does not build on origin/{branch}: the remote task 
 JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the job token (D-502, D-582)
 # The comments on a pull request the runner closes while preparing a retry's branch (D-583). They are
 # posted only once the pull request is closed. The marker lets a later attempt recognise a pull request
-# the runner closed to drop auto-merge even when recording its number in the state failed (D-584).
-DROP_MARKER = "<!-- askhava-runner: closed to drop auto-merge (D-584) -->"
+# the runner closed to drop auto-merge even when recording its number in the state failed (DROP_MARKER, in
+# runner/cycle.py, which also puts it on a pull request closed for an unreviewed head; D-584).
 AUTO_MERGE_NOTE = ("Closed by the runner before the next attempt: auto-merge was on for `{branch}`, so a push of "
                    "unreviewed work could have merged. The attempt continues on this branch; the runner opens a "
                    "fresh pull request after its review (D-583).\n\n" + DROP_MARKER)
@@ -982,32 +982,42 @@ class GitHubEnv:
         if not self._holds_lease(task_id, session):
             self.log.append(f"pull request #{number} left open: {session} no longer holds the lease on {task_id}")
             return None
+        return number if self.close_pr(number, body) else None
+
+    def close_pr(self, number: int, body: str) -> bool:
+        """Close a pull request through REST, then comment on it; the comment goes only on one that did
+        close, so it never says what did not happen (D-584). Closing also clears its auto-merge."""
         closed = self._run(["gh", "api", "-X", "PATCH", f"repos/{self.repo}/pulls/{number}", "-f", "state=closed"], None, self.root)
         if closed[0] != 0:
             self.log.append(f"pull request #{number} not closed: {closed[2].strip()[:200]}")
-            return None
+            return False
         self._run(["gh", "api", f"repos/{self.repo}/issues/{number}/comments", "-f", f"body={body}"], None, self.root)
-        return number
+        return True
 
-    def only_main_merges(self, reviewed: str, head: str, number: int) -> bool | None:
-        """Whether `head` is `reviewed` plus only merges of main: `reviewed` is an ancestor of `head`, and
-        every commit between them is a merge whose other parents are all on main (GitHub's "Update
-        branch" makes such a commit). None when git cannot say, as for a head it cannot fetch (D-584)."""
+    def reviewed_plus_main(self, reviewed: str, head: str, number: int) -> bool | None:
+        """Whether `head` holds exactly the reviewed work combined with main: its tree equals the clean
+        automatic merge (`git merge-tree --write-tree`) of `reviewed` with the main commit `head` is based
+        on (their merge base). That accepts GitHub's "Update branch" whether it merges main in or rebases
+        onto it, and rejects a new commit, a merge of anything else, and a merge that adds content of its
+        own (an "evil merge"). The reviewed commit and the pull request's head are fetched first, since a
+        fresh checkout may lack them; None when git still cannot say (D-584)."""
         if number:
             self._run(["git", "fetch", "--quiet", "origin", f"+refs/pull/{number}/head:refs/runner/pr-{number}"], None, self.root)
+        if not self._has_commit(reviewed):
+            self._run(["git", "fetch", "--quiet", "origin", reviewed], None, self.root)
         main = self.main_head()
-        code = self._run(["git", "merge-base", "--is-ancestor", reviewed, head], None, self.root)[0]
-        if code not in (0, 1) or not main:
+        if not main or not self._has_commit(reviewed) or not self._has_commit(head):
             return None
-        if code == 1:
-            return False
-        # The commits the head adds beyond the reviewed head and main itself: each must be a merge whose
-        # other parents are on main.
-        code, out, _ = self._run(["git", "rev-list", "--parents", head, "--not", reviewed, main], None, self.root)
+        code, base, _ = self._run(["git", "merge-base", head, main], None, self.root)
         if code != 0:
-            return None
-        rows = [line.split() for line in out.splitlines() if line.strip()]
-        return bool(rows) and all(len(r) >= 3 and all(self._is_ancestor(p, main) for p in r[2:]) for r in rows)
+            return False if code == 1 else None  # 1: no common history with main
+        code, out, _ = self._run(["git", "merge-tree", "--write-tree", reviewed, base.strip()], None, self.root)
+        if code != 0:
+            return False if code == 1 else None  # 1: they conflict, so no clean combination exists
+        return out.splitlines()[0].strip() == self.git("rev-parse", f"{head}^{{tree}}", check=False)
+
+    def _has_commit(self, sha: str) -> bool:
+        return bool(sha) and self._run(["git", "cat-file", "-e", f"{sha}^{{commit}}"], None, self.root)[0] == 0
 
     def collect_result(
         self, task: dict[str, Any], outcome: str, transcripts: list[str], reviewer_transcripts: list[str],

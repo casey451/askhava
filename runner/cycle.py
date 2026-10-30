@@ -26,6 +26,15 @@ UNREVIEWED_MERGE = ("merged head {head} is not the reviewed head {reviewed}: wor
                     "is red and FIX-MAIN reverts it (D-583, D-584)")
 UNREVIEWED_HEAD = ("pull request head {head} is not the reviewed head {reviewed}: commits were pushed after the review, "
                    "so auto-merge is refused for it; the next attempt continues the branch and is reviewed again (D-584)")
+UPDATED_HEAD = ("pull request head {head} is the reviewed head {reviewed} updated from main, but auto-merge is off and the "
+                "runner turns it on only for a reviewed head; the next attempt continues the branch (D-584)")
+UNREVIEWED_CLOSE = ("Closed by the runner: head `{head}` is not the head its review approved, and auto-merge was on, "
+                    "so it could have merged unreviewed work. The next attempt continues this branch and is reviewed again (D-584).")
+HEAD_UNPLACED = ("merged head {head} (merge {merge}) could not be checked against the reviewed head for {wait}; "
+                 "a person must look at that merge, then re-queue the task (D-584)")
+HEAD_CHECK_WAIT = timedelta(hours=2)  # how long a merged head git cannot place waits before it is BLOCKED (D-584)
+# The marker the runner's GitHubEnv puts in an auto-merge closing comment (runner/github_env.py DROP_MARKER).
+DROP_MARKER = "<!-- askhava-runner: closed to drop auto-merge (D-584) -->"
 # The BLOCKED reasons that are not the task's own fault, the only ones `--requeue` lifts (D-583).
 REQUEUABLE = ("branch push rejected", "no head to push", "permission blocked", st.PROOF_MISSING)
 
@@ -108,9 +117,15 @@ class Env(Protocol):
         """The git output of the last rejected push_branch, '' when none or unknown (D-583)."""
         ...
 
-    def only_main_merges(self, reviewed: str, head: str, number: int) -> bool | None:
-        """Whether a PR head is the reviewed head plus only merges of main (GitHub's "Update branch"):
-        True or False, None when git cannot say (D-584)."""
+    def reviewed_plus_main(self, reviewed: str, head: str, number: int) -> bool | None:
+        """Whether a PR head holds exactly the reviewed work combined with main (GitHub's "Update branch",
+        by merge or by rebase; never a merge that adds content of its own): True or False, None when git
+        cannot say (D-584)."""
+        ...
+
+    def close_pr(self, number: int, body: str) -> bool:
+        """Close a pull request (which also clears its auto-merge) and then comment on it; False when the
+        close failed, and then no comment is posted (D-584)."""
         ...
 
     def prepare_branch(self, task: dict[str, Any], attempt: int, session: str) -> dict[str, Any]:
@@ -251,34 +266,78 @@ def _resolve_merge(state: State, env: Env, cfg: Config, now: datetime) -> tuple[
             continue
         tid = task["id"]
         pr = env.pr_for(tid)
+        if pr is not None and _earlier_pr(task, pr, env):
+            pr = None  # an earlier attempt's PR beside an empty hand-in already on main (D-584)
         if pr is None:
             return _without_pr(state, env, task, now)
-        checks = verify.checks_state(pr)
         reviewed = _head_reviewed(state, env, tid, pr)
         if not pr.get("merged"):
-            if not reviewed:
-                # Pushed after the review (a session that died mid-work), or git cannot tell: auto-merge is
-                # refused for this head, so waiting would stall the build; it is a failed attempt (D-584).
-                why = UNREVIEWED_HEAD.format(head=str(pr.get("head_sha"))[:12], reviewed=str(task.get("reviewed_sha"))[:12])
-                return _close_history(record_failure(state, tid, why), tid, pr, "unreviewed_head"), "unreviewed_head"
-            if checks == "failed":
-                reason = pr.get("failure_log") or "required check failed on head"
-                return _close_history(record_failure(state, tid, reason), tid, pr, "check_failed"), "check_failed"
-            return _auto_merge(state, env, tid, pr.get("head_sha", "")) if not pr.get("auto_merge") else state, "merge_pending"
-        if checks == "pending" or reviewed is None:
-            return state, "merge_pending"  # a merged head git cannot place yet is never blamed on a guess
+            return _open_pr_step(state, env, tid, pr, reviewed)
+        if verify.checks_state(pr) == "pending":
+            return state, "merge_pending"
+        if reviewed is None:
+            return _unplaced_merge(state, cfg, tid, pr, now)
         return _merged(state, tid, pr, cfg, now, reviewed)
     return state, ""
 
 
+def _earlier_pr(task: dict[str, Any], pr: dict[str, Any], env: Env) -> bool:
+    """Whether the branch's latest PR is not this attempt's: the task's reviewed head is already on main
+    (an empty hand-in, for which GitHub opens no PR) and the PR carries another head, so the hand-in is
+    resolved by _without_pr and never judged by an old merge (D-584)."""
+    reviewed = str(task.get("reviewed_sha") or "")
+    return bool(reviewed) and pr.get("head_sha") != reviewed and env.in_main(reviewed) is True
+
+
 def _head_reviewed(state: State, env: Env, tid: str, pr: dict[str, Any]) -> bool | None:
-    """Whether the PR's head is the task's `reviewed_sha`, or that head plus only merges of main
-    (GitHub's "Update branch"); True when the task has no `reviewed_sha` to compare with; None when git
-    cannot say (D-583, D-584)."""
+    """Whether the PR's head is the task's `reviewed_sha`, or holds exactly that work combined with main
+    (GitHub's "Update branch", by merge or rebase); True when the task has no `reviewed_sha` to compare
+    with; None when git cannot say (D-583, D-584)."""
     reviewed, head = str(st.entry(state, tid).get("reviewed_sha") or ""), str(pr.get("head_sha") or "")
     if not reviewed or head == reviewed:
         return True
-    return env.only_main_merges(reviewed, head, int(pr.get("number") or 0))
+    return env.reviewed_plus_main(reviewed, head, int(pr.get("number") or 0))
+
+
+def _open_pr_step(state: State, env: Env, tid: str, pr: dict[str, Any], reviewed: bool | None) -> tuple[State, str]:
+    """An unmerged PR (D-584). A head nobody reviewed (or one git cannot place) is a failed attempt,
+    never a wait for an auto-merge the runner refuses; if auto-merge is on, the PR is closed first so
+    GitHub cannot merge that head, and if the close fails the task stays MERGE_PENDING so `_merged`
+    still judges whatever merges. A reviewed head updated from main merges only if auto-merge is
+    already on; with it off the runner cannot turn it on for that head, so that too is a failed
+    attempt. Otherwise as before: red checks fail the attempt, and auto-merge is turned on."""
+    head, task = str(pr.get("head_sha") or ""), st.entry(state, tid)
+    if not reviewed:
+        if pr.get("auto_merge"):
+            if not env.close_pr(int(pr.get("number") or 0), UNREVIEWED_CLOSE.format(head=head[:12]) + "\n\n" + DROP_MARKER):
+                why = f"PR head {head[:12]} is not the reviewed head and its auto-merge could not be turned off; waiting so any merge is judged"
+                return st.with_task(state, tid, auto_merge={"enabled": True, "why": why, "head": head}), "merge_pending"
+            state = st.with_task(state, tid, runner_closed_prs=[*(task.get("runner_closed_prs") or []), pr.get("number")])
+        why = UNREVIEWED_HEAD.format(head=head[:12], reviewed=str(task.get("reviewed_sha"))[:12])
+        return _close_history(record_failure(state, tid, why), tid, pr, "unreviewed_head"), "unreviewed_head"
+    if verify.checks_state(pr) == "failed":
+        reason = pr.get("failure_log") or "required check failed on head"
+        return _close_history(record_failure(state, tid, reason), tid, pr, "check_failed"), "check_failed"
+    if pr.get("auto_merge"):
+        return state, "merge_pending"
+    if task.get("reviewed_sha") and head != task.get("reviewed_sha"):
+        why = UPDATED_HEAD.format(head=head[:12], reviewed=str(task.get("reviewed_sha"))[:12])
+        return _close_history(record_failure(state, tid, why), tid, pr, "unreviewed_head"), "unreviewed_head"
+    return _auto_merge(state, env, tid, head), "merge_pending"
+
+
+def _unplaced_merge(state: State, cfg: Config, tid: str, pr: dict[str, Any], now: datetime) -> tuple[State, str]:
+    """A merged head git cannot place against the reviewed head (D-584): never a red main on a guess,
+    and never a wait without end. It waits up to HEAD_CHECK_WAIT, saying why; then the task is BLOCKED
+    with the reason and an outbox item asks a person to look at that merge."""
+    head = str(pr.get("head_sha") or "")
+    since = str(st.entry(state, tid).get("head_check_since") or st.iso(now))
+    if now - st.parse(since) < HEAD_CHECK_WAIT:
+        return st.with_task(state, tid, head_check_since=since), "merge_pending"
+    reason = HEAD_UNPLACED.format(head=head[:12], merge=str(pr.get("merged_sha", ""))[:12], wait=HEAD_CHECK_WAIT)
+    body = f"{reason}\n\nLook at that merge on main: revert it if it holds work nobody reviewed, then re-queue the task."
+    outbox.write_outbox(cfg.outbox_dir, f"{tid}-merged-head", f"{tid}: a merged head the runner could not check", "blocked", body)
+    return _close_history(st.with_task(state, tid, status=st.BLOCKED, reason=reason), tid, pr, "not_done"), "not_done"
 
 
 def _merged(state: State, tid: str, pr: dict[str, Any], cfg: Config, now: datetime, reviewed: bool = True) -> tuple[State, str]:

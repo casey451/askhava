@@ -381,27 +381,65 @@ def test_checking_the_lease_leaves_the_cached_state_refs_alone(repo: dict[str, P
     assert env.push_state(st.with_task(env.last_state or {}, "K10", note="x"), env.last_state or {}) is False  # the race is still caught
 
 
-def test_only_main_merges_tells_an_updated_branch_from_unreviewed_work(repo: dict[str, Path], tmp_path: Path) -> None:
-    """N2 (D-584): the reviewed head plus GitHub's "Update branch" merge of main is accepted; a new commit,
-    or a merge of anything not on main, is not; a head git does not have is unknown."""
+def _head_of(root: Path) -> str:
+    return git(root, "rev-parse", "HEAD")
+
+
+def _commit_file(root: Path, path: str, text: str, message: str) -> str:
+    (root / path).parent.mkdir(parents=True, exist_ok=True)
+    (root / path).write_text(text)
+    git(root, "add", "-A")
+    git(root, "commit", "-qm", message)
+    return _head_of(root)
+
+
+def test_reviewed_plus_main_accepts_an_updated_branch_and_nothing_else(repo: dict[str, Path], tmp_path: Path) -> None:
+    """N2, R2 (D-584): the reviewed work combined with main is accepted (a merge of main in); a new
+    commit, a merge of anything not on main, and an "evil merge" that adds content in the merge commit
+    are not; a head git does not have is unknown."""
     reviewed = pushed_attempt(repo)
     move_main(repo, "fake repo, main moved\n")
     env = make_env(repo["a"], tmp_path, run=OfflineGh([]))
     env.read_state()
-    git(repo["a"], "fetch", "-q", "origin")
-    git(repo["a"], "checkout", "-q", TASK["branch"])
-    git(repo["a"], "merge", "-q", "--no-edit", "origin/main")
-    updated = git(repo["a"], "rev-parse", "HEAD")
-    assert env.only_main_merges(reviewed, updated, 0) is True
-    (repo["a"] / "docs/k10/late.md").write_text("pushed after the review\n")
-    git(repo["a"], "add", "-A")
-    git(repo["a"], "commit", "-qm", "late work")
-    assert env.only_main_merges(reviewed, git(repo["a"], "rev-parse", "HEAD"), 0) is False
-    side = commit_on(repo["a"], "side", reviewed, "docs/k10/side.md", "not on main\n")
-    git(repo["a"], "checkout", "-q", "-B", "merged-side", reviewed)
-    git(repo["a"], "merge", "-q", "--no-ff", "--no-edit", side)
-    assert env.only_main_merges(reviewed, git(repo["a"], "rev-parse", "HEAD"), 0) is False
-    assert env.only_main_merges(reviewed, "f" * 40, 0) is None
+    a = repo["a"]
+    git(a, "fetch", "-q", "origin")
+    git(a, "checkout", "-q", TASK["branch"])
+    git(a, "merge", "-q", "--no-edit", "origin/main")
+    assert env.reviewed_plus_main(reviewed, _head_of(a), 0) is True
+    assert env.reviewed_plus_main(reviewed, _commit_file(a, "docs/k10/late.md", "late\n", "late work"), 0) is False
+    side = commit_on(a, "side", reviewed, "docs/k10/side.md", "not on main\n")
+    git(a, "checkout", "-q", "-B", "merged-side", reviewed)
+    git(a, "merge", "-q", "--no-ff", "--no-edit", side)
+    assert env.reviewed_plus_main(reviewed, _head_of(a), 0) is False
+    git(a, "checkout", "-q", "-B", "evil", reviewed)
+    git(a, "merge", "-q", "--no-ff", "--no-commit", "origin/main")
+    (a / "docs/k10/evil.md").write_text("added inside the merge commit\n")
+    git(a, "add", "-A")
+    git(a, "commit", "-qm", "Merge main (with an extra file)")
+    assert len(git(a, "rev-list", "--parents", "-n", "1", "HEAD").split()) == 3  # topologically a plain merge of main
+    assert env.reviewed_plus_main(reviewed, _head_of(a), 0) is False
+    assert env.reviewed_plus_main(reviewed, "f" * 40, 0) is None
+
+
+def test_reviewed_plus_main_accepts_a_rebased_update_and_fetches_the_reviewed_commit(repo: dict[str, Path], tmp_path: Path) -> None:
+    """R2b (D-584): "Update with rebase" replaces the reviewed commit, which a fresh checkout does not
+    even have; it is fetched, and the rebased head is accepted by its tree. A rebase that adds a change is not."""
+    reviewed = pushed_attempt(repo)
+    move_main(repo, "fake repo, main moved\n")
+    a, b = repo["a"], repo["b"]
+    git(a, "fetch", "-q", "origin")
+    git(a, "checkout", "-q", "-B", "rebased", reviewed)
+    git(a, "rebase", "-q", "origin/main")
+    rebased = _head_of(a)
+    git(a, "push", "-q", "origin", "rebased")
+    extra = _commit_file(a, "docs/k10/extra.md", "slipped in\n", "rebase plus a change")
+    git(a, "push", "-q", "origin", "rebased:rebased-extra")
+    git(b, "fetch", "-q", "origin", "rebased", "rebased-extra", "main")
+    assert subprocess.run(["git", "cat-file", "-e", f"{reviewed}^{{commit}}"], cwd=b, capture_output=True).returncode != 0
+    env = make_env(b, tmp_path, "b", run=OfflineGh([]))
+    env.read_state()
+    assert env.reviewed_plus_main(reviewed, rebased, 0) is True
+    assert env.reviewed_plus_main(reviewed, extra, 0) is False
 
 
 def test_drill_t167_a_hand_in_rebuilt_from_main_fails_honestly_and_is_never_forced(repo: dict[str, Path], tmp_path: Path) -> None:
