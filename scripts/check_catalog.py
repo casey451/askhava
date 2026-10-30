@@ -11,6 +11,9 @@ Also checks the license map (LIC-043, LIC-044, D-392) and the intake question ba
 Checks each category's job types (LIC-001) against the license map's per-job-type scope:
 every job type of an enabled licensed category has a license that covers it (CARD-001), and
 a subclassification receives only job types within its scope (LIC-035, D-058, D-504).
+Checks the job-type kinds of the five split categories (LIC-041, D-257, D-605): every job type of
+plumbing repair, heating and cooling, electrical, roof repair and painting has a kind (repair,
+replace or install) and each of the five has at least one repair job type.
 Loads the matching worked examples M01 to M16 (D-110) and fails on a missing, duplicated or
 malformed one, on a name the catalog or license map lacks, and on an expected outcome that breaks
 a necessary card condition (CARD-001, LIC-013, LIC-017, LIC-019, LIC-021, LIC-022, LIC-035,
@@ -19,8 +22,6 @@ Prints one line per example; exits 1 on any error.
 
 Usage: python3 scripts/check_catalog.py [--root REPO_ROOT]
 """
-# LIC-041: the job-type `kind` field (repair, replace, install) and its check arrive with T233 (D-493).
-
 from __future__ import annotations
 
 import argparse
@@ -60,6 +61,14 @@ QUOTE_FORMATS = frozenset({"range", "monthly", "tiers", "firm", "diagnostic_visi
 KB_TRADES_DIR = Path("docs/catalog/trade_kb/trades")  # D-431
 SUBCLASS = re.compile(r"^R-\d+R ")  # LIC-035: an R-37R or R-39R subclassification row
 MAX_PHOTOS = 3  # INT-044, D-432
+JOB_KINDS = frozenset({"repair", "replace", "install"})  # LIC-041, D-257
+KIND_SPLIT: dict[str, tuple[str, ...]] = {  # LIC-041, D-605: a split category and its catalog ids
+    "plumbing repair": ("plumbing_repair",),
+    "heating and cooling": ("hvac_repair", "hvac_replacement"),
+    "electrical": ("electrical",),
+    "roof repair": ("roof_repair",),
+    "painting": ("painting",),
+}
 
 TIER_LOW_FROM = Fraction(500)  # FEE-001: $500.00 and up is $75
 TIER_HIGH_UP_TO = Fraction(1500)  # FEE-001: up to and including $1,500.00 is $75
@@ -460,6 +469,50 @@ def check_legal_holds(cats: dict[str, dict[str, Any]]) -> list[str]:
     return errors
 
 
+def check_kinds(cat: dict[str, Any]) -> list[str]:
+    """LIC-041 (D-605): each job type of a split category has a known kind; no stray kind."""
+    cat_id = cat.get("id", "?")
+    kinds = cat.get("job_type_kinds") or {}
+    if not isinstance(kinds, dict):
+        return [f"category {cat_id}: job_type_kinds must map job types to kinds (LIC-041)"]
+    jobs = [str(j) for j in cat.get("job_types", [])]
+    errors = [
+        f"category {cat_id}: job type {job!r} has no kind (repair, replace or install) (LIC-041)"
+        for job in jobs
+        if job not in kinds
+    ]
+    errors.extend(
+        f"category {cat_id}: job_type_kinds {job!r} must name a job type and one of "
+        f"{sorted(JOB_KINDS)} (LIC-041)"
+        for job, kind in kinds.items()
+        if str(job) not in jobs or str(kind) not in JOB_KINDS
+    )
+    return errors
+
+
+def check_job_kinds(cats: dict[str, dict[str, Any]]) -> list[str]:
+    """LIC-041, BIZ-004 (D-257, D-605): the five split categories carry kinds, each a repair one."""
+    errors: list[str] = []
+    split_ids = {cat_id for ids in KIND_SPLIT.values() for cat_id in ids}
+    errors.extend(
+        f"category {cat_id}: job_type_kinds outside the split categories (LIC-041)"
+        for cat_id, cat in cats.items()
+        if cat_id not in split_ids and "job_type_kinds" in cat
+    )
+    for name, ids in KIND_SPLIT.items():
+        listed = [cats[cat_id] for cat_id in ids if cat_id in cats]
+        if not listed:
+            errors.append(f"split category {name}: not in the catalog (LIC-041)")
+            continue
+        for cat in listed:
+            errors.extend(check_kinds(cat))
+        maps = [cat.get("job_type_kinds") for cat in listed]
+        kinds = {str(kind) for m in maps if isinstance(m, dict) for kind in m.values()}
+        if "repair" not in kinds:
+            errors.append(f"split category {name}: no repair job type (LIC-041)")
+    return errors
+
+
 def check_categories(
     data: dict[str, Any],
 ) -> tuple[dict[str, dict[str, Any]], list[str]]:
@@ -483,6 +536,7 @@ def check_categories(
             "category pest_control: must be listed with advertised: false (7.1 item 3)"
         )
     errors.extend(check_legal_holds(cats))
+    errors.extend(check_job_kinds(cats))
     if set(data.get("not_offered_at_launch", [])) != NOT_AT_LAUNCH:
         errors.append("not_offered_at_launch does not match LIC-004")
     names = {str(cat.get("name", "")).lower() for cat in cats.values()}
