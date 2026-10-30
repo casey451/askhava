@@ -161,9 +161,10 @@ def test_committed_waiver_file_is_valid_and_names_known_causes() -> None:
 def test_decision_missing_from_the_log_next_to_the_twin_exits_2(tmp_path: Path) -> None:
     twin_dir = copy_twin(tmp_path)
     log = tmp_path / "docs" / "decisions.md"
-    log.write_text(log.read_text().replace("- **D-102**", "- D-102"))
+    # D-106: a decision the committed pins still name (T005 removed every D-102 pin; D-517)
+    log.write_text(log.read_text().replace("- **D-106**", "- D-106"))
     out = run_gate(twin_dir)
-    assert out.returncode == 2 and "D-102" in out.stdout
+    assert out.returncode == 2 and "D-106" in out.stdout
 
 
 def test_twin_declares_every_required_check() -> None:
@@ -250,7 +251,7 @@ BREAKS = {
                 "> 12 * 60:\n                    pass",
             ),
         ),
-        "normal_fixed",
+        "vendor_chaos_fixed",  # D-517: its seed 2 has a lapsing license; normal_fixed seeds 1-2 no longer do
         "2",
         "job_card_to_unlicensed_contractor",
     ),
@@ -258,7 +259,7 @@ BREAKS = {
     "opt-out check removed from sending": (
         lambda d: replace_in(d, "app.py", 'if phone in self.stopped and kind not in ("stop_confirm",):', "if False:"),
         "adversarial_fixed",
-        "1",
+        "2",  # D-517: seed 2 is where a text reaches an opted-out homeowner once the opt-out check is gone
         "text_after_stop",
     ),
     "quiet-hours check removed": (
