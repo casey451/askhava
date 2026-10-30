@@ -402,17 +402,47 @@ fn read_name(reader: Reader, purpose: Purpose) -> &'static str {
         .map_or(UNREGISTERED_ALERT, |(.., name)| name.as_str())
 }
 
+/// Fails with [`VaultError::InTransaction`] when `db` is inside a transaction, whether sqlx opened
+/// it or a raw `BEGIN` did: sqlx's own depth counter is checked first, then the server's state. A
+/// transaction-local setting made by one statement outlives it only inside a transaction block;
+/// outside one, each statement is its own transaction and the setting is gone by the next. No
+/// error is raised, so the probe adds nothing to the server log (PRIV-003, SEC-047, D-753). A
+/// caller's later rollback could otherwise undo a read's audit rows or a refusal's alert.
+async fn ensure_bare(db: &mut PgConnection) -> Result<(), VaultError> {
+    if db.is_in_transaction() {
+        return Err(VaultError::InTransaction);
+    }
+    sqlx::query_scalar!("SELECT set_config('askhava.vault_probe', 'open', true)")
+        .fetch_one(&mut *db)
+        .await
+        .map_err(db_err)?;
+    let left = sqlx::query_scalar!(
+        r#"SELECT coalesce(current_setting('askhava.vault_probe', true), '') = 'open' AS "open!""#
+    )
+    .fetch_one(&mut *db)
+    .await
+    .map_err(db_err)?;
+    if left {
+        return Err(VaultError::InTransaction);
+    }
+    Ok(())
+}
+
 /// Refuses a read of contact `id` that matches no grant and raises a High alert at once, its
-/// subject kind `vault_read.<reader>.<purpose>` and its subject the contact (SEC-047, D-752).
+/// subject kind `vault_read.<reader>.<purpose>` and its subject the contact (SEC-047, D-752). The
+/// alert commits on its own: a connection inside a transaction, whose rollback could undo it, is
+/// refused first (D-753).
 ///
 /// # Errors
 ///
-/// Always [`VaultError::UnregisteredPurpose`], or [`VaultError::Audit`] if the alert failed.
+/// [`VaultError::UnregisteredPurpose`], or [`VaultError::InTransaction`], or
+/// [`VaultError::Audit`] if the alert failed.
 pub(crate) async fn refuse(
     db: &mut PgConnection,
     (reader, purpose): (Reader, Purpose),
     id: Uuid,
 ) -> Result<ContactDetails, VaultError> {
+    ensure_bare(db).await?;
     let alert = NewAlert {
         kind: UNREGISTERED_ALERT,
         severity: Severity::High,
@@ -428,7 +458,7 @@ pub(crate) async fn refuse(
 /// purpose (the grant's action), one more naming the pick when `pick` is a release's, and the read
 /// counted for SEC-047, all in one transaction that commits before any plaintext is returned
 /// (PRIV-003, PRIV-004, SEC-030). Refused on a connection already in a transaction, whose later
-/// rollback would undo the audit rows after the plaintext left (D-752).
+/// rollback would undo the audit rows after the plaintext left (D-752, D-753).
 ///
 /// # Errors
 ///
@@ -441,9 +471,7 @@ pub(crate) async fn read(
     id: Uuid,
     fields: &[Field],
 ) -> Result<ContactDetails, VaultError> {
-    if db.is_in_transaction() {
-        return Err(VaultError::InTransaction);
-    }
+    ensure_bare(db).await?;
     let mut tx = db.begin().await.map_err(db_err)?;
     let details = open_row(&mut tx, vault, id, fields, false).await?;
     audit_read(&mut tx, (grant, actor), id, fields).await?;
@@ -539,8 +567,11 @@ fn own_grant(purpose: Purpose) -> &'static Grant {
         .unwrap_or_else(|| unreachable!())
 }
 
-/// Re-seals up to `limit` contacts still under an older `VAULT_KEY` or `VAULT_INDEX_KEY` version
-/// with the active ones, rebuilding each phone digest; returns how many it moved. Run it until it
+/// Re-seals up to `limit` contacts still under an older `VAULT_KEY` version or with a
+/// `homeowner-phone` digest under an older `VAULT_INDEX_KEY` version with the active ones,
+/// rebuilding each phone digest; returns how many it moved. Only the phone digest is selected,
+/// as it is the only one [`reseal`] rebuilds, so a stale digest of another purpose never makes a
+/// batch that never ends (D-753). Run it until it
 /// returns 0: both versions stay readable throughout (PRIV-024). Each move is its own transaction
 /// and audits its plaintext read as `privacy`'s rotation (PRIV-003).
 ///
@@ -554,8 +585,10 @@ pub async fn rotate_batch(
 ) -> Result<u64, VaultError> {
     let ids = sqlx::query_scalar!(
         "SELECT id FROM privacy.contact WHERE oldest_key_version < $1 \
-         OR id IN (SELECT contact_id FROM privacy.contact_index WHERE key_version < $2) ORDER BY id LIMIT $3",
+         OR id IN (SELECT contact_id FROM privacy.contact_index WHERE key_version < $2 AND purpose = $4) \
+         ORDER BY id LIMIT $3",
         i32::from(vault.seal_version()), i32::from(vault.index_version()), limit,
+        IndexPurpose::HomeownerPhone.label(),
     )
     .fetch_all(&mut *db)
     .await
@@ -606,7 +639,8 @@ async fn reseal(
     Ok(())
 }
 
-/// Compares each reader-purpose count of the hour starting `hour` with its 14-day hourly baseline
+/// Compares each reader-purpose count of the hour holding `hour` (rounded down to the UTC hour,
+/// D-753) with its 14-day hourly baseline
 /// and raises one High alert for each count above three times it (floored at
 /// [`BASELINE_FLOOR`]); returns how many it raised. Safe to run twice: an hour alerts once (SEC-047).
 ///
@@ -616,9 +650,10 @@ async fn reseal(
 pub async fn check_read_rates(db: &mut PgConnection, hour: Timestamp) -> Result<usize, VaultError> {
     let mut tx = db.begin().await.map_err(db_err)?;
     let spikes = sqlx::query_scalar!(
-        "UPDATE privacy.read_count c SET alerted = true WHERE c.hour = $1 AND NOT c.alerted \
+        "WITH h AS (SELECT date_trunc('hour', $1::timestamptz, 'UTC') AS start) \
+         UPDATE privacy.read_count c SET alerted = true FROM h WHERE c.hour = h.start AND NOT c.alerted \
          AND c.reads > $2::float8 * greatest($3::float8, (SELECT coalesce(sum(p.reads), 0) FROM privacy.read_count p \
-           WHERE p.action = c.action AND p.hour >= $1 - interval '14 days' AND p.hour < $1) / $4::float8) \
+           WHERE p.action = c.action AND p.hour >= h.start - interval '14 days' AND p.hour < h.start) / $4::float8) \
          RETURNING c.id",
         hour.to_sqlx() as _, RATE_MULTIPLE, BASELINE_FLOOR, BASELINE_HOURS,
     )

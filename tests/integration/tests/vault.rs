@@ -6,7 +6,8 @@
 //! every plaintext read writes an audit row naming its reader, purpose and field; that the
 //! rotation drill reads v1 rows while v2 is active, ends with no v1 row or digest and still finds
 //! every number; and that an hour's reads above three times the 14-day baseline, or a read with an
-//! unregistered purpose, raises one High alert. The export and the runbook's key inventory are
+//! unregistered purpose, raises one High alert; and that no read or refusal runs inside a caller's
+//! transaction, even one a raw `BEGIN` opened (D-753). The export and the runbook's key inventory are
 //! the nightly export's and T117's cases of TD-PRIV-09. All data and keys are fake.
 
 use askhava_integration::set_app_role;
@@ -225,6 +226,41 @@ async fn a_read_inside_the_callers_transaction_is_refused(pool: PgPool) {
     tx.rollback().await.expect("rollback");
     let read = read_contact(&mut conn, &vault, SEND, id, &[Field::Name]).await;
     assert!(read.is_ok(), "a bare connection reads");
+}
+
+/// PRIV-003, SEC-047, D-753: a transaction opened by a raw `BEGIN`, which sqlx does not count, is
+/// still seen; a refused read inside one raises no alert the caller could roll back, and is refused.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_raw_begin_is_seen_and_no_refusal_alerts_inside_it(pool: PgPool) {
+    use sqlx::Executor as _;
+    let vault = v1();
+    let mut conn = app_conn(&pool).await;
+    let id = store_contact(&mut conn, &vault, &zelda(PHONE))
+        .await
+        .expect("store");
+    conn.execute("BEGIN").await.expect("raw begin");
+    let read = read_contact(&mut conn, &vault, SEND, id, &[Field::Name]).await;
+    assert_eq!(read.err(), Some(VaultError::InTransaction));
+    let stray = (Reader::Calls, Purpose::Send);
+    let refused = read_contact(&mut conn, &vault, stray, id, &[Field::Name]).await;
+    assert_eq!(refused.err(), Some(VaultError::InTransaction));
+    conn.execute("ROLLBACK").await.expect("raw rollback");
+    let mut tx = sqlx::Connection::begin(&mut *conn).await.expect("begin");
+    let refused = read_contact(&mut tx, &vault, stray, id, &[Field::Name]).await;
+    assert_eq!(refused.err(), Some(VaultError::InTransaction));
+    tx.rollback().await.expect("rollback");
+    assert_eq!(
+        alerts(&mut conn, "privacy.vault_read_unregistered").await,
+        0
+    );
+    let refused = read_contact(&mut conn, &vault, stray, id, &[Field::Name]).await;
+    assert_eq!(refused.err(), Some(VaultError::UnregisteredPurpose));
+    assert_eq!(
+        alerts(&mut conn, "privacy.vault_read_unregistered").await,
+        1
+    );
+    let read = read_contact(&mut conn, &vault, SEND, id, &[Field::Name]).await;
+    assert!(read.is_ok(), "the probe leaves a bare connection reading");
 }
 
 /// PRIV-002, D-752: two contacts racing for one phone: the one whose blind-index insert meets the
@@ -446,6 +482,29 @@ async fn the_rotation_drill_moves_every_row_to_v2(pool: PgPool) {
     );
 }
 
+/// PRIV-024, D-753: a stale digest of a purpose the re-seal does not rebuild never selects its
+/// contact, so the drill still ends at 0.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_stale_digest_of_another_purpose_does_not_stall_rotation(pool: PgPool) {
+    let mut conn = app_conn(&pool).await;
+    let id = store_contact(&mut conn, &v1(), &zelda(PHONE))
+        .await
+        .expect("store");
+    let (version, digest) = v1().blind_index(IndexPurpose::HomeownerPhone, "zelda@example.com")[0];
+    sqlx::query(
+        "INSERT INTO privacy.contact_index (purpose, key_version, digest, contact_id) VALUES ('email', $1, $2, $3)",
+    )
+    .bind(i32::from(version))
+    .bind(&digest[..])
+    .bind(id)
+    .execute(&mut *conn)
+    .await
+    .expect("plant an email digest under v1");
+    let both = vault(&key(1, 0x11), &format!("{},{}", key(2, 0x22), key(1, 0x21)));
+    assert_eq!(rotate_batch(&mut conn, &both, 5).await.expect("rotate"), 1);
+    assert_eq!(rotate_batch(&mut conn, &both, 5).await.expect("rotate"), 0);
+}
+
 /// Plants `per_hour` reads of `action` in each of the 336 hours before `hour`.
 async fn plant_baseline(conn: &mut PgConnection, action: &str, hour: Timestamp, per_hour: i32) {
     sqlx::query(
@@ -498,6 +557,30 @@ async fn a_read_burst_above_three_times_baseline_alerts_once(pool: PgPool) {
     }
     assert_eq!(check_read_rates(&mut conn, hour).await.expect("check"), 1);
     assert_eq!(check_read_rates(&mut conn, hour).await.expect("again"), 0);
+    assert_eq!(alerts(&mut conn, "privacy.vault_read_spike").await, 1);
+}
+
+/// SEC-047, D-753: a check given a time inside the hour, not its start, checks that hour.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_check_inside_the_hour_checks_that_hour(pool: PgPool) {
+    let vault = v1();
+    let mut conn = app_conn(&pool).await;
+    let id = store_contact(&mut conn, &vault, &zelda(PHONE))
+        .await
+        .expect("store");
+    let hour: jiff_sqlx::Timestamp = sqlx::query_scalar("SELECT date_trunc('hour', now(), 'UTC')")
+        .fetch_one(&mut *conn)
+        .await
+        .expect("hour");
+    let hour = hour.to_jiff();
+    plant_baseline(&mut conn, "vault_read.messaging.send", hour, 1).await;
+    for _ in 0..4 {
+        read_contact(&mut conn, &vault, SEND, id, &[Field::Phone])
+            .await
+            .expect("send");
+    }
+    let inside = hour + jiff::SignedDuration::from_mins(37);
+    assert_eq!(check_read_rates(&mut conn, inside).await.expect("check"), 1);
     assert_eq!(alerts(&mut conn, "privacy.vault_read_spike").await, 1);
 }
 

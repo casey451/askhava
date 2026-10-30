@@ -38,11 +38,13 @@ pub enum ReleaseBasis {
     NoFeeDue,
 }
 
-/// Proof that pick `pick_id` may release its homeowner's details; only [`ReleaseMint::mint`] makes
-/// one, and only `payments` holds the mint (SEC-030, D-481).
+/// Proof that pick `pick_id` may release the details of its homeowner's contact `contact_id`;
+/// only [`ReleaseMint::mint`] makes one, and only `payments` holds the mint. The proof names the
+/// contact, so it opens that contact and no other (SEC-030, D-481, D-753).
 #[derive(Debug)]
 pub struct ReleaseProof {
     pick_id: Uuid,
+    contact_id: Uuid,
     basis: ReleaseBasis,
 }
 
@@ -51,6 +53,12 @@ impl ReleaseProof {
     #[must_use]
     pub fn pick_id(&self) -> Uuid {
         self.pick_id
+    }
+
+    /// The homeowner contact this proof opens (D-753).
+    #[must_use]
+    pub fn contact_id(&self) -> Uuid {
+        self.contact_id
     }
 
     /// Why the release is allowed.
@@ -68,11 +76,16 @@ pub struct ReleaseMint {
 }
 
 impl ReleaseMint {
-    /// A proof for `pick_id`; `payments` calls it only after a verified succeeded charge or a
-    /// no-fee decision, never on a redirect (SEC-030).
+    /// A proof for pick `pick_id` and its homeowner's contact `contact_id`; `payments` calls it
+    /// only after a verified succeeded charge or a no-fee decision, never on a redirect (SEC-030,
+    /// D-753).
     #[must_use]
-    pub fn mint(&self, pick_id: Uuid, basis: ReleaseBasis) -> ReleaseProof {
-        ReleaseProof { pick_id, basis }
+    pub fn mint(&self, pick_id: Uuid, contact_id: Uuid, basis: ReleaseBasis) -> ReleaseProof {
+        ReleaseProof {
+            pick_id,
+            contact_id,
+            basis,
+        }
     }
 }
 
@@ -161,10 +174,10 @@ pub async fn read_contact(
     }
 }
 
-/// Reads the release fields of contact `id` for the pick `proof` names, consuming the proof so it
-/// opens one release only; besides the per-field rows, an audit row with subject `picks.pick` and
-/// the proof's pick ID ties the read to its pick (SEC-030, PRIV-003, PRIV-005, D-752). The phone is
-/// never released (PICK-023).
+/// Reads the release fields of the contact `proof` names, for the pick it names, consuming the
+/// proof so it opens one release of one contact only (D-753); besides the per-field rows, an audit
+/// row with subject `picks.pick` and the proof's pick ID ties the read to its pick (SEC-030,
+/// PRIV-003, PRIV-005, D-752). The phone is never released (PICK-023).
 ///
 /// # Errors
 ///
@@ -173,10 +186,9 @@ pub async fn read_for_release(
     db: &mut PgConnection,
     vault: &Vault,
     proof: ReleaseProof,
-    id: Uuid,
     fields: &[Field],
 ) -> Result<ContactDetails, VaultError> {
-    let access = (Reader::Picks, Purpose::Release);
+    let (access, id) = ((Reader::Picks, Purpose::Release), proof.contact_id);
     match grant_for(access.0, access.1, fields) {
         Some(grant) => {
             let gate = (grant, Actor::System, Some(proof.pick_id));
@@ -308,13 +320,12 @@ mod realm_tests {
             .await
             .expect("store");
         let mint = ReleaseMint { _private: () };
-        let proof = mint.mint(Uuid::max(), ReleaseBasis::NoFeeDue);
+        let proof = mint.mint(Uuid::max(), id, ReleaseBasis::NoFeeDue);
         assert_eq!(
-            (proof.pick_id(), proof.basis()),
-            (Uuid::max(), ReleaseBasis::NoFeeDue)
+            (proof.pick_id(), proof.contact_id(), proof.basis()),
+            (Uuid::max(), id, ReleaseBasis::NoFeeDue)
         );
-        let read =
-            read_for_release(&mut db, &vault, proof, id, &[Field::Name, Field::Address]).await;
+        let read = read_for_release(&mut db, &vault, proof, &[Field::Name, Field::Address]).await;
         assert_eq!(
             read.expect("release")
                 .name
@@ -322,12 +333,13 @@ mod realm_tests {
                 .as_deref(),
             Some("Ada Example")
         );
-        let proof = mint.mint(Uuid::max(), ReleaseBasis::PaidCharge);
-        let phone = read_for_release(&mut db, &vault, proof, id, &[Field::Phone]).await;
+        let proof = mint.mint(Uuid::max(), id, ReleaseBasis::PaidCharge);
+        let phone = read_for_release(&mut db, &vault, proof, &[Field::Phone]).await;
         assert_eq!(phone.err(), Some(VaultError::UnregisteredPurpose));
     }
 
-    /// SEC-030, PRIV-003, D-752: a release read is audited against the pick its proof names.
+    /// SEC-030, PRIV-003, D-752, D-753: a release read is audited against the pick its proof names
+    /// and opens only the contact the proof names.
     #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
     async fn a_release_read_is_audited_against_its_pick(pool: PgPool) {
         let (vault, mut db) = (vault(), pool.acquire().await.expect("connection"));
@@ -335,8 +347,11 @@ mod realm_tests {
             .await
             .expect("store");
         let pick = Uuid::from_u128(0x22);
-        let proof = ReleaseMint { _private: () }.mint(pick, ReleaseBasis::PaidCharge);
-        read_for_release(&mut db, &vault, proof, id, &[Field::Name])
+        let other = store_contact(&mut db, &vault, &contact("928-555-0116"))
+            .await
+            .expect("other");
+        let proof = ReleaseMint { _private: () }.mint(pick, id, ReleaseBasis::PaidCharge);
+        read_for_release(&mut db, &vault, proof, &[Field::Name])
             .await
             .expect("release");
         let rows = export_audit(&mut db, 0, 100).await.expect("export");
@@ -351,6 +366,12 @@ mod realm_tests {
                 ("privacy.contact", id, Some("name")),
                 ("picks.pick", pick, None)
             ]
+        );
+        assert!(
+            rows.iter()
+                .filter(|r| r.action.starts_with("vault_read."))
+                .all(|r| r.subject_id != other),
+            "a proof opens only the contact it names (D-753)"
         );
     }
 

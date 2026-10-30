@@ -4,7 +4,8 @@
 //! plaintext read functions and fails when one is named outside the crates D-093 lets read:
 //! `read_contact` by `messaging` and `calls`, `read_for_release` by `picks` (with a `ReleaseProof`,
 //! SEC-030), `read_own_contact` and `read_for_owner` by `portals` (with a session proof, SEC-046),
-//! and no business-realm file of `portals` naming any of them. `quotes` names none: it reads card
+//! and no business-realm file of `portals` (its path or a session type naming `business`) naming
+//! any of them. `quotes` names none: it reads card
 //! photos only (PRIV-004). The compile-fail proof that business code cannot build a session proof
 //! is T223's trybuild case; a homeowner session reading only its own record is the in-crate test
 //! in `app/privacy/src/api.rs`. Each rule is proved on a planted source.
@@ -20,26 +21,102 @@ const READERS: [(&str, &[&str]); 4] = [
     ("read_for_owner", &["portals"]),
 ];
 
-/// `src` with `//` comments and `"…"` string bodies blanked, so a mention in prose never counts.
+/// `src` with comments (`//` and nested `/* */`) dropped and the bodies of string literals (plain,
+/// byte, C and raw `r#"…"#`) and character literals blanked, so a mention in prose or data never
+/// counts and a `'"'` never opens a string (D-753).
 fn code_only(src: &str) -> String {
+    let chars: Vec<char> = src.chars().collect();
     let mut out = String::with_capacity(src.len());
-    let mut chars = src.chars().peekable();
-    let (mut in_str, mut in_comment) = (false, false);
-    while let Some(c) = chars.next() {
-        match (in_str, in_comment, c) {
-            (_, true, '\n') => in_comment = false,
-            (_, true, _) => continue,
-            (true, _, '\\') => {
-                chars.next();
+    let mut i = 0;
+    while i < chars.len() {
+        let skip = match (chars[i], chars.get(i + 1)) {
+            ('/', Some('/')) => line_comment(&chars, i),
+            ('/', Some('*')) => block_comment(&chars, i),
+            ('"', _) => quoted(&chars, i, '"'),
+            ('r', Some('"' | '#')) if raw_prefix(&chars, i) => raw_string(&chars, i),
+            ('\'', _) => char_literal(&chars, i),
+            _ => None,
+        };
+        match skip {
+            Some(end) => {
+                out.push(' ');
+                i = end;
             }
-            (true, _, '"') | (false, _, '"') => in_str = !in_str,
-            (false, _, '/') if chars.peek() == Some(&'/') => in_comment = true,
-            (true, _, _) => continue,
-            _ => {}
+            None => {
+                out.push(chars[i]);
+                i += 1;
+            }
         }
-        out.push(c);
     }
     out
+}
+
+fn ident_before(chars: &[char], at: usize) -> bool {
+    at > 0 && (chars[at - 1].is_alphanumeric() || chars[at - 1] == '_')
+}
+
+/// Whether the `r` at `at` opens a raw string: alone, or after a lone `b` or `c` prefix.
+fn raw_prefix(chars: &[char], at: usize) -> bool {
+    !ident_before(chars, at) || (matches!(chars[at - 1], 'b' | 'c') && !ident_before(chars, at - 1))
+}
+
+/// The end of the `//` comment at `at` (its newline is kept).
+fn line_comment(chars: &[char], at: usize) -> Option<usize> {
+    Some(
+        (at..chars.len())
+            .find(|&j| chars[j] == '\n')
+            .unwrap_or(chars.len()),
+    )
+}
+
+/// The end of the block comment at `at`, nesting as Rust does.
+fn block_comment(chars: &[char], at: usize) -> Option<usize> {
+    let (mut depth, mut j) = (0_usize, at);
+    while j + 1 < chars.len() {
+        match (chars[j], chars[j + 1]) {
+            ('/', '*') => (depth, j) = (depth + 1, j + 2),
+            ('*', '/') if depth == 1 => return Some(j + 2),
+            ('*', '/') => (depth, j) = (depth - 1, j + 2),
+            _ => j += 1,
+        }
+    }
+    Some(chars.len())
+}
+
+/// The end of the literal opened by `quote` at `at`, past escapes.
+fn quoted(chars: &[char], at: usize, quote: char) -> Option<usize> {
+    let mut j = at + 1;
+    while j < chars.len() {
+        match chars[j] {
+            '\\' => j += 2,
+            c if c == quote => return Some(j + 1),
+            _ => j += 1,
+        }
+    }
+    Some(chars.len())
+}
+
+/// The end of the raw string `r#…#"…"#…#` at `at`, or `None` when `r` starts an identifier.
+fn raw_string(chars: &[char], at: usize) -> Option<usize> {
+    let hashes = chars[at + 1..].iter().take_while(|&&c| c == '#').count();
+    if chars.get(at + 1 + hashes) != Some(&'"') {
+        return None;
+    }
+    let close: Vec<char> = std::iter::once('"')
+        .chain(std::iter::repeat_n('#', hashes))
+        .collect();
+    let body = at + 2 + hashes;
+    let found = (body..chars.len()).find(|&j| chars[j..].starts_with(&close));
+    Some(found.map_or(chars.len(), |j| j + close.len()))
+}
+
+/// The end of the character literal at `at`, or `None` for a lifetime or label (`'a`).
+fn char_literal(chars: &[char], at: usize) -> Option<usize> {
+    match (chars.get(at + 1), chars.get(at + 2)) {
+        (Some('\\'), _) => quoted(chars, at, '\''),
+        (Some(_), Some('\'')) => Some(at + 3),
+        _ => None,
+    }
 }
 
 /// True when `word` appears in `code` as a whole identifier.
@@ -52,10 +129,19 @@ fn names(code: &str, word: &str) -> bool {
     })
 }
 
+/// Whether `code` names an identifier holding both `business` and `session` in any case (a
+/// business-realm session type or extractor), so a business route outside a `business` file is
+/// still in the business realm (SEC-046, D-753).
+fn business_session(code: &str) -> bool {
+    code.split(|c: char| !(c.is_alphanumeric() || c == '_'))
+        .map(str::to_lowercase)
+        .any(|w| w.contains("business") && w.contains("session"))
+}
+
 /// The findings for one file of crate `krate` at `rel` (PRIV-004, SEC-046).
 fn check_file(krate: &str, rel: &str, src: &str) -> Vec<String> {
     let code = code_only(src);
-    let business = krate == "portals" && rel.contains("business");
+    let business = krate == "portals" && (rel.contains("business") || business_session(&code));
     READERS
         .iter()
         .filter(|(word, _)| names(&code, word))
@@ -140,6 +226,53 @@ fn the_reader_scan_catches_each_planted_violation() {
             0,
         ),
         ("privacy", "app/privacy/src/api.rs", call, 0),
+    ];
+    for (krate, rel, src, want) in cases {
+        assert_eq!(check_file(krate, rel, src).len(), want, "{rel}: {src}");
+    }
+}
+
+/// D-753: the scan sees past character literals, nested block comments and raw strings, and treats
+/// a `portals` file naming a business session as business realm whatever its path.
+#[test]
+fn the_reader_scan_reads_literals_comments_and_business_sessions() {
+    let cases: [(&str, &str, &str, usize); 6] = [
+        (
+            "jobs",
+            "app/jobs/src/b.rs",
+            "let q = '\"'; read_contact(db, v, a, id, &[]);",
+            1,
+        ),
+        (
+            "jobs",
+            "app/jobs/src/c.rs",
+            "let e = '\\''; let l: &'static str = x; read_contact();",
+            1,
+        ),
+        (
+            "jobs",
+            "app/jobs/src/d.rs",
+            "/* read_contact /* nested */ read_contact */ let s = r#\"read_contact \" x\"#; br\"read_contact\"; br#\"read_contact\"#;",
+            0,
+        ),
+        (
+            "jobs",
+            "app/jobs/src/e.rs",
+            "/* a */ let s = r#\"\"#; read_contact();",
+            1,
+        ),
+        (
+            "portals",
+            "app/portals/src/confirm_pay.rs",
+            "async fn f(s: BusinessSession) { read_for_owner(db, v, x, id, &[]); }",
+            1,
+        ),
+        (
+            "portals",
+            "app/portals/src/owner_portal.rs",
+            "async fn f(s: OwnerSession) { read_for_owner(db, v, x, id, &[]); }",
+            0,
+        ),
     ];
     for (krate, rel, src, want) in cases {
         assert_eq!(check_file(krate, rel, src).len(), want, "{rel}: {src}");
