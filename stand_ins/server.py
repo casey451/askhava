@@ -123,7 +123,7 @@ def twilio_list(s: StandIns, req: Request, m: re.Match[str]) -> Out:
 
 
 def twilio_media(s: StandIns, req: Request, m: re.Match[str]) -> Out:
-    """Bytes without a suffix, the Media resource JSON with `.json`, DELETE either way (D-492, D-561)."""
+    """Bytes (with their stored content type) without a suffix, the Media resource JSON with `.json`, DELETE either way (D-492, D-561)."""
     path = req.path.removeprefix("/twilio").removesuffix(".json")
     if req.method == "DELETE":
         return (*s.twilio.delete_media(path), {})
@@ -131,7 +131,7 @@ def twilio_media(s: StandIns, req: Request, m: re.Match[str]) -> Out:
         return (*s.twilio.media_resource(path), {})
     if path not in s.twilio.media:
         return (*twilio.error(20404, "The requested resource was not found", 404), {})
-    return 200, s.twilio.media[path], {"content-type": "image/jpeg"}
+    return 200, s.twilio.media[path], {"content-type": s.twilio.media_types[path]}
 
 
 def twilio_calls(s: StandIns, req: Request, m: re.Match[str]) -> Out:
@@ -276,7 +276,7 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
         ("POST", r"/_stand_in/lob/advance", control_lob_advance),
         ("POST", r"/_stand_in/lob/webhooks", control_lob_webhooks),
         ("POST", r"/stripe/v1/(?P<kind>customers|setup_intents|payment_intents|refunds)", stripe_create),
-        ("GET", r"/stripe/v1/(payment_intents|customers|refunds)/(?P<id>\w+)", stripe_fetch),
+        ("GET", r"/stripe/v1/(payment_intents|setup_intents|customers|refunds)/(?P<id>\w+)", stripe_fetch),
         ("GET", r"/stripe/v1/events", stripe_events),
         ("POST", r"/resend/emails", resend_send),
         ("POST", r"/lob/v1/letters", lob_create),

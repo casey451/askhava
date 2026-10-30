@@ -10,7 +10,8 @@ text that is exactly one of its opt-out words blocks later sends (21610) and get
 CON-009 reply (Spanish for the Spanish words) until START or UNSTOP (no YES); the webhook then
 carries OptOutType. Those provider replies are kept apart in `replies`, so `sent_log` counts only
 the app's own sends. Inbound picture texts carry NumMedia and MediaUrl{n}; GET on a media URL gives
-the bytes, with `.json` the Media resource, and DELETE removes it. Each sent message keeps the app's derived key, and `sent_log` finds it, for OPS-017's
+the bytes (served with their content type), with `.json` the Media resource, and DELETE
+removes it; every picture gets its own Media sid. Each sent message keeps the app's derived key, and `sent_log` finds it, for OPS-017's
 "nothing sent twice" check; Calls stand in for the masked voice session (D-491). Webhooks carry
 X-Twilio-Signature: base64(HMAC-SHA1(auth token, URL + sorted key+value pairs)). Verify: POST
 /v2/Services/{sid}/Verifications and /VerificationCheck.
@@ -96,6 +97,7 @@ class FakeTwilio:
         self.keys: dict[str, str] = {}
         self.media: dict[str, bytes] = {}
         self.media_types: dict[str, str] = {}
+        self.media_count = 0
         self.replies: list[dict[str, Any]] = []
         self.calls: list[dict[str, Any]] = []
 
@@ -181,7 +183,9 @@ class FakeTwilio:
         params = {"MessageSid": sid, "AccountSid": self.account_sid, "From": frm, "To": to, "Body": body}
         params["NumMedia"] = str(len(media or []))
         for n, content_type in enumerate(media or []):
-            path = f"/2010-04-01/Accounts/{self.account_sid}/Messages/{sid}/Media/{fake_id('ME', n, 32)}"
+            self.media_count += 1
+            media_sid = fake_id("ME", self.media_count, 32)
+            path = f"/2010-04-01/Accounts/{self.account_sid}/Messages/{sid}/Media/{media_sid}"
             self.media[path], self.media_types[path] = b"fake-image-bytes", content_type
             params[f"MediaUrl{n}"], params[f"MediaContentType{n}"] = path, content_type
         opt_type = self._auto_reply(word, frm, to)

@@ -68,6 +68,8 @@ def test_twilio_send_errors_and_auth_over_http(base: str) -> None:
     assert status == 400 and err["code"] == 21610 and set(err) == {"code", "message", "more_info", "status"}
     status, err, _ = call(base, "POST", MSGS, {"To": HOMEOWNER, "From": OURS, "Body": "x"})
     assert status == 401 and err["code"] == 20003
+    assert tw(base, "POST", MSGS, {"To": HOMEOWNER, "From": OURS, "Body": ""})[1]["code"] == 21602
+    assert tw(base, "POST", MSGS, {"To": HOMEOWNER, "From": "+19285550199", "Body": "x"})[1]["code"] == 21606
     other = "Basic " + base64.b64encode(f"AC{'1' * 32}:token".encode()).decode()
     assert call(base, "POST", MSGS, {"To": HOMEOWNER, "From": OURS, "Body": "x"}, authorization=other)[0] == 401
 
@@ -117,6 +119,15 @@ def test_spanish_opt_out_gets_the_spanish_reply_and_yes_resubscribes_nothing(bas
     assert tw(base, "POST", MSGS, {"To": HOMEOWNER, "From": OURS, "Body": "x"})[0] == 201
 
 
+def test_yes_from_an_opted_out_number_gets_no_provider_reply(base: str) -> None:
+    """CON-030 (D-492): YES is no keyword, so the provider sends nothing back and the block stays."""
+    text_in(base, "STOP")
+    params = text_in(base, "yes")["params"]
+    replies = tw(base, "GET", MSGS + "?Direction=outbound-reply")[1]["messages"]
+    assert "OptOutType" not in params and len(replies) == 1
+    assert replies[0]["body"] == twilio.OPTOUT_SETTINGS["opt_out"]["reply"]["en"]
+
+
 def test_picture_text_media_can_be_fetched_then_deleted(base: str) -> None:
     """D-492: NumMedia and MediaUrl{n} arrive signed; DELETE removes the stored picture."""
     reply = text_in(base, "my sink", ["image/jpeg"])
@@ -124,7 +135,8 @@ def test_picture_text_media_can_be_fetched_then_deleted(base: str) -> None:
     assert params["NumMedia"] == "1" and params["MediaContentType0"] == "image/jpeg"
     assert twilio.validate_signature("fake-auth-token", "https://example.com/sms", params, reply["signature"])
     path = params["MediaUrl0"].removeprefix(base)
-    assert tw(base, "GET", path)[:2] == (200, b"fake-image-bytes")
+    got = tw(base, "GET", path)
+    assert got[:2] == (200, b"fake-image-bytes") and got[2]["content-type"] == "image/jpeg"
     status, meta, headers = tw(base, "GET", path + ".json")
     assert status == 200 and headers["content-type"] == "application/json"
     assert meta["content_type"] == "image/jpeg" and meta["parent_sid"] == params["MessageSid"]
@@ -138,6 +150,9 @@ def test_media_url_uses_the_server_address_not_the_host_header(base: str) -> Non
     payload = {"from": HOMEOWNER, "to": OURS, "body": "", "media": ["image/png"], "url": "https://example.com/sms"}
     reply = call(base, "POST", "/_stand_in/twilio/inbound", body=payload, host="attacker.example")[1]
     assert reply["params"]["MediaUrl0"].startswith(base + "/twilio/")
+    assert tw(base, "GET", reply["params"]["MediaUrl0"].removeprefix(base))[2]["content-type"] == "image/png"
+    again = call(base, "POST", "/_stand_in/twilio/inbound", body=payload)[1]["params"]
+    assert again["MediaUrl0"].rsplit("/", 1)[1] != reply["params"]["MediaUrl0"].rsplit("/", 1)[1]
     assert twilio.validate_signature("fake-auth-token", "https://example.com/sms", reply["params"], reply["signature"])
 
 
@@ -151,6 +166,16 @@ def test_verify_and_voice_session_over_http(base: str) -> None:
     assert status == 201 and tw(base, "GET", calls + ".json?Status=queued")[1]["calls"] == [opened]
     assert tw(base, "POST", f"{calls}/{opened['sid']}.json", {"Status": "completed"})[1]["status"] == "completed"
     assert tw(base, "GET", calls + ".json?Status=queued")[1]["calls"] == []
+
+
+def test_verify_wrong_code_and_attempt_limit_over_http(base: str) -> None:
+    tw(base, "POST", VERIFY + "/Verifications", {"To": HOMEOWNER, "Channel": "sms"})
+    for _ in range(twilio.MAX_CHECK_ATTEMPTS):
+        status, wrong, _ = tw(base, "POST", VERIFY + "/VerificationCheck", {"To": HOMEOWNER, "Code": "x"})
+        assert (status, wrong["status"], wrong["valid"]) == (200, "pending", False)
+    status, err, _ = tw(base, "POST", VERIFY + "/VerificationCheck", {"To": HOMEOWNER, "Code": "x"})
+    assert (status, err["code"]) == (429, 60202)
+    assert tw(base, "POST", VERIFY + "/Verifications", {"To": "928", "Channel": "sms"})[1]["code"] == 60200
 
 
 def test_status_callback_control(base: str) -> None:
@@ -180,6 +205,9 @@ def test_stripe_charge_idempotency_decline_and_live_key(base: str) -> None:
     events = call(base, "GET", "/stripe/v1/events?type=payment_intent.succeeded", authorization="Bearer sk_test_fake")
     assert len(events[1]["data"]) == 1
     assert stripe_post(base, "customers", {}, auth="sk_live_fake")[0] == 401
+    seti = stripe_post(base, "setup_intents", {"customer": cus["id"]})[1]
+    got = call(base, "GET", f"/stripe/v1/setup_intents/{seti['id']}", authorization="Bearer sk_test_fake")
+    assert seti["id"].startswith("seti_") and got[:2] == (200, seti)
 
 
 def test_stripe_dispute_and_signed_webhook_controls(base: str) -> None:
@@ -197,6 +225,8 @@ def test_stripe_dispute_and_signed_webhook_controls(base: str) -> None:
     header = signed["headers"]["stripe-signature"]
     assert stripe.verify_signature("whsec_fake", signed["payload"], header, 1_800_000_000)
     assert not stripe.verify_signature("whsec_fake", signed["payload"], header, 1_800_000_000 + 301)
+    assert not stripe.verify_signature("whsec_fake", signed["payload"] + " ", header, 1_800_000_000)
+    assert not stripe.verify_signature("whsec_other", signed["payload"], header, 1_800_000_000)
     assert call(base, "POST", "/_stand_in/stripe/webhook", body={"id": "evt_none"})[0] == 400
 
 
@@ -257,6 +287,8 @@ def test_resend_send_idempotency_and_errors(base: str) -> None:
     other = resend_post(base, {**mail, "subject": "B"}, "email-1")
     assert other[0] == 409 and other[1]["name"] == "invalid_idempotent_request"
     assert resend_post(base, {**mail, "to": []})[0] == 422
+    bad = resend_post(base, {**mail, "to": ["not-an-address"]})
+    assert bad[0] == 422 and bad[1]["name"] == "invalid_parameter"
     assert call(base, "POST", "/resend/emails", body=mail)[1]["statusCode"] == 401
 
 
@@ -275,6 +307,8 @@ def test_lob_letter_idempotency_and_errors(base: str) -> None:
     clash = lob_post(base, {**letter, "color": True}, "letter-1")
     assert clash[0] == 409
     assert lob_post(base, {**letter, "file": ""})[0] == 422
+    missing = lob_post(base, {**letter, "to": {**address, "address_zip": ""}})
+    assert missing[0] == 422 and missing[1]["error"]["message"] == "to.address_zip is required"
     assert call(base, "GET", f"/lob/v1/letters/{made['id']}", authorization=LOB_AUTH)[1] == made
     assert call(base, "POST", "/lob/v1/letters", body=letter)[0] == 401
 
@@ -326,6 +360,13 @@ def test_ai_refusal_max_tokens_and_planted_outputs(base: str) -> None:
     planted = {p: ask(base, plain, x_stand_in_plant=p)[1]["content"][0]["text"] for p in ai.PLANTS}
     assert "cannabis" in planted["restricted-word"] and "https://" in planted["url"] and len(planted["long"]) == 600
     assert ask(base, plain)[1]["content"][0]["text"] == "<request>my sink leaks today</request>"
+
+
+@pytest.mark.parametrize("header", [{"x_stand_in_fault": "503"}, {"x_stand_in_plant": "nothing"}])
+def test_unknown_fault_or_plant_is_a_400_not_a_normal_reply(base: str, header: dict[str, str]) -> None:
+    """D-493: a typo in a fault or plant name never passes as a normal reply."""
+    status, body, _ = ask(base, READ, **header)
+    assert (status, body["type"], body["error"]["type"]) == (400, "error", "invalid_request_error")
 
 
 @pytest.mark.parametrize("content", [["hi"], [{"type": "text", "text": 7}], None, 5])

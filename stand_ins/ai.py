@@ -9,7 +9,8 @@ Over HTTP (`stand_ins/server.py`) it answers the Claude Messages API: POST /v1/m
 /v1/messages/count_tokens. The header `x-stand-in-fault` picks a fault (500, 504, 529, 429 with
 or without `retry-after`, 400 spend limit, 401, 403, a `refusal` or `max_tokens` stop) and
 `x-stand-in-plant` a planted output (a carrier-restricted word, a URL, 600 characters), so
-TD-AI-14 and TD-AI-10 run against it (D-493).
+TD-AI-14 and TD-AI-10 run against it (D-493); an unknown value in either header is a 400
+`invalid_request_error`, so a typo in a test never passes as a normal reply.
 """
 
 from __future__ import annotations
@@ -146,6 +147,8 @@ def _reply(body: dict[str, Any], text: str, stop: str) -> Answer:
 def messages(body: dict[str, Any], fault: str = "", plant: str = "") -> Answer:
     """POST /v1/messages: a structured request (output_config) gets the intake reading as JSON
     text; any other request gets its own text back. Faults and plants come first (AI-023, AI-021)."""
+    if fault not in ("", "refusal", "max_tokens", *FAULTS) or plant not in ("", *PLANTS):
+        return api_error(400, "invalid_request_error", "unknown x-stand-in-fault or x-stand-in-plant value")
     if fault in FAULTS:
         status, kind, message = FAULTS[fault]
         headers = {"retry-after": "3"} if fault == "429-retry-after" else {}
