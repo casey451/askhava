@@ -14,10 +14,12 @@ askhava-ops = { workspace = true }
 askhava-privacy = { workspace = true }
 axum = { workspace = true }
 base64 = { workspace = true }
+hmac = { workspace = true }
 jiff = { workspace = true }
 secrecy = { workspace = true }
 sentry = { workspace = true }
 serde_json = { workspace = true }
+sha1 = { workspace = true }
 sha2 = { workspace = true }
 sqlx = { workspace = true }
 tokio = { workspace = true }

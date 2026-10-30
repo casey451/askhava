@@ -251,14 +251,17 @@ name = "askhava-adapters"
 version = "0.1.0"
 dependencies = [
  "askhava-core",
+ "base64 0.23.1",
  "hmac",
  "reqwest",
  "secrecy",
  "serde",
  "serde_json",
+ "sha1",
  "sha2 0.11.1",
  "thiserror",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -422,10 +425,12 @@ dependencies = [
  "askhava-privacy",
  "axum",
  "base64 0.23.1",
+ "hmac",
  "jiff",
  "secrecy",
  "sentry",
  "serde_json",
+ "sha1",
  "sha2 0.11.1",
  "sqlx",
  "tokio",

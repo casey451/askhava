@@ -8,14 +8,17 @@ publish.workspace = true
 
 [dependencies]
 askhava-core = { workspace = true }
+base64 = { workspace = true }
 hmac = { workspace = true }
 reqwest = { workspace = true }
 secrecy = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+sha1 = { workspace = true }
 sha2 = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
+tracing = { workspace = true }
 
 [lints]
 workspace = true
