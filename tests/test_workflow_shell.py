@@ -19,7 +19,7 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-WORKFLOWS = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
+WORKFLOWS = sorted([*(ROOT / ".github" / "workflows").glob("*.yml"), *(ROOT / ".github" / "workflows").glob("*.yaml")])
 EXPRESSION = re.compile(r"\$\{\{.*?\}\}", re.DOTALL)
 
 
@@ -32,7 +32,7 @@ def _bash_steps() -> list[tuple[str, str]]:
         for job_id, job in (doc.get("jobs") or {}).items():
             job_shell = ((job.get("defaults") or {}).get("run") or {}).get("shell", default)
             for index, step in enumerate(job.get("steps") or []):
-                if "run" in step and str(step.get("shell", job_shell)).split()[0] == "bash":
+                if "run" in step and Path(str(step.get("shell", job_shell)).split()[0]).name == "bash":
                     label = f"{path.name}:{job_id}:{step.get('name', index)}"
                     found.append((label, str(step["run"])))
     return found
