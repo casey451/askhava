@@ -183,3 +183,4 @@
 - 2026-10-30T12:05:38Z runner 4ed333ef3cc4 (actions): {"T233": "IN_PROGRESS -> BLOCKED"}
 - 2026-10-30T12:10:24Z runner f8e0b064b77b (actions): {"T168": "QUEUED -> IN_PROGRESS"}; T168 estimated 276k tokens (calibrated); five-hour window has 25.3M left, week 424.9M (ledger); claimed
 - 2026-10-30T12:12:18Z runner 18efd3eea6cc (actions): {}
+- 2026-10-30T12:12:27Z runner 18efd3eea6cc (actions): {"T168": "IN_PROGRESS -> MERGE_PENDING"}
