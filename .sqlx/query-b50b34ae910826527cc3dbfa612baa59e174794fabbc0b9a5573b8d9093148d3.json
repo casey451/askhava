@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(alert_id) AS \"n!\" FROM ai.call_stat WHERE alert = 'ai.daily_cap'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "b50b34ae910826527cc3dbfa612baa59e174794fabbc0b9a5573b8d9093148d3"
+}

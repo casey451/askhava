@@ -1248,3 +1248,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Possible over-cutting.** After "I'm" or "it's", an unusual word may be cut ("it's flooding" loses "flooding"). That costs the AI a word, never a homeowner's privacy.
 - **Emails.** Inbound email is accepted only with the email provider's signature. A sender whose email fails the standard sender checks can only unsubscribe, never act on a job or change details.
 - **One gap for the plan.** Saving the raw message text in its locked store needs a database table that no task builds yet; the runner has the note (D-801).
+
+## How the app asks the AI, and what it refuses back (T024, D-810 to D-813, October 30)
+
+- **What it does.** The AI only ever gets the already-cleaned message, wrapped so it is read as data, never as orders, and it has no tools: it can only fill in fixed boxes (trade, job type, language and a few yes/no flags). Anything that does not fit those boxes, or names a trade that is switched off, is thrown away and the plain no-AI path runs instead.
+- **Limits you can change in settings.** Each AI call gets 20 seconds; the app stops calling the AI after 2,000 calls in one Arizona day and alerts you once; a rejected key or a spending limit also alerts you once a day.
+- **Words it will not send.** Any AI-written question or card holding a carrier-banned word (sex, hate, alcohol, guns, tobacco, cannabis and drugs, English and Spanish), a link, or too many characters is replaced by the fixed wording. Everyday trade words like "weed", "nail gun" and "wine fridge" are deliberately not on the list (D-813).
+- **Two notes for the plan.** The AI connector does not yet pass back the "try again in N seconds" signal, so for now the app treats every rate-limit as a spending problem and alerts you (D-810); and the practice AI uses trade names that do not match the catalog yet (D-812).

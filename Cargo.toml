@@ -19,6 +19,7 @@ askhava-ops = { path = "app/ops" }
 askhava-catalog = { path = "app/catalog" }
 askhava-adapters = { path = "app/adapters" }
 askhava-privacy = { path = "app/privacy" }
+askhava-ai = { path = "app/ai" }
 askhava-fixtures = { path = "tests/fixtures" }
 axum = { version = "=0.8.9", features = ["multipart"] }
 axum-extra = { version = "=0.12.6", features = ["cookie"] }

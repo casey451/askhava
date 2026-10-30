@@ -1,0 +1,47 @@
+# askhava-ai: the AI adapter's caller, strict schemas, no tools
+
+## Purpose
+
+The layer-3 crate every AI call goes through (`docs/architecture.md` section 3). It takes only `ScrubbedText`, builds the Claude Messages request (versioned instruction, the text inside one escaped tag, the committed schema in `output_config`, no tools), sends it through `adapters`' AI client with the AI-023 timeout and retries, keeps only schema-checked fields that match the open catalog, records every call, and screens any AI-written text before it is used. T024 built it; T025 adds the zero-retention switch and keyword-only mode, T163 the AI-019 writer and output checks.
+
+## What it owns
+
+- `src/api.rs`: the only public surface: `read_intake`, `open_trades`, `screen_text`, `quote_summary`, the types and setting keys.
+- `src/models.rs`: `Instruction`, `INTAKE_READING`, `INSTRUCTIONS`, `AiConfig::from_pairs` (`ASKHAVA_AI_MODEL`, `ASKHAVA_AI_TIMEOUT_SECONDS`, `ASKHAVA_AI_DAILY_CAP`), `Endpoint`, `Transport`, `AdapterTransport`, `Fault`, `Reply`, `AiError`, the `ai.call_stat` queries.
+- `src/schemas.rs`: the compiled-in `schemas/intake_reading.json`, `RawReading` (`deny_unknown_fields`), `parse_reading`, `OpenTrades`, `IntakeReading`, `wrap` (AI-025 tags), `screen_text` (AI-021).
+- `src/service.rs`: `read_intake`, `send` (timeout and retries), `intake_request`, `reading_from_reply`, `record` (call row plus once-a-day owner alert).
+- Migration `0040_ai_adapter.sql`: `ai.call_stat` (append-only for `askhava_app`). `ai.reading` is not built yet (AI-013 belongs to a later task).
+
+## Rules it enforces
+
+- AI-001: `models::Endpoint` holds only `/v1/messages` and `/v1/messages/count_tokens`; `service::send` posts to `Messages` only.
+- AI-004: every entry point takes `&ScrubbedText`, which only `privacy` can build.
+- AI-005, AI-022: `schemas::parse_reading`: exact fields, confidences 0 to 1, enums trimmed and lower-cased, trade open and job type under it, else discarded.
+- AI-006: `service::intake_request` has no `tools` key; `reading_from_reply` reads only an `end_turn` stop with one text block; `api::quote_summary` is always `None` (PICK-003, D-373).
+- AI-015, AI-024: `models::INTAKE_READING` (versioned); the model ID is `AiConfig::model`; each `ai.call_stat` row holds model, instruction version and request ID.
+- AI-021: `schemas::screen_text` (CARD-010 list from `catalog::api::restricted_match`, links, `TextKind::cap`); `read_intake` makes no call for unverified web chat or past `ASKHAVA_AI_DAILY_CAP` (alert `ai.daily_cap`).
+- AI-023: `service::send` (whole call within the timeout setting, at most 2 retries: connection, 500, 504, 529 with 1 s then 2 s backoff, 429 with `retry-after` waits that long); `service::alert_for` (`ai.key_rejected` for 401 and 403, `ai.spend_limit` for a spend-limit 400 and a 429 without `retry-after`), once a day per kind.
+- AI-025: `schemas::wrap`: `&`, `<`, `>` become entities and the tag name, in any case, has its `_` written `&#95;`.
+
+## Never break
+
+- No request ever carries tools: `tests/no_tools.rs::requests_carry_no_tools_and_tool_use_is_discarded`.
+- The schema file, `FIELDS` and `output_config` stay equal: `tests/schemas.rs::rust_types_output_config_and_schema_file_are_equal`, `rust_reading_type_takes_exactly_the_schema_fields`.
+- `ai` depends on no crate that sends, charges or releases: `tests/no_tools.rs::output_never_sends_charges_or_releases`.
+- No transaction is open during a network call; the call row and its alert commit together after it (R11).
+- `ai.call_stat` holds no text, only codes and IDs (PRIV-016).
+- The adapter drops error headers and bodies, so through `AdapterTransport` a 429 counts as having no `retry-after` and any 400 as a spend limit; both fail toward the owner alert (D-810).
+
+## How to change
+
+- Change an instruction: edit its text in `src/models.rs` and bump `version` (AI-015); a new model ID needs the AI-024 evaluation and a decision.
+- Add an AI job: a new `Instruction` in `INSTRUCTIONS`, its request builder beside `intake_request`, its job code allowed by the `ai.call_stat.job` check.
+- Change a length cap: `TextKind::cap` and D-811. Change the restricted list: `app/catalog/src/restricted_words.rs` and D-813.
+- Change the schema: `schemas/intake_reading.json` (T167's), `FIELDS`, `RawReading` and `IntakeReading` together; the stand-in reads the same file.
+- Run `cargo test -p askhava-ai` (needs `python3` and a database), clippy, `cargo fmt --all --check` and `bash scripts/smoke.sh`.
+
+## Tests that guard it
+
+- `src/tests/schemas.rs` (TD-AI-02, TD-AI-13, TD-AI-15): the schema triangle, reading checks, instruction versions, model setting and paths, the tag-escaping property.
+- `src/tests/no_tools.rs` (TD-AI-02, TD-AI-06, TD-AI-10): no tools, no send or release, no quote summary, the AI-021 screen and the CARD-010 list.
+- `src/tests/adapter_calls.rs` (TD-AI-10, TD-AI-13, TD-AI-14): fault modes under a paused clock, AI-off endings, call records, daily cap, web-chat rule, and the stand-in over HTTP.

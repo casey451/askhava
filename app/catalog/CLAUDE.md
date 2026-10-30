@@ -9,6 +9,7 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 - `src/api.rs`: the only public surface: `load_embedded`, `load`, `category`, `is_enabled`, `enabled_categories`, `is_not_offered`, `set_category_enabled`.
 - `src/loader.rs`: `embedded` (the file is `include_str!`ed), `parse` (pure checks), `normalize`.
 - `src/question_bank.rs`: `parse_bank`, `embedded_bank` (pure, in memory; `api::question_bank`, `api::parse_question_bank`): sets of 3 to 8 questions, both languages, card fields multiple choice only (LIC-040, D-754).
+- `src/restricted_words.rs`: `RESTRICTED_WORDS`, `restricted_match` (pure; `api` re-exports them for `quotes` and `ai`).
 - `src/service.rs`: the SQL: `load`, reads, `set_enabled`.
 - `src/models.rs`: file types (`Catalog`, `CategoryDef`, `LicenseRule`), `Category`, `CatalogError`.
 - Migration `0027_catalog_module.sql`: `catalog.category`, `job_type`, `license_rule`, `fee_rule`, `not_offered`.
@@ -22,6 +23,7 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 - AI-017: no function takes a license class; classes come from the reviewed file only; a ROC category with no classes cannot be switched on (`LicenseUnresolved`); only `Actor::Owner` switches (`OwnerOnly`).
 
 - LIC-042: `loader::covers_warranty` makes `parse` refuse a category, job type or keyword (and `parse_bank` a set code) that covers a warranty, protection plan, service contract or guarantee (D-755).
+- CARD-010: `restricted_words::restricted_match`: whole-word, any-case match against the SHAFT, cannabis and drug list, naming the entry, never the text; trade words such as "weed" and "nail gun" are off the list on purpose (D-813). `ai` screens AI-written text with it (AI-021); `quotes` (T185) removes the phrases from card descriptions.
 
 ## Never break
 
@@ -39,4 +41,5 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 ## Tests that guard it
 
 - `src/tests/question_bank_load.rs` (TD-LIC-24, TD-LIC-16; LIC-040 to LIC-042).
+- The restricted list's cases are in `app/ai/src/tests/no_tools.rs::restricted_list_matches_whole_words_only` (T024, TD-AI-10).
 - `src/tests/loader.rs` and `tests/integration/tests/catalog_settings.rs` (TD-LIC-01; LIC-001 to LIC-005, AI-017).
