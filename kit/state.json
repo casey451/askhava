@@ -5013,11 +5013,11 @@
      "result": "update_conflict"
     }
    ],
-   "reviewed_sha": "2d4aa07eed60ad2775b8fc591035c0eb8f929b46",
+   "reviewed_sha": "6e21ad31faf1359668c575617cc088d6e1b599a6",
    "review_lease": {
     "task": "T028",
-    "session": "actions-41137576067",
-    "expires": "2026-10-31T01:29:29Z"
+    "session": "actions-41138392364",
+    "expires": "2026-10-31T02:17:43Z"
    },
    "branch": "claude/task/T028-messaging-outbox-a2",
    "auto_merge": {
@@ -5029,8 +5029,7 @@
     148
    ],
    "last_failure": "merging main into the task branch conflicts in docs/architecture.md, docs/for-casey-review.md: the runner resolves only docs/decisions.md and a plan lock both sides kept true, so this attempt fails and the next one starts from the branch with main merged in, or fresh from main when that still conflicts (D-583, D-620)",
-   "update_waiting_since": null,
-   "update_push_failures": null
+   "head_check_since": null
   },
   {
    "id": "T178",
@@ -8830,7 +8829,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T23:32:39Z",
+ "updated_at": "2026-10-30T23:39:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -8928,7 +8927,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "8acf08c5608155d7354474cb71d47e3ce8b642b6",
+ "runner_sha": "6e21ad31faf1359668c575617cc088d6e1b599a6",
  "starter": "actions",
  "smoke_runs": [
   {
