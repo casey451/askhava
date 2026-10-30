@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT d.business_id FROM messaging.sender_directory d JOIN UNNEST($1::smallint[], $2::bytea[]) AS k (v, h) ON d.index_version = k.v AND d.digest = k.h LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.sender_directory",
+            "name": "business_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int2Array",
+        "ByteaArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7e6d6796cb7f0331868c398af820d7c93cae7b30feaac75070e6d5668f885e59"
+}

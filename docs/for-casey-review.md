@@ -1261,3 +1261,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Limits you can change in settings.** Each AI call gets 20 seconds; the app stops calling the AI after 2,000 calls in one Arizona day and alerts you once; a rejected key or a spending limit also alerts you once a day.
 - **Words it will not send.** Any AI-written question or card holding a carrier-banned word (sex, hate, alcohol, guns, tobacco, cannabis and drugs, English and Spanish), a link, or too many characters is replaced by the fixed wording. Everyday trade words like "weed", "nail gun" and "wine fridge" are deliberately not on the list (D-813).
 - **Two notes for the plan.** The AI connector does not yet pass back the "try again in N seconds" signal, so for now the app treats every rate-limit as a spending problem and alerts you (D-810); and the practice AI uses trade names that do not match the catalog yet (D-812).
+
+## A text is never sent twice, and past customers are left alone (T028, D-846 to D-848, October 30)
+
+- **What it does.** Every text waits in one outbox with a tag made from what it is about (which message, which job, which person), never from a phone number. If the app crashes just after the texting service took a text, the retry carries the same tag, so the service sends it only once.
+- **Past customers.** Ask Hava never texts someone whose request is finished unless she has written to Ask Hava since then.
+- **Business phones.** Each business's main and staff phones are kept only in a scrambled form that can be matched but not read, so an incoming text can be tied to its business.
+- **One note for the plan.** For now the code that queues a text tells the outbox whether the person's request is still open and when she last wrote; the later inbox task should take that over (D-846).

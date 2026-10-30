@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.outbox SET status = 'sent', provider_sid = $2, sent_at = now() WHERE id = $1 AND status = 'sending'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fbd67f8299fa1e00d35ffa70d2ca98676fdf11834945c0b519daee8e378fb1b4"
+}

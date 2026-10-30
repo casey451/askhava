@@ -1,11 +1,17 @@
 //! The public face of `askhava-messaging`: everything other crates may call (D-481).
 //!
-//! Render a text from its template ID, pick the language it may use, count its segments, and decide
-//! when it may be sent (quiet hours).
+//! Render a text from its template ID, pick the language it may use, count its segments, decide
+//! when it may be sent (quiet hours), queue and send it through the outbox once (TXT-009,
+//! TXT-011), and keep the sender directory of business phones (D-492).
 
+pub use crate::models::OutboxError;
 pub use crate::rules::{
     AreaCodes, Channel, Decision, Held, Kind, Outgoing, QuietHoursError, Release, decide,
     plan_release, retry,
+};
+pub use crate::service::{
+    NewText, Relation, SEND_ACTION, enqueue, may_text, send, sender_add, sender_business,
+    sender_remove,
 };
 pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,
