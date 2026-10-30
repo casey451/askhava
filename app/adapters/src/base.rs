@@ -85,6 +85,10 @@ pub enum AdapterError {
     /// A base URL or object name was refused before any request (AI-009, SEC-032).
     #[error("adapter setting refused")]
     BadConfig,
+    /// A write-once object of that name already holds different bytes, so
+    /// the write was refused rather than ignored (SEC-018, D-728).
+    #[error("stored object already holds other bytes")]
+    ObjectExists,
 }
 
 /// Builds the texting, voice and Verify clients from one checked config; the
@@ -337,9 +341,16 @@ pub struct FetchPolicy {
 
 impl FetchPolicy {
     /// A policy allowing exactly `hosts` (and their subdomains) (SEC-041).
+    /// An entry that is empty, starts or ends with a dot, or has no dot is
+    /// dropped, so a bad entry can never match every host (it fails closed).
+    /// `timeout` bounds the whole fetch, every hop and redirect included.
     #[must_use]
     pub fn new(hosts: &[&str], max_bytes: usize, timeout: Duration) -> Self {
-        let hosts = hosts.iter().map(|host| host.to_ascii_lowercase()).collect();
+        let hosts = hosts
+            .iter()
+            .filter(|host| host.contains('.') && !host.starts_with('.') && !host.ends_with('.'))
+            .map(|host| host.to_ascii_lowercase())
+            .collect();
         let loopback_for_tests = false;
         Self {
             hosts,
@@ -422,8 +433,9 @@ pub enum FetchError {
     Failed,
 }
 
-/// Fetches `url` under `policy` (SEC-041): every hop's host must be allowed,
-/// the lookup must finish within the policy's timeout, every address it
+/// Fetches `url` under `policy` (SEC-041): the whole fetch, every lookup,
+/// hop and redirect included, must finish within the policy's timeout,
+/// every hop's host must be allowed, every address it
 /// resolves to must be public, the connection goes only to
 /// those checked addresses (no second lookup), at most [`MAX_REDIRECTS`]
 /// redirects are followed and each is checked the same way, and the body is
@@ -433,7 +445,14 @@ pub enum FetchError {
 ///
 /// A [`FetchError`] naming the rule that stopped it.
 pub async fn fetch_untrusted(policy: &FetchPolicy, url: &str) -> Result<Vec<u8>, FetchError> {
-    let mut url = reqwest::Url::parse(url).map_err(|_| FetchError::BadUrl)?;
+    let url = reqwest::Url::parse(url).map_err(|_| FetchError::BadUrl)?;
+    tokio::time::timeout(policy.timeout, follow_hops(policy, url))
+        .await
+        .map_err(|_| FetchError::TimedOut)?
+}
+
+/// The redirect loop of [`fetch_untrusted`], run under its overall timeout.
+async fn follow_hops(policy: &FetchPolicy, mut url: reqwest::Url) -> Result<Vec<u8>, FetchError> {
     for _ in 0..=MAX_REDIRECTS {
         let response = fetch_hop(policy, &url).await?;
         if !response.status().is_redirection() {
@@ -515,8 +534,10 @@ fn fetch_error(error: &reqwest::Error) -> FetchError {
 /// IETF protocol (192.0.0.0/24), benchmark, documentation, multicast, reserved
 /// or unspecified, including those carried inside an IPv4-mapped or NAT64 IPv6
 /// address, and not an IPv6 tunnel or translation prefix that can carry an
-/// IPv4 address (6to4 2002::/16, Teredo 2001::/32, local NAT64 64:ff9b:1::/48),
-/// site-local fec0::/10 or discard 100::/64 (SEC-041).
+/// IPv4 address (6to4 2002::/16, Teredo 2001::/32, local NAT64 64:ff9b:1::/48).
+/// Any other IPv6 address passes only inside global unicast 2000::/3, minus
+/// documentation 2001:db8::/32, so site-local, discard, unique-local and every
+/// range assigned later are refused by default (SEC-041, D-727).
 #[must_use]
 pub fn is_public_address(ip: IpAddr) -> bool {
     match ip {
@@ -548,15 +569,8 @@ fn is_public_v4(ip: Ipv4Addr) -> bool {
 }
 
 fn is_public_v6(ip: Ipv6Addr) -> bool {
-    let [first, second, third, fourth, ..] = ip.segments();
-    !(ip.is_loopback()
-        || ip.is_unspecified()
-        || ip.is_multicast()
-        || ip.is_unique_local()
-        || ip.is_unicast_link_local()
-        || first & 0xffc0 == 0xfec0
-        || first == 0x2002
-        || (first == 0x2001 && (second == 0 || second == 0x0db8))
-        || (first == 0x0064 && second == 0xff9b && third == 1)
-        || [first, second, third, fourth] == [0x0100, 0, 0, 0])
+    let [first, second, ..] = ip.segments();
+    first & 0xe000 == 0x2000
+        && first != 0x2002
+        && !(first == 0x2001 && (second == 0 || second == 0x0db8))
 }

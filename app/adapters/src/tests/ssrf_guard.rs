@@ -33,6 +33,7 @@ fn answer(path: &str) -> String {
         "/off-host" => redirect("http://media.example.com/photo.jpg"),
         "/hop" => redirect("/ok"),
         "/loop" => redirect("/loop"),
+        "/slow" => redirect("/slow"),
         _ => "HTTP/1.1 200 OK\r\nContent-Length: 10\r\n\r\nfake media".to_owned(),
     }
 }
@@ -46,6 +47,9 @@ fn reply(stream: TcpStream) {
     let mut stream = reader.into_inner();
     if path == "/hang" {
         std::thread::sleep(Duration::from_secs(5));
+    } else if path == "/slow" {
+        std::thread::sleep(Duration::from_millis(200));
+        let _ = stream.write_all(answer(&path).as_bytes());
     } else if path == "/big" {
         let _ = stream.write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n");
         let chunk = vec![b'x'; 64 * 1024];
@@ -106,6 +110,56 @@ fn only_public_addresses_pass() {
     }
 }
 
+/// TD-SEC-20; SEC-041: IPv6 passes only inside global unicast 2000::/3, minus the tunnel and documentation blocks in it.
+#[test]
+fn ipv6_outside_global_unicast_is_refused() {
+    let refused = [
+        "1fff:ffff::1",
+        "4000::1",
+        "c000::1",
+        "fc00::1",
+        "fe00::1",
+        "400::1",
+        "2001:db8::1",
+        "2001:0:1::1",
+        "2002::1",
+    ];
+    for ip in refused {
+        assert!(!is_public_address(ip.parse::<IpAddr>().unwrap()), "{ip}");
+    }
+    for ip in ["2000::1", "2001:4860:4860::8888", "2a00:1450::1", "3ffe::1"] {
+        assert!(is_public_address(ip.parse::<IpAddr>().unwrap()), "{ip}");
+    }
+}
+
+/// TD-SEC-20; SEC-041: an empty, dot-led, dot-ended or dotless allowed-host entry is dropped, so it never matches every host.
+#[tokio::test]
+async fn bad_allowed_host_entries_fail_closed() {
+    let port = remote_host();
+    for entry in ["", ".", ".0.0.1", "127.0.0.", "127"] {
+        let policy =
+            FetchPolicy::new(&[entry], MB, Duration::from_secs(2)).with_loopback_for_tests();
+        for host in ["127.0.0.1", "127.0.0.1."] {
+            let url = format!("http://{host}:{port}/ok");
+            let got = fetch_untrusted(&policy, &url).await;
+            assert_eq!(got, Err(FetchError::HostNotAllowed), "{entry:?} {host}");
+        }
+    }
+}
+
+/// TD-SEC-20; SEC-041: the timeout bounds the whole fetch, so a chain of slow redirects, each under it, still times out.
+#[tokio::test]
+async fn slow_redirect_chains_time_out_overall() {
+    let port = remote_host();
+    let url = format!("http://127.0.0.1:{port}/slow");
+    let started = std::time::Instant::now();
+    assert_eq!(
+        fetch_untrusted(&test_policy(500), &url).await,
+        Err(FetchError::TimedOut)
+    );
+    assert!(started.elapsed() < Duration::from_millis(700));
+}
+
 /// TD-SEC-20; SEC-041: a redirect to the metadata or a private address is refused after resolution.
 #[tokio::test]
 async fn redirect_to_metadata_or_private_address_is_refused() {
@@ -130,7 +184,8 @@ async fn redirect_off_the_allowed_hosts_is_not_followed() {
     assert_eq!(fetch("loop").await, Err(FetchError::TooManyRedirects));
 }
 
-/// TD-SEC-20; SEC-041: media only from Twilio's hosts, over https; a name resolving to loopback is refused.
+/// TD-SEC-20; SEC-041: media only from Twilio's hosts, over https; a listed host resolving to loopback is refused
+/// (a dotted host, since a dotless entry such as `localhost` is dropped from the policy).
 #[tokio::test]
 async fn media_from_a_non_twilio_host_is_refused() {
     let media = FetchPolicy::twilio_media();
@@ -146,8 +201,8 @@ async fn media_from_a_non_twilio_host_is_refused() {
             "{url}"
         );
     }
-    let local = FetchPolicy::new(&["localhost"], MB, Duration::from_secs(2));
-    let got = fetch_untrusted(&local, "https://localhost/photo.jpg").await;
+    let local = FetchPolicy::new(&["127.0.0.1"], MB, Duration::from_secs(2));
+    let got = fetch_untrusted(&local, "https://127.0.0.1/photo.jpg").await;
     assert_eq!(got, Err(FetchError::AddressRefused));
 }
 
@@ -276,7 +331,15 @@ async fn storage_writes_once_and_refuses_unsafe_names() {
         .await
         .unwrap();
     store
+        .put_object(&k, "stream/2026-10-30/a.bin", b"first".to_vec())
+        .await
+        .unwrap();
+    let other = store
         .put_object(&k, "stream/2026-10-30/a.bin", b"second".to_vec())
+        .await;
+    assert_eq!(other, Err(AdapterError::ObjectExists));
+    store
+        .put_object(&k, "stream/2026-10-30/a.txt", b"other".to_vec())
         .await
         .unwrap();
     assert_eq!(
@@ -285,11 +348,12 @@ async fn storage_writes_once_and_refuses_unsafe_names() {
     );
     let bad = store.put_object(&k, "../escape.bin", Vec::new()).await;
     assert_eq!(bad, Err(AdapterError::InvalidId));
-    let left: Vec<_> = std::fs::read_dir(dir.join("stream/2026-10-30"))
+    let mut left: Vec<_> = std::fs::read_dir(dir.join("stream/2026-10-30"))
         .unwrap()
         .map(|entry| entry.unwrap().file_name())
         .collect();
-    assert_eq!(left, ["a.bin"]);
+    left.sort();
+    assert_eq!(left, ["a.bin", "a.txt"]);
     let _ = std::fs::remove_dir_all(dir);
 }
 
@@ -371,6 +435,18 @@ async fn remove_suppression_deletes_one_encoded_address() {
     );
     assert!(head.contains(&format!("idempotency-key: {}", k.as_str())));
     assert!(head.contains("authorization: bearer re_stand_in_fake"));
+}
+
+/// BIZ-056: an address that is empty, a dot segment or not `local@domain` is refused before any request, so it never hits the whole collection.
+#[tokio::test]
+async fn remove_suppression_refuses_non_address_segments() {
+    let resend =
+        ResendEmail::new("http://127.0.0.1:9/resend", SecretString::from("re_fake")).unwrap();
+    let k = key("email.unsuppress", "biz-1");
+    for address in ["", ".", "..", "owner", "@example.com", "owner@"] {
+        let got = resend.remove_suppression(&k, address).await;
+        assert_eq!(got, Err(AdapterError::InvalidId), "{address:?}");
+    }
 }
 
 fn key(action: &str, id: &str) -> IdempotencyKey {

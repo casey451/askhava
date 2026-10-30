@@ -5,7 +5,9 @@
 //! provider's team-wide suppression list before a re-verification email
 //! (BIZ-056; the caller writes the audit row). The suppression path is
 //! `DELETE /suppressions/{address}`, the shape T133's fake Resend serves (D-492,
-//! D-725). An address is percent-encoded as one path segment.
+//! D-725). An address is percent-encoded as one path segment, and only after
+//! [`is_address_segment`] passes, so `""`, `.` or `..` can never address the
+//! whole suppression collection.
 
 use std::future::Future;
 use std::sync::Arc;
@@ -90,8 +92,19 @@ impl EmailAdapter for ResendEmail {
         idempotency: &IdempotencyKey,
         address: &str,
     ) -> Result<(), AdapterError> {
+        if !is_address_segment(address) {
+            return Err(AdapterError::InvalidId);
+        }
         let path = ["suppressions", address];
         let request = self.http.request(Method::DELETE, &path, Some(idempotency));
         self.http.send(request).await.map(drop)
     }
+}
+
+/// Whether `address` can be one suppression path segment: one `@` with text on
+/// both sides, so it is never empty, `.` or `..` (BIZ-056, D-728).
+fn is_address_segment(address: &str) -> bool {
+    address
+        .split_once('@')
+        .is_some_and(|(local, domain)| !local.is_empty() && !domain.is_empty())
 }

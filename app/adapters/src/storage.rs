@@ -3,8 +3,9 @@
 //!
 //! Holds the off-database stream, the nightly encrypted export and the
 //! app-encrypted photos; callers pass bytes already encrypted. Objects are
-//! never overwritten: a second put of the same name is a no-op, so a retried
-//! write under the same key cannot change what was stored. The Phase 1 client
+//! never overwritten: a second put of the same name and bytes is a no-op (a
+//! retry), and one with other bytes is refused with `ObjectExists`, so no
+//! write can change what was stored. The Phase 1 client
 //! is a local directory (`file://` base URL); the Backblaze B2 client with a
 //! write-only, prefix-scoped key is Phase 2's (D-492, D-726).
 
@@ -62,24 +63,40 @@ impl LocalStorage {
     }
 }
 
-/// Writes `bytes` to a temporary file named by the key, then hard-links it
-/// into place; the link fails when the object exists, so an object is never
-/// replaced, even by a racing writer, and the temporary file is removed either
-/// way (write-once, SEC-018, D-727).
-fn write_once(path: &std::path::Path, key: &str, bytes: &[u8]) -> std::io::Result<()> {
+/// Writes `bytes` to a temporary file `<name>.<key>.part` beside the object,
+/// then hard-links it into place; the link fails when the object exists, so
+/// an object is never replaced, even by a racing writer, and the temporary
+/// file is removed either way (write-once, SEC-018, D-728). An existing object
+/// with the same bytes is a retry and succeeds; one with other bytes is
+/// [`AdapterError::ObjectExists`].
+fn write_once(path: &std::path::Path, key: &str, bytes: &[u8]) -> Result<(), AdapterError> {
     if path.exists() {
-        return Ok(());
+        return same_bytes(path, bytes);
     }
+    let io = |_: std::io::Error| AdapterError::NotSent;
     if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)?;
+        std::fs::create_dir_all(parent).map_err(io)?;
     }
-    let temporary = path.with_extension(format!("{key}.part"));
-    std::fs::write(&temporary, bytes)?;
+    let name = path.file_name().ok_or(AdapterError::InvalidId)?;
+    let mut temporary_name = name.to_os_string();
+    temporary_name.push(format!(".{key}.part"));
+    let temporary = path.with_file_name(temporary_name);
+    std::fs::write(&temporary, bytes).map_err(io)?;
     let linked = std::fs::hard_link(&temporary, path);
-    std::fs::remove_file(&temporary)?;
+    std::fs::remove_file(&temporary).map_err(io)?;
     match linked {
-        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => Ok(()),
-        other => other,
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => same_bytes(path, bytes),
+        other => other.map_err(io),
+    }
+}
+
+/// `Ok` when the stored object at `path` holds exactly `bytes`.
+fn same_bytes(path: &std::path::Path, bytes: &[u8]) -> Result<(), AdapterError> {
+    let stored = std::fs::read(path).map_err(|_| AdapterError::NotSent)?;
+    if stored == bytes {
+        Ok(())
+    } else {
+        Err(AdapterError::ObjectExists)
     }
 }
 
@@ -93,9 +110,7 @@ impl StorageAdapter for LocalStorage {
         let path = self.path(name)?;
         let key = idempotency.as_str().to_owned();
         let written = tokio::task::spawn_blocking(move || write_once(&path, &key, &bytes)).await;
-        written
-            .map_err(|_| AdapterError::OutcomeUnknown)?
-            .map_err(|_| AdapterError::NotSent)
+        written.map_err(|_| AdapterError::OutcomeUnknown)?
     }
 
     async fn read_object(&self, name: &str) -> Result<Vec<u8>, AdapterError> {

@@ -25,10 +25,10 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 
 - SEC-018: `base::IdempotencyKey::derive`; every trait method that acts outside takes `idempotency: &IdempotencyKey` (read-only prefixes `fetch_`, `get_`, `list_`, `read_`, `check_`, `lookup_` excepted, D-596).
 - SEC-002, SEC-032: `config::TwilioConfig::from_settings` (`live` mode only in live, `stand_in` and `sandbox` never there; base URLs through `askhava_core::api::check_base_url`).
-- SEC-041, D-724: `base::fetch_untrusted` is the only way to fetch a URL a person or vendor supplied: listed https hosts on port 443 only, no userinfo, no environment proxy, lookup under the timeout, every resolved address public and pinned, at most 3 re-checked redirects, size cap, timeout (D-727).
+- SEC-041, D-724: `base::fetch_untrusted` is the only way to fetch a URL a person or vendor supplied: listed https hosts on port 443 only, no userinfo, no environment proxy, lookup under the timeout, every resolved address public and pinned (IPv6 only inside 2000::/3), at most 3 re-checked redirects, size cap, one timeout over the whole fetch; an allowed-host entry that is empty, dot-led, dot-ended or dotless is dropped so it fails closed (D-727).
 - AI-009: `ai::StandInAi::new` accepts only an `http` base URL on a loopback IP literal (not `localhost`) and holds no key.
 - PICK-022, SEC-030: `payments::PaymentIntent` carries currency, customer and `metadata.pick_id`; `livemode` is `Option<bool>` and `None` is never test mode (D-728). Vendor IDs pass `base::is_vendor_id` before a path or form.
-- BIZ-056: `email::EmailAdapter::remove_suppression`; the caller writes the audit row.
+- BIZ-056: `email::EmailAdapter::remove_suppression`; the address must be `local@domain` with both parts non-empty or it is `InvalidId` before any request; the caller writes the audit row.
 - CALL-017, D-160: `config::MaskedPool` is exactly `ASKHAVA_MASKED_POOL_SIZE` (default 10) distinct numbers from `ASKHAVA_MASKED_NUMBERS`; `voice::VoiceAdapter::open_call` takes only a `PoolNumber`.
 
 ## Never break
@@ -41,9 +41,10 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 - `AdapterError` carries codes only, never a URL, number or vendor message (PRIV-016).
 - A vendor ID from a caller is checked before it goes into a URL path (`base::is_sid`), or pushed as one percent-encoded segment (`VendorHttp::request`).
 - `FetchPolicy::with_loopback_for_tests` stays `#[cfg(test)]`; private, link-local and metadata addresses are refused even under it: `tests/ssrf_guard.rs`.
-- Stored objects are write-once (hard link, never rename) and names cannot climb out of the directory (`storage::LocalStorage`, D-726, D-728).
+- Stored objects are write-once (hard link, never rename; a same-bytes retry is `Ok`, other bytes `ObjectExists`) and names cannot climb out of the directory (`storage::LocalStorage`, D-726, D-728).
 - Every HTTP client is built with `no_proxy()`: `tests/ssrf_guard.rs::fetch_and_vendor_clients_ignore_proxy_settings` (D-727).
-- `adapters` depends only on `core` and the HTTP and crypto crates (`kit/layers.json`).
+- `adapters` depends only on `core` and the HTTP and crypto crates (`kit/layers.json`). Because it may not depend on any domain crate, its traits take and return `serde_json::Value` (or plain IDs and amounts) where a domain type would fit; the calling crate owns the typed shape.
+- Only the `ai` crate names `AiAdapter` or `StandInAi`; every other crate goes through `ai`, which scrubs input and validates output (AI-009). The layer rules cannot express this yet, so it is a review rule here.
 
 ## How to change
 
