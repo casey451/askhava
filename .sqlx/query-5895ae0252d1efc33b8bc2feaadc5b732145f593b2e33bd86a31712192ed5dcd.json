@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT status, version, emergency, status_at FROM jobs.job WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "status",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "status"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "version"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "emergency",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "emergency"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "status_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "status_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5895ae0252d1efc33b8bc2feaadc5b732145f593b2e33bd86a31712192ed5dcd"
+}

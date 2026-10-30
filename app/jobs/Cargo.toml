@@ -1,0 +1,23 @@
+[package]
+name = "askhava-jobs"
+description = "Ask Hava jobs: the twelve job statuses, the allowed moves, status history and timers (JOB-001 to JOB-003, JOB-005, JOB-006)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+askhava-core = { workspace = true }
+askhava-ops = { workspace = true }
+jiff = { workspace = true }
+jiff-sqlx = { workspace = true, features = ["postgres"] }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+
+[lints]
+workspace = true
