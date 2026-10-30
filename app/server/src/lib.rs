@@ -7,13 +7,18 @@
 //! knows about HTTP status codes or process signals.
 
 use std::io;
+use std::sync::Arc;
 
+use askhava_adapters::api::StorageAdapter;
 use askhava_core::api::{LogGuard, Registry, Settings, init_logging, request_span};
 use axum::Router;
 use axum::body::Body;
+use sqlx::PgPool;
 use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
+
+pub mod offdb_stream;
 
 /// Installs rustls' aws-lc-rs provider as the process default, so sqlx and
 /// reqwest share one TLS provider (D-481, D-488). Call it first in `main`.
@@ -45,9 +50,14 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 /// The app's router: every module's routes, merged once here (D-481), under
 /// the request-ID and tracing layers, so every request log line carries the
 /// request ID and the matched route template, never the URI (PRIV-016,
-/// PRIV-028). Merge routes before the layers so they apply to them.
-pub fn build_router() -> Router {
+/// PRIV-028), and every request queues its request-log line for the off-database stream over
+/// `pool` (OPS-011, D-734). Merge routes before the layers so they apply to them.
+pub fn build_router(pool: PgPool) -> Router {
     Router::new()
+        .layer(axum::middleware::from_fn_with_state(
+            pool,
+            offdb_stream::log_request,
+        ))
         .layer(TraceLayer::new_for_http().make_span_with(request_span::<Body>))
         .layer(PropagateRequestIdLayer::x_request_id())
         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
@@ -55,10 +65,16 @@ pub fn build_router() -> Router {
 
 /// Every module's `core.task` handlers, one `register` call per kind (D-481, D-491). The worker
 /// runs what it returns; tests hold it in a `OnceLock`. A kind with no handler is failed with
-/// `NO_HANDLER` and dead-lettered after its attempts (JOB-006).
+/// `NO_HANDLER` and dead-lettered after its attempts (JOB-006). `stream` is the off-database
+/// stream writer and its nightly check (OPS-011, PRIV-029, D-734).
 #[must_use]
-pub fn register_handlers() -> Registry {
-    Registry::new()
+pub fn register_handlers<S>(stream: Arc<offdb_stream::OffDbStream<S>>) -> Registry
+where
+    S: StorageAdapter + Send + Sync + 'static,
+{
+    let mut registry = Registry::new();
+    offdb_stream::register(&mut registry, stream);
+    registry
 }
 
 /// Registers SIGINT and SIGTERM now and returns a future that finishes on the

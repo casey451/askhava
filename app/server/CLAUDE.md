@@ -6,9 +6,10 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 
 ## What it owns
 
-- `src/lib.rs`: `install_crypto_provider()`, `start_up()` (settings from `std::env::vars()`, then the JSON log and Sentry; D-689), `build_router()` (no routes yet, under the request-ID and `TraceLayer` layers that log the route template only), `shutdown_signal()` (SIGINT or SIGTERM), `register_handlers()` (the `core::api::Registry` of every task handler; empty until a module registers one, T013).
+- `src/lib.rs`: `install_crypto_provider()`, `start_up()` (settings from `std::env::vars()`, then the JSON log and Sentry; D-689), `build_router(pool)` (no routes yet; the request-log middleware, under the request-ID and `TraceLayer` layers that log the route template only), `shutdown_signal()` (SIGINT or SIGTERM), `register_handlers(stream)` (the `core::api::Registry` of every task handler; the off-database stream's two so far).
 - `src/main.rs`: the `server` binary; binds `0.0.0.0:$PORT` and serves with graceful shutdown. `server migrate` instead applies pending migrations over `ASKHAVA_MIGRATION_DATABASE_URL` (via `askhava_core::api::migrate`) and exits (D-700, SEC-052). Missing or bad `PORT` exits 1 without echoing the value (D-588).
 - `src/bin/worker.rs`: the `worker` binary; it runs `core`'s `Worker::run`, the claim loop over `core.task` (4 at once, idle poll 200 ms to 5 s, the reaper when idle), with the shutdown signal and a 20-second drain, after which the loop calls `release_leases` (JOB-006, D-708, D-710).
+- `src/offdb_stream.rs` (T017, D-734, D-735): `OffDbStream` (storage, `ID_SECRET`, clock, stand-in purge directory; `from_settings` reads `ASKHAVA_STORAGE_BASE_URL` and `ASKHAVA_ID_SECRET`), `register` (handlers for `ops.offdb_stream` and `ops.offdb_verify`), `verify_audit_chain`, `purge_request_log`, `schedule_verify`, `audit_name` and the `log_request` middleware that `build_router(pool)` puts on every route.
 - No tables.
 
 ## Rules it enforces
@@ -16,6 +17,8 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 - SEC-029: workspace lints on (`[lints] workspace = true`), `unsafe_code` forbidden, built by `cargo build -p askhava-server --locked` in `scripts/smoke.sh` and `Ci` (D-488).
 
 ## Never break
+
+- OPS-011, PRIV-029: every request queues one request-log line holding request ID, route template, status and time, never the path; audit row `n` is stored as `audit/<n>.json` with its line and the ID and line hash of the row before it, and waits (retries) up to 2 minutes for a missing lower ID; the nightly `ops.offdb_verify` raises a High `ops.audit_chain_broken` alert on any mismatch and purges stand-in request days older than 30; the worker queues it at start and each run queues the next (`tests/integration/tests/offdb_stream.rs`).
 
 - `install_crypto_provider()` runs first in both binaries, so sqlx and reqwest share the aws-lc-rs provider (D-481, D-488).
 - Both binaries exit 0 on SIGTERM; the web server drains in-flight requests first (D-491).
@@ -33,4 +36,5 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 
 ## Tests that guard it
 
+- `tests/integration/tests/offdb_stream.rs` (TD-OPS-03, TD-OPS-19): the stream writer, the chain check and the purge.
 - `tests/integration/tests/task_queue.rs` runs `core`'s `Registry::run` and `Worker::run`, the loop this binary starts. T175's architecture test (TD-SEC-10) checks the layer table and lints; T106 adds the health check.

@@ -51,6 +51,9 @@ const KEYS: &[&str] = &[
     // Parsed by `rate_limit::ClientIpPolicy::from_pairs` (T013, SEC-040).
     "ASKHAVA_CLIENT_IP_HEADER",
     "ASKHAVA_PROXIED_HOSTS",
+    // Parsed by `askhava_server::offdb_stream::OffDbStream::from_settings` (T017, D-734).
+    "ASKHAVA_STORAGE_BASE_URL",
+    "ASKHAVA_ID_SECRET",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
