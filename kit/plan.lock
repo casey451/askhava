@@ -1,6 +1,6 @@
 {
  "items": {
-  "BUILD_BRIEF.md": "b655e7e0a11fbf2128dbcc9fbc338490664150df7d0db1e16fff104ab65e65a9",
+  "BUILD_BRIEF.md": "3a9271e4461dddd5d395976c45298172479f097085850783c175fa399f42cbcf",
   "CLAUDE.md": "5f3fa3df88049abb225b56e3da6d62cbd4e8232a5e29e4b692e2ccb4bc2f353c",
   "docs/architecture.md#3": "4516c6eb5687a675f22d0f31efd9ba27582b238d566c791adcab3ec6ced471c4",
   "docs/architecture.md#4": "7e91e998af692e306f9ecb696a36c03c7da107a6865a4e9996ed035bd88ace43",
@@ -57,7 +57,7 @@
   "scripts/pii_scan.py": "26bf4685dcd9d3fc67ea8c6446a23d3e45e50ea2cce3aaed76773a3745b57379",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "d1cace9111244af5f26ddde33ac306abf69f3fb7cee1eb7035900dc69c5e14ec",
-  "scripts/smoke.sh": "f8800be6e6bd07d73239ee3af236e81707c9cfc4c5fe67d7f0c223466a816e90",
+  "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
   "scripts/stage_exit.py": "009c0f3ffe26f1181f00b785bce3430c6d1f54651dde0bde6b7375d7cc1a6aa0",
   "scripts/trace_spec.py": "6c36de51fd4faef8eabfaa5be73db88c7c5aae5fb36f495474c25e244f3b0049",
   "scripts/validate_tasks.py": "7d100620b1080171c77a9c5281a8152c5003d76f5c11d7c3b1e0c48d454f8632"
