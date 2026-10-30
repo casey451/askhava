@@ -4193,11 +4193,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "b15e79c5f7ec3d2295f1af0e35ee006b9d6ce9d0",
+   "reviewed_sha": "5bcde9de4acb19f961e54af79b74f3a3166d6654",
    "review_lease": {
     "task": "T167",
-    "session": "actions-41018393456",
-    "expires": "2026-10-30T10:11:58Z"
+    "session": "actions-41025677139",
+    "expires": "2026-10-30T11:20:48Z"
    },
    "branch": "claude/task/T167-stand-ins-http",
    "auto_merge": {
@@ -4430,7 +4430,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T08:24:29Z",
+ "updated_at": "2026-10-30T08:38:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -4528,7 +4528,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ae7233917821ca50290ab7c27c638cf576a1e2ce",
+ "runner_sha": "5bcde9de4acb19f961e54af79b74f3a3166d6654",
  "starter": "actions",
  "smoke_runs": [
   {
