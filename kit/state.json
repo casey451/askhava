@@ -4347,11 +4347,11 @@
      "result": "QUEUED"
     }
    ],
-   "reviewed_sha": "0f5dbfebb6b495e60ce3f6b4b36f542117561ba7",
+   "reviewed_sha": "a1b9870a838daf3c019a3f446fc084eab2f9e84f",
    "review_lease": {
     "task": "T024",
-    "session": "actions-41125055055",
-    "expires": "2026-10-30T23:43:30Z",
+    "session": "actions-41132577097",
+    "expires": "2026-10-31T00:54:34Z",
     "lane": "2"
    },
    "branch": "claude/task/T024-ai-adapter-a2",
@@ -4364,8 +4364,7 @@
     142
    ],
    "last_failure": "app/catalog/src/tests/restricted_words.rs: not owned by T024",
-   "update_waiting_since": null,
-   "update_push_failures": null
+   "head_check_since": null
   },
   {
    "id": "T025",
@@ -8287,7 +8286,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T22:10:49Z",
+ "updated_at": "2026-10-30T22:11:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -8385,7 +8384,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fd02d991df01dcf15fb8b3ce350f7f32e4ada5f5",
+ "runner_sha": "a1b9870a838daf3c019a3f446fc084eab2f9e84f",
  "starter": "actions",
  "smoke_runs": [
   {
