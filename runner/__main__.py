@@ -19,6 +19,11 @@ line of JSON with what changed.
                                     permission, stage proof) back to QUEUED, attempts unchanged and
                                     the reason as its last_failure (refused for FIX-MAIN, a task out of
                                     attempts, or while any lease is live; recorded in `requeues`, D-583)
+  python3 -m runner --requeue T### --plan-fix D-### --reason TEXT
+                                    give a task that used all its attempts exactly one more (on Opus)
+                                    after a plan fix: D-### is new on main's docs/decisions.md since the
+                                    task was blocked and its kit/tasks.json entry or prompt changed on
+                                    main since then; once per decision, never under a live lease (D-646)
   python3 -m runner --restore-lanes end a fall back to one lane (`lanes_fallback`, D-620)
   RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
                                     claims only on that lane; unset, the first free lane (D-620)
@@ -85,6 +90,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--record-proof")
     ap.add_argument("--evidence", default="")
     ap.add_argument("--requeue")
+    ap.add_argument("--plan-fix", default="")
     ap.add_argument("--reason", default="")
     ap.add_argument("--restore-lanes", action="store_true")
     return ap.parse_args(argv)
@@ -238,6 +244,8 @@ def requeue_task(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) ->
     tid, reason = str(args.requeue), args.reason.strip()
     if not reason:
         return "requeue_refused: --reason is empty"
+    if args.plan_fix:
+        return plan_fix_requeue(tid, args.plan_fix.strip(), reason, cfg, env)
     why = cycle.requeue_refusal(env.read_state(), tid, now_utc(), cfg)
     if why:
         return f"requeue_refused: {why}"
@@ -246,6 +254,28 @@ def requeue_task(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) ->
         later = cycle.requeue_refusal(env.read_state(), tid, now_utc(), cfg)
         return f"requeue_refused: {later}" if later else "lost_race"
     return "requeued"
+
+
+def plan_fix_requeue(tid: str, decision: str, reason: str, cfg: cycle.Config, env: GitHubEnv) -> str:
+    """`--requeue T### --plan-fix D-### --reason TEXT`: one more attempt for a task that used all its
+    attempts, after a plan fix on main (D-646). The state-only checks run first; then main is read for
+    the time the task was blocked (GitHubEnv.plan_evidence), and the move goes through update_state,
+    which re-checks everything against the fresh state."""
+    state = env.read_state()
+    why = cycle.plan_fix_precheck(state, tid, decision, now_utc(), cfg)
+    if why:
+        return f"requeue_refused: {why}"
+    task = {**st.entry(state, tid), **next((t for t in cfg.graph if t["id"] == tid), {})}
+    since = str(cycle.blocked_at(st.entry(state, tid)))
+    evidence = env.plan_evidence(tid, str(task.get("prompt") or f"kit/prompts/{tid}.md"), since)
+    why = cycle.plan_fix_refusal(state, tid, decision, evidence, now_utc(), cfg)
+    if why:
+        return f"requeue_refused: {why}"
+    done = env.update_state(lambda fresh: cycle.requeue_plan_fix(fresh, tid, reason, decision, evidence, now_utc(), cfg.session, cfg))
+    if done is None:
+        later = cycle.plan_fix_refusal(env.read_state(), tid, decision, evidence, now_utc(), cfg)
+        return f"requeue_refused: {later}" if later else "lost_race"
+    return "requeued_after_plan_fix"
 
 
 def restore_lanes(env: GitHubEnv) -> str:

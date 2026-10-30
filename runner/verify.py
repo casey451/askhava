@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from collections.abc import Iterable
@@ -191,3 +192,19 @@ def auto_merge_reason(state: dict[str, Any], branch: str, head_sha: str, lease: 
 def auto_merge_allowed(state: dict[str, Any], branch: str, head_sha: str, lease: dict[str, Any] | None = None) -> bool:
     """True only when auto_merge_reason finds nothing (the auto-pr workflow's decision)."""
     return auto_merge_reason(state, branch, head_sha, lease) == ""
+
+
+def plan_fingerprint(tasks_text: str | None, prompt_text: str | None, task_id: str) -> str | None:
+    """The sha256 of one task's plan at one commit: its `kit/tasks.json` entry (canonical JSON) and its
+    prompt file's text (D-646). `--requeue --plan-fix` compares the fingerprint on main when the task
+    was blocked with today's, so a capped task gets its extra attempt only when its plan really
+    changed. None when `kit/tasks.json` is missing or is not a task graph at that commit."""
+    if tasks_text is None:
+        return None
+    try:
+        tasks = json.loads(tasks_text).get("tasks", [])
+    except (ValueError, AttributeError):
+        return None
+    entry = next((t for t in tasks if isinstance(t, dict) and t.get("id") == task_id), None)
+    plan = json.dumps({"entry": entry, "prompt": prompt_text}, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(plan.encode("utf-8")).hexdigest()
