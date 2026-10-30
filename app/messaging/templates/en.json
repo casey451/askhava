@@ -62,17 +62,17 @@
   "close_howto": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Reply CLOSE {job} to close request {job}."
+    "text": "Ask Hava: Reply CLOSE {job} to close request {job}. If that doesn't fix it, reply with what's wrong and the Ask Hava owner gets it right away."
   },
   "cost_answer": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: It's free for you. The business you pick pays Ask Hava a fixed introduction fee ($25, $75 or $199, by quote size). You pay the business directly for the work."
+    "text": "Ask Hava: It's free for you. The business you pick pays Ask Hava a fixed introduction fee ($25, $75 or $199, by quote size). You pay the business directly for the work. If that doesn't fix it, reply with what's wrong and the Ask Hava owner gets it right away."
   },
   "business_no_call_reminder": {
     "audience": "business",
-    "segments": 1,
-    "text": "Ask Hava: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded."
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded. Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts can be on different days."
   },
   "business_pick_waiting": {
     "audience": "business",

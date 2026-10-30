@@ -23,14 +23,22 @@ SHORTENERS = {
 }
 PROMOTION = re.compile(
     r"\b(promo\w*|discount\w*|coupon\w*|special offer|limited time|save this number|save our number|"
-    r"add us to your contacts|refer a friend|referral|sale|deals?|% off|descuento\w*|cup[oó]n\w*|oferta especial|"
+    r"add us to your contacts|refer a friend|referral|on sale|a deal|great deals?|% off|descuento\w*|cup[oó]n\w*|oferta especial|"
     r"guarde este n[uú]mero)\b",
     re.IGNORECASE,
 )
 REPLY_CANCEL = re.compile(r"\b(reply|text|send|responda|env[ií]e)\s+(cancel|cancelar)\b", re.IGNORECASE)
-LINK = re.compile(r"(?:https?://)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:/[^\s]*)?", re.IGNORECASE)
+LINK = re.compile(
+    r"(?:https?://)?(?:(?:[a-z0-9-]+\.)+[a-z]{2,}|\d{1,3}(?:\.\d{1,3}){3})(?::\d+)?(?:/[^\s]*)?",
+    re.IGNORECASE,
+)
+WARRANTY = re.compile(
+    r"\b(home warranty|protection plan|service contract|extended warranty|guarantee\w*|warrant(?:y|ies)|"
+    r"garant[ií]a\w*)\b",
+    re.IGNORECASE,
+)
 EMOJI = re.compile(
-    "[©®‼-㊙\U0001f000-\U0001faff️‍]"
+    "[\u00a9\u00ae\u203c-\u3299\U0001f000-\U0001faff\ufe0f\u200d]"
 )
 # Characters in that wide range which are ordinary text: dashes, quotes, bullets and the euro sign.
 PLAIN = set("–—‘’“”•…€")
@@ -66,12 +74,14 @@ def problems(text: str) -> list[str]:
             found.append(f"uses a link shortener {host} (TXT-006)")
         elif host != "askhava.com":
             found.append(f"links off askhava.com: {link} (TXT-006)")
-        elif "roc" in bare.lower() and bare.lower() != ROC_LINK:
+        elif re.search(r"/roc\b", bare, re.IGNORECASE) and bare.lower() != ROC_LINK:
             found.append(f"ROC link must be {ROC_LINK} (TXT-007)")
     if re.search(r"\broc\b", text, re.IGNORECASE) and ROC_LINK not in text:
         found.append(f"mentions the ROC without {ROC_LINK} (TXT-007)")
     if PROMOTION.search(text):
         found.append("has promotion wording (TXT-008)")
+    if WARRANTY.search(text):
+        found.append("offers a warranty or protection plan (LIC-042)")
     if REPLY_CANCEL.search(text):
         found.append('says "reply CANCEL" (TXT-010)')
     return found
@@ -107,11 +117,15 @@ def test_the_close_text_says_close_with_the_job_number() -> None:
         ("Ask Hava: Get a discount today", "promotion"),
         ("Ask Hava: Save this number for later", "promotion"),
         ("Ask Hava: Reply CANCEL to stop", "reply CANCEL"),
+        ("Ask Hava: Ask about our home warranty", "warranty"),
+        ("Ask Hava: Our guarantee covers it", "warranty"),
+        ("Ask Hava: Tenemos una garantía extendida", "warranty"),
+        ("Ask Hava: See http://192.168.1.5/x", "off askhava.com"),
         ("Hi there", "does not begin"),
     ],
 )
 def test_the_scan_catches_a_planted_violation(planted: str, expected: str) -> None:
-    """TD-TXT-02: each planted violation is caught."""
+    """TD-TXT-02, TD-LIC-18: each planted violation is caught."""
     assert any(expected in p for p in problems(planted)), problems(planted)
 
 

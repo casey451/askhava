@@ -78,20 +78,20 @@
   "close_howto": {
     "audience": "homeowner",
     "draft": true,
-    "segments": 1,
-    "text": "Ask Hava: Responda CERRAR {job} para cerrar la solicitud {job}."
+    "segments": 2,
+    "text": "Ask Hava: Responda CERRAR {job} para cerrar la solicitud {job}. Si eso no lo resuelve, responda con lo que pasa y el dueño de Ask Hava lo atiende de inmediato."
   },
   "cost_answer": {
     "audience": "homeowner",
     "draft": true,
-    "segments": 4,
-    "text": "Ask Hava: Es gratis para usted. El negocio que elija le paga a Ask Hava una tarifa fija de presentación ($25, $75 o $199, según el tamaño de la cotización). Usted le paga directamente al negocio por el trabajo."
+    "segments": 5,
+    "text": "Ask Hava: Es gratis para usted. El negocio que elija le paga a Ask Hava una tarifa fija de presentación ($25, $75 o $199, según el tamaño de la cotización). Usted le paga directamente al negocio por el trabajo. Si eso no lo resuelve, responda con lo que pasa y el dueño de Ask Hava lo atiende de inmediato."
   },
   "business_no_call_reminder": {
     "audience": "business",
     "draft": true,
-    "segments": 2,
-    "text": "Ask Hava: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de la entrega, o la tarifa no se puede reembolsar."
+    "segments": 4,
+    "text": "Ask Hava: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de la entrega, o la tarifa no se puede reembolsar. Llame entre las 8 a.m. y las 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). Sus 2 intentos pueden ser en días distintos."
   },
   "business_pick_waiting": {
     "audience": "business",

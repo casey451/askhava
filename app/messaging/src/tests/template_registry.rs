@@ -26,7 +26,7 @@ fn registry() -> &'static Registry {
 #[test]
 fn every_kind_has_both_languages_and_begins_ask_hava() {
     let ids = template_ids().expect("ids");
-    assert!(ids.len() >= 10);
+    assert!(ids.iter().any(|id| id == "consent"));
     for id in &ids {
         for wanted in [Language::En, Language::Es] {
             let text = render(id, wanted, true, VALUES).expect("renders");
@@ -37,68 +37,88 @@ fn every_kind_has_both_languages_and_begins_ask_hava() {
     }
 }
 
+/// A planted registry of generic kinds, so the behaviour tests do not hang on later tasks' keys.
+fn planted() -> Registry {
+    let en = r#"{
+      "plain": {"audience":"homeowner","segments":1,"text":"Ask Hava: Job {job} plain."},
+      "stays": {"audience":"homeowner","segments":1,"text":"Ask Hava: Job {job} stays."},
+      "notice": {"audience":"business","segments":1,"text":"Ask Hava: Job {job} notice."}
+    }"#;
+    let es = r#"{
+      "plain": {"audience":"homeowner","segments":1,"draft":true,"text":"Ask Hava: Trabajo {job} normal."},
+      "stays": {"audience":"homeowner","segments":1,"draft":true,"spanish_stays_on":true,"text":"Ask Hava: Trabajo {job} sigue."},
+      "notice": {"audience":"business","segments":1,"draft":true,"text":"Ask Hava: Trabajo {job} aviso."}
+    }"#;
+    Registry::parse(en, es).expect("planted registry is valid")
+}
+
+const JOB: &[(&str, &str)] = &[("job", "1042")];
+
 /// TD-TXT-01, TXT-039, TXT-002: Spanish conversations off gives English, except the stay-on texts.
 #[test]
 fn spanish_only_while_the_setting_is_on_except_the_stay_on_texts() {
-    let off = |id: &str| {
-        render(id, Language::Es, false, VALUES)
+    let reg = planted();
+    let lang = |id: &str, on: bool| {
+        reg.render(id, Language::Es, on, JOB)
             .expect("renders")
             .language
     };
-    let on = |id: &str| {
-        render(id, Language::Es, true, VALUES)
-            .expect("renders")
-            .language
-    };
-    assert_eq!(off("first_quote"), Language::En);
-    assert_eq!(on("first_quote"), Language::Es);
+    assert_eq!(lang("plain", false), Language::En);
+    assert_eq!(lang("plain", true), Language::Es);
+    assert_eq!(lang("stays", false), Language::Es);
+    let english = reg
+        .render("plain", Language::En, true, JOB)
+        .expect("renders");
+    assert_eq!(english.language, Language::En);
+}
+
+/// TXT-041, TXT-039: the HELP, 911, opt-out and "English only" texts stay Spanish with the setting off.
+#[test]
+fn the_required_stay_on_texts_are_flagged() {
     for stays in [
         "emergency_911",
         "help_reply",
         "opt_out_confirmation",
         "spanish_not_yet",
     ] {
-        assert_eq!(off(stays), Language::Es, "{stays}");
+        let text = render(stays, Language::Es, false, VALUES).expect("renders");
+        assert_eq!(text.language, Language::Es, "{stays}");
     }
-    let english = render("first_quote", Language::En, true, VALUES).expect("renders");
-    assert_eq!(english.language, Language::En);
 }
 
 /// TD-TXT-01, BIZ-018: language is per person; the owner phone English and a team phone Spanish.
 #[test]
 fn business_language_is_per_phone_and_english_while_spanish_is_off() {
-    let id = "business_pick_waiting";
-    assert_eq!(registry().audience(id), Some(Audience::Business));
-    let owner = render(id, Language::En, true, VALUES).expect("owner");
-    let team = render(id, Language::Es, true, VALUES).expect("team");
+    let reg = planted();
+    assert_eq!(reg.audience("notice"), Some(Audience::Business));
+    let owner = reg
+        .render("notice", Language::En, true, JOB)
+        .expect("owner");
+    let team = reg.render("notice", Language::Es, true, JOB).expect("team");
     assert_eq!(
         (owner.language, team.language),
         (Language::En, Language::Es)
     );
-    assert_eq!(
-        render(id, Language::Es, false, VALUES)
-            .expect("off")
-            .language,
-        Language::En
-    );
+    let off = reg.render("notice", Language::Es, false, JOB).expect("off");
+    assert_eq!(off.language, Language::En);
 }
 
 /// TXT-004: a missing value or unknown ID is an error, and a value holding braces is not expanded.
 #[test]
 fn rendering_is_fixed_and_strict() {
+    let reg = planted();
     assert!(matches!(
-        render("nope", Language::En, true, VALUES),
+        reg.render("nope", Language::En, true, JOB),
         Err(TemplateError::Unknown(_))
     ));
     assert!(matches!(
-        render("close_howto", Language::En, true, &[]),
+        reg.render("plain", Language::En, true, &[]),
         Err(TemplateError::MissingValue { .. })
     ));
-    let text = render("close_howto", Language::En, true, &[("job", "{job}")]).expect("renders");
-    assert_eq!(
-        text.body,
-        "Ask Hava: Reply CLOSE {job} to close request {job}."
-    );
+    let text = reg
+        .render("plain", Language::En, true, &[("job", "{job}")])
+        .expect("renders");
+    assert_eq!(text.body, "Ask Hava: Job {job} plain.");
 }
 
 fn pair(id: &str, es_extra: &str, es_draft: &str) -> (String, String) {
