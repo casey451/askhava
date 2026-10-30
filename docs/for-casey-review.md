@@ -303,7 +303,7 @@ You approved every recommendation in the business-side fix plan. All 16 quick fi
 3. **Recruit about 2 to 4 businesses per trade** until a trade averages about 1 confirmed pick per business per month. Open small trades later, or with 1 or 2 businesses. Put this pace in the go-to-market plan, section 3.3. There is still no cap, and a business that finds Ask Hava on its own can still join. If a trade ever has 7 or more businesses and its typical job gets 5 or more quotes two months in a row, the owner portal flags it, and a 5-quote limit comes back to you as a decision. (D-189)
 4. **Start the founding interest list yourself (A10).** Note each business, its trade, how it would like to be reached and its OK to be contacted once at launch. Then sign each one up in person during launch week. Nobody can sign up before Gate C, and the list must never be built from the ROC or city lists. (D-181)
 5. **The business data page (B16): now the AI legal-research memo (in progress, `/home/claude/hhq/outputs/legal/`) + your decision (D-367).** Every line on it must be exactly true. It covers what's kept and for how long, who sees it, no call recordings, never asking about workers, police or others getting data only when a law requires it (such as a subpoena or warrant), and that you don't use Ask Hava data in any other job. (D-203)
-6. **Whether to mention police work (C8).** The "Who runs Ask Hava" block leaves it out until the interviews answer this. (D-183)
+6. **Whether to mention your day job (C8).** The "Who runs Ask Hava" block leaves it out until the interviews answer this. (D-183)
 7. **Checked at build time:** whether the city license list has a date field. If it doesn't, no-license cards say "City business license on file" with no year. (D-190)
 
 **Pending validation: needs real contractor interviews (section 3C, not applied)**
@@ -317,7 +317,7 @@ None of these blocks the spec. Each touches a number that is now a setting, or a
 - **C5. Who reads the pick text, and is 2 business hours workable with every phone notified?** Could reopen B4 or B5. Q4, plus new: "If the pick text went to you and your office at once, could one of you confirm within 2 hours?" Must be in before launch.
 - **C6. What is a new recurring client worth, and is $75 acceptable for an ongoing service?** Could reopen B9. Q12.
 - **C7. What Spanish-first owners need in Spanish, and what they want promised about data.** (A9, B16) Q18.
-- **C8. Is your being a police officer a plus, a worry or nothing?** (A12, B16 wording) New: "The person running this is a local police officer. Does that matter to you, either way?"
+- **C8. Is your having a full-time day job a plus, a worry or nothing?** (A12, B16 wording) New: "The person running this has a full-time day job. Does that matter to you, either way?"
 - **C9. Would BUSY <days> keep them signed up through the busy season?** (B11) New: "When you're booked out, what do you do about new requests today?"
 - **C10. Minutes per quote, and how many unanswered quotes before they stop.** (B1, B2 pacing; B6) Q7, Q9. Must be in before launch.
 - **C11. Would the loss text ("4 quoted; the picked quote was lower") make them quote again, or quit?** (B6) Q9; show the loss text on paper.

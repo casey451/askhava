@@ -37,7 +37,7 @@
 
 ## Part 2. The business in one paragraph
 
-Residents of Lake Havasu City, Arizona (later Bullhead City, Fort Mohave and Kingman) text one local number or use web chat to say what service they need. That can be a repair, a recurring service like pool cleaning, or a one-time job like car detailing. The app sends an anonymous **job card** to every qualified local business that opted in to that type of job. Businesses send quotes. The homeowner sees **every quote** on one private quote page, with links to reviews and the state license record. The homeowner picks one by entering a code texted to their own phone. The business taps **Confirm** within 2 business hours, and only then pays a fee of **$25, $75 or $199** depending on the size of the chosen quote. Only after payment does the business get the homeowner's first name, address and photos. It calls through a **masked number**; the homeowner's phone number is never shared. **Homeowners never pay.** Positioning: "We gather quotes; you choose. We're just compiling the information." Owner: Casey Solomon, a full-time police officer, so his available time is limited and comes in shifts.
+Residents of Lake Havasu City, Arizona (later Bullhead City, Fort Mohave and Kingman) text one local number or use web chat to say what service they need. That can be a repair, a recurring service like pool cleaning, or a one-time job like car detailing. The app sends an anonymous **job card** to every qualified local business that opted in to that type of job. Businesses send quotes. The homeowner sees **every quote** on one private quote page, with links to reviews and the state license record. The homeowner picks one by entering a code texted to their own phone. The business taps **Confirm** within 2 business hours, and only then pays a fee of **$25, $75 or $199** depending on the size of the chosen quote. Only after payment does the business get the homeowner's first name, address and photos. It calls through a **masked number**; the homeowner's phone number is never shared. **Homeowners never pay.** Positioning: "We gather quotes; you choose. We're just compiling the information." Owner: Casey Solomon, who has a full-time day job, so his available time is limited and comes in shifts.
 
 ---
 
@@ -387,7 +387,7 @@ Shared-lead platforms usually send each lead to 3–5 businesses. Businesses typ
 
 ### 8.3 Casey
 
-- A full-time police officer on rotating shifts, available about 1 hour a day in two windows. Model shift weeks, including a 2-week stretch away.
+- Someone with a full-time job on rotating shifts, available about 1 hour a day in two windows. Model shift weeks, including a 2-week stretch away.
 - Approves flagged sign-ups. Assumed: approves 95% of legitimate ones; fooled by a fake 15% of the time, or 3% with the checklist (call the phone on the state record, compare ID and license card).
 - Handles complaints, disputes, call-back lists and alerts. Each task takes time; report minutes.
 - A backup person can pause and approve, but can't change bank details.
