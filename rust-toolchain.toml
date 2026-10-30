@@ -1,0 +1,6 @@
+# The pinned Rust release (docs/architecture.md section 11, D-096, D-453). 1.99.1 is past the
+# cutoff and fixes no security issue, so it is not taken (D-585).
+[toolchain]
+channel = "1.99.0"
+components = ["clippy", "rustfmt"]
+profile = "minimal"
