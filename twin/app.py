@@ -262,7 +262,8 @@ class App:
         return a
 
     # ------------------------------------------------------------------ outbound texting (all goes through here)
-    def text(self, phone, body, kind, ref=None, conversational=False, media=None, tries=1):
+    def text(self, phone, body, kind, ref=None, conversational=False, media=None, tries=1, after_stop=False):
+        """Every outbound text. `after_stop` is set only for the HELP reply, which an opted-out number still gets (CON-018, D-131)."""
         H = self.fx("hardening")
         if self.replaying and self.replay_sent is not None and self.replay_sent.get((phone, kind, ref), 0) > 0:
             self.replay_sent[(phone, kind, ref)] -= 1                     # already sent before the restore: don't send twice
@@ -278,8 +279,9 @@ class App:
             if self.sim.now - self.last_inbound.get(phone, -1e9) > 15:
                 conversational = False
         if phone in self.stopped and kind not in ("stop_confirm",):
-            self.log("text_suppressed_stop", phone=phone, kind=kind)
-            return None
+            if not after_stop:
+                self.log("text_suppressed_stop", phone=phone, kind=kind)
+                return None
         if self.paused["texting"] and kind not in ("safety",):
             self.log("text_suppressed_pause", kind=kind)
             hid = self.phone_to_ho.get(phone)
@@ -368,7 +370,7 @@ class App:
             self.optout_natural.discard(frm) if hasattr(self, "optout_natural") else None
             return
         if self.fx("v93") and up in ("HELP", "INFO"):
-            self.text(frm, self.help_text(), "help", None, conversational=True)
+            self.text(frm, self.help_text(), "help", None, conversational=True, after_stop=True)
             return
         if self.fx("v93") and NATURAL_OPTOUT.search(b):
             # FCC: people may revoke consent by any reasonable means, not only the exact keywords
@@ -419,11 +421,16 @@ class App:
             if cv:
                 cv["emergency_sent"] = True
         if H and cv and cv["stage"] == "consent":
-            if re.match(r"^(OK|OKAY|YES|Y|SI|SÍ|SURE)\b", up):
+            ok_ = re.match(r"^(OK|OKAY|YES|Y|SI|SÍ|SURE)\b", up)
+            if not ok_:
+                cv["text"] += " " + b                 # extra details: keep them with the first message
+            # CON-027: no reply is ever needed and the consent text is never sent twice for one request, so a message
+            # a day after an unanswered consent text goes on with this request, first message kept (INT-023)
+            go_on = self.fx("v93") and self.sim.now - cv["started"] > DAY
+            if ok_ or go_on:
                 h["consented"] = True
                 h["consent_record"] = dict(at=self.sim.now, reply=b, prompt_version="v9.3")
                 return self.run_intake(h, phone)
-            cv["text"] += " " + b                     # extra details: keep them, ask once more
             if not cv.get("reprompted"):
                 cv["reprompted"] = True
                 self.text(phone, "Got it. Reply OK to start (it's free; terms: askhava.example/terms).", "consent_again", conversational=True)
@@ -442,21 +449,20 @@ class App:
             asked = [self.requests[x] for x in h["requests"] if self.requests[x].get("onsite_asked") and not self.requests[x].get("onsite")
                      and (not self.fx("v93") or self.requests[x]["status"] not in TERMINAL)]
             if asked:
-                asked[-1]["onsite"] = b; return
+                asked[-1]["onsite"] = b; asked[-1]["last_ho_msg"] = self.sim.now; return
         if up == "LINK":
             for rid in reversed(h["requests"]):
                 r = self.requests[rid]
                 if r["status"] not in TERMINAL:
+                    r["last_ho_msg"] = self.sim.now
                     self.send_quote_link(r, conversational=True); return
             return
         if up == "LIST":
             for rid in reversed(h["requests"]):
                 r = self.requests[rid]
                 if r["status"] in ("QUOTES_READY", "AWAITING_YES"):
-                    lines = [f"{i+1}. {self.contractors[self.quotes[q]['co']]['business']}: {self.quote_label(self.quotes[q])}" for i, q in enumerate(self.visible_quotes(r))]
-                    self.text(phone, f"Quotes for request {rid}:\n" + "\n".join(lines) + "\nReply the number + YES (e.g. 1 YES) to choose.", "quote_list", rid, conversational=True)
-                    r["list_mode"] = True
-                    return
+                    r["last_ho_msg"] = self.sim.now
+                    return self.send_quote_list(r, phone)
             return
         if self.fx("v93"):
             up_n = re.sub(r"\s+", " ", re.sub(r"[^A-Z0-9 ]", "", up).replace("PLEASE", "")).strip()
@@ -693,8 +699,11 @@ class App:
         # duplicate check: same phone + trade + property, still open
         for rid in h["requests"][:-1]:
             o = self.requests[rid]
-            same_job = o["trade"] == r["trade"] or (self.cfg.get("fixes", {}).get("dup_ignore_trade_2h") and self.sim.now - o["created"] < 120)
-            if self.fx("v93") and same_job and self.sim.now - o["created"] >= 120:
+            # INT-010 (D-485): the 2 hours run from that open job's own last homeowner message, not from when it was
+            # opened nor from a message about another job
+            window = self.sim.now - o["created"] < 120 or (self.fx("v93") and cv["started"] - o.get("last_ho_msg", -1e9) < 120)
+            same_job = o["trade"] == r["trade"] or (self.cfg.get("fixes", {}).get("dup_ignore_trade_2h") and window)
+            if self.fx("v93") and same_job and not window:
                 # past 2 hours, the same trade is only the same job if the words mostly match (a different leak is a new job)
                 wa = set(re.findall(r"[a-z]{3,}", o["original_text"].lower())); wb = set(re.findall(r"[a-z]{3,}", r["original_text"].lower()))
                 same_job = len(wa & wb) / max(1, min(len(wa), len(wb))) >= 0.6
@@ -702,6 +711,7 @@ class App:
             if (same_job and o["zip"] == r["zip"] and o["status"] not in TERMINAL) or resent:
                 self.set_status(r, "DUPLICATE")
                 r["merged_into"] = rid
+                o["last_ho_msg"] = cv["started"]
                 self.text(phone, f"Looks like this is the same job as request {rid}, so we've added it there.", "duplicate", rid, conversational=True)
                 return
         self.set_status(r, "OPEN")
@@ -1134,17 +1144,29 @@ class App:
             self.set_status(r, "QUOTES_READY")
             r["pending_choice"] = None
 
+    def send_quote_list(self, r, phone):
+        """The LIST reply. "<number> YES" picks the quote that number named in the list as sent (PICK-015), so the
+        numbering is kept; a quote that expires or is withdrawn later never shifts the others."""
+        r["list_qids"] = self.visible_quotes(r)
+        lines = [f"{i+1}. {self.contractors[self.quotes[q]['co']]['business']}: {self.quote_label(self.quotes[q])}" for i, q in enumerate(r["list_qids"])]
+        self.text(phone, f"Quotes for request {r['id']}:\n" + "\n".join(lines) + "\nReply the number + YES (e.g. 1 YES) to choose.", "quote_list", r["id"], conversational=True)
+        r["list_mode"] = True
+
     def homeowner_yes(self, h, n, phone):
         for rid in reversed(h["requests"]):
             r = self.requests[rid]
             if r["status"] == "AWAITING_YES" and n is None:
+                r["last_ho_msg"] = self.sim.now
                 return self.start_pick(r, r["pending_choice"]["qid"], phone)
             if r["status"] in ("QUOTES_READY", "AWAITING_YES") and n is not None and r.get("list_mode"):
-                vq = self.visible_quotes(r)
-                if 1 <= n <= len(vq):
+                listed = r.get("list_qids") or self.visible_quotes(r)
+                if 1 <= n <= len(listed):
+                    r["last_ho_msg"] = self.sim.now
+                    if listed[n - 1] not in self.visible_quotes(r):
+                        return self.send_quote_list(r, phone)     # the quote that number named is gone: list them again
                     if r["status"] == "QUOTES_READY":
                         self.set_status(r, "AWAITING_YES")
-                    return self.start_pick(r, vq[n - 1], phone)
+                    return self.start_pick(r, listed[n - 1], phone)
         self.log("yes_without_pending", homeowner=h["id"])
 
     def start_pick(self, r, qid, phone, auth="yes_text"):
@@ -1370,8 +1392,13 @@ class App:
         if r["status"] != "PAYMENT_PENDING":
             self.log("release_wrong_state", pick=p["id"], status=r["status"])
             return
-        p["released"] = True; p["released_at"] = self.sim.now
         c = self.contractors[p["co"]]
+        if self.fx("v93") and not self.license_ok(c):
+            # PRIV-005, PICK-020: the license's stored end date passed between Confirm and the payment: no details, fee back
+            p["status"] = "license_lapsed"
+            self.do_refund(p, "license_lapsed")
+            return self.reoffer(r, p, "license_lapsed")
+        p["released"] = True; p["released_at"] = self.sim.now
         h = self.homeowners[r["ho"]]
         v = self.vault[h["contact"]]
         sid = None
@@ -1382,7 +1409,7 @@ class App:
         p["session"] = sid
         self.set_status(r, "CONNECTED")
         full_photos = [ph["raw"] for ph in r["photos"]]
-        self.text(c["phones"][0], f"Confirmed: job {r['id']}. Homeowner: {v['name'] or 'the homeowner'}, address on your job page. Call them through (928) 555-0100.", "connect_contractor", r["id"], media=full_photos)
+        p["release_text"] = self.text(c["phones"][0], f"Confirmed: job {r['id']}. Homeowner: {v['name'] or 'the homeowner'}, address on your job page. Call them through (928) 555-0100.", "connect_contractor", r["id"], media=full_photos)
         self.sim.disclosures.append(dict(t=self.sim.now, to_co=c["id"], req=r["id"], pick=p["id"], kind="contact_and_address"))
         when = "by 4 p.m." if self.in_business() else "tomorrow morning"
         self.text(self.phone_of(r), f"{c['business']} confirmed and will call you from (928) 555-0100 {when}.", "who_is_calling", r["id"])
@@ -1423,12 +1450,24 @@ class App:
         if p["status"] == "paid" and not p.get("calls"):
             self.text(self.contractors[p["co"]]["phones"][0], f"Reminder: please call the homeowner for job {p['req']}.", "call_reminder", p["req"])
 
+    def release_sent(self, p):
+        """Whether the release text (the homeowner's details) went to the carrier for this pick's business: at once (or, in
+        a restore replay, before the restore), or later after a quiet-hours hold."""
+        to = self.contractors[p["co"]]["phones"][0]
+        return bool(p.get("release_text")) or any(m["kind"] == "connect_contractor" and m["ref"] == p["req"] and m["phone"] == to for m in self.msg_meta.values())
+
     def t_no_call_reoffer(self, pid):
+        """72 hours without a call: a no-show, unless the release never reached the business (texting paused), in which
+        case the fee bought no introduction and is refunded (FEE-006, FEE-021)."""
         p = self.picks[pid]
         if p["status"] == "paid" and not p.get("calls"):
-            p["status"] = "no_show"
-            self.contractors[p["co"]]["no_shows"] += 1
-            if self.contractors[p["co"]]["no_shows"] >= 2:
+            if self.fx("v93") and not self.release_sent(p):
+                p["status"] = "not_introduced"
+                self.do_refund(p, "release_not_sent")
+            else:
+                p["status"] = "no_show"
+                self.contractors[p["co"]]["no_shows"] += 1
+            if self.contractors[p["co"]]["no_shows"] >= 2 and p["status"] == "no_show":
                 self.contractors[p["co"]]["status"] = "paused"; self.contractors[p["co"]]["pause_reason"] = "no_shows"
                 self.alert("normal", "contractor_no_shows", f"{self.contractors[p['co']]['business']} paused after 2 no-shows")
             r = self.requests[p["req"]]
@@ -1438,8 +1477,9 @@ class App:
                 self.reoffer(r, p, "no_call")
 
     def t_refund_decision(self, pid):
+        """FEE-022: decided at 96 hours, also when the homeowner closed the job after the business started calling."""
         p = self.picks[pid]
-        if p["status"] != "paid" or p["free"]:
+        if p["status"] not in ("paid", "closed_by_homeowner") or p["free"]:
             return
         calls = [c for c in p.get("calls", []) if not c["rejected"] and c["at"] - p["released_at"] <= 72 * 60]
         days = {int(c["at"] // DAY) for c in calls}
@@ -1672,7 +1712,8 @@ class App:
 
     # ------------------------------------------------------------------ texting down: Casey's call list (person-to-person calls)
     def manual_call_list(self):
-        """Owner portal list while texting is paused: who needs a personal call from Casey."""
+        """Owner portal list while texting is paused: who needs a personal call from Casey (TXT-023). An emergency whose
+        safety text never arrived is on it too, as an urgent call-back (INT-023, D-277)."""
         if not self.paused["texting"]:
             return []
         out = []
@@ -1695,7 +1736,8 @@ class App:
                 continue
             for rid in h["requests"]:
                 r = self.requests[rid]
-                if r["status"] in ("OPEN", "NO_QUOTES_YET", "QUOTES_READY") and r.get("manual_contact_status") != r["status"]:
+                due = r["status"] in ("OPEN", "NO_QUOTES_YET", "QUOTES_READY") or (r["status"] == "EMERGENCY" and last_out.get(phone, -1e9) < r["created"])
+                if due and r.get("manual_contact_status") != r["status"]:
                     out.append(("update", phone, rid))
         return out
 
@@ -1726,6 +1768,8 @@ class App:
             r["manual_contact_status"] = r["status"]
             if info and info.get("email") and h:
                 h["email"] = info["email"]
+                if r["status"] == "QUOTES_READY":
+                    self.send_quote_link(r)                  # texting is down, so the link goes to the email just given (TXT-023)
         self.log("owner_call", kind=kind, request=rid, reached=reached)
 
     # ------------------------------------------------------------------ database restore
