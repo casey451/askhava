@@ -25,6 +25,11 @@
 #                     active businesses; false: "Coming later", waitlist sign-ups only (LIC-046, D-396,
 #                     D-418). A launch-open category must be enabled.
 #   fee_free_job_types  job types whose pick charges no introduction fee (FEE-045, D-403).
+#   job_type_kinds    plumbing repair, heating and cooling (both hvac categories), electrical,
+#                     roof repair and painting only: each job type's kind, repair | replace |
+#                     install, so a business can untick the kinds it does not take (LIC-041,
+#                     BIZ-004, D-257, D-605). Every job type of those categories has one, and each
+#                     of the five has at least one repair job type.
 #   licensed_only_decision  pest control only: the decision that switched it on for Department
 #                     licensees only (LIC-012, D-402).
 #
@@ -75,6 +80,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: true
     job_types: [leak repair, toilet repair, drain clearing, faucet replacement]
+    job_type_kinds: {leak repair: repair, toilet repair: repair, drain clearing: repair, faucet replacement: replace}
     refused:
       - {job: "gas line work", routed_to: "licensed only (R-37)", reason: "gas work is never handyman work (LIC-021)"}
       - {job: "water heater replacement", routed_to: "licensed only (R-37)", reason: "permit-type job (LIC-022)"}
@@ -95,6 +101,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: true
     job_types: [AC not cooling, thermostat, duct repair, furnace repair, evaporative (swamp) cooler repair]
+    job_type_kinds: {AC not cooling: repair, thermostat: repair, duct repair: repair, furnace repair: repair, evaporative (swamp) cooler repair: repair}
     refused: []
     quote_format: diagnostic_visit
     keywords: [ac, air conditioner, hvac, cooling, furnace, thermostat, swamp cooler, evaporative cooler]
@@ -112,6 +119,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: false
     job_types: [full system replacement, condenser replacement]
+    job_type_kinds: {full system replacement: replace, condenser replacement: replace}
     refused: []
     quote_format: range
     keywords: [new ac, replace ac, new unit, system replacement]
@@ -129,6 +137,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: true
     job_types: [outlet repair, breaker trips, light fixture, panel upgrade, new circuit, hardwired smoke alarm]
+    job_type_kinds: {outlet repair: repair, breaker trips: repair, light fixture: install, panel upgrade: replace, new circuit: install, hardwired smoke alarm: install}
     refused: []
     quote_format: range
     keywords: [outlet, breaker, panel, wiring, circuit, light fixture]
@@ -437,6 +446,7 @@ categories:
     trip_fee_tier: 25
     after_hours_emergency: true
     job_types: [leak repair, tile replacement, re-roof]
+    job_type_kinds: {leak repair: repair, tile replacement: repair, re-roof: replace}
     refused: []
     quote_format: range
     keywords: [roof, roof leak, roofer, re-roof]
@@ -453,7 +463,8 @@ categories:
     recurring: false
     trip_fee_tier: 25
     after_hours_emergency: false
-    job_types: [interior painting, exterior painting, cabinet painting]
+    job_types: [paint touch-up, interior painting, exterior painting, cabinet painting]
+    job_type_kinds: {paint touch-up: repair, interior painting: replace, exterior painting: replace, cabinet painting: replace}
     refused: []
     quote_format: range
     design: true
