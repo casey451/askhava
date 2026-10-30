@@ -7,6 +7,7 @@
 pub mod api;
 mod loader;
 mod models;
+mod question_bank;
 mod service;
 
 #[cfg(test)]
