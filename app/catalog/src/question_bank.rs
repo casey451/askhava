@@ -3,10 +3,11 @@
 //!
 //! The file is compiled in. Parsing is pure and refuses the same malformed sets that
 //! `scripts/check_catalog.py` rejects: a set outside 3 to 8 questions, a question missing either
-//! language, unequal English and Spanish option lists, a free-text card field, a repeated question id,
-//! a condition on a question that does not come earlier, more than 3 photo asks, and a set whose id
-//! covers a warranty or guarantee (LIC-042). The `kb_trade` file and photo-id checks stay in the script,
-//! which can read the trade files.
+//! language, unequal English and Spanish option lists, a free-text card field, a size band without one
+//! `band_floor` per option, a repeated question id, a condition on a question that does not come
+//! earlier or names an answer number beyond the options (plus the extra "Not sure" answer), more than 3
+//! photo asks, photos without a `kb_trade`, and a set whose id covers a warranty or guarantee
+//! (LIC-042). The `kb_trade` file and photo-id checks stay in the script, which can read the trade files.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -52,6 +53,9 @@ pub struct Question {
     /// True when the answer is a size or budget band (BIZ-049).
     #[serde(default)]
     pub size_band: bool,
+    /// For a size band, the lowest dollar amount of each option as decimal text, one per option (BIZ-049).
+    #[serde(default)]
+    pub band_floor: Vec<String>,
     /// True when asked even on an emergency job (INT-039).
     #[serde(default)]
     pub emergency: bool,
@@ -122,6 +126,7 @@ fn set_ok(set: &QuestionSet) -> bool {
     QUESTIONS.contains(&set.questions.len())
         && set.photos.len() <= MAX_PHOTOS
         && set.version >= 1
+        && (set.kb_trade.is_some() || set.photos.is_empty())
         && set.questions.iter().enumerate().all(|(i, q)| {
             let earlier = &set.questions[..i];
             question_ok(q) && ask_if_ok(q, earlier) && earlier.iter().all(|e| e.id != q.id)
@@ -132,7 +137,13 @@ fn set_ok(set: &QuestionSet) -> bool {
 /// and a card field only when multiple choice (LIC-040, CARD-007).
 fn question_ok(q: &Question) -> bool {
     let options = match (&q.options_en, &q.options_es) {
-        (Some(en), Some(es)) => en.len() == es.len() && !en.is_empty() && filled(en) && filled(es),
+        (Some(en), Some(es)) => {
+            en.len() == es.len()
+                && !en.is_empty()
+                && filled(en)
+                && filled(es)
+                && (!q.size_band || q.band_floor.len() == en.len())
+        }
         (None, None) => !q.card_field && !q.size_band,
         _ => false,
     };
@@ -144,15 +155,18 @@ fn filled(items: &[String]) -> bool {
     items.iter().all(|s| !s.trim().is_empty())
 }
 
-/// A condition must name an earlier question and at least one of its answer numbers.
+/// A condition must name an earlier question and at least one of its answer numbers; the numbers run
+/// one past the options because the app adds a "Not sure" answer (D-754).
 fn ask_if_ok(q: &Question, earlier: &[Question]) -> bool {
     q.ask_if.as_ref().is_none_or(|c| {
         !c.answers.is_empty()
             && earlier.iter().any(|e| {
                 e.id == c.question
-                    && e.options_en
-                        .as_ref()
-                        .is_some_and(|o| c.answers.iter().all(|&a| a >= 1 && a as usize <= o.len()))
+                    && e.options_en.as_ref().is_some_and(|o| {
+                        c.answers
+                            .iter()
+                            .all(|&a| a >= 1 && a as usize <= o.len() + 1)
+                    })
             })
     })
 }

@@ -107,13 +107,34 @@ fn ids_conditions_and_photos_are_checked() {
     assert!(refused(&bank(&[later, q("b", ""), q("c", "")])));
     let earlier = q("c", ", ask_if: {question: a, answers: [2]}");
     assert!(!refused(&bank(&[q("a", ""), q("b", ""), earlier])));
-    let bad_answer = q("c", ", ask_if: {question: a, answers: [3]}");
+    let not_sure = q("c", ", ask_if: {question: a, answers: [3]}");
+    assert!(!refused(&bank(&[q("a", ""), q("b", ""), not_sure])));
+    let bad_answer = q("c", ", ask_if: {question: a, answers: [4]}");
     assert!(refused(&bank(&[q("a", ""), q("b", ""), bad_answer])));
     let photos = bank(&three()).replace(
         "    questions:",
         "    photos: [p1, p2, p3, p4]\n    questions:",
     );
     assert!(refused(&photos));
+}
+
+/// TD-LIC-24, LIC-040: a size band needs one band floor per option; photos need a trade file name.
+#[test]
+fn band_floors_and_photo_trades_are_checked() {
+    let band = |floor: &str| {
+        let mut v = three();
+        v[0] = q("a", &format!(", size_band: true{floor}"));
+        bank(&v)
+    };
+    assert!(!refused(&band(", band_floor: [\"0\", \"500.00\"]")));
+    assert!(refused(&band("")));
+    assert!(refused(&band(", band_floor: [\"0\"]")));
+    assert!(refused(&band(", band_floor: [\"0\", \"5\", \"9\"]")));
+    let photos = bank(&three()).replace("    questions:", "    photos: [p1]\n    questions:");
+    assert!(refused(&photos));
+    assert!(!refused(
+        &photos.replace("    photos:", "    kb_trade: t\n    photos:")
+    ));
 }
 
 /// TD-LIC-24, LIC-040: an enabled category with no set, and a set for an unknown category, are refused.
@@ -124,7 +145,9 @@ fn a_missing_or_unknown_set_is_refused() {
 }
 
 /// TD-LIC-16, LIC-041: the five split categories carry repair and replace kinds, and electrical also
-/// install, so a business can untick some; every kind is one of the three.
+/// install, so a business can untick some; every job type has a kind and every kind is one of the three.
+/// Plumbing and heating and cooling have no install job type yet: each needs a `scope_tags` row in
+/// `docs/catalog/license_map.yaml`, the follow-up named in D-605 and D-756.
 #[test]
 fn the_split_categories_have_job_type_kinds() {
     let catalog = embedded().expect("catalog");
@@ -143,6 +166,15 @@ fn the_split_categories_have_job_type_kinds() {
         &["roof_repair"],
         &["painting"],
     ] {
+        for c in catalog
+            .categories
+            .iter()
+            .filter(|c| ids.contains(&c.id.as_str()))
+        {
+            for j in &c.job_types {
+                assert!(c.job_type_kinds.contains_key(j), "{} {j} has no kind", c.id);
+            }
+        }
         let k = kinds(ids);
         assert!(
             k.iter().any(|x| x == "repair") && k.iter().any(|x| x == "replace"),
