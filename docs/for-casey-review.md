@@ -1202,3 +1202,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What it does.** A new test reads every part of the code and fails if a part reaches up to a part it should not, skips the shared safety settings, adds an unapproved library, or names the "release contact details" key outside the three places allowed to hold it. It reads the allowed-calls table from the build's own file, not from the written description, so the two can't drift apart quietly.
 - **Money and duplicates.** Only the payments part may talk to the card processor, and every adapter action that sends or charges something must carry a repeat-proof key, so a retry never sends or charges twice.
 - **Nothing for you to do.** These are build rules; no customer sees them.
+
+## The app checks its own settings before it starts (T011, D-688, D-689, October 30)
+
+- **What it does.** When the website or the background worker starts, it reads its settings and stops at once if one is missing, misspelled, a live payment key in the test site (or a test key in the live site), or an account that belongs to the other site. Error messages name the setting, never its value.
+- **Logs.** Every log line is one tidy line that Railway can read, carrying a request number and the page pattern (such as `/q/{token}`), never the full web address, a phone number or an email. Error reports to Sentry have personal details stripped first.
+- **Business hours.** Timers count only 8 a.m. to 8 p.m. Arizona time, every day of the week.
+- **Nothing for you to do now.** At the account checkpoint each Railway site gets a short list of its own account names (Twilio, Stripe, Resend, storage bucket); the deploy notes will say exactly what to paste.

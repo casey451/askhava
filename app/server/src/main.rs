@@ -1,6 +1,7 @@
 //! The `web` process: the `server` binary (`docs/architecture.md` section 2; SEC-029).
 //!
-//! Installs the TLS provider, builds the router and serves it on
+//! Installs the TLS provider, refuses to start on bad settings (SEC-002),
+//! starts the JSON log, builds the router and serves it on
 //! `0.0.0.0:$PORT` (the host sets `PORT`) until SIGINT or SIGTERM, then
 //! finishes the requests in flight and exits 0.
 
@@ -12,6 +13,7 @@ use tokio::net::TcpListener;
 #[tokio::main]
 async fn main() -> io::Result<()> {
     askhava_server::install_crypto_provider()?;
+    let (_settings, _log_guard) = askhava_server::start_up()?;
     let port = port_from_env()?;
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
     axum::serve(listener, askhava_server::build_router())

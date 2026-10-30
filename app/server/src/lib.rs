@@ -1,15 +1,19 @@
 //! The composition root both binaries share (`docs/architecture.md` section 2; SEC-029, D-481).
 //!
 //! `server` (the `web` process) and `worker` call only what is here: the TLS
-//! provider every outside connection uses, the router, and the shutdown
-//! signal. Later tasks add each module's routes to [`build_router`] and its task
+//! provider every outside connection uses, the settings and logging start-up,
+//! the router, and the shutdown signal. Later tasks add each module's routes to [`build_router`] and its task
 //! handlers to a `register_handlers()` beside it; nothing else in the app
 //! knows about HTTP status codes or process signals.
 
 use std::io;
 
+use askhava_core::api::{LogGuard, Settings, init_logging, request_span};
 use axum::Router;
+use axum::body::Body;
 use tokio::signal::unix::{SignalKind, signal};
+use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
+use tower_http::trace::TraceLayer;
 
 /// Installs rustls' aws-lc-rs provider as the process default, so sqlx and
 /// reqwest share one TLS provider (D-481, D-488). Call it first in `main`.
@@ -24,10 +28,29 @@ pub fn install_crypto_provider() -> io::Result<()> {
         .map_err(|_| io::Error::other("a rustls crypto provider is already installed"))
 }
 
-/// The app's router: every module's routes, merged once here (D-481). Empty
-/// until the first module with a web surface adds its routes.
+/// Reads the settings from the process environment and starts the JSON log
+/// and Sentry, so a bad configuration stops the process before it serves or
+/// claims anything (SEC-002, SEC-036, PRIV-016, PRIV-017). Hold the guard
+/// for the life of `main`.
+///
+/// # Errors
+///
+/// Any settings or logging error; its message names a key, never a value.
+pub fn start_up() -> io::Result<(Settings, LogGuard)> {
+    let settings = Settings::from_pairs(std::env::vars()).map_err(io::Error::other)?;
+    let guard = init_logging(&settings).map_err(io::Error::other)?;
+    Ok((settings, guard))
+}
+
+/// The app's router: every module's routes, merged once here (D-481), under
+/// the request-ID and tracing layers, so every request log line carries the
+/// request ID and the matched route template, never the URI (PRIV-016,
+/// PRIV-028). Merge routes before the layers so they apply to them.
 pub fn build_router() -> Router {
     Router::new()
+        .layer(TraceLayer::new_for_http().make_span_with(request_span::<Body>))
+        .layer(PropagateRequestIdLayer::x_request_id())
+        .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
 }
 
 /// Registers SIGINT and SIGTERM now and returns a future that finishes on the
