@@ -3,12 +3,18 @@
 //! Every function takes the caller's connection, so a module passes `&mut *tx` and the audit row,
 //! the alert or the switch change commits or rolls back with its own state change (JOB-005,
 //! rust brain R11). `ops` is layer 1: it records rows and never sends or reads anything outside
-//! its own schema. The export reads the log in `id` order after a cursor; T017's off-database
-//! stream reads it the same way (OPS-010, OPS-011, D-729).
+//! its own schema. The export is a paged read in `id` order after a cursor (OPS-010). It is not a
+//! stream cursor: identity values are taken at insert and can commit out of order, so a row may
+//! appear below a cursor already read. T017's off-database copy (OPS-011) must use a per-row
+//! `core.task` or outbox row inserted in the audit row's transaction, or read only below a safe
+//! horizon (D-729).
 
-use sqlx::PgConnection;
+use sqlx::types::Uuid;
+use sqlx::{Connection, PgConnection};
 
-use crate::models::{Actor, AuditEntry, AuditRow, NewAlert, OpsError, Switch, is_code_name};
+use crate::models::{
+    Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Switch, is_code_name,
+};
 
 /// The most rows one export call returns.
 pub const EXPORT_PAGE_MAX: i64 = 1000;
@@ -43,7 +49,9 @@ pub async fn audit(db: &mut PgConnection, entry: &AuditEntry) -> Result<i64, Ops
 }
 
 /// Up to `limit` audit rows (at most [`EXPORT_PAGE_MAX`]) with an ID above `after`, oldest first:
-/// the export, read page by page with the last row's ID as the next cursor (OPS-010).
+/// the export, read page by page with the last row's ID as the next cursor (OPS-010). A row whose
+/// transaction commits after a later ID was read can be missed, so this is an export of a settled
+/// log, never the off-database stream (OPS-011, D-729).
 ///
 /// # Errors
 ///
@@ -85,7 +93,7 @@ pub async fn export_audit(
 /// # Errors
 ///
 /// [`OpsError::NotACodeName`] before anything is written, or [`OpsError::Database`].
-pub async fn raise_alert(db: &mut PgConnection, alert: &NewAlert) -> Result<i64, OpsError> {
+pub async fn raise_alert(db: &mut PgConnection, alert: &NewAlert) -> Result<Uuid, OpsError> {
     if !is_code_name(alert.kind) {
         return Err(OpsError::NotACodeName("kind"));
     }
@@ -124,8 +132,10 @@ pub async fn is_paused(db: &mut PgConnection, switch: Switch) -> Result<bool, Op
 }
 
 /// Turns `switch` on or off and logs the change with its actor in the append-only
-/// `ops.switch_history` (OPS-003). Returns false, writing nothing, when it was already in that
-/// state. The row lock taken by the upsert makes two owners' changes queue, not interleave.
+/// `ops.switch_history` and in `ops.audit_log` (action `switch_on` or `switch_off`, subject the
+/// `ops.pause_switch` row; OPS-003, SEC-006). Returns false, writing nothing, when it was already
+/// in that state. The flip, history and audit row commit together in one transaction (a savepoint
+/// inside the caller's); the row lock taken by the flip makes two owners' changes queue.
 ///
 /// # Errors
 ///
@@ -136,10 +146,31 @@ pub async fn set_switch(
     paused: bool,
     actor: Actor,
 ) -> Result<bool, OpsError> {
-    let (name, scope_id) = switch.columns();
-    if !flip(db, switch, paused).await? {
+    let mut tx = db.begin().await.map_err(|_| OpsError::Database)?;
+    let Some(switch_id) = flip(&mut tx, switch, paused).await? else {
         return Ok(false);
-    }
+    };
+    record_history(&mut tx, switch, paused, actor).await?;
+    let entry = AuditEntry {
+        actor,
+        action: if paused { "switch_on" } else { "switch_off" },
+        subject_kind: "ops.pause_switch",
+        subject_id: switch_id,
+        change: Change::Action,
+    };
+    audit(&mut tx, &entry).await?;
+    tx.commit().await.map_err(|_| OpsError::Database)?;
+    Ok(true)
+}
+
+/// Appends one row to `ops.switch_history`: the switch, its new state and who set it (OPS-003).
+async fn record_history(
+    db: &mut PgConnection,
+    switch: Switch,
+    paused: bool,
+    actor: Actor,
+) -> Result<(), OpsError> {
+    let (name, scope_id) = switch.columns();
     let (actor_kind, actor_id) = actor.columns();
     sqlx::query!(
         "INSERT INTO ops.switch_history (name, scope_id, paused, actor_kind, actor_id) \
@@ -153,12 +184,17 @@ pub async fn set_switch(
     .execute(db)
     .await
     .map_err(|_| OpsError::Database)?;
-    Ok(true)
+    Ok(())
 }
 
-/// Sets the switch row to `paused` if it is not already; true when it changed. A switch never set
-/// is off, so turning it on inserts its row and turning it off only updates one that is on.
-async fn flip(db: &mut PgConnection, switch: Switch, paused: bool) -> Result<bool, OpsError> {
+/// Sets the switch row to `paused` if it is not already, returning the row's ID when it changed. A
+/// switch never set is off, so turning it on inserts its row and turning it off only updates one
+/// that is on.
+async fn flip(
+    db: &mut PgConnection,
+    switch: Switch,
+    paused: bool,
+) -> Result<Option<Uuid>, OpsError> {
     let (name, scope_id) = switch.columns();
     let changed = if paused {
         sqlx::query_scalar!(
@@ -180,5 +216,5 @@ async fn flip(db: &mut PgConnection, switch: Switch, paused: bool) -> Result<boo
         .fetch_optional(db)
         .await
     };
-    Ok(changed.map_err(|_| OpsError::Database)?.is_some())
+    changed.map_err(|_| OpsError::Database)
 }

@@ -5,7 +5,8 @@
 //! but refuse `UPDATE`, `DELETE` and `TRUNCATE`; that a status change's audit row commits or rolls
 //! back with the change's own transaction; that the export returns every row once, in order, by
 //! cursor, as JSON lines; that an audit row can hold no contact value, in Rust and in the table; and
-//! that a pause switch logs each real change with its actor. Reaching the storage stand-in as each
+//! that a pause switch logs each real change with its actor, in its history and in the audit log,
+//! atomically. Reaching the storage stand-in as each
 //! event happens is TD-OPS-03's off-database case, T017's (D-729). All data is fake.
 
 use askhava_integration::{is_permission_denied, set_app_role};
@@ -60,7 +61,7 @@ async fn app_role_cannot_rewrite_the_audit_log_or_switch_history(pool: PgPool) {
     set_switch(&mut conn, Switch::Texting, true, Actor::Owner(OWNER))
         .await
         .expect("switch");
-    assert_eq!(audit_rows(&mut conn).await, 1, "the app role may select");
+    assert_eq!(audit_rows(&mut conn).await, 2, "the app role may select");
     assert_append_only(&mut conn, "ops.audit_log", "action").await;
     assert_append_only(&mut conn, "ops.switch_history", "paused").await;
 }
@@ -168,18 +169,32 @@ async fn an_audit_row_cannot_hold_a_contact_value(pool: PgPool) {
         assert!(by_hand.is_err(), "the table took a contact-shaped field");
     }
     assert_eq!(audit_rows(&mut conn).await, 0);
-    let types: Vec<(String, String)> = sqlx::query_as(
+    let columns: Vec<(String, String)> = sqlx::query_as(
         "SELECT column_name::text, data_type::text FROM information_schema.columns \
-         WHERE table_schema = 'ops' AND table_name = 'audit_log' AND data_type = 'text'",
+         WHERE table_schema = 'ops' AND table_name = 'audit_log' ORDER BY ordinal_position",
     )
     .fetch_all(&mut *conn)
     .await
     .expect("columns");
-    let names: Vec<&str> = types.iter().map(|(n, _)| n.as_str()).collect();
+    let expected = [
+        ("id", "bigint"),
+        ("at", "timestamp with time zone"),
+        ("actor_kind", "text"),
+        ("actor_id", "uuid"),
+        ("action", "text"),
+        ("subject_kind", "text"),
+        ("subject_id", "uuid"),
+        ("from_status", "text"),
+        ("to_status", "text"),
+        ("field", "text"),
+    ];
+    let expected: Vec<(String, String)> = expected
+        .iter()
+        .map(|(n, t)| ((*n).to_owned(), (*t).to_owned()))
+        .collect();
     assert_eq!(
-        names.len(),
-        6,
-        "only the code-name columns are text: {names:?}"
+        columns, expected,
+        "ops.audit_log holds IDs and code names only"
     );
 }
 
@@ -222,6 +237,54 @@ async fn a_pause_switch_logs_each_change_once(pool: PgPool) {
         history,
         [(true, "owner".to_owned()), (false, "system".to_owned())]
     );
+    let switch_id: Uuid = sqlx::query_scalar("SELECT id FROM ops.pause_switch WHERE scope_id = $1")
+        .bind(TOWN)
+        .fetch_one(&mut *conn)
+        .await
+        .expect("switch row");
+    let audited: Vec<(String, String, Uuid, String)> = sqlx::query_as(
+        "SELECT action, subject_kind, subject_id, actor_kind FROM ops.audit_log ORDER BY id",
+    )
+    .fetch_all(&mut *conn)
+    .await
+    .expect("audit rows");
+    let row = |action: &str, actor: &str| {
+        (
+            action.to_owned(),
+            "ops.pause_switch".to_owned(),
+            switch_id,
+            actor.to_owned(),
+        )
+    };
+    assert_eq!(
+        audited,
+        [row("switch_on", "owner"), row("switch_off", "system")],
+        "SEC-006: every switch change is audit-logged"
+    );
+}
+
+/// OPS-003: setting a switch to the state it is already in returns false and writes no second
+/// history or audit row.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_repeat_switch_change_writes_nothing(pool: PgPool) {
+    let mut conn = app_conn(&pool).await;
+    let owner = Actor::Owner(OWNER);
+    assert!(
+        set_switch(&mut conn, Switch::Charging, true, owner)
+            .await
+            .expect("on")
+    );
+    assert!(
+        !set_switch(&mut conn, Switch::Charging, true, owner)
+            .await
+            .expect("again")
+    );
+    let history: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM ops.switch_history WHERE name = 'charging'")
+            .fetch_one(&mut *conn)
+            .await
+            .expect("history");
+    assert_eq!((history, audit_rows(&mut conn).await), (1, 1));
 }
 
 /// An alert holds the record it is about by ID only (PRIV-028).

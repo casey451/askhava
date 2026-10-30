@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-1 crate that keeps Ask Hava's operating records: the append-only audit log every state change writes in its own transaction, the alerts table and the owner pause switches with their change history (`docs/architecture.md` section 3). It records rows holding IDs and code names only; it never sends, calls or reads anything outside the `ops` schema (D-491). T015 built the audit log, alerts and switches; later tasks add safe mode, the status banner, alert acks and help requests.
+The layer-1 crate that keeps Ask Hava's operating records: the append-only audit log every state change writes in its own transaction, the alerts table and the owner pause switches with their change history (`docs/architecture.md` section 3). It records rows holding IDs and code names only; it never sends, calls or reads anything outside the `ops` schema (D-491). T015 built the audit log, alerts and switches; of the switch rules it provides only the OPS-003 store (`set_switch`, `is_paused`): nothing reads a switch yet, and later tasks add the checks that honour them, safe mode, the status banner, alert acks and help requests.
 
 ## What it owns
 
@@ -16,10 +16,10 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 ## Rules it enforces
 
 - JOB-005: `service::audit` takes the caller's connection, so a module calls it with `&mut *tx` in the transaction that changes status; `AuditEntry::status_change` is the row for a status move.
-- OPS-010: `ops.audit_log` revokes `UPDATE`, `DELETE`, `TRUNCATE` from `askhava_app`; `service::export_audit` reads it by `id` cursor, `AuditRow::to_json` is the line format.
-- OPS-011: the off-database copy is T017's; it reads the log through `export_audit`'s cursor (D-729).
+- OPS-010: `ops.audit_log` revokes `UPDATE`, `DELETE`, `TRUNCATE` from `askhava_app`; `service::export_audit` is a paged export by `id` cursor, `AuditRow::to_json` is the line format.
+- OPS-011: the off-database copy is T017's. It must not read `export_audit`'s cursor: identity IDs can commit out of order, so a row can land below a cursor already read. T017 uses a per-row `core.task` or outbox row inserted in the audit row's transaction, or reads only below a safe horizon (D-729).
 - PRIV-028: actors and subjects are UUIDs; every name is a `&'static str` written in code and checked by `models::is_code_name` and the table's `CHECK`s, so no phone, email or street address fits; a field edit logs the field name only (`Change::Field`).
-- OPS-003: `service::set_switch` changes a switch only if it differs and logs the change with its actor in the append-only `ops.switch_history`; `service::is_paused` (a switch never set is off).
+- OPS-003, SEC-006: `service::set_switch` changes a switch only if it differs and, in one transaction, logs the change with its actor in the append-only `ops.switch_history` and as an `ops.audit_log` row (`switch_on`/`switch_off`, subject `ops.pause_switch` by its UUID); `service::is_paused` (a switch never set is off).
 
 ## Never break
 
@@ -27,8 +27,9 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 - An audit row commits or rolls back with its change: `a_status_change_audit_row_shares_the_transaction`.
 - No audit row holds a contact value; text columns are code names only (six of them): `an_audit_row_cannot_hold_a_contact_value`.
 - The export returns every row exactly once in `id` order: `the_export_returns_every_row_once_in_order`.
+- A switch change writes history and audit together, a repeat writes nothing: `a_pause_switch_logs_each_change_once`, `a_repeat_switch_change_writes_nothing`.
 - `OpsError` never carries a value or the database's message (PRIV-016).
-- `ops` depends on no first-party crate but `core` (layer 1, `kit/layers.json`); it sends nothing itself.
+- `ops` depends on no first-party crate (layer 1, `kit/layers.json`); it sends nothing itself.
 
 ## How to change
 
@@ -39,4 +40,4 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 
 ## Tests that guard it
 
-- `tests/integration/tests/audit_log.rs` (TD-OPS-03 append-only and export cases, TD-PRIV-13 audit-row case; JOB-005, OPS-003, PRIV-028). T017 adds the off-database stream cases of TD-OPS-03.
+- `tests/integration/tests/audit_log.rs` (TD-OPS-03 append-only and export cases, TD-PRIV-13 audit-row case; JOB-005, OPS-003, PRIV-028, SEC-006). T017 adds the off-database stream cases of TD-OPS-03.
