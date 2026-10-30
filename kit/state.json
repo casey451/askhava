@@ -3519,7 +3519,7 @@
     "T015",
     "T169"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "privacy-vault",
    "type": "build",
@@ -3601,13 +3601,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 68,
      "head_sha": "6c597ba656499f3ba9bd09281e937357d0cdfca6",
-     "pr": null,
-     "checks": null,
+     "pr": 134,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-30T18:31:49Z",
      "ended_at": "2026-10-30T19:04:12Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "7e8dda8cae8c7b307d2ca6418136b6bea9253527",
@@ -3637,7 +3694,39 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "d6c176fd32377e98a3563372bac11491a94aa93b",
+   "merged_at": "2026-10-30T19:11:04Z",
+   "files": [
+    ".sqlx/query-01d00f03e566322a5440de68e803f4d2f75e239b1ba6f3b36b09f3b1e5b75dea.json",
+    ".sqlx/query-3af6f8e7d71bbb6ef06c75cac06d59ecde60d479168e0be17f1ebf2ea87e69c4.json",
+    ".sqlx/query-3eb13a5e7acdffb2148931bc6357d55eacca5809dace39eea3e7bf4b8c472b47.json",
+    ".sqlx/query-3ed37e8e36187b000f9b86229f87b73012c33f5b34b8da155a79aa1e03ce0672.json",
+    ".sqlx/query-4b5929be9394d85e93a98ef21ee2c19adbfc38a6c7febdd6ca830e1f92c9115b.json",
+    ".sqlx/query-70d2575dad3913cddb74a8813eddc43388a357d2d0e2f3189790139c38995fe6.json",
+    ".sqlx/query-977d54e84e443ecdaae990b9caa036495b129c859545a6cb892cdbd868f8146a.json",
+    ".sqlx/query-a3c001ae3ac3a879558895a51188362e3e98cddad740282f2ab8ee9b52ca97a3.json",
+    ".sqlx/query-a4b83b9d317aeb99b39a4f68c98b3b51dfb3cfe265abc466e598c71731b297fa.json",
+    ".sqlx/query-aa66d1245f8bbdf0aea9dccb880b2c3be64767681ca4f6f195b4f341a9c419de.json",
+    ".sqlx/query-cfa83a650816917437d1943d77e0a9f1cbe0e02e19db41a5b610d8645f137c00.json",
+    ".sqlx/query-fc4fe4aff24a57203bb1f3d46846e97d80e5de1e4eea0a3030158541ff947389.json",
+    "Cargo.lock",
+    "Cargo.toml",
+    "app/privacy/CLAUDE.md",
+    "app/privacy/Cargo.toml",
+    "app/privacy/sqlx.toml",
+    "app/privacy/src/api.rs",
+    "app/privacy/src/lib.rs",
+    "app/privacy/src/models.rs",
+    "app/privacy/src/vault.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "migrations/0036_privacy_vault.sql",
+    "tests/integration/Cargo.toml",
+    "tests/integration/tests/vault.rs",
+    "tests/security/tests/vault_readers.rs"
+   ]
   },
   {
    "id": "T223",
@@ -7298,7 +7387,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T19:11:37Z",
+ "updated_at": "2026-10-30T19:12:30Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -7396,7 +7485,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "8ab4416d3fd207116003e5b38bc065ec40743eed",
+ "runner_sha": "d6c176fd32377e98a3563372bac11491a94aa93b",
  "starter": "actions",
  "smoke_runs": [
   {
