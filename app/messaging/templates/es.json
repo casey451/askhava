@@ -1,0 +1,102 @@
+{
+  "consent": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Recibido. Ahora, unas preguntas. Ask Hava no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: askhava.com/terms Privacidad: askhava.com/privacy"
+  },
+  "opt_out_confirmation": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Se canceló su suscripción. No recibirá más textos ni llamadas automáticas de Ask Hava en este número. Para volver a usar Ask Hava, envíe START.",
+    "spanish_stays_on": true
+  },
+  "start_reply": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Ya puede escribirnos de nuevo. Envíe su solicitud para empezar. Pueden aplicar cargos de msj y datos. Responda AYUDA para ayuda, PARAR para salir."
+  },
+  "help_reply": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 6,
+    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Ayuda: askhava.com/help Responda PARAR para salir.",
+    "spanish_stays_on": true
+  },
+  "emergency_911": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Ask Hava no es un servicio de emergencia. Si huele a gas, ve humo o fuego, suena una alarma de CO o hay un cable de luz caído, saque a todos y llame al 911 desde afuera. Responda SEGURO cuando esté a salvo.",
+    "spanish_stays_on": true
+  },
+  "spanish_not_yet": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Por ahora seguimos en inglés. Responda AYUDA si necesita ayuda.",
+    "spanish_stays_on": true
+  },
+  "under_18": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Lo sentimos, debe tener 18 años o más para usar Ask Hava. Pídale a un padre o adulto que nos escriba."
+  },
+  "request_out": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: La solicitud {job} se envió a {count} negocios de {trade}. No todos responden. Le escribiremos cuando llegue la primera cotización."
+  },
+  "first_quote": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 5,
+    "text": "Ask Hava: Llegó la primera cotización de su solicitud {job}, y pueden llegar más. Es gratis para usted. El negocio que elija le paga a Ask Hava una tarifa fija de presentación. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Véalas aquí: {link} Términos (18+): askhava.com/terms"
+  },
+  "all_quotes_in": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Ya llegaron todas las cotizaciones de la solicitud {job}: cotizaron {quoted} de {count} negocios. {link} Responda LISTA para verlas aquí, o CERRAR {job} si ya no la necesita."
+  },
+  "caller_missed": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: {business} intentó llamarle por la solicitud {job}. Llámele de vuelta al {number}."
+  },
+  "problem_reply": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Gracias. El dueño de Ask Hava lee cada reporte de problema, normalmente en 7 días. Ask Hava no puede resolver disputas sobre el trabajo o el precio. Oficios con licencia: también puede presentar una queja ante el estado en askhava.com/help/roc-complaint."
+  },
+  "close_howto": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Responda CERRAR {job} para cerrar la solicitud {job}."
+  },
+  "cost_answer": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Es gratis para usted. El negocio que elija le paga a Ask Hava una tarifa fija de presentación ($25, $75 o $199, según el tamaño de la cotización). Usted le paga directamente al negocio por el trabajo."
+  },
+  "business_no_call_reminder": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de la entrega, o la tarifa no se puede reembolsar."
+  },
+  "business_pick_waiting": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Un propietario eligió su cotización del trabajo {job}. Acepte antes de {time}."
+  }
+}
