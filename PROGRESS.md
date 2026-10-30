@@ -254,3 +254,4 @@
 - 2026-10-30T17:19:45Z runner 0f2b6586dbd7 (actions): {"T021": "QUEUED -> IN_PROGRESS"}; T021 estimated 288k tokens (calibrated); five-hour window has 21.6M left, week 410.8M after 847k still running in another lane (ledger); claimed
 - 2026-10-30T17:25:58Z runner 5a8e06e79bde (actions): {}
 - 2026-10-30T17:26:08Z runner 5a8e06e79bde (actions): {"T020": "IN_PROGRESS -> MERGE_PENDING"}
+- 2026-10-30T17:32:54Z runner 7a7f53eaa9da (actions): {"T020": "MERGE_PENDING -> DONE"}

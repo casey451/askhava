@@ -2874,7 +2874,7 @@
     "T013",
     "T176"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "e2e-harness",
    "type": "build",
@@ -2955,13 +2955,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 62,
      "head_sha": "5a8e06e79bde9be8de801e28acb45acd6a670e67",
-     "pr": null,
-     "checks": null,
+     "pr": 129,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-30T17:08:47Z",
      "ended_at": "2026-10-30T17:25:58Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "5a8e06e79bde9be8de801e28acb45acd6a670e67",
@@ -2978,7 +3035,32 @@
     "head": "5a8e06e79bde9be8de801e28acb45acd6a670e67"
    },
    "last_failure": "Ci: failure; Ci: failure; Checks: failure; Coverage: failure; Coverage: failure; Checks: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\nChecks failed at step: Rust build (the one boundary build) and tests\nCi failed at step: Both jobs passed",
-   "lane": "2"
+   "lane": "2",
+   "merged_sha": "7a7f53eaa9da6ea4a35846780fb85d09acaa80f6",
+   "merged_at": "2026-10-30T17:31:34Z",
+   "files": [
+    "Cargo.lock",
+    "app/core/CLAUDE.md",
+    "app/core/Cargo.toml",
+    "app/core/src/api.rs",
+    "app/core/src/lib.rs",
+    "app/core/src/settings.rs",
+    "app/core/src/test_control.rs",
+    "app/server/CLAUDE.md",
+    "app/server/src/bin/worker.rs",
+    "app/server/src/lib.rs",
+    "app/server/src/main.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "eslint.config.js",
+    "package-lock.json",
+    "package.json",
+    "tests/e2e/fixtures.ts",
+    "tests/security/Cargo.toml",
+    "tests/security/tests/control_router_absent.rs",
+    "tsconfig.json"
+   ]
   },
   {
    "id": "T021",
@@ -6714,7 +6796,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T17:26:08Z",
+ "updated_at": "2026-10-30T17:32:54Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -6812,7 +6894,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5a8e06e79bde9be8de801e28acb45acd6a670e67",
+ "runner_sha": "7a7f53eaa9da6ea4a35846780fb85d09acaa80f6",
  "starter": "actions",
  "smoke_runs": [
   {
