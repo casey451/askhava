@@ -187,3 +187,4 @@
 - 2026-10-30T12:15:57Z runner 1fbbfe9687db (actions): {}
 - 2026-10-30T12:26:05Z runner bdae23c02581 (actions): {}
 - 2026-10-30T12:32:46Z runner 994cb71f6989 (actions): {"T168": "MERGE_PENDING -> DONE"}
+- 2026-10-30T12:36:58Z runner 994cb71f6989 (actions): {"T010": "QUEUED -> IN_PROGRESS"}; T010 estimated 690k tokens (calibrated); five-hour window has 25.1M left, week 424.7M (ledger); claimed
