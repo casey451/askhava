@@ -465,7 +465,8 @@
    "owns": [
     "twin/app.py",
     "twin/twin.py",
-    "twin/waivers.json"
+    "twin/waivers.json",
+    "tests/twin/test_gate.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -493,7 +494,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 400,
     "context_pct": 15
    },
@@ -530,7 +531,8 @@
     "twin/app.py",
     "twin/twin.py",
     "twin/waivers.json",
-    "docs/twin-warnings.md"
+    "docs/twin-warnings.md",
+    "tests/twin/test_gate.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -575,7 +577,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 400,
     "context_pct": 16
    },
