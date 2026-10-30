@@ -110,6 +110,17 @@ def api_error(status: int, kind: str, message: str) -> Answer:
     return status, {"type": "error", "error": {"type": kind, "message": message}}, {}
 
 
+def _well_formed(body: dict[str, Any]) -> bool:
+    """True when the last message's content is a string or a list of objects whose text is a
+    string, so a malformed request gets the API's 400 envelope instead of a crash (D-561)."""
+    last = body["messages"][-1]
+    content = last.get("content") if isinstance(last, dict) else None
+    if isinstance(content, str):
+        return True
+    return isinstance(content, list) and all(
+        isinstance(part, dict) and isinstance(part.get("text", ""), str) for part in content)
+
+
 def _user_text(body: dict[str, Any]) -> str:
     content = body["messages"][-1]["content"]
     if isinstance(content, str):
@@ -141,6 +152,8 @@ def messages(body: dict[str, Any], fault: str = "", plant: str = "") -> Answer:
         return status, api_error(status, kind, message)[1], headers
     if not isinstance(body.get("messages"), list) or not body["messages"] or "max_tokens" not in body:
         return api_error(400, "invalid_request_error", "messages and max_tokens are required")
+    if not _well_formed(body):
+        return api_error(400, "invalid_request_error", "message content must be text or a list of blocks")
     if body.get("tools"):
         return api_error(400, "invalid_request_error", "the stand-in AI has no tools")
     text = _user_text(body)
@@ -157,4 +170,6 @@ def count_tokens(body: dict[str, Any]) -> Answer:
     """POST /v1/messages/count_tokens."""
     if not isinstance(body.get("messages"), list) or not body["messages"]:
         return api_error(400, "invalid_request_error", "messages is required")
+    if not _well_formed(body):
+        return api_error(400, "invalid_request_error", "message content must be text or a list of blocks")
     return 200, {"input_tokens": len(_user_text(body)) // 4 + 1}, {}

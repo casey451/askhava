@@ -328,6 +328,16 @@ def test_ai_refusal_max_tokens_and_planted_outputs(base: str) -> None:
     assert ask(base, plain)[1]["content"][0]["text"] == "<request>my sink leaks today</request>"
 
 
+@pytest.mark.parametrize("content", [["hi"], [{"type": "text", "text": 7}], None, 5])
+@pytest.mark.parametrize("path", ["/anthropic/v1/messages", "/anthropic/v1/messages/count_tokens"])
+def test_malformed_ai_content_gets_the_api_400_not_a_dropped_connection(base: str, path: str, content: Any) -> None:
+    """A content list holding a non-object (or a non-text part) is the API's 400, not a crash."""
+    body = {**READ, "messages": [{"role": "user", "content": content}]}
+    status, reply, _ = call(base, "POST", path, body=body, **AI_HEADERS)
+    assert (status, reply["type"], reply["error"]["type"]) == (400, "error", "invalid_request_error")
+    assert call(base, "POST", path, body={**READ, "messages": ["hi"]}, **AI_HEADERS)[0] == 400
+
+
 def test_unknown_route_and_bad_body(base: str) -> None:
     assert call(base, "GET", "/twilio/nothing")[0] == 404
     bad = call(base, "POST", "/_stand_in/twilio/inbound", body={"to": OURS})
