@@ -2951,11 +2951,12 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "030b05333fe35205865dace8ba77913810551f09",
+   "reviewed_sha": "5a8e06e79bde9be8de801e28acb45acd6a670e67",
    "review_lease": {
     "task": "T020",
-    "session": "actions-41088447293",
-    "expires": "2026-10-30T19:32:10Z"
+    "session": "actions-41096051633",
+    "expires": "2026-10-30T20:08:47Z",
+    "lane": "2"
    },
    "branch": "claude/task/T020-e2e-harness-a2",
    "auto_merge": {
@@ -2964,7 +2965,8 @@
     "head": "030b05333fe35205865dace8ba77913810551f09"
    },
    "last_failure": "Ci: failure; Ci: failure; Checks: failure; Coverage: failure; Coverage: failure; Checks: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\nChecks failed at step: Rust build (the one boundary build) and tests\nCi failed at step: Both jobs passed",
-   "lane": "2"
+   "lane": "2",
+   "head_check_since": null
   },
   {
    "id": "T021",
@@ -6700,7 +6702,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T17:19:45Z",
+ "updated_at": "2026-10-30T17:25:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -6798,7 +6800,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0f2b6586dbd7d4ac6a92b084a70ff33d69caeffc",
+ "runner_sha": "5a8e06e79bde9be8de801e28acb45acd6a670e67",
  "starter": "actions",
  "smoke_runs": [
   {
