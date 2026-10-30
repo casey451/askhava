@@ -6,9 +6,9 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 
 ## What it owns
 
-- `src/lib.rs`: `install_crypto_provider()`, `start_up()` (settings from `std::env::vars()`, then the JSON log and Sentry; D-689), `build_router()` (no routes yet, under the request-ID and `TraceLayer` layers that log the route template only), `shutdown_signal()` (SIGINT or SIGTERM), `register_handlers()` (the `core::api::Registry` of every task handler; empty until a module registers one, T013).
+- `src/lib.rs`: `install_crypto_provider()`, `start_up()` (settings from `std::env::vars()`, then the JSON log and Sentry; D-689), `build_router(test_control)` (merges `core`'s `TestControl::router()`, empty in the release build, SEC-035, D-739; no module routes yet, under the request-ID and `TraceLayer` layers that log the route template only), `shutdown_signal()` (SIGINT or SIGTERM), `register_handlers()` (the `core::api::Registry` of every task handler; empty until a module registers one, T013).
 - `src/main.rs`: the `server` binary; binds `0.0.0.0:$PORT` and serves with graceful shutdown. `server migrate` instead applies pending migrations over `ASKHAVA_MIGRATION_DATABASE_URL` (via `askhava_core::api::migrate`) and exits (D-700, SEC-052). Missing or bad `PORT` exits 1 without echoing the value (D-588).
-- `src/bin/worker.rs`: the `worker` binary; it runs `core`'s `Worker::run`, the claim loop over `core.task` (4 at once, idle poll 200 ms to 5 s, the reaper when idle), with the shutdown signal and a 20-second drain, after which the loop calls `release_leases` (JOB-006, D-708, D-710).
+- `src/bin/worker.rs`: the `worker` binary; it runs `core`'s `Worker::run` on `TestControl::clock()` (the system clock in release, D-740), the claim loop over `core.task` (4 at once, idle poll 200 ms to 5 s, the reaper when idle), with the shutdown signal and a 20-second drain, after which the loop calls `release_leases` (JOB-006, D-708, D-710).
 - No tables.
 
 ## Rules it enforces

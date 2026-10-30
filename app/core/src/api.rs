@@ -4,7 +4,8 @@
 //! (JOB-007), the database pool, migrations and the guarded-update outcome
 //! (JOB-004, D-092), and logging with `Redacted` contact values and the Sentry
 //! scrubber (PRIV-016, PRIV-017, PRIV-028), the task queue (JOB-006) and the rate-limit counters with
-//! the client IP they are keyed on (SEC-014, SEC-040).
+//! the client IP they are keyed on (SEC-014, SEC-040), and the test-control router and clock,
+//! whose routes exist only under the `test-control` feature (SEC-035).
 
 pub use crate::clock::{
     BUSINESS_CLOSE_HOUR, BUSINESS_OPEN_HOUR, Clock, ClockError, ManualClock, SystemClock,
@@ -25,3 +26,4 @@ pub use crate::tasks::{
     NewTask, Outcome, Registry, TIMED_OUT, TaskError, WORKER_CONCURRENCY, Worker, WorkerId,
     backoff, claim, enqueue, fail, finish, reap_expired, release_leases, renew,
 };
+pub use crate::test_control::{TEST_CONTROL_COMPILED, TestControl, TestControlError};

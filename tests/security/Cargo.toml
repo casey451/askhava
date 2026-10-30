@@ -7,6 +7,10 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dev-dependencies]
+askhava-core = { workspace = true }
+axum = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
 trybuild = { workspace = true }
 
 [lints]

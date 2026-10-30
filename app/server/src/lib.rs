@@ -45,9 +45,11 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 /// The app's router: every module's routes, merged once here (D-481), under
 /// the request-ID and tracing layers, so every request log line carries the
 /// request ID and the matched route template, never the URI (PRIV-016,
-/// PRIV-028). Merge routes before the layers so they apply to them.
-pub fn build_router() -> Router {
+/// PRIV-028). Merge routes before the layers so they apply to them. `test_control` is
+/// `askhava_core::api::TestControl::router()`, which has no routes in the release build (SEC-035).
+pub fn build_router(test_control: Router) -> Router {
     Router::new()
+        .merge(test_control)
         .layer(TraceLayer::new_for_http().make_span_with(request_span::<Body>))
         .layer(PropagateRequestIdLayer::x_request_id())
         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
