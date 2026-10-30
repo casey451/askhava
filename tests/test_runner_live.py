@@ -250,11 +250,17 @@ class OfflineGh:
 
     def __init__(self, pulls: list[dict[str, Any]]) -> None:
         self.pulls, self.calls = pulls, []  # type: list[dict[str, Any]], list[list[str]]
+        self.comments: list[dict[str, Any]] = []  # what a PR's comments read returns (D-584)
+        self.close_fails = False
 
     def __call__(self, args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
         if args[0] != "gh":
             return run_command(args, stdin, cwd)
         self.calls.append(args)
+        if "PATCH" in args and self.close_fails:
+            return 1, "", "HTTP 403: Resource not accessible by integration"
+        if "/comments?per_page=" in args[-1]:
+            return 0, json.dumps(self.comments), ""
         return 0, json.dumps(self.pulls) if "/pulls?head=" in args[-1] else "{}", ""
 
 
@@ -340,6 +346,118 @@ def test_an_auto_merge_pull_request_is_left_alone_without_the_lease(repo: dict[s
     prep = env.prepare_branch(TASK, 2, "someone-else")
     assert prep["branch"] == f"{TASK['branch']}-a2" and prep["why"] == "its open pull request has auto-merge on and could not be closed"
     assert not any("PATCH" in call for call in gh.calls) and any("left open" in line for line in env.log)
+
+
+def test_a_failed_close_posts_no_comment_and_the_attempt_moves_to_a_new_branch(repo: dict[str, Path], tmp_path: Path) -> None:
+    """N4 (D-584): the pull request is closed first and commented on only once closed, so a comment never
+    says "the attempt continues on this branch" when it moved to `-a2`."""
+    pushed_attempt(repo)
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": {"merge_method": "squash"}}])
+    gh.close_fails = True
+    prep = env.prepare_branch(TASK, 2, SESSION)
+    assert prep["branch"] == f"{TASK['branch']}-a2" and prep["why"] == "its open pull request has auto-merge on and could not be closed"
+    assert any("PATCH" in call for call in gh.calls) and not any(call[2].endswith("/issues/94/comments") for call in gh.calls)
+
+
+def test_a_pull_request_closed_by_the_runner_is_known_by_its_comment_when_the_record_was_lost(repo: dict[str, Path], tmp_path: Path) -> None:
+    """N4 (D-584): the close happened but recording #94 in runner_closed_prs lost the lease; the runner's
+    closing comment carries a marker, so the next attempt still continues the branch."""
+    pushed_attempt(repo)
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "closed", "merged_at": None, "auto_merge": None}])
+    gh.comments = [{"body": "a reviewer's note"}, {"body": ge.AUTO_MERGE_NOTE.format(branch=TASK["branch"])}]
+    prep = env.prepare_branch(TASK, 3, SESSION)
+    assert prep["branch"] == TASK["branch"] and "renamed_from" not in prep
+    gh.comments = [{"body": "closed by hand: wrong approach"}]  # someone else closed it: a fresh branch
+    assert env.prepare_branch(TASK, 3, SESSION)["why"] == "its pull request was closed"
+
+
+def test_checking_the_lease_leaves_the_cached_state_refs_alone(repo: dict[str, Path], tmp_path: Path) -> None:
+    """N3 (D-584): _holds_lease reads fresh without moving the heads and blob a later push builds on."""
+    env, _ = claimed_env(repo, tmp_path, [])
+    before = (env.state_head, env.lease_head, env.state_blob, json.dumps(env.last_state, sort_keys=True))
+    push_side_file(repo, "kit/state.json", json.dumps({"schema": 1, "lease": None, "tasks": [{"id": "X1"}]}))
+    assert env._holds_lease("K10", SESSION) is True
+    assert (env.state_head, env.lease_head, env.state_blob, json.dumps(env.last_state, sort_keys=True)) == before
+    assert env.push_state(st.with_task(env.last_state or {}, "K10", note="x"), env.last_state or {}) is False  # the race is still caught
+
+
+def _head_of(root: Path) -> str:
+    return git(root, "rev-parse", "HEAD")
+
+
+def _commit_file(root: Path, path: str, text: str, message: str) -> str:
+    (root / path).parent.mkdir(parents=True, exist_ok=True)
+    (root / path).write_text(text)
+    git(root, "add", "-A")
+    git(root, "commit", "-qm", message)
+    return _head_of(root)
+
+
+def test_reviewed_plus_main_accepts_an_updated_branch_and_nothing_else(repo: dict[str, Path], tmp_path: Path) -> None:
+    """N2, R2 (D-584): the reviewed work combined with main is accepted (a merge of main in); a new
+    commit, a merge of anything not on main, and an "evil merge" that adds content in the merge commit
+    are not; a head git does not have is unknown."""
+    reviewed = pushed_attempt(repo)
+    move_main(repo, "fake repo, main moved\n")
+    env = make_env(repo["a"], tmp_path, run=OfflineGh([]))
+    env.read_state()
+    a = repo["a"]
+    git(a, "fetch", "-q", "origin")
+    git(a, "checkout", "-q", TASK["branch"])
+    git(a, "merge", "-q", "--no-edit", "origin/main")
+    assert env.reviewed_plus_main(reviewed, _head_of(a), 0) is True
+    assert env.reviewed_plus_main(reviewed, _commit_file(a, "docs/k10/late.md", "late\n", "late work"), 0) is False
+    side = commit_on(a, "side", reviewed, "docs/k10/side.md", "not on main\n")
+    git(a, "checkout", "-q", "-B", "merged-side", reviewed)
+    git(a, "merge", "-q", "--no-ff", "--no-edit", side)
+    assert env.reviewed_plus_main(reviewed, _head_of(a), 0) is False
+    git(a, "checkout", "-q", "-B", "evil", reviewed)
+    git(a, "merge", "-q", "--no-ff", "--no-commit", "origin/main")
+    (a / "docs/k10/evil.md").write_text("added inside the merge commit\n")
+    git(a, "add", "-A")
+    git(a, "commit", "-qm", "Merge main (with an extra file)")
+    assert len(git(a, "rev-list", "--parents", "-n", "1", "HEAD").split()) == 3  # topologically a plain merge of main
+    assert env.reviewed_plus_main(reviewed, _head_of(a), 0) is False
+    assert env.reviewed_plus_main(reviewed, "f" * 40, 0) is None
+
+
+def test_reviewed_plus_main_refuses_a_head_built_on_main_older_than_the_reviewed_fork(repo: dict[str, Path], tmp_path: Path) -> None:
+    """T1 (D-584): main added a change X and then reverted it (R); the task forked after R. A head made of
+    the reviewed tree on X (`commit-tree <reviewed tree> -p X`) has X as its base, and the clean merge of
+    the reviewed commit with X is the reviewed tree, so the tree test alone would trust it. Its base is
+    older than the reviewed fork point (R), so it is refused."""
+    seed = repo["seed"]
+    change = commit_on(seed, "main", "origin/main", "docs/x.md", "a change main later reverts\n")
+    git(seed, "revert", "--no-edit", "HEAD")
+    git(seed, "push", "-q", "origin", "main")
+    reviewed = pushed_attempt(repo)
+    a = repo["a"]
+    crafted = git(a, "commit-tree", f"{reviewed}^{{tree}}", "-p", change, "-m", "the reviewed tree on an older main")
+    assert git(a, "merge-tree", "--write-tree", reviewed, change).splitlines()[0] == git(a, "rev-parse", f"{reviewed}^{{tree}}")
+    env = make_env(a, tmp_path, run=OfflineGh([]))
+    env.read_state()
+    assert env.reviewed_plus_main(reviewed, crafted, 0) is False
+
+
+def test_reviewed_plus_main_accepts_a_rebased_update_and_fetches_the_reviewed_commit(repo: dict[str, Path], tmp_path: Path) -> None:
+    """R2b (D-584): "Update with rebase" replaces the reviewed commit, which a fresh checkout does not
+    even have; it is fetched, and the rebased head is accepted by its tree. A rebase that adds a change is not."""
+    reviewed = pushed_attempt(repo)
+    move_main(repo, "fake repo, main moved\n")
+    a, b = repo["a"], repo["b"]
+    git(a, "fetch", "-q", "origin")
+    git(a, "checkout", "-q", "-B", "rebased", reviewed)
+    git(a, "rebase", "-q", "origin/main")
+    rebased = _head_of(a)
+    git(a, "push", "-q", "origin", "rebased")
+    extra = _commit_file(a, "docs/k10/extra.md", "slipped in\n", "rebase plus a change")
+    git(a, "push", "-q", "origin", "rebased:rebased-extra")
+    git(b, "fetch", "-q", "origin", "rebased", "rebased-extra", "main")
+    assert subprocess.run(["git", "cat-file", "-e", f"{reviewed}^{{commit}}"], cwd=b, capture_output=True).returncode != 0
+    env = make_env(b, tmp_path, "b", run=OfflineGh([]))
+    env.read_state()
+    assert env.reviewed_plus_main(reviewed, rebased, 0) is True
+    assert env.reviewed_plus_main(reviewed, extra, 0) is False
 
 
 def test_drill_t167_a_hand_in_rebuilt_from_main_fails_honestly_and_is_never_forced(repo: dict[str, Path], tmp_path: Path) -> None:
@@ -434,7 +552,7 @@ def test_requeue_command_moves_a_blocked_task_through_update_state(repo: dict[st
     args = entry.parse_args(["--requeue", "K10", "--reason", "the branch is fixed"])
     assert entry.requeue_task(args, cfg, env) == "requeued"
     task = st.entry(json.loads(origin_file(repo, "claude/kit-state", "kit/state.json")), "K10")
-    assert task["status"] == st.QUEUED and task["attempts"] == 1 and task["reason"] is None and task["last_failure"] == "the branch is fixed"
+    assert task["status"] == st.QUEUED and task["attempts"] == 1 and task["reason"] is None and task["last_failure"] == "re-queued: the branch is fixed"
     assert task["requeues"][0]["reason"] == "the branch is fixed" and task["requeues"][0]["by"] == "manual-1"
     assert entry.requeue_task(args, cfg, env) == "requeue_refused: K10 is QUEUED, not BLOCKED"
     assert entry.requeue_task(entry.parse_args(["--requeue", "FIX-MAIN", "--reason", "x"]), cfg, env).startswith("requeue_refused:")
