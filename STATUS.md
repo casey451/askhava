@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-30T08:20:03Z by runner ae7233917821 (manual).
+Updated 2026-10-30T08:24:21Z by runner ae7233917821 (actions).
 
 **Requirements verified:** 0 of 725 (0.0%) · partial 36 · unstarted 689
 **Tasks merged (throughput only):** 9 of 221
@@ -31,7 +31,7 @@ Updated 2026-10-30T08:20:03Z by runner ae7233917821 (manual).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (ledger): five-hour: 5.2M used, 21.8M left, resets 2026-10-30T10:33:02Z; week: 20.4M used, 429.6M left, resets 2026-11-05T18:38:52Z; projected finish 2026-11-02T00:20:55Z.
+- Pacing (ledger): five-hour: 5.2M used, 21.8M left, resets 2026-10-30T10:33:02Z; week: 20.4M used, 429.6M left, resets 2026-11-05T18:38:52Z; projected finish 2026-11-02T02:06:58Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -46,7 +46,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 13 of 15 done
 
 ## Running
-- nothing
+- T167 (lease until 2026-10-30T11:20:48Z)
 
 ## Needs attention
 - BLOCKED T008: stage proof missing (the proof waits for: T167 is QUEUED)
