@@ -7,6 +7,7 @@ rejected when someone else pushed first, a scripted worker and a scripted PR.
 from __future__ import annotations
 
 import copy
+import dataclasses
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -988,3 +989,40 @@ def test_drill_one_transient_renewal_failure_then_a_good_beat_submits_normally(t
     t1 = st.entry(env.store, "T001")
     assert t1["status"] == st.MERGE_PENDING and t1["reviewed_sha"] == "good0001" and env.store["lease"] is None
     assert env.branch_pushes == [("claude/task/T001-x", "good0001")]
+
+
+def _numbered(cfg: cycle.Config, main: set[int] | None) -> cycle.Config:
+    """The config with main's docs/decisions.md numbers wired in, as runner/__main__.py does (D-530)."""
+    return dataclasses.replace(cfg, decisions=lambda: main)
+
+
+def test_drill_a_claim_reserves_decision_numbers_and_a_retry_reuses_them(tmp_path: Path) -> None:
+    """D-530: the claim's own state write reserves the block; a failed attempt's retry keeps it; the next
+    task's block starts above it, so work in flight never shares a number."""
+    graph = [make_task("T001"), make_task("T002")]
+    failing = {"left": 1}
+
+    def worker(task: dict[str, Any], model: str, log: str) -> cycle.WorkerResult:
+        if task["id"] == "T001" and failing["left"]:
+            failing["left"] -= 1
+            return cycle.WorkerResult("tests_failed", log="1 failed")
+        return reviewed(task, model)
+
+    env, cfg = FakeEnv(worker), _numbered(config(graph, tmp_path), {1, 2, 521})
+    assert cycle.run_cycle(cfg, env, NOW) == st.QUEUED
+    assert st.entry(env.store, "T001")["decision_ids"] == [522, 523, 524, 525, 526] and env.store["next_decision"] == 527
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == st.MERGE_PENDING
+    assert env.runs[-1][0] == "T001" and st.entry(env.store, "T001")["decision_ids"] == [522, 523, 524, 525, 526]
+    assert env.store["next_decision"] == 527
+    env.prs["T001"] = green_pr(sha="head0001")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=2)) == st.MERGE_PENDING
+    assert env.runs[-1][0] == "T002" and st.entry(env.store, "T002")["decision_ids"] == [527, 528, 529, 530, 531]
+
+
+def test_drill_fix_main_gets_a_block_and_unreadable_numbers_reserve_none(tmp_path: Path) -> None:
+    env, cfg = go_red(tmp_path)
+    assert cycle.run_cycle(_numbered(cfg, {7}), env, NOW + timedelta(minutes=10)) == "fix_main"
+    assert st.entry(env.store, st.FIX_MAIN)["decision_ids"] == [8, 9, 10, 11, 12]
+    env2 = FakeEnv()
+    assert cycle.run_cycle(_numbered(config([make_task("T001")], tmp_path), None), env2, NOW) == st.MERGE_PENDING
+    assert "decision_ids" not in st.entry(env2.store, "T001") and "next_decision" not in env2.store

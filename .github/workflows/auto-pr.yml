@@ -34,14 +34,18 @@ jobs:
       - name: Read main's decision code and the review record
         run: |
           set -euo pipefail
-          git fetch --quiet --depth=1 origin main
+          # The checkout keeps no credentials (persist-credentials: false) and the repo is private,
+          # so each fetch passes the job token for that one command (D-540).
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          fetch() { git -c "http.https://github.com/.extraheader=${auth}" fetch --quiet --depth=1 origin "$1"; }
+          fetch main
           git show FETCH_HEAD:runner/verify.py > "$RUNNER_TEMP/verify_main.py"
-          if git fetch --quiet --depth=1 origin claude/kit-state 2>/dev/null; then
+          if fetch claude/kit-state 2>/dev/null; then
             git show FETCH_HEAD:kit/state.json > "$RUNNER_TEMP/state.json" 2>/dev/null || echo '{"tasks": []}' > "$RUNNER_TEMP/state.json"
           else
             echo '{"tasks": []}' > "$RUNNER_TEMP/state.json"
           fi
-          if git fetch --quiet --depth=1 origin claude/lease 2>/dev/null; then
+          if fetch claude/lease 2>/dev/null; then
             git show FETCH_HEAD:lease.json > "$RUNNER_TEMP/lease.json" 2>/dev/null || echo '{"lease": null}' > "$RUNNER_TEMP/lease.json"
           else
             echo '{"lease": null}' > "$RUNNER_TEMP/lease.json"

@@ -108,6 +108,9 @@ class Config:
     on_usage: Callable[[State, dict[str, Any], datetime], State] | None = None  # usage windows (scripts/pacing.py)
     owner_paths: tuple[str, ...] = ()  # .github/CODEOWNERS entries: a PR touching one waits for Casey (D-511)
     lanes: int = 1  # kit/runner.json "lanes"; only lane "1" is ever claimed until a later stage (D-515)
+    # Reads the D-numbers on main's docs/decisions.md (None when unreadable). A claim reserves the
+    # task's decision numbers only when this is set and returns a set (D-530).
+    decisions: Callable[[], set[int] | None] | None = None
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -490,7 +493,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     task, state = _paced_pick(cfg, state, ids, now)
     if task is None:
         return "paced" if state == base or env.push_state(state, base) else "lost_race"
-    claimed = st.claim(state, task["id"], cfg.session, now)
+    claimed = st.claim(state, task["id"], cfg.session, now, taken=cfg.decisions() if cfg.decisions else None)
     if not env.push_state(claimed, base):
         return "lost_race"
     done = _work(cfg, env, claimed, task, now)
