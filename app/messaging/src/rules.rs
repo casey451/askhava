@@ -48,19 +48,21 @@ impl From<jiff::Error> for QuietHoursError {
     }
 }
 
-/// The area-code table: every code has exactly one zone (QH-003, D-100, D-139).
+/// The area-code table: every code has one or more zones; a code spanning zones is judged in all of
+/// them, so the stricter one rules (QH-001, QH-003, D-100, D-139).
 #[derive(Debug)]
 pub struct AreaCodes {
-    zones: HashMap<String, String>,
+    zones: HashMap<String, Vec<String>>,
 }
 
 impl AreaCodes {
     /// Parses a table shaped `{"<zone>": ["<code>", ...]}`; every zone must be known to the bundled
-    /// time-zone data, every code three digits, and no code may appear twice (QH-003).
+    /// time-zone data, every code three digits, and no code may repeat within one zone (a code listed under two zones
+    /// spans both, QH-003).
     ///
     /// # Errors
     ///
-    /// [`QuietHoursError::InvalidTable`] for bad JSON, an unknown zone, a bad or repeated code.
+    /// [`QuietHoursError::InvalidTable`] for bad JSON, an unknown zone, a bad code or a code repeated in one zone.
     pub fn parse(json: &str) -> Result<Self, QuietHoursError> {
         let raw: BTreeMap<String, Vec<String>> =
             from_str(json).map_err(|_| QuietHoursError::InvalidTable)?;
@@ -83,39 +85,47 @@ impl AreaCodes {
         Self::parse(include_str!("../area_codes.json"))
     }
 
-    /// Every area code in the table with its zone name, for the "every code has a zone" test.
+    /// Every (area code, zone) pair in the table, sorted so tests are reproducible.
     pub fn entries(&self) -> impl Iterator<Item = (&str, &str)> {
-        self.zones.iter().map(|(c, z)| (c.as_str(), z.as_str()))
+        let mut pairs: Vec<(&str, &str)> = self
+            .zones
+            .iter()
+            .flat_map(|(c, zs)| zs.iter().map(move |z| (c.as_str(), z.as_str())))
+            .collect();
+        pairs.sort_unstable();
+        pairs.into_iter()
     }
 
-    /// The zone of a `+1` number's area code (QH-003).
+    /// The zones of a `+1` number's area code, at least one (QH-003); a split code lists each zone.
     ///
     /// # Errors
     ///
     /// [`QuietHoursError::NotNorthAmerican`] unless the number is `+1` and ten digits;
     /// [`QuietHoursError::UnknownAreaCode`] when the code is not in the table (D-100, D-139).
-    pub fn zone_for(&self, phone: &str) -> Result<&str, QuietHoursError> {
+    pub fn zones_for(&self, phone: &str) -> Result<&[String], QuietHoursError> {
         let digits = phone
             .strip_prefix("+1")
             .filter(|d| d.len() == 10 && d.bytes().all(|b| b.is_ascii_digit()))
             .ok_or(QuietHoursError::NotNorthAmerican)?;
         self.zones
             .get(&digits[..3])
-            .map(String::as_str)
+            .map(Vec::as_slice)
             .ok_or(QuietHoursError::UnknownAreaCode)
     }
 }
 
-/// Adds one code under `zone`, refusing a malformed or repeated code (QH-003).
+/// Adds one code under `zone`, refusing a malformed code or one repeated in the same zone (QH-003).
 fn add_code(
-    zones: &mut HashMap<String, String>,
+    zones: &mut HashMap<String, Vec<String>>,
     code: String,
     zone: &str,
 ) -> Result<(), QuietHoursError> {
     let digits = code.len() == 3 && code.bytes().all(|b| b.is_ascii_digit());
-    if !digits || zones.insert(code, zone.to_owned()).is_some() {
+    let list = zones.entry(code).or_default();
+    if !digits || list.iter().any(|z| z == zone) {
         return Err(QuietHoursError::InvalidTable);
     }
+    list.push(zone.to_owned());
     Ok(())
 }
 
@@ -146,15 +156,17 @@ pub enum Kind {
     JobCard,
     /// A confirm request to a business.
     ConfirmRequest,
-    /// The first-quote text or a quote-count update (D-136).
+    /// The first-quote text (TXT-016, D-136).
     Quote,
+    /// A quote-count update such as "You now have N quotes" (TXT-017, D-136); held ones merge (TXT-025).
+    QuoteCount,
     /// A question INT-029 asks after the cards (D-164).
     JobQuestion,
     /// A pick, confirm or connect text: who's-calling, missed-call, PICK-044, PICK-046 (D-270).
     PickStep,
     /// The INT-033 after-hours notice (D-271).
     AfterHoursNotice,
-    /// An update text about a job; held updates merge (TXT-025).
+    /// An update text about a job; held updates and quote-count updates merge (TXT-025).
     Update,
     /// Any other non-urgent message.
     Other,
@@ -189,14 +201,25 @@ pub enum Decision {
     },
 }
 
+/// True when the local time is 8:00:00 to 19:59:59, the QH-001 window (D-101).
 fn in_window(at: &Zoned) -> bool {
     (OPEN_HOUR..CLOSE_HOUR).contains(&at.hour())
 }
 
-fn allowed_at(zone: &str, at: Timestamp) -> Result<bool, QuietHoursError> {
-    Ok(in_window(&at.in_tz(ARIZONA)?) && in_window(&at.in_tz(zone)?))
+/// QH-001: true when `at` is inside the window in Arizona (QH-002) and in every zone of the area code.
+fn allowed_at(zones: &[String], at: Timestamp) -> Result<bool, QuietHoursError> {
+    if !in_window(&at.in_tz(ARIZONA)?) {
+        return Ok(false);
+    }
+    for zone in zones {
+        if !in_window(&at.in_tz(zone.as_str())?) {
+            return Ok(false);
+        }
+    }
+    Ok(true)
 }
 
+/// The instant `zone` reaches 08:00 on `day`, the only moment an allowed stretch can begin (QH-006).
 fn opens_on(zone: &str, day: Date) -> Result<Timestamp, QuietHoursError> {
     Ok(day.at(OPEN_HOUR, 0, 0, 0).in_tz(zone)?.timestamp())
 }
@@ -204,9 +227,10 @@ fn opens_on(zone: &str, day: Date) -> Result<Timestamp, QuietHoursError> {
 /// The first instant after `now` at which both Arizona and `zone` are inside 8:00 to 20:00. An
 /// allowed stretch always begins when one zone opens at 08:00 local, so those are the only candidates
 /// (QH-001, QH-006, QH-009).
-fn next_window_start(zone: &str, now: Timestamp) -> Result<Timestamp, QuietHoursError> {
+fn next_window_start(zones: &[String], now: Timestamp) -> Result<Timestamp, QuietHoursError> {
     let mut starts = Vec::new();
-    for name in [ARIZONA, zone] {
+    let names = std::iter::once(ARIZONA).chain(zones.iter().map(String::as_str));
+    for name in names {
         let today = now.in_tz(name)?.date();
         for offset in 0..=SEARCH_DAYS {
             let day = today.checked_add(jiff::Span::new().days(offset))?;
@@ -215,13 +239,14 @@ fn next_window_start(zone: &str, now: Timestamp) -> Result<Timestamp, QuietHours
     }
     starts.sort();
     for start in starts.into_iter().filter(|s| *s > now) {
-        if allowed_at(zone, start)? {
+        if allowed_at(zones, start)? {
             return Ok(start);
         }
     }
     Err(QuietHoursError::Zone)
 }
 
+/// QH-004, D-101: a direct reply is fresh when 0 <= age < 15 minutes since the person's own text.
 fn is_fresh_reply(inbound_at: Timestamp, now: Timestamp) -> bool {
     let age = now.duration_since(inbound_at);
     age >= SignedDuration::ZERO && age < SignedDuration::from_mins(REPLY_MINUTES)
@@ -232,7 +257,7 @@ fn night_exception(msg: &Outgoing<'_>, now: Timestamp) -> bool {
     match msg.kind {
         Kind::Safety911 | Kind::KeywordReply | Kind::PickCode | Kind::AfterHoursNotice => true,
         Kind::DirectReply { inbound_at } => is_fresh_reply(inbound_at, now),
-        Kind::Quote | Kind::JobQuestion | Kind::PickStep => msg.emergency_job,
+        Kind::Quote | Kind::QuoteCount | Kind::JobQuestion | Kind::PickStep => msg.emergency_job,
         Kind::JobCard | Kind::ConfirmRequest => {
             msg.emergency_job
                 && msg.channel == Channel::Email
@@ -256,12 +281,12 @@ pub fn decide(
     msg: &Outgoing<'_>,
     now: Timestamp,
 ) -> Result<Decision, QuietHoursError> {
-    let zone = table.zone_for(msg.phone)?;
-    if allowed_at(zone, now)? || night_exception(msg, now) {
+    let zones = table.zones_for(msg.phone)?;
+    if allowed_at(zones, now)? || night_exception(msg, now) {
         return Ok(Decision::Send);
     }
     Ok(Decision::Hold {
-        until: next_window_start(zone, now)?,
+        until: next_window_start(zones, now)?,
     })
 }
 
@@ -288,7 +313,7 @@ pub struct Held {
     pub job_id: u64,
     /// The person it goes to.
     pub recipient_id: u64,
-    /// What it is; only [`Kind::Update`] merges.
+    /// What it is; only [`Kind::Update`] and [`Kind::QuoteCount`] merge.
     pub kind: Kind,
     /// True for a text that announces the close itself (JOB-012, INT-019).
     pub announces_close: bool,
@@ -310,33 +335,40 @@ pub enum Release {
 /// announces the close (QH-007, D-461); the rest of the held updates for one job and recipient merge
 /// into one text (TXT-025, D-158). Order follows each group's first message.
 pub fn plan_release(held: &[Held], job_closed: impl Fn(u64) -> bool) -> Vec<Release> {
-    let mut out: Vec<Release> = Vec::new();
+    let mut out: Vec<Slot> = Vec::new();
     let mut groups: HashMap<(u64, u64), usize> = HashMap::new();
     for h in held {
+        let mergeable = matches!(h.kind, Kind::Update | Kind::QuoteCount) && !h.announces_close;
         if job_closed(h.job_id) && !h.announces_close {
-            out.push(Release::Drop(h.id));
-        } else if h.kind == Kind::Update && !h.announces_close {
-            match groups.get(&(h.job_id, h.recipient_id)) {
-                Some(&slot) => merge_into(&mut out[slot], h.id),
-                None => {
-                    groups.insert((h.job_id, h.recipient_id), out.len());
-                    out.push(Release::Send(h.id));
-                }
+            out.push(Slot::Done(Release::Drop(h.id)));
+        } else if mergeable {
+            let slot = *groups
+                .entry((h.job_id, h.recipient_id))
+                .or_insert(out.len());
+            match out.get_mut(slot) {
+                Some(Slot::Group(ids)) => ids.push(h.id),
+                _ => out.push(Slot::Group(vec![h.id])),
             }
         } else {
-            out.push(Release::Send(h.id));
+            out.push(Slot::Done(Release::Send(h.id)));
         }
     }
-    out
+    out.into_iter().map(Slot::finish).collect()
 }
 
-fn merge_into(slot: &mut Release, id: u64) {
-    *slot = match std::mem::replace(slot, Release::Drop(id)) {
-        Release::Send(first) => Release::Merged(vec![first, id]),
-        Release::Merged(mut ids) => {
-            ids.push(id);
-            Release::Merged(ids)
+/// A release being built: either settled, or a group of mergeable updates still collecting ids.
+enum Slot {
+    Done(Release),
+    Group(Vec<u64>),
+}
+
+impl Slot {
+    /// A group of one is sent alone; a larger group becomes one merged text (TXT-025).
+    fn finish(self) -> Release {
+        match self {
+            Self::Done(release) => release,
+            Self::Group(ids) if ids.len() == 1 => Release::Send(ids[0]),
+            Self::Group(ids) => Release::Merged(ids),
         }
-        Release::Drop(old) => Release::Drop(old),
-    };
+    }
 }

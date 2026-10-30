@@ -38,7 +38,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 
 - Edit or add a text: change the key in both `en.json` and `es.json`, set `segments` to the new count (the test prints the counted values with `--nocapture`; raising it is a logged decision, TXT-044), run both test commands below.
 - Spanish text: keep `draft: true`; a text that must stay on while the setting is off needs `spanish_stays_on: true` and a back-translation entry in `docs/decisions.md` (TXT-039).
-- Add an area code: put it under exactly one zone in `area_codes.json` (the parser rejects repeats); only US, territory and Canadian codes (D-100); run the quiet-hours tests.
+- Add an area code: put it under every zone it spans in `area_codes.json` (all must be open to send; the parser rejects a repeat within one zone); only US, territory and Canadian codes (D-100); run the quiet-hours tests.
 - Add a night exception: QH-004 first, then `Kind` and `night_exception`, then a case in `td_qh_02_*`.
 
 ## Tests that guard it

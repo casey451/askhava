@@ -101,14 +101,65 @@ fn td_qh_01_daylight_saving_change_days() {
             until: ts("2026-11-01T08:00:00-08:00")
         }
     );
-    // Eastern, same days: the late evening edge moves with the Eastern shift.
+    // Eastern, Arizona is UTC-7 all year. Spring forward 2026-03-08: the day before (EST, 2 hours
+    // ahead) the late edge is 18:00 Arizona; the day of (EDT, 3 hours ahead) it is 17:00 Arizona.
+    let eastern = |when| at(EASTERN, Kind::Other, when);
+    assert_eq!(eastern("2026-03-07T17:30:00-07:00"), Decision::Send);
     assert!(matches!(
-        at(EASTERN, Kind::Other, "2026-03-08T17:30:00-07:00"),
+        eastern("2026-03-07T18:30:00-07:00"),
         Decision::Hold { .. }
     ));
+    assert_eq!(eastern("2026-03-08T16:30:00-07:00"), Decision::Send);
+    assert!(matches!(
+        eastern("2026-03-08T17:30:00-07:00"),
+        Decision::Hold { .. }
+    ));
+    // Fall back 2026-11-01: the day before (EDT) the edge is 17:00 Arizona; the day of (EST) 18:00.
+    assert_eq!(eastern("2026-10-31T16:30:00-07:00"), Decision::Send);
+    assert!(matches!(
+        eastern("2026-10-31T17:30:00-07:00"),
+        Decision::Hold { .. }
+    ));
+    assert_eq!(eastern("2026-11-01T17:30:00-07:00"), Decision::Send);
+    assert!(matches!(
+        eastern("2026-11-01T18:30:00-07:00"),
+        Decision::Hold { .. }
+    ));
+}
+
+/// TD-QH-01, QH-001, QH-003: a code spanning zones is judged in every zone, so the stricter rules.
+#[test]
+fn td_qh_01_split_codes_use_every_zone() {
+    let t = table();
+    // 928 covers the Navajo Nation, which keeps daylight saving: in July 07:30 Arizona is 08:30 MDT
+    // there, but Arizona itself is closed, so wait; 19:30 Arizona is 20:30 MDT, held.
+    let navajo = |when| decide(&t, &text("+19285550100", Kind::Other), ts(when)).expect("d");
     assert_eq!(
-        at(EASTERN, Kind::Other, "2026-03-08T16:30:00-07:00"),
-        Decision::Send
+        navajo("2026-07-15T19:30:00-07:00"),
+        Decision::Hold {
+            until: ts("2026-07-16T08:00:00-07:00")
+        }
+    );
+    assert_eq!(navajo("2026-07-15T12:00:00-07:00"), Decision::Send);
+    // 850: Eastern and Central; 18:30 Arizona is 19:30 Central but 20:30 Eastern, so Eastern governs the evening.
+    let panhandle = decide(
+        &t,
+        &text("+18505550100", Kind::Other),
+        ts("2026-01-15T18:30:00-07:00"),
+    );
+    assert!(matches!(panhandle, Ok(Decision::Hold { .. })));
+    // 208: Idaho north is Pacific, south Mountain; in January Arizona equals Mountain, so 08:30
+    // Arizona is 07:30 Pacific, held to 09:00 Arizona.
+    let idaho = decide(
+        &t,
+        &text("+12085550100", Kind::Other),
+        ts("2026-01-15T08:30:00-07:00"),
+    );
+    assert_eq!(
+        idaho,
+        Ok(Decision::Hold {
+            until: ts("2026-01-15T09:00:00-07:00")
+        })
     );
 }
 
@@ -130,11 +181,11 @@ fn td_qh_01_unknown_area_code_never_texted() {
         }
     }
     assert_eq!(
-        t.zone_for("+18765550100"),
+        t.zones_for("+18765550100"),
         Err(QuietHoursError::UnknownAreaCode)
     );
     assert_eq!(
-        t.zone_for("+442071234567"),
+        t.zones_for("+442071234567"),
         Err(QuietHoursError::NotNorthAmerican)
     );
 }
@@ -148,18 +199,28 @@ fn td_qh_01_every_table_code_has_a_zone() {
         n += 1;
         assert_eq!(code.len(), 3);
         let phone = format!("+1{code}5550100");
-        assert_eq!(t.zone_for(&phone).expect("zone"), zone);
+        assert!(
+            t.zones_for(&phone)
+                .expect("zones")
+                .iter()
+                .any(|z| z == zone)
+        );
         jiff::tz::TimeZone::get(zone).expect("known zone");
     }
     assert!(n > 350);
     for code in ["876", "809", "829", "849", "284", "242", "268"] {
-        assert!(t.zone_for(&format!("+1{code}5550100")).is_err());
+        assert!(t.zones_for(&format!("+1{code}5550100")).is_err());
     }
     for code in ["787", "939", "340", "671", "670", "684", "709"] {
-        assert!(t.zone_for(&format!("+1{code}5550100")).is_ok());
+        assert!(t.zones_for(&format!("+1{code}5550100")).is_ok());
     }
-    assert_eq!(t.zone_for("+17095550100"), Ok("America/St_Johns"));
+    let st_johns = t.zones_for("+17095550100").expect("709");
+    assert!(st_johns.iter().any(|z| z == "America/St_Johns"));
+    for code in ["945", "557", "464", "235", "826", "584", "257", "468"] {
+        assert!(t.zones_for(&format!("+1{code}5550100")).is_ok(), "{code}");
+    }
     assert!(AreaCodes::parse(r#"{"America/Phoenix":["480","480"]}"#).is_err());
+    assert!(AreaCodes::parse(r#"{"America/Phoenix":["480"],"America/Denver":["480"]}"#).is_ok());
     assert!(AreaCodes::parse(r#"{"Nowhere/Land":["480"]}"#).is_err());
 }
 
@@ -180,7 +241,12 @@ fn td_qh_02_night_exceptions_sent() {
         emergency_job: true,
         ..text(AZ, kind)
     };
-    for kind in [Kind::Quote, Kind::JobQuestion, Kind::PickStep] {
+    for kind in [
+        Kind::Quote,
+        Kind::QuoteCount,
+        Kind::JobQuestion,
+        Kind::PickStep,
+    ] {
         assert_eq!(
             decide(&table(), &emergency(kind), ts(NIGHT)),
             Ok(Decision::Send)
@@ -318,6 +384,21 @@ fn td_qh_02_held_updates_merge() {
             Release::Send(5)
         ]
     );
+}
+
+/// TD-QH-02, TXT-025, TXT-017: held quote-count updates merge too, but a first-quote text does not.
+#[test]
+fn td_qh_02_held_quote_counts_merge() {
+    let plan = plan_release(
+        &[
+            held(1, 10, 7, Kind::QuoteCount, false),
+            held(2, 10, 7, Kind::Quote, false),
+            held(3, 10, 7, Kind::QuoteCount, false),
+            held(4, 10, 7, Kind::Update, false),
+        ],
+        |_| false,
+    );
+    assert_eq!(plan, vec![Release::Merged(vec![1, 3, 4]), Release::Send(2)]);
 }
 
 /// TD-QH-02, QH-007, D-461: a held text for a closed job is dropped, except the closing text.

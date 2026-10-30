@@ -27,10 +27,11 @@ proptest! {
     fn allowed_is_both_zones(secs in 1_767_225_600_i64..1_798_761_600, pick in 0usize..400) {
         let table = AreaCodes::embedded().expect("table");
         let entries: Vec<(&str, &str)> = table.entries().collect();
-        let (code, zone) = entries[pick % entries.len()];
+        let (code, _) = entries[pick % entries.len()];
         let phone = format!("+1{code}5550100");
         let now = Timestamp::from_second(secs).expect("instant");
-        let expected = local_ok(now, "America/Phoenix") && local_ok(now, zone);
+        let zones = table.zones_for(&phone).expect("zones");
+        let expected = local_ok(now, "America/Phoenix") && zones.iter().all(|z| local_ok(now, z));
         let got = decide(&table, &msg(&phone, Kind::Other), now).expect("decision");
         match got {
             Decision::Send => prop_assert!(expected),
@@ -38,9 +39,9 @@ proptest! {
                 prop_assert!(!expected);
                 prop_assert!(until > now);
                 prop_assert!(until.duration_since(now) <= SignedDuration::from_hours(48));
-                prop_assert!(local_ok(until, "America/Phoenix") && local_ok(until, zone));
+                prop_assert!(local_ok(until, "America/Phoenix") && zones.iter().all(|z| local_ok(until, z)));
                 let before = until - SignedDuration::from_secs(1);
-                prop_assert!(!(local_ok(before, "America/Phoenix") && local_ok(before, zone)));
+                prop_assert!(!(local_ok(before, "America/Phoenix") && zones.iter().all(|z| local_ok(before, z))));
             }
         }
         prop_assert_eq!(retry(&table, &msg(&phone, Kind::Other), now), Ok(got));
