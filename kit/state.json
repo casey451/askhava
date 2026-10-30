@@ -2269,7 +2269,7 @@
     "T167",
     "T016"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "adapters-other-vendors",
    "type": "build",
@@ -2345,6 +2345,19 @@
      "started_at": "2026-10-30T15:04:20Z",
      "ended_at": "2026-10-30T15:25:57Z",
      "result": "check_failed"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 40,
+     "head_sha": "6b4c9959b81b4975d33b8629fd386b449f756e3d",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-10-30T15:34:51Z",
+     "ended_at": "2026-10-30T15:59:41Z",
+     "result": "MERGE_PENDING"
     }
    ],
    "reviewed_sha": "6b4c9959b81b4975d33b8629fd386b449f756e3d",
@@ -2357,14 +2370,13 @@
    "branch": "claude/task/T176-adapters-other-vendors",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #122 (gh pr merge)",
-    "head": "ec1162052d8b70f1844976e75d0e5a4f2146251e"
+    "why": "auto-merge on #124 (gh pr merge)",
+    "head": "6b4c9959b81b4975d33b8629fd386b449f756e3d"
    },
    "last_failure": "Ci: failure; Ci: failure; Checks: failure; Checks: failure\nChecks failed at step: PII scan\nCi failed at step: Both jobs passed",
    "runner_closed_prs": [
     122
-   ],
-   "head_check_since": null
+   ]
   },
   {
    "id": "T017",
@@ -5973,12 +5985,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T013",
-   "at": "2026-10-30T15:32:12Z",
-   "cache_creation_input_tokens": 455574,
-   "cache_read_input_tokens": 11073396,
-   "input_tokens": 227,
-   "output_tokens": 144546
+   "task": "T176",
+   "at": "2026-10-30T15:59:41Z",
+   "output_tokens": 50574,
+   "cache_creation_input_tokens": 277989,
+   "input_tokens": 112,
+   "cache_read_input_tokens": 2485242
   },
   "source": "ledger",
   "by_task": {
@@ -6205,10 +6217,10 @@
    "T176": {
     "estimated_bytes": 380574,
     "estimated_tokens": 1365074,
-    "cache_read_input_tokens": 4850306,
-    "input_tokens": 141,
-    "cache_creation_input_tokens": 281990,
-    "output_tokens": 65778,
+    "cache_read_input_tokens": 7335548,
+    "input_tokens": 253,
+    "cache_creation_input_tokens": 559979,
+    "output_tokens": 116352,
     "last_model": "claude-opus-5-5"
    },
    "T015": {
@@ -6218,16 +6230,16 @@
   },
   "windows": {
    "five_hour": {
-    "start": "2026-10-30T10:47:18Z",
-    "tokens": 10362083
+    "start": "2026-10-30T15:59:41Z",
+    "tokens": 577199
    },
    "week": {
     "start": "2026-10-29T18:38:52Z",
-    "tokens": 33799324
+    "tokens": 34376523
    }
   }
  },
- "updated_at": "2026-10-30T15:59:42Z",
+ "updated_at": "2026-10-30T15:59:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
