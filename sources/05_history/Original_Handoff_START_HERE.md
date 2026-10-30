@@ -1,6 +1,6 @@
 # Havasu Home Quotes — START HERE (handoff for a fresh session)
 
-**Owner:** Casey Solomon, Lake Havasu City, AZ (police officer; also owns Ask Hava, askhava.com)
+**Owner:** Casey Solomon, Lake Havasu City, AZ (full-time day job; also owns Ask Hava, askhava.com)
 **Prepared:** Oct 26, 2026, end of a long planning session
 **Read this first, then the files it points to.** Everything the old conversation decided is in this zip.
 
