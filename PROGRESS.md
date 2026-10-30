@@ -140,3 +140,4 @@
 - 2026-10-30T07:13:49Z runner 1cdbd960f712 (actions): {"T167": "QUEUED -> IN_PROGRESS"}; T167 estimated 1.1M tokens (calibrated); five-hour window has 21.8M left, week 429.6M (ledger); claimed
 - 2026-10-30T07:25:32Z runner b15e79c5f7ec (actions): {}
 - 2026-10-30T07:25:35Z runner b15e79c5f7ec (actions): {"T167": "IN_PROGRESS -> BLOCKED"}
+- 2026-10-30T08:20:03Z runner ae7233917821 (manual): {"T167": "BLOCKED -> QUEUED"}

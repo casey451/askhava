@@ -4132,7 +4132,7 @@
    "deps": [
     "T008"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "stand-ins-http",
    "type": "harness",
@@ -4205,8 +4205,17 @@
     "why": "auto-merge on #94 (gh pr merge)",
     "head": "ca099c544306c9384c0c0c70ae5cf059c8417819"
    },
-   "last_failure": "Ci: failure; Ci: failure",
-   "reason": "branch push rejected; fix the push credential, then set the task back to QUEUED"
+   "last_failure": "Retry push was rejected non-fast-forward because the retry rebuilt the branch from main; fixed by D-583 (retries now continue the branch). Attempt 1 failed Ci on two gitleaks generic-api-key false positives in tests/contract/test_stand_in_server.py lines 263 and 265 (the idempotency_key=\"l1\" arguments): change the test so gitleaks does not flag it, never allowlist or weaken the scan.",
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-10-30T08:20:03Z",
+     "reason": "Retry push was rejected non-fast-forward because the retry rebuilt the branch from main; fixed by D-583 (retries now continue the branch). Attempt 1 failed Ci on two gitleaks generic-api-key false positives in tests/contract/test_stand_in_server.py lines 263 and 265 (the idempotency_key=\"l1\" arguments): change the test so gitleaks does not flag it, never allowlist or weaken the scan.",
+     "by": "overseer-casey-approved",
+     "was": "branch push rejected; fix the push credential, then set the task back to QUEUED",
+     "attempts": 1
+    }
+   ]
   },
   {
    "id": "T168",
@@ -4418,7 +4427,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T07:25:35Z",
+ "updated_at": "2026-10-30T08:20:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -4516,8 +4525,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b15e79c5f7ec3d2295f1af0e35ee006b9d6ce9d0",
- "starter": "actions",
+ "runner_sha": "ae7233917821ca50290ab7c27c638cf576a1e2ce",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "36b13e66ddf412ecdbfd5be2de2f2c8530e06ec7",
