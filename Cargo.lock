@@ -323,6 +323,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "askhava-messaging"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "askhava-ops"
 version = "0.1.0"
 dependencies = [

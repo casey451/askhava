@@ -1,0 +1,82 @@
+{
+  "consent": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy"
+  },
+  "opt_out_confirmation": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: You're unsubscribed. You won't get more texts or automated calls from Ask Hava at this number. To use Ask Hava again, text START."
+  },
+  "start_reply": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: You can text us again. Send your request to start. Msg & data rates may apply. Reply HELP for help, STOP to opt out."
+  },
+  "help_reply": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner gets HELP messages right away and usually replies within {reply_time}. This number is text-only. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Help: askhava.com/help Reply STOP to opt out."
+  },
+  "emergency_911": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe."
+  },
+  "spanish_not_yet": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: For now we text in English. Reply HELP if you need help."
+  },
+  "under_18": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Sorry, you must be 18 or older to use Ask Hava. Please ask a parent or adult to text us."
+  },
+  "request_out": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Request {job} is out to {count} {trade} businesses. Not every business answers. We'll text you when the first quote comes in."
+  },
+  "first_quote": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Your first quote for request {job} is in, and more may come. Free for you. The business you pick pays Ask Hava a set introduction fee. Can't open links? Reply LIST to get your quotes by text. See them here: {link} Terms (18+): askhava.com/terms"
+  },
+  "all_quotes_in": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: All quotes are in for request {job}: {quoted} of {count} businesses quoted. {link} Reply LIST to see them here, or CLOSE {job} if you don't need it."
+  },
+  "caller_missed": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: {business} tried to call you about request {job}. Call them back on {number}."
+  },
+  "problem_reply": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Thanks. The Ask Hava owner reads every problem report, usually within 7 days. Ask Hava can't settle disputes about work or price. Licensed trades: you can also file with the state at askhava.com/help/roc-complaint."
+  },
+  "close_howto": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Reply CLOSE {job} to close request {job}. If that doesn't fix it, reply with what's wrong and the Ask Hava owner gets it right away."
+  },
+  "cost_answer": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: It's free for you. The business you pick pays Ask Hava a fixed introduction fee ($25, $75 or $199, by quote size). You pay the business directly for the work. If that doesn't fix it, reply with what's wrong and the Ask Hava owner gets it right away."
+  },
+  "business_no_call_reminder": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded. Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts can be on different days."
+  },
+  "business_pick_waiting": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: A homeowner picked your quote for job {job}. Accept by {time}."
+  }
+}
