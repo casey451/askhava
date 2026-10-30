@@ -3597,12 +3597,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "5bce5b8be097b97e020a82f4aca1b2dab775ae6a",
+   "reviewed_sha": "6c597ba656499f3ba9bd09281e937357d0cdfca6",
    "review_lease": {
     "task": "T022",
-    "session": "actions-41099290452",
-    "expires": "2026-10-30T20:39:30Z",
-    "lane": "2"
+    "session": "actions-41107355968",
+    "expires": "2026-10-30T21:31:49Z"
    },
    "branch": "claude/task/T022-privacy-vault",
    "auto_merge": {
@@ -3610,25 +3609,11 @@
     "why": "auto-merge on #132 (gh pr merge)",
     "head": "b0abd371eceaccf23a3732c4500a985e2bfee760"
    },
-   "update_merges": [
-    {
-     "from": "b0abd371eceaccf23a3732c4500a985e2bfee760",
-     "to": "5bce5b8be097b97e020a82f4aca1b2dab775ae6a",
-     "main": "28dbc6fb1c0084329b19b0ab42c7da61476ccb02",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-10-30T18:22:17Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Ci: failure; Ci: failure; Coverage: failure; Coverage: failure",
    "runner_closed_prs": [
     132
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T223",
@@ -7202,7 +7187,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T18:55:06Z",
+ "updated_at": "2026-10-30T19:04:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -7300,7 +7285,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9689862b7be74c8f7e7e2be921c11d2683f71eb2",
+ "runner_sha": "6c597ba656499f3ba9bd09281e937357d0cdfca6",
  "starter": "actions",
  "smoke_runs": [
   {
