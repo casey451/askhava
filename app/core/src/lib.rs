@@ -10,6 +10,8 @@ pub mod api;
 mod clock;
 mod db;
 mod logging;
+mod rate_limit;
 mod settings;
+mod tasks;
 #[cfg(test)]
 mod tests;
