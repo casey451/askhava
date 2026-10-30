@@ -2236,7 +2236,6 @@
    ],
    "owns": [
     "app/ai/Cargo.toml",
-    "app/ai/src/api.rs",
     "app/ai/src/models.rs",
     "app/ai/src/schemas.rs",
     "app/ai/src/service.rs",
@@ -2244,7 +2243,8 @@
     "app/ai/src/tests/schemas.rs",
     "app/ai/src/tests/no_tools.rs",
     "app/ai/src/tests/adapter_calls.rs",
-    "app/catalog/src/restricted_words.rs"
+    "app/catalog/src/restricted_words.rs",
+    "app/catalog/src/tests/restricted_words.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -2280,13 +2280,14 @@
    "decisions": [
     "D-373",
     "D-480",
-    "D-492"
+    "D-492",
+    "D-840"
    ],
    "cites": [],
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 18
    },
    "checks": [
     "Ci",
