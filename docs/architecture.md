@@ -145,6 +145,8 @@ tests/               the Rust test-layer crates integration, security and recove
 twin/                the twin (Python) and its hard-failing gate, calling the Rust rules through rules_bridge
 ```
 
+- Text templates: `app/messaging/templates/en.json` and `es.json` are the registry of every fixed text (TXT-001, TXT-004), one key per template ID with both languages and a recorded `segments` count; each task adds only its own keys (D-759, D-491).
+
 ## 3. Modules, what each owns, and its tables
 
 Each module owns its files and its tables, and no module reaches into another's tables (`BUILD_BRIEF.md:126`). Each module's tables live in a Postgres schema named after it (D-091). "Calls" lists the lower crates whose `api` it may use, which are exactly the path dependencies in its `Cargo.toml`; `core` is always allowed and is not repeated.
