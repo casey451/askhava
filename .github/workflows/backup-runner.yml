@@ -120,6 +120,9 @@ jobs:
       CI: "true"
       DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
       SQLX_OFFLINE: "true"
+      # The same pinned gitleaks as ci.yml, so scripts/smoke.sh runs Ci's secret scan here (D-582).
+      GITLEAKS_VERSION: "8.28.0"
+      GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
     permissions:
       contents: write
       pull-requests: write
@@ -163,6 +166,12 @@ jobs:
               || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
             psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
           done
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/gitleaks"
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
+          echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"
       - uses: anthropics/claude-code-action@v1
         env:
           RUNNER_STARTER: actions

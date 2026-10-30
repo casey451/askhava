@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -15,7 +16,7 @@ from typing import Any
 
 import pytest
 
-from runner import __main__ as entry, cycle, state as st, verify
+from runner import __main__ as entry, cycle, github_env as ge, state as st, verify
 from runner.github_env import (
     GitHubEnv,
     alias_for,
@@ -323,7 +324,7 @@ class FakeRunner:
             path = args[-1]
             for key, value in self.replies.items():
                 if path.startswith(key):
-                    return 0, json.dumps(value), ""
+                    return 0, value if isinstance(value, str) else json.dumps(value), ""
             return 1, "", "not found"
         if args[:2] == ["git", "rev-parse"]:
             return 0, "tree-" + args[2].split("^")[0][:4], ""
@@ -350,6 +351,133 @@ def test_pr_for_uses_rest_and_reads_trees_and_files(tmp_path: Path) -> None:
 def test_pr_for_without_a_pr_is_none(tmp_path: Path) -> None:
     env = GitHubEnv(tmp_path, [TASK], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=FakeRunner({"repos/o/r/pulls": []}))
     assert env.pr_for("K10") is None
+
+
+# ---- D-582: the failure log names the failed step and carries the tail of its log
+
+ESC = "\x1b"
+FAKE_TOKEN = "ghs_" + "f" * 30  # token-shaped, built at run time so no scanner sees one in this file
+JOB_LOG = "\n".join([
+    "2026-10-30T07:01:00.0000000Z ##[group]Run actions/checkout@v4",
+    "2026-10-30T07:01:01.0000000Z ##[endgroup]",
+    "2026-10-30T07:01:02.0000000Z Syncing repository",
+    "2026-10-30T07:02:00.0000000Z ##[group]Run curl -sSfL -o scanner.tgz",
+    "2026-10-30T07:02:00.1000000Z env:",
+    f"2026-10-30T07:02:00.2000000Z   FAKE_SETTING: {FAKE_TOKEN}",
+    "2026-10-30T07:02:00.3000000Z   DATABASE_URL: postgres://fake_role@localhost:5432/fake_db",
+    "2026-10-30T07:02:01.0000000Z ##[endgroup]",
+    "2026-10-30T07:02:02.0000000Z scanner.tgz: OK",
+    f"2026-10-30T07:02:03.0000000Z Finding:     value=\"{ESC}[1;3mREDACTED{ESC}[0m\"",
+    "2026-10-30T07:02:03.1000000Z RuleID:      generic-api-key",
+    "2026-10-30T07:02:03.2000000Z File:        tests/contract/test_fake.py",
+    "2026-10-30T07:02:03.3000000Z Line:        263",
+    f"2026-10-30T07:02:03.4000000Z remote said {FAKE_TOKEN}",
+    f"2026-10-30T07:02:04.0000000Z {ESC}[90m7:02AM{ESC}[0m {ESC}[33mWRN{ESC}[0m leaks found: 2",
+    "2026-10-30T07:02:04.1000000Z ##[error]Process completed with exit code 1.",
+    "2026-10-30T07:02:05.0000000Z Post job cleanup.",
+])
+SCAN_STEP = "Secret scan (gitleaks, working tree)"
+
+
+def _failed_runs(*jobs: tuple[str, str, str]) -> dict[str, Any]:
+    """Check runs for head bbbb2222: (name, job id, started_at), each a failure from GitHub Actions."""
+    url = "https://github.com/o/r/actions/runs/77/job/{}"
+    return {"check_runs": [{"name": n, "head_sha": "bbbb2222", "conclusion": "failure", "started_at": at,
+                            "details_url": url.format(job)} for n, job, at in jobs]}
+
+
+def _pr_env(tmp_path: Path, replies: dict[str, Any]) -> tuple[GitHubEnv, FakeRunner]:
+    pulls = [{"number": 94, "head": {"sha": "bbbb2222"}, "merged_at": None}]
+    fake = FakeRunner({"repos/o/r/pulls?head=o:claude/task/K10-practice": pulls, **replies})
+    return GitHubEnv(tmp_path, [TASK], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=fake), fake
+
+
+def test_failure_log_names_the_failed_step_and_the_tail_of_its_log(tmp_path: Path) -> None:
+    job = {"steps": [{"name": "Set up job", "conclusion": "success"}, {"name": SCAN_STEP, "conclusion": "failure"},
+                     {"name": "PII scan", "conclusion": "skipped"}]}
+    runs = _failed_runs(("Ci", "5001", "2026-10-30T07:00:00Z"), ("Ci", "5002", "2026-10-30T07:01:00Z"))
+    env, fake = _pr_env(tmp_path, {"repos/o/r/commits/bbbb2222/check-runs": runs,
+                                   "repos/o/r/actions/jobs/5002/logs": JOB_LOG, "repos/o/r/actions/jobs/5002": job})
+    log = (env.pr_for("K10") or {})["failure_log"]
+    assert log.startswith("Ci: failure; Ci: failure\n") and f"Ci failed at step: {SCAN_STEP}\n" in log
+    assert "RuleID:      generic-api-key\nFile:        tests/contract/test_fake.py\nLine:        263" in log
+    assert log.endswith("leaks found: 2\n##[error]Process completed with exit code 1.")
+    assert FAKE_TOKEN not in log and "remote said [redacted]" in log
+    assert "DATABASE_URL" not in log and "env:" not in log and "Syncing" not in log and ESC not in log
+    assert log.count("failed at step") == 1  # the push and pull-request runs of one check: its latest only
+    assert not any("actions/jobs/5001" in a[-1] for a in fake.calls) and len(log) <= ge.FAILURE_LOG_CAP
+
+
+def test_failure_log_is_the_plain_list_when_the_jobs_api_fails(tmp_path: Path) -> None:
+    runs = _failed_runs(("Ci", "6001", "2026-10-30T07:00:00Z"), ("Twin", "6002", "2026-10-30T07:00:00Z"))
+    env, _ = _pr_env(tmp_path, {"repos/o/r/commits/bbbb2222/check-runs": runs,
+                                "repos/o/r/actions/jobs/6002": "not json"})
+    assert (env.pr_for("K10") or {})["failure_log"] == "Ci: failure; Twin: failure"
+    assert any("job 6001 detail unreadable" in line for line in env.log)
+    assert any("job 6002 detail unreadable" in line for line in env.log)
+
+
+def test_failure_log_without_a_readable_log_still_names_the_step(tmp_path: Path) -> None:
+    runs = _failed_runs(("Ci", "7001", "2026-10-30T07:00:00Z"))
+    runs["check_runs"].append({"name": "Other app", "head_sha": "bbbb2222", "conclusion": "failure"})
+    job = {"steps": [{"name": "Unit, contract and drill tests (pytest)", "conclusion": "failure"}]}
+    env, fake = _pr_env(tmp_path, {"repos/o/r/commits/bbbb2222/check-runs": runs, "repos/o/r/actions/jobs/7001": job})
+
+    def no_logs(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
+        return (1, "", "HTTP 410: gone") if args[-1].endswith("/logs") else fake(args, stdin, cwd)
+
+    env._run = no_logs
+    log = (env.pr_for("K10") or {})["failure_log"]
+    assert log == "Ci: failure; Other app: failure\nCi failed at step: Unit, contract and drill tests (pytest)"
+
+
+def test_failure_log_skips_a_job_with_no_failed_step(tmp_path: Path) -> None:
+    runs = _failed_runs(("Ci", "8001", "2026-10-30T07:00:00Z"))
+    env, fake = _pr_env(tmp_path, {"repos/o/r/commits/bbbb2222/check-runs": runs,
+                                   "repos/o/r/actions/jobs/8001": {"steps": [{"name": "x", "conclusion": "success"}]}})
+    assert (env.pr_for("K10") or {})["failure_log"] == "Ci: failure"
+    assert not any(a[-1].endswith("/logs") for a in fake.calls)
+
+
+def test_fit_failure_log_caps_the_length_and_keeps_the_error_line() -> None:
+    excerpt = [f"line {i} " + "x" * 150 for i in range(15)] + ["##[error]Process completed with exit code 1."]
+    text = ge.fit_failure_log("Ci: failure", [("Ci failed at step: s", excerpt), ("Twin failed at step: t", excerpt)])
+    assert len(text) <= ge.FAILURE_LOG_CAP and text.startswith("Ci: failure\nCi failed at step: s\n")
+    assert text.count("##[error]") >= 1 and "line 0 " not in text
+    assert ge.fit_failure_log("x" * 2000, [("h", ["e"])]) == "x" * ge.FAILURE_LOG_CAP
+    assert ge.fit_failure_log("Ci: failure", []) == "Ci: failure"
+
+
+def test_log_excerpt_needs_an_error_line_and_drops_groups() -> None:
+    assert ge.log_excerpt("2026-10-30T07:00:00.0Z all fine\n") == []
+    rows = ge.log_excerpt("\n".join(f"out {i}" for i in range(30)) + "\n##[error]boom")
+    assert len(rows) == ge.EXCERPT_LINES and rows[-1] == "##[error]boom" and rows[0] == "out 16"
+    assert ge.log_excerpt("##[group]Run x\nsecret-ish env\n##[endgroup]\n" + "y" * 500 + "\n##[error]e") == ["y" * ge.EXCERPT_WIDTH, "##[error]e"]
+
+
+def test_actions_job_reads_use_the_job_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-582: the job and log reads go with RUNNER_CHECKS_TOKEN, never with the long-lived token."""
+    for path in ("repos/o/r/actions/jobs/5002", "repos/o/r/actions/jobs/5002/logs"):
+        monkeypatch.setenv("RUNNER_CHECKS_TOKEN", "fake-job-token")
+        monkeypatch.setenv("RUNNER_PUSH_TOKEN", "fake-push-token")
+        monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+        assert ge._long_token_args(["gh", "api", path]) is None
+        env = ge._env_for(["gh", "api", path])
+        assert env is not None and env["GH_TOKEN"] == "fake-job-token"
+    assert ge._env_for(["gh", "api", "repos/o/r/actions/runs/77"]) is None
+
+
+def test_the_secret_scan_is_verbose_redacted_and_pinned_alike() -> None:
+    """D-582: Ci, the backup job and the smoke test run one gitleaks, verbose and redacted."""
+    root = Path(__file__).resolve().parent.parent
+    ci, backup = ((root / ".github/workflows" / f).read_text(encoding="utf-8") for f in ("ci.yml", "backup-runner.yml"))
+    smoke = (root / "scripts/smoke.sh").read_text(encoding="utf-8")
+    for key in ("GITLEAKS_VERSION", "GITLEAKS_SHA256"):
+        pins = {re.findall(rf'{key}: "([^"]+)"', text)[0] for text in (ci, backup)}
+        assert len(pins) == 1, key
+    assert "sha256sum -c -" in backup and 'echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"' in backup
+    command = "dir . --no-banner --redact --verbose --exit-code 1"
+    assert f'"$RUNNER_TEMP/gitleaks/gitleaks" {command}' in ci and f"gitleaks {command}" in smoke
 
 
 # ---- small pieces

@@ -45,6 +45,7 @@ import glob
 import json
 import os
 import random
+import re
 import shlex
 import subprocess
 import tempfile
@@ -71,6 +72,19 @@ UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError) 
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
 HEARTBEAT_SECONDS = 60
 ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
+FAILED_CONCLUSIONS = ("failure", "cancelled", "timed_out")
+# The retry worker's failure log (D-582): at most this many characters in all, and per failed job the
+# last EXCERPT_LINES lines of its failed step, each cut to EXCERPT_WIDTH characters.
+FAILURE_LOG_CAP = 1500
+EXCERPT_LINES = 15
+EXCERPT_WIDTH = 200
+JOB_URL = re.compile(r"/actions/runs/\d+/job/(\d+)")
+LOG_STAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z ")
+ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+# Defence in depth only: Actions already masks secrets as *** and gitleaks runs with --redact.
+TOKEN_LIKE = re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|x-access-token:[^@\s]+@")
+DETAIL_ERRORS = (RuntimeError, ValueError, TypeError, AttributeError, KeyError, OSError, subprocess.SubprocessError)
+JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the job token (D-502, D-582)
 
 
 def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
@@ -100,16 +114,22 @@ def _long_token_args(args: list[str]) -> list[str] | None:
     The Claude App's token lasts one hour, so a session whose worker runs longer could no longer
     fetch, push or call the API at hand-in (T005, October 29, 2026). Remote git calls name the
     repository URL instead of `origin` so the credential helper, not the action's header, answers;
-    gh calls other than check-run reads (RUNNER_CHECKS_TOKEN, D-502) use the token as GH_TOKEN."""
+    gh calls other than the job-token reads (check runs and Actions jobs, RUNNER_CHECKS_TOKEN, D-502,
+    D-582) use the token as GH_TOKEN."""
     token, repo = os.environ.get("RUNNER_PUSH_TOKEN", ""), os.environ.get("GITHUB_REPOSITORY", "")
     if not token or not repo:
         return None
     if args[:1] == ["git"] and len(args) > 1 and args[1] in REMOTE_GIT:
         url = f"https://github.com/{repo}.git"
         return [url if a == "origin" else a for a in args]
-    if args[:1] == ["gh"] and not (args[:2] == ["gh", "api"] and "/check-runs" in args[-1]):
+    if args[:1] == ["gh"] and not _job_token_read(args):
         return list(args)
     return None
+
+
+def _job_token_read(args: list[str]) -> bool:
+    """A `gh api` read of check runs (D-502) or of an Actions job and its log (D-582)."""
+    return args[:2] == ["gh", "api"] and any(part in args[-1] for part in JOB_TOKEN_READS)
 
 
 def _long_token_env(args: list[str]) -> dict[str, str]:
@@ -119,14 +139,15 @@ def _long_token_env(args: list[str]) -> dict[str, str]:
 
 
 def _env_for(args: list[str]) -> dict[str, str] | None:
-    """Check-run reads use the job's own token (D-502).
+    """Check-run and Actions-job reads use the job's own token (D-502, D-582).
 
     Inside the Claude Code action, GH_TOKEN is the Claude GitHub App's token, which has no Checks
     permission, so `commits/<sha>/check-runs` answers 403. The workflow passes the job token (which has
-    `checks: read`) as RUNNER_CHECKS_TOKEN; it is used only for those reads and never put in argv.
+    `checks: read`, and `actions: write`, which includes the read of a job and its log) as
+    RUNNER_CHECKS_TOKEN; it is used only for those reads and never put in argv.
     """
     token = os.environ.get("RUNNER_CHECKS_TOKEN", "")
-    if token and args[:2] == ["gh", "api"] and "/check-runs" in args[-1]:
+    if token and _job_token_read(args):
         return dict(os.environ, GH_TOKEN=token)
     return _push_env(args)
 
@@ -168,6 +189,51 @@ def parse_inbox_file(text: str) -> tuple[str, str]:
         if key.strip() == "outbox_id" and value.strip() not in ("", "null"):
             outbox_id = str(json.loads(value.strip())) if value.strip().startswith('"') else value.strip()
     return outbox_id, body.strip()
+
+
+def log_excerpt(text: str, lines: int = EXCERPT_LINES) -> list[str]:
+    """The last lines of a job log's failed step, up to and including its first `##[error]` line (D-582).
+
+    Timestamps and colour codes are dropped. Everything between `##[group]` and `##[endgroup]` is
+    left out: that is where Actions prints the step's command and its `env:` block, so no environment
+    dump reaches the excerpt. Token-shaped strings are replaced as a second guard. [] when the log
+    holds no error line."""
+    rows = [LOG_STAMP.sub("", ANSI.sub("", row)) for row in text.splitlines()]
+    end = next((i for i, row in enumerate(rows) if row.startswith("##[error]")), None)
+    if end is None:
+        return []
+    start = max((i for i in range(end) if rows[i].startswith("##[group]Run ")), default=0)
+    kept: list[str] = []
+    inside = False
+    for row in rows[start:end + 1]:
+        if row.startswith(("##[group]", "##[endgroup]")):
+            inside = row.startswith("##[group]")
+            continue
+        if not inside and row.strip():
+            kept.append(TOKEN_LIKE.sub("[redacted]", row)[:EXCERPT_WIDTH])
+    return kept[-lines:]
+
+
+def fit_failure_log(base: str, details: list[tuple[str, list[str]]], cap: int = FAILURE_LOG_CAP) -> str:
+    """`base` (the "name: conclusion" list) and, per failed job, its header line and log excerpt, in at
+    most `cap` characters (D-582). An excerpt that does not fit loses its oldest lines first, so the
+    error line at its end survives longest."""
+    parts = [base[:cap]]
+    for header, excerpt in details:
+        left = cap - len("\n".join(parts)) - 1
+        if left <= 0:
+            break
+        rows = list(excerpt)
+        while rows and len("\n".join([header, *rows])) > left:
+            rows.pop(0)
+        parts.append("\n".join([header, *rows])[:left])
+    return "\n".join(parts)
+
+
+def _job_id(run: dict[str, Any]) -> str | None:
+    """The Actions job behind a check run, from its details URL; None for a check from another app."""
+    found = JOB_URL.search(str(run.get("details_url") or ""))
+    return found.group(1) if found else None
 
 
 def state_diff(before: State, after: State) -> dict[str, Any]:
@@ -597,11 +663,42 @@ class GitHubEnv:
         checks = [{"name": r.get("name"), "sha": r.get("head_sha", head), "conclusion": r.get("conclusion")} for r in runs]
         out = {"number": int(pr["number"]), "merged": bool(pr.get("merged_at")), "head_sha": head, "checks": checks,
                "auto_merge": bool(pr.get("auto_merge"))}
-        failed = [f"{c['name']}: {c['conclusion']}" for c in checks if c["conclusion"] in ("failure", "cancelled", "timed_out")]
-        out["failure_log"] = "; ".join(failed)
+        out["failure_log"] = self._failure_log(runs)
         if out["merged"]:
             out.update(self._merge_facts(int(pr["number"]), head, str(pr.get("merge_commit_sha") or ""), str(pr["merged_at"])))
         return out
+
+    def _failure_log(self, runs: list[dict[str, Any]]) -> str:
+        """What failed on a PR head, as the retry worker gets it in `last_failure` (D-582).
+
+        First the "name: conclusion" list of every failed check run, as before. Then, once per check
+        name (its latest run), the Actions job's failed step names and the tail of that step's log
+        (`log_excerpt`), all within FAILURE_LOG_CAP characters. A detail that cannot be read is left
+        out, so on any API error the log is exactly the plain list."""
+        failed = [r for r in runs if r.get("conclusion") in FAILED_CONCLUSIONS]
+        base = "; ".join(f"{r.get('name')}: {r.get('conclusion')}" for r in failed)
+        latest: dict[str, dict[str, Any]] = {}
+        for run in sorted(failed, key=lambda r: str(r.get("started_at") or "")):
+            latest[str(run.get("name"))] = run
+        details = [d for d in (self._job_detail(run) for run in latest.values()) if d is not None]
+        return fit_failure_log(base, details)
+
+    def _job_detail(self, run: dict[str, Any]) -> tuple[str, list[str]] | None:
+        """(header naming the failed steps, log excerpt) for one failed check run, or None."""
+        job = _job_id(run)
+        if job is None:
+            return None
+        try:
+            steps = self.gh_json(f"repos/{self.repo}/actions/jobs/{job}").get("steps") or []
+            names = [str(s.get("name")) for s in steps if s.get("conclusion") in FAILED_CONCLUSIONS]
+            if not names:
+                return None
+            code, text, _ = self._run(["gh", "api", f"repos/{self.repo}/actions/jobs/{job}/logs"], None, self.root)
+        except DETAIL_ERRORS as exc:
+            self.log.append(f"job {job} detail unreadable: {str(exc)[:200]}")
+            return None
+        excerpt = log_excerpt(text) if code == 0 else []
+        return f"{run.get('name')} failed at step: {', '.join(names)}", excerpt
 
     def _merge_facts(self, number: int, head: str, merged: str, merged_at: str) -> dict[str, Any]:
         """Trees of the tested head and the squash commit, and the merge's files (--no-renames)."""

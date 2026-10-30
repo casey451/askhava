@@ -59,7 +59,8 @@ jobs:
           echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/gitleaks"
           tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
-          "$RUNNER_TEMP/gitleaks/gitleaks" dir . --no-banner --redact --exit-code 1
+          # --verbose prints each finding's rule, file and line; --redact still hides the value (D-582).
+          "$RUNNER_TEMP/gitleaks/gitleaks" dir . --no-banner --redact --verbose --exit-code 1
 
       - name: PII scan
         run: |
