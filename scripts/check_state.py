@@ -6,7 +6,9 @@ properties, items, additionalProperties as a schema, pattern, minLength) checked
 standard library only. Unknown keys are allowed, because the runner keeps every key it does not
 know (D-121). On top of the schema: task IDs are unique and a lease names a task in the list; with
 the lane map `leases` (D-515), each lane lease names a task, no task holds two lanes, at most `lanes`
-live leases sit outside the "fix" lane, and `lease` mirrors lane "1".
+live leases sit outside the "fix" lane, and `lease` mirrors lane "1". Decision numbers (D-525): no
+number sits in two tasks' `decision_ids`, and none is at or above `next_decision`, which would hand
+it out again. A state without these keys (written before D-525) stays valid.
 
 Usage: python3 scripts/check_state.py [--state PATH] [--schema PATH]
 Exit status 0 when valid; otherwise each problem is printed as `path: problem` and the status is 1.
@@ -109,6 +111,20 @@ def _lane_checks(state: dict[str, Any], lanes: int, now: datetime) -> list[str]:
     return problems
 
 
+def _decision_checks(state: dict[str, Any]) -> list[str]:
+    """Reserved D-numbers (D-525): each in one task's `decision_ids` only, all below `next_decision`."""
+    owners: dict[int, list[str]] = {}
+    for task in state.get("tasks", []):
+        if isinstance(task, dict):
+            for number in task.get("decision_ids") or []:
+                owners.setdefault(number, []).append(str(task.get("id")))
+    problems = [f"state.tasks: D-{n:03d} is reserved by {', '.join(ids)}" for n, ids in sorted(owners.items()) if len(ids) > 1]
+    counter = state.get("next_decision")
+    if isinstance(counter, int) and owners and max(owners) >= counter:
+        problems.append(f"state.next_decision: {counter} is not above the highest reserved number D-{max(owners):03d}")
+    return problems
+
+
 def check(state: Any, schema: dict[str, Any] | None = None, lanes: int | None = None, now: datetime | None = None) -> list[str]:
     """Every problem with a kit/state.json value (schema plus cross checks).
 
@@ -119,7 +135,7 @@ def check(state: Any, schema: dict[str, Any] | None = None, lanes: int | None = 
     if problems or not isinstance(state, dict):
         return problems
     count = lanes if lanes is not None else state.get("lanes", 1)
-    return _cross_checks(state) + _lane_checks(state, int(count), now or datetime.now(timezone.utc))
+    return _cross_checks(state) + _lane_checks(state, int(count), now or datetime.now(timezone.utc)) + _decision_checks(state)
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -31,7 +31,7 @@ A rule enforced only by a document is a rule a tired session can skip. The matri
 | The blueprint changes only with a decision entry and a lock rewrite; on a task branch only a harness task or the owner of a changed locked file may rewrite the lock | `Governance` and `Ci` (`scripts/check_plan_lock.py`, `scripts/check_pr_change.py`, rule 3) |
 | A plan change from a non-task branch names its decision | `Governance` and `Ci` (`Plan-Change: D-###` trailer, rule 5). **Reader** for authorship until Claude has its own GitHub identity (E-1) |
 | A requirement line changes only with a decision naming its ID; an ID is never removed | `Governance` and `Ci` (rules 3 and 4) |
-| `docs/decisions.md` is append-only, entries byte-identical and in order | `Governance` and `Ci` (rule 2) |
+| `docs/decisions.md` is append-only, entries byte-identical and in order; no D-number on two entries | `Governance` and `Ci` (rule 2) |
 | Every requirement traces to a source line; every `D-###` it names exists; no superseded value | `Ci` (`scripts/trace_spec.py`) |
 | Every live requirement and test-design entry is owned by a task; no withdrawn ID is named; no two concurrent tasks own one file; protected and shared paths are as listed | `Ci` (`scripts/validate_tasks.py`) |
 | Every task prompt matches `kit/tasks.json` and the template | `Ci` (`scripts/gen_prompts.py --check`) |
@@ -61,6 +61,7 @@ A rule enforced only by a document is a rule a tired session can skip. The matri
 3. **Who decides.** Inside the stops in `BUILD_BRIEF.md` section 16, Casey. Everywhere else, the session decides by the order of authority and logs it, and the item goes to `docs/for-casey-review.md` with the ones most worth a second look first. Casey may reverse any logged decision by a plan-change session; the reversal is a new entry.
 4. **Architecture change.** A change to a module's ownership, a layer (`kit/layers.json`), an invariant, a status, a timeout, the vault readers, an adapter or a pinned version is an architecture change. It requires: a `D-###` entry, the architecture file and `kit/layers.json` updated in the same PR, the plan lock rewritten, and an Opus fresh-eyes review. On a task branch only a harness task may make one (`scripts/check_pr_change.py`); any other task that finds the architecture wrong reports it and the plan-change session decides.
 5. **New dependency.** A crate or npm package not in `docs/architecture.md` section 11 needs a `D-###` entry with purpose, license and the audit result, and must pass `cargo deny` (`BUILD_BRIEF.md:122`).
+6. **Numbering.** The runner reserves numbers: each claim gives the task a block of five in `decision_ids` (in the hand-off) and advances `next_decision` in `kit/state.json`, and the worker numbers its entries only from that block, in order (D-525). A change made outside the runner (a plan-change session, a human fix) takes the next number above both `main`'s highest entry and the state's `next_decision`, and bumps nothing; gaps in the numbering are allowed. If two changes still take one number, the duplicate check fails whichever lands second (rule 2), and that change renumbers its entry.
 
 ## 4. The conflict rule, tightened
 

@@ -14,6 +14,9 @@ Times are UTC ISO strings ending in "Z". Every function returns a new state; not
 its argument. Keys this runner adds (D-486, kit/state_schema.json): `main_red` (falsy, or the failing
 check, SHA and offending merge: docs/governance.md section 5), `stage_proofs`, `smoke_runs`,
 `deviations`, `usage.by_task`, `runner_sha`/`starter`, and per task `history`, `reviewed_sha`.
+Decision numbers (D-525): `next_decision` is the next D-number the runner may hand out, and each
+claimed task carries `decision_ids`, the block of DECISION_BLOCK numbers its worker numbers new
+docs/decisions.md entries from, so parallel work never takes the same number twice.
 """
 
 from __future__ import annotations
@@ -42,6 +45,8 @@ FIX_MAIN = "FIX-MAIN"  # the only task while main is red (BUILD_BRIEF.md:240)
 RETRYABLE = (QUEUED, RETRY_AFTER_RESET, RETRY_LATER)
 SATISFIED = (DONE, SKIPPED)
 BUILD_TASK = re.compile(r"^T\d+$")  # the tasks Gate P holds
+DECISION_BLOCK = 5  # D-numbers reserved per claimed task (D-525)
+DECISION_ENTRY = re.compile(r"^- \*\*D-(\d+)\*\*", re.M)  # an entry line of docs/decisions.md
 
 
 class LeaseError(Exception):
@@ -203,15 +208,46 @@ def _claim_refusal(state: State, task_id: str, now: datetime, lane: str) -> str:
     return ""
 
 
-def claim(state: State, task_id: str, session: str, now: datetime, lane: str = LANE_ONE) -> State:
-    """Claim a task on a lane. With one lane, one task is in flight at a time (BUILD_BRIEF.md:222)."""
+def decision_numbers(text: str) -> list[int]:
+    """The D-numbers of docs/decisions.md's entry lines (`- **D-###** ...`), in file order, repeats kept."""
+    return [int(n) for n in DECISION_ENTRY.findall(text)]
+
+
+def _reserved(state: State) -> list[int]:
+    """Every D-number a task of the state holds in `decision_ids`."""
+    return [n for t in state["tasks"] for n in t.get("decision_ids") or []]
+
+
+def reserve_decisions(state: State, task_id: str, taken: set[int]) -> State:
+    """Give the task a block of DECISION_BLOCK D-numbers and advance `next_decision` (D-525).
+
+    `taken` is every D-number on main's docs/decisions.md. A task that already holds a block keeps
+    it (a re-claim) unless one of its numbers is on main by now. A new block starts above main's
+    highest entry, above every block already handed out and at `next_decision` or later, so the
+    counter starts lazily from main's file and never hands out a number main already uses."""
+    held = list(entry(state, task_id).get("decision_ids") or [])
+    if held and not set(held) & taken:
+        return state
+    start = max([int(state.get("next_decision") or 1), max(taken, default=0) + 1, max(_reserved(state), default=0) + 1])
+    out = with_task(state, task_id, decision_ids=list(range(start, start + DECISION_BLOCK)))
+    out["next_decision"] = start + DECISION_BLOCK
+    return out
+
+
+def claim(
+    state: State, task_id: str, session: str, now: datetime, lane: str = LANE_ONE, taken: set[int] | None = None
+) -> State:
+    """Claim a task on a lane. With one lane, one task is in flight at a time (BUILD_BRIEF.md:222).
+
+    With `taken` (the D-numbers on main's docs/decisions.md) the same write reserves the task's
+    decision numbers (reserve_decisions, D-525); without it the claim reserves none."""
     refusal = _claim_refusal(state, task_id, now, lane)
     if refusal:
         raise LeaseError(refusal)
     out = with_task(state, task_id, status=IN_PROGRESS, attempt_started_at=iso(now))
     out = with_lease(out, lane, _lease_for(task_id, session, now))
     out["current"] = task_id
-    return out
+    return out if taken is None else reserve_decisions(out, task_id, taken)
 
 
 def renew(state: State, task_id: str, session: str, now: datetime, lane: str = LANE_ONE) -> State:

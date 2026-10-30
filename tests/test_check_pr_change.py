@@ -234,3 +234,39 @@ def test_trailer_must_name_a_new_entry_exactly(tmp_path: Path, capsys) -> None:
     commit(root, "D-001")
     assert run(root) == 1
     assert "not a new entry" in capsys.readouterr().err
+
+
+def test_a_d_number_used_twice_fails_with_a_clear_message(tmp_path: Path, capsys) -> None:
+    """D-525: two pieces of work that took one number; the change that lands second fails."""
+    root = repo(tmp_path)
+    add_decision(root, "- **D-002** Question: one lane. Choice: c.\n- **D-002** Question: other lane. Choice: d.\n")
+    commit(root)
+    assert run(root) == 1
+    err = capsys.readouterr().err
+    assert "docs/decisions.md has D-002 on 2 entries; renumber the newer one" in err
+    assert cc.decisions_unique(DECISIONS + "- **D-001** Question: again. Choice: e.\n") != []
+
+
+def test_gaps_in_decision_numbers_pass(tmp_path: Path) -> None:
+    """Reserved blocks leave unused numbers behind; a gap is never an error (D-525)."""
+    root = repo(tmp_path)
+    add_decision(root, "- **D-004** Question: q. Choice: c.\n- **D-009** Question: r. Choice: d.\n")
+    commit(root)
+    assert run(root) == 0
+    assert cc.decisions_unique(None) == []
+
+
+def test_two_branches_appending_decisions_merge_cleanly_locally(tmp_path: Path) -> None:
+    """The repository's .gitattributes (`docs/decisions.md merge=union`) lets a local merge keep both appends."""
+    root = repo(tmp_path)
+    (root / ".gitattributes").write_text((REPO_ROOT / ".gitattributes").read_text(encoding="utf-8"), encoding="utf-8")
+    commit(root)
+    git(root, "checkout", "-qb", "other")
+    add_decision(root, "- **D-007** Question: other. Choice: c.\n")
+    commit(root)
+    git(root, "checkout", "-q", "work")
+    add_decision(root, "- **D-002** Question: work. Choice: c.\n")
+    commit(root)
+    git(root, "merge", "-q", "--no-edit", "other")
+    text = (root / "docs/decisions.md").read_text(encoding="utf-8")
+    assert "- **D-002** Question: work." in text and "- **D-007** Question: other." in text and "<<<<<<<" not in text

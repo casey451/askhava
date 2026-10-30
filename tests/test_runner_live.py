@@ -466,6 +466,27 @@ def test_fix_main_handoff_carries_its_goal_as_the_prompt() -> None:
     assert entry._prompt_for({}, "T999") == "kit/prompts/T999.md"
 
 
+def test_a_live_claim_reserves_decision_numbers_above_mains_file(repo: dict[str, Path], tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-525: the real Env reads main's docs/decisions.md fresh; the claim's state push carries the block."""
+    monkeypatch.delenv("RUNNER_WORKER_CMD", raising=False)
+    env = make_env(repo["a"], tmp_path)
+    assert env.decision_numbers() is None  # no decisions file on main: claims reserve nothing
+    seed = repo["seed"]
+    git(seed, "checkout", "-q", "main")
+    (seed / "docs").mkdir()
+    (seed / "docs" / "decisions.md").write_text("# Decisions\n\n- **D-001** a.\n- **D-040** b.\n")
+    git(seed, "add", "-A")
+    git(seed, "commit", "-qm", "decisions")
+    git(seed, "push", "-q", "origin", "main")
+    assert env.decision_numbers() == {1, 40}
+    env.smoke_main = lambda: (True, env.main_head())  # type: ignore[method-assign]  # reason: no smoke.sh in the fake repo
+    cfg = cycle.Config([TASK], MODELS, [".github/", "runner/"], ["docs/decisions.md"], env.outbox_dir, "session-a", lambda: NOW,
+                       decisions=env.decision_numbers)
+    assert cycle.run_cycle(cfg, env, NOW) == "handed_off"
+    state = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    assert st.entry(state, "K10")["decision_ids"] == [41, 42, 43, 44, 45] and state["next_decision"] == 46
+
+
 def test_check_run_reads_use_the_job_token(monkeypatch: pytest.MonkeyPatch) -> None:
     """D-502: only check-run reads swap in RUNNER_CHECKS_TOKEN, and only when it is set."""
     from runner import github_env

@@ -115,6 +115,9 @@
         }
       }
     },
+    "next_decision": {
+      "type": "integer"
+    },
     "main_red": {
       "type": [
         "object",
@@ -283,6 +286,12 @@
                   "type": "string"
                 }
               }
+            }
+          },
+          "decision_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
             }
           }
         }
