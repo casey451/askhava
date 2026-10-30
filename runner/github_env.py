@@ -71,9 +71,48 @@ ALIASES = {"haiku": "haiku", "sonnet": "sonnet", "opus": "opus"}
 
 
 def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
-    """subprocess.run without a shell; returns (exit code, stdout, stderr)."""
-    done = subprocess.run(args, input=stdin, capture_output=True, text=True, cwd=cwd, timeout=600, check=False, env=_env_for(args))
+    """subprocess.run without a shell; returns (exit code, stdout, stderr).
+
+    Remote git and gh calls go first with the long-lived token (D-519) and, if that is refused, once
+    more exactly as before with the session's own credentials, so the change can never do worse."""
+    long_args = _long_token_args(args)
+    if long_args is not None:
+        done = _run(long_args, stdin, cwd, _long_token_env(long_args))
+        if done.returncode == 0:
+            return done.returncode, done.stdout, done.stderr
+    done = _run(args, stdin, cwd, _env_for(args))
     return done.returncode, done.stdout, done.stderr
+
+
+def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(args, input=stdin, capture_output=True, text=True, cwd=cwd, timeout=600, check=False, env=env)
+
+
+REMOTE_GIT = ("fetch", "push", "ls-remote")
+
+
+def _long_token_args(args: list[str]) -> list[str] | None:
+    """The call to make with RUNNER_PUSH_TOKEN, or None when it does not apply (D-519).
+
+    The Claude App's token lasts one hour, so a session whose worker runs longer could no longer
+    fetch, push or call the API at hand-in (T005, October 29, 2026). Remote git calls name the
+    repository URL instead of `origin` so the credential helper, not the action's header, answers;
+    gh calls other than check-run reads (RUNNER_CHECKS_TOKEN, D-502) use the token as GH_TOKEN."""
+    token, repo = os.environ.get("RUNNER_PUSH_TOKEN", ""), os.environ.get("GITHUB_REPOSITORY", "")
+    if not token or not repo:
+        return None
+    if args[:1] == ["git"] and len(args) > 1 and args[1] in REMOTE_GIT:
+        url = f"https://github.com/{repo}.git"
+        return [url if a == "origin" else a for a in args]
+    if args[:1] == ["gh"] and not (args[:2] == ["gh", "api"] and "/check-runs" in args[-1]):
+        return list(args)
+    return None
+
+
+def _long_token_env(args: list[str]) -> dict[str, str]:
+    if args[:1] == ["gh"]:
+        return dict(os.environ, GH_TOKEN=os.environ["RUNNER_PUSH_TOKEN"])
+    return _git_token_env()
 
 
 def _env_for(args: list[str]) -> dict[str, str] | None:
@@ -102,6 +141,11 @@ def _push_env(args: list[str]) -> dict[str, str] | None:
         return None
     if not any(a.startswith("https://github.com/") for a in args):
         return None
+    return _git_token_env()
+
+
+def _git_token_env() -> dict[str, str]:
+    """git config, through the environment only, that answers credentials with RUNNER_PUSH_TOKEN."""
     helper = '!f() { echo username=x-access-token; echo "password=$RUNNER_PUSH_TOKEN"; }; f'
     pairs = [("http.https://github.com/.extraheader", ""), ("credential.helper", ""), ("credential.helper", helper)]
     env = dict(os.environ, GIT_CONFIG_COUNT=str(len(pairs)))
