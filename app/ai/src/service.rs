@@ -7,11 +7,15 @@
 //! it with the AI-023 timeout and retries, uses the reply only on an `end_turn` stop with one
 //! schema-valid text block (AI-005), and records the call with the model ID, instruction version
 //! and request ID (AI-024). Every other ending returns [`AiOff::CallEnded`], and a key or spend
-//! error raises an owner alert (AI-023). No transaction is open during the network call (R11).
+//! error raises an owner alert (AI-023). A reading is stored without text in `ai.reading` and
+//! streamed off-database with the call record (AI-013). No transaction is open during the network
+//! call (R11). The AI-008 gate in front of it is `switch::read_intake`.
 
+use std::collections::BTreeSet;
+use std::sync::{Mutex, PoisonError};
 use std::time::Duration;
 
-use askhava_ops::api::{NewAlert, Severity, raise_alert};
+use askhava_ops::api::{NewAlert, Severity, StreamEvent, is_code_name, raise_alert, stream_event};
 use askhava_privacy::api::ScrubbedText;
 use serde_json::{Value, json};
 use sqlx::types::Uuid;
@@ -20,7 +24,9 @@ use sqlx::{Connection, PgConnection};
 use crate::models::{
     self, AiConfig, AiError, CallRow, Endpoint, Fault, INTAKE_READING, Reply, Transport,
 };
-use crate::schemas::{Discard, IntakeReading, OpenTrades, Tag, intake_schema, parse_reading, wrap};
+use crate::schemas::{
+    Discard, IntakeReading, Language, OpenTrades, Tag, intake_schema, parse_reading, wrap,
+};
 
 /// The most retries after the first attempt (AI-023).
 pub(crate) const MAX_RETRIES: u32 = 2;
@@ -63,6 +69,9 @@ pub enum AiOff {
     DailyCap,
     /// The call ended without a usable reading (error, timeout, stop, schema or catalog).
     CallEnded,
+    /// In live, the AI-008 switch is off (or a record it needs is missing) and zero retention is
+    /// not signed: no call was made, and intake runs keyword-only.
+    SwitchOff,
 }
 
 /// The intake step's result (AI-010).
@@ -246,7 +255,7 @@ pub async fn read_intake<T: Transport>(
         alert: Some("ai.daily_cap"),
     };
     if models::calls_today(db).await? >= config.daily_cap() {
-        record(db, &row).await?;
+        record(db, &row, None).await?;
         return Ok(Intake::AiOff(AiOff::DailyCap));
     }
     let body = intake_request(config, call.text);
@@ -261,7 +270,7 @@ pub async fn read_intake<T: Transport>(
         Err(CallEnd::Http { status, alert }) => ("http_error", Some(i32::from(status)), alert),
         Err(end) => (end.code(), None, None),
     };
-    record(db, &row).await?;
+    record(db, &row, result.as_ref().ok()).await?;
     Ok(result.map_or(Intake::AiOff(AiOff::CallEnded), Intake::Reading))
 }
 
@@ -274,8 +283,13 @@ fn is_request_id(id: &str) -> bool {
 }
 
 /// Writes the call record and, for the first alert of its kind today, raises the owner alert
-/// and stores its ID on the record, in one short transaction (AI-021, AI-023).
-async fn record(db: &mut PgConnection, row: &CallRow<'_>) -> Result<(), AiError> {
+/// and stores its ID on the record, and the reading, if any, with its off-database copy, in one
+/// short transaction (AI-013, AI-021, AI-023).
+async fn record(
+    db: &mut PgConnection,
+    row: &CallRow<'_>,
+    reading: Option<&IntakeReading>,
+) -> Result<(), AiError> {
     let mut tx = db.begin().await.map_err(|_| AiError::Database)?;
     let mut alert_id = None;
     if let Some(kind) = row.alert
@@ -293,5 +307,78 @@ async fn record(db: &mut PgConnection, row: &CallRow<'_>) -> Result<(), AiError>
         );
     }
     models::insert_call(&mut tx, row, alert_id).await?;
+    if let Some(reading) = reading {
+        write_reading(&mut tx, row.subject, reading).await?;
+    }
     tx.commit().await.map_err(|_| AiError::Database)
+}
+
+/// Stores the reading's confidences and flags in `ai.reading`, which has no text column, and
+/// queues its trade, job type, flags and language for the off-database stream in the same
+/// transaction (AI-013, PRIV-029, D-734, D-842).
+async fn write_reading(
+    db: &mut PgConnection,
+    subject: Uuid,
+    reading: &IntakeReading,
+) -> Result<(), AiError> {
+    let spanish = reading.language == Language::Es;
+    let id = sqlx::query_scalar!(
+        "INSERT INTO ai.reading (subject_id, trade_confidence, job_type_confidence, emergency, \
+         urgent, major, spanish) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+        subject,
+        reading.trade_confidence,
+        reading.job_type_confidence,
+        reading.emergency,
+        reading.urgent,
+        reading.major,
+        spanish,
+    )
+    .fetch_one(&mut *db)
+    .await
+    .map_err(|_| AiError::Database)?;
+    let flag = |on: bool| if on { "true" } else { "false" };
+    let fields: Vec<(&'static str, &'static str)> = [
+        ("trade", interned(code_of(&reading.trade))),
+        ("job_type", interned(code_of(&reading.job_type))),
+        ("emergency", flag(reading.emergency)),
+        ("urgent", flag(reading.urgent)),
+        ("major", flag(reading.major)),
+        ("language", if spanish { "es" } else { "en" }),
+    ]
+    .into_iter()
+    .filter(|(_, value)| is_code_name(value))
+    .collect();
+    let event = StreamEvent::AiReading {
+        reading_id: id,
+        fields: &fields,
+    };
+    stream_event(db, &event)
+        .await
+        .map_err(|_| AiError::Database)
+}
+
+/// A catalog trade code or job-type name as a code name: lower-case letters and digits, every
+/// other run of characters one `_` ("evaporative (swamp) cooler repair" becomes
+/// `evaporative_swamp_cooler_repair`) (AI-013, D-842).
+pub(crate) fn code_of(value: &str) -> String {
+    let lower = value.to_lowercase();
+    let words: Vec<&str> = lower
+        .split(|c: char| !(c.is_ascii_lowercase() || c.is_ascii_digit()))
+        .filter(|w| !w.is_empty())
+        .collect();
+    words.join("_")
+}
+
+/// `value` as a `&'static str`, which the stream's field list takes (D-734). Only codes of
+/// catalog-checked trades and job types reach it, so the set it keeps is bounded by the catalog
+/// (D-842).
+fn interned(value: String) -> &'static str {
+    static SEEN: Mutex<BTreeSet<&'static str>> = Mutex::new(BTreeSet::new());
+    let mut seen = SEEN.lock().unwrap_or_else(PoisonError::into_inner);
+    if let Some(known) = seen.get(value.as_str()) {
+        return known;
+    }
+    let leaked: &'static str = Box::leak(value.into_boxed_str());
+    seen.insert(leaked);
+    leaked
 }
