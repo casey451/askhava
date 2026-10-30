@@ -1746,8 +1746,8 @@
    "deps": [
     "T008"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "catalog-job-type-kinds",
    "type": "build",
    "stage": "2",
@@ -1801,6 +1801,19 @@
      "started_at": "2026-10-30T11:02:21Z",
      "ended_at": "2026-10-30T11:23:45Z",
      "result": "check_failed"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 28,
+     "head_sha": "ece277d09f5eef0e1484b2973fa97fc9a11bfd5b",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-10-30T11:28:17Z",
+     "ended_at": "2026-10-30T11:49:23Z",
+     "result": "QUEUED"
     }
    ],
    "reviewed_sha": "f52cc719ec551420d5d960da2de81825908bf309",
@@ -1815,7 +1828,7 @@
     "why": "auto-merge on #103 (gh pr merge)",
     "head": "f52cc719ec551420d5d960da2de81825908bf309"
    },
-   "last_failure": "Twin: failure; Twin: failure\nTwin failed at step: Twin gate",
+   "last_failure": "T233 acceptance passes (check_catalog, test_check_catalog 77 passed) but Twin/Ci/smoke fail: twin/oracle/license_scope.json (protected) is stale after categories.yaml change; a harness task must run twin/oracle/gen_license_scope.py (D-606)",
    "runner_closed_prs": [
     103
    ]
@@ -4837,11 +4850,11 @@
  "usage": {
   "last_reading": {
    "task": "T233",
-   "at": "2026-10-30T11:23:45Z",
-   "cache_read_input_tokens": 1423462,
-   "output_tokens": 22950,
-   "input_tokens": 78,
-   "cache_creation_input_tokens": 98021
+   "at": "2026-10-30T11:49:23Z",
+   "cache_read_input_tokens": 2203551,
+   "cache_creation_input_tokens": 160977,
+   "output_tokens": 37966,
+   "input_tokens": 108
   },
   "source": "ledger",
   "by_task": {
@@ -4987,25 +5000,25 @@
    "T233": {
     "estimated_bytes": 122022,
     "estimated_tokens": 499456,
-    "cache_read_input_tokens": 1423462,
-    "output_tokens": 22950,
-    "input_tokens": 78,
-    "cache_creation_input_tokens": 98021,
+    "cache_read_input_tokens": 3627013,
+    "output_tokens": 60916,
+    "input_tokens": 186,
+    "cache_creation_input_tokens": 258998,
     "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-10-30T10:47:18Z",
-    "tokens": 950667
+    "tokens": 1370073
    },
    "week": {
     "start": "2026-10-29T18:38:52Z",
-    "tokens": 24387908
+    "tokens": 24807314
    }
   }
  },
- "updated_at": "2026-10-30T11:33:48Z",
+ "updated_at": "2026-10-30T11:49:23Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -5103,7 +5116,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ef74c9a216eb55a8a222b420ae4105ceff0118d1",
+ "runner_sha": "ece277d09f5eef0e1484b2973fa97fc9a11bfd5b",
  "starter": "actions",
  "smoke_runs": [
   {
