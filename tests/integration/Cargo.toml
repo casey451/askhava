@@ -17,6 +17,7 @@ askhava-catalog = { workspace = true }
 askhava-adapters = { workspace = true }
 askhava-privacy = { workspace = true }
 askhava-jobs = { workspace = true }
+askhava-messaging = { workspace = true }
 axum = { workspace = true }
 base64 = { workspace = true }
 hmac = { workspace = true }
