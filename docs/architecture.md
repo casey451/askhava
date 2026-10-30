@@ -145,6 +145,7 @@ tests/               the Rust test-layer crates integration, security and recove
 twin/                the twin (Python) and its hard-failing gate, calling the Rust rules through rules_bridge
 ```
 
+- Sentinel scan: `tests/security/tests/sentinel_db_logs.rs` (T217) writes the fixture sentinels (`askhava-fixtures`) through the vault, sends a request carrying them through the `build_router` layers and runs the off-database stream, then searches every table but `privacy.contact` (bytea as hex too), the JSON log, the stream's stand-in objects and a capturing Sentry transport for them; T120 repeats it after J1 to J4 (TD-PRIV-02, PRIV-016, PRIV-019, D-795).
 - Text templates: `app/messaging/templates/en.json` and `es.json` are the registry of every fixed text (TXT-001, TXT-004), one key per template ID with both languages and a recorded `segments` count; each task adds only its own keys (D-759, D-491).
 
 ## 3. Modules, what each owns, and its tables
