@@ -243,30 +243,38 @@ def test_real_looking_keys_are_refused(base: str, path: str, headers: dict[str, 
     assert call(base, "POST", path, body={}, **headers)[0] == 401
 
 
+def resend_post(base: str, mail: dict[str, Any], once: str = "") -> Reply:
+    extra = {"idempotency_key": once} if once else {}
+    return call(base, "POST", "/resend/emails", body=mail, authorization="Bearer re_stand_in_fake", **extra)
+
+
 def test_resend_send_idempotency_and_errors(base: str) -> None:
     mail = {"from": "Ask Hava <jobs@example.com>", "to": ["canary@example.com"], "subject": "Hi", "text": "Hello"}
-    one = call(base, "POST", "/resend/emails", body=mail, authorization="Bearer re_stand_in_fake", idempotency_key="e1")
+    one = resend_post(base, mail, "email-1")
     assert one[0] == 200 and len(one[1]["id"]) == 36
-    again = call(base, "POST", "/resend/emails", body=mail, authorization="Bearer re_stand_in_fake", idempotency_key="e1")
+    again = resend_post(base, mail, "email-1")
     assert again[1] == one[1]
-    other = call(base, "POST", "/resend/emails", body={**mail, "subject": "B"}, authorization="Bearer re_stand_in_fake",
-                 idempotency_key="e1")
+    other = resend_post(base, {**mail, "subject": "B"}, "email-1")
     assert other[0] == 409 and other[1]["name"] == "invalid_idempotent_request"
-    assert call(base, "POST", "/resend/emails", body={**mail, "to": []}, authorization="Bearer re_stand_in_fake")[0] == 422
+    assert resend_post(base, {**mail, "to": []})[0] == 422
     assert call(base, "POST", "/resend/emails", body=mail)[1]["statusCode"] == 401
+
+
+def lob_post(base: str, letter: dict[str, Any], once: str = "") -> Reply:
+    extra = {"idempotency_key": once} if once else {}
+    return call(base, "POST", "/lob/v1/letters", body=letter, authorization=LOB_AUTH, **extra)
 
 
 def test_lob_letter_idempotency_and_errors(base: str) -> None:
     address = {"name": "Zelda Canary", "address_line1": "1 Test Way", "address_city": "Lake Havasu City",
                "address_state": "AZ", "address_zip": "86403"}
     letter = {"to": address, "from": {**address, "name": "Ask Hava"}, "file": "<html>000000</html>", "color": False}
-    status, made, _ = call(base, "POST", "/lob/v1/letters", body=letter, authorization=LOB_AUTH, idempotency_key="l1")
+    status, made, _ = lob_post(base, letter, "letter-1")
     assert status == 200 and made["id"].startswith("ltr_")
-    assert call(base, "POST", "/lob/v1/letters", body=letter, authorization=LOB_AUTH, idempotency_key="l1")[1] == made
-    clash = call(base, "POST", "/lob/v1/letters", body={**letter, "color": True}, authorization=LOB_AUTH,
-                 idempotency_key="l1")
+    assert lob_post(base, letter, "letter-1")[1] == made
+    clash = lob_post(base, {**letter, "color": True}, "letter-1")
     assert clash[0] == 409
-    assert call(base, "POST", "/lob/v1/letters", body={**letter, "file": ""}, authorization=LOB_AUTH)[0] == 422
+    assert lob_post(base, {**letter, "file": ""})[0] == 422
     assert call(base, "GET", f"/lob/v1/letters/{made['id']}", authorization=LOB_AUTH)[1] == made
     assert call(base, "POST", "/lob/v1/letters", body=letter)[0] == 401
 
