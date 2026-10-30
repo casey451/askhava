@@ -5,10 +5,16 @@ Body), 201 with a message resource, errors as {code, message, more_info, status}
 Magic numbers (Twilio test credentials docs): From +15005550006 is valid; To
 +15005550001 invalid (21211), +15005550002 cannot be routed (21612), +15005550003 no
 permission (21408), +15005550004 blocked (21610), +15005550009 cannot receive SMS (21614).
-Opt-out: STOP, STOPALL, UNSUBSCRIBE, CANCEL, END, QUIT, REVOKE, OPTOUT block later sends (21610) until
-START, YES or UNSTOP. Webhooks carry X-Twilio-Signature: base64(HMAC-SHA1(auth token,
-URL + sorted key+value pairs)). Verify: POST /v2/Services/{sid}/Verifications and
-/VerificationCheck.
+Advanced Opt-Out comes from `stand_ins/provider_optout.json` (CON-030, D-492, D-493): an inbound
+text that is exactly one of its opt-out words blocks later sends (21610) and gets the file's
+CON-009 reply (Spanish for the Spanish words) until START or UNSTOP (no YES); the webhook then
+carries OptOutType. Those provider replies are kept apart in `replies`, so `sent_log` counts only
+the app's own sends. Inbound picture texts carry NumMedia and MediaUrl{n}; GET on a media URL gives
+the bytes (served with their content type), with `.json` the Media resource, and DELETE
+removes it; every picture gets its own Media sid. Each sent message keeps the app's derived key, and `sent_log` finds it, for OPS-017's
+"nothing sent twice" check; Calls stand in for the masked voice session (D-491). Webhooks carry
+X-Twilio-Signature: base64(HMAC-SHA1(auth token, URL + sorted key+value pairs)). Verify: POST
+/v2/Services/{sid}/Verifications and /VerificationCheck.
 """
 
 from __future__ import annotations
@@ -16,8 +22,10 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import json
 import math
 import re
+from pathlib import Path
 from typing import Any
 
 from stand_ins.common import Reply, fake_id
@@ -36,8 +44,10 @@ MAGIC_TO = {
     "+15005550004": (21610, "Attempt to send to unsubscribed recipient"),
     "+15005550009": (21614, "'To' number is not a valid mobile number"),
 }
-OPT_OUT = {"STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "REVOKE", "OPTOUT"}
-OPT_IN = {"START", "YES", "UNSTOP"}
+OPTOUT_SETTINGS: dict[str, Any] = json.loads((Path(__file__).parent / "provider_optout.json").read_text("utf-8"))
+OPT_OUT = {w.upper() for w in OPTOUT_SETTINGS["opt_out"]["keywords"]}
+OPT_IN = {w.upper() for w in OPTOUT_SETTINGS["opt_in"]["keywords"]}
+SPANISH_OPT_OUT = {w.upper() for w in OPTOUT_SETTINGS["opt_out"]["spanish_keywords"]}
 E164 = re.compile(r"^\+[1-9]\d{7,14}$")
 GSM_BASIC = (
     "@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?¡"
@@ -84,8 +94,14 @@ class FakeTwilio:
         self.opted_out: set[tuple[str, str]] = set()
         self.verifications: dict[str, dict[str, Any]] = {}
         self.callbacks: list[dict[str, str]] = []
+        self.keys: dict[str, str] = {}
+        self.media: dict[str, bytes] = {}
+        self.media_types: dict[str, str] = {}
+        self.media_count = 0
+        self.replies: list[dict[str, Any]] = []
+        self.calls: list[dict[str, Any]] = []
 
-    def create_message(self, to: str, frm: str, body: str) -> Reply:
+    def create_message(self, to: str, frm: str, body: str, key: str | None = None) -> Reply:
         if not body:
             return error(21602, "Message body is required.")
         if len(body) > MAX_BODY:
@@ -101,10 +117,34 @@ class FakeTwilio:
             return error(21610, "Attempt to send to unsubscribed recipient")
         msg = self._resource(to, frm, body)
         self.messages.append(msg)
+        if key is not None:
+            self.keys[msg["sid"]] = key
         return 201, dict(msg)
 
+    def sent_log(self, key: str | None = None, to: str | None = None, replies: bool = False) -> list[dict[str, Any]]:
+        """The app's sends (or, with `replies`, the provider's own opt-out replies), filtered by the
+        app's derived key and/or To (OPS-017, D-491, D-561)."""
+        return [
+            dict(m)
+            for m in (self.replies if replies else self.messages)
+            if key in (None, self.keys.get(m["sid"])) and to in (None, m["to"])
+        ]
+
+    def _auto_reply(self, word: str, to: str, frm: str) -> str | None:
+        """The provider's own Advanced Opt-Out reply to the keyword, from the settings file (CON-030)."""
+        if word in OPT_OUT:
+            replies = OPTOUT_SETTINGS["opt_out"]["reply"]
+            text = replies["es" if word in SPANISH_OPT_OUT else "en"]
+        elif word in OPT_IN:
+            text = OPTOUT_SETTINGS["opt_in"]["reply"]["en"]
+        else:
+            return None
+        reply = {**self._resource(to, frm, text), "direction": "outbound-reply"}
+        self.replies.append(reply)
+        return "STOP" if word in OPT_OUT else "START"
+
     def _resource(self, to: str, frm: str, body: str) -> dict[str, Any]:
-        sid = fake_id("SM", len(self.messages) + 1, 32)
+        sid = fake_id("SM", len(self.messages) + len(self.replies) + 1, 32)
         return {
             "sid": sid,
             "account_sid": self.account_sid,
@@ -131,23 +171,68 @@ class FakeTwilio:
         self.callbacks.append(params)
         return params
 
-    def receive(self, frm: str, to: str, body: str) -> dict[str, str]:
-        """A homeowner texts us; returns the webhook params (Twilio posts these form fields)."""
+    def receive(self, frm: str, to: str, body: str, media: list[str] | None = None) -> dict[str, str]:
+        """A homeowner texts us (media: content types of attached pictures); returns the webhook
+        params Twilio posts, with OptOutType when an Advanced Opt-Out keyword matched."""
         word = body.strip().upper()
         if word in OPT_OUT:
             self.opted_out.add((to, frm))
         elif word in OPT_IN:
             self.opted_out.discard((to, frm))
-        params = {
-            "MessageSid": fake_id("SM", 1000 + len(self.inbound), 32),
-            "AccountSid": self.account_sid,
-            "From": frm,
-            "To": to,
-            "Body": body,
-            "NumMedia": "0",
-        }
+        sid = fake_id("MM" if media else "SM", 1000 + len(self.inbound), 32)
+        params = {"MessageSid": sid, "AccountSid": self.account_sid, "From": frm, "To": to, "Body": body}
+        params["NumMedia"] = str(len(media or []))
+        for n, content_type in enumerate(media or []):
+            self.media_count += 1
+            media_sid = fake_id("ME", self.media_count, 32)
+            path = f"/2010-04-01/Accounts/{self.account_sid}/Messages/{sid}/Media/{media_sid}"
+            self.media[path], self.media_types[path] = b"fake-image-bytes", content_type
+            params[f"MediaUrl{n}"], params[f"MediaContentType{n}"] = path, content_type
+        opt_type = self._auto_reply(word, frm, to)
+        if opt_type:
+            params["OptOutType"] = opt_type
         self.inbound.append(params)
         return params
+
+    def delete_media(self, path: str) -> Reply:
+        """DELETE a stored inbound picture; 204, then 404 for any later fetch (D-492)."""
+        path = path.removesuffix(".json")
+        if self.media.pop(path, None) is None:
+            return error(20404, "The requested resource was not found", 404)
+        del self.media_types[path]
+        return 204, {}
+
+    def media_resource(self, path: str) -> Reply:
+        """The Media resource JSON for a stored picture (GET `.../Media/ME....json`), 404 once deleted."""
+        if path not in self.media:
+            return error(20404, "The requested resource was not found", 404)
+        parts = path.split("/")
+        return 200, {
+            "sid": parts[-1],
+            "account_sid": self.account_sid,
+            "parent_sid": parts[-3],
+            "content_type": self.media_types[path],
+            "uri": path + ".json",
+        }
+
+    def create_call(self, to: str, frm: str) -> Reply:
+        """Open a voice session (the masked call line stand-in, D-491)."""
+        if not E164.match(to) or not E164.match(frm):
+            return error(21211, f"The 'To' number {to} is not a valid phone number.")
+        sid = fake_id("CA", len(self.calls) + 1, 32)
+        call = {"sid": sid, "account_sid": self.account_sid, "to": to, "from": frm, "status": "queued"}
+        self.calls.append(call)
+        return 201, dict(call)
+
+    def update_call(self, sid: str, status: str) -> Reply:
+        """POST Status=completed ends a call; an open call stays reusable until then (OPS-017)."""
+        call = next((c for c in self.calls if c["sid"] == sid), None)
+        if call is None:
+            return error(20404, "The requested resource was not found", 404)
+        if status not in ("completed", "canceled"):
+            return error(21220, "Invalid call state: Status must be completed or canceled")
+        call["status"] = status
+        return 200, dict(call)
 
     def signed(self, url: str, params: dict[str, str]) -> tuple[dict[str, str], str]:
         return params, compute_signature(self.auth_token, url, params)

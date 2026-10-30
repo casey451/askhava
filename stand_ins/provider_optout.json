@@ -1,0 +1,17 @@
+{
+  "about": "The texting provider's Advanced Opt-Out settings (CON-030, CON-009, D-492, D-493). The fake Twilio matches inbound keywords and sends its reply from this file; the app's own word lists must equal it (T029).",
+  "opt_out": {
+    "keywords": ["stop", "stopall", "unsubscribe", "cancel", "end", "revoke", "optout", "quit", "parar", "alto", "cancelar", "baja"],
+    "spanish_keywords": ["parar", "alto", "cancelar", "baja"],
+    "reply": {
+      "en": "Ask Hava: You're unsubscribed. You won't get more texts or automated calls from Ask Hava at this number. To use Ask Hava again, text START.",
+      "es": "Ask Hava: Se canceló su suscripción. No recibirá más textos ni llamadas automáticas de Ask Hava en este número. Para volver a usar Ask Hava, envíe START."
+    }
+  },
+  "opt_in": {
+    "keywords": ["start", "unstop"],
+    "reply": {
+      "en": "Ask Hava: You can text us again. Send your request to start. Msg & data rates may apply. Reply HELP for help, STOP to opt out."
+    }
+  }
+}
