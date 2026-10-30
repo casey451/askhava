@@ -1312,7 +1312,15 @@
     592,
     593,
     594
-   ]
+   ],
+   "reviewed_sha": "7277f5a6895801bbc66555d9fed1936ddb9f8a3a",
+   "review_lease": {
+    "task": "T219",
+    "session": "actions-41034809241",
+    "expires": "2026-10-30T12:39:05Z"
+   },
+   "branch": "claude/task/T219-rust-rules-scanner-gaps",
+   "head_check_since": null
   },
   {
    "id": "T175",
@@ -4658,7 +4666,7 @@
    }
   }
  },
- "updated_at": "2026-10-30T09:44:26Z",
+ "updated_at": "2026-10-30T09:53:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -4756,7 +4764,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b17f7d06e80ebe01aa09c83c6702913f4cbbda14",
+ "runner_sha": "7277f5a6895801bbc66555d9fed1936ddb9f8a3a",
  "starter": "actions",
  "smoke_runs": [
   {
