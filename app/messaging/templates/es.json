@@ -21,8 +21,29 @@
   "help_reply": {
     "audience": "homeowner",
     "draft": true,
+    "segments": 7,
+    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Ayuda: help@askhava.com o askhava.com/help Responda PARAR para salir.",
+    "spanish_stays_on": true
+  },
+  "help_reply_ca": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 8,
+    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Los números de Canadá pueden pagar cargos de roaming. Ayuda: help@askhava.com o askhava.com/help Responda PARAR para salir.",
+    "spanish_stays_on": true
+  },
+  "help_reply_away": {
+    "audience": "homeowner",
+    "draft": true,
     "segments": 6,
-    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Ayuda: askhava.com/help Responda PARAR para salir.",
+    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava está fuera hasta el {time} y responderá para entonces. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Ayuda: help@askhava.com o askhava.com/help Responda PARAR para salir.",
+    "spanish_stays_on": true
+  },
+  "help_reply_away_ca": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 7,
+    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava está fuera hasta el {time} y responderá para entonces. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Los números de Canadá pueden pagar cargos de roaming. Ayuda: help@askhava.com o askhava.com/help Responda PARAR para salir.",
     "spanish_stays_on": true
   },
   "emergency_911": {
