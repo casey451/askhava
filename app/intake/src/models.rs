@@ -402,3 +402,152 @@ pub(crate) async fn acceptances(
         })
         .collect())
 }
+
+/// Records one emergency-list event of inbound text `inbox` (INT-004, INT-037): `matched` is the
+/// 911-list code or `beep_question`, `queued` when the 911 text was queued. Once per inbound text.
+pub(crate) async fn insert_event(
+    db: &mut PgConnection,
+    (conversation, inbox): (Uuid, Uuid),
+    matched: &str,
+    queued: Option<Timestamp>,
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    sqlx::query!(
+        "INSERT INTO intake.emergency_event \
+         (conversation_id, inbox_id, matched, text_queued_at, created_at) \
+         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (inbox_id) DO NOTHING",
+        conversation,
+        inbox,
+        matched,
+        queued.map(|t| t.to_sqlx()) as _,
+        at.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| IntakeError::Database)
+}
+
+/// The emergency events of request `conversation`, oldest first.
+pub(crate) async fn events(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Vec<EmergencyEventRow>, IntakeError> {
+    let rows = sqlx::query!(
+        "SELECT id, conversation_id, inbox_id, matched, text_queued_at, safe_at, created_at \
+         FROM intake.emergency_event WHERE conversation_id = $1 ORDER BY created_at, id",
+        conversation
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(rows
+        .into_iter()
+        .map(|r| EmergencyEventRow {
+            id: r.id,
+            conversation_id: r.conversation_id,
+            inbox_id: r.inbox_id,
+            matched: r.matched,
+            text_queued_at: r.text_queued_at.map(|t| t.to_jiff()),
+            safe_at: r.safe_at.map(|t| t.to_jiff()),
+            created_at: r.created_at.to_jiff(),
+        })
+        .collect())
+}
+
+/// Marks every 911 text of `conversation` still waiting for SAFE as answered at `at` (INT-005);
+/// `true` when one was waiting.
+pub(crate) async fn mark_safe(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    at: Timestamp,
+) -> Result<bool, IntakeError> {
+    sqlx::query!(
+        "UPDATE intake.emergency_event SET safe_at = $2 WHERE conversation_id = $1 \
+         AND text_queued_at IS NOT NULL AND safe_at IS NULL",
+        conversation,
+        at.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|r| r.rows_affected() > 0)
+    .map_err(|_| IntakeError::Database)
+}
+
+/// Stores one answer to question `question` of `conversation` (INT-030, INT-006, INT-037).
+pub(crate) async fn insert_answer(
+    db: &mut PgConnection,
+    (conversation, inbox): (Uuid, Uuid),
+    (question, choice): (&str, &str),
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    sqlx::query!(
+        "INSERT INTO intake.intake_answer (conversation_id, question_id, choice, inbox_id, \
+         answered_at) VALUES ($1, $2, $3, $4, $5)",
+        conversation,
+        question,
+        choice,
+        inbox,
+        at.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| IntakeError::Database)
+}
+
+/// The latest stored answer to `question` in `conversation`, if any.
+pub(crate) async fn latest_answer(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    question: &str,
+) -> Result<Option<String>, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT choice FROM intake.intake_answer WHERE conversation_id = $1 AND question_id = $2 \
+         ORDER BY answered_at DESC, id DESC LIMIT 1",
+        conversation,
+        question
+    )
+    .fetch_optional(db)
+    .await
+    .map(Option::flatten)
+    .map_err(|_| IntakeError::Database)
+}
+
+/// What the release of an emergency job waits on (INT-029): consent recorded, no 911 text still
+/// waiting for SAFE, the emergency choice, and the ZIP and area check (a property in a town).
+pub(crate) struct ReleaseState {
+    pub(crate) consented: bool,
+    pub(crate) waiting_safe: bool,
+    pub(crate) emergency: bool,
+    pub(crate) area_done: bool,
+}
+
+/// The release state of `conversation` (INT-005, INT-029).
+pub(crate) async fn release_state(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<ReleaseState, IntakeError> {
+    let r = sqlx::query!(
+        "SELECT EXISTS (SELECT 1 FROM intake.consent_record WHERE conversation_id = c.id) \
+         AS \"consented!\", \
+         EXISTS (SELECT 1 FROM intake.emergency_event WHERE conversation_id = c.id \
+         AND text_queued_at IS NOT NULL AND safe_at IS NULL) AS \"waiting!\", \
+         COALESCE((SELECT choice = 'emergency' FROM intake.intake_answer \
+         WHERE conversation_id = c.id AND question_id = 'emergency_choice' \
+         ORDER BY answered_at DESC, id DESC LIMIT 1), false) AS \"emergency!\", \
+         EXISTS (SELECT 1 FROM intake.property WHERE homeowner_id = c.homeowner_id) AS \"area!\" \
+         FROM intake.conversation c WHERE c.id = $1",
+        conversation
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| IntakeError::Database)?
+    .ok_or(IntakeError::UnknownRequest)?;
+    Ok(ReleaseState {
+        consented: r.consented,
+        waiting_safe: r.waiting,
+        emergency: r.emergency,
+        area_done: r.area,
+    })
+}
