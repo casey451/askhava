@@ -676,6 +676,7 @@ def test_drill_red_main_reverts_clears_and_continues(tmp_path: Path) -> None:
     fix = st.entry(env.store, st.FIX_MAIN)
     assert fix["type"] == "harness" and fix["model"] == MODELS["sonnet"] and fix["reviewer_model"] == MODELS["opus"]
     assert fix["owns"] == ["app/t001/x.py"] and "git revert --no-edit bad0001" in fix["goal"]
+    assert "git checkout origin/main -- docs/decisions.md" in fix["goal"]  # the log stays append-only (D-1078)
     assert st.eligible(env.store, NOW) == [st.FIX_MAIN]
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "fix_main"
     assert env.runs[-1][:2] == (st.FIX_MAIN, MODELS["sonnet"]) and st.status(env.store, st.FIX_MAIN) == st.MERGE_PENDING
