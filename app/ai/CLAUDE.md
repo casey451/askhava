@@ -6,10 +6,13 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 
 ## What it owns
 
-- `src/api.rs`: the only public surface: `read_intake` (the gated one from `switch.rs`), `ai_mode`, `set_ai_switch`, `weekly_counts`, `open_trades`, `screen_text`, `quote_summary`, the types and setting keys.
+- `src/api.rs`: the only public surface: `read_intake` (the gated one from `switch.rs`), `ai_mode`, `set_ai_switch`, `weekly_counts`, `open_trades`, `screen_text`, `quote_summary`, `accept_question`, `accept_document`, `WriteSources`, `Document`, `Written`, `CheckHit`, the types and setting keys.
 - `src/models.rs`: `Instruction`, `INTAKE_READING`, `INSTRUCTIONS`, `AiConfig::from_pairs` (`ASKHAVA_AI_MODEL`, `ASKHAVA_AI_TIMEOUT_SECONDS`, `ASKHAVA_AI_DAILY_CAP`), `Endpoint`, `Transport`, `AdapterTransport`, `Fault`, `Reply`, `AiError`, the `ai.call_stat` queries.
 - `src/schemas.rs`: the compiled-in `schemas/intake_reading.json`, `RawReading` (`deny_unknown_fields`), `parse_reading`, `OpenTrades`, `IntakeReading`, `wrap` (AI-025 tags), `screen_text` (AI-021).
 - `src/service.rs`: the ungated `read_intake`, `send` (timeout and retries), `intake_request`, `reading_from_reply`, `record` (call row plus once-a-day owner alert, plus the reading), `write_reading` (`ai.reading` row and off-database stream event), `code_of`, `interned`.
+- `src/output_checks.rs`: `check_output` (the AI-019 checks after `screen_text`), `price_or_cause`, `fold`, `word_022` (the expanded phrase file), `CheckHit`.
+- `src/writer.rs`: `WriteSources`, `Document`, `Written`, `accept_question` (fallback: the bank wording), `accept_document` (fallback: her scrubbed words).
+- `data/word_022_phrases.json`: the WORD-022 regexes of `scripts/trace_spec.py` with their phrases as slots (D-988).
 - `src/switch.rs`: the AI-008 gate (`Readiness`, `Missing`, `AiMode`, `ai_mode`), `set_ai_switch`, the gated `read_intake`, `WeeklyCounts` and `weekly_counts` (AI-014).
 - Migration `0040_ai_adapter.sql`: `ai.call_stat` (append-only for `askhava_app`).
 - Migration `0041_ai_provider_terms.sql`: `ai.provider_terms` (the account checklist's AI terms and any zero-retention signing date), `ai.privacy_policy_version` (version, effective date, whether it holds the AI-018 sentence; entered by the owner), `ai.switch_history`, `ai.reading` (no text column); all append-only for `askhava_app`.
@@ -25,6 +28,7 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 - AI-014: `switch::weekly_counts`: numbers only.
 - AI-015, AI-024: `models::INTAKE_READING` (versioned); the model ID is `AiConfig::model`; each `ai.call_stat` row holds model, instruction version and request ID.
 - AI-021: `schemas::screen_text` (on an NFKC, format-character-free copy it returns: CARD-010 list from `catalog::api::restricted_match`, links with any path or query, `TextKind::cap`; D-814); `read_intake` makes no call for unverified web chat or past `ASKHAVA_AI_DAILY_CAP` (alert `ai.daily_cap`).
+- AI-019 (D-492, D-493, D-988, D-989): `output_checks::check_output`, in order: `screen_text`; on a folded copy (accents dropped, lower case) `$` and price words, the English and Spanish cause words, WORD-022 phrases, WORD-003 claims, caller-passed business names; `adds_fact` (a number, digits in any script, or mid-sentence capitalized word absent from her words, answers, photo notes, bank wording); CARD-008 shapes last (7 digits in any script, `char::is_numeric`). `writer::accept_*` returns the fallback and the `CheckHit` on any hit.
 - AI-023: `service::send` (whole call within the timeout setting, at most 2 retries: connection, 500, 504, 529 with 1 s then 2 s backoff, 429 with `retry-after` waits that long); `service::alert_for` (`ai.key_rejected` for 401 and 403, `ai.spend_limit` for a spend-limit 400 and a 429 without `retry-after`), once a day per kind.
 - AI-025: `schemas::wrap`: `&`, `<`, `>` become entities and the tag name, in any case, has its `_` written `&#95;`.
 
@@ -41,12 +45,16 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 - `IntakeReading::missing_info` is for records and question choice only: never send it to a person or put it into a template (D-814).
 - `Transport::post` takes the AI job code; the idempotency key is derived from job and subject (SEC-018, D-814).
 - The adapter drops error headers and bodies, so through `AdapterTransport` a 429 counts as having no `retry-after` and any 400 as a spend limit; both fail toward the owner alert (D-810).
+- `app/ai/data/word_022_phrases.json` equals `scripts/trace_spec.py`'s `_NOT_A_CONTRACTOR_PATTERNS`: `tests/docs/test_word_022_phrases.py`.
+- A failed check never returns the AI's text, and the phrase file failing to load refuses every AI text (D-988).
 
 ## How to change
 
 - Change an instruction: edit its text in `src/models.rs` and bump `version` (AI-015); a new model ID needs the AI-024 evaluation and a decision.
 - Add an AI job: a new `Instruction` in `INSTRUCTIONS`, its request builder beside `intake_request`, its job code allowed by the `ai.call_stat.job` check.
 - Change a length cap: `TextKind::cap` and D-811. Change the restricted list: `app/catalog/src/restricted_words.rs` and D-813.
+- Change the WORD-022 list: edit `scripts/trace_spec.py`, then the matching entry's `regex` and `slots` in `data/word_022_phrases.json`; run `tests/docs/test_word_022_phrases.py`. Change a cause, price, claim or contact word: its list in `src/output_checks.rs` and a case in `prop_ai_output_limits.rs`.
+- Add a writing call (questions, card): its `Instruction` in `INSTRUCTIONS`, a request builder, the same gate and cap as `read_intake`, then hand the reply text to `accept_question` or `accept_document` (D-990).
 - Change the schema: `schemas/intake_reading.json` (T167's), `FIELDS`, `RawReading` and `IntakeReading` together; the stand-in reads the same file.
 - Add an AI-008 requirement: a `Readiness` field read in `switch::readiness`, a `Missing` variant in order, and a case in `ai_zero_retention.rs`.
 - Run `cargo test -p askhava-ai` (needs `python3` and a database), clippy, `cargo fmt --all --check` and `bash scripts/smoke.sh`.
@@ -55,5 +63,7 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 
 - `src/tests/schemas.rs` (TD-AI-02, TD-AI-13, TD-AI-15): the schema triangle, reading checks, instruction versions, model setting and paths, `AdapterTransport` sending only `Messages` with a job-keyed ID, the `missing_info` cap and screen, the tag-escaping property for both tags.
 - `src/tests/no_tools.rs` (TD-AI-02, TD-AI-06, TD-AI-10): no tools, no send or release, no quote summary, the AI-021 screen (links with paths, disguised text) and the CARD-010 list.
+- `src/tests/prop_ai_output_limits.rs` (TD-AI-08, TD-AI-10): planted prices, cause words (Spanish, capitals, accents), WORD-022 phrases, claims, business names and contact details fall back for all three kinds with their own `CheckHit`; fee, charge, quote and Spanish budget words are prices; digits in any script count; outputs from her words pass; added numbers and names fall back; carrier-filtered words, links and 600 characters send the template.
+- `tests/docs/test_word_022_phrases.py` (TD-AI-08): the phrase file equals the spec check's list.
 - `src/tests/adapter_calls.rs` (TD-AI-10, TD-AI-13, TD-AI-14): fault modes under a paused clock, AI-off endings, call records, daily cap, web-chat rule, and the stand-in over HTTP.
 - `tests/integration/tests/ai_zero_retention.rs` (TD-AI-07, TD-AI-04): zero adapter calls with the switch off in live, each missing record refusing the switch, the policy day rule, zero retention (newest row only, not future-dated), the no-text `ai.reading` schema, the stream payload and the weekly counts.

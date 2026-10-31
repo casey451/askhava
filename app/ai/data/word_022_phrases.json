@@ -1,0 +1,31 @@
+{
+  "about": "WORD-022 phrases for the AI-019 check: each pattern of scripts/trace_spec.py _NOT_A_CONTRACTOR_PATTERNS with its phrases as slots joined in order; a trailing * means any word letters follow. Kept equal by tests/docs/test_word_022_phrases.py (D-493).",
+  "patterns": [
+    {"regex": "\\bour (?:pros?|professionals|network|contractors?|plumbers?|electricians?|technicians?|techs?|crews?|businesses|workers|team of)\\b", "slots": [["our "], ["pro", "crew", "pros", "tech", "crews", "techs", "network", "plumber", "team of", "workers", "plumbers", "businesses", "contractor", "technician", "contractors", "electrician", "technicians", "electricians", "professionals"]]},
+    {"regex": "\\byour (?:contractor|pro|plumber|electrician|technician|handyman)\\b", "slots": [["your "], ["pro", "plumber", "handyman", "contractor", "technician", "electrician"]]},
+    {"regex": "\\b(?:we|Ask Hava)(?:'ll| will)? (?:dispatch|assign|schedule|book)s? (?:you )?(?:a|an|the|your|someone)\\b", "slots": [["we", "ask hava"], ["", "'ll", " will"], [" "], ["book", "assign", "dispatch", "schedule"], ["", "s"], [" "], ["", "you "], ["a", "an", "the", "your", "someone"]]},
+    {"regex": "\\bsend(?:s|ing)? (?:you )?(?:a|an) (?:plumber|pro|electrician|technician|tech|handyman|contractor|crew|worker)\\b", "slots": [["send"], ["", "s", "ing"], [" "], ["", "you "], ["a"], ["", "n"], [" "], ["pro", "crew", "tech", "worker", "plumber", "handyman", "contractor", "technician", "electrician"]]},
+    {"regex": "\\bbook(?:s|ed|ing|ings)?\\b", "slots": [["book"], ["", "s", "ed", "ing", "ings"]]},
+    {"regex": "\\bhir(?:e|es|ed|ing) (?:through|via|with) (?:us|Ask Hava)\\b", "slots": [["hir"], ["e", "ed", "es", "ing"], [" "], ["via", "with", "through"], [" "], ["us", "ask hava"]]},
+    {"regex": "\\bthrough (?:Ask Hava|us)\\b", "slots": [["through "], ["us", "ask hava"]]},
+    {"regex": "\\bdispatch(?:es|ed|ing)? (?:a|an|the|your) (?:plumber|pro|business|contractor|technician|crew|worker)\\b", "slots": [["dispatch"], ["", "ed", "es", "ing"], [" "], ["a", "an", "the", "your"], [" "], ["pro", "crew", "worker", "plumber", "business", "contractor", "technician"]]},
+    {"regex": "\\bassign(?:s|ed|ing|ment|ments)?\\b", "slots": [["assign"], ["", "s", "ed", "ing", "ment", "ments"]]},
+    {"regex": "\\b(?:we|Ask Hava) (?:found|matched) you\\b", "slots": [["we", "ask hava"], [" "], ["found", "matched"], [" you"]]},
+    {"regex": "\\bmatch(?:es|ed)? you (?:with|to)\\b", "slots": [["match"], ["", "ed", "es"], [" you "], ["to", "with"]]},
+    {"regex": "\\bservice[- ]providers?\\b", "slots": [["service"], [" ", "-"], ["provider"], ["", "s"]]},
+    {"regex": "\\bprovider partners?\\b", "slots": [["provider partner"], ["", "s"]]},
+    {"regex": "\\b(?:our|Ask Hava's|Ask Hava|referral) network\\b", "slots": [["our", "ask hava", "referral", "ask hava's"], [" network"]]},
+    {"regex": "\\bsubcontract\\w*", "slots": [["subcontract*"]]},
+    {"regex": "\\b(?:we|Ask Hava) (?:guarantee|warrant|recommend|manage|negotiate|supervise|inspect)s?\\b", "slots": [["we", "ask hava"], [" "], ["manage", "inspect", "warrant", "guarantee", "negotiate", "recommend", "supervise"], ["", "s"]]},
+    {"regex": "\\bAsk Hava(?:'s)? (?:guarantee|warranty|pros?|plumbers?|contractors?|technicians?)\\b", "slots": [["ask hava"], ["", "'s"], [" "], ["pro", "pros", "plumber", "plumbers", "warranty", "guarantee", "contractor", "technician", "contractors", "technicians"]]},
+    {"regex": "\\bguaranteed\\b", "slots": [["guaranteed"]]},
+    {"regex": "\\b(?:work|works|working) for (?:us|Ask Hava)\\b", "slots": [["work"], ["", "s", "ing"], [" for "], ["us", "ask hava"]]},
+    {"regex": "\\bour (?:prices?|rates?|quotes?|estimates?)\\b", "slots": [["our "], ["rate", "price", "quote", "rates", "prices", "quotes", "estimate", "estimates"]]},
+    {"regex": "\\bhire (?:us|Ask Hava)\\b", "slots": [["hire "], ["us", "ask hava"]]},
+    {"regex": "\\bnuestr[oa]s? (?:profesionales|red|contratistas|técnicos|plomeros|electricistas)\\b", "slots": [["nuestr"], ["a", "o"], ["", "s"], [" "], ["red", "plomeros", "técnicos", "contratistas", "electricistas", "profesionales"]]},
+    {"regex": "\\ble enviaremos (?:un|una) (?:plomero|técnico|profesional|contratista|electricista)\\b", "slots": [["le enviaremos un"], ["", "a"], [" "], ["plomero", "técnico", "contratista", "profesional", "electricista"]]},
+    {"regex": "\\bsubcontrat\\w*", "slots": [["subcontrat*"]]},
+    {"regex": "\\bconnect(?:s|ing)? (?:you|homeowners|customers|people) (?:with|to)\\b", "slots": [["connect"], ["", "s", "ing"], [" "], ["you", "people", "customers", "homeowners"], [" "], ["to", "with"]]},
+    {"regex": "\\breferral (?:network|service)s?\\b", "slots": [["referral "], ["network", "service"], ["", "s"]]}
+  ]
+}
