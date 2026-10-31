@@ -1300,3 +1300,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Spanish.** It goes in Spanish only when the first message reads as Spanish and you have turned Spanish conversations on; until then everyone gets English.
 - **"Is this a real person?"** That reply gets "Ask Hava is a local service. Our texts are automated. The Ask Hava owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent." before the next question. The "2 days" and "24 hours" are the spec's fixed words; if you change the HELP reply times in settings, this line does not follow them (D-907).
 - **Two new Spanish drafts** wait for the native-speaker review: the "who is this" line and the consent text with the recorded-call sentence, which only goes once the safety voice call is switched on (it is off).
+
+## How a business account moves between statuses (T041, D-953 to D-955, October 31)
+
+- **Six statuses.** A business is pending, active, paused (always with a reason), waitlist, needs review or removed.
+- **Activation.** A sign-up goes active by itself only with its identity code and its license or city-list match and nothing flagged. Anything flagged waits in needs review for you, and your approval still needs the code and the match. A removed business stays removed.
+- **Insurance.** What a business says about insurance is only stored and shown as it reported it; it never pauses or activates anyone.
+- **Night count.** The "after-hours emergencies" tick is stored now and counted for the night message, but the rule that someone on the team must have emergency emails on and pass the test email comes in a later task; nothing sends night cards yet.
