@@ -9,7 +9,7 @@
 //! INT-037 question, "How soon?", the INT-033 night count and the emergency-or-regular choice and
 //! release (INT-002 to INT-006, INT-024 to INT-026, INT-029, INT-030, INT-033, INT-037); the
 //! keyword second opinion, the trade question and INT-032's two trades (AI-011, INT-012, INT-013,
-//! INT-015, INT-032, T042).
+//! INT-015, INT-032, T042); "Which fits best?" and its reply (INT-014, CARD-001, T183).
 
 pub use crate::conversation::{
     Answer, JobStart, Opened, Recorded, Taken, ask_name_address, begin_job, hear, joining_job,
@@ -20,7 +20,7 @@ pub use crate::emergency_count::{
     is_night, offer,
 };
 pub use crate::matching::{
-    Candidates, KeywordReading, Opinion, Reading, TradeAnswer, TradeQuestion, TradeStep,
+    Candidates, FitStep, KeywordReading, Opinion, Reading, TradeAnswer, TradeQuestion, TradeStep,
     candidates, job_types_of, keyword_reading, second_opinion, starts_second, trade_label,
     two_trades,
 };
