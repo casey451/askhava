@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'businesses' AND (column_name LIKE '%week%' OR column_name LIKE '%max_card%' OR column_name LIKE '%card_limit%')",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f71df0caa4ee57bbbde2da7502ce2e26f9ea3feb1301042bba91b138765f62ef"
+}

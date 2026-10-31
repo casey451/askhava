@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT own_open_minute, own_close_minute FROM businesses.business WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "own_open_minute",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "businesses.business",
+            "name": "own_open_minute"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "own_close_minute",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "businesses.business",
+            "name": "own_close_minute"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "8cf72f95f6f0403bcd09dc3a6fb970b4d317694aaf9bd92097c73ec5a114d418"
+}
