@@ -556,7 +556,31 @@ def test_requeue_command_moves_a_blocked_task_through_update_state(repo: dict[st
     assert task["status"] == st.QUEUED and task["attempts"] == 1 and task["reason"] is None and task["last_failure"] == "re-queued: the branch is fixed"
     assert task["requeues"][0]["reason"] == "the branch is fixed" and task["requeues"][0]["by"] == "manual-1"
     assert entry.requeue_task(args, cfg, env) == "requeue_refused: K10 is QUEUED, not BLOCKED"
-    assert entry.requeue_task(entry.parse_args(["--requeue", "FIX-MAIN", "--reason", "x"]), cfg, env).startswith("requeue_refused:")
+    assert entry.requeue_task(entry.parse_args(["--requeue", "FIX-MAIN", "--reason", "x"]), cfg, env) == (
+        "requeue_refused: main is not red; FIX-MAIN is re-queued by hand only while main_red is set (D-1099)")
+
+
+def test_requeue_command_starts_a_capped_fix_main_again_while_main_is_red(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-1099: a session that can write claude/kit-state has a tool for a FIX-MAIN stuck after every round."""
+    env = make_env(repo["a"], tmp_path)
+    red = {"check": "tree", "sha": "bad0001", "task": "K10", "revert_sha": "bad0001", "files": ["docs/k10/one.md"]}
+
+    def capped(s: st.State) -> st.State:
+        out = st.with_task(dict(s, main_red=red), "FIX-MAIN", status=st.BLOCKED, attempts=3, reason="revert failed",
+                           escalated_at="2026-11-01T10:00:00Z", fix_main_rounds=[{"round": 1, "at": "2026-11-01T09:00:00Z", "reason": "r"}])
+        return out
+
+    env.update_state(capped)
+    cfg = live_config("manual-1", tmp_path, env)
+    args = entry.parse_args(["--requeue", "FIX-MAIN", "--reason", "the append-only rule is fixed on main"])
+    assert entry.requeue_task(args, cfg, env) == "requeued"
+    task = st.entry(json.loads(origin_file(repo, "claude/kit-state", "kit/state.json")), "FIX-MAIN")
+    assert task["status"] == st.QUEUED and task["attempts"] == 0 and task["escalated_at"] is None and task["reason"] is None
+    assert task["requeues"][0]["was"] == "revert failed" and task["requeues"][0]["attempts"] == 3
+    assert task["fix_main_rounds"] == [{"round": 1, "at": "2026-11-01T09:00:00Z", "reason": "r"}]  # the rounds stay as evidence
+    assert entry.requeue_task(args, cfg, env) == "requeue_refused: FIX-MAIN is QUEUED, not BLOCKED"
+    plan = entry.parse_args(["--requeue", "FIX-MAIN", "--plan-fix", "D-101", "--reason", "x"])
+    assert entry.requeue_task(plan, cfg, env).startswith("requeue_refused: FIX-MAIN takes no --plan-fix")
 
 
 def commit_main_at(repo: dict[str, Path], when: str, files: dict[str, str]) -> str:
