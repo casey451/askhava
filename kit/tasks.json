@@ -4222,7 +4222,8 @@
     "app/quotes/src/service.rs",
     "app/quotes/src/tests/overflow.rs",
     "tests/integration/tests/card_late_eligible.rs",
-    "app/intake/src/routing.rs"
+    "app/intake/src/routing.rs",
+    "app/quotes/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4248,11 +4249,12 @@
     "TD-INT-25"
    ],
    "decisions": [
-    "D-042"
+    "D-042",
+    "D-1023"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 6,
     "lines": 250,
     "context_pct": 12
    },
