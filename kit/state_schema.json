@@ -298,6 +298,30 @@
             "type": "string",
             "pattern": "^([1-9][0-9]*|fix)$"
           },
+          "resync": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "required": [
+              "attempt",
+              "from",
+              "paths",
+              "at"
+            ]
+          },
+          "resyncs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "attempt",
+                "from",
+                "paths",
+                "at"
+              ]
+            }
+          },
           "update_merges": {
             "type": "array",
             "items": {

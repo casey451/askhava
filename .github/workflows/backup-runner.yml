@@ -279,6 +279,7 @@ jobs:
             2. If the result is anything but `handed_off`, stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
             3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models. Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists (when `prompt` is not a file path, as for FIX-MAIN, it is the prompt text itself: follow it, revert first); commit to the local branch; do not push it. Tell the worker to number new `docs/decisions.md` entries only from the handoff's `decision_ids`, in order (D-530).
             3b. When the handoff's `branch_ready` is true, the runner has already made that local branch (on top of the task's earlier pushed attempt when there is one, with main merged in): pass the handoff's `branch_note` to the worker word for word and tell it to `git switch` to the branch and never create, reset or rebase it, which replaces step 6 of the prompt's start routine. A branch rebuilt from main cannot be pushed, because the runner never force-pushes (D-583).
+            3c. When the handoff's `resync` is not empty, the task's reviewed work is finished and only merging main into it conflicts: give the worker the prompt and the `resync` text word for word, and its only job is to merge main into the branch with a normal merge commit, resolve each conflict keeping both sides, change nothing else, run the smoke test and commit. The reviewer in step 4 then reviews the whole diff against main as usual (D-890).
             3a. Run every subagent in the foreground (run_in_background: false) and wait for it to finish. Never end your turn while a subagent is running: this job ends when you stop, and anything still running is killed with it (D-503).
             4. Run the fresh-eyes reviewer subagent on the reviewer model over the diff and the task's spec files; findings go back to the worker once, as a NEW foreground worker subagent call (run_in_background: false) given the findings and told to commit on the same branch; never resume an agent by message, which runs it in the background and ends the job before it commits (D-522).
             5. Run `python3 -m runner --after --worker-agent <worker agent id> --reviewer-agent <reviewer agent id>` (add `--outcome tests_failed --log "<summary>"` if the work failed, `--outcome usage_limit` at a usage limit).
@@ -346,7 +347,7 @@ jobs:
           import json, os, re, sys
           start, session = os.environ.get("JOB_START", "9999"), os.environ.get("SESSION", "")
           moved = {"MERGE_PENDING", "QUEUED", "BLOCKED", "DONE", "RETRY_LATER", "RETRY_AFTER_RESET", "done", "check_failed",
-                   "no_changes", "unreviewed_head", "not_done", "push_failed", "update_conflict", "update_push_failed",
+                   "no_changes", "unreviewed_head", "not_done", "push_failed", "update_conflict", "update_push_failed", "resync",
                    "main_cleared", "false_red_cleared", "main_red"}
           def quiet(r):
               result = str(r.get("result", ""))

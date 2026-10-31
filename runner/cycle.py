@@ -17,11 +17,17 @@ MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queu
 HOURLY = timedelta(hours=1)
 WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes", "unreviewed_head",
                 "branch_updated", "update_conflict", "update_push_failed")
-# Stage C (D-620): a reviewed head that fell behind main is brought up to date by the runner's own update
-# merge. A real conflict is never resolved here: the attempt fails and the retry starts from the branch.
-UPDATE_CONFLICT = ("merging main into the task branch conflicts in {paths}: the runner resolves only docs/decisions.md "
-                   "and a plan lock both sides kept true, so this attempt fails and the next one starts from the "
-                   "branch with main merged in, or fresh from main when that still conflicts (D-583, D-620)")
+# Stage C (D-620, D-890): a reviewed head that fell behind main is brought up to date by the runner's own
+# update merge. A real conflict is never resolved by the runner: it hands the branch back to a worker on the
+# same attempt (a resync), at most RESYNC_LIMIT times per attempt; past that the attempt fails.
+RESYNC = "resync"  # the result of a conflict handed to a resync worker (D-890)
+RESYNC_LIMIT = 2  # resyncs per attempt before a conflict fails the attempt (D-890)
+UPDATE_CONFLICT = ("merging main into the task branch conflicts in {paths} again after {limit} resyncs in this attempt, "
+                   "so this attempt fails and the next one starts from the branch with main merged in, or fresh from "
+                   "main when that still conflicts (D-583, D-620, D-890)")
+RESYNC_CLOSE = ("Closed by the runner: merging main into this branch conflicts in {paths}, and auto-merge was on. A "
+                "worker merges main in on the same attempt and the merge is reviewed again before it is pushed; the "
+                "runner then opens a fresh pull request (D-890).")
 UPDATE_PUSH_LIMIT = 3  # rejected update-merge pushes (not races) before the attempt fails (D-620)
 UPDATE_WAIT = timedelta(hours=2)  # how long an update merge git cannot make waits before the attempt fails (D-620)
 UPDATE_STUCK = "the branch could not be brought up to date with main for {wait}: {why} (D-620)"
@@ -243,6 +249,9 @@ def attempt_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -
 
 
 def record_failure(state: State, task_id: str, reason: str) -> State:
+    """A failed attempt: QUEUED for the next one, or BLOCKED at MAX_ATTEMPTS. A failed resync is a failed
+    attempt too, so its `resync` mark goes (the retry then follows D-583, D-890)."""
+    state = _without(state, task_id, "resync") if st.entry(state, task_id).get("resync") else state
     attempts = int(st.entry(state, task_id).get("attempts", 0)) + 1
     if attempts >= MAX_ATTEMPTS:
         return st.with_task(state, task_id, status=st.BLOCKED, attempts=attempts, reason=reason)
@@ -464,9 +473,9 @@ def _update_step(state: State, env: Env, tid: str, pr: dict[str, Any], now: date
     """Keep the reviewed head current with main (stage C, D-620); the result is '' when it already is.
 
     A clean merge is pushed by `env.update_branch` and becomes the reviewed head, and auto-merge stays
-    on (or is turned on) for it. A real conflict fails the attempt (after closing a PR whose auto-merge
-    is on), and the retry starts from the branch (prepare_branch, D-583). A rejected push that is not a
-    race counts toward UPDATE_PUSH_LIMIT; a merge git cannot make waits at most UPDATE_WAIT."""
+    on (or is turned on) for it. A real conflict goes to a resync worker on the same attempt
+    (`_conflict_step`, D-890). A rejected push that is not a race counts toward UPDATE_PUSH_LIMIT; a
+    merge git cannot make waits at most UPDATE_WAIT."""
     task = st.entry(state, tid)
     done = env.update_branch(str(task.get("branch") or ""), str(task.get("reviewed_sha") or ""))
     status, why = done.get("status"), str(done.get("why") or "")
@@ -477,7 +486,7 @@ def _update_step(state: State, env: Env, tid: str, pr: dict[str, Any], now: date
         state = _adopt_update(state, tid, note, now)
         return (state if pr.get("auto_merge") else _auto_merge(state, env, tid, str(done["sha"]))), "branch_updated"
     if status == "conflict":
-        return _update_failed(state, env, tid, pr, UPDATE_CONFLICT.format(paths=", ".join(done.get("paths") or ["?"])), "update_conflict")
+        return _conflict_step(state, env, tid, pr, done, now)
     if status == "push_failed" and not ("non-fast-forward" in why or "fetch first" in why):
         count = int(task.get("update_push_failures") or 0) + 1
         if count >= UPDATE_PUSH_LIMIT:
@@ -495,14 +504,39 @@ def _head_checks(pr: dict[str, Any]) -> dict[str, str]:
             if c.get("sha") == head and c.get("name") in verify.REQUIRED_CHECKS and c.get("conclusion")}
 
 
+def _conflict_step(state: State, env: Env, tid: str, pr: dict[str, Any], done: dict[str, Any], now: datetime) -> tuple[State, str]:
+    """A real conflict merging main into the reviewed head (D-890). Within RESYNC_LIMIT resyncs of this
+    attempt the task goes back to QUEUED with `resync` set and its `attempts` unchanged, after a PR with
+    auto-merge on is closed (a failed close keeps it MERGE_PENDING, so any merge is judged); the next
+    claim runs a worker that merges main in on the same branch (`_next_step` takes it first), and its
+    hand-in is reviewed and pushed like any other. Past the limit the attempt fails (`_update_failed`)."""
+    task, paths = st.entry(state, tid), [str(p) for p in done.get("paths") or ["?"]]
+    attempt = int(task.get("attempts", 0)) + 1
+    if len([r for r in task.get("resyncs") or [] if r.get("attempt") == attempt]) >= RESYNC_LIMIT:
+        return _update_failed(state, env, tid, pr, UPDATE_CONFLICT.format(paths=", ".join(paths), limit=RESYNC_LIMIT), "update_conflict")
+    state, closed = _drop_auto_merge(state, env, tid, pr, RESYNC_CLOSE.format(paths=", ".join(paths)))
+    if not closed:
+        return _held_open(state, tid, pr, f"merging main into the task branch conflicts in {', '.join(paths)}"), "merge_pending"
+    note = {"attempt": attempt, "from": str(task.get("reviewed_sha") or ""), "main": str(done.get("main") or ""),
+            "paths": paths, "at": st.iso(now)}
+    why = f"merging main into the reviewed head conflicts in {', '.join(paths)}; a resync merges it in on this attempt (D-890)"
+    queued = st.with_task(state, tid, status=st.QUEUED, resync=note, resyncs=[*(task.get("resyncs") or []), note][-10:],
+                          last_failure=why, update_waiting_since=None, update_push_failures=None)
+    return _close_history(queued, tid, pr, RESYNC), RESYNC
+
+
+def _held_open(state: State, tid: str, pr: dict[str, Any], reason: str) -> State:
+    """A PR whose auto-merge could not be turned off: the task stays MERGE_PENDING so any merge is judged."""
+    why = f"{reason[:300]}; its auto-merge could not be turned off in time, so it waits and any merge is judged"
+    return st.with_task(state, tid, auto_merge={"enabled": True, "why": why, "head": str(pr.get("head_sha") or "")})
+
+
 def _update_failed(state: State, env: Env, tid: str, pr: dict[str, Any], reason: str, result: str) -> tuple[State, str]:
     """The update merge failed for good: close the PR first when its auto-merge is on (so nothing merges
     while the task is back in the queue), then fail the attempt; a failed close keeps it MERGE_PENDING."""
     state, closed = _drop_auto_merge(state, env, tid, pr, UPDATE_CLOSE.format(why=reason[:300]))
     if not closed:
-        head = str(pr.get("head_sha") or "")
-        why = f"{reason[:300]}; its auto-merge could not be turned off in time, so it waits and any merge is judged"
-        return st.with_task(state, tid, auto_merge={"enabled": True, "why": why, "head": head}), "merge_pending"
+        return _held_open(state, tid, pr, reason), "merge_pending"
     failed = st.with_task(record_failure(state, tid, reason), tid, update_waiting_since=None, update_push_failures=None)
     return _close_history(failed, tid, pr, result), result
 
@@ -876,7 +910,7 @@ def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
     state, red = _red_main_step(cfg, env, state, now)
     if red:
         return red if state == base or env.push_state(state, base) else "lost_race"
-    done = next((r for _, _, r in outcomes if r == "done"), "")
+    done = next((r for _, _, r in outcomes if r in ("done", RESYNC)), "")
     return _next_step(cfg, env, state, base, now, done, str(lane))
 
 
@@ -960,6 +994,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
         return "gate_open" if env.push_state(opened, base) else "lost_race"
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked)
+    ids = sorted(ids, key=lambda tid: not st.entry(state, tid).get("resync"))  # a resync finishes reviewed work first (D-890)
     if not ids:
         if state != base and not env.push_state(state, base):
             return "lost_race"
@@ -1048,12 +1083,31 @@ def _work(cfg: Config, env: Env, claimed: State, task: dict[str, Any], now: date
     prepared = _prepare_branch(cfg, env, current, task, lane)
     if prepared is None:
         return "lost_race"  # the lease is not this session's any more: write nothing else (D-515)
-    res = env.run_worker(prepared, model, str(entry.get("last_failure", "")), heartbeat)
+    if entry.get("resync") and not (prepared.get("branch_prep") or {}).get("resync"):
+        # The reviewed head could not be made the branch (origin moved, its pull request was closed or merged by
+        # someone, git failed): the resync cannot run, so the attempt fails as the conflict did before (D-890).
+        lost = WorkerResult("tests_failed", log=f"{entry.get('last_failure')}; the resync could not start on the reviewed head")
+        return finish(cfg, env, current["state"], task, lost, model, now)
+    told = resync_log(entry) if entry.get("resync") else ""
+    res = env.run_worker(prepared, model, told or str(entry.get("last_failure", "")), heartbeat)
     if res.outcome == "handed_off":
         return "handed_off"  # the session works the task and calls `python3 -m runner --after`
     if current["lost"]:
         return "lost_race"  # the lease may belong to another session now: write nothing (D-515)
     return finish(cfg, env, current["state"], task, res, model, now)
+
+
+RESYNC_LOG = ("resync, not a new attempt (D-890): the reviewed work on this branch is finished, but merging main "
+              "{main} into it conflicts in {paths}. Merge main into the branch with a normal merge commit, resolve each "
+              "conflict keeping both sides' intent, change nothing else, run the smoke test and commit; never redo the task.")
+
+
+def resync_log(task: dict[str, Any]) -> str:
+    """What a resync worker is told in place of `last_failure` (D-890); '' for any other attempt."""
+    note = task.get("resync") or {}
+    if not note:
+        return ""
+    return RESYNC_LOG.format(main=str(note.get("main") or "main")[:12], paths=", ".join(note.get("paths") or ["?"]))
 
 
 def _prepare_branch(cfg: Config, env: Env, current: dict[str, Any], task: dict[str, Any], lane: str) -> dict[str, Any] | None:
@@ -1096,12 +1150,13 @@ def _history_entry(state: State, task: dict[str, Any], res: WorkerResult, model:
     path_ok = None
     if res.outcome == "submitted":
         path_ok = not verify.check_paths(res.changed_paths, task, cfg.protected, cfg.shared)
-    return {
+    record = {
         "attempt": int(entry.get("attempts", 0)) + 1, "model": model, "model_evidence_count": len(res.model_evidence),
         "head_sha": res.head_sha, "pr": None, "checks": None, "reviewer_model": task.get("reviewer_model"),
         "path_check_ok": path_ok, "started_at": entry.get("attempt_started_at"), "ended_at": st.iso(cfg.clock()),
         "result": res.outcome,
     }
+    return {**record, "resync": True} if entry.get("resync") else record  # the same attempt, resumed to merge main (D-890)
 
 
 def _record_usage(state: State, tid: str, model: str, res: WorkerResult, now: datetime, cfg: Config) -> State:
@@ -1151,6 +1206,8 @@ def finish(
         state = reviewed
     elif st.status(final, tid) in (st.QUEUED, st.BLOCKED) and lane != st.LANE_ONE:
         final = lanes.clear_strikes(final, lane)  # a failure of the task's own work breaks a run of strikes (D-620)
+    if st.status(final, tid) not in (st.RETRY_AFTER_RESET, st.RETRY_LATER):
+        final = _without(final, tid, "resync")  # the resync ended; a pause (usage limit, outage) resumes it (D-890)
     final = st.with_lease(final, lane, None)
     if env.update_state(_release_onto(state, final, (tid, lane, cfg.session))) is None:
         return _lost_writes(cfg, env, tid, lane, "its lease release")
@@ -1406,7 +1463,7 @@ def plan_since(entry: dict[str, Any]) -> str | None:
     `started_at` of its last `history` entry), or that attempt's `ended_at` when no start was recorded.
     The start, not the end, so a plan fix merged while the final attempt ran still counts. None when the
     state has no such record."""
-    history = entry.get("history") or []
+    history = [h for h in entry.get("history") or [] if not h.get("resync")]  # a resync resumes its attempt (D-890)
     if not history:
         return None
     last = history[-1]
