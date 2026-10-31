@@ -222,5 +222,23 @@
     "draft": true,
     "segments": 2,
     "text": "Ask Hava: Todavía no cubrimos su ciudad, así que no podemos tomar esta solicitud. Escríbanos cuando quiera."
+  },
+  "coverage_count_many": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Listo. Vamos a enviar su solicitud a los {count} negocios de {trade} en Ask Hava."
+  },
+  "coverage_count_one": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Listo. Vamos a enviar su solicitud al negocio de {trade} que hay en Ask Hava."
+  },
+  "split_offer": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Este trabajo necesita 2 tipos de negocio. Responda DIVIDIR y lo enviamos como 2 solicitudes, una para cada oficio."
   }
 }

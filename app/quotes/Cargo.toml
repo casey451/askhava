@@ -8,6 +8,7 @@ publish.workspace = true
 
 [dependencies]
 askhava-businesses = { workspace = true }
+askhava-jobs = { workspace = true }
 askhava-licensing = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }

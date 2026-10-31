@@ -29,9 +29,10 @@ pub use crate::models::{
     IntakeError, PropertyRow, RecruitingDemandRow, TermsAcceptanceRow,
 };
 pub use crate::routing::{
-    NOT_COVERED_TEMPLATE, OUT_OF_AREA_TEMPLATE, Outcome, Request, Routing, Town, TownRefused, Why,
-    apply as apply_routing, asks_property_management, check_towns, move_refused, recruiting_demand,
-    route, trade_is_open,
+    COUNT_MANY_TEMPLATE, COUNT_ONE_TEMPLATE, NOT_COVERED_TEMPLATE, OUT_OF_AREA_TEMPLATE, Outcome,
+    Request, Routing, SPLIT_TEMPLATE, Town, TownRefused, Why, apply as apply_routing,
+    asks_property_management, check_towns, is_split_reply, move_refused, recruiting_demand, route,
+    split_request, tell_coverage, trade_is_open,
 };
 pub use crate::safety_text::{SAFETY_WITHIN, safety_outgoing, safety_text, sent_in_time};
 /// The first-reply step without the consent record, for this crate's own tests only.

@@ -5,24 +5,37 @@
 //!
 //! [`route`] is the pure decision; [`apply`] carries it out in one transaction: the request closes,
 //! its jobs leave Intake (`ClosedEarly` or `NotCovered`), the one reply is queued, a request nobody
-//! covers yet is logged as recruiting demand (OPS-041 reads it) and an audit row is written. The
-//! INT-017 count line for a covered trade is not here: it needs matching and is T184's (D-491).
+//! covers yet is logged as recruiting demand (OPS-041 reads it) and an audit row is written.
+//!
+//! T184 (D-1020): once the trade check passes, [`tell_coverage`] takes the `quotes::api::coverage`
+//! count (as CARD-001 and CARD-004 would send the card then) and queues the INT-017 count line, the
+//! INT-032 SPLIT offer, or moves the request to Not covered when no active business in the town
+//! covers it ([`Why::NobodyCovers`], logged as recruiting demand). [`split_request`] opens the
+//! second trade's job on a SPLIT or DIVIDIR reply, so each trade goes out as its own request.
 
 use askhava_catalog::api::is_enabled;
 use askhava_jobs::api::{JobStatus, current, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
+use askhava_quotes::api::Coverage;
 use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::conversation::{JobStart, Opened, begin_job};
 use crate::models::{self, IntakeError, RecruitingDemandRow};
 use crate::rules::fold;
 use crate::service::{Queued, TextIn};
 
 /// The INT-017 not-covered reply (`{trade}`).
 pub const NOT_COVERED_TEMPLATE: &str = "not_covered";
+/// The INT-017 count line for 2 or more businesses (`{count}`, `{trade}`).
+pub const COUNT_MANY_TEMPLATE: &str = "coverage_count_many";
+/// The INT-017 count line for 1 business (`{trade}`).
+pub const COUNT_ONE_TEMPLATE: &str = "coverage_count_one";
+/// The INT-032 SPLIT offer (DIVIDIR in Spanish).
+pub const SPLIT_TEMPLATE: &str = "split_offer";
 /// The reply to a request from a town outside the towns list (INT-022).
 pub const OUT_OF_AREA_TEMPLATE: &str = "out_of_area";
 /// The moving category a LIC-017 state check applies to.
@@ -164,6 +177,8 @@ pub enum Why {
     MoveOutsideArizona,
     /// A home watch request asks for rent collection or leasing (LIC-018).
     PropertyManagement,
+    /// No active business in the town covers the job (INT-017, from `quotes::api::coverage`).
+    NobodyCovers,
 }
 
 /// The routing decision (INT-016).
@@ -284,11 +299,11 @@ pub async fn apply(
     for job in jobs {
         leave_intake(&mut tx, job, status, at).await?;
     }
-    if outcome == Outcome::NotCovered(Why::TradeNotOpen) {
+    if logs_demand(outcome) {
         let found = (req.town, req.trade, routing.job_type);
         models::insert_demand(&mut tx, routing.conversation, found, at).await?;
     }
-    let queued = queue(&mut tx, secret, template, routing).await?;
+    let queued = queue(&mut tx, secret, template, routing, None).await?;
     let entry = AuditEntry {
         actor: Actor::System,
         action,
@@ -301,6 +316,78 @@ pub async fn apply(
         .map_err(|_| IntakeError::Audit)?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Some(queued))
+}
+
+/// INT-017, INT-032, CARD-001: tells the homeowner the coverage `quotes::api::coverage` counted
+/// for the request's job: "We'll send this to the <N> <trade> businesses" (the singular for 1),
+/// the SPLIT offer, or, when nobody covers it, [`apply`] with [`Why::NobodyCovers`]. A request
+/// that was already closed gets nothing. Returns the queued reply.
+///
+/// # Errors
+///
+/// As [`apply`]; [`IntakeError::Template`] or [`IntakeError::Outbox`] for the count line.
+pub async fn tell_coverage(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    (req, coverage): (&Request<'_>, Coverage),
+    routing: &Routing<'_>,
+) -> Result<Option<Queued>, IntakeError> {
+    let (template, count) = match coverage {
+        Coverage::NotCovered => {
+            let outcome = Outcome::NotCovered(Why::NobodyCovers);
+            return apply(db, secret, (req, outcome), routing).await;
+        }
+        Coverage::Split => (SPLIT_TEMPLATE, None),
+        Coverage::Send(1) => (COUNT_ONE_TEMPLATE, None),
+        Coverage::Send(n) => (COUNT_MANY_TEMPLATE, Some(n.to_string())),
+    };
+    if !open_request(db, routing.conversation).await? {
+        return Ok(None);
+    }
+    queue(db, secret, template, routing, count.as_deref())
+        .await
+        .map(Some)
+}
+
+/// Whether request `conversation` is still open.
+async fn open_request(db: &mut PgConnection, conversation: Uuid) -> Result<bool, IntakeError> {
+    Ok(models::conversation_state(db, conversation)
+        .await?
+        .is_some_and(|(_, open)| open))
+}
+
+/// True when a reply is SPLIT or DIVIDIR alone (INT-032).
+#[must_use]
+pub fn is_split_reply(words: &str) -> bool {
+    matches!(fold(words).as_str(), "split" | "dividir")
+}
+
+/// INT-032, D-1020: on a SPLIT or DIVIDIR reply, opens the job of the request's second trade
+/// (`second.trade`, with the request's own description in `second.words`) through the one
+/// job-opening path, so each trade is matched and sent as its own request; any other reply opens
+/// nothing ([`Opened::Refused`]).
+///
+/// # Errors
+///
+/// As `conversation::begin_job`.
+pub async fn split_request(
+    db: &mut PgConnection,
+    reply: &str,
+    second: &JobStart<'_>,
+) -> Result<Opened, IntakeError> {
+    if !is_split_reply(reply) {
+        return Ok(Opened::Refused);
+    }
+    begin_job(db, second).await
+}
+
+/// A request recruiting can fill is logged as demand: a trade not open, or nobody in the town
+/// covering it (INT-017, OPS-041, D-1008).
+fn logs_demand(outcome: Outcome) -> bool {
+    matches!(
+        outcome,
+        Outcome::NotCovered(Why::TradeNotOpen | Why::NobodyCovers)
+    )
 }
 
 /// The recruiting-demand rows of request `conversation` (INT-017, OPS-041).
@@ -343,14 +430,16 @@ async fn leave_intake(
         .map_err(|_| IntakeError::Job)
 }
 
-/// Renders and queues the reply of `template` (TXT-011).
+/// Renders and queues the reply of `template`, with `{count}` when given (TXT-011).
 async fn queue(
     db: &mut PgConnection,
     secret: &SecretString,
     template: &'static str,
     routing: &Routing<'_>,
+    count: Option<&str>,
 ) -> Result<Queued, IntakeError> {
-    let values = [("trade", routing.label)];
+    let mut values = vec![("trade", routing.label)];
+    values.extend(count.map(|n| ("count", n)));
     let body = render(template, routing.language, routing.spanish_on, &values)
         .map_err(|_| IntakeError::Template)?
         .body;

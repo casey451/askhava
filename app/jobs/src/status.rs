@@ -163,6 +163,13 @@ impl JobStatus {
         matches!(self, Self::QuotesReady)
     }
 
+    /// True for Open and No quotes yet, the statuses in which a business that becomes eligible
+    /// still gets the job card, with its own 24 hours (CARD-018, D-042).
+    #[must_use]
+    pub const fn takes_late_cards(self) -> bool {
+        matches!(self, Self::Open | Self::NoQuotesYet)
+    }
+
     /// True for the five final statuses, which wait for nothing (JOB-001, JOB-003).
     #[must_use]
     pub const fn is_final(self) -> bool {

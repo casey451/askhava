@@ -21,6 +21,7 @@ askhava-jobs = { workspace = true }
 askhava-licensing = { workspace = true }
 askhava-messaging = { workspace = true }
 askhava-businesses = { workspace = true }
+askhava-quotes = { workspace = true }
 axum = { workspace = true }
 base64 = { workspace = true }
 hmac = { workspace = true }

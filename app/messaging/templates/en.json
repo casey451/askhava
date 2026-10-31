@@ -178,5 +178,20 @@
     "audience": "homeowner",
     "segments": 1,
     "text": "Ask Hava: We don't cover your town yet, so we can't take this request. Text us any time."
+  },
+  "coverage_count_many": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Got it. We'll send this to the {count} {trade} businesses on Ask Hava."
+  },
+  "coverage_count_one": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Got it. We'll send this to the 1 {trade} business on Ask Hava."
+  },
+  "split_offer": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade."
   }
 }
