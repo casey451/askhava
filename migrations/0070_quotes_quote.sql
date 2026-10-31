@@ -3,7 +3,9 @@
 -- amount or the low and high amounts or up to 3 named tiers, a recurring price's period and any
 -- one-time setup charge (FEE-044), any hourly rate with its estimated hours (FEE-043), the
 -- "Range to be confirmed on site" tick, the notes, the original wording, the AI-read and
--- business-confirmed flags, the earliest visit and any edit or withdrawal time. There is no expiry
+-- business-confirmed flags, the earliest visit, any edit or withdrawal time, and unavailable_at,
+-- set by picks when a pick of this quote fails, after which it can't be chosen again and no
+-- quote on the job can be edited (JOB-025, PICK-051, D-1051). There is no expiry
 -- column: no quote expires on its own (PICK-051, TD-PICK-02). Every text field passed the PICK-007
 -- bounce before it was stored, so no contact detail is here; no homeowner detail either
 -- (PRIV-001). jobs.job and businesses.business are other schemas, so no foreign key
@@ -35,6 +37,7 @@ CREATE TABLE quotes.quote (
   received_at timestamptz NOT NULL,
   edited_at timestamptz,
   withdrawn_at timestamptz,
+  unavailable_at timestamptz,
   UNIQUE (job_id, business_id),
   CHECK (cardinality(tier_names) BETWEEN 1 AND 3 OR tier_names IS NULL),
   CHECK (cardinality(tier_names) = cardinality(tier_cents) OR tier_names IS NULL)

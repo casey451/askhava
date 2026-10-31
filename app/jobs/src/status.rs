@@ -181,6 +181,14 @@ impl JobStatus {
         )
     }
 
+    /// True for Open, No quotes yet and Quotes ready, the statuses in which a business may still
+    /// edit its quote: from Awaiting confirm on the job has had a pick (PICK-051, D-043). A job
+    /// back in Quotes ready after a failed pick is caught by `quotes`' unavailable quote.
+    #[must_use]
+    pub const fn takes_quote_edits(self) -> bool {
+        matches!(self, Self::Open | Self::NoQuotesYet | Self::QuotesReady)
+    }
+
     /// True for the five final statuses, which wait for nothing (JOB-001, JOB-003).
     #[must_use]
     pub const fn is_final(self) -> bool {

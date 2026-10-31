@@ -123,8 +123,9 @@ impl DayPart {
     }
 }
 
-/// The price as the business entered it, in cents (PICK-002, PICK-053, FEE-043, FEE-044).
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// The price as the business entered it, in cents (PICK-002, PICK-053, FEE-043, FEE-044). Its
+/// `Debug` shows tier prices but never tier names, which the business typed (rust brain R6).
+#[derive(Clone, PartialEq, Eq)]
 pub enum Price {
     /// One price.
     Firm(u64),
@@ -159,8 +160,44 @@ pub enum Price {
     },
 }
 
+impl std::fmt::Debug for Price {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Firm(v) => f.debug_tuple("Firm").field(v).finish(),
+            Self::Range { low, high, on_site } => f
+                .debug_struct("Range")
+                .field("low", low)
+                .field("high", high)
+                .field("on_site", on_site)
+                .finish(),
+            Self::Monthly {
+                cents,
+                period,
+                setup,
+            } => f
+                .debug_struct("Monthly")
+                .field("cents", cents)
+                .field("period", period)
+                .field("setup", setup)
+                .finish(),
+            Self::Tiers(t) => {
+                let cents: Vec<u64> = t.iter().map(|(_, c)| *c).collect();
+                f.debug_tuple("Tiers").field(&cents).finish()
+            }
+            Self::VisitFee(v) => f.debug_tuple("VisitFee").field(v).finish(),
+            Self::Hourly { rate, hours } => f
+                .debug_struct("Hourly")
+                .field("rate", rate)
+                .field("hours", hours)
+                .finish(),
+        }
+    }
+}
+
 /// What the quote form (or the read-back of a text quote) sends, before any check (PICK-002).
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// Its `Debug` leaves out the notes and original wording, which may hold the contact detail the
+/// check refuses (PICK-007, rust brain R6).
+#[derive(Clone, PartialEq, Eq)]
 pub struct QuoteForm {
     /// The price.
     pub price: Price,
@@ -172,6 +209,18 @@ pub struct QuoteForm {
     pub ai_read: bool,
     /// The earliest visit: a date and a part of the day (PICK-040).
     pub earliest_visit: Option<(Date, DayPart)>,
+}
+
+impl std::fmt::Debug for QuoteForm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("QuoteForm")
+            .field("price", &self.price)
+            .field("notes", &"<redacted>")
+            .field("original", &"<redacted>")
+            .field("ai_read", &self.ai_read)
+            .field("earliest_visit", &self.earliest_visit)
+            .finish()
+    }
 }
 
 /// What a quote is checked against: the job's format and the handyman limit (PICK-053, LIC-019).
@@ -395,10 +444,14 @@ pub enum Submitted {
     WindowClosed,
     /// The job takes no quote now: the picked business has tapped Confirm, or it closed (D-043).
     NotTaking,
+    /// The business already quoted and the job has had a pick, so its quote can't be edited
+    /// (PICK-051); a first quote from another business is still taken (D-043).
+    EditClosed,
 }
 
 /// PICK-001, PICK-002, D-042, D-043: stores `quote` from `business` on `job` at `now` when its own
-/// card's 24 hours are still open and the job takes quotes, confirmed unless the AI read it
+/// card's 24 hours are still open and the job takes quotes (an edit only before any pick,
+/// PICK-051), confirmed unless the AI read it
 /// (PICK-006, D-149), and schedules the every-window-ended check (TXT-042, JOB-025). One
 /// transaction; a Confirm committed after the status read orders as just after this quote (D-1051).
 ///
@@ -424,6 +477,10 @@ pub async fn submit_quote(
     if !status.status.takes_quotes() {
         return Ok(Submitted::NotTaking);
     }
+    let (edit, picked) = models::edit_facts(&mut tx, job, business).await?;
+    if edit && (picked || !status.status.takes_quote_edits()) {
+        return Ok(Submitted::EditClosed);
+    }
     models::upsert_quote(&mut tx, (job, business), quote, now).await?;
     crate::handlers::schedule(&mut tx, job).await?;
     tx.commit().await.map_err(|_| QuotesError::Database)?;
@@ -431,17 +488,42 @@ pub async fn submit_quote(
 }
 
 /// PICK-006, D-149: the business confirmed its AI-read quote on the read-back screen (T148), so
-/// the homeowner may now see it. Moved on when there is no such quote or it is withdrawn.
+/// the homeowner may now see it. Moved on when there is no such quote, it is withdrawn, or the
+/// job no longer takes quotes (`JobStatus::takes_quotes`, D-043, D-1049).
 ///
 /// # Errors
 ///
-/// [`QuotesError::Database`].
+/// [`QuotesError::Job`] or [`QuotesError::Database`].
 pub async fn confirm_quote(
     db: &mut PgConnection,
     job: Uuid,
     business: Uuid,
 ) -> Result<Guarded<()>, QuotesError> {
-    models::confirm_quote(db, job, business).await
+    let mut tx = db.begin().await.map_err(|_| QuotesError::Database)?;
+    let status = askhava_jobs::api::current(&mut tx, job)
+        .await
+        .map_err(|_| QuotesError::Job)?;
+    if !status.status.takes_quotes() {
+        return Ok(Guarded::MovedOn);
+    }
+    let done = models::confirm_quote(&mut tx, job, business).await?;
+    tx.commit().await.map_err(|_| QuotesError::Database)?;
+    Ok(done)
+}
+
+/// JOB-025, D-1051: `picks` marks the quote of a failed pick unavailable at `at`; it is no longer
+/// choosable at the every-window-ended check, and no quote on the job can be edited after it
+/// (PICK-051). Moved on when there is no such quote or it is already marked.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`].
+pub async fn mark_unavailable(
+    db: &mut PgConnection,
+    (job, business): (Uuid, Uuid),
+    at: Timestamp,
+) -> Result<Guarded<()>, QuotesError> {
+    models::mark_unavailable(db, job, business, at).await
 }
 
 /// TD-PICK-02: the businesses whose quote on `job` the homeowner's page may show: confirmed by

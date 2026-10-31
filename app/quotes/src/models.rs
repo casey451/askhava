@@ -285,8 +285,9 @@ fn columns(quote: &Quote) -> Columns {
 }
 
 /// PICK-002, PICK-051: stores the quote; a second quote from the same business replaces the first
-/// as an edit (`edited_at`). A form quote is confirmed as sent; an AI-read one waits for the
-/// business's confirm on the read-back screen, after every edit too (PICK-006, D-149).
+/// as an edit (`edited_at`), and one after a withdrawal clears `withdrawn_at` (D-1049). A form
+/// quote is confirmed as sent; an AI-read one waits for the business's confirm on the read-back
+/// screen, after every edit too (PICK-006, D-149). The caller refuses an edit after a pick.
 pub(crate) async fn upsert_quote(
     db: &mut PgConnection,
     (job, business): (Uuid, Uuid),
@@ -313,7 +314,8 @@ pub(crate) async fn upsert_quote(
          confirm_on_site = EXCLUDED.confirm_on_site, notes = EXCLUDED.notes, \
          original = EXCLUDED.original, ai_read = EXCLUDED.ai_read, \
          confirmed = EXCLUDED.confirmed, earliest_visit = EXCLUDED.earliest_visit, \
-         visit_part = EXCLUDED.visit_part, edited_at = EXCLUDED.received_at",
+         visit_part = EXCLUDED.visit_part, edited_at = EXCLUDED.received_at, \
+         withdrawn_at = NULL",
         job,
         business,
         quote.format.code(),
@@ -339,6 +341,46 @@ pub(crate) async fn upsert_quote(
     .await
     .map_err(|_| QuotesError::Database)?;
     Ok(())
+}
+
+/// PICK-051, JOB-025: whether `business` already has a quote on `job` (a new one is then an
+/// edit), and whether any quote on the job is marked unavailable by a failed pick.
+pub(crate) async fn edit_facts(
+    db: &mut PgConnection,
+    job: Uuid,
+    business: Uuid,
+) -> Result<(bool, bool), QuotesError> {
+    let row = sqlx::query!(
+        "SELECT EXISTS (SELECT 1 FROM quotes.quote WHERE job_id = $1 AND business_id = $2) \
+         AS \"own!\", EXISTS (SELECT 1 FROM quotes.quote WHERE job_id = $1 \
+         AND unavailable_at IS NOT NULL) AS \"picked!\"",
+        job,
+        business
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok((row.own, row.picked))
+}
+
+/// JOB-025: marks the business's quote on the job unavailable at `at`, once (a failed pick).
+pub(crate) async fn mark_unavailable(
+    db: &mut PgConnection,
+    job: Uuid,
+    business: Uuid,
+    at: Timestamp,
+) -> Result<Guarded<()>, QuotesError> {
+    let row = sqlx::query_scalar!(
+        "UPDATE quotes.quote SET unavailable_at = $3 \
+         WHERE job_id = $1 AND business_id = $2 AND unavailable_at IS NULL RETURNING true",
+        job,
+        business,
+        at.to_sqlx()
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok(Guarded::from_returning(row.map(|_| ())))
 }
 
 /// PICK-006: marks the business's quote on the job confirmed, unless it is withdrawn.
@@ -384,8 +426,8 @@ pub(crate) struct WindowState {
     pub windows: Windows,
 }
 
-/// Counts the job's cards (`sent`), its confirmed quotes (`quoted`) and those not withdrawn
-/// (`choosable`); a failed pick's quote is `picks`', which passes its own count (D-1051).
+/// Counts the job's cards (`sent`), its confirmed quotes (`quoted`) and those neither withdrawn
+/// nor marked unavailable by a failed pick (`choosable`, JOB-025, D-1051).
 pub(crate) async fn window_state(
     db: &mut PgConnection,
     job: Uuid,
@@ -394,7 +436,7 @@ pub(crate) async fn window_state(
         "SELECT max(c.sent_at) AS last_sent, count(*) AS \"sent!\", \
          (SELECT count(*) FROM quotes.quote q WHERE q.job_id = $1 AND q.confirmed) AS \"quoted!\", \
          (SELECT count(*) FROM quotes.quote q WHERE q.job_id = $1 AND q.confirmed \
-          AND q.withdrawn_at IS NULL) AS \"choosable!\" \
+          AND q.withdrawn_at IS NULL AND q.unavailable_at IS NULL) AS \"choosable!\" \
          FROM quotes.job_card c WHERE c.job_id = $1",
         job
     )

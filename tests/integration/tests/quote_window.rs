@@ -13,7 +13,8 @@ use askhava_licensing::api::LicenseKind;
 use askhava_ops::api::Actor;
 use askhava_quotes::api::{
     Format, Price, Quote, QuoteForm, QuoteRules, Submitted, WINDOWS_KIND, WindowsCheck,
-    confirm_quote, parse_quote, run_windows_end, shown_quotes, submit_quote, windows_ended,
+    confirm_quote, mark_unavailable, parse_quote, run_windows_end, shown_quotes, submit_quote,
+    windows_ended,
 };
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -239,4 +240,78 @@ async fn td_job_03_all_quotes_in_once_every_window_ended(pool: PgPool) {
         windows_ended(&mut db, none, at("04T08:00:00")).await,
         Ok(WindowsCheck::NoCards)
     );
+}
+
+/// TD-PICK-02 (PICK-051, D-043): a quote is edited only before any pick: in Awaiting confirm, or
+/// back in Quotes ready after a failed pick, an edit is refused while another business's first
+/// quote is still taken; a resubmission after a withdrawal clears it; a Confirm on the read-back
+/// is refused once the job takes no quotes.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_02_no_edit_after_a_pick(mut db: Db) {
+    let ready = [JobStatus::Open, JobStatus::QuotesReady];
+    let id = job_at(&mut db, &ready, at("03T08:00:00")).await;
+    let sent = at("03T08:00:00");
+    let (a, b, c) = (
+        card(&mut db, id, 1, sent).await,
+        card(&mut db, id, 2, sent).await,
+        card(&mut db, id, 3, sent).await,
+    );
+    let q = quote(false);
+    for n in [a, b] {
+        let saved = submit_quote(&mut db, (id, n), &q, at("03T09:00:00")).await;
+        assert_eq!(saved, Ok(Submitted::Saved));
+    }
+    sqlx::query("UPDATE quotes.quote SET withdrawn_at = $2 WHERE job_id = $1 AND business_id = $3")
+        .bind(id)
+        .bind(at("03T09:30:00").to_sqlx())
+        .bind(b)
+        .execute(&mut *db)
+        .await
+        .expect("withdraw");
+    let again = submit_quote(&mut db, (id, b), &q, at("03T09:45:00")).await;
+    assert_eq!(again, Ok(Submitted::Saved));
+    assert_eq!(shown_quotes(&mut db, id).await, Ok(vec![a, b]));
+    let pick = (JobStatus::QuotesReady, JobStatus::AwaitingConfirm);
+    let moved = move_to(&mut db, id, pick, at("03T10:00:00"), Actor::System).await;
+    assert_eq!(moved, Ok(Guarded::Applied(())));
+    let edit = submit_quote(&mut db, (id, b), &q, at("03T10:30:00")).await;
+    assert_eq!(edit, Ok(Submitted::EditClosed));
+    let back = (JobStatus::AwaitingConfirm, JobStatus::QuotesReady);
+    let moved = move_to(&mut db, id, back, at("03T11:00:00"), Actor::System).await;
+    assert_eq!(moved, Ok(Guarded::Applied(())));
+    let failed = mark_unavailable(&mut db, (id, a), at("03T11:00:00")).await;
+    assert_eq!(failed, Ok(Guarded::Applied(())));
+    for n in [a, b] {
+        let edit = submit_quote(&mut db, (id, n), &q, at("03T11:30:00")).await;
+        assert_eq!(edit, Ok(Submitted::EditClosed));
+    }
+    let late = submit_quote(&mut db, (id, c), &quote(true), at("03T11:30:00")).await;
+    assert_eq!(late, Ok(Submitted::Saved));
+    let close = (JobStatus::QuotesReady, JobStatus::Cancelled);
+    let moved = move_to(&mut db, id, close, at("03T12:00:00"), Actor::System).await;
+    assert_eq!(moved, Ok(Guarded::Applied(())));
+    assert_eq!(confirm_quote(&mut db, id, c).await, Ok(Guarded::MovedOn));
+}
+
+/// TD-JOB-03 (JOB-025): a failed pick's quote, marked unavailable, is not choosable, so once
+/// every window has ended a job whose only quote it was closes; marking it twice changes nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_03_a_failed_picks_quote_is_not_choosable(mut db: Db) {
+    let ready = [JobStatus::Open, JobStatus::QuotesReady];
+    let id = job_at(&mut db, &ready, at("03T08:00:00")).await;
+    let a = card(&mut db, id, 1, at("03T08:00:00")).await;
+    submit_quote(&mut db, (id, a), &quote(false), at("03T09:00:00"))
+        .await
+        .expect("quote");
+    let marked = mark_unavailable(&mut db, (id, a), at("03T12:00:00")).await;
+    assert_eq!(marked, Ok(Guarded::Applied(())));
+    let twice = mark_unavailable(&mut db, (id, a), at("03T13:00:00")).await;
+    assert_eq!(twice, Ok(Guarded::MovedOn));
+    let closed = windows_ended(&mut db, id, at("04T08:00:00")).await;
+    assert_eq!(
+        closed,
+        Ok(WindowsCheck::Ended(Guarded::Applied(WindowsEnd::Close)))
+    );
+    let status = current(&mut db, id).await.expect("job").status;
+    assert_eq!(status.code(), "closed");
 }

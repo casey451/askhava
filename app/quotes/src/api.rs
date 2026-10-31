@@ -14,14 +14,15 @@
 //! PICK-007, FEE-043, FEE-044); [`submit_quote`] stores it inside the business's own 24 hours
 //! ([`window_open`], PICK-001); [`confirm_quote`] is the read-back's confirm (PICK-006);
 //! [`shown_quotes`] lists the confirmed ones the homeowner's page may show; [`run_windows_end`]
-//! is the [`WINDOWS_KIND`] handler that calls `jobs::api::all_windows_ended` (TXT-042, JOB-025).
+//! is the [`WINDOWS_KIND`] handler that calls `jobs::api::all_windows_ended` (TXT-042, JOB-025);
+//! [`mark_unavailable`] is `picks`' mark on a failed pick's quote (JOB-025, PICK-051).
 
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
 pub use crate::gate::final_gate;
 pub use crate::handlers::{WINDOWS_KIND, WindowsCheck, run_windows_end, windows_ended};
 pub use crate::intake::{
     Bounce, DayPart, Format, Period, Price, QUOTE_WINDOW, Quote, QuoteForm, QuoteRules, Submitted,
-    confirm_quote, parse_quote, shown_quotes, submit_quote, window_open,
+    confirm_quote, mark_unavailable, parse_quote, shown_quotes, submit_quote, window_open,
 };
 pub use crate::models::{
     CardBusiness, CardDecision, CardJob, CardLines, Coverage, OfferTown, OwnerPauses, Pool, Pooled,

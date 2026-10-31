@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT max(c.sent_at) AS last_sent, count(*) AS \"sent!\", (SELECT count(*) FROM quotes.quote q WHERE q.job_id = $1 AND q.confirmed) AS \"quoted!\", (SELECT count(*) FROM quotes.quote q WHERE q.job_id = $1 AND q.confirmed AND q.withdrawn_at IS NULL) AS \"choosable!\" FROM quotes.job_card c WHERE c.job_id = $1",
+  "query": "SELECT max(c.sent_at) AS last_sent, count(*) AS \"sent!\", (SELECT count(*) FROM quotes.quote q WHERE q.job_id = $1 AND q.confirmed) AS \"quoted!\", (SELECT count(*) FROM quotes.quote q WHERE q.job_id = $1 AND q.confirmed AND q.withdrawn_at IS NULL AND q.unavailable_at IS NULL) AS \"choosable!\" FROM quotes.job_card c WHERE c.job_id = $1",
   "describe": {
     "columns": [
       {
@@ -40,5 +40,5 @@
       null
     ]
   },
-  "hash": "a8be0601fe403e996fb1c965cad28318f6b15ae1af1c80f9e8d4879dfa1f881f"
+  "hash": "dc513d3dbde2a59ba220f942f6e07232f903b6b59db4eed70a72d0102fb8d01a"
 }

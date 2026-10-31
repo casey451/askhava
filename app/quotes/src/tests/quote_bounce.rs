@@ -4,7 +4,7 @@
 //! `example.com`).
 
 use askhava_catalog::api::RESTRICTED_WORDS;
-use askhava_licensing::api::LicenseKind;
+use askhava_licensing::api::{LicenseKind, QuoteRefusal};
 
 use crate::api::{Bounce, Format, Price, QuoteForm, QuoteRules, parse_quote};
 
@@ -78,13 +78,35 @@ fn td_pick_03_clean_notes_pass_and_lines_hold_no_value() {
         parse_quote(with_notes(&restricted), &RULES),
         Err(Bounce::Restricted)
     );
-    for bounce in [
+}
+
+/// TD-PICK-03: no line of any bounce, all seven, repeats a value, and a form's `Debug` shows
+/// none of the business's text (rust brain R6).
+#[test]
+fn td_pick_03_no_bounce_line_or_debug_holds_a_value() {
+    let every = [
         Bounce::Contact,
         Bounce::Restricted,
+        Bounce::WrongFormat,
         Bounce::NeedsHours,
         Bounce::Amounts,
-    ] {
-        assert!(!bounce.message().contains("555"));
-        assert!(!bounce.message().to_lowercase().contains("example"));
+        Bounce::Handyman(QuoteRefusal::NotCertified),
+        Bounce::Handyman(QuoteRefusal::OverHandymanLimit),
+        Bounce::Handyman(QuoteRefusal::SplitJob),
+    ];
+    for bounce in every {
+        let line = bounce.message().to_lowercase();
+        assert!(
+            !line.contains("555") && !line.contains("example"),
+            "{bounce:?}"
+        );
     }
+    let mut form = with_notes(CONTACT[0]);
+    form.original = CONTACT[4].to_owned();
+    form.price = Price::Tiers(vec![("Basic 928-555-0142".to_owned(), 9_000)]);
+    let shown = format!("{form:?}");
+    assert!(
+        !shown.contains("555") && !shown.contains("example"),
+        "{shown}"
+    );
 }

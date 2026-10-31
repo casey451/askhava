@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM quotes.quote WHERE job_id = $1 AND business_id = $2) AS \"own!\", EXISTS (SELECT 1 FROM quotes.quote WHERE job_id = $1 AND unavailable_at IS NOT NULL) AS \"picked!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "own!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "picked!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "52dc9fccd0b2ea2b5f3c68412325a92ab5a421023ad41f7a279cd825fc612d87"
+}

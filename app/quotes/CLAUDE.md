@@ -6,16 +6,16 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 
 ## What it owns
 
-- `src/api.rs`: the only public surface: `send_cards`, `send_job_cards`, `send_late_cards`, `coverage`, `card_holders`, `parse_quote`, `submit_quote`, `confirm_quote`, `shown_quotes`, `window_open`, `QUOTE_WINDOW`, `windows_ended`, `run_windows_end`, `WINDOWS_KIND`, the types below and `api::rules` (`card_for`, `card_under`, `match_job`, `coverage`, `recipients`).
-- `src/models.rs`: `CardJob`, `CardLines`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Pooled`, `OwnerPauses`, `Pool`, `Coverage`, `Recipient`, `QuotesError`, the `quotes.job_card` queries and the `quotes.quote` queries (`card_sent_at`, `upsert_quote`, `confirm_quote`, `shown_quotes`, `window_state`).
-- `src/intake.rs`: `Format`, `Period`, `DayPart`, `Price`, `QuoteForm`, `QuoteRules`, `Bounce` (with the business's line, `message`), `Quote` (only `parse_quote` makes one), `Submitted`, `window_open`, `parse_quote` (pure), `submit_quote`, `confirm_quote`, `shown_quotes`.
+- `src/api.rs`: the only public surface: `send_cards`, `send_job_cards`, `send_late_cards`, `coverage`, `card_holders`, `parse_quote`, `submit_quote`, `confirm_quote`, `mark_unavailable`, `shown_quotes`, `window_open`, `QUOTE_WINDOW`, `windows_ended`, `run_windows_end`, `WINDOWS_KIND`, the types below and `api::rules` (`card_for`, `card_under`, `match_job`, `coverage`, `recipients`).
+- `src/models.rs`: `CardJob`, `CardLines`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Pooled`, `OwnerPauses`, `Pool`, `Coverage`, `Recipient`, `QuotesError`, the `quotes.job_card` queries and the `quotes.quote` queries (`card_sent_at`, `upsert_quote`, `edit_facts`, `mark_unavailable`, `confirm_quote`, `shown_quotes`, `window_state`).
+- `src/intake.rs`: `Format`, `Period`, `DayPart`, `Price`, `QuoteForm`, `QuoteRules`, `Bounce` (with the business's line, `message`), `Quote` (only `parse_quote` makes one), `Submitted`, `window_open`, `parse_quote` (pure), `submit_quote`, `confirm_quote`, `mark_unavailable`, `shown_quotes`. `Price` and `QuoteForm` have hand-written `Debug` that leaves out the notes, original wording and tier names (R6).
 - `src/handlers.rs`: the `quotes.windows_end` task: `schedule`, `windows_ended`, `run_windows_end`, `WindowsCheck`.
 - `src/rules.rs` (pure): `card_for`, `card_under`, `match_job`, `coverage`, `recipients`, `owner_paused`, `gate`, `serves`, `ticked`, `covered`.
 - `src/cards.rs` (pure): `CardParts`, `JobCard` (private fields: town, place, photo IDs, text), `Place`, `Timing`, `Danger`, `DEFAULT_MIN_WORDS`, `build_card`, `JobCard::text_for`.
 - `src/gate.rs` (pure): `final_gate` (CARD-008, CARD-010) and `word_count` (CARD-009).
 - `src/service.rs`: `send_cards` (choose and record), `send_job_cards` (full match, new holders only), `send_late_cards` (CARD-018), `coverage` (shipped map), `card_holders`.
 - Migration `0067_quotes_matching.sql`: the `quotes` schema and `quotes.job_card` (job and business IDs, handyman flag, `sent_at`; unique per job and business; no `UPDATE`, `DELETE` or `TRUNCATE` for `askhava_app`). No homeowner detail.
-- Migration `0070_quotes_quote.sql`: `quotes.quote` (one per business per job; format, amounts, tiers, period, setup, hourly rate and hours, on-site tick, notes, original wording, `ai_read`, `confirmed`, earliest visit, `received_at`, `edited_at`, `withdrawn_at`; no expiry column; no `DELETE` or `TRUNCATE` for `askhava_app`).
+- Migration `0070_quotes_quote.sql`: `quotes.quote` (one per business per job; format, amounts, tiers, period, setup, hourly rate and hours, on-site tick, notes, original wording, `ai_read`, `confirmed`, earliest visit, `received_at`, `edited_at`, `withdrawn_at`, `unavailable_at`; no expiry column; no `DELETE` or `TRUNCATE` for `askhava_app`).
 
 ## Rules it enforces
 
@@ -36,11 +36,11 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - CARD-012: `JobCard::text_for` adds "Homeowner prefers Spanish" only when `CardLines::prefers_spanish` and the business speaks Spanish; no matching input holds a language.
 - CARD-019, FEE-045: `text_for` adds "No introduction fee for this job." when `CardLines::fee_free` and ends with "Sent to <N> businesses." ("Sent to 1 business.", D-1032); N is the caller's count, never capped.
 - PICK-001, D-042, D-043: `intake::window_open` (24 hours from the business's own `job_card.sent_at`, shut at exactly 24 hours); `submit_quote` refuses no card, a closed window, or a job failing `JobStatus::takes_quotes` (D-1048).
-- PICK-002, PICK-006, PICK-051: `submit_quote` stores the checked quote, a resubmission an edit; confirmed unless `ai_read`; `confirm_quote` confirms; `shown_quotes` lists only confirmed, unwithdrawn quotes (D-1049).
+- PICK-002, PICK-006, PICK-051: `submit_quote` stores the checked quote, a resubmission an edit (clearing any withdrawal); an edit is refused (`Submitted::EditClosed`) unless `JobStatus::takes_quote_edits` and no quote on the job is unavailable, while another business's first quote is still taken (D-043); confirmed unless `ai_read`; `confirm_quote` confirms only while `JobStatus::takes_quotes`; `shown_quotes` lists only confirmed, unwithdrawn quotes (D-1049).
 - PICK-053, FEE-043, FEE-044, LIC-019: `parse_quote` requires the job's format; hourly with hours is a range (in `range` or `diagnostic_visit` jobs), without hours a site visit in `diagnostic_visit` only (`NeedsHours` elsewhere); the handyman limit is `licensing::api::check_quote` on the top, never the setup charge; no fee code here (D-1050, D-491).
 - PICK-007, CARD-010: `intake::text_bounce` bounces notes, wording or a tier name when `final_gate` would cut a word, or on a restricted phrase; `Bounce` carries no text (D-1051).
-- TXT-042, JOB-025: each accepted quote schedules `quotes.windows_end` for the last window end; `windows_ended` re-schedules for a later card, else passes `Windows { quoted, sent, choosable }` to `jobs::api::all_windows_ended` (D-1051).
-- Not here yet: the first-quote move to Quotes ready (JOB-009); the PICK-040 fact columns (T148) and the quote card (T186); withdrawal (PICK-051); a failed pick's quote is `picks`'.
+- TXT-042, JOB-025: each accepted quote schedules `quotes.windows_end` for the last window end; `windows_ended` re-schedules for a later card, else passes `Windows { quoted, sent, choosable }` to `jobs::api::all_windows_ended`; `choosable` leaves out withdrawn quotes and those `picks` marked with `mark_unavailable` after a failed pick (D-1051).
+- Not here yet: the first-quote move to Quotes ready (JOB-009); the PICK-040 fact columns (T148) and the quote card (T186); the withdraw action (PICK-051); calling `mark_unavailable` on a failed pick is `picks`' (T063).
 - Not here yet: the card notice and the provider-accepted count (CARD-019 to CARD-021, T147); the BIZ-049 largest-job and recurring-work skips (T155, D-492); CARD-015's daily check feeds `verified`.
 
 ## Never break
