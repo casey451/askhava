@@ -351,12 +351,12 @@ def test_size_limits(tmp_path: Path) -> None:
     tasks = valid_tasks()
     owns = [f"app/fake/m{i}.py" for i in range(vt.MAX_OWNS + 1)]
     task(tasks, "T001").update(
-        owns=owns, budget={"files": 2, "lines": vt.MAX_LINES + 1, "context_pct": 25}
+        owns=owns, budget={"files": 2, "lines": vt.MAX_LINES + 1, "context_pct": vt.MAX_CONTEXT_PCT + 1}
     )
     errors = errors_for(tmp_path, tasks)
     assert_error(errors, f"owned paths {vt.MAX_OWNS + 1} over the limit")
     assert_error(errors, f"budget lines {vt.MAX_LINES + 1} over the limit")
-    assert_error(errors, "budget context_pct 25 over the limit")
+    assert_error(errors, f"budget context_pct {vt.MAX_CONTEXT_PCT + 1} over the limit of {vt.MAX_CONTEXT_PCT}")
     assert_error(errors, f"budget files 2 does not match the {vt.MAX_OWNS + 1} owned files")
 
 
@@ -592,7 +592,31 @@ def test_harness_keeps_the_d119_size_limits(tmp_path: Path) -> None:
     errors = errors_for(tmp_path, tasks)
     assert not [e for e in errors if "T004" in e and "over the limit" in e]
     harness["budget"]["context_pct"] = vt.MAX_HARNESS_CONTEXT_PCT + 1
-    assert_error(errors_for(tmp_path, tasks), "budget context_pct 31 over the limit of 30")
+    assert_error(errors_for(tmp_path, tasks), "budget context_pct 51 over the limit of 50")
+
+
+def test_context_limits_are_set_where_the_measured_tasks_sit(tmp_path: Path) -> None:
+    """D-1036: 45 for build, docs and audit, 50 for harness, 65 for cleanup; each limit itself passes."""
+    assert (vt.MAX_CONTEXT_PCT, vt.MAX_HARNESS_CONTEXT_PCT, vt.MAX_CLEANUP_CONTEXT_PCT) == (45, 50, 65)
+    tasks = valid_tasks()
+    build, harness = task(tasks, "T001"), task(tasks, "T004")
+    build["budget"]["context_pct"], harness["budget"]["context_pct"] = 45, 50
+    assert not [e for e in errors_for(tmp_path, tasks) if "context_pct" in e]
+    build["type"] = "cleanup"
+    build["budget"]["context_pct"] = 65
+    assert not [e for e in errors_for(tmp_path, tasks) if "context_pct" in e]
+    build["budget"]["context_pct"] = 66
+    assert_error(errors_for(tmp_path, tasks), "budget context_pct 66 over the limit of 65")
+    build["type"] = "docs"
+    assert_error(errors_for(tmp_path, tasks), "budget context_pct 66 over the limit of 45")
+
+
+def test_finished_twin_harness_tasks_keep_their_measured_budget() -> None:
+    """D-1036: only T005 to T007, already done, may store up to 75%; any other harness task stops at 50."""
+    assert vt.CONTEXT_LIMIT_HISTORY == {"T005", "T006", "T007"}
+    for tid in ("T005", "T006", "T007"):
+        assert vt.context_limit(make_task(tid, "twin", type="harness")) == vt.MAX_HISTORY_CONTEXT_PCT == 75
+    assert vt.context_limit(make_task("T074", "twin", type="harness")) == 50
 
 
 def test_v1_build_and_harness_need_tests_or_acceptance(tmp_path: Path) -> None:
