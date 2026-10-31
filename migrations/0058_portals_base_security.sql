@@ -9,7 +9,8 @@
 -- webhook signature failure: its kind, the route template (never the path, which can hold a
 -- token), the request ID and an actor ID, never a phone or a name (SEC-048). Events are counted
 -- per kind over the last hour for the High alert, so the table is append-only for askhava_app
--- (postgres brain P5). Both tables are new and empty.
+-- (postgres brain P5); raised_alert marks the event that raised one, so a kind raises at most one
+-- alert per hour. Both tables are new and empty.
 
 CREATE SCHEMA IF NOT EXISTS portals;
 GRANT USAGE ON SCHEMA portals TO askhava_app;
@@ -34,7 +35,8 @@ CREATE TABLE portals.security_event (
   route text NOT NULL CHECK (length(route) BETWEEN 1 AND 200 AND route !~ '[?#[:space:]]'),
   request_id uuid,
   actor_ref uuid,
-  at timestamptz NOT NULL
+  at timestamptz NOT NULL,
+  raised_alert boolean NOT NULL DEFAULT false
 );
 CREATE INDEX security_event_kind_at_idx ON portals.security_event (kind, at);
 REVOKE UPDATE, DELETE, TRUNCATE ON portals.security_event FROM askhava_app;

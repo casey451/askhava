@@ -10,8 +10,9 @@
 //! [`CsrfForm`] parses a posted form and refuses it unless its `csrf` field matches the request's
 //! own cookie. Each refusal is a 403 and a security event: one log line with kind, route template,
 //! request ID and actor reference only, and a row whose count per kind over the last hour raises
-//! one High alert at [`EVENTS_PER_HOUR_ALERT`] (SEC-048). Autoescaping is never turned off
-//! (SEC-011): the template scan in `scripts/check_rust_rules.py` and this file's test guard it.
+//! one High alert at [`EVENTS_PER_HOUR_ALERT`], at most one per kind per hour (SEC-048).
+//! Autoescaping is never turned off (SEC-011): the template scan in `scripts/check_rust_rules.py`
+//! and this file's test guard it.
 
 use std::sync::Arc;
 
@@ -29,7 +30,7 @@ use serde::de::DeserializeOwned;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
-use crate::session::{PortalsError, csrf_matches};
+use crate::session::{PortalsError, csrf_matches, current_session};
 
 /// The `Content-Security-Policy`: own origin only, no inline or eval script, no plugins, no
 /// framing (SEC-012, SEC-013). A page that needs an inline script adds a per-response nonce.
@@ -93,27 +94,44 @@ impl WebSecurity {
     }
 
     async fn refuse(&self, kind: SecurityEventKind, site: EventSite) -> Response {
-        let event = SecurityEvent {
-            kind,
-            route: &site.route,
-            request_id: site.request_id,
-            actor_ref: None,
-        };
+        let now = self.clock.now();
         let recorded = match self.pool.acquire().await {
-            Ok(mut db) => record_security_event(&mut db, &event, self.clock.now()).await,
+            Ok(mut db) => {
+                // The session's row ID only, never the phone or name behind it (SEC-048).
+                let actor_ref = match current_session(&mut db, &site.jar, now).await {
+                    Ok(session) => session.map(|session| session.id()),
+                    Err(_) => None,
+                };
+                let event = SecurityEvent {
+                    kind,
+                    route: &site.route,
+                    request_id: site.request_id,
+                    actor_ref,
+                };
+                record_security_event(&mut db, &event, now).await
+            }
             Err(_) => Err(PortalsError::Database),
         };
         if let Err(error) = recorded {
-            tracing::error!(%error, route = event.route, "security event not recorded");
+            let request_id = site.request_id.map(|id| id.to_string());
+            tracing::error!(
+                %error,
+                kind = kind.as_str(),
+                route = site.route,
+                request_id = request_id.as_deref(),
+                "security event not recorded"
+            );
         }
         StatusCode::FORBIDDEN.into_response()
     }
 }
 
-/// The route template and request ID of a request, never its path (SEC-048, SEC-033).
+/// The route template, request ID and cookies of a request, never its path (SEC-048, SEC-033).
+/// The cookies only find the session whose row ID is the event's actor reference.
 struct EventSite {
     route: String,
     request_id: Option<Uuid>,
+    jar: CookieJar,
 }
 
 impl EventSite {
@@ -129,12 +147,14 @@ impl EventSite {
         Self {
             route: route.to_owned(),
             request_id,
+            jar: CookieJar::from_headers(request.headers()),
         }
     }
 }
 
 /// Whether a request that changes state comes from another site: a `Sec-Fetch-Site` other than
-/// `same-origin`, an `Origin` whose host is not `host`, or neither header (SEC-042).
+/// `same-origin`, an `Origin` that is not `https://` on `host` (a plain `http://` origin is
+/// cross-site, since the app is served over HTTPS only, SEC-012), or neither header (SEC-042).
 #[must_use]
 pub fn is_cross_site(headers: &HeaderMap, host: Option<&str>) -> bool {
     let fetch_site = headers.get("sec-fetch-site");
@@ -144,11 +164,10 @@ pub fn is_cross_site(headers: &HeaderMap, host: Option<&str>) -> bool {
     let Some(origin) = headers.get(header::ORIGIN) else {
         return fetch_site.is_none();
     };
-    let origin_host = origin.to_str().ok().and_then(|origin| {
-        origin
-            .strip_prefix("https://")
-            .or(origin.strip_prefix("http://"))
-    });
+    let origin_host = origin
+        .to_str()
+        .ok()
+        .and_then(|origin| origin.strip_prefix("https://"));
     !matches!((origin_host, host), (Some(origin), Some(host)) if origin.eq_ignore_ascii_case(host))
 }
 
@@ -209,12 +228,11 @@ where
     type Rejection = Response;
 
     async fn from_request(request: Request, state: &S) -> Result<Self, Response> {
-        let jar = CookieJar::from_headers(request.headers());
         let site = EventSite::of(&request);
         let Form(form) = Form::<T>::from_request(request, state)
             .await
             .map_err(IntoResponse::into_response)?;
-        if csrf_matches(&jar, form.csrf()) {
+        if csrf_matches(&site.jar, form.csrf()) {
             return Ok(Self(form));
         }
         let security = WebSecurity::from_ref(state);
@@ -272,8 +290,10 @@ pub struct SecurityEvent<'a> {
 }
 
 /// Logs `event` once and stores it; the event that brings its kind's count over the last hour to
-/// [`EVENTS_PER_HOUR_ALERT`] raises one High alert (SEC-048, TD-SEC-26). Returns whether it did.
-/// One lock per kind makes concurrent events count one at a time, so the alert is raised once.
+/// at least [`EVENTS_PER_HOUR_ALERT`] raises one High alert, unless an event of that kind in the
+/// last hour already raised one, so a steady attack raises at most one alert per kind per hour
+/// (SEC-048, TD-SEC-26). Returns whether it did. One lock per kind makes concurrent events count
+/// one at a time, so the alert is raised once.
 ///
 /// # Errors
 ///
@@ -292,7 +312,6 @@ pub async fn record_security_event(
         actor_ref = actor_ref.as_deref(),
         "security event"
     );
-    let since = now - SignedDuration::from_hours(1);
     let mut tx = db.begin().await.map_err(|_| PortalsError::Database)?;
     // The lock comes first, in its own statement, so the count below sees every event committed
     // before it.
@@ -303,22 +322,25 @@ pub async fn record_security_event(
     .fetch_one(&mut *tx)
     .await
     .map_err(|_| PortalsError::Database)?;
-    let count = sqlx::query_scalar!(
-        r#"INSERT INTO portals.security_event (kind, route, request_id, actor_ref, at)
-           VALUES ($1, $2, $3, $4, $5)
-           RETURNING (SELECT count(*) FROM portals.security_event
-                      WHERE kind = $1 AND at > $6) + 1 AS "count!""#,
+    let alert = sqlx::query_scalar!(
+        r#"WITH recent AS (
+             SELECT count(*) AS events, coalesce(bool_or(raised_alert), false) AS raised
+             FROM portals.security_event WHERE kind = $1 AND at > $6)
+           INSERT INTO portals.security_event
+             (kind, route, request_id, actor_ref, at, raised_alert)
+           SELECT $1, $2, $3, $4, $5, recent.events + 1 >= $7 AND NOT recent.raised FROM recent
+           RETURNING raised_alert"#,
         event.kind.as_str(),
         event.route,
         event.request_id,
         event.actor_ref,
         now.to_sqlx(),
-        since.to_sqlx(),
+        (now - SignedDuration::from_hours(1)).to_sqlx(),
+        EVENTS_PER_HOUR_ALERT,
     )
     .fetch_one(&mut *tx)
     .await
     .map_err(|_| PortalsError::Database)?;
-    let alert = count == EVENTS_PER_HOUR_ALERT;
     if alert {
         let burst = NewAlert {
             kind: event.kind.alert_kind(),

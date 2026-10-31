@@ -234,6 +234,10 @@ async fn the_test_route_refuses_cross_site_and_tokenless_posts(pool: PgPool) {
         ),
         (form_post(&mine, &[], &good), StatusCode::FORBIDDEN),
         (
+            form_post(&mine, &[("origin", "http://askhava.test")], &good),
+            StatusCode::FORBIDDEN,
+        ),
+        (
             form_post(&mine, &[("origin", "https://askhava.test")], &good),
             StatusCode::OK,
         ),
@@ -255,7 +259,7 @@ async fn the_test_route_refuses_cross_site_and_tokenless_posts(pool: PgPool) {
             .fetch_all(&pool)
             .await
             .expect("events");
-    assert_eq!(stored.len(), 5, "one event per refusal");
+    assert_eq!(stored.len(), 6, "one event per refusal");
     assert!(
         stored
             .iter()
@@ -264,7 +268,7 @@ async fn the_test_route_refuses_cross_site_and_tokenless_posts(pool: PgPool) {
     let text = log.text();
     assert_eq!(
         text.matches("security event").count(),
-        5,
+        6,
         "one log line per refusal"
     );
     assert!(text.contains(FAKE_REQUEST_ID) && text.contains("/test/{token}"));
@@ -314,4 +318,60 @@ async fn fifty_failed_sign_ins_in_an_hour_raise_one_high_alert(pool: PgPool) {
     assert!(!record(&pool, SecurityEventKind::AuthFailed, fiftieth).await);
     assert_eq!(alerts(&pool, "portals.auth_failed_burst").await, 1);
     assert_eq!(alerts(&pool, "portals.csrf_rejected_burst").await, 0);
+}
+
+/// TD-SEC-26 (SEC-048): a steady attack of 50 events an hour raises one High alert per hour,
+/// not one per event once the sliding window holds 50.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_steady_fifty_an_hour_raises_one_alert_per_hour(pool: PgPool) {
+    let every = SignedDuration::from_secs(72);
+    let mut raised = Vec::new();
+    for event in 0..99_i32 {
+        let at = now() + every * event;
+        if record(&pool, SecurityEventKind::AuthzDenied, at).await {
+            raised.push(event);
+        }
+    }
+    assert_eq!(
+        raised,
+        [49],
+        "only the fiftieth event raises, within its hour"
+    );
+    assert_eq!(alerts(&pool, "portals.authz_denied_burst").await, 1);
+    let next_hour = now() + every * 99;
+    assert!(record(&pool, SecurityEventKind::AuthzDenied, next_hour).await);
+    assert_eq!(alerts(&pool, "portals.authz_denied_burst").await, 2);
+}
+
+/// TD-SEC-21 (SEC-048): a refused post from a signed-in browser stores its session's row ID as
+/// the actor reference, never anything about the person.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_refusal_with_a_session_records_its_actor_ref(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let login = (Realm::Homeowner, Uuid::from_u128(9));
+    let jar = start_session(
+        &mut db,
+        CookieJar::new(),
+        login,
+        SignedDuration::from_hours(1),
+        now(),
+    );
+    let (cookie, _) = cookie_of(&set_cookies(jar.await.expect("login")), SESSION_COOKIE);
+    let signed_in = jar_with(&[(SESSION_COOKIE, &cookie)]);
+    let session = current_session(&mut db, &signed_in, now()).await;
+    let session = session.expect("lookup").expect("signed in");
+    let request = Request::post(format!("/test/{FAKE_PHONE}"))
+        .header(header::HOST, HOST)
+        .header(header::COOKIE, format!("{SESSION_COOKIE}={cookie}"))
+        .header("origin", "https://evil.test")
+        .body(Body::empty())
+        .expect("request");
+    let got = test_route(pool.clone()).oneshot(request).await;
+    assert_eq!(got.expect("response").status(), StatusCode::FORBIDDEN);
+    let stored: Vec<Option<Uuid>> =
+        sqlx::query_scalar("SELECT actor_ref FROM portals.security_event")
+            .fetch_all(&pool)
+            .await
+            .expect("events");
+    assert_eq!(stored, [Some(session.id())]);
 }

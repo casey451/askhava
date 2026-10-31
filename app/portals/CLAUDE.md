@@ -6,7 +6,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 
 ## What it owns
 
-- Migration `0058_portals_base_security.sql`: the `portals` schema and grants; `portals.session` (SHA256 of the cookie token, realm, actor ID, created and expiry times) and `portals.security_event` (kind, route template, request ID, actor reference, time; append-only for `askhava_app`).
+- Migration `0058_portals_base_security.sql`: the `portals` schema and grants; `portals.session` (SHA256 of the cookie token, realm, actor ID, created and expiry times) and `portals.security_event` (kind, route template, request ID, actor reference, time, `raised_alert`; append-only for `askhava_app`).
 - `src/session.rs`: `SESSION_COOKIE`, `PRE_SESSION_COOKIE`, `PortalsError`, `Realm`, `Session` (`id`, `realm`, `homeowner_proof`, `owner_proof`), `start_session`, `current_session`, `ensure_pre_session`, `csrf_token`, `csrf_matches`.
 - `src/security.rs`: `security_headers`, `no_store`, `refuse_cross_site`, `is_cross_site`, `WebSecurity`, `CsrfField`, `ButtonForm`, `CsrfForm`, `SecurityEventKind`, `SecurityEvent`, `record_security_event`, `EVENTS_PER_HOUR_ALERT`, the header values `CONTENT_SECURITY_POLICY`, `STRICT_TRANSPORT_SECURITY`, `PERMISSIONS_POLICY`.
 - `askama.toml`: template folders `templates/` then `../site/templates/`, so every portal page extends `base.html` (D-491).
@@ -15,13 +15,13 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 ## Rules it enforces
 
 - SEC-009, D-099: every cookie is `__Host-` with `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`, no `Domain` (`session::host_cookie`); a form carries `csrf_token` and is read through `CsrfForm`.
-- SEC-042, D-480: `start_session` deletes the browser's earlier session and drops the pre-session cookie, so no pre-login cookie survives a login; `refuse_cross_site` refuses a POST, PUT, PATCH or DELETE whose `Sec-Fetch-Site` is not `same-origin`, whose `Origin` host is not the `Host`, or that has neither; forms without a session are bound to `__Host-askhava-pre` (`ensure_pre_session`).
+- SEC-042, D-480: `start_session` deletes the browser's earlier session and drops the pre-session cookie, so no pre-login cookie survives a login; `refuse_cross_site` refuses a POST, PUT, PATCH or DELETE whose `Sec-Fetch-Site` is not `same-origin`, whose `Origin` is not `https://` on the `Host` (plain `http://` is refused), or that has neither; forms without a session are bound to `__Host-askhava-pre` (`ensure_pre_session`).
 - SEC-011: autoescaping on in every template; `scripts/check_rust_rules.py` bans the escapes; `security::tests` renders `<script>` through `base.html` as text.
-- SEC-012, SEC-054, D-492: `security_headers` (layered outermost in `server::build_router`) sends the CSP, one-year HSTS with `includeSubDomains` and no `preload`, the Permissions-Policy, `nosniff` and `Referrer-Policy: no-referrer` on every response, replacing any a handler set.
+- SEC-012, SEC-054, D-492: `security_headers` (layered outermost in `server::build_router`) sends the CSP, one-year HSTS with `includeSubDomains` and no `preload`, the Permissions-Policy, `nosniff` and `Referrer-Policy: no-referrer` on every response, replacing any a handler set; a page-specific CSP (Stripe on Confirm, a nonce) needs that layer changed first (D-946).
 - SEC-013: the CSP allows the app's own origin only; templates and static files load no other host (Stripe.js on the Confirm page is the one exception, FEE-014, which that page's task adds to its own CSP).
 - SEC-034: `no_store` on every page with homeowner contact details or job photos.
 - SEC-046: `Session::homeowner_proof` and `owner_proof` mint a `privacy` proof only for a session of that realm; business sessions get none.
-- SEC-048, D-943: `record_security_event` logs one `security event` line (kind, route template, request ID, actor reference) and stores a row; the event that makes its kind's count over the last hour `EVENTS_PER_HOUR_ALERT` (50) raises one High `ops` alert `portals.<kind>_burst`. An advisory lock per kind serializes the count.
+- SEC-048, D-943, D-945: `record_security_event` logs one `security event` line (kind, route template, request ID, actor reference) and stores a row; a refusal's actor reference is the signed-in session's row ID, never a phone or name. The event that makes its kind's count over the last hour at least `EVENTS_PER_HOUR_ALERT` (50) raises one High `ops` alert `portals.<kind>_burst` unless an event of that kind in the last hour already did (`raised_alert`), so a steady attack raises at most one per kind per hour. An advisory lock per kind serializes the count.
 - A11Y-030, A11Y-031: forms post with `novalidate`, keep their submit button enabled and lean on the handler's idempotency key; a refused CSRF token is a bare 403.
 
 ## Never break
@@ -30,7 +30,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - A CSRF token works only with its own cookie; a cross-site post is refused even with a good token: `tests/security/tests/cookies_csrf.rs`.
 - Every response carries the SEC-012 headers, HSTS has no `preload`: `tests/security/tests/headers.rs`.
 - No third-party script, style, image, frame or font host, and the CSP names none: `tests/security/tests/no_third_party.rs`.
-- Security events carry no phone, name or path, and 50 of one kind in an hour raise one alert: `cookies_csrf.rs`.
+- Security events carry no phone, name or path, 50 of one kind in an hour raise one alert, and a steady 50 an hour raises one per hour, not one per event: `cookies_csrf.rs`.
 - `refuse_cross_site` is never layered over webhooks (their callers send no `Origin`).
 
 ## How to change
