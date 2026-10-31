@@ -1321,3 +1321,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **A beeping alarm.** "Smoke detector beeping" gets one question: "Is it 1) a chirp every minute or so, or 2) an alarm that keeps going off?" Answer 2 gets the 911 text; anything else is a normal request.
 - **Emergency or regular.** The choice text adds "Is this an emergency?" before the spec's words and "Reply 1 for emergency or 2 for regular." after them, so she knows how to answer (D-979). At night she first gets the count of businesses that take emergency requests at night; with none, she gets "Your request goes out at 8 a.m." and no choice.
 - **For you to look at.** One test-design line says the "no business at night" text "holds the 911 line"; the spec's own wording for that text has no 911 line and the D-436 rule allows no other safety text, so the spec's wording was built (D-978).
+
+## The trade question and two-trade messages (T042, D-998, D-999, October 31)
+
+- **A second opinion.** Each request is read by the AI and also by plain keyword rules. When they disagree, she gets a numbered question offering every trade any of them named, up to three.
+- **Her answer.** A number, "Not sure", or words of one option ("the AC one", "just a small repair") count; "repair" never reads as heating/AC. If her reply fits nothing, the same numbered question comes once more; after a second miss, Ask Hava goes with the keyword trade (if exactly one trade matched) or the AI's first reading, and moves on.
+- **The job keeps its words.** Once she picks a trade, the job keeps the job type her own words named ("AC blowing warm air" stays "AC not cooling"), so AC-only businesses still get the card. That fixes the twin's six warnings.
+- **Later messages.** More than 2 hours after her last message, a message about the same trade joins the open job only if at least half of its words (leaving out words like "the" and "my") are in the job's description.
+- **For you to look at.** The "That's 2 jobs" and SPLIT texts and the keyword list living in the catalog file are not built yet; the rules that detect two trades and the ALSO / TAMBIÉN reply are, and the texts go to the task that owns the intake texts (D-999).
