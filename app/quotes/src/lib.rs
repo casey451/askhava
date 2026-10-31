@@ -9,11 +9,17 @@
 //! T045 added the anonymous card and the final plain-code gate (CARD-005 to CARD-009, PRIV-006)
 //! in `cards` and `gate`.
 //!
+//! T046 added quote intake: the 24-hour window, the checked quote and its bounces, the stored
+//! record (PICK-001, PICK-002, PICK-007) in `intake`, and the every-window-ended check that hands
+//! the counts to `jobs` (TXT-042, JOB-025) in `handlers`.
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
 mod cards;
 mod gate;
+mod handlers;
+mod intake;
 mod models;
 mod rules;
 mod service;

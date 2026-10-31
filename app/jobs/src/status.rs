@@ -170,6 +170,17 @@ impl JobStatus {
         matches!(self, Self::Open | Self::NoQuotesYet)
     }
 
+    /// True for Open, No quotes yet, Quotes ready and Awaiting confirm, the statuses in which a
+    /// business may still quote inside its own 24 hours; once the picked business taps Confirm the
+    /// job has left them (PICK-001, D-043).
+    #[must_use]
+    pub const fn takes_quotes(self) -> bool {
+        matches!(
+            self,
+            Self::Open | Self::NoQuotesYet | Self::QuotesReady | Self::AwaitingConfirm
+        )
+    }
+
     /// True for the five final statuses, which wait for nothing (JOB-001, JOB-003).
     #[must_use]
     pub const fn is_final(self) -> bool {

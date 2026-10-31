@@ -2,17 +2,20 @@
 
 ## Purpose
 
-The layer-5 crate that decides who receives each job card, and later holds the cards and the quotes (`docs/architecture.md` section 3). T044 built the matching: a card goes to every active, verified business serving the job's Arizona offer towns whose licenses cover every candidate job type and which ticked one, with no cap (D-1013 to D-1015). T184 added the owner pauses, "jobs nobody else covers", late cards and the coverage count intake tells the homeowner (D-1018 to D-1022). T045 added the anonymous job card and the final plain-code gate every card passes last (D-1024 to D-1026). T185 added the carrier-restricted removal to that gate and the per-business Spanish, fee-free and "Sent to <N> businesses." lines (D-1031 to D-1033).
+The layer-5 crate that decides who receives each job card, and later holds the cards and the quotes (`docs/architecture.md` section 3). T044 built the matching: a card goes to every active, verified business serving the job's Arizona offer towns whose licenses cover every candidate job type and which ticked one, with no cap (D-1013 to D-1015). T184 added the owner pauses, "jobs nobody else covers", late cards and the coverage count intake tells the homeowner (D-1018 to D-1022). T045 added the anonymous job card and the final plain-code gate every card passes last (D-1024 to D-1026). T185 added the carrier-restricted removal to that gate and the per-business Spanish, fee-free and "Sent to <N> businesses." lines (D-1031 to D-1033). T046 added quote intake (the 24-hour window, the checked quote, its bounces and the stored record) and the every-window-ended check that hands the counts to `jobs` (D-1048 to D-1052).
 
 ## What it owns
 
-- `src/api.rs`: the only public surface: `send_cards`, `send_job_cards`, `send_late_cards`, `coverage`, `card_holders`, the types below and `api::rules` (`card_for`, `card_under`, `match_job`, `coverage`, `recipients`).
-- `src/models.rs`: `CardJob`, `CardLines`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Pooled`, `OwnerPauses`, `Pool`, `Coverage`, `Recipient`, `QuotesError` and the `quotes.job_card` queries.
+- `src/api.rs`: the only public surface: `send_cards`, `send_job_cards`, `send_late_cards`, `coverage`, `card_holders`, `parse_quote`, `submit_quote`, `confirm_quote`, `shown_quotes`, `window_open`, `QUOTE_WINDOW`, `windows_ended`, `run_windows_end`, `WINDOWS_KIND`, the types below and `api::rules` (`card_for`, `card_under`, `match_job`, `coverage`, `recipients`).
+- `src/models.rs`: `CardJob`, `CardLines`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Pooled`, `OwnerPauses`, `Pool`, `Coverage`, `Recipient`, `QuotesError`, the `quotes.job_card` queries and the `quotes.quote` queries (`card_sent_at`, `upsert_quote`, `confirm_quote`, `shown_quotes`, `window_state`).
+- `src/intake.rs`: `Format`, `Period`, `DayPart`, `Price`, `QuoteForm`, `QuoteRules`, `Bounce` (with the business's line, `message`), `Quote` (only `parse_quote` makes one), `Submitted`, `window_open`, `parse_quote` (pure), `submit_quote`, `confirm_quote`, `shown_quotes`.
+- `src/handlers.rs`: the `quotes.windows_end` task: `schedule`, `windows_ended`, `run_windows_end`, `WindowsCheck`.
 - `src/rules.rs` (pure): `card_for`, `card_under`, `match_job`, `coverage`, `recipients`, `owner_paused`, `gate`, `serves`, `ticked`, `covered`.
 - `src/cards.rs` (pure): `CardParts`, `JobCard` (private fields: town, place, photo IDs, text), `Place`, `Timing`, `Danger`, `DEFAULT_MIN_WORDS`, `build_card`, `JobCard::text_for`.
 - `src/gate.rs` (pure): `final_gate` (CARD-008, CARD-010) and `word_count` (CARD-009).
 - `src/service.rs`: `send_cards` (choose and record), `send_job_cards` (full match, new holders only), `send_late_cards` (CARD-018), `coverage` (shipped map), `card_holders`.
 - Migration `0067_quotes_matching.sql`: the `quotes` schema and `quotes.job_card` (job and business IDs, handyman flag, `sent_at`; unique per job and business; no `UPDATE`, `DELETE` or `TRUNCATE` for `askhava_app`). No homeowner detail.
+- Migration `0070_quotes_quote.sql`: `quotes.quote` (one per business per job; format, amounts, tiers, period, setup, hourly rate and hours, on-site tick, notes, original wording, `ai_read`, `confirmed`, earliest visit, `received_at`, `edited_at`, `withdrawn_at`; no expiry column; no `DELETE` or `TRUNCATE` for `askhava_app`).
 
 ## Rules it enforces
 
@@ -32,6 +35,12 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - CARD-010, D-485, D-492: each `gate::gate_once` pass runs `strip_restricted` after the contact cut (a domain holding a listed word is cut whole, D-1031): every `catalog::api::RESTRICTED_WORDS` phrase goes, whole words, any case, longest first; each removal logs only `entry=<list entry>`; a line with none is unchanged.
 - CARD-012: `JobCard::text_for` adds "Homeowner prefers Spanish" only when `CardLines::prefers_spanish` and the business speaks Spanish; no matching input holds a language.
 - CARD-019, FEE-045: `text_for` adds "No introduction fee for this job." when `CardLines::fee_free` and ends with "Sent to <N> businesses." ("Sent to 1 business.", D-1032); N is the caller's count, never capped.
+- PICK-001, D-042, D-043: `intake::window_open` (24 hours from the business's own `job_card.sent_at`, shut at exactly 24 hours); `submit_quote` refuses no card, a closed window, or a job failing `JobStatus::takes_quotes` (D-1048).
+- PICK-002, PICK-006, PICK-051: `submit_quote` stores the checked quote, a resubmission an edit; confirmed unless `ai_read`; `confirm_quote` confirms; `shown_quotes` lists only confirmed, unwithdrawn quotes (D-1049).
+- PICK-053, FEE-043, FEE-044, LIC-019: `parse_quote` requires the job's format; hourly with hours is a range (in `range` or `diagnostic_visit` jobs), without hours a site visit in `diagnostic_visit` only (`NeedsHours` elsewhere); the handyman limit is `licensing::api::check_quote` on the top, never the setup charge; no fee code here (D-1050, D-491).
+- PICK-007, CARD-010: `intake::text_bounce` bounces notes, wording or a tier name when `final_gate` would cut a word, or on a restricted phrase; `Bounce` carries no text (D-1051).
+- TXT-042, JOB-025: each accepted quote schedules `quotes.windows_end` for the last window end; `windows_ended` re-schedules for a later card, else passes `Windows { quoted, sent, choosable }` to `jobs::api::all_windows_ended` (D-1051).
+- Not here yet: the first-quote move to Quotes ready (JOB-009); the PICK-040 fact columns (T148) and the quote card (T186); withdrawal (PICK-051); a failed pick's quote is `picks`'.
 - Not here yet: the card notice and the provider-accepted count (CARD-019 to CARD-021, T147); the BIZ-049 largest-job and recurring-work skips (T155, D-492); CARD-015's daily check feeds `verified`.
 
 ## Never break
@@ -45,8 +54,14 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - No restricted phrase survives the gate and the log holds only the entry; the Spanish line only for Spanish speakers; the sent and fee-free lines: `src/tests/card_lines.rs`.
 - Overflow only when no checklist business gets the card; pauses send nothing: `src/tests/overflow.rs`.
 - A late card goes only in Open or No quotes yet, with its own send time: `tests/integration/tests/card_late_eligible.rs`.
+- A quote is taken only inside its card's 24 hours and before Confirm; an unconfirmed quote is never shown; the all-quotes-in text is queued once, after the last window: `tests/integration/tests/quote_window.rs`.
+- Contact in a quote bounces, and a bounce line repeats nothing the business wrote: `src/tests/quote_bounce.rs`.
+- A setup charge never changes whether a quote passes: `src/tests/quote_parse.rs::td_fee_27_setup_never_counts`.
 
 ## How to change
+
+- Change what a quote stores: a new migration on `quotes.quote`, the `Columns` spread in `models.rs`, `cargo sqlx prepare --workspace -- --all-targets --all-features`; never add an expiry (PICK-051).
+- A quote bounce miss: fix it in the card gate (`src/gate.rs`, recipe below), so cards and quotes stay on one rule; add the case to `src/tests/quote_bounce.rs`.
 
 - Restricted list change: `app/catalog/src/restricted_words.rs` only (`catalog` owns it); `tests::card_lines` checks every entry.
 - Gate miss found: add the case to `src/tests/prop_card_no_contact.rs` first, then a word to the matching list in `src/gate.rs` (one `const` per shape); never drop a test case; log the change in `docs/decisions.md` like D-1025.
@@ -56,6 +71,10 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - Change the card table: a new migration, then `sqlx migrate run` and `cargo sqlx prepare --workspace -- --all-targets --all-features`.
 
 ## Tests that guard it
+
+- `src/tests/quote_parse.rs`: TD-PICK-01 (pure window), TD-PICK-02 (fields, refusals), TD-FEE-27's quote-form cases and property (`cargo test -p askhava-quotes tests::quote_parse`).
+- `src/tests/quote_bounce.rs`: TD-PICK-03 (`cargo test -p askhava-quotes tests::quote_bounce`).
+- `tests/integration/tests/quote_window.rs`: TD-PICK-01, TD-PICK-02 and TD-JOB-03's every-window-ended cases in the database (`cargo test -p askhava-integration --test quote_window`).
 
 - `src/tests/matching_examples.rs`: TD-LIC-02 (M01 to M16 from `docs/catalog/matching_examples.yaml`; 50 qualified businesses get 50 recorded cards, on a fresh database with `DATABASE_URL` set).
 - `src/tests/prop_matching_props.rs`: TD-LIC-02 property tests (card exactly when qualified, neighbouring towns, no cap).
