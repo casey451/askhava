@@ -4,7 +4,7 @@
 //!
 //! T035 added the handyman limits (AI-012, LIC-019 to LIC-025, LIC-036) in `handyman`.
 //!
-//! Other crates reach it only through [`api`]. T036 the daily list
+//! Other crates reach it only through [`api`]. T036 adds the daily list
 //! imports, T153 the license-map class coverage that fills `Holder::roc_covers`.
 
 pub mod api;

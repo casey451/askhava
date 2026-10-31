@@ -29,6 +29,9 @@ const HOME_INSPECTION: &str = "home_inspection";
 /// - Agency: only that agency's licensees (LIC-012, LIC-015, LIC-016); alarms need the Board
 ///   certificate and an ROC low-voltage class (LIC-013). A pest category job goes through the
 ///   attestation alone whatever its license kind says (LIC-012, D-417).
+///
+/// This does not apply the AI-012, LIC-021, LIC-022 handyman block (gas, smoke-alarm, sprinkler
+/// and permit-type requests); code that chooses recipients must call [`eligibility_for_request`].
 #[must_use]
 pub fn eligibility(job: &Job, holder: &Holder) -> Eligibility {
     if Agency::for_category(&job.category) == Some(Agency::PestManagement) {

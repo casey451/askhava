@@ -34,6 +34,7 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - `Agency` stays equal to the license map's `agencies`, the catalog's agency kinds and the migration's codes: `src/tests/scope_examples.rs`.
 - Matching examples M09 to M12 hold: `src/tests/scope_examples.rs::matching_examples_for_agency_rules_hold`.
 - A gas, smoke-alarm, sprinkler or permit-type request never gets a `HandymanCard`, and an unreadable gas list blocks every one: `src/tests/prop_handyman_never_gas.rs`, `src/tests/handyman.rs::malformed_gas_file_is_refused`.
+- The older `eligibility` (in `src/api.rs`, from `rules`) does not apply the AI-012, LIC-021, LIC-022 handyman block; code that chooses recipients must call `eligibility_for_request`.
 - The gas list keeps every AI-012 word: `src/tests/handyman.rs::gas_list_holds_ai_012_words_and_catches_d_157_cases`.
 - `Holder::roc_covers` means the license map covers this job type (T153); this crate never reads a class name to decide ROC cover.
 

@@ -44,7 +44,8 @@ fn hundredths(text: &str) -> u64 {
     whole.parse::<u64>().expect("whole") * 100 + part[..2].parse::<u64>().expect("cents")
 }
 
-/// The worked example's quote as the portal form would hand it over; hourly is a range (FEE-043).
+/// The worked example's quote as the portal form would hand it over; hourly with hours is a range
+/// (FEE-043), hourly without hours (W36) and `trip_fee` are site-visit quotes; any other type panics.
 fn price(quote: &BTreeMap<String, String>) -> QuotePrice {
     let cents = |key: &str| hundredths(&quote[key]);
     match quote["type"].as_str() {
@@ -57,7 +58,8 @@ fn price(quote: &BTreeMap<String, String>) -> QuotePrice {
             low: cents("rate") * cents("hours_low") / 100,
             high: cents("rate") * cents("hours_high") / 100,
         },
-        _ => QuotePrice::TripFee,
+        "trip_fee" | "hourly" => QuotePrice::TripFee,
+        other => panic!("worked example quote type {other:?} has no QuotePrice mapping"),
     }
 }
 
