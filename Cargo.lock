@@ -284,6 +284,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "askhava-businesses"
+version = "0.1.0"
+dependencies = [
+ "askhava-core",
+ "askhava-ops",
+ "jiff",
+ "jiff-sqlx",
+ "sqlx",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "askhava-catalog"
 version = "0.1.0"
 dependencies = [

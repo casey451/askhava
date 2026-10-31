@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM businesses.job_type_choice WHERE business_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cc36b1f995eaa79b6def2c3f702be9033fd9e2a515ab0d56eb1ef3ffe9d9bc06"
+}
