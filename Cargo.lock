@@ -398,8 +398,10 @@ version = "0.1.0"
 dependencies = [
  "askhava-businesses",
  "askhava-core",
+ "askhava-jobs",
  "askhava-messaging",
  "askhava-ops",
+ "askhava-privacy",
  "jiff",
  "jiff-sqlx",
  "proptest",

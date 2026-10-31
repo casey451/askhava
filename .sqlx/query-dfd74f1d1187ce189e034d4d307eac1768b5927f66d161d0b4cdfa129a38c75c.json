@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM intake.property WHERE homeowner_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "dfd74f1d1187ce189e034d4d307eac1768b5927f66d161d0b4cdfa129a38c75c"
+}

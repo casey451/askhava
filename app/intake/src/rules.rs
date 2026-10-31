@@ -7,8 +7,13 @@
 //! once per request. A text that is only an opt-out word
 //! or HELP, INFO or AYUDA was already answered by `messaging` and never gets the consent text
 //! (D-131). Every later reply is a conversation step, never a wait for consent (CON-027).
+//!
+//! The conversation rules (T040) are pure too: what opens a job ([`opens_job`], INT-007, INT-008),
+//! the INT-010 join window ([`joins_open_job`]), exact answers ([`pick_option`], INT-011, INT-012),
+//! the under-18 check ([`age_stop`], INT-038) and the name-and-address split (INT-027).
 
 use askhava_messaging::api::Language;
+use jiff::{SignedDuration, Timestamp};
 
 /// The CON-031 consent text's template ID (`messaging` templates).
 pub const CONSENT_TEMPLATE: &str = "consent";
@@ -275,4 +280,179 @@ pub fn language_from_code(code: &str) -> Language {
     } else {
         Language::En
     }
+}
+
+/// The INT-010 window after the open job's last homeowner message in which a follow-up joins it
+/// (a setting, default 2 hours; the caller passes the setting's value).
+pub const JOIN_WINDOW: SignedDuration = SignedDuration::from_hours(2);
+/// The INT-038 reply's template ID (English, and Spanish that stays on).
+pub const UNDER_18_TEMPLATE: &str = "under_18";
+/// The INT-027 name-and-address question's template ID.
+pub const NAME_ADDRESS_TEMPLATE: &str = "name_address";
+
+/// Words that, as the first word, make a message cancel-like (INT-008), folded.
+const CANCEL_WORDS: &[&str] = &[
+    "cancel",
+    "cancelar",
+    "cancela",
+    "stop",
+    "quit",
+    "unsubscribe",
+    "nevermind",
+    "nvm",
+    "parar",
+];
+/// Phrases that make a message cancel-like anywhere in it, folded.
+const CANCEL_PHRASES: &[&str] = &["never mind", "forget it", "olvidalo", "no quiero nada"];
+/// The longest message that is cancel-like by holding a cancel word anywhere in it.
+const CANCEL_SHORT: usize = 4;
+
+/// Whether a message is cancel-like (INT-008): it starts with a cancel word, holds a cancel
+/// phrase, or is a short message holding a cancel word. "The leak will not stop" is a request.
+#[must_use]
+pub fn cancel_like(words: &str) -> bool {
+    let folded = fold(words);
+    let tokens: Vec<&str> = folded.split(' ').filter(|t| !t.is_empty()).collect();
+    let has_word = tokens.iter().any(|t| CANCEL_WORDS.contains(t));
+    let first = tokens.first().is_some_and(|t| CANCEL_WORDS.contains(t));
+    let padded = format!(" {folded} ");
+    let phrase = CANCEL_PHRASES
+        .iter()
+        .any(|p| padded.contains(&format!(" {p} ")));
+    first || phrase || (has_word && tokens.len() <= CANCEL_SHORT)
+}
+
+/// Whether a message opens a new job (INT-007, INT-008, D-138): more than two words, or any length
+/// with an emergency keyword, and never a cancel-like message. "ME", "86403" and "ok sure" open
+/// nothing.
+#[must_use]
+pub fn opens_job(words: &str, emergency: bool) -> bool {
+    !cancel_like(words) && (emergency || words.split_whitespace().count() > 2)
+}
+
+/// Whether a second message at `now` joins the open job whose last homeowner message was at
+/// `last`, even if it reads as another trade (INT-010): strictly inside `window`, so 1:59:59 joins
+/// and 2:00:00 does not (the after-window same-trade rule is T042's).
+#[must_use]
+pub fn joins_open_job(last: Timestamp, now: Timestamp, window: SignedDuration) -> bool {
+    let since = now.duration_since(last);
+    !since.is_negative() && since < window
+}
+
+/// The first of `options` (code, phrase) whose phrase appears in `words` as whole words, in the
+/// order they appear in the message (INT-011, INT-012): "ok" is not in "broke", and "the AC one"
+/// picks the option whose phrase is "ac".
+#[must_use]
+pub fn pick_option<'a>(words: &str, options: &[(&'a str, &str)]) -> Option<&'a str> {
+    let padded = format!(" {} ", fold(words));
+    options
+        .iter()
+        .filter_map(|(code, phrase)| {
+            let at = padded.find(&format!(" {} ", fold(phrase)))?;
+            Some((at, *code))
+        })
+        .min_by_key(|(at, _)| *at)
+        .map(|(_, code)| code)
+}
+
+/// Whether a word answer is accepted for a free-answer question (INT-012): "the AC one", "Yes!",
+/// a first name or "my email is ..." all count; only an empty message does not.
+#[must_use]
+pub fn accepts_word_answer(words: &str) -> bool {
+    !fold(words).is_empty()
+}
+
+/// The age a sender stated (INT-038).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AgeStop {
+    /// Under 18, or in school: the request closes and no card goes.
+    Under18,
+    /// Under 13: as [`AgeStop::Under18`], and the request and its data are deleted too.
+    Under13,
+}
+
+/// Words that may follow "I'm <n>" or "I am <n>" and still mean the sender's own age
+/// ("I'm 15 and ..."). Spanish "y" and "en" are not here: "tengo 2 y uno no enfria" is a request.
+const AFTER_AGE: &[&str] = &[
+    "years", "year", "yrs", "yr", "yo", "and", "but", "so", "my", "our", "the", "a", "we", "can",
+    "need", "have",
+];
+/// The only words that may follow "tengo <n>" for it to be an age (INT-038, D-996).
+const AFTER_TENGO: &[&str] = &["anos", "ano"];
+/// Words that must come directly before a school phrase for it to be the sender's own school.
+const BEFORE_SCHOOL: &[&[&str]] = &[&["im", "in"], &["i", "am", "in"], &["i", "go", "to"]];
+/// School phrases a sender uses about themselves (INT-038), folded.
+const SCHOOLS: &[&[&str]] = &[
+    &["middle", "school"],
+    &["junior", "high"],
+    &["high", "school"],
+];
+
+/// Whether the sender gives their own age as under 18, or says they are in middle school, junior
+/// high or high school (INT-038): "I'm 15", "I am 16 years old", "tengo 15 años". Someone else's
+/// age ("my 15-year-old broke the door") is a normal request. An emergency keyword is handled
+/// first by the caller (INT-002).
+#[must_use]
+pub fn age_stop(words: &str) -> Option<AgeStop> {
+    let folded = fold(words);
+    let t: Vec<&str> = folded.split(' ').collect();
+    let first_person = |i: usize| match t[i] {
+        "im" => true,
+        "i" => t.get(i + 1) == Some(&"am"),
+        _ => false,
+    };
+    for i in 0..t.len() {
+        let after = if t[i] == "tengo" {
+            Some(i + 1)
+        } else if first_person(i) {
+            Some(i + if t[i] == "i" { 2 } else { 1 })
+        } else {
+            None
+        };
+        let age = after.and_then(|j| Some((t.get(j)?.parse::<u8>().ok()?, j)));
+        let list = if t[i] == "tengo" {
+            AFTER_TENGO
+        } else {
+            AFTER_AGE
+        };
+        if let Some((age, j)) = age
+            && age < 18
+            && t.get(j + 1).is_none_or(|n| list.contains(n))
+        {
+            return Some(if age < 13 {
+                AgeStop::Under13
+            } else {
+                AgeStop::Under18
+            });
+        }
+    }
+    in_school(&t).then_some(AgeStop::Under18)
+}
+
+/// Whether the sender says "I'm in", "I am in" or "I go to" directly before a school phrase.
+/// "I live near the high school" is a normal request.
+fn in_school(t: &[&str]) -> bool {
+    SCHOOLS.iter().any(|school| {
+        t.windows(school.len()).enumerate().any(|(at, w)| {
+            w == *school
+                && BEFORE_SCHOOL
+                    .iter()
+                    .any(|lead| at >= lead.len() && t[at - lead.len()..at] == **lead)
+        })
+    })
+}
+
+/// Splits the raw name-and-address answer (INT-027): the name is the words before the first one
+/// that holds a digit, the street address is the rest from that word. `None` when no word holds a
+/// digit (no street number), so the question is asked again. The caller keeps both in the vault
+/// only (D-146).
+#[must_use]
+pub fn split_name_address(raw: &str) -> Option<(String, String)> {
+    let words: Vec<&str> = raw.split_whitespace().collect();
+    let at = words
+        .iter()
+        .position(|w| w.chars().any(|c| c.is_ascii_digit()))?;
+    let name = words[..at].join(" ");
+    let address = words[at..].join(" ");
+    (!name.is_empty()).then_some((name, address))
 }

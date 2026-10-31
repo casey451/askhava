@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE intake.conversation SET job_id = COALESCE(job_id, $2) WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4a3bed4e6486f5a0919cc206d08cb228b0fb5f25db9300ff3fb304119da9d1b7"
+}

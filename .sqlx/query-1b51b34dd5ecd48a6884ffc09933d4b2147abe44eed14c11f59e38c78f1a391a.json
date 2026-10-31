@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM intake.intake_answer WHERE conversation_id = $1 AND question_id LIKE 'job.%'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1b51b34dd5ecd48a6884ffc09933d4b2147abe44eed14c11f59e38c78f1a391a"
+}

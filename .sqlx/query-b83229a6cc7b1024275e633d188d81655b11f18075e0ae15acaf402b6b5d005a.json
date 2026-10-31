@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM intake.emergency_event WHERE conversation_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b83229a6cc7b1024275e633d188d81655b11f18075e0ae15acaf402b6b5d005a"
+}
