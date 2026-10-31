@@ -70,7 +70,8 @@ fn is_code(s: &str) -> bool {
 ///
 /// # Errors
 ///
-/// [`BusinessesError::BadCode`] for a malformed category or job type;
+/// [`BusinessesError::BadCode`] for a malformed category or a job type that is empty, over 100
+/// bytes or has leading or trailing spaces;
 /// [`BusinessesError::NotCovered`] for a job type `allowed` lacks.
 pub fn checklist(
     ticked: &[JobTypeChoice],
@@ -78,8 +79,9 @@ pub fn checklist(
 ) -> Result<Vec<JobTypeChoice>, BusinessesError> {
     let mut out = BTreeSet::new();
     for choice in ticked {
-        let name = choice.job_type.trim();
-        if !is_code(&choice.category) || name.is_empty() || name.len() > 100 {
+        let name = &choice.job_type;
+        if !is_code(&choice.category) || name.trim() != name || name.is_empty() || name.len() > 100
+        {
             return Err(BusinessesError::BadCode);
         }
         if !allowed.contains(choice) {

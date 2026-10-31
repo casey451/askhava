@@ -105,7 +105,11 @@ pub(crate) async fn read(db: &mut PgConnection, id: Uuid) -> Result<Business, Bu
     Ok(Business {
         id: row.id,
         status: AccountStatus::from_code(&row.status).ok_or(BusinessesError::Database)?,
-        pause_reason: row.pause_reason.as_deref().and_then(PauseReason::from_code),
+        pause_reason: row
+            .pause_reason
+            .as_deref()
+            .map(|c| PauseReason::from_code(c).ok_or(BusinessesError::Database))
+            .transpose()?,
         overflow_on: row.overflow_on,
         speaks_spanish: row.speaks_spanish,
         insurance: row
@@ -163,11 +167,18 @@ pub(crate) async fn update_ticks(
     Ok(done.rows_affected() == 1)
 }
 
+/// Locks the business row (`FOR UPDATE`), then replaces its towns, so concurrent saves apply one
+/// after the other; `UnknownBusiness` when no such row.
 pub(crate) async fn replace_towns(
     db: &mut PgConnection,
     id: Uuid,
     towns: &[String],
 ) -> Result<(), BusinessesError> {
+    let lock = sqlx::query!(
+        "SELECT id FROM businesses.business WHERE id = $1 FOR UPDATE",
+        id
+    );
+    self::db(lock.fetch_optional(&mut *db).await)?.ok_or(BusinessesError::UnknownBusiness)?;
     let d = sqlx::query!("DELETE FROM businesses.town WHERE business_id = $1", id);
     self::db(d.execute(&mut *db).await)?;
     let q = sqlx::query!(
@@ -178,11 +189,18 @@ pub(crate) async fn replace_towns(
     self::db(q.execute(db).await).map(|_| ())
 }
 
+/// Locks the business row (`FOR UPDATE`), then replaces its checklist, so concurrent saves apply
+/// one after the other; `UnknownBusiness` when no such row.
 pub(crate) async fn replace_job_types(
     db: &mut PgConnection,
     id: Uuid,
     chosen: &[JobTypeChoice],
 ) -> Result<(), BusinessesError> {
+    let lock = sqlx::query!(
+        "SELECT id FROM businesses.business WHERE id = $1 FOR UPDATE",
+        id
+    );
+    self::db(lock.fetch_optional(&mut *db).await)?.ok_or(BusinessesError::UnknownBusiness)?;
     let d = sqlx::query!(
         "DELETE FROM businesses.job_type_choice WHERE business_id = $1",
         id

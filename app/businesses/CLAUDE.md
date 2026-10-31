@@ -29,6 +29,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - Insurance No never pauses: `src/tests/account_status.rs::td_biz_02_ticks_insurance_and_pause_are_stored`.
 - A paused or unticked business never counts at night: `src/tests/account_status.rs::night_count_counts_active_after_hours_businesses`.
 - A business row is never deleted by the app: `src/tests/account_status.rs::the_app_role_cannot_delete_a_business`.
+- LIC-043 holds only as far as the caller's `allowed` set is right: `checklist` and `set_job_types` refuse anything outside it but cannot check the set against the license (D-954); every caller must build it from the license map plus the no-license job types.
 - No contact value in any table, audit row or error (PRIV-001, PRIV-028); contacts live in `privacy`.
 
 ## How to change

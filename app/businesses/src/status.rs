@@ -112,8 +112,9 @@ pub struct Refused;
 /// The status `event` moves a business in `from` to (BIZ-009, BIZ-003, BIZ-016).
 ///
 /// Sign-up activates only with the code and the match and no flag; a flag (even before the code,
-/// as when no record contact can get one, BIZ-002) sends it to needs review, where only Casey's approval, with the code and the match, activates. Only an active
-/// business pauses and only a paused one resumes; removed is final.
+/// as when no record contact can get one, BIZ-002) sends it to needs review, where only Casey's
+/// approval, with the code and the match, activates. Only an active business pauses and only a
+/// paused one resumes; removed is final.
 ///
 /// # Errors
 ///
