@@ -2,15 +2,15 @@
 
 ## Purpose
 
-The layer-5 crate that decides who receives each job card, and later holds the cards and the quotes (`docs/architecture.md` section 3). T044 built the matching: a card goes to every active, verified business serving the job's Arizona offer towns whose licenses cover every candidate job type and which ticked one, with no cap (D-1013 to D-1015). T184 added the owner pauses, "jobs nobody else covers", late cards and the coverage count intake tells the homeowner (D-1018 to D-1022). T045 added the anonymous job card and the final plain-code gate every card passes last (D-1024 to D-1026).
+The layer-5 crate that decides who receives each job card, and later holds the cards and the quotes (`docs/architecture.md` section 3). T044 built the matching: a card goes to every active, verified business serving the job's Arizona offer towns whose licenses cover every candidate job type and which ticked one, with no cap (D-1013 to D-1015). T184 added the owner pauses, "jobs nobody else covers", late cards and the coverage count intake tells the homeowner (D-1018 to D-1022). T045 added the anonymous job card and the final plain-code gate every card passes last (D-1024 to D-1026). T185 added the carrier-restricted removal to that gate and the per-business Spanish, fee-free and "Sent to <N> businesses." lines (D-1031 to D-1033).
 
 ## What it owns
 
 - `src/api.rs`: the only public surface: `send_cards`, `send_job_cards`, `send_late_cards`, `coverage`, `card_holders`, the types below and `api::rules` (`card_for`, `card_under`, `match_job`, `coverage`, `recipients`).
-- `src/models.rs`: `CardJob`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Pooled`, `OwnerPauses`, `Pool`, `Coverage`, `Recipient`, `QuotesError` and the `quotes.job_card` queries.
+- `src/models.rs`: `CardJob`, `CardLines`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Pooled`, `OwnerPauses`, `Pool`, `Coverage`, `Recipient`, `QuotesError` and the `quotes.job_card` queries.
 - `src/rules.rs` (pure): `card_for`, `card_under`, `match_job`, `coverage`, `recipients`, `owner_paused`, `gate`, `serves`, `ticked`, `covered`.
-- `src/cards.rs` (pure): `CardParts`, `JobCard` (private fields: town, place, photo IDs, text), `Place`, `Timing`, `Danger`, `DEFAULT_MIN_WORDS`, `build_card`.
-- `src/gate.rs` (pure): `final_gate` (CARD-008) and `word_count` (CARD-009).
+- `src/cards.rs` (pure): `CardParts`, `JobCard` (private fields: town, place, photo IDs, text), `Place`, `Timing`, `Danger`, `DEFAULT_MIN_WORDS`, `build_card`, `JobCard::text_for`.
+- `src/gate.rs` (pure): `final_gate` (CARD-008, CARD-010) and `word_count` (CARD-009).
 - `src/service.rs`: `send_cards` (choose and record), `send_job_cards` (full match, new holders only), `send_late_cards` (CARD-018), `coverage` (shipped map), `card_holders`.
 - Migration `0067_quotes_matching.sql`: the `quotes` schema and `quotes.job_card` (job and business IDs, handyman flag, `sent_at`; unique per job and business; no `UPDATE`, `DELETE` or `TRUNCATE` for `askhava_app`). No homeowner detail.
 
@@ -29,7 +29,10 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - CARD-007: `cards::build_card` lines: approved description, card-field answers, "How soon: <answer>" ("Needed by <day>"), "911 text sent: <Danger>", concept-image label; each through the gate, then the whole text again.
 - CARD-008: `gate::final_gate` cuts each sentence at its first contact-shaped word (D-1025 lists the shapes); its output is a fixed point.
 - CARD-009: `build_card` puts "<Category> job (details on the job page)" when the gated description has fewer than `min_words` words (the caller's setting, default 5).
-- Not here yet: CARD-010's restricted-word removal; the card notice (CARD-019 to CARD-021); the BIZ-049 largest-job and recurring-work skips (T155, D-492); CARD-015's daily check feeds `verified`.
+- CARD-010, D-485, D-492: each `gate::gate_once` pass first runs `strip_restricted`: every `catalog::api::RESTRICTED_WORDS` phrase goes, whole words, any case, longest first; each removal logs only `entry=<list entry>`; a line with none is unchanged.
+- CARD-012: `JobCard::text_for` adds "Homeowner prefers Spanish" only when `CardLines::prefers_spanish` and the business speaks Spanish; no matching input holds a language.
+- CARD-019, FEE-045: `text_for` adds "No introduction fee for this job." when `CardLines::fee_free` and ends with "Sent to <N> businesses." ("Sent to 1 business.", D-1032); N is the caller's count, never capped.
+- Not here yet: the card notice and the provider-accepted count (CARD-019 to CARD-021, T147); the BIZ-049 largest-job and recurring-work skips (T155, D-492); CARD-015's daily check feeds `verified`.
 
 ## Never break
 
@@ -39,11 +42,13 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - One card row per job and business: `src/tests/matching_examples.rs::td_lic_02_fifty_qualified_businesses_get_fifty_cards`.
 - No status is compared outside `businesses`' `status.rs` or `jobs`' `status.rs`; ask `receives_cards` and `takes_late_cards` (SEC-031).
 - No contact survives a card, the CARD-009 line replaces fewer than 5 words, and the gate runs last: `src/tests/prop_card_no_contact.rs`.
+- No restricted phrase survives the gate and the log holds only the entry; the Spanish line only for Spanish speakers; the sent and fee-free lines: `src/tests/card_lines.rs`.
 - Overflow only when no checklist business gets the card; pauses send nothing: `src/tests/overflow.rs`.
 - A late card goes only in Open or No quotes yet, with its own send time: `tests/integration/tests/card_late_eligible.rs`.
 
 ## How to change
 
+- Restricted list change: `app/catalog/src/restricted_words.rs` only (`catalog` owns it); `tests::card_lines` checks every entry.
 - Gate miss found: add the case to `src/tests/prop_card_no_contact.rs` first, then a word to the matching list in `src/gate.rs` (one `const` per shape); never drop a test case; log the change in `docs/decisions.md` like D-1025.
 - Add a card line or a kind of place: a field on `CardParts` or a `Place` variant, its line in `build_card`, a case in `prop_card_no_contact.rs`; never add a free-text field that bypasses the gate.
 - Add a matching check (such as BIZ-049's skips): a `Skip` variant, a step in `rules::card_for`, a field on `CardJob` or `CardBusiness`, cases in both test files; update CARD-001's line here.
@@ -57,5 +62,6 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - `src/tests/overflow.rs`: TD-LIC-03, and the pure cases of TD-CARD-05, TD-INT-29, TD-INT-25 (`cargo test -p askhava-quotes tests::overflow`).
 - `tests/integration/tests/card_late_eligible.rs`: TD-CARD-05, TD-INT-29, TD-INT-25 in the database (`cargo test -p askhava-integration --test card_late_eligible`).
 - `src/tests/prop_card_no_contact.rs`: TD-CARD-01 (property and twin adversarial texts), TD-CARD-08, the card cases of TD-CARD-11, TD-INT-13 and TD-INT-33 (`cargo test -p askhava-quotes tests::prop_card_no_contact`).
+- `src/tests/card_lines.rs`: TD-CARD-02, the card cases of TD-CARD-03 and TD-CARD-07 (`cargo test -p askhava-quotes tests::card_lines`).
 - Run `cargo test -p askhava-quotes tests::matching_examples` and `cargo test -p askhava-quotes tests::prop_matching_props`.
 - TD-LIC-26 (LIC-036, a handyman's text quote gets the portal link) is listed for T044 but covers none of its requirements and needs quote intake by text, which does not exist yet; no case is written here (D-1016).

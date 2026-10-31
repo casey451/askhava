@@ -36,6 +36,21 @@ pub struct OfferTown {
     pub state: String,
 }
 
+/// What a card says beyond its stored text when it is sent to one business (CARD-012, CARD-019,
+/// FEE-045). The caller fills it; nothing here caps or filters who gets the card (CARD-003).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CardLines {
+    /// The N of "Sent to <N> businesses.": the count of businesses whose card notice the
+    /// provider accepted, which the card-notice sender passes (CARD-019, T147).
+    pub sent_to: u32,
+    /// The homeowner prefers Spanish; shown only to a business that ticked "We speak Spanish"
+    /// (CARD-012). It is never a matching input, so no business can skip a job by language.
+    pub prefers_spanish: bool,
+    /// The job type is one of the catalog's `fee_free_job_types`, read from
+    /// `catalog::api::JobType::fee_free` (FEE-045, D-403).
+    pub fee_free: bool,
+}
+
 /// What matching knows of one job (CARD-001, CARD-002).
 #[derive(Debug, Clone)]
 pub struct CardJob {

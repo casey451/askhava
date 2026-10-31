@@ -8,10 +8,15 @@
 //! (INT-046), each field through the final gate ([`crate::gate::final_gate`], CARD-008) and the
 //! whole text through it again last. A description left with fewer than the setting's words
 //! (default 5) becomes "<Category> job (details on the job page)" (CARD-009, D-434).
+//!
+//! [`JobCard::text_for`] is the text one business gets: the stored text, then "Homeowner prefers
+//! Spanish" for a business that speaks Spanish (CARD-012), "No introduction fee for this job." for
+//! a fee-free job type (FEE-045) and "Sent to <N> businesses." (CARD-019), all fixed wording.
 
 use sqlx::types::Uuid;
 
 use crate::gate::{final_gate, word_count};
+use crate::models::CardLines;
 
 /// CARD-009's default: a gated description with fewer words than this becomes the fallback line.
 /// The caller passes the setting's value to [`build_card`].
@@ -131,6 +136,26 @@ impl JobCard {
     #[must_use]
     pub fn text(&self) -> &str {
         &self.text
+    }
+
+    /// The text sent to one business: the stored text, then "Homeowner prefers Spanish" only when
+    /// she prefers it and `speaks_spanish` (the business ticked "We speak Spanish", CARD-012),
+    /// "No introduction fee for this job." for a fee-free job type (FEE-045) and the
+    /// "Sent to <N> businesses." line, "Sent to 1 business." for one (CARD-019, D-1032).
+    #[must_use]
+    pub fn text_for(&self, lines: &CardLines, speaks_spanish: bool) -> String {
+        let mut out = vec![self.text.clone()];
+        if lines.prefers_spanish && speaks_spanish {
+            out.push("Homeowner prefers Spanish.".to_owned());
+        }
+        if lines.fee_free {
+            out.push("No introduction fee for this job.".to_owned());
+        }
+        out.push(match lines.sent_to {
+            1 => "Sent to 1 business.".to_owned(),
+            n => format!("Sent to {n} businesses."),
+        });
+        out.join("\n")
     }
 }
 

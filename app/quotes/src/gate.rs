@@ -7,6 +7,12 @@
 //! email, link, domain or spelled email; a street number; three number words in a row; or 7 or
 //! more digits, however spaced. Lines stay lines, so each card field is gated on its own line.
 //! The gate repeats until nothing changes, so running it twice changes nothing (TD-CARD-11).
+//!
+//! Each pass first removes every phrase on `catalog`'s carrier-restricted list (whole words, any
+//! case, read through `catalog::api`, CARD-010, D-492) and logs each removal with the list entry
+//! that matched, never the text around it (D-485).
+
+use askhava_catalog::api::RESTRICTED_WORDS;
 
 /// Cues that put a name or on-site contact next: fire unless an everyday word follows.
 const NAME_CUES: &str = "ask for|talk to|speak to|speak with|meet|pregunte por";
@@ -51,10 +57,11 @@ pub fn final_gate(text: &str) -> String {
     out
 }
 
-/// One pass of the gate over every line and sentence (CARD-008).
+/// One pass of the gate over every line and sentence (CARD-008, CARD-010).
 fn gate_once(text: &str) -> String {
     let lines = text.lines().map(|line| {
-        let kept: Vec<String> = sentences(line)
+        let line = strip_restricted(line);
+        let kept: Vec<String> = sentences(&line)
             .into_iter()
             .filter_map(gate_sentence)
             .collect();
@@ -64,6 +71,74 @@ fn gate_once(text: &str) -> String {
         .filter(|l| !l.is_empty())
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+/// Removes every carrier-restricted phrase from `line` as whole words, any case, logging each
+/// removal with the list entry only (CARD-010, D-485). A line holding none comes back unchanged.
+fn strip_restricted(line: &str) -> String {
+    let spans = word_spans(line);
+    let lower: Vec<String> = spans
+        .iter()
+        .map(|&(s, e)| line[s..e].to_lowercase())
+        .collect();
+    let mut cut = vec![false; spans.len()];
+    let mut entries = RESTRICTED_WORDS.to_vec();
+    // Longest phrases first, so "neo nazi" is one removal, logged once, not also "nazi".
+    entries.sort_by_key(|e| std::cmp::Reverse(e.split(' ').count()));
+    for entry in &entries {
+        let phrase: Vec<&str> = entry.split(' ').collect();
+        for (i, window) in lower.windows(phrase.len()).enumerate() {
+            let free = !cut[i..i + phrase.len()].contains(&true);
+            if free && window.iter().zip(&phrase).all(|(w, p)| w == p) {
+                cut[i..i + phrase.len()].fill(true);
+                tracing::info!(entry = *entry, "restricted phrase removed from a job card");
+            }
+        }
+    }
+    if !cut.contains(&true) {
+        return line.to_owned();
+    }
+    let mut out = String::new();
+    let mut from = 0;
+    for (&(start, end), _) in spans.iter().zip(&cut).filter(|(_, c)| **c) {
+        out.push_str(&line[from..start]);
+        from = end;
+    }
+    out.push_str(&line[from..]);
+    tidy(&out)
+}
+
+/// The byte ranges of the runs of letters and digits in `line`, the words the list matches.
+fn word_spans(line: &str) -> Vec<(usize, usize)> {
+    let mut spans = Vec::new();
+    let mut start = None;
+    for (i, c) in line.char_indices().chain([(line.len(), ' ')]) {
+        match (c.is_alphanumeric(), start) {
+            (true, None) => start = Some(i),
+            (false, Some(s)) => {
+                spans.push((s, i));
+                start = None;
+            }
+            _ => {}
+        }
+    }
+    spans
+}
+
+/// Drops the punctuation a removal left alone, keeping a sentence's last stop on the word before.
+fn tidy(text: &str) -> String {
+    let mut kept: Vec<String> = Vec::new();
+    for token in text.split_whitespace() {
+        if token.chars().any(char::is_alphanumeric) {
+            kept.push(token.to_owned());
+        } else if let (Some(stop), Some(last)) =
+            (token.chars().rfind(|c| ".!?".contains(*c)), kept.last_mut())
+            && !last.ends_with(|c: char| c.is_ascii_punctuation())
+        {
+            last.push(stop);
+        }
+    }
+    kept.join(" ")
 }
 
 /// The words the gate counts for CARD-009: tokens holding a letter or digit.
