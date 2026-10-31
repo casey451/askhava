@@ -15,10 +15,11 @@ import pytest
 
 from runner import __main__ as entry, github_env as ge
 from runner.github_env import GitHubEnv
-from runner.update_merge import decisions_after_main
+from runner.update_merge import decisions_after_main, decisions_appended
 from test_runner_live import (  # noqa: F401  # reason: `repo` is the shared fixture
     SESSION, TASK, AutoMergeRunner, OfflineGh, am_env, claimed_env, commit_on, git, make_env, move_main, pushed_attempt, repo,
 )
+from test_runner_live import worker_commit  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 BRANCH = TASK["branch"]
@@ -248,6 +249,93 @@ def test_a_retrys_branch_keeps_mains_decisions_first(repo: dict[str, Path], tmp_
     assert prep["base"] == f"origin/{BRANCH}" and parents(repo["b"], prep["base_sha"]) == [first, main2]
     merged = git(repo["b"], "show", f"{prep['base_sha']}:docs/decisions.md") + "\n"
     assert merged == BASE_LOG + "- **D-005** Question: main's entry.\n- **D-010** Question: attempt one's entry.\n"
+
+
+# ---- entries filed before main's last entry move to the end (T184's PR #187, D-1029)
+
+PLAN_LOG = BASE_LOG + "- **D-023** Question: a fake plan change, numbered above the reserved block.\n"
+EARLY = "- **D-018** Question: a fake reserved entry.\n- **D-019** Question: another fake reserved entry.\n"
+INSERTED = BASE_LOG + EARLY + "- **D-023** Question: a fake plan change, numbered above the reserved block.\n"
+
+
+def test_decisions_appended_moves_inserted_entries_to_the_end_and_refuses_anything_else() -> None:
+    assert decisions_appended(PLAN_LOG, INSERTED) == PLAN_LOG + EARLY
+    assert decisions_appended(PLAN_LOG, PLAN_LOG + EARLY) is None  # already in order: nothing to fix
+    assert decisions_appended(PLAN_LOG, INSERTED.replace("fake first", "edited")) is None  # a changed entry
+    assert decisions_appended(PLAN_LOG, BASE_LOG + EARLY) is None  # a removed entry
+    assert decisions_appended(PLAN_LOG, BASE_LOG + "## A heading\n" + EARLY + PLAN_LOG[len(BASE_LOG):]) is None
+    assert decisions_appended(PLAN_LOG, BASE_LOG + "- **D-001** again\n" + PLAN_LOG[len(BASE_LOG):]) is None
+    assert decisions_appended(PLAN_LOG, BASE_LOG + EARLY + "\n" + PLAN_LOG[len(BASE_LOG):]) == PLAN_LOG + EARLY
+    assert decisions_appended("", INSERTED) is None
+
+
+def _append_only(root: Path, main: str, sha: str) -> list[str]:
+    main_text = git(root, "show", f"{main}:docs/decisions.md") + "\n"
+    return check_pr_change.decisions_append_only(main_text, git(root, "show", f"{sha}:docs/decisions.md") + "\n")
+
+
+def test_a_retrys_branch_with_entries_filed_before_mains_last_gets_them_moved_to_the_end(repo: dict[str, Path], tmp_path: Path) -> None:
+    main1 = push_main(repo, "docs/decisions.md", PLAN_LOG)
+    first = push_branch(repo, "docs/decisions.md", INSERTED)
+    assert _append_only(repo["a"], main1, first) != []  # what failed Governance on PR #187
+    main2 = move_main(repo, "fake repo, main moved\n")
+    env, _ = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": None}])
+    prep = env.prepare_branch(TASK, 2, SESSION)
+    fix, merged_main = parents(repo["b"], prep["base_sha"])
+    assert merged_main == main2 and parents(repo["b"], fix) == [first]  # a commit on attempt one's work, then main merged in
+    assert git(repo["b"], "show", f"{prep['base_sha']}:docs/decisions.md") + "\n" == PLAN_LOG + EARLY
+    assert _append_only(repo["b"], main2, prep["base_sha"]) == []
+
+
+def test_a_retrys_branch_with_a_changed_main_entry_is_left_to_fail(repo: dict[str, Path], tmp_path: Path) -> None:
+    main1 = push_main(repo, "docs/decisions.md", PLAN_LOG)
+    first = push_branch(repo, "docs/decisions.md", INSERTED.replace("fake first", "edited"))
+    env, _ = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": None}])
+    prep = env.prepare_branch(TASK, 2, SESSION)
+    assert prep["base_sha"] == first and _append_only(repo["b"], main1, first) != []
+
+
+def test_a_hand_in_with_entries_filed_before_mains_last_is_fixed_before_the_push(repo: dict[str, Path], tmp_path: Path) -> None:
+    main1 = push_main(repo, "docs/decisions.md", PLAN_LOG)
+    a = repo["a"]
+    worker_commit(a, BRANCH, "docs/k10/note.md")
+    (a / "docs/decisions.md").write_text(INSERTED)
+    git(a, "commit", "-qam", "the worker's entries, in numeric order")
+    worked = git(a, "rev-parse", "HEAD")
+    env = make_env(a, tmp_path)
+    env.read_state()
+    res = env.collect_result(TASK, "submitted", [], [])
+    assert parents(a, res.head_sha) == [worked] and git(a, "rev-parse", BRANCH) == res.head_sha
+    assert (a / "docs/decisions.md").read_text() == PLAN_LOG + EARLY  # the checkout followed the branch
+    assert _append_only(a, main1, res.head_sha) == [] and res.changed_paths == ["docs/decisions.md", "docs/k10/note.md"]
+    assert env.collect_result(TASK, "submitted", [], []).head_sha == res.head_sha  # nothing left to fix
+
+
+def test_a_hand_in_with_a_changed_main_entry_is_not_rewritten(repo: dict[str, Path], tmp_path: Path) -> None:
+    main1 = push_main(repo, "docs/decisions.md", PLAN_LOG)
+    a = repo["a"]
+    worker_commit(a, BRANCH, "docs/k10/note.md")
+    (a / "docs/decisions.md").write_text(INSERTED.replace("fake first", "edited"))
+    git(a, "commit", "-qam", "the worker edited an old entry")
+    git(a, "checkout", "-q", "--detach")  # the branch is not checked out: the ref path
+    worked = git(a, "rev-parse", BRANCH)
+    env = make_env(a, tmp_path)
+    env.read_state()
+    res = env.collect_result(TASK, "submitted", [], [])
+    assert res.head_sha == worked and _append_only(a, main1, worked) != []
+
+
+def test_a_hand_in_on_a_branch_not_checked_out_moves_the_ref(repo: dict[str, Path], tmp_path: Path) -> None:
+    main1 = push_main(repo, "docs/decisions.md", PLAN_LOG)
+    a = repo["a"]
+    worker_commit(a, BRANCH, "docs/k10/note.md")
+    (a / "docs/decisions.md").write_text(INSERTED)
+    git(a, "commit", "-qam", "the worker's entries, in numeric order")
+    git(a, "checkout", "-q", "--detach")
+    env = make_env(a, tmp_path)
+    env.read_state()
+    res = env.collect_result(TASK, "submitted", [], [])
+    assert git(a, "rev-parse", BRANCH) == res.head_sha and _append_only(a, main1, res.head_sha) == []
 
 
 # ---- update_merge_of: the same fork-point rule as reviewed_plus_main (D-584, D-620)
