@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. T040 added what opens a job, duplicates, the join window, exact answers, the name-and-address question and the under-18 reply. T042 added the keyword second opinion, the trade question rules, the INT-010 after-window word share and INT-032's two-trade detection (pure; not yet wired into the conversation, D-999). T183 added "Which fits best?" across licenses and its reply (`Candidates::fit_step`, D-1003). Not here yet: the question order, the `two_jobs` text and the conversation wiring of T042's rules (no owning task yet, a plan gap for the runner, D-999), the conversation wiring of routing and the coverage line (T043, T184 built, below), web chat (T103).
+The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. T040 added what opens a job, duplicates, the join window, exact answers, the name-and-address question and the under-18 reply. T042 added the keyword second opinion, the trade question rules, the INT-010 after-window word share and INT-032's two-trade detection (pure; not yet wired into the conversation, D-999). T183 added "Which fits best?" across licenses and its reply (`Candidates::fit_step`, D-1003). T156 added the question set one question at a time, routing confidence and the golden run (D-1037 to D-1040; pure, not yet wired into the conversation). Not here yet: the conversation wiring of the question order, the `two_jobs` text and the conversation wiring of T042's rules (no owning task yet, a plan gap for the runner, D-999), the conversation wiring of routing and the coverage line (T043, T184 built, below), web chat (T103).
 
 ## What it owns
 
@@ -18,6 +18,9 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `src/models.rs`: `IntakeError`, one row type per table, the crate-private queries. `sqlx.toml`: `timestamptz` as jiff timestamps.
 - Templates it uses in `app/messaging/templates/`: `consent`, `consent_safety_call` and `who_is_this` (added by T038, D-907), `emergency_911`; `beep_question`, `how_soon`, `needed_by_day`, `emergency_choice`, `night_count_many` (`{count}`, `{trade}`), `night_count_one`, `night_count_none` (`{trade}`) (T039, D-979).
 - `src/routing.rs` (T043, T184): `route` (pure: `Request`, `Outcome`, `Why`), `apply` (one transaction), `tell_coverage` (from `quotes::api::Coverage`), `is_split_reply`, `split_request`, `trade_is_open`, `recruiting_demand`, `check_towns` (`Town`, `TownRefused`), `move_refused`, `asks_property_management`; templates `not_covered` (`{trade}`), `out_of_area`, `coverage_count_many` (`{count}`, `{trade}`), `coverage_count_one` (`{trade}`) and `split_offer` (en, es).
+- `src/question_bank.rs` (T156, pure): `BankRun` (`new`, `next`, `hear`, `answers`, `card_answers`), `BankSettings`, `AiTurn`, `Prompt` (`render`), `Next`, `Heard`, `Given`, `keyword_answer`, `asks_smell_kind`, `starts_now`, `MAX_ASKED`, `NOT_SURE`, `SMELL_EN`, `SMELL_ES`.
+- `src/routing_confidence.rs` (T156, pure): `keyword_scored`, `Scored`, `decide` (`Decision`), `after_fit` (`Outgoing`), `unsure_reach` (`UnsureReach`), `HIGH_CONFIDENCE`, `NOT_CERTAIN`.
+- `src/golden_run.rs` (T156): `golden_rows` (`GoldenRow`), `catalog_version`, `reaches`, `score`, `run_golden`, `run_golden_for`, `golden_results`; migration `0083_intake_golden_result.sql` (`intake.golden_result`, one row per catalog version, counts only, append-only for `askhava_app`); the worker calls `run_golden` at start-up.
 - `src/api.rs`: the public surface; `api::rules` re-exports the pure rules.
 
 ## Rules it enforces
@@ -48,6 +51,9 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - INT-010, INT-032, D-485, D-493: `rules::follow_up_joins` (from 2:00:00 a same-trade message joins only when `shares_words` holds); `matching::two_trades`, `starts_second` (ALSO or TAMBIÉN alone).
 - INT-027, D-146, D-238, D-995: the name-and-address question follows the area check, and its raw answer goes to the vault only, never to the AI.
 - INT-038, D-385, D-994: an under-18 sender gets one `under_18` reply and the request closes; under 13 the data is deleted except the consent record.
+- INT-039, CARD-007, AI-019, D-1037: `BankRun` asks in set order, applies `ask_if`, asks only `emergency` questions on an emergency job (after the cards, `starts_now`), never more than 8 prompts, "Not sure"/"No sé" last on every bank list; AI off: templates word for word, skip only by `keyword_answer`; AI on: rewording and the one `kb_trade` follow-up only through `ai::api::accept_question`, options always the bank's, skip only at a reading at or above `skip_threshold` (unset, so none, D-492). A smell answer of unstated kind asks the exact smell question; 1 or 2 is `Heard::Safety911` (the caller sends INT-004 and holds).
+- INT-040, AI-017, D-1038, D-1040: `decide` goes on only on agreement at or above the high setting, else the INT-013 question; `after_fit` marks a kept-all job `NOT_CERTAIN`; `quotes::api::rules::match_job` with all candidates reaches only covering-all businesses; `unsure_reach` gives `NoneCovers`. No class is read here.
+- OPS-040, D-493, D-1039: `run_golden` stores one `intake.golden_result` per `catalog_version`; `golden_results` is T210's read.
 
 - INT-016, INT-017, INT-022, LIC-017, LIC-018, D-1008: `route` checks the area first (outside the towns list: Closed early, no demand row), then moves outside Arizona, then home watch rent or leasing words, then a trade that is not open; only the last writes a recruiting-demand row; `apply` is safe to run twice.
 - INT-017, INT-032, D-1019, D-1020: `tell_coverage` queues the count line (N from `quotes::api::coverage`, the singular for 1) or the SPLIT offer, and on `Coverage::NotCovered` moves only the told job to Not covered (plus a demand row) while another job of the request is live, else runs `apply` with `Why::NobodyCovers` (D-1020); `split_request` opens the second trade's job on SPLIT or DIVIDIR alone and does not check that a SPLIT offer was made: the conversation wiring must call it only for the reply to a `Coverage::Split` offer (D-1020). A job already final gets no count line or SPLIT offer.
@@ -70,6 +76,8 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - Consent records cannot be updated, deleted or truncated by the app role: `consent_records_are_append_only_for_the_app_role`.
 - Two first texts at once open one request and queue one consent text: `td_con_01_concurrent_first_texts_queue_one_consent_text`.
 - One consent record per request, none from a reply; one full terms row per pick, append-only: `tests/integration/tests/consent_records.rs`.
+- With the skip threshold unset no question is skipped at any confidence; an AI text that fails AI-019 asks the template: `tests::question_bank::td_int_21_*`.
+- An unsure job reaches only a business covering every candidate; a catalog version runs the golden set once: `tests/integration/tests/routing_confidence.rs`.
 
 ## How to change
 
@@ -79,6 +87,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - Edit the consent text: CON-031 first, then `consent` (and `consent_safety_call`) in both `en.json` and `es.json` with their `segments`; run both test commands below and `cargo test -p askhava-messaging tests::template_registry`.
 - Add a Spanish marker word or a who-is-this phrase: `SPANISH_WORDS` or `WHO_PHRASES` in `rules.rs` (folded: lower case, no accents or apostrophes), plus a case in `tests/consent.rs`.
 - Edit the 911 text: INT-004 first (a spec change with a decision), then `emergency_911` in both `en.json` and `es.json` with `segments`, then `INT_004_EN`/`INT_004_ES` in `tests/safety_text.rs`; run both safety test commands.
+- Set the skip threshold: only from a recorded AI-027 run in `docs/phase2/real-ai.md`, passed as `BankSettings::skip_threshold`; never a guessed value.
 - Add a table or column: a new migration (`-- intake (T###)` first line), its row type in `models.rs`, regenerate `.sqlx/` (online build with `SQLX_OFFLINE_DIR=.sqlx`).
 
 ## Tests that guard it
@@ -97,3 +106,5 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `src/tests/trade_question.rs` (TD-INT-04, TD-INT-35): `cargo test -p askhava-intake tests::trade_question`.
 - `src/tests/twin_warnings_regression.rs` (TD-INT-03): `cargo test -p askhava-intake tests::twin_warnings_regression`.
 - `src/tests/prop_keyword_boundary.rs` (TD-INT-05, TD-INT-06): `cargo test -p askhava-intake tests::prop_keyword_boundary`.
+- `src/tests/question_bank.rs` (TD-INT-21, TD-INT-18, TD-INT-24, TD-INT-22 pure cases): `cargo test -p askhava-intake tests::question_bank`.
+- `tests/integration/tests/routing_confidence.rs` (TD-INT-22): `cargo test -p askhava-integration --test routing_confidence`.
