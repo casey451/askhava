@@ -397,3 +397,4 @@
 - 2026-10-31T05:15:53Z runner 8dc5c58f6527 (actions): {}
 - 2026-10-31T05:26:48Z runner 7c4b75de0b2c (actions): {"T181": "QUEUED -> IN_PROGRESS"}; T181 estimated 1.5M tokens (calibrated); five-hour window has 22.1M left, week 379.8M after 903k still running in another lane (ledger); claimed
 - 2026-10-31T05:42:39Z runner 3826f978cdd1 (actions): {}
+- 2026-10-31T05:42:48Z runner 3826f978cdd1 (actions): {"T181": "IN_PROGRESS -> MERGE_PENDING"}
