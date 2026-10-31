@@ -6012,11 +6012,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "1d2cd1ead6b1e82cc60050ed43db3269f4d97f32",
+   "reviewed_sha": "1fb1b799c383719155055d2ae88de4438140e3c3",
    "review_lease": {
     "task": "T033",
-    "session": "actions-41156619445",
-    "expires": "2026-10-31T04:44:03Z"
+    "session": "actions-41159536901",
+    "expires": "2026-10-31T05:32:29Z"
    },
    "branch": "claude/task/T033-jobs-races",
    "auto_merge": {
@@ -6024,25 +6024,11 @@
     "why": "auto-merge on #157 (gh pr merge)",
     "head": "81f7223af5b25dbcc36db721721cb865edfabb56"
    },
-   "update_merges": [
-    {
-     "from": "81f7223af5b25dbcc36db721721cb865edfabb56",
-     "to": "1d2cd1ead6b1e82cc60050ed43db3269f4d97f32",
-     "main": "9007b7e61a500fecc4a00b457bc6ffbb2eb00c76",
-     "how": "runner",
-     "checks": {
-      "Twin": "success",
-      "Ally": "success"
-     },
-     "at": "2026-10-31T02:07:13Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\nCi failed at step: Both jobs passed",
    "runner_closed_prs": [
     157
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T034",
@@ -9728,7 +9714,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T02:42:50Z",
+ "updated_at": "2026-10-31T02:50:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -9826,7 +9812,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "cb42726a9c0660d28e3316feb46593ceb260f262",
+ "runner_sha": "1fb1b799c383719155055d2ae88de4438140e3c3",
  "starter": "actions",
  "smoke_runs": [
   {
