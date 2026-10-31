@@ -100,6 +100,24 @@ def test_oversize_files_are_reported_and_bad_encoding_is_still_scanned(
     assert "skipped, not scanned: big.txt" in capsys.readouterr().out
 
 
+def test_growing_log_warns_past_three_quarters_of_the_limit(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-1075: docs/decisions.md over 75% of MAX_BYTES warns while it is still scanned; it does not fail."""
+    monkeypatch.setattr(pii_scan, "MAX_BYTES", 1_000)
+    (tmp_path / "docs").mkdir()
+    log = tmp_path / "docs" / "decisions.md"
+    log.write_text("y" * 750, encoding="utf-8")
+    assert pii_scan.size_warnings(tmp_path) == []
+    log.write_text("y" * 751, encoding="utf-8")
+    assert pii_scan.size_warnings(tmp_path) == [
+        "docs/decisions.md is 751 bytes, over 75% of MAX_BYTES (1,000, scripts/pii_scan.py); "
+        "raise the limit or split the file before the scanner skips it and fails"
+    ]
+    assert pii_scan.main(["--root", str(tmp_path)]) == 0
+    assert "WARNING docs/decisions.md is 751 bytes" in capsys.readouterr().out
+
+
 # --- D-485: email addresses, image metadata, skipped files ---------------------------------
 
 

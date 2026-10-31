@@ -29,8 +29,12 @@ orphaned, and prints each prompt's token estimate. The estimate is
 recomputed live, so a value that drifted as files appeared is a note for the
 next generation: every merge moves some estimates, and a task branch cannot
 rewrite kit/tasks.json, so drift never fails Ci. With --check --strict (a
-plan-change session, before it commits) a stored value that differs from the
-measurement is a problem too (D-1036).
+plan-change session, before it commits) a measurement over the task's limit
+(scripts/validate_tasks.py context_limit) is a problem, and so is a stored
+value more than CONTEXT_DRIFT_POINTS from the measurement (D-1036, D-1075).
+Generating keeps a stored value that is still within those points and the
+limit, so the steady growth of docs/architecture.md, which almost every task
+reads, does not rewrite every prompt at each plan change (D-1075).
 
 Usage: python3 scripts/gen_prompts.py [--root REPO_ROOT] [--check [--strict]]
 """
@@ -49,7 +53,9 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import trace_spec  # sibling script, imported after its folder is on the path
+import pii_scan  # sibling scripts, imported after their folder is on the path
+import trace_spec
+import validate_tasks
 
 TASKS_FILE = Path("kit/tasks.json")
 TEMPLATE_FILE = Path("kit/prompts/TEMPLATE.md")
@@ -60,6 +66,7 @@ NONE_NOTE = "none for this task"
 INTRO = "_intro"  # the section 5 paragraph before the journeys: setup and the closing checks
 WINDOW_TOKENS = 200_000
 BYTES_PER_TOKEN = 4
+CONTEXT_DRIFT_POINTS = 3  # how far a stored context_pct may sit from its measurement (D-1075)
 DECISION_QUESTION_CHARS = 200
 DECISION_CHOICE_CHARS = 600
 SUPERSEDED_FILE = "kit/superseded_decisions.json"
@@ -460,11 +467,20 @@ def percent(byte_count: int) -> int:
     return math.ceil(byte_count / BYTES_PER_TOKEN * 100 / WINDOW_TOKENS)
 
 
+def settled_pct(task: dict[str, Any], measured: int) -> int:
+    """The context_pct to store: the stored one while it and the measurement are within the task's limit and
+    at most CONTEXT_DRIFT_POINTS apart, else the measurement (D-1075)."""
+    stored = task["budget"]["context_pct"]
+    if not isinstance(stored, int) or abs(stored - measured) > CONTEXT_DRIFT_POINTS:
+        return measured
+    return stored if max(stored, measured) <= validate_tasks.context_limit(task) else measured
+
+
 def derive_context(root: Path, template: Template, task: dict[str, Any], src: Sources) -> str:
-    """Set budget.context_pct from bytes until the prompt that states it agrees; return the prompt."""
+    """Settle budget.context_pct (settled_pct) until the prompt that states it agrees; return the prompt."""
     prompt = render(template, task, src)
     for _ in range(5):
-        pct = percent(context_bytes(root, task, prompt))
+        pct = settled_pct(task, percent(context_bytes(root, task, prompt)))
         if pct == task["budget"]["context_pct"]:
             return prompt
         task["budget"]["context_pct"] = pct
@@ -491,15 +507,20 @@ def check_task(root: Path, template: Template, task: dict[str, Any], src: Source
 def estimate_line(root: Path, task: dict[str, Any], prompt: str) -> str:
     byte_count = context_bytes(root, task, prompt)
     pct = percent(byte_count)
-    note = "" if pct == task["budget"]["context_pct"] else f" (stored {task['budget']['context_pct']}%; regenerate to refresh)"
+    note = "" if settled_pct(task, pct) == task["budget"]["context_pct"] else f" (stored {task['budget']['context_pct']}%; regenerate to refresh)"
     return f"{task['id']}: about {byte_count // BYTES_PER_TOKEN} tokens, {pct}% of the window{note}"
 
 
 def budget_problem(root: Path, task: dict[str, Any], prompt: str) -> list[str]:
-    """--strict (D-1036): the stored budget.context_pct must equal the live measurement."""
+    """--strict (D-1036, D-1075): the measurement is within the task's limit and the stored value has settled."""
     pct = percent(context_bytes(root, task, prompt))
     stored = task["budget"]["context_pct"]
-    return [] if pct == stored else [f"{task['id']}: stored context_pct {stored}% but it measures {pct}%; regenerate"]
+    limit = validate_tasks.context_limit(task)
+    if pct > limit:
+        return [f"{task['id']}: measures {pct}% of the window, over its {limit}% limit; trim its reads or split it"]
+    if settled_pct(task, pct) != stored:
+        return [f"{task['id']}: stored context_pct {stored}% but it measures {pct}%; regenerate"]
+    return []
 
 
 def check(
@@ -515,6 +536,9 @@ def check(
         print(estimate_line(root, task, prompt))
         if strict:
             problems.extend(budget_problem(root, task, prompt))
+    if strict:
+        for warning in pii_scan.size_warnings(root):
+            print(f"WARNING {warning}")
     expected = {Path(task["prompt"]).name for task in tasks}
     for path in sorted((root / PROMPTS_DIR).glob("T[0-9][0-9][0-9].md")):
         if path.name not in expected:
