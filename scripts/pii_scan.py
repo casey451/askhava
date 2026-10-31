@@ -16,7 +16,9 @@ Fake data only (BUILD_BRIEF.md:66; D-109). Flags, outside sources/:
 The twin's own generator literals (a fake over-sharer's address, two fixed record
 phones) pass only by exact value in twin/twin.py, never by path (D-109, D-516).
 A file that could not be scanned (over the size limit) fails the run unless it
-is on SKIP_ALLOWED with a reason (D-485).
+is on SKIP_ALLOWED with a reason (D-485). An append-only log every task grows
+(GROWING_FILES) past GROWTH_WARN_SHARE of the limit prints a warning, so the
+limit is raised or the file split long before it is skipped (D-1075).
 Findings print as path:line:rule with the match redacted. Exit 1 on any finding.
 
 Usage: python3 scripts/pii_scan.py [--root REPO_ROOT]
@@ -34,7 +36,7 @@ from pathlib import Path
 
 SKIP_PREFIXES = ("sources/", ".git/")
 SKIP_FILES = ("kit/sources.sha256", "uv.lock")
-MAX_BYTES = 1_000_000
+MAX_BYTES = 4_000_000
 
 FAKE_STREETS = {"Test", "Example", "Sample", "Fake", "Canary", "Sentinel", "Placeholder"}
 FAKE_NAMES = {
@@ -270,6 +272,36 @@ def unallowed(skipped: list[str]) -> list[str]:
     return [item for item in skipped if item.split(" (", 1)[0] not in SKIP_ALLOWED]
 
 
+GROWING_FILES = ("docs/decisions.md",)  # every task appends to it (D-1064)
+GROWTH_WARN_SHARE = 0.75
+GROWTH_STOP_SHARE = 0.9  # a plan change must not leave the file this close to the limit (D-1075)
+
+
+def size_warnings(root: Path) -> list[str]:
+    """Each growing file past GROWTH_WARN_SHARE of MAX_BYTES, while there is still room to act (D-1075)."""
+    out = []
+    for name in GROWING_FILES:
+        path = root / name
+        size = path.stat().st_size if path.is_file() else 0
+        if size > MAX_BYTES * GROWTH_WARN_SHARE:
+            out.append(
+                f"{name} is {size:,} bytes, over {GROWTH_WARN_SHARE:.0%} of MAX_BYTES ({MAX_BYTES:,}, "
+                "scripts/pii_scan.py); raise the limit or split the file before the scanner skips it and fails"
+            )
+    return out
+
+
+def size_stops(root: Path) -> list[str]:
+    """Each growing file past GROWTH_STOP_SHARE of MAX_BYTES; a plan change fails on these (D-1075)."""
+    out = []
+    for name in GROWING_FILES:
+        path = root / name
+        size = path.stat().st_size if path.is_file() else 0
+        if size > MAX_BYTES * GROWTH_STOP_SHARE:
+            out.append(f"{name} is {size:,} bytes, over {GROWTH_STOP_SHARE:.0%} of MAX_BYTES ({MAX_BYTES:,}); raise the limit or split the file in this plan change")
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0] if __doc__ else "")
     parser.add_argument("--root", default=".")
@@ -283,6 +315,8 @@ def main(argv: list[str] | None = None) -> int:
     for item in skipped:
         verdict = "fails, not on SKIP_ALLOWED" if item in failing else "allow-listed"
         print(f"skipped, not scanned: {item} ({verdict})")
+    for warning in size_warnings(root):
+        print(f"WARNING {warning}")
     print(f"pii_scan: {len(findings)} finding(s), {len(skipped)} file(s) skipped, {len(failing)} not allow-listed")
     return 1 if findings or failing else 0
 

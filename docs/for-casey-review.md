@@ -1045,7 +1045,6 @@ You said: "I think if they text us, that's implied that they want to talk to us.
 6. **Twilio question shortened (D-424):** it's at the top of this file and in `send_drafts/Twilio_question.md`. Signed "Ask Hava (LLC being formed)".
 7. **Your answers today:** trademark skipped for now (D-425); insurance after the business is fully working (D-426); Spanish: launch in English, with the Spanish safety texts on and checked by ChatGPT and Grok translating them back, and full Spanish after a paid review of about $100 (D-427). Sales tax (B10) stays open.
 
-
 ## From fix round 14 ("as well packaged as possible"), October 28, 2026
 
 Your four answers (photos now, AI later; she OKs sharing at the pick; the tax ruling on the later list; the fire-truck list only) and "Do everything that you recommend" are in D-429 to D-449. The plan is `docs/handoff/rework-plan.md`. Nothing was sent anywhere, no simulation was run, and nothing is built.
@@ -1357,6 +1356,27 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What you approved.** Each task tells its worker roughly how much of its reading space it will use. Those numbers were stale (about half the real size), and nearly every task was over the old 20% limit. They are now measured fresh for every task, and the limits are 45% for ordinary tasks and 50% for tooling tasks.
 - **Two calls Claude made.** A clean-up task that sweeps the whole app folder is no longer counted as reading every file in it, since it only searches it. The one clean-up task that also runs the full twin check (T126) measures 59%, so clean-up tasks got their own limit of 65%. Three finished twin tasks (T005 to T007) measure 63 to 69%; their numbers are kept as measured under a limit only they can use.
 - **Keeping the numbers honest.** Every plan change now re-checks the numbers strictly before it is committed. Ordinary task merges still only note small drift, because every merge moves some numbers by a point and a task cannot fix the task list itself.
+
+## Task size numbers no longer churn every plan change (D-1075, October 31)
+
+- **What changed.** Each task's size number moved by a point whenever the shared architecture notes grew (almost every task reads them), so even a one-line plan fix had to rewrite about 90 task prompts. A stored number now stays as long as it is within 3 points of the real measurement and under the task's limit. The limit itself still binds the real measurement: a plan change fails if any task's reading actually goes over it.
+- **Calls Claude made.** 3 points (about 24 KB of reading) was picked so roughly a dozen task merges pass between refreshes. The decisions log was suspected but turned out not to be the cause: prompts only paste the decisions they name. Separately, the PII scanner now prints a warning once the decisions log passes 75% of its size limit; it warns at 75% rather than fails, so a growing log never turns the build red by surprise; past 90% the plan-change check itself refuses to pass until the limit is raised or the file split, so the session that can act must. One task (T156, the intake question bank) sits exactly at its size limit, so the next plan change after it lands will have to give it the same "keep the budget it was built with" allowance three stage-1 tasks already have.
+
+## T156 was reverted (FIX-MAIN, D-1053, October 31)
+
+- **What happened.** The intake question bank (T156) was reverted because main went red after its merge. Its decisions D-1037 to D-1041 stay in the log but are void until T156 is re-run.
+
+## A stuck fix for a broken main no longer stops the build for good (D-1099, October 31)
+
+- **What happened.** Today `main` broke for the first time and the fix task (FIX-MAIN) failed its first try. Had it failed all three, or been blocked for any other reason, it would have stopped for good, and so would the whole build, until someone edited the runner's state by hand, which the rules forbid.
+- **What the runner now does itself.** It waits at least 30 minutes, until its next cycle after that, then gives FIX-MAIN a fresh set of three tries on the same undo, with every earlier failure in its instructions. It retries at most three times, and each retry opens an issue saying what failed. Nothing is needed from you for those.
+- **When a person must act.** If FIX-MAIN is still blocked after its third retry, you get one issue saying it is stuck, with what failed, the files and the commit it is undoing. Once the cause is fixed, `python3 -m runner --requeue FIX-MAIN --reason "..."` starts it again. If the undo itself went in and `main` is still broken, you get one issue about that straight away, because undoing it again cannot help; the build resumes on its own once `main` passes again.
+- **What did not change.** `main` is still fixed only by undoing the bad merge, and it is still marked fixed only after the runner's own check passes on it.
+
+## The test that kept turning main red for no reason is fixed (D-1086, October 31)
+
+- **What changed.** A test of the phone-call client failed now and then (about six false alarms, and main went red after T156). The cause was in the test setup, not the app: the test picked a free network port, then started the fake vendor server on it, and another test running at the same moment could grab that port in between. The test now waits for the fake server itself to say it is listening on its port, and starts it on a new port if it could not get the first one.
+- **Calls Claude made.** No test was loosened, skipped or retried, and the app's code did not change. The fake vendor server (a protected file) was left alone. One other crate (the AI tests) has the same setup and is left for a later fix.
 
 ## How a business's quote comes in (T046, D-1048 to D-1052, October 31)
 

@@ -118,6 +118,35 @@
     "next_decision": {
       "type": "integer"
     },
+    "plan_reservations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "number",
+          "at",
+          "reason",
+          "session"
+        ],
+        "properties": {
+          "number": {
+            "type": "integer"
+          },
+          "at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "session": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
     "main_red": {
       "type": [
         "object",
@@ -137,7 +166,8 @@
             "smoke",
             "Ci",
             "Twin",
-            "Ally"
+            "Ally",
+            "review"
           ]
         },
         "sha": {
@@ -153,6 +183,35 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "fix_main_rounds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "round",
+              "at",
+              "reason"
+            ],
+            "properties": {
+              "round": {
+                "type": "integer"
+              },
+              "at": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+              },
+              "blocked_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
           }
         }
       }
@@ -353,6 +412,73 @@
                 }
               }
             }
+          },
+          "plan_gap_strikes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "at",
+                "paths",
+                "attempt"
+              ],
+              "properties": {
+                "at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+                },
+                "paths": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "attempt": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "fix_main_rounds": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "round",
+                "at",
+                "reason"
+              ],
+              "properties": {
+                "round": {
+                  "type": "integer"
+                },
+                "at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+                },
+                "blocked_at": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reason": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "blocked_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "escalated_at": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       }
