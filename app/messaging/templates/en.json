@@ -4,6 +4,16 @@
     "segments": 2,
     "text": "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy"
   },
+  "consent_safety_call": {
+    "audience": "homeowner",
+    "segments": 3,
+    "text": "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. If you report a danger like gas or smoke and we can't text, we may try one recorded call to this number. Don't wait for it: call 911. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy"
+  },
+  "who_is_this": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Ask Hava is a local service. Our texts are automated. The Ask Hava owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent."
+  },
   "opt_out_confirmation": {
     "audience": "homeowner",
     "segments": 1,
