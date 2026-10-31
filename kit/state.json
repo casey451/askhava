@@ -7979,7 +7979,10 @@
     "head": "f6eacb4b66e3bfd004d6937c916f0535882bfd0e"
    },
    "last_failure": "Ci: failure; Ci: failure; Checks: failure; Checks: failure\nChecks failed at step: TypeScript checks and npm audit\nCi failed at step: Both jobs passed",
-   "lane": "2"
+   "lane": "2",
+   "runner_closed_prs": [
+    172
+   ]
   },
   {
    "id": "T055",
@@ -11055,7 +11058,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T08:37:28Z",
+ "updated_at": "2026-10-31T08:37:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
