@@ -745,7 +745,8 @@ def _fix_main_fields(cfg: Config, offending: tuple[str, str, list[str]]) -> dict
         f"Fix main. First option: `git revert --no-edit {sha or '<offending squash commit>'}` "
         f"(the merge of {tid or 'an unknown task'}), then `git checkout origin/main -- docs/decisions.md` so the "
         "log keeps every entry (it is append-only; the reverted task's entries stand as history, D-1088) and "
-        "append your own entry at the end. Patch over only if the revert itself would break main, "
+        "append your own entry at the end; if the revert touches a protected or locked path, end the commit "
+        "message with a `Plan-Change: D-<your entry>` trailer. Patch over only if the revert itself would break main, "
         "and say why in the report."
     )
     return {
