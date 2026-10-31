@@ -107,6 +107,8 @@ fn td_int_02_short_and_cancel_like_messages_open_nothing() {
     }
     assert!(!opens_job("cancel gas leak", true));
     assert!(!cancel_like("the leak will not stop and the floor is wet"));
+    assert!(!cancel_like("baja presion de agua en la cocina"));
+    assert!(!cancel_like("alto voltaje en el panel y huele a quemado"));
     assert!(opens_job(
         "the leak will not stop and the floor is wet",
         false
@@ -327,6 +329,10 @@ fn td_int_20_age_rules() {
         "my son is in high school and the sink leaks",
         "the high school gym roof leaks",
         "I'm 18",
+        "tengo 2 y uno no enfria",
+        "tengo 3 en la sala y no enfria",
+        "I live near the high school and my AC is out",
+        "the kids go to the high school and the AC is out",
     ] {
         assert_eq!(age_stop(words), None, "{words}");
     }
@@ -433,4 +439,86 @@ fn td_int_20_the_spanish_reply_stays_on() {
         en,
         "Ask Hava: Sorry, you must be 18 or older to use Ask Hava. Please ask a parent or adult to text us."
     );
+}
+
+/// TD-INT-20 (INT-038): the stop cancels the job the request opened, and a closed request no
+/// longer blocks a new job or the INT-010 join (INT-009).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_20_the_stop_cancels_the_job_and_frees_the_trade(mut db: Db) {
+    let (id, _) = open_request(&mut db, 0xC1, "I'm 15 and our sink leaks").await;
+    let opened = begin_job(&mut db, &start(id, "our sink leaks badly", "plumbing", 1)).await;
+    let Ok(Opened::Created(job)) = opened else {
+        panic!("{opened:?}");
+    };
+    let msg = text_in(
+        Uuid::from_u128(0xC1),
+        2,
+        inbound("I'm 15 and our sink leaks"),
+    );
+    let stop = stop_if_under_18(&mut db, &secret(), &msg, id, false)
+        .await
+        .expect("stop");
+    assert!(stop.is_some());
+    let status = askhava_jobs::api::current(&mut db, job).await.expect("job");
+    assert!(status.status.code() == "cancelled");
+    assert_eq!(
+        joining_job(&mut db, id, at(3), SignedDuration::from_hours(2)).await,
+        Ok(None)
+    );
+    let (next, _) = open_request(&mut db, 0xC1, "my sink is leaking again").await;
+    let again = begin_job(&mut db, &start(next, "my sink is leaking", "plumbing", 4)).await;
+    assert!(
+        matches!(again, Ok(Opened::Created(new)) if new != job),
+        "{again:?}"
+    );
+}
+
+/// TD-INT-02 (INT-009): a job opened before the area check and one after are one active job.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_02_a_job_before_and_after_the_area_check_is_one_job(mut db: Db) {
+    let (id, homeowner) = open_request(&mut db, 0xC3, "my sink is leaking").await;
+    let first = begin_job(&mut db, &start(id, "my sink is leaking", "plumbing", 1)).await;
+    let Ok(Opened::Created(job)) = first else {
+        panic!("{first:?}");
+    };
+    sqlx::query!(
+        "INSERT INTO intake.property (homeowner_id, contact_id, town, created_at) \
+         VALUES ($1, $2, 'lake_havasu_city', now())",
+        homeowner,
+        Uuid::from_u128(0xC3)
+    )
+    .execute(&mut *db)
+    .await
+    .expect("property");
+    let second = begin_job(&mut db, &start(id, "the sink still leaks", "plumbing", 2)).await;
+    assert_eq!(second, Ok(Opened::Existing(job)));
+}
+
+/// TD-INT-11 (INT-027): asking again after an answer with no street number sends a second text.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_11_a_re_ask_sends_again(mut db: Db) {
+    let (id, homeowner) = open_request(&mut db, 0xC4, "my sink is leaking").await;
+    sqlx::query!(
+        "INSERT INTO intake.property (homeowner_id, contact_id, town, created_at) \
+         VALUES ($1, $2, 'lake_havasu_city', now())",
+        homeowner,
+        Uuid::from_u128(0xC4)
+    )
+    .execute(&mut *db)
+    .await
+    .expect("property");
+    let one = TextIn {
+        inbox_id: Uuid::from_u128(0x911),
+        ..text_in(Uuid::from_u128(0xC4), 5, inbound("x"))
+    };
+    let two = TextIn {
+        inbox_id: Uuid::from_u128(0x912),
+        ..one
+    };
+    let a = ask_name_address(&mut db, &secret(), &one, id, false).await;
+    let b = ask_name_address(&mut db, &secret(), &two, id, false).await;
+    let (Ok(Some(a)), Ok(Some(b))) = (a, b) else {
+        panic!("no ask");
+    };
+    assert_ne!(a.outbox_id, b.outbox_id);
 }

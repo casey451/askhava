@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT a.choice, GREATEST(a.answered_at, COALESCE((SELECT max(h.answered_at) FROM intake.intake_answer h WHERE h.conversation_id = a.conversation_id AND h.question_id = 'heard'), a.answered_at)) AS \"last!\" FROM intake.intake_answer a JOIN intake.conversation c ON c.id = a.conversation_id WHERE c.homeowner_id = $1 AND a.question_id LIKE 'job.%' ORDER BY a.answered_at DESC, a.id DESC LIMIT 1",
+  "query": "SELECT a.choice, GREATEST(a.answered_at, COALESCE((SELECT max(h.answered_at) FROM intake.intake_answer h WHERE h.conversation_id = a.conversation_id AND h.question_id = 'heard'), a.answered_at)) AS \"last!\" FROM intake.intake_answer a JOIN intake.conversation c ON c.id = a.conversation_id WHERE c.homeowner_id = $1 AND c.closed_at IS NULL AND a.question_id LIKE 'job.%' ORDER BY a.answered_at DESC, a.id DESC LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -31,5 +31,5 @@
       null
     ]
   },
-  "hash": "c1ecc842396397d992ec39056759930a973027a745fb02f821513fee2905f082"
+  "hash": "eb0ebe39c8afff0ebb4442a3e0cf1815192ff30379c1b7d149d71d7bbdda75a8"
 }

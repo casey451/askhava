@@ -301,8 +301,6 @@ const CANCEL_WORDS: &[&str] = &[
     "nevermind",
     "nvm",
     "parar",
-    "alto",
-    "baja",
 ];
 /// Phrases that make a message cancel-like anywhere in it, folded.
 const CANCEL_PHRASES: &[&str] = &["never mind", "forget it", "olvidalo", "no quiero nada"];
@@ -373,11 +371,16 @@ pub enum AgeStop {
     Under13,
 }
 
-/// Words that may follow a stated age and still mean the sender's own age ("I'm 15 and ...").
+/// Words that may follow "I'm <n>" or "I am <n>" and still mean the sender's own age
+/// ("I'm 15 and ..."). Spanish "y" and "en" are not here: "tengo 2 y uno no enfria" is a request.
 const AFTER_AGE: &[&str] = &[
-    "years", "year", "yrs", "yr", "yo", "and", "but", "so", "y", "pero", "en", "my", "our", "the",
-    "a", "we", "can", "need", "have", "anos",
+    "years", "year", "yrs", "yr", "yo", "and", "but", "so", "my", "our", "the", "a", "we", "can",
+    "need", "have",
 ];
+/// The only words that may follow "tengo <n>" for it to be an age (INT-038, D-996).
+const AFTER_TENGO: &[&str] = &["anos", "ano"];
+/// Words that must come directly before a school phrase for it to be the sender's own school.
+const BEFORE_SCHOOL: &[&[&str]] = &[&["im", "in"], &["i", "am", "in"], &["i", "go", "to"]];
 /// School phrases a sender uses about themselves (INT-038), folded.
 const SCHOOLS: &[&[&str]] = &[
     &["middle", "school"],
@@ -407,9 +410,14 @@ pub fn age_stop(words: &str) -> Option<AgeStop> {
             None
         };
         let age = after.and_then(|j| Some((t.get(j)?.parse::<u8>().ok()?, j)));
+        let list = if t[i] == "tengo" {
+            AFTER_TENGO
+        } else {
+            AFTER_AGE
+        };
         if let Some((age, j)) = age
             && age < 18
-            && t.get(j + 1).is_none_or(|n| AFTER_AGE.contains(n))
+            && t.get(j + 1).is_none_or(|n| list.contains(n))
         {
             return Some(if age < 13 {
                 AgeStop::Under13
@@ -421,15 +429,15 @@ pub fn age_stop(words: &str) -> Option<AgeStop> {
     in_school(&t).then_some(AgeStop::Under18)
 }
 
-/// Whether the sender says "I'm in/at ... high school" (a first-person word within 4 words
-/// before the school phrase).
+/// Whether the sender says "I'm in", "I am in" or "I go to" directly before a school phrase.
+/// "I live near the high school" is a normal request.
 fn in_school(t: &[&str]) -> bool {
     SCHOOLS.iter().any(|school| {
         t.windows(school.len()).enumerate().any(|(at, w)| {
             w == *school
-                && t[at.saturating_sub(4)..at]
+                && BEFORE_SCHOOL
                     .iter()
-                    .any(|x| matches!(*x, "i" | "im"))
+                    .any(|lead| at >= lead.len() && t[at - lead.len()..at] == **lead)
         })
     })
 }

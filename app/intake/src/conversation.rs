@@ -9,7 +9,8 @@
 //! reply and closes the request. The name-and-address answer goes to the vault and nowhere else
 //! (INT-027, D-146): nothing in this file touches an AI.
 
-use askhava_jobs::api::create;
+use askhava_core::api::Guarded;
+use askhava_jobs::api::{JobStatus, create, current, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_privacy::api::{NewContact, Vault, store_contact};
@@ -76,7 +77,8 @@ pub async fn begin_job(db: &mut PgConnection, start: &JobStart<'_>) -> Result<Op
     models::lock_homeowner(&mut tx, homeowner).await?;
     let property = models::latest_property(&mut tx, homeowner).await?;
     let kind = job_kind(start.trade, property)?;
-    if let Some(job) = models::active_job(&mut tx, homeowner, &kind).await? {
+    let earlier = job_kind(start.trade, None)?;
+    if let Some(job) = models::active_job(&mut tx, homeowner, &[kind.clone(), earlier]).await? {
         tx.commit().await.map_err(|_| IntakeError::Database)?;
         return Ok(Opened::Existing(job));
     }
@@ -205,7 +207,8 @@ pub async fn record_answer(
 
 /// The INT-038 reply, if the sender stated an age under 18 or said they are in school, and the
 /// request closed (no card ever goes). Under 13, the request and its data are deleted too, except
-/// the consent record. The reply goes once: a closed request gets none. An emergency keyword was
+/// the consent record. Every job the request opened is cancelled (no card, no timer left). The
+/// vault contact holding a name and address stays: `privacy` has no delete call yet (D-996). The reply goes once: a closed request gets none. An emergency keyword was
 /// handled first by `receive_text` (INT-002), so its 911 text is already queued before this one.
 ///
 /// # Errors
@@ -226,8 +229,12 @@ pub async fn stop_if_under_18(
         return Err(IntakeError::UnknownRequest);
     };
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let jobs = models::request_jobs(&mut tx, conversation).await?;
     if !models::close_request(&mut tx, conversation, msg.received_at).await? {
         return Ok(None);
+    }
+    for job in jobs {
+        cancel_job(&mut tx, job, msg.received_at).await?;
     }
     let language = wanted_language(msg.inbound.words, msg.inbound.ai_spanish);
     let subject = [conversation, msg.inbox_id];
@@ -257,6 +264,21 @@ pub async fn stop_if_under_18(
     Ok(Some((stop, queued)))
 }
 
+/// Cancels a job of a request that closed for INT-038, unless it already reached a final status.
+async fn cancel_job(db: &mut PgConnection, job: Uuid, at: Timestamp) -> Result<(), IntakeError> {
+    let status = current(db, job).await.map_err(|_| IntakeError::Job)?.status;
+    if !status.is_final() {
+        let moved = move_to(db, job, (status, JobStatus::Cancelled), at, Actor::System)
+            .await
+            .map_err(|_| IntakeError::Job)?;
+        // A job that moved on first is that move's to settle; nothing more to do here.
+        if let Guarded::MovedOn = moved {
+            return Ok(());
+        }
+    }
+    Ok(())
+}
+
 /// Asks the name-and-address question (INT-027, D-238): the last intake question, only once the
 /// ZIP and area check made a property row; `None` before that. It carries the who-sees-it line
 /// and asks nothing about renting or owning (D-437).
@@ -281,7 +303,7 @@ pub async fn ask_name_address(
         .await?
         .ok_or(IntakeError::UnknownRequest)?;
     let language = crate::rules::language_from_code(&row.language);
-    let subject = [conversation];
+    let subject = [conversation, msg.inbox_id];
     let ask = queue_text(
         db,
         secret,

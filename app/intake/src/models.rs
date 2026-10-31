@@ -593,18 +593,19 @@ pub(crate) async fn conversation_state(
     .map_err(|_| IntakeError::Database)
 }
 
-/// The active job stored under `kind` (`job.<trade>.<property>`) for the homeowner, if any.
+/// The active job stored under any of `kinds` (`job.<trade>.<property>`) in an open request of
+/// the homeowner, if any (INT-009): a closed request never blocks a new job.
 pub(crate) async fn active_job(
     db: &mut PgConnection,
     homeowner: Uuid,
-    kind: &str,
+    kinds: &[String],
 ) -> Result<Option<Uuid>, IntakeError> {
     let hex = sqlx::query_scalar!(
         "SELECT a.choice FROM intake.intake_answer a \
          JOIN intake.conversation c ON c.id = a.conversation_id \
-         WHERE c.homeowner_id = $1 AND a.question_id = $2 LIMIT 1",
+         WHERE c.homeowner_id = $1 AND c.closed_at IS NULL AND a.question_id = ANY($2) LIMIT 1",
         homeowner,
-        kind
+        kinds
     )
     .fetch_optional(db)
     .await
@@ -623,7 +624,7 @@ pub(crate) async fn newest_job(
          FROM intake.intake_answer h WHERE h.conversation_id = a.conversation_id \
          AND h.question_id = 'heard'), a.answered_at)) AS \"last!\" \
          FROM intake.intake_answer a JOIN intake.conversation c ON c.id = a.conversation_id \
-         WHERE c.homeowner_id = $1 AND a.question_id LIKE 'job.%' \
+         WHERE c.homeowner_id = $1 AND c.closed_at IS NULL AND a.question_id LIKE 'job.%' \
          ORDER BY a.answered_at DESC, a.id DESC LIMIT 1",
         homeowner
     )
@@ -652,6 +653,28 @@ pub(crate) async fn insert_plain(
     .await
     .map(|_| ())
     .map_err(|_| IntakeError::Database)
+}
+
+/// The IDs of every job the request opened: its job links and its first job (INT-038).
+pub(crate) async fn request_jobs(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Vec<Uuid>, IntakeError> {
+    let links = sqlx::query_scalar!(
+        "SELECT choice FROM intake.intake_answer WHERE conversation_id = $1 AND question_id LIKE 'job.%' \
+         UNION SELECT replace(job_id::text, '-', '') FROM intake.conversation WHERE id = $1",
+        conversation
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(links
+        .into_iter()
+        .flatten()
+        .filter_map(|h| Uuid::parse_str(&h).ok())
+        .collect::<std::collections::BTreeSet<_>>()
+        .into_iter()
+        .collect())
 }
 
 /// Closes request `conversation` at `at` and drops its job links (INT-038); `false` if it was
