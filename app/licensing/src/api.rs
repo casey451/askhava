@@ -17,6 +17,10 @@
 //! [`read_back`] gives the sign-up read-back of the classes on the state record (LIC-006, LIC-027);
 //! [`city_standing`] matches a business on the latest city list (LIC-010, LIC-011).
 //!
+//! The card lines (T037): [`licensed_lines`] gives a licensed card's record-check line with its link
+//! and its "license since" line; [`no_license_lines`] gives a no-license card's city-license line and
+//! business-reported insurance after the handyman line (LIC-026, LIC-034, LIC-037, LIC-038, LIC-032).
+//!
 //! The live lookup (T180): [`lookup_at_pick`] makes the one lookup at a pick, a failed one is
 //! `Unknown` and can't Confirm; [`unknown_standing`] keeps, warns and pauses (LIC-008);
 //! [`end_date_pauses`] applies LIC-009; [`list_failure_alerts`], [`alert_list_failure`] and
@@ -34,6 +38,10 @@ pub use crate::handyman::{
 pub use crate::imports::{
     CITY_HEADER, CityRow, ImportError, ParsedList, ROC_HEADER, RocRow, RocStatus,
     normalise_license_number, parse_city_list, parse_roc_list,
+};
+pub use crate::lines::{
+    CardLanguage, CardLine, Issuer, LicenseFacts, LinesError, NoLicenseFacts, licensed_lines,
+    no_license_lines,
 };
 pub use crate::models::{
     Agency, CityListStanding, CityRecord, Eligibility, Holder, InspectionFee, Job, LicenseKind,

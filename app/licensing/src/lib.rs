@@ -10,6 +10,9 @@
 //! T180 added the live lookup at the pick and the lookup and list failure clocks (LIC-008,
 //! LIC-009, LIC-039) in `handlers`.
 //!
+//! T037 added the quote-card license lines (LIC-026, LIC-032, LIC-034, LIC-037, LIC-038, WORD-016)
+//! in `lines`.
+//!
 //! Other crates reach it only through [`api`]. T153 adds the license-map class coverage that fills
 //! `Holder::roc_covers`.
 
@@ -17,6 +20,7 @@ pub mod api;
 mod handlers;
 mod handyman;
 mod imports;
+mod lines;
 mod models;
 mod rules;
 mod service;

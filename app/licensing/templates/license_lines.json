@@ -1,0 +1,44 @@
+{
+  "links": {
+    "roc": "https://roc.az.gov/",
+    "home_inspector": "https://btr.az.gov/",
+    "alarm_business": "https://btr.az.gov/",
+    "septage_hauler": "https://azdeq.gov/"
+  },
+  "en": {
+    "agencies": {
+      "pest_management": "Arizona Department of Agriculture",
+      "home_inspector": "Board of Technical Registration",
+      "alarm_business": "Board of Technical Registration",
+      "septage_hauler": "ADEQ"
+    },
+    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    "date": "{month} {day}, {year}",
+    "roc_checked": "ROC #{number} showed Active on the ROC website when we checked on {date}. Check it yourself.",
+    "agency_checked": "{agency} license #{number} showed Active on the {agency} website when we checked on {date}. Check it yourself.",
+    "roc_since": "ROC license since {year}",
+    "agency_since": "{agency} license since {year}",
+    "city_since": "City business license on file since {year}",
+    "city": "City business license on file",
+    "insurance_yes": "Insurance (business-reported): Yes",
+    "insurance_no": "Insurance (business-reported): No"
+  },
+  "es": {
+    "agencies": {
+      "pest_management": "Arizona Department of Agriculture",
+      "home_inspector": "Board of Technical Registration",
+      "alarm_business": "Board of Technical Registration",
+      "septage_hauler": "ADEQ"
+    },
+    "months": ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+    "date": "{day} de {month} de {year}",
+    "roc_checked": "ROC #{number} figuraba como Activa en el sitio web del ROC cuando lo revisamos el {date}. Compruébelo usted mismo.",
+    "agency_checked": "La licencia #{number} de {agency} figuraba como Activa en el sitio web de {agency} cuando la revisamos el {date}. Compruébela usted mismo.",
+    "roc_since": "Licencia del ROC desde {year}",
+    "agency_since": "Licencia de {agency} desde {year}",
+    "city_since": "Licencia comercial de la ciudad registrada desde {year}",
+    "city": "Licencia comercial de la ciudad registrada",
+    "insurance_yes": "Seguro (informado por el negocio): Sí",
+    "insurance_no": "Seguro (informado por el negocio): No"
+  }
+}
