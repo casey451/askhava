@@ -8,6 +8,15 @@
 //! of a HOLD or a pause) calls [`restart_timer`], which supersedes the pending timer (D-807).
 //! Every job gets its number in the transaction that creates it and keeps it for ever; after a
 //! restore the replay raises the counter with [`raise_number_floor`] (JOB-024, D-851).
+//!
+//! Same-moment collisions (JOB-004, TD-JOB-02): a move's first statement is the guarded
+//! `UPDATE … WHERE status = from`, which takes the job's row lock. Two events that try to move one
+//! job at once (a pick and a close, two picks, a timer and a reply, a cancel and a Confirm) queue
+//! on that lock; when the first commits, Postgres re-checks the second's `WHERE` against the
+//! committed row, finds the expected status gone and updates nothing, so the second writes no
+//! history, audit row, timer or text and answers [`Guarded::MovedOn`]. A move that lost never
+//! retries from the job's new status; the caller decides what "moved on" means for it.
+//! `tests/integration/tests/job_races.rs` stages every pair in both orders.
 
 use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
@@ -137,7 +146,10 @@ pub async fn move_to(
 
 /// The move itself, optionally fenced on the job's version and timer version (a timer's, JOB-006).
 /// `text` is the homeowner text the move sends, by template ID; its event commits with the move,
-/// so a move that does not apply sends nothing (JOB-010 to JOB-012, JOB-025, R11).
+/// so a move that does not apply sends nothing (JOB-010 to JOB-012, JOB-025, R11). The guarded
+/// update is the transaction's first statement, so the row lock is the first lock a move takes and
+/// two racing moves never wait on each other in opposite orders; the loser rolls back having
+/// written nothing (JOB-004).
 pub(crate) async fn apply(
     db: &mut PgConnection,
     id: Uuid,
@@ -212,7 +224,7 @@ async fn queue_timer(
     Ok(())
 }
 
-/// Runs one job timer (JOB-003, JOB-006): re-checks the job's status, version and timer version
+/// Runs one job timer (JOB-003, JOB-004, JOB-006): re-checks the job's status, version and timer version
 /// first and does nothing if it moved on or its wait was restarted (D-807); otherwise moves it to
 /// its timeout's target at the timer's due time, as the system, with the status's timeout text
 /// (`JobStatus::timeout_text`: JOB-010 at 6 p.m., JOB-011, JOB-012; D-030, D-461). Safe to run
