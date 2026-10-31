@@ -4288,7 +4288,9 @@
    "owns": [
     "app/quotes/src/cards.rs",
     "app/quotes/src/gate.rs",
-    "app/quotes/src/tests/prop_card_no_contact.rs"
+    "app/quotes/src/tests/prop_card_no_contact.rs",
+    "app/quotes/src/models.rs",
+    "migrations/0068_quotes_card_text.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4319,11 +4321,12 @@
     "D-292",
     "D-326",
     "D-382",
-    "D-385"
+    "D-385",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 5,
     "lines": 350,
     "context_pct": 13
    },
@@ -4358,7 +4361,8 @@
    "owns": [
     "app/quotes/src/cards.rs",
     "app/quotes/src/gate.rs",
-    "app/quotes/src/tests/card_lines.rs"
+    "app/quotes/src/tests/card_lines.rs",
+    "app/quotes/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4381,11 +4385,12 @@
     "TD-CARD-07"
    ],
    "decisions": [
-    "D-188"
+    "D-188",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 300,
     "context_pct": 12
    },
@@ -4423,7 +4428,9 @@
     "app/quotes/src/handlers.rs",
     "app/quotes/src/tests/quote_parse.rs",
     "app/quotes/src/tests/quote_bounce.rs",
-    "tests/integration/tests/quote_window.rs"
+    "tests/integration/tests/quote_window.rs",
+    "migrations/0070_quotes_quote.sql",
+    "app/quotes/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4458,11 +4465,12 @@
     "D-233",
     "D-283",
     "D-309",
-    "D-399"
+    "D-399",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 400,
     "context_pct": 13
    },
@@ -4498,7 +4506,9 @@
    "owns": [
     "app/quotes/src/intake.rs",
     "app/quotes/src/quote_card.rs",
-    "app/quotes/src/tests/quote_card.rs"
+    "app/quotes/src/tests/quote_card.rs",
+    "app/quotes/src/models.rs",
+    "tests/integration/tests/quote_card.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4526,11 +4536,12 @@
     "D-283",
     "D-295",
     "D-373",
-    "D-438"
+    "D-438",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 5,
     "lines": 300,
     "context_pct": 13
    },
@@ -4564,7 +4575,9 @@
    ],
    "owns": [
     "app/quotes/src/notify.rs",
-    "tests/integration/tests/quote_texts.rs"
+    "tests/integration/tests/quote_texts.rs",
+    "app/quotes/src/tests/prop_quote_texts.rs",
+    "app/quotes/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4609,11 +4622,12 @@
     "D-358",
     "D-368",
     "D-406",
-    "D-420"
+    "D-420",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 4,
     "lines": 450,
     "context_pct": 14
    },
@@ -4639,7 +4653,8 @@
     "T043",
     "T032",
     "T025",
-    "T047"
+    "T047",
+    "T163"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -4649,7 +4664,11 @@
    ],
    "owns": [
     "app/intake/src/handlers.rs",
-    "tests/integration/tests/intake_timeouts.rs"
+    "tests/integration/tests/intake_timeouts.rs",
+    "app/intake/src/service.rs",
+    "app/intake/src/models.rs",
+    "app/intake/src/tests/intake_timeouts.rs",
+    "app/intake/src/conversation.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4676,11 +4695,12 @@
     "D-095",
     "D-127",
     "D-277",
-    "D-492"
+    "D-492",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 6,
     "lines": 350,
     "context_pct": 13
    },
@@ -4715,7 +4735,9 @@
     "app/intake/src/closing.rs",
     "app/intake/src/rules.rs",
     "app/intake/src/tests/close_cancel.rs",
-    "tests/integration/tests/close_which.rs"
+    "tests/integration/tests/close_which.rs",
+    "app/intake/src/service.rs",
+    "app/intake/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4736,11 +4758,12 @@
     "TD-JOB-05"
    ],
    "decisions": [
-    "D-005"
+    "D-005",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 6,
     "lines": 400,
     "context_pct": 12
    },
@@ -4775,7 +4798,8 @@
     "app/intake/src/service.rs",
     "app/intake/src/tests/prop_optout_no_close.rs",
     "migrations/0076_intake_optout_jobs.sql",
-    "tests/integration/tests/optout_job_notice.rs"
+    "tests/integration/tests/optout_job_notice.rs",
+    "app/intake/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4800,11 +4824,12 @@
     "D-005",
     "D-129",
     "D-372",
-    "D-490"
+    "D-490",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 250,
     "context_pct": 13
    },
@@ -4926,7 +4951,8 @@
     "app/portals/templates/quote_page.html",
     "tests/security/tests/quote_token.rs",
     "app/portals/src/tests/prop_arrival_order.rs",
-    "app/portals/static/quote_page.ts"
+    "app/portals/static/quote_page.ts",
+    "tests/integration/tests/quote_page.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4963,11 +4989,12 @@
    "decisions": [
     "D-084",
     "D-480",
-    "D-490"
+    "D-490",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 6,
     "lines": 500,
     "context_pct": 14
    },
@@ -5205,14 +5232,14 @@
    ],
    "owns": [
     "app/picks/Cargo.toml",
-    "app/picks/src/lib.rs",
-    "app/picks/src/api.rs",
     "app/picks/src/models.rs",
     "app/picks/src/rules.rs",
     "app/picks/src/service.rs",
     "migrations/0079_picks_code.sql",
     "tests/security/tests/pick_code.rs",
-    "tests/integration/tests/text_pick.rs"
+    "tests/integration/tests/text_pick.rs",
+    "app/picks/src/tests/pick_code_rules.rs",
+    "app/intake/src/service.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -5253,7 +5280,8 @@
     "D-291",
     "D-366",
     "D-480",
-    "D-490"
+    "D-490",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
@@ -5342,7 +5370,8 @@
    "owns": [
     "app/portals/src/pick_flow.rs",
     "app/portals/templates/pick_review.html",
-    "tests/e2e/pick_flow.spec.ts"
+    "tests/e2e/pick_flow.spec.ts",
+    "app/portals/src/tests/pick_flow.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -5386,11 +5415,12 @@
     "D-421",
     "D-466",
     "D-490",
-    "D-492"
+    "D-492",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 350,
     "context_pct": 16
    },
@@ -14438,7 +14468,8 @@
     "T154",
     "T163",
     "T044",
-    "T184"
+    "T184",
+    "T187"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14452,7 +14483,8 @@
     "app/intake/src/tests/question_bank.rs",
     "tests/integration/tests/routing_confidence.rs",
     "app/intake/src/golden_run.rs",
-    "migrations/0083_intake_golden_result.sql"
+    "migrations/0083_intake_golden_result.sql",
+    "app/intake/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14486,11 +14518,12 @@
     "D-430",
     "D-431",
     "D-434",
-    "D-492"
+    "D-492",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 450,
     "context_pct": 18
    },
@@ -14527,7 +14560,11 @@
    ],
    "owns": [
     "app/intake/src/summary_step.rs",
-    "tests/integration/tests/summary_step.rs"
+    "tests/integration/tests/summary_step.rs",
+    "app/intake/src/tests/summary_step.rs",
+    "app/intake/src/service.rs",
+    "app/intake/src/models.rs",
+    "app/intake/src/handlers.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14558,11 +14595,12 @@
     "D-430",
     "D-434",
     "D-446",
-    "D-460"
+    "D-460",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 6,
     "lines": 350,
     "context_pct": 18
    },
@@ -15246,7 +15284,8 @@
     "app/quotes/src/job_page.rs",
     "app/quotes/src/update_texts.rs",
     "tests/integration/tests/job_page.rs",
-    "app/quotes/src/tests/update_texts.rs"
+    "app/quotes/src/tests/update_texts.rs",
+    "app/quotes/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15268,11 +15307,12 @@
    ],
    "decisions": [
     "D-434",
-    "D-438"
+    "D-438",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 350,
     "context_pct": 13
    },
