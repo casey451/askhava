@@ -1,0 +1,52 @@
+# Ask Hava gas keyword list (AI-012, D-157, D-493).
+#
+# A request whose scrubbed text or candidate job types contain any of these words or phrases is
+# gas work: it never reaches a handyman, whatever the AI says (LIC-021). Read by
+# app/licensing/src/handyman.rs (compiled in). Matching is whole words, case ignored, curly
+# apostrophes read as straight ones; a phrase matches only as consecutive words, so "gas" never
+# matches "gasket". The list overrides the AI, so it errs wide: a false match only sends the job
+# to licensed businesses instead of handymen.
+#
+# Keep AI-012's words (the first lines of each list); add words, never remove them without a
+# docs/decisions.md entry. Changing this file needs `python3 scripts/check_plan_lock.py --write`.
+
+decision: D-157
+en:
+  - gas
+  - propane
+  - natural gas
+  - pilot
+  - pilot light
+  - won't light
+  - heater won't light
+  - furnace
+  - gas line
+  - gas dryer
+  - gas stove
+  - gas range
+  - wont light
+  - will not light
+  - pilot light out
+  - gas leak
+  - gas smell
+  - smell gas
+  - gas valve
+  - gas meter
+  - gas fireplace
+  - gas grill
+  - gas water heater
+  - gas pool heater
+  - butane
+  - thermocouple
+es:
+  - gas
+  - propano
+  - piloto
+  - gas natural
+  - luz piloto
+  - fuga de gas
+  - olor a gas
+  - butano
+  - calentador de gas
+  - estufa de gas
+  - secadora de gas

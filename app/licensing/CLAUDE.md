@@ -2,13 +2,14 @@
 
 ## Purpose
 
-The layer-3 crate that decides, from a business's licenses alone, whether it may receive a job's card (`docs/architecture.md` section 3). T034 built the agency-licensed categories (pest by attestation, alarm, inspection, septic), the city-list match for no-license categories and the boundary job types (dryer vents, holiday lights, appliances, pools). T035 adds the handyman limits, T036 the daily list imports, T153 the license-map class coverage, T180 the live lookup, T037 the card lines.
+The layer-3 crate that decides, from a business's licenses alone, whether it may receive a job's card (`docs/architecture.md` section 3). T034 built the agency-licensed categories (pest by attestation, alarm, inspection, septic), the city-list match for no-license categories and the boundary job types (dryer vents, holiday lights, appliances, pools). T035 added the handyman limits (`src/handyman.rs`), T036 the daily list imports, T153 the license-map class coverage, T180 the live lookup, T037 the card lines.
 
 ## What it owns
 
-- `src/api.rs`: the only public surface: `eligibility`, `city_list_standing`, `inspection_fee` and the types below.
+- `src/api.rs`: the only public surface: `eligibility`, `eligibility_for_request`, `city_list_standing`, `inspection_fee`, the `handyman` functions and the types below.
 - `src/models.rs`: `LicenseKind` (the catalog's `license.kind`), `Agency` (code, license-map name, its one category), `PestRecordCategory`, `PestAttestation` (checked constructor), `CityListStanding`, `CityRecord` (no `Debug`), `Holder`, `Job`, `Eligibility`, `NoCardReason`, `SaleAnswer`, `InspectionFee`, `LicensingError`.
 - `src/rules.rs`: the pure rules; no database.
+- `src/handyman.rs`: the handyman limits (T035): `never_handyman`, `check_quote`, `split_job`, `QuotePrice`, `QuoteSubmission`, `QuoteRefusal`, `HandymanJob`, `JobRequest`, `NeverHandyman`, `HANDYMAN_CARD_LINE`, `HANDYMAN_LIMIT_CENTS`, `SPLIT_JOB_WINDOW_DAYS`; it compiles in `docs/catalog/gas_keywords.yaml` (D-897).
 - Migration `0048_licensing_agency_rules.sql`: the `licensing` schema and `licensing.business_license` (one row per other-agency license; a pest row is `self_attested` with its record categories and `paused_at`; no `DELETE` for `askhava_app`).
 
 ## Rules it enforces
@@ -17,6 +18,10 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - LIC-012, LIC-047: `rules::pest` (attestation only, termites need wood-destroying, pre-emergent needs weed control, a reported license pauses); `models::PestAttestation::new` (ticked box and a number).
 - LIC-013: `rules::roc_and_agency` (Board alarm certificate and ROC cover).
 - LIC-014, LIC-030, LIC-031: `rules::handyman` (listed job type of a handyman-allowed category, handyman on the city list, `HandymanCard`).
+- AI-012, LIC-021, LIC-022: `rules::eligibility_for_request` withholds a `HandymanCard` (`RefusedJobType`) when `handyman::never_handyman` finds a gas word in the request text or a candidate, or a smoke-alarm, fire-sprinkler or permit-type candidate (D-898).
+- LIC-019, LIC-020, LIC-025, LIC-036: `handyman::check_quote` (certification box on every handyman quote; $1,000.00 or more, top of any range, refused for construction work by a handyman or in a no-license construction category; no limit outside construction).
+- LIC-023: `handyman::split_job` (same business, same address, less than the window apart, a shared job type or tops together reaching $1,000).
+- LIC-024: `handyman::HANDYMAN_CARD_LINE`.
 - LIC-015: `rules::agency_only` (certified inspectors) and `rules::inspection_fee` (for a `home_inspection` job, a yes or a fee-free job type is `FeeFree`; any other category is `Normal`).
 - LIC-016: `rules::agency_only` (ADEQ septage hauler).
 - LIC-028, LIC-029, LIC-031: `rules::no_license` (listed no-license job types only; refused ones such as a new outlet or vent reroute are `RefusedJobType`; the handyman category gives `HandymanCard` to a business signed up as a handyman, else `NotHandyman`).
@@ -28,12 +33,15 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - A refused job type never reaches a handyman or no-license business: `src/tests/agency_rules.rs::appliances_and_pools_split_between_licensed_handyman_and_no_license`.
 - `Agency` stays equal to the license map's `agencies`, the catalog's agency kinds and the migration's codes: `src/tests/scope_examples.rs`.
 - Matching examples M09 to M12 hold: `src/tests/scope_examples.rs::matching_examples_for_agency_rules_hold`.
+- A gas, smoke-alarm, sprinkler or permit-type request never gets a `HandymanCard`, and an unreadable gas list blocks every one: `src/tests/prop_handyman_never_gas.rs`, `src/tests/handyman.rs::malformed_gas_file_is_refused`.
+- The gas list keeps every AI-012 word: `src/tests/handyman.rs::gas_list_holds_ai_012_words_and_catches_d_157_cases`.
 - `Holder::roc_covers` means the license map covers this job type (T153); this crate never reads a class name to decide ROC cover.
 
 ## How to change
 
 - Add an agency-licensed category: an `Agency` variant (code, map name, category), the `agencies` row in `docs/catalog/license_map.yaml`, the migration check list in a new migration; run `cargo test -p askhava-licensing`.
 - Add a pest record category: `PestRecordCategory`, `needed_for`, a `licensing.business_license` column and the map's `record_category_needed`.
+- Add a gas word: `docs/catalog/gas_keywords.yaml`, then `python3 scripts/check_plan_lock.py --write` and a `docs/decisions.md` entry. Add a permit-type or never-at-any-price job type: `PERMIT_TYPE` or `NEVER_AT_ANY_PRICE` in `src/handyman.rs` and a case in `src/tests/handyman.rs`.
 - Change the city-list match: `rules::city_list_standing`, `compared`; update LIC-011 and D-856.
 
 ## Tests that guard it
@@ -41,3 +49,5 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - `src/tests/agency_rules.rs`: TD-LIC-06, TD-LIC-12, TD-LIC-17.
 - `src/tests/scope_examples.rs`: TD-LIC-06, TD-LIC-17 against `docs/catalog/matching_examples.yaml`, `license_map.yaml`, `categories.yaml` and the migration.
 - `src/tests/prop_rules.rs`: property tests (R17, D-860) over random businesses and jobs: handyman cards, city-list need, agency licensees exactly, the unlicensed business, the city-list name match and the inspection fee.
+- `src/tests/handyman.rs`: TD-LIC-08 (every worked example through `check_quote`, the certification box, the card line), TD-LIC-09 (the gas list and the blocked job types), TD-LIC-10 (the split-job window and totals).
+- `src/tests/prop_handyman_never_gas.rs`: property tests for TD-LIC-09 (gas words and blocked candidates never reach a handyman), TD-LIC-08 (accepted exactly when certified and under the limit) and TD-LIC-10 (near jobs reaching $1,000 are blocked).
