@@ -140,7 +140,7 @@ def load_sources(root: Path) -> Sources:
     log = root / DECISIONS
     if log.is_file():
         for line in log.read_text(encoding="utf-8").splitlines():
-            match = re.match(r"^- \*\*(D-\d{3})\*\* (.*)$", line)
+            match = re.match(r"^- \*\*(D-\d{3,})\*\* (.*)$", line)
             if match:
                 src.decisions[match.group(1)] = match.group(2)
     extra_path = root / SUPERSEDED_FILE
@@ -220,8 +220,8 @@ def indent(text: str) -> str:
 
 
 SUPERSEDED_PATTERNS = (
-    re.compile(r"\b(D-\d{3}) (?:is |was |now )?(?:withdrawn|superseded|replaced|reversed)(?: by (D-\d{3}))?"),
-    re.compile(r"\b(?:withdraws|supersedes|replaces|reverses) (D-\d{3})"),
+    re.compile(r"\b(D-\d{3,}) (?:is |was |now )?(?:withdrawn|superseded|replaced|reversed)(?: by (D-\d{3,}))?"),
+    re.compile(r"\b(?:withdraws|supersedes|replaces|reverses) (D-\d{3,})"),
 )
 
 

@@ -49,7 +49,7 @@ import check_plan_lock  # noqa: E402
 from runner import state as runner_state, verify  # noqa: E402
 
 TASK_BRANCH = re.compile(r"^claude/task/(?P<id>T\d{3})-")
-DECISION = re.compile(r"^- \*\*(D-\d{3})\*\*")
+DECISION = re.compile(r"^- \*\*(D-\d{3,})\*\*")
 REQ_LINE = re.compile(r"^- \*\*(?P<id>[A-Z0-9]+-\d{3})\*\* ")
 DECISIONS = "docs/decisions.md"
 LOCK = check_plan_lock.LOCK_FILE.as_posix()
@@ -202,10 +202,10 @@ def plan_change_trailer_check(
         return []
     # The trailer may sit on any commit of the change (a pull-request run checks out a merge commit).
     message = git(root, "log", "--format=%B", f"{base}..HEAD")
-    found = re.findall(r"^Plan-Change: (D-\d{3})\s*$", message, re.M)
+    found = re.findall(r"^Plan-Change: (D-\d{3,})\s*$", message, re.M)
     if not found:
         return [f"plan change touching {touched[0]} needs a 'Plan-Change: D-###' trailer on one of its commits"]
-    m = re.match(r"(D-\d{3})", found[0])  # the newest commit's trailer governs
+    m = re.match(r"(D-\d{3,})", found[0])  # the newest commit's trailer governs
     if not any(DECISION.match(line).group(1) == m.group(1) for line in decisions_added):
         return [f"Plan-Change trailer names {m.group(1)}, which is not a new entry in docs/decisions.md"]
     return []
