@@ -1403,3 +1403,8 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What you asked for.** Use the week's tokens up by a few hours before Thursday's reset, as accurately as possible, instead of running dry on Monday and sitting idle for two days.
 - **What changed.** The runner now follows a straight spend line from today's reading to the budget at 8:38 am Phoenix on Thursday (three hours before the reset). When the next task would put spending above the line, it waits until the line catches up, then claims; nothing else about pacing changed. It also runs one lane instead of two: the remaining stage-2 tasks are a chain anyway, one lane paces exactly, and it removes the claim races and update-merge conflicts that cost attempts this week. Two lanes come back by removing `spread` and setting `lanes` to 2.
 - **The caveat.** The budget the line aims at (200M weighted tokens) is still the calibration from your "about 50%" reading, because the runner's own usage probe is still falling back to its ledger. Fixing the probe is next, so the line can aim at the real number.
+
+## Every remaining task now runs on Opus (D-1143, October 31)
+
+- **Your call.** With the budget to be spent by Thursday rather than saved, the 39 queued tasks that were set to run on the cheaper Sonnet model now run on Opus, and the 14 whose reviewer was Sonnet get an Opus reviewer. Finished tasks keep the model they ran on; T047, already running, finishes on its original setup.
+- **Why not a second review instead.** The attempts lost so far came from plan gaps, merge conflicts and a flaky test, not from a reviewer missing something; a second reviewer would cost about as much as the worker. The stronger model on first attempts is where the tokens buy accuracy.
