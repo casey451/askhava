@@ -496,3 +496,4 @@
 - 2026-10-31T18:47:18Z runner 2dcd4ed268f8 (actions): {"T185": "QUEUED -> IN_PROGRESS"}; T185 estimated 1.4M tokens (calibrated); five-hour window has 25.6M left, week 354.0M (ledger); claimed
 - 2026-10-31T18:59:27Z runner 2dcd4ed268f8 (actions): {"T156": "QUEUED -> IN_PROGRESS"}; T156 estimated 2.4M tokens (calibrated); five-hour window has 24.2M left, week 352.6M after 1.4M still running in another lane (ledger); claimed
 - 2026-10-31T19:12:26Z runner ea1234df69b3 (actions): {}
+- 2026-10-31T19:12:34Z runner ea1234df69b3 (actions): {"T185": "IN_PROGRESS -> MERGE_PENDING"}
