@@ -5273,7 +5273,15 @@
     868,
     869,
     870
-   ]
+   ],
+   "reviewed_sha": "6de1c1ab5890003522f6ac74193b5cf3031674d3",
+   "review_lease": {
+    "task": "T029",
+    "session": "actions-41150141142",
+    "expires": "2026-10-31T03:28:10Z"
+   },
+   "branch": "claude/task/T029-messaging-optout",
+   "head_check_since": null
   },
   {
    "id": "T030",
@@ -9146,7 +9154,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T00:45:16Z",
+ "updated_at": "2026-10-31T00:58:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -9244,7 +9252,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "223320ddeb23bc5fcc7ba92484e773cc008f6772",
+ "runner_sha": "6de1c1ab5890003522f6ac74193b5cf3031674d3",
  "starter": "actions",
  "smoke_runs": [
   {
