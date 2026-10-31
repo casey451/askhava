@@ -11540,7 +11540,7 @@
     "T044",
     "T184"
    ],
-   "status": "MERGE_PENDING",
+   "status": "BLOCKED",
    "attempts": 0,
    "slug": "intake-question-bank",
    "type": "build",
@@ -11560,13 +11560,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 139,
      "head_sha": "40109ef102e4ef5edf860f7bf9c385d487028d84",
-     "pr": null,
-     "checks": null,
+     "pr": 195,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "backup",
+       "conclusion": "cancelled"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-31T18:50:17Z",
      "ended_at": "2026-10-31T19:25:16Z",
-     "result": "MERGE_PENDING"
+     "result": "not_done"
     }
    ],
    "reviewed_sha": "7274a85ee3e42f2737961ec9ec4246c91deacfaf",
@@ -11596,7 +11653,8 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "reason": "Ci: not green on head 7274a85"
   },
   {
    "id": "T208",
@@ -12323,20 +12381,41 @@
   {
    "id": "FIX-MAIN",
    "deps": [],
-   "status": "SKIPPED",
+   "status": "QUEUED",
    "attempts": 0,
    "type": "harness",
    "model": "claude-sonnet-5-5",
    "reviewer_model": "claude-opus-5-5",
-   "owns": [],
+   "owns": [
+    ".sqlx/query-0031b2035f3954d59c004e8f21fc911a5eaa6835d99057417e4cf441ac822eb8.json",
+    ".sqlx/query-afc2fda06cb4ac2aff8f42f84bae858395c9647aaf47313a22d89219ad5b0017.json",
+    "Cargo.lock",
+    "app/intake/CLAUDE.md",
+    "app/intake/Cargo.toml",
+    "app/intake/src/api.rs",
+    "app/intake/src/golden_run.rs",
+    "app/intake/src/lib.rs",
+    "app/intake/src/models.rs",
+    "app/intake/src/question_bank.rs",
+    "app/intake/src/routing_confidence.rs",
+    "app/intake/src/tests/mod.rs",
+    "app/intake/src/tests/question_bank.rs",
+    "app/server/Cargo.toml",
+    "app/server/src/bin/worker.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "migrations/0083_intake_golden_result.sql",
+    "tests/integration/tests/routing_confidence.rs"
+   ],
    "slug": "revert",
    "branch": "claude/task/FIX-MAIN-revert",
-   "revert_sha": "cf319c3",
-   "offending_task": "FIX1",
-   "goal": "Fix main. First option: `git revert --no-edit cf319c3` (the merge of FIX1). Patch over only if the revert itself would break main, and say why in the report.",
+   "revert_sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
+   "offending_task": "T156",
+   "goal": "Fix main. First option: `git revert --no-edit 26b176e5aab228dba7e0637bc909b6516f1692b6` (the merge of T156). Patch over only if the revert itself would break main, and say why in the report.",
    "retry_after": null,
    "last_failure": null,
-   "reason": "false red: the head's checks were green (D-498)",
+   "reason": null,
    "attempt_started_at": "2026-10-29T18:01:50Z",
    "stale_leases": [
     {
@@ -13068,7 +13147,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T19:40:02Z",
+ "updated_at": "2026-10-31T19:43:54Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -13166,7 +13245,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3253d8f0ed2b6d36e00dc45e133880974f2d93f8",
+ "runner_sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -13290,7 +13369,35 @@
    "why": "start routine"
   }
  ],
- "main_red": null,
+ "main_red": {
+  "check": "tree",
+  "sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
+  "task": "T156",
+  "revert_sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
+  "files": [
+   ".sqlx/query-0031b2035f3954d59c004e8f21fc911a5eaa6835d99057417e4cf441ac822eb8.json",
+   ".sqlx/query-afc2fda06cb4ac2aff8f42f84bae858395c9647aaf47313a22d89219ad5b0017.json",
+   "Cargo.lock",
+   "app/intake/CLAUDE.md",
+   "app/intake/Cargo.toml",
+   "app/intake/src/api.rs",
+   "app/intake/src/golden_run.rs",
+   "app/intake/src/lib.rs",
+   "app/intake/src/models.rs",
+   "app/intake/src/question_bank.rs",
+   "app/intake/src/routing_confidence.rs",
+   "app/intake/src/tests/mod.rs",
+   "app/intake/src/tests/question_bank.rs",
+   "app/server/Cargo.toml",
+   "app/server/src/bin/worker.rs",
+   "docs/architecture.md",
+   "docs/decisions.md",
+   "docs/for-casey-review.md",
+   "migrations/0083_intake_golden_result.sql",
+   "tests/integration/tests/routing_confidence.rs"
+  ],
+  "set_at": "2026-10-31T19:43:49Z"
+ },
  "pacing": {
   "last": "T046 estimated 1.7M tokens (calibrated); five-hour window has 22.4M left, week 350.8M (ledger); claimed",
   "at": "2026-10-31T19:31:06Z",
