@@ -13,7 +13,7 @@ from typing import Any, Protocol
 from runner import lanes, outbox, state as st, verify
 from runner.state import State
 
-MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677)
+MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677); FIX-MAIN re-arms (D-1089)
 HOURLY = timedelta(hours=1)
 WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes", "unreviewed_head",
                 "branch_updated", "update_conflict", "update_push_failed")
@@ -761,7 +761,7 @@ def set_main_red(
     tid, merge, files = offending
     out = copy.deepcopy(state)
     out["main_red"] = {"check": check, "sha": sha, "task": tid, "revert_sha": merge, "files": files, "set_at": st.iso(now)}
-    return st.with_task(out, st.FIX_MAIN, **_fix_main_fields(cfg, offending))
+    return st.with_task(out, st.FIX_MAIN, **_fix_main_fields(cfg, offending), **fresh_rounds())
 
 
 def offending_merge(state: State) -> tuple[str, str, list[str]]:
@@ -819,9 +819,112 @@ def _red_main_step(cfg: Config, env: Env, state: State, now: datetime) -> tuple[
     red_sha = str(state["main_red"].get("sha", ""))
     if _false_smoke_red(state) and _smoke_env_strikes(state, red_sha) < SMOKE_ENV_STRIKES and env.main_checks_green(red_sha) is True:
         return clear_false_red(state, now), "false_red_cleared"
+    if fix_main_capped(state):
+        return capped_fix_main(cfg, state, now)
     if st.status(state, st.FIX_MAIN) != st.DONE:
         return state, ""
     return clear_main_red(state, env, now)
+
+
+# ---- a capped FIX-MAIN while main is red (D-1089)
+
+FIX_MAIN_ROUNDS = 3  # re-arms of a FIX-MAIN that used all MAX_ATTEMPTS while main is red, before a person must act
+FIX_MAIN_COOL_OFF = timedelta(minutes=30)  # from the cycle that first finds FIX-MAIN capped to its re-arm
+FIX_MAIN_CAPPED = "fix_main_capped"  # the cycle result while a capped FIX-MAIN cools off or waits for a person
+ROUNDS_MARK = "\n\nEarlier FIX-MAIN rounds used all their attempts and failed (D-1089):"
+
+
+def fresh_rounds() -> dict[str, Any]:
+    """The round fields of a FIX-MAIN queued for a new red main: no rounds, no cool-off, no escalation."""
+    return {"fix_main_rounds": [], "capped_at": None, "escalated_at": None}
+
+
+def fix_main_capped(state: State) -> bool:
+    """FIX-MAIN is BLOCKED with every attempt of its round used (record_failure at MAX_ATTEMPTS)."""
+    fix = st.entry(state, st.FIX_MAIN)
+    return fix.get("status") == st.BLOCKED and int(fix.get("attempts", 0)) >= MAX_ATTEMPTS
+
+
+def capped_fix_main(cfg: Config, state: State, now: datetime) -> tuple[State, str]:
+    """A capped FIX-MAIN while main is red: re-armed by the runner itself, never left for a hand edit (D-1089).
+
+    The cycle that first finds it capped stamps `capped_at`; once FIX_MAIN_COOL_OFF has passed from
+    then, rearm_fix_main starts the next round ("main_red", which chains the next cycle, D-500). After
+    FIX_MAIN_ROUNDS re-arms it stays BLOCKED and escalate_fix_main asks a person, once. Main stays red
+    throughout: only a verified green run clears it (governance 5.3)."""
+    fix = st.entry(state, st.FIX_MAIN)
+    if len(fix.get("fix_main_rounds") or []) >= FIX_MAIN_ROUNDS:
+        return escalate_fix_main(cfg, state, now), FIX_MAIN_CAPPED
+    since = fix.get("capped_at")
+    if not since:
+        return st.with_task(state, st.FIX_MAIN, capped_at=st.iso(now)), FIX_MAIN_CAPPED
+    if now - st.parse(str(since)) < FIX_MAIN_COOL_OFF:
+        return state, FIX_MAIN_CAPPED
+    return rearm_fix_main(cfg, state, now), "main_red"
+
+
+def rearm_fix_main(cfg: Config, state: State, now: datetime) -> State:
+    """The next round: QUEUED with `attempts` 0 (Sonnet first again, attempt_model), the round kept in the
+    task's and main_red's `fix_main_rounds` ({round, at, capped_at, reason}), every earlier round's failure
+    added to the goal and this one's in `last_failure`, and one outbox item for Casey (D-1089). `owns`,
+    `revert_sha`, `offending_task` and the branch stay as they are."""
+    fix = st.entry(state, st.FIX_MAIN)
+    reason = str(fix.get("reason") or fix.get("last_failure") or "unknown")
+    rounds = [*(fix.get("fix_main_rounds") or []),
+              {"round": len(fix.get("fix_main_rounds") or []) + 1, "at": st.iso(now), "capped_at": fix.get("capped_at"),
+               "reason": reason[:1500]}]
+    last = (f"FIX-MAIN round {len(rounds)} of {FIX_MAIN_ROUNDS} re-armed after the last round used all {MAX_ATTEMPTS} "
+            f"attempts; its last failure: {reason}")
+    out = st.with_task(state, st.FIX_MAIN, status=st.QUEUED, attempts=0, reason=None, retry_after=None, capped_at=None,
+                       last_failure=last, goal=_goal_with_rounds(str(fix.get("goal") or ""), rounds), fix_main_rounds=rounds)
+    out["main_red"] = dict(out["main_red"], fix_main_rounds=rounds)
+    title = f"Main is red: FIX-MAIN used all its attempts; retrying, round {len(rounds)} of {FIX_MAIN_ROUNDS}"
+    body = _fix_main_report(out, reason) + (f"\n\nThe runner re-armed FIX-MAIN with {MAX_ATTEMPTS} fresh attempts after a "
+                                            f"{FIX_MAIN_COOL_OFF} cool-off. Nothing is needed from you yet.")
+    outbox.write_outbox(cfg.outbox_dir, f"{_red_id(out)}-round-{len(rounds)}", title, "info", body)
+    return out
+
+
+def escalate_fix_main(cfg: Config, state: State, now: datetime) -> State:
+    """Every round used: FIX-MAIN stays BLOCKED and one outbox item says what a person must do (D-1089)."""
+    fix = st.entry(state, st.FIX_MAIN)
+    if fix.get("escalated_at"):
+        return state
+    red = state.get("main_red") or {}
+    body = _fix_main_report(state, str(fix.get("reason") or "")) + (
+        f"\n\nFIX-MAIN used all {MAX_ATTEMPTS} attempts in {FIX_MAIN_ROUNDS} re-armed rounds, so the runner stops "
+        "retrying and the build stays stopped until a person acts. Find why the revert fails (the failures above), then "
+        f"either make `git revert --no-edit {red.get('revert_sha') or '<offending merge>'}` pass on a branch that changes "
+        "only the files listed, or fix what blocks it. Then, from a session that can write claude/kit-state, run "
+        '`python3 -m runner --requeue FIX-MAIN --reason "..."`: FIX-MAIN starts again with fresh attempts. Main clears '
+        "only when the runner's own smoke run is green on the new head (docs/governance.md section 5).")
+    stuck = f"{_red_id(state)}-stuck-{len(fix.get('requeues') or []) + 1}"
+    outbox.write_outbox(cfg.outbox_dir, stuck, "Main is red and FIX-MAIN is stuck: a person must act", "blocked", body)
+    return st.with_task(state, st.FIX_MAIN, escalated_at=st.iso(now))
+
+
+def _red_id(state: State) -> str:
+    """The outbox id stem of this red main: FIX-MAIN and the red SHA's first 12 characters."""
+    sha = re.sub(r"[^A-Za-z0-9]", "", str((state.get("main_red") or {}).get("sha") or "unknown"))[:12]
+    return f"{st.FIX_MAIN}-{sha or 'unknown'}"
+
+
+def _goal_with_rounds(goal: str, rounds: list[dict[str, Any]]) -> str:
+    """The FIX-MAIN goal without any earlier rounds note, then one line per round's last failure."""
+    lines = "".join(f"\n- round {r['round']}: {str(r.get('reason'))[:600]}" for r in rounds)
+    return goal.split(ROUNDS_MARK)[0] + ROUNDS_MARK + lines
+
+
+def _fix_main_report(state: State, reason: str) -> str:
+    """What failed, for an outbox item about a capped FIX-MAIN: the red, the merge, the files, the rounds."""
+    red, fix = state.get("main_red") or {}, st.entry(state, st.FIX_MAIN)
+    files = list(red.get("files") or fix.get("owns") or [])
+    shown = "".join(f"\n- `{f}`" for f in files[:40]) + (f"\n- ... and {len(files) - 40} more" if len(files) > 40 else "")
+    rounds = "".join(f"\n- round {r['round']} ({r['at']}): {str(r.get('reason'))[:400]}" for r in fix.get("fix_main_rounds") or [])
+    return (f"Main is red: check `{red.get('check')}` on `{red.get('sha')}` since {red.get('set_at', 'unknown')}. "
+            f"FIX-MAIN reverts `{red.get('revert_sha') or fix.get('revert_sha')}`, the merge of "
+            f"{red.get('task') or fix.get('offending_task') or 'an unknown task'}.\n\nIts last failure:\n{reason[:1500]}"
+            f"\n\nFiles FIX-MAIN may change:{shown or ' none recorded'}\n\nEarlier re-armed rounds:{rounds or ' none'}")
 
 
 def _false_smoke_red(state: State) -> bool:
@@ -1476,7 +1579,7 @@ def requeue_refusal(state: State, tid: str, now: datetime, cfg: Config | None = 
     beside it (`lanes.refusal` minus the dependency rule: overlapping owned paths, another stage, a
     cleanup task on either side), since re-queuing then could let the two meet."""
     if tid == st.FIX_MAIN:
-        return "FIX-MAIN is never re-queued by hand; it clears only with main (docs/governance.md section 5)"
+        return _fix_main_requeue_refusal(state, now, cfg)
     if not any(t["id"] == tid for t in state.get("tasks", [])):
         return f"no task {tid} in the state"
     if st.status(state, tid) != st.BLOCKED:
@@ -1491,6 +1594,17 @@ def requeue_refusal(state: State, tid: str, now: datetime, cfg: Config | None = 
     if held:
         return f"a live lease is held ({', '.join(held)}); try again once it ends"
     return ""
+
+
+def _fix_main_requeue_refusal(state: State, now: datetime, cfg: Config | None) -> str:
+    """Why `--requeue FIX-MAIN` must not move it, '' when it may (D-1089): only while main is red, only a
+    BLOCKED FIX-MAIN (at the cap or for any other reason), and never under a live lease that matters."""
+    if not state.get("main_red"):
+        return "main is not red; FIX-MAIN is re-queued by hand only while main_red is set (D-1089)"
+    if st.status(state, st.FIX_MAIN) != st.BLOCKED:
+        return f"FIX-MAIN is {st.status(state, st.FIX_MAIN)}, not BLOCKED"
+    held = _requeue_blockers(state, st.FIX_MAIN, now, cfg)
+    return f"a live lease is held ({', '.join(held)}); try again once it ends" if held else ""
 
 
 def _requeue_blockers(state: State, tid: str, now: datetime, cfg: Config | None) -> list[str]:
@@ -1511,15 +1625,18 @@ def requeue(state: State, tid: str, reason: str, now: datetime, by: str, cfg: Co
     left as it is, so the 3-attempt cap holds (BUILD_BRIEF.md:271, :540); the given reason is appended
     to `last_failure` as "re-queued: ...", so the retry sees both the earlier failure and why it was
     re-queued (D-584). The re-queue is kept in the task's `requeues` list (when, why, by whom, the old
-    reason); `history` holds attempts only."""
+    reason); `history` holds attempts only. FIX-MAIN is the exception (D-1089): a person re-queues it
+    while main is red, from any block, and it starts again with `attempts` 0 and its cool-off and
+    escalation marks cleared, so a later cap is re-armed or escalated again (capped_fix_main)."""
     if requeue_refusal(state, tid, now, cfg):
         return None
     entry = st.entry(state, tid)
     note = {"at": st.iso(now), "reason": reason, "by": by, "was": entry.get("reason"), "attempts": int(entry.get("attempts", 0))}
     earlier = str(entry.get("last_failure") or "")
     last = f"{earlier}\nre-queued: {reason}" if earlier else f"re-queued: {reason}"
+    fresh = {"attempts": 0, "capped_at": None, "escalated_at": None, "retry_after": None} if tid == st.FIX_MAIN else {}
     return st.with_task(state, tid, status=st.QUEUED, reason=None, last_failure=last,
-                        requeues=[*entry.get("requeues", []), note])
+                        requeues=[*entry.get("requeues", []), note], **fresh)
 
 
 def plan_since(entry: dict[str, Any]) -> str | None:
@@ -1537,7 +1654,7 @@ def plan_since(entry: dict[str, Any]) -> str | None:
 def plan_fix_precheck(state: State, tid: str, decision: str, now: datetime, cfg: Config | None = None) -> str:
     """The state-only half of plan_fix_refusal (D-677): '' when main is worth reading."""
     if tid == st.FIX_MAIN:
-        return "FIX-MAIN is never re-queued by hand; it clears only with main (docs/governance.md section 5)"
+        return "FIX-MAIN takes no --plan-fix; while main is red use --requeue FIX-MAIN --reason (D-1089)"
     if not any(t["id"] == tid for t in state.get("tasks", [])):
         return f"no task {tid} in the state"
     if st.status(state, tid) != st.BLOCKED:

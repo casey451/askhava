@@ -166,7 +166,8 @@
             "smoke",
             "Ci",
             "Twin",
-            "Ally"
+            "Ally",
+            "review"
           ]
         },
         "sha": {
@@ -182,6 +183,35 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "fix_main_rounds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "round",
+              "at",
+              "reason"
+            ],
+            "properties": {
+              "round": {
+                "type": "integer"
+              },
+              "at": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+              },
+              "capped_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
           }
         }
       }
@@ -408,6 +438,47 @@
                 }
               }
             }
+          },
+          "fix_main_rounds": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "round",
+                "at",
+                "reason"
+              ],
+              "properties": {
+                "round": {
+                  "type": "integer"
+                },
+                "at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+                },
+                "capped_at": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reason": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "capped_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "escalated_at": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       }

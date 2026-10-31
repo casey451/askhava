@@ -79,6 +79,7 @@ A rule enforced only by a document is a rule a tired session can skip. The matri
 2. `FIX-MAIN` is a harness-class task: Sonnet worker, Opus reviewer, allowed to change only the files of the offending merge, and its first option is always `git revert` of that squash commit. Patching over is allowed only when the revert itself would break `main` (the entry says why).
 3. `main_red` clears only when the runner verifies, with its own tool run, that the smoke test is green on the new `main` head and that `kit/nightly.json`, if its SHA is the current head, says success.
 4. The reverted task returns to the queue with its attempt count raised; the original branch is kept for evidence.
+5. A `FIX-MAIN` that uses all its attempts while `main` is red never leaves the build stopped for a hand edit of the state: the runner re-arms it itself, after a 30-minute cool-off, with fresh attempts and the same files, revert SHA and offending merge, the earlier rounds' failures in its goal and one outbox item per round so Casey sees it. After 3 such rounds it stays `BLOCKED` and one outbox item says a person must act (the failures, the files, the revert SHA); that person's tool is `python3 -m runner --requeue FIX-MAIN --reason TEXT`, allowed only while `main` is red and `FIX-MAIN` is `BLOCKED`. A round never clears `main` and never patches over: points 2 and 3 still hold (D-1089).
 
 ## 6. Progress and milestones
 
