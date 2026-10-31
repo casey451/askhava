@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE quotes.quote SET confirmed = true WHERE job_id = $1 AND business_id = $2 AND withdrawn_at IS NULL RETURNING true",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "?column?",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "5a7fe34cb4af98cd5e6ad94bfdd3d0a107f8d5cec6dbdee94f5ef548f4af9b1b"
+}

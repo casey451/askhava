@@ -1,5 +1,6 @@
 //! The records matching reads and returns, and the `quotes.job_card` query (migration
-//! `0067_quotes_matching.sql`; CARD-001 to CARD-004, CARD-016, CARD-018, LIC-035).
+//! `0067_quotes_matching.sql`; CARD-001 to CARD-004, CARD-016, CARD-018, LIC-035); T046 adds
+//! the `quotes.quote` queries (migration `0070_quotes_quote.sql`; PICK-001, PICK-002, TXT-042).
 //!
 //! Nothing here holds a homeowner's detail: a job is its offer towns, its candidate job types and
 //! its scrubbed text (PRIV-001); a business is IDs, codes and ticks.
@@ -7,11 +8,15 @@
 use std::collections::BTreeSet;
 
 use askhava_businesses::api::AccountStatus;
+use askhava_core::api::Guarded;
+use askhava_jobs::api::rules::Windows;
 use askhava_licensing::api::{Holder, Job, NoCardReason};
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
+
+use crate::intake::{Price, Quote};
 
 /// Why a quotes call failed. No variant carries a value (rust brain R5, R6).
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -203,4 +208,248 @@ pub(crate) async fn card_holders(
     .fetch_all(db)
     .await
     .map_err(|_| QuotesError::Database)
+}
+
+/// When the business's card for this job was sent, or none when it holds no card (PICK-001).
+pub(crate) async fn card_sent_at(
+    db: &mut PgConnection,
+    job: Uuid,
+    business: Uuid,
+) -> Result<Option<Timestamp>, QuotesError> {
+    let row = sqlx::query_scalar!(
+        "SELECT sent_at FROM quotes.job_card WHERE job_id = $1 AND business_id = $2",
+        job,
+        business
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok(row.map(jiff_sqlx::Timestamp::to_jiff))
+}
+
+/// The `quotes.quote` columns one checked quote fills (PICK-002, FEE-043, FEE-044).
+#[derive(Default)]
+struct Columns {
+    amount: Option<i64>,
+    low: Option<i64>,
+    high: Option<i64>,
+    tier_names: Option<Vec<String>>,
+    tier_cents: Option<Vec<i64>>,
+    period: Option<&'static str>,
+    setup: Option<i64>,
+    rate: Option<i64>,
+    hours: (Option<i32>, Option<i32>),
+    on_site: bool,
+}
+
+/// Cents as the database stores them; [`crate::intake::parse_quote`] already capped every amount.
+fn cents(v: u64) -> Option<i64> {
+    i64::try_from(v).ok()
+}
+
+/// Spreads `quote`'s price over the columns.
+fn columns(quote: &Quote) -> Columns {
+    let (low, high) = quote
+        .range()
+        .map_or((None, None), |(l, h)| (cents(l), cents(h)));
+    let mut c = Columns {
+        low,
+        high,
+        ..Columns::default()
+    };
+    match &quote.price {
+        Price::Firm(v) | Price::VisitFee(v) => c.amount = cents(*v),
+        Price::Range { on_site, .. } => c.on_site = *on_site,
+        Price::Monthly {
+            cents: v,
+            period,
+            setup,
+        } => {
+            (c.amount, c.setup) = (cents(*v), setup.and_then(cents));
+            c.period = Some(period.code());
+        }
+        Price::Tiers(t) => {
+            c.tier_names = Some(t.iter().map(|(n, _)| n.clone()).collect());
+            c.tier_cents = Some(t.iter().filter_map(|(_, v)| cents(*v)).collect());
+        }
+        Price::Hourly { rate, hours } => {
+            c.rate = cents(*rate);
+            let (lo, hi) = hours.map_or((None, None), |(l, h)| (Some(l), Some(h)));
+            c.hours = (
+                lo.and_then(|v| i32::try_from(v).ok()),
+                hi.and_then(|v| i32::try_from(v).ok()),
+            );
+        }
+    }
+    c
+}
+
+/// PICK-002, PICK-051: stores the quote; a second quote from the same business replaces the first
+/// as an edit (`edited_at`), and one after a withdrawal clears `withdrawn_at` (D-1049). A form
+/// quote is confirmed as sent; an AI-read one waits for the business's confirm on the read-back
+/// screen, after every edit too (PICK-006, D-149). The caller refuses an edit after a pick.
+pub(crate) async fn upsert_quote(
+    db: &mut PgConnection,
+    (job, business): (Uuid, Uuid),
+    quote: &Quote,
+    now: Timestamp,
+) -> Result<(), QuotesError> {
+    let c = columns(quote);
+    let form = &quote.form;
+    let (visit, part) = form
+        .earliest_visit
+        .map_or((None, None), |(d, p)| (Some(d), Some(p.code())));
+    sqlx::query!(
+        "INSERT INTO quotes.quote (job_id, business_id, format, amount_cents, low_cents, \
+         high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, \
+         hours_high, confirm_on_site, notes, original, ai_read, confirmed, earliest_visit, \
+         visit_part, received_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, \
+         $14, $15, $16, $17, NOT $17, $18, $19, $20) \
+         ON CONFLICT (job_id, business_id) DO UPDATE SET format = EXCLUDED.format, \
+         amount_cents = EXCLUDED.amount_cents, low_cents = EXCLUDED.low_cents, \
+         high_cents = EXCLUDED.high_cents, tier_names = EXCLUDED.tier_names, \
+         tier_cents = EXCLUDED.tier_cents, period = EXCLUDED.period, \
+         setup_cents = EXCLUDED.setup_cents, hourly_rate_cents = EXCLUDED.hourly_rate_cents, \
+         hours_low = EXCLUDED.hours_low, hours_high = EXCLUDED.hours_high, \
+         confirm_on_site = EXCLUDED.confirm_on_site, notes = EXCLUDED.notes, \
+         original = EXCLUDED.original, ai_read = EXCLUDED.ai_read, \
+         confirmed = EXCLUDED.confirmed, earliest_visit = EXCLUDED.earliest_visit, \
+         visit_part = EXCLUDED.visit_part, edited_at = EXCLUDED.received_at, \
+         withdrawn_at = NULL",
+        job,
+        business,
+        quote.format.code(),
+        c.amount,
+        c.low,
+        c.high,
+        c.tier_names.as_deref(),
+        c.tier_cents.as_deref(),
+        c.period,
+        c.setup,
+        c.rate,
+        c.hours.0,
+        c.hours.1,
+        c.on_site,
+        form.notes,
+        form.original,
+        form.ai_read,
+        visit.map(|d| d.to_sqlx()) as _,
+        part,
+        now.to_sqlx()
+    )
+    .execute(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok(())
+}
+
+/// PICK-051, JOB-025: whether `business` already has a quote on `job` (a new one is then an
+/// edit), and whether any quote on the job is marked unavailable by a failed pick.
+pub(crate) async fn edit_facts(
+    db: &mut PgConnection,
+    job: Uuid,
+    business: Uuid,
+) -> Result<(bool, bool), QuotesError> {
+    let row = sqlx::query!(
+        "SELECT EXISTS (SELECT 1 FROM quotes.quote WHERE job_id = $1 AND business_id = $2) \
+         AS \"own!\", EXISTS (SELECT 1 FROM quotes.quote WHERE job_id = $1 \
+         AND unavailable_at IS NOT NULL) AS \"picked!\"",
+        job,
+        business
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok((row.own, row.picked))
+}
+
+/// JOB-025: marks the business's quote on the job unavailable at `at`, once (a failed pick).
+pub(crate) async fn mark_unavailable(
+    db: &mut PgConnection,
+    job: Uuid,
+    business: Uuid,
+    at: Timestamp,
+) -> Result<Guarded<()>, QuotesError> {
+    let row = sqlx::query_scalar!(
+        "UPDATE quotes.quote SET unavailable_at = $3 \
+         WHERE job_id = $1 AND business_id = $2 AND unavailable_at IS NULL RETURNING true",
+        job,
+        business,
+        at.to_sqlx()
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok(Guarded::from_returning(row.map(|_| ())))
+}
+
+/// PICK-006: marks the business's quote on the job confirmed, unless it is withdrawn.
+pub(crate) async fn confirm_quote(
+    db: &mut PgConnection,
+    job: Uuid,
+    business: Uuid,
+) -> Result<Guarded<()>, QuotesError> {
+    let row = sqlx::query_scalar!(
+        "UPDATE quotes.quote SET confirmed = true \
+         WHERE job_id = $1 AND business_id = $2 AND withdrawn_at IS NULL RETURNING true",
+        job,
+        business
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok(Guarded::from_returning(row.map(|_| ())))
+}
+
+/// TD-PICK-02: the businesses whose quote the homeowner's page may show: confirmed by the
+/// business and not withdrawn, sorted by ID (PICK-002, PICK-006, PICK-051).
+pub(crate) async fn shown_quotes(
+    db: &mut PgConnection,
+    job: Uuid,
+) -> Result<Vec<Uuid>, QuotesError> {
+    sqlx::query_scalar!(
+        "SELECT business_id FROM quotes.quote \
+         WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL ORDER BY business_id",
+        job
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| QuotesError::Database)
+}
+
+/// A job's cards and quotes when its windows are judged (PICK-001, TXT-042, JOB-025).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct WindowState {
+    /// When the last card was sent; none when no card was.
+    pub last_sent: Option<Timestamp>,
+    /// The counts `jobs::api::all_windows_ended` takes.
+    pub windows: Windows,
+}
+
+/// Counts the job's cards (`sent`), its confirmed quotes (`quoted`) and those neither withdrawn
+/// nor marked unavailable by a failed pick (`choosable`, JOB-025, D-1051).
+pub(crate) async fn window_state(
+    db: &mut PgConnection,
+    job: Uuid,
+) -> Result<WindowState, QuotesError> {
+    let row = sqlx::query!(
+        "SELECT max(c.sent_at) AS last_sent, count(*) AS \"sent!\", \
+         (SELECT count(*) FROM quotes.quote q WHERE q.job_id = $1 AND q.confirmed) AS \"quoted!\", \
+         (SELECT count(*) FROM quotes.quote q WHERE q.job_id = $1 AND q.confirmed \
+          AND q.withdrawn_at IS NULL AND q.unavailable_at IS NULL) AS \"choosable!\" \
+         FROM quotes.job_card c WHERE c.job_id = $1",
+        job
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    let count = |v: i64| u32::try_from(v).unwrap_or(u32::MAX);
+    Ok(WindowState {
+        last_sent: row.last_sent.map(jiff_sqlx::Timestamp::to_jiff),
+        windows: Windows {
+            quoted: count(row.quoted),
+            sent: count(row.sent),
+            choosable: count(row.choosable),
+        },
+    })
 }
