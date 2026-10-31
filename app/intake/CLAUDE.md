@@ -50,7 +50,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - INT-038, D-385, D-994: an under-18 sender gets one `under_18` reply and the request closes; under 13 the data is deleted except the consent record.
 
 - INT-016, INT-017, INT-022, LIC-017, LIC-018, D-1008: `route` checks the area first (outside the towns list: Closed early, no demand row), then moves outside Arizona, then home watch rent or leasing words, then a trade that is not open; only the last writes a recruiting-demand row; `apply` is safe to run twice.
-- INT-017, INT-032, D-1019, D-1020: `tell_coverage` queues the count line (N from `quotes::api::coverage`, the singular for 1) or the SPLIT offer, and on `Coverage::NotCovered` moves only the told job to Not covered (plus a demand row) while another job of the request is live, else runs `apply` with `Why::NobodyCovers` (D-1020); `split_request` opens the second trade's job on SPLIT or DIVIDIR alone.
+- INT-017, INT-032, D-1019, D-1020: `tell_coverage` queues the count line (N from `quotes::api::coverage`, the singular for 1) or the SPLIT offer, and on `Coverage::NotCovered` moves only the told job to Not covered (plus a demand row) while another job of the request is live, else runs `apply` with `Why::NobodyCovers` (D-1020); `split_request` opens the second trade's job on SPLIT or DIVIDIR alone and does not check that a SPLIT offer was made: the conversation wiring must call it only for the reply to a `Coverage::Split` offer (D-1020). A job already final gets no count line or SPLIT offer.
 
 ## Never break
 

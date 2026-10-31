@@ -22,7 +22,7 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - CARD-004, D-1018: `rules::match_job` sends to the `overflow_on` businesses passing every check but the ticks only when the checklist match reaches nobody; `rules::match_job_held` (used by `send_job_cards` and `send_late_cards` with the job's card holders) also keeps overflow off when a holder's checklist covers the job, whatever its status now (TD-LIC-03).
 - CARD-016, OPS-003: `AccountStatus::receives_cards` for a paused business; `OwnerPauses` (all, trade codes, town codes, filled by the caller from `ops::api::is_paused`) gives `Skip::OwnerPaused` in `card_under` under "all", a candidate's trade, the job's own town (the first offer town) or every offer town the business serves (D-1018).
 - CARD-018, D-042: `send_late_cards` records only new holders, sent now, and only while `JobStatus::takes_late_cards` (Open, No quotes yet). The handler calling it when a business becomes eligible is not built yet (D-1021).
-- INT-017, INT-032, D-1019: `coverage` is `Send(n)` from `match_job`, else `Split` when one trade's part alone reaches a business, else `NotCovered`; intake turns it into the text.
+- INT-017, INT-032, D-1019: `coverage` is `Send(n)` from `match_job`; else `NotCovered` when an active, verified business serving an offer town is licensed for every candidate (ticks, overflow and pauses aside); else `Split` when one trade's part alone reaches a business; else `NotCovered`; intake turns it into the text.
 - Not here yet: the BIZ-049 largest-job and recurring-work skips (T155, D-492); CARD-015's daily check feeds `verified`.
 
 ## Never break

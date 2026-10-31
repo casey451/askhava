@@ -74,7 +74,8 @@ pub async fn send_job_cards(
 /// the caller runs this; while the job is Open or No quotes yet each business newly reached gets
 /// its card now, so its 24 hours start now. Any other status sends nothing. The status read and
 /// the inserts share one transaction; a move committed between them orders as a card sent just
-/// before the move (D-1021).
+/// before the move (D-1021). `now` is recorded as `sent_at`, as in [`send_cards`]; a quiet-hours
+/// hold is the delivery's, not this step's (D-1021).
 ///
 /// # Errors
 ///

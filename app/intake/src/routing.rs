@@ -324,7 +324,7 @@ pub async fn apply(
 /// singular for 1), the SPLIT offer, or, when nobody covers it, Not covered for that job alone
 /// ([`Why::NobodyCovers`]; the whole request through [`apply`] only when no other job of it is
 /// still live, so a SPLIT's other trade is never touched, D-1020). A request that was already
-/// closed gets nothing. Returns the queued reply.
+/// closed, or a `job` already final, gets nothing. Returns the queued reply.
 ///
 /// # Errors
 ///
@@ -341,7 +341,7 @@ pub async fn tell_coverage(
         Coverage::Send(1) => (COUNT_ONE_TEMPLATE, None),
         Coverage::Send(n) => (COUNT_MANY_TEMPLATE, Some(n.to_string())),
     };
-    if !open_request(db, routing.conversation).await? {
+    if !open_request(db, routing.conversation).await? || status_of(db, job).await?.is_final() {
         return Ok(None);
     }
     queue(db, secret, template, routing, count.as_deref())
@@ -424,6 +424,10 @@ pub fn is_split_reply(words: &str) -> bool {
 /// (`second.trade`, with the request's own description in `second.words`) through the one
 /// job-opening path, so each trade is matched and sent as its own request; any other reply opens
 /// nothing ([`Opened::Refused`]).
+///
+/// It trusts its caller: it does not check that a SPLIT offer was made. The conversation wiring
+/// must call it only for the reply that follows a [`tell_coverage`] `Coverage::Split` offer of the
+/// same request; a SPLIT or DIVIDIR at any other point would open a second job (D-1020).
 ///
 /// # Errors
 ///

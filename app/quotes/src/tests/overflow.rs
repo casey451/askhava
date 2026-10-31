@@ -243,3 +243,28 @@ fn td_int_29_coverage_counts_the_match_and_offers_split() {
     assert_eq!(cover(&both, &parts), Coverage::Split);
     assert_eq!(cover(&card_job(&[AC]), &parts), Coverage::NotCovered);
 }
+
+/// TD-INT-25 (INT-032, D-1019): a business licensed for both plumbing and electrical serves the
+/// town but ticked neither and has overflow off, so the request is not covered, never a SPLIT
+/// offer, even though a plumbing-only business would take the plumbing part.
+#[test]
+fn td_int_25_no_split_when_one_business_is_licensed_for_every_trade() {
+    let pipe = ("plumbing_repair", "faucet replacement");
+    let wire = ("electrical", "outlet repair");
+    let pauses = OwnerPauses::default();
+    let pool = [
+        pooled(1, &["R-37", "R-11"], &[], false),
+        pooled(2, &["R-37"], &[pipe], false),
+    ];
+    let pool = Pool {
+        businesses: &pool,
+        pauses: &pauses,
+    };
+    let both = card_job(&[pipe, wire]);
+    assert!(rules::match_job(map(), &both, &pool).is_empty());
+    assert_eq!(rules::coverage(map(), &both, &pool), Coverage::NotCovered);
+    assert_eq!(
+        rules::coverage(map(), &card_job(&[pipe]), &pool),
+        Coverage::Send(1)
+    );
+}

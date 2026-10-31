@@ -114,9 +114,9 @@ async fn sent_at(db: &mut Db, job: Uuid, business: u128) -> Timestamp {
     at.parse().expect("time")
 }
 
-/// TD-CARD-05 (CARD-016, CARD-018): a paused business and one under an owner switch get nothing;
-/// unpaused while Open, or newly ticked while No quotes yet, each gets its card then; in Intake or
-/// once cancelled, nothing.
+/// TD-CARD-05 (CARD-016, CARD-018): a paused business, a pending one and one under an owner
+/// switch get nothing; unpaused or newly active while Open, or newly ticked while No quotes yet,
+/// each gets its card then; in Intake or once cancelled, nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_card_05_late_eligible_business_gets_its_card_then(mut db: Db) {
     let map = ClassMap::shipped().expect("map");
@@ -128,6 +128,7 @@ async fn td_card_05_late_eligible_business_gets_its_card_then(mut db: Db) {
         business(1, AccountStatus::Active, "R-39", &[AC]),
         business(2, AccountStatus::Paused, "R-39", &[AC]),
         business(3, AccountStatus::Active, "R-39", &[]),
+        business(5, AccountStatus::Pending, "R-39", &[AC]),
     ];
     let none = OwnerPauses::default();
     let early = send_late_cards(&mut db, map, id, &ac, &pool_of(&pool, &none), at(9))
@@ -168,6 +169,19 @@ async fn td_card_05_late_eligible_business_gets_its_card_then(mut db: Db) {
         "its own 24 hours start now"
     );
     assert_eq!(sent_at(&mut db, id, 1).await, at(9));
+    pool[3].card.status = AccountStatus::Active;
+    let activated = send_late_cards(&mut db, map, id, &ac, &pool_of(&pool, &none), at(12))
+        .await
+        .expect("newly active");
+    assert_eq!(
+        activated
+            .iter()
+            .map(|r| r.business.as_u128())
+            .collect::<Vec<_>>(),
+        vec![5],
+        "a business newly active while Open gets its card then"
+    );
+    assert_eq!(sent_at(&mut db, id, 5).await, at(12));
     step(
         &mut db,
         id,

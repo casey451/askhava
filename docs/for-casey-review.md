@@ -1340,7 +1340,7 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 ## Who gets a card, pauses and the count line (T184, D-1018 to D-1021, October 31)
 
 - **Jobs nobody else covers.** When no business that ticked the job type can get the card, it goes to every licensed business that left "also send me jobs nobody else covers" on. If even one ticked business gets it, the switch is not used.
-- **Pauses.** A paused business gets no cards, and neither does one under your "all" switch, its trade's switch, or the switch of every town it would get the job through.
+- **Pauses.** A paused business gets no cards, and neither does one under your "all" switch, its trade's switch, or the switch of every town it would get the job through. Pausing the job's own town stops every business for that job, even one that also serves a neighbouring town.
 - **Late cards.** A business that becomes able to take a job while it is still Open or No quotes yet gets the card then, with its own 24 hours from that moment. After that, nothing.
 - **What she hears.** "Ask Hava: Got it. We'll send this to the 5 <trade> businesses on Ask Hava." (or "the 1 <trade> business"), the number being exactly who would get the card. If nobody in her town covers it, she gets the "We don't cover <trade> jobs yet" text and it is noted for recruiting.
 - **SPLIT.** A request needing two kinds of business with nobody licensed for both gets "Ask Hava: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade." SPLIT (or DIVIDIR) opens the second job; each goes out alone.

@@ -101,14 +101,22 @@ fn checklist_covers(map: &ClassMap, job: &CardJob, business: &CardBusiness) -> b
     chosen(business, gate(map, job, &active, true)).is_some()
 }
 
-/// INT-017, INT-032, D-1019: how many businesses [`match_job`] reaches; when none, SPLIT if the
-/// candidates span two or more trades and one trade's part alone reaches a business, otherwise
-/// not covered.
+/// INT-017, INT-032, D-1019: how many businesses [`match_job`] reaches; when none, SPLIT only if
+/// no active, verified business serving an offer town is licensed for every candidate job type
+/// (ticks, overflow switch and owner pauses aside), the candidates span two or more trades and one
+/// trade's part alone reaches a business; otherwise not covered.
 #[must_use]
 pub fn coverage(map: &ClassMap, job: &CardJob, pool: &Pool<'_>) -> Coverage {
     let n = match_job(map, job, pool).len();
     if n > 0 {
         return Coverage::Send(n);
+    }
+    let one_license_covers_all = pool
+        .businesses
+        .iter()
+        .any(|p| chosen(&p.card, gate(map, job, &p.card, false)).is_some());
+    if one_license_covers_all {
+        return Coverage::NotCovered;
     }
     let trades: BTreeSet<&str> = job.candidates.iter().map(|c| c.category.as_str()).collect();
     let part_reaches = |trade: &&str| {
