@@ -20,6 +20,6 @@ CREATE TABLE quotes.job_card (
 );
 CREATE INDEX job_card_business_idx ON quotes.job_card (business_id);
 
--- A card once sent is never deleted by the app.
-GRANT SELECT, INSERT, UPDATE ON quotes.job_card TO askhava_app;
-REVOKE DELETE, TRUNCATE ON quotes.job_card FROM askhava_app;
+-- A card once sent is never changed or deleted by the app.
+GRANT SELECT, INSERT ON quotes.job_card TO askhava_app;
+REVOKE UPDATE, DELETE, TRUNCATE ON quotes.job_card FROM askhava_app;

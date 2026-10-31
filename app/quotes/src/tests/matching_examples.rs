@@ -10,7 +10,9 @@ use std::sync::LazyLock;
 
 use askhava_businesses::api::AccountStatus;
 use askhava_catalog::api::{Catalog, parse};
-use askhava_licensing::api::{Agency, CityListStanding, ClassMap, Holder, Job, LicenseKind};
+use askhava_licensing::api::{
+    Agency, CityListStanding, ClassMap, Holder, Job, LicenseKind, NoCardReason,
+};
 use jiff::Timestamp;
 use serde::Deserialize;
 use sqlx::types::Uuid;
@@ -18,6 +20,7 @@ use sqlx::types::Uuid;
 use crate::api::{
     CardBusiness, CardDecision, CardJob, OfferTown, Skip, card_holders, rules, send_cards,
 };
+use crate::models::insert_cards;
 
 const EXAMPLES: &str = include_str!("../../../../docs/catalog/matching_examples.yaml");
 const CATEGORIES: &str = include_str!("../../../../docs/catalog/categories.yaml");
@@ -55,6 +58,8 @@ struct ExampleBusiness {
 #[derive(Deserialize)]
 struct Expected {
     outcome: String,
+    rules: Vec<String>,
+    map_covers: Option<bool>,
     condition: Option<String>,
 }
 
@@ -135,14 +140,60 @@ fn card_job(catalog: &Catalog, ex: &ExampleJob) -> CardJob {
     }
 }
 
+/// The skip a `no_card` example must give, read from the oracle's own fields: the town first,
+/// then a missing agency license, then the rules it cites (LIC-021, LIC-022: a refused handyman
+/// request), then ROC cover the map denies with no handyman path. `None` when the row names no
+/// one reason, so any license reason is accepted.
+fn expected_skip(catalog: &Catalog, ex: &Example) -> Option<Skip> {
+    if !ex.business.towns.contains(&ex.job.town) {
+        return Some(Skip::OutOfTown);
+    }
+    let agency = Agency::for_category(&ex.job.category);
+    let agencies: Vec<Option<Agency>> = ex
+        .business
+        .agencies
+        .iter()
+        .map(|n| Agency::from_map_name(n))
+        .collect();
+    if let Some(a) = agency.filter(|a| !agencies.contains(&Some(*a))) {
+        return Some(Skip::NotCovered(NoCardReason::AgencyMissing(a)));
+    }
+    let cites = |id: &str| ex.expected.rules.iter().any(|r| r == id);
+    if cites("LIC-021") || cites("LIC-022") {
+        return Some(Skip::NotCovered(NoCardReason::RefusedJobType));
+    }
+    let first = job(catalog, &ex.job.category, &ex.job.candidates[0]);
+    let handyman_path = first.handyman_allowed && ex.business.handyman;
+    let roc = first.license == LicenseKind::Roc;
+    (roc && ex.expected.map_covers != Some(true) && !handyman_path)
+        .then_some(Skip::NotCovered(NoCardReason::RocNotCovered))
+}
+
+/// LIC-035, LIC-043: an ROC-only example's `map_covers` agrees with `ClassMap::covers` for every
+/// candidate, so the oracle and the shipped map are checked against each other here too.
+fn assert_map_covers(ex: &Example) {
+    let (Some(want), true) = (ex.expected.map_covers, ex.business.agencies.is_empty()) else {
+        return;
+    };
+    let roc: Vec<&str> = ex.business.roc.iter().map(String::as_str).collect();
+    let got = ex
+        .job
+        .candidates
+        .iter()
+        .all(|jt| map().covers(&roc, &ex.job.category, jt));
+    assert_eq!(got, want, "{}: map_covers", ex.id);
+}
+
 /// TD-LIC-02 (CARD-001, LIC-035): M01 to M16, each through `card_for`. A card with a condition
-/// must be a handyman card; `refused_at_intake` (M14) must also get no card here.
+/// must be a handyman card; `refused_at_intake` (M14) must also get no card here; a `no_card` row
+/// must give the skip its fields name.
 #[test]
 fn td_lic_02_matching_examples_m01_to_m16() {
     let examples: Examples = serde_saphyr::from_str(EXAMPLES).expect("examples parse");
     let catalog = catalog();
     let mut ids = BTreeSet::new();
     for ex in &examples.examples {
+        assert_map_covers(ex);
         let got = rules::card_for(map(), &card_job(catalog, &ex.job), &business(ex, 1));
         let ok = match (
             ex.expected.outcome.as_str(),
@@ -151,10 +202,10 @@ fn td_lic_02_matching_examples_m01_to_m16() {
             ("card", true) => got == CardDecision::HandymanCard,
             ("card", false) => got == CardDecision::Card,
             ("refused_at_intake", _) => matches!(got, CardDecision::Skip(_)),
-            _ => matches!(
-                got,
-                CardDecision::Skip(Skip::NotCovered(_) | Skip::OutOfTown)
-            ),
+            _ => match expected_skip(catalog, ex) {
+                Some(skip) => got == CardDecision::Skip(skip),
+                None => matches!(got, CardDecision::Skip(Skip::NotCovered(_))),
+            },
         };
         assert!(ok, "{}: got {got:?}", ex.id);
         ids.insert(ex.id.clone());
@@ -195,7 +246,7 @@ fn td_lic_02_every_candidate_must_be_covered_and_the_town_served() {
 type Db = sqlx::pool::PoolConnection<sqlx::Postgres>;
 
 /// TD-LIC-02 (CARD-003): 50 qualified businesses get 50 recorded cards, one unqualified gets
-/// none, and a second run records nothing more.
+/// none, and a second run records nothing more (JOB-006).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_lic_02_fifty_qualified_businesses_get_fifty_cards(mut db: Db) {
     let examples: Examples = serde_saphyr::from_str(EXAMPLES).expect("examples parse");
@@ -215,10 +266,48 @@ async fn td_lic_02_fifty_qualified_businesses_get_fifty_cards(mut db: Db) {
         .await
         .expect("send");
     assert_eq!(chosen.len(), 50);
-    send_cards(&mut db, map(), job_id, &job, &all, now)
+    let again = send_cards(&mut db, map(), job_id, &job, &all, now)
         .await
         .expect("send again");
+    assert_eq!(again, chosen);
+    let added = insert_cards(&mut db, job_id, &chosen, now)
+        .await
+        .expect("insert again");
+    assert_eq!(added, 0);
     let mut want: Vec<Uuid> = all[..50].iter().map(|b| b.id).collect();
     want.sort();
     assert_eq!(card_holders(&mut db, job_id).await.expect("holders"), want);
+}
+
+/// D-1015: the app role can neither change nor delete a recorded card (postgres brain P5).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn the_app_role_cannot_change_or_delete_a_card(mut db: Db) {
+    let examples: Examples = serde_saphyr::from_str(EXAMPLES).expect("examples parse");
+    let m01 = examples
+        .examples
+        .iter()
+        .find(|e| e.id == "M01")
+        .expect("M01");
+    let job_id = Uuid::from_u128(0x10c);
+    let now = Timestamp::from_second(1_800_000_000).expect("time");
+    let job = card_job(catalog(), &m01.job);
+    send_cards(&mut db, map(), job_id, &job, &[business(m01, 1)], now)
+        .await
+        .expect("send");
+    sqlx::query!("SET ROLE askhava_app")
+        .execute(&mut *db)
+        .await
+        .expect("role");
+    let deleted = sqlx::query!("DELETE FROM quotes.job_card")
+        .execute(&mut *db)
+        .await;
+    assert!(deleted.is_err());
+    let changed = sqlx::query!("UPDATE quotes.job_card SET handyman = true")
+        .execute(&mut *db)
+        .await;
+    assert!(changed.is_err());
+    assert_eq!(
+        card_holders(&mut db, job_id).await.expect("holders"),
+        vec![Uuid::from_u128(1)]
+    );
 }

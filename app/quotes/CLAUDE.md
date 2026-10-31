@@ -10,7 +10,7 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - `src/models.rs`: `CardJob`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Recipient`, `QuotesError` and the `quotes.job_card` queries.
 - `src/rules.rs` (pure): `card_for`, `recipients`, `serves`, `ticked`, `covered`.
 - `src/service.rs`: `send_cards` (choose and record), `card_holders`.
-- Migration `0067_quotes_matching.sql`: the `quotes` schema and `quotes.job_card` (job and business IDs, handyman flag, `sent_at`; unique per job and business; no `DELETE` for `askhava_app`). No homeowner detail.
+- Migration `0067_quotes_matching.sql`: the `quotes` schema and `quotes.job_card` (job and business IDs, handyman flag, `sent_at`; unique per job and business; no `UPDATE`, `DELETE` or `TRUNCATE` for `askhava_app`). No homeowner detail.
 
 ## Rules it enforces
 

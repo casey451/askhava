@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE quotes.job_card SET handyman = true",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "a6094e0a7f31dca73f97db128132d2f31b505c2e94fa1e9f714bd8e305cbbb3f"
+}

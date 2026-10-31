@@ -3,8 +3,8 @@
 //! Arizona offer town (its own or a neighbouring one), its classes cover every candidate job type
 //! as the license map says and it ticked one; any number of qualified businesses all get one.
 //!
-//! The oracle reads the license map per class and job type and the status by its stored code,
-//! never `rules`. Towns and IDs are public place names and generated values; no homeowner data.
+//! The oracle reads the license map per class and job type and whether the generated status is
+//! the active one, never `rules`. Towns and IDs are public place names and generated values; no homeowner data.
 
 use std::collections::BTreeSet;
 
@@ -14,7 +14,7 @@ use proptest::prelude::*;
 use sqlx::types::Uuid;
 
 use super::matching_examples::{catalog, job, map};
-use crate::api::{CardBusiness, CardDecision, CardJob, OfferTown, rules};
+use crate::api::{CardBusiness, CardDecision, CardJob, OfferTown, Skip, rules};
 
 const CATEGORY: &str = "hvac_repair";
 const CLASSES: [&str; 5] = [
@@ -25,6 +25,23 @@ const CLASSES: [&str; 5] = [
     "R-11",
 ];
 const TOWNS: [&str; 3] = ["lake_havasu_city", "kingman", "needles"];
+/// Every status but `Active`, named so a new status must be placed here or there (CARD-016).
+const NOT_ACTIVE: [AccountStatus; 5] = [
+    AccountStatus::Pending,
+    AccountStatus::Paused,
+    AccountStatus::Waitlist,
+    AccountStatus::NeedsReview,
+    AccountStatus::Removed,
+];
+
+/// `Active` when `active`, else the `other`th status of [`NOT_ACTIVE`].
+fn status(active: bool, other: usize) -> AccountStatus {
+    if active {
+        AccountStatus::Active
+    } else {
+        NOT_ACTIVE[other % NOT_ACTIVE.len()]
+    }
+}
 
 /// The first five hvac job types of the catalog.
 fn job_types() -> Vec<String> {
@@ -69,7 +86,7 @@ fn card_job(candidates: u8, offer: u8) -> CardJob {
 
 fn business(
     id: u128,
-    status: usize,
+    status: AccountStatus,
     verified: bool,
     towns: u8,
     classes: u8,
@@ -77,7 +94,7 @@ fn business(
 ) -> CardBusiness {
     CardBusiness {
         id: Uuid::from_u128(id),
-        status: AccountStatus::ALL[status],
+        status,
         verified,
         towns: pick(&TOWNS, towns).into_iter().map(str::to_owned).collect(),
         ticked: pick(&job_types(), ticked)
@@ -92,8 +109,9 @@ fn business(
     }
 }
 
-/// The TD-LIC-02 oracle, written from CARD-001, CARD-002 and INT-022.
-fn oracle(job: &CardJob, b: &CardBusiness) -> bool {
+/// The TD-LIC-02 oracle, written from CARD-001, CARD-002 and INT-022; `active` is whether the
+/// business was given the `Active` status.
+fn oracle(job: &CardJob, b: &CardBusiness, active: bool) -> bool {
     let classes: Vec<&str> = b.classes.iter().map(String::as_str).collect();
     let serves = job
         .towns
@@ -107,7 +125,7 @@ fn oracle(job: &CardJob, b: &CardBusiness) -> bool {
         b.ticked
             .contains(&(CATEGORY.to_owned(), c.job_type.clone()))
     });
-    b.status.code() == "active" && b.verified && serves && covered && ticked
+    active && b.verified && serves && covered && ticked
 }
 
 proptest! {
@@ -115,14 +133,14 @@ proptest! {
     /// never as a handyman card to a business that is not a handyman.
     #[test]
     fn td_lic_02_card_exactly_when_qualified(
-        candidates in 0u8..32, offer in 0u8..8, status in 0usize..6, verified: bool,
-        towns in 0u8..8, classes in 0u8..32, ticked in 0u8..32,
+        candidates in 0u8..32, offer in 0u8..8, active: bool, other in 0usize..5,
+        verified: bool, towns in 0u8..8, classes in 0u8..32, ticked in 0u8..32,
     ) {
         let job = card_job(candidates, offer);
-        let b = business(1, status, verified, towns, classes, ticked);
+        let b = business(1, status(active, other), verified, towns, classes, ticked);
         let got = rules::card_for(map(), &job, &b);
         prop_assert_ne!(got, CardDecision::HandymanCard);
-        prop_assert_eq!(got == CardDecision::Card, oracle(&job, &b));
+        prop_assert_eq!(got == CardDecision::Card, oracle(&job, &b, active));
     }
 
     /// TD-LIC-02 (CARD-002): a business serving only the neighbouring Arizona town gets the card by
@@ -132,12 +150,13 @@ proptest! {
         candidates in 0u8..32, classes in 0u8..32, ticked in 0u8..32,
     ) {
         let job = card_job(candidates, 0b110);
-        let own = business(1, 1, true, 0b001, classes, ticked);
-        let neighbour = business(2, 1, true, 0b010, classes, ticked);
-        let outside = business(3, 1, true, 0b100, classes, ticked);
+        let active = AccountStatus::Active;
+        let own = business(1, active, true, 0b001, classes, ticked);
+        let neighbour = business(2, active, true, 0b010, classes, ticked);
+        let outside = business(3, active, true, 0b100, classes, ticked);
         let decide = |b: &CardBusiness| rules::card_for(map(), &job, b);
         prop_assert_eq!(decide(&own), decide(&neighbour));
-        prop_assert_ne!(decide(&outside), CardDecision::Card);
+        prop_assert_eq!(decide(&outside), CardDecision::Skip(Skip::OutOfTown));
     }
 
     /// TD-LIC-02 (CARD-003): n qualified businesses among unqualified ones get exactly n cards,
@@ -145,8 +164,10 @@ proptest! {
     #[test]
     fn td_lic_02_no_cap_on_recipients(n in 0u128..120, unqualified in 0u128..10) {
         let job = card_job(0, 0);
-        let mut all: Vec<CardBusiness> = (0..n).map(|i| business(i, 1, true, 1, 1, 1)).collect();
-        all.extend((0..unqualified).map(|i| business(1000 + i, 1, false, 1, 1, 1)));
+        let active = AccountStatus::Active;
+        let mut all: Vec<CardBusiness> =
+            (0..n).map(|i| business(i, active, true, 1, 1, 1)).collect();
+        all.extend((0..unqualified).map(|i| business(1000 + i, active, false, 1, 1, 1)));
         let got = rules::recipients(map(), &job, &all);
         prop_assert_eq!(got.len() as u128, n);
         let ids: BTreeSet<Uuid> = got.iter().map(|r| r.business).collect();
@@ -158,6 +179,23 @@ proptest! {
 #[test]
 fn td_lic_02_fifty_qualified_get_fifty_cards() {
     let job = card_job(0, 0);
-    let all: Vec<CardBusiness> = (0..50).map(|i| business(i, 1, true, 1, 1, 1)).collect();
+    let all: Vec<CardBusiness> = (0..50)
+        .map(|i| business(i, AccountStatus::Active, true, 1, 1, 1))
+        .collect();
     assert_eq!(rules::recipients(map(), &job, &all).len(), 50);
+}
+
+/// CARD-001, CARD-016: only `Active` receives cards; every other status, named, is skipped first.
+#[test]
+fn only_the_active_status_receives_cards() {
+    assert!(AccountStatus::Active.receives_cards());
+    let job = card_job(0, 0);
+    for s in NOT_ACTIVE {
+        assert!(!s.receives_cards(), "{s:?}");
+        let b = business(1, s, true, 1, 1, 1);
+        let got = rules::card_for(map(), &job, &b);
+        assert_eq!(got, CardDecision::Skip(Skip::NotActive), "{s:?}");
+    }
+    let every = AccountStatus::ALL.len();
+    assert_eq!(NOT_ACTIVE.len() + 1, every);
 }
