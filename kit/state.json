@@ -5935,7 +5935,7 @@
    "deps": [
     "T032"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "jobs-races",
    "type": "build",
@@ -6010,6 +6010,19 @@
      "started_at": "2026-10-31T01:44:03Z",
      "ended_at": "2026-10-31T02:06:08Z",
      "result": "check_failed"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 31,
+     "head_sha": "1fb1b799c383719155055d2ae88de4438140e3c3",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-10-31T02:32:29Z",
+     "ended_at": "2026-10-31T02:50:44Z",
+     "result": "MERGE_PENDING"
     }
    ],
    "reviewed_sha": "1fb1b799c383719155055d2ae88de4438140e3c3",
@@ -6021,14 +6034,13 @@
    "branch": "claude/task/T033-jobs-races",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #157 (gh pr merge)",
-    "head": "81f7223af5b25dbcc36db721721cb865edfabb56"
+    "why": "auto-merge on #161 (gh pr merge)",
+    "head": "1fb1b799c383719155055d2ae88de4438140e3c3"
    },
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\nCi failed at step: Both jobs passed",
    "runner_closed_prs": [
     157
-   ],
-   "head_check_since": null
+   ]
   },
   {
    "id": "T034",
@@ -9248,12 +9260,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T034",
-   "at": "2026-10-31T02:27:33Z",
-   "cache_read_input_tokens": 2278775,
-   "cache_creation_input_tokens": 216443,
-   "input_tokens": 114,
-   "output_tokens": 31910
+   "task": "T033",
+   "at": "2026-10-31T02:50:44Z",
+   "output_tokens": 23866,
+   "cache_creation_input_tokens": 131867,
+   "cache_read_input_tokens": 1579152,
+   "input_tokens": 90
   },
   "source": "ledger",
   "by_task": {
@@ -9696,25 +9708,25 @@
    "T033": {
     "estimated_bytes": 180867,
     "estimated_tokens": 795474,
-    "output_tokens": 66679,
-    "cache_creation_input_tokens": 330267,
-    "cache_read_input_tokens": 4854518,
-    "input_tokens": 154,
+    "output_tokens": 90545,
+    "cache_creation_input_tokens": 462134,
+    "cache_read_input_tokens": 6433670,
+    "input_tokens": 244,
     "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-10-31T02:27:33Z",
-    "tokens": 476344
+    "tokens": 790082
    },
    "week": {
     "start": "2026-10-29T18:38:52Z",
-    "tokens": 65738330
+    "tokens": 66052068
    }
   }
  },
- "updated_at": "2026-10-31T02:50:44Z",
+ "updated_at": "2026-10-31T02:50:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
