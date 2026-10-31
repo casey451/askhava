@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM quotes.job_card",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "d84114181a6c6d2023125031bc7434f9081da7c61766f7046496ba8e2be94ca5"
+}
