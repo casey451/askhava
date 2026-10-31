@@ -40,7 +40,7 @@ TEST_DESIGN = Path("docs/test-design.md")
 TASK_ID = re.compile(r"^T\d{3}$")
 SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TD_ROW = re.compile(r"^\| (?P<id>TD-[A-Z0-9]+-\d{2}) \|")
-DECISION_ID = re.compile(r"^D-\d{3}$")
+DECISION_ID = re.compile(r"^D-\d{3,}$")
 CITE = re.compile(r"^(?P<path>[^\s:]+):(?P<line>\d+)$")
 
 MODELS = frozenset({"claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"})

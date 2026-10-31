@@ -58,7 +58,7 @@ DROP_MARKER = "<!-- askhava-runner: closed to drop auto-merge (D-584) -->"
 # The BLOCKED reasons that are not the task's own fault, the only ones `--requeue` lifts (D-583).
 REQUEUABLE = ("branch push rejected", "no head to push", "permission blocked", st.PROOF_MISSING, "unchecked merge")
 # `--requeue T### --plan-fix D-###`: one more attempt for a capped task after a logged plan fix (D-677).
-PLAN_FIX_ID = re.compile(r"^D-\d{3,4}$")
+PLAN_FIX_ID = re.compile(r"^D-\d{3,}$")
 
 
 @dataclass
