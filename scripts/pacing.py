@@ -32,6 +32,16 @@ help, and a rejected run is RETRY_AFTER_RESET). A usage-limit rejection whose re
 ledger only at its hand-in, so `used` also counts the estimate recorded at its claim for every other
 IN_PROGRESS task (`in_flight_tokens`). With one lane that is always 0.
 
+**Spend line** (D-1128, Casey's rule of October 31: the week's budget is to be spent by a few hours
+before its reset, as accurately as possible, with no idle days after an early stop). When
+kit/pacing.json has `spread` ({"anchor_at": ISO, "anchor_used_week": tokens,
+"finish_hours_before_reset": hours}), the week window's spend is held to a straight line from the
+anchor reading to the effective week budget at `resets_at` minus the margin: a claim that would put
+`used + estimate` above the line now waits until the line reaches it (`spend_line`), never past the
+reset; a task that fits the line claims as before. The line is for the anchor's week only: once the
+window's start (its reset minus the week's hours) is later than the anchor, from the ledger's
+roll-over or a quota reading, there is no line until a new anchor is set.
+
 Usage: python3 scripts/pacing.py [--state PATH] [--task ID]
 """
 
@@ -140,15 +150,24 @@ def record_usage(state: State, usage: dict[str, Any], now: datetime, cfg: dict[s
     return out
 
 
+PROBE_NOTE: list[str] = []  # the last probe failure's stderr line, for the pacing row (D-1128)
+
+
 def read_quota(command: str | None = None) -> dict[str, Any] | None:
-    """Utilisation from PACING_QUOTA_CMD, or None when unset or unreadable (the ledger is used then)."""
+    """Utilisation from PACING_QUOTA_CMD, or None when unset or unreadable (the ledger is used then).
+
+    A probe that fails leaves its last stderr line in PROBE_NOTE, so the pacing row says why the
+    ledger was used (D-1128); the command's output is never logged beyond that line."""
     command = command if command is not None else os.environ.get("PACING_QUOTA_CMD", "")
+    PROBE_NOTE.clear()
     if not command:
         return None
     try:
         done = subprocess.run(shlex.split(command), capture_output=True, text=True, timeout=30, check=False)
+        PROBE_NOTE[:] = [line for line in done.stderr.splitlines() if line.strip()][-1:]
         reading = json.loads(done.stdout)
-    except (OSError, ValueError, subprocess.SubprocessError):
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        PROBE_NOTE[:] = PROBE_NOTE or [f"{type(error).__name__}: {str(error)[:120]}"]
         return None
     ok = isinstance(reading, dict) and all(isinstance(reading.get(w), dict) and "utilization" in reading[w] for w in WINDOWS)
     return reading if ok else None
@@ -183,7 +202,7 @@ def standing(
         used += reserved
         eff = budget * (1 - float(cfg["headroom"]))
         out[w] = {"used": int(used), "budget": int(eff), "left": int(eff - used), "resets_at": reset}
-    return out, "quota_cmd" if quota else "ledger"
+    return out, "quota_cmd" if quota else ("ledger; " + PROBE_NOTE[0][:160] if PROBE_NOTE else "ledger")
 
 
 def _verdict(need: int, stand: dict[str, dict[str, Any]], now: datetime) -> tuple[str, str | None]:
@@ -204,6 +223,30 @@ def decide(
     return assess(state, task, root=root, config=config, now=now, quota=quota)["decision"]
 
 
+def spend_line(cfg: dict[str, Any], week: dict[str, Any], need: int, now: datetime) -> str | None:
+    """When `used + need` sits above the week's straight spend line (D-1128), the ISO time the line
+    reaches it (capped at the reset); None when the claim fits the line or no line applies."""
+    spread = cfg.get("spread")
+    reset = week.get("resets_at")
+    if not spread or not reset:
+        return None
+    start, end = parse(str(spread["anchor_at"])), parse(str(reset)) - timedelta(hours=float(spread["finish_hours_before_reset"]))
+    window_start = parse(str(reset)) - timedelta(hours=float(cfg["window_hours"]["week"]))
+    if window_start > start:
+        return None  # the anchor's window has rolled over: the line was for that week only
+    if now < start or now >= end or end <= start:
+        return None
+    base, top = float(spread["anchor_used_week"]), float(week["budget"])
+    if top <= base:
+        return None
+    target = float(week["used"]) + need
+    released = base + (top - base) * (now - start).total_seconds() / (end - start).total_seconds()
+    if target <= released:
+        return None
+    when = start + (end - start) * min((target - base) / (top - base), 1.0)
+    return iso(max(when, now + timedelta(minutes=1)))
+
+
 def assess(
     state: State, task: dict[str, Any], *, root: Path = ROOT, config: dict[str, Any] | None = None,
     now: datetime | None = None, quota: dict[str, Any] | None = None,
@@ -215,7 +258,11 @@ def assess(
     stand, source = standing(state, cfg, now, quota, reserved)
     hit = ((state.get("usage") or {}).get("limit_hit") or {}).get("reset_at")
     decision = ("wait", hit) if hit and parse(hit) > now else _verdict(need, stand, now)
+    line_at = spend_line(cfg, stand["week"], need, now) if decision[0] == "claim" else None
+    if line_at:
+        decision = ("wait", line_at)
     found = {"decision": decision, "estimate": need, "bytes": size, "basis": basis, "standing": stand, "source": source}
+    found |= {"spend_line": line_at} if line_at else {}
     return found | ({"in_flight": reserved} if reserved else {})
 
 
@@ -228,6 +275,8 @@ def line(tid: str, found: dict[str, Any]) -> str:
     stand, (verdict, detail) = found["standing"], found["decision"]
     left = f"five-hour window has {_k(stand['five_hour']['left'])} left, week {_k(stand['week']['left'])}"
     outcome = {"claim": "claimed", "wait": f"waiting until {detail}", "defer": f"claimed anyway ({detail})"}[verdict]
+    if found.get("spend_line"):
+        outcome = f"on the spend line (D-1128), {outcome}"
     running = f" after {_k(found['in_flight'])} still running in another lane" if found.get("in_flight") else ""
     return f"{tid} estimated {_k(found['estimate'])} tokens ({found['basis']}); {left}{running} ({found['source']}); {outcome}"
 
