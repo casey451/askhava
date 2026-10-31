@@ -349,3 +349,4 @@
 - 2026-10-31T00:19:01Z runner 79535a4eab27 (actions): {"T178": "IN_PROGRESS -> MERGE_PENDING"}
 - 2026-10-31T00:28:08Z runner 07a4edc714ca (actions): {"T034": "IN_PROGRESS -> QUEUED"}
 - 2026-10-31T00:28:14Z runner 223320ddeb23 (actions): {"T178": "MERGE_PENDING -> DONE"}
+- 2026-10-31T00:34:29Z runner 223320ddeb23 (actions): {"T029": "QUEUED -> IN_PROGRESS"}; T029 estimated 1.3M tokens (calibrated); five-hour window has 14.6M left, week 389.5M (ledger); claimed
