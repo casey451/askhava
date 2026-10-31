@@ -1,5 +1,5 @@
 //! The records matching reads and returns, and the `quotes.job_card` query (migration
-//! `0067_quotes_matching.sql`; CARD-001 to CARD-003, LIC-035).
+//! `0067_quotes_matching.sql`; CARD-001 to CARD-004, CARD-016, CARD-018, LIC-035).
 //!
 //! Nothing here holds a homeowner's detail: a job is its offer towns, its candidate job types and
 //! its scrubbed text (PRIV-001); a business is IDs, codes and ticks.
@@ -19,6 +19,12 @@ pub enum QuotesError {
     /// A database call failed.
     #[error("quotes database call failed")]
     Database,
+    /// The shipped license map did not load (LIC-043).
+    #[error("the license map did not load")]
+    LicenseMap,
+    /// The job could not be read through `jobs::api` (CARD-018).
+    #[error("the job could not be read")]
+    Job,
 }
 
 /// A town a job is offered in: the job's own town first, then any neighbouring towns (CARD-002).
@@ -74,6 +80,9 @@ pub enum CardDecision {
 /// Why a business does not receive a card, first failing check first.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Skip {
+    /// An owner pause switch covers everything, a candidate's trade or every offer town it
+    /// serves (CARD-016, OPS-003); checked only by [`crate::rules::card_under`].
+    OwnerPaused,
     /// Its status is not `Active` (CARD-001, CARD-016).
     NotActive,
     /// It is not verified (CARD-001).
@@ -86,6 +95,51 @@ pub enum Skip {
     NothingTicked,
     /// Its licenses do not cover one candidate job type (CARD-001, LIC-035, LIC-043).
     NotCovered(NoCardReason),
+}
+
+/// One business as full matching sees it: its matching record and its "also send me jobs nobody
+/// else covers" switch (BIZ-005, CARD-004).
+#[derive(Debug, Clone)]
+pub struct Pooled {
+    /// What the checklist match reads (CARD-001).
+    pub card: CardBusiness,
+    /// "Also send me jobs nobody else covers" is on (CARD-004).
+    pub overflow_on: bool,
+}
+
+/// The owner pause switches that are on (OPS-003), as codes: the caller reads them through
+/// `ops::api::is_paused` and maps each town or trade switch's record to its code (CARD-016).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct OwnerPauses {
+    /// The "all" switch is on.
+    pub all: bool,
+    /// Town codes whose switch is on.
+    pub towns: BTreeSet<String>,
+    /// Category codes whose switch is on.
+    pub trades: BTreeSet<String>,
+}
+
+/// Every business that may receive a job's card, and the owner pauses in force (CARD-004,
+/// CARD-016).
+#[derive(Debug, Clone, Copy)]
+pub struct Pool<'a> {
+    /// The businesses, in any order.
+    pub businesses: &'a [Pooled],
+    /// The owner pause switches that are on.
+    pub pauses: &'a OwnerPauses,
+}
+
+/// What the homeowner is told once the trade is known (INT-017, INT-032), counted as CARD-001
+/// and CARD-004 would send the card then.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Coverage {
+    /// This many businesses would receive the card (at least 1).
+    Send(usize),
+    /// Nobody is licensed for every candidate, but the job spans two or more trades and one
+    /// trade's part alone would reach a business: offer SPLIT (INT-032, D-1019).
+    Split,
+    /// No active business in the town covers it (INT-017).
+    NotCovered,
 }
 
 /// One business chosen to receive the card (CARD-001, CARD-003).
