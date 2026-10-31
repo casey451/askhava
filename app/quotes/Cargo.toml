@@ -8,20 +8,22 @@ publish.workspace = true
 
 [dependencies]
 askhava-businesses = { workspace = true }
+askhava-catalog = { workspace = true }
 askhava-jobs = { workspace = true }
 askhava-licensing = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
-askhava-catalog = { workspace = true }
 askhava-core = { workspace = true }
 proptest = { workspace = true }
 serde = { workspace = true }
 serde-saphyr = { workspace = true }
 tokio = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 [lints]
 workspace = true
