@@ -1273,7 +1273,7 @@ def test_run_command_falls_back_when_the_long_token_is_refused(monkeypatch: pyte
 
 
 def test_reserve_decision_command_takes_one_number_from_the_live_counter(repo: dict[str, Path], tmp_path: Path) -> None:
-    """D-1052: `--reserve-decision` reads main's docs/decisions.md, writes the reservation through
+    """D-1058: `--reserve-decision` reads main's docs/decisions.md, writes the reservation through
     update_state and prints the number; a second call, from another clone, takes the next one."""
     env = make_env(repo["a"], tmp_path)
     no_file = entry.parse_args(["--reserve-decision", "--reason", "x"])

@@ -352,7 +352,7 @@ def test_diff_outside_owned_paths_is_rejected(tmp_path: Path) -> None:
 
 
 def test_a_first_plan_gap_path_failure_costs_no_attempt_and_records_a_strike(tmp_path: Path) -> None:
-    """D-1052: a submitted attempt whose only problem is a file the plan did not list keeps its attempts."""
+    """D-1058: a submitted attempt whose only problem is a file the plan did not list keeps its attempts."""
     env = FakeEnv(lambda t, m, log: cycle.WorkerResult("submitted", ["app/t001/x.py", "app/other/models.rs"], [m]))
     cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW)
     task = st.entry(env.store, "T001")

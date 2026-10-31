@@ -30,7 +30,7 @@ line of JSON with what changed.
                                     the runner (a plan change, a human fix): the next free number at or
                                     above `next_decision`, above main's highest entry and every reserved
                                     number, kept in `plan_reservations` with `next_decision` moved past
-                                    it, and printed as `reserved D-####` (D-1052)
+                                    it, and printed as `reserved D-####` (D-1058)
   python3 -m runner --restore-lanes end a fall back to one lane (`lanes_fallback`, D-620)
   RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
                                     claims only on that lane; unset, the first free lane (D-620);
@@ -289,7 +289,7 @@ def plan_fix_requeue(tid: str, decision: str, reason: str, cfg: cycle.Config, en
 
 
 def reserve_decision(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
-    """`--reserve-decision --reason TEXT`: one D-number for a plan change from the live counter (D-1052).
+    """`--reserve-decision --reason TEXT`: one D-number for a plan change from the live counter (D-1058).
 
     Main's docs/decisions.md is read fresh (GitHubEnv.decision_numbers); the reservation goes through
     update_state, which re-reads claude/kit-state and takes the number again from the fresh state after

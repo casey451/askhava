@@ -112,7 +112,7 @@ def decisions_unique(head_text: str | None) -> list[str]:
     counts = Counter(runner_state.decision_numbers(head_text or ""))
     return [
         f"docs/decisions.md has D-{n:03d} on {count} entries; renumber the newer one to a free number "
-        "(the handoff's decision_ids, or `python3 -m runner --reserve-decision` for a plan change, D-1052)"
+        "(the handoff's decision_ids, or `python3 -m runner --reserve-decision` for a plan change, D-1058)"
         for n, count in sorted(counts.items())
         if count > 1
     ]
@@ -126,7 +126,7 @@ def decisions_not_taken_on_main(base_text: str | None, main_text: str | None, he
     added = set(runner_state.decision_numbers(head_text or "")) - old
     return [
         f"docs/decisions.md: D-{n:03d} is new on this branch but main already has a D-{n:03d} entry; "
-        "renumber this branch's entry (the handoff's decision_ids, or `python3 -m runner --reserve-decision`, D-1052)"
+        "renumber this branch's entry (the handoff's decision_ids, or `python3 -m runner --reserve-decision`, D-1058)"
         for n in sorted(added & on_main)
     ]
 

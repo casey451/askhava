@@ -106,7 +106,7 @@ def test_check_state_validates_the_counter_and_the_blocks() -> None:
     assert cs.check(behind) == ["state.next_decision: 527 is not above the highest reserved number D-527"]
 
 
-# ---- plan changes take one number from the same counter (D-1052)
+# ---- plan changes take one number from the same counter (D-1058)
 
 
 def test_a_plan_reservation_takes_the_next_free_number_records_it_and_advances_the_counter() -> None:
