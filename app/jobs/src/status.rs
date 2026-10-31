@@ -133,6 +133,36 @@ impl JobStatus {
         })
     }
 
+    /// The homeowner text, by template ID, that this status's timeout sends with its move: the
+    /// "no quotes yet" text at 6 p.m. (JOB-010, D-030) and the two closing notes (JOB-011,
+    /// JOB-012, D-461). The Intake close text is INT-019's own task's, and a return to Quotes
+    /// ready is told by `picks` (PICK-045); Connected closes with no text and no review request
+    /// (JOB-026, D-046).
+    #[must_use]
+    pub const fn timeout_text(self) -> Option<&'static str> {
+        match self {
+            Self::Open => Some("no_quotes_yet"),
+            Self::NoQuotesYet => Some("closed_no_quotes"),
+            Self::QuotesReady => Some("closed_no_pick"),
+            Self::Intake
+            | Self::AwaitingConfirm
+            | Self::PaymentPending
+            | Self::Connected
+            | Self::Done
+            | Self::Closed
+            | Self::ClosedEarly
+            | Self::NotCovered
+            | Self::Cancelled => None,
+        }
+    }
+
+    /// True for Quotes ready, the only status the all-quotes-in text and the every-window-ended
+    /// close apply to (TXT-042, JOB-025).
+    #[must_use]
+    pub const fn awaits_pick(self) -> bool {
+        matches!(self, Self::QuotesReady)
+    }
+
     /// True for the five final statuses, which wait for nothing (JOB-001, JOB-003).
     #[must_use]
     pub const fn is_final(self) -> bool {
