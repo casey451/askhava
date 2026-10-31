@@ -16,18 +16,23 @@ loads whole documents to find its slice (plan change P-1, D-485):
 says what done looks like.
 
 budget.context_pct is derived, never guessed: the bytes of the generated
-prompt, of the owned files that exist and of the reads that exist, over a
-200k-token window at about 4 bytes per token, rounded up. A spec file, the
-test design and the decisions log count only through the lines the prompt
-pastes from them. Generating writes the value back into kit/tasks.json.
+prompt, of the owned regular files that exist and of the reads that exist,
+over a 200k-token window at about 4 bytes per token, rounded up. A spec file,
+the test design and the decisions log count only through the lines the prompt
+pastes from them; an owned directory counts nothing and an owned file is never
+counted twice through a read (D-1036). Generating writes the value back into
+kit/tasks.json.
 
 With --check, nothing is written: the script exits 1 if a prompt is missing,
 stale (differs from what the template and the stored task produce) or
 orphaned, and prints each prompt's token estimate. The estimate is
-recomputed live, so a value that drifted as files appeared is reported as a
-note for the next generation, never as a failure.
+recomputed live, so a value that drifted as files appeared is a note for the
+next generation: every merge moves some estimates, and a task branch cannot
+rewrite kit/tasks.json, so drift never fails Ci. With --check --strict (a
+plan-change session, before it commits) a stored value that differs from the
+measurement is a problem too (D-1036).
 
-Usage: python3 scripts/gen_prompts.py [--root REPO_ROOT] [--check]
+Usage: python3 scripts/gen_prompts.py [--root REPO_ROOT] [--check [--strict]]
 """
 
 from __future__ import annotations
@@ -425,10 +430,30 @@ def path_bytes(root: Path, path: str) -> int:
 
 
 def context_bytes(root: Path, task: dict[str, Any], prompt: str) -> int:
-    """Prompt + owned files that exist + reads that exist (pasted documents count through the prompt)."""
-    reads = [r for r in task["reads"] if not r.startswith(PASTED_READS)]
-    paths = dict.fromkeys([*task["owns"], *reads])
-    return len(prompt.encode("utf-8")) + sum(path_bytes(root, p) for p in paths)
+    """Prompt + owned regular files that exist + reads that exist (pasted documents count through the prompt).
+
+    An owned directory (a cleanup or harness task's tree) counts nothing: the worker greps and sweeps it, it
+    does not load it. A directory under reads still counts in full, since the worker reads it, but a file the
+    task owns is counted once, never again through a read that names it or a directory read holding it
+    (D-1036).
+    """
+    owned = [o for o in task["owns"] if (root / o).is_file()]
+    owned_set = set(owned)
+    reads = [r for r in task["reads"] if not r.startswith(PASTED_READS) and r not in owned_set]
+    total = len(prompt.encode("utf-8")) + sum(path_bytes(root, p) for p in dict.fromkeys(owned))
+    return total + sum(read_bytes(root, r, owned_set) for r in dict.fromkeys(reads))
+
+
+def read_bytes(root: Path, path: str, owned: set[str]) -> int:
+    """Bytes of one read, leaving out the owned files a directory read holds (they already counted)."""
+    target = root / path
+    if not target.is_dir():
+        return path_bytes(root, path)
+    return sum(
+        p.stat().st_size
+        for p in target.rglob("*")
+        if p.is_file() and "__pycache__" not in p.parts and p.relative_to(root).as_posix() not in owned
+    )
 
 
 def percent(byte_count: int) -> int:
@@ -470,14 +495,26 @@ def estimate_line(root: Path, task: dict[str, Any], prompt: str) -> str:
     return f"{task['id']}: about {byte_count // BYTES_PER_TOKEN} tokens, {pct}% of the window{note}"
 
 
-def check(root: Path, data: dict[str, Any], template: Template, src: Sources | None = None) -> list[str]:
+def budget_problem(root: Path, task: dict[str, Any], prompt: str) -> list[str]:
+    """--strict (D-1036): the stored budget.context_pct must equal the live measurement."""
+    pct = percent(context_bytes(root, task, prompt))
+    stored = task["budget"]["context_pct"]
+    return [] if pct == stored else [f"{task['id']}: stored context_pct {stored}% but it measures {pct}%; regenerate"]
+
+
+def check(
+    root: Path, data: dict[str, Any], template: Template, src: Sources | None = None, strict: bool = False
+) -> list[str]:
     """Return every problem across all prompts; print each prompt's token estimate."""
     src = src or load_sources(root)
     problems: list[str] = []
     tasks = prompt_tasks(data)
     for task in tasks:
         problems.extend(check_task(root, template, task, src))
-        print(estimate_line(root, task, render(template, task, src)))
+        prompt = render(template, task, src)
+        print(estimate_line(root, task, prompt))
+        if strict:
+            problems.extend(budget_problem(root, task, prompt))
     expected = {Path(task["prompt"]).name for task in tasks}
     for path in sorted((root / PROMPTS_DIR).glob("T[0-9][0-9][0-9].md")):
         if path.name not in expected:
@@ -508,21 +545,22 @@ def main(argv: list[str] | None = None) -> int:
         "--root", type=Path, default=Path(__file__).resolve().parent.parent
     )
     parser.add_argument("--check", action="store_true", help="verify, write nothing")
+    parser.add_argument("--strict", action="store_true", help="with --check: a stale stored budget fails (D-1036)")
     args = parser.parse_args(argv)
     root: Path = args.root
     data = json.loads((root / TASKS_FILE).read_text(encoding="utf-8"))
     template = Template((root / TEMPLATE_FILE).read_text(encoding="utf-8"))
     try:
-        return run(root, data, template, args.check)
+        return run(root, data, template, args.check, args.strict)
     except ValueError as error:
         print(f"ERROR {error}")
         return 1
 
 
-def run(root: Path, data: dict[str, Any], template: Template, check_only: bool) -> int:
+def run(root: Path, data: dict[str, Any], template: Template, check_only: bool, strict: bool = False) -> int:
     """Check or generate; ValueError means a malformed task."""
     if check_only:
-        problems = check(root, data, template)
+        problems = check(root, data, template, strict=strict)
         for problem in problems:
             print(f"ERROR {problem}")
         count = len(prompt_tasks(data))

@@ -187,10 +187,19 @@ MAX_OWNS = 10  # P-1 (D-485): one session's work; was 14 (D-119)
 MAX_FILES = 10
 MAX_DIR_FILES = 14  # a cleanup or harness task owning a directory; the runner holds its diff to budget.files
 MAX_LINES = 600  # was 800 (D-119)
-MAX_CONTEXT_PCT = 20  # derived from bytes by scripts/gen_prompts.py (D-485)
+# budget.context_pct is derived from bytes by scripts/gen_prompts.py. The limits sit where the re-measured
+# tasks are (D-1036; were 20 and 30, D-485): build, docs and audit tasks reach 39, so 45.
+MAX_CONTEXT_PCT = 45
 # A harness task edits existing tooling it must read whole (its owned files count in full), so it may use
-# up to 30%; every other task stays at 20% (D-485).
-MAX_HARNESS_CONTEXT_PCT = 30
+# up to 50% (D-1036).
+MAX_HARNESS_CONTEXT_PCT = 50
+# A cleanup task's owned directories count nothing (it sweeps them), but T126 reads the whole twin for its
+# chaos run (D-1036).
+MAX_CLEANUP_CONTEXT_PCT = 65
+# Harness tasks finished before D-1036 that edited the twin's two largest files whole (63 to 69%); their
+# measured budgets are history, stored honestly under a limit of their own rather than trimmed (D-1036).
+CONTEXT_LIMIT_HISTORY = frozenset({"T005", "T006", "T007"})
+MAX_HISTORY_CONTEXT_PCT = 75
 MAX_REQUIREMENTS = 12  # was 25 (D-119)
 MAX_TESTS = 6
 # Harness, docs, audit and cleanup work keeps the D-119 limits; the P-1 limits above bind build tasks,
@@ -367,6 +376,13 @@ def check_models(task: Task) -> list[str]:
     return errors
 
 
+def context_limit(task: Task) -> int:
+    """The most of the context window a task may fill, by type (D-1036)."""
+    if task["id"] in CONTEXT_LIMIT_HISTORY:
+        return MAX_HISTORY_CONTEXT_PCT
+    return {"harness": MAX_HARNESS_CONTEXT_PCT, "cleanup": MAX_CLEANUP_CONTEXT_PCT}.get(task["type"], MAX_CONTEXT_PCT)
+
+
 def check_size(task: Task) -> list[str]:
     """The task fits the size budget: few files, few lines, a small slice of context."""
     errors: list[str] = []
@@ -382,7 +398,7 @@ def check_size(task: Task) -> list[str]:
         (len(task["owns"]), MAX_OWNS if build else NON_BUILD_LIMITS["owns"], "owned paths"),
         (files, MAX_DIR_FILES if has_dir else max_files, "budget files"),
         (lines, MAX_LINES if build else NON_BUILD_LIMITS["lines"], "budget lines"),
-        (ctx, MAX_HARNESS_CONTEXT_PCT if task["type"] == "harness" else MAX_CONTEXT_PCT, "budget context_pct"),
+        (ctx, context_limit(task), "budget context_pct"),
         (len(task["requirements"]), MAX_REQUIREMENTS if build else NON_BUILD_LIMITS["requirements"], "requirements"),
         (len(task["tests"]), MAX_TESTS, "tests"),
     )
