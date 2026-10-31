@@ -33,7 +33,7 @@ jobs:
       TESTED_SHA: ${{ github.sha }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: claude/kit-state
       - name: Record the result
