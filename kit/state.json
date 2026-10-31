@@ -7298,7 +7298,7 @@
     "T039",
     "T024"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "intake-conversation",
    "type": "build",
@@ -7317,13 +7317,70 @@
      "model": "claude-sonnet-5-5",
      "model_evidence_count": 92,
      "head_sha": "630dbaf1923363c0f1f9fb82f2bf0e561a012ee4",
-     "pr": null,
-     "checks": null,
+     "pr": 180,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-31T10:27:52Z",
      "ended_at": "2026-10-31T11:14:56Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "86d15af6046adb77da9629ea37f89df7a3ef7cef",
@@ -7352,7 +7409,41 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "82640e8e0b8f422cdbf366c41bd2e3ed01bd076d",
+   "merged_at": "2026-10-31T11:27:45Z",
+   "files": [
+    ".sqlx/query-03878c827484d16570f8ad93a21c60e50e365f0adc7957b997e44aa279e1155b.json",
+    ".sqlx/query-196a18f4a2d93a900e0749e8460ec75497bfce61f1a210047e1eb5fe2538deb9.json",
+    ".sqlx/query-1b51b34dd5ecd48a6884ffc09933d4b2147abe44eed14c11f59e38c78f1a391a.json",
+    ".sqlx/query-1eeeca17c6da1afd534424154f5db293f91535f3a213805687cc441294446c6b.json",
+    ".sqlx/query-3c9404bbd0c3a469b48d8437a6e09e94e4ba3df5261c9b9082419d93b324de4b.json",
+    ".sqlx/query-4a3bed4e6486f5a0919cc206d08cb228b0fb5f25db9300ff3fb304119da9d1b7.json",
+    ".sqlx/query-51369e00ab0957d3332e6dc63a856d5b771fbc280ba3e018d6f5aab409d2990b.json",
+    ".sqlx/query-5e426e4d843ce09a7e2c25d2c76e174569a4c4e046cf31b149f6bdbcd52e304d.json",
+    ".sqlx/query-6e814f79b691a0185421d50683190015ae27313f4202ad2f7ceb5fef3e864fb0.json",
+    ".sqlx/query-b1512c475db1ad4a55524ef1f96bbd447ef862b6cb6f7f6c0339becd154120a1.json",
+    ".sqlx/query-b83229a6cc7b1024275e633d188d81655b11f18075e0ae15acaf402b6b5d005a.json",
+    ".sqlx/query-df7ad93a5c9aad6326fbc98e70bdfbddcbc169aef2623c3868a27eb0131b03d2.json",
+    ".sqlx/query-dfd74f1d1187ce189e034d4d307eac1768b5927f66d161d0b4cdfa129a38c75c.json",
+    ".sqlx/query-eb0ebe39c8afff0ebb4442a3e0cf1815192ff30379c1b7d149d71d7bbdda75a8.json",
+    ".sqlx/query-f0dcf3fc5ceb1facf5771efdc144fa7de6a716064908d3ae76dbf53c9a12a545.json",
+    ".sqlx/query-f32759ca880ec78b07733c3b4f3b11e43b5605c4b19a4ef3398c08c77a578725.json",
+    "Cargo.lock",
+    "app/intake/CLAUDE.md",
+    "app/intake/Cargo.toml",
+    "app/intake/src/api.rs",
+    "app/intake/src/conversation.rs",
+    "app/intake/src/lib.rs",
+    "app/intake/src/models.rs",
+    "app/intake/src/rules.rs",
+    "app/intake/src/tests/conversation.rs",
+    "app/intake/src/tests/mod.rs",
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "docs/architecture.md",
+    "docs/decisions.md"
+   ]
   },
   {
    "id": "T041",
@@ -11942,7 +12033,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T11:17:55Z",
+ "updated_at": "2026-10-31T11:30:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -12040,7 +12131,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "247942ec878c68152e46a35727739044e3982ae6",
+ "runner_sha": "82640e8e0b8f422cdbf366c41bd2e3ed01bd076d",
  "starter": "actions",
  "smoke_runs": [
   {
