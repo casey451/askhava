@@ -168,5 +168,15 @@
     "audience": "homeowner",
     "segments": 1,
     "text": "Ask Hava: What is your first name and street address? Only the business you pick gets this, after you pick it. We never ask about immigration status or ID."
+  },
+  "not_covered": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: We don't cover {trade} jobs yet. We've noted your request so we can add businesses. Text us any time."
+  },
+  "out_of_area": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: We don't cover your town yet, so we can't take this request. Text us any time."
   }
 }
