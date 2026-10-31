@@ -2,13 +2,14 @@
 
 ## Purpose
 
-The layer-5 crate that decides who receives each job card, and later holds the cards and the quotes (`docs/architecture.md` section 3). T044 built the matching: a card goes to every active, verified business serving the job's Arizona offer towns whose licenses cover every candidate job type and which ticked one, with no cap (D-1013 to D-1015). T184 added the owner pauses, "jobs nobody else covers", late cards and the coverage count intake tells the homeowner (D-1018 to D-1022). T045 added the anonymous job card and the final plain-code gate every card passes last (D-1024 to D-1026). T185 added the carrier-restricted removal to that gate and the per-business Spanish, fee-free and "Sent to <N> businesses." lines (D-1031 to D-1033). T046 added quote intake (the 24-hour window, the checked quote, its bounces and the stored record) and the every-window-ended check that hands the counts to `jobs` (D-1048 to D-1052).
+The layer-5 crate that decides who receives each job card, and later holds the cards and the quotes (`docs/architecture.md` section 3). T044 built the matching: a card goes to every active, verified business serving the job's Arizona offer towns whose licenses cover every candidate job type and which ticked one, with no cap (D-1013 to D-1015). T184 added the owner pauses, "jobs nobody else covers", late cards and the coverage count intake tells the homeowner (D-1018 to D-1022). T045 added the anonymous job card and the final plain-code gate every card passes last (D-1024 to D-1026). T185 added the carrier-restricted removal to that gate and the per-business Spanish, fee-free and "Sent to <N> businesses." lines (D-1031 to D-1033). T046 added quote intake (the 24-hour window, the checked quote, its bounces and the stored record) and the every-window-ended check that hands the counts to `jobs` (D-1048 to D-1052). T186 added the quote card: the same lines for the homeowner and the business's preview, its own words always, an AI summary only when allowed and claim-free (D-1111 to D-1113).
 
 ## What it owns
 
-- `src/api.rs`: the only public surface: `send_cards`, `send_job_cards`, `send_late_cards`, `coverage`, `card_holders`, `parse_quote`, `submit_quote`, `confirm_quote`, `mark_unavailable`, `shown_quotes`, `window_open`, `QUOTE_WINDOW`, `windows_ended`, `run_windows_end`, `WINDOWS_KIND`, the types below and `api::rules` (`card_for`, `card_under`, `match_job`, `coverage`, `recipients`).
-- `src/models.rs`: `CardJob`, `CardLines`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Pooled`, `OwnerPauses`, `Pool`, `Coverage`, `Recipient`, `QuotesError`, the `quotes.job_card` queries and the `quotes.quote` queries (`card_sent_at`, `upsert_quote`, `edit_facts`, `mark_unavailable`, `confirm_quote`, `shown_quotes`, `window_state`).
+- `src/api.rs`: the only public surface: `send_cards`, `send_job_cards`, `send_late_cards`, `coverage`, `card_holders`, `parse_quote`, `submit_quote`, `confirm_quote`, `mark_unavailable`, `shown_quotes`, `window_open`, `QUOTE_WINDOW`, `windows_ended`, `run_windows_end`, `WINDOWS_KIND`, `quote_card`, `check_summary`, `switch_on`, `POLICY_SUMMARY_SENTENCE`, the types below and `api::rules` (`card_for`, `card_under`, `match_job`, `coverage`, `recipients`).
+- `src/models.rs`: `CardJob`, `CardLines`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Pooled`, `OwnerPauses`, `Pool`, `Coverage`, `Recipient`, `QuotesError`, the `quotes.job_card` queries and the `quotes.quote` queries (`card_sent_at`, `upsert_quote`, `edit_facts`, `mark_unavailable`, `confirm_quote`, `shown_quotes`, `window_state`, `stored_card`).
 - `src/intake.rs`: `Format`, `Period`, `DayPart`, `Price`, `QuoteForm`, `QuoteRules`, `Bounce` (with the business's line, `message`), `Quote` (only `parse_quote` makes one), `Submitted`, `window_open`, `parse_quote` (pure), `submit_quote`, `confirm_quote`, `mark_unavailable`, `shown_quotes`. `Price` and `QuoteForm` have hand-written `Debug` that leaves out the notes, original wording and tier names (R6).
+- `src/quote_card.rs`: `QuoteCard` (`lines(language)`, no viewer argument), `QuoteFacts`, `TripFee`, `Parts`, `Permit`, `Spanish`, `CardSource`, `quote_card` (reads `models::stored_card` and the business's after-hours tick), `SummarySetting` (default `Off`), `switch_on`, `POLICY_SUMMARY_SENTENCE`, `check_summary`, `Summary` (only `check_summary` makes one); the English and Spanish card words (`EN`, `ES`).
 - `src/handlers.rs`: the `quotes.windows_end` task: `schedule`, `windows_ended`, `run_windows_end`, `WindowsCheck`.
 - `src/rules.rs` (pure): `card_for`, `card_under`, `match_job`, `coverage`, `recipients`, `owner_paused`, `gate`, `serves`, `ticked`, `covered`.
 - `src/cards.rs` (pure): `CardParts`, `JobCard` (private fields: town, place, photo IDs, text), `Place`, `Timing`, `Danger`, `DEFAULT_MIN_WORDS`, `build_card`, `JobCard::text_for`.
@@ -40,7 +41,9 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - PICK-053, FEE-043, FEE-044, LIC-019: `parse_quote` requires the job's format; hourly with hours is a range (in `range` or `diagnostic_visit` jobs), without hours a site visit in `diagnostic_visit` only (`NeedsHours` elsewhere); the handyman limit is `licensing::api::check_quote` on the top, never the setup charge; no fee code here (D-1050, D-491).
 - PICK-007, CARD-010: `intake::text_bounce` bounces notes, wording or a tier name when `final_gate` would cut a word, or on a restricted phrase; `Bounce` carries no text (D-1051).
 - TXT-042, JOB-025: each accepted quote schedules `quotes.windows_end` for the last window end; `windows_ended` re-schedules for a later card, else passes `Windows { quoted, sent, choosable }` to `jobs::api::all_windows_ended`; `choosable` leaves out withdrawn quotes and those `picks` marked with `mark_unavailable` after a failed pick (D-1051).
-- Not here yet: the first-quote move to Quotes ready (JOB-009); the PICK-040 fact columns (T148) and the quote card (T186); the withdraw action (PICK-051); calling `mark_unavailable` on a failed pick is `picks`' (T063).
+- PICK-005, PICK-040, PICK-041, PICK-044: `QuoteCard::lines`: name, license lines, the "check it yourself" line, WORD-014's "Independent business, not affiliated with Ask Hava.", "Gets emergency requests at night" only for an after-hours business (BIZ-007), the six facts in fixed order, the format's definition plus "Free estimate" for no trip fee (never on a visit-fee quote), then the business's own words; English or Spanish (D-1111, D-1113).
+- PICK-003, PICK-004, D-373: `check_summary` returns none while `SummarySetting::Off` and none when any summary word or number is outside the original wording and `LINKING_WORDS`; `switch_on` needs a `D-<n>` decision and a published policy holding `POLICY_SUMMARY_SENTENCE`; `quote_card` never fills a summary, as none is stored (D-1112).
+- Not here yet: the first-quote move to Quotes ready (JOB-009); the PICK-040 fact columns (T148, so `CardSource::facts` comes from the caller); the Google and Yelp links (T165) and the price line (T164) on the card; the "no longer available" line (D-1051); the stored owner-portal summary setting; the withdraw action (PICK-051); calling `mark_unavailable` on a failed pick is `picks`' (T063).
 - Not here yet: the card notice and the provider-accepted count (CARD-019 to CARD-021, T147); the BIZ-049 largest-job and recurring-work skips (T155, D-492); CARD-015's daily check feeds `verified`.
 
 ## Never break
@@ -56,11 +59,14 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - A late card goes only in Open or No quotes yet, with its own send time: `tests/integration/tests/card_late_eligible.rs`.
 - A quote is taken only inside its card's 24 hours and before Confirm; an unconfirmed quote is never shown; the all-quotes-in text is queued once, after the last window: `tests/integration/tests/quote_window.rs`.
 - Contact in a quote bounces, and a bounce line repeats nothing the business wrote: `src/tests/quote_bounce.rs`.
+- The business's preview is the homeowner's card, character for character, and the night line moves nothing: `tests/integration/tests/quote_card.rs`, `src/tests/quote_card.rs::td_pick_44_after_hours_line_only_when_ticked`.
+- No summary while the setting is off, none that adds a word: `src/tests/quote_card.rs::td_pick_29_summary_off_by_default_and_never_adds_a_claim`.
 - A setup charge never changes whether a quote passes: `src/tests/quote_parse.rs::td_fee_27_setup_never_counts`.
 
 ## How to change
 
 - Change what a quote stores: a new migration on `quotes.quote`, the `Columns` spread in `models.rs`, `cargo sqlx prepare --workspace -- --all-targets --all-features`; never add an expiry (PICK-051).
+- Change a card line or its Spanish: the `EN` and `ES` words in `src/quote_card.rs`, the expected lines in `src/tests/quote_card.rs`; the fixed spec lines (PICK-003, PICK-040, PICK-041, PICK-044) change only with the spec.
 - A quote bounce miss: fix it in the card gate (`src/gate.rs`, recipe below), so cards and quotes stay on one rule; add the case to `src/tests/quote_bounce.rs`.
 
 - Restricted list change: `app/catalog/src/restricted_words.rs` only (`catalog` owns it); `tests::card_lines` checks every entry.
@@ -74,6 +80,7 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 
 - `src/tests/quote_parse.rs`: TD-PICK-01 (pure window), TD-PICK-02 (fields, refusals), TD-FEE-27's quote-form cases and property (`cargo test -p askhava-quotes tests::quote_parse`).
 - `src/tests/quote_bounce.rs`: TD-PICK-03 (`cargo test -p askhava-quotes tests::quote_bounce`).
+- `src/tests/quote_card.rs` and `tests/integration/tests/quote_card.rs`: TD-PICK-18, TD-PICK-29, TD-PICK-44 (`cargo test -p askhava-quotes tests::quote_card`, `cargo test -p askhava-integration --test quote_card`).
 - `tests/integration/tests/quote_window.rs`: TD-PICK-01, TD-PICK-02 and TD-JOB-03's every-window-ended cases in the database (`cargo test -p askhava-integration --test quote_window`).
 
 - `src/tests/matching_examples.rs`: TD-LIC-02 (M01 to M16 from `docs/catalog/matching_examples.yaml`; 50 qualified businesses get 50 recorded cards, on a fresh database with `DATABASE_URL` set).
