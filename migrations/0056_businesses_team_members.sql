@@ -6,8 +6,9 @@
 -- here (PRIV-001); notice_addresses returns it (D-492). A removed member keeps its row with
 -- removed_at set, so the audit trail and the end-sessions event still name it. businesses.staff_phone
 -- is one row per linked main or staff phone: its id is the line ID messaging's sender directory
--- knows it by, linked_by the member who linked it (CALL-012), and at most one main phone per
--- business. The number itself is never stored here; messaging keeps only its blind-index digests.
+-- knows it by, linked_by the member who linked it (CALL-012), of the same business by a composite
+-- foreign key, and at most one main phone per business. The number itself is never stored here;
+-- messaging keeps only its blind-index digests.
 -- Both tables are new and empty.
 
 CREATE TABLE businesses.team_member (
@@ -20,7 +21,8 @@ CREATE TABLE businesses.team_member (
   added_at timestamptz NOT NULL,
   removed_at timestamptz,
   CHECK (cards_and_quotes OR confirm_and_billing),
-  CHECK (NOT is_owner OR (cards_and_quotes AND confirm_and_billing AND removed_at IS NULL))
+  CHECK (NOT is_owner OR (cards_and_quotes AND confirm_and_billing AND removed_at IS NULL)),
+  UNIQUE (id, business_id)
 );
 CREATE UNIQUE INDEX team_member_one_owner_idx ON businesses.team_member (business_id)
   WHERE is_owner;
@@ -30,9 +32,10 @@ CREATE UNIQUE INDEX team_member_mailbox_idx ON businesses.team_member (business_
 CREATE TABLE businesses.staff_phone (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   business_id uuid NOT NULL REFERENCES businesses.business (id),
-  linked_by uuid NOT NULL REFERENCES businesses.team_member (id),
+  linked_by uuid NOT NULL,
   is_main boolean NOT NULL DEFAULT false,
-  linked_at timestamptz NOT NULL
+  linked_at timestamptz NOT NULL,
+  FOREIGN KEY (linked_by, business_id) REFERENCES businesses.team_member (id, business_id)
 );
 CREATE UNIQUE INDEX staff_phone_one_main_idx ON businesses.staff_phone (business_id) WHERE is_main;
 CREATE INDEX staff_phone_linked_by_idx ON businesses.staff_phone (linked_by);

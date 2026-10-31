@@ -1,22 +1,23 @@
 {
   "db_name": "PostgreSQL",
-  "query": "DELETE FROM businesses.staff_phone WHERE id = $1 RETURNING business_id",
+  "query": "SELECT is_main FROM businesses.staff_phone WHERE id = $1 AND business_id = $2 FOR UPDATE",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "business_id",
-        "type_info": "Uuid",
+        "name": "is_main",
+        "type_info": "Bool",
         "origin": {
           "Table": {
             "table": "businesses.staff_phone",
-            "name": "business_id"
+            "name": "is_main"
           }
         }
       }
     ],
     "parameters": {
       "Left": [
+        "Uuid",
         "Uuid"
       ]
     },
@@ -24,5 +25,5 @@
       false
     ]
   },
-  "hash": "64a7838e3aba22566bc284e7715c466969a6dacad083ef74de1b97e073c9e1b0"
+  "hash": "d2f59092b2101a7b0c89e5cb1c815dbec24998b265029cf97895d4255b478cf1"
 }

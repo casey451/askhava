@@ -1,22 +1,23 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT business_id FROM businesses.staff_phone WHERE id = $1 FOR UPDATE",
+  "query": "DELETE FROM businesses.staff_phone WHERE linked_by = $1 AND business_id = $2 RETURNING id",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "business_id",
+        "name": "id",
         "type_info": "Uuid",
         "origin": {
           "Table": {
             "table": "businesses.staff_phone",
-            "name": "business_id"
+            "name": "id"
           }
         }
       }
     ],
     "parameters": {
       "Left": [
+        "Uuid",
         "Uuid"
       ]
     },
@@ -24,5 +25,5 @@
       false
     ]
   },
-  "hash": "47514029517b7f81c8041b436e29721c223918a5ac680ec277a2153ef3c88ebc"
+  "hash": "c46edac37ae85d1d5e5be4a36b7bb7d3ce1a20fcc05de92f8950bf0a989eb61e"
 }

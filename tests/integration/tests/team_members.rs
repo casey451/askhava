@@ -8,8 +8,8 @@
 //! numbers and IDs are fake.
 
 use askhava_businesses::api::{
-    MEMBER_REMOVED_KIND, Roles, SenderLink, TeamError, add_member, add_owner, create, link_phone,
-    members, remove_member, set_roles,
+    Acting, MEMBER_REMOVED_KIND, Roles, SenderLink, TeamError, add_member, add_owner, create,
+    link_phone, members, remove_member, set_roles,
 };
 use askhava_messaging::api::{OutboxError, sender_add, sender_business};
 use askhava_privacy::api::Vault;
@@ -77,25 +77,36 @@ async fn td_biz_34_removing_a_member_unlinks_both_phones_once(pool: PgPool) {
     let owner = add_owner(&mut db, business, Uuid::from_u128(0xd0), at(1))
         .await
         .expect("owner");
+    let by = Acting {
+        business,
+        member: owner,
+    };
     let cards = Roles::new(true, false).expect("roles");
-    let member = add_member(&mut db, business, Uuid::from_u128(0xd1), cards, at(2))
+    let member = add_member(&mut db, by, Uuid::from_u128(0xd1), cards, at(2))
         .await
         .expect("add");
     let id = member.to_string();
-    set_roles(&mut db, member, Roles::BOTH)
+    set_roles(&mut db, by, member, Roles::BOTH)
         .await
         .expect("change");
     assert_eq!(count(&mut db, MEMBER_AUDIT, &id).await, 2);
     for (minute, number) in [(3, "928-555-0190"), (4, "928-555-0191")] {
         let number = SecretString::from(number.to_owned());
-        link_phone(&mut db, &dir, (member, false), &number, at(minute))
+        let linker = Acting { business, member };
+        link_phone(&mut db, &dir, (linker, false), &number, at(minute))
             .await
             .expect("link");
     }
     assert_eq!(found(&mut db, &dir, "928-555-0190").await, Some(business));
     assert_eq!(found(&mut db, &dir, "928-555-0191").await, Some(business));
-    remove_member(&mut db, member, at(5)).await.expect("remove");
-    let again = remove_member(&mut db, member, at(6)).await;
+    let cards_member = Acting { business, member };
+    let refused = remove_member(&mut db, cards_member, member, at(5)).await;
+    assert_eq!(refused, Err(TeamError::NotAllowed));
+    assert_eq!(found(&mut db, &dir, "928-555-0190").await, Some(business));
+    remove_member(&mut db, by, member, at(5))
+        .await
+        .expect("remove");
+    let again = remove_member(&mut db, by, member, at(6)).await;
     assert_eq!(again, Err(TeamError::UnknownMember));
     assert_eq!(found(&mut db, &dir, "928-555-0190").await, None);
     assert_eq!(found(&mut db, &dir, "928-555-0191").await, None);
@@ -106,7 +117,7 @@ async fn td_biz_34_removing_a_member_unlinks_both_phones_once(pool: PgPool) {
     assert_eq!(left.len(), 1);
     assert!(left[0].id == owner && left[0].roles == Roles::BOTH);
     assert_eq!(
-        set_roles(&mut db, owner, cards).await,
+        set_roles(&mut db, by, owner, cards).await,
         Err(TeamError::OwnerKeepsBoth)
     );
 }

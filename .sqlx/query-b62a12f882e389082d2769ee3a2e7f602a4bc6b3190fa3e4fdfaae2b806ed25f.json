@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, business_id, mailbox_id, is_owner, cards_and_quotes, confirm_and_billing FROM businesses.team_member WHERE id = $1 AND removed_at IS NULL FOR UPDATE",
+  "query": "SELECT id, business_id, mailbox_id, is_owner, cards_and_quotes, confirm_and_billing FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL FOR UPDATE",
   "describe": {
     "columns": [
       {
@@ -72,6 +72,7 @@
     ],
     "parameters": {
       "Left": [
+        "Uuid",
         "Uuid"
       ]
     },
@@ -84,5 +85,5 @@
       false
     ]
   },
-  "hash": "ad3cebb2f7c74fd5fa3b28683e3de1e9ebe2b024ec777d019e03cd1b28912d43"
+  "hash": "b62a12f882e389082d2769ee3a2e7f602a4bc6b3190fa3e4fdfaae2b806ed25f"
 }

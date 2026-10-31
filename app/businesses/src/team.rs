@@ -8,6 +8,12 @@
 //! with `messaging::api::sender_add` and the vault, since `businesses` may not name `privacy`
 //! (`kit/layers.json`, D-963); a removal calls `messaging::api::sender_remove` itself. No number or
 //! email is stored or logged here, only opaque IDs (PRIV-001, PRIV-028).
+//!
+//! Every change but [`add_owner`] names who acts, an [`Acting`] member of the business: only the
+//! owner adds, changes or removes members (BIZ-023), only the owner or a "Confirm and billing"
+//! member links, changes or unlinks a phone, and only the owner the main phone (CALL-012). Every
+//! lookup is by business and ID together, so one business never reaches another's rows. The audit
+//! row's actor is the business: `ops`' `Actor` has no member variant yet (D-963).
 
 use std::future::Future;
 
@@ -27,8 +33,19 @@ pub const MEMBER_REMOVED_KIND: &str = "businesses.member_removed";
 const MEMBER: &str = "businesses.team_member";
 const PHONE: &str = "businesses.staff_phone";
 
+/// Who makes a team or phone change: a current member of `business`, as the caller's signed-in
+/// session names them (BIZ-023, CALL-012). A member of another business is refused as
+/// [`TeamError::NotAllowed`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Acting {
+    /// The business account the change is made on.
+    pub business: Uuid,
+    /// The acting member's row ID.
+    pub member: Uuid,
+}
+
 /// Why a team or phone call failed. No variant carries a value (rust brain R5, R6).
-#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, thiserror::Error, PartialEq, Eq)]
 pub enum TeamError {
     /// A database call failed.
     #[error("team database call failed")]
@@ -54,9 +71,11 @@ pub enum TeamError {
     /// A current member already signs in with that email.
     #[error("that email already belongs to a member")]
     MailboxTaken,
-    /// Only the owner or a "Confirm and billing" member links a phone, and only the owner the main
-    /// phone (CALL-012).
-    #[error("this member may not link that phone")]
+    /// The acting member may not make this change: only the owner manages members (BIZ-023); only
+    /// the owner or a "Confirm and billing" member links, changes or unlinks a phone, and only the
+    /// owner the main phone (CALL-012); or the acting member is not a current member of the
+    /// business.
+    #[error("this member may not make that change")]
     NotAllowed,
     /// The business already has a main phone; change it instead.
     #[error("the business already has a main phone")]
@@ -192,12 +211,19 @@ async fn log(
         .map_err(|_| TeamError::Audit)
 }
 
-/// Locks and reads a current member (`FOR UPDATE`), so a removal and a change apply in turn.
-async fn locked_member(tx: &mut PgConnection, id: Uuid) -> Result<TeamMember, TeamError> {
+/// Locks and reads a current member of `business` (`FOR UPDATE`), so a removal and a change apply
+/// in turn; a member of another business is not found.
+async fn locked_member(
+    tx: &mut PgConnection,
+    business: Uuid,
+    id: Uuid,
+) -> Result<TeamMember, TeamError> {
     let row = db(sqlx::query!(
         "SELECT id, business_id, mailbox_id, is_owner, cards_and_quotes, confirm_and_billing \
-         FROM businesses.team_member WHERE id = $1 AND removed_at IS NULL FOR UPDATE",
-        id
+         FROM businesses.team_member \
+         WHERE id = $1 AND business_id = $2 AND removed_at IS NULL FOR UPDATE",
+        id,
+        business
     )
     .fetch_optional(tx)
     .await)?
@@ -212,13 +238,36 @@ async fn locked_member(tx: &mut PgConnection, id: Uuid) -> Result<TeamMember, Te
     })
 }
 
-async fn add(
-    conn: &mut PgConnection,
+/// The acting member, locked, or [`TeamError::NotAllowed`] when it is not a current member of the
+/// business (BIZ-023, CALL-012).
+async fn acting(tx: &mut PgConnection, by: Acting) -> Result<TeamMember, TeamError> {
+    match locked_member(tx, by.business, by.member).await {
+        Err(TeamError::UnknownMember) => Err(TeamError::NotAllowed),
+        other => other,
+    }
+}
+
+/// The acting member when it is the owner, who alone manages members (BIZ-023).
+async fn acting_owner(tx: &mut PgConnection, by: Acting) -> Result<TeamMember, TeamError> {
+    let m = acting(tx, by).await?;
+    if m.owner {
+        Ok(m)
+    } else {
+        Err(TeamError::NotAllowed)
+    }
+}
+
+/// Whether `m` may link, change or unlink a phone, the main one when `main` (CALL-012).
+fn may_handle_phone(m: &TeamMember, main: bool) -> bool {
+    (m.owner || m.roles.confirm_and_billing) && (m.owner || !main)
+}
+
+async fn insert_member(
+    tx: &mut PgConnection,
     (business, mailbox): (Uuid, Uuid),
     (owner, roles): (bool, Roles),
     now: Timestamp,
 ) -> Result<Uuid, TeamError> {
-    let mut tx = db(conn.begin().await)?;
     let id = sqlx::query_scalar!(
         "INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes, \
          confirm_and_billing, added_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
@@ -233,18 +282,18 @@ async fn add(
     .await
     .map_err(|e| insert_error(&e))?;
     log(
-        &mut tx,
+        tx,
         business,
         "businesses.member_added",
         (MEMBER, id),
         Change::Action,
     )
     .await?;
-    db(tx.commit().await)?;
     Ok(id)
 }
 
 /// Records the account owner, holding both roles, signing in with email `mailbox` (BIZ-023).
+/// No acting member is checked: the sign-up that creates the business calls it once (T081).
 ///
 /// # Errors
 ///
@@ -255,36 +304,47 @@ pub async fn add_owner(
     mailbox: Uuid,
     now: Timestamp,
 ) -> Result<Uuid, TeamError> {
-    add(conn, (business, mailbox), (true, Roles::BOTH), now).await
+    let mut tx = db(conn.begin().await)?;
+    let id = insert_member(&mut tx, (business, mailbox), (true, Roles::BOTH), now).await?;
+    db(tx.commit().await)?;
+    Ok(id)
 }
 
-/// Adds a team member signing in with email `mailbox`, holding `roles`; audited (BIZ-023).
+/// Adds a member of `by.business` signing in with email `mailbox`, holding `roles`; only the
+/// owner may (BIZ-023). Audited.
 ///
 /// # Errors
 ///
-/// [`TeamError::MailboxTaken`], `UnknownBusiness`, `Database` or `Audit`.
+/// [`TeamError::NotAllowed`], `MailboxTaken`, `Database` or `Audit`.
 pub async fn add_member(
     conn: &mut PgConnection,
-    business: Uuid,
+    by: Acting,
     mailbox: Uuid,
     roles: Roles,
     now: Timestamp,
 ) -> Result<Uuid, TeamError> {
-    add(conn, (business, mailbox), (false, roles), now).await
+    let mut tx = db(conn.begin().await)?;
+    acting_owner(&mut tx, by).await?;
+    let id = insert_member(&mut tx, (by.business, mailbox), (false, roles), now).await?;
+    db(tx.commit().await)?;
+    Ok(id)
 }
 
-/// Changes a member's roles; the owner's stay both (BIZ-023). An unchanged set writes nothing.
+/// Changes the roles of `member` of `by.business`; only the owner may, and the owner's stay both
+/// (BIZ-023). An unchanged set writes nothing.
 ///
 /// # Errors
 ///
-/// [`TeamError::OwnerKeepsBoth`], `UnknownMember`, `Database` or `Audit`.
+/// [`TeamError::NotAllowed`], `OwnerKeepsBoth`, `UnknownMember`, `Database` or `Audit`.
 pub async fn set_roles(
     conn: &mut PgConnection,
+    by: Acting,
     member: Uuid,
     roles: Roles,
 ) -> Result<(), TeamError> {
     let mut tx = db(conn.begin().await)?;
-    let m = locked_member(&mut tx, member).await?;
+    acting_owner(&mut tx, by).await?;
+    let m = locked_member(&mut tx, by.business, member).await?;
     if m.owner && roles != Roles::BOTH {
         return Err(TeamError::OwnerKeepsBoth);
     }
@@ -292,9 +352,10 @@ pub async fn set_roles(
         return Ok(());
     }
     db(sqlx::query!(
-        "UPDATE businesses.team_member SET cards_and_quotes = $2, confirm_and_billing = $3 \
-         WHERE id = $1",
+        "UPDATE businesses.team_member SET cards_and_quotes = $3, confirm_and_billing = $4 \
+         WHERE id = $1 AND business_id = $2",
         member,
+        m.business,
         roles.cards_and_quotes,
         roles.confirm_and_billing
     )
@@ -312,33 +373,39 @@ pub async fn set_roles(
     db(tx.commit().await)
 }
 
-/// Removes a member (never the owner, BIZ-023): unlinks every phone it linked and takes each out
-/// of the sender directory (CALL-012, D-491), and enqueues one [`MEMBER_REMOVED_KIND`] event so
-/// `portals` ends its sessions (TD-BIZ-06), all with their audit rows in one transaction.
+/// Removes `member` of `by.business` (only the owner may, and never the owner, BIZ-023): unlinks
+/// every phone it linked and takes each out of the sender directory (CALL-012, D-491), and
+/// enqueues one [`MEMBER_REMOVED_KIND`] event so `portals` ends its sessions (TD-BIZ-06), all
+/// with their audit rows in one transaction.
 ///
 /// # Errors
 ///
-/// [`TeamError::OwnerKeepsBoth`], `UnknownMember`, `Database` or `Audit`.
+/// [`TeamError::NotAllowed`], `OwnerKeepsBoth`, `UnknownMember`, `Database` or `Audit`.
 pub async fn remove_member(
     conn: &mut PgConnection,
+    by: Acting,
     member: Uuid,
     now: Timestamp,
 ) -> Result<(), TeamError> {
     let mut tx = db(conn.begin().await)?;
-    let m = locked_member(&mut tx, member).await?;
+    acting_owner(&mut tx, by).await?;
+    let m = locked_member(&mut tx, by.business, member).await?;
     if m.owner {
         return Err(TeamError::OwnerKeepsBoth);
     }
     db(sqlx::query!(
-        "UPDATE businesses.team_member SET removed_at = $2 WHERE id = $1",
+        "UPDATE businesses.team_member SET removed_at = $3 WHERE id = $1 AND business_id = $2",
         member,
+        m.business,
         now.to_sqlx() as _
     )
     .execute(&mut *tx)
     .await)?;
     let lines = db(sqlx::query_scalar!(
-        "DELETE FROM businesses.staff_phone WHERE linked_by = $1 RETURNING id",
-        member
+        "DELETE FROM businesses.staff_phone WHERE linked_by = $1 AND business_id = $2 \
+         RETURNING id",
+        member,
+        m.business
     )
     .fetch_all(&mut *tx)
     .await)?;
@@ -362,26 +429,26 @@ pub async fn remove_member(
     db(tx.commit().await)
 }
 
-/// Links a phone for the business of `member`, the main phone when `main` (CALL-012, D-491):
-/// only the owner or a "Confirm and billing" member links a phone, only the owner the main one.
-/// The number is in the sender directory when this returns; the line ID is returned.
+/// Links a phone for `by.business`, linked by `by.member`, the main phone when `main` (CALL-012,
+/// D-491): only the owner or a "Confirm and billing" member links a phone, only the owner the
+/// main one. The number is in the sender directory when this returns; the line ID is returned.
 ///
 /// # Errors
 ///
-/// [`TeamError::NotAllowed`], `MainExists`, `BadPhone`, `PhoneTaken`, `UnknownMember`,
-/// `Database` or `Audit`.
+/// [`TeamError::NotAllowed`], `MainExists`, `BadPhone`, `PhoneTaken`, `Database` or `Audit`.
 pub async fn link_phone(
     conn: &mut PgConnection,
     dir: &impl SenderLink,
-    (member, main): (Uuid, bool),
+    (by, main): (Acting, bool),
     number: &SecretString,
     now: Timestamp,
 ) -> Result<Uuid, TeamError> {
     let mut tx = db(conn.begin().await)?;
-    let m = locked_member(&mut tx, member).await?;
-    if !(m.owner || m.roles.confirm_and_billing) || (main && !m.owner) {
+    let m = acting(&mut tx, by).await?;
+    if !may_handle_phone(&m, main) {
         return Err(TeamError::NotAllowed);
     }
+    let member = m.id;
     let line = sqlx::query_scalar!(
         "INSERT INTO businesses.staff_phone (business_id, linked_by, is_main, linked_at) \
          VALUES ($1, $2, $3, $4) RETURNING id",
@@ -406,25 +473,42 @@ pub async fn link_phone(
     Ok(line)
 }
 
-/// Changes the number of linked phone `line`; the sender directory follows at once (D-491).
+/// Locks phone `line` of the acting member's business and checks the member may handle it
+/// (CALL-012); a line of another business is not found.
+async fn handled_line(tx: &mut PgConnection, by: Acting, line: Uuid) -> Result<(), TeamError> {
+    let m = acting(tx, by).await?;
+    let main = db(sqlx::query_scalar!(
+        "SELECT is_main FROM businesses.staff_phone WHERE id = $1 AND business_id = $2 \
+         FOR UPDATE",
+        line,
+        by.business
+    )
+    .fetch_optional(tx)
+    .await)?
+    .ok_or(TeamError::UnknownPhone)?;
+    if may_handle_phone(&m, main) {
+        Ok(())
+    } else {
+        Err(TeamError::NotAllowed)
+    }
+}
+
+/// Changes the number of phone `line` of `by.business`; only the owner or a "Confirm and billing"
+/// member may, only the owner for the main phone (CALL-012). The sender directory follows at once
+/// (D-491).
 ///
 /// # Errors
 ///
-/// [`TeamError::UnknownPhone`], `BadPhone`, `PhoneTaken`, `Database` or `Audit`.
+/// [`TeamError::NotAllowed`], `UnknownPhone`, `BadPhone`, `PhoneTaken`, `Database` or `Audit`.
 pub async fn change_phone(
     conn: &mut PgConnection,
     dir: &impl SenderLink,
-    line: Uuid,
+    (by, line): (Acting, Uuid),
     number: &SecretString,
 ) -> Result<(), TeamError> {
     let mut tx = db(conn.begin().await)?;
-    let business = db(sqlx::query_scalar!(
-        "SELECT business_id FROM businesses.staff_phone WHERE id = $1 FOR UPDATE",
-        line
-    )
-    .fetch_optional(&mut *tx)
-    .await)?
-    .ok_or(TeamError::UnknownPhone)?;
+    handled_line(&mut tx, by, line).await?;
+    let business = by.business;
     dir.link(&mut tx, (business, line), number).await?;
     let change = Change::Field("number");
     log(
@@ -438,21 +522,28 @@ pub async fn change_phone(
     db(tx.commit().await)
 }
 
-/// Unlinks phone `line` and takes it out of the sender directory at once (CALL-012, D-491).
+/// Unlinks phone `line` of `by.business` and takes it out of the sender directory at once; only
+/// the owner or a "Confirm and billing" member may, only the owner for the main phone (CALL-012,
+/// D-491).
 ///
 /// # Errors
 ///
-/// [`TeamError::UnknownPhone`], `Database` or `Audit`.
-pub async fn unlink_phone(conn: &mut PgConnection, line: Uuid) -> Result<(), TeamError> {
+/// [`TeamError::NotAllowed`], `UnknownPhone`, `Database` or `Audit`.
+pub async fn unlink_phone(
+    conn: &mut PgConnection,
+    by: Acting,
+    line: Uuid,
+) -> Result<(), TeamError> {
     let mut tx = db(conn.begin().await)?;
-    let business = db(sqlx::query_scalar!(
-        "DELETE FROM businesses.staff_phone WHERE id = $1 RETURNING business_id",
-        line
+    handled_line(&mut tx, by, line).await?;
+    db(sqlx::query!(
+        "DELETE FROM businesses.staff_phone WHERE id = $1 AND business_id = $2",
+        line,
+        by.business
     )
-    .fetch_optional(&mut *tx)
-    .await)?
-    .ok_or(TeamError::UnknownPhone)?;
-    unlink_line(&mut tx, business, line).await?;
+    .execute(&mut *tx)
+    .await)?;
+    unlink_line(&mut tx, by.business, line).await?;
     db(tx.commit().await)
 }
 

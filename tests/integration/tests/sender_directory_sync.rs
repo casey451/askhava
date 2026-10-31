@@ -6,7 +6,7 @@
 //! transaction. All numbers and IDs are fake.
 
 use askhava_businesses::api::{
-    Roles, SenderLink, TeamError, add_member, add_owner, change_phone, create, link_phone,
+    Acting, Roles, SenderLink, TeamError, add_member, add_owner, change_phone, create, link_phone,
     remove_member, unlink_phone,
 };
 use askhava_messaging::api::{OutboxError, sender_add, sender_business};
@@ -55,12 +55,12 @@ async fn found(db: &mut PgConnection, dir: &Directory, number: &str) -> Option<U
     sender_business(db, &dir.0, number).await.expect("lookup")
 }
 
-async fn owned_business(db: &mut PgConnection) -> (Uuid, Uuid) {
+async fn owned_business(db: &mut PgConnection) -> (Uuid, Acting) {
     let business = create(db, false, at(0)).await.expect("business");
-    let owner = add_owner(db, business, Uuid::from_u128(0xc0), at(1))
+    let member = add_owner(db, business, Uuid::from_u128(0xc0), at(1))
         .await
         .expect("owner");
-    (business, owner)
+    (business, Acting { business, member })
 }
 
 /// TD-BIZ-34 (D-491): a main phone added, changed or removed is in or out of the directory at once.
@@ -73,15 +73,15 @@ async fn td_biz_34_the_main_phone_follows_into_the_directory(pool: PgPool) {
         .await
         .expect("link");
     assert_eq!(found(&mut db, &dir, "(928) 555-0180").await, Some(business));
-    change_phone(&mut db, &dir, main, &n("928-555-0181"))
+    change_phone(&mut db, &dir, (owner, main), &n("928-555-0181"))
         .await
         .expect("change");
     assert_eq!(found(&mut db, &dir, "928-555-0180").await, None);
     assert_eq!(found(&mut db, &dir, "928-555-0181").await, Some(business));
-    unlink_phone(&mut db, main).await.expect("unlink");
+    unlink_phone(&mut db, owner, main).await.expect("unlink");
     assert_eq!(found(&mut db, &dir, "928-555-0181").await, None);
     assert_eq!(
-        unlink_phone(&mut db, main).await,
+        unlink_phone(&mut db, owner, main).await,
         Err(TeamError::UnknownPhone)
     );
 }
@@ -91,22 +91,53 @@ async fn td_biz_34_the_main_phone_follows_into_the_directory(pool: PgPool) {
 async fn td_biz_34_a_staff_phone_follows_into_the_directory(pool: PgPool) {
     let dir = directory();
     let mut db = pool.acquire().await.expect("connection");
-    let (business, _) = owned_business(&mut db).await;
+    let (business, owner) = owned_business(&mut db).await;
     let roles = Roles::new(false, true).expect("roles");
-    let member = add_member(&mut db, business, Uuid::from_u128(0xc1), roles, at(2))
+    let member = add_member(&mut db, owner, Uuid::from_u128(0xc1), roles, at(2))
         .await
         .expect("member");
-    let line = link_phone(&mut db, &dir, (member, false), &n("928-555-0182"), at(3))
+    let biller = Acting { business, member };
+    let line = link_phone(&mut db, &dir, (biller, false), &n("928-555-0182"), at(3))
         .await
         .expect("link");
     assert_eq!(found(&mut db, &dir, "928-555-0182").await, Some(business));
-    change_phone(&mut db, &dir, line, &n("928-555-0183"))
+    change_phone(&mut db, &dir, (biller, line), &n("928-555-0183"))
         .await
         .expect("change");
     assert_eq!(found(&mut db, &dir, "928-555-0182").await, None);
     assert_eq!(found(&mut db, &dir, "928-555-0183").await, Some(business));
-    remove_member(&mut db, member, at(4)).await.expect("remove");
+    remove_member(&mut db, owner, member, at(4))
+        .await
+        .expect("remove");
     assert_eq!(found(&mut db, &dir, "928-555-0183").await, None);
+}
+
+/// CALL-012, D-491: a refused change or unlink, by a member without the role or by another
+/// business, leaves the directory as it was.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_refused_change_leaves_the_directory_as_it_was(pool: PgPool) {
+    let dir = directory();
+    let mut db = pool.acquire().await.expect("connection");
+    let (business, owner) = owned_business(&mut db).await;
+    let (_, stranger) = owned_business(&mut db).await;
+    let roles = Roles::new(true, false).expect("roles");
+    let member = add_member(&mut db, owner, Uuid::from_u128(0xc2), roles, at(2))
+        .await
+        .expect("member");
+    let carder = Acting { business, member };
+    let line = link_phone(&mut db, &dir, (owner, false), &n("928-555-0185"), at(3))
+        .await
+        .expect("link");
+    for (by, want) in [
+        (carder, TeamError::NotAllowed),
+        (stranger, TeamError::UnknownPhone),
+    ] {
+        let changed = change_phone(&mut db, &dir, (by, line), &n("928-555-0186")).await;
+        assert_eq!(changed, Err(want));
+        assert_eq!(unlink_phone(&mut db, by, line).await, Err(want));
+    }
+    assert_eq!(found(&mut db, &dir, "928-555-0185").await, Some(business));
+    assert_eq!(found(&mut db, &dir, "928-555-0186").await, None);
 }
 
 /// D-491, D-963: a bad or already linked number is refused and leaves no phone row behind.

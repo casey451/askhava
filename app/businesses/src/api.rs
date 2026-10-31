@@ -15,9 +15,9 @@ pub use crate::rules::{Checks, Event};
 pub use crate::service::{Ticks, apply, create, night_count, set_job_types, set_ticks, set_towns};
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
-    MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember, add_member,
-    add_owner, change_phone, link_phone, members, notice_addresses, remove_member, set_roles,
-    unlink_phone,
+    Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,
+    add_member, add_owner, change_phone, link_phone, members, notice_addresses, remove_member,
+    set_roles, unlink_phone,
 };
 
 /// The pure status and checklist rules, for the rules bridge and other crates' property tests.
