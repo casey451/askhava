@@ -6435,8 +6435,8 @@
     "T035",
     "T176"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "licensing-imports",
    "type": "build",
    "stage": "2",
@@ -6448,7 +6448,7 @@
     905,
     906
    ],
-   "last_failure": "app/licensing/src/tests/imports.rs: not owned by T036",
+   "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\nCi failed at step: Both jobs passed",
    "history": [
     {
      "attempt": 1,
@@ -6468,13 +6468,42 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 44,
      "head_sha": "ce94ad8cd898a0b3d80452dff0016d965dcfa021",
-     "pr": null,
-     "checks": null,
+     "pr": 165,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-31T04:21:54Z",
      "ended_at": "2026-10-31T04:58:15Z",
-     "result": "MERGE_PENDING"
+     "result": "check_failed"
     }
    ],
    "reviewed_sha": "ce94ad8cd898a0b3d80452dff0016d965dcfa021",
@@ -10114,7 +10143,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T04:58:23Z",
+ "updated_at": "2026-10-31T05:06:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -10212,7 +10241,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ce94ad8cd898a0b3d80452dff0016d965dcfa021",
+ "runner_sha": "8dc5c58f6527c9437de2c6e2dc573333434c4824",
  "starter": "actions",
  "smoke_runs": [
   {
