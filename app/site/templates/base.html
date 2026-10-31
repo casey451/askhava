@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{#- The shared page layout every site and portal page extends (T051, D-491, D-492); T101 gives it
+    the look of docs/design/DESIGN_SPEC.md. A page fills `title` (after a failed submit it begins
+    "Error: ", A11Y-030) and `main`, and may set `lang`. No script, style or font comes from another
+    host (SEC-013); every value is escaped (SEC-011). Forms post with novalidate and never disable
+    their submit button (A11Y-030, A11Y-031). -#}
+<html lang="{% block lang %}en{% endblock %}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{% endblock %} | Ask Hava</title>
+</head>
+<body>
+<a href="#main">Skip to main content</a>
+<header>
+<p><a href="/">Ask Hava</a></p>
+</header>
+<main id="main" tabindex="-1">
+{% block main %}{% endblock %}
+</main>
+</body>
+</html>

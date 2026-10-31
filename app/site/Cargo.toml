@@ -1,0 +1,10 @@
+[package]
+name = "askhava-site"
+description = "Ask Hava public website; for now only the shared page layout templates/base.html that every portal page extends (T051, D-491, D-492); T101 adds the routes and the look"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true

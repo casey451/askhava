@@ -1,0 +1,5 @@
+# Askama settings for askhava-portals (docs/architecture.md section 2, D-481, D-491). Portal pages
+# live in templates/ and extend the shared layout app/site/templates/base.html, found through the
+# second folder. HTML escaping is Askama's default and is never turned off (SEC-011).
+[general]
+dirs = ["templates", "../site/templates"]

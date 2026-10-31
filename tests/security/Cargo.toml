@@ -11,6 +11,7 @@ askhava-adapters = { workspace = true }
 askhava-core = { workspace = true }
 askhava-fixtures = { workspace = true }
 askhava-ops = { workspace = true }
+askhava-portals = { workspace = true }
 askhava-privacy = { workspace = true }
 axum = { workspace = true }
 base64 = { workspace = true }
