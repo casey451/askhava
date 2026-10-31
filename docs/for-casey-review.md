@@ -1329,3 +1329,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **The job keeps its words.** Once she picks a trade, the job keeps the job type her own words named ("AC blowing warm air" stays "AC not cooling"), so AC-only businesses still get the card. That fixes the twin's six warnings.
 - **Later messages.** More than 2 hours after her last message, a message about the same trade joins the open job only if at least half of its words (leaving out words like "the" and "my") are in the job's description.
 - **For you to look at.** The "That's 2 jobs" and SPLIT texts and the keyword list living in the catalog file are not built yet; the rules that detect two trades and the ALSO / TAMBIÉN reply are, and the texts go to the task that owns the intake texts (D-999).
+
+## Requests we turn away (T043, D-1009, D-1010, D-1011, October 31)
+
+- **Not in our towns.** A request from a town outside the towns list gets "Ask Hava: We don't cover your town yet, so we can't take this request. Text us any time." and the request closes. The spec fixes no wording for this one, so please read it (D-1009).
+- **A trade we do not offer.** She gets the spec's "We don't cover <trade> jobs yet" text and a line is noted so we can recruit.
+- **Refused work.** A move that leaves Arizona, or a home watch or turnover cleaning request asking for rent collection, finding or screening tenants, showing the home to renters or leasing, gets the same text but is not counted as recruiting demand. Plain words like "renters check out" do not trigger it (D-1011).
+- **For you to look at.** The owner email for new demand is not sent yet; the demand row is there for whichever task builds that email (D-1010).

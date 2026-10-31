@@ -210,5 +210,17 @@
     "draft": true,
     "segments": 3,
     "text": "Ask Hava: ¿Cuál es su primer nombre y la dirección de su casa? Solo el negocio que usted elija la recibe, después de que lo elija. Nunca preguntamos por estatus migratorio ni identificación."
+  },
+  "not_covered": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Todavía no cubrimos trabajos de {trade}. Anotamos su solicitud para poder agregar negocios. Escríbanos cuando quiera."
+  },
+  "out_of_area": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Todavía no cubrimos su ciudad, así que no podemos tomar esta solicitud. Escríbanos cuando quiera."
   }
 }

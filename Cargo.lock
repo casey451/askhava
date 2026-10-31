@@ -397,6 +397,7 @@ name = "askhava-intake"
 version = "0.1.0"
 dependencies = [
  "askhava-businesses",
+ "askhava-catalog",
  "askhava-core",
  "askhava-jobs",
  "askhava-messaging",

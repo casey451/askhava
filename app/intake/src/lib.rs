@@ -17,6 +17,7 @@ mod emergency;
 mod emergency_count;
 mod matching;
 mod models;
+mod routing;
 mod rules;
 mod safety_text;
 mod service;

@@ -31,6 +31,9 @@ pub enum IntakeError {
     /// A trade code is not a catalog code (lower case letters, digits and underscores).
     #[error("intake trade code is not valid")]
     BadTrade,
+    /// A town code is not a catalog town code (lower case letters, digits and underscores).
+    #[error("intake town code is not valid")]
+    BadTown,
     /// The jobs module could not create the job.
     #[error("intake could not create a job")]
     Job,
@@ -772,4 +775,52 @@ pub(crate) async fn set_first_job(
     .await
     .map(|_| ())
     .map_err(|_| IntakeError::Database)
+}
+
+/// Records one request no business covers yet (INT-017, OPS-041).
+pub(crate) async fn insert_demand(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    (town, trade, job_type): (&str, &str, Option<&str>),
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    sqlx::query!(
+        "INSERT INTO intake.recruiting_demand (conversation_id, town, trade, job_type, created_at) \
+         VALUES ($1, $2, $3, $4, $5)",
+        conversation,
+        town,
+        trade,
+        job_type,
+        at.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| IntakeError::Database)
+}
+
+/// The recruiting-demand rows of request `conversation`, oldest first (INT-017).
+pub(crate) async fn demand_rows(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Vec<RecruitingDemandRow>, IntakeError> {
+    let rows = sqlx::query!(
+        "SELECT id, conversation_id, town, trade, job_type, created_at \
+         FROM intake.recruiting_demand WHERE conversation_id = $1 ORDER BY created_at, id",
+        conversation
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(rows
+        .into_iter()
+        .map(|r| RecruitingDemandRow {
+            id: r.id,
+            conversation_id: r.conversation_id,
+            town: r.town,
+            trade: r.trade,
+            job_type: r.job_type,
+            created_at: r.created_at.to_jiff(),
+        })
+        .collect())
 }
