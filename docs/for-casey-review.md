@@ -1367,7 +1367,16 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 
 - **What happened.** The intake question bank (T156) was reverted because main went red after its merge. Its decisions D-1037 to D-1041 stay in the log but are void until T156 is re-run.
 
+<<<<<<< HEAD
 ## The test that kept turning main red for no reason is fixed (D-1086, October 31)
 
 - **What changed.** A test of the phone-call client failed now and then (about six false alarms, and main went red after T156). The cause was in the test setup, not the app: the test picked a free network port, then started the fake vendor server on it, and another test running at the same moment could grab that port in between. The test now waits for the fake server itself to say it is listening on its port, and starts it on a new port if it could not get the first one.
 - **Calls Claude made.** No test was loosened, skipped or retried, and the app's code did not change. The fake vendor server (a protected file) was left alone. One other crate (the AI tests) has the same setup and is left for a later fix.
+=======
+## A stuck fix for a broken main no longer stops the build for good (D-1099, October 31)
+
+- **What happened.** Today `main` broke for the first time and the fix task (FIX-MAIN) failed its first try. Had it failed all three, or been blocked for any other reason, it would have stopped for good, and so would the whole build, until someone edited the runner's state by hand, which the rules forbid.
+- **What the runner now does itself.** It waits at least 30 minutes, until its next cycle after that, then gives FIX-MAIN a fresh set of three tries on the same undo, with every earlier failure in its instructions. It retries at most three times, and each retry opens an issue saying what failed. Nothing is needed from you for those.
+- **When a person must act.** If FIX-MAIN is still blocked after its third retry, you get one issue saying it is stuck, with what failed, the files and the commit it is undoing. Once the cause is fixed, `python3 -m runner --requeue FIX-MAIN --reason "..."` starts it again. If the undo itself went in and `main` is still broken, you get one issue about that straight away, because undoing it again cannot help; the build resumes on its own once `main` passes again.
+- **What did not change.** `main` is still fixed only by undoing the bad merge, and it is still marked fixed only after the runner's own check passes on it.
+>>>>>>> origin/main
