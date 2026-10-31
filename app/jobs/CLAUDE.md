@@ -24,7 +24,7 @@ The layer-4 crate that owns every job's one status and the only code that change
 - JOB-001: `status::JobStatus` and the `jobs.job.status` `CHECK`.
 - JOB-002: `status::JobStatus::targets` (the arrows; every non-final status may go to Cancelled, JOB-018); `rules::check_move`; `service::apply` refuses any other move with `JobsError::RefusedMove`, logged once with `tracing::error!` as a bug, before anything is read or written.
 - JOB-003: `status::JobStatus::wait` and `rules::timeout`: every non-final status has a timer, queued on entry by `service::queue_timer` (D-805).
-- JOB-004 (the pattern; its race tests are TD-JOB-02's): `models::guarded_move` updates only `WHERE status = from`, returning `Guarded::MovedOn` otherwise.
+- JOB-004 (T033): `models::guarded_move` updates only `WHERE status = from`, returning `Guarded::MovedOn` otherwise. It is the first statement of `service::apply`'s transaction, so it takes the row lock first; a second event racing the same move waits on the lock, is re-checked against the committed row and writes nothing (no history, audit, timer or text). A lost move never retries from the job's new status.
 - JOB-005: `service::apply` writes `jobs.status_history` and `ops::api::audit` (`status_changed`) in the move's transaction; `create` audits `created`.
 - JOB-006: a timer is a `core.task` (`jobs.timeout`, payload `{job, status, version, timer}`, dedupe key `jobs.timeout.<job>.<version>.<timer>`); `service::run_timer` re-checks the version and timer version first and does nothing if the job moved on or its wait was restarted; the move it makes is fenced on status, version and timer version and stamped at the timer's due time (D-806).
 - D-807: a wait the spec counts from a later event or extends or pauses (INT-019, JOB-014, JOB-015, FEE-018, FEE-038, PICK-043, BIZ-034) is re-timed by the owning task with `restart_timer(db, id, (status, from))`; it never shortens a wait (`from` must not be before `timer_from`); a pause is a restart at `timer_from` plus the paused time.
@@ -40,6 +40,7 @@ The layer-4 crate that owns every job's one status and the only code that change
 
 - The arrows equal the hand-written oracle of section 6: `src/tests/prop_job_machine.rs::the_arrows_are_the_architectures`.
 - A refused or stale move writes nothing: `src/tests/transitions.rs::a_refused_or_stale_move_changes_nothing`.
+- Of two events racing one job, exactly one applies, in either order: `tests/integration/tests/job_races.rs`.
 - One history row and one audit row per move: `every_move_writes_one_history_and_one_audit_row`.
 - A timer for a job that moved on, or run twice, does nothing more: `a_timer_for_a_job_that_moved_on_does_nothing`.
 - A restarted wait supersedes the pending timer: `a_restarted_wait_supersedes_the_pending_timer`.
@@ -67,5 +68,6 @@ The layer-4 crate that owns every job's one status and the only code that change
 - `src/tests/business_clock.rs` (TD-JOB-03 pure cases: 7:30 p.m. pick to 11:30 a.m., emergency 60 minutes, 6 p.m. next day, 5, 3 and 21 days, which timeouts text, JOB-015 replies, JOB-025 rule): `cargo test -p askhava-jobs tests::business_clock`.
 - `tests/integration/tests/job_timers.rs` (TD-JOB-03 database cases and TD-PICK-33's JOB-010 template: texts on timeout, the 3-day restart, all-quotes-in once, held to 8 a.m. and never after a pick or CLOSE, no-choosable close and its retry past a restarted wait, DONE and the silent close, a timer per waiting status): `cargo test -p askhava-integration --test job_timers`.
 - `tests/integration/tests/job_numbers.rs` (TD-JOB-06: numbers from 1001 kept after cancel, concurrent creates, the app role cannot rewrite or re-issue one, a simulated restore and the raised floor; JOB-024).
+- `tests/integration/tests/job_races.rs` (TD-JOB-02: a cancel and a Confirm, a Stripe notice and the payment deadline, a pick and the 3-day close, two picks, each staged in both orders behind a held row lock, plus unstaged races; JOB-004): `cargo test -p askhava-integration --test job_races`.
 - `tests/security/tests/status_enums.rs` (TD-SEC-12: the scan is clean, fails on each planted shape, every `status.rs` denies wildcard arms; SEC-031).
 - `tests/integration/tests/webhook_dedupe.rs` (TD-SEC-16: re-issue, revoke, replay from the stored salt, one audit row each, a revoke stamped before the issue, the concurrent-issue race; SEC-037).
