@@ -6326,7 +6326,15 @@
     899,
     900,
     901
-   ]
+   ],
+   "reviewed_sha": "f410e15e005541a076bdee3c0ce0f480b487b72e",
+   "review_lease": {
+    "task": "T035",
+    "session": "actions-41162280261",
+    "expires": "2026-10-31T06:00:52Z"
+   },
+   "branch": "claude/task/T035-licensing-handyman",
+   "head_check_since": null
   },
   {
    "id": "T036",
@@ -9814,7 +9822,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T03:10:49Z",
+ "updated_at": "2026-10-31T03:23:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -9912,7 +9920,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "cb42726a9c0660d28e3316feb46593ceb260f262",
+ "runner_sha": "f410e15e005541a076bdee3c0ce0f480b487b72e",
  "starter": "actions",
  "smoke_runs": [
   {
