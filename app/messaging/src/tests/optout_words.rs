@@ -9,10 +9,11 @@
 
 use jiff::{SignedDuration, Timestamp};
 use serde_json::Value;
+use sqlx::types::Uuid;
 
 use crate::api::{
     APP_OPT_OUT_WORDS, CONFIRMATION_TEMPLATE, Classified, Detected, HELP_TEMPLATE, Language,
-    OPT_OUT_PHRASES, PROVIDER_OPT_OUT_WORDS, ProviderKeyword, RESUBSCRIBE_WORDS,
+    Listing, OPT_OUT_PHRASES, PROVIDER_OPT_OUT_WORDS, ProviderKeyword, RESUBSCRIBE_WORDS,
     SPANISH_OPT_OUT_WORDS, classify, detect_opt_out, may_send_to, render,
 };
 
@@ -140,15 +141,19 @@ fn td_con_20_the_confirmation_is_the_bare_con_009_text() {
     assert_eq!(es.body, CON_009_ES, "the Spanish one stays on");
 }
 
-/// TD-CON-20, CON-015, CON-030: only a sole START or UNSTOP re-subscribes; "yes" does not, and the
-/// provider's own match counts either way.
+/// TD-CON-20, CON-015, CON-030: only the provider's START or UNSTOP match (`OptOutType=START`)
+/// re-subscribes, so the app lifts a listing exactly when the provider lifts its block; a START
+/// the provider did not match ("Start.", or no `OptOutType`) and "yes" do not (D-870).
 #[test]
 fn td_con_20_only_start_or_unstop_resubscribes() {
-    for text in ["START", " unstop ", "Start."] {
+    for text in ["START", " unstop "] {
         assert_eq!(
-            classify(text, ProviderKeyword::None),
+            classify(text, ProviderKeyword::from_opt_out_type(Some("START"))),
             Classified::Resubscribe
         );
+    }
+    for text in ["Start.", "START", "unstop"] {
+        assert_eq!(classify(text, ProviderKeyword::None), Classified::Other);
     }
     assert_eq!(classify("yes", ProviderKeyword::None), Classified::Other);
     assert_eq!(
@@ -169,17 +174,25 @@ fn td_con_20_only_start_or_unstop_resubscribes() {
     );
 }
 
-/// TD-CON-05, CON-009, CON-013: a listed number gets only the confirmation, within 5 minutes,
-/// and the HELP reply.
+/// TD-CON-05, CON-009, CON-013: a listed number gets only the confirmation of its current listing,
+/// within 5 minutes, and the HELP reply.
 #[test]
 fn td_con_05_a_listed_number_gets_only_the_confirmation_and_help() {
     let since = Timestamp::from_second(1_793_000_000).expect("time");
     let at = |secs| since + SignedDuration::from_secs(secs);
-    assert!(may_send_to(None, "first_quote", since));
-    assert!(!may_send_to(Some(since), "first_quote", at(1)));
-    assert!(!may_send_to(Some(since), "consent", at(1)));
-    assert!(may_send_to(Some(since), CONFIRMATION_TEMPLATE, at(300)));
-    assert!(!may_send_to(Some(since), CONFIRMATION_TEMPLATE, at(301)));
-    assert!(!may_send_to(Some(since), CONFIRMATION_TEMPLATE, at(-1)));
-    assert!(may_send_to(Some(since), HELP_TEMPLATE, at(86_400)));
+    let event = Uuid::from_u128(0xe1);
+    let listed = Some(Listing { since, event });
+    let this = [event];
+    assert!(may_send_to(None, "first_quote", &[], since));
+    assert!(!may_send_to(listed, "first_quote", &this, at(1)));
+    assert!(!may_send_to(listed, "consent", &this, at(1)));
+    assert!(may_send_to(listed, CONFIRMATION_TEMPLATE, &this, at(300)));
+    assert!(!may_send_to(listed, CONFIRMATION_TEMPLATE, &this, at(301)));
+    assert!(!may_send_to(listed, CONFIRMATION_TEMPLATE, &this, at(-1)));
+    let earlier = [Uuid::from_u128(0xe0)];
+    assert!(
+        !may_send_to(listed, CONFIRMATION_TEMPLATE, &earlier, at(1)),
+        "an earlier listing's confirmation never goes"
+    );
+    assert!(may_send_to(listed, HELP_TEMPLATE, &[], at(86_400)));
 }

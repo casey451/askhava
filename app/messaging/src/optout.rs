@@ -6,9 +6,10 @@
 //! the event with its channel, how it was detected and when (a repeat is logged too); the app
 //! queues the one CON-009 confirmation only for words the provider did not answer, only on the
 //! first opt-out, and never
-//! while texting is paused (the caller emails it instead, CON-030). START or UNSTOP takes the
-//! number off (CON-015); anything else from a listed number sends nothing, and an emergency in it
-//! raises a critical alert (CON-016, CON-017). [`suppress`] is the entry for every other channel
+//! while texting is paused (the caller emails it instead, CON-030). The provider's START or UNSTOP
+//! (`OptOutType=START`) takes the number off (CON-015); anything else from a listed number sends
+//! nothing, and an emergency in it, or in the opt-out itself, raises a critical alert (CON-016,
+//! CON-017). [`suppress`] is the entry for every other channel
 //! (email, email reply, help form, portal switch, owner-recorded). [`send_checked`] is the one way
 //! a queued text goes out: it refuses a listed number except the confirmation within 5 minutes and
 //! the HELP reply (CON-013), and a 21610 refusal lists the number and blocks the row, which is
@@ -111,8 +112,11 @@ pub enum Outcome {
         confirmation: Option<Uuid>,
         /// Confirm by email if one is on file (T094's email).
         email: bool,
+        /// The critical alert raised, if the message carried the emergency flag (CON-017): the
+        /// number cannot be texted back once this message lists it (D-870).
+        alert: Option<Uuid>,
     },
-    /// START or UNSTOP took the number off: a new request, from the consent text (CON-015).
+    /// The provider's START or UNSTOP took the number off: a new request, from the consent text (CON-015).
     Resubscribed,
     /// The number is listed and wrote without START: no text; email her or list her in the digest
     /// (CON-016). `alert` is the critical alert raised for an emergency (CON-017).
@@ -139,17 +143,24 @@ pub async fn on_inbound_text(
 ) -> Result<Outcome, OutboxError> {
     let digests = digests(vault, msg.phone)?;
     let mut tx = db.begin().await.map_err(|_| OutboxError::Database)?;
-    let listed = models::suppressed_since(&mut tx, &digests).await?.is_some();
+    let listed = models::listing(&mut tx, &digests).await?.is_some();
     let outcome = match rules::classify(msg.text, msg.provider) {
         Classified::OptOut {
             detected,
             by_provider,
         } => {
             let how = detected.map_or_else(|| "provider".to_owned(), rules::Detected::label);
-            let event = record(&mut tx, &digests, (RevokeChannel::Text, &how), now).await?;
+            let (event, added) =
+                record(&mut tx, &digests, (RevokeChannel::Text, &how), now).await?;
             let spanish = detected.is_some_and(rules::Detected::spanish);
-            let answered = by_provider || listed;
-            confirm(&mut tx, secret, msg, (event, spanish, answered)).await?
+            let answered = by_provider || listed || !added;
+            let (confirmation, email) =
+                confirm(&mut tx, secret, msg, (event, spanish, answered)).await?;
+            Outcome::OptedOut {
+                confirmation,
+                email,
+                alert: alert(&mut tx, msg).await?,
+            }
         }
         Classified::Resubscribe if listed => {
             let event = OptOutEvent {
@@ -173,25 +184,20 @@ pub async fn on_inbound_text(
 }
 
 /// The app's part of the one confirmation (CON-009, CON-030): none when the provider answered or
-/// the number was already listed (`answered`), none while texting is paused (email instead), else
-/// the CON-009 text queued once under opt-out `event`, in Spanish for a Spanish phrase.
+/// the number was listed already or by a concurrent opt-out (`answered`), none while texting is
+/// paused (email instead: `(None, true)`), else the CON-009 text queued once under opt-out
+/// `event`, in Spanish for a Spanish phrase: `(Some(row), false)`.
 async fn confirm(
     db: &mut PgConnection,
     secret: &SecretString,
     msg: &InboundText<'_>,
     (event, spanish, answered): (Uuid, bool, bool),
-) -> Result<Outcome, OutboxError> {
+) -> Result<(Option<Uuid>, bool), OutboxError> {
     if answered {
-        return Ok(Outcome::OptedOut {
-            confirmation: None,
-            email: false,
-        });
+        return Ok((None, false));
     }
     if texting_paused(db).await? {
-        return Ok(Outcome::OptedOut {
-            confirmation: None,
-            email: true,
-        });
+        return Ok((None, true));
     }
     let language = if spanish { Language::Es } else { Language::En };
     let body = Registry::embedded()
@@ -205,10 +211,7 @@ async fn confirm(
         body: &body.body,
     };
     let (id, _) = service::enqueue(db, secret, &text).await?;
-    Ok(Outcome::OptedOut {
-        confirmation: Some(id),
-        email: false,
-    })
+    Ok((Some(id), false))
 }
 
 /// Whether the owner paused texting, alone or with everything (OPS-003, CON-030).
@@ -224,8 +227,9 @@ async fn texting_paused(db: &mut PgConnection) -> Result<bool, OutboxError> {
     Ok(false)
 }
 
-/// Raises the critical alert for an emergency from a listed number, if the message has the flag
-/// (CON-017); the alert holds the inbox row's ID only (PRIV-006).
+/// Raises the critical alert for an emergency from a listed number (one listed before or by this
+/// message), if the message has the flag (CON-017, D-870); the alert holds the inbox row's ID only
+/// (PRIV-006).
 async fn alert(db: &mut PgConnection, msg: &InboundText<'_>) -> Result<Option<Uuid>, OutboxError> {
     if !msg.emergency {
         return Ok(None);
@@ -258,20 +262,23 @@ pub async fn suppress(
 ) -> Result<bool, OutboxError> {
     let digests = digests(vault, phone)?;
     let mut tx = db.begin().await.map_err(|_| OutboxError::Database)?;
-    let new = models::suppressed_since(&mut tx, &digests).await?.is_none();
-    record(&mut tx, &digests, (channel, how), now).await?;
+    let listed = models::listing(&mut tx, &digests).await?.is_some();
+    let (_, added) = record(&mut tx, &digests, (channel, how), now).await?;
     tx.commit().await.map_err(|_| OutboxError::Database)?;
-    Ok(new)
+    Ok(added && !listed)
 }
 
 /// Logs an opt-out by `channel` and lists the number from `now` (a listed number keeps its
-/// earlier time, the repeat being logged only); returns the event's ID (CON-022, CON-035).
+/// earlier time, the repeat being logged only); returns the event's ID and whether it added a
+/// suppression row. The insert waits on a concurrent opt-out's uncommitted rows, so of two at once
+/// only the first adds any: that, not an earlier read, decides "newly listed" (CON-009, CON-022,
+/// CON-035, D-870).
 async fn record(
     db: &mut PgConnection,
     digests: &[(u16, [u8; 32])],
     (channel, how): (RevokeChannel, &str),
     now: Timestamp,
-) -> Result<Uuid, OutboxError> {
+) -> Result<(Uuid, bool), OutboxError> {
     let event = OptOutEvent {
         action: "opt_out",
         channel: channel.as_str(),
@@ -280,13 +287,13 @@ async fn record(
         at: now,
     };
     let id = models::insert_optout_event(db, &event).await?;
-    models::put_suppression(db, digests, id, now).await?;
-    Ok(id)
+    let added = models::put_suppression(db, digests, id, now).await?;
+    Ok((id, added > 0))
 }
 
 /// Sends outbox row `id` as `service::send` does, after checking the suppression list at `now`
-/// (CON-013, CON-035): a listed number gets only the confirmation within 5 minutes of its opt-out
-/// and the HELP reply, whatever the provider has blocked. A carrier refusal with 21610 lists the
+/// (CON-013, CON-035): a listed number gets only the HELP reply and the confirmation of its current
+/// listing within 5 minutes of it (`rules::may_send_to`), whatever the provider has blocked. A carrier refusal with 21610 lists the
 /// number and blocks the row, which is never retried (CON-014).
 ///
 /// # Errors
@@ -300,12 +307,12 @@ pub async fn send_checked(
     (to, from): (To<'_>, &str),
     now: Timestamp,
 ) -> Result<Option<SentText>, OutboxError> {
-    let (recipient, template) = models::outbox_target(db, id)
+    let (recipient, template, subject) = models::outbox_target(db, id)
         .await?
         .ok_or(OutboxError::NotFound)?;
     let digests = digests(vault, number(db, to, recipient).await?.expose_secret())?;
-    let since = models::suppressed_since(db, &digests).await?;
-    if !rules::may_send_to(since, &template, now) {
+    let listing = models::listing(db, &digests).await?;
+    if !rules::may_send_to(listing, &template, &subject, now) {
         return Err(OutboxError::Suppressed);
     }
     let watch = Watch {
@@ -317,7 +324,7 @@ pub async fn send_checked(
         return sent;
     }
     let mut tx = db.begin().await.map_err(|_| OutboxError::Database)?;
-    if since.is_none() {
+    if listing.is_none() {
         record(
             &mut tx,
             &digests,

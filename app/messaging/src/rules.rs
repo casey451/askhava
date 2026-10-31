@@ -14,6 +14,7 @@ use std::collections::{BTreeMap, HashMap};
 
 use jiff::{SignedDuration, Timestamp, Zoned, civil::Date, tz::TimeZone};
 use serde_json::from_str;
+use sqlx::types::Uuid;
 use thiserror::Error;
 
 /// The Arizona zone every window is also checked in (QH-002).
@@ -396,7 +397,8 @@ pub const SPANISH_OPT_OUT_WORDS: [&str; 4] = ["parar", "alto", "cancelar", "baja
 /// A sole opt-out word the provider does not handle, so the app sends its confirmation: "opt out"
 /// with a space or hyphen is an FCC word but not a provider keyword (CON-008, CON-030, D-477).
 pub const APP_OPT_OUT_WORDS: [&str; 1] = ["opt out"];
-/// The only re-subscribe words, the provider's and the app's alike; YES is not one (CON-015, CON-030).
+/// The provider's only re-subscribe words; YES is not one (CON-015, CON-030). The app acts on the
+/// provider's `OptOutType=START` for them rather than matching them itself (D-870).
 pub const RESUBSCRIBE_WORDS: [&str; 2] = ["start", "unstop"];
 /// The revocation phrases, each with the pattern ID stored as how an opt-out was detected (CON-010,
 /// CON-036). None also fits a normal request ("can stop by at 3", "please cancel my request").
@@ -487,7 +489,7 @@ pub enum Classified {
         /// The provider matched it and replied (CON-030).
         by_provider: bool,
     },
-    /// A sole START or UNSTOP (CON-015).
+    /// The provider matched START or UNSTOP (`OptOutType=START`) and lifted its block (CON-015).
     Resubscribe,
     /// Anything else, "yes" included (CON-011, CON-030).
     Other,
@@ -515,11 +517,13 @@ pub fn detect_opt_out(text: &str) -> Option<Detected> {
 }
 
 /// Classifies an inbound text from what the provider matched and the app's own detector (CON-008,
-/// CON-010, CON-015, CON-030): a sole START or UNSTOP re-subscribes; nothing else does.
+/// CON-010, CON-015, CON-030): only the provider's `OptOutType=START` re-subscribes, so the app
+/// lifts a listing exactly when the provider lifted its block. A text the provider did not match
+/// ("Start.", or START with no `OptOutType`) leaves the number listed, as the provider's block
+/// stays (D-870).
 #[must_use]
 pub fn classify(text: &str, provider: ProviderKeyword) -> Classified {
-    let folded = fold(text);
-    if provider == ProviderKeyword::Start || RESUBSCRIBE_WORDS.contains(&folded.as_str()) {
+    if provider == ProviderKeyword::Start {
         return Classified::Resubscribe;
     }
     let detected = detect_opt_out(text);
@@ -533,16 +537,34 @@ pub fn classify(text: &str, provider: ProviderKeyword) -> Classified {
     Classified::Other
 }
 
-/// Whether text `template_id` may go at `now` to a number on the suppression list since `since`
-/// (`None`: not on it). Only the one confirmation, within [`CONFIRM_WITHIN`] of the opt-out, and the
-/// HELP reply go to a suppressed number (CON-009, CON-013, CON-030, CON-035, D-131).
+/// A number's current listing on the suppression list: since when, and the opt-out event that
+/// listed it (CON-035).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Listing {
+    /// When suppression took effect.
+    pub since: Timestamp,
+    /// The `messaging.optout_event` that listed the number.
+    pub event: Uuid,
+}
+
+/// Whether text `template_id` with subject IDs `subject` may go at `now` to a number with
+/// `listing` (`None`: not listed). Only the HELP reply, and the one confirmation of this listing
+/// (its subject holds the listing's event) within [`CONFIRM_WITHIN`] of it, go to a listed
+/// number; a confirmation queued for an earlier listing never goes (CON-009, CON-013, CON-030,
+/// CON-035, D-131, D-870).
 #[must_use]
-pub fn may_send_to(since: Option<Timestamp>, template_id: &str, now: Timestamp) -> bool {
-    let Some(since) = since else {
+pub fn may_send_to(
+    listing: Option<Listing>,
+    template_id: &str,
+    subject: &[Uuid],
+    now: Timestamp,
+) -> bool {
+    let Some(Listing { since, event }) = listing else {
         return true;
     };
     template_id == HELP_TEMPLATE
         || (template_id == CONFIRMATION_TEMPLATE
+            && subject.contains(&event)
             && now >= since
             && now.duration_since(since) <= CONFIRM_WITHIN)
 }

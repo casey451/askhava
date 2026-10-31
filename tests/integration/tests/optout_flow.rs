@@ -2,8 +2,9 @@
 //! CON-017, CON-030, CON-035).
 //!
 //! Proves through `messaging::api` alone that a STOP by text lists the number at once with its
-//! channel and time and nothing else goes to it, even when the carrier has no block, until START;
-//! that "yes" re-subscribes nothing; that the app queues exactly one bare CON-009 confirmation,
+//! channel and time and nothing else goes to it, even when the carrier has no block, until the
+//! provider's START (`OptOutType=START`); that "yes" and an unmatched "Start." re-subscribe nothing;
+//! that two opt-outs at once and an earlier listing never add a second confirmation; that the app queues exactly one bare CON-009 confirmation,
 //! only for words the provider did not answer, which goes within 5 minutes and never later; that
 //! the HELP reply still goes; that a later message sends nothing and an emergency in it raises a
 //! critical alert; that a 21610 refusal blocks the row and is never retried; and that while
@@ -24,7 +25,7 @@ use base64::engine::general_purpose::STANDARD;
 use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::types::Uuid;
-use sqlx::{PgConnection, PgPool};
+use sqlx::{Acquire, PgConnection, PgPool};
 
 const FROM: &str = "+19285550100";
 const NOW: i64 = 1_793_000_000;
@@ -159,6 +160,7 @@ async fn td_con_20_stop_lists_the_number_and_nothing_goes_until_start(pool: PgPo
     let none = Outcome::OptedOut {
         confirmation: None,
         email: false,
+        alert: None,
     };
     assert_eq!(
         on(&mut db, &vault, &stop, 0).await,
@@ -215,6 +217,7 @@ async fn td_con_05_one_confirmation_then_only_help_until_start(pool: PgPool) {
     let Outcome::OptedOut {
         confirmation: Some(confirmation),
         email: false,
+        alert: None,
     } = on(&mut db, &vault, &opt_out, 0).await
     else {
         panic!("the app confirms a word the provider does not answer");
@@ -247,17 +250,102 @@ async fn td_con_05_one_confirmation_then_only_help_until_start(pool: PgPool) {
     let Outcome::Suppressed { alert: Some(_) } = on(&mut db, &vault, &gas, 3_700).await else {
         panic!("an emergency from a listed number raises an alert");
     };
+    let mut stop_gas = inbound(her, phone, "STOP", ProviderKeyword::OptOut);
+    stop_gas.emergency = true;
+    let Outcome::OptedOut { alert: Some(_), .. } = on(&mut db, &vault, &stop_gas, 3_710).await
+    else {
+        panic!("an emergency in an opt-out from a listed number raises an alert");
+    };
     let critical = "SELECT count(*) FROM ops.alert WHERE severity = 'critical'";
-    assert_eq!(count(&pool, critical).await, 1);
+    assert_eq!(count(&pool, critical).await, 2);
     assert_eq!(
         carrier.calls(),
         2,
         "no text but the confirmation and the HELP reply"
     );
-    let start = inbound(her, phone, "unstop", ProviderKeyword::None);
+    let punctuated = inbound(her, phone, "Start.", ProviderKeyword::None);
+    assert_eq!(
+        on(&mut db, &vault, &punctuated, 3_750).await,
+        Outcome::Suppressed { alert: None },
+        "the provider did not match it, so its block stays and so does the listing"
+    );
+    let start = inbound(her, phone, "unstop", ProviderKeyword::Start);
     assert_eq!(
         on(&mut db, &vault, &start, 3_800).await,
         Outcome::Resubscribed
+    );
+}
+
+/// TD-CON-05, CON-009, CON-013: a confirmation queued for an earlier listing never goes once the
+/// number re-subscribed and opted out again; only the current listing's confirmation does.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_05_only_the_current_listings_confirmation_goes(pool: PgPool) {
+    let (vault, carrier) = (vault(), FakeCarrier::default());
+    let mut db = pool.acquire().await.expect("connection");
+    let phone = "+19285550148";
+    let her = contact(&mut db, &vault, phone).await;
+    let opt_out = inbound(her, phone, "opt-out", ProviderKeyword::None);
+    let Outcome::OptedOut {
+        confirmation: Some(first),
+        ..
+    } = on(&mut db, &vault, &opt_out, 0).await
+    else {
+        panic!("the app confirms the first opt-out");
+    };
+    let start = inbound(her, phone, "START", ProviderKeyword::Start);
+    assert_eq!(on(&mut db, &vault, &start, 10).await, Outcome::Resubscribed);
+    let Outcome::OptedOut {
+        confirmation: Some(second),
+        ..
+    } = on(&mut db, &vault, &opt_out, 20).await
+    else {
+        panic!("the app confirms the new opt-out");
+    };
+    let stale = try_send(&mut db, (&carrier, &vault), first, 30).await;
+    assert_eq!(stale.err(), Some(OutboxError::Suppressed));
+    let current = try_send(&mut db, (&carrier, &vault), second, 30).await;
+    assert!(current.expect("sent").is_some());
+    assert_eq!(
+        carrier.calls(),
+        1,
+        "one confirmation for the current listing"
+    );
+}
+
+/// TD-CON-05, CON-009: two opt-outs from one number at once queue one confirmation: the second
+/// waits on the first's uncommitted listing and, finding the number listed, sends none.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_05_two_opt_outs_at_once_queue_one_confirmation(pool: PgPool) {
+    let vault = vault();
+    let (mut first_db, mut second_db) = (
+        pool.acquire().await.expect("connection"),
+        pool.acquire().await.expect("connection"),
+    );
+    let phone = "+19285550149";
+    let her = contact(&mut first_db, &vault, phone).await;
+    let opt_out = inbound(her, phone, "Opt out", ProviderKeyword::None);
+    let mut open = first_db.begin().await.expect("transaction");
+    let Outcome::OptedOut {
+        confirmation: Some(_),
+        ..
+    } = on(&mut open, &vault, &opt_out, 0).await
+    else {
+        panic!("the first opt-out is confirmed");
+    };
+    let commit_later = async {
+        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+        open.commit().await.expect("commit");
+    };
+    let (second, ()) = tokio::join!(on(&mut second_db, &vault, &opt_out, 1), commit_later);
+    let none = Outcome::OptedOut {
+        confirmation: None,
+        email: false,
+        alert: None,
+    };
+    assert_eq!(second, none, "the concurrent opt-out sends none");
+    assert_eq!(
+        count(&pool, "SELECT count(*) FROM messaging.outbox").await,
+        1
     );
 }
 
@@ -301,6 +389,7 @@ async fn td_con_13_spanish_and_late_confirmations(pool: PgPool) {
     let none = Outcome::OptedOut {
         confirmation: None,
         email: false,
+        alert: None,
     };
     assert_eq!(on(&mut db, &vault, &parar, 0).await, none);
     assert_eq!(
@@ -325,6 +414,7 @@ async fn td_con_13_an_opt_out_while_texting_is_paused_is_never_confirmed_by_text
     let email = Outcome::OptedOut {
         confirmation: None,
         email: true,
+        alert: None,
     };
     assert_eq!(on(&mut db, &vault, &msg, 0).await, email);
     set_switch(&mut db, Switch::Texting, false, Actor::System)

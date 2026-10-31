@@ -10,6 +10,7 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 use thiserror::Error;
 
+use crate::rules::Listing;
 use crate::status::DeliveryStatus;
 
 /// Why a `messaging` outbox or directory call failed. No variant carries a value (PRIV-016).
@@ -349,33 +350,40 @@ pub(crate) async fn insert_optout_event(
     .map_err(|_| OutboxError::Database)
 }
 
-/// Since when the number with `digests` is on the suppression list, if it is (CON-035).
-pub(crate) async fn suppressed_since(
+/// The number with `digests`'s current listing on the suppression list, if it is listed: the
+/// earliest row's time and the event that listed it (CON-035).
+pub(crate) async fn listing(
     db: &mut PgConnection,
     digests: &[(u16, [u8; 32])],
-) -> Result<Option<Timestamp>, OutboxError> {
+) -> Result<Option<Listing>, OutboxError> {
     let (versions, hashes) = split_digests(digests);
-    let since = sqlx::query_scalar!(
-        "SELECT min(s.since) FROM messaging.suppression s \
+    let row = sqlx::query!(
+        "SELECT s.since, s.event_id FROM messaging.suppression s \
          JOIN UNNEST($1::smallint[], $2::bytea[]) AS k (v, h) \
-         ON s.index_version = k.v AND s.digest = k.h",
+         ON s.index_version = k.v AND s.digest = k.h \
+         ORDER BY s.since, s.event_id LIMIT 1",
         &versions,
         &hashes
     )
-    .fetch_one(db)
+    .fetch_optional(db)
     .await
     .map_err(|_| OutboxError::Database)?;
-    Ok(since.map(|at| at.to_jiff()))
+    Ok(row.map(|r| Listing {
+        since: r.since.to_jiff(),
+        event: r.event_id,
+    }))
 }
 
 /// Puts the number with `digests` on the suppression list since `at`, by opt-out event `event`
-/// (CON-035). A version already listed keeps its earlier row.
+/// (CON-035). A version already listed keeps its earlier row. Returns how many rows it added: a
+/// concurrent opt-out that listed the number first leaves this one adding none, as the insert
+/// waits for that transaction's rows (D-870).
 pub(crate) async fn put_suppression(
     db: &mut PgConnection,
     digests: &[(u16, [u8; 32])],
     event: Uuid,
     at: Timestamp,
-) -> Result<(), OutboxError> {
+) -> Result<u64, OutboxError> {
     let (versions, hashes) = split_digests(digests);
     sqlx::query!(
         "INSERT INTO messaging.suppression (index_version, digest, event_id, since) \
@@ -388,7 +396,7 @@ pub(crate) async fn put_suppression(
     )
     .execute(db)
     .await
-    .map(|_| ())
+    .map(|done| done.rows_affected())
     .map_err(|_| OutboxError::Database)
 }
 
@@ -410,19 +418,19 @@ pub(crate) async fn lift_suppression(
     .map_err(|_| OutboxError::Database)
 }
 
-/// Outbox row `id`'s recipient ID and template ID, if the row exists (CON-035).
+/// Outbox row `id`'s recipient ID, template ID and subject IDs, if the row exists (CON-035).
 pub(crate) async fn outbox_target(
     db: &mut PgConnection,
     id: Uuid,
-) -> Result<Option<(Uuid, String)>, OutboxError> {
+) -> Result<Option<(Uuid, String, Vec<Uuid>)>, OutboxError> {
     let row = sqlx::query!(
-        "SELECT recipient_id, template_id FROM messaging.outbox WHERE id = $1",
+        "SELECT recipient_id, template_id, subject_ids FROM messaging.outbox WHERE id = $1",
         id
     )
     .fetch_optional(db)
     .await
     .map_err(|_| OutboxError::Database)?;
-    Ok(row.map(|r| (r.recipient_id, r.template_id)))
+    Ok(row.map(|r| (r.recipient_id, r.template_id, r.subject_ids)))
 }
 
 /// Marks row `id` blocked and clears its body: the carrier refused it with 21610, so it is never

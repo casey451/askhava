@@ -3,10 +3,11 @@
 
 use jiff::{SignedDuration, Timestamp};
 use proptest::prelude::*;
+use sqlx::types::Uuid;
 
 use crate::api::{
-    CONFIRMATION_TEMPLATE, Classified, HELP_TEMPLATE, PROVIDER_OPT_OUT_WORDS, ProviderKeyword,
-    classify, detect_opt_out, may_send_to,
+    CONFIRMATION_TEMPLATE, Classified, HELP_TEMPLATE, Listing, PROVIDER_OPT_OUT_WORDS,
+    ProviderKeyword, RESUBSCRIBE_WORDS, classify, detect_opt_out, may_send_to,
 };
 
 /// The later inbound texts a listed number may send.
@@ -21,6 +22,17 @@ const INBOUND: [&str; 9] = [
     "start",
     "Unstop",
 ];
+/// What the provider reports for `text`, as the fake Twilio matches it (T167): `START` only for a
+/// bare START or UNSTOP once trimmed; the app never re-matches it (D-870).
+fn provider(text: &str) -> ProviderKeyword {
+    let word = text.trim().to_lowercase();
+    if RESUBSCRIBE_WORDS.contains(&word.as_str()) {
+        ProviderKeyword::Start
+    } else {
+        ProviderKeyword::None
+    }
+}
+
 /// The texts the app may try to send.
 const TEMPLATES: [&str; 5] = [
     "consent",
@@ -53,24 +65,30 @@ proptest! {
 
     /// TD-CON-05, CON-013, CON-015: after an opt-out, over any later sequence of inbound texts and
     /// send attempts, nothing but the confirmation within 5 minutes and the HELP reply goes until
-    /// a START or UNSTOP.
+    /// a START or UNSTOP. Each opt-out of a not-listed number is a new listing with its own event;
+    /// a confirmation goes only for the current one, and never late.
     #[test]
     fn nothing_but_confirmation_and_help_until_start(
-        events in proptest::collection::vec((0usize..9, 0usize..5, 0i64..900), 1..40),
+        events in proptest::collection::vec((0usize..9, 0usize..5, 0i64..900, 0u128..4), 1..40),
     ) {
         let opted = Timestamp::from_second(1_793_000_000).expect("time");
-        let (mut since, mut now) = (Some(opted), opted);
-        for (text, template, step) in events {
+        let (mut listing, mut now, mut serial) = (Some(Listing { since: opted, event: Uuid::from_u128(0) }), opted, 0u128);
+        for (text, template, step, about) in events {
             now += SignedDuration::from_secs(step);
-            since = match classify(INBOUND[text], ProviderKeyword::None) {
+            listing = match classify(INBOUND[text], provider(INBOUND[text])) {
                 Classified::Resubscribe => None,
-                Classified::OptOut { .. } => since.or(Some(now)),
-                Classified::Other => since,
+                Classified::OptOut { .. } => listing.or_else(|| {
+                    serial += 1;
+                    Some(Listing { since: now, event: Uuid::from_u128(serial) })
+                }),
+                Classified::Other => listing,
             };
             let template = TEMPLATES[template];
-            if let Some(at) = since && may_send_to(since, template, now) {
-                let late = now.duration_since(at) > SignedDuration::from_mins(5);
-                prop_assert!(template == HELP_TEMPLATE || (template == CONFIRMATION_TEMPLATE && !late));
+            let subject = [Uuid::from_u128(about)];
+            if let Some(Listing { since, event }) = listing && may_send_to(listing, template, &subject, now) {
+                let late = now.duration_since(since) > SignedDuration::from_mins(5);
+                let current = subject.contains(&event);
+                prop_assert!(template == HELP_TEMPLATE || (template == CONFIRMATION_TEMPLATE && current && !late));
             }
         }
     }

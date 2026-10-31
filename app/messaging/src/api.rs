@@ -14,7 +14,7 @@ pub use crate::optout::{
 };
 pub use crate::rules::{
     APP_OPT_OUT_WORDS, AreaCodes, CONFIRM_WITHIN, CONFIRMATION_TEMPLATE, Channel, Classified,
-    Decision, Detected, HELP_TEMPLATE, Held, Kind, OPT_OUT_PHRASES, Outgoing,
+    Decision, Detected, HELP_TEMPLATE, Held, Kind, Listing, OPT_OUT_PHRASES, Outgoing,
     PROVIDER_OPT_OUT_WORDS, ProviderKeyword, QuietHoursError, RESUBSCRIBE_WORDS, Release,
     SPANISH_OPT_OUT_WORDS, classify, decide, detect_opt_out, may_send_to, plan_release, retry,
 };

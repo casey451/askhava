@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT recipient_id, template_id FROM messaging.outbox WHERE id = $1",
+  "query": "SELECT recipient_id, template_id, subject_ids FROM messaging.outbox WHERE id = $1",
   "describe": {
     "columns": [
       {
@@ -24,6 +24,17 @@
             "name": "template_id"
           }
         }
+      },
+      {
+        "ordinal": 2,
+        "name": "subject_ids",
+        "type_info": "UuidArray",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "subject_ids"
+          }
+        }
       }
     ],
     "parameters": {
@@ -33,8 +44,9 @@
     },
     "nullable": [
       false,
+      false,
       false
     ]
   },
-  "hash": "c5b0928c797518641056f28c6ed10670cca8fb04be05973c4fd37030ba1ec1ad"
+  "hash": "193db3e215683338b41b564a17779ef78ac11ffbab9f01a62d0dbab26439ddf3"
 }
