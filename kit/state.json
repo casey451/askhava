@@ -9814,7 +9814,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T03:09:02Z",
+ "updated_at": "2026-10-31T03:10:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -9912,7 +9912,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c2afcea76d80ceaeecf29299758199a3d5be0d1a",
+ "runner_sha": "cb42726a9c0660d28e3316feb46593ceb260f262",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -10104,7 +10104,7 @@
  },
  "lane_strikes": {
   "2": {
-   "count": 0,
+   "count": 1,
    "last": [
     {
      "at": "2026-10-30T21:17:19Z",
@@ -10113,6 +10113,10 @@
     {
      "at": "2026-10-30T23:48:18Z",
      "why": "T034 update_conflict: merging main into the task branch conflicts in Cargo.toml: the runner resolves only docs/decisions.md and a plan lock both sides kept true, so this attempt fails and the next one starts from the branc"
+    },
+    {
+     "at": "2026-10-31T03:10:49Z",
+     "why": "lane 2: 3 lost races in a row in one run"
     }
    ]
   }
