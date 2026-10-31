@@ -3215,7 +3215,8 @@
     "app/licensing/src/service.rs",
     "app/licensing/src/imports.rs",
     "tests/integration/tests/license_imports.rs",
-    "migrations/0050_licensing_imports.sql"
+    "migrations/0050_licensing_imports.sql",
+    "app/licensing/src/tests/imports.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -3236,13 +3237,14 @@
     "D-017",
     "D-056",
     "D-112",
-    "D-267"
+    "D-267",
+    "D-932"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 18
    },
    "checks": [
     "Ci",
