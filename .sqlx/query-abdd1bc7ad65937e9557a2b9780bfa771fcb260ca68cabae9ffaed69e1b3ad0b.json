@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM businesses.business b WHERE b.status = 'active' AND b.after_hours AND EXISTS (SELECT 1 FROM businesses.town t WHERE t.business_id = b.id AND t.town = $2) AND EXISTS (SELECT 1 FROM businesses.job_type_choice c WHERE c.business_id = b.id AND c.category = $1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "abdd1bc7ad65937e9557a2b9780bfa771fcb260ca68cabae9ffaed69e1b3ad0b"
+}
