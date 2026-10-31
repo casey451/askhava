@@ -4,8 +4,10 @@
 //! Each request is read twice by the AI; [`keyword_reading`] is the independent second opinion on
 //! trade and job type (AI-011). [`second_opinion`] settles the trade or builds a [`TradeQuestion`]
 //! offering every distinct trade of the two readings and the keywords, up to three (D-104). Its
-//! answers match numbers and whole words only ("repair" never matches heating/AC, D-103); a second
-//! unusable answer applies the fallback (INT-015). After a trade is chosen, [`candidates`] keeps
+//! answers match numbers and whole words only ("repair" never matches heating/AC, and generic
+//! label words such as "repair" name no option, D-103); a second unusable answer applies the
+//! fallback (INT-015). The longest phrase wins, so "water heater" is plumbing (R-37) and "spa
+//! heater" pool repair, never the furnace rule's "heater". After a trade is chosen, [`candidates`] keeps
 //! that trade's keyword job types (D-102) and every license-boundary keyword job type (D-105), so
 //! CARD-001's license check sees the job in the homeowner's own words. [`two_trades`] and
 //! [`starts_second`] are INT-032's two-job detection and its ALSO / TAMBIÉN reply.
@@ -40,6 +42,7 @@ const PLUMBING: &str = "plumbing_repair";
 const HVAC: &str = "hvac_repair";
 const ELECTRICAL: &str = "electrical";
 const HANDYMAN: &str = "handyman";
+const POOL: &str = "pool_repair";
 
 /// The keyword rules; job type names are the catalog's (`docs/catalog/categories.yaml`).
 const RULES: &[Rule] = &[
@@ -67,6 +70,8 @@ const RULES: &[Rule] = &[
     ),
     rule(HVAC, Some("thermostat"), &["thermostat"], true),
     rule(HVAC, Some("furnace repair"), &["furnace", "heater"], true),
+    rule(PLUMBING, None, &["water heater"], false),
+    rule(POOL, None, &["pool heater", "spa heater"], false),
     rule(
         HVAC,
         Some("evaporative (swamp) cooler repair"),
@@ -91,7 +96,23 @@ const RULES: &[Rule] = &[
     rule(HANDYMAN, Some("fence repair"), &["fence"], false),
 ];
 
-/// The trade as an option label reads (INT-013), whose words also answer the question (D-103).
+/// Label words too generic to name one option ("just a small repair" must not pick appliance
+/// repair or roof repair, D-103).
+const GENERIC: &[&str] = &[
+    "repair",
+    "replacement",
+    "cleaning",
+    "maintenance",
+    "pickup",
+    "removal",
+    "detailing",
+    "washing",
+    "systems",
+    "other",
+];
+
+/// The trade as an option label reads (INT-013), whose words, less the [`GENERIC`] ones, also
+/// answer the question (D-103).
 #[must_use]
 pub fn trade_label(trade: &str) -> String {
     match trade {
@@ -139,16 +160,35 @@ fn first_at(padded: &str, words: &[&str]) -> Option<usize> {
         .min()
 }
 
+/// Each rule's first whole-word match, longest phrase first: a matched phrase is blanked out, so
+/// a shorter phrase inside it ("heater" in "water heater") never matches there.
+fn rule_hits(words: &str) -> Vec<(usize, &'static Rule)> {
+    let mut working = format!(" {} ", fold(words));
+    let mut phrases: Vec<(&str, &'static Rule)> = RULES
+        .iter()
+        .flat_map(|r| r.words.iter().map(move |w| (*w, r)))
+        .collect();
+    phrases.sort_by_key(|(w, _)| std::cmp::Reverse(w.len()));
+    let mut hits: Vec<(usize, &'static Rule)> = Vec::new();
+    for (w, r) in phrases {
+        let needle = format!(" {w} ");
+        while let Some(at) = working.find(&needle) {
+            working.replace_range(at + 1..at + 1 + w.len(), &" ".repeat(w.len()));
+            match hits.iter_mut().find(|(_, h)| std::ptr::eq(*h, r)) {
+                Some(hit) => hit.0 = hit.0.min(at),
+                None => hits.push((at, r)),
+            }
+        }
+    }
+    hits.sort_by_key(|(at, _)| *at);
+    hits
+}
+
 /// The keyword second opinion on trade and job type (AI-011): whole words only, so "repair"
-/// never matches "air" and "leaky" is not "leak".
+/// never matches "air" and "leaky" is not "leak"; the longest phrase wins ("water heater").
 #[must_use]
 pub fn keyword_reading(words: &str) -> KeywordReading {
-    let padded = format!(" {} ", fold(words));
-    let mut hits: Vec<(usize, &Rule)> = RULES
-        .iter()
-        .filter_map(|r| Some((first_at(&padded, r.words)?, r)))
-        .collect();
-    hits.sort_by_key(|(at, _)| *at);
+    let hits = rule_hits(words);
     let mut out = KeywordReading::default();
     for (_, r) in hits {
         if !out.trades.contains(&r.trade) {
@@ -232,11 +272,23 @@ pub enum TradeStep {
     Fallback(String),
 }
 
-const NOT_SURE: &[&str] = &["not sure", "no se", "dont know", "no idea", "unsure"];
+const NOT_SURE: &[&str] = &["not sure", "dont know", "no idea", "unsure"];
+
+/// "No sé" counts only nearly alone (at most this many words), since "no se" also starts
+/// ordinary Spanish sentences ("no se puede cerrar").
+const NO_SE_MAX_WORDS: usize = 3;
+
+/// Whether a reply that names no option says "Not sure" (INT-015).
+fn not_sure(folded: &str) -> bool {
+    let padded = format!(" {folded} ");
+    first_at(&padded, NOT_SURE).is_some()
+        || (folded.split(' ').count() <= NO_SE_MAX_WORDS && first_at(&padded, &["no se"]).is_some())
+}
 
 impl TradeQuestion {
-    /// Reads a reply (INT-012, D-103): a lone option number, "Not sure", or the whole words of
-    /// exactly one option (its trade's keywords or its label's words); anything else is unusable.
+    /// Reads a reply (INT-012, D-103): a lone option number, the whole words of exactly one option
+    /// (its trade's keywords or its label's non-generic words), or, naming no option, "Not sure";
+    /// anything else is unusable.
     #[must_use]
     pub fn read(&self, words: &str) -> TradeAnswer {
         let folded = fold(words);
@@ -248,9 +300,6 @@ impl TradeQuestion {
         {
             return TradeAnswer::Trade(trade.clone());
         }
-        if first_at(&padded, NOT_SURE).is_some() {
-            return TradeAnswer::NotSure;
-        }
         let hits: Vec<&String> = self
             .options
             .iter()
@@ -258,6 +307,7 @@ impl TradeQuestion {
             .collect();
         match hits.as_slice() {
             [one] => TradeAnswer::Trade((*one).clone()),
+            [] if not_sure(&folded) => TradeAnswer::NotSure,
             _ => TradeAnswer::Unusable,
         }
     }
@@ -276,14 +326,13 @@ impl TradeQuestion {
     }
 }
 
-/// Whether the reply holds, as whole words, a keyword of `trade` or a word of its label.
+/// Whether the reply holds, as whole words, a keyword of `trade` (longest phrase first) or a
+/// non-generic word of its label.
 fn option_named(padded: &str, trade: &str) -> bool {
     let label = fold(&trade_label(trade));
-    let label_words: Vec<&str> = label.split(' ').collect();
+    let label_words: Vec<&str> = label.split(' ').filter(|w| !GENERIC.contains(w)).collect();
     first_at(padded, &label_words).is_some()
-        || RULES
-            .iter()
-            .any(|r| r.trade == trade && first_at(padded, r.words).is_some())
+        || rule_hits(padded).iter().any(|(_, r)| r.trade == trade)
 }
 
 /// The candidate job types after the trade is known (D-102, D-105, CARD-001).

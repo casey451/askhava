@@ -8,7 +8,7 @@
 
 use crate::api::{
     Candidates, Opinion, Reading, TradeStep, candidates, job_types_of, keyword_reading,
-    second_opinion,
+    second_opinion, two_trades,
 };
 
 const CATALOG: &str = include_str!("../../../../docs/catalog/categories.yaml");
@@ -140,4 +140,32 @@ fn td_int_03_keyword_job_types_are_catalog_job_types() {
             assert!(line.contains(job), "{trade}: {job} not in the catalog");
         }
     }
+}
+
+/// TD-INT-03 (CARD-001, D-105; R-37 in `docs/catalog/categories.yaml`): a water heater is
+/// plumbing and a pool or spa heater is pool repair; the longest phrase wins, so "heater" inside
+/// them never adds the furnace candidate or a second trade, while "heater" alone stays heating.
+#[test]
+fn td_int_03_water_and_spa_heaters_never_read_as_a_furnace() {
+    let water = keyword_reading("Water heater leaking 86403");
+    assert_eq!(water.trades, ["plumbing_repair"]);
+    assert_eq!(water.job_types, [("plumbing_repair", "leak repair")]);
+    assert_eq!(two_trades("Water heater leaking 86403"), None);
+    let got = candidates(
+        "plumbing_repair",
+        wrong("plumbing_repair", "leak repair"),
+        &water,
+    );
+    assert!(
+        got.job_types.iter().all(|(t, _)| t != "hvac_repair"),
+        "no furnace candidate: {got:?}"
+    );
+    for words in ["the pool heater won't light", "Spa heater is broken"] {
+        let kw = keyword_reading(words);
+        assert_eq!(kw.trades, ["pool_repair"], "{words}");
+        assert!(kw.boundary.is_empty(), "{words}");
+    }
+    let both = keyword_reading("water heater and the heater in the hall");
+    assert_eq!(both.trades, ["plumbing_repair", "hvac_repair"]);
+    assert_eq!(keyword_reading("heater rattles").trades, ["hvac_repair"]);
 }

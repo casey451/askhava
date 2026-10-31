@@ -43,6 +43,34 @@ fn td_int_04_word_answers_match_whole_words_only() {
     assert_eq!(q.read("no sé"), TradeAnswer::NotSure);
 }
 
+/// TD-INT-04 (INT-012, D-103): generic label words ("repair", "replacement") name no option, so
+/// "just a small repair" picks handyman over appliance repair and "repair" alone picks nothing.
+#[test]
+fn td_int_04_generic_label_words_name_no_option() {
+    let q = question(&["appliance_repair", "handyman"], "handyman");
+    assert_eq!(q.read("just a small repair"), trade("handyman"));
+    assert_eq!(q.read("the appliance"), trade("appliance_repair"));
+    let roofs = question(&["roof_repair", "hvac_replacement"], "roof_repair");
+    assert_eq!(roofs.read("repair"), TradeAnswer::Unusable);
+    assert_eq!(roofs.read("a replacement"), TradeAnswer::Unusable);
+    assert_eq!(roofs.read("the roof"), trade("roof_repair"));
+}
+
+/// TD-INT-04 (INT-015, D-103): option words come first; "no sé" is "Not sure" only nearly alone,
+/// never inside an ordinary Spanish sentence.
+#[test]
+fn td_int_04_no_se_is_not_sure_only_alone() {
+    let q = hvac_or_handyman();
+    assert_eq!(q.read("No sé"), TradeAnswer::NotSure);
+    assert_eq!(q.read("no sé cuál"), TradeAnswer::NotSure);
+    assert_eq!(
+        q.read("no se puede cerrar la puerta del patio"),
+        TradeAnswer::Unusable
+    );
+    assert_eq!(q.read("the AC, no sé"), trade("hvac_repair"));
+    assert_eq!(q.read("not sure, maybe the handyman"), trade("handyman"));
+}
+
 /// TD-INT-04 (INT-015, D-103): the re-ask offers the same numbered options; a second unusable
 /// reply applies the fallback and intake moves on, so the question is never asked a third time.
 #[test]
