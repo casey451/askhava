@@ -155,5 +155,47 @@
     "draft": true,
     "segments": 2,
     "text": "Ask Hava: Un propietario eligió su cotización del trabajo {job}. Acepte antes de {time}."
+  },
+  "beep_question": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: ¿Es 1) un chirrido cada minuto más o menos, o 2) una alarma que no deja de sonar?"
+  },
+  "how_soon": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: ¿Para cuándo lo necesita? 1) Hoy, es urgente 2) En los próximos días 3) Sin prisa 4) Para un día específico"
+  },
+  "needed_by_day": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: ¿Para qué día lo necesita?"
+  },
+  "emergency_choice": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 6,
+    "text": "Ask Hava: ¿Es una emergencia? Emergencia: los negocios reciben su solicitud por correo marcada EMERGENCY, y el negocio que elija tiene 60 minutos para confirmar. Los negocios que reciben solicitudes de emergencia de noche tal vez puedan venir esta noche. El trabajo fuera de horario suele costar más. Responda 1 para emergencia o 2 para normal."
+  },
+  "night_count_many": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: {count} negocios de {trade} en Ask Hava reciben solicitudes de emergencia de noche."
+  },
+  "night_count_one": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: 1 negocio de {trade} en Ask Hava recibe solicitudes de emergencia de noche."
+  },
+  "night_count_none": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Ningún negocio de {trade} en Ask Hava recibe solicitudes de emergencia de noche todavía. Su solicitud sale a las 8 a.m."
   }
 }
