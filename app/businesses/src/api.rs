@@ -3,8 +3,9 @@
 //! The business account and its status moves (BIZ-009, BIZ-003, BIZ-016), the towns and the
 //! job-type checklist within the license (BIZ-004, BIZ-010), the overflow switch, the Spanish
 //! tick, the business-reported insurance answer and the after-hours tick (BIZ-005 to BIZ-008), and
-//! the night count for INT-033 (D-491); the self-pause and own quiet times (BIZ-010, D-085); team members with their roles, the main and staff phones
-//! kept in `messaging`'s sender directory, and `notice_addresses` (BIZ-023, CALL-012, D-491, D-492).
+//! the night count for INT-033 (D-491); the self-pause and own quiet times (BIZ-010, D-085); team
+//! members with their roles, the main and staff phones kept in `messaging`'s sender directory, and
+//! `notice_addresses` (BIZ-023, CALL-012, D-491, D-492).
 
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
@@ -13,8 +14,8 @@ pub use crate::models::{Business, BusinessesError, Insurance};
 pub use crate::rules::JobTypeChoice;
 pub use crate::rules::{Checks, Event, OwnHours, Widens};
 pub use crate::service::{
-    Ticks, apply, create, night_count, own_hours, pause_self, resume_self, set_job_types,
-    set_own_hours, set_ticks, set_towns,
+    Ticks, apply, create, night_count, own_hours, pause_for_rule, pause_self, resume_self,
+    set_job_types, set_own_hours, set_ticks, set_towns,
 };
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{

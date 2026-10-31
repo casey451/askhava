@@ -6,8 +6,8 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 
 ## What it owns
 
-- `src/api.rs`: the only public surface: `create`, `apply`, `pause_self`, `resume_self`, `set_ticks`, `set_towns`, `set_job_types`, `set_own_hours`, `own_hours`, `night_count`, `business`, `towns`, `job_types`, the types below, and `api::rules` (`next`, `checklist`, `towns`, `may_notify`, `may_resume_itself`, `APP_OPEN_MINUTE`, `APP_CLOSE_MINUTE`); from `team`: `Acting`, `add_owner`, `add_member`, `set_roles`, `remove_member`, `link_phone`, `change_phone`, `unlink_phone`, `members`, `notice_addresses`, `Roles`, `NoticePurpose`, `TeamMember`, `TeamError`, `SenderLink`, `MEMBER_REMOVED_KIND`.
-- `src/status.rs`: `AccountStatus` (six statuses, `code`, `from_code`), `PauseReason`, `Refused`, `next` (every match on a status lives here, SEC-031).
+- `src/api.rs`: the only public surface: `create`, `apply`, `pause_for_rule`, `pause_self`, `resume_self`, `set_ticks`, `set_towns`, `set_job_types`, `set_own_hours`, `own_hours`, `night_count`, `business`, `towns`, `job_types`, the types below, and `api::rules` (`next`, `checklist`, `towns`, `may_notify`, `may_resume_itself`, `APP_OPEN_MINUTE`, `APP_CLOSE_MINUTE`); from `team`: `Acting`, `add_owner`, `add_member`, `set_roles`, `remove_member`, `link_phone`, `change_phone`, `unlink_phone`, `members`, `notice_addresses`, `Roles`, `NoticePurpose`, `TeamMember`, `TeamError`, `SenderLink`, `MEMBER_REMOVED_KIND`.
+- `src/status.rs`: `AccountStatus` (six statuses, `code`, `from_code`), `PauseReason`, `Refused`, `next`, `replaces_self_pause` (every match on a status lives here, SEC-031).
 - `src/rules.rs` (pure): `Event`, `Checks`, `JobTypeChoice`, `checklist`, `towns`, `OwnHours`, `Widens`, `may_notify`, `may_resume_itself`.
 - `src/models.rs`: `Business`, `Insurance`, `BusinessesError` and every query.
 - `src/service.rs`: the transactions with their audit rows; `Ticks`; the own-hours and self-resume queries (T182).
@@ -23,7 +23,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - BIZ-005, BIZ-006: `service::set_ticks` (`overflow_on`, `speaks_spanish`).
 - BIZ-008: `Insurance` is stored as reported; no event of `next` reads it, so it never pauses or activates (D-061).
 - BIZ-007: the `after_hours` column and `service::night_count` (active, ticked, in the town and category); its conditions are T150's (D-955, D-491).
-- BIZ-010: `rules::towns` and `service::set_towns` (catalog town codes); `service::pause_self` and `resume_self` (only from a `self` pause, row locked; D-969); `rules::OwnHours`, `service::set_own_hours`, `own_hours` and `rules::may_notify` (own quiet times only narrow 8 a.m. to 8 p.m. Arizona time; D-085, D-968). No weekly card limit exists (D-028).
+- BIZ-010: `rules::towns` and `service::set_towns` (catalog town codes); `service::pause_self` and `resume_self` (only from a `self` pause, row locked; D-969); `service::pause_for_rule` (a rule's pause replaces a `self` reason, never another rule's; D-970); `set_own_hours` never changes a removed business (D-971); `rules::OwnHours`, `service::set_own_hours`, `own_hours` and `rules::may_notify` (own quiet times only narrow 8 a.m. to 8 p.m. Arizona time; D-085, D-968). No weekly card limit exists (D-028).
 - BIZ-023: `team::add_owner`, `add_member`, `set_roles`, `remove_member` (one audit row each; only the owner, as the `Acting` member, adds, changes or removes; the owner holds both roles and is never removed, also by a check constraint); `Roles::new` refuses neither role.
 - CALL-012: `team::link_phone`, `change_phone`, `unlink_phone` (owner or "Confirm and billing" only; the main phone owner only; `may_handle_phone`); `remove_member` unlinks every phone the member linked and enqueues one `businesses.member_removed` task that `portals` handles (TD-BIZ-06).
 - D-491, D-963: every phone add or change goes through `SenderLink` (the composition's `messaging::api::sender_add` with the vault) and every unlink through `messaging::api::sender_remove`, in the phone change's transaction.
@@ -36,7 +36,8 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - Insurance No never pauses: `src/tests/account_status.rs::td_biz_02_ticks_insurance_and_pause_are_stored`.
 - A paused or unticked business never counts at night: `src/tests/account_status.rs::night_count_counts_active_after_hours_businesses`.
 - Own quiet times never widen the window, in code and in the table: `src/tests/own_quiet_times.rs::td_qh_03_own_quiet_times_only_narrow_the_window`, `td_qh_03_the_table_refuses_a_wider_window`.
-- A business never resumes itself from a pause it did not choose: `src/tests/own_quiet_times.rs::td_biz_02_business_pauses_and_resumes_itself`.
+- A business never resumes itself from a pause it did not choose, also after a rule paused it on top of its own pause: `src/tests/own_quiet_times.rs::td_biz_02_business_pauses_and_resumes_itself`, `td_biz_02_a_rule_pause_replaces_a_self_pause`.
+- Every rule pause (complaints, license, no covered job type, Casey) must call `pause_for_rule`, not `apply`, or a self-paused business keeps its `self` reason (D-970). A business paused for two rules keeps only the first reason; ending it must re-check the others (D-198).
 - A business row is never deleted by the app: `src/tests/account_status.rs::the_app_role_cannot_delete_a_business`.
 - LIC-043 holds only as far as the caller's `allowed` set is right: `checklist` and `set_job_types` refuse anything outside it but cannot check the set against the license (D-954); every caller must build it from the license map plus the no-license job types.
 - The owner always holds both roles and is never removed: `src/tests/team.rs::td_biz_34_the_owner_always_holds_both_roles`.

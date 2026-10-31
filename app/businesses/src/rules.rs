@@ -177,8 +177,9 @@ impl OwnHours {
 
 /// Whether a business notice may go at `at`, Arizona wall-clock time (QH-002): inside the app-wide
 /// window and, when the business set its own quiet times, inside those too, so its own times only
-/// ever narrow the window (BIZ-010, D-085, QH-001, QH-005). The QH-004 exceptions are the
-/// sender's to apply.
+/// ever narrow the window (BIZ-010, D-085, QH-001, QH-005). It checks Arizona time only: the
+/// recipient's area-code time zone check (the stricter of Arizona and area-code time, QH-001,
+/// QH-003) and the QH-004 exceptions remain the sender's to apply.
 #[must_use]
 pub fn may_notify(own: Option<OwnHours>, at: Time) -> bool {
     let minute = i16::from(at.hour()) * 60 + i16::from(at.minute());

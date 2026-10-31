@@ -11,7 +11,7 @@ use sqlx::types::Uuid;
 
 use crate::api::{
     BusinessesError, Checks, Event, OwnHours, PauseReason, Widens, apply, business, create,
-    own_hours, pause_self, resume_self, set_own_hours,
+    own_hours, pause_for_rule, pause_self, resume_self, set_own_hours,
 };
 use crate::rules::{APP_CLOSE_MINUTE, APP_OPEN_MINUTE, may_notify, may_resume_itself};
 
@@ -154,8 +154,26 @@ async fn td_biz_02_own_quiet_times_are_stored(mut db: Db) {
     assert_eq!(missing, Err(BusinessesError::UnknownBusiness));
 }
 
-/// TD-QH-03 (BIZ-010, D-085): the table itself refuses a window wider than 8 a.m. to 8 p.m. or
-/// half set, even from the app role.
+async fn set_raw(
+    db: &mut Db,
+    id: Uuid,
+    open: Option<i16>,
+    close: Option<i16>,
+) -> sqlx::Result<u64> {
+    sqlx::query!(
+        "UPDATE businesses.business SET own_open_minute = $2, own_close_minute = $3 WHERE id = $1",
+        id,
+        open,
+        close
+    )
+    .execute(&mut **db)
+    .await
+    .map(|r| r.rows_affected())
+}
+
+/// TD-QH-03 (BIZ-010, D-085): the table itself refuses a window wider than 8 a.m. to 8 p.m., empty,
+/// backwards or half set, even from the app role, by `business_own_hours_check` (SQLSTATE 23514);
+/// a valid narrower window from the same role is stored.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_qh_03_the_table_refuses_a_wider_window(mut db: Db) {
     let id = active(&mut db).await;
@@ -163,23 +181,82 @@ async fn td_qh_03_the_table_refuses_a_wider_window(mut db: Db) {
         .execute(&mut *db)
         .await
         .expect("role");
-    let wider: [(Option<i16>, Option<i16>); 3] = [
+    assert_eq!(
+        set_raw(&mut db, id, Some(540), Some(1050))
+            .await
+            .expect("valid"),
+        1
+    );
+    let bad: [(Option<i16>, Option<i16>); 6] = [
         (Some(420), Some(1000)),
         (Some(480), Some(1260)),
         (Some(600), None),
+        (None, Some(600)),
+        (Some(600), Some(600)),
+        (Some(900), Some(600)),
     ];
-    for (open, close) in wider {
-        let r = sqlx::query!(
-            "UPDATE businesses.business SET own_open_minute = $2, own_close_minute = $3 \
-             WHERE id = $1",
-            id,
-            open,
-            close
-        )
-        .execute(&mut *db)
-        .await;
-        assert!(r.is_err(), "{open:?} {close:?}");
+    for (open, close) in bad {
+        let err = set_raw(&mut db, id, open, close)
+            .await
+            .expect_err("refused");
+        let e = err.as_database_error().expect("database error");
+        assert_eq!(e.code().as_deref(), Some("23514"), "{open:?} {close:?}");
+        assert_eq!(
+            e.constraint(),
+            Some("business_own_hours_check"),
+            "{open:?} {close:?}"
+        );
     }
+    let stored = OwnHours::from_minutes(540, 1050).expect("hours");
+    assert_eq!(own_hours(&mut db, id).await, Ok(Some(stored)));
+}
+
+/// TD-BIZ-02 (BIZ-009, BIZ-010, D-970): a rule's pause on a self-paused business replaces the
+/// `self` reason with one audit row and never replaces another rule's; the business can then no
+/// longer resume itself; an active business is paused for the rule; a removed business's own quiet
+/// times are never changed.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_02_a_rule_pause_replaces_a_self_pause(mut db: Db) {
+    let id = active(&mut db).await;
+    pause_self(&mut db, id, at(2)).await.expect("pause");
+    let self_again = pause_for_rule(&mut db, id, PauseReason::SelfPaused, Actor::System, at(3));
+    assert_eq!(self_again.await, Err(BusinessesError::Refused));
+    let license = pause_for_rule(&mut db, id, PauseReason::License, Actor::System, at(3));
+    assert_eq!(license.await.map(|s| s.code()), Ok("paused"));
+    let owner = pause_for_rule(&mut db, id, PauseReason::Owner, Actor::System, at(4));
+    assert_eq!(owner.await, Err(BusinessesError::Refused));
+    let b = business(&mut db, id).await.expect("read");
+    let reason = b.pause_reason.map(PauseReason::code);
+    assert_eq!(reason, Some("license"));
+    assert_eq!(
+        resume_self(&mut db, id, at(5)).await,
+        Err(BusinessesError::Refused)
+    );
+    assert_eq!(
+        pause_self(&mut db, id, at(6)).await,
+        Err(BusinessesError::Refused)
+    );
+    let rows = export_audit(&mut db, 0, EXPORT_PAGE_MAX)
+        .await
+        .expect("audit");
+    let replaced = rows
+        .iter()
+        .filter(|r| r.subject_id == id && r.action == "businesses.field_changed")
+        .count();
+    assert_eq!(replaced, 1);
+    apply(&mut db, id, Event::Remove, Actor::System, at(7))
+        .await
+        .expect("remove");
+    let other = active(&mut db).await;
+    let fresh = pause_for_rule(&mut db, other, PauseReason::Owner, Actor::System, at(8)).await;
+    assert_eq!(fresh.map(|s| s.code()), Ok("paused"));
+    let b = business(&mut db, other).await.expect("read");
+    let reason = b.pause_reason.map(PauseReason::code);
+    assert_eq!(reason, Some("owner"));
+    let hours = OwnHours::from_minutes(540, 1050).expect("hours");
+    let gone = set_own_hours(&mut db, id, Some(hours), Actor::System).await;
+    assert_eq!(gone, Err(BusinessesError::UnknownBusiness));
+    assert_eq!(own_hours(&mut db, id).await, Ok(None));
 }
 
 /// TD-BIZ-02 (BIZ-010, D-028): there is no weekly card limit: no column of the business record
