@@ -8473,11 +8473,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "6801f4ff1e078ec8e0d6c55eb5b75e01a5bc8b96",
+   "reviewed_sha": "01dcd6f29746ac25566b6f142753999a2ea62383",
    "review_lease": {
     "task": "T184",
-    "session": "actions-41215771022",
-    "expires": "2026-10-31T19:00:18Z"
+    "session": "actions-41221605131",
+    "expires": "2026-10-31T19:53:29Z"
    },
    "branch": "claude/task/T184-quotes-overflow-late-eligibility",
    "auto_merge": {
@@ -8487,7 +8487,8 @@
    },
    "runner_closed_prs": [
     187
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T045",
@@ -12628,7 +12629,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T17:02:11Z",
+ "updated_at": "2026-10-31T17:17:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -12726,7 +12727,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "019a3d7e15517e87a61f9cef9f4eebc53708fa95",
+ "runner_sha": "01dcd6f29746ac25566b6f142753999a2ea62383",
  "starter": "actions",
  "smoke_runs": [
   {
