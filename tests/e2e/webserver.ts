@@ -23,6 +23,7 @@ const SECRET_KEY = "ASKHAVA_TEST_CONTROL_SECRET";
 const REPO_ROOT = join(import.meta.dirname, "..", "..");
 const STAND_IN_PORT = 4010;
 const START_TIMEOUT_MS = 60_000;
+const STOP_TIMEOUT_MS = 10_000;
 
 /** The port the web binary listens on: `E2E_PORT`, else 3000. */
 export function webPort(): number {
@@ -50,8 +51,9 @@ function requireEnv(name: string): string {
 /** The environment both binaries start with: CI settings, the stand-ins, a shared clock file. */
 function appEnv(scratch: string): NodeJS.ProcessEnv {
   const database = requireEnv("DATABASE_URL");
+  const inherited = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("ASKHAVA_")));
   return {
-    ...process.env,
+    ...inherited,
     PORT: String(webPort()),
     ASKHAVA_APP_ENV: "ci",
     ASKHAVA_DATABASE_URL: database,
@@ -75,6 +77,9 @@ function run(command: string, args: string[], env: NodeJS.ProcessEnv): void {
 /** Rejects if `child` exits before it is stopped, so a crash during start-up is not a timeout. */
 function exitedEarly(name: string, child: ChildProcess): Promise<never> {
   return new Promise((_, reject) => {
+    child.once("error", (error) => {
+      reject(new Error(`${name} failed to start: ${error.message}`));
+    });
     child.once("exit", (code) => {
       reject(new Error(`${name} exited during start-up with code ${String(code)}`));
     });
@@ -102,13 +107,24 @@ async function waitForPort(port: number, deadline: number): Promise<void> {
   throw new Error(`nothing answered on port ${String(port)} within ${String(START_TIMEOUT_MS / 1000)} seconds`);
 }
 
+/** Fails at once if something already listens on a port, so a stale server is not mistaken for ours. */
+async function requirePortsFree(): Promise<void> {
+  for (const port of [STAND_IN_PORT, webPort()]) {
+    if (await canConnect(port)) throw new Error(`port ${String(port)} is already in use`);
+  }
+}
+
 function stop(child: ChildProcess): Promise<void> {
   return new Promise((resolve) => {
     if (child.exitCode !== null || child.signalCode !== null) {
       resolve();
       return;
     }
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+    }, STOP_TIMEOUT_MS);
     child.once("exit", () => {
+      clearTimeout(timer);
       resolve();
     });
     child.kill("SIGTERM");
@@ -125,7 +141,9 @@ export default async function setup(): Promise<() => Promise<void>> {
     rmSync(scratch, { recursive: true, force: true });
   };
   try {
-    run("cargo", ["build", "-p", "askhava-server", "--bins", "--features", "askhava-core/test-control"], env);
+    await requirePortsFree();
+    const build = { ...env, SQLX_OFFLINE: "true" };
+    run("cargo", ["build", "-p", "askhava-server", "--bins", "--features", "askhava-core/test-control"], build);
     run(join(REPO_ROOT, "target", "debug", "server"), ["migrate"], env);
     const start = (name: string, command: string, args: string[]): Promise<never> => {
       const child = spawn(command, args, { cwd: REPO_ROOT, env, stdio: "inherit" });
@@ -142,6 +160,8 @@ export default async function setup(): Promise<() => Promise<void>> {
       Promise.all([waitForPort(STAND_IN_PORT, deadline), waitForPort(webPort(), deadline)]),
       ...crashes,
     ]);
+    const dead = children.findIndex((child) => child.exitCode !== null);
+    if (dead >= 0) throw new Error(`a child process exited during start-up (index ${String(dead)}); is the port already in use?`);
   } catch (error) {
     await teardown();
     throw error;
