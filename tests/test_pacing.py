@@ -142,3 +142,46 @@ def test_real_config_loads_and_cli_runs(capsys: Any) -> None:
     assert cfg["headroom"] == 0.10 and set(cfg["model_multiplier"]) == {"haiku", "sonnet", "opus"}
     assert pc.main(["--state", "/nonexistent.json", "--task", "T058"]) == 0
     assert "projected finish" in capsys.readouterr().out
+
+
+def test_spend_line_holds_the_week_to_a_straight_line_to_the_reset(tmp_path: Path) -> None:
+    """D-1128: from the anchor reading to the effective week budget a few hours before the reset."""
+    root = repo(tmp_path)
+    need = pc.estimate(TASK, {"tasks": []}, CFG, root)[0]
+    cfg = dict(CFG, spread={"anchor_at": pc.iso(NOW), "anchor_used_week": 1_000_000, "finish_hours_before_reset": 3})
+    week_start = NOW - timedelta(days=2)  # resets in 5 days; the line ends 3 hours before that
+    state = {"tasks": [], "usage": {"windows": {"five_hour": {"start": pc.iso(NOW), "tokens": 0},
+                                                "week": {"start": pc.iso(week_start), "tokens": 1_000_000}}}}
+    found = pc.assess(state, TASK, root=root, config=cfg, now=NOW)
+    verdict, until = found["decision"]
+    assert verdict == "wait" and found["spend_line"] == until and "spend line" in pc.line("T001", found)
+    line_len = timedelta(days=5) - timedelta(hours=3)
+    expected = NOW + line_len * (need / (9_000_000 - 1_000_000))
+    assert abs((pc.parse(until) - expected).total_seconds()) < 2
+    assert pc.decide(state, TASK, root=root, config=cfg, now=pc.parse(until) + timedelta(seconds=1)) == ("claim", None)
+    far = pc.decide(dict(state, usage={"windows": {"five_hour": {"start": pc.iso(NOW), "tokens": 0},
+                                                   "week": {"start": pc.iso(week_start), "tokens": 8_500_000}}}),
+                    TASK, root=root, config=cfg, now=NOW + timedelta(days=1))
+    assert far[0] == "wait" and NOW + timedelta(days=4) < pc.parse(far[1]) <= week_start + timedelta(days=7) - timedelta(hours=3)
+    assert pc.decide(state, TASK, root=root, config=cfg, now=NOW - timedelta(hours=1)) == ("claim", None), "before the anchor"
+    rolled = dict(state, usage={"windows": {"five_hour": {"start": pc.iso(NOW), "tokens": 0},
+                                            "week": {"start": pc.iso(NOW + timedelta(days=5)), "tokens": 3_000_000}}})
+    assert pc.decide(rolled, TASK, root=root, config=cfg, now=NOW + timedelta(days=6)) == ("claim", None), "a rolled-over week has no line"
+    later = {"five_hour": {"utilization": 0.1, "resets_at": pc.iso(NOW + timedelta(days=6, hours=2))},
+             "week": {"utilization": 0.5, "resets_at": pc.iso(NOW + timedelta(days=12))}}
+    assert pc.decide(state, TASK, root=root, config=cfg, now=NOW + timedelta(days=6), quota=later) == ("claim", None), "a quota reading past the anchor's week has no line"
+    assert pc.decide(state, TASK, root=root, config=CFG, now=NOW) == ("claim", None), "no spread configured"
+    assert pc.decide(spent(899_000), TASK, root=root, config=cfg, now=NOW) == ("wait", pc.iso(NOW + timedelta(hours=5))), "the five-hour wait still wins"
+
+
+def test_a_failing_probe_says_why_in_the_source(tmp_path: Path) -> None:
+    """D-1128: the pacing row names the probe's last stderr line, so a silent fallback can be diagnosed."""
+    probe = tmp_path / "probe.py"
+    probe.write_text("import sys; print('quota_probe: HTTP 403 from the usage endpoint', file=sys.stderr); sys.exit(1)\n", encoding="utf-8")
+    assert pc.read_quota(f"{sys.executable} {probe}") is None
+    stand, source = pc.standing(spent(0), CFG, NOW, None)
+    assert source == "ledger; quota_probe: HTTP 403 from the usage endpoint" and stand["week"]["used"] == 0
+    probe.write_text("print('{\"five_hour\": {\"utilization\": 0.5}, \"week\": {\"utilization\": 0.25}}')\n", encoding="utf-8")
+    reading = pc.read_quota(f"{sys.executable} {probe}")
+    assert reading and pc.standing(spent(0), CFG, NOW, reading)[1] == "quota_cmd"
+    assert pc.read_quota("") is None and pc.standing(spent(0), CFG, NOW, None)[1] == "ledger"

@@ -1392,3 +1392,14 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Worth a look.** The spec gave only two of the quote-type lines (firm price and free estimate). Claude wrote the other four (price range, recurring price, packages, visit fee) in English and Spanish after two read-through reviews. The Spanish uses "cotización" rather than "presupuesto", since most local Spanish speakers would say it that way. A "tonight" visit reads "the night of November 3", so the card stays right the next day.
 - **AI summaries stay off.** No summary is stored with any quote. The switch can only turn on with your recorded decision and a privacy policy carrying the summary sentence. Even then, a summary using any word or number the business didn't write is thrown out. That is strict: a summary that only rephrases is rejected too, which is the safe side.
 - **Still to come.** The Google and Yelp links (T165), the price line (T164) and the stored quote facts (T148) arrive with their own tasks; this card already has their places.
+
+## Why a free lane sat idle this afternoon (D-1126, October 31)
+
+- **What happened.** T156 (the intake question bank) looked ready in the runner's state, but every lane refused to start it: a plan change earlier today had made T156 wait for T187 in the plan file, and the runner never copied that new wait into its state file. The two halves of the runner disagreed, so lane 1 reported "idle" with a task that looked ready. Fixed: the runner now copies changed waits into its state.
+- **The wait itself was longer than needed.** T156 only has to come after T050 (they edit the same intake file); waiting for T187 would have put it behind eight tasks instead of four. It now waits for T050, and T208 keeps its own order after T054 directly. Nothing else moves.
+
+## Spending the week's budget by Thursday morning (D-1128, October 31)
+
+- **What you asked for.** Use the week's tokens up by a few hours before Thursday's reset, as accurately as possible, instead of running dry on Monday and sitting idle for two days.
+- **What changed.** The runner now follows a straight spend line from today's reading to the budget at 8:38 am Phoenix on Thursday (three hours before the reset). When the next task would put spending above the line, it waits until the line catches up, then claims; nothing else about pacing changed. It also runs one lane instead of two: the remaining stage-2 tasks are a chain anyway, one lane paces exactly, and it removes the claim races and update-merge conflicts that cost attempts this week. Two lanes come back by removing `spread` and setting `lanes` to 2.
+- **The caveat.** The budget the line aims at (200M weighted tokens) is still the calibration from your "about 50%" reading, because the runner's own usage probe is still falling back to its ledger. Fixing the probe is next, so the line can aim at the real number.

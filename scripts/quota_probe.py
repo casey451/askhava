@@ -6,8 +6,8 @@ from Claude Code's credentials file, never printed) and prints the shape scripts
 
     {"five_hour": {"utilization": 0.42, "resets_at": "..."}, "week": {"utilization": 0.18, "resets_at": "..."}}
 
-Utilisation is printed as 0..1 from the endpoint's percent. On any failure it prints nothing and exits 1, so the runner falls back to its
-own ledger (state.usage.source = "ledger"). **Unverified until the D-486 rehearsal:** the endpoint,
+Utilisation is printed as 0..1 from the endpoint's percent. On any failure it prints one `quota_probe: <why>` line on stderr (never the token) and exits 1,
+so the runner falls back to its own ledger (state.usage.source = "ledger") and the pacing row says why (D-1128). **Unverified until the D-486 rehearsal:** the endpoint,
 header and field names below are the ones Claude Code and the public usage monitors use as of
 2026; if the rehearsal shows a different shape, fix this file, not pacing.py. It never touches a
 vendor API or a product key, and the token leaves this process only in the request header.
@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -70,16 +71,26 @@ def to_pacing_shape(raw: dict) -> dict | None:
     return out
 
 
+def _note(text: str) -> int:
+    """Why the probe gave no reading, on stderr for the pacing row (D-1128); never the token or the body."""
+    print(f"quota_probe: {text}", file=sys.stderr)
+    return 1
+
+
 def main() -> int:
     token = _token()
     if not token:
-        return 1
+        return _note("no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file")
     try:
-        shaped = to_pacing_shape(_fetch(token))
-    except Exception:  # noqa: BLE001 (any failure means: use the ledger)
-        return 1
+        raw = _fetch(token)
+    except urllib.error.HTTPError as error:
+        return _note(f"HTTP {error.code} from the usage endpoint")
+    except Exception as error:  # noqa: BLE001 (any failure means: use the ledger)
+        return _note(f"{type(error).__name__} calling the usage endpoint")
+    shaped = to_pacing_shape(raw)
     if shaped is None:
-        return 1
+        keys = ", ".join(sorted(k for k in raw)) if isinstance(raw, dict) else type(raw).__name__
+        return _note(f"reply has no five_hour and seven_day windows with utilization (top-level keys: {keys})")
     print(json.dumps(shaped))
     return 0
 
