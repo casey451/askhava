@@ -111,6 +111,13 @@ pub enum DayPart {
 }
 
 impl DayPart {
+    /// The part named by a stored `visit_part` code, or none (the quote card, PICK-040).
+    #[must_use]
+    pub fn from_code(code: &str) -> Option<Self> {
+        let all = [Self::Morning, Self::Afternoon, Self::Evening, Self::Tonight];
+        all.into_iter().find(|p| p.code() == code)
+    }
+
     /// The code `quotes.quote.visit_part` stores.
     #[must_use]
     pub const fn code(self) -> &'static str {

@@ -1,6 +1,7 @@
 //! The records matching reads and returns, and the `quotes.job_card` query (migration
 //! `0067_quotes_matching.sql`; CARD-001 to CARD-004, CARD-016, CARD-018, LIC-035); T046 adds
-//! the `quotes.quote` queries (migration `0070_quotes_quote.sql`; PICK-001, PICK-002, TXT-042).
+//! the `quotes.quote` queries (migration `0070_quotes_quote.sql`; PICK-001, PICK-002, TXT-042);
+//! T186 adds [`stored_card`], what a quote card reads of a shown quote (PICK-003, PICK-040).
 //!
 //! Nothing here holds a homeowner's detail: a job is its offer towns, its candidate job types and
 //! its scrubbed text (PRIV-001); a business is IDs, codes and ticks.
@@ -16,7 +17,7 @@ use jiff_sqlx::ToSqlx;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::intake::{Price, Quote};
+use crate::intake::{DayPart, Format, Price, Quote};
 
 /// Why a quotes call failed. No variant carries a value (rust brain R5, R6).
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -30,6 +31,9 @@ pub enum QuotesError {
     /// The job could not be read through `jobs::api` (CARD-018).
     #[error("the job could not be read")]
     Job,
+    /// The business could not be read through `businesses::api` (PICK-044).
+    #[error("the business could not be read")]
+    Business,
 }
 
 /// A town a job is offered in: the job's own town first, then any neighbouring towns (CARD-002).
@@ -452,4 +456,40 @@ pub(crate) async fn window_state(
             choosable: count(row.choosable),
         },
     })
+}
+
+/// What a quote card reads of one shown quote: its format, the business's original wording and
+/// the earliest visit (PICK-003, PICK-040). No AI output is stored with a quote (PICK-003, D-373).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct StoredCard {
+    pub format: Format,
+    pub original: String,
+    pub earliest_visit: Option<(jiff::civil::Date, DayPart)>,
+}
+
+/// PICK-003: the stored card of a confirmed, unwithdrawn quote, or none (PICK-002, PICK-006).
+pub(crate) async fn stored_card(
+    db: &mut PgConnection,
+    job: Uuid,
+    business: Uuid,
+) -> Result<Option<StoredCard>, QuotesError> {
+    let row = sqlx::query!(
+        "SELECT format, original, earliest_visit::text AS visit, visit_part FROM quotes.quote \
+         WHERE job_id = $1 AND business_id = $2 AND confirmed AND withdrawn_at IS NULL",
+        job,
+        business
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    let Some(row) = row else { return Ok(None) };
+    let format = Format::from_code(&row.format).ok_or(QuotesError::Database)?;
+    let part = row.visit_part.as_deref().and_then(DayPart::from_code);
+    let date = row.visit.and_then(|d| d.parse::<jiff::civil::Date>().ok());
+    let visit = date.zip(part);
+    Ok(Some(StoredCard {
+        format,
+        original: row.original,
+        earliest_visit: visit,
+    }))
 }
