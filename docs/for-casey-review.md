@@ -1393,6 +1393,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **AI summaries stay off.** No summary is stored with any quote. The switch can only turn on with your recorded decision and a privacy policy carrying the summary sentence. Even then, a summary using any word or number the business didn't write is thrown out. That is strict: a summary that only rephrases is rejected too, which is the safe side.
 - **Still to come.** The Google and Yelp links (T165), the price line (T164) and the stored quote facts (T148) arrive with their own tasks; this card already has their places.
 
+## Why a free lane sat idle this afternoon (D-1126, October 31)
+
+- **What happened.** T156 (the intake question bank) looked ready in the runner's state, but every lane refused to start it: a plan change earlier today had made T156 wait for T187 in the plan file, and the runner never copied that new wait into its state file. The two halves of the runner disagreed, so lane 1 reported "idle" with a task that looked ready. Fixed: the runner now copies changed waits into its state.
+- **The wait itself was longer than needed.** T156 only has to come after T050 (they edit the same intake file); waiting for T187 would have put it behind eight tasks instead of four. It now waits for T050, and T208 keeps its own order after T054 directly. Nothing else moves.
+
 ## Spending the week's budget by Thursday morning (D-1128, October 31)
 
 - **What you asked for.** Use the week's tokens up by a few hours before Thursday's reset, as accurately as possible, instead of running dry on Monday and sitting idle for two days.
