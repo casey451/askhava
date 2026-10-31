@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.choice FROM intake.intake_answer a JOIN intake.conversation c ON c.id = a.conversation_id WHERE c.homeowner_id = $1 AND a.question_id = $2 LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "choice",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.intake_answer",
+            "name": "choice"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "adff11594e7125eae1674396f445f0d1afa3ad0df163573374a74bb11e4380f4"
+}

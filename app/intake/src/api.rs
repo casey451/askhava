@@ -9,6 +9,10 @@
 //! INT-037 question, "How soon?", the INT-033 night count and the emergency-or-regular choice and
 //! release (INT-002 to INT-006, INT-024 to INT-026, INT-029, INT-030, INT-033, INT-037).
 
+pub use crate::conversation::{
+    Answer, JobStart, Opened, Recorded, Taken, ask_name_address, begin_job, hear, joining_job,
+    record_answer, stop_if_under_18, take_name_address,
+};
 pub use crate::emergency_count::{
     CHOICE_TEMPLATE, NIGHT_MANY_TEMPLATE, NIGHT_NONE_TEMPLATE, NIGHT_ONE_TEMPLATE, Offer, count,
     is_night, offer,
@@ -35,8 +39,10 @@ pub mod rules {
         Check, Choice, Hazard, Urgency, beep_is_alarm, check, choice, is_safe_reply, urgency,
     };
     pub use crate::rules::{
-        CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, DISCLOSURE_TEMPLATE, Inbound, Plan,
-        SAFETY_TEMPLATE, Send, Settings, Then, asks_who, consent_language, consent_template,
-        language_code, language_from_code, plan, reads_spanish, wanted_language,
+        AgeStop, CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, DISCLOSURE_TEMPLATE, Inbound,
+        JOIN_WINDOW, NAME_ADDRESS_TEMPLATE, Plan, SAFETY_TEMPLATE, Send, Settings, Then,
+        UNDER_18_TEMPLATE, accepts_word_answer, age_stop, asks_who, cancel_like, consent_language,
+        consent_template, joins_open_job, language_code, language_from_code, opens_job,
+        pick_option, plan, reads_spanish, split_name_address, wanted_language,
     };
 }

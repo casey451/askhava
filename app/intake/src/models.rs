@@ -1,7 +1,8 @@
 //! Row types and queries of the `intake` schema (migration `0053_intake_tables.sql`, D-492, D-493).
 //!
 //! One row type per table; T181 added the consent and terms records (`0054_intake_terms_acceptance.sql`);
-//! T039, T040 and T043 add their queries here. Every row holds IDs, codes
+//! T039, T040 and T043 add their queries here. T040 keeps a request's jobs as `intake_answer` rows
+//! (no new table, D-993). Every row holds IDs, codes
 //! and times only, never a contact value or homeowner text (PRIV-001, PRIV-028).
 
 use jiff::Timestamp;
@@ -27,6 +28,15 @@ pub enum IntakeError {
     /// No request has the given ID.
     #[error("intake request not found")]
     UnknownRequest,
+    /// A trade code is not a catalog code (lower case letters, digits and underscores).
+    #[error("intake trade code is not valid")]
+    BadTrade,
+    /// The jobs module could not create the job.
+    #[error("intake could not create a job")]
+    Job,
+    /// The vault could not store the name and address.
+    #[error("intake could not store the name and address")]
+    Vault,
 }
 
 /// `intake.homeowner`: one person by vault contact ID.
@@ -550,4 +560,193 @@ pub(crate) async fn release_state(
         emergency: r.emergency,
         area_done: r.area,
     })
+}
+
+/// Locks the homeowner row until the transaction ends, so two messages at once open one job
+/// (INT-009).
+pub(crate) async fn lock_homeowner(
+    db: &mut PgConnection,
+    homeowner: Uuid,
+) -> Result<(), IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT id FROM intake.homeowner WHERE id = $1 FOR UPDATE",
+        homeowner
+    )
+    .fetch_one(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| IntakeError::Database)
+}
+
+/// The homeowner and open state of request `conversation`: `None` when it does not exist.
+pub(crate) async fn conversation_state(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Option<(Uuid, bool)>, IntakeError> {
+    sqlx::query!(
+        "SELECT homeowner_id, closed_at IS NULL AS \"open!\" FROM intake.conversation WHERE id = $1",
+        conversation
+    )
+    .fetch_optional(db)
+    .await
+    .map(|r| r.map(|r| (r.homeowner_id, r.open)))
+    .map_err(|_| IntakeError::Database)
+}
+
+/// The active job stored under `kind` (`job.<trade>.<property>`) for the homeowner, if any.
+pub(crate) async fn active_job(
+    db: &mut PgConnection,
+    homeowner: Uuid,
+    kind: &str,
+) -> Result<Option<Uuid>, IntakeError> {
+    let hex = sqlx::query_scalar!(
+        "SELECT a.choice FROM intake.intake_answer a \
+         JOIN intake.conversation c ON c.id = a.conversation_id \
+         WHERE c.homeowner_id = $1 AND a.question_id = $2 LIMIT 1",
+        homeowner,
+        kind
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(hex.flatten().and_then(|h| Uuid::parse_str(&h).ok()))
+}
+
+/// The homeowner's newest job and the time of the homeowner's last message to it (INT-010): the
+/// later of the job's opening and the latest `heard` row of its request.
+pub(crate) async fn newest_job(
+    db: &mut PgConnection,
+    homeowner: Uuid,
+) -> Result<Option<(Uuid, Timestamp)>, IntakeError> {
+    let row = sqlx::query!(
+        "SELECT a.choice, GREATEST(a.answered_at, COALESCE((SELECT max(h.answered_at) \
+         FROM intake.intake_answer h WHERE h.conversation_id = a.conversation_id \
+         AND h.question_id = 'heard'), a.answered_at)) AS \"last!\" \
+         FROM intake.intake_answer a JOIN intake.conversation c ON c.id = a.conversation_id \
+         WHERE c.homeowner_id = $1 AND a.question_id LIKE 'job.%' \
+         ORDER BY a.answered_at DESC, a.id DESC LIMIT 1",
+        homeowner
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(row.and_then(|r| Some((Uuid::parse_str(&r.choice?).ok()?, r.last.to_jiff()))))
+}
+
+/// Stores an answer row with no inbound text (a job link): question, choice and time.
+pub(crate) async fn insert_plain(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    (question, choice): (&str, &str),
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    sqlx::query!(
+        "INSERT INTO intake.intake_answer (conversation_id, question_id, choice, answered_at) \
+         VALUES ($1, $2, $3, $4)",
+        conversation,
+        question,
+        choice,
+        at.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| IntakeError::Database)
+}
+
+/// Closes request `conversation` at `at` and drops its job links (INT-038); `false` if it was
+/// already closed.
+pub(crate) async fn close_request(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    at: Timestamp,
+) -> Result<bool, IntakeError> {
+    let done = sqlx::query!(
+        "UPDATE intake.conversation SET closed_at = GREATEST($2, opened_at) \
+         WHERE id = $1 AND closed_at IS NULL",
+        conversation,
+        at.to_sqlx() as _
+    )
+    .execute(&mut *db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    sqlx::query!(
+        "DELETE FROM intake.intake_answer WHERE conversation_id = $1 AND question_id LIKE 'job.%'",
+        conversation
+    )
+    .execute(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(done.rows_affected() > 0)
+}
+
+/// Deletes the request's data except its consent record (INT-038, under 13): answers, 911-list
+/// events, recruiting demand and the homeowner's property rows. The conversation row stays as
+/// the consent record's anchor and holds only IDs and times.
+pub(crate) async fn purge_request(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    homeowner: Uuid,
+) -> Result<(), IntakeError> {
+    let err = |_| IntakeError::Database;
+    sqlx::query!(
+        "DELETE FROM intake.intake_answer WHERE conversation_id = $1",
+        conversation
+    )
+    .execute(&mut *db)
+    .await
+    .map_err(err)?;
+    sqlx::query!(
+        "DELETE FROM intake.emergency_event WHERE conversation_id = $1",
+        conversation
+    )
+    .execute(&mut *db)
+    .await
+    .map_err(err)?;
+    sqlx::query!(
+        "DELETE FROM intake.recruiting_demand WHERE conversation_id = $1",
+        conversation
+    )
+    .execute(&mut *db)
+    .await
+    .map_err(err)?;
+    sqlx::query!(
+        "DELETE FROM intake.property WHERE homeowner_id = $1",
+        homeowner
+    )
+    .execute(db)
+    .await
+    .map_err(err)?;
+    Ok(())
+}
+
+/// The homeowner's newest property row, if the ZIP and area check made one (INT-009).
+pub(crate) async fn latest_property(
+    db: &mut PgConnection,
+    homeowner: Uuid,
+) -> Result<Option<Uuid>, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT id FROM intake.property WHERE homeowner_id = $1 ORDER BY created_at DESC, id DESC LIMIT 1",
+        homeowner
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| IntakeError::Database)
+}
+
+/// Sets request `conversation`'s first job if it has none (`conversation.job_id`).
+pub(crate) async fn set_first_job(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    job: Uuid,
+) -> Result<(), IntakeError> {
+    sqlx::query!(
+        "UPDATE intake.conversation SET job_id = COALESCE(job_id, $2) WHERE id = $1",
+        conversation,
+        job
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| IntakeError::Database)
 }

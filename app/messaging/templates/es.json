@@ -197,5 +197,18 @@
     "draft": true,
     "segments": 2,
     "text": "Ask Hava: Ningún negocio de {trade} en Ask Hava recibe solicitudes de emergencia de noche todavía. Su solicitud sale a las 8 a.m."
+  },
+  "under_18": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Lo sentimos, debe tener 18 años o más para usar Ask Hava. Pídale a un padre o adulto que nos escriba.",
+    "spanish_stays_on": true
+  },
+  "name_address": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: ¿Cuál es su nombre y la dirección de su casa? Solo el negocio que usted elija la recibe, después de que lo elija. Nunca preguntamos por estatus migratorio ni identificación."
   }
 }

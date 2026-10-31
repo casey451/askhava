@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. Not here yet: the rest of the intake questions and their order (T040), routing (T043), web chat (T103).
+The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. T040 added what opens a job, duplicates, the join window, exact answers, the name-and-address question and the under-18 reply. Not here yet: the trade questions and their order (T042, T156), routing (T043), web chat (T103).
 
 ## What it owns
 
@@ -13,6 +13,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `src/safety_text.rs` (T152): `safety_text` (the INT-004 text in English or Spanish), `safety_outgoing` (its `Kind::Safety911` quiet-hours view), `sent_in_time` and `SAFETY_WITHIN` (5 minutes).
 - `src/emergency.rs` (T039, pure): `check` (`Check`, `Hazard`), `is_safe_reply`, `urgency` (`Urgency`), `choice` (`Choice`), `beep_is_alarm`; re-exported in `api::rules`.
 - `src/emergency_count.rs` (T039): `count` (from `businesses::api::night_count`), `is_night`, `offer` (`Offer`), `CHOICE_TEMPLATE`, `NIGHT_MANY_TEMPLATE`, `NIGHT_ONE_TEMPLATE`, `NIGHT_NONE_TEMPLATE`.
+- `src/conversation.rs` (T040): `begin_job` (`JobStart`, `Opened`), `hear`, `joining_job`, `record_answer` (`Answer`, `Recorded`), `stop_if_under_18`, `ask_name_address`, `take_name_address` (`Taken`); a request's jobs are `intake_answer` rows `job.<trade>.<property>` (D-993). `rules.rs` also holds `opens_job`, `cancel_like`, `joins_open_job`, `JOIN_WINDOW`, `pick_option`, `accepts_word_answer`, `age_stop` (`AgeStop`), `split_name_address`; templates `under_18` and `name_address` (en, es).
 - `src/models.rs`: `IntakeError`, one row type per table, the crate-private queries. `sqlx.toml`: `timestamptz` as jiff timestamps.
 - Templates it uses in `app/messaging/templates/`: `consent`, `consent_safety_call` and `who_is_this` (added by T038, D-907), `emergency_911`; `beep_question`, `how_soon`, `needed_by_day`, `emergency_choice`, `night_count_many` (`{count}`, `{trade}`), `night_count_one`, `night_count_none` (`{trade}`) (T039, D-979).
 - `src/api.rs`: the public surface; `api::rules` re-exports the pure rules.
@@ -34,6 +35,11 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - CON-005, D-933: `receive_text` writes one `intake.consent_record` (channel `sms`, inbox ID, arrival time, version `<template>:<language>:<12 hex of the SHA256 of the rendered text>`) only when the text queued the consent text; replies, opt-outs and HELP record nothing. `on_text` alone writes no record (T038's `consent_records_are_append_only_for_the_app_role` counts on that), so other crates call `receive_text` only.
 - CON-007, CON-021: `card_allowed(conversation)` is true only with a consent record; `may_text(contact)` only for a homeowner with one (tenants and on-site contacts never have one). Card and send tasks call them first. `card_allowed` gates text-delivered cards only; the CON-007 web-chat request with no verified mobile number is T103's to allow. `may_text` covers homeowner request texts only and ignores opt-outs; HELP and opt-out confirmations and the suppression list are the send path's.
 - TERMS-001, TERMS-016, TERMS-033, D-934: only a pick calls `record_terms_acceptance`; intake hashes the published text itself; the same pick twice returns `false` and stores nothing more; an unknown request is `IntakeError::UnknownRequest`.
+- INT-007, INT-008, D-138, D-994: `opens_job` is false for one or two words and for any cancel-like message; an emergency keyword opens at any length.
+- INT-009, INT-010, D-993: one active job per homeowner, property and trade; a follow-up strictly inside the window joins the newest job even as another trade.
+- INT-011, INT-012: answers count only for an open request and match whole words ("ok" is not in "broke"); free-answer questions take any words and store only the code `text`.
+- INT-027, D-146, D-238, D-995: the name-and-address question follows the area check, and its raw answer goes to the vault only, never to the AI.
+- INT-038, D-385, D-994: an under-18 sender gets one `under_18` reply and the request closes; under 13 the data is deleted except the consent record.
 
 ## Never break
 
@@ -69,3 +75,4 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `tests/integration/tests/emergency_flow.rs` (TD-INT-12, TD-INT-13, TD-INT-15, TD-INT-16): `cargo test -p askhava-integration --test emergency_flow`.
 - `tests/docs/test_no_phone_numbers_in_templates.py` (TD-INT-17): `python3 -m pytest tests/docs/test_no_phone_numbers_in_templates.py -q -p no:cacheprovider`.
 - `tests/integration/tests/consent_records.rs` (TD-CON-02, TD-CON-03, TD-CON-14, TD-CON-24, TD-TERMS-07): `cargo test -p askhava-integration --test consent_records`.
+- `src/tests/conversation.rs` (TD-INT-02, TD-INT-11, TD-INT-14, TD-INT-20): `cargo test -p askhava-intake tests::conversation`.
