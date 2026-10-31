@@ -34,7 +34,7 @@ from pathlib import Path
 
 SKIP_PREFIXES = ("sources/", ".git/")
 SKIP_FILES = ("kit/sources.sha256", "uv.lock")
-MAX_BYTES = 1_000_000
+MAX_BYTES = 4_000_000
 
 FAKE_STREETS = {"Test", "Example", "Sample", "Fake", "Canary", "Sentinel", "Placeholder"}
 FAKE_NAMES = {
