@@ -2,9 +2,14 @@
 # Stub until there are pages to test.
 name: a11y
 on:
+  # Push only, no pull_request trigger (D-1087): exactly one run per head commit. A second,
+  # pull_request-started run of the same head doubled the minutes and the exposure to a flaky test
+  # (runner/verify.py needs every run of a required check on the head green) and, finishing after the
+  # merge, made governance.yml post a false failure. A check run attaches to its commit, so these push
+  # runs satisfy a pull request with that head (the ruleset matches checks by name and app on the head
+  # SHA). Every pull request here comes from claude/** or dependabot/**.
   push:
-    branches: ["claude/**", "!claude/kit-state"]
-  pull_request:
+    branches: ["claude/**", "dependabot/**", "!claude/kit-state"]
   workflow_call:
 permissions:
   contents: read
