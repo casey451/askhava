@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT town FROM businesses.town WHERE business_id = $1 ORDER BY town",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "town",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.town",
+            "name": "town"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "2aa841309f97f31466515419c38a5c4bd567b989e51884ef5169eb57670aaed3"
+}

@@ -337,6 +337,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "askhava-businesses"
+version = "0.1.0"
+dependencies = [
+ "askhava-core",
+ "askhava-messaging",
+ "askhava-ops",
+ "jiff",
+ "jiff-sqlx",
+ "secrecy",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "askhava-catalog"
 version = "0.1.0"
 dependencies = [
@@ -399,6 +415,7 @@ version = "0.1.0"
 dependencies = [
  "askhava-adapters",
  "askhava-ai",
+ "askhava-businesses",
  "askhava-catalog",
  "askhava-core",
  "askhava-intake",

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM businesses.staff_phone WHERE id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b28aeb460a5dd9f7ebfcbf610d3f4dae37d1bf3cbaef52cf4b69c875c1196da0"
+}

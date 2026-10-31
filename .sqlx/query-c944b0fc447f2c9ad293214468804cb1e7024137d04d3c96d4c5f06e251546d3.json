@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.team_member SET cards_and_quotes = false WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c944b0fc447f2c9ad293214468804cb1e7024137d04d3c96d4c5f06e251546d3"
+}

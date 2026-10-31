@@ -1,0 +1,24 @@
+[package]
+name = "askhava-businesses"
+description = "Ask Hava businesses: account statuses, towns, job-type checklist within the license, overflow, Spanish, insurance and after-hours ticks, team members and staff phones (BIZ-004 to BIZ-009, BIZ-023)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+askhava-core = { workspace = true }
+askhava-messaging = { workspace = true }
+askhava-ops = { workspace = true }
+jiff = { workspace = true }
+jiff-sqlx = { workspace = true, features = ["postgres"] }
+secrecy = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+
+[lints]
+workspace = true
