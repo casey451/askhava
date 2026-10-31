@@ -5,9 +5,11 @@
 //! Pairs only, never `std::env::set_var` (R16). Every number is a fake
 //! 555-style test number; the stand-in Twilio SID is `AC` and 32 zeros.
 
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Read};
 use std::net::TcpListener;
 use std::process::{Child, Command, Stdio};
+use std::sync::mpsc;
+use std::time::Duration;
 
 use askhava_core::api::{Settings, SettingsError};
 use secrecy::SecretString;
@@ -228,41 +230,108 @@ impl Drop for StandIn {
 /// How many free ports `stand_in` tries before giving up.
 const STAND_IN_STARTS: usize = 5;
 
+/// How long one start may take to print its "listening" line. The old connect
+/// probe allowed 5 seconds; the server normally prints within a fraction of a
+/// second, so this only bounds a child that neither prints nor exits.
+const STAND_IN_READY: Duration = Duration::from_secs(10);
+
 /// Starts `python3 -m stand_ins.server` and returns once that child, and no
 /// other process, is listening on the port. A free port is only free when it
 /// is looked up: before the child binds it another test can take it, the
 /// child then exits with "Address already in use", and a plain connect probe
 /// would reach the other test's socket. So readiness is the child's own
-/// "listening" line, printed after its bind, and a child that exits without
-/// it is started again on a new port (D-1087).
+/// "listening" line, printed after its bind, and a child that exits, prints
+/// something else or stays silent past `STAND_IN_READY` is killed and started
+/// again on a new port; after `STAND_IN_STARTS` failed starts the panic shows
+/// what each child said (D-1086).
 pub(super) fn stand_in() -> StandIn {
+    let mut failures = Vec::new();
     for _ in 0..STAND_IN_STARTS {
-        if let Some(server) = start_stand_in() {
-            return server;
+        let port = TcpListener::bind("127.0.0.1:0")
+            .unwrap()
+            .local_addr()
+            .unwrap()
+            .port();
+        let mut command = Command::new("python3");
+        command
+            .args(["-m", "stand_ins.server", "--port", &port.to_string()])
+            .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+        match start_and_wait(command, port, STAND_IN_READY) {
+            Ok(server) => return server,
+            Err(failure) => failures.push(failure),
         }
     }
-    panic!("stand-in server did not start");
+    panic!("stand-in server did not start: {failures:#?}");
 }
 
-/// One start on a looked-up free port; `None` when the child exited before
-/// saying it listens there (the port was taken in between).
-fn start_stand_in() -> Option<StandIn> {
-    let port = TcpListener::bind("127.0.0.1:0")
-        .unwrap()
-        .local_addr()
-        .unwrap()
-        .port();
-    let child = Command::new("python3")
-        .args(["-m", "stand_ins.server", "--port", &port.to_string()])
-        .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."))
+/// Spawns `command` and waits up to `within` for its first stdout line to be
+/// `stand-ins listening on http://127.0.0.1:<port>`. The line is read on a
+/// helper thread, which then drains stdout so the child never writes to a
+/// closed pipe. On any other outcome the child is killed and reaped and the
+/// error says what it printed on stdout and stderr (D-1086).
+fn start_and_wait(mut command: Command, port: u16, within: Duration) -> Result<StandIn, String> {
+    let spawned = command
         .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn();
-    let mut server = StandIn(child.unwrap(), port);
-    let mut line = String::new();
-    let stdout = server.0.stdout.as_mut().unwrap();
-    BufReader::new(stdout).read_line(&mut line).unwrap();
+    let mut child = spawned.map_err(|error| format!("spawn failed: {error}"))?;
+    let stdout = child.stdout.take().unwrap();
+    let (sender, first_line) = mpsc::channel();
+    std::thread::spawn(move || {
+        let mut reader = BufReader::new(stdout);
+        let mut line = String::new();
+        let _ = reader.read_line(&mut line);
+        let _ = sender.send(line);
+        let _ = std::io::copy(&mut reader, &mut std::io::sink());
+    });
+    let mut server = StandIn(child, port);
     let ready = format!("stand-ins listening on http://127.0.0.1:{port}");
-    (line.trim_end() == ready).then_some(server)
+    let said = match first_line.recv_timeout(within) {
+        Ok(line) if line.trim_end() == ready => {
+            pass_stderr_through(&mut server.0);
+            return Ok(server);
+        }
+        Ok(line) => format!("stdout {line:?}"),
+        Err(_) => format!("no line within {within:?}"),
+    };
+    let _ = server.0.kill();
+    let _ = server.0.wait();
+    let mut stderr = String::new();
+    if let Some(mut pipe) = server.0.stderr.take() {
+        let _ = pipe.read_to_string(&mut stderr);
+    }
+    Err(format!("port {port}: {said}; stderr {stderr:?}"))
+}
+
+/// Copies a running server's stderr to the test's own, as an inherited
+/// stderr would, so a traceback from a request still shows in the test log.
+fn pass_stderr_through(child: &mut Child) {
+    if let Some(mut pipe) = child.stderr.take() {
+        std::thread::spawn(move || std::io::copy(&mut pipe, &mut std::io::stderr()));
+    }
+}
+
+/// D-1086: a child that never prints its "listening" line is killed after the
+/// wait and reported, so a stuck start cannot hang the test run.
+#[test]
+fn a_silent_stand_in_start_is_killed_and_reported() {
+    let mut command = Command::new("python3");
+    command.args(["-c", "import time; time.sleep(60)"]);
+    let started = std::time::Instant::now();
+    let failure = start_and_wait(command, 1, Duration::from_millis(300)).err();
+    assert!(failure.unwrap().contains("no line within"));
+    assert!(started.elapsed() < Duration::from_secs(30));
+}
+
+/// D-1086: a child that exits before its "listening" line (as on "Address
+/// already in use") is a failed start whose stderr is kept for the panic.
+#[test]
+fn a_stand_in_that_exits_early_is_reported_with_its_stderr() {
+    let mut command = Command::new("python3");
+    command.args(["-c", "import sys; sys.exit('fake bind failure')"]);
+    let failure = start_and_wait(command, 1, STAND_IN_READY).err().unwrap();
+    assert!(failure.contains("stdout \"\""));
+    assert!(failure.contains("fake bind failure"));
 }
 
 fn stand_in_config(port: u16) -> TwilioConfig {
