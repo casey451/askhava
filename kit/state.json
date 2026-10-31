@@ -12409,7 +12409,7 @@
     "tests/integration/tests/routing_confidence.rs"
    ],
    "slug": "revert",
-   "branch": "claude/task/FIX-MAIN-revert",
+   "branch": "claude/task/FIX-MAIN-a2",
    "revert_sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
    "offending_task": "T156",
    "goal": "Fix main. First option: `git revert --no-edit 26b176e5aab228dba7e0637bc909b6516f1692b6` (the merge of T156). Patch over only if the revert itself would break main, and say why in the report.",
@@ -13236,7 +13236,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T20:06:03Z",
+ "updated_at": "2026-10-31T20:06:11Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
