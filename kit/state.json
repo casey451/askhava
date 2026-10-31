@@ -5531,7 +5531,7 @@
     "expires": "2026-10-31T02:25:58Z",
     "lane": "2"
    },
-   "branch": "claude/task/T034-licensing-agency-rules",
+   "branch": "claude/task/T034-licensing-agency-rules-a2",
    "auto_merge": {
     "enabled": true,
     "why": "auto-merge on #151 (gh pr merge)",
@@ -8996,7 +8996,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T00:17:10Z",
+ "updated_at": "2026-10-31T00:17:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
