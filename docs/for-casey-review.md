@@ -1346,7 +1346,13 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **SPLIT.** A request needing two kinds of business with nobody licensed for both gets "Ask Hava: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade." SPLIT (or DIVIDIR) opens the second job; each goes out alone.
 - **For you to look at.** The Spanish versions of these texts are drafts for your translator. Nothing yet calls the late-card step when a business unpauses or ticks a new job type, and nothing yet reads your pause switches into matching: both are wiring for a later task (D-1021).
 
-## Task size numbers re-measured (D-1030, October 31)
+## What a business sees on a job card (T045, D-1024 to D-1027, October 31)
+
+- **What's on it.** The town, the kind of place (house, marina, storage lot or ramp), the homeowner's approved description, her multiple-choice answers, "How soon: <her answer>" ("Needed by Wed" when she gave a day), "911 text sent: gas" (or CO alarm and so on) when that text went out, and checked card photos. There is no place on the card for a name, phone, email, street address or on-site contact.
+- **The last check.** Every line goes through a final plain-code check. In any sentence with something that looks like a contact ("ask for Pat", "text me", "my number", an email, a street number, a phone number in any spacing or spelled out), that word and the rest of the sentence are removed. It leans toward removing too much, so now and then an ordinary sentence loses its end. If fewer than 5 words of her description are left, the card says "Plumbing job (details on the job page)".
+- **For you to look at.** Both reviewers thought a contractor might read "911 text sent: gas" as "911 was called." That wording is fixed by the spec (D-436), so it wasn't changed. If you'd like it clearer, something like "We sent the homeowner our 911 safety text (gas)" would be a spec change.
+
+## Task size numbers re-measured (D-1036, October 31)
 
 - **What you approved.** Each task tells its worker roughly how much of its reading space it will use. Those numbers were stale (about half the real size), and nearly every task was over the old 20% limit. They are now measured fresh for every task, and the limits are 45% for ordinary tasks and 50% for tooling tasks.
 - **Two calls Claude made.** A clean-up task that sweeps the whole app folder is no longer counted as reading every file in it, since it only searches it. The one clean-up task that also runs the full twin check (T126) measures 59%, so clean-up tasks got their own limit of 65%. Three finished twin tasks (T005 to T007) measure 63 to 69%; their numbers are kept as measured under a limit only they can use.

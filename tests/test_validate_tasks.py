@@ -596,7 +596,7 @@ def test_harness_keeps_the_d119_size_limits(tmp_path: Path) -> None:
 
 
 def test_context_limits_are_set_where_the_measured_tasks_sit(tmp_path: Path) -> None:
-    """D-1030: 45 for build, docs and audit, 50 for harness, 65 for cleanup; each limit itself passes."""
+    """D-1036: 45 for build, docs and audit, 50 for harness, 65 for cleanup; each limit itself passes."""
     assert (vt.MAX_CONTEXT_PCT, vt.MAX_HARNESS_CONTEXT_PCT, vt.MAX_CLEANUP_CONTEXT_PCT) == (45, 50, 65)
     tasks = valid_tasks()
     build, harness = task(tasks, "T001"), task(tasks, "T004")
@@ -612,7 +612,7 @@ def test_context_limits_are_set_where_the_measured_tasks_sit(tmp_path: Path) -> 
 
 
 def test_finished_twin_harness_tasks_keep_their_measured_budget() -> None:
-    """D-1030: only T005 to T007, already done, may store up to 75%; any other harness task stops at 50."""
+    """D-1036: only T005 to T007, already done, may store up to 75%; any other harness task stops at 50."""
     assert vt.CONTEXT_LIMIT_HISTORY == {"T005", "T006", "T007"}
     for tid in ("T005", "T006", "T007"):
         assert vt.context_limit(make_task(tid, "twin", type="harness")) == vt.MAX_HISTORY_CONTEXT_PCT == 75

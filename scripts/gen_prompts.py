@@ -20,7 +20,7 @@ prompt, of the owned regular files that exist and of the reads that exist,
 over a 200k-token window at about 4 bytes per token, rounded up. A spec file,
 the test design and the decisions log count only through the lines the prompt
 pastes from them; an owned directory counts nothing and an owned file is never
-counted twice through a read (D-1030). Generating writes the value back into
+counted twice through a read (D-1036). Generating writes the value back into
 kit/tasks.json.
 
 With --check, nothing is written: the script exits 1 if a prompt is missing,
@@ -30,7 +30,7 @@ recomputed live, so a value that drifted as files appeared is a note for the
 next generation: every merge moves some estimates, and a task branch cannot
 rewrite kit/tasks.json, so drift never fails Ci. With --check --strict (a
 plan-change session, before it commits) a stored value that differs from the
-measurement is a problem too (D-1030).
+measurement is a problem too (D-1036).
 
 Usage: python3 scripts/gen_prompts.py [--root REPO_ROOT] [--check [--strict]]
 """
@@ -435,7 +435,7 @@ def context_bytes(root: Path, task: dict[str, Any], prompt: str) -> int:
     An owned directory (a cleanup or harness task's tree) counts nothing: the worker greps and sweeps it, it
     does not load it. A directory under reads still counts in full, since the worker reads it, but a file the
     task owns is counted once, never again through a read that names it or a directory read holding it
-    (D-1030).
+    (D-1036).
     """
     owned = [o for o in task["owns"] if (root / o).is_file()]
     owned_set = set(owned)
@@ -496,7 +496,7 @@ def estimate_line(root: Path, task: dict[str, Any], prompt: str) -> str:
 
 
 def budget_problem(root: Path, task: dict[str, Any], prompt: str) -> list[str]:
-    """--strict (D-1030): the stored budget.context_pct must equal the live measurement."""
+    """--strict (D-1036): the stored budget.context_pct must equal the live measurement."""
     pct = percent(context_bytes(root, task, prompt))
     stored = task["budget"]["context_pct"]
     return [] if pct == stored else [f"{task['id']}: stored context_pct {stored}% but it measures {pct}%; regenerate"]
@@ -545,7 +545,7 @@ def main(argv: list[str] | None = None) -> int:
         "--root", type=Path, default=Path(__file__).resolve().parent.parent
     )
     parser.add_argument("--check", action="store_true", help="verify, write nothing")
-    parser.add_argument("--strict", action="store_true", help="with --check: a stale stored budget fails (D-1030)")
+    parser.add_argument("--strict", action="store_true", help="with --check: a stale stored budget fails (D-1036)")
     args = parser.parse_args(argv)
     root: Path = args.root
     data = json.loads((root / TASKS_FILE).read_text(encoding="utf-8"))

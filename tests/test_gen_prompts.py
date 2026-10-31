@@ -328,7 +328,7 @@ def test_check_prints_token_estimates_and_notes_drift(
 def test_strict_check_fails_a_stale_stored_budget(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """D-1030: --check notes drift, --check --strict fails it until the budgets are regenerated."""
+    """D-1036: --check notes drift, --check --strict fails it until the budgets are regenerated."""
     root = make_repo(tmp_path, [fake_task()])
     assert gp.main(["--root", str(root)]) == 0
     assert gp.main(["--root", str(root), "--check", "--strict"]) == 0
@@ -344,7 +344,7 @@ def test_strict_check_fails_a_stale_stored_budget(
 
 
 def test_owned_directories_count_nothing_and_owned_files_count_once(tmp_path: Path) -> None:
-    """D-1030: a swept tree is not loaded; a directory read leaves out the owned files it holds."""
+    """D-1036: a swept tree is not loaded; a directory read leaves out the owned files it holds."""
     root = make_repo(tmp_path, [fake_task()])
     (root / "tree").mkdir()
     (root / "tree" / "own.py").write_text("o" * 1_000, encoding="utf-8")
