@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, business_id, mailbox_id, is_owner, cards_and_quotes, confirm_and_billing FROM businesses.team_member WHERE id = $1 AND removed_at IS NULL FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "mailbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "mailbox_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "is_owner",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "is_owner"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "cards_and_quotes",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "cards_and_quotes"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "confirm_and_billing",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "confirm_and_billing"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ad3cebb2f7c74fd5fa3b28683e3de1e9ebe2b024ec777d019e03cd1b28912d43"
+}

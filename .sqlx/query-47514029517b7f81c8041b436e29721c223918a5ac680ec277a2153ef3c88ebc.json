@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_id FROM businesses.staff_phone WHERE id = $1 FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.staff_phone",
+            "name": "business_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "47514029517b7f81c8041b436e29721c223918a5ac680ec277a2153ef3c88ebc"
+}
