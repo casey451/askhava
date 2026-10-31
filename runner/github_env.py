@@ -667,9 +667,10 @@ class GitHubEnv:
         """True when `Ci`, `Twin` and `Ally` all concluded success for that commit of main; False when
         any of them failed; None when a required check is missing or still running (REST, read only).
 
-        A squash commit on main carries no check runs of its own (the check workflows run on `claude/**`
-        pushes and pull requests), so the verdict is read from the merged pull request's head, which
-        GitHub lists for the commit; a direct read of the commit comes first for a commit that has them."""
+        A squash commit on main carries no check runs of its own (the check workflows run on pushes to
+        `claude/**` and `dependabot/**` only, D-1077), so the verdict is read from the merged pull
+        request's head, which GitHub lists for the commit; a direct read of the commit comes first for a
+        commit that has them."""
         verdict = self._required_checks(head)
         if verdict is not None:
             return verdict

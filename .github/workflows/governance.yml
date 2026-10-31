@@ -32,7 +32,8 @@ jobs:
           # already started when D-1077 landed) would compare the head with a main that already holds its
           # decision entries and post a false failure; the Governance result from before the merge stands.
           # Any answer that is not a plain count (an API error prints its body) counts as not merged, so
-          # the rules still run.
+          # the rules still run. This assumes a merged head is on main; that is false only when a FIX-MAIN revert
+          # is followed by the same SHA proposed again (a retry merges main first, so it gets a new SHA).
           merged="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls" \
             --jq '[.[] | select(.merged_at != null and .head.sha == env.HEAD_SHA)] | length' 2>/dev/null)" || merged=0
           case "$merged" in ''|*[!0-9]*) merged=0 ;; esac
