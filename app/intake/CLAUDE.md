@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. Not here yet: the 911 flow and SAFE hold (T039), the intake questions (T040), routing (T043), web chat (T103).
+The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. Not here yet: the 911 flow and SAFE hold (T039), the intake questions (T040), routing (T043), web chat (T103).
 
 ## What it owns
 
@@ -10,6 +10,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - Migration `0054_intake_terms_acceptance.sql` (T181): `intake.terms_acceptance`, one row per pick (unique `pick_id`), append-only for `askhava_app`: document, version, `text_sha256`, language, channel `quote_page` or `text_pick` (inbox ID required for and only for `text_pick`), assent line, time (TERMS-033, D-934).
 - `src/rules.rs`: pure `plan` (with `Inbound`, `Settings`, `Plan`, `Send`, `Then`), `consent_template`, `consent_language`, `wanted_language`, `reads_spanish`, `asks_who`, `language_code`, `language_from_code`; template IDs `CONSENT_TEMPLATE`, `CONSENT_CALL_TEMPLATE`, `SAFETY_TEMPLATE`, `DISCLOSURE_TEMPLATE`.
 - `src/service.rs`: `receive_text` (the entry point: `on_text` plus the consent record, one transaction), `on_text` (`TextIn`, `Handled`, `Queued`; exported only to this crate's tests), `disclosure`, `conversation`, `consent_records`, `card_allowed`, `may_text`, `record_terms_acceptance` (`TermsAcceptance`, `TermsChannel`), `terms_acceptances`.
+- `src/safety_text.rs` (T152): `safety_text` (the INT-004 text in English or Spanish), `safety_outgoing` (its `Kind::Safety911` quiet-hours view), `sent_in_time` and `SAFETY_WITHIN` (5 minutes).
 - `src/models.rs`: `IntakeError`, one row type per table, the crate-private queries. `sqlx.toml`: `timestamptz` as jiff timestamps.
 - Templates it uses in `app/messaging/templates/`: `consent`, `consent_safety_call` and `who_is_this` (added by T038, D-907), `emergency_911`.
 - `src/api.rs`: the public surface; `api::rules` re-exports the pure rules.
@@ -21,6 +22,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - CON-026, TXT-039, D-065: `consent_language`: Spanish only when `wanted_language` says Spanish (`reads_spanish`: two words from its list or ñ, ¿, ¡; or the AI reading) and Spanish conversations are on.
 - CON-027: `plan` on an open request gives `Then::IntakeReply` (agreement words record nothing) or `Then::DiscloseThenAsk` when `asks_who`; `service::disclosure` renders the CON-027 line for T040 to put before the next question. The rendered line already starts "Ask Hava: "; T040 joins it to the question without a second "Ask Hava:" prefix (D-907). Consent goes once per request: one open conversation per homeowner (`ON CONFLICT ... DO NOTHING`), the outbox key over template, contact and conversation ID (TXT-011).
 - CALL-022, D-384: `consent_template(true)` picks `consent_safety_call` only while the safety voice call is on.
+- INT-004, D-436: one fixed 911 text, `emergency_911`, in English or Spanish (`safety_text`; its Spanish template is `spanish_stays_on`, so a Spanish match gets Spanish even while Spanish conversations are off); it is never held by quiet hours (`safety_outgoing`, QH-004) and must go within `SAFETY_WITHIN` of the message (`sent_in_time`); it holds no number but 911 and no cause, symptom, health, heat, water, shutoff, utility or appliance advice. No safety-contacts file exists (D-350 withdrawn by D-436); never add a local or utility number to any text or page. The stem matcher and the SAFE hold are T039's.
 - JOB-005: `on_text` writes the `intake.consent_sent` audit row in the transaction that opens the request and queues its texts.
 - CON-005, D-933: `receive_text` writes one `intake.consent_record` (channel `sms`, inbox ID, arrival time, version `<template>:<language>:<12 hex of the SHA256 of the rendered text>`) only when the text queued the consent text; replies, opt-outs and HELP record nothing. `on_text` alone writes no record (T038's `consent_records_are_append_only_for_the_app_role` counts on that), so other crates call `receive_text` only.
 - CON-007, CON-021: `card_allowed(conversation)` is true only with a consent record; `may_text(contact)` only for a homeowner with one (tenants and on-site contacts never have one). Card and send tasks call them first. `card_allowed` gates text-delivered cards only; the CON-007 web-chat request with no verified mobile number is T103's to allow. `may_text` covers homeowner request texts only and ignores opt-outs; HELP and opt-out confirmations and the suppression list are the send path's.
@@ -33,6 +35,8 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - Consent first and at most once per request; STOP and HELP never get it: `tests::prop_consent_first::td_con_01_consent_text_first_and_once_per_request`, `tests::consent::td_con_01_*`.
 - The 911 text comes before the consent text in `Handled::texts` (`Queued` rows with their template), the order the caller sends: `td_con_01_911_text_first_then_the_consent_text`.
 - No homeowner text asks for "Reply OK", "Reply YES" or "Responda OK": `td_con_24_no_homeowner_text_asks_for_a_consent_reply`.
+- The 911 text equals its templates exactly, goes at any hour within 5 minutes, and comes before the consent text on the text and START-return paths: `tests::safety_text::td_int_17_*`, `int_004_*`, `td_con_26_*`.
+- No phone number but 911, no 211, utility name or "cooling center" in any template or page, and no safety-contacts file: `tests/docs/test_no_phone_numbers_in_templates.py`.
 - Consent records cannot be updated, deleted or truncated by the app role: `consent_records_are_append_only_for_the_app_role`.
 - Two first texts at once open one request and queue one consent text: `td_con_01_concurrent_first_texts_queue_one_consent_text`.
 - One consent record per request, none from a reply; one full terms row per pick, append-only: `tests/integration/tests/consent_records.rs`.
@@ -41,10 +45,13 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 
 - Edit the consent text: CON-031 first, then `consent` (and `consent_safety_call`) in both `en.json` and `es.json` with their `segments`; run both test commands below and `cargo test -p askhava-messaging tests::template_registry`.
 - Add a Spanish marker word or a who-is-this phrase: `SPANISH_WORDS` or `WHO_PHRASES` in `rules.rs` (folded: lower case, no accents or apostrophes), plus a case in `tests/consent.rs`.
+- Edit the 911 text: INT-004 first (a spec change with a decision), then `emergency_911` in both `en.json` and `es.json` with `segments`, then `INT_004_EN`/`INT_004_ES` in `tests/safety_text.rs`; run both safety test commands.
 - Add a table or column: a new migration (`-- intake (T###)` first line), its row type in `models.rs`, regenerate `.sqlx/` (online build with `SQLX_OFFLINE_DIR=.sqlx`).
 
 ## Tests that guard it
 
 - `src/tests/consent.rs` (TD-CON-01, TD-CON-11, TD-CON-14, TD-CON-18, TD-TXT-24): `cargo test -p askhava-intake tests::consent`.
 - `src/tests/prop_consent_first.rs` (TD-CON-01, TD-CON-11, TD-CON-24 properties): `cargo test -p askhava-intake tests::prop_consent_first`.
+- `src/tests/safety_text.rs` (TD-INT-17, TD-CON-26): `cargo test -p askhava-intake tests::safety_text`.
+- `tests/docs/test_no_phone_numbers_in_templates.py` (TD-INT-17): `python3 -m pytest tests/docs/test_no_phone_numbers_in_templates.py -q -p no:cacheprovider`.
 - `tests/integration/tests/consent_records.rs` (TD-CON-02, TD-CON-03, TD-CON-14, TD-CON-24, TD-TERMS-07): `cargo test -p askhava-integration --test consent_records`.
