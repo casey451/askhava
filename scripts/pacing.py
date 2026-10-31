@@ -149,15 +149,24 @@ def record_usage(state: State, usage: dict[str, Any], now: datetime, cfg: dict[s
     return out
 
 
+PROBE_NOTE: list[str] = []  # the last probe failure's stderr line, for the pacing row (D-1128)
+
+
 def read_quota(command: str | None = None) -> dict[str, Any] | None:
-    """Utilisation from PACING_QUOTA_CMD, or None when unset or unreadable (the ledger is used then)."""
+    """Utilisation from PACING_QUOTA_CMD, or None when unset or unreadable (the ledger is used then).
+
+    A probe that fails leaves its last stderr line in PROBE_NOTE, so the pacing row says why the
+    ledger was used (D-1128); the command's output is never logged beyond that line."""
     command = command if command is not None else os.environ.get("PACING_QUOTA_CMD", "")
+    PROBE_NOTE.clear()
     if not command:
         return None
     try:
         done = subprocess.run(shlex.split(command), capture_output=True, text=True, timeout=30, check=False)
+        PROBE_NOTE[:] = [line for line in done.stderr.splitlines() if line.strip()][-1:]
         reading = json.loads(done.stdout)
-    except (OSError, ValueError, subprocess.SubprocessError):
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        PROBE_NOTE[:] = PROBE_NOTE or [f"{type(error).__name__}: {str(error)[:120]}"]
         return None
     ok = isinstance(reading, dict) and all(isinstance(reading.get(w), dict) and "utilization" in reading[w] for w in WINDOWS)
     return reading if ok else None
@@ -192,7 +201,7 @@ def standing(
         used += reserved
         eff = budget * (1 - float(cfg["headroom"]))
         out[w] = {"used": int(used), "budget": int(eff), "left": int(eff - used), "resets_at": reset}
-    return out, "quota_cmd" if quota else "ledger"
+    return out, "quota_cmd" if quota else ("ledger; " + PROBE_NOTE[0][:160] if PROBE_NOTE else "ledger")
 
 
 def _verdict(need: int, stand: dict[str, dict[str, Any]], now: datetime) -> tuple[str, str | None]:

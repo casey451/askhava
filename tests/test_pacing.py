@@ -166,3 +166,16 @@ def test_spend_line_holds_the_week_to_a_straight_line_to_the_reset(tmp_path: Pat
     assert pc.decide(state, TASK, root=root, config=cfg, now=NOW - timedelta(hours=1)) == ("claim", None), "before the anchor"
     assert pc.decide(state, TASK, root=root, config=CFG, now=NOW) == ("claim", None), "no spread configured"
     assert pc.decide(spent(899_000), TASK, root=root, config=cfg, now=NOW) == ("wait", pc.iso(NOW + timedelta(hours=5))), "the five-hour wait still wins"
+
+
+def test_a_failing_probe_says_why_in_the_source(tmp_path: Path) -> None:
+    """D-1128: the pacing row names the probe's last stderr line, so a silent fallback can be diagnosed."""
+    probe = tmp_path / "probe.py"
+    probe.write_text("import sys; print('quota_probe: HTTP 403 from the usage endpoint', file=sys.stderr); sys.exit(1)\n", encoding="utf-8")
+    assert pc.read_quota(f"{sys.executable} {probe}") is None
+    stand, source = pc.standing(spent(0), CFG, NOW, None)
+    assert source == "ledger; quota_probe: HTTP 403 from the usage endpoint" and stand["week"]["used"] == 0
+    probe.write_text("print('{\"five_hour\": {\"utilization\": 0.5}, \"week\": {\"utilization\": 0.25}}')\n", encoding="utf-8")
+    reading = pc.read_quota(f"{sys.executable} {probe}")
+    assert reading and pc.standing(spent(0), CFG, NOW, reading)[1] == "quota_cmd"
+    assert pc.read_quota("") is None and pc.standing(spent(0), CFG, NOW, None)[1] == "ledger"
