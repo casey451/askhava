@@ -16,8 +16,23 @@
   },
   "help_reply": {
     "audience": "homeowner",
-    "segments": 2,
-    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner gets HELP messages right away and usually replies within {reply_time}. This number is text-only. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Help: askhava.com/help Reply STOP to opt out."
+    "segments": 3,
+    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner gets HELP messages right away and usually replies within {reply_time}. This number is text-only. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Help: help@askhava.com or askhava.com/help Reply STOP to opt out."
+  },
+  "help_reply_ca": {
+    "audience": "homeowner",
+    "segments": 3,
+    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner gets HELP messages right away and usually replies within {reply_time}. This number is text-only. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Canadian numbers may pay roaming charges. Help: help@askhava.com or askhava.com/help Reply STOP to opt out."
+  },
+  "help_reply_away": {
+    "audience": "homeowner",
+    "segments": 3,
+    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner is away until {time} and will reply by then. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Help: help@askhava.com or askhava.com/help Reply STOP to opt out."
+  },
+  "help_reply_away_ca": {
+    "audience": "homeowner",
+    "segments": 3,
+    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner is away until {time} and will reply by then. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Canadian numbers may pay roaming charges. Help: help@askhava.com or askhava.com/help Reply STOP to opt out."
   },
   "emergency_911": {
     "audience": "homeowner",
