@@ -698,8 +698,9 @@ def test_drill_red_main_stays_red_on_a_red_smoke_run_or_a_red_nightly_on_head(tm
     env.prs[st.FIX_MAIN] = green_pr(sha="revert01", tree="t-revert")
     env.smoke_green = False
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "main_red"
-    assert env.store["main_red"] and st.status(env.store, st.FIX_MAIN) == st.QUEUED
-    assert st.entry(env.store, st.FIX_MAIN)["attempts"] == 1 and env.store["smoke_runs"][-1]["ok"] is False
+    # D-1099: the revert is on main, so it is not run again; FIX-MAIN stays DONE and a person is asked.
+    assert env.store["main_red"] and st.status(env.store, st.FIX_MAIN) == st.DONE
+    assert st.entry(env.store, st.FIX_MAIN)["escalated_at"] and env.store["smoke_runs"][-1]["ok"] is False
     assert st.status(env.store, "T001") == st.BLOCKED  # not back in the queue until main is green
     env.store = st.with_task(env.store, st.FIX_MAIN, status=st.DONE)
     env.smoke_green, env.nightly = True, {"conclusion": "failure", "sha": env.head}
@@ -1071,7 +1072,7 @@ def test_drill_a_handed_off_fix_main_reaches_the_session_as_handed_off(tmp_path:
     assert st.status(env.store, st.FIX_MAIN) == st.IN_PROGRESS
 
 
-# ---- D-1099: a FIX-MAIN that used all its attempts while main is red is re-armed by the runner itself
+# ---- D-1099: a FIX-MAIN BLOCKED while main is red is retried by the runner itself
 
 REVERT_FAILS = "Governance: failure; Checks failed at step: Plan lock and change rules (docs/governance.md)"
 
@@ -1091,8 +1092,8 @@ def _cap(env: FakeEnv, reason: str = REVERT_FAILS) -> None:
 
 
 def _round(cfg: cycle.Config, env: FakeEnv, at: datetime) -> datetime:
-    """One capped round: the stamp, the cool-off, the re-arm. Returns the re-arm time."""
-    assert cycle.run_cycle(cfg, env, at) == cycle.FIX_MAIN_CAPPED
+    """One retry: the stamp, the cool-off, the re-arm. Returns the re-arm time."""
+    assert cycle.run_cycle(cfg, env, at) == cycle.FIX_MAIN_BLOCKED
     later = at + cycle.FIX_MAIN_COOL_OFF
     assert cycle.run_cycle(cfg, env, later) == "main_red"
     return later
@@ -1107,58 +1108,58 @@ def test_drill_a_capped_fix_main_cools_off_then_is_re_armed_with_one_outbox_item
     assert fix["status"] == st.BLOCKED and fix["attempts"] == cycle.MAX_ATTEMPTS and env.runs[-1][1] == MODELS["opus"]
     assert st.eligible(env.store, NOW) == []  # the dead end D-1099 removes: nothing claimable, main red
     capped = NOW + timedelta(minutes=20)
-    assert cycle.run_cycle(cfg, env, capped) == cycle.FIX_MAIN_CAPPED
-    assert st.entry(env.store, st.FIX_MAIN)["capped_at"] == st.iso(capped) and _outbox(tmp_path) == []
+    assert cycle.run_cycle(cfg, env, capped) == cycle.FIX_MAIN_BLOCKED
+    assert st.entry(env.store, st.FIX_MAIN)["blocked_at"] == st.iso(capped) and _outbox(tmp_path) == []
     runs = len(env.runs)
-    assert cycle.run_cycle(cfg, env, capped + timedelta(minutes=29)) == cycle.FIX_MAIN_CAPPED  # still cooling off
+    assert cycle.run_cycle(cfg, env, capped + timedelta(minutes=29)) == cycle.FIX_MAIN_BLOCKED  # still cooling off
     assert st.status(env.store, st.FIX_MAIN) == st.BLOCKED and len(env.runs) == runs
     assert cycle.run_cycle(cfg, env, capped + cycle.FIX_MAIN_COOL_OFF) == "main_red"
     fix = st.entry(env.store, st.FIX_MAIN)
-    assert fix["status"] == st.QUEUED and fix["attempts"] == 0 and fix["reason"] is None and fix["capped_at"] is None
+    assert fix["status"] == st.QUEUED and fix["attempts"] == 0 and fix["reason"] is None and fix["blocked_at"] is None
     assert fix["owns"] == ["app/t001/x.py"] and fix["revert_sha"] == "bad0001" and fix["offending_task"] == "T001"
-    rounds = [{"round": 1, "at": st.iso(capped + cycle.FIX_MAIN_COOL_OFF), "capped_at": st.iso(capped), "reason": REVERT_FAILS}]
+    rounds = [{"round": 1, "at": st.iso(capped + cycle.FIX_MAIN_COOL_OFF), "blocked_at": st.iso(capped), "reason": REVERT_FAILS}]
     assert fix["fix_main_rounds"] == rounds and env.store["main_red"]["fix_main_rounds"] == rounds
     assert REVERT_FAILS in fix["last_failure"] and "git revert --no-edit bad0001" in fix["goal"]
-    assert fix["goal"].endswith(f"{cycle.ROUNDS_MARK}\n- round 1: {REVERT_FAILS}")
-    assert _outbox(tmp_path) == ["FIX-MAIN-bad0001-round-1.md"]
-    text = (tmp_path / "FIX-MAIN-bad0001-round-1.md").read_text()
-    assert "kind: info" in text and "round 1 of 3" in text and REVERT_FAILS in text and "`app/t001/x.py`" in text
+    assert fix["goal"].endswith(f"{cycle.ROUNDS_MARK}\n- before retry 1: {REVERT_FAILS}")
+    assert _outbox(tmp_path) == ["FIX-MAIN-bad0001-retry-1.md"]
+    text = (tmp_path / "FIX-MAIN-bad0001-retry-1.md").read_text()
+    assert "kind: info" in text and "retry 1 of 3" in text and REVERT_FAILS in text and "`app/t001/x.py`" in text
     assert st.status(env.store, "T001") == st.BLOCKED and env.store["main_red"]  # main stays red: nothing is cleared
     assert cycle.run_cycle(cfg, env, capped + timedelta(minutes=31)) == "fix_main"  # the new round claims at once
     assert env.runs[-1][:2] == (st.FIX_MAIN, MODELS["sonnet"]) and REVERT_FAILS in env.runs[-1][2]
-    assert _outbox(tmp_path) == ["FIX-MAIN-bad0001-round-1.md"]  # one item per round, not per cycle
+    assert _outbox(tmp_path) == ["FIX-MAIN-bad0001-retry-1.md"]  # one item per round, not per cycle
 
 
 def test_drill_fix_main_rounds_are_bounded_then_a_person_is_asked_once(tmp_path: Path) -> None:
     env, cfg = go_red(tmp_path)
     at = NOW + timedelta(minutes=10)
     for n in range(1, cycle.FIX_MAIN_ROUNDS + 1):
-        _cap(env, f"round {n} failed")
+        _cap(env, f"set {n} failed")
         at = _round(cfg, env, at) + timedelta(minutes=1)
     assert [r["round"] for r in st.entry(env.store, st.FIX_MAIN)["fix_main_rounds"]] == [1, 2, 3]
     goal = st.entry(env.store, st.FIX_MAIN)["goal"]
-    assert goal.count(cycle.ROUNDS_MARK) == 1 and all(f"- round {n}: round {n} failed" in goal for n in (1, 2, 3))
-    _cap(env, "round 4 failed")
-    assert cycle.run_cycle(cfg, env, at) == cycle.FIX_MAIN_CAPPED
+    assert goal.count(cycle.ROUNDS_MARK) == 1 and all(f"- before retry {n}: set {n} failed" in goal for n in (1, 2, 3))
+    _cap(env, "set 4 failed")
+    assert cycle.run_cycle(cfg, env, at) == cycle.FIX_MAIN_BLOCKED
     fix = st.entry(env.store, st.FIX_MAIN)
     assert fix["status"] == st.BLOCKED and fix["escalated_at"] == st.iso(at) and len(fix["fix_main_rounds"]) == 3
-    assert _outbox(tmp_path) == [*[f"FIX-MAIN-bad0001-round-{n}.md" for n in (1, 2, 3)], "FIX-MAIN-bad0001-stuck-1.md"]
+    assert _outbox(tmp_path) == [*[f"FIX-MAIN-bad0001-retry-{n}.md" for n in (1, 2, 3)], "FIX-MAIN-bad0001-stuck-1.md"]
     stuck = (tmp_path / "FIX-MAIN-bad0001-stuck-1.md").read_text()
-    assert "kind: blocked" in stuck and "round 4 failed" in stuck and "git revert --no-edit bad0001" in stuck
+    assert "kind: blocked" in stuck and "set 4 failed" in stuck and "git revert --no-edit bad0001" in stuck
     assert "`app/t001/x.py`" in stuck and '--requeue FIX-MAIN --reason "..."' in stuck
     store, pushes = copy.deepcopy(env.store), env.pushes
-    assert cycle.run_cycle(cfg, env, at + timedelta(hours=5)) == cycle.FIX_MAIN_CAPPED  # no more rounds, no new item
+    assert cycle.run_cycle(cfg, env, at + timedelta(hours=5)) == cycle.FIX_MAIN_BLOCKED  # no more rounds, no new item
     assert env.store == store and env.pushes == pushes and len(_outbox(tmp_path)) == 4
     # A person acts: --requeue FIX-MAIN starts it again with fresh attempts; a later cap asks again (stuck-2).
     out = cycle.requeue(env.store, st.FIX_MAIN, "fixed the append-only rule on main", at, "manual-1")
     assert out is not None
     fix = st.entry(out, st.FIX_MAIN)
     assert fix["status"] == st.QUEUED and fix["attempts"] == 0 and fix["escalated_at"] is None and fix["reason"] is None
-    assert fix["requeues"][-1]["attempts"] == cycle.MAX_ATTEMPTS and fix["requeues"][-1]["was"] == "round 4 failed"
+    assert fix["requeues"][-1]["attempts"] == cycle.MAX_ATTEMPTS and fix["requeues"][-1]["was"] == "set 4 failed"
     assert st.eligible(out, at) == [st.FIX_MAIN]
     env.store = out
-    _cap(env, "round 5 failed")
-    assert cycle.run_cycle(cfg, env, at + timedelta(hours=6)) == cycle.FIX_MAIN_CAPPED
+    _cap(env, "set 5 failed")
+    assert cycle.run_cycle(cfg, env, at + timedelta(hours=6)) == cycle.FIX_MAIN_BLOCKED
     assert "FIX-MAIN-bad0001-stuck-2.md" in _outbox(tmp_path)
 
 
@@ -1181,8 +1182,62 @@ def test_fix_main_requeue_only_while_main_is_red_and_blocked_and_a_new_red_start
     assert len(st.entry(env.store, st.FIX_MAIN)["fix_main_rounds"]) == 1
     again = cycle.set_main_red(env.store, cfg, "nightly", "main0009", ("T002", "m2", ["app/t002/x.py"]), NOW)
     fix = st.entry(again, st.FIX_MAIN)
-    assert fix["fix_main_rounds"] == [] and fix["capped_at"] is None and fix["escalated_at"] is None
+    assert fix["fix_main_rounds"] == [] and fix["blocked_at"] is None and fix["escalated_at"] is None
     assert cycle.ROUNDS_MARK not in fix["goal"] and fix["owns"] == ["app/t002/x.py"]
+
+
+def test_drill_a_retried_fix_main_never_reopens_the_false_red_withdrawal(tmp_path: Path) -> None:
+    """Review of D-1099: a smoke-set red whose FIX-MAIN was retried (attempts back at 0) or re-queued has
+    started, so green checks on the head no longer withdraw it as false (D-498); only a verified run clears."""
+    env, cfg = FakeEnv(failing_fix_main), config([make_task("T001"), make_task("T002")], tmp_path)
+    env.store = st.with_task(env.store, "T001", status=st.DONE, merged_sha="m1", merged_at="2026-11-01T10:00:00Z",
+                             files=["app/t001/x.py"])
+    env.smoke_green = False
+    assert cycle.run_cycle(cfg, env, NOW) == "main_red" and env.store["main_red"]["check"] == "smoke"
+    _cap(env)
+    at = _round(cfg, env, NOW + timedelta(minutes=5))
+    assert st.entry(env.store, st.FIX_MAIN)["attempts"] == 0 and st.status(env.store, st.FIX_MAIN) == st.QUEUED
+    env.checks_green = True  # Ci, Twin and Ally green on the red head
+    assert cycle.run_cycle(cfg, env, at + timedelta(minutes=1)) != "false_red_cleared"
+    assert env.store["main_red"] and st.status(env.store, st.FIX_MAIN) != st.SKIPPED
+    blocked = st.with_task(env.store, st.FIX_MAIN, status=st.BLOCKED, attempts=1, fix_main_rounds=[], reason="permission blocked: gh")
+    requeued = cycle.requeue(blocked, st.FIX_MAIN, "the permission is fixed", at + timedelta(hours=1), "manual-1")
+    assert requeued is not None and not cycle._false_smoke_red(requeued)
+    old_requeue = st.with_task(requeued, st.FIX_MAIN, requeues=[{"at": "2026-10-01T00:00:00Z", "reason": "an earlier red"}])
+    assert cycle._false_smoke_red(old_requeue)  # a re-queue from an earlier red does not count against this one
+
+
+def test_drill_a_fix_main_blocked_for_a_permission_is_retried_too(tmp_path: Path) -> None:
+    """Review of D-1099: BLOCKED for any reason while main is red takes the same bounded retry path."""
+    env, cfg = go_red(tmp_path)
+    env.store = st.with_task(env.store, st.FIX_MAIN, status=st.BLOCKED, attempts=1, reason="permission blocked: gh denied")
+    at = _round(cfg, env, NOW + timedelta(minutes=10))
+    fix = st.entry(env.store, st.FIX_MAIN)
+    assert fix["status"] == st.QUEUED and fix["attempts"] == 0 and fix["fix_main_rounds"][0]["reason"] == "permission blocked: gh denied"
+    assert _outbox(tmp_path) == ["FIX-MAIN-bad0001-retry-1.md"] and at
+
+
+def test_drill_a_red_smoke_run_after_the_revert_merged_asks_a_person_at_once(tmp_path: Path) -> None:
+    """Review of D-1099: the revert is on main and smoke is still red: no retry of the revert, one outbox
+    item, and main clears on its own once a later smoke run on the head is green."""
+    env, cfg = go_red(tmp_path)
+    cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10))
+    env.prs[st.FIX_MAIN] = dict(green_pr(sha="revert01", tree="t-revert"), merged_sha="rev0001")
+    env.smoke_green = False
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "main_red"
+    fix = st.entry(env.store, st.FIX_MAIN)
+    assert fix["status"] == st.DONE and fix["merged_sha"] == "rev0001" and fix["attempts"] == 0
+    assert fix["last_failure"] == cycle.REVERT_LANDED.format(head="main0001")
+    assert _outbox(tmp_path) == ["FIX-MAIN-bad0001-revert-landed.md"]
+    text = (tmp_path / "FIX-MAIN-bad0001-revert-landed.md").read_text()
+    assert "kind: blocked" in text and "rev0001" in text and "`app/t001/x.py`" in text
+    runs = len(env.runs)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(hours=2)) == "main_red"  # red again: nothing new
+    assert _outbox(tmp_path) == ["FIX-MAIN-bad0001-revert-landed.md"] and len(env.runs) == runs
+    assert st.status(env.store, st.FIX_MAIN) == st.DONE and st.status(env.store, "T001") == st.BLOCKED
+    env.smoke_green, env.head = True, "main0003"  # a person's fix reached main
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(hours=3)) == "main_cleared" and not env.store["main_red"]
+    assert st.status(env.store, "T001") == st.QUEUED
 
 
 def test_a_green_main_never_re_arms_a_blocked_fix_main(tmp_path: Path) -> None:
@@ -1190,7 +1245,7 @@ def test_a_green_main_never_re_arms_a_blocked_fix_main(tmp_path: Path) -> None:
     env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
     _cap(env)
     assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
-    assert st.status(env.store, st.FIX_MAIN) == st.BLOCKED and "capped_at" not in st.entry(env.store, st.FIX_MAIN)
+    assert st.status(env.store, st.FIX_MAIN) == st.BLOCKED and "blocked_at" not in st.entry(env.store, st.FIX_MAIN)
     assert _outbox(tmp_path) == []
 
 
