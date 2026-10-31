@@ -319,6 +319,21 @@ fn td_int_18_smell_answer_asks_what_kind_and_1_or_2_sends_the_911_text() {
     );
 }
 
+/// TD-INT-18: two smell answers in one set ask the smell question once (INT-039, D-1037).
+#[test]
+fn td_int_18_smell_question_is_asked_once() {
+    let mut set = bank().sets["electrical"].clone();
+    for q in &mut set.questions[..2] {
+        q.options_en = Some(vec!["Strange noise or smell".into(), "Other".into()]);
+        q.ask_if = None;
+    }
+    let mut run = BankRun::new(&set, false, false, BankSettings::default());
+    let asked = walk(&mut run, "", &["1", "3", "1"]);
+    let smells = asked.iter().filter(|id| *id == "smell_kind").count();
+    assert_eq!(asked[1], "smell_kind");
+    assert_eq!(smells, 1, "{asked:?}");
+}
+
 /// TD-INT-24: a boat "Fuel smell" answer sends nothing extra; "I smell gas" still matches INT-002.
 #[test]
 fn td_int_24_fuel_smell_sends_nothing_extra() {

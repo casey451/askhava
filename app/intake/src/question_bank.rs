@@ -350,7 +350,9 @@ impl<'a> BankRun<'a> {
             });
         if let Some((options, n)) = option_en {
             let has_list = self.set.questions.iter().any(is_smell);
-            self.smell_due = !has_list && options.get(n - 1).is_some_and(|o| asks_smell_kind(o));
+            let asked = self.answers.iter().any(|(id, _)| id == SMELL_ID);
+            self.smell_due =
+                !has_list && !asked && options.get(n - 1).is_some_and(|o| asks_smell_kind(o));
         }
         Heard::Stored(given)
     }

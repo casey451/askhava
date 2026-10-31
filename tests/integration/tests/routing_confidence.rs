@@ -152,3 +152,25 @@ async fn td_int_22_a_catalog_version_runs_the_golden_set_once_and_stores_its_sha
         first.rows_right * 100 / first.rows_total
     );
 }
+
+/// OPS-040, D-493: the app role may add a golden run but never change or remove one
+/// (`migrations/0083_intake_golden_result.sql`).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn golden_results_are_append_only_for_the_app_role(pool: sqlx::PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    sqlx::query("SET ROLE askhava_app")
+        .execute(&mut *db)
+        .await
+        .expect("role");
+    let at: Timestamp = "2026-11-02T10:00:00-07:00".parse().expect("time");
+    let stored = run_golden_for(&mut db, "test-version-app", at)
+        .await
+        .expect("insert");
+    assert!(stored.is_some(), "the app role adds a run");
+    for sql in [
+        "UPDATE intake.golden_result SET rows_right = 0",
+        "DELETE FROM intake.golden_result",
+    ] {
+        assert!(sqlx::query(sql).execute(&mut *db).await.is_err(), "{sql}");
+    }
+}
