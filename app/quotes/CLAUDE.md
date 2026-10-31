@@ -29,7 +29,7 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - CARD-007: `cards::build_card` lines: approved description, card-field answers, "How soon: <answer>" ("Needed by <day>"), "911 text sent: <Danger>", concept-image label; each through the gate, then the whole text again.
 - CARD-008: `gate::final_gate` cuts each sentence at its first contact-shaped word (D-1025 lists the shapes); its output is a fixed point.
 - CARD-009: `build_card` puts "<Category> job (details on the job page)" when the gated description has fewer than `min_words` words (the caller's setting, default 5).
-- CARD-010, D-485, D-492: each `gate::gate_once` pass first runs `strip_restricted`: every `catalog::api::RESTRICTED_WORDS` phrase goes, whole words, any case, longest first; each removal logs only `entry=<list entry>`; a line with none is unchanged.
+- CARD-010, D-485, D-492: each `gate::gate_once` pass runs `strip_restricted` after the contact cut (a domain holding a listed word is cut whole, D-1031): every `catalog::api::RESTRICTED_WORDS` phrase goes, whole words, any case, longest first; each removal logs only `entry=<list entry>`; a line with none is unchanged.
 - CARD-012: `JobCard::text_for` adds "Homeowner prefers Spanish" only when `CardLines::prefers_spanish` and the business speaks Spanish; no matching input holds a language.
 - CARD-019, FEE-045: `text_for` adds "No introduction fee for this job." when `CardLines::fee_free` and ends with "Sent to <N> businesses." ("Sent to 1 business.", D-1032); N is the caller's count, never capped.
 - Not here yet: the card notice and the provider-accepted count (CARD-019 to CARD-021, T147); the BIZ-049 largest-job and recurring-work skips (T155, D-492); CARD-015's daily check feeds `verified`.

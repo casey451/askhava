@@ -4,8 +4,9 @@
 //! many businesses got it, with the fee-free line for the catalog's fee-free job types. All
 //! descriptions here are made up.
 
+use std::cell::RefCell;
 use std::io::Write;
-use std::sync::{Arc, Mutex};
+use std::sync::Once;
 
 use askhava_catalog::api::{RESTRICTED_WORDS, parse, restricted_match};
 use proptest::prelude::*;
@@ -39,13 +40,17 @@ fn lines(sent_to: u32, prefers_spanish: bool, fee_free: bool) -> CardLines {
     }
 }
 
-/// A log sink the tests read back.
-#[derive(Clone, Default)]
-struct Sink(Arc<Mutex<Vec<u8>>>);
+thread_local! {
+    /// What this test thread logged while [`logged`] listens; `None` drops the lines.
+    static CAPTURE: RefCell<Option<Vec<u8>>> = const { RefCell::new(None) };
+}
+
+/// The writer of the one process-wide subscriber: it keeps a line only on a listening thread.
+struct Sink;
 
 impl Write for Sink {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.0.lock().expect("sink").extend_from_slice(buf);
+        CAPTURE.with_borrow_mut(|c| c.as_mut().map(|v| v.extend_from_slice(buf)));
         Ok(buf.len())
     }
     fn flush(&mut self) -> std::io::Result<()> {
@@ -53,16 +58,21 @@ impl Write for Sink {
     }
 }
 
-/// Runs `run` and returns what it logged.
+/// Runs `run` and returns what it logged on this thread. One global subscriber is installed
+/// once, so the removal's log callsite is always enabled: a scoped subscriber raced other test
+/// threads registering the same callsite and could miss the first event (D-1034).
 fn logged(run: impl FnOnce()) -> String {
-    let sink = Sink::default();
-    let writer = sink.clone();
-    let subscriber = tracing_subscriber::fmt()
-        .with_writer(move || writer.clone())
-        .with_ansi(false)
-        .finish();
-    tracing::subscriber::with_default(subscriber, run);
-    let bytes = sink.0.lock().expect("sink").clone();
+    static INSTALL: Once = Once::new();
+    INSTALL.call_once(|| {
+        let subscriber = tracing_subscriber::fmt()
+            .with_writer(|| Sink)
+            .with_ansi(false)
+            .finish();
+        tracing::subscriber::set_global_default(subscriber).expect("one global subscriber");
+    });
+    CAPTURE.set(Some(Vec::new()));
+    run();
+    let bytes = CAPTURE.take().unwrap_or_default();
     String::from_utf8(bytes).expect("utf-8 log")
 }
 
@@ -125,6 +135,29 @@ fn td_card_02_no_listed_phrase_passes_unchanged() {
         let log = logged(|| assert_eq!(final_gate(text), text));
         assert!(log.is_empty(), "{log}");
     }
+}
+
+/// TD-CARD-02 with CARD-008: a domain holding a listed word is cut whole by the contact gate,
+/// never split by the restricted removal into a shape that escapes it (PRIV-006).
+#[test]
+fn td_card_02_domain_with_a_listed_word_is_still_cut() {
+    for domain in ["joes.beer.biz", "havasu.vape.shop"] {
+        let gated = final_gate(&format!("Find us at {domain} today"));
+        assert_eq!(gated, "Find.", "{domain}");
+    }
+}
+
+/// TD-CARD-02: a hyphenated listed word leaves no fragment ("e-" from "e-cigarette").
+#[test]
+fn td_card_02_hyphen_fragment_is_dropped() {
+    assert_eq!(
+        final_gate("The e-cigarette shelf broke."),
+        "The shelf broke."
+    );
+    assert_eq!(
+        final_gate("Fix the shelf by the e-cigarette."),
+        "Fix the shelf by the."
+    );
 }
 
 proptest! {

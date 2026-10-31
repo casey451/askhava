@@ -8,9 +8,10 @@
 //! more digits, however spaced. Lines stay lines, so each card field is gated on its own line.
 //! The gate repeats until nothing changes, so running it twice changes nothing (TD-CARD-11).
 //!
-//! Each pass first removes every phrase on `catalog`'s carrier-restricted list (whole words, any
+//! Each pass then removes every phrase on `catalog`'s carrier-restricted list (whole words, any
 //! case, read through `catalog::api`, CARD-010, D-492) and logs each removal with the list entry
-//! that matched, never the text around it (D-485).
+//! that matched, never the text around it (D-485). The contact cut runs first, so a domain holding
+//! a listed word ("joes.beer.biz") is cut whole before the list could split it.
 
 use askhava_catalog::api::RESTRICTED_WORDS;
 
@@ -57,15 +58,15 @@ pub fn final_gate(text: &str) -> String {
     out
 }
 
-/// One pass of the gate over every line and sentence (CARD-008, CARD-010).
+/// One pass of the gate over every line: the contact cut per sentence, then the restricted
+/// removal, so a domain holding a listed word is never split before it is cut (CARD-008, CARD-010).
 fn gate_once(text: &str) -> String {
     let lines = text.lines().map(|line| {
-        let line = strip_restricted(line);
-        let kept: Vec<String> = sentences(&line)
+        let kept: Vec<String> = sentences(line)
             .into_iter()
             .filter_map(gate_sentence)
             .collect();
-        kept.join(" ")
+        strip_restricted(&kept.join(" "))
     });
     lines
         .filter(|l| !l.is_empty())
@@ -125,11 +126,13 @@ fn word_spans(line: &str) -> Vec<(usize, usize)> {
     spans
 }
 
-/// Drops the punctuation a removal left alone, keeping a sentence's last stop on the word before.
+/// Drops the punctuation a removal left alone and a fragment ending in a hyphen ("e-" from
+/// "e-cigarette"), keeping a sentence's last stop on the word before.
 fn tidy(text: &str) -> String {
     let mut kept: Vec<String> = Vec::new();
     for token in text.split_whitespace() {
-        if token.chars().any(char::is_alphanumeric) {
+        let fragment = token.trim_end_matches(['.', '!', '?']).ends_with('-');
+        if !fragment && token.chars().any(char::is_alphanumeric) {
             kept.push(token.to_owned());
         } else if let (Some(stop), Some(last)) =
             (token.chars().rfind(|c| ".!?".contains(*c)), kept.last_mut())
