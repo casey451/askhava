@@ -421,3 +421,17 @@ def test_four_digit_decisions_are_read_and_superseded(tmp_path: Path) -> None:
     src = gp.load_sources(tmp_path)
     assert set(src.decisions) == {"D-001", "D-1000"}
     assert src.superseded == {"D-001": "D-1000"}
+
+
+def test_strict_fails_when_the_decisions_log_is_within_a_tenth_of_the_scan_limit(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-1075: past 90% of MAX_BYTES the plan-change check fails, so the one session that can act must act."""
+    root = make_repo(tmp_path, [fake_task()])
+    (root / "docs").mkdir()
+    (root / "docs" / "decisions.md").write_text("- **D-001** x\n" + "y" * 950, encoding="utf-8")
+    monkeypatch.setattr(gp.pii_scan, "MAX_BYTES", 1_000)
+    assert gp.main(["--root", str(root)]) == 0
+    capsys.readouterr()
+    assert gp.main(["--root", str(root), "--check", "--strict"]) == 1
+    assert "over 90% of MAX_BYTES" in capsys.readouterr().out

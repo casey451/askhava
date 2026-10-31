@@ -220,3 +220,17 @@ def test_twin_generator_literals_pass_only_in_their_own_file() -> None:
 def test_twin_file_still_flags_other_real_looking_data() -> None:
     line = "contact_phone = \"+1928" + "7001234\""
     assert [rule for _, _, rule in pii_scan.scan_text("twin/twin.py", line)] == ["phone"]
+
+
+def test_growing_log_stops_a_plan_change_past_nine_tenths_of_the_limit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-1075: over 90% of MAX_BYTES is a problem for the plan-change check, while the scanner itself still passes."""
+    monkeypatch.setattr(pii_scan, "MAX_BYTES", 1_000)
+    (tmp_path / "docs").mkdir()
+    log = tmp_path / "docs" / "decisions.md"
+    log.write_text("y" * 900, encoding="utf-8")
+    assert pii_scan.size_stops(tmp_path) == []
+    log.write_text("y" * 901, encoding="utf-8")
+    assert pii_scan.size_stops(tmp_path) == [
+        "docs/decisions.md is 901 bytes, over 90% of MAX_BYTES (1,000); raise the limit or split the file in this plan change"
+    ]
+    assert pii_scan.main(["--root", str(tmp_path)]) == 0

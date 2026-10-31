@@ -274,6 +274,7 @@ def unallowed(skipped: list[str]) -> list[str]:
 
 GROWING_FILES = ("docs/decisions.md",)  # every task appends to it (D-1064)
 GROWTH_WARN_SHARE = 0.75
+GROWTH_STOP_SHARE = 0.9  # a plan change must not leave the file this close to the limit (D-1075)
 
 
 def size_warnings(root: Path) -> list[str]:
@@ -287,6 +288,17 @@ def size_warnings(root: Path) -> list[str]:
                 f"{name} is {size:,} bytes, over {GROWTH_WARN_SHARE:.0%} of MAX_BYTES ({MAX_BYTES:,}, "
                 "scripts/pii_scan.py); raise the limit or split the file before the scanner skips it and fails"
             )
+    return out
+
+
+def size_stops(root: Path) -> list[str]:
+    """Each growing file past GROWTH_STOP_SHARE of MAX_BYTES; a plan change fails on these (D-1075)."""
+    out = []
+    for name in GROWING_FILES:
+        path = root / name
+        size = path.stat().st_size if path.is_file() else 0
+        if size > MAX_BYTES * GROWTH_STOP_SHARE:
+            out.append(f"{name} is {size:,} bytes, over {GROWTH_STOP_SHARE:.0%} of MAX_BYTES ({MAX_BYTES:,}); raise the limit or split the file in this plan change")
     return out
 
 

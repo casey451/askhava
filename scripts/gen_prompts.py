@@ -539,6 +539,7 @@ def check(
     if strict:
         for warning in pii_scan.size_warnings(root):
             print(f"WARNING {warning}")
+        problems.extend(pii_scan.size_stops(root))
     expected = {Path(task["prompt"]).name for task in tasks}
     for path in sorted((root / PROMPTS_DIR).glob("T[0-9][0-9][0-9].md")):
         if path.name not in expected:
