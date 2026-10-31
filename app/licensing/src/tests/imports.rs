@@ -1,9 +1,10 @@
 //! The pure list readers in `src/imports.rs` (CARD-015, LIC-006, LIC-007, LIC-010): the header
-//! check, skipped and counted malformed rows, the truncated-list refusal, quoted fields, field
+//! check, skipped and counted malformed rows, the truncated-list refusals (D-905), quoted fields, field
 //! limits, dates and statuses. Every license number, business and owner name here is fake.
 
 use crate::imports::{
-    CITY_HEADER, ImportError, ROC_HEADER, normalise_license_number, parse_city_list, parse_roc_list,
+    CITY_HEADER, ImportError, ROC_HEADER, normalise_license_number, parse_city_list,
+    parse_roc_list, shrank_too_far,
 };
 
 fn roc(rows: &[&str]) -> String {
@@ -108,6 +109,20 @@ fn empty_or_mostly_malformed_lists_are_refused() {
         parse_city_list(&truncated_city).err(),
         Some(ImportError::TooFewRows)
     );
+}
+
+#[test]
+fn a_list_under_half_the_previous_one_is_too_shrunk() {
+    assert!(
+        !shrank_too_far(1, None),
+        "the first list has nothing to compare"
+    );
+    assert!(shrank_too_far(100, Some(10_000)), "a clean truncation");
+    assert!(shrank_too_far(4, Some(9)));
+    assert!(!shrank_too_far(5, Some(10)), "exactly half is kept");
+    assert!(!shrank_too_far(12_000, Some(10_000)), "growth is kept");
+    assert!(shrank_too_far(0, Some(1)));
+    assert!(!shrank_too_far(u32::MAX, Some(u32::MAX)));
 }
 
 #[test]

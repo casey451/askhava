@@ -4,7 +4,8 @@
 //! line (fields may be double-quoted); a wrong header rejects the whole list, so a changed file
 //! layout never changes a status (LIC-008), while a malformed row is skipped and counted. A list with
 //! no usable row, or with more malformed rows than good ones, is refused whole (a truncated download
-//! must never become the latest list). ROC license numbers are normalised (upper case, no spaces)
+//! must never become the latest list); `service` also refuses a list under half the size of the
+//! previous one (`shrank_too_far`, D-905). ROC license numbers are normalised (upper case, no spaces)
 //! here and at every lookup. Only the columns verification needs are read; any other column (an
 //! address or a phone) is dropped here and never stored (LIC-010).
 
@@ -24,8 +25,9 @@ pub enum ImportError {
     /// The first line is not the list's header: the layout changed, so nothing is recorded.
     #[error("the list header is not the expected one")]
     BadHeader,
-    /// The list has no good row, or more malformed rows than good ones: it looks truncated or
-    /// misread, so nothing is recorded and the previous list stays the latest (LIC-008).
+    /// The list has no good row, more malformed rows than good ones, or fewer than half the rows
+    /// the previous list of its source recorded (D-905): it looks truncated or misread, so nothing
+    /// is recorded and the previous list stays the latest (LIC-008).
     #[error("the list has too few good rows")]
     TooFewRows,
     /// No list of this source has been imported yet, so no daily check can run (LIC-008).
@@ -182,6 +184,12 @@ fn parse<T>(
         return Err(ImportError::TooFewRows);
     }
     Ok(parsed)
+}
+
+/// Whether a list recording `recorded` rows shrank to under half of the previous list's
+/// `previous` recorded rows, so it is refused as a clean truncation (LIC-008, D-905).
+pub(crate) fn shrank_too_far(recorded: u32, previous: Option<u32>) -> bool {
+    previous.is_some_and(|before| u64::from(recorded) * 2 < u64::from(before))
 }
 
 /// Splits one line on commas, honouring double-quoted fields; `None` on an unclosed quote.

@@ -5,7 +5,8 @@
 //! its source and list date; that planted malformed rows (a short row, an unknown status, a bad
 //! date, an unclosed quote, a blank number) are skipped and counted without stopping the import;
 //! that a changed header records nothing; that a second run for the same day records nothing new;
-//! that an empty or mostly malformed list is refused and the previous list stays the latest; that
+//! that an empty, mostly malformed or less than half-size list is refused and the previous list
+//! stays the latest; that
 //! conflicting repeated rows keep the stricter status and license numbers are normalised; that the
 //! class and issue year read back from the state record; that an ROC-licensed card goes only when
 //! the latest daily check of its covering license was Active and fresh; that the city list matches
@@ -36,8 +37,10 @@ ROC900006,R-37,Active,2020-13-40\n\
 \"ROC900007,R-37,Active,\n\
 ,R-37,Active,2020-01-01\n";
 
-const ROC_DAY_2: &str =
-    "license_number,class,status,issued_on\nROC900001,CR-37,Expired,2009-04-01\n";
+const ROC_DAY_2: &str = "license_number,class,status,issued_on\n\
+ROC900001,CR-37,Expired,2009-04-01\n\
+ROC900002,R-11,Suspended,2020-01-15\n\
+ROC900003,R-37,Active,\n";
 
 const CITY: &str = "license_number,business_name,trade_name,owner_name,issued_on\n\
 CL-1001,\"Example Pools, LLC\",Sample Pool Care,Pat Placeholder,2018-02-03\n\
@@ -237,6 +240,45 @@ async fn truncated_lists_are_refused_and_conflicts_keep_the_stricter_status(pool
     assert_eq!((done.recorded, done.skipped), (2, 1));
     let strict = check_license(&mut conn, BUSINESS, " Roc900010 ").await;
     assert_eq!(strict, Ok(DailyCheck::Inactive), "the stricter status wins");
+}
+
+/// A clean list under half the previous list's rows is refused, so a truncated download never
+/// turns every missing business `not_listed`; exactly half is kept (LIC-008, D-905).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_list_under_half_the_previous_one_is_refused(pool: PgPool) {
+    let mut conn = app(&pool).await;
+    import_roc_list(&mut conn, date(2026, 10, 29), ROC_DAY_1)
+        .await
+        .expect("day 1, four rows");
+    let one_row = "license_number,class,status,issued_on\nROC900003,R-37,Active,\n";
+    let cut = import_roc_list(&mut conn, date(2026, 10, 30), one_row).await;
+    assert_eq!(cut, Err(ImportError::TooFewRows), "one of four rows");
+    let kept = check_license(&mut conn, BUSINESS, "ROC900001").await;
+    assert_eq!(
+        kept,
+        Ok(DailyCheck::Active),
+        "the previous list stays the latest"
+    );
+    let half = "license_number,class,status,issued_on\n\
+        ROC900001,CR-37,Active,\nROC900003,R-37,Active,\n";
+    let done = import_roc_list(&mut conn, date(2026, 10, 31), half)
+        .await
+        .expect("two of four rows is kept");
+    assert_eq!(done.recorded, 2);
+    let city_cut =
+        "license_number,business_name,trade_name,owner_name,issued_on\n,Only One Co,,,\n";
+    import_city_list(&mut conn, date(2026, 10, 29), CITY)
+        .await
+        .expect("city day 1");
+    let half_city = import_city_list(&mut conn, date(2026, 10, 30), city_cut).await;
+    assert_eq!(
+        half_city,
+        Ok(ImportSummary {
+            recorded: 1,
+            skipped: 0,
+            already_imported: false
+        })
+    );
 }
 
 /// The city list keeps names for matching, skips a row without a business name (LIC-010, LIC-011).

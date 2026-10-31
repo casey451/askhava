@@ -68,7 +68,8 @@ pub struct ReadBack {
 /// # Errors
 ///
 /// [`ImportError::BadHeader`] for a changed layout; [`ImportError::TooFewRows`] for an empty or
-/// mostly malformed list (nothing recorded); [`ImportError::Database`] on a database failure.
+/// mostly malformed list, or one under half the previous list's rows (D-905; nothing recorded);
+/// [`ImportError::Database`] on a database failure.
 pub async fn import_roc_list(
     conn: &mut PgConnection,
     list_date: Date,
@@ -99,7 +100,8 @@ pub async fn import_roc_list(
 /// # Errors
 ///
 /// [`ImportError::BadHeader`] for a changed layout; [`ImportError::TooFewRows`] for an empty or
-/// mostly malformed list (nothing recorded); [`ImportError::Database`] on a database failure.
+/// mostly malformed list, or one under half the previous list's rows (D-905; nothing recorded);
+/// [`ImportError::Database`] on a database failure.
 pub async fn import_city_list(
     conn: &mut PgConnection,
     list_date: Date,
@@ -139,6 +141,9 @@ async fn start_import<T>(
     let (Ok(recorded), Ok(skipped)) = (recorded, skipped) else {
         return Err(ImportError::Database);
     };
+    if imports::shrank_too_far(s.recorded, previous_rows(tx, source, list_date).await?) {
+        return Err(ImportError::TooFewRows);
+    }
     db(sqlx::query_scalar!(
         "INSERT INTO licensing.list_import (source, list_date, rows_recorded, rows_skipped) \
          VALUES ($1, $2, $3, $4) ON CONFLICT (source, list_date) DO NOTHING RETURNING id",
@@ -149,6 +154,23 @@ async fn start_import<T>(
     )
     .fetch_optional(&mut *tx)
     .await)
+}
+
+/// The rows recorded by the latest list of `source` dated before `list_date`, if any (D-905).
+async fn previous_rows(
+    tx: &mut PgConnection,
+    source: &str,
+    list_date: Date,
+) -> Result<Option<u32>, ImportError> {
+    let rows = db(sqlx::query_scalar!(
+        "SELECT rows_recorded FROM licensing.list_import WHERE source = $1 AND list_date < $2 \
+         ORDER BY list_date DESC LIMIT 1",
+        source,
+        list_date.to_sqlx() as _,
+    )
+    .fetch_optional(&mut *tx)
+    .await)?;
+    Ok(rows.map(|n| u32::try_from(n).unwrap_or(0)))
 }
 
 async fn stored_summary(
@@ -257,6 +279,7 @@ async fn latest_import(conn: &mut PgConnection, source: &str) -> Result<Uuid, Im
 }
 
 /// Runs and records one business's daily check against the latest ROC list (CARD-015, LIC-007).
+/// The check is per license number: `active` when any class on the number is Active (D-906).
 ///
 /// # Errors
 ///
