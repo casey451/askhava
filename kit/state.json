@@ -6506,11 +6506,12 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "ce94ad8cd898a0b3d80452dff0016d965dcfa021",
+   "reviewed_sha": "3aeab826e1b2f4427e37c8c633128358c6b9a31f",
    "review_lease": {
     "task": "T036",
-    "session": "actions-41168087164",
-    "expires": "2026-10-31T07:21:54Z"
+    "session": "actions-41170376657",
+    "expires": "2026-10-31T08:06:29Z",
+    "lane": "2"
    },
    "branch": "claude/task/T036-licensing-imports",
    "auto_merge": {
@@ -6521,7 +6522,8 @@
    "lane": "2",
    "runner_closed_prs": [
     165
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T180",
@@ -10191,7 +10193,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T05:42:48Z",
+ "updated_at": "2026-10-31T05:44:18Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -10289,7 +10291,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3826f978cdd180346db69ae250ba6e20e8bd3f43",
+ "runner_sha": "3aeab826e1b2f4427e37c8c633128358c6b9a31f",
  "starter": "actions",
  "smoke_runs": [
   {
