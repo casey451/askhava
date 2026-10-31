@@ -107,8 +107,31 @@ fn td_lic_03_one_business_ticked_so_overflow_does_not_apply() {
     assert_eq!(ids(&got), vec![2]);
 }
 
+/// TD-LIC-03 (CARD-004, CARD-018, D-1018): on a rerun, a business that ticked the job type and
+/// holds its card keeps overflow off even once it is paused, so no overflow card goes out.
+#[test]
+fn td_lic_03_a_ticked_card_holder_keeps_overflow_off_on_a_rerun() {
+    let mut ticked = pooled(1, &["R-39"], &[AC], false);
+    ticked.card.status = AccountStatus::Paused;
+    let pool = [ticked, pooled(2, &["R-39"], &[], true)];
+    let pauses = OwnerPauses::default();
+    let pool = Pool {
+        businesses: &pool,
+        pauses: &pauses,
+    };
+    let job = card_job(&[AC]);
+    let held = [Uuid::from_u128(1)];
+    assert!(rules::match_job_held(map(), &job, &pool, &held).is_empty());
+    let other = [Uuid::from_u128(9)];
+    assert_eq!(
+        ids(&rules::match_job_held(map(), &job, &pool, &other)),
+        vec![2]
+    );
+}
+
 /// TD-CARD-05 (CARD-016): the "all" switch, the job's trade switch or the switch of every offer
-/// town a business serves gives it no card; a paused town it does not need changes nothing.
+/// town a business serves gives it no card; a paused neighbouring town it does not need changes
+/// nothing.
 #[test]
 fn td_card_05_owner_pause_switches_send_nothing() {
     let pool = [pooled(1, &["R-39"], &[AC], false)];
@@ -158,6 +181,22 @@ fn td_card_05_owner_pause_switches_send_nothing() {
     };
     assert_eq!(
         rules::card_under(map(), &job, &all, (&pool[0].card, false)),
+        CardDecision::Skip(Skip::OwnerPaused)
+    );
+}
+
+/// TD-CARD-05 (CARD-016, D-1018): the job's own town paused stops a business that also serves a
+/// neighbouring offer town.
+#[test]
+fn td_card_05_own_town_pause_stops_a_business_serving_a_neighbour_too() {
+    let mut both = pooled(1, &["R-39"], &[AC], false);
+    both.card.towns.insert(KINGMAN.to_owned());
+    let own_town = OwnerPauses {
+        towns: BTreeSet::from([HAVASU.to_owned()]),
+        ..OwnerPauses::default()
+    };
+    assert_eq!(
+        rules::card_under(map(), &card_job(&[AC]), &own_town, (&both.card, false)),
         CardDecision::Skip(Skip::OwnerPaused)
     );
 }

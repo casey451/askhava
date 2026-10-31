@@ -10,8 +10,9 @@
 //! T184 (D-1020): once the trade check passes, [`tell_coverage`] takes the `quotes::api::coverage`
 //! count (as CARD-001 and CARD-004 would send the card then) and queues the INT-017 count line, the
 //! INT-032 SPLIT offer, or moves the request to Not covered when no active business in the town
-//! covers it ([`Why::NobodyCovers`], logged as recruiting demand). [`split_request`] opens the
-//! second trade's job on a SPLIT or DIVIDIR reply, so each trade goes out as its own request.
+//! covers it ([`Why::NobodyCovers`], logged as recruiting demand; only the told job when another
+//! job of the request is still live). [`split_request`] opens the second trade's job on a SPLIT or
+//! DIVIDIR reply, so each trade goes out as its own request.
 
 use askhava_catalog::api::is_enabled;
 use askhava_jobs::api::{JobStatus, current, move_to};
@@ -319,9 +320,11 @@ pub async fn apply(
 }
 
 /// INT-017, INT-032, CARD-001: tells the homeowner the coverage `quotes::api::coverage` counted
-/// for the request's job: "We'll send this to the <N> <trade> businesses" (the singular for 1),
-/// the SPLIT offer, or, when nobody covers it, [`apply`] with [`Why::NobodyCovers`]. A request
-/// that was already closed gets nothing. Returns the queued reply.
+/// for `job`, one job of the request: "We'll send this to the <N> <trade> businesses" (the
+/// singular for 1), the SPLIT offer, or, when nobody covers it, Not covered for that job alone
+/// ([`Why::NobodyCovers`]; the whole request through [`apply`] only when no other job of it is
+/// still live, so a SPLIT's other trade is never touched, D-1020). A request that was already
+/// closed gets nothing. Returns the queued reply.
 ///
 /// # Errors
 ///
@@ -329,14 +332,11 @@ pub async fn apply(
 pub async fn tell_coverage(
     db: &mut PgConnection,
     secret: &SecretString,
-    (req, coverage): (&Request<'_>, Coverage),
+    (req, coverage, job): (&Request<'_>, Coverage, Uuid),
     routing: &Routing<'_>,
 ) -> Result<Option<Queued>, IntakeError> {
     let (template, count) = match coverage {
-        Coverage::NotCovered => {
-            let outcome = Outcome::NotCovered(Why::NobodyCovers);
-            return apply(db, secret, (req, outcome), routing).await;
-        }
+        Coverage::NotCovered => return not_covered(db, secret, (req, job), routing).await,
         Coverage::Split => (SPLIT_TEMPLATE, None),
         Coverage::Send(1) => (COUNT_ONE_TEMPLATE, None),
         Coverage::Send(n) => (COUNT_MANY_TEMPLATE, Some(n.to_string())),
@@ -347,6 +347,64 @@ pub async fn tell_coverage(
     queue(db, secret, template, routing, count.as_deref())
         .await
         .map(Some)
+}
+
+/// INT-017, D-1020: `job` is not covered. With another job of the request still live (not final)
+/// only `job` moves to Not covered, with its reply, demand row and audit row in one transaction,
+/// and the request stays open; otherwise the whole request goes through [`apply`]. A job already
+/// final, or a closed request, gets nothing.
+async fn not_covered(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    (req, job): (&Request<'_>, Uuid),
+    routing: &Routing<'_>,
+) -> Result<Option<Queued>, IntakeError> {
+    let outcome = Outcome::NotCovered(Why::NobodyCovers);
+    check_request(req, outcome)?;
+    let jobs = models::request_jobs(db, routing.conversation).await?;
+    if !jobs.contains(&job) {
+        return Err(IntakeError::UnknownRequest);
+    }
+    let mut live = Vec::new();
+    for other in jobs.into_iter().filter(|j| *j != job) {
+        if !status_of(db, other).await?.is_final() {
+            live.push(other);
+        }
+    }
+    if live.is_empty() {
+        return apply(db, secret, (req, outcome), routing).await;
+    }
+    if !open_request(db, routing.conversation).await? || status_of(db, job).await?.is_final() {
+        return Ok(None);
+    }
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    leave_intake(&mut tx, job, JobStatus::NotCovered, routing.msg.received_at).await?;
+    let found = (req.town, req.trade, routing.job_type);
+    models::insert_demand(
+        &mut tx,
+        routing.conversation,
+        found,
+        routing.msg.received_at,
+    )
+    .await?;
+    let queued = queue(&mut tx, secret, NOT_COVERED_TEMPLATE, routing, None).await?;
+    let entry = AuditEntry {
+        actor: Actor::System,
+        action: "intake.not_covered",
+        subject_kind: "intake.conversation",
+        subject_id: routing.conversation,
+        change: Change::Action,
+    };
+    audit(&mut tx, &entry)
+        .await
+        .map_err(|_| IntakeError::Audit)?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(Some(queued))
+}
+
+/// Job `job`'s current status (JOB-001).
+async fn status_of(db: &mut PgConnection, job: Uuid) -> Result<JobStatus, IntakeError> {
+    Ok(current(db, job).await.map_err(|_| IntakeError::Job)?.status)
 }
 
 /// Whether request `conversation` is still open.

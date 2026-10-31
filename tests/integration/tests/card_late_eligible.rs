@@ -245,6 +245,19 @@ async fn told(
     pool: &[Pooled],
 ) -> (Uuid, Uuid, Option<&'static str>, Option<String>) {
     let (conversation, job_id) = open_request(db, msg, trade).await;
+    let (template, body) = tell(db, (msg, trade), (conversation, job_id), job, pool).await;
+    (conversation, job_id, template, body)
+}
+
+/// Tells job `job_id` of request `conversation` the coverage of `job` and `pool`; returns the
+/// queued template and body.
+async fn tell(
+    db: &mut Db,
+    (msg, trade): (&TextIn<'_>, &str),
+    (conversation, job_id): (Uuid, Uuid),
+    job: &CardJob,
+    pool: &[Pooled],
+) -> (Option<&'static str>, Option<String>) {
     let none = OwnerPauses::default();
     let count = coverage(
         job,
@@ -271,7 +284,7 @@ async fn told(
         label: "AC",
         job_type: None,
     };
-    let queued = tell_coverage(db, &secret(), (&req, count), &routing)
+    let queued = tell_coverage(db, &secret(), (&req, count, job_id), &routing)
         .await
         .expect("tell");
     let body = match &queued {
@@ -282,7 +295,7 @@ async fn told(
             .expect("body"),
         None => None,
     };
-    (conversation, job_id, queued.map(|q| q.template), body)
+    (queued.map(|q| q.template), body)
 }
 
 /// TD-INT-29 (INT-017, CARD-001, INT-032): 5 businesses covering the job get the plural count, 1
@@ -406,4 +419,50 @@ async fn td_int_25_split_offer_and_split_makes_two_requests(mut db: Db) {
         .await
         .expect("dividir");
     assert!(matches!(opened, Opened::Created(_)), "DIVIDIR opens it too");
+}
+
+/// TD-INT-25, TD-INT-29 (INT-032, INT-017, D-1020): after SPLIT each part is told its own
+/// coverage; plumbing is covered and goes Open, electrical is not, so only the electrical job
+/// moves to Not covered and the plumbing job and the request stay as they were.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_25_a_split_part_nobody_covers_leaves_the_other_part_alone(mut db: Db) {
+    askhava_catalog::api::load_embedded(&mut db)
+        .await
+        .expect("catalog");
+    let plumber = [business(6, AccountStatus::Active, "R-37", &[PIPE])];
+    let words = "the kitchen faucet leaks and an outlet sparks";
+    let msg = text(6, words);
+    let (conversation, first) = open_request(&mut db, &msg, PIPE.0).await;
+    let second = JobStart {
+        conversation,
+        words,
+        emergency: false,
+        trade: WIRE.0,
+        at: at(11),
+    };
+    let Opened::Created(wire_job) = split_request(&mut db, "SPLIT", &second)
+        .await
+        .expect("split")
+    else {
+        panic!("SPLIT opens the second request");
+    };
+    let ids = (conversation, first);
+    let (template, _) = tell(&mut db, (&msg, PIPE.0), ids, &card_job(&[PIPE]), &plumber).await;
+    assert_eq!(template, Some(COUNT_ONE_TEMPLATE));
+    step(&mut db, first, (JobStatus::Intake, JobStatus::Open), at(11)).await;
+    let ids = (conversation, wire_job);
+    let (template, _) = tell(&mut db, (&msg, WIRE.0), ids, &card_job(&[WIRE]), &plumber).await;
+    assert_eq!(template, Some(NOT_COVERED_TEMPLATE));
+    let status = |s: JobStatus| s.code();
+    let wire_now = current(&mut db, wire_job).await.expect("wire").status;
+    assert_eq!(status(wire_now), "not_covered");
+    let pipe_now = current(&mut db, first).await.expect("pipe").status;
+    assert_eq!(status(pipe_now), "open", "the covered part is untouched");
+    let open: bool =
+        sqlx::query_scalar("SELECT closed_at IS NULL FROM intake.conversation WHERE id = $1")
+            .bind(conversation)
+            .fetch_one(&mut *db)
+            .await
+            .expect("request");
+    assert!(open, "the request stays open for the covered part");
 }

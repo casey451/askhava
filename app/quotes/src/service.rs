@@ -11,8 +11,8 @@
 use askhava_jobs::api::current;
 use askhava_licensing::api::ClassMap;
 use jiff::Timestamp;
-use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, CardBusiness, CardJob, Coverage, Pool, QuotesError, Recipient};
 use crate::rules;
@@ -46,7 +46,9 @@ pub async fn card_holders(db: &mut PgConnection, job_id: Uuid) -> Result<Vec<Uui
 }
 
 /// CARD-001, CARD-003, CARD-004, CARD-016: records a card for every business the full match
-/// (`rules::match_job`) reaches that holds none yet, each sent `now`. Returns only the new ones.
+/// (`rules::match_job_held`, given the job's current card holders, so a rerun never turns
+/// overflow on for a job a holder's checklist covers, D-1018) reaches that holds none yet, each
+/// sent `now`. Returns only the new ones.
 ///
 /// # Errors
 ///
@@ -60,7 +62,7 @@ pub async fn send_job_cards(
     now: Timestamp,
 ) -> Result<Vec<Recipient>, QuotesError> {
     let holders = models::card_holders(db, job_id).await?;
-    let new: Vec<Recipient> = rules::match_job(map, job, pool)
+    let new: Vec<Recipient> = rules::match_job_held(map, job, pool, &holders)
         .into_iter()
         .filter(|r| holders.binary_search(&r.business).is_err())
         .collect();
@@ -70,11 +72,13 @@ pub async fn send_job_cards(
 
 /// CARD-018, D-042: once a business becomes eligible (newly active, unpaused or newly ticked),
 /// the caller runs this; while the job is Open or No quotes yet each business newly reached gets
-/// its card now, so its 24 hours start now. Any other status sends nothing.
+/// its card now, so its 24 hours start now. Any other status sends nothing. The status read and
+/// the inserts share one transaction; a move committed between them orders as a card sent just
+/// before the move (D-1021).
 ///
 /// # Errors
 ///
-/// [`QuotesError::Job`] or [`QuotesError::Database`].
+/// [`QuotesError::Job`] or [`QuotesError::Database`]; nothing is kept on an error.
 pub async fn send_late_cards(
     db: &mut PgConnection,
     map: &ClassMap,
@@ -83,14 +87,17 @@ pub async fn send_late_cards(
     pool: &Pool<'_>,
     now: Timestamp,
 ) -> Result<Vec<Recipient>, QuotesError> {
-    let status = current(db, job_id)
+    let mut tx = db.begin().await.map_err(|_| QuotesError::Database)?;
+    let status = current(&mut tx, job_id)
         .await
         .map_err(|_| QuotesError::Job)?
         .status;
     if !status.takes_late_cards() {
         return Ok(Vec::new());
     }
-    send_job_cards(db, map, job_id, job, pool, now).await
+    let sent = send_job_cards(&mut tx, map, job_id, job, pool, now).await?;
+    tx.commit().await.map_err(|_| QuotesError::Database)?;
+    Ok(sent)
 }
 
 /// INT-017, INT-032: the coverage intake tells the homeowner, counted with the shipped license

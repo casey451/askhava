@@ -8,14 +8,18 @@
 //! There is no cap on recipients (CARD-003). The largest-job and recurring-work skips of CARD-001
 //! (BIZ-049) are T155's (D-492).
 //!
-//! T184 added [`match_job`]: an owner pause for everything, a candidate's trade or every offer town
-//! a business serves skips it (CARD-016); when no business's checklist gets the card, it goes to
-//! the licensed businesses with "jobs nobody else covers" on, ticks aside (CARD-004, D-1018); and
-//! [`coverage`] counts the same match for the INT-017 line or offers INT-032's SPLIT (D-1019).
+//! T184 added [`match_job`]: an owner pause for everything, a candidate's trade, the job's own
+//! town or every offer town a business serves skips it (CARD-016); when no business's checklist
+//! gets the card, it goes to the licensed businesses with "jobs nobody else covers" on, ticks
+//! aside (CARD-004, D-1018); and [`coverage`] counts the same match for the INT-017 line or
+//! offers INT-032's SPLIT (D-1019). [`match_job_held`] is the rerun: a card holder whose checklist
+//! covers the job keeps overflow off.
 
 use std::collections::BTreeSet;
 
+use askhava_businesses::api::AccountStatus;
 use askhava_licensing::api::{ClassMap, Eligibility, Job, JobRequest, eligibility_for_request};
+use sqlx::types::Uuid;
 
 use crate::models::{
     CardBusiness, CardDecision, CardJob, Coverage, OwnerPauses, Pool, Recipient, Skip,
@@ -45,9 +49,23 @@ pub fn card_under(
 
 /// CARD-001, CARD-003, CARD-004, CARD-016: every business that receives the card: the checklist
 /// match under the owner pauses, or, when that reaches nobody, every licensed business with
-/// "jobs nobody else covers" on (D-1018). No cap.
+/// "jobs nobody else covers" on (D-1018). No cap. The first send of a job; a rerun uses
+/// [`match_job_held`].
 #[must_use]
 pub fn match_job(map: &ClassMap, job: &CardJob, pool: &Pool<'_>) -> Vec<Recipient> {
+    match_job_held(map, job, pool, &[])
+}
+
+/// CARD-004, CARD-018, TD-LIC-03, D-1018: [`match_job`] for a job whose cards `held` (business
+/// IDs) already went out. Overflow also stays off when a holder's checklist covers the job, even
+/// if that holder is now paused or inactive: one business ticked it, so overflow doesn't apply.
+#[must_use]
+pub fn match_job_held(
+    map: &ClassMap,
+    job: &CardJob,
+    pool: &Pool<'_>,
+    held: &[Uuid],
+) -> Vec<Recipient> {
     let under = |overflow: bool| {
         pool.businesses
             .iter()
@@ -61,11 +79,26 @@ pub fn match_job(map: &ClassMap, job: &CardJob, pool: &Pool<'_>) -> Vec<Recipien
             .collect::<Vec<_>>()
     };
     let checklist = under(false);
-    if checklist.is_empty() {
+    let covered_by_holder = || {
+        pool.businesses
+            .iter()
+            .any(|p| held.contains(&p.card.id) && checklist_covers(map, job, &p.card))
+    };
+    if checklist.is_empty() && !covered_by_holder() {
         under(true)
     } else {
         checklist
     }
+}
+
+/// CARD-004, D-1018: the business's checklist covers the job whatever its status or the owner
+/// pauses: verified, serving an offer town, licensed and ticking a candidate.
+fn checklist_covers(map: &ClassMap, job: &CardJob, business: &CardBusiness) -> bool {
+    let active = CardBusiness {
+        status: AccountStatus::Active,
+        ..business.clone()
+    };
+    chosen(business, gate(map, job, &active, true)).is_some()
 }
 
 /// INT-017, INT-032, D-1019: how many businesses [`match_job`] reaches; when none, SPLIT if the
@@ -97,9 +130,14 @@ pub fn coverage(map: &ClassMap, job: &CardJob, pool: &Pool<'_>) -> Coverage {
     }
 }
 
-/// CARD-016, OPS-003: the "all" switch, a candidate's trade switch, or every Arizona offer town
-/// the business serves is paused.
+/// CARD-016, OPS-003, D-1018: the "all" switch, a candidate's trade switch, the switch of the
+/// job's own town (the first offer town: a paused town takes no new jobs), or the switch of every
+/// Arizona offer town the business serves is on.
 fn owner_paused(pauses: &OwnerPauses, job: &CardJob, business: &CardBusiness) -> bool {
+    let own_town_paused = job
+        .towns
+        .first()
+        .is_some_and(|t| pauses.towns.contains(&t.code));
     let mut served = job
         .towns
         .iter()
@@ -107,6 +145,7 @@ fn owner_paused(pauses: &OwnerPauses, job: &CardJob, business: &CardBusiness) ->
         .peekable();
     let towns_paused = served.peek().is_some() && served.all(|t| pauses.towns.contains(&t.code));
     pauses.all
+        || own_town_paused
         || towns_paused
         || job
             .candidates

@@ -14,5 +14,5 @@ pub use crate::service::{card_holders, coverage, send_cards, send_job_cards, sen
 
 /// The pure matching rules, for the rules bridge and other crates' property tests.
 pub mod rules {
-    pub use crate::rules::{card_for, card_under, coverage, match_job, recipients};
+    pub use crate::rules::{card_for, card_under, coverage, match_job, match_job_held, recipients};
 }
