@@ -81,11 +81,13 @@ pub async fn on_text(
     match opened {
         Some(handled) => Ok(handled),
         None => {
+            // Lost the race: the winner queued the consent text, so this message is a reply in
+            // its request ("is this a real person?" still gets the CON-027 line).
             let conversation = models::open_conversation(db, msg.contact).await?;
             Ok(Handled {
                 conversation,
                 texts: Vec::new(),
-                then: Then::IntakeReply,
+                then: plan(true, &msg.inbound, settings).then,
             })
         }
     }

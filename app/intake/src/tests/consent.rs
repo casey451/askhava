@@ -4,9 +4,12 @@
 //! Text cases render the compiled-in templates; database cases run `on_text` on a fresh database
 //! with fake IDs only and read the queued outbox rows.
 
-use askhava_messaging::api::{Encoding, Language, count_segments, render};
+use askhava_messaging::api::{
+    Encoding, Language, NewText, Relation, count_segments, enqueue, render,
+};
 use jiff::Timestamp;
 use secrecy::SecretString;
+use sqlx::Connection;
 use sqlx::types::Uuid;
 
 use crate::api::{Handled, TextIn, conversation, disclosure, on_text};
@@ -300,8 +303,98 @@ async fn consent_records_are_append_only_for_the_app_role(
     .execute(&mut *db)
     .await
     .expect("insert");
-    let update = sqlx::query!("UPDATE intake.consent_record SET channel = 'web_chat'")
-        .execute(&mut *db)
-        .await;
-    assert!(update.is_err());
+    for change in 0..3 {
+        let mut tx = db.begin().await.expect("begin");
+        assert!(
+            refused(&mut tx, change).await,
+            "change {change} was allowed"
+        );
+        tx.rollback().await.expect("rollback");
+    }
+    let kept = sqlx::query_scalar!("SELECT count(*) FROM intake.consent_record")
+        .fetch_one(&mut *db)
+        .await
+        .expect("count");
+    assert_eq!(kept, Some(1));
+}
+
+/// Whether the database refuses change `which` (an update, a delete, a truncate) to the consent
+/// records.
+async fn refused(tx: &mut sqlx::PgConnection, which: u8) -> bool {
+    let done = match which {
+        0 => {
+            sqlx::query!("UPDATE intake.consent_record SET channel = 'web_chat'")
+                .execute(tx)
+                .await
+        }
+        1 => {
+            sqlx::query!("DELETE FROM intake.consent_record")
+                .execute(tx)
+                .await
+        }
+        _ => {
+            sqlx::query!("TRUNCATE intake.consent_record")
+                .execute(tx)
+                .await
+        }
+    };
+    done.is_err()
+}
+
+/// TD-CON-01, TD-CON-11 (CON-001, CON-027, D-908): two first texts for one contact handled at
+/// once on two connections open one request and queue one consent text; the message that lost
+/// the race is a reply in that request, so "is this a real person?" gets the CON-027 line.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_01_concurrent_first_texts_queue_one_consent_text(pool: sqlx::PgPool) {
+    let contact = Uuid::from_u128(0xC4);
+    let (mut one, mut two) = (
+        pool.acquire().await.expect("one"),
+        pool.acquire().await.expect("two"),
+    );
+    let (a, b) = (
+        text_in(contact, 0, msg("is this a real person?")),
+        text_in(contact, 1, msg("is this a real person?")),
+    );
+    let (key, settings) = (secret(), Settings::default());
+    let (a, b) = tokio::join!(
+        on_text(&mut one, &key, &a, settings),
+        on_text(&mut two, &key, &b, settings)
+    );
+    let mut both = [a.expect("a"), b.expect("b")];
+    both.sort_by_key(|h| h.texts.is_empty());
+    let [won, lost] = both;
+    assert_eq!(
+        (templates(&won), won.then),
+        (vec!["consent"], Then::FirstQuestion)
+    );
+    assert_eq!((lost.texts.len(), lost.then), (0, Then::DiscloseThenAsk));
+    assert_eq!(lost.conversation, won.conversation);
+    let requests = sqlx::query_scalar!("SELECT count(*) FROM intake.conversation")
+        .fetch_one(&pool)
+        .await
+        .expect("count");
+    assert_eq!(requests, Some(1));
+    let mut db = pool.acquire().await.expect("db");
+    let id = won.conversation.expect("request");
+    let again = consent_queued_again(&mut db, contact, id).await;
+    assert_eq!(again, (won.texts[0].outbox_id, false));
+}
+
+/// Queues the request's consent text again through `messaging`'s public `enqueue` (intake may not
+/// read the outbox table): `false` means the one consent row of the request is already there under
+/// its key (TXT-011), and its row ID is returned.
+async fn consent_queued_again(
+    db: &mut sqlx::PgConnection,
+    contact: Uuid,
+    id: Uuid,
+) -> (Uuid, bool) {
+    let body = consent(false, Language::En, false);
+    let text = NewText {
+        template_id: CONSENT_TEMPLATE,
+        subject: &[id],
+        recipient: contact,
+        relation: Relation::OpenRequest,
+        body: &body,
+    };
+    enqueue(db, &secret(), &text).await.expect("enqueue")
 }

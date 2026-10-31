@@ -46,9 +46,13 @@ fn rendered(send: Send, settings: Settings) -> String {
 }
 
 proptest! {
-    /// TD-CON-01, TD-CON-11 (CON-001, CON-027): the first text of a request is the consent text, or
-    /// the 911 text with the consent text right after it; the consent text goes at most once per
-    /// request; STOP and HELP never get it; nothing waits for a reply.
+    /// TD-CON-01, TD-CON-11 (CON-001, CON-027): a property of `plan` with its `consent_sent` state
+    /// carried along: the first planned text of a request is the consent text, or the 911 text with
+    /// the consent text right after it; once `consent_sent` is true `plan` never plans it again;
+    /// STOP and HELP never get it; nothing waits for a reply. That the database keeps the state, so
+    /// the consent text is queued once per request even for repeated or concurrent messages, is
+    /// checked by `tests::consent::td_con_01_first_message_gets_the_consent_text_once` and
+    /// `td_con_01_concurrent_first_texts_queue_one_consent_text`.
     #[test]
     fn td_con_01_consent_text_first_and_once_per_request(
         messages in prop::collection::vec(message(), 1..12),

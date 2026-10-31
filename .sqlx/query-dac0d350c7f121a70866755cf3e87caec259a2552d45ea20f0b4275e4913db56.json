@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM intake.consent_record",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "dac0d350c7f121a70866755cf3e87caec259a2552d45ea20f0b4275e4913db56"
+}
