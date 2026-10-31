@@ -7,7 +7,9 @@
 //! the row types of the `intake` tables (D-492, D-493); the one INT-004 911 text, sent at any hour
 //! within [`SAFETY_WITHIN`] (D-436); the 911-list screen on every message, the SAFE hold, the
 //! INT-037 question, "How soon?", the INT-033 night count and the emergency-or-regular choice and
-//! release (INT-002 to INT-006, INT-024 to INT-026, INT-029, INT-030, INT-033, INT-037).
+//! release (INT-002 to INT-006, INT-024 to INT-026, INT-029, INT-030, INT-033, INT-037); the
+//! keyword second opinion, the trade question and INT-032's two trades (AI-011, INT-012, INT-013,
+//! INT-015, INT-032, T042).
 
 pub use crate::conversation::{
     Answer, JobStart, Opened, Recorded, Taken, ask_name_address, begin_job, hear, joining_job,
@@ -16,6 +18,11 @@ pub use crate::conversation::{
 pub use crate::emergency_count::{
     CHOICE_TEMPLATE, NIGHT_MANY_TEMPLATE, NIGHT_NONE_TEMPLATE, NIGHT_ONE_TEMPLATE, Offer, count,
     is_night, offer,
+};
+pub use crate::matching::{
+    Candidates, KeywordReading, Opinion, Reading, TradeAnswer, TradeQuestion, TradeStep,
+    candidates, job_types_of, keyword_reading, second_opinion, starts_second, trade_label,
+    two_trades,
 };
 pub use crate::models::{
     ConsentRecordRow, ConversationRow, EmergencyEventRow, HomeownerRow, IntakeAnswerRow,
@@ -40,9 +47,10 @@ pub mod rules {
     };
     pub use crate::rules::{
         AgeStop, CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, DISCLOSURE_TEMPLATE, Inbound,
-        JOIN_WINDOW, NAME_ADDRESS_TEMPLATE, Plan, SAFETY_TEMPLATE, Send, Settings, Then,
-        UNDER_18_TEMPLATE, accepts_word_answer, age_stop, asks_who, cancel_like, consent_language,
-        consent_template, joins_open_job, language_code, language_from_code, opens_job,
-        pick_option, plan, reads_spanish, split_name_address, wanted_language,
+        JOIN_SHARE_PERCENT, JOIN_WINDOW, NAME_ADDRESS_TEMPLATE, Plan, SAFETY_TEMPLATE, Send,
+        Settings, Then, UNDER_18_TEMPLATE, accepts_word_answer, age_stop, asks_who, cancel_like,
+        consent_language, consent_template, follow_up_joins, joins_open_job, language_code,
+        language_from_code, opens_job, pick_option, plan, reads_spanish, shares_words,
+        split_name_address, wanted_language,
     };
 }

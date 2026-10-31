@@ -9,7 +9,8 @@
 //! (D-131). Every later reply is a conversation step, never a wait for consent (CON-027).
 //!
 //! The conversation rules (T040) are pure too: what opens a job ([`opens_job`], INT-007, INT-008),
-//! the INT-010 join window ([`joins_open_job`]), exact answers ([`pick_option`], INT-011, INT-012),
+//! the INT-010 join window ([`joins_open_job`]) and, after it, the same-trade word-share rule
+//! ([`follow_up_joins`], T042), exact answers ([`pick_option`], INT-011, INT-012),
 //! the under-18 check ([`age_stop`], INT-038) and the name-and-address split (INT-027).
 
 use askhava_messaging::api::Language;
@@ -244,7 +245,7 @@ pub fn asks_who(words: &str) -> bool {
 
 /// Lower case, Spanish accents folded, apostrophes dropped, every other non-letter a space, and
 /// runs of spaces made one.
-fn fold(words: &str) -> String {
+pub(crate) fn fold(words: &str) -> String {
     let mapped: String = words
         .to_lowercase()
         .chars()
@@ -332,11 +333,58 @@ pub fn opens_job(words: &str, emergency: bool) -> bool {
 
 /// Whether a second message at `now` joins the open job whose last homeowner message was at
 /// `last`, even if it reads as another trade (INT-010): strictly inside `window`, so 1:59:59 joins
-/// and 2:00:00 does not (the after-window same-trade rule is T042's).
+/// and 2:00:00 does not; from then on [`follow_up_joins`] decides.
 #[must_use]
 pub fn joins_open_job(last: Timestamp, now: Timestamp, window: SignedDuration) -> bool {
     let since = now.duration_since(last);
     !since.is_negative() && since < window
+}
+
+/// The INT-010 share of a message's words that must appear in the job's scrubbed description for
+/// a same-trade message after the window to join (a setting, default 50%; the caller passes it).
+pub const JOIN_SHARE_PERCENT: u8 = 50;
+/// Common words left out of the INT-010 word share, folded (English and Spanish).
+const COMMON_WORDS: &[&str] = &[
+    "the", "a", "an", "my", "is", "it", "its", "and", "or", "of", "to", "in", "on", "at", "for",
+    "i", "im", "me", "we", "our", "this", "that", "with", "be", "are", "was", "el", "la", "los",
+    "las", "un", "una", "mi", "es", "y", "de", "en", "que",
+];
+
+/// Whether at least `share_percent` of the message's distinct words, common words left out, also
+/// appear in the job's scrubbed `description` (INT-010, D-485): 5 of 10 joins at 50%, 49 of 100
+/// does not; a message of only common words never joins.
+#[must_use]
+pub fn shares_words(message: &str, description: &str, share_percent: u8) -> bool {
+    let folded_description = fold(description);
+    let known: Vec<&str> = folded_description.split(' ').collect();
+    let folded = fold(message);
+    let mut words: Vec<&str> = folded
+        .split(' ')
+        .filter(|w| !w.is_empty() && !COMMON_WORDS.contains(w))
+        .collect();
+    words.sort_unstable();
+    words.dedup();
+    let found = words.iter().filter(|w| known.contains(w)).count();
+    !words.is_empty() && found * 100 >= words.len() * usize::from(share_percent)
+}
+
+/// Whether a follow-up joins the open job (INT-010, D-485): strictly inside `window` it joins
+/// whatever its trade ([`joins_open_job`]); from the window on (2:00:00 included) it joins only
+/// when it reads as the job's trade and [`shares_words`] holds; otherwise it opens a new job.
+#[must_use]
+pub fn follow_up_joins(
+    last: Timestamp,
+    now: Timestamp,
+    window: SignedDuration,
+    same_trade: bool,
+    message: &str,
+    description: &str,
+    share_percent: u8,
+) -> bool {
+    joins_open_job(last, now, window)
+        || (!now.duration_since(last).is_negative()
+            && same_trade
+            && shares_words(message, description, share_percent))
 }
 
 /// The first of `options` (code, phrase) whose phrase appears in `words` as whole words, in the

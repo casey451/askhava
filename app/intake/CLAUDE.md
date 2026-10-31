@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. T040 added what opens a job, duplicates, the join window, exact answers, the name-and-address question and the under-18 reply. Not here yet: the trade questions and their order (T042, T156), routing (T043), web chat (T103).
+The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. T040 added what opens a job, duplicates, the join window, exact answers, the name-and-address question and the under-18 reply. T042 added the keyword second opinion, the trade question rules, the INT-010 after-window word share and INT-032's two-trade detection (pure; not yet wired into the conversation, D-999). Not here yet: the question order, the `two_jobs` text and the conversation wiring of T042's rules (no owning task yet, a plan gap for the runner, D-999), routing (T043), web chat (T103).
 
 ## What it owns
 
@@ -14,6 +14,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `src/emergency.rs` (T039, pure): `check` (`Check`, `Hazard`), `is_safe_reply`, `urgency` (`Urgency`), `choice` (`Choice`), `beep_is_alarm`; re-exported in `api::rules`.
 - `src/emergency_count.rs` (T039): `count` (from `businesses::api::night_count`), `is_night`, `offer` (`Offer`), `CHOICE_TEMPLATE`, `NIGHT_MANY_TEMPLATE`, `NIGHT_ONE_TEMPLATE`, `NIGHT_NONE_TEMPLATE`.
 - `src/conversation.rs` (T040): `begin_job` (`JobStart`, `Opened`), `hear`, `joining_job`, `record_answer` (`Answer`, `Recorded`), `stop_if_under_18`, `ask_name_address`, `take_name_address` (`Taken`); a request's jobs are `intake_answer` rows `job.<trade>.<property>` (D-993). `rules.rs` also holds `opens_job`, `cancel_like`, `joins_open_job`, `JOIN_WINDOW`, `pick_option`, `accepts_word_answer`, `age_stop` (`AgeStop`), `split_name_address`; templates `under_18` and `name_address` (en, es).
+- `src/matching.rs` (T042, pure): `keyword_reading` (`KeywordReading`, table `RULES`), `second_opinion` (`Reading`, `Opinion`, `TradeQuestion` with `read` and `step`, `TradeAnswer`, `TradeStep`), `candidates` (`Candidates`), `job_types_of`, `trade_label`, `two_trades`, `starts_second`. `rules.rs` adds `follow_up_joins`, `shares_words`, `JOIN_SHARE_PERCENT`.
 - `src/models.rs`: `IntakeError`, one row type per table, the crate-private queries. `sqlx.toml`: `timestamptz` as jiff timestamps.
 - Templates it uses in `app/messaging/templates/`: `consent`, `consent_safety_call` and `who_is_this` (added by T038, D-907), `emergency_911`; `beep_question`, `how_soon`, `needed_by_day`, `emergency_choice`, `night_count_many` (`{count}`, `{trade}`), `night_count_one`, `night_count_none` (`{trade}`) (T039, D-979).
 - `src/api.rs`: the public surface; `api::rules` re-exports the pure rules.
@@ -38,6 +39,11 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - INT-007, INT-008, D-138, D-994: `opens_job` is false for one or two words and for any cancel-like message; an emergency keyword opens at any length.
 - INT-009, INT-010, D-993: one active job per homeowner, property and trade; a follow-up strictly inside the window joins the newest job even as another trade.
 - INT-011, INT-012: answers count only for an open request and match whole words ("ok" is not in "broke"); free-answer questions take any words and store only the code `text`.
+- AI-011, R-37, D-998: `keyword_reading` takes the longest phrase first, so "water heater" is plumbing and "pool heater"/"spa heater" pool repair, never the furnace rule's "heater".
+- AI-011, INT-013, D-104: `matching::second_opinion` asks only when the readings differ or the keywords name trades without the readings' one; the question offers every distinct trade, readings first, up to three.
+- INT-012, INT-015, D-103: `TradeQuestion::read` matches whole words only ("repair" never matches heating/AC); generic label words ("repair", "replacement") name no option; "Not sure" counts only when no option is named ("no sé" at most three words); `step` re-asks once with the same options, then applies `fallback` (the keyword trade if exactly one matched, else the first reading); "Not sure" applies it at once (D-998).
+- CARD-001, D-102, D-105: `matching::candidates` keeps the chosen trade's keyword job types (never `<trade>_other` when one was named) and every license-boundary keyword job type; `which_fits` lists the trade's job types or the cross-trade candidates.
+- INT-010, INT-032, D-485, D-493: `rules::follow_up_joins` (from 2:00:00 a same-trade message joins only when `shares_words` holds); `matching::two_trades`, `starts_second` (ALSO or TAMBIÉN alone).
 - INT-027, D-146, D-238, D-995: the name-and-address question follows the area check, and its raw answer goes to the vault only, never to the AI.
 - INT-038, D-385, D-994: an under-18 sender gets one `under_18` reply and the request closes; under 13 the data is deleted except the consent record.
 
@@ -51,6 +57,8 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - The 911 text equals its templates exactly, goes at any hour within 5 minutes, and comes before the consent text on the text and START-return paths: `tests::safety_text::td_int_17_*`, `int_004_*`, `td_con_26_*`.
 - No phone number but 911, no 211, utility name or "cooling center" in any template or page, and no safety-contacts file: `tests/docs/test_no_phone_numbers_in_templates.py`.
 - The 911 list matches its TD-INT-01 phrases and nothing on the not-list; street names and the address answer never match: `tests::emergency::td_int_01_*`.
+- A trade answer keeps the keyword job type, never `<trade>_other` (the twin's six warnings): `tests::twin_warnings_regression::td_int_03_*`.
+- The trade question is asked at most twice and matches whole words only: `tests::trade_question::td_int_04_*`.
 - The AI flag never sends the 911 text: `tests::emergency::td_int_10_the_ai_flag_never_stands_in_for_the_stem_match`.
 - No card before SAFE, and an emergency is released once, only after consent, SAFE, the choice and the ZIP: `tests/integration/tests/emergency_flow.rs`.
 - Consent records cannot be updated, deleted or truncated by the app role: `consent_records_are_append_only_for_the_app_role`.
@@ -59,6 +67,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 
 ## How to change
 
+- Add a keyword or a trade to the second opinion: a row in `RULES` in `matching.rs` (catalog category ID and job type name, folded whole-word phrases, boundary true for a licensed job type), a label in `trade_label` if needed, then run both T042 test commands; `td_int_03_keyword_job_types_are_catalog_job_types` checks the job type against `docs/catalog/categories.yaml`.
 - Add a 911-list word: INT-002 first (a spec change with a decision), then the list in `emergency.rs` (folded words; stems match word starts, phrases whole words), plus a case in `MATCHES` or `CLEAR` in `tests/emergency.rs`.
 
 - Edit the consent text: CON-031 first, then `consent` (and `consent_safety_call`) in both `en.json` and `es.json` with their `segments`; run both test commands below and `cargo test -p askhava-messaging tests::template_registry`.
@@ -76,3 +85,5 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `tests/docs/test_no_phone_numbers_in_templates.py` (TD-INT-17): `python3 -m pytest tests/docs/test_no_phone_numbers_in_templates.py -q -p no:cacheprovider`.
 - `tests/integration/tests/consent_records.rs` (TD-CON-02, TD-CON-03, TD-CON-14, TD-CON-24, TD-TERMS-07): `cargo test -p askhava-integration --test consent_records`.
 - `src/tests/conversation.rs` (TD-INT-02, TD-INT-11, TD-INT-14, TD-INT-20): `cargo test -p askhava-intake tests::conversation`.
+- `src/tests/trade_question.rs` (TD-INT-04, TD-INT-35): `cargo test -p askhava-intake tests::trade_question`.
+- `src/tests/twin_warnings_regression.rs` (TD-INT-03): `cargo test -p askhava-intake tests::twin_warnings_regression`.
