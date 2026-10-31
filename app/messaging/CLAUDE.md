@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses; T029 opt-outs and the one suppression list. Not here yet: inbound routing (the scrubbed text and flags), HELP and START replies (T030), retries, email and letters (later messaging tasks).
+The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses; T029 opt-outs and the one suppression list. T030 the HELP, INFO and AYUDA reply. Not here yet: inbound routing (the scrubbed text and flags), retries, email and letters (later messaging tasks).
 
 ## What it owns
 
@@ -12,6 +12,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/rules.rs`: pure quiet-hours logic: `AreaCodes`, `decide`, `retry`, `plan_release`, `Kind`, `Outgoing`, `Decision`, `Held`, `Release`; and the pure opt-out rules: `PROVIDER_OPT_OUT_WORDS`, `SPANISH_OPT_OUT_WORDS`, `APP_OPT_OUT_WORDS`, `RESUBSCRIBE_WORDS`, `OPT_OUT_PHRASES` (with pattern IDs), `detect_opt_out`, `classify`, `ProviderKeyword`, `Detected`, `Classified`, `Listing`, `may_send_to`, `CONFIRM_WITHIN`.
 - `src/optout.rs`: the suppression list and opt-out flow: `on_inbound_text`, `suppress`, `send_checked`, `InboundText`, `Outcome`, `RevokeChannel`.
 - `src/service.rs`: the outbox (`enqueue`, `send`, `may_text`, `NewText`, `Relation`, `To`, `SEND_ACTION`), `delivery_status` (TXT-013) and the sender directory (`sender_add`, `sender_remove`, `sender_business`).
+- `src/keywords.rs`: `keyword` (a text that is only HELP, INFO or AYUDA), `Keyword`, `HelpSettings` (checked reply times, away date; refuses a help phone equal to the texting number), `help_text`, `reply_to_help`. Templates `help_reply`, `help_reply_ca`, `help_reply_away`, `help_reply_away_ca` in both languages (D-887).
 - `src/handlers.rs`: Twilio's webhooks: `receive_inbound`, `receive_status`, `Callback` (`Recorded`, `Repeat`, `Ignored`).
 - `src/status.rs`: `DeliveryStatus` (`from_twilio`, `as_str`, `rank`); every match on it lives here (SEC-031).
 - `src/models.rs`: `OutboxError`, `InboxError` and the crate-private queries on `messaging.outbox`, `messaging.sender_directory`, `messaging.webhook_event`, `messaging.inbox`, `messaging.delivery_event`, `messaging.optout_event` and `messaging.suppression`.
@@ -47,6 +48,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - CON-014: a 21610 refusal (watched by a wrapper around the carrier) lists the number (channel `carrier`) and marks the row `blocked`; `models::claim` claims only `queued` or `sending`, so it is never retried.
 - CON-015, CON-016, CON-017: only the provider's `OptOutType=START` (its START or UNSTOP match) lifts the listing (`Outcome::Resubscribed`: a new request from the consent text), so the app's list and the provider's block agree; "Start.", a START without `OptOutType`, "yes" and any other message from a listed number give `Outcome::Suppressed` (the caller emails or lists it in the digest) (D-870). An emergency flag raises a critical `messaging.opted_out_emergency` alert on the inbox row, on `Suppressed` and on an opt-out alike (`Outcome::OptedOut { alert }`).
 - CON-022, CON-035, CON-036: every opt-out and START is logged in `messaging.optout_event` with channel, `word:<word>` / `phrase:<id>` / `provider` / `carrier:21610`, and time; `optout::suppress` is the entry for the email, form, portal and owner channels (confirmed by email or on screen, never by text).
+- CON-018, D-131, D-066: `keywords::reply_to_help` queues the HELP reply for a text that is only HELP, INFO or AYUDA ("I need help with my sink" is not), once per inbound message, under template ID `help_reply` whatever the variant so `may_send_to` lets it reach an opted-out number; no quiet-hours check applies. Reply times, the away sentence (OPS-026) and the Canadian roaming line come from `HelpSettings` and the number; no personal name, no voice number (D-887 to D-890). START is the provider's `OptOutType` (CON-015).
 
 ## Never break
 
@@ -71,6 +73,8 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - Nothing but the confirmation within 5 minutes and HELP reaches a listed number: `tests::prop_optout_props::nothing_but_confirmation_and_help_until_start`, `tests/integration/tests/optout_flow.rs`.
 - A 21610 refusal is never retried: `optout_flow.rs::td_con_05_a_21610_refusal_is_never_retried`.
 - Two opt-outs at once queue one confirmation, and an earlier listing's confirmation never goes: `optout_flow.rs::td_con_05_two_opt_outs_at_once_queue_one_confirmation`, `td_con_05_only_the_current_listings_confirmation_goes`.
+
+- The HELP reply holds the help email, askhava.com/help, the LIST line and the settings' times, and only the roaming line differs for Canada: `tests/integration/tests/help_start.rs`.
 
 ## How to change
 
