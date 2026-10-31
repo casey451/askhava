@@ -9,11 +9,15 @@ Occupancy lives in runner/state.py (`in_flight`: a live lease, or MERGE_PENDING 
   run never takes a lane another run's concurrency group serves; a run with no lane takes the first
   free one. While `main` is red and no numbered lane can take FIX-MAIN, it takes the reserved "fix"
   lane, which never counts against `lanes` (`fix_lane`, D-630).
-- `compatible`: beside a task in flight, a task may be claimed only when its dependencies are all DONE
-  or SKIPPED (no proof-waiting exception, D-551), it is in the same stage as every task in flight, its
-  owned paths overlap none of theirs (a task owning a locked file also owns `kit/plan.lock`, which it
-  must rewrite), and neither it nor any task in flight is a stage's cleanup task, which runs alone.
-  FIX-MAIN is exempt: while `main` is red nothing else is eligible, and it must not wait.
+- `compatible`: a task may be claimed only when the graph's dependencies for it are all DONE or
+  SKIPPED, checked whether or not anything is in flight (D-1127: with both lanes free the check used to
+  be skipped, so a dependency the graph gained after the entry was made could be ignored); with no task
+  in flight a proof-waiting cleanup task of the task's own stage counts as met, as in `state.eligible`
+  (D-551), beside a task in flight it does not. Beside a task in flight it must also be in the same
+  stage as every task in flight, its owned paths overlap none of theirs (a task owning a locked file
+  also owns `kit/plan.lock`, which it must rewrite), and neither it nor any task in flight is a stage's
+  cleanup task, which runs alone. FIX-MAIN is exempt: while `main` is red nothing else is eligible, and
+  it must not wait.
 - strikes: a harness-type failure on a lane above 1 (a rejected branch push, an attempt that lost its
   writes, a required check that failed after another lane's merge, an update merge that conflicted or
   could not be pushed) is a strike; a task on that lane reaching DONE, or failing for its own work,
@@ -85,31 +89,53 @@ def overlaps(first: Iterable[str], second: Iterable[str]) -> list[str]:
     return sorted({f"{a} ~ {b}" for a in first for b in second if meet(a, b)})
 
 
-def refusal(task: dict[str, Any], others: list[dict[str, Any]], done: set[str], locked: Locked | None) -> str:
-    """Why `task` must not run beside the tasks in flight `others`; '' when it may (D-620)."""
-    if task.get("id") == st.FIX_MAIN or not others:
+def refusal(
+    task: dict[str, Any],
+    others: list[dict[str, Any]],
+    done: set[str],
+    locked: Locked | None,
+    early: dict[str, str] | None = None,
+) -> str:
+    """Why `task` must not be claimed now, beside the tasks in flight `others`; '' when it may (D-620).
+
+    The graph's dependencies are checked first, with or without tasks in flight (D-1127); `early` maps a
+    proof-waiting cleanup task to its stage and counts as met only while nothing is in flight (D-551).
+    """
+    if task.get("id") == st.FIX_MAIN:
+        return ""
+    met = dict(early or {}) if not others else {}
+    stage = str(task.get("stage"))
+    waiting = [d for d in task.get("deps") or [] if d not in done and met.get(d) != stage]
+    if waiting:
+        return f"dependencies not DONE: {', '.join(waiting)}"
+    if not others:
         return ""
     if task.get("type") == "cleanup":
         return "a stage's cleanup task runs alone"
     for other in others:
         if other.get("type") == "cleanup":
             return f"{other['id']} is a cleanup task, which runs alone"
-        if str(other.get("stage")) != str(task.get("stage")):
+        if str(other.get("stage")) != stage:
             return f"{other['id']} is in stage {other.get('stage')}, not stage {task.get('stage')}"
         clash = overlaps(owned(task, locked), owned(other, locked))
         if clash:
             return f"owns what {other['id']} owns ({clash[0]})"
-    waiting = [d for d in task.get("deps") or [] if d not in done]
-    return f"dependencies not DONE: {', '.join(waiting)}" if waiting else ""
+    return ""
 
 
 def compatible_ids(
-    ids: list[str], state: State, now: datetime, task_def: Callable[[str], dict[str, Any]], locked: Locked | None
+    ids: list[str],
+    state: State,
+    now: datetime,
+    task_def: Callable[[str], dict[str, Any]],
+    locked: Locked | None,
+    proof_stages: frozenset[str] = frozenset(),
 ) -> list[str]:
-    """The eligible ids that may be claimed beside the tasks now in flight, in order."""
+    """The eligible ids that may be claimed now, beside the tasks in flight, in order (D-620, D-1127)."""
     flying = [task_def(tid) for tid in st.in_flight(state, now)]
     done = {t["id"] for t in state["tasks"] if t.get("status") in st.SATISFIED}
-    return [i for i in ids if not refusal(task_def(i), [t for t in flying if t["id"] != i], done, locked)]
+    early = {t["id"]: str(t.get("stage")) for t in state["tasks"] if st.awaits_proof(t) and str(t.get("stage")) in proof_stages}
+    return [i for i in ids if not refusal(task_def(i), [t for t in flying if t["id"] != i], done, locked, early)]
 
 
 def strike(state: State, lane: str, why: str, now: datetime) -> State:
