@@ -273,9 +273,9 @@ def plan_gap_failure(state: State, task_id: str, problems: list[str], now: datet
     entry = st.entry(state, task_id)
     if int(entry.get("attempts", 0)) >= MAX_ATTEMPTS:
         return None
-    if entry.get("plan_gap_strikes") or not problems or not all(NOT_OWNED in p for p in problems):
+    if entry.get("plan_gap_strikes") or not problems or not all(p.endswith(f"{NOT_OWNED}{task_id}") for p in problems):
         return None
-    paths = [p.split(NOT_OWNED)[0] for p in problems]
+    paths = [p.rsplit(NOT_OWNED, 1)[0] for p in problems]
     strike = {"at": st.iso(now), "paths": paths, "attempt": int(entry.get("attempts", 0)) + 1}
     note = ("; this first plan-gap failure costs no attempt: keep to the files the task owns and report a "
             "file the plan should list (D-1052)")

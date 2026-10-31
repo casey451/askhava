@@ -393,6 +393,9 @@ def test_plan_gap_failure_rule() -> None:
     assert st.entry(out, "T001")["plan_gap_strikes"][0]["attempt"] == 3
     assert cycle.plan_gap_failure(out, "T001", ["a/b.rs: not owned by T001"], NOW) is None
     assert cycle.plan_gap_failure(s, "T001", [], NOW) is None
+    tricky = "app/x: not owned by T1.rs: protected path, harness tasks only"  # the phrase inside a file name is no plan gap
+    assert cycle.plan_gap_failure(s, "T001", [tricky], NOW) is None
+    assert cycle.plan_gap_failure(s, "T1", [tricky], NOW) is None
     capped = st.with_task(st.new_state(), "T001", attempts=cycle.MAX_ATTEMPTS)  # a plan-fix attempt stays exactly one (D-677)
     assert cycle.plan_gap_failure(capped, "T001", ["a/b.rs: not owned by T001"], NOW) is None
     assert cycle.plan_gap_failure(s, "T001", ["a/b.rs: not owned by T001", "no model evidence found"], NOW) is None
