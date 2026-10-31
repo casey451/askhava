@@ -1101,7 +1101,7 @@ def refill_lanes(cfg: Config, state: State, now: datetime) -> list[str]:
     if not free or _pacer_waiting(state, now):
         return []
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
-    ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked)
+    ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
     return free[: len(ready)]
 
 
@@ -1145,7 +1145,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     if opened is not None:
         return "gate_open" if env.push_state(opened, base) else "lost_race"
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
-    ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked)
+    ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
     ids = sorted(ids, key=lambda tid: not st.entry(state, tid).get("resync"))  # a resync finishes reviewed work first (D-891)
     if not ids:
         if state != base and not env.push_state(state, base):

@@ -106,6 +106,28 @@ def test_refusal_names_overlap_stage_cleanup_and_dependencies() -> None:
     assert lanes.refusal({"id": st.FIX_MAIN, "owns": ["app/a/"]}, [a], done, None) == ""
 
 
+def test_refusal_checks_the_graphs_dependencies_even_with_no_task_in_flight() -> None:
+    """D-1127: a dependency the graph holds is checked with both lanes free too; a proof-waiting cleanup
+    task of the same stage counts as met only then (D-551), never beside a task in flight."""
+    done = {"T000"}
+    waiting = staged("T007", deps=["T000", "T009"], owns=["app/g/"])
+    assert lanes.refusal(waiting, [], done, None) == "dependencies not DONE: T009"
+    assert lanes.refusal(waiting, [], done, None, {"T009": "2"}) == ""
+    assert lanes.refusal(waiting, [], done, None, {"T009": "1"}) == "dependencies not DONE: T009"
+    assert lanes.refusal(waiting, [staged("T001", owns=["app/a/"])], done, None, {"T009": "2"}) == "dependencies not DONE: T009"
+    assert lanes.refusal({"id": st.FIX_MAIN, "deps": ["T009"], "owns": ["app/a/"]}, [], done, None) == ""
+
+
+def test_compatible_ids_refuses_a_graph_dependency_the_state_entry_lacks() -> None:
+    """The case of October 31: the state entry listed five dependencies, the graph six (D-1030), and both
+    lanes free would have claimed T156 with T187 undone."""
+    graph = [staged("T050"), staged("T156", deps=["T050"], owns=["app/i/"])]
+    s = st.sync_graph(st.new_state(), [staged("T050"), staged("T156", owns=["app/i/"])])
+    defs = {t["id"]: t for t in graph}
+    assert lanes.compatible_ids(["T156"], s, NOW, defs.__getitem__, None) == []
+    assert lanes.compatible_ids(["T156"], st.with_task(s, "T050", status=st.DONE), NOW, defs.__getitem__, None) == ["T156"]
+
+
 def test_two_tasks_owning_locked_files_both_own_the_plan_lock() -> None:
     first, second = staged("T001", owns=["scripts/one.py"]), staged("T002", owns=["docs/governance.md"])
     assert lanes.refusal(second, [first], set(), None) == ""
