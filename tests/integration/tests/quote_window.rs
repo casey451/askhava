@@ -215,10 +215,8 @@ async fn td_job_03_all_quotes_in_once_every_window_ended(pool: PgPool) {
         ),
         (Some(1), Some(2))
     );
-    assert_eq!(
-        current(&mut db, id).await.expect("job").status,
-        JobStatus::QuotesReady
-    );
+    let status = current(&mut db, id).await.expect("job").status;
+    assert_eq!(status.code(), "quotes_ready");
     sqlx::query("UPDATE quotes.quote SET withdrawn_at = $2 WHERE job_id = $1")
         .bind(id)
         .bind(at("04T11:00:00").to_sqlx())
@@ -230,10 +228,8 @@ async fn td_job_03_all_quotes_in_once_every_window_ended(pool: PgPool) {
         closed,
         Ok(WindowsCheck::Ended(Guarded::Applied(WindowsEnd::Close)))
     );
-    assert_eq!(
-        current(&mut db, id).await.expect("job").status,
-        JobStatus::Closed
-    );
+    let status = current(&mut db, id).await.expect("job").status;
+    assert_eq!(status.code(), "closed");
     let open = job_at(&mut db, &[JobStatus::Open], at("03T08:00:00")).await;
     card(&mut db, open, 1, at("03T08:00:00")).await;
     let left = windows_ended(&mut db, open, at("04T08:00:00")).await;
