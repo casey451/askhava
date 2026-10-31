@@ -23,13 +23,13 @@ jobs:
       HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
       HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
     steps:
-      - name: Skip a head whose pull request already merged (D-1077)
+      - name: Skip a head whose pull request already merged (D-1087)
         id: merged
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           # A ci run that finishes after its head was squash-merged (a manual re-run, or a pull_request run
-          # already started when D-1077 landed) would compare the head with a main that already holds its
+          # already started when D-1087 landed) would compare the head with a main that already holds its
           # decision entries and post a false failure; the Governance result from before the merge stands.
           # Any answer that is not a plain count (an API error prints its body) counts as not merged, so
           # the rules still run. This assumes a merged head is on main; that is false only when a FIX-MAIN revert
