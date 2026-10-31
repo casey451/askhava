@@ -2,10 +2,13 @@
 //! no-license categories only to businesses on the city list, and the boundary job types split
 //! between no-license, handyman and licensed work (LIC-011 to LIC-016, LIC-028 to LIC-031, LIC-047).
 //!
-//! Pure functions, no database. Towns, ticked job types (CARD-001) and the handyman price and
-//! permit checks (LIC-019 to LIC-025, T035) are decided elsewhere; a `HandymanCard` carries the
-//! under-$1,000, no-permit condition for those checks.
+//! Pure functions, no database. Towns and ticked job types (CARD-001) are decided elsewhere. A
+//! `HandymanCard` carries the under-$1,000, no-permit condition that `handyman::check_quote` and
+//! `handyman::split_job` enforce when the quote comes in (LIC-019 to LIC-025);
+//! [`eligibility_for_request`] withholds it from gas, smoke-alarm, sprinkler and permit-type
+//! requests whatever the AI says (AI-012, LIC-021, LIC-022).
 
+use crate::handyman::{JobRequest, never_handyman};
 use crate::models::{
     Agency, CityListStanding, CityRecord, Eligibility, Holder, InspectionFee, Job, LicenseKind,
     NoCardReason, PestRecordCategory, SaleAnswer,
@@ -26,6 +29,9 @@ const HOME_INSPECTION: &str = "home_inspection";
 /// - Agency: only that agency's licensees (LIC-012, LIC-015, LIC-016); alarms need the Board
 ///   certificate and an ROC low-voltage class (LIC-013). A pest category job goes through the
 ///   attestation alone whatever its license kind says (LIC-012, D-417).
+///
+/// This does not apply the AI-012, LIC-021, LIC-022 handyman block (gas, smoke-alarm, sprinkler
+/// and permit-type requests); code that chooses recipients must call [`eligibility_for_request`].
 #[must_use]
 pub fn eligibility(job: &Job, holder: &Holder) -> Eligibility {
     if Agency::for_category(&job.category) == Some(Agency::PestManagement) {
@@ -37,6 +43,34 @@ pub fn eligibility(job: &Job, holder: &Holder) -> Eligibility {
         LicenseKind::Roc => handyman(job, holder),
         LicenseKind::StateAgency => agency_only(job, holder),
         LicenseKind::RocAndStateAgency => roc_and_agency(job, holder),
+    }
+}
+
+/// AI-012, LIC-021, LIC-022: [`eligibility`] for one job type of a request, except that a handyman
+/// card is withheld (`RefusedJobType`) when the request text or any candidate job type, or this
+/// job type itself, is gas, smoke-alarm, sprinkler or permit-type work. The AI's handyman reading
+/// is never an input.
+#[must_use]
+pub fn eligibility_for_request(
+    job: &Job,
+    holder: &Holder,
+    request: &JobRequest<'_>,
+) -> Eligibility {
+    let outcome = eligibility(job, holder);
+    if outcome != Eligibility::HandymanCard {
+        return outcome;
+    }
+    let own = [job.job_type.clone()];
+    let blocked = never_handyman(request).is_some()
+        || never_handyman(&JobRequest {
+            text: "",
+            candidates: &own,
+        })
+        .is_some();
+    if blocked {
+        Eligibility::NoCard(NoCardReason::RefusedJobType)
+    } else {
+        outcome
     }
 }
 
