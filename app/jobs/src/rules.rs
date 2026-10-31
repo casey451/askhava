@@ -2,9 +2,13 @@
 //! (JOB-002, JOB-003; `docs/architecture.md` section 6). No I/O; property-tested in
 //! `tests/prop_job_machine.rs`.
 //!
-//! The timeouts here are each waiting status's backstop timer, set when the job enters it. Later
-//! tasks add the finer timers that are not status moves (the Intake reminder at 24 hours, HOLD and
-//! away-time extensions, the Connected call check and check-ins), and the D-140 early close.
+//! The timeouts here are each waiting status's backstop timer, set when the job enters it, on the
+//! business clock (8 a.m. to 8 p.m. Arizona time every day, JOB-007, D-004) or, for an emergency
+//! job's confirm and payment waits, the 60-minute emergency clock (PICK-044). Later tasks add the
+//! finer timers that are not status moves (the Intake reminder at 24 hours, HOLD and away-time
+//! extensions, the Connected call check and check-ins). [`connected_move`] is where a Connected
+//! job's check-in reply leads (JOB-015) and [`after_windows`] what happens once every card's quote
+//! window has ended (JOB-025, TXT-042, D-140).
 
 use askhava_core::api::{add_business_minutes, arizona, arizona_time};
 use jiff::{SignedDuration, Timestamp};
@@ -78,6 +82,79 @@ fn next_day_at(entered: Timestamp, hour: i8) -> Option<Timestamp> {
     let day = arizona_time(entered).date().tomorrow().ok()?;
     let at = day.at(hour, 0, 0, 0).to_zoned(arizona()).ok()?;
     Some(at.timestamp())
+}
+
+/// A homeowner's check-in answer on a Connected job, as `intake` parsed it (DONE or LISTO, NO,
+/// PROBLEM; JOB-015, JOB-028).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Reply {
+    /// The work is done.
+    Done,
+    /// The business never reached her (or, for call contact, the work is not going ahead).
+    No,
+    /// Something went wrong.
+    Problem,
+}
+
+/// Which check-in the reply answers (JOB-015).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CheckIn {
+    /// Day 3, counted from the later of the release and the earliest visit date.
+    Day3,
+    /// Day 14.
+    Day14,
+}
+
+/// How the homeowner chose to be contacted (JOB-015, D-143).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Contact {
+    /// The business calls her.
+    Call,
+    /// The business emails her.
+    Email,
+}
+
+/// Where a Connected job moves on `reply` (JOB-015, D-143): DONE to Done, PROBLEM to Closed, NO to
+/// Closed, except a day-3 NO under email contact, which records a no-show and returns the job to
+/// Quotes ready.
+#[must_use]
+pub fn connected_move(reply: Reply, check_in: CheckIn, contact: Contact) -> JobStatus {
+    match (reply, check_in, contact) {
+        (Reply::Done, _, _) => JobStatus::Done,
+        (Reply::No, CheckIn::Day3, Contact::Email) => JobStatus::QuotesReady,
+        (Reply::No | Reply::Problem, _, _) => JobStatus::Closed,
+    }
+}
+
+/// A Quotes ready job's counts once every card's 24-hour quote window has ended (TXT-042,
+/// JOB-025), as `quotes` reports them.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Windows {
+    /// Businesses that quoted (`<k>` in TXT-042).
+    pub quoted: u32,
+    /// Businesses whose card was sent (`<N>` in TXT-042).
+    pub sent: u32,
+    /// Quotes she can still choose: not withdrawn and not a failed pick's (D-045).
+    pub choosable: u32,
+}
+
+/// What ending every quote window does to a Quotes ready job (JOB-025, TXT-042, D-140).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WindowsEnd {
+    /// No choosable quote is left: the job closes and she is told.
+    Close,
+    /// She gets the one all-quotes-in text and the job waits for her pick.
+    AllQuotesIn,
+}
+
+/// The JOB-025 rule: close only when no choosable quote is left, else the all-quotes-in text.
+#[must_use]
+pub fn after_windows(windows: Windows) -> WindowsEnd {
+    if windows.choosable == 0 {
+        WindowsEnd::Close
+    } else {
+        WindowsEnd::AllQuotesIn
+    }
 }
 
 /// Checks the move from `from` to `to` against the arrows (JOB-002).

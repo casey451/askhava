@@ -63,6 +63,30 @@
     "segments": 3,
     "text": "Ask Hava: Ya llegaron todas las cotizaciones de la solicitud {job}: cotizaron {quoted} de {count} negocios. {link} Responda LISTA para verlas aquí, o CERRAR {job} si ya no la necesita."
   },
+  "no_quotes_yet": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Aún no hay cotizaciones para la solicitud {job}. Unos detalles más o una foto suelen ayudar a que un negocio le ponga precio. Responda 1 para agregar detalles, 2 para seguir esperando o 3 para cerrarla."
+  },
+  "closed_no_quotes": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: La solicitud {job} está cerrada porque no llegaron cotizaciones. Escríbanos cuando quiera para intentarlo de nuevo."
+  },
+  "closed_no_pick": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: La solicitud {job} está cerrada porque no se eligió ninguna cotización. Escríbanos cuando quiera para empezar una nueva."
+  },
+  "closed_no_quote_left": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: La solicitud {job} está cerrada porque ninguna de sus cotizaciones puede seguir adelante. Escríbanos cuando quiera para empezar una nueva."
+  },
   "caller_missed": {
     "audience": "homeowner",
     "draft": true,

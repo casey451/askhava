@@ -17,6 +17,7 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
+use crate::handlers;
 use crate::models::{self, JobsError};
 use crate::rules::{check_move, timeout};
 use crate::status::JobStatus;
@@ -131,16 +132,18 @@ pub async fn move_to(
     at: Timestamp,
     actor: Actor,
 ) -> Result<Guarded<()>, JobsError> {
-    apply(db, id, (from, None, to), at, actor).await
+    apply(db, id, (from, None, to), (at, actor), None).await
 }
 
 /// The move itself, optionally fenced on the job's version and timer version (a timer's, JOB-006).
-async fn apply(
+/// `text` is the homeowner text the move sends, by template ID; its event commits with the move,
+/// so a move that does not apply sends nothing (JOB-010 to JOB-012, JOB-025, R11).
+pub(crate) async fn apply(
     db: &mut PgConnection,
     id: Uuid,
     (from, fence, to): (JobStatus, Option<(i32, i32)>, JobStatus),
-    at: Timestamp,
-    actor: Actor,
+    (at, actor): (Timestamp, Actor),
+    text: Option<&'static str>,
 ) -> Result<Guarded<()>, JobsError> {
     if let Err(refused) = check_move(from, to) {
         let (from, to) = (refused.from.code(), refused.to.code());
@@ -157,6 +160,11 @@ async fn apply(
         .await
         .map_err(|_| JobsError::Database)?;
     queue_timer(&mut tx, id, to, fenced, at).await?;
+    if let Some(template) = text {
+        let number = job_number(&mut tx, id).await?;
+        let values = json!({ "job": number });
+        handlers::queue_text(&mut tx, id, (template, fenced.0), values, at).await?;
+    }
     tx.commit().await.map_err(|_| JobsError::Database)?;
     Ok(Guarded::Applied(()))
 }
@@ -205,8 +213,10 @@ async fn queue_timer(
 }
 
 /// Runs one job timer (JOB-003, JOB-006): re-checks the job's status, version and timer version
-/// first and does nothing if it moved on or its wait was restarted (D-807); otherwise moves it to its timeout's target at the timer's due time,
-/// as the system. Safe to run twice: the second run finds the version moved on.
+/// first and does nothing if it moved on or its wait was restarted (D-807); otherwise moves it to
+/// its timeout's target at the timer's due time, as the system, with the status's timeout text
+/// (`JobStatus::timeout_text`: JOB-010 at 6 p.m., JOB-011, JOB-012; D-030, D-461). Safe to run
+/// twice: the second run finds the version moved on.
 ///
 /// # Errors
 ///
@@ -233,7 +243,8 @@ pub async fn run_timer(pool: PgPool, task: Claimed) -> Result<(), HandlerError> 
         return Ok(());
     };
     let step = (status, Some((version, timer)), due.then);
-    match apply(&mut db, id, step, due.at, Actor::System).await {
+    let text = status.timeout_text();
+    match apply(&mut db, id, step, (due.at, Actor::System), text).await {
         Ok(_) => Ok(()),
         Err(_) => Err(HandlerError(DB)),
     }
