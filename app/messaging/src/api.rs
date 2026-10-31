@@ -5,9 +5,12 @@
 //! TXT-011), keep the sender directory of business phones (D-492), record Twilio's inbound texts
 //! and status callbacks once per message ID (TXT-012), read a text's delivery status (TXT-013),
 //! keep the one suppression list and send only through its check (CON-008 to CON-017, CON-030,
-//! CON-035).
+//! CON-035), and answer HELP, INFO and AYUDA (CON-018).
 
 pub use crate::handlers::{Callback, receive_inbound, receive_status};
+pub use crate::keywords::{
+    HelpSettings, HelpSettingsError, Keyword, help_text, keyword, reply_to_help,
+};
 pub use crate::models::{InboxError, OutboxError};
 pub use crate::optout::{
     InboundText, Outcome, RevokeChannel, on_inbound_text, send_checked, suppress,

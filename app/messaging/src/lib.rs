@@ -9,9 +9,11 @@
 //! once per message ID (`handlers`, TXT-012) and every text's delivery status is kept (TXT-013).
 //! Opt-outs (`optout`, CON-008 to CON-017, CON-030, CON-035): the rules' detector, the one
 //! suppression list every revocation channel feeds, and the checked send every text goes through.
+//! The HELP, INFO and AYUDA reply (`keywords`, CON-018) is queued for any number, listed or not.
 
 pub mod api;
 mod handlers;
+mod keywords;
 mod models;
 mod optout;
 mod rules;
