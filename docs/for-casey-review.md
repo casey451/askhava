@@ -1307,3 +1307,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Activation.** A sign-up goes active by itself only with its identity code and its license or city-list match and nothing flagged. Anything flagged waits in needs review for you, and your approval still needs the code and the match. A removed business stays removed.
 - **Insurance.** What a business says about insurance is only stored and shown as it reported it; it never pauses or activates anyone.
 - **Night count.** The "after-hours emergencies" tick is stored now and counted for the night message, but the rule that someone on the team must have emergency emails on and pass the test email comes in a later task; nothing sends night cards yet.
+
+## Which licenses get which jobs (T153, D-983 to D-985, October 31)
+
+- **License map.** Which ROC classes get which job types now comes only from the license map. A dual (CR-) class gets its residential class's jobs, KB-1 and KB-2 get the B jobs, and a row marked unclear (for example plumbing R-37R and gas line work) is never passed on.
+- **Commercial-only.** A business whose licenses are all commercial-only (A, B-1, B-2, any C-) is stopped at sign-up; so is one whose licenses reach no home job at all.
+- **Project limits.** R-62 quotes over $5,000 and R-61 quotes over $50,000 (top of the range) are refused when that is the business's only license for the job. The dual CR-61 has no limit in the map; please confirm whether it should carry R-61's $50,000 limit.
