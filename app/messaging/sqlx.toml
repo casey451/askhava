@@ -1,0 +1,4 @@
+# Query-macro type overrides for askhava-messaging (D-488): every timestamptz reads and writes as a
+# jiff timestamp. The key is case-sensitive; a lowercase 'timestamptz' does nothing.
+[macros.type-overrides]
+'TIMESTAMPTZ' = "jiff_sqlx::Timestamp"

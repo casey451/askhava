@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM messaging.suppression s USING UNNEST($1::smallint[], $2::bytea[]) AS k (v, h) WHERE s.index_version = k.v AND s.digest = k.h",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int2Array",
+        "ByteaArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ce87e9ad05be19865cca839704edfac8798e6111e5dbe39e36ced3c9310f5503"
+}
