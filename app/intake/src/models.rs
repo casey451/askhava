@@ -40,9 +40,6 @@ pub enum IntakeError {
     /// The vault could not store the name and address.
     #[error("intake could not store the name and address")]
     Vault,
-    /// The compiled-in question bank or golden set did not load (T156).
-    #[error("intake catalog files failed to load")]
-    Catalog,
 }
 
 /// `intake.homeowner`: one person by vault contact ID.
@@ -824,61 +821,6 @@ pub(crate) async fn demand_rows(
             trade: r.trade,
             job_type: r.job_type,
             created_at: r.created_at.to_jiff(),
-        })
-        .collect())
-}
-
-/// `intake.golden_result` (T156, `0083_intake_golden_result.sql`): one golden-set run per catalog
-/// version, counts only (OPS-040, D-493).
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GoldenResultRow {
-    /// The catalog version the run was made for.
-    pub catalog_version: String,
-    /// The rows run.
-    pub rows_total: i32,
-    /// The rows that reached the right trade, job type and first question with no human.
-    pub rows_right: i32,
-    /// When it ran.
-    pub ran_at: Timestamp,
-}
-
-/// Stores one run unless `version` already has one; true when stored (OPS-040).
-pub(crate) async fn insert_golden(
-    db: &mut PgConnection,
-    row: &GoldenResultRow,
-) -> Result<bool, IntakeError> {
-    sqlx::query!(
-        "INSERT INTO intake.golden_result (catalog_version, rows_total, rows_right, ran_at) \
-         VALUES ($1, $2, $3, $4) ON CONFLICT (catalog_version) DO NOTHING",
-        row.catalog_version,
-        row.rows_total,
-        row.rows_right,
-        row.ran_at.to_sqlx() as _
-    )
-    .execute(db)
-    .await
-    .map(|r| r.rows_affected() == 1)
-    .map_err(|_| IntakeError::Database)
-}
-
-/// Every stored run, newest first (OPS-040).
-pub(crate) async fn golden_rows(
-    db: &mut PgConnection,
-) -> Result<Vec<GoldenResultRow>, IntakeError> {
-    let rows = sqlx::query!(
-        "SELECT catalog_version, rows_total, rows_right, ran_at \
-         FROM intake.golden_result ORDER BY ran_at DESC, id"
-    )
-    .fetch_all(db)
-    .await
-    .map_err(|_| IntakeError::Database)?;
-    Ok(rows
-        .into_iter()
-        .map(|r| GoldenResultRow {
-            catalog_version: r.catalog_version,
-            rows_total: r.rows_total,
-            rows_right: r.rows_right,
-            ran_at: r.ran_at.to_jiff(),
         })
         .collect())
 }
