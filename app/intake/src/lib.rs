@@ -7,12 +7,15 @@
 //! T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check (D-436).
 //! T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question,
 //! "How soon?", the INT-033 night count and the emergency-or-regular choice and release.
+//! T042 added the keyword second opinion, the trade question and its word answers, the INT-010
+//! after-window word share and INT-032's two-trade detection (`matching`).
 //! Other crates reach it only through [`api`].
 
 pub mod api;
 mod conversation;
 mod emergency;
 mod emergency_count;
+mod matching;
 mod models;
 mod rules;
 mod safety_text;
