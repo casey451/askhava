@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT c.id FROM intake.conversation c JOIN intake.homeowner h ON h.id = c.homeowner_id WHERE h.contact_id = $1 AND c.closed_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3f167fe6ef21d61cbf47890673239c2e799696d5df18ec95b3e300f750abd14c"
+}
