@@ -2,6 +2,13 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock, the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Two tasks finishing together no longer cost a try (D-891, October 31)
+
+- **What happened.** On October 30 two tasks (T024 and T028) each lost one of their three tries only because another task merged into the same shared files just before them (a list of code libraries, the architecture notes, this file). The work itself was fine.
+- **What the runner now does itself.** When both sides only added lines at the same spot in those shared files, the runner keeps both, the newer `main` lines first. Both of October 30's clashes would have been fixed this way with no one involved. Anything else, such as two edits to the same line, is never guessed.
+- **What it hands back.** For any other clash, the task keeps its try. A worker merges `main` in, sorts out the clash keeping both sides, runs the tests, and the reviewer checks the result again before it is pushed. This can happen twice per try; a third clash, a failed test or a blocking review counts as a failed try, as before.
+- **The rule that changed.** The build brief said a real clash "fails the attempt". That line (`BUILD_BRIEF.md:224`) now says the runner hands it to a worker on the same attempt first.
+
 ## Worth a look first: two tasks at once is ready, but still switched off (D-620, October 30)
 
 - **What's new.** The runner can now work on two tasks at the same time, which should roughly double how fast the build moves. It stays off: `kit/runner.json` still says `"lanes": 1`. Turning it on means changing that one value to `"lanes": 2`, made separately once you've looked this over. That file is now part of the locked plan, so the same small change also refreshes the plan's fingerprint and adds a one-line decision entry saying why; that way the switch is always on record.
