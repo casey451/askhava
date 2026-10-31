@@ -6,6 +6,7 @@
 //! transaction. Other crates reach it only through [`api`].
 
 pub mod api;
+mod handlers;
 mod models;
 mod quote_token;
 mod rules;

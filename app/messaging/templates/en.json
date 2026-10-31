@@ -49,6 +49,26 @@
     "segments": 2,
     "text": "Ask Hava: All quotes are in for request {job}: {quoted} of {count} businesses quoted. {link} Reply LIST to see them here, or CLOSE {job} if you don't need it."
   },
+  "no_quotes_yet": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: No quotes yet for request {job}. A few more details or a photo often help a business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close."
+  },
+  "closed_no_quotes": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Request {job} is closed because no quotes came in. Text us any time to try again."
+  },
+  "closed_no_pick": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Request {job} is closed because no quote was picked. Text us any time to start a new one."
+  },
+  "closed_no_quote_left": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Request {job} is closed because none of its quotes can go ahead. Text us any time to start a new one."
+  },
   "caller_missed": {
     "audience": "homeowner",
     "segments": 1,
