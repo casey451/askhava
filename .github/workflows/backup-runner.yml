@@ -219,7 +219,7 @@ jobs:
           persist-credentials: false
       - name: Note when this job started (for the chaining step)
         run: echo "JOB_START=$(date -u +%Y-%m-%dT%H:%M:%S)" >> "$GITHUB_ENV"
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Rust build cache (D-514)
