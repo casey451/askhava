@@ -12,7 +12,7 @@ use askhava_core::api::{Claimed, Guarded, WorkerId, claim, finish};
 use askhava_jobs::api::rules::{CheckIn, Contact, Reply, Windows, WindowsEnd};
 use askhava_jobs::api::{
     JobStatus, TEXT_KIND, TIMER_KIND, all_windows_ended, connected_reply, create, current, move_to,
-    run_timer, text_due,
+    restart_timer, run_timer, text_due,
 };
 use askhava_messaging::api::{
     AreaCodes, Channel, Decision, Kind, Language, Outgoing, decide, render,
@@ -176,6 +176,86 @@ async fn td_job_03_all_quotes_in_once_and_never_after_a_pick(pool: PgPool) {
     assert_eq!(after, Ok(Guarded::MovedOn));
 }
 
+/// TD-JOB-03: after the homeowner's CLOSE the queued all-quotes-in text is no longer due and a
+/// later every-window-ended call sends nothing (TXT-042 "never after a pick or a close").
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_03_all_quotes_in_never_after_a_close(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let id = job_at(&mut db, 2).await;
+    let w = Windows {
+        quoted: 1,
+        sent: 3,
+        choosable: 1,
+    };
+    let night = hours(11);
+    let ended = all_windows_ended(&mut db, id, w, night).await;
+    assert_eq!(ended, Ok(Guarded::Applied(WindowsEnd::AllQuotesIn)));
+    let texts = fire(&pool, night).await;
+    let version = i32::try_from(texts[0]["version"].as_i64().expect("v")).expect("v");
+    let close = move_to(
+        &mut db,
+        id,
+        (JobStatus::QuotesReady, JobStatus::Closed),
+        hours(12),
+        Actor::System,
+    )
+    .await;
+    assert_eq!(close, Ok(Guarded::Applied(())));
+    assert_eq!(text_due(&mut db, id, version).await, Ok(false));
+    let after = all_windows_ended(&mut db, id, w, hours(13)).await;
+    assert_eq!(after, Ok(Guarded::MovedOn));
+    assert!(
+        fire(&pool, hours(13)).await.is_empty(),
+        "nothing after CLOSE"
+    );
+}
+
+/// TD-JOB-03: a wait restarted while the no-quote-left close waits on the row lock does not lose
+/// the close: it reloads once and closes with its note (JOB-025, D-807, D-872).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_03_close_survives_a_restarted_wait(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let id = job_at(&mut db, 2).await;
+    let mut other = pool.begin().await.expect("begin");
+    let restarted = restart_timer(&mut other, id, (JobStatus::QuotesReady, hours(1))).await;
+    assert_eq!(restarted, Ok(Guarded::Applied(())));
+    let w = Windows {
+        quoted: 1,
+        sent: 3,
+        choosable: 0,
+    };
+    let racer = pool.clone();
+    let closer = tokio::spawn(async move {
+        let mut conn = racer.acquire().await.expect("connection");
+        all_windows_ended(&mut conn, id, w, hours(30)).await
+    });
+    assert!(waits_on_a_lock(&pool).await, "the close waits on the row");
+    other.commit().await.expect("commit");
+    let closed = closer.await.expect("join");
+    assert_eq!(closed, Ok(Guarded::Applied(WindowsEnd::Close)));
+    assert_eq!(status(&mut db, id).await, "closed");
+    let note = ("closed_no_quote_left".to_owned(), json!({"job": 1001}));
+    assert_eq!(kinds(&fire(&pool, hours(30)).await), [note]);
+}
+
+/// True once a session in this test's database waits on a lock, polling for up to 10 seconds.
+async fn waits_on_a_lock(pool: &PgPool) -> bool {
+    for _ in 0..200 {
+        let waiting: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_stat_activity \
+             WHERE datname = current_database() AND wait_event_type = 'Lock'",
+        )
+        .fetch_one(pool)
+        .await
+        .expect("read pg_stat_activity");
+        if waiting > 0 {
+            return true;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    }
+    false
+}
+
 /// A non-urgent update text to the fake phone.
 fn update(phone: &str) -> Outgoing<'_> {
     Outgoing {
@@ -233,20 +313,39 @@ async fn td_job_03_connected_done_or_silent_close(pool: PgPool) {
     assert_eq!(status(&mut db, silent).await, "closed");
 }
 
-/// TD-JOB-03: every non-final status leaves a pending timer, and each one firing after the job
-/// moved does nothing (JOB-003, JOB-006, moved from TD-JOB-01).
+/// TD-JOB-03: every non-final status leaves a pending timer, No quotes yet included, and each one
+/// firing after the job moved does nothing (JOB-003, JOB-006, JOB-010, moved from TD-JOB-01).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_job_03_every_waiting_status_has_a_timer(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
     let id = job_at(&mut db, 5).await;
     let back = (JobStatus::Connected, JobStatus::QuotesReady);
     go(&mut db, id, back, start()).await;
-    let step = (JobStatus::QuotesReady, JobStatus::Closed);
-    go(&mut db, id, step, start()).await;
+    go(
+        &mut db,
+        id,
+        (JobStatus::QuotesReady, JobStatus::Closed),
+        start(),
+    )
+    .await;
+    let quiet = job_at(&mut db, 1).await;
+    go(
+        &mut db,
+        quiet,
+        (JobStatus::Open, JobStatus::NoQuotesYet),
+        start(),
+    )
+    .await;
+    go(
+        &mut db,
+        quiet,
+        (JobStatus::NoQuotesYet, JobStatus::Closed),
+        start(),
+    )
+    .await;
     let owner = WorkerId::new(&pool).await.expect("worker");
-    let far = hours(100 * 24);
     let lease = SignedDuration::from_mins(5);
-    let timers: Vec<Claimed> = claim(&pool, owner, far, lease, 100)
+    let timers: Vec<Claimed> = claim(&pool, owner, hours(100 * 24), lease, 100)
         .await
         .expect("claim")
         .into_iter()
@@ -258,17 +357,17 @@ async fn td_job_03_every_waiting_status_has_a_timer(pool: PgPool) {
         .collect();
     seen.sort_unstable();
     seen.dedup();
-    let waiting: Vec<&str> = {
-        let mut w: Vec<_> = PATH.iter().map(|s| s.code()).collect();
-        w.sort_unstable();
-        w
-    };
+    let mut waiting: Vec<&str> = PATH.iter().map(|s| s.code()).collect();
+    waiting.push(JobStatus::NoQuotesYet.code());
+    waiting.sort_unstable();
     assert_eq!(seen, waiting, "one timer per waiting status entered");
     for task in timers {
         run_timer(pool.clone(), task).await.expect("stale timer");
     }
     let job = current(&mut db, id).await.expect("job");
     assert_eq!((job.status.code(), job.version), ("closed", 7));
+    let job = current(&mut db, quiet).await.expect("job");
+    assert_eq!((job.status.code(), job.version), ("closed", 3));
 }
 
 /// The four timeout and closing templates, rendered for job 1001 in `language`.

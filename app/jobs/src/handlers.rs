@@ -74,26 +74,42 @@ pub async fn all_windows_ended(
     windows: Windows,
     at: Timestamp,
 ) -> Result<Guarded<WindowsEnd>, JobsError> {
+    let end = after_windows(windows);
+    if end == WindowsEnd::Close {
+        return close_none_left(db, id, at).await;
+    }
     let job = models::load(db, id).await?;
     if !job.status.awaits_pick() {
         return Ok(Guarded::MovedOn);
-    }
-    let end = after_windows(windows);
-    if end == WindowsEnd::Close {
-        let step = (
-            job.status,
-            Some((job.version, job.timer_version)),
-            JobStatus::Closed,
-        );
-        let moved = apply(db, id, step, (at, Actor::System), Some(CLOSED_NONE_LEFT)).await?;
-        return Ok(moved
-            .applied()
-            .map_or(Guarded::MovedOn, |()| Guarded::Applied(end)));
     }
     let number = job_number(db, id).await?;
     let values = json!({"job": number, "quoted": windows.quoted, "count": windows.sent});
     queue_text(db, id, (ALL_QUOTES_IN, job.version), values, at).await?;
     Ok(Guarded::Applied(end))
+}
+
+/// Closes a job still awaiting a pick with the no-quote-left note (JOB-025, D-045, D-872). The
+/// close is fenced on the version and timer version it loaded; if the row changed in between (a
+/// restarted wait bumps the timer version) it loads once more and tries again while the job still
+/// awaits a pick, so a moved fence alone never loses the close.
+async fn close_none_left(
+    db: &mut PgConnection,
+    id: Uuid,
+    at: Timestamp,
+) -> Result<Guarded<WindowsEnd>, JobsError> {
+    for _ in 0..2 {
+        let job = models::load(db, id).await?;
+        if !job.status.awaits_pick() {
+            return Ok(Guarded::MovedOn);
+        }
+        let fence = Some((job.version, job.timer_version));
+        let step = (job.status, fence, JobStatus::Closed);
+        let moved = apply(db, id, step, (at, Actor::System), Some(CLOSED_NONE_LEFT)).await?;
+        if moved.applied().is_some() {
+            return Ok(Guarded::Applied(WindowsEnd::Close));
+        }
+    }
+    Ok(Guarded::MovedOn)
 }
 
 /// Moves a Connected job on the homeowner's check-in `reply` (JOB-015, D-143): DONE to Done, NO or
