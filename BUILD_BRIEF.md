@@ -246,7 +246,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
    - it works on branch `claude/task/T###-<slug>`, created from the latest `main`; a retry whose earlier attempt pushed that branch continues it with the latest `main` merged in (a merge commit, never a rebase or force-push), and when that cannot be done (its pull request was closed or merged, or `main` conflicts) starts fresh from the latest `main` on `claude/task/T###-<slug>-a<n>` (D-583);
    - **model check:** the runner confirms which model actually ran from evidence it can inspect itself (session or usage records), not from what the subagent says. K8 establishes which evidence is reliable and which model-ID format the subagent call accepts. A substituted model fails the attempt.
    - **path check:** before handing in, the runner checks the diff against the task's owned files and the protected paths (§2, rule 7).
-4. **Fresh-eyes review:** a reviewer subagent (Opus for money, privacy, security and recovery tasks; Sonnet otherwise) sees only the diff and the task's spec files. It checks for:
+4. **Fresh-eyes review:** a reviewer subagent (Opus for money, privacy, security and recovery tasks; Sonnet otherwise until D-1143, Opus for every task not yet started since) sees only the diff and the task's spec files. It checks for:
    - drift from the spec;
    - duplicated logic;
    - dead code and TODOs;
@@ -268,7 +268,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 
 | What happened | What the runner does |
 |---|---|
-| Checks fail | The same model gets one more try with the failure log. A Sonnet task that fails twice gets one Opus try, logged. After that the task is `BLOCKED`: dependents wait, other work continues, and it goes on the end-of-build list (§16), unless a logged plan change fixes the plan that made it fail: then `python3 -m runner --requeue T### --plan-fix D-###` gives it exactly one more attempt, on Opus, once per decision (D-677); FIX-MAIN is the exception, retried by the runner while `main` is red (D-1099). Casey is asked only if a human action is the only way through |
+| Checks fail | The same model gets one more try with the failure log. A Sonnet task that fails twice gets one Opus try, logged (since D-1143 the queued tasks already run on Opus, so the third try changes nothing but the log). After that the task is `BLOCKED`: dependents wait, other work continues, and it goes on the end-of-build list (§16), unless a logged plan change fixes the plan that made it fail: then `python3 -m runner --requeue T### --plan-fix D-###` gives it exactly one more attempt, on Opus, once per decision (D-677); FIX-MAIN is the exception, retried by the runner while `main` is red (D-1099). Casey is asked only if a human action is the only way through |
 | Flaky test (passes on rerun with no change) | Logged, and a fix task is queued first in line. A quarantined test keeps running and reporting; it may leave its required check for at most 48 hours. It is never deleted |
 | Vendor sandbox outage (Phase 2) | `RETRY_LATER` with backoff, so it isn't counted as a failure |
 | Usage limit hit, or a run rejected | `RETRY_AFTER_RESET`; the hourly run picks it up after the reset. No pay-per-use |
@@ -494,8 +494,8 @@ The list below is the minimum, not the whole set:
 
 **Models**
 - **Haiku 5.5:** running tests and summarizing, scans, formatting, docs upkeep.
-- **Sonnet 5.5:** most code.
-- **Opus 5.5:** spec, architecture, money, privacy, security and recovery application code, reviews of all work in those areas, and the final audit; test-only, docs and harness work there runs on Sonnet with an Opus reviewer (D-483).
+- **Sonnet 5.5:** most code (the rule until D-1143; the tasks finished under it keep their recorded model).
+- **Opus 5.5:** spec, architecture, money, privacy, security and recovery application code, reviews of all work in those areas, and the final audit; test-only, docs and harness work there runs on Sonnet with an Opus reviewer (D-483). From October 31, 2026 every Sonnet-named task not yet started runs on Opus with an Opus reviewer (Casey's choice, D-1143: the week's budget is to be spent on accuracy, not saved); T136 stays on Haiku with an Opus reviewer, FIX-MAIN's worker and the runner's own session stay on Sonnet.
 - **Fable:** not used.
 - Models are named in each task. The runner's own session uses Sonnet at low effort.
 

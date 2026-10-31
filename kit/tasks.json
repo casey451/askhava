@@ -4656,9 +4656,9 @@
     "T047",
     "T163"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "compliance"
    ],
@@ -4696,7 +4696,8 @@
     "D-127",
     "D-277",
     "D-492",
-    "D-1030"
+    "D-1030",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -4725,7 +4726,7 @@
    "deps": [
     "T048"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -4759,7 +4760,8 @@
    ],
    "decisions": [
     "D-005",
-    "D-1030"
+    "D-1030",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -4788,7 +4790,7 @@
    "deps": [
     "T049"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -4825,7 +4827,8 @@
     "D-129",
     "D-372",
     "D-490",
-    "D-1030"
+    "D-1030",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -5019,9 +5022,9 @@
    "deps": [
     "T052"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "accessibility"
    ],
@@ -5059,7 +5062,8 @@
     "TD-A11Y-01"
    ],
    "decisions": [
-    "D-490"
+    "D-490",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -5700,9 +5704,9 @@
     "T026",
     "T057"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "compliance"
    ],
@@ -5753,7 +5757,8 @@
     "D-381",
     "D-490",
     "D-492",
-    "D-1047"
+    "D-1047",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -7291,7 +7296,7 @@
    "deps": [
     "T071"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -7317,7 +7322,8 @@
     "TD-AI-05"
    ],
    "decisions": [
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -7810,9 +7816,9 @@
    "deps": [
     "T079"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "accessibility"
    ],
@@ -7852,7 +7858,8 @@
     "D-359",
     "D-384",
     "D-385",
-    "D-344"
+    "D-344",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -8071,7 +8078,7 @@
    "deps": [
     "T193"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -8133,7 +8140,8 @@
     "D-374",
     "D-385",
     "D-456",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -8163,9 +8171,9 @@
     "T082",
     "T094"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [],
    "owns": [
     "app/businesses/src/complaints.rs",
@@ -8206,7 +8214,8 @@
     "D-281",
     "D-287",
     "D-288",
-    "D-311"
+    "D-311",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -9132,9 +9141,9 @@
     "T095",
     "T080"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "compliance"
    ],
@@ -9179,7 +9188,8 @@
     "D-303",
     "D-315",
     "D-344",
-    "D-366"
+    "D-366",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -9207,9 +9217,9 @@
    "deps": [
     "T080"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [],
    "owns": [
     "app/jobs/src/followups.rs",
@@ -9244,7 +9254,8 @@
     "D-286",
     "D-295",
     "D-466",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -9388,7 +9399,7 @@
     "T088",
     "T224"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -9412,7 +9423,9 @@
    "tests": [
     "J1"
    ],
-   "decisions": [],
+   "decisions": [
+    "D-1143"
+   ],
    "cites": [],
    "budget": {
     "files": 2,
@@ -9445,7 +9458,7 @@
     "T199",
     "T155"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -9471,7 +9484,9 @@
     "TD-BIZ-22",
     "TD-BIZ-25"
    ],
-   "decisions": [],
+   "decisions": [
+    "D-1143"
+   ],
    "cites": [],
    "budget": {
     "files": 2,
@@ -10556,9 +10571,9 @@
    "deps": [
     "T100"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "accessibility"
    ],
@@ -10598,7 +10613,8 @@
    ],
    "decisions": [
     "D-384",
-    "D-490"
+    "D-490",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -10626,7 +10642,7 @@
    "deps": [
     "T101"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10670,7 +10686,8 @@
    ],
    "decisions": [
     "D-491",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -10699,7 +10716,7 @@
    "deps": [
     "T101"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10755,7 +10772,8 @@
     "D-366",
     "D-371",
     "D-384",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -10785,7 +10803,7 @@
     "T102",
     "T221"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10838,7 +10856,8 @@
     "D-352",
     "D-356",
     "D-371",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -11127,7 +11146,7 @@
    "deps": [
     "T103"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -11182,7 +11201,8 @@
     "D-360",
     "D-368",
     "D-358",
-    "D-377"
+    "D-377",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -11211,7 +11231,7 @@
     "T103",
     "T104"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -11262,7 +11282,8 @@
     "D-356",
     "D-366",
     "D-363",
-    "D-357"
+    "D-357",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -12159,7 +12180,7 @@
    "deps": [
     "T112"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12212,7 +12233,8 @@
     "D-356",
     "D-419",
     "D-490",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -12364,9 +12386,9 @@
    "deps": [
     "T103"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "accessibility"
    ],
@@ -12395,7 +12417,8 @@
    ],
    "decisions": [
     "D-317",
-    "D-379"
+    "D-379",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -12427,7 +12450,7 @@
     "T166",
     "T216"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12465,7 +12488,8 @@
     "D-041",
     "D-087",
     "D-490",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -12494,7 +12518,7 @@
    "deps": [
     "T206"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12530,7 +12554,8 @@
    ],
    "decisions": [
     "D-480",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [
     "BUILD_BRIEF.md:526"
@@ -12560,7 +12585,7 @@
    "deps": [
     "T205"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12586,7 +12611,9 @@
     "J3",
     "TD-TXT-15"
    ],
-   "decisions": [],
+   "decisions": [
+    "D-1143"
+   ],
    "cites": [],
    "budget": {
     "files": 2,
@@ -12614,7 +12641,7 @@
     "T118",
     "T103"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12639,7 +12666,9 @@
     "J4",
     "TD-TXT-15"
    ],
-   "decisions": [],
+   "decisions": [
+    "D-1143"
+   ],
    "cites": [],
    "budget": {
     "files": 2,
@@ -12731,7 +12760,7 @@
    "deps": [
     "T120"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12763,7 +12792,8 @@
    ],
    "decisions": [
     "D-480",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -12792,7 +12822,7 @@
     "T116",
     "T117"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12844,7 +12874,8 @@
     "D-322",
     "D-480",
     "D-490",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [
     "BUILD_BRIEF.md:180",
@@ -12882,9 +12913,9 @@
     "T216",
     "T218"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "docs"
    ],
@@ -12900,7 +12931,8 @@
    "requirements": [],
    "tests": [],
    "decisions": [
-    "D-314"
+    "D-314",
+    "D-1143"
    ],
    "cites": [
     "BUILD_BRIEF.md:525",
@@ -13398,7 +13430,7 @@
    "deps": [
     "T132"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -13450,7 +13482,8 @@
     "D-318",
     "D-344",
     "D-366",
-    "D-480"
+    "D-480",
+    "D-1143"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
@@ -13480,7 +13513,7 @@
    "deps": [
     "T133"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -13524,7 +13557,8 @@
    "decisions": [
     "D-094",
     "D-480",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -13552,7 +13586,7 @@
    "deps": [
     "T134"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -13581,7 +13615,8 @@
    ],
    "decisions": [
     "D-480",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [
     "BUILD_BRIEF.md:192"
@@ -13613,7 +13648,7 @@
    ],
    "model": "claude-haiku-5-5",
    "effort": "low",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "docs"
    ],
@@ -13630,7 +13665,9 @@
     "J3",
     "J4"
    ],
-   "decisions": [],
+   "decisions": [
+    "D-1143"
+   ],
    "cites": [
     "BUILD_BRIEF.md:193"
    ],
@@ -13728,7 +13765,7 @@
    "deps": [
     "T137"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -13747,7 +13784,9 @@
     "SEC-023"
    ],
    "tests": [],
-   "decisions": [],
+   "decisions": [
+    "D-1143"
+   ],
    "cites": [
     "BUILD_BRIEF.md:195"
    ],
@@ -13894,9 +13933,9 @@
     "T140",
     "T159"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "docs"
    ],
@@ -13923,7 +13962,8 @@
    "decisions": [
     "D-473",
     "D-480",
-    "D-492"
+    "D-492",
+    "D-1143"
    ],
    "cites": [
     "BUILD_BRIEF.md:523",
@@ -13954,7 +13994,7 @@
    "deps": [
     "T141"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -13972,7 +14012,8 @@
    "requirements": [],
    "tests": [],
    "decisions": [
-    "D-473"
+    "D-473",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -14937,7 +14978,7 @@
    "deps": [
     "T140"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14961,7 +15002,8 @@
     "TD-OPS-17"
    ],
    "decisions": [
-    "D-436"
+    "D-436",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -14990,7 +15032,7 @@
     "T203",
     "T202"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -15043,7 +15085,8 @@
     "D-409",
     "D-419",
     "D-452",
-    "D-474"
+    "D-474",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -15798,9 +15841,9 @@
    "deps": [
     "T101"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "accessibility"
    ],
@@ -15835,7 +15878,8 @@
     "D-451",
     "D-466",
     "D-468",
-    "D-490"
+    "D-490",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -15864,9 +15908,9 @@
     "T101",
     "T166"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
-   "reviewer_model": "claude-sonnet-5-5",
+   "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "accessibility"
    ],
@@ -15891,7 +15935,8 @@
    ],
    "tests": [],
    "decisions": [
-    "D-451"
+    "D-451",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
@@ -16051,7 +16096,7 @@
     "T026",
     "T161"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -16084,7 +16129,8 @@
     "TD-TXT-26"
    ],
    "decisions": [
-    "D-490"
+    "D-490",
+    "D-1143"
    ],
    "cites": [],
    "budget": {
