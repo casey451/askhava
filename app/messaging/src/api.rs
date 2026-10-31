@@ -2,17 +2,20 @@
 //!
 //! Render a text from its template ID, pick the language it may use, count its segments, decide
 //! when it may be sent (quiet hours), queue and send it through the outbox once (TXT-009,
-//! TXT-011), and keep the sender directory of business phones (D-492).
+//! TXT-011), keep the sender directory of business phones (D-492), record Twilio's inbound texts
+//! and status callbacks once per message ID (TXT-012) and read a text's delivery status (TXT-013).
 
-pub use crate::models::OutboxError;
+pub use crate::handlers::{Callback, receive_inbound, receive_status};
+pub use crate::models::{InboxError, OutboxError};
 pub use crate::rules::{
     AreaCodes, Channel, Decision, Held, Kind, Outgoing, QuietHoursError, Release, decide,
     plan_release, retry,
 };
 pub use crate::service::{
-    NewText, Relation, SEND_ACTION, To, enqueue, may_text, send, sender_add, sender_business,
-    sender_remove,
+    NewText, Relation, SEND_ACTION, To, delivery_status, enqueue, may_text, send, sender_add,
+    sender_business, sender_remove,
 };
+pub use crate::status::DeliveryStatus;
 pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,
 };

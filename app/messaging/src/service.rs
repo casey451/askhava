@@ -12,7 +12,8 @@
 //! other kind is refused, so a homeowner's row never skips the vault read or the TXT-009 check.
 //! A send refused before the claim (TXT-009, wrong kind) leaves the row `queued`; a failed vault
 //! read or carrier call leaves it `sending`. Neither is ever made terminal here: the retry task
-//! (TXT-014, TXT-015) decides when an unsent row is given up.
+//! (TXT-014, TXT-015) decides when an unsent row is given up. [`delivery_status`] gives a text's
+//! status from its row and the status callbacks recorded for its provider SID (TXT-013).
 
 use askhava_adapters::api::{IdempotencyKey, SentText, SmsAdapter};
 use askhava_privacy::api::{
@@ -24,6 +25,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, OutboxError};
+use crate::status::DeliveryStatus;
 
 /// The action name every text's idempotency key is derived under (SEC-018).
 pub const SEND_ACTION: &str = "sms.send";
@@ -205,6 +207,35 @@ pub async fn send(
         .map_err(|_| OutboxError::Carrier)?;
     models::mark_sent(db, id, &sent.sid).await?;
     Ok(Some(sent))
+}
+
+/// The delivery status of outbox row `id` (TXT-013): `Queued` or `Sending` while the row is, and
+/// once sent the furthest status Twilio reported for its SID (`Sent` if none yet). A callback
+/// that arrives late with an earlier status never moves it back; between two final ones the later
+/// wins.
+///
+/// # Errors
+///
+/// [`OutboxError::NotFound`] or [`OutboxError::Database`].
+pub async fn delivery_status(
+    db: &mut PgConnection,
+    id: Uuid,
+) -> Result<DeliveryStatus, OutboxError> {
+    let (status, sid) = models::outbox_state(db, id)
+        .await?
+        .ok_or(OutboxError::NotFound)?;
+    let sid = match (status.as_str(), sid) {
+        ("queued", _) => return Ok(DeliveryStatus::Queued),
+        ("sent", Some(sid)) => sid,
+        _ => return Ok(DeliveryStatus::Sending),
+    };
+    let events = models::delivery_events(db, &sid).await?;
+    Ok(events
+        .iter()
+        .filter_map(|e| DeliveryStatus::from_twilio(e))
+        .fold(DeliveryStatus::Sent, |now, next| {
+            if next.rank() >= now.rank() { next } else { now }
+        }))
 }
 
 /// The number to text: a homeowner's from the vault for contact `recipient` (PRIV-003, PRIV-004,
