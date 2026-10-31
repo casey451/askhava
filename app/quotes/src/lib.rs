@@ -13,6 +13,10 @@
 //! record (PICK-001, PICK-002, PICK-007) in `intake`, and the every-window-ended check that hands
 //! the counts to `jobs` (TXT-042, JOB-025) in `handlers`.
 //!
+//! T186 added the quote card in `quote_card`: the business's name, license lines, the quote facts
+//! in order, its own words beside any checked summary, the after-hours line, the same for the
+//! homeowner and the business's preview (PICK-003 to PICK-005, PICK-040, PICK-041, PICK-044).
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -21,6 +25,7 @@ mod gate;
 mod handlers;
 mod intake;
 mod models;
+mod quote_card;
 mod rules;
 mod service;
 
