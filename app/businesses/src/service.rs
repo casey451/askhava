@@ -4,6 +4,8 @@
 //! A status moves only by [`crate::status::next`] and only if still in the status it was read in
 //! (JOB-004). Audit rows hold IDs, status codes and field names only, never a value (PRIV-028).
 //! The after-hours tick is stored as given; T150 adds the BIZ-007 conditions on it (D-491).
+//! T182 added the self-pause and self-resume and the business's own quiet times (BIZ-010, D-085,
+//! D-968, D-969).
 
 use std::collections::BTreeSet;
 
@@ -13,8 +15,8 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, BusinessesError, Insurance, db};
-use crate::rules::{self, Event, JobTypeChoice};
-use crate::status::{AccountStatus, next};
+use crate::rules::{self, Event, JobTypeChoice, OwnHours};
+use crate::status::{AccountStatus, PauseReason, next};
 
 const SUBJECT: &str = "businesses.business";
 
@@ -96,7 +98,20 @@ pub async fn apply(
     now: Timestamp,
 ) -> Result<AccountStatus, BusinessesError> {
     let mut tx = db(conn.begin().await)?;
-    let from = models::read(&mut tx, id).await?.status;
+    let to = move_status(&mut tx, id, event, actor, now).await?;
+    db(tx.commit().await)?;
+    Ok(to)
+}
+
+/// Moves the status inside the caller's transaction, with its audit row (BIZ-009, JOB-004, JOB-005).
+async fn move_status(
+    tx: &mut PgConnection,
+    id: Uuid,
+    event: Event,
+    actor: Actor,
+    now: Timestamp,
+) -> Result<AccountStatus, BusinessesError> {
+    let from = models::read(tx, id).await?.status;
     let to = next(from, event).map_err(|_| BusinessesError::Refused)?;
     let reason = match event {
         Event::Pause(r) => Some(r),
@@ -106,15 +121,112 @@ pub async fn apply(
         | Event::Resume
         | Event::Remove => None,
     };
-    if !models::update_status(&mut tx, id, from, to, reason, now).await? {
+    if !models::update_status(tx, id, from, to, reason, now).await? {
         return Err(BusinessesError::MovedOn);
     }
     let entry = AuditEntry::status_change(actor, (SUBJECT, id), from.code(), to.code());
-    audit(&mut tx, &entry)
+    audit(tx, &entry)
         .await
         .map_err(|_| BusinessesError::Audit)?;
+    Ok(to)
+}
+
+/// The business pauses itself in the portal (BIZ-010): an active business becomes paused with the
+/// reason `self`, the business as the audit actor.
+///
+/// # Errors
+///
+/// As [`apply`]: `Refused` unless active, `MovedOn`, `UnknownBusiness`, `Database` or `Audit`.
+pub async fn pause_self(
+    conn: &mut PgConnection,
+    id: Uuid,
+    now: Timestamp,
+) -> Result<AccountStatus, BusinessesError> {
+    let event = Event::Pause(PauseReason::SelfPaused);
+    apply(conn, id, event, Actor::Business(id), now).await
+}
+
+/// The business resumes itself (BIZ-010), only from its own pause: the row is locked first, so a
+/// pause for another reason can't slip in between the check and the move (BIZ-009, D-969).
+///
+/// # Errors
+///
+/// [`BusinessesError::Refused`] unless paused by itself; `UnknownBusiness`, `Database` or `Audit`.
+pub async fn resume_self(
+    conn: &mut PgConnection,
+    id: Uuid,
+    now: Timestamp,
+) -> Result<AccountStatus, BusinessesError> {
+    let mut tx = db(conn.begin().await)?;
+    let reason = db(sqlx::query_scalar!(
+        "SELECT pause_reason FROM businesses.business WHERE id = $1 FOR UPDATE",
+        id
+    )
+    .fetch_optional(&mut *tx)
+    .await)?
+    .ok_or(BusinessesError::UnknownBusiness)?;
+    let reason = reason.as_deref().and_then(PauseReason::from_code);
+    if !rules::may_resume_itself(reason) {
+        return Err(BusinessesError::Refused);
+    }
+    let to = move_status(&mut tx, id, Event::Resume, Actor::Business(id), now).await?;
     db(tx.commit().await)?;
     Ok(to)
+}
+
+/// Sets or, with `None`, clears the business's own quiet times; [`OwnHours`] already holds them
+/// inside the app-wide window, and the table's check refuses anything wider (BIZ-010, D-085).
+///
+/// # Errors
+///
+/// [`BusinessesError::UnknownBusiness`], `Database` or `Audit`.
+pub async fn set_own_hours(
+    conn: &mut PgConnection,
+    id: Uuid,
+    hours: Option<OwnHours>,
+    actor: Actor,
+) -> Result<(), BusinessesError> {
+    let mut tx = db(conn.begin().await)?;
+    let done = db(sqlx::query!(
+        "UPDATE businesses.business SET own_open_minute = $2, own_close_minute = $3 WHERE id = $1",
+        id,
+        hours.map(OwnHours::open_minute),
+        hours.map(OwnHours::close_minute)
+    )
+    .execute(&mut *tx)
+    .await)?;
+    if done.rows_affected() != 1 {
+        return Err(BusinessesError::UnknownBusiness);
+    }
+    let change = Change::Field("own_hours");
+    log(&mut tx, actor, "businesses.field_changed", id, change).await?;
+    db(tx.commit().await)
+}
+
+/// The business's own quiet times, `None` when it set none, for the notice senders to pass to
+/// [`crate::rules::may_notify`] (BIZ-010, D-085).
+///
+/// # Errors
+///
+/// [`BusinessesError::UnknownBusiness`] or `Database` (also for a stored window the rule refuses).
+pub async fn own_hours(
+    conn: &mut PgConnection,
+    id: Uuid,
+) -> Result<Option<OwnHours>, BusinessesError> {
+    let row = db(sqlx::query!(
+        "SELECT own_open_minute, own_close_minute FROM businesses.business WHERE id = $1",
+        id
+    )
+    .fetch_optional(conn)
+    .await)?
+    .ok_or(BusinessesError::UnknownBusiness)?;
+    match (row.own_open_minute, row.own_close_minute) {
+        (Some(o), Some(c)) => OwnHours::from_minutes(o, c)
+            .map(Some)
+            .map_err(|_| BusinessesError::Database),
+        (None, None) => Ok(None),
+        _ => Err(BusinessesError::Database),
+    }
 }
 
 /// Sets the overflow switch, the Spanish tick, the insurance answer and the after-hours tick

@@ -1,7 +1,10 @@
 //! Pure rules of the business records: the job-type checklist within the license and the town
-//! list (BIZ-004, BIZ-010, LIC-043), and the events that may move a status (BIZ-009). No I/O.
+//! list (BIZ-004, BIZ-010, LIC-043), the events that may move a status (BIZ-009), and the
+//! self-pause and own quiet times rules (BIZ-010, D-085). No I/O.
 
 use std::collections::BTreeSet;
+
+use jiff::civil::Time;
 
 use crate::models::BusinessesError;
 use crate::status::PauseReason;
@@ -104,4 +107,89 @@ pub fn towns(towns: &[&str]) -> Result<Vec<String>, BusinessesError> {
     } else {
         Err(BusinessesError::BadCode)
     }
+}
+
+/// First minute after midnight inside the app-wide window, Arizona time (QH-001, D-003). It
+/// repeats `messaging`'s private window hours, which T182 may not change (D-968).
+pub const APP_OPEN_MINUTE: i16 = 8 * 60;
+/// First minute outside the app-wide window, so 19:59 is in and 20:00 is out (QH-001, D-101).
+pub const APP_CLOSE_MINUTE: i16 = 20 * 60;
+
+/// The asked-for own quiet times would widen the app-wide window, be empty or not fall on whole
+/// minutes (BIZ-010, D-085).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+#[error("own quiet times must narrow the app-wide window")]
+pub struct Widens;
+
+/// A business's own notice window in Arizona time (QH-002): notices may go from `open` up to but
+/// not including `close`. The checked constructor keeps it inside the app-wide 8 a.m. to 8 p.m.
+/// window, so it can only narrow it (BIZ-010, D-085, D-968).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OwnHours {
+    open: i16,
+    close: i16,
+}
+
+fn whole_minute(t: Time) -> Option<i16> {
+    (t.second() == 0 && t.subsec_nanosecond() == 0)
+        .then(|| i16::from(t.hour()) * 60 + i16::from(t.minute()))
+}
+
+impl OwnHours {
+    /// The window from `open` to `close` (BIZ-010, D-085).
+    ///
+    /// # Errors
+    ///
+    /// [`Widens`] when `open` is before 8:00, `close` after 20:00, `open` is not before `close`,
+    /// or either has seconds.
+    pub fn new(open: Time, close: Time) -> Result<Self, Widens> {
+        match (whole_minute(open), whole_minute(close)) {
+            (Some(o), Some(c)) => Self::from_minutes(o, c),
+            _ => Err(Widens),
+        }
+    }
+
+    /// The window from stored minutes after midnight (migration `0057_businesses_own_hours.sql`).
+    ///
+    /// # Errors
+    ///
+    /// [`Widens`] when the minutes leave the app-wide window or the window is empty.
+    pub fn from_minutes(open: i16, close: i16) -> Result<Self, Widens> {
+        if APP_OPEN_MINUTE <= open && open < close && close <= APP_CLOSE_MINUTE {
+            Ok(Self { open, close })
+        } else {
+            Err(Widens)
+        }
+    }
+
+    /// The first minute after midnight inside the window.
+    #[must_use]
+    pub const fn open_minute(self) -> i16 {
+        self.open
+    }
+
+    /// The first minute after midnight outside the window.
+    #[must_use]
+    pub const fn close_minute(self) -> i16 {
+        self.close
+    }
+}
+
+/// Whether a business notice may go at `at`, Arizona wall-clock time (QH-002): inside the app-wide
+/// window and, when the business set its own quiet times, inside those too, so its own times only
+/// ever narrow the window (BIZ-010, D-085, QH-001, QH-005). The QH-004 exceptions are the
+/// sender's to apply.
+#[must_use]
+pub fn may_notify(own: Option<OwnHours>, at: Time) -> bool {
+    let minute = i16::from(at.hour()) * 60 + i16::from(at.minute());
+    let own = own.map_or(APP_OPEN_MINUTE..APP_CLOSE_MINUTE, |h| h.open..h.close);
+    (APP_OPEN_MINUTE..APP_CLOSE_MINUTE).contains(&minute) && own.contains(&minute)
+}
+
+/// Whether a business may resume itself: only from a pause it chose (BIZ-010); a pause for
+/// complaints, the license, no covered job type or by Casey ends only by its own rule (BIZ-009,
+/// D-969). It compares the stored code, as SEC-031 keeps status matches in `status`.
+#[must_use]
+pub fn may_resume_itself(reason: Option<PauseReason>) -> bool {
+    reason.is_some_and(|r| r.code() == "self")
 }

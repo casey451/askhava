@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.business SET own_open_minute = $2, own_close_minute = $3 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int2",
+        "Int2"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "854ef92f1c916f9cd6cb067f851a157b3238a23ca917a963ad154603bdb7ae0a"
+}
