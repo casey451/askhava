@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT s.since, s.event_id FROM messaging.suppression s JOIN UNNEST($1::smallint[], $2::bytea[]) AS k (v, h) ON s.index_version = k.v AND s.digest = k.h ORDER BY s.since, s.event_id LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "since",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.suppression",
+            "name": "since"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "event_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.suppression",
+            "name": "event_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int2Array",
+        "ByteaArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "856305783690ba381e88ef038c974a9f0b846166810676ba5e59edc0394b53af"
+}
