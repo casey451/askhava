@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH recent AS (\n             SELECT count(*) AS events, coalesce(bool_or(raised_alert), false) AS raised\n             FROM portals.security_event WHERE kind = $1 AND at > $6)\n           INSERT INTO portals.security_event\n             (kind, route, request_id, actor_ref, at, raised_alert)\n           SELECT $1, $2, $3, $4, $5, recent.events + 1 >= $7 AND NOT recent.raised FROM recent\n           RETURNING raised_alert",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "raised_alert",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "portals.security_event",
+            "name": "raised_alert"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Uuid",
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "5778b75d80a5be27ec0fb40a6ac4543589f9061b2cd85a6cb3c01142a476359a"
+}
