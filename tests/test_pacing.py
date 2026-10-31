@@ -142,3 +142,27 @@ def test_real_config_loads_and_cli_runs(capsys: Any) -> None:
     assert cfg["headroom"] == 0.10 and set(cfg["model_multiplier"]) == {"haiku", "sonnet", "opus"}
     assert pc.main(["--state", "/nonexistent.json", "--task", "T058"]) == 0
     assert "projected finish" in capsys.readouterr().out
+
+
+def test_spend_line_holds_the_week_to_a_straight_line_to_the_reset(tmp_path: Path) -> None:
+    """D-1128: from the anchor reading to the effective week budget a few hours before the reset."""
+    root = repo(tmp_path)
+    need = pc.estimate(TASK, {"tasks": []}, CFG, root)[0]
+    cfg = dict(CFG, spread={"anchor_at": pc.iso(NOW), "anchor_used_week": 1_000_000, "finish_hours_before_reset": 3})
+    week_start = NOW - timedelta(days=2)  # resets in 5 days; the line ends 3 hours before that
+    state = {"tasks": [], "usage": {"windows": {"five_hour": {"start": pc.iso(NOW), "tokens": 0},
+                                                "week": {"start": pc.iso(week_start), "tokens": 1_000_000}}}}
+    found = pc.assess(state, TASK, root=root, config=cfg, now=NOW)
+    verdict, until = found["decision"]
+    assert verdict == "wait" and found["spend_line"] == until and "spend line" in pc.line("T001", found)
+    line_len = timedelta(days=5) - timedelta(hours=3)
+    expected = NOW + line_len * (need / (9_000_000 - 1_000_000))
+    assert abs((pc.parse(until) - expected).total_seconds()) < 2
+    assert pc.decide(state, TASK, root=root, config=cfg, now=pc.parse(until) + timedelta(seconds=1)) == ("claim", None)
+    far = pc.decide(dict(state, usage={"windows": {"five_hour": {"start": pc.iso(NOW), "tokens": 0},
+                                                   "week": {"start": pc.iso(week_start), "tokens": 8_500_000}}}),
+                    TASK, root=root, config=cfg, now=NOW + timedelta(days=1))
+    assert far[0] == "wait" and NOW + timedelta(days=4) < pc.parse(far[1]) <= week_start + timedelta(days=7) - timedelta(hours=3)
+    assert pc.decide(state, TASK, root=root, config=cfg, now=NOW - timedelta(hours=1)) == ("claim", None), "before the anchor"
+    assert pc.decide(state, TASK, root=root, config=CFG, now=NOW) == ("claim", None), "no spread configured"
+    assert pc.decide(spent(899_000), TASK, root=root, config=cfg, now=NOW) == ("wait", pc.iso(NOW + timedelta(hours=5))), "the five-hour wait still wins"

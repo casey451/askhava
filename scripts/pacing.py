@@ -32,6 +32,15 @@ help, and a rejected run is RETRY_AFTER_RESET). A usage-limit rejection whose re
 ledger only at its hand-in, so `used` also counts the estimate recorded at its claim for every other
 IN_PROGRESS task (`in_flight_tokens`). With one lane that is always 0.
 
+**Spend line** (D-1128, Casey's rule of October 31: the week's budget is to be spent by a few hours
+before its reset, as accurately as possible, with no idle days after an early stop). When
+kit/pacing.json has `spread` ({"anchor_at": ISO, "anchor_used_week": tokens,
+"finish_hours_before_reset": hours}), the week window's spend is held to a straight line from the
+anchor reading to the effective week budget at `resets_at` minus the margin: a claim that would put
+`used + estimate` above the line now waits until the line reaches it (`spend_line`), never past the
+reset; a task that fits the line claims as before. The line ends at the reset, so a window that
+rolls over, or a quota reading past the anchor's week, retires it.
+
 Usage: python3 scripts/pacing.py [--state PATH] [--task ID]
 """
 
@@ -204,6 +213,27 @@ def decide(
     return assess(state, task, root=root, config=config, now=now, quota=quota)["decision"]
 
 
+def spend_line(cfg: dict[str, Any], week: dict[str, Any], need: int, now: datetime) -> str | None:
+    """When `used + need` sits above the week's straight spend line (D-1128), the ISO time the line
+    reaches it (capped at the reset); None when the claim fits the line or no line applies."""
+    spread = cfg.get("spread")
+    reset = week.get("resets_at")
+    if not spread or not reset:
+        return None
+    start, end = parse(str(spread["anchor_at"])), parse(str(reset)) - timedelta(hours=float(spread["finish_hours_before_reset"]))
+    if now < start or now >= end or end <= start:
+        return None
+    base, top = float(spread["anchor_used_week"]), float(week["budget"])
+    if top <= base:
+        return None
+    target = float(week["used"]) + need
+    released = base + (top - base) * (now - start).total_seconds() / (end - start).total_seconds()
+    if target <= released:
+        return None
+    when = start + (end - start) * min((target - base) / (top - base), 1.0)
+    return iso(max(when, now + timedelta(minutes=1)))
+
+
 def assess(
     state: State, task: dict[str, Any], *, root: Path = ROOT, config: dict[str, Any] | None = None,
     now: datetime | None = None, quota: dict[str, Any] | None = None,
@@ -215,7 +245,11 @@ def assess(
     stand, source = standing(state, cfg, now, quota, reserved)
     hit = ((state.get("usage") or {}).get("limit_hit") or {}).get("reset_at")
     decision = ("wait", hit) if hit and parse(hit) > now else _verdict(need, stand, now)
+    line_at = spend_line(cfg, stand["week"], need, now) if decision[0] == "claim" else None
+    if line_at:
+        decision = ("wait", line_at)
     found = {"decision": decision, "estimate": need, "bytes": size, "basis": basis, "standing": stand, "source": source}
+    found |= {"spend_line": line_at} if line_at else {}
     return found | ({"in_flight": reserved} if reserved else {})
 
 
@@ -228,6 +262,8 @@ def line(tid: str, found: dict[str, Any]) -> str:
     stand, (verdict, detail) = found["standing"], found["decision"]
     left = f"five-hour window has {_k(stand['five_hour']['left'])} left, week {_k(stand['week']['left'])}"
     outcome = {"claim": "claimed", "wait": f"waiting until {detail}", "defer": f"claimed anyway ({detail})"}[verdict]
+    if found.get("spend_line"):
+        outcome = f"on the spend line (D-1128), {outcome}"
     running = f" after {_k(found['in_flight'])} still running in another lane" if found.get("in_flight") else ""
     return f"{tid} estimated {_k(found['estimate'])} tokens ({found['basis']}); {left}{running} ({found['source']}); {outcome}"
 
