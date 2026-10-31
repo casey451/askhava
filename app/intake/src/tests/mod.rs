@@ -4,6 +4,7 @@ mod consent;
 mod conversation;
 mod emergency;
 mod prop_consent_first;
+mod prop_keyword_boundary;
 mod safety_text;
 mod trade_question;
 mod twin_warnings_regression;
