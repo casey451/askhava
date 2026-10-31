@@ -3,13 +3,20 @@
 //! Render a text from its template ID, pick the language it may use, count its segments, decide
 //! when it may be sent (quiet hours), queue and send it through the outbox once (TXT-009,
 //! TXT-011), keep the sender directory of business phones (D-492), record Twilio's inbound texts
-//! and status callbacks once per message ID (TXT-012) and read a text's delivery status (TXT-013).
+//! and status callbacks once per message ID (TXT-012), read a text's delivery status (TXT-013),
+//! keep the one suppression list and send only through its check (CON-008 to CON-017, CON-030,
+//! CON-035).
 
 pub use crate::handlers::{Callback, receive_inbound, receive_status};
 pub use crate::models::{InboxError, OutboxError};
+pub use crate::optout::{
+    InboundText, Outcome, RevokeChannel, on_inbound_text, send_checked, suppress,
+};
 pub use crate::rules::{
-    AreaCodes, Channel, Decision, Held, Kind, Outgoing, QuietHoursError, Release, decide,
-    plan_release, retry,
+    APP_OPT_OUT_WORDS, AreaCodes, CONFIRM_WITHIN, CONFIRMATION_TEMPLATE, Channel, Classified,
+    Decision, Detected, HELP_TEMPLATE, Held, Kind, OPT_OUT_PHRASES, Outgoing,
+    PROVIDER_OPT_OUT_WORDS, ProviderKeyword, QuietHoursError, RESUBSCRIBE_WORDS, Release,
+    SPANISH_OPT_OUT_WORDS, classify, decide, detect_opt_out, may_send_to, plan_release, retry,
 };
 pub use crate::service::{
     NewText, Relation, SEND_ACTION, To, delivery_status, enqueue, may_text, send, sender_add,

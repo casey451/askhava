@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT min(s.since) FROM messaging.suppression s JOIN UNNEST($1::smallint[], $2::bytea[]) AS k (v, h) ON s.index_version = k.v AND s.digest = k.h",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "min",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int2Array",
+        "ByteaArray"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "55d0b4654024ac3a109d9c895dea2185452e9dd36b71b93f353b03c5bd8f63f5"
+}

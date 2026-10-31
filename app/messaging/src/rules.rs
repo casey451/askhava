@@ -1,4 +1,6 @@
-//! Quiet hours (QH-001 to QH-009, TXT-025): when a text or a business email may go.
+//! Quiet hours (QH-001 to QH-009, TXT-025): when a text or a business email may go; and the
+//! opt-out rules (CON-008 to CON-011, CON-013, CON-030): the word and phrase lists, the detector
+//! and which texts may still go to a number on the suppression list.
 //!
 //! Pure decision logic, no I/O and no clock of its own: the caller passes the instant. A non-urgent
 //! message goes only when it is 8:00 a.m. to before 8:00 p.m. in Arizona time (`America/Phoenix`, no
@@ -371,4 +373,197 @@ impl Slot {
             Self::Group(ids) => Release::Merged(ids),
         }
     }
+}
+
+/// The sole opt-out words the texting provider's Advanced Opt-Out also handles, in the order of
+/// `stand_ins/provider_optout.json`, which must hold exactly these (CON-008, CON-030, D-493).
+pub const PROVIDER_OPT_OUT_WORDS: [&str; 12] = [
+    "stop",
+    "stopall",
+    "unsubscribe",
+    "cancel",
+    "end",
+    "revoke",
+    "optout",
+    "quit",
+    "parar",
+    "alto",
+    "cancelar",
+    "baja",
+];
+/// The Spanish ones among them; the provider answers these with the Spanish CON-009 wording.
+pub const SPANISH_OPT_OUT_WORDS: [&str; 4] = ["parar", "alto", "cancelar", "baja"];
+/// A sole opt-out word the provider does not handle, so the app sends its confirmation: "opt out"
+/// with a space or hyphen is an FCC word but not a provider keyword (CON-008, CON-030, D-477).
+pub const APP_OPT_OUT_WORDS: [&str; 1] = ["opt out"];
+/// The only re-subscribe words, the provider's and the app's alike; YES is not one (CON-015, CON-030).
+pub const RESUBSCRIBE_WORDS: [&str; 2] = ["start", "unstop"];
+/// The revocation phrases, each with the pattern ID stored as how an opt-out was detected (CON-010,
+/// CON-036). None also fits a normal request ("can stop by at 3", "please cancel my request").
+pub const OPT_OUT_PHRASES: [(&str, &str); 14] = [
+    ("en.stop_texting", "stop texting"),
+    ("en.stop_messaging", "stop messaging"),
+    ("en.stop_sending", "stop sending"),
+    ("en.dont_text_me", "don't text me"),
+    ("en.do_not_text_me", "do not text me"),
+    ("en.no_more_texts", "no more texts"),
+    ("en.remove_me", "remove me"),
+    ("en.take_me_off", "take me off"),
+    ("en.unsubscribe_me", "unsubscribe me"),
+    ("es.no_me_escriban", "no me escriban"),
+    ("es.no_me_manden_mensajes", "no me manden mensajes"),
+    ("es.ya_no_quiero_mensajes", "ya no quiero mensajes"),
+    ("es.dejen_de_escribirme", "dejen de escribirme"),
+    ("es.quitenme_de_la_lista", "quítenme de la lista"),
+];
+/// The template of the one opt-out confirmation (CON-009).
+pub const CONFIRMATION_TEMPLATE: &str = "opt_out_confirmation";
+/// The template of the HELP reply, which still goes to an opted-out number (CON-013, CON-018, D-131).
+pub const HELP_TEMPLATE: &str = "help_reply";
+/// How long after an opt-out its one confirmation may still go; never later (CON-009, CON-030).
+pub const CONFIRM_WITHIN: SignedDuration = SignedDuration::from_mins(5);
+
+/// Which Advanced Opt-Out keyword the provider matched, from the inbound webhook's `OptOutType`
+/// (CON-030): the provider has already blocked or unblocked the number and sent its own reply.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProviderKeyword {
+    /// No keyword matched (no `OptOutType`, or `HELP`, which is T030's).
+    None,
+    /// `OptOutType=STOP`: the provider sent the CON-009 reply.
+    OptOut,
+    /// `OptOutType=START`: the provider sent the START reply.
+    Start,
+}
+
+impl ProviderKeyword {
+    /// Reads the webhook's `OptOutType` value, if any.
+    #[must_use]
+    pub fn from_opt_out_type(value: Option<&str>) -> Self {
+        match value.map(str::to_ascii_uppercase).as_deref() {
+            Some("STOP") => Self::OptOut,
+            Some("START") => Self::Start,
+            _ => Self::None,
+        }
+    }
+}
+
+/// How the app's detector matched an opt-out (CON-008, CON-010, CON-036).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Detected {
+    /// The whole message is this sole opt-out word.
+    Word(&'static str),
+    /// The message contains the revocation phrase with this pattern ID.
+    Phrase(&'static str),
+}
+
+impl Detected {
+    /// Whether it was a Spanish word or phrase, so its confirmation is in Spanish (CON-009).
+    #[must_use]
+    pub fn spanish(self) -> bool {
+        match self {
+            Self::Word(word) => SPANISH_OPT_OUT_WORDS.contains(&word),
+            Self::Phrase(id) => id.starts_with("es."),
+        }
+    }
+
+    /// What is stored as how it was detected: `word:<word>` or `phrase:<pattern ID>` (CON-036).
+    #[must_use]
+    pub fn label(self) -> String {
+        match self {
+            Self::Word(word) => format!("word:{word}"),
+            Self::Phrase(id) => format!("phrase:{id}"),
+        }
+    }
+}
+
+/// What one inbound message means for the suppression list (CON-008, CON-010, CON-015, CON-030).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Classified {
+    /// An opt-out. `detected` is `None` only when the provider matched a word the app does not
+    /// list; `by_provider` means the provider already sent the confirmation, so the app sends none.
+    OptOut {
+        /// The app's own match, if any.
+        detected: Option<Detected>,
+        /// The provider matched it and replied (CON-030).
+        by_provider: bool,
+    },
+    /// A sole START or UNSTOP (CON-015).
+    Resubscribe,
+    /// Anything else, "yes" included (CON-011, CON-030).
+    Other,
+}
+
+/// The app's opt-out detector, the same for texts, help emails, email replies and form messages
+/// (CON-035): a message that is only an opt-out word in any case, spacing and punctuation
+/// (CON-008), or contains a listed revocation phrase (CON-010); a word used in another sense ("can
+/// stop by at 3") is not one (CON-011).
+#[must_use]
+pub fn detect_opt_out(text: &str) -> Option<Detected> {
+    let folded = fold(text);
+    if let Some(word) = PROVIDER_OPT_OUT_WORDS
+        .iter()
+        .chain(&APP_OPT_OUT_WORDS)
+        .find(|w| **w == folded)
+    {
+        return Some(Detected::Word(word));
+    }
+    let padded = format!(" {folded} ");
+    OPT_OUT_PHRASES
+        .iter()
+        .find(|(_, phrase)| padded.contains(&format!(" {} ", fold(phrase))))
+        .map(|(id, _)| Detected::Phrase(id))
+}
+
+/// Classifies an inbound text from what the provider matched and the app's own detector (CON-008,
+/// CON-010, CON-015, CON-030): a sole START or UNSTOP re-subscribes; nothing else does.
+#[must_use]
+pub fn classify(text: &str, provider: ProviderKeyword) -> Classified {
+    let folded = fold(text);
+    if provider == ProviderKeyword::Start || RESUBSCRIBE_WORDS.contains(&folded.as_str()) {
+        return Classified::Resubscribe;
+    }
+    let detected = detect_opt_out(text);
+    let by_provider = provider == ProviderKeyword::OptOut;
+    if detected.is_some() || by_provider {
+        return Classified::OptOut {
+            detected,
+            by_provider,
+        };
+    }
+    Classified::Other
+}
+
+/// Whether text `template_id` may go at `now` to a number on the suppression list since `since`
+/// (`None`: not on it). Only the one confirmation, within [`CONFIRM_WITHIN`] of the opt-out, and the
+/// HELP reply go to a suppressed number (CON-009, CON-013, CON-030, CON-035, D-131).
+#[must_use]
+pub fn may_send_to(since: Option<Timestamp>, template_id: &str, now: Timestamp) -> bool {
+    let Some(since) = since else {
+        return true;
+    };
+    template_id == HELP_TEMPLATE
+        || (template_id == CONFIRMATION_TEMPLATE
+            && now >= since
+            && now.duration_since(since) <= CONFIRM_WITHIN)
+}
+
+/// Lower-cases, folds Spanish accents, drops apostrophes, turns every other non-letter, non-digit
+/// into a space and collapses spaces, so "Don't TEXT me!!" reads "dont text me" (CON-010).
+fn fold(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    for c in text.chars().flat_map(char::to_lowercase) {
+        let c = match c {
+            'á' | 'à' | 'ä' | 'â' => 'a',
+            'é' | 'è' | 'ë' | 'ê' => 'e',
+            'í' | 'ì' | 'ï' | 'î' => 'i',
+            'ó' | 'ò' | 'ö' | 'ô' => 'o',
+            'ú' | 'ù' | 'ü' | 'û' => 'u',
+            'ñ' => 'n',
+            '\'' | '\u{2018}' | '\u{2019}' => continue,
+            c if c.is_alphanumeric() => c,
+            _ => ' ',
+        };
+        out.push(c);
+    }
+    out.split_whitespace().collect::<Vec<_>>().join(" ")
 }

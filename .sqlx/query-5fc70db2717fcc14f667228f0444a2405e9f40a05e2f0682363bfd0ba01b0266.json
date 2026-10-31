@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO messaging.suppression (index_version, digest, event_id, since) SELECT v, h, $3, $4 FROM UNNEST($1::smallint[], $2::bytea[]) AS k (v, h) ON CONFLICT (index_version, digest) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int2Array",
+        "ByteaArray",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5fc70db2717fcc14f667228f0444a2405e9f40a05e2f0682363bfd0ba01b0266"
+}
