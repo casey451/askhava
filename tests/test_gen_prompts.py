@@ -343,6 +343,61 @@ def test_strict_check_fails_a_stale_stored_budget(
     assert gp.main(["--root", str(root), "--check", "--strict"]) == 0
 
 
+def test_settled_pct_keeps_a_close_stored_value_within_the_limit() -> None:
+    """D-1075: within 3 points and the limit the stored value stays; otherwise the measurement is stored."""
+    assert gp.settled_pct(fake_task(), 11) == 8 and gp.settled_pct(fake_task(), 5) == 8
+    assert gp.settled_pct(fake_task(), 12) == 12 and gp.settled_pct(fake_task(), 4) == 4
+    near = {"files": 1, "lines": 50}
+    assert gp.settled_pct(fake_task(budget={**near, "context_pct": 44}), 46) == 46  # measured over build's 45
+    assert gp.settled_pct(fake_task(budget={**near, "context_pct": 47}), 45) == 45  # stored over the limit
+    assert gp.settled_pct(fake_task(type="harness", budget={**near, "context_pct": 47}), 45) == 47
+
+
+def test_small_drift_neither_fails_strict_nor_rewrites_a_prompt(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """D-1075: growth within 3 points is no plan-change churn; past 3 points strict fails until regenerated."""
+    root = make_repo(tmp_path, [fake_task()])
+    assert gp.main(["--root", str(root)]) == 0
+    tasks, prompt = (root / "kit/tasks.json").read_text(), (root / "kit/prompts/T900.md").read_text()
+    (root / "app").mkdir()
+    (root / "app" / "fake.py").write_text("q" * 16_000, encoding="utf-8")  # 4,000 tokens, 2 points
+    assert gp.main(["--root", str(root), "--check", "--strict"]) == 0
+    assert gp.main(["--root", str(root)]) == 0
+    assert (root / "kit/tasks.json").read_text() == tasks and (root / "kit/prompts/T900.md").read_text() == prompt
+    (root / "app" / "fake.py").write_text("q" * 40_000, encoding="utf-8")  # 5 points
+    capsys.readouterr()
+    assert gp.main(["--root", str(root), "--check", "--strict"]) == 1
+    assert "ERROR T900: stored context_pct" in capsys.readouterr().out
+
+
+def test_strict_fails_a_measurement_over_the_limit_even_when_stored(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """D-1075: the limit binds the measurement, not only the stored number validate_tasks reads."""
+    root = make_repo(tmp_path, [fake_task()])
+    (root / "app").mkdir()
+    (root / "app" / "fake.py").write_text("q" * 400_000, encoding="utf-8")  # 50 points
+    assert gp.main(["--root", str(root)]) == 0
+    capsys.readouterr()
+    assert gp.main(["--root", str(root), "--check", "--strict"]) == 1
+    assert "over its 45% limit" in capsys.readouterr().out
+
+
+def test_strict_warns_when_the_decisions_log_nears_the_scan_limit(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-1075: the plan-change check prints pii_scan's size warning; it is a warning, not a problem."""
+    root = make_repo(tmp_path, [fake_task()])
+    (root / "docs").mkdir()
+    (root / "docs" / "decisions.md").write_text("- **D-001** x\n" + "y" * 800, encoding="utf-8")
+    monkeypatch.setattr(gp.pii_scan, "MAX_BYTES", 1_000)
+    assert gp.main(["--root", str(root)]) == 0
+    capsys.readouterr()
+    assert gp.main(["--root", str(root), "--check", "--strict"]) == 0
+    assert "WARNING docs/decisions.md is 814 bytes" in capsys.readouterr().out
+
+
 def test_owned_directories_count_nothing_and_owned_files_count_once(tmp_path: Path) -> None:
     """D-1036: a swept tree is not loaded; a directory read leaves out the owned files it holds."""
     root = make_repo(tmp_path, [fake_task()])
@@ -366,3 +421,17 @@ def test_four_digit_decisions_are_read_and_superseded(tmp_path: Path) -> None:
     src = gp.load_sources(tmp_path)
     assert set(src.decisions) == {"D-001", "D-1000"}
     assert src.superseded == {"D-001": "D-1000"}
+
+
+def test_strict_fails_when_the_decisions_log_is_within_a_tenth_of_the_scan_limit(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-1075: past 90% of MAX_BYTES the plan-change check fails, so the one session that can act must act."""
+    root = make_repo(tmp_path, [fake_task()])
+    (root / "docs").mkdir()
+    (root / "docs" / "decisions.md").write_text("- **D-001** x\n" + "y" * 950, encoding="utf-8")
+    monkeypatch.setattr(gp.pii_scan, "MAX_BYTES", 1_000)
+    assert gp.main(["--root", str(root)]) == 0
+    capsys.readouterr()
+    assert gp.main(["--root", str(root), "--check", "--strict"]) == 1
+    assert "over 90% of MAX_BYTES" in capsys.readouterr().out
