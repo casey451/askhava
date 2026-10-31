@@ -20,7 +20,7 @@ line of JSON with what changed.
                                     the reason as its last_failure (refused for a task out of attempts,
                                     or while any lease is live; recorded in `requeues`, D-583). FIX-MAIN
                                     only while main is red and FIX-MAIN is BLOCKED: it restarts with
-                                    attempts 0 (D-1089)
+                                    attempts 0 (D-1099)
   python3 -m runner --requeue T### --plan-fix D-### --reason TEXT
                                     give a task that used all its attempts exactly one more (on Opus)
                                     after a plan fix: since its last attempt started, D-### is new on

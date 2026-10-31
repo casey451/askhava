@@ -13,7 +13,7 @@ from typing import Any, Protocol
 from runner import lanes, outbox, state as st, verify
 from runner.state import State
 
-MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677); FIX-MAIN re-arms (D-1089)
+MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677); FIX-MAIN re-arms (D-1099)
 HOURLY = timedelta(hours=1)
 WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes", "unreviewed_head",
                 "branch_updated", "update_conflict", "update_push_failed")
@@ -743,7 +743,10 @@ def _fix_main_fields(cfg: Config, offending: tuple[str, str, list[str]]) -> dict
     tid, sha, files = offending
     goal = (
         f"Fix main. First option: `git revert --no-edit {sha or '<offending squash commit>'}` "
-        f"(the merge of {tid or 'an unknown task'}). Patch over only if the revert itself would break main, "
+        f"(the merge of {tid or 'an unknown task'}), then `git checkout origin/main -- docs/decisions.md` so the "
+        "log keeps every entry (it is append-only; the reverted task's entries stand as history, D-1088) and "
+        "append your own entry at the end; if the revert touches a protected or locked path, end the commit "
+        "message with a `Plan-Change: D-<your entry>` trailer. Patch over only if the revert itself would break main, "
         "and say why in the report."
     )
     return {
@@ -826,12 +829,12 @@ def _red_main_step(cfg: Config, env: Env, state: State, now: datetime) -> tuple[
     return clear_main_red(state, env, now)
 
 
-# ---- a capped FIX-MAIN while main is red (D-1089)
+# ---- a capped FIX-MAIN while main is red (D-1099)
 
 FIX_MAIN_ROUNDS = 3  # re-arms of a FIX-MAIN that used all MAX_ATTEMPTS while main is red, before a person must act
 FIX_MAIN_COOL_OFF = timedelta(minutes=30)  # from the cycle that first finds FIX-MAIN capped to its re-arm
 FIX_MAIN_CAPPED = "fix_main_capped"  # the cycle result while a capped FIX-MAIN cools off or waits for a person
-ROUNDS_MARK = "\n\nEarlier FIX-MAIN rounds used all their attempts and failed (D-1089):"
+ROUNDS_MARK = "\n\nEarlier FIX-MAIN rounds used all their attempts and failed (D-1099):"
 
 
 def fresh_rounds() -> dict[str, Any]:
@@ -846,7 +849,7 @@ def fix_main_capped(state: State) -> bool:
 
 
 def capped_fix_main(cfg: Config, state: State, now: datetime) -> tuple[State, str]:
-    """A capped FIX-MAIN while main is red: re-armed by the runner itself, never left for a hand edit (D-1089).
+    """A capped FIX-MAIN while main is red: re-armed by the runner itself, never left for a hand edit (D-1099).
 
     The cycle that first finds it capped stamps `capped_at`; once FIX_MAIN_COOL_OFF has passed from
     then, rearm_fix_main starts the next round ("main_red", which chains the next cycle, D-500). After
@@ -866,7 +869,7 @@ def capped_fix_main(cfg: Config, state: State, now: datetime) -> tuple[State, st
 def rearm_fix_main(cfg: Config, state: State, now: datetime) -> State:
     """The next round: QUEUED with `attempts` 0 (Sonnet first again, attempt_model), the round kept in the
     task's and main_red's `fix_main_rounds` ({round, at, capped_at, reason}), every earlier round's failure
-    added to the goal and this one's in `last_failure`, and one outbox item for Casey (D-1089). `owns`,
+    added to the goal and this one's in `last_failure`, and one outbox item for Casey (D-1099). `owns`,
     `revert_sha`, `offending_task` and the branch stay as they are."""
     fix = st.entry(state, st.FIX_MAIN)
     reason = str(fix.get("reason") or fix.get("last_failure") or "unknown")
@@ -886,7 +889,7 @@ def rearm_fix_main(cfg: Config, state: State, now: datetime) -> State:
 
 
 def escalate_fix_main(cfg: Config, state: State, now: datetime) -> State:
-    """Every round used: FIX-MAIN stays BLOCKED and one outbox item says what a person must do (D-1089)."""
+    """Every round used: FIX-MAIN stays BLOCKED and one outbox item says what a person must do (D-1099)."""
     fix = st.entry(state, st.FIX_MAIN)
     if fix.get("escalated_at"):
         return state
@@ -1597,10 +1600,10 @@ def requeue_refusal(state: State, tid: str, now: datetime, cfg: Config | None = 
 
 
 def _fix_main_requeue_refusal(state: State, now: datetime, cfg: Config | None) -> str:
-    """Why `--requeue FIX-MAIN` must not move it, '' when it may (D-1089): only while main is red, only a
+    """Why `--requeue FIX-MAIN` must not move it, '' when it may (D-1099): only while main is red, only a
     BLOCKED FIX-MAIN (at the cap or for any other reason), and never under a live lease that matters."""
     if not state.get("main_red"):
-        return "main is not red; FIX-MAIN is re-queued by hand only while main_red is set (D-1089)"
+        return "main is not red; FIX-MAIN is re-queued by hand only while main_red is set (D-1099)"
     if st.status(state, st.FIX_MAIN) != st.BLOCKED:
         return f"FIX-MAIN is {st.status(state, st.FIX_MAIN)}, not BLOCKED"
     held = _requeue_blockers(state, st.FIX_MAIN, now, cfg)
@@ -1625,7 +1628,7 @@ def requeue(state: State, tid: str, reason: str, now: datetime, by: str, cfg: Co
     left as it is, so the 3-attempt cap holds (BUILD_BRIEF.md:271, :540); the given reason is appended
     to `last_failure` as "re-queued: ...", so the retry sees both the earlier failure and why it was
     re-queued (D-584). The re-queue is kept in the task's `requeues` list (when, why, by whom, the old
-    reason); `history` holds attempts only. FIX-MAIN is the exception (D-1089): a person re-queues it
+    reason); `history` holds attempts only. FIX-MAIN is the exception (D-1099): a person re-queues it
     while main is red, from any block, and it starts again with `attempts` 0 and its cool-off and
     escalation marks cleared, so a later cap is re-armed or escalated again (capped_fix_main)."""
     if requeue_refusal(state, tid, now, cfg):
@@ -1654,7 +1657,7 @@ def plan_since(entry: dict[str, Any]) -> str | None:
 def plan_fix_precheck(state: State, tid: str, decision: str, now: datetime, cfg: Config | None = None) -> str:
     """The state-only half of plan_fix_refusal (D-677): '' when main is worth reading."""
     if tid == st.FIX_MAIN:
-        return "FIX-MAIN takes no --plan-fix; while main is red use --requeue FIX-MAIN --reason (D-1089)"
+        return "FIX-MAIN takes no --plan-fix; while main is red use --requeue FIX-MAIN --reason (D-1099)"
     if not any(t["id"] == tid for t in state.get("tasks", [])):
         return f"no task {tid} in the state"
     if st.status(state, tid) != st.BLOCKED:

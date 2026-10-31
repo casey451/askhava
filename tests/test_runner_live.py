@@ -557,11 +557,11 @@ def test_requeue_command_moves_a_blocked_task_through_update_state(repo: dict[st
     assert task["requeues"][0]["reason"] == "the branch is fixed" and task["requeues"][0]["by"] == "manual-1"
     assert entry.requeue_task(args, cfg, env) == "requeue_refused: K10 is QUEUED, not BLOCKED"
     assert entry.requeue_task(entry.parse_args(["--requeue", "FIX-MAIN", "--reason", "x"]), cfg, env) == (
-        "requeue_refused: main is not red; FIX-MAIN is re-queued by hand only while main_red is set (D-1089)")
+        "requeue_refused: main is not red; FIX-MAIN is re-queued by hand only while main_red is set (D-1099)")
 
 
 def test_requeue_command_starts_a_capped_fix_main_again_while_main_is_red(repo: dict[str, Path], tmp_path: Path) -> None:
-    """D-1089: a session that can write claude/kit-state has a tool for a FIX-MAIN stuck after every round."""
+    """D-1099: a session that can write claude/kit-state has a tool for a FIX-MAIN stuck after every round."""
     env = make_env(repo["a"], tmp_path)
     red = {"check": "tree", "sha": "bad0001", "task": "K10", "revert_sha": "bad0001", "files": ["docs/k10/one.md"]}
 

@@ -676,6 +676,7 @@ def test_drill_red_main_reverts_clears_and_continues(tmp_path: Path) -> None:
     fix = st.entry(env.store, st.FIX_MAIN)
     assert fix["type"] == "harness" and fix["model"] == MODELS["sonnet"] and fix["reviewer_model"] == MODELS["opus"]
     assert fix["owns"] == ["app/t001/x.py"] and "git revert --no-edit bad0001" in fix["goal"]
+    assert "git checkout origin/main -- docs/decisions.md" in fix["goal"]  # the log stays append-only (D-1088)
     assert st.eligible(env.store, NOW) == [st.FIX_MAIN]
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "fix_main"
     assert env.runs[-1][:2] == (st.FIX_MAIN, MODELS["sonnet"]) and st.status(env.store, st.FIX_MAIN) == st.MERGE_PENDING
@@ -1070,7 +1071,7 @@ def test_drill_a_handed_off_fix_main_reaches_the_session_as_handed_off(tmp_path:
     assert st.status(env.store, st.FIX_MAIN) == st.IN_PROGRESS
 
 
-# ---- D-1089: a FIX-MAIN that used all its attempts while main is red is re-armed by the runner itself
+# ---- D-1099: a FIX-MAIN that used all its attempts while main is red is re-armed by the runner itself
 
 REVERT_FAILS = "Governance: failure; Checks failed at step: Plan lock and change rules (docs/governance.md)"
 
@@ -1104,7 +1105,7 @@ def test_drill_a_capped_fix_main_cools_off_then_is_re_armed_with_one_outbox_item
         cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10 + n))
     fix = st.entry(env.store, st.FIX_MAIN)
     assert fix["status"] == st.BLOCKED and fix["attempts"] == cycle.MAX_ATTEMPTS and env.runs[-1][1] == MODELS["opus"]
-    assert st.eligible(env.store, NOW) == []  # the dead end D-1089 removes: nothing claimable, main red
+    assert st.eligible(env.store, NOW) == []  # the dead end D-1099 removes: nothing claimable, main red
     capped = NOW + timedelta(minutes=20)
     assert cycle.run_cycle(cfg, env, capped) == cycle.FIX_MAIN_CAPPED
     assert st.entry(env.store, st.FIX_MAIN)["capped_at"] == st.iso(capped) and _outbox(tmp_path) == []
@@ -1700,7 +1701,7 @@ def test_requeue_refuses_what_it_must_not_move() -> None:
     assert cycle.requeue_refusal(_blocked(1), "T002", NOW) == "T002 is QUEUED, not BLOCKED"
     assert cycle.requeue_refusal(_blocked(1), "T999", NOW) == "no task T999 in the state"
     fix = st.with_task(_blocked(1), st.FIX_MAIN, status=st.BLOCKED, reason=PUSH_BLOCK)
-    # FIX-MAIN is re-queued by hand only while main is red (D-1089); see the FIX-MAIN re-queue drills below.
+    # FIX-MAIN is re-queued by hand only while main is red (D-1099); see the FIX-MAIN re-queue drills below.
     assert cycle.requeue_refusal(fix, st.FIX_MAIN, NOW).startswith("main is not red; FIX-MAIN is re-queued by hand only")
     assert cycle.requeue_refusal(_blocked(3), "T001", NOW).startswith("T001 has used all 3 attempts")
     assert cycle.requeue_refusal(_blocked(2, "Ci: failure; Twin: failure"), "T001", NOW).startswith("T001 is BLOCKED for its own work")
