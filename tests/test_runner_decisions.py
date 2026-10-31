@@ -104,3 +104,40 @@ def test_check_state_validates_the_counter_and_the_blocks() -> None:
     assert cs.check(shared) == ["state.tasks: D-523 is reserved by T001, T002"]
     behind = dict(good, next_decision=527)
     assert cs.check(behind) == ["state.next_decision: 527 is not above the highest reserved number D-527"]
+
+
+# ---- plan changes take one number from the same counter (D-1052)
+
+
+def test_a_plan_reservation_takes_the_next_free_number_records_it_and_advances_the_counter() -> None:
+    s = st.claim(two_tasks(), "T001", "a", NOW, taken=MAIN)  # T001 holds 522 to 526, next_decision 527
+    s, number = st.reserve_plan_number(s, MAIN, "stage 2 owns audit", "overseer-casey-approved", NOW)
+    assert number == 527 and s["next_decision"] == 528
+    assert s["plan_reservations"] == [{"number": 527, "at": "2026-11-01T12:00:00Z", "reason": "stage 2 owns audit",
+                                       "session": "overseer-casey-approved"}]
+    s, second = st.reserve_plan_number(s, MAIN, "context budgets", "overseer-casey-approved", NOW)
+    assert second == 528 and s["next_decision"] == 529 and [r["number"] for r in s["plan_reservations"]] == [527, 528]
+    assert cs.check(s, now=NOW) == []
+
+
+def test_a_plan_reservation_starts_above_mains_highest_entry_and_a_stale_counter() -> None:
+    s, number = st.reserve_plan_number(dict(two_tasks(), next_decision=400), MAIN | {600}, "fix", "o", NOW)
+    assert number == 601 and s["next_decision"] == 602
+
+
+def test_reserved_includes_plan_reservations_so_a_claim_skips_them() -> None:
+    s, number = st.reserve_plan_number(two_tasks(), MAIN, "plan change", "o", NOW)
+    assert number == 522 and 522 in st._reserved(s)
+    s.pop("next_decision")  # a lost counter: the reservation alone still keeps the next block above it
+    s = st.claim(s, "T001", "a", NOW, taken=MAIN)
+    assert st.entry(s, "T001")["decision_ids"] == [523, 524, 525, 526, 527] and s["next_decision"] == 528
+
+
+def test_check_state_counts_plan_reservations_as_reserved() -> None:
+    good = {"schema": 1, "next_decision": 528, "tasks": [{"id": "T001", "decision_ids": [522]}],
+            "plan_reservations": [{"number": 527, "at": "2026-11-01T12:00:00Z", "reason": "r", "session": "o"}]}
+    assert cs.check(good) == []
+    assert cs.check(dict(good, next_decision=527)) == ["state.next_decision: 527 is not above the highest reserved number D-527"]
+    clash = dict(good, plan_reservations=[dict(good["plan_reservations"][0], number=522)])
+    assert cs.check(clash) == ["state.tasks: D-522 is reserved by T001, plan_reservations"]
+    assert cs.check(dict(good, plan_reservations=[{"number": 527}])) != []

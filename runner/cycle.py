@@ -258,6 +258,31 @@ def record_failure(state: State, task_id: str, reason: str) -> State:
     return st.with_task(state, task_id, status=st.QUEUED, attempts=attempts, last_failure=reason)
 
 
+NOT_OWNED = ": not owned by "  # the path-check problem of a file the plan did not list (verify.check_paths)
+
+
+def plan_gap_failure(state: State, task_id: str, problems: list[str], now: datetime) -> State | None:
+    """A first plan-gap failure, which costs no attempt (D-1052); None when the failure counts normally.
+
+    When every problem of a submitted attempt is a file its plan did not list ("<path>: not owned by
+    T###"), with no test, model, review or protected-path problem beside it, and the task has no
+    `plan_gap_strikes` yet, the task goes back to QUEUED with `attempts` unchanged, the paths in
+    `last_failure` and one strike ({at, paths, attempt}) recorded. A second such failure is None here,
+    so record_failure counts it: a worker that insists on scope creep still runs out of attempts. A task
+    already at MAX_ATTEMPTS (its one plan-fix attempt, D-677) gets no free retry: that stays exactly one."""
+    entry = st.entry(state, task_id)
+    if int(entry.get("attempts", 0)) >= MAX_ATTEMPTS:
+        return None
+    if entry.get("plan_gap_strikes") or not problems or not all(NOT_OWNED in p for p in problems):
+        return None
+    paths = [p.split(NOT_OWNED)[0] for p in problems]
+    strike = {"at": st.iso(now), "paths": paths, "attempt": int(entry.get("attempts", 0)) + 1}
+    note = ("; this first plan-gap failure costs no attempt: keep to the files the task owns and report a "
+            "file the plan should list (D-1052)")
+    state = _without(state, task_id, "resync") if entry.get("resync") else state
+    return st.with_task(state, task_id, status=st.QUEUED, last_failure="; ".join(problems) + note, plan_gap_strikes=[strike])
+
+
 def _outage(state: State, tid: str, now: datetime) -> State:
     n = int(st.entry(state, tid).get("outages", 0))
     after = now + timedelta(minutes=st.backoff_minutes(n))
@@ -282,7 +307,7 @@ def _after_worker(
     problems += verify.check_model(res.model_evidence, model, cfg.models.values())
     problems += _review_problems(task, res, cfg)
     if problems:
-        return record_failure(state, tid, "; ".join(problems))
+        return plan_gap_failure(state, tid, problems, now) or record_failure(state, tid, "; ".join(problems))
     if res.commits_ahead == 0 and task.get("type") != "cleanup":
         return record_failure(state, tid, NO_CHANGES)
     return st.with_task(state, tid, status=st.MERGE_PENDING)
@@ -1223,6 +1248,8 @@ def finish(
     lane = st.lane_of(state, tid) or st.LANE_ONE
     record = _history_entry(state, task, res, model, cfg)
     final = _after_worker(state, task, res, cfg, model, now)
+    if len(st.entry(final, tid).get("plan_gap_strikes") or []) > len(st.entry(state, tid).get("plan_gap_strikes") or []):
+        record = {**record, "plan_gap": True}  # this attempt cost nothing, so the next one repeats its number (D-1052)
     history = [*st.entry(state, tid).get("history", []), dict(record, result=st.status(final, tid))]
     final = _record_usage(st.with_task(final, tid, history=history), tid, model, res, now, cfg)
     if st.status(final, tid) == st.MERGE_PENDING and res.commits_ahead == 0:

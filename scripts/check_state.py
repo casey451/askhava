@@ -8,7 +8,8 @@ know (D-121). On top of the schema: task IDs are unique and a lease names a task
 the lane map `leases` (D-515), each lane lease names a task, no task holds two lanes, at most `lanes`
 live leases sit outside the "fix" lane, and `lease` mirrors lane "1". Decision numbers (D-530): no
 number sits in two tasks' `decision_ids`, and none is at or above `next_decision`, which would hand
-it out again. A state without these keys (written before D-530) stays valid.
+it out again; a number a plan change took (`plan_reservations`, D-1052) counts as reserved too. A
+state without these keys (written before D-530) stays valid.
 
 Usage: python3 scripts/check_state.py [--state PATH] [--schema PATH]
 Exit status 0 when valid; otherwise each problem is printed as `path: problem` and the status is 1.
@@ -112,12 +113,16 @@ def _lane_checks(state: dict[str, Any], lanes: int, now: datetime) -> list[str]:
 
 
 def _decision_checks(state: dict[str, Any]) -> list[str]:
-    """Reserved D-numbers (D-530): each in one task's `decision_ids` only, all below `next_decision`."""
+    """Reserved D-numbers (D-530): each in one task's `decision_ids` or one plan reservation (D-1052)
+    only, all below `next_decision`."""
     owners: dict[int, list[str]] = {}
     for task in state.get("tasks", []):
         if isinstance(task, dict):
             for number in task.get("decision_ids") or []:
                 owners.setdefault(number, []).append(str(task.get("id")))
+    for note in state.get("plan_reservations") or []:
+        if isinstance(note, dict) and isinstance(note.get("number"), int):
+            owners.setdefault(note["number"], []).append("plan_reservations")
     problems = [f"state.tasks: D-{n:03d} is reserved by {', '.join(ids)}" for n, ids in sorted(owners.items()) if len(ids) > 1]
     counter = state.get("next_decision")
     if isinstance(counter, int) and owners and max(owners) >= counter:

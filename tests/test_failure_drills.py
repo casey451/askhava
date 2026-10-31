@@ -351,6 +351,53 @@ def test_diff_outside_owned_paths_is_rejected(tmp_path: Path) -> None:
     assert ".github/workflows/ci.yml" in st.entry(env.store, "T001")["last_failure"]
 
 
+def test_a_first_plan_gap_path_failure_costs_no_attempt_and_records_a_strike(tmp_path: Path) -> None:
+    """D-1052: a submitted attempt whose only problem is a file the plan did not list keeps its attempts."""
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("submitted", ["app/t001/x.py", "app/other/models.rs"], [m]))
+    cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW)
+    task = st.entry(env.store, "T001")
+    assert task["status"] == st.QUEUED and task["attempts"] == 0
+    assert task["plan_gap_strikes"] == [{"at": "2026-11-01T12:00:00Z", "paths": ["app/other/models.rs"], "attempt": 1}]
+    assert "app/other/models.rs: not owned by T001" in task["last_failure"] and "costs no attempt" in task["last_failure"]
+    assert task["history"][-1]["path_check_ok"] is False and task["history"][-1]["plan_gap"] is True
+
+
+def test_a_second_plan_gap_path_failure_counts_as_an_attempt(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("submitted", ["app/other/models.rs"], [m]))
+    cfg = config([make_task("T001")], tmp_path)
+    cycle.run_cycle(cfg, env, NOW)
+    cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5))
+    task = st.entry(env.store, "T001")
+    assert task["status"] == st.QUEUED and task["attempts"] == 1 and len(task["plan_gap_strikes"]) == 1
+    assert "app/other/models.rs: not owned by T001" in task["last_failure"] and "costs no attempt" not in task["last_failure"]
+    assert [h["attempt"] for h in task["history"]] == [1, 1] and "plan_gap" not in task["history"][-1]
+
+
+def test_a_path_failure_beside_another_failure_counts_as_an_attempt(tmp_path: Path) -> None:
+    """Unowned path plus a substituted model, plus a protected path, and an unowned path on a failed
+    test run: none is a pure plan gap, so each costs an attempt and records no strike."""
+    for files, model in ((["app/other/models.rs"], MODELS["haiku"]), (["app/other/models.rs", ".github/x.yml"], None)):
+        env = FakeEnv(lambda t, m, log, f=files, mm=model: cycle.WorkerResult("submitted", f, [mm or m]))
+        cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW)
+        task = st.entry(env.store, "T001")
+        assert task["attempts"] == 1 and "plan_gap_strikes" not in task and "not owned by T001" in task["last_failure"]
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("tests_failed", ["app/other/models.rs"], [m], log="2 failed"))
+    cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW)
+    assert st.entry(env.store, "T001")["attempts"] == 1 and "plan_gap_strikes" not in st.entry(env.store, "T001")
+
+
+def test_plan_gap_failure_rule() -> None:
+    s = st.with_task(st.new_state(), "T001", attempts=2, resync={"attempt": 3, "from": "h", "paths": [], "at": "x"})
+    out = cycle.plan_gap_failure(s, "T001", ["a/b.rs: not owned by T001"], NOW)
+    assert out is not None and st.entry(out, "T001")["attempts"] == 2 and "resync" not in st.entry(out, "T001")
+    assert st.entry(out, "T001")["plan_gap_strikes"][0]["attempt"] == 3
+    assert cycle.plan_gap_failure(out, "T001", ["a/b.rs: not owned by T001"], NOW) is None
+    assert cycle.plan_gap_failure(s, "T001", [], NOW) is None
+    capped = st.with_task(st.new_state(), "T001", attempts=cycle.MAX_ATTEMPTS)  # a plan-fix attempt stays exactly one (D-677)
+    assert cycle.plan_gap_failure(capped, "T001", ["a/b.rs: not owned by T001"], NOW) is None
+    assert cycle.plan_gap_failure(s, "T001", ["a/b.rs: not owned by T001", "no model evidence found"], NOW) is None
+
+
 def test_substituted_model_fails_the_attempt(tmp_path: Path) -> None:
     env = FakeEnv(lambda t, m, log: cycle.WorkerResult("submitted", ["app/t001/x.py"], [MODELS["haiku"]]))
     cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW)

@@ -1270,3 +1270,22 @@ def test_run_command_falls_back_when_the_long_token_is_refused(monkeypatch: pyte
     monkeypatch.setattr(ge, "_run", fake_run)
     assert ge.run_command(["git", "push", "--porcelain", "origin", "a:refs/heads/b"], None, tmp_path)[0] == 0
     assert calls[0][3] == "https://github.com/o/r.git" and calls[1][3] == "origin"
+
+
+def test_reserve_decision_command_takes_one_number_from_the_live_counter(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-1052: `--reserve-decision` reads main's docs/decisions.md, writes the reservation through
+    update_state and prints the number; a second call, from another clone, takes the next one."""
+    env = make_env(repo["a"], tmp_path)
+    no_file = entry.parse_args(["--reserve-decision", "--reason", "x"])
+    assert entry.reserve_decision(no_file, live_config("o", tmp_path, env), env) == "reserve_refused: main's docs/decisions.md could not be read"
+    commit_main_at(repo, "2026-11-01T09:00:00Z", {"docs/decisions.md": "- **D-100** a\n- **D-101** b\n"})
+    env.update_state(lambda s: dict(st.with_task(s, "K10", decision_ids=[102, 103, 104, 105, 106]), next_decision=107))
+    cfg = live_config("overseer-casey-approved", tmp_path, env)
+    assert entry.reserve_decision(entry.parse_args(["--reserve-decision"]), cfg, env) == "reserve_refused: --reason is empty"
+    args = entry.parse_args(["--reserve-decision", "--reason", "plan change"])
+    assert entry.reserve_decision(args, cfg, env) == "reserved D-107"
+    other = make_env(repo["b"], tmp_path, "b")
+    assert entry.reserve_decision(args, live_config("overseer-casey-approved", tmp_path, other), other) == "reserved D-108"
+    stored = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    assert stored["next_decision"] == 109 and [r["number"] for r in stored["plan_reservations"]] == [107, 108]
+    assert stored["plan_reservations"][0]["session"] == "overseer-casey-approved" and stored["plan_reservations"][0]["reason"] == "plan change"
