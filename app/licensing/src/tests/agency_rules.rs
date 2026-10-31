@@ -107,6 +107,53 @@ fn agency_categories_reach_only_their_licensees() {
     assert_eq!(eligibility(&alarm, &handyman()), no_card(missing));
 }
 
+/// TD-LIC-06 (LIC-013): alarm monitoring setup, like an install, needs the Board certificate and
+/// ROC cover; either alone, or a handyman, gets nothing.
+#[test]
+fn alarm_monitoring_setup_needs_the_certificate_and_roc_cover() {
+    let monitoring = job("alarm_systems", "alarm monitoring setup");
+    assert!(monitoring.listed);
+    let both = Holder {
+        roc_covers: true,
+        ..agency(Agency::AlarmBusiness)
+    };
+    assert_eq!(eligibility(&monitoring, &both), Eligibility::Card);
+    let missing = no_card(NoCardReason::AgencyMissing(Agency::AlarmBusiness));
+    assert_eq!(eligibility(&monitoring, &roc()), missing);
+    assert_eq!(eligibility(&monitoring, &handyman()), missing);
+    assert_eq!(
+        eligibility(&monitoring, &agency(Agency::AlarmBusiness)),
+        no_card(NoCardReason::RocNotCovered)
+    );
+}
+
+/// TD-LIC-17 (LIC-012, D-417): a pest job opens only through the attestation even if its license
+/// kind also names ROC; `agencies` with an ROC class never opens it.
+#[test]
+fn pest_jobs_need_the_attestation_whatever_the_license_kind() {
+    let both = Holder {
+        roc_covers: true,
+        ..agency(Agency::PestManagement)
+    };
+    let missing = no_card(NoCardReason::AgencyMissing(Agency::PestManagement));
+    for license in [
+        LicenseKind::None,
+        LicenseKind::Roc,
+        LicenseKind::StateAgency,
+        LicenseKind::RocAndStateAgency,
+    ] {
+        let general = Job {
+            license,
+            ..job("pest_control", "general pest service")
+        };
+        assert_eq!(eligibility(&general, &both), missing, "{license:?}");
+        assert_eq!(
+            eligibility(&general, &pest(false, false)),
+            Eligibility::Card
+        );
+    }
+}
+
 /// TD-LIC-06 (LIC-014): cameras go to R-67-covered businesses or to handymen as handyman cards
 /// (under $1,000, no permit); a handyman still pending on the city list gets none.
 #[test]

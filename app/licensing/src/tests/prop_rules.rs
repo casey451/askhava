@@ -127,12 +127,13 @@ proptest! {
     }
 
     /// TD-LIC-06 (LIC-011, D-177): a no-license job never reaches a business still pending on the
-    /// city list, and a refused job type of a no-license category reaches nobody.
+    /// city list, and a refused job type of a no-license category reaches nobody (pest is
+    /// attestation-only whatever its kind, LIC-012).
     #[test]
     fn no_license_cards_need_the_city_list(job in job_strategy(), holder in holder_strategy()) {
         let job = Job { license: LicenseKind::None, ..job };
         let outcome = eligibility(&job, &holder);
-        if receives(outcome) {
+        if receives(outcome) && job.category != "pest_control" {
             prop_assert_eq!(holder.city_list, CityListStanding::Matched);
             prop_assert!(job.listed);
         }
@@ -150,13 +151,24 @@ proptest! {
         let got = receives(eligibility(&job, &holder));
         let expected = match (Agency::for_category(&job.category), license) {
             (None, _) => false,
-            (Some(Agency::PestManagement), LicenseKind::StateAgency) => pest_may_receive(&job, &holder),
+            (Some(Agency::PestManagement), _) => pest_may_receive(&job, &holder),
             (Some(agency), LicenseKind::RocAndStateAgency) => {
                 holder.agencies.contains(&agency) && holder.roc_covers
             }
             (Some(agency), _) => holder.agencies.contains(&agency),
         };
         prop_assert_eq!(got, expected);
+    }
+
+    /// TD-LIC-17 (LIC-012, LIC-047, D-417): a pest job of any license kind reaches exactly the
+    /// unpaused attested businesses holding its record category; `agencies`, an ROC class or the
+    /// city list never open it.
+    #[test]
+    fn pest_jobs_of_any_kind_go_only_through_the_attestation(
+        job in job_strategy(), holder in holder_strategy(),
+    ) {
+        let job = Job { category: "pest_control".to_owned(), ..job };
+        prop_assert_eq!(receives(eligibility(&job, &holder)), pest_may_receive(&job, &holder));
     }
 
     /// TD-LIC-06 (LIC-011 to LIC-016): a business with no ROC cover, no agency license, no pest

@@ -24,9 +24,13 @@ const HOME_INSPECTION: &str = "home_inspection";
 ///   job type of a handyman-allowed category (cameras, appliances, pool repair; LIC-014, LIC-030,
 ///   LIC-031). Refused job types (gas pool heater, gas or line work) go to licensed businesses only.
 /// - Agency: only that agency's licensees (LIC-012, LIC-015, LIC-016); alarms need the Board
-///   certificate and an ROC low-voltage class (LIC-013).
+///   certificate and an ROC low-voltage class (LIC-013). A pest category job goes through the
+///   attestation alone whatever its license kind says (LIC-012, D-417).
 #[must_use]
 pub fn eligibility(job: &Job, holder: &Holder) -> Eligibility {
+    if Agency::for_category(&job.category) == Some(Agency::PestManagement) {
+        return pest(job, holder);
+    }
     match job.license {
         LicenseKind::None => no_license(job, holder),
         LicenseKind::Roc if holder.roc_covers => Eligibility::Card,
@@ -70,10 +74,9 @@ fn handyman(job: &Job, holder: &Holder) -> Eligibility {
     }
 }
 
-/// LIC-012, LIC-015, LIC-016: only the category's agency licensees; pest by attestation alone.
+/// LIC-015, LIC-016: only the category's agency licensees (pest never reaches here, LIC-012).
 fn agency_only(job: &Job, holder: &Holder) -> Eligibility {
     match Agency::for_category(&job.category) {
-        Some(Agency::PestManagement) => pest(job, holder),
         Some(agency) if holder.agencies.contains(&agency) => Eligibility::Card,
         Some(agency) => Eligibility::NoCard(NoCardReason::AgencyMissing(agency)),
         None => Eligibility::NoCard(NoCardReason::AgencyUnmapped),
