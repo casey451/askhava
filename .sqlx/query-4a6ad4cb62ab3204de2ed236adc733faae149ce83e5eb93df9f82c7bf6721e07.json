@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.consent_record (homeowner_id, conversation_id, channel, inbox_id, consent_version, consented_at) VALUES ($1, $2, 'sms', $3, $4, $5)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4a6ad4cb62ab3204de2ed236adc733faae149ce83e5eb93df9f82c7bf6721e07"
+}

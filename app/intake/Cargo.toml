@@ -12,6 +12,7 @@ askhava-ops = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
 secrecy = { workspace = true }
+sha2 = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
 
