@@ -396,6 +396,7 @@ version = "0.1.0"
 name = "askhava-intake"
 version = "0.1.0"
 dependencies = [
+ "askhava-businesses",
  "askhava-core",
  "askhava-messaging",
  "askhava-ops",
@@ -403,6 +404,7 @@ dependencies = [
  "jiff-sqlx",
  "proptest",
  "secrecy",
+ "serde_json",
  "sha2 0.11.1",
  "sqlx",
  "thiserror",

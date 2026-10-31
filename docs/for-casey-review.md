@@ -1307,3 +1307,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Activation.** A sign-up goes active by itself only with its identity code and its license or city-list match and nothing flagged. Anything flagged waits in needs review for you, and your approval still needs the code and the match. A removed business stays removed.
 - **Insurance.** What a business says about insurance is only stored and shown as it reported it; it never pauses or activates anyone.
 - **Night count.** The "after-hours emergencies" tick is stored now and counted for the night message, but the rule that someone on the team must have emergency emails on and pass the test email comes in a later task; nothing sends night cards yet.
+
+## Danger words, SAFE, and the emergency choice (T039, D-978 to D-981, October 31)
+
+- **Every message is checked.** Each text, not just the first, is checked for the 911 list: gas or propane smell or hiss, a CO or other alarm going off, smoke or fire, a sparking or burning outlet or panel, a downed power line. A match gets the one 911 text and no business sees the request until she replies SAFE (or OK or Yes). The AI's reading never sends or stops that text.
+- **Not on the list.** A burst pipe, an AC out at 92 degrees, no heat, feeling dizzy, a gas water heater that won't light, a fire pit, a detector that chirps: no safety text, a normal request. A street name like Smoketree Ave never counts, and her address answer is never checked.
+- **A beeping alarm.** "Smoke detector beeping" gets one question: "Is it 1) a chirp every minute or so, or 2) an alarm that keeps going off?" Answer 2 gets the 911 text; anything else is a normal request.
+- **Emergency or regular.** The choice text adds "Is this an emergency?" before the spec's words and "Reply 1 for emergency or 2 for regular." after them, so she knows how to answer (D-979). At night she first gets the count of businesses that take emergency requests at night; with none, she gets "Your request goes out at 8 a.m." and no choice.
+- **For you to look at.** One test-design line says the "no business at night" text "holds the 911 line"; the spec's own wording for that text has no 911 line and the D-436 rule allows no other safety text, so the spec's wording was built (D-978).

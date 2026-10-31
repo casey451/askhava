@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE intake.emergency_event SET safe_at = $2 WHERE conversation_id = $1 AND text_queued_at IS NOT NULL AND safe_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d32069a93ee5302e29ce290fffaed7049a38718a67213f026eed0efbb7ba8996"
+}

@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.emergency_event (conversation_id, inbox_id, matched, text_queued_at, created_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (inbox_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cde525a00479e63a3e81af04de335ea6414f206a31600985d88327e1b937c3a7"
+}

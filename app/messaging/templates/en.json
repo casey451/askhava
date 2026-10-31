@@ -123,5 +123,40 @@
     "audience": "business",
     "segments": 1,
     "text": "Ask Hava: A homeowner picked your quote for job {job}. Accept by {time}."
+  },
+  "beep_question": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Is it 1) a chirp every minute or so, or 2) an alarm that keeps going off?"
+  },
+  "how_soon": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: How soon do you need this? 1) Today, it's urgent 2) In the next few days 3) No rush 4) By a certain day"
+  },
+  "needed_by_day": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Which day do you need it by?"
+  },
+  "emergency_choice": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Is this an emergency? Emergency: businesses get your request by email marked EMERGENCY, and the business you pick has 60 minutes to confirm. Businesses that get emergency requests at night may be able to come tonight. After-hours work usually costs more. Reply 1 for emergency or 2 for regular."
+  },
+  "night_count_many": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: {count} {trade} businesses on Ask Hava get emergency requests at night."
+  },
+  "night_count_one": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: 1 {trade} business on Ask Hava gets emergency requests at night."
+  },
+  "night_count_none": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: No {trade} business on Ask Hava gets emergency requests at night yet. Your request goes out at 8 a.m."
   }
 }

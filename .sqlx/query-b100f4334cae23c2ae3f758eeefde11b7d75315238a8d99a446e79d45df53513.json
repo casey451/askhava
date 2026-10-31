@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM intake.consent_record WHERE conversation_id = c.id) AS \"consented!\", EXISTS (SELECT 1 FROM intake.emergency_event WHERE conversation_id = c.id AND text_queued_at IS NOT NULL AND safe_at IS NULL) AS \"waiting!\", COALESCE((SELECT choice = 'emergency' FROM intake.intake_answer WHERE conversation_id = c.id AND question_id = 'emergency_choice' ORDER BY answered_at DESC, id DESC LIMIT 1), false) AS \"emergency!\", EXISTS (SELECT 1 FROM intake.property WHERE homeowner_id = c.homeowner_id) AS \"area!\" FROM intake.conversation c WHERE c.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "consented!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "waiting!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "emergency!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "area!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "b100f4334cae23c2ae3f758eeefde11b7d75315238a8d99a446e79d45df53513"
+}

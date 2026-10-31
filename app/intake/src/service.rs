@@ -1,16 +1,19 @@
-//! The first reply to a request, its consent record and the terms acceptance at a pick (CON-001,
-//! CON-005, CON-007, CON-021, CON-026, CON-027, CON-031, TERMS-001, TERMS-016, TERMS-033; rust
-//! brain R11).
+//! The first reply to a request, the 911-list screen on every message, its consent record and the
+//! terms acceptance at a pick (CON-001, CON-005, CON-007, CON-021, CON-026, CON-027, CON-031,
+//! INT-002 to INT-005, INT-025, INT-026, INT-037, TERMS-001, TERMS-016, TERMS-033; rust brain R11).
 //!
 //! [`receive_text`] runs after `messaging` has handled dedupe, opt-outs and HELP
-//! (`docs/architecture.md` section 8). For a contact with no open request it opens one and queues,
-//! in one transaction with its consent record and audit row, the 911 text on a 911-list match and
-//! then the consent text, each under a key derived from the request (TXT-011), so the consent text
-//! goes once per request even when a message is handled twice. Any other text is returned as a
-//! conversation step: nothing waits for a reply and no reply is a consent or terms event (CON-004,
-//! D-419, D-420). The terms are accepted only by a pick, through [`record_terms_acceptance`]
-//! (TERMS-001).
+//! (`docs/architecture.md` section 8). The 911-list stem match ([`crate::emergency::check`]) runs
+//! first on every message and alone decides the INT-004 text; the AI's reading never does
+//! (INT-026). For a contact with no open request it opens one and queues, in one transaction with
+//! its consent record, emergency event and audit rows, the 911 text on a match and then the
+//! consent text, each under a key derived from the request (TXT-011). A reply in an open request
+//! gets the 911 text on a match, the INT-037 question on a beeping alarm, or ends the SAFE hold
+//! (INT-005, INT-025); nothing waits for a consent reply (CON-004, D-419). The urgency, choice and
+//! release steps follow: [`ask_how_soon`], [`answer_how_soon`] (with the INT-033 night count),
+//! [`answer_choice`] and [`release_emergency`], which enqueues the event `quotes` turns into cards.
 
+use askhava_core::api::{NewTask, enqueue as enqueue_task};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::Timestamp;
@@ -19,11 +22,22 @@ use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
-use crate::models::{self, ConsentRecordRow, IntakeError, NewAcceptance, TermsAcceptanceRow};
+use crate::emergency::{self, Check, Choice, Hazard, Urgency, beep_is_alarm, is_safe_reply};
+use crate::emergency_count;
+use crate::models::{
+    self, ConsentRecordRow, EmergencyEventRow, IntakeError, NewAcceptance, TermsAcceptanceRow,
+};
 use crate::rules::{
     CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, DISCLOSURE_TEMPLATE, Inbound, Plan, SAFETY_TEMPLATE,
-    Send, Settings, Then, language_code, language_from_code, plan,
+    Send, Settings, Then, language_code, language_from_code, plan, wanted_language,
 };
+
+/// The INT-037 question to a smoke or CO alarm said only to beep.
+pub const BEEP_TEMPLATE: &str = "beep_question";
+/// The stored question ID of the INT-037 answer (`alarm` or `chirp`).
+const BEEP_QUESTION: &str = "emergency_beep";
+/// The `intake.emergency_event.matched` code of an INT-037 question asked.
+const BEEP_EVENT: &str = "beep_question";
 
 /// One inbound text from a homeowner's number, as `messaging` passes it on (IDs and flags only).
 #[derive(Debug, Clone, Copy)]
@@ -56,54 +70,120 @@ pub struct Handled {
     pub texts: Vec<Queued>,
     /// What the conversation does next (CON-027).
     pub then: Then,
+    /// What the 911-list screen did with this message (INT-002, INT-025, INT-037).
+    pub screened: Screened,
 }
 
-/// Handles one inbound text for the first reply (CON-001, CON-027, D-008, D-131): a new request
-/// gets the 911 text on a 911-list match and then the consent text; a reply in an open request,
-/// an opt-out and a HELP keyword get no consent text. `secret` is the `ID_SECRET`. The inner step
-/// of [`receive_text`], which adds the consent record; other crates reach only that.
+/// What the 911-list screen did with one message.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Screened {
+    /// Nothing on the list.
+    Clear,
+    /// A 911-list match: the INT-004 text is queued and cards wait for SAFE (INT-004, INT-005).
+    Matched(Hazard),
+    /// A smoke or CO alarm said only to beep: the INT-037 question is queued.
+    BeepAsked,
+    /// The safe reply to a 911 text that was waiting for it (INT-025): the request continues
+    /// (INT-024).
+    Safe,
+}
+
+/// Which question a reply answers, as the conversation knows it (INT-002, D-165).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Asked {
+    /// Any question but the name-and-address one, or none.
+    Other,
+    /// The name-and-address question, whose answer is never checked against the 911 list.
+    NameAndAddress,
+}
+
+/// Handles one inbound text as [`receive_answer`] does with [`Asked::Other`], without the consent
+/// record (CON-001, CON-027, INT-002). `secret` is the `ID_SECRET`. Other crates reach only
+/// [`receive_text`] and [`receive_answer`].
 ///
 /// # Errors
 ///
 /// [`IntakeError::Database`], [`IntakeError::Template`], [`IntakeError::Outbox`] or
 /// [`IntakeError::Audit`]; nothing is kept on an error.
+#[cfg(test)]
 pub async fn on_text(
     db: &mut PgConnection,
     secret: &SecretString,
     msg: &TextIn<'_>,
     settings: Settings,
 ) -> Result<Handled, IntakeError> {
+    handle(db, secret, msg, settings, Asked::Other).await
+}
+
+/// One message being handled, with what the 911-list screen found.
+struct Step<'s, 'm> {
+    secret: &'s SecretString,
+    msg: &'s TextIn<'m>,
+    settings: Settings,
+    check: Check,
+}
+
+/// The screen and first reply (INT-002, INT-003, CON-001, D-008): the 911-list stem match runs
+/// first and alone decides the 911 text (the caller's `emergency` flag is replaced, INT-026); a new
+/// request gets the 911 text on a match, then the consent text; a reply in an open request goes
+/// to [`screen_reply`]. Opt-outs and HELP were answered by `messaging` and get nothing.
+async fn handle(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    settings: Settings,
+    asked: Asked,
+) -> Result<Handled, IntakeError> {
+    let check = emergency::check(msg.inbound.words, asked == Asked::NameAndAddress);
+    let inbound = Inbound {
+        emergency: matches!(check, Check::Match(_)),
+        ..msg.inbound
+    };
     let open = models::open_conversation(db, msg.contact).await?;
-    let decided = plan(open.is_some(), &msg.inbound, settings);
-    if decided.texts.is_empty() {
-        return Ok(Handled {
-            conversation: open,
-            texts: Vec::new(),
-            then: decided.then,
-        });
+    let decided = plan(open.is_some(), &inbound, settings);
+    if decided.then == Then::Nothing {
+        return Ok(handled(open, Vec::new(), decided.then, Screened::Clear));
     }
+    let step = Step {
+        secret,
+        msg,
+        settings,
+        check,
+    };
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
-    let opened = open_request(&mut tx, secret, msg, (&decided, settings)).await?;
+    let done = match open {
+        None => open_request(&mut tx, &step, &decided).await?,
+        Some(id) => Some(screen_reply(&mut tx, &step, id, decided.then).await?),
+    };
     tx.commit().await.map_err(|_| IntakeError::Database)?;
-    match opened {
-        Some(handled) => Ok(handled),
-        None => {
-            // Lost the race: the winner queued the consent text, so this message is a reply in
-            // its request ("is this a real person?" still gets the CON-027 line).
-            let conversation = models::open_conversation(db, msg.contact).await?;
-            Ok(Handled {
-                conversation,
-                texts: Vec::new(),
-                then: plan(true, &msg.inbound, settings).then,
-            })
-        }
+    if let Some(done) = done {
+        return Ok(done);
+    }
+    // Lost the race: the winner queued the consent text, so this message is a reply in its
+    // request ("is this a real person?" still gets the CON-027 line).
+    let id = models::open_conversation(db, msg.contact)
+        .await?
+        .ok_or(IntakeError::Database)?;
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let done = screen_reply(&mut tx, &step, id, plan(true, &inbound, settings).then).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(done)
+}
+
+fn handled(conversation: Option<Uuid>, texts: Vec<Queued>, then: Then, s: Screened) -> Handled {
+    Handled {
+        conversation,
+        texts,
+        then,
+        screened: s,
     }
 }
 
 /// Handles one inbound homeowner text: [`on_text`] and, when this text opened the request, its
 /// consent record (this text's ID and time, channel `sms`, the consent-text version), in one
 /// transaction (CON-005, D-419). A reply in an open request, an opt-out and a HELP keyword record
-/// nothing, so no reply is ever a consent event. The entry point for every inbound text.
+/// nothing, so no reply is ever a consent event. The entry point for every inbound text whose
+/// open question is not the name-and-address one.
 ///
 /// # Errors
 ///
@@ -114,8 +194,24 @@ pub async fn receive_text(
     msg: &TextIn<'_>,
     settings: Settings,
 ) -> Result<Handled, IntakeError> {
+    receive_answer(db, secret, msg, settings, Asked::Other).await
+}
+
+/// As [`receive_text`], for a reply to question `asked`: the answer to the name-and-address
+/// question is never checked against the 911 list (INT-002, D-165).
+///
+/// # Errors
+///
+/// As [`on_text`]; nothing is kept on an error.
+pub async fn receive_answer(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    settings: Settings,
+    asked: Asked,
+) -> Result<Handled, IntakeError> {
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
-    let handled = on_text(&mut tx, secret, msg, settings).await?;
+    let handled = handle(&mut tx, secret, msg, settings, asked).await?;
     let sent = handled.texts.iter().find(|q| is_consent(q.template));
     if let (Some(consent), Some(id)) = (sent, handled.conversation) {
         let row = models::conversation(&mut tx, id)
@@ -143,14 +239,15 @@ fn is_consent(template: &str) -> bool {
     template == CONSENT_TEMPLATE || template == CONSENT_CALL_TEMPLATE
 }
 
-/// Opens the request and queues the plan's texts in order; `None` when another message opened it
-/// first, so its consent text is not sent twice (CON-027).
+/// Opens the request and queues the plan's texts in order, then the INT-037 question on a
+/// beeping alarm, and records a 911-list match; `None` when another message opened it first, so
+/// its consent text is not sent twice (CON-027).
 async fn open_request(
     tx: &mut PgConnection,
-    secret: &SecretString,
-    msg: &TextIn<'_>,
-    (decided, settings): (&Plan, Settings),
+    step: &Step<'_, '_>,
+    decided: &Plan,
 ) -> Result<Option<Handled>, IntakeError> {
+    let msg = step.msg;
     let (template, language) = consent_of(decided);
     let homeowner = models::homeowner_for(tx, msg.contact, msg.received_at).await?;
     let ids = (homeowner, msg.inbox_id);
@@ -158,36 +255,151 @@ async fn open_request(
     let Some(id) = models::open(tx, ids, names, msg.received_at).await? else {
         return Ok(None);
     };
-    let mut texts = Vec::with_capacity(decided.texts.len());
+    let mut texts = Vec::with_capacity(decided.texts.len() + 1);
     for send in &decided.texts {
         let (template, language, subject) = match *send {
             Send::Safety(language) => (SAFETY_TEMPLATE, language, vec![id, msg.inbox_id]),
             Send::Consent { template, language } => (template, language, vec![id]),
         };
-        let body = render(template, language, settings.spanish_conversations_on, &[])
-            .map_err(|_| IntakeError::Template)?
-            .body;
-        let text = NewText {
-            template_id: template,
-            subject: &subject,
-            recipient: msg.contact,
-            relation: Relation::OpenRequest,
-            body: &body,
-        };
-        let (row, _) = enqueue(tx, secret, &text)
-            .await
-            .map_err(|_| IntakeError::Outbox)?;
-        texts.push(Queued {
-            outbox_id: row,
-            template,
-        });
+        texts.push(queue(tx, step, (template, language), &subject, &[]).await?);
     }
-    audit_consent_sent(tx, homeowner, id).await?;
-    Ok(Some(Handled {
-        conversation: Some(id),
-        texts,
-        then: decided.then,
-    }))
+    let screened = match step.check {
+        Check::Match(hazard) => record_match(tx, step, id, hazard).await?,
+        Check::BeepQuestion => ask_beep(tx, step, id, language, &mut texts).await?,
+        Check::Clear => Screened::Clear,
+    };
+    audit_action(tx, Actor::Homeowner(homeowner), "intake.consent_sent", id).await?;
+    Ok(Some(handled(Some(id), texts, decided.then, screened)))
+}
+
+/// Renders and queues one text to the message's sender under `subject` (TXT-011).
+async fn queue(
+    tx: &mut PgConnection,
+    step: &Step<'_, '_>,
+    (template, language): (&'static str, Language),
+    subject: &[Uuid],
+    values: &[(&str, &str)],
+) -> Result<Queued, IntakeError> {
+    let spanish_on = step.settings.spanish_conversations_on;
+    let body = render(template, language, spanish_on, values)
+        .map_err(|_| IntakeError::Template)?
+        .body;
+    let text = NewText {
+        template_id: template,
+        subject,
+        recipient: step.msg.contact,
+        relation: Relation::OpenRequest,
+        body: &body,
+    };
+    let (outbox_id, _) = enqueue(tx, step.secret, &text)
+        .await
+        .map_err(|_| IntakeError::Outbox)?;
+    Ok(Queued {
+        outbox_id,
+        template,
+    })
+}
+
+/// Records a 911-list match whose INT-004 text was queued now: the event (the SAFE hold,
+/// INT-005) and its audit row (JOB-005, IDs only).
+async fn record_match(
+    tx: &mut PgConnection,
+    step: &Step<'_, '_>,
+    conversation: Uuid,
+    hazard: Hazard,
+) -> Result<Screened, IntakeError> {
+    let at = step.msg.received_at;
+    let ids = (conversation, step.msg.inbox_id);
+    models::insert_event(tx, ids, hazard.code(), Some(at), at).await?;
+    audit_action(tx, Actor::System, "intake.emergency_matched", conversation).await?;
+    Ok(Screened::Matched(hazard))
+}
+
+/// Queues the INT-037 question in the request's language and records that it was asked.
+async fn ask_beep(
+    tx: &mut PgConnection,
+    step: &Step<'_, '_>,
+    conversation: Uuid,
+    language: Language,
+    texts: &mut Vec<Queued>,
+) -> Result<Screened, IntakeError> {
+    let subject = [conversation, step.msg.inbox_id];
+    texts.push(queue(tx, step, (BEEP_TEMPLATE, language), &subject, &[]).await?);
+    let at = step.msg.received_at;
+    let ids = (conversation, step.msg.inbox_id);
+    models::insert_event(tx, ids, BEEP_EVENT, None, at).await?;
+    Ok(Screened::BeepAsked)
+}
+
+/// Screens a reply in open request `id` (INT-002, INT-025, INT-037): a 911-list match queues the
+/// INT-004 text (in the message's language; its Spanish stays on); a beeping alarm gets the
+/// INT-037 question; the safe reply ends a waiting SAFE hold; the answer to an open INT-037
+/// question is stored, and answer 2 sends the INT-004 text and holds the cards.
+async fn screen_reply(
+    tx: &mut PgConnection,
+    step: &Step<'_, '_>,
+    id: Uuid,
+    then: Then,
+) -> Result<Handled, IntakeError> {
+    let msg = step.msg;
+    let wanted = wanted_language(msg.inbound.words, msg.inbound.ai_spanish);
+    let mut texts = Vec::new();
+    let screened = match step.check {
+        Check::Match(hazard) => {
+            let subject = [id, msg.inbox_id];
+            texts.push(queue(tx, step, (SAFETY_TEMPLATE, wanted), &subject, &[]).await?);
+            record_match(tx, step, id, hazard).await?
+        }
+        Check::BeepQuestion => {
+            let row = models::conversation(tx, id)
+                .await?
+                .ok_or(IntakeError::Database)?;
+            let language = language_from_code(&row.language);
+            ask_beep(tx, step, id, language, &mut texts).await?
+        }
+        Check::Clear => clear_reply(tx, step, id, &mut texts).await?,
+    };
+    Ok(handled(Some(id), texts, then, screened))
+}
+
+/// A reply with no 911-list words: the safe reply while a 911 text waits for it (INT-025), or the
+/// answer to an open INT-037 question (D-361).
+async fn clear_reply(
+    tx: &mut PgConnection,
+    step: &Step<'_, '_>,
+    id: Uuid,
+    texts: &mut Vec<Queued>,
+) -> Result<Screened, IntakeError> {
+    let msg = step.msg;
+    if is_safe_reply(msg.inbound.words) && models::mark_safe(tx, id, msg.received_at).await? {
+        audit_action(tx, Actor::System, "intake.safe_reply", id).await?;
+        return Ok(Screened::Safe);
+    }
+    if !beep_open(tx, id).await? {
+        return Ok(Screened::Clear);
+    }
+    let alarm = beep_is_alarm(msg.inbound.words);
+    let answer = (BEEP_QUESTION, if alarm { "alarm" } else { "chirp" });
+    models::insert_answer(tx, (id, msg.inbox_id), answer, msg.received_at).await?;
+    if !alarm {
+        return Ok(Screened::Clear);
+    }
+    let wanted = wanted_language(msg.inbound.words, msg.inbound.ai_spanish);
+    let subject = [id, msg.inbox_id];
+    texts.push(queue(tx, step, (SAFETY_TEMPLATE, wanted), &subject, &[]).await?);
+    record_match(tx, step, id, Hazard::CoAlarm).await
+}
+
+/// Whether an INT-037 question was asked in `id` and not yet answered.
+async fn beep_open(tx: &mut PgConnection, id: Uuid) -> Result<bool, IntakeError> {
+    let asked = models::events(tx, id)
+        .await?
+        .iter()
+        .any(|e| e.matched == BEEP_EVENT);
+    Ok(asked
+        && models::latest_answer(tx, id, BEEP_QUESTION)
+            .await?
+            .is_none())
 }
 
 /// SHA256 of `text` as 64 lower-case hex digits.
@@ -217,15 +429,16 @@ fn consent_of(decided: &Plan) -> (&'static str, Language) {
         .unwrap_or((CONSENT_TEMPLATE, Language::En))
 }
 
-/// The audit row of a request opened with its consent text (JOB-005, PRIV-028: IDs only).
-async fn audit_consent_sent(
+/// One audit row about request `conversation` (JOB-005, PRIV-028: IDs only).
+async fn audit_action(
     tx: &mut PgConnection,
-    homeowner: Uuid,
+    actor: Actor,
+    action: &'static str,
     conversation: Uuid,
 ) -> Result<(), IntakeError> {
     let entry = AuditEntry {
-        actor: Actor::Homeowner(homeowner),
-        action: "intake.consent_sent",
+        actor,
+        action,
         subject_kind: "intake.conversation",
         subject_id: conversation,
         change: Change::Action,
@@ -234,6 +447,260 @@ async fn audit_consent_sent(
         .await
         .map(|_| ())
         .map_err(|_| IntakeError::Audit)
+}
+
+/// The `core.task` kind `quotes` handles: an emergency job released for cards (INT-029, D-491).
+pub const EMERGENCY_RELEASED_KIND: &str = "intake.emergency_released";
+/// The "How soon?" question (INT-030).
+pub const HOW_SOON_TEMPLATE: &str = "how_soon";
+/// The question after answer 4, "By a certain day" (INT-030, D-292).
+pub const NEEDED_BY_TEMPLATE: &str = "needed_by_day";
+const HOW_SOON_QUESTION: &str = "how_soon";
+const CHOICE_QUESTION: &str = "emergency_choice";
+
+/// The trade and town a request is in, for the INT-033 count.
+#[derive(Debug, Clone, Copy)]
+pub struct Trade<'a> {
+    /// The catalog category code, such as `hvac_repair`.
+    pub category: &'a str,
+    /// The catalog town code.
+    pub town: &'a str,
+    /// The trade as the homeowner reads it, such as "HVAC".
+    pub label: &'a str,
+}
+
+/// What an answer to "How soon?" or to the emergency-or-regular choice did.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Answered {
+    /// The texts queued now, in order.
+    pub texts: Vec<Queued>,
+    /// The urgency or choice read, `None` when the reply was neither (the question is the
+    /// conversation's to ask again, T040).
+    pub read: Option<&'static str>,
+    /// Whether the job was released for cards now (INT-029).
+    pub released: bool,
+}
+
+/// Asks "How soon do you need this?" in request `conversation` (INT-030); the conversation asks it
+/// right after the category check (T040).
+///
+/// # Errors
+///
+/// [`IntakeError::Database`], [`IntakeError::Template`] or [`IntakeError::Outbox`].
+pub async fn ask_how_soon(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    conversation: Uuid,
+    settings: Settings,
+) -> Result<Queued, IntakeError> {
+    let step = plain_step(secret, msg, settings);
+    let language = request_language(db, conversation).await?;
+    let subject = [conversation, msg.inbox_id];
+    queue(db, &step, (HOW_SOON_TEMPLATE, language), &subject, &[]).await
+}
+
+/// Stores the "How soon?" answer as the urgent flag and card field (INT-030, CARD-007). Answer 1,
+/// or any answer once a 911 text was answered SAFE, leads to the emergency-or-regular choice
+/// ([`offer_choice`], INT-006); answer 4 asks the day; 2 and 3 send nothing.
+///
+/// # Errors
+///
+/// As [`ask_how_soon`]; nothing is kept on an error.
+pub async fn answer_how_soon(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+    trade: &Trade<'_>,
+    settings: Settings,
+) -> Result<Answered, IntakeError> {
+    let Some(urgency) = emergency::urgency(msg.inbound.words) else {
+        return Ok(answered(Vec::new(), None, false));
+    };
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let ids = (conversation, msg.inbox_id);
+    let answer = (HOW_SOON_QUESTION, urgency.code());
+    models::insert_answer(&mut tx, ids, answer, msg.received_at).await?;
+    let had_911 = models::events(&mut tx, conversation)
+        .await?
+        .iter()
+        .any(|e| e.text_queued_at.is_some());
+    let step = plain_step(secret, msg, settings);
+    let texts = if urgency == Urgency::Today || had_911 {
+        offer_choice(&mut tx, &step, conversation, trade).await?
+    } else if urgency == Urgency::ByDay {
+        let language = request_language(&mut tx, conversation).await?;
+        let subject = [conversation, msg.inbox_id];
+        vec![
+            queue(
+                &mut tx,
+                &step,
+                (NEEDED_BY_TEMPLATE, language),
+                &subject,
+                &[],
+            )
+            .await?,
+        ]
+    } else {
+        Vec::new()
+    };
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(answered(texts, Some(urgency.code()), false))
+}
+
+/// Queues the INT-006 choice, at night after the INT-033 count; with a night count of 0 only the
+/// zero text goes and the job is stored as regular (INT-033).
+async fn offer_choice(
+    tx: &mut PgConnection,
+    step: &Step<'_, '_>,
+    conversation: Uuid,
+    trade: &Trade<'_>,
+) -> Result<Vec<Queued>, IntakeError> {
+    let at = step.msg.received_at;
+    let n = emergency_count::count(tx, trade.category, trade.town).await?;
+    let offer = emergency_count::offer(at, n);
+    let language = request_language(tx, conversation).await?;
+    let n_text = n.to_string();
+    let values = [("count", n_text.as_str()), ("trade", trade.label)];
+    let subject = [conversation, step.msg.inbox_id];
+    let mut texts = Vec::with_capacity(offer.templates.len());
+    for template in offer.templates {
+        texts.push(queue(tx, step, (template, language), &subject, &values).await?);
+    }
+    if !offer.offered {
+        let ids = (conversation, step.msg.inbox_id);
+        let answer = (CHOICE_QUESTION, Choice::Regular.code());
+        models::insert_answer(tx, ids, answer, at).await?;
+    }
+    Ok(texts)
+}
+
+/// Stores the emergency-or-regular choice (INT-006); an emergency is released for cards at once
+/// when its other conditions are met ([`release_emergency`], INT-029).
+///
+/// # Errors
+///
+/// [`IntakeError::Database`], [`IntakeError::UnknownRequest`] or [`IntakeError::Audit`].
+pub async fn answer_choice(
+    db: &mut PgConnection,
+    msg: &TextIn<'_>,
+    conversation: Uuid,
+) -> Result<Answered, IntakeError> {
+    let Some(choice) = emergency::choice(msg.inbound.words) else {
+        return Ok(answered(Vec::new(), None, false));
+    };
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let ids = (conversation, msg.inbox_id);
+    let answer = (CHOICE_QUESTION, choice.code());
+    models::insert_answer(&mut tx, ids, answer, msg.received_at).await?;
+    let released = choice == Choice::Emergency
+        && release_emergency(&mut tx, conversation, msg.received_at).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(answered(Vec::new(), Some(choice.code()), released))
+}
+
+/// Releases an emergency job for cards (INT-029, D-164): once consent is recorded, no 911 text
+/// waits for SAFE (INT-005), the homeowner chose emergency and the ZIP and area check stored her
+/// town, it enqueues one [`EMERGENCY_RELEASED_KIND`] event for `quotes`, before the trade
+/// questions, photos and the name-and-address question. `true` only when released by this call;
+/// the conversation calls it again once the ZIP is in.
+///
+/// # Errors
+///
+/// [`IntakeError::UnknownRequest`], [`IntakeError::Database`] or [`IntakeError::Audit`].
+pub async fn release_emergency(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    at: Timestamp,
+) -> Result<bool, IntakeError> {
+    let s = models::release_state(db, conversation).await?;
+    if !(s.consented && !s.waiting_safe && s.emergency && s.area_done) {
+        return Ok(false);
+    }
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let payload = serde_json::json!({ "conversation": conversation });
+    let mut task = NewTask::new(EMERGENCY_RELEASED_KIND, payload, at);
+    task.dedupe_key = Some(format!("{EMERGENCY_RELEASED_KIND}.{conversation}"));
+    let queued = enqueue_task(&mut tx, &task)
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    if queued.is_some() {
+        audit_action(
+            &mut tx,
+            Actor::System,
+            "intake.emergency_released",
+            conversation,
+        )
+        .await?;
+    }
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(queued.is_some())
+}
+
+/// Whether request `conversation` has a 911 text still waiting for SAFE; while it does no job card
+/// may go (INT-005). Card tasks check this as well as [`card_allowed`].
+///
+/// # Errors
+///
+/// [`IntakeError::UnknownRequest`] or [`IntakeError::Database`].
+pub async fn safe_hold(db: &mut PgConnection, conversation: Uuid) -> Result<bool, IntakeError> {
+    Ok(models::release_state(db, conversation).await?.waiting_safe)
+}
+
+/// The stored "How soon?" answer code of a request, for the card field (INT-030, CARD-007).
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn how_soon(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Option<String>, IntakeError> {
+    models::latest_answer(db, conversation, HOW_SOON_QUESTION).await
+}
+
+/// The emergency events of a request, oldest first (INT-004, INT-005, INT-037).
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn emergency_events(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Vec<EmergencyEventRow>, IntakeError> {
+    models::events(db, conversation).await
+}
+
+fn answered(texts: Vec<Queued>, read: Option<&'static str>, released: bool) -> Answered {
+    Answered {
+        texts,
+        read,
+        released,
+    }
+}
+
+fn plain_step<'s, 'm>(
+    secret: &'s SecretString,
+    msg: &'s TextIn<'m>,
+    settings: Settings,
+) -> Step<'s, 'm> {
+    Step {
+        secret,
+        msg,
+        settings,
+        check: Check::Clear,
+    }
+}
+
+/// The language a request's texts use (CON-026).
+async fn request_language(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Language, IntakeError> {
+    let row = models::conversation(db, conversation)
+        .await?
+        .ok_or(IntakeError::UnknownRequest)?;
+    Ok(language_from_code(&row.language))
 }
 
 /// The CON-027 line ("Ask Hava is a local service. Our texts are automated. ...") that goes before
