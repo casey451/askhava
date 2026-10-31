@@ -11,10 +11,12 @@
 
 use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, TcpListener, TcpStream};
-use std::process::{Child, Command, Stdio};
+use std::process::{Command, Stdio};
 use std::time::Duration;
 
 use secrecy::SecretString;
+
+use super::adapter_config::stand_in;
 
 use crate::api::{
     AdapterError, AiAdapter, Charge, Email, EmailAdapter, FetchError, FetchPolicy, IdempotencyKey,
@@ -451,36 +453,6 @@ async fn remove_suppression_refuses_non_address_segments() {
 
 fn key(action: &str, id: &str) -> IdempotencyKey {
     IdempotencyKey::derive(&SecretString::from("fake-id-secret"), action, &[id])
-}
-
-struct StandIn(Child, u16);
-
-impl Drop for StandIn {
-    fn drop(&mut self) {
-        let _ = self.0.kill();
-        let _ = self.0.wait();
-    }
-}
-
-fn stand_in() -> StandIn {
-    let port = TcpListener::bind("127.0.0.1:0")
-        .unwrap()
-        .local_addr()
-        .unwrap()
-        .port();
-    let child = Command::new("python3")
-        .args(["-m", "stand_ins.server", "--port", &port.to_string()])
-        .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."))
-        .stdout(Stdio::null())
-        .spawn();
-    let server = StandIn(child.unwrap(), port);
-    for _ in 0..100 {
-        if TcpStream::connect(("127.0.0.1", port)).is_ok() {
-            return server;
-        }
-        std::thread::sleep(Duration::from_millis(50));
-    }
-    panic!("stand-in server did not start");
 }
 
 /// SEC-018, SEC-032, PICK-022: payments talk to the stand-in over HTTP; a repeated key returns the same charge and refund.
