@@ -1,7 +1,0 @@
-# Seeds for failure cases proptest has generated in the past. It is
-# automatically read and these particular cases re-run before any
-# novel cases are generated.
-#
-# It is recommended to check this file in to source control so that
-# everyone who runs the test benefits from these saved cases.
-cc 831a2fb6ca720048cc2736b37d1d101e38b880ffcea1362fbcfde315efdb2660 # shrinks to (words, readings, trade, replies) = ("spa heater and leaking pipe and toilet", [Reading { trade: "plumbing_repair", job_type: None }, Reading { trade: "plumbing_repair", job_type: None }], "pool_repair", ["1", "1"])
