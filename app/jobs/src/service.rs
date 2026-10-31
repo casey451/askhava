@@ -224,11 +224,11 @@ async fn queue_timer(
     Ok(())
 }
 
-/// Runs one job timer (JOB-003, JOB-004, JOB-006): re-checks the job's status, version and timer version
-/// first and does nothing if it moved on or its wait was restarted (D-807); otherwise moves it to
-/// its timeout's target at the timer's due time, as the system, with the status's timeout text
-/// (`JobStatus::timeout_text`: JOB-010 at 6 p.m., JOB-011, JOB-012; D-030, D-461). Safe to run
-/// twice: the second run finds the version moved on.
+/// Runs one job timer (JOB-003, JOB-004, JOB-006): re-checks the job's status, version and timer
+/// version first and does nothing if it moved on or its wait was restarted (D-807); otherwise
+/// moves it to its timeout's target at the timer's due time, as the system, with the status's
+/// timeout text (`JobStatus::timeout_text`: JOB-010 at 6 p.m., JOB-011, JOB-012; D-030, D-461).
+/// Safe to run twice: the second run finds the version moved on.
 ///
 /// # Errors
 ///

@@ -86,16 +86,23 @@ async fn count(pool: &PgPool, sql: &'static str, id: Uuid, kind: &str) -> i64 {
         .expect(sql)
 }
 
+/// Reads job `id`'s status and version and counts its history rows, `status_changed` audit rows
+/// and queued text events, so a race's effects can be compared before and after.
 async fn trace(pool: &PgPool, id: Uuid) -> Trace {
     let mut db = pool.acquire().await.expect("connection");
     let job = current(&mut db, id).await.expect("job");
-    let history = "SELECT count(*) FROM jobs.status_history WHERE job_id = $1 AND $2 <> ''";
+    let history = "SELECT count(*) FROM jobs.status_history WHERE job_id = $1";
+    let history: i64 = sqlx::query_scalar(history)
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .expect(history);
     let audits = "SELECT count(*) FROM ops.audit_log WHERE subject_id = $1 AND action = $2";
     let texts = "SELECT count(*) FROM core.task WHERE payload->>'job' = $1::text AND kind = $2";
     Trace {
         status: job.status.code(),
         version: job.version,
-        history: count(pool, history, id, "status_changed").await,
+        history,
         audits: count(pool, audits, id, "status_changed").await,
         texts: count(pool, texts, id, TEXT_KIND).await,
     }
@@ -181,6 +188,8 @@ async fn race(pool: &PgPool, id: Uuid, (first, second): (Ready, Ready), at: Time
     let b = tokio::spawn(run(pool.clone(), id, second, at));
     assert!(lock_waiters(pool, 2).await, "the second event waits");
     holder.commit().await.expect("release");
+    // A timer answers `None` (`run_timer` reports no outcome), so these two checks bind only
+    // moves; a timer's win or loss is checked afterwards by `one_applied`'s full trace.
     assert_ne!(a.await.expect("first"), Some(false), "the first applies");
     assert_ne!(
         b.await.expect("second"),
