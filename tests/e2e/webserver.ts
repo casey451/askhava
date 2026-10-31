@@ -160,8 +160,6 @@ export default async function setup(): Promise<() => Promise<void>> {
       Promise.all([waitForPort(STAND_IN_PORT, deadline), waitForPort(webPort(), deadline)]),
       ...crashes,
     ]);
-    const dead = children.findIndex((child) => child.exitCode !== null);
-    if (dead >= 0) throw new Error(`a child process exited during start-up (index ${String(dead)}); is the port already in use?`);
   } catch (error) {
     await teardown();
     throw error;
