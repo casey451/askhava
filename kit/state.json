@@ -8484,7 +8484,10 @@
     "enabled": true,
     "why": "auto-merge on #187 (gh pr merge)",
     "head": "6801f4ff1e078ec8e0d6c55eb5b75e01a5bc8b96"
-   }
+   },
+   "runner_closed_prs": [
+    187
+   ]
   },
   {
    "id": "T045",
@@ -12625,7 +12628,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T17:02:04Z",
+ "updated_at": "2026-10-31T17:02:11Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
