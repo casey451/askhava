@@ -138,7 +138,9 @@ tests/               the Rust test-layer crates integration, security and recove
                      compile-fail cases with their expected `.stderr` in tests/security/ui/, built by trybuild in a
                      crate with no feature on, so a proof type's privacy is tested as production sees it;
                      `tests/fixtures` (T010) is the fake-data crate; Playwright in TypeScript for e2e and a11y;
-                     `tests/e2e/fixtures.ts` gives every spec the `control` fixture over the test-control router, and
+                     `tests/e2e/fixtures.ts` gives every spec the `control` fixture over the test-control router,
+                     `tests/e2e/webserver.ts` (the config's `globalSetup`, D-958) builds and starts the stand-ins,
+                     worker and web binary with `test-control` and stops them after the run, and
                      `package.json`, `tsconfig.json` and `eslint.config.js` at the root pin the TypeScript tooling (D-741);
                      pytest for docs and contract. Every database test uses `#[sqlx::test(migrator = ...)]`, one
                      fresh database per test (D-481)
