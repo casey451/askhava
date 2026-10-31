@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_id FROM quotes.quote WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL ORDER BY business_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "business_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "822d3182c073813f844878ef4afbd6d26452380e0f6a7d88c2a8e71b52f48400"
+}

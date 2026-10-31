@@ -5,3 +5,5 @@ mod matching_examples;
 mod overflow;
 mod prop_card_no_contact;
 mod prop_matching_props;
+mod quote_bounce;
+mod quote_parse;
