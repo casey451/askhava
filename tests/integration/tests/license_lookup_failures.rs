@@ -5,28 +5,31 @@
 //! that a site down, a CAPTCHA, a changed page or a row for another number is "unknown", records
 //! nothing, blocks Confirm and leaves the verified status as it was; the 24- and 72-hour clocks to
 //! the second and as settings; that an end or bond-cancel date pauses from 00:00 Arizona time; and
-//! that a failing list raises no alert at 11:59, one listed alert at 12:00 and the push at 24:00,
-//! while each active business gets one lookup that updates its verified status. All fake.
+//! that a failing list raises no alert at 11:59, one listed alert at 12:00 and the push item at
+//! 24:00 (both `normal`, both raised when one run jumps past 24 hours), while each active business
+//! gets one lookup, spaced by the throttle, that updates its verified status. All fake.
 
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::Instant;
 
 use askhava_adapters::api::{AdapterError, LicenseSource};
 use askhava_integration::set_app_role;
 use askhava_licensing::api::{
-    FailureLimits, Freshness, LookupOutcome, UnknownStanding, alert_list_failure, end_date_pauses,
-    lookup_at_pick, lookup_while_list_fails, roc_check_allows_card, unknown_standing,
+    FailureLimits, Freshness, ListFailureAlert, LookupOutcome, UnknownStanding, alert_list_failure,
+    end_date_pauses, list_failure_alerts, lookup_at_pick, lookup_while_list_fails,
+    roc_check_allows_card, unknown_standing,
 };
-use askhava_ops::api::Severity;
 use jiff::civil::date;
 use jiff::{SignedDuration, Timestamp};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
 const BUSINESS: Uuid = Uuid::from_u128(0x7e57_0180_0001);
-const ACTIVE: &str = "license_number,class,status,issued_on\nROC900180,R-37,Active,2015-06-30\n";
-const SUSPENDED: &str = "license_number,class,status,issued_on\nROC900180,R-37,Suspended,\n";
+const ACTIVE: &str = "license_number,class,status,issued_on\n{number},R-37,Active,2015-06-30\n";
+const SUSPENDED: &str = "license_number,class,status,issued_on\n{number},R-37,Suspended,\n";
 
-/// A fake license source answering every lookup with `answer` and counting the calls.
+/// A fake license source answering every lookup with `answer`, `{number}` replaced by the number
+/// looked up, and counting the calls.
 struct Fake {
     answer: Option<&'static str>,
     calls: AtomicUsize,
@@ -46,10 +49,10 @@ impl LicenseSource for Fake {
         Err(AdapterError::NotSent)
     }
 
-    async fn lookup_license(&self, _number: &str) -> Result<Vec<u8>, AdapterError> {
+    async fn lookup_license(&self, number: &str) -> Result<Vec<u8>, AdapterError> {
         self.calls.fetch_add(1, Ordering::SeqCst);
         self.answer
-            .map(|a| a.as_bytes().to_vec())
+            .map(|a| a.replace("{number}", number).into_bytes())
             .ok_or(AdapterError::NotSent)
     }
 }
@@ -66,7 +69,11 @@ fn any_age() -> Freshness {
 }
 
 async fn allows_card(conn: &mut sqlx::PgConnection) -> bool {
-    roc_check_allows_card(conn, BUSINESS, "roc 900180", any_age())
+    allows_card_of(conn, (BUSINESS, "roc 900180")).await
+}
+
+async fn allows_card_of(conn: &mut sqlx::PgConnection, (id, number): (Uuid, &str)) -> bool {
+    roc_check_allows_card(conn, id, number, any_age())
         .await
         .expect("card check")
 }
@@ -103,7 +110,7 @@ async fn a_failed_lookup_is_unknown_and_keeps_the_verified_status(pool: PgPool) 
         let got = lookup_at_pick(&mut conn, &fake, (BUSINESS, "ROC900180"), now).await;
         assert_eq!(got, Ok(LookupOutcome::Unknown));
         assert!(
-            !LookupOutcome::Unknown.allows_confirm(),
+            !got.expect("outcome").allows_confirm(),
             "no Confirm while unknown"
         );
         assert_eq!(fake.calls.load(Ordering::SeqCst), 1);
@@ -173,10 +180,10 @@ fn end_and_bond_cancel_dates_pause_from_arizona_midnight() {
     assert!(!end_date_pauses(None, None, midnight));
 }
 
-/// TD-LIC-15: no alert at 11:59, one listed alert at 12:00, the push at 24:00; while failing each
-/// active business gets one lookup and a verified status updates.
+/// TD-LIC-15: no alert at 11:59, one listed alert at 12:00, the push item at 24:00, each `normal`
+/// so neither can start OPS-001 safe mode, and none repeated.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn a_failing_list_alerts_and_lookups_keep_statuses_current(pool: PgPool) {
+async fn a_failing_list_alerts_once_at_12_and_24_hours(pool: PgPool) {
     let mut conn = pool.acquire().await.expect("connection");
     set_app_role(&mut conn).await.expect("SET ROLE askhava_app");
     let start = at("2026-10-31T07:00:00Z");
@@ -187,48 +194,73 @@ async fn a_failing_list_alerts_and_lookups_keep_statuses_current(pool: PgPool) {
         (h(11), h(12) - minute),
         (h(12) - minute, h(12)),
         (h(12), h(13)),
+        (h(23), h(24)),
+        (h(24), h(25)),
     ] {
-        raised.push(
-            alert_list_failure(&mut conn, (start, last, now), limits)
-                .await
-                .expect("alert"),
-        );
+        let got = alert_list_failure(&mut conn, (start, last, now), limits).await;
+        raised.push(got.expect("alert"));
     }
-    assert_eq!(
-        raised,
-        [None, Some(Severity::Normal), None],
-        "one listed, non-push alert"
-    );
-    let push = alert_list_failure(&mut conn, (start, h(23), h(24)), limits).await;
-    assert_eq!(
-        push,
-        Ok(Some(Severity::High)),
-        "still failing at 24 hours: the push"
-    );
-    lookup_at_pick(
-        &mut conn,
-        &Fake::new(Some(ACTIVE)),
-        (BUSINESS, "ROC900180"),
-        start,
-    )
-    .await
-    .expect("verified");
-    let fake = Fake::new(Some(SUSPENDED));
-    let other = Uuid::from_u128(0x7e57_0180_0002);
-    let businesses = [(BUSINESS, "ROC900180"), (other, "ROC900180")];
-    let got = lookup_while_list_fails(&mut conn, &fake, &businesses, h(12)).await;
-    assert_eq!(got, Ok(vec![LookupOutcome::Inactive; 2]));
-    assert_eq!(
-        fake.calls.load(Ordering::SeqCst),
-        2,
-        "one lookup per active business"
-    );
-    assert!(!allows_card(&mut conn).await, "the verified status updated");
-    let alerts: Vec<String> = sqlx::query_scalar(
-        "SELECT severity FROM ops.alert WHERE kind = 'licensing.list_failing' ORDER BY severity",
+    let (listed, still) = (ListFailureAlert::Listed, ListFailureAlert::StillFailing);
+    assert_eq!(raised, [vec![], vec![listed], vec![], vec![still], vec![]]);
+    let alerts: Vec<(String, String)> = sqlx::query_as(
+        "SELECT kind, severity FROM ops.alert WHERE kind LIKE 'licensing.%' ORDER BY kind",
     )
     .fetch_all(&pool)
     .await
     .expect("alerts");
-    assert_eq!(alerts, ["high", "normal"], "one of each, no repeat");
+    let normal = |kind: &str| (kind.to_owned(), "normal".to_owned());
+    let want = [
+        normal("licensing.list_failing"),
+        normal("licensing.list_still_failing"),
+    ];
+    assert_eq!(alerts, want, "one of each, never high");
+}
+
+/// TD-LIC-15: a run that jumps from before 12 hours to past 24 raises the listed alert and the push
+/// item, in that order.
+#[test]
+fn a_run_past_both_limits_raises_both_alerts() {
+    let start = at("2026-10-31T07:00:00Z");
+    let h = |n: i64| start + SignedDuration::from_hours(n);
+    let got = list_failure_alerts(start, h(11), h(25), FailureLimits::default());
+    assert_eq!(
+        got,
+        [ListFailureAlert::Listed, ListFailureAlert::StillFailing]
+    );
+    let none = list_failure_alerts(start, h(25), h(26), FailureLimits::default());
+    assert!(none.is_empty(), "nothing raised twice");
+}
+
+/// TD-LIC-15, TD-LIC-04: while a list fails each active business gets one throttled lookup, spaced
+/// at least `lookup_spacing` apart, and a verified status updates.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn while_a_list_fails_throttled_lookups_keep_statuses_current(pool: PgPool) {
+    let mut conn = pool.acquire().await.expect("connection");
+    set_app_role(&mut conn).await.expect("SET ROLE askhava_app");
+    let now = at("2026-10-31T19:00:00Z");
+    let other = (Uuid::from_u128(0x7e57_0180_0002), "ROC900181");
+    let businesses = [(BUSINESS, "ROC900180"), other];
+    let limits = FailureLimits::default();
+    let active = Fake::new(Some(ACTIVE));
+    let verified = lookup_while_list_fails(&mut conn, &active, &businesses, (now, limits)).await;
+    assert_eq!(verified, Ok(vec![LookupOutcome::Active; 2]));
+    assert!(allows_card(&mut conn).await && allows_card_of(&mut conn, other).await);
+    let spacing = SignedDuration::from_millis(200);
+    let throttled = FailureLimits {
+        lookup_spacing: spacing,
+        ..limits
+    };
+    let fake = Fake::new(Some(SUSPENDED));
+    let began = Instant::now();
+    let got = lookup_while_list_fails(&mut conn, &fake, &businesses, (now, throttled)).await;
+    let took = SignedDuration::try_from(began.elapsed()).expect("elapsed");
+    assert_eq!(got, Ok(vec![LookupOutcome::Inactive; 2]));
+    assert_eq!(
+        fake.calls.load(Ordering::SeqCst),
+        2,
+        "one lookup per business"
+    );
+    assert!(took >= spacing, "the second lookup waits for the throttle");
+    assert!(!allows_card(&mut conn).await, "the verified status updated");
+    assert!(!allows_card_of(&mut conn, other).await);
 }

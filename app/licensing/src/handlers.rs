@@ -6,11 +6,13 @@
 //! changed layout, a row for another number, no good row) is [`LookupOutcome::Unknown`] and records
 //! nothing, so a misread never changes a verified status (LIC-008); a read answer is recorded as a
 //! daily check dated the Arizona day. [`lookup_while_list_fails`] runs that lookup once for each
-//! active business, one at a time, while a list fails to load (LIC-039, D-230). The clocks are pure:
-//! [`unknown_standing`] (kept, warned at 24 hours, paused at 72), [`end_date_pauses`] (paused from
-//! 00:00 Arizona time on a license-end or bond-cancellation date) and [`list_failure_alert`] (a
-//! listed alert at 12 hours, the OPS-032 push at 24). The caller (`businesses` and the worker) holds
-//! when the failure started and fills [`FailureLimits`] from its settings.
+//! active business, one at a time and at least `lookup_spacing` apart (the throttle), while a list
+//! fails to load (LIC-039, D-230). The clocks are pure: [`unknown_standing`] (kept, warned at 24
+//! hours, paused at 72), [`end_date_pauses`] (paused from 00:00 Arizona time on a license-end or
+//! bond-cancellation date) and [`list_failure_alerts`] (a listed alert at 12 hours, an OPS-032 push
+//! item at 24, both `normal` so neither can start OPS-001 safe mode; D-942). The caller
+//! (`businesses` and the worker) holds when the failure started and fills [`FailureLimits`] from its
+//! settings.
 
 use askhava_adapters::api::LicenseSource;
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
@@ -23,8 +25,13 @@ use sqlx::types::Uuid;
 use crate::imports::{ImportError, normalise_license_number, parse_roc_list};
 use crate::service::record_lookup;
 
-/// The alert kind for a license list that keeps failing to load (LIC-039).
+/// The alert kind for a license list failing to load for 12 hours, listed for Casey's next window
+/// (LIC-039).
 pub const LIST_FAILING_ALERT: &str = "licensing.list_failing";
+
+/// The alert kind for a license list still failing 24 hours after it started: an item of the
+/// OPS-032 daytime push, never a High alert (LIC-039, D-282, D-942).
+pub const LIST_STILL_FAILING_ALERT: &str = "licensing.list_still_failing";
 
 /// The LIC-008 and LIC-039 clocks; each is a setting the caller passes in.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -37,6 +44,8 @@ pub struct FailureLimits {
     pub alert_after: SignedDuration,
     /// A failing list goes in the OPS-032 push after this long (24 hours, LIC-039, D-282).
     pub push_after: SignedDuration,
+    /// The least time between two live lookups while a list fails: the throttle (LIC-039).
+    pub lookup_spacing: SignedDuration,
 }
 
 impl Default for FailureLimits {
@@ -46,6 +55,7 @@ impl Default for FailureLimits {
             pause_after: SignedDuration::from_hours(72),
             alert_after: SignedDuration::from_hours(12),
             push_after: SignedDuration::from_hours(24),
+            lookup_spacing: SignedDuration::from_secs(2),
         }
     }
 }
@@ -117,52 +127,76 @@ pub fn end_date_pauses(
         .any(|day| day <= today)
 }
 
-/// LIC-039, D-282: the alert a list failing since `failing_since` raises on a run at `now` whose
-/// previous run was at `last_run`: `Normal` (listed for Casey's next window) when the alert limit
-/// falls in `(last_run, now]`, `High` (the OPS-032 push) when the push limit does, else none, so
-/// each is raised once.
+/// One alert a failing license list raises (LIC-039, D-282).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ListFailureAlert {
+    /// Failing for 12 hours: listed for Casey's next window, never pushed.
+    Listed,
+    /// Still failing at 24 hours: an item of the OPS-032 daytime push.
+    StillFailing,
+}
+
+impl ListFailureAlert {
+    /// The `ops` alert kind this alert is raised under.
+    #[must_use]
+    pub const fn kind(self) -> &'static str {
+        match self {
+            Self::Listed => LIST_FAILING_ALERT,
+            Self::StillFailing => LIST_STILL_FAILING_ALERT,
+        }
+    }
+}
+
+/// LIC-039, D-282, D-942: the alerts a list failing since `failing_since` raises on a run at `now`
+/// whose previous run was at `last_run`: each whose limit falls in `(last_run, now]`, in order, so a
+/// run that jumps past both limits raises both and each is raised once across runs.
 #[must_use]
-pub fn list_failure_alert(
+pub fn list_failure_alerts(
     failing_since: Timestamp,
     last_run: Timestamp,
     now: Timestamp,
     limits: FailureLimits,
-) -> Option<Severity> {
+) -> Vec<ListFailureAlert> {
     let crossed = |limit: SignedDuration| {
         let at = failing_since
             .saturating_add(limit)
             .unwrap_or(Timestamp::MAX);
         last_run < at && at <= now
     };
-    match (crossed(limits.push_after), crossed(limits.alert_after)) {
-        (true, _) => Some(Severity::High),
-        (false, true) => Some(Severity::Normal),
-        (false, false) => None,
-    }
+    [
+        (limits.alert_after, ListFailureAlert::Listed),
+        (limits.push_after, ListFailureAlert::StillFailing),
+    ]
+    .into_iter()
+    .filter(|&(limit, _)| crossed(limit))
+    .map(|(_, alert)| alert)
+    .collect()
 }
 
-/// Raises the [`list_failure_alert`] for this run, if any, and returns its severity (LIC-039).
+/// Raises the [`list_failure_alerts`] for this run as `normal` `ops` alerts, which never start
+/// OPS-001 safe mode, and returns them (LIC-039, D-942).
 ///
 /// # Errors
 ///
-/// [`ImportError::Database`] when the alert cannot be written.
+/// [`ImportError::Database`] when an alert cannot be written.
 pub async fn alert_list_failure(
     conn: &mut PgConnection,
     (failing_since, last_run, now): (Timestamp, Timestamp, Timestamp),
     limits: FailureLimits,
-) -> Result<Option<Severity>, ImportError> {
-    let Some(severity) = list_failure_alert(failing_since, last_run, now, limits) else {
-        return Ok(None);
-    };
-    let alert = NewAlert {
-        kind: LIST_FAILING_ALERT,
-        severity,
-        subject: None,
-    };
-    raise_alert(conn, &alert)
-        .await
-        .map_err(|_| ImportError::Database)?;
-    Ok(Some(severity))
+) -> Result<Vec<ListFailureAlert>, ImportError> {
+    let alerts = list_failure_alerts(failing_since, last_run, now, limits);
+    for alert in &alerts {
+        let new = NewAlert {
+            kind: alert.kind(),
+            severity: Severity::Normal,
+            subject: None,
+        };
+        raise_alert(conn, &new).await.map_err(|error| {
+            tracing::error!(%error, kind = alert.kind(), "license list alert not written");
+            ImportError::Database
+        })?;
+    }
+    Ok(alerts)
 }
 
 /// Reads one live lookup answer for `number` with the ROC list reader (D-282); anything that does
@@ -196,7 +230,10 @@ pub async fn lookup_at_pick(
     let number = normalise_license_number(license_number);
     let outcome = match source.lookup_license(&number).await {
         Ok(answer) => read_answer(&number, &answer),
-        Err(_) => LookupOutcome::Unknown,
+        Err(error) => {
+            tracing::warn!(%error, "live license lookup failed; status unknown");
+            LookupOutcome::Unknown
+        }
     };
     let active = match outcome {
         LookupOutcome::Unknown => return Ok(outcome),
@@ -207,7 +244,8 @@ pub async fn lookup_at_pick(
 }
 
 /// While a list fails to load, runs [`lookup_at_pick`] once for each active business on it, one at
-/// a time, and returns the outcomes in order (LIC-039, D-230).
+/// a time and at least `limits.lookup_spacing` apart (the throttle), and returns the outcomes in
+/// order (LIC-039, D-230, D-942).
 ///
 /// # Errors
 ///
@@ -216,10 +254,14 @@ pub async fn lookup_while_list_fails(
     conn: &mut PgConnection,
     source: &impl LicenseSource,
     businesses: &[(Uuid, &str)],
-    now: Timestamp,
+    (now, limits): (Timestamp, FailureLimits),
 ) -> Result<Vec<LookupOutcome>, ImportError> {
+    let spacing = std::time::Duration::try_from(limits.lookup_spacing).unwrap_or_default();
     let mut outcomes = Vec::with_capacity(businesses.len());
-    for &business in businesses {
+    for (i, &business) in businesses.iter().enumerate() {
+        if i > 0 {
+            tokio::time::sleep(spacing).await;
+        }
         outcomes.push(lookup_at_pick(conn, source, business, now).await?);
     }
     Ok(outcomes)
