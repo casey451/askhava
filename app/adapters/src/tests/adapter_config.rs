@@ -5,7 +5,8 @@
 //! Pairs only, never `std::env::set_var` (R16). Every number is a fake
 //! 555-style test number; the stand-in Twilio SID is `AC` and 32 zeros.
 
-use std::net::{TcpListener, TcpStream};
+use std::io::{BufRead, BufReader};
+use std::net::TcpListener;
 use std::process::{Child, Command, Stdio};
 
 use askhava_core::api::{Settings, SettingsError};
@@ -213,8 +214,9 @@ fn idempotency_key_is_derived_from_what_it_identifies() {
     assert!(!text.as_str().contains("outbox"));
 }
 
-/// The stand-in server on a free port, killed on drop.
-struct StandIn(Child, u16);
+/// The stand-in server on a port it bound itself, killed on drop. Shared with
+/// `ssrf_guard.rs` so every test in this binary starts it the same way.
+pub(super) struct StandIn(Child, pub(super) u16);
 
 impl Drop for StandIn {
     fn drop(&mut self) {
@@ -223,7 +225,28 @@ impl Drop for StandIn {
     }
 }
 
-fn stand_in() -> StandIn {
+/// How many free ports `stand_in` tries before giving up.
+const STAND_IN_STARTS: usize = 5;
+
+/// Starts `python3 -m stand_ins.server` and returns once that child, and no
+/// other process, is listening on the port. A free port is only free when it
+/// is looked up: before the child binds it another test can take it, the
+/// child then exits with "Address already in use", and a plain connect probe
+/// would reach the other test's socket. So readiness is the child's own
+/// "listening" line, printed after its bind, and a child that exits without
+/// it is started again on a new port (D-1087).
+pub(super) fn stand_in() -> StandIn {
+    for _ in 0..STAND_IN_STARTS {
+        if let Some(server) = start_stand_in() {
+            return server;
+        }
+    }
+    panic!("stand-in server did not start");
+}
+
+/// One start on a looked-up free port; `None` when the child exited before
+/// saying it listens there (the port was taken in between).
+fn start_stand_in() -> Option<StandIn> {
     let port = TcpListener::bind("127.0.0.1:0")
         .unwrap()
         .local_addr()
@@ -232,16 +255,14 @@ fn stand_in() -> StandIn {
     let child = Command::new("python3")
         .args(["-m", "stand_ins.server", "--port", &port.to_string()])
         .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."))
-        .stdout(Stdio::null())
+        .stdout(Stdio::piped())
         .spawn();
-    let server = StandIn(child.unwrap(), port);
-    for _ in 0..100 {
-        if TcpStream::connect(("127.0.0.1", port)).is_ok() {
-            return server;
-        }
-        std::thread::sleep(std::time::Duration::from_millis(50));
-    }
-    panic!("stand-in server did not start");
+    let mut server = StandIn(child.unwrap(), port);
+    let mut line = String::new();
+    let stdout = server.0.stdout.as_mut().unwrap();
+    BufReader::new(stdout).read_line(&mut line).unwrap();
+    let ready = format!("stand-ins listening on http://127.0.0.1:{port}");
+    (line.trim_end() == ready).then_some(server)
 }
 
 fn stand_in_config(port: u16) -> TwilioConfig {
