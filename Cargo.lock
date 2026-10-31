@@ -324,6 +324,21 @@ name = "askhava-fixtures"
 version = "0.1.0"
 
 [[package]]
+name = "askhava-intake"
+version = "0.1.0"
+dependencies = [
+ "askhava-core",
+ "askhava-messaging",
+ "askhava-ops",
+ "jiff",
+ "jiff-sqlx",
+ "proptest",
+ "secrecy",
+ "sqlx",
+ "thiserror",
+]
+
+[[package]]
 name = "askhava-integration"
 version = "0.1.0"
 dependencies = [
