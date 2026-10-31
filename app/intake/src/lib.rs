@@ -10,6 +10,7 @@
 //! Other crates reach it only through [`api`].
 
 pub mod api;
+mod conversation;
 mod emergency;
 mod emergency_count;
 mod models;

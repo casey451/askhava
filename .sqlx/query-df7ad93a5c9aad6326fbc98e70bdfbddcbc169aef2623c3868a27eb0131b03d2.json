@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE intake.conversation SET closed_at = GREATEST($2, opened_at) WHERE id = $1 AND closed_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "df7ad93a5c9aad6326fbc98e70bdfbddcbc169aef2623c3868a27eb0131b03d2"
+}

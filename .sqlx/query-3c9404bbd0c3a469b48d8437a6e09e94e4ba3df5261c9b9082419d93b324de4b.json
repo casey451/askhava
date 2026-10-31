@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT choice FROM intake.intake_answer WHERE conversation_id = $1 AND question_id LIKE 'job.%' UNION SELECT replace(job_id::text, '-', '') FROM intake.conversation WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "choice",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "3c9404bbd0c3a469b48d8437a6e09e94e4ba3df5261c9b9082419d93b324de4b"
+}
