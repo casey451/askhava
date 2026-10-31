@@ -89,6 +89,104 @@ fn td_int_01_addresses_are_not_hazards() {
     assert_eq!(check("smell gas", true), Check::Clear);
 }
 
+/// TD-INT-01 (INT-002, D-165, D-982): an all-caps or title-case message keeps its hazard words
+/// beside a street name; only the street name (up to three words and a house number) goes.
+#[test]
+fn td_int_01_street_removal_keeps_hazard_words() {
+    let real = [
+        ("GAS LEAK AT HOUSE ON MAIN ST", Hazard::Gas),
+        ("SMELL GAS NEAR THE TANK BY OAK DR", Hazard::Gas),
+        (
+            "There Is Smoke Coming From The Panel On Elm St",
+            Hazard::Electrical,
+        ),
+        ("Smell Gas 100 Smoketree Test Ave", Hazard::Gas),
+        ("OUTLET SPARKING AT 12 PALM LN", Hazard::Electrical),
+    ];
+    for (words, hazard) in real {
+        assert_eq!(check(words, false), Check::Match(hazard), "{words}");
+    }
+    assert_eq!(
+        check("Leaking Faucet On Burst Test Ln", false),
+        Check::Clear
+    );
+}
+
+/// TD-INT-01 (INT-002, D-982): the power line in its other word orders.
+#[test]
+fn td_int_01_power_line_word_orders() {
+    for words in [
+        "sparking power line by the road",
+        "there is a sparking wire in the yard",
+        "power line fell on the fence",
+        "a power line is down",
+        "the wires are sparking",
+        "downed wire out back",
+    ] {
+        assert_eq!(
+            check(words, false),
+            Check::Match(Hazard::PowerLine),
+            "{words}"
+        );
+    }
+}
+
+/// TD-INT-01 (INT-002, D-982): everyday words near a 911-list stem do not match.
+#[test]
+fn td_int_01_no_false_matches() {
+    for words in [
+        "need a new spark plug for the mower",
+        "the stove burner won't light",
+        "fix the smoker on my patio",
+        "mount a fire extinguisher in the garage",
+        "car alarm going off next door",
+        "phone line down since Monday",
+        "my fire alarm keeps chirping",
+    ] {
+        assert_eq!(check(words, false), Check::Clear, "{words}");
+    }
+}
+
+/// TD-INT-10 (INT-025, D-982): a negated or questioning reply is never the safe reply.
+#[test]
+fn td_int_10_negated_and_questions_are_not_safe() {
+    for words in [
+        "I don't feel safe",
+        "dont think we are safe",
+        "is it safe to go back in?",
+        "is it safe to go back in",
+        "can we go back in, is it safe",
+        "we're not ok",
+        "I don't think we're fine",
+        "no estamos seguros",
+        "estamos seguros?",
+    ] {
+        assert!(!is_safe_reply(words), "{words}");
+    }
+    for words in [
+        "we're safe outside now",
+        "I'm ok",
+        "estamos seguros",
+        "Safe now",
+    ] {
+        assert!(is_safe_reply(words), "{words}");
+    }
+}
+
+/// TD-INT-13 (INT-030, INT-006, D-982): a negated "Today" or emergency never reads as one, and a
+/// "by <day>" is answer 4.
+#[test]
+fn td_int_13_negated_answers_are_not_today() {
+    assert_ne!(urgency("not urgent"), Some(Urgency::Today));
+    assert_eq!(urgency("not today, in a few days"), Some(Urgency::FewDays));
+    assert_eq!(urgency("by 12/1"), Some(Urgency::ByDay));
+    assert_eq!(urgency("by Friday please"), Some(Urgency::ByDay));
+    assert_eq!(urgency("1) today"), Some(Urgency::Today));
+    assert_eq!(choice("not an emergency, regular"), Some(Choice::Regular));
+    assert_eq!(choice("not an emergency"), None);
+    assert_eq!(choice("emergency please"), Some(Choice::Emergency));
+}
+
 /// TD-INT-10 (INT-025, D-128, D-419): the safe replies, and what does not count.
 #[test]
 fn td_int_10_safe_replies() {
@@ -386,4 +484,36 @@ async fn td_int_01_a_beeping_alarm_gets_the_question(mut db: Db) {
     )
     .await;
     assert_eq!(templates(&quiet), [CONSENT_TEMPLATE]);
+}
+
+/// TD-INT-01, TD-INT-10 (INT-004, INT-005, D-982): while the hold is on, another match sends no
+/// second 911 text; "we're safe outside but still smell gas" keeps the hold and sends nothing;
+/// a later plain SAFE ends it.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_01_one_911_text_while_the_hold_is_on(mut db: Db) {
+    let contact = Uuid::from_u128(0x399);
+    let opened = send(&mut db, contact, 0, "smell gas").await;
+    assert_eq!(templates(&opened), [SAFETY_TEMPLATE, CONSENT_TEMPLATE]);
+    let id = opened.conversation.expect("request");
+    let again = send(&mut db, contact, 1, "the gas smell is really strong").await;
+    assert_eq!(again.screened, Screened::Matched(Hazard::Gas));
+    assert!(again.texts.is_empty(), "one INT-004 text per hold");
+    let outside = send(
+        &mut db,
+        contact,
+        2,
+        "we're safe outside but still smell gas",
+    )
+    .await;
+    assert!(outside.texts.is_empty());
+    assert!(
+        safe_hold(&mut db, id).await.expect("hold"),
+        "the hazard is still there"
+    );
+    let safe = send(&mut db, contact, 3, "SAFE").await;
+    assert_eq!(safe.screened, Screened::Safe);
+    assert!(!safe_hold(&mut db, id).await.expect("hold"));
+    let events = emergency_events(&mut db, id).await.expect("events");
+    let queued = events.iter().filter(|e| e.text_queued_at.is_some()).count();
+    assert_eq!((events.len(), queued), (3, 1));
 }

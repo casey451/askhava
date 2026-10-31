@@ -345,11 +345,7 @@ async fn screen_reply(
     let wanted = wanted_language(msg.inbound.words, msg.inbound.ai_spanish);
     let mut texts = Vec::new();
     let screened = match step.check {
-        Check::Match(hazard) => {
-            let subject = [id, msg.inbox_id];
-            texts.push(queue(tx, step, (SAFETY_TEMPLATE, wanted), &subject, &[]).await?);
-            record_match(tx, step, id, hazard).await?
-        }
+        Check::Match(hazard) => match_reply(tx, step, (id, wanted), hazard, &mut texts).await?,
         Check::BeepQuestion => {
             let row = models::conversation(tx, id)
                 .await?
@@ -385,9 +381,28 @@ async fn clear_reply(
         return Ok(Screened::Clear);
     }
     let wanted = wanted_language(msg.inbound.words, msg.inbound.ai_spanish);
-    let subject = [id, msg.inbox_id];
-    texts.push(queue(tx, step, (SAFETY_TEMPLATE, wanted), &subject, &[]).await?);
-    record_match(tx, step, id, Hazard::CoAlarm).await
+    match_reply(tx, step, (id, wanted), Hazard::CoAlarm, texts).await
+}
+
+/// A 911-list match in a reply (INT-004, INT-005, D-982): the INT-004 text goes once per hold, so
+/// while an earlier 911 text still waits for SAFE the match is recorded with no text queued and
+/// the hold stays ("we're safe outside but still smell gas" keeps the cards held and gets no
+/// second text); otherwise the text is queued and the new hold recorded.
+async fn match_reply(
+    tx: &mut PgConnection,
+    step: &Step<'_, '_>,
+    (id, language): (Uuid, Language),
+    hazard: Hazard,
+    texts: &mut Vec<Queued>,
+) -> Result<Screened, IntakeError> {
+    if !models::release_state(tx, id).await?.waiting_safe {
+        let subject = [id, step.msg.inbox_id];
+        texts.push(queue(tx, step, (SAFETY_TEMPLATE, language), &subject, &[]).await?);
+        return record_match(tx, step, id, hazard).await;
+    }
+    let at = step.msg.received_at;
+    models::insert_event(tx, (id, step.msg.inbox_id), hazard.code(), None, at).await?;
+    Ok(Screened::Matched(hazard))
 }
 
 /// Whether an INT-037 question was asked in `id` and not yet answered.
@@ -479,6 +494,9 @@ pub struct Answered {
     pub read: Option<&'static str>,
     /// Whether the job was released for cards now (INT-029).
     pub released: bool,
+    /// Whether the choice is due but waits for the SAFE reply: the conversation then calls
+    /// [`offer_emergency_choice`] once SAFE is in (INT-005, INT-006, D-982).
+    pub choice_after_safe: bool,
 }
 
 /// Asks "How soon do you need this?" in request `conversation` (INT-030); the conversation asks it
@@ -500,9 +518,12 @@ pub async fn ask_how_soon(
     queue(db, &step, (HOW_SOON_TEMPLATE, language), &subject, &[]).await
 }
 
-/// Stores the "How soon?" answer as the urgent flag and card field (INT-030, CARD-007). Answer 1,
-/// or any answer once a 911 text was answered SAFE, leads to the emergency-or-regular choice
-/// ([`offer_choice`], INT-006); answer 4 asks the day; 2 and 3 send nothing.
+/// Stores the "How soon?" answer as the urgent flag and card field (INT-030, CARD-007). Answer 4
+/// asks the day, whatever came before; answer 1, or any other answer once a 911 text was answered
+/// SAFE, leads to the emergency-or-regular choice ([`offer_choice`], INT-006); 2 and 3 send
+/// nothing. While a 911 text still waits for SAFE the choice is never offered (INT-005, D-982):
+/// `Answered::choice_after_safe` is then true and the conversation calls
+/// [`offer_emergency_choice`] once the safe reply is in.
 ///
 /// # Errors
 ///
@@ -521,31 +542,54 @@ pub async fn answer_how_soon(
     let ids = (conversation, msg.inbox_id);
     let answer = (HOW_SOON_QUESTION, urgency.code());
     models::insert_answer(&mut tx, ids, answer, msg.received_at).await?;
-    let had_911 = models::events(&mut tx, conversation)
-        .await?
+    let events = models::events(&mut tx, conversation).await?;
+    let waiting = events
         .iter()
-        .any(|e| e.text_queued_at.is_some());
+        .any(|e| e.text_queued_at.is_some() && e.safe_at.is_none());
+    let had_911 = events.iter().any(|e| e.text_queued_at.is_some());
     let step = plain_step(secret, msg, settings);
-    let texts = if urgency == Urgency::Today || had_911 {
-        offer_choice(&mut tx, &step, conversation, trade).await?
-    } else if urgency == Urgency::ByDay {
+    let wants_choice = urgency != Urgency::ByDay && (urgency == Urgency::Today || had_911);
+    let texts = if urgency == Urgency::ByDay {
         let language = request_language(&mut tx, conversation).await?;
         let subject = [conversation, msg.inbox_id];
-        vec![
-            queue(
-                &mut tx,
-                &step,
-                (NEEDED_BY_TEMPLATE, language),
-                &subject,
-                &[],
-            )
-            .await?,
-        ]
+        let template = (NEEDED_BY_TEMPLATE, language);
+        vec![queue(&mut tx, &step, template, &subject, &[]).await?]
+    } else if wants_choice && !waiting {
+        offer_choice(&mut tx, &step, conversation, trade).await?
     } else {
         Vec::new()
     };
     tx.commit().await.map_err(|_| IntakeError::Database)?;
-    Ok(answered(texts, Some(urgency.code()), false))
+    let mut done = answered(texts, Some(urgency.code()), false);
+    done.choice_after_safe = wants_choice && waiting;
+    Ok(done)
+}
+
+/// Offers the emergency-or-regular choice (INT-006, INT-033) to a request whose "How soon?" answer
+/// came while a 911 text waited for SAFE (`Answered::choice_after_safe`); the conversation calls
+/// it once the safe reply is in. Nothing is sent while the hold is still on (INT-005, D-982).
+///
+/// # Errors
+///
+/// As [`ask_how_soon`]; nothing is kept on an error.
+pub async fn offer_emergency_choice(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+    trade: &Trade<'_>,
+    settings: Settings,
+) -> Result<Vec<Queued>, IntakeError> {
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    if models::release_state(&mut tx, conversation)
+        .await?
+        .waiting_safe
+    {
+        return Ok(Vec::new());
+    }
+    let step = plain_step(secret, msg, settings);
+    let texts = offer_choice(&mut tx, &step, conversation, trade).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(texts)
 }
 
 /// Queues the INT-006 choice, at night after the INT-033 count; with a night count of 0 only the
@@ -676,6 +720,7 @@ fn answered(texts: Vec<Queued>, read: Option<&'static str>, released: bool) -> A
         texts,
         read,
         released,
+        choice_after_safe: false,
     }
 }
 

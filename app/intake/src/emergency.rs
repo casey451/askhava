@@ -90,16 +90,21 @@ const BATTERY_WORDS: &[&str] = &[
     "once a minute",
     "cada minuto",
 ];
-/// Phrases that never count as smoke or fire by themselves (INT-002).
+/// Phrases that never count as smoke or fire by themselves (INT-002): the detectors and alarms,
+/// the fire features INT-002 names and a fire extinguisher (D-982).
 const NOT_SMOKE: &[&str] = &[
     "smoke detector",
     "smoke alarm",
     "detector de humo",
     "alarma de humo",
+    "fire alarm",
     "fire pit",
     "fire table",
     "fire sprinkler",
+    "fire extinguisher",
 ];
+/// Words beginning with a smoke stem that name no smoke (D-982).
+const NOT_SMOKE_WORDS: &[&str] = &["smoker", "smokers", "smokeless", "nonsmoker"];
 const FIRE_PHRASES: &[&str] = &["en llamas"];
 const FIRE_STEMS: &[&str] = &["smok", "flame", "humo", "fuego", "incendi"];
 const ELECTRIC_PARTS: &[&str] = &[
@@ -114,7 +119,18 @@ const ELECTRIC_PARTS: &[&str] = &[
     "cable",
     "interruptor",
 ];
-const ELECTRIC_SIGNS: &[&str] = &["spark", "smok", "burn", "chispa", "quema"];
+/// Parts that are not an electrical hazard however they are described (D-982).
+const NOT_ELECTRIC: &[&str] = &["spark plug"];
+const ELECTRIC_STEMS: &[&str] = &["spark", "smok", "chispa", "quema"];
+/// Burning as a whole word, so a stove "burner" is not burning (D-982).
+const BURNING: &[&str] = &["burn", "burns", "burning", "burned", "burnt"];
+/// Alarms that are never a CO or smoke alarm going off (D-982).
+const NOT_HOME_ALARM: &[&str] = &[
+    "car alarm",
+    "burglar alarm",
+    "security alarm",
+    "alarm clock",
+];
 const POWER_LINE: &[&str] = &[
     "power line down",
     "power lines down",
@@ -122,17 +138,56 @@ const POWER_LINE: &[&str] = &[
     "lines down",
     "line is down",
     "lines are down",
+    "line fell",
+    "lines fell",
+    "line came down",
+    "lines came down",
+    "line fallen",
     "wire down",
     "wires down",
+    "wire fell",
+    "wires fell",
     "downed power line",
     "downed line",
+    "downed wire",
+    "fallen power line",
+    "fallen line",
     "power line sparking",
+    "power lines sparking",
+    "sparking power line",
+    "sparking line",
+    "sparking wire",
+    "wire sparking",
+    "wires sparking",
+    "wire is sparking",
+    "wires are sparking",
+    "line is sparking",
+    "lines are sparking",
     "cable caido",
+];
+/// Lines that are not power lines (D-982): removed before the power-line phrases.
+const NOT_POWER_LINE: &[&str] = &[
+    "phone line",
+    "phone lines",
+    "telephone line",
+    "telephone lines",
+    "internet line",
+    "fiber line",
+    "phone wire",
 ];
 /// Street suffixes whose name before them is removed before matching (D-165).
 const STREET_SUFFIXES: &[&str] = &[
     "ave", "avenue", "st", "street", "ln", "lane", "rd", "road", "dr", "drive", "blvd", "ct",
     "court", "pl", "cir", "circle", "trl", "trail", "pkwy", "hwy", "loop",
+];
+/// At most this many name words are removed before a street suffix (D-982).
+const MAX_STREET_WORDS: usize = 3;
+/// Words never taken as part of a street name: small joining words and hazard words, so "GAS
+/// LEAK AT HOUSE ON MAIN ST" keeps its hazard (D-982).
+const NOT_STREET_WORDS: &[&str] = &[
+    "on", "at", "by", "near", "in", "of", "the", "from", "to", "off", "and", "a", "is", "en", "de",
+    "la", "el", "gas", "propane", "smoke", "smoking", "fire", "flames", "sparking", "burning",
+    "leak", "leaking", "smell", "alarm", "outlet", "panel", "breaker", "line", "wire",
 ];
 
 /// The 911-list check of one message (INT-002, INT-037, D-165, D-361, D-436): `address_answer`
@@ -154,45 +209,53 @@ pub fn check(words: &str, address_answer: bool) -> Check {
     }
 }
 
-/// The first 911-list entry the folded message names (INT-002).
+/// The first 911-list entry the folded message names (INT-002, D-982).
 fn hazard(text: &Folded) -> Option<Hazard> {
-    if text.any_phrase(POWER_LINE) {
+    if Folded::new(&text.without(NOT_POWER_LINE)).any_phrase(POWER_LINE) {
         return Some(Hazard::PowerLine);
     }
     let gas = text.any_word(GAS_WORDS) && text.any_stem(GAS_SIGNS);
     if gas || text.any_phrase(GAS_PHRASES) {
         return Some(Hazard::Gas);
     }
-    if text.any_stem(ELECTRIC_PARTS) && text.any_stem(ELECTRIC_SIGNS) {
+    let wiring = Folded::new(&text.without(NOT_ELECTRIC));
+    let damaged = wiring.any_word(BURNING) || wiring.smoke_or(ELECTRIC_STEMS);
+    if wiring.any_stem(ELECTRIC_PARTS) && damaged {
         return Some(Hazard::Electrical);
     }
-    let going_off = text.any_phrase(GOING_OFF)
-        || (text.any_stem(&["loud"]) && !text.any_stem(CHIRP_WORDS) && !text.any_stem(BEEP_WORDS));
-    if text.any_stem(ALARM_WORDS) && going_off {
+    let alarms = Folded::new(&text.without(NOT_HOME_ALARM));
+    let going_off = alarms.any_phrase(GOING_OFF)
+        || (alarms.any_stem(&["loud"])
+            && !alarms.any_stem(CHIRP_WORDS)
+            && !alarms.any_stem(BEEP_WORDS));
+    if alarms.any_stem(ALARM_WORDS) && going_off {
         return Some(Hazard::CoAlarm);
     }
     let fire = Folded::new(&text.without(NOT_SMOKE));
     let burning = fire.any_word(&["fire", "fires"]) || fire.any_phrase(FIRE_PHRASES);
-    if burning || fire.any_stem(FIRE_STEMS) {
+    if burning || fire.smoke_or(FIRE_STEMS) {
         return Some(Hazard::SmokeFire);
     }
     None
 }
 
-/// Removes street-address patterns (D-165): a street suffix and the capitalized name words (and a
-/// house number) right before it, so "100 Smoketree Test Ave" or "Burst Test Ln" is never a hazard.
+/// Removes street-address patterns (D-165, D-982): a street suffix after a capitalized word, up to
+/// [`MAX_STREET_WORDS`] capitalized name words before it (never a joining or hazard word) and a
+/// house number, so "100 Smoketree Test Ave" or "Burst Test Ln" is never a hazard while "GAS
+/// LEAK AT HOUSE ON MAIN ST" still is.
 fn strip_addresses(words: &str) -> String {
     let mut kept: Vec<&str> = Vec::new();
     for token in words.split_whitespace() {
         let bare = token.trim_matches(|c: char| !c.is_alphanumeric());
         let is_suffix = STREET_SUFFIXES.contains(&bare.to_lowercase().as_str());
-        let named = kept.last().is_some_and(|w| capitalized(w));
-        if !(is_suffix && named) {
+        if !(is_suffix && kept.last().is_some_and(|w| street_word(w))) {
             kept.push(token);
             continue;
         }
-        while kept.last().is_some_and(|w| capitalized(w)) {
+        let mut taken = 0;
+        while taken < MAX_STREET_WORDS && kept.last().is_some_and(|w| street_word(w)) {
             kept.pop();
+            taken += 1;
         }
         if kept
             .last()
@@ -202,6 +265,14 @@ fn strip_addresses(words: &str) -> String {
         }
     }
     kept.join(" ")
+}
+
+/// Whether a word can be part of a street name: capitalized, and not a joining or hazard word.
+fn street_word(word: &str) -> bool {
+    let bare = word
+        .trim_matches(|c: char| !c.is_alphanumeric())
+        .to_lowercase();
+    capitalized(word) && !NOT_STREET_WORDS.contains(&bare.as_str())
 }
 
 /// Whether a word starts with a capital letter (a street name word).
@@ -250,6 +321,14 @@ impl Folded {
         self.words().any(|w| list.iter().any(|s| w.starts_with(s)))
     }
 
+    /// A word beginning with a stem from `list`, not counting the smoke-stem words that name no
+    /// smoke ("smoker", D-982).
+    fn smoke_or(&self, list: &[&str]) -> bool {
+        self.words()
+            .filter(|w| !NOT_SMOKE_WORDS.contains(w))
+            .any(|w| list.iter().any(|s| w.starts_with(s)))
+    }
+
     /// A run of whole words from `list` (a phrase may also be the start of the last word).
     fn any_phrase(&self, list: &[&str]) -> bool {
         list.iter().any(|p| self.0.contains(&format!(" {p}")))
@@ -263,9 +342,21 @@ impl Folded {
     }
 }
 
-/// Whether a reply is the safe reply (INT-025, D-128, D-419): safe, seguro or segura, "we're
-/// safe", "we're ok" or "we're fine", or a plain OK or Yes; a "not" or "no" just before the safe
-/// word means not safe.
+/// Words that make any later safe word mean not safe ("I don't feel safe", D-982).
+const NEGATIONS: &[&str] = &[
+    "not", "isnt", "arent", "never", "dont", "doesnt", "cant", "cannot", "wont", "didnt", "aint",
+    "nunca", "tampoco",
+];
+/// First words that make a reply a question ("is it safe to go back in", D-982).
+const QUESTION_STARTS: &[&str] = &[
+    "is", "are", "am", "can", "should", "could", "when", "how", "what", "do", "does", "will",
+    "puedo", "podemos", "cuando", "es",
+];
+
+/// Whether a reply is the safe reply (INT-025, D-128, D-419, D-982): safe, seguro or segura,
+/// "we're safe", "we're ok" or "we're fine", or a plain OK or Yes. A question (a "?" or a first
+/// word such as "is" or "can") is never the safe reply, nor is a reply with a negation ("not",
+/// "don't", "can't", ...) anywhere before the safe words, or a "no" just before them.
 #[must_use]
 pub fn is_safe_reply(words: &str) -> bool {
     let text = Folded::new(words);
@@ -276,15 +367,18 @@ pub fn is_safe_reply(words: &str) -> bool {
     ) {
         return true;
     }
-    if text.any_phrase(&["were ok", "were fine", "we are ok", "we are fine"]) {
-        return true;
+    let question =
+        words.contains(['?', '\u{bf}']) || all.first().is_some_and(|w| QUESTION_STARTS.contains(w));
+    if question {
+        return false;
     }
+    let fine = ["were", "are", "im", "am"];
     all.iter().enumerate().any(|(i, w)| {
+        let phrase = matches!(*w, "ok" | "okay" | "fine") && i > 0 && fine.contains(&all[i - 1]);
         let safe = matches!(*w, "safe" | "seguro" | "segura" | "seguros" | "seguras");
-        let negated = all[i.saturating_sub(2)..i]
-            .iter()
-            .any(|n| matches!(*n, "not" | "no" | "isnt" | "arent" | "never"));
-        safe && !negated
+        let negated = all[..i].iter().any(|n| NEGATIONS.contains(n))
+            || all[i.saturating_sub(2)..i].contains(&"no");
+        (safe || phrase) && !negated
     })
 }
 
@@ -314,20 +408,92 @@ impl Urgency {
     }
 }
 
-/// The "How soon?" answer in a reply: its number, or the option's own words; `None` otherwise
-/// (INT-030). Other word answers are T040's.
+/// Negated answers removed before "How soon?" and the choice are read, so "not urgent" is not
+/// "Today" and "not an emergency" not an emergency (D-982).
+const NEGATED: &[&str] = &[
+    "not urgent",
+    "not that urgent",
+    "not too urgent",
+    "not really urgent",
+    "isnt urgent",
+    "not today",
+    "not an emergency",
+    "not emergency",
+    "no emergency",
+    "isnt an emergency",
+    "no urgente",
+    "no es urgente",
+    "hoy no",
+    "no hoy",
+    "no es emergencia",
+    "no es una emergencia",
+];
+const DAY_NAMES: &[&str] = &[
+    "mon",
+    "tue",
+    "wed",
+    "thu",
+    "fri",
+    "sat",
+    "sun",
+    "tomorrow",
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "may",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec",
+    "next",
+    "end",
+    "manana",
+    "lunes",
+    "martes",
+    "miercoles",
+    "jueves",
+    "viernes",
+    "sabado",
+    "domingo",
+];
+
+/// The reply folded with its negated answers removed, and its first word (an option number counts
+/// only as the first word, so "by 12/1" is not answer 1).
+fn answer_text(words: &str) -> (Folded, String) {
+    let text = Folded::new(&Folded::new(words).without(NEGATED));
+    let first = text.words().next().unwrap_or_default().to_owned();
+    (text, first)
+}
+
+/// Whether a reply names a day to be done by: "by" then a number, day or month (D-292, D-982).
+fn names_a_day(text: &Folded) -> bool {
+    let all: Vec<&str> = text.words().collect();
+    all.windows(2).any(|pair| {
+        matches!(pair[0], "by" | "para" | "antes")
+            && (pair[1].starts_with(|c: char| c.is_ascii_digit())
+                || DAY_NAMES.iter().any(|d| pair[1].starts_with(d)))
+    })
+}
+
+/// The "How soon?" answer in a reply: its number as the first word, a "by <day>", or the option's
+/// own words, a negated option ("not urgent", "not today") never counting; `None` otherwise
+/// (INT-030, D-982). Other word answers are T040's.
 #[must_use]
 pub fn urgency(words: &str) -> Option<Urgency> {
-    let text = Folded::new(words);
-    let pick = |n: &str, words: &[&str]| text.any_word(&[n]) || text.any_phrase(words);
-    if pick("1", &["today", "urgent", "hoy", "urgente"]) {
+    let (text, first) = answer_text(words);
+    let pick = |n: &str, words: &[&str]| first == n || text.any_phrase(words);
+    if pick("4", &["certain day", "by a day", "un dia"]) || names_a_day(&text) {
+        Some(Urgency::ByDay)
+    } else if pick("1", &["today", "urgent", "hoy", "urgente"]) {
         Some(Urgency::Today)
     } else if pick("2", &["next few days", "few days", "unos dias"]) {
         Some(Urgency::FewDays)
     } else if pick("3", &["no rush", "sin prisa"]) {
         Some(Urgency::NoRush)
-    } else if pick("4", &["certain day", "by a day", "un dia"]) {
-        Some(Urgency::ByDay)
     } else {
         None
     }
@@ -353,14 +519,15 @@ impl Choice {
     }
 }
 
-/// The choice in a reply to the INT-006 text: 1 or "emergency", 2 or "regular"; `None` otherwise.
+/// The choice in a reply to the INT-006 text: 1 or "emergency", 2 or "regular" (a negated
+/// "not an emergency" never counting, D-982); `None` otherwise.
 #[must_use]
 pub fn choice(words: &str) -> Option<Choice> {
-    let text = Folded::new(words);
-    if text.any_word(&["1"]) || text.any_stem(&["emergenc"]) {
-        Some(Choice::Emergency)
-    } else if text.any_word(&["2", "regular", "normal"]) {
+    let (text, first) = answer_text(words);
+    if text.any_word(&["regular", "normal"]) || first == "2" {
         Some(Choice::Regular)
+    } else if first == "1" || text.any_stem(&["emergenc"]) {
+        Some(Choice::Emergency)
     } else {
         None
     }

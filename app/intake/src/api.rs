@@ -25,8 +25,8 @@ pub use crate::service::{
     Answered, Asked, BEEP_TEMPLATE, EMERGENCY_RELEASED_KIND, HOW_SOON_TEMPLATE, Handled,
     NEEDED_BY_TEMPLATE, Queued, Screened, TermsAcceptance, TermsChannel, TextIn, Trade,
     answer_choice, answer_how_soon, ask_how_soon, card_allowed, consent_records, conversation,
-    disclosure, emergency_events, how_soon, may_text, receive_answer, receive_text,
-    record_terms_acceptance, release_emergency, safe_hold, terms_acceptances,
+    disclosure, emergency_events, how_soon, may_text, offer_emergency_choice, receive_answer,
+    receive_text, record_terms_acceptance, release_emergency, safe_hold, terms_acceptances,
 };
 
 /// The pure first-reply rules, for the rules bridge and other crates' property tests.

@@ -16,7 +16,7 @@ use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     Answered, CHOICE_TEMPLATE, EMERGENCY_RELEASED_KIND, Handled, NEEDED_BY_TEMPLATE,
     NIGHT_NONE_TEMPLATE, NIGHT_ONE_TEMPLATE, TextIn, Trade, answer_choice, answer_how_soon,
-    how_soon, receive_text, release_emergency, safe_hold,
+    how_soon, offer_emergency_choice, receive_text, release_emergency, safe_hold,
 };
 use askhava_ops::api::Actor;
 use jiff::{SignedDuration, Timestamp};
@@ -234,4 +234,45 @@ async fn td_int_16_daytime_choice_and_answer_four(mut db: Db) {
         let asked = how(&mut db, &reply, id).await;
         assert_eq!(templates(&asked.texts), want, "answer {answer}");
     }
+}
+
+/// TD-INT-16, TD-INT-13 (INT-005, INT-006, INT-030, D-982): after a 911 match the choice is never
+/// offered before SAFE; it goes once SAFE is in; answer 4 after a 911 match still asks the day.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_16_no_choice_before_safe_and_answer_four_after_a_match(mut db: Db) {
+    let contact = Uuid::from_u128(0x3B0);
+    let opened = first(&mut db, contact, az("14:00"), "smell gas").await;
+    let id = opened.conversation.expect("request");
+    let early = text(contact, az("14:01"), 0x20, "2");
+    let held = how(&mut db, &early, id).await;
+    assert!(held.texts.is_empty(), "no choice before SAFE (INT-005)");
+    assert!(held.choice_after_safe);
+    let too_soon =
+        offer_emergency_choice(&mut db, &secret(), (&early, id), &HVAC, Settings::default())
+            .await
+            .expect("held");
+    assert!(too_soon.is_empty());
+    let safe = text(contact, az("14:02"), 0x21, "safe");
+    receive_text(&mut db, &secret(), &safe, Settings::default())
+        .await
+        .expect("safe");
+    let after = text(contact, az("14:03"), 0x22, "safe");
+    let offered =
+        offer_emergency_choice(&mut db, &secret(), (&after, id), &HVAC, Settings::default())
+            .await
+            .expect("offer");
+    assert_eq!(templates(&offered), [CHOICE_TEMPLATE]);
+
+    let day = Uuid::from_u128(0x3B1);
+    let opened = first(&mut db, day, az("14:00"), "smell gas").await;
+    let id = opened.conversation.expect("request");
+    let safe = text(day, az("14:01"), 0x23, "SAFE");
+    receive_text(&mut db, &secret(), &safe, Settings::default())
+        .await
+        .expect("safe");
+    let four = how(&mut db, &text(day, az("14:02"), 0x24, "4"), id).await;
+    assert_eq!(templates(&four.texts), [NEEDED_BY_TEMPLATE]);
+    assert!(!four.choice_after_safe);
+    let two = how(&mut db, &text(day, az("14:03"), 0x25, "2"), id).await;
+    assert_eq!(templates(&two.texts), [CHOICE_TEMPLATE]);
 }
