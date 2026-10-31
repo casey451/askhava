@@ -5,7 +5,11 @@
 //! back; [`rules::card_for`] and [`rules::recipients`] are the pure decision (LIC-035, LIC-043).
 //! T184: [`send_job_cards`] (owner pauses and "jobs nobody else covers", CARD-004, CARD-016),
 //! [`send_late_cards`] (CARD-018) and [`coverage`] (INT-017, INT-032).
+//! T045: [`build_card`] makes the anonymous [`JobCard`] (CARD-005 to CARD-009, PRIV-006) and
+//! [`final_gate`] is the CARD-008 gate it runs last.
 
+pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
+pub use crate::gate::final_gate;
 pub use crate::models::{
     CardBusiness, CardDecision, CardJob, Coverage, OfferTown, OwnerPauses, Pool, Pooled,
     QuotesError, Recipient, Skip,
