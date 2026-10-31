@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-10-31T07:16:54Z by runner aa655da24e57 (actions).
+Updated 2026-10-31T07:19:50Z by runner fec8bff5ffe1 (actions).
 
-**Requirements verified:** 3 of 725 (0.4%) · partial 197 · unstarted 525
-**Tasks merged (throughput only):** 55 of 221
+**Requirements verified:** 3 of 725 (0.4%) · partial 206 · unstarted 516
+**Tasks merged (throughput only):** 56 of 221
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 0 | 35 | 35 |
+| accessibility | 0 | 2 | 33 | 35 |
 | ai | 0 | 21 | 6 | 27 |
 | businesses | 0 | 1 | 56 | 57 |
 | calls | 0 | 2 | 23 | 25 |
@@ -23,7 +23,7 @@ Updated 2026-10-31T07:16:54Z by runner aa655da24e57 (actions).
 | quiet-hours | 0 | 9 | 0 | 9 |
 | quotes-pick | 0 | 4 | 52 | 56 |
 | recurring | 0 | 2 | 9 | 11 |
-| security | 2 | 21 | 31 | 54 |
+| security | 2 | 28 | 24 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
 | wording | 0 | 2 | 29 | 31 |
@@ -36,7 +36,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
-- stage 2: 44 of 78 done
+- stage 2: 45 of 78 done
 - stage 3: 0 of 25 done
 - stage 4: 0 of 50 done
 - stage 5: 0 of 42 done
