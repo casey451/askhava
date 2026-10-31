@@ -7,10 +7,14 @@
 //! T036 added the daily ROC and city list imports, the daily license check and the sign-up
 //! read-back (CARD-015, LIC-006, LIC-007, LIC-010, LIC-027) in `imports` and `service`.
 //!
+//! T180 added the live lookup at the pick and the lookup and list failure clocks (LIC-008,
+//! LIC-009, LIC-039) in `handlers`.
+//!
 //! Other crates reach it only through [`api`]. T153 adds the license-map class coverage that fills
 //! `Holder::roc_covers`.
 
 pub mod api;
+mod handlers;
 mod handyman;
 mod imports;
 mod models;

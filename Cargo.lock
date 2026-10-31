@@ -444,7 +444,9 @@ dependencies = [
 name = "askhava-licensing"
 version = "0.1.0"
 dependencies = [
+ "askhava-adapters",
  "askhava-catalog",
+ "askhava-ops",
  "jiff",
  "jiff-sqlx",
  "proptest",
@@ -452,6 +454,8 @@ dependencies = [
  "serde-saphyr",
  "sqlx",
  "thiserror",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]

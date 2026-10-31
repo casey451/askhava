@@ -9,6 +9,7 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - `src/api.rs`: the only public surface: `eligibility`, `eligibility_for_request`, `city_list_standing`, `inspection_fee`, the `handyman` functions, the list imports and checks below and the types below.
 - `src/imports.rs` (T036, pure): `parse_roc_list`, `parse_city_list`, `ROC_HEADER`, `CITY_HEADER`, `RocRow`, `RocStatus`, `CityRow` (no `Debug`), `ParsedList`, `ImportError`, `normalise_license_number`.
 - `src/service.rs` (T036, database): `import_roc_list`, `import_city_list`, `check_license`, `roc_check_allows_card`, `read_back`, `city_standing`, `ImportSummary`, `DailyCheck`, `ReadBack`, `Freshness`.
+- `src/handlers.rs` (T180): `lookup_at_pick`, `lookup_while_list_fails`, `unknown_standing`, `end_date_pauses`, `arizona_day`, `list_failure_alerts`, `alert_list_failure`, `FailureLimits`, `ListFailureAlert`, `LookupOutcome`, `UnknownStanding`, `LIST_FAILING_ALERT`, `LIST_STILL_FAILING_ALERT`; it calls `adapters` (`LicenseSource`) and `ops` (`raise_alert`), and logs a failed lookup or alert write with `tracing`. `service::record_lookup` stores a read lookup.
 - `src/models.rs`: `LicenseKind` (the catalog's `license.kind`), `Agency` (code, license-map name, its one category), `PestRecordCategory`, `PestAttestation` (checked constructor), `CityListStanding`, `CityRecord` (no `Debug`), `Holder`, `Job`, `Eligibility`, `NoCardReason`, `SaleAnswer`, `InspectionFee`, `LicensingError`.
 - `src/rules.rs`: the pure rules; no database.
 - `src/handyman.rs`: the handyman limits (T035): `never_handyman`, `check_quote`, `split_job`, `QuotePrice`, `QuoteSubmission`, `QuoteRefusal`, `HandymanJob`, `JobRequest`, `NeverHandyman`, `HANDYMAN_CARD_LINE`, `HANDYMAN_LIMIT_CENTS`, `SPLIT_JOB_WINDOW_DAYS`; it compiles in `docs/catalog/gas_keywords.yaml` (D-897).
@@ -30,6 +31,9 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - LIC-028, LIC-029, LIC-031: `rules::no_license` (listed no-license job types only; refused ones such as a new outlet or vent reroute are `RefusedJobType`; the handyman category gives `HandymanCard` to a business signed up as a handyman, else `NotHandyman`).
 - CARD-015, LIC-007: `service::check_license` (latest ROC list by date; per license number, D-906: `active` when any class on the number is Active, `inactive`, `not_listed`) and `service::roc_check_allows_card` (the latest check of the covering ROC license is `active` and within the caller's `Freshness`; ROC-licensed categories only: pest is attested, LIC-048, and other-agency, no-license and handyman cards never call it).
 - LIC-006, LIC-027: `service::read_back` (classes and issue year from the latest ROC list; never typed); `imports::parse_roc_list` (a wrong header rejects the list, a malformed row is skipped and counted, a list with no good row or more malformed than good rows is refused, `TooFewRows`, and so is a list under half the previous list's rows, `imports::shrank_too_far` called from `service::start_import`, D-905; license numbers upper case with no spaces; a repeated number and class keeps the stricter status). LIC-027 is partial here: the read-back is the ROC's only; other agencies' come with T180.
+- LIC-007, LIC-008: `handlers::lookup_at_pick` (exactly one lookup, never retried; a failed or misread answer is `Unknown`, records nothing, can't Confirm; D-938) and `handlers::unknown_standing` (kept, warned at 24 hours, paused at 72; D-940).
+- LIC-009: `handlers::end_date_pauses` (from 00:00 Arizona time on the end or bond-cancel date).
+- LIC-039: `handlers::list_failure_alerts`, `alert_list_failure` (`licensing.list_failing` at 12 hours, `licensing.list_still_failing` for the OPS-032 push at 24, both `normal`, never `high`, so OPS-001 safe mode can't start from them; both on a run that jumps past 24 hours; D-939, D-942) and `lookup_while_list_fails` (one lookup per active business, `lookup_spacing` apart).
 - LIC-010: the lists are read only by license number (`read_back`, `check_license`) or matched against one business's names (`service::city_standing`); no function lists them out and no contact column is stored.
 
 ## Never break
@@ -47,6 +51,7 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - A cleanly cut list under half the previous one never becomes the latest: `tests/integration/tests/license_imports.rs::a_list_under_half_the_previous_one_is_refused`.
 - A card needs the latest daily check `active`: `tests/integration/tests/license_imports.rs::card_needs_latest_daily_check_active`.
 - An empty or truncated list never becomes the latest: `tests/integration/tests/license_imports.rs::truncated_lists_are_refused_and_conflicts_keep_the_stricter_status`.
+- A failed or misread live lookup records nothing and never changes a verified status: `tests/integration/tests/license_lookup_failures.rs::a_failed_lookup_is_unknown_and_keeps_the_verified_status`.
 
 ## How to change
 
@@ -64,4 +69,5 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - `src/tests/handyman.rs`: TD-LIC-08 (every worked example through `check_quote`, the certification box, the card line), TD-LIC-09 (the gas list and the blocked job types), TD-LIC-10 (the split-job window and totals).
 - `src/tests/prop_handyman_never_gas.rs`: property tests for TD-LIC-09 (gas words and blocked candidates never reach a handyman), TD-LIC-08 (accepted exactly when certified and under the limit) and TD-LIC-10 (near jobs reaching $1,000 are blocked).
 - `src/tests/imports.rs` (pure, D-932): the list readers: header check, skipped and counted malformed rows (wrong field count, unclosed quote, over-long field, bad date, unknown status), the `TooFewRows` refusal for both lists, the half-size check (`shrank_too_far`, D-905), quoted fields and number normalising; it keeps `app/licensing/` at or above its 95% branch floor.
+- `tests/integration/tests/license_lookup_failures.rs` (database, T180): TD-LIC-04 (one lookup at the pick), TD-LIC-05 (unknown, clocks, end dates), TD-LIC-15 (the failing-list alerts, both `normal`, a run that jumps past both limits, and the throttled lookups).
 - `tests/integration/tests/license_imports.rs` (database): the imports with planted malformed rows, the read-back, the daily check and card gate, the city match and append-only tables.

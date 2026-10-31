@@ -7,12 +7,16 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+askhava-adapters = { workspace = true }
+askhava-ops = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
 serde = { workspace = true }
 serde-saphyr = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 askhava-catalog = { workspace = true }
