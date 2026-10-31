@@ -6742,7 +6742,7 @@
    "deps": [
     "T180"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "licensing-card-lines",
    "type": "build",
@@ -6762,13 +6762,66 @@
      "model": "claude-sonnet-5-5",
      "model_evidence_count": 21,
      "head_sha": "049258213a6758b25fcd7d1d290d0093857576fb",
-     "pr": null,
-     "checks": null,
+     "pr": 169,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-sonnet-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-31T06:45:09Z",
      "ended_at": "2026-10-31T06:59:49Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "049258213a6758b25fcd7d1d290d0093857576fb",
@@ -6783,7 +6836,20 @@
     "enabled": true,
     "why": "auto-merge on #169 (gh pr merge)",
     "head": "049258213a6758b25fcd7d1d290d0093857576fb"
-   }
+   },
+   "merged_sha": "aa655da24e575dba070506a9743b72dfea84a9db",
+   "merged_at": "2026-10-31T07:07:44Z",
+   "files": [
+    "app/licensing/CLAUDE.md",
+    "app/licensing/src/api.rs",
+    "app/licensing/src/lib.rs",
+    "app/licensing/src/lines.rs",
+    "app/licensing/src/tests/license_lines.rs",
+    "app/licensing/src/tests/mod.rs",
+    "app/licensing/templates/license_lines.json",
+    "docs/architecture.md",
+    "docs/decisions.md"
+   ]
   },
   {
    "id": "T038",
@@ -7326,7 +7392,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "2772cebc3597c541fc4580b0717372ff814a1dd6",
+   "reviewed_sha": "8df6b1c8db3feb3eaec0f2526b0987058744a125",
    "review_lease": {
     "task": "T051",
     "session": "actions-41174237039",
@@ -7349,6 +7415,17 @@
       "Twin": "success"
      },
      "at": "2026-10-31T07:06:57Z"
+    },
+    {
+     "from": "2772cebc3597c541fc4580b0717372ff814a1dd6",
+     "to": "8df6b1c8db3feb3eaec0f2526b0987058744a125",
+     "main": "aa655da24e575dba070506a9743b72dfea84a9db",
+     "how": "runner",
+     "checks": {
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-10-31T07:10:17Z"
     }
    ],
    "update_waiting_since": null,
@@ -10599,7 +10676,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T07:07:04Z",
+ "updated_at": "2026-10-31T07:10:25Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -10697,7 +10774,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9fb86401d922f124ac5223c637ac0197ab393d33",
+ "runner_sha": "aa655da24e575dba070506a9743b72dfea84a9db",
  "starter": "actions",
  "smoke_runs": [
   {
