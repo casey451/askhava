@@ -17,7 +17,10 @@ check, SHA and offending merge: docs/governance.md section 5), `stage_proofs`, `
 `deviations`, `usage.by_task`, `runner_sha`/`starter`, and per task `history`, `reviewed_sha`.
 Decision numbers (D-530): `next_decision` is the next D-number the runner may hand out, and each
 claimed task carries `decision_ids`, the block of DECISION_BLOCK numbers its worker numbers new
-docs/decisions.md entries from, so parallel work never takes the same number twice.
+docs/decisions.md entries from, so parallel work never takes the same number twice. A change made
+outside the runner (a plan change, a human fix) takes ONE number the same way, through
+`python3 -m runner --reserve-decision --reason TEXT` (reserve_plan_number, D-1058): it is kept in the
+top-level `plan_reservations` list ({number, at, reason, session}) and counts as reserved (_reserved).
 """
 
 from __future__ import annotations
@@ -259,8 +262,10 @@ def decision_numbers(text: str) -> list[int]:
 
 
 def _reserved(state: State) -> list[int]:
-    """Every D-number a task of the state holds in `decision_ids`."""
-    return [n for t in state["tasks"] for n in t.get("decision_ids") or []]
+    """Every D-number a task of the state holds in `decision_ids`, and every number a plan change took
+    from the counter (`plan_reservations`, D-1058), so no block is ever handed out over one."""
+    held = [n for t in state["tasks"] for n in t.get("decision_ids") or []]
+    return held + [int(r["number"]) for r in state.get("plan_reservations") or []]
 
 
 def reserve_decisions(state: State, task_id: str, taken: set[int]) -> State:
@@ -277,6 +282,22 @@ def reserve_decisions(state: State, task_id: str, taken: set[int]) -> State:
     out = with_task(state, task_id, decision_ids=list(range(start, start + DECISION_BLOCK)))
     out["next_decision"] = start + DECISION_BLOCK
     return out
+
+
+def reserve_plan_number(state: State, taken: set[int], reason: str, session: str, now: datetime) -> tuple[State, int]:
+    """Take ONE D-number from the live counter for a change made outside the runner (D-1058).
+
+    `taken` is every D-number on main's docs/decisions.md. The number is the first at or above
+    `next_decision`, above main's highest entry and above every number already reserved (a task's
+    block or an earlier plan reservation), so it is free by construction. It is recorded in the
+    top-level `plan_reservations` list ({number, at, reason, session}) and `next_decision` moves past
+    it, in one state write, so the next claim's block starts above it (docs/governance.md section 3.6)."""
+    number = max([int(state.get("next_decision") or 1), max(taken, default=0) + 1, max(_reserved(state), default=0) + 1])
+    out = copy.deepcopy(state)
+    note = {"number": number, "at": iso(now), "reason": reason, "session": session}
+    out["plan_reservations"] = [*(out.get("plan_reservations") or []), note]
+    out["next_decision"] = number + 1
+    return out, number
 
 
 def claim(
