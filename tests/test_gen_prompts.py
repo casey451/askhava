@@ -323,3 +323,14 @@ def test_check_prints_token_estimates_and_notes_drift(
     assert gp.main(["--root", str(root), "--check"]) == 0
     out = capsys.readouterr().out
     assert "T900: about" in out and "tokens" in out and "regenerate to refresh" in out
+
+
+def test_four_digit_decisions_are_read_and_superseded(tmp_path: Path) -> None:
+    """D-930: a D-1000 entry is pasted like any other and may supersede an older one; D-99 is no entry."""
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "decisions.md").write_text(
+        "- **D-001** Old.\n- **D-1000** New; it supersedes D-001.\n- **D-99** Too short.\n", encoding="utf-8"
+    )
+    src = gp.load_sources(tmp_path)
+    assert set(src.decisions) == {"D-001", "D-1000"}
+    assert src.superseded == {"D-001": "D-1000"}

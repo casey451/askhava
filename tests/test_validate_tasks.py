@@ -753,3 +753,14 @@ def test_v12_a_file_under_a_crate_needs_the_manifest_first(tmp_path: Path) -> No
     task(tasks, "T001")["deps"] = []
     root = write_repo(tmp_path, tasks)
     assert not [e for e in vt.run(root).errors if "V12" in e]
+
+
+def test_four_digit_decision_reference_resolves(tmp_path: Path) -> None:
+    """D-930: a task may name D-1000 once the log has it; D-99 is never a decision id."""
+    assert vt.DECISION_ID.match("D-1000") and not vt.DECISION_ID.match("D-99")
+    tasks = valid_tasks()
+    task(tasks, "T004")["decisions"] = ["D-1000"]
+    root = write_repo(tmp_path, tasks)
+    with (root / "docs" / "decisions.md").open("a", encoding="utf-8") as f:
+        f.write("- **D-1000** Four digits.\n")
+    assert not [e for e in vt.run(root).errors if "D-1000" in e]
