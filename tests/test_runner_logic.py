@@ -434,3 +434,19 @@ def test_owner_review_setting(tmp_path: Path) -> None:
     assert entry.owner_review(f) is True
     f.write_text('{"owner_review": false}', encoding="utf-8")
     assert entry.owner_review(f) is False
+
+
+def test_sync_graph_copies_changed_deps_onto_unfinished_entries() -> None:
+    """A dependency a plan change adds later reaches the state entry, so `eligible` and the lane check
+    agree (D-1126: T156 gained T187 in kit/tasks.json after it was claimed and looked eligible for ever)."""
+    graph = [task("T001"), task("T002"), task("T003", deps=["T001"]), task("T004", deps=["T001"])]
+    s = st.sync_graph(st.new_state(), graph)
+    s = st.with_task(s, "T001", status=st.DONE)
+    s = st.with_task(s, "T004", status=st.DONE)
+    moved = [task("T001"), task("T002", deps=["T001", "T003"]), task("T003", deps=["T002"]), task("T004", deps=["T002"])]
+    out = st.sync_graph(s, moved)
+    assert st.entry(out, "T002")["deps"] == ["T001", "T003"]
+    assert st.entry(out, "T003")["deps"] == ["T002"]
+    assert st.entry(out, "T004")["deps"] == ["T001"], "a finished entry keeps the deps it ran with"
+    assert st.eligible(out, NOW) == []
+    assert st.eligible(st.sync_graph(s, graph), NOW) == ["T002", "T003"], "unchanged deps change nothing"
