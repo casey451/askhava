@@ -13,10 +13,13 @@
 //! T037 added the quote-card license lines (LIC-026, LIC-032, LIC-034, LIC-037, LIC-038, WORD-016)
 //! in `lines`.
 //!
-//! Other crates reach it only through [`api`]. T153 adds the license-map class coverage that fills
-//! `Holder::roc_covers`.
+//! T153 added the license class map, the commercial-only sign-up stop, the R-61 and R-62 project
+//! limits and the `launch_open` openings (LIC-035, LIC-043 to LIC-046) in `class_map`.
+//!
+//! Other crates reach it only through [`api`].
 
 pub mod api;
+mod class_map;
 mod handlers;
 mod handyman;
 mod imports;

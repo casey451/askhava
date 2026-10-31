@@ -25,7 +25,16 @@
 //! `Unknown` and can't Confirm; [`unknown_standing`] keeps, warns and pauses (LIC-008);
 //! [`end_date_pauses`] applies LIC-009; [`list_failure_alerts`], [`alert_list_failure`] and
 //! [`lookup_while_list_fails`] cover a failing list (LIC-039).
+//!
+//! The class map (T153): [`ClassMap`] loads `docs/catalog/license_map.yaml`; [`ClassMap::covers`]
+//! fills `Holder::roc_covers` (LIC-043, LIC-035), [`ClassMap::sign_up`] stops a commercial-only
+//! record (LIC-044), [`ClassMap::check_project_limit`] applies the R-61 and R-62 limits (LIC-045),
+//! [`ClassMap::opening`] and [`request_intake`] honor `launch_open` (LIC-046).
 
+pub use crate::class_map::{
+    ClassMap, ClassMapError, JobTypeKey, Opening, ProjectLimitRefusal, RequestIntake,
+    STRUCTURAL_JOB_TYPES, SignUpOutcome, request_intake,
+};
 pub use crate::handlers::{
     FailureLimits, LIST_FAILING_ALERT, LIST_STILL_FAILING_ALERT, ListFailureAlert, LookupOutcome,
     UnknownStanding, alert_list_failure, arizona_day, end_date_pauses, list_failure_alerts,
