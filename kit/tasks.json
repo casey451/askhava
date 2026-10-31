@@ -5712,7 +5712,8 @@
     "app/messaging/src/models.rs",
     "migrations/0089_messaging_retries_email.sql",
     "tests/integration/tests/text_retries.rs",
-    "app/messaging/templates/email_layout.html"
+    "app/messaging/templates/email_layout.html",
+    "app/messaging/src/tests/retries.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -5751,11 +5752,12 @@
     "D-308",
     "D-381",
     "D-490",
-    "D-492"
+    "D-492",
+    "D-1047"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 400,
     "context_pct": 26
    },
@@ -6001,7 +6003,8 @@
     "app/payments/src/service.rs",
     "migrations/0093_payments_customers_cards.sql",
     "tests/integration/tests/setup_intent.rs",
-    "tests/security/tests/no_homeowner_charge.rs"
+    "tests/security/tests/no_homeowner_charge.rs",
+    "app/payments/src/tests/prop_no_homeowner_charge.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -6030,11 +6033,12 @@
     "D-196",
     "D-365",
     "D-465",
-    "D-490"
+    "D-490",
+    "D-1047"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 6,
     "lines": 550,
     "context_pct": 22
    },
@@ -6068,7 +6072,8 @@
     "app/payments/src/service.rs",
     "app/payments/src/rules.rs",
     "tests/integration/tests/fee_at_pick.rs",
-    "tests/integration/tests/fee_mode_switch.rs"
+    "tests/integration/tests/fee_mode_switch.rs",
+    "app/payments/src/tests/fee_at_pick.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -6093,11 +6098,12 @@
     "D-071",
     "D-072",
     "D-277",
-    "D-357"
+    "D-357",
+    "D-1047"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 450,
     "context_pct": 21
    },
@@ -6205,7 +6211,8 @@
     "app/payments/src/models.rs",
     "migrations/0096_payments_charge.sql",
     "tests/integration/tests/charge_attempts.rs",
-    "app/picks/src/money_notices.rs"
+    "app/picks/src/money_notices.rs",
+    "app/payments/src/tests/charge.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -6246,11 +6253,12 @@
     "D-308",
     "D-365",
     "D-368",
-    "D-490"
+    "D-490",
+    "D-1047"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 350,
     "context_pct": 23
    },
@@ -6288,7 +6296,8 @@
     "app/payments/src/handlers.rs",
     "app/payments/src/release_proof.rs",
     "tests/integration/tests/confirm_and_pay.rs",
-    "migrations/0097_payments_charge_evidence.sql"
+    "migrations/0097_payments_charge_evidence.sql",
+    "app/payments/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -6328,11 +6337,12 @@
     "D-453",
     "D-480",
     "D-488",
-    "D-492"
+    "D-492",
+    "D-1047"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 6,
     "lines": 300,
     "context_pct": 25
    },
@@ -6446,7 +6456,9 @@
    "owns": [
     "app/picks/src/confirm.rs",
     "app/picks/src/handlers.rs",
-    "tests/integration/tests/confirm_window.rs"
+    "tests/integration/tests/confirm_window.rs",
+    "app/picks/src/models.rs",
+    "app/picks/src/tests/confirm.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -6490,11 +6502,12 @@
     "D-345",
     "D-344",
     "D-365",
-    "D-359"
+    "D-359",
+    "D-1047"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 5,
     "lines": 350,
     "context_pct": 23
    },
@@ -6530,7 +6543,8 @@
    ],
    "owns": [
     "app/picks/src/confirm.rs",
-    "tests/integration/tests/confirm_hold_away.rs"
+    "tests/integration/tests/confirm_hold_away.rs",
+    "app/picks/src/tests/confirm_hold_away.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -6567,11 +6581,12 @@
     "D-345",
     "D-344",
     "D-346",
-    "D-359"
+    "D-359",
+    "D-1047"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 3,
     "lines": 350,
     "context_pct": 23
    },
