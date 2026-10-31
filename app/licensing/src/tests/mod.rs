@@ -2,6 +2,7 @@
 
 mod agency_rules;
 mod handyman;
+mod imports;
 mod prop_handyman_never_gas;
 mod prop_rules;
 mod scope_examples;

@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT rows_recorded FROM licensing.list_import WHERE source = $1 AND list_date < $2 ORDER BY list_date DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "rows_recorded",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "licensing.list_import",
+            "name": "rows_recorded"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a46058703fcbbc27ad10f96540de4bec0ea208756e82e1988c3ac6826b571910"
+}
