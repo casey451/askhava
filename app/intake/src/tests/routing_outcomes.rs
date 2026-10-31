@@ -1,5 +1,5 @@
 //! Routing outcomes right after the ZIP and area check (TD-INT-19, TD-INT-14, TD-LIC-07,
-//! TD-LIC-01, TD-LIC-17: INT-016, INT-017, INT-018, INT-022, LIC-017, LIC-018). Pure cases only;
+//! TD-LIC-01: INT-016, INT-017, INT-018, INT-022, LIC-017, LIC-018). Pure cases only;
 //! the database cases are `tests/integration/tests/not_covered.rs`. Fake text only.
 
 use crate::api::{
@@ -17,6 +17,7 @@ fn request<'a>(town: &'a str, trade: &'a str, open: bool, words: &'a str) -> Req
         trade_open: open,
         words,
         move_states: None,
+        job_types: &[],
     }
 }
 
@@ -91,7 +92,23 @@ fn td_lic_07_moves_outside_arizona_are_refused() {
     assert_eq!(route(&m14), Outcome::Continue);
 }
 
-/// TD-LIC-07, TD-LIC-17 (LIC-018): home watch asking for rent collection or leasing is refused,
+/// TD-LIC-07 (LIC-017, M14): the catalog's refused "move leaving Arizona" job type is refused
+/// even when no states are known.
+#[test]
+fn td_lic_07_the_refused_move_job_type_is_refused_without_states() {
+    let mut m14 = request(
+        "lake_havasu_city",
+        "local_moving",
+        true,
+        "move to Las Vegas",
+    );
+    m14.job_types = &["move leaving Arizona"];
+    assert_eq!(route(&m14), Outcome::NotCovered(Why::MoveOutsideArizona));
+    m14.job_types = &["in-town move"];
+    assert_eq!(route(&m14), Outcome::Continue);
+}
+
+/// TD-LIC-07 (LIC-018): home watch asking for rent collection or leasing is refused,
 /// in English and Spanish; an ordinary house check goes on.
 #[test]
 fn td_lic_07_home_watch_for_rent_or_leasing_is_refused() {
@@ -104,9 +121,15 @@ fn td_lic_07_home_watch_for_rent_or_leasing_is_refused() {
     ] {
         assert!(asks_property_management(words), "{words}");
     }
-    assert!(!asks_property_management(
-        "weekly house check while we are away"
-    ));
+    for words in [
+        "weekly house check while we are away",
+        "clean after the renters check out",
+        "turnover cleaning when my tenant moves out",
+        "limpieza cuando salga el inquilino",
+        "the lease ends friday, clean the unit",
+    ] {
+        assert!(!asks_property_management(words), "{words}");
+    }
     let asked = request("lake_havasu_city", "home_watch", true, "tenant screening");
     assert_eq!(route(&asked), Outcome::NotCovered(Why::PropertyManagement));
     let other = request(

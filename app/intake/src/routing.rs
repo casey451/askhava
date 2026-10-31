@@ -27,28 +27,56 @@ pub const NOT_COVERED_TEMPLATE: &str = "not_covered";
 pub const OUT_OF_AREA_TEMPLATE: &str = "out_of_area";
 /// The moving category a LIC-017 state check applies to.
 const MOVING: &str = "local_moving";
+/// The catalog's refused moving job type (`docs/catalog/categories.yaml`, LIC-017).
+const MOVE_LEAVING_ARIZONA: &str = "move leaving Arizona";
 /// The categories whose requests may not ask for rent collection or leasing (LIC-018).
 const HOME_WATCH: [&str; 2] = ["home_watch", "turnover_cleaning"];
 
-/// The catalog `property management` words, English and Spanish, folded (LIC-018, D-485): rent
-/// collection, finding or screening tenants, showing the home to renters and leasing.
-const PROPERTY_MANAGEMENT: [&str; 16] = [
+/// The catalog `property management` phrases, English and Spanish, folded (LIC-018, D-485): rent
+/// collection, finding or screening tenants, showing the home to renters and leasing. Bare nouns
+/// such as "renters" are not here: "clean after the renters check out" is turnover cleaning.
+const PROPERTY_MANAGEMENT: [&str; 41] = [
     "collect rent",
     "collecting rent",
-    "rent collection",
     "collect the rent",
-    "tenant",
-    "tenants",
-    "renter",
-    "renters",
-    "lease",
+    "rent collection",
+    "find tenants",
+    "find a tenant",
+    "find renters",
+    "find a renter",
+    "screen tenants",
+    "screening tenants",
+    "tenant screening",
+    "screen renters",
+    "show the home to renters",
+    "show the house to renters",
+    "show it to renters",
+    "showing the home to renters",
+    "showing the house to renters",
+    "show the home to tenants",
+    "show the house to tenants",
+    "lease it out",
+    "lease the home",
+    "lease the house",
     "leasing",
+    "leased out",
+    "rent it out",
+    "renting out",
     "cobrar la renta",
     "cobrar renta",
     "cobro de renta",
-    "inquilino",
-    "inquilinos",
+    "cobrar el alquiler",
+    "buscar inquilinos",
+    "buscar un inquilino",
+    "encontrar inquilinos",
+    "encontrar un inquilino",
+    "filtrar inquilinos",
+    "mostrar la casa a inquilinos",
+    "mostrar la casa a los inquilinos",
     "arrendar",
+    "rentar la casa",
+    "rentar mi casa",
+    "alquilar la casa",
 ];
 
 /// A town in the service-area list with its state (INT-022, D-382).
@@ -123,6 +151,8 @@ pub struct Request<'a> {
     pub words: &'a str,
     /// The states a move starts and ends in, for a moving request (LIC-017).
     pub move_states: Option<(&'a str, &'a str)>,
+    /// The candidate job types found so far, such as `move leaving Arizona` (LIC-017).
+    pub job_types: &'a [&'a str],
 }
 
 /// Why a request is not covered.
@@ -154,7 +184,7 @@ pub fn route(req: &Request<'_>) -> Outcome {
     if !req.area.contains(&req.town) {
         return Outcome::OutOfArea;
     }
-    if req.trade == MOVING && req.move_states.is_some_and(|(a, b)| move_refused(a, b)) {
+    if req.trade == MOVING && leaves_arizona(req) {
         return Outcome::NotCovered(Why::MoveOutsideArizona);
     }
     if HOME_WATCH.contains(&req.trade) && asks_property_management(req.words) {
@@ -164,6 +194,20 @@ pub fn route(req: &Request<'_>) -> Outcome {
         return Outcome::NotCovered(Why::TradeNotOpen);
     }
     Outcome::Continue
+}
+
+/// Checks the codes `apply` writes: the town always, the trade only for Not covered (an
+/// out-of-area request may have no trade yet).
+fn check_request(req: &Request<'_>, outcome: Outcome) -> Result<(), IntakeError> {
+    if matches!(outcome, Outcome::NotCovered(_)) {
+        check_code(req.trade, IntakeError::BadTrade)?;
+    }
+    check_code(req.town, IntakeError::BadTown)
+}
+
+fn leaves_arizona(req: &Request<'_>) -> bool {
+    req.job_types.contains(&MOVE_LEAVING_ARIZONA)
+        || req.move_states.is_some_and(|(a, b)| move_refused(a, b))
 }
 
 /// The request, its homeowner message and the language to answer in.
@@ -224,8 +268,7 @@ pub async fn apply(
             "intake.not_covered",
         ),
     };
-    check_code(req.trade, IntakeError::BadTrade)?;
-    check_code(req.town, IntakeError::BadTown)?;
+    check_request(req, outcome)?;
     let at = routing.msg.received_at;
     if models::conversation_state(db, routing.conversation)
         .await?

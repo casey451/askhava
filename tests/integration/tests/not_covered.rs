@@ -7,10 +7,11 @@
 
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
-    JobStart, NOT_COVERED_TEMPLATE, OUT_OF_AREA_TEMPLATE, Opened, Outcome, Request, Routing,
-    TextIn, Why, apply_routing, begin_job, receive_text, recruiting_demand, route, trade_is_open,
+    JobStart, NOT_COVERED_TEMPLATE, OUT_OF_AREA_TEMPLATE, Opened, Outcome, Queued, Request,
+    Routing, TextIn, Why, apply_routing, begin_job, receive_text, recruiting_demand, route,
+    trade_is_open,
 };
-use askhava_jobs::api::{JobStatus, current};
+use askhava_jobs::api::current;
 use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::types::Uuid;
@@ -68,7 +69,7 @@ async fn run(
     conversation: Uuid,
     town: &str,
     trade: &str,
-) -> Outcome {
+) -> (Outcome, Option<Queued>) {
     let open = trade_is_open(db, trade).await.expect("open check");
     let req = Request {
         town,
@@ -77,6 +78,7 @@ async fn run(
         trade_open: open,
         words: msg.inbound.words,
         move_states: None,
+        job_types: &[],
     };
     let outcome = route(&req);
     let routing = Routing {
@@ -95,10 +97,10 @@ async fn run(
         Outcome::OutOfArea => Some(OUT_OF_AREA_TEMPLATE),
         Outcome::NotCovered(_) => Some(NOT_COVERED_TEMPLATE),
     };
-    if let Some(queued) = queued {
-        assert_eq!(Some(queued.template), expected);
+    if let Some(sent) = &queued {
+        assert_eq!(Some(sent.template), expected);
     }
-    outcome
+    (outcome, queued)
 }
 
 /// TD-INT-14, TD-LIC-01 (INT-016, INT-017, INT-018): a boat-lift request moves to Not covered with
@@ -110,11 +112,12 @@ async fn td_int_14_a_trade_not_open_moves_to_not_covered(mut db: Db) {
         .expect("catalog");
     let msg = text(Uuid::from_u128(0x7001));
     let (conversation, job) = request_with_job(&mut db, &msg, "boat_lift").await;
-    let outcome = run(&mut db, &msg, conversation, TOWN, "boat_lift").await;
+    let (outcome, first) = run(&mut db, &msg, conversation, TOWN, "boat_lift").await;
+    assert!(first.is_some());
     assert_eq!(outcome, Outcome::NotCovered(Why::TradeNotOpen));
     assert_eq!(
-        current(&mut db, job).await.expect("job").status,
-        JobStatus::NotCovered
+        current(&mut db, job).await.expect("job").status.code(),
+        "not_covered"
     );
     let rows = recruiting_demand(&mut db, conversation)
         .await
@@ -124,11 +127,13 @@ async fn td_int_14_a_trade_not_open_moves_to_not_covered(mut db: Db) {
         (rows[0].town.as_str(), rows[0].trade.as_str()),
         (TOWN, "boat_lift")
     );
-    let again = run(&mut db, &msg, conversation, TOWN, "boat_lift").await;
-    assert_eq!(
-        again, outcome,
-        "a second run queues nothing and adds no row"
-    );
+    let (again, queued) = run(&mut db, &msg, conversation, TOWN, "boat_lift").await;
+    assert_eq!(again, outcome);
+    assert!(queued.is_none(), "a second run queues nothing");
+    let rows = recruiting_demand(&mut db, conversation)
+        .await
+        .expect("rows");
+    assert_eq!(rows.len(), 1, "a second run adds no demand row");
 }
 
 /// TD-INT-19 (INT-022): a town outside the list moves the job to Closed early, logs no demand,
@@ -140,11 +145,12 @@ async fn td_int_19_out_of_area_closes_early_and_a_later_text_reopens(mut db: Db)
         .expect("catalog");
     let msg = text(Uuid::from_u128(0x7002));
     let (conversation, job) = request_with_job(&mut db, &msg, "plumbing_repair").await;
-    let outcome = run(&mut db, &msg, conversation, "needles", "plumbing_repair").await;
+    let (outcome, queued) = run(&mut db, &msg, conversation, "needles", "plumbing_repair").await;
+    assert!(queued.is_some(), "the out-of-area reply was queued");
     assert_eq!(outcome, Outcome::OutOfArea);
     assert_eq!(
-        current(&mut db, job).await.expect("job").status,
-        JobStatus::ClosedEarly
+        current(&mut db, job).await.expect("job").status.code(),
+        "closed_early"
     );
     assert!(
         recruiting_demand(&mut db, conversation)
@@ -159,10 +165,11 @@ async fn td_int_19_out_of_area_closes_early_and_a_later_text_reopens(mut db: Db)
     let handled = receive_text(&mut db, &secret(), &later, Settings::default())
         .await
         .expect("later");
-    assert_ne!(handled.conversation, Some(conversation));
+    let opened = handled.conversation.expect("a new request opened");
+    assert_ne!(opened, conversation);
 }
 
-/// TD-LIC-01, TD-LIC-17 (INT-017): an open trade is open, a trade not in the catalog is not.
+/// TD-LIC-01 (INT-017): an open trade is open, a trade not in the catalog is not.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_lic_01_open_and_unknown_trades(mut db: Db) {
     askhava_catalog::api::load_embedded(&mut db)
