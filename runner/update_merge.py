@@ -21,11 +21,13 @@ to be "the reviewed work plus main" (`reviewed_plus_main`, D-584):
    every conflict in it is a pure insertion on both sides at the same place (git's diff3 view holds
    no base line between them, `insertions_after_main`): both inserted blocks are kept verbatim, main's
    first and the branch's after, as for docs/decisions.md; when main's block opens a section (a
-   heading or a TOML table) the branch's must open its own. A resolved Cargo.toml must still parse as
-   TOML (a key both sides added twice does not), and every locked section of a resolved
-   docs/architecture.md (scripts/check_plan_lock.py) must be the branch's or main's (D-890).
+   heading or a TOML table) the branch's must open its own. No side's file may hold a line whose first
+   word is a 40-character conflict marker (`marker_shaped`), which could be misread as git's own. A
+   resolved Cargo.toml must still parse as TOML (a key both sides added twice does not) and no inserted
+   line may assign a dotted key (`dotted_key`), and every locked section of a resolved
+   docs/architecture.md (scripts/check_plan_lock.py) must be the branch's or main's (D-891).
 Any other conflicting path is a real conflict: nothing is resolved by guesswork. The cycle then hands
-the branch to a worker on the same attempt to merge main in itself (a resync, runner/cycle.py, D-890).
+the branch to a worker on the same attempt to merge main in itself (a resync, runner/cycle.py, D-891).
 
 The commit's author and committer dates are main's commit date, so two runners that build the same
 update make the same commit and the second push is a no-op instead of a rejected race.
@@ -48,9 +50,10 @@ PLAN_LOCK = "kit/plan.lock"
 LOCK_TOOL = "scripts/check_plan_lock.py"
 LOCK_TREES = ("docs/", "scripts/", "kit/")  # where locked files live; root files are checked out too
 ARCHITECTURE = "docs/architecture.md"
-# Shared files where two tasks finishing close together each insert lines at the same place (D-890).
+# Shared files where two tasks finishing close together each insert lines at the same place (D-891).
 INSERT_ONLY = ("docs/for-casey-review.md", ARCHITECTURE, "Cargo.toml")
-MARK = 40  # conflict marker size for `git merge-file`: no line of these files starts with 40 "<"s
+MARK = 40  # conflict marker size for `git merge-file`; a file with a line shaped like one is never resolved
+MARKERS = tuple(c * MARK for c in "<|=>")  # the four marker lines of a `--diff3` conflict (D-891)
 
 
 def decisions_after_main(base: str, ours: str, theirs: str) -> str | None:
@@ -84,11 +87,16 @@ def joinable(branch: list[str], base: list[str], main: list[str]) -> bool:
     return not any(opens_section(line) for line in main) or opens_section(first)
 
 
-def insertions_after_main(merged: str) -> str | None:
+def insertions_after_main(merged: str, sources: tuple[str, ...] = (), inserted: list[str] | None = None) -> str | None:
     """A `git merge-file -p --diff3 --marker-size=MARK <branch> <base> <main>` result with each conflict
-    replaced by main's lines and then the branch's (D-890); None when any conflict is not `joinable` or
-    the markers do not close."""
+    replaced by main's lines and then the branch's (D-891); None when any of the `sources` (the three
+    texts merged) has a line shaped like a conflict marker (`marker_shaped`: it would be read as git's
+    own), any conflict is not `joinable`, or the markers do not close. Each line a conflict inserted is
+    appended to `inserted` when given."""
+    if any(marker_shaped(text) for text in sources):
+        return None
     out: list[str] = []
+    kept: list[str] = [] if inserted is None else inserted
     part, block = "", {"ours": [], "base": [], "theirs": []}  # type: str, dict[str, list[str]]
     opens = {"<" * MARK: "ours", "|" * MARK: "base", "=" * MARK: "theirs"}
     for line in merged.splitlines(keepends=True):
@@ -99,6 +107,7 @@ def insertions_after_main(merged: str) -> str | None:
             if not joinable(block["ours"], block["base"], block["theirs"]):
                 return None
             out += block["theirs"] + block["ours"]
+            kept += block["theirs"] + block["ours"]
             part, block = "", {"ours": [], "base": [], "theirs": []}
         elif part:
             block[part].append(line)
@@ -107,15 +116,43 @@ def insertions_after_main(merged: str) -> str | None:
     return None if part else "".join(out)
 
 
+def marker_shaped(text: str) -> bool:
+    """Whether any line's first word is one of the four conflict markers (`MARKERS`). Such a line (a
+    Markdown underline of 40 "="s, say) cannot be told apart from git's own in the merged text, so the
+    file is refused and the conflict goes to a resync worker (D-891)."""
+    return any(line.split(" ", 1)[0] in MARKERS for line in text.splitlines())
+
+
+def dotted_key(line: str) -> bool:
+    """Whether a TOML line assigns a dotted key (`serde.version = "1"`): a `.` outside quotes before the
+    first `=`. Table headers, comments and lines without `=` are not assignments (D-891)."""
+    stripped = line.strip()
+    if not stripped or stripped.startswith(("#", "[")) or "=" not in stripped:
+        return False
+    quote = ""
+    for char in stripped.split("=", 1)[0]:
+        if quote:
+            quote = "" if char == quote else quote
+        elif char in "\"'":
+            quote = char
+        elif char == ".":
+            return True
+    return False
+
+
 def insert_only(path: str) -> bool:
-    """Whether a conflict in `path` may be resolved as insertions on both sides (D-890)."""
+    """Whether a conflict in `path` may be resolved as insertions on both sides (D-891)."""
     return path in INSERT_ONLY or path.endswith("/Cargo.toml")
 
 
-def toml_ok(path: str, text: str) -> bool:
-    """A resolved Cargo.toml must still parse (tomllib refuses a key defined twice); other files pass."""
+def toml_ok(path: str, text: str, inserted: list[str]) -> bool:
+    """A resolved Cargo.toml must still parse (tomllib refuses a key defined twice) and no `inserted`
+    line may assign a dotted key: `serde.version` from one side and `serde.features` from the other
+    parse into one dependency neither side wrote (D-891). Other files pass."""
     if not path.endswith("Cargo.toml"):
         return True
+    if any(dotted_key(line) for line in inserted):
+        return False
     try:
         tomllib.loads(text)
     except tomllib.TOMLDecodeError:
@@ -186,8 +223,9 @@ class UpdateMerge:
         return merged, []
 
     def _insertions(self, commits: tuple[str, str, str], path: str) -> str | None:
-        """`path` merged with both sides' insertions kept, main's first (D-890); None when its conflicts
-        are not all pure insertions, a side lacks the file, a Cargo.toml no longer parses, or a locked
+        """`path` merged with both sides' insertions kept, main's first (D-891); None when its conflicts
+        are not all pure insertions, a side lacks the file, any side has a line shaped like a conflict
+        marker, a Cargo.toml no longer parses or an inserted line assigns a dotted key, or a locked
         section of docs/architecture.md would be neither side's (a resolution never writes locked text)."""
         base, reviewed, main = commits
         texts = [self._file(reviewed, path), self._file(base, path), self._file(main, path)]
@@ -198,8 +236,9 @@ class UpdateMerge:
             for name, text in zip(names, texts):
                 Path(name).write_text(str(text), encoding="utf-8")
             code, out, _ = self._run(["git", "merge-file", "-p", "--diff3", f"--marker-size={MARK}", *names], None, self.root)
-        text = insertions_after_main(out) if 0 <= code < 128 else None
-        if text is None or not toml_ok(path, text):
+        inserted: list[str] = []
+        text = insertions_after_main(out, tuple(str(t) for t in texts), inserted) if 0 <= code < 128 else None
+        if text is None or not toml_ok(path, text, inserted):
             return None
         if path == ARCHITECTURE and not self._sections_kept(text, str(texts[0]), str(texts[2])):
             return None
@@ -207,7 +246,7 @@ class UpdateMerge:
 
     def _sections_kept(self, merged: str, ours: str, theirs: str) -> bool:
         """Whether each locked section of docs/architecture.md (scripts/check_plan_lock.py) in the merged
-        text is the branch's or main's, so the lock one side carries still holds for it (D-890)."""
+        text is the branch's or main's, so the lock one side carries still holds for it (D-891)."""
         tool = self._lock_tool()
         if tool is None:
             return False

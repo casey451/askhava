@@ -2,7 +2,7 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock, the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
-## Two tasks finishing together no longer cost a try (D-890, October 31)
+## Two tasks finishing together no longer cost a try (D-891, October 31)
 
 - **What happened.** On October 30 two tasks (T024 and T028) each lost one of their three tries only because another task merged into the same shared files just before them (a list of code libraries, the architecture notes, this file). The work itself was fine.
 - **What the runner now does itself.** When both sides only added lines at the same spot in those shared files, the runner keeps both, the newer `main` lines first. Both of October 30's clashes would have been fixed this way with no one involved. Anything else, such as two edits to the same line, is never guessed.

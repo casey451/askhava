@@ -327,7 +327,7 @@ def test_auto_merge_waits_a_bounded_time_for_the_pushed_head(tmp_path: Path) -> 
     assert not ok and "not the reviewed head" in why and len(waits) == ge.HEAD_POLLS
 
 
-# ---- pure insertions in shared files are resolved, main's first (D-890)
+# ---- pure insertions in shared files are resolved, main's first (D-891)
 
 REVIEW = "# For Casey's review\n\n## First (T001)\n\n- one\n"
 CARGO = '[workspace]\nmembers = ["app/*"]\n\n[workspace.dependencies]\naskhava-core = { path = "app/core" }\naskhava-fixtures = { path = "tests/fixtures" }\naxum = "=0.8.9"\n'
@@ -413,7 +413,7 @@ def _with_lock_tool(env: ge.GitHubEnv, root: Path) -> ge.GitHubEnv:
     return env
 
 
-# ---- a resync's branch is the reviewed head, main not merged in (D-890)
+# ---- a resync's branch is the reviewed head, main not merged in (D-891)
 
 
 def test_a_resync_branch_starts_at_the_reviewed_head_without_main(repo: dict[str, Path], tmp_path: Path) -> None:
@@ -438,3 +438,69 @@ def test_a_resync_on_a_branch_whose_pull_request_still_has_auto_merge_closes_it_
     prep = env.prepare_branch(dict(TASK, resync={"attempt": 1, "from": reviewed, "main": main2, "paths": ["README.md"], "at": "t"}), 1, SESSION)
     assert prep["resync"] is True and prep["dropped_pr"] == 94 and git(repo["b"], "rev-parse", BRANCH) == reviewed
     assert ["gh", "api", "-X", "PATCH", "repos/fake-owner/fake-repo/pulls/94", "-f", "state=closed"] in gh.calls
+
+
+# ---- marker-shaped lines and dotted TOML keys are refused (D-891 review)
+
+SETEXT = "Notes\n" + "=" * 40 + "\n"  # a Markdown heading underlined with exactly 40 "="s
+
+
+@pytest.mark.parametrize("char", ["<", "|", "=", ">"])
+@pytest.mark.parametrize("side", ["base", "ours", "main"])
+def test_a_marker_shaped_line_on_any_side_is_never_resolved(tmp_path: Path, char: str, side: str) -> None:
+    """A line whose first word is one of the four 40-character markers could be read as git's own, so
+    `insertions_after_main` refuses when any of the three merged texts holds one."""
+    from runner.update_merge import insertions_after_main  # noqa: PLC0415  # reason: beside its sibling helpers
+    texts = {"base": REVIEW, "ours": REVIEW + "\n## Branch (T003)\n\n- three\n", "main": REVIEW + "\n## Main (T002)\n\n- two\n"}
+    clean = _ours_base_main(tmp_path, texts["base"], texts["ours"], texts["main"])
+    assert insertions_after_main(clean, (texts["ours"], texts["base"], texts["main"])) is not None
+    shaped = "=" * 40 + "\n" if char == "=" else char * 40 + " heading\n"
+    if side == "base":  # every side keeps the base's line, so the conflict is still a pure insertion
+        texts = {k: v.replace(REVIEW, REVIEW + shaped) for k, v in texts.items()}
+    else:
+        texts[side] += shaped
+    merged = _ours_base_main(tmp_path, texts["base"], texts["ours"], texts["main"])
+    assert insertions_after_main(merged, (texts["ours"], texts["base"], texts["main"])) is None
+
+
+def test_without_the_refusal_a_forty_equals_underline_in_mains_block_is_misread(tmp_path: Path) -> None:
+    """Why the refusal exists: read without its sources, a 40-"=" underline in main's block is taken for git's
+    separator and the join comes out wrong; with the sources it is refused."""
+    from runner.update_merge import insertions_after_main  # noqa: PLC0415  # reason: beside its sibling helpers
+    ours, main = REVIEW + "\n## Branch (T003)\n\n- three\n", REVIEW + "\n" + SETEXT + "\n- two\n"
+    merged = _ours_base_main(tmp_path, REVIEW, ours, main)
+    assert insertions_after_main(merged) != main + "\n## Branch (T003)\n\n- three\n"
+    assert insertions_after_main(merged, (ours, REVIEW, main)) is None
+
+
+def test_dotted_keys_are_found_outside_quotes_only() -> None:
+    from runner.update_merge import dotted_key, toml_ok  # noqa: PLC0415  # reason: beside its sibling helpers
+    assert dotted_key('serde.version = "1"\n') and dotted_key("version.workspace = true\n") and dotted_key("'x'.y = 2\n")
+    assert not dotted_key('serde = { version = "1.0" }\n') and not dotted_key('"a.b" = 1\n') and not dotted_key("[a.b]\n")
+    assert not dotted_key("# a.b = 1\n") and not dotted_key("\n") and not dotted_key("plain line\n")
+    assert toml_ok("README.md", "not toml", ["a.b = 1\n"]) and not toml_ok("Cargo.toml", "a.b = 1\n", ["a.b = 1\n"])
+    assert toml_ok("Cargo.toml", "a.b = 1\n", []) and not toml_ok("Cargo.toml", "a = [\n", [])
+
+
+def test_dotted_keys_from_both_sides_stay_a_real_conflict(repo: dict[str, Path], tmp_path: Path) -> None:
+    """The reviewer's case 14: branch `serde.version` and main `serde.features` parse with tomllib into one
+    dependency neither side wrote, so the Cargo.toml guard refuses any inserted dotted key."""
+    push_main(repo, "Cargo.toml", CARGO)
+    reviewed = push_branch(repo, "Cargo.toml", CARGO.replace("axum", 'serde.version = "1.0.0"\naxum'))
+    push_main(repo, "Cargo.toml", CARGO.replace("axum", 'serde.features = ["derive"]\naxum'))
+    env = env_on(repo, tmp_path)
+    assert env.update_branch(BRANCH, reviewed)["paths"] == ["Cargo.toml"]
+    assert git(repo["origin"], "rev-parse", BRANCH) == reviewed
+
+
+def test_a_setext_heading_inside_an_insertion_stays_a_real_conflict_end_to_end(repo: dict[str, Path], tmp_path: Path) -> None:
+    """The reviewer's reproduction: a 40-"=" underline inside main's inserted block. Before the refusal it was
+    misread and `is_update_merge` accepted the corrupted tree; now no tree is made, so nothing is pushed or adopted."""
+    push_main(repo, "docs/for-casey-review.md", REVIEW)
+    reviewed = push_branch(repo, "docs/for-casey-review.md", REVIEW + "\n## Branch (T003)\n\n- three\n")
+    main2 = push_main(repo, "docs/for-casey-review.md", REVIEW + "\n" + SETEXT + "\n- two\n")
+    env = env_on(repo, tmp_path)
+    assert env.updates.commit(reviewed, main2, BRANCH) == (None, ["docs/for-casey-review.md"])
+    forged = git(repo["b"], "commit-tree", f"{main2}^{{tree}}", "-p", reviewed, "-p", main2, "-m", "a hand-made merge")
+    assert env.updates.is_update_merge(reviewed, forged) == (False, main2)
+    assert env.update_branch(BRANCH, reviewed)["status"] == "conflict" and git(repo["origin"], "rev-parse", BRANCH) == reviewed

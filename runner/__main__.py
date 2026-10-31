@@ -296,7 +296,7 @@ def branch_note(prep: dict[str, Any]) -> str:
     name = prep["branch"]
     if prep.get("resync"):
         return (f"The runner made the local branch {name} at origin/{name}, the reviewed work, WITHOUT main merged in: this is "
-                f"a resync (D-890). Run `git switch {name}`, then `git merge {str(prep.get('main') or 'origin/main')}` (a normal "
+                f"a resync (D-891). Run `git switch {name}`, then `git merge {str(prep.get('main') or 'origin/main')}` (a normal "
                 "merge commit), resolve the conflicts keeping both sides, and commit there; never create, reset or rebase "
                 "the branch, whatever step 6 of the prompt's start routine says (D-583).")
     where = "the latest main" if prep.get("base") == "main" else f"origin/{name} (the earlier attempt's work) with the latest main merged in"
@@ -322,7 +322,7 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         "session": cfg.session, "task": tid, "branch": env.branch_for(tid), "prompt": _prompt_for(task, tid),
         "model": cycle.attempt_model(task, int(task.get("attempts", 0)), cfg.models) if task.get("model") else None,
         "reviewer_model": task.get("reviewer_model"), "last_failure": task.get("last_failure"), "goal": task.get("goal"),
-        # Non-empty only when the branch was made at the reviewed head: merge main in, resolve, nothing else (D-890).
+        # Non-empty only when the branch was made at the reviewed head: merge main in, resolve, nothing else (D-891).
         "resync": cycle.resync_log(task) if env.prepared.get("resync") else "",
         "decision_ids": list(task.get("decision_ids") or []),  # number new decision entries from these, in order (D-530)
         # The branch is already made, on top of an earlier pushed attempt when there is one: never recreate it (D-583).

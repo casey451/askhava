@@ -244,7 +244,7 @@ def _conflict(env: FakeEnv, number: int = 7) -> None:
 
 
 def test_drill_a_real_conflict_is_resynced_on_the_same_attempt_and_reviewed_again(tmp_path: Path) -> None:
-    """The conflict no longer fails the attempt (D-890): the task goes back on its attempt, the next claim
+    """The conflict no longer fails the attempt (D-891): the task goes back on its attempt, the next claim
     takes it first, and its worker hands in the merge, which is reviewed and pushed like any hand-in."""
     env, graph = _two_merge_pending(tmp_path)
     _conflict(env)
@@ -256,7 +256,7 @@ def test_drill_a_real_conflict_is_resynced_on_the_same_attempt_and_reviewed_agai
     assert t2["resync"]["attempt"] == 1 and len(t2["resyncs"]) == 1 and "lane_strikes" not in env.store
     assert t2["runner_closed_prs"] == [7] and cycle.DROP_MARKER in env.closed_prs[0][1] and "same attempt" in env.closed_prs[0][1]
     assert t2["history"][-1]["result"] == cycle.RESYNC and env.prepared_for[-1] == ("T002", 1)
-    assert env.runs[-1][0] == "T002" and env.runs[-1][2].startswith("resync, not a new attempt (D-890)")
+    assert env.runs[-1][0] == "T002" and env.runs[-1][2].startswith("resync, not a new attempt (D-891)")
     assert env.runs[-1][1] == MODELS["sonnet"]  # the attempt's own model: attempts did not move
     env.worker = lambda task, model, log: reviewed(task, model, paths=["app/b/x.py"], head="m-t002")
     del env.prs["T002"]
@@ -290,7 +290,7 @@ def test_drill_a_conflict_after_the_resync_limit_fails_the_attempt_and_strikes(t
 
 def test_drill_a_resync_that_cannot_start_on_the_reviewed_head_fails_the_attempt(tmp_path: Path) -> None:
     """origin moved, or its pull request was closed by someone: prepare_branch makes no resync branch, so
-    the resync cannot run, and the attempt fails as the conflict did before D-890; the retry follows D-583."""
+    the resync cannot run, and the attempt fails as the conflict did before D-891; the retry follows D-583."""
     env, graph = _two_merge_pending(tmp_path)
     _conflict(env)
     env.prep = {"branch": "claude/task/T002-x-a2", "branch_ready": True, "base": "main", "renamed_from": "claude/task/T002-x"}
@@ -298,6 +298,27 @@ def test_drill_a_resync_that_cannot_start_on_the_reviewed_head_fails_the_attempt
     t2 = st.entry(env.store, "T002")
     assert t2["attempts"] == 1 and "resync" not in t2 and "the resync could not start" in t2["last_failure"]
     assert env.runs == [("T001", MODELS["sonnet"], ""), ("T002", MODELS["sonnet"], "")]  # no resync worker ran
+
+
+def test_drill_a_resync_that_crashed_after_its_reviewed_push_re_runs_as_a_plain_attempt(tmp_path: Path) -> None:
+    """The resync's merge was reviewed and pushed, then the session died before the release: the lease
+    expires with `resync` still set (release_expired), and origin's tip already is `reviewed_sha`. The
+    re-run clears `resync` and goes on like any crashed attempt, never failing it (D-891)."""
+    env, graph = _two_merge_pending(tmp_path)
+    _conflict(env)
+    env.worker, env.prep = handed_off, RESYNC_PREP
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s3", "2"), env, NOW + timedelta(minutes=10)) == "handed_off"
+    env.store = st.with_task(env.store, "T002", reviewed_sha="m-t002")  # the review record, then the crash
+    del env.prs["T002"]
+    env.prep = {"branch": "claude/task/T002-x", "branch_ready": True, "base": "origin/claude/task/T002-x", "remote_sha": "m-t002"}
+    later = NOW + timedelta(hours=st.LEASE_HOURS, minutes=11)
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s4", "2"), env, later) == "handed_off"
+    t2 = st.entry(env.store, "T002")
+    assert t2["status"] == st.IN_PROGRESS and t2["attempts"] == 0 and "resync" not in t2 and len(t2["resyncs"]) == 1
+    assert env.runs[-1][0] == "T002" and not env.runs[-1][2].startswith("resync")
+    env.store = st.with_task(env.store, "T002", resync=t2["resyncs"][0], reviewed_sha="other")  # tip is not the review
+    assert cycle._resync_gate(two_lane(graph, tmp_path, "s4", "2"), env, {"state": env.store},
+                              {"id": "T002", "branch_prep": env.prep}, "2") == "fail"
 
 
 def test_drill_a_resync_whose_close_fails_waits_so_any_merge_is_judged(tmp_path: Path) -> None:

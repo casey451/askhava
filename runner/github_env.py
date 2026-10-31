@@ -907,7 +907,7 @@ class GitHubEnv:
           none when main is already in it). An open pull request with auto-merge on is closed with a
           comment first, so no push of unreviewed work can merge; the runner opens a fresh one after
           review (`_open_pr`), and the closed number is recorded in the task's `runner_closed_prs`;
-        - a resync (the task's `resync`, D-890) whose reviewed head is still origin's tip, with a pull
+        - a resync (the task's `resync`, D-891) whose reviewed head is still origin's tip, with a pull
           request that is open or one the runner closed: the branch starts at that head and main is NOT
           merged in, since the worker merges it and resolves the conflict itself ("resync": True);
         - its pull request was merged or closed by someone, its pull requests cannot be read, the
@@ -942,7 +942,7 @@ class GitHubEnv:
         resync = task.get("resync") or {}
         extra: dict[str, Any] = {}
         if resync and remote == resync.get("from"):
-            # A resync (D-890): the worker merges main into the reviewed head itself, so it is not merged here.
+            # A resync (D-891): the worker merges main into the reviewed head itself, so it is not merged here.
             tip: str | None = remote
             extra = {"resync": True, "main": main, "paths": [str(p) for p in resync.get("paths") or []]}
         else:
