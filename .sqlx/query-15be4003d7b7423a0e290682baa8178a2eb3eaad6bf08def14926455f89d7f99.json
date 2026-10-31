@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_name, trade_name, owner_name, license_number FROM licensing.city_license_entry WHERE import_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.city_license_entry",
+            "name": "business_name"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "trade_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.city_license_entry",
+            "name": "trade_name"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "owner_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.city_license_entry",
+            "name": "owner_name"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "license_number",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.city_license_entry",
+            "name": "license_number"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "15be4003d7b7423a0e290682baa8178a2eb3eaad6bf08def14926455f89d7f99"
+}

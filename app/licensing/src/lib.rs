@@ -4,13 +4,18 @@
 //!
 //! T035 added the handyman limits (AI-012, LIC-019 to LIC-025, LIC-036) in `handyman`.
 //!
-//! Other crates reach it only through [`api`]. T036 adds the daily list
-//! imports, T153 the license-map class coverage that fills `Holder::roc_covers`.
+//! T036 added the daily ROC and city list imports, the daily license check and the sign-up
+//! read-back (CARD-015, LIC-006, LIC-007, LIC-010, LIC-027) in `imports` and `service`.
+//!
+//! Other crates reach it only through [`api`]. T153 adds the license-map class coverage that fills
+//! `Holder::roc_covers`.
 
 pub mod api;
 mod handyman;
+mod imports;
 mod models;
 mod rules;
+mod service;
 
 #[cfg(test)]
 mod tests;

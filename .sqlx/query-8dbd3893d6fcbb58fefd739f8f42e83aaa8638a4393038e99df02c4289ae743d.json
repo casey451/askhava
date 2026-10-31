@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO licensing.city_license_entry (import_id, source, list_date, license_number, business_name, trade_name, owner_name, issued_on) VALUES ($1, 'city', $2, $3, $4, $5, $6, $7)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Date",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8dbd3893d6fcbb58fefd739f8f42e83aaa8638a4393038e99df02c4289ae743d"
+}

@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT class_code, EXTRACT(YEAR FROM issued_on)::int AS year FROM licensing.agency_record WHERE import_id = $1 AND license_number = $2 ORDER BY class_code",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "class_code",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.agency_record",
+            "name": "class_code"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "year",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "1a0a7134f762a9a2d14ba734fbca283c1f7d8e72f895e838702ed6f746bd9ff8"
+}
