@@ -8,10 +8,13 @@
 //! under (MessageSid, MessageStatus) and, on its first delivery, appends a
 //! `messaging.delivery_event` that [`crate::service::delivery_status`] reads. Both open a
 //! transaction (a savepoint inside the caller's own), so the dedupe row and its effect commit
-//! together. The route answers Twilio 200 whatever the outcome, except on a database error.
+//! together. Every `received_at` is `now`, which the caller takes from its injected `Clock`
+//! (D-863). The contract for the routing task that wires these to Twilio's webhooks (none exists
+//! yet, D-861): answer Twilio 200 whatever the outcome, except on a database error.
 
 use askhava_adapters::api::{VerifiedWebhook, WebhookVendor};
 use askhava_core::api::EventKey;
+use jiff::Timestamp;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
@@ -35,7 +38,8 @@ pub enum Callback {
 }
 
 /// Records one verified inbound text (TXT-012): `Some(inbox row ID)` on its first delivery,
-/// `None` when the same MessageSid came before, which changes nothing.
+/// `None` when the same MessageSid came before, which changes nothing. `now` is the instant from
+/// the caller's injected clock, stored as each row's `received_at` (D-863).
 ///
 /// # Errors
 ///
@@ -44,12 +48,13 @@ pub enum Callback {
 pub async fn receive_inbound(
     db: &mut PgConnection,
     hook: &VerifiedWebhook,
+    now: Timestamp,
 ) -> Result<Option<Uuid>, InboxError> {
     let sid = message_sid(hook)?;
     let key = EventKey::new(sid).map_err(|_| InboxError::BadWebhook)?;
     let mut tx = db.begin().await.map_err(|_| InboxError::Database)?;
-    let id = if models::first_event(&mut tx, INBOUND_SOURCE, key.as_str()).await? {
-        Some(models::insert_inbox(&mut tx, sid).await?)
+    let id = if models::first_event(&mut tx, (INBOUND_SOURCE, key.as_str()), now).await? {
+        Some(models::insert_inbox(&mut tx, sid, now).await?)
     } else {
         None
     };
@@ -58,7 +63,8 @@ pub async fn receive_inbound(
 }
 
 /// Records one verified status callback (TXT-012, TXT-013): its first delivery per
-/// (MessageSid, MessageStatus) appends the folded status and Twilio's `ErrorCode`, if any.
+/// (MessageSid, MessageStatus) appends the folded status and Twilio's `ErrorCode`, if any, received
+/// at `now` from the caller's injected clock (D-863).
 ///
 /// # Errors
 ///
@@ -67,6 +73,7 @@ pub async fn receive_inbound(
 pub async fn receive_status(
     db: &mut PgConnection,
     hook: &VerifiedWebhook,
+    now: Timestamp,
 ) -> Result<Callback, InboxError> {
     let sid = message_sid(hook)?;
     let raw = field(hook, "MessageStatus").ok_or(InboxError::BadWebhook)?;
@@ -76,8 +83,8 @@ pub async fn receive_status(
         return Ok(Callback::Ignored);
     };
     let mut tx = db.begin().await.map_err(|_| InboxError::Database)?;
-    let outcome = if models::first_event(&mut tx, STATUS_SOURCE, key.as_str()).await? {
-        models::insert_delivery(&mut tx, sid, status, error_code).await?;
+    let outcome = if models::first_event(&mut tx, (STATUS_SOURCE, key.as_str()), now).await? {
+        models::insert_delivery(&mut tx, sid, (status, error_code), now).await?;
         Callback::Recorded(status)
     } else {
         Callback::Repeat

@@ -3,6 +3,8 @@
 //! opaque IDs, keys, Twilio message SIDs and blind-index digests (PRIV-002).
 
 use askhava_core::api::Dedupe;
+use jiff::Timestamp;
+use jiff_sqlx::ToSqlx;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 use thiserror::Error;
@@ -51,18 +53,19 @@ pub enum InboxError {
     Database,
 }
 
-/// Records `event_key` under `source` in `messaging.webhook_event`; true on its first delivery
-/// (SEC-017, TXT-012).
+/// Records `event_key` under `source` in `messaging.webhook_event`, received at `now` from the
+/// injected clock; true on its first delivery (SEC-017, TXT-012, D-863).
 pub(crate) async fn first_event(
     db: &mut PgConnection,
-    source: &str,
-    event_key: &str,
+    (source, event_key): (&str, &str),
+    now: Timestamp,
 ) -> Result<bool, InboxError> {
     let row = sqlx::query_scalar!(
-        "INSERT INTO messaging.webhook_event (source, event_key) VALUES ($1, $2) \
+        "INSERT INTO messaging.webhook_event (source, event_key, received_at) VALUES ($1, $2, $3) \
          ON CONFLICT (source, event_key) DO NOTHING RETURNING event_key",
         source,
-        event_key
+        event_key,
+        now.to_sqlx() as _
     )
     .fetch_optional(db)
     .await
@@ -70,30 +73,37 @@ pub(crate) async fn first_event(
     Ok(Dedupe::from_returning(row).is_first())
 }
 
-/// Inserts the inbox row of inbound text `sid` and returns its ID (TXT-012).
-pub(crate) async fn insert_inbox(db: &mut PgConnection, sid: &str) -> Result<Uuid, InboxError> {
+/// Inserts the inbox row of inbound text `sid`, received at `now`, and returns its ID (TXT-012,
+/// D-863).
+pub(crate) async fn insert_inbox(
+    db: &mut PgConnection,
+    sid: &str,
+    now: Timestamp,
+) -> Result<Uuid, InboxError> {
     sqlx::query_scalar!(
-        "INSERT INTO messaging.inbox (message_sid) VALUES ($1) RETURNING id",
-        sid
+        "INSERT INTO messaging.inbox (message_sid, received_at) VALUES ($1, $2) RETURNING id",
+        sid,
+        now.to_sqlx() as _
     )
     .fetch_one(db)
     .await
     .map_err(|_| InboxError::Database)
 }
 
-/// Appends one delivery event for provider SID `sid` (TXT-013).
+/// Appends one delivery event for provider SID `sid`, received at `now` (TXT-013, D-863).
 pub(crate) async fn insert_delivery(
     db: &mut PgConnection,
     sid: &str,
-    status: DeliveryStatus,
-    error_code: Option<i32>,
+    (status, error_code): (DeliveryStatus, Option<i32>),
+    now: Timestamp,
 ) -> Result<(), InboxError> {
     sqlx::query!(
-        "INSERT INTO messaging.delivery_event (provider_sid, status, error_code) \
-         VALUES ($1, $2, $3)",
+        "INSERT INTO messaging.delivery_event (provider_sid, status, error_code, received_at) \
+         VALUES ($1, $2, $3, $4)",
         sid,
         status.as_str(),
-        error_code
+        error_code,
+        now.to_sqlx() as _
     )
     .execute(db)
     .await

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO messaging.inbox (message_sid) VALUES ($1) RETURNING id",
+  "query": "INSERT INTO messaging.inbox (message_sid, received_at) VALUES ($1, $2) RETURNING id",
   "describe": {
     "columns": [
       {
@@ -17,12 +17,13 @@
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Text",
+        "Timestamptz"
       ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "3a608c9491a8478505957c8235027c66918550783995257d7cd049eafc7f9049"
+  "hash": "e87cee5713110b751d681131614831bd9aa42987856f152c2714982e4106594b"
 }

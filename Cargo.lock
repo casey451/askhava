@@ -376,6 +376,7 @@ dependencies = [
  "askhava-core",
  "askhava-privacy",
  "jiff",
+ "jiff-sqlx",
  "proptest",
  "secrecy",
  "serde",

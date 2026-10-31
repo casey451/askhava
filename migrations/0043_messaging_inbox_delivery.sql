@@ -9,19 +9,20 @@
 -- folded to queued, sending, sent, delivered, undelivered or failed, with Twilio's error code;
 -- `messaging::api::delivery_status` reads a text's status from them by its provider SID, so a
 -- callback that arrives before the send is marked still counts once it is (TXT-013, D-861).
+-- Every received_at has no default: the handler binds it from the injected clock (D-863).
 -- All three are new and empty.
 
 CREATE TABLE messaging.webhook_event (
   source text NOT NULL CHECK (source IN ('twilio_inbound', 'twilio_status')),
   event_key text NOT NULL,
-  received_at timestamptz NOT NULL DEFAULT now(),
+  received_at timestamptz NOT NULL,
   PRIMARY KEY (source, event_key)
 );
 
 CREATE TABLE messaging.inbox (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   message_sid text NOT NULL UNIQUE CHECK (message_sid ~ '^(SM|MM)[A-Za-z0-9]{32}$'),
-  received_at timestamptz NOT NULL DEFAULT now()
+  received_at timestamptz NOT NULL
 );
 
 CREATE TABLE messaging.delivery_event (
@@ -30,6 +31,6 @@ CREATE TABLE messaging.delivery_event (
   status text NOT NULL
     CHECK (status IN ('queued', 'sending', 'sent', 'delivered', 'undelivered', 'failed')),
   error_code integer CHECK (error_code > 0),
-  received_at timestamptz NOT NULL DEFAULT now()
+  received_at timestamptz NOT NULL
 );
 CREATE INDEX delivery_event_sid_idx ON messaging.delivery_event (provider_sid, id);
