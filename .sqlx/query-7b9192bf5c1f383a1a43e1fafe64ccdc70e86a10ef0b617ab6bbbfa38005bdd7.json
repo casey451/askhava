@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE messaging.outbox SET status = 'sending', attempts = attempts + 1 WHERE id = $1 AND status <> 'sent' AND recipient_kind = $2 RETURNING template_id, recipient_id, subject_ids, body",
+  "query": "UPDATE messaging.outbox SET status = 'sending', attempts = attempts + 1 WHERE id = $1 AND status IN ('queued', 'sending') AND recipient_kind = $2 RETURNING template_id, recipient_id, subject_ids, body",
   "describe": {
     "columns": [
       {
@@ -61,5 +61,5 @@
       true
     ]
   },
-  "hash": "071ccb4752b6af79e6531cfca53c65a039a59baed0981a9b96563ae212e36f58"
+  "hash": "7b9192bf5c1f383a1a43e1fafe64ccdc70e86a10ef0b617ab6bbbfa38005bdd7"
 }

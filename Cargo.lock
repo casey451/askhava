@@ -374,6 +374,7 @@ version = "0.1.0"
 dependencies = [
  "askhava-adapters",
  "askhava-core",
+ "askhava-ops",
  "askhava-privacy",
  "jiff",
  "jiff-sqlx",
