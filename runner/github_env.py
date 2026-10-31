@@ -907,6 +907,8 @@ class GitHubEnv:
           none when main is already in it). An open pull request with auto-merge on is closed with a
           comment first, so no push of unreviewed work can merge; the runner opens a fresh one after
           review (`_open_pr`), and the closed number is recorded in the task's `runner_closed_prs`;
+          when that branch's docs/decisions.md has new entries filed before its base's last entry, a
+          runner commit moves them to the end first (`_decisions_in_order`, D-1029);
         - a resync (the task's `resync`, D-891) whose reviewed head is still origin's tip, with a pull
           request that is open or one the runner closed: the branch starts at that head and main is NOT
           merged in, since the worker merges it and resolves the conflict itself ("resync": True);
@@ -946,7 +948,8 @@ class GitHubEnv:
             tip: str | None = remote
             extra = {"resync": True, "main": main, "paths": [str(p) for p in resync.get("paths") or []]}
         else:
-            tip = remote if self._is_ancestor(main, remote) else self._merge_main(branch, remote, main)
+            start = self._decisions_in_order(branch, remote, main) or remote  # entries filed early move to the end (D-1029)
+            tip = start if self._is_ancestor(main, start) else self._merge_main(branch, start, main)
         if tip is None:
             new = self._new_name(task, attempt)
             closed = self._close_open_pr(branch, CONFLICT_NOTE.format(branch=branch, new=new), task["id"], session)
@@ -1175,7 +1178,9 @@ class GitHubEnv:
         self, task: dict[str, Any], outcome: str, transcripts: list[str], reviewer_transcripts: list[str],
         log: str = "", reset_at: datetime | None = None,
     ) -> WorkerResult:
-        """A WorkerResult from what the runner reads itself: git diff --no-renames and the transcripts."""
+        """A WorkerResult from what the runner reads itself: git diff --no-renames and the transcripts.
+        A submitted head whose docs/decisions.md has new entries filed before its base's last entry gets
+        a runner commit on top that moves them to the end (`_hand_in_in_order`, D-1029)."""
         branch = self.branch_for(task["id"])
         base = self.main_head()
         head = self.git("rev-parse", f"refs/heads/{branch}", check=False)
@@ -1187,12 +1192,43 @@ class GitHubEnv:
         if remote and not self._is_ancestor(remote, head):
             # The push would be rejected as a non-fast-forward, and the runner never force-pushes (D-583).
             return WorkerResult("tests_failed", log=NOT_BUILT_ON.format(branch=branch), branch=branch, head_sha=head)
+        if outcome == "submitted" and base:
+            head = self._hand_in_in_order(branch, head, base)
         changed = self.git("diff", "--no-renames", "--name-only", f"{base}...{head}", check=False) if head else ""
         evidence, usage = read_transcripts(transcripts)
         review, review_usage = read_transcripts(reviewer_transcripts)
         usage = {k: usage.get(k, 0) + review_usage.get(k, 0) for k in {*usage, *review_usage}}  # both count (pacing)
         return WorkerResult(outcome, [p for p in changed.splitlines() if p], evidence, reset_at, log, branch, head, review, usage,
                             self._commits_ahead(base, head))
+
+    def _decisions_in_order(self, branch: str, head: str, main: str) -> str | None:
+        """`UpdateMerge.in_order` of `head`: a commit on top of it whose docs/decisions.md has the new
+        entries after main's last entry, or None when there is nothing to fix, nothing safe to do (a
+        changed or removed entry stays a real failure for scripts/check_pr_change.py) or git fails (D-1029)."""
+        try:
+            fixed = self.updates.in_order(head, main, branch)
+        except RuntimeError as exc:
+            self.log.append(f"decision entries of {branch} not re-ordered: {str(exc)[:200]}")
+            return None
+        if fixed:
+            self.log.append(f"decision entries of {branch} moved after main's last entry as {fixed[:12]} (D-1029)")
+        return fixed
+
+    def _hand_in_in_order(self, branch: str, head: str, main: str) -> str:
+        """The hand-in's head after `_decisions_in_order`: the local task branch moves to the fixing commit
+        (a fast-forward of the checkout when the branch is checked out, so the working tree follows; the
+        old head when that fails), and the push that follows carries it (D-1029)."""
+        fixed = self._decisions_in_order(branch, head, main)
+        if not fixed:
+            return head
+        if self.git("symbolic-ref", "-q", "HEAD", check=False) == f"refs/heads/{branch}":
+            code, _, err = self._run(["git", "merge", "--ff-only", "--quiet", fixed], None, self.root)
+        else:
+            code, _, err = self._run(["git", "update-ref", f"refs/heads/{branch}", fixed, head], None, self.root)
+        if code != 0:
+            self.log.append(f"decision entries of {branch} not re-ordered: {err.strip()[:200]}")
+            return head
+        return fixed
 
     def _commits_ahead(self, base: str, head: str) -> int | None:
         """The head's commits that main lacks (`git rev-list --count base..head`); 0 is an empty hand-in

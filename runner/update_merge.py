@@ -29,6 +29,14 @@ to be "the reviewed work plus main" (`reviewed_plus_main`, D-584):
 Any other conflicting path is a real conflict: nothing is resolved by guesswork. The cycle then hands
 the branch to a worker on the same attempt to merge main in itself (a resync, runner/cycle.py, D-891).
 
+`in_order` is the same rule for one branch on its own (D-1029): when a branch's docs/decisions.md is its
+merge base's file with new entry lines inserted before the base's last entry (a worker that filed its
+reserved, lower numbers in numeric order above a plan change's higher one, T184's PR #187), it builds a
+commit on top of the branch whose file is the base's text followed by those entries in the branch's
+order (`decisions_appended`). The runner uses it on a retry's prepared branch and on a hand-in before
+the push (runner/github_env.py); a file that changed or removed an entry is left alone, so
+scripts/check_pr_change.py still fails it.
+
 The commit's author and committer dates are main's commit date, so two runners that build the same
 update make the same commit and the second push is a no-op instead of a rejected race.
 """
@@ -70,6 +78,34 @@ def decisions_after_main(base: str, ours: str, theirs: str) -> str | None:
     if not base.endswith("\n") and added.startswith("\n"):
         added = added[1:]
     return theirs + ("" if not theirs or theirs.endswith("\n") else "\n") + added
+
+
+def entry_lines(text: str) -> list[str]:
+    """The entry lines (`- **D-###** ...`) of a docs/decisions.md text, in file order."""
+    return [line for line in text.splitlines() if st.DECISION_ENTRY.match(line)]
+
+
+def decisions_appended(base: str, head: str) -> str | None:
+    """docs/decisions.md for a branch whose file is `base` with new entry lines inserted before the base's
+    last entry: `base`, then the inserted entries in the branch's order, so the base's entries stay an
+    unchanged prefix (scripts/check_pr_change.py's append-only rule, D-1029). None when there is nothing
+    to fix (the base's entries already lead) or nothing safe to do: a base line changed or removed, an
+    inserted line that is not an entry (a heading would leave its section), or an inserted entry whose
+    D-number the base already uses. Blank lines the branch inserted are dropped."""
+    if not base or entry_lines(head)[: len(entry_lines(base))] == entry_lines(base):
+        return None
+    wanted, added = iter(base.splitlines()), []
+    want = next(wanted, None)
+    for line in head.splitlines():
+        if want is not None and line == want:
+            want = next(wanted, None)
+        elif line.strip():
+            added.append(line)
+    if want is not None or not added or any(not st.DECISION_ENTRY.match(line) for line in added):
+        return None
+    if set(st.decision_numbers("\n".join(added))) & set(st.decision_numbers(base)):
+        return None
+    return base + ("" if base.endswith("\n") else "\n") + "\n".join(added) + "\n"
 
 
 def opens_section(line: str) -> bool:
@@ -321,6 +357,22 @@ class UpdateMerge:
         env = {**self.identity(), "GIT_AUTHOR_DATE": stamp, "GIT_COMMITTER_DATE": stamp}
         message = f"Merge main into {branch} (runner update merge, D-620)\n\nReviewed: {reviewed}\nMain: {main}\n"
         return self._ok("commit-tree", tree, "-p", reviewed, "-p", main, "-m", message, env=env), []
+
+    def in_order(self, head: str, main: str, branch: str) -> str | None:
+        """A commit on top of `head` whose docs/decisions.md is `decisions_appended` of the file at the
+        merge base of `head` and `main`, or None when that leaves nothing to fix or nothing safe to do
+        (D-1029). Its dates are `head`'s, so two runners make the same commit. RuntimeError when git fails."""
+        base = self.merge_base(head, main)
+        before, after = self._file(base, DECISIONS), self._file(head, DECISIONS)
+        text = decisions_appended(before, after) if before is not None and after is not None else None
+        if text is None:
+            return None
+        tree = self._replace(self._ok("rev-parse", f"{head}^{{tree}}"), {DECISIONS: text})
+        stamp = f"@{self._ok('show', '-s', '--format=%ct', head)} +0000"
+        env = {**self.identity(), "GIT_AUTHOR_DATE": stamp, "GIT_COMMITTER_DATE": stamp}
+        message = (f"Move {branch}'s new decision entries after main's last entry (runner, D-1029)\n\n"
+                   "docs/decisions.md is append-only: the merge base's file first, then the branch's new entries.\n")
+        return self._ok("commit-tree", tree, "-p", head, "-m", message, env=env)
 
     def parents(self, commit: str) -> list[str]:
         return self._ok("rev-list", "--parents", "-n", "1", commit).split()[1:]
