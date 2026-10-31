@@ -7,6 +7,7 @@
 //! against one business's own names, never listed out (LIC-010). The daily job calls an import per
 //! list, then `businesses` calls [`check_license`] for every ROC-licensed business. The read-back
 //! here is the ROC's only; other agencies' read-back comes with T180's lookup (LIC-027 is partial).
+//! `record_lookup` stores a read live lookup from `handlers` as a check (LIC-007, LIC-008).
 
 use jiff::Timestamp;
 use jiff::civil::Date;
@@ -314,6 +315,27 @@ pub async fn check_license(
     .execute(&mut *conn)
     .await)?;
     Ok(check)
+}
+
+/// Records a read live lookup of the normalised `number` as a check dated `day` (LIC-007, T180).
+pub(crate) async fn record_lookup(
+    conn: &mut PgConnection,
+    business_id: Uuid,
+    number: &str,
+    active: bool,
+    day: Date,
+) -> Result<(), ImportError> {
+    db(sqlx::query!(
+        "INSERT INTO licensing.license_check (business_id, source, license_number, list_date, status) \
+         VALUES ($1, 'roc', $2, $3, $4)",
+        business_id,
+        number,
+        day.to_sqlx() as _,
+        if active { "active" } else { "inactive" },
+    )
+    .execute(&mut *conn)
+    .await)?;
+    Ok(())
 }
 
 /// Whether the ROC license `license_number` that covers a job lets the business receive its card:

@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO licensing.license_check (business_id, source, license_number, list_date, status) VALUES ($1, 'roc', $2, $3, $4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Date",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1416a5829ffd8fe98aca0cd1661710a399236f5c412fc707960dd09524aa7a0f"
+}

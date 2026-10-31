@@ -16,7 +16,17 @@
 //! ROC-licensed card go only after a fresh Active check of the covering license (CARD-015, LIC-007);
 //! [`read_back`] gives the sign-up read-back of the classes on the state record (LIC-006, LIC-027);
 //! [`city_standing`] matches a business on the latest city list (LIC-010, LIC-011).
+//!
+//! The live lookup (T180): [`lookup_at_pick`] makes the one lookup at a pick, a failed one is
+//! `Unknown` and can't Confirm; [`unknown_standing`] keeps, warns and pauses (LIC-008);
+//! [`end_date_pauses`] applies LIC-009; [`list_failure_alerts`], [`alert_list_failure`] and
+//! [`lookup_while_list_fails`] cover a failing list (LIC-039).
 
+pub use crate::handlers::{
+    FailureLimits, LIST_FAILING_ALERT, LIST_STILL_FAILING_ALERT, ListFailureAlert, LookupOutcome,
+    UnknownStanding, alert_list_failure, arizona_day, end_date_pauses, list_failure_alerts,
+    lookup_at_pick, lookup_while_list_fails, unknown_standing,
+};
 pub use crate::handyman::{
     HANDYMAN_CARD_LINE, HANDYMAN_LIMIT_CENTS, HandymanJob, JobRequest, NeverHandyman, QuotePrice,
     QuoteRefusal, QuoteSubmission, SPLIT_JOB_WINDOW_DAYS, check_quote, never_handyman, split_job,
