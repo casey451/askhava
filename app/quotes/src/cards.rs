@@ -59,7 +59,8 @@ pub enum Danger {
 }
 
 /// What a card is built from (CARD-007). Every text here is already scrubbed or fixed wording.
-#[derive(Debug, Clone)]
+/// Its `Debug` hides the description, answers and concept label, so a log never holds her words.
+#[derive(Clone)]
 pub struct CardParts {
     /// The category's display name, for the CARD-009 line ("Plumbing").
     pub category: String,
@@ -79,6 +80,22 @@ pub struct CardParts {
     pub photos: Vec<Uuid>,
     /// A concept image's screened ID and its label (INT-046).
     pub concept: Option<(Uuid, String)>,
+}
+
+impl std::fmt::Debug for CardParts {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CardParts")
+            .field("category", &self.category)
+            .field("town", &self.town)
+            .field("place", &self.place)
+            .field("description", &"<hidden>")
+            .field("answers", &self.answers.len())
+            .field("timing", &self.timing.is_some())
+            .field("danger", &self.danger)
+            .field("photos", &self.photos.len())
+            .field("concept", &self.concept.is_some())
+            .finish()
+    }
 }
 
 /// A built job card. Its fields are private and [`build_card`] is the only way to make one, so
@@ -118,7 +135,8 @@ impl JobCard {
 }
 
 /// Builds the card from its parts, gating every field and then the whole text (CARD-005 to
-/// CARD-009, PRIV-006). `min_words` is CARD-009's setting ([`DEFAULT_MIN_WORDS`]).
+/// CARD-009, PRIV-006). `min_words` is CARD-009's setting ([`DEFAULT_MIN_WORDS`]); it is checked
+/// on the gate's fixed point, so the stored description is the one counted.
 #[must_use]
 pub fn build_card(parts: &CardParts, min_words: usize) -> JobCard {
     let description = final_gate(&parts.description);

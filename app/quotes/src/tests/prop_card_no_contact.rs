@@ -178,3 +178,100 @@ fn td_card_08_fixed_911_and_timing_lines() {
         assert!(!card.text().contains("gas company"));
     }
 }
+
+/// TD-CARD-01: review texts (a street after "N.", names after a role word, lowercase
+/// self-introductions, domains, a contact verb before a name, O for zero) leave no contact.
+#[test]
+fn td_card_01_review_adversarial_texts() {
+    let cases: [(&str, &[&str]); 9] = [
+        (
+            "I live at 1234 N. Example Lake Dr by the lake.",
+            &["1234", "Example"],
+        ),
+        ("Ask for the owner Pat Lee at the gate.", &["Pat", "Lee"]),
+        ("Gate sticks. this is pat from the house", &["pat"]),
+        ("Gate sticks. im pat, the gate code is fine", &["pat"]),
+        (
+            "Email pat.lee at example.net for info.",
+            &["pat", "example"],
+        ),
+        ("See example.com/pat for photos.", &["example"]),
+        ("Text Pat at 928 555 one four two two", &["Pat", "928"]),
+        ("Gate sticks at unit 1234 Kiowa", &["1234", "Kiowa"]),
+        ("Gate sticks, call 928 555 O142 anytime", &["928", "O142"]),
+    ];
+    for (text, banned) in cases {
+        let card = build_card(&parts(text), DEFAULT_MIN_WORDS);
+        let keys: Vec<&str> = card.text().split(|c: char| !c.is_alphanumeric()).collect();
+        for gone in banned {
+            assert!(!keys.contains(gone), "{gone} in {}", card.text());
+        }
+    }
+}
+
+/// TD-CARD-01: everyday sentences next to a cue stay whole.
+#[test]
+fn td_card_01_everyday_words_stay() {
+    for text in [
+        "Please ask for a quote on the fence.",
+        "I'm worried the pipe will burst.",
+        "This is urgent, the heater is out.",
+        "Work starts at 8 a.m. on the dot.",
+    ] {
+        assert_eq!(final_gate(text), text);
+    }
+}
+
+/// TD-CARD-11, CARD-009: the CARD-009 count uses the gate's fixed point, so a cut that leaves a
+/// street-shaped tail is counted after the second cut, not before.
+#[test]
+fn td_card_11_count_is_taken_on_the_stored_text() {
+    let text = "Fence on lot 3 ask for Pat. Drive is blocked by the gate.";
+    let card = build_card(&parts(text), DEFAULT_MIN_WORDS);
+    let first = card.text().lines().next().unwrap_or_default();
+    assert_eq!(first, "Plumbing job (details on the job page)");
+}
+
+const SOUP: [&str; 24] = [
+    "ask",
+    "for",
+    "Pat",
+    "3",
+    ".",
+    "Drive",
+    "N.",
+    "1234",
+    "at",
+    "dot",
+    "com",
+    "I'm",
+    "928",
+    "555",
+    "one",
+    "\n",
+    "the",
+    "owner",
+    "lot",
+    "example.com",
+    "text",
+    "Lee.",
+    "im",
+    "O142",
+];
+
+proptest! {
+    /// TD-CARD-11 (CARD-008): gating twice changes nothing, on any text.
+    #[test]
+    fn td_card_11_gate_is_a_fixed_point(text in "\\PC{0,120}") {
+        let once = final_gate(&text);
+        prop_assert_eq!(final_gate(&once), once);
+    }
+
+    /// TD-CARD-11 (CARD-008): gating twice changes nothing, on text dense with contact shapes.
+    #[test]
+    fn td_card_11_gate_is_a_fixed_point_on_cues(idx in proptest::collection::vec(0..SOUP.len(), 0..40)) {
+        let text = idx.iter().map(|&i| SOUP[i]).collect::<Vec<_>>().join(" ");
+        let once = final_gate(&text);
+        prop_assert_eq!(final_gate(&once), once);
+    }
+}
