@@ -107,7 +107,7 @@ def test_refusal_names_overlap_stage_cleanup_and_dependencies() -> None:
 
 
 def test_refusal_checks_the_graphs_dependencies_even_with_no_task_in_flight() -> None:
-    """D-1127: a dependency the graph holds is checked with both lanes free too; a proof-waiting cleanup
+    """D-1142: a dependency the graph holds is checked with both lanes free too; a proof-waiting cleanup
     task of the same stage counts as met only then (D-551), never beside a task in flight."""
     done = {"T000"}
     waiting = staged("T007", deps=["T000", "T009"], owns=["app/g/"])

@@ -10,7 +10,7 @@ Occupancy lives in runner/state.py (`in_flight`: a live lease, or MERGE_PENDING 
   free one. While `main` is red and no numbered lane can take FIX-MAIN, it takes the reserved "fix"
   lane, which never counts against `lanes` (`fix_lane`, D-630).
 - `compatible`: a task may be claimed only when the graph's dependencies for it are all DONE or
-  SKIPPED, checked whether or not anything is in flight (D-1127: with both lanes free the check used to
+  SKIPPED, checked whether or not anything is in flight (D-1142: with both lanes free the check used to
   be skipped, so a dependency the graph gained after the entry was made could be ignored); with no task
   in flight a proof-waiting cleanup task of the task's own stage counts as met, as in `state.eligible`
   (D-551), beside a task in flight it does not. Beside a task in flight it must also be in the same
@@ -98,7 +98,7 @@ def refusal(
 ) -> str:
     """Why `task` must not be claimed now, beside the tasks in flight `others`; '' when it may (D-620).
 
-    The graph's dependencies are checked first, with or without tasks in flight (D-1127); `early` maps a
+    The graph's dependencies are checked first, with or without tasks in flight (D-1142); `early` maps a
     proof-waiting cleanup task to its stage and counts as met only while nothing is in flight (D-551).
     """
     if task.get("id") == st.FIX_MAIN:
@@ -131,7 +131,7 @@ def compatible_ids(
     locked: Locked | None,
     proof_stages: frozenset[str] = frozenset(),
 ) -> list[str]:
-    """The eligible ids that may be claimed now, beside the tasks in flight, in order (D-620, D-1127)."""
+    """The eligible ids that may be claimed now, beside the tasks in flight, in order (D-620, D-1142)."""
     flying = [task_def(tid) for tid in st.in_flight(state, now)]
     done = {t["id"] for t in state["tasks"] if t.get("status") in st.SATISFIED}
     early = {t["id"]: str(t.get("stage")) for t in state["tasks"] if st.awaits_proof(t) and str(t.get("stage")) in proof_stages}
