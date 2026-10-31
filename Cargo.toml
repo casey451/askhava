@@ -25,6 +25,7 @@ askhava-messaging = { path = "app/messaging" }
 askhava-licensing = { path = "app/licensing" }
 askhava-intake = { path = "app/intake" }
 askhava-portals = { path = "app/portals" }
+askhava-businesses = { path = "app/businesses" }
 askhava-fixtures = { path = "tests/fixtures" }
 axum = { version = "=0.8.9", features = ["multipart"] }
 axum-extra = { version = "=0.12.6", features = ["cookie"] }
