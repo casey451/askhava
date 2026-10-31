@@ -1,15 +1,15 @@
 # Ask Hava build status
 
-Updated 2026-10-31T09:41:41Z by runner 661a903b1382 (actions).
+Updated 2026-10-31T09:44:08Z by runner f23055e84250 (actions).
 
-**Requirements verified:** 3 of 725 (0.4%) · partial 214 · unstarted 508
-**Tasks merged (throughput only):** 60 of 221
+**Requirements verified:** 3 of 725 (0.4%) · partial 215 · unstarted 507
+**Tasks merged (throughput only):** 61 of 221
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 0 | 2 | 33 | 35 |
 | ai | 0 | 21 | 6 | 27 |
-| businesses | 0 | 8 | 49 | 57 |
+| businesses | 0 | 9 | 48 | 57 |
 | calls | 0 | 2 | 23 | 25 |
 | consent | 0 | 23 | 12 | 35 |
 | fees | 0 | 5 | 48 | 53 |
@@ -36,7 +36,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
-- stage 2: 49 of 78 done
+- stage 2: 50 of 78 done
 - stage 3: 0 of 25 done
 - stage 4: 0 of 50 done
 - stage 5: 0 of 42 done
