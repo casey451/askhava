@@ -472,3 +472,4 @@
 - 2026-10-31T13:40:24Z runner 16a3fa460e68 (actions): {}
 - 2026-10-31T13:40:34Z runner 16a3fa460e68 (actions): {"T043": "IN_PROGRESS -> MERGE_PENDING"}
 - 2026-10-31T13:51:18Z runner 6da6abe7844a (actions): {"T043": "MERGE_PENDING -> DONE"}
+- 2026-10-31T14:00:49Z runner 6da6abe7844a (actions): {"T044": "QUEUED -> IN_PROGRESS"}; T044 estimated 1.5M tokens (calibrated); five-hour window has 25.5M left, week 361.7M (ledger); claimed
