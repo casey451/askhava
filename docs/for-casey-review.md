@@ -1397,3 +1397,8 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 
 - **What happened.** T156 (the intake question bank) looked ready in the runner's state, but every lane refused to start it: a plan change earlier today had made T156 wait for T187 in the plan file, and the runner never copied that new wait into its state file. The two halves of the runner disagreed, so lane 1 reported "idle" with a task that looked ready. Fixed: the runner now copies changed waits into its state.
 - **The wait itself was longer than needed.** T156 only has to come after T050 (they edit the same intake file); waiting for T187 would have put it behind eight tasks instead of four. It now waits for T050, and T208 keeps its own order after T054 directly. Nothing else moves.
+
+## Every remaining task now runs on Opus (D-1129, October 31)
+
+- **Your call.** With the budget to be spent by Thursday rather than saved, the 39 queued tasks that were set to run on the cheaper Sonnet model now run on Opus, and the 14 whose reviewer was Sonnet get an Opus reviewer. Finished tasks keep the model they ran on; T047, already running, finishes on its original setup.
+- **Why not a second review instead.** The attempts lost so far came from plan gaps, merge conflicts and a flaky test, not from a reviewer missing something; a second reviewer would cost about as much as the worker. The stronger model on first attempts is where the tokens buy accuracy.
