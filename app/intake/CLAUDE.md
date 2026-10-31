@@ -23,7 +23,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - CALL-022, D-384: `consent_template(true)` picks `consent_safety_call` only while the safety voice call is on.
 - JOB-005: `on_text` writes the `intake.consent_sent` audit row in the transaction that opens the request and queues its texts.
 - CON-005, D-933: `receive_text` writes one `intake.consent_record` (channel `sms`, inbox ID, arrival time, version `<template>:<language>:<12 hex of the SHA256 of the rendered text>`) only when the text queued the consent text; replies, opt-outs and HELP record nothing. `on_text` alone writes no record (T038's `consent_records_are_append_only_for_the_app_role` counts on that), so other crates call `receive_text` only.
-- CON-007, CON-021: `card_allowed(conversation)` is true only with a consent record; `may_text(contact)` only for a homeowner with one (tenants and on-site contacts never have one). Card and send tasks call them first.
+- CON-007, CON-021: `card_allowed(conversation)` is true only with a consent record; `may_text(contact)` only for a homeowner with one (tenants and on-site contacts never have one). Card and send tasks call them first. `card_allowed` gates text-delivered cards only; the CON-007 web-chat request with no verified mobile number is T103's to allow. `may_text` covers homeowner request texts only and ignores opt-outs; HELP and opt-out confirmations and the suppression list are the send path's.
 - TERMS-001, TERMS-016, TERMS-033, D-934: only a pick calls `record_terms_acceptance`; intake hashes the published text itself; the same pick twice returns `false` and stores nothing more; an unknown request is `IntakeError::UnknownRequest`.
 
 ## Never break

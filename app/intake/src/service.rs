@@ -276,7 +276,9 @@ pub async fn consent_records(
 }
 
 /// Whether a job card may go out for a request: only once its consent is recorded (CON-007). The
-/// caller sending a card checks this first.
+/// caller sending a card checks this first. This gates text-delivered cards only; CON-007's
+/// web-chat request with no verified mobile number (no texts needed) has no consent record and
+/// is the card task's to allow (T103), not this gate's.
 ///
 /// # Errors
 ///
@@ -286,7 +288,9 @@ pub async fn card_allowed(db: &mut PgConnection, conversation: Uuid) -> Result<b
 }
 
 /// Whether vault contact `contact` may be texted as a homeowner: only someone who wrote first and
-/// so has a consent record; a tenant or on-site contact never has one (CON-021).
+/// so has a consent record; a tenant or on-site contact never has one (CON-021). It covers
+/// homeowner request texts only and ignores opt-outs: required HELP and opt-out confirmations
+/// and the suppression list are decided by the send path, not by this gate.
 ///
 /// # Errors
 ///

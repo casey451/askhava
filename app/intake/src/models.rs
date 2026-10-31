@@ -78,7 +78,7 @@ pub struct ConversationRow {
     pub closed_at: Option<Timestamp>,
 }
 
-/// `intake.consent_record`: one consent (CON-005, CON-022), append-only; `on_text` writes it.
+/// `intake.consent_record`: one consent (CON-005, CON-022), append-only; `receive_text` writes it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConsentRecordRow {
     /// Row ID.
