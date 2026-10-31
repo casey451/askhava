@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. T040 added what opens a job, duplicates, the join window, exact answers, the name-and-address question and the under-18 reply. T042 added the keyword second opinion, the trade question rules, the INT-010 after-window word share and INT-032's two-trade detection (pure; not yet wired into the conversation, D-999). T183 added "Which fits best?" across licenses and its reply (`Candidates::fit_step`, D-1003). Not here yet: the question order, the `two_jobs` text and the conversation wiring of T042's rules (no owning task yet, a plan gap for the runner, D-999), routing (T043), web chat (T103).
+The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. T040 added what opens a job, duplicates, the join window, exact answers, the name-and-address question and the under-18 reply. T042 added the keyword second opinion, the trade question rules, the INT-010 after-window word share and INT-032's two-trade detection (pure; not yet wired into the conversation, D-999). T183 added "Which fits best?" across licenses and its reply (`Candidates::fit_step`, D-1003). Not here yet: the question order, the `two_jobs` text and the conversation wiring of T042's rules (no owning task yet, a plan gap for the runner, D-999), routing (T043 built, below; the count line is T184's), web chat (T103).
 
 ## What it owns
 
@@ -17,6 +17,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `src/matching.rs` (T042, pure): `keyword_reading` (`KeywordReading`, table `RULES`), `second_opinion` (`Reading`, `Opinion`, `TradeQuestion` with `read` and `step`, `TradeAnswer`, `TradeStep`), `candidates` (`Candidates` with `fit_step`, `FitStep`), `job_types_of`, `trade_label`, `two_trades`, `starts_second`. `rules.rs` adds `follow_up_joins`, `shares_words`, `JOIN_SHARE_PERCENT`.
 - `src/models.rs`: `IntakeError`, one row type per table, the crate-private queries. `sqlx.toml`: `timestamptz` as jiff timestamps.
 - Templates it uses in `app/messaging/templates/`: `consent`, `consent_safety_call` and `who_is_this` (added by T038, D-907), `emergency_911`; `beep_question`, `how_soon`, `needed_by_day`, `emergency_choice`, `night_count_many` (`{count}`, `{trade}`), `night_count_one`, `night_count_none` (`{trade}`) (T039, D-979).
+- `src/routing.rs` (T043): `route` (pure: `Request`, `Outcome`, `Why`), `apply` (one transaction), `trade_is_open`, `recruiting_demand`, `check_towns` (`Town`, `TownRefused`), `move_refused`, `asks_property_management`; templates `not_covered` (`{trade}`) and `out_of_area` (en, es).
 - `src/api.rs`: the public surface; `api::rules` re-exports the pure rules.
 
 ## Rules it enforces
@@ -47,6 +48,8 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - INT-010, INT-032, D-485, D-493: `rules::follow_up_joins` (from 2:00:00 a same-trade message joins only when `shares_words` holds); `matching::two_trades`, `starts_second` (ALSO or TAMBIÉN alone).
 - INT-027, D-146, D-238, D-995: the name-and-address question follows the area check, and its raw answer goes to the vault only, never to the AI.
 - INT-038, D-385, D-994: an under-18 sender gets one `under_18` reply and the request closes; under 13 the data is deleted except the consent record.
+
+- INT-016, INT-017, INT-022, LIC-017, LIC-018, D-1008: `route` checks the area first (outside the towns list: Closed early, no demand row), then moves outside Arizona, then home watch rent or leasing words, then a trade that is not open; only the last writes a recruiting-demand row; `apply` is safe to run twice.
 
 ## Never break
 
@@ -79,6 +82,8 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 
 ## Tests that guard it
 
+- `src/tests/routing_outcomes.rs` (TD-INT-14, TD-INT-19, TD-LIC-07): `cargo test -p askhava-intake tests::routing_outcomes`.
+- `tests/integration/tests/not_covered.rs` (TD-INT-14, TD-INT-19, TD-LIC-01): `cargo test -p askhava-integration --test not_covered`.
 - `src/tests/consent.rs` (TD-CON-01, TD-CON-11, TD-CON-14, TD-CON-18, TD-TXT-24): `cargo test -p askhava-intake tests::consent`.
 - `src/tests/prop_consent_first.rs` (TD-CON-01, TD-CON-11, TD-CON-24 properties): `cargo test -p askhava-intake tests::prop_consent_first`.
 - `src/tests/safety_text.rs` (TD-INT-17, TD-CON-26): `cargo test -p askhava-intake tests::safety_text`.
