@@ -9,15 +9,20 @@
 //! "How soon?", the INT-033 night count and the emergency-or-regular choice and release.
 //! T042 added the keyword second opinion, the trade question and its word answers, the INT-010
 //! after-window word share and INT-032's two-trade detection (`matching`).
+//! T156 added the question set one question at a time, routing confidence and the golden run
+//! (`question_bank`, `routing_confidence`, `golden_run`).
 //! Other crates reach it only through [`api`].
 
 pub mod api;
 mod conversation;
 mod emergency;
 mod emergency_count;
+mod golden_run;
 mod matching;
 mod models;
+mod question_bank;
 mod routing;
+mod routing_confidence;
 mod rules;
 mod safety_text;
 mod service;

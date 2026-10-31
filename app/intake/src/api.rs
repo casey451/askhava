@@ -9,7 +9,9 @@
 //! INT-037 question, "How soon?", the INT-033 night count and the emergency-or-regular choice and
 //! release (INT-002 to INT-006, INT-024 to INT-026, INT-029, INT-030, INT-033, INT-037); the
 //! keyword second opinion, the trade question and INT-032's two trades (AI-011, INT-012, INT-013,
-//! INT-015, INT-032, T042); "Which fits best?" and its reply (INT-014, CARD-001, T183).
+//! INT-015, INT-032, T042); "Which fits best?" and its reply (INT-014, CARD-001, T183); the
+//! question set one question at a time, routing confidence and the stored golden runs (INT-039,
+//! INT-040, CARD-007, OPS-040, T156).
 
 pub use crate::conversation::{
     Answer, JobStart, Opened, Recorded, Taken, ask_name_address, begin_job, hear, joining_job,
@@ -19,20 +21,32 @@ pub use crate::emergency_count::{
     CHOICE_TEMPLATE, NIGHT_MANY_TEMPLATE, NIGHT_NONE_TEMPLATE, NIGHT_ONE_TEMPLATE, Offer, count,
     is_night, offer,
 };
+pub use crate::golden_run::{
+    GoldenRow, catalog_version, golden_results, golden_rows, reaches, run_golden, run_golden_for,
+    score,
+};
 pub use crate::matching::{
     Candidates, FitStep, KeywordReading, Opinion, Reading, TradeAnswer, TradeQuestion, TradeStep,
     candidates, job_types_of, keyword_reading, second_opinion, starts_second, trade_label,
     two_trades,
 };
 pub use crate::models::{
-    ConsentRecordRow, ConversationRow, EmergencyEventRow, HomeownerRow, IntakeAnswerRow,
-    IntakeError, PropertyRow, RecruitingDemandRow, TermsAcceptanceRow,
+    ConsentRecordRow, ConversationRow, EmergencyEventRow, GoldenResultRow, HomeownerRow,
+    IntakeAnswerRow, IntakeError, PropertyRow, RecruitingDemandRow, TermsAcceptanceRow,
+};
+pub use crate::question_bank::{
+    AiTurn, BankRun, BankSettings, Given, Heard, MAX_ASKED, NOT_SURE, Next, Prompt, SMELL_EN,
+    SMELL_ES, asks_smell_kind, keyword_answer, starts_now,
 };
 pub use crate::routing::{
     COUNT_MANY_TEMPLATE, COUNT_ONE_TEMPLATE, NOT_COVERED_TEMPLATE, OUT_OF_AREA_TEMPLATE, Outcome,
     Request, Routing, SPLIT_TEMPLATE, Town, TownRefused, Why, apply as apply_routing,
     asks_property_management, check_towns, is_split_reply, move_refused, recruiting_demand, route,
     split_request, tell_coverage, trade_is_open,
+};
+pub use crate::routing_confidence::{
+    Decision, HIGH_CONFIDENCE, NOT_CERTAIN, Outgoing, Scored, UnsureReach, after_fit, decide,
+    keyword_scored, unsure_reach,
 };
 pub use crate::safety_text::{SAFETY_WITHIN, safety_outgoing, safety_text, sent_in_time};
 /// The first-reply step without the consent record, for this crate's own tests only.
