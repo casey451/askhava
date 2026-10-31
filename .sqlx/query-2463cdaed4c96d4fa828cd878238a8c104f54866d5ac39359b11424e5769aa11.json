@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at) SELECT $1, b, h, $4 FROM unnest($2::uuid[], $3::bool[]) AS t(b, h) ON CONFLICT (job_id, business_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "UuidArray",
+        "BoolArray",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2463cdaed4c96d4fa828cd878238a8c104f54866d5ac39359b11424e5769aa11"
+}

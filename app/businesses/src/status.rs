@@ -58,6 +58,18 @@ impl AccountStatus {
     pub fn from_code(code: &str) -> Option<Self> {
         Self::ALL.into_iter().find(|s| s.code() == code)
     }
+
+    /// Whether a business in this status may receive job cards: only `Active` (CARD-001,
+    /// CARD-016). `quotes` asks this instead of comparing a status (SEC-031).
+    #[must_use]
+    pub const fn receives_cards(self) -> bool {
+        match self {
+            Self::Active => true,
+            Self::Pending | Self::Paused | Self::Waitlist | Self::NeedsReview | Self::Removed => {
+                false
+            }
+        }
+    }
 }
 
 /// Why a business is paused (BIZ-009); stored in `businesses.business.pause_reason`.

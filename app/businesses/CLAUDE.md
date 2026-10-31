@@ -7,7 +7,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 ## What it owns
 
 - `src/api.rs`: the only public surface: `create`, `apply`, `pause_for_rule`, `pause_self`, `resume_self`, `set_ticks`, `set_towns`, `set_job_types`, `set_own_hours`, `own_hours`, `night_count`, `business`, `towns`, `job_types`, the types below, and `api::rules` (`next`, `checklist`, `towns`, `may_notify`, `may_resume_itself`, `APP_OPEN_MINUTE`, `APP_CLOSE_MINUTE`); from `team`: `Acting`, `add_owner`, `add_member`, `set_roles`, `remove_member`, `link_phone`, `change_phone`, `unlink_phone`, `members`, `notice_addresses`, `Roles`, `NoticePurpose`, `TeamMember`, `TeamError`, `SenderLink`, `MEMBER_REMOVED_KIND`.
-- `src/status.rs`: `AccountStatus` (six statuses, `code`, `from_code`), `PauseReason`, `Refused`, `next`, `replaces_self_pause` (every match on a status lives here, SEC-031).
+- `src/status.rs`: `AccountStatus` (six statuses, `code`, `from_code`, `receives_cards`: only `Active`, read by `quotes` for CARD-001 and CARD-016, T044), `PauseReason`, `Refused`, `next`, `replaces_self_pause` (every match on a status lives here, SEC-031).
 - `src/rules.rs` (pure): `Event`, `Checks`, `JobTypeChoice`, `checklist`, `towns`, `OwnHours`, `Widens`, `may_notify`, `may_resume_itself`.
 - `src/models.rs`: `Business`, `Insurance`, `BusinessesError` and every query.
 - `src/service.rs`: the transactions with their audit rows; `Ticks`; the own-hours and self-resume queries (T182).

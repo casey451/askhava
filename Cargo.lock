@@ -554,6 +554,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "askhava-quotes"
+version = "0.1.0"
+dependencies = [
+ "askhava-businesses",
+ "askhava-catalog",
+ "askhava-core",
+ "askhava-licensing",
+ "jiff",
+ "jiff-sqlx",
+ "proptest",
+ "serde",
+ "serde-saphyr",
+ "sqlx",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "askhava-recovery-tests"
 version = "0.1.0"
 
