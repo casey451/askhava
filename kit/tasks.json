@@ -3070,7 +3070,8 @@
     "app/licensing/src/rules.rs",
     "migrations/0048_licensing_agency_rules.sql",
     "app/licensing/src/tests/agency_rules.rs",
-    "app/licensing/src/tests/scope_examples.rs"
+    "app/licensing/src/tests/scope_examples.rs",
+    "app/licensing/src/tests/prop_rules.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -3102,13 +3103,14 @@
     "D-177",
     "D-376",
     "D-402",
-    "D-403"
+    "D-403",
+    "D-886"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 9,
     "lines": 550,
-    "context_pct": 13
+    "context_pct": 19
    },
    "checks": [
     "Ci",
