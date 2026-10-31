@@ -287,3 +287,28 @@ def test_a_stale_branch_whose_number_main_took_meanwhile_fails(tmp_path: Path, c
     commit(root)
     assert run(root) == 0
     assert cc.decisions_not_taken_on_main(DECISIONS, DECISIONS, DECISIONS) == []
+
+
+def test_four_digit_decision_entry_and_trailer_are_recognised(tmp_path: Path) -> None:
+    """D-930: decision numbers pass D-999; an entry and a Plan-Change trailer with four digits count."""
+    root = repo(tmp_path)
+    (root / "BUILD_BRIEF.md").write_text("brief changed\n", encoding="utf-8")
+    pl.write_lock(root)
+    add_decision(root, "- **D-1000** Question: q. Choice: c.\n")
+    commit(root, "D-1000")
+    assert run(root) == 0
+    assert cc.new_decisions(DECISIONS, DECISIONS + "- **D-1000** Question: q. Choice: c.\n") == [
+        "- **D-1000** Question: q. Choice: c."
+    ]
+
+
+def test_two_digit_decision_entry_and_trailer_are_not_recognised(tmp_path: Path, capsys) -> None:
+    """D-930: the width is three digits or more; D-99 is neither an entry nor a trailer."""
+    assert cc.DECISION.match("- **D-99** Question: q. Choice: c.") is None
+    root = repo(tmp_path)
+    (root / "BUILD_BRIEF.md").write_text("brief changed\n", encoding="utf-8")
+    pl.write_lock(root)
+    add_decision(root, "- **D-99** Question: q. Choice: c.\n")
+    commit(root, "D-99")
+    assert run(root) == 1
+    assert "needs a 'Plan-Change: D-###' trailer" in capsys.readouterr().err

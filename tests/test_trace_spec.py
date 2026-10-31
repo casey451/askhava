@@ -201,3 +201,13 @@ def test_honest_description_passes(tmp_path: Path) -> None:
         "any business with Hava in its name\". Source: `src.md:3`.\n"
     )
     assert errors_for(tmp_path, body) == []
+
+
+def test_four_digit_decisions_are_defined_and_named(tmp_path: Path) -> None:
+    """D-930: a D-1000 entry is a known decision and a requirement naming it resolves; D-99 is neither."""
+    root = make_repo(tmp_path, "- **TST-001** A rule (D-1000). Source: `src.md:3`.\n")
+    with (root / "docs" / "decisions.md").open("a", encoding="utf-8") as f:
+        f.write("- **D-1000** Four digits.\n- **D-99** Two digits.\n")
+    assert trace_spec.known_decisions(root) == {"D-001", "D-1000"}
+    assert trace_spec.DECISION_REF.findall("see D-1000 and D-99") == ["D-1000"]
+    assert not [e for e in trace_spec.run(root).errors if "D-1000" in e]

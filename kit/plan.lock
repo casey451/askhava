@@ -51,18 +51,18 @@
   "scripts/check_crates.py": "6191806bd18621eb13b6ead908507c4150859ce587426670dd26d1c55a8666bc",
   "scripts/check_legal_docs.py": "d5e7cf0fad16d331f6d1010fc7a7e968440cdeafd09d8850a2adf83f0975dffd",
   "scripts/check_plan_lock.py": "15571e4da313f02b0a9931497e78057e29e218a16fc14ef6f3007b0611f97814",
-  "scripts/check_pr_change.py": "0756834ecaf611e3fced804dba7c1b9daa4abb9addd7c6b71c2365b235419066",
+  "scripts/check_pr_change.py": "a5d5e35141cc0f7815af67a779b6ff978206b620cc71d1e1ac30b4781e7dad6e",
   "scripts/check_rust_rules.py": "559029dff80fed3f8a701527b115660bbb19edf05e548b7d4d1caf86d57a573d",
   "scripts/check_state.py": "73952c1f7af2d2540086366631fd8fd0258ba9d37ea56a7895ca588aafa0fa26",
-  "scripts/gen_prompts.py": "c1c03ddbcb20feadd6de02e474682243b7ba0c6a98f66f16f82b753f8a85fb5e",
+  "scripts/gen_prompts.py": "138fb02cbe70fcd9c2592f976f089d55ba3b46056b5c781e9862d6c6c4d007e0",
   "scripts/pacing.py": "a6a8df5d6ed8464ea2b4301ff05dcf46069d5bcd6b11b632f33ffe74355aace0",
   "scripts/pii_scan.py": "26bf4685dcd9d3fc67ea8c6446a23d3e45e50ea2cce3aaed76773a3745b57379",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "d1cace9111244af5f26ddde33ac306abf69f3fb7cee1eb7035900dc69c5e14ec",
   "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
   "scripts/stage_exit.py": "009c0f3ffe26f1181f00b785bce3430c6d1f54651dde0bde6b7375d7cc1a6aa0",
-  "scripts/trace_spec.py": "6c36de51fd4faef8eabfaa5be73db88c7c5aae5fb36f495474c25e244f3b0049",
-  "scripts/validate_tasks.py": "7d100620b1080171c77a9c5281a8152c5003d76f5c11d7c3b1e0c48d454f8632"
+  "scripts/trace_spec.py": "9956b2ffaa7f6e205e6f27338f65cddf7f573afa3c53de697f959adc96923439",
+  "scripts/validate_tasks.py": "4d92de02eb830d5e664f2b5e25a587bc3d84218848f09e5c59371681db35d57e"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1
