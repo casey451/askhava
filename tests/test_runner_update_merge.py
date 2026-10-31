@@ -13,7 +13,7 @@ import check_plan_lock
 import check_pr_change
 import pytest
 
-from runner import github_env as ge
+from runner import __main__ as entry, github_env as ge
 from runner.github_env import GitHubEnv
 from runner.update_merge import decisions_after_main
 from test_runner_live import (  # noqa: F401  # reason: `repo` is the shared fixture
@@ -325,3 +325,182 @@ def test_auto_merge_waits_a_bounded_time_for_the_pushed_head(tmp_path: Path) -> 
     waits.clear()
     ok, why = never.enable_auto_merge(BRANCH, "m1")
     assert not ok and "not the reviewed head" in why and len(waits) == ge.HEAD_POLLS
+
+
+# ---- pure insertions in shared files are resolved, main's first (D-891)
+
+REVIEW = "# For Casey's review\n\n## First (T001)\n\n- one\n"
+CARGO = '[workspace]\nmembers = ["app/*"]\n\n[workspace.dependencies]\naskhava-core = { path = "app/core" }\naskhava-fixtures = { path = "tests/fixtures" }\naxum = "=0.8.9"\n'
+
+
+def _ours_base_main(tmp: Path, base: str, ours: str, main: str) -> str:
+    """`git merge-file -p --diff3` of the three texts with the runner's marker size, as `_insertions` runs it."""
+    names = []
+    for name, text in (("ours", ours), ("base", base), ("main", main)):
+        (tmp / name).write_text(text)
+        names.append(str(tmp / name))
+    from runner import update_merge  # noqa: PLC0415  # reason: the constant under test
+    return subprocess.run(["git", "merge-file", "-p", "--diff3", f"--marker-size={update_merge.MARK}", *names],
+                          capture_output=True, text=True, check=False).stdout
+
+
+def test_insertions_after_main_keeps_both_blocks_and_refuses_anything_else(tmp_path: Path) -> None:
+    from runner.update_merge import insertions_after_main  # noqa: PLC0415  # reason: beside its sibling helpers
+    ours, main = REVIEW + "\n## Branch (T003)\n\n- three\n", REVIEW + "\n## Main (T002)\n\n- two\n"
+    assert insertions_after_main(_ours_base_main(tmp_path, REVIEW, ours, main)) == main + "\n## Branch (T003)\n\n- three\n"
+    edited = REVIEW.replace("- one", "- one, edited") + "\n## Branch (T003)\n\n- three\n"
+    assert insertions_after_main(_ours_base_main(tmp_path, REVIEW, edited, REVIEW.replace("- one", "- one, main's"))) is None
+    loose = REVIEW + "- branch bullet\n"  # a bullet, not a section, after main's new section would move into it
+    assert insertions_after_main(_ours_base_main(tmp_path, REVIEW, loose, main)) is None
+    assert insertions_after_main("x\n" + "<" * 40 + " a\ny\n") is None  # markers that never close
+    assert insertions_after_main("no conflict\n") == "no conflict\n"
+
+
+def test_cargo_toml_and_casey_review_insertions_merge_without_a_worker(repo: dict[str, Path], tmp_path: Path) -> None:
+    """T024's PR #142 (Cargo.toml and docs/for-casey-review.md, October 30) as a drill: both sides added one
+    workspace dependency and one review section at the same place."""
+    push_main(repo, "Cargo.toml", CARGO)
+    push_main(repo, "docs/for-casey-review.md", REVIEW)
+    ai = CARGO.replace('askhava-fixtures', 'askhava-ai = { path = "app/ai" }\naskhava-fixtures')
+    push_branch(repo, "Cargo.toml", ai)
+    reviewed = push_branch(repo, "docs/for-casey-review.md", REVIEW + "\n## The AI (T024)\n\n- ai\n", start=BRANCH)
+    push_main(repo, "Cargo.toml", CARGO.replace('askhava-fixtures', 'askhava-jobs = { path = "app/jobs" }\naskhava-fixtures'))
+    main2 = push_main(repo, "docs/for-casey-review.md", REVIEW + "\n## Links (T014)\n\n- ids\n")
+    env = env_on(repo, tmp_path)
+    done = env.update_branch(BRANCH, reviewed)
+    assert done["status"] == "pushed" and parents(repo["b"], done["sha"]) == [reviewed, main2]
+    cargo = git(repo["b"], "show", f"{done['sha']}:Cargo.toml")
+    assert 'askhava-jobs = { path = "app/jobs" }\naskhava-ai = { path = "app/ai" }\naskhava-fixtures' in cargo
+    assert git(repo["b"], "show", f"{done['sha']}:docs/for-casey-review.md").endswith("## Links (T014)\n\n- ids\n\n## The AI (T024)\n\n- ai")
+    assert env.reviewed_plus_main(reviewed, done["sha"], 0) is True and env.update_merge_of(reviewed, done["sha"], 0) is True
+
+
+def test_a_doubled_cargo_key_or_an_edited_line_stays_a_real_conflict(repo: dict[str, Path], tmp_path: Path) -> None:
+    push_main(repo, "Cargo.toml", CARGO)
+    twice = CARGO.replace('askhava-fixtures', 'askhava-ai = { path = "app/ai" }\naskhava-fixtures')
+    reviewed = push_branch(repo, "Cargo.toml", twice)
+    push_main(repo, "Cargo.toml", CARGO.replace('askhava-fixtures', 'askhava-ai = { path = "app/ai2" }\naskhava-fixtures'))
+    env = env_on(repo, tmp_path)
+    assert env.update_branch(BRANCH, reviewed)["paths"] == ["Cargo.toml"]  # the same key twice no longer parses
+    edited = push_branch(repo, "Cargo.toml", twice.replace("=0.8.9", "=0.8.8"), start=BRANCH)
+    push_main(repo, "Cargo.toml", CARGO.replace('askhava-fixtures', 'askhava-ai = { path = "app/ai2" }\naskhava-fixtures').replace("=0.8.9", "=0.8.7"))
+    assert env.update_branch(BRANCH, edited)["status"] == "conflict"
+    assert git(repo["origin"], "rev-parse", BRANCH) == edited
+
+
+def test_an_architecture_insertion_into_a_locked_section_stays_a_real_conflict(repo: dict[str, Path], tmp_path: Path) -> None:
+    """A resolution never writes locked text neither side had (scripts/check_plan_lock.py LOCKED_SECTIONS)."""
+    arch = "# Architecture\n\n## 2. Layout\n\n- a\n\n## 3. Modules, what each owns, and its tables\n\n- core\n\n## 4. Dependency rules\n\n- none\n"
+    push_main(repo, "docs/architecture.md", arch)
+    in_two = push_branch(repo, "docs/architecture.md", arch.replace("- a\n", "- a\n- branch\n"))
+    main_two = arch.replace("- a\n", "- a\n- main\n")
+    push_main(repo, "docs/architecture.md", main_two)
+    env = _with_lock_tool(env_on(repo, tmp_path), repo["b"])
+    done = env.update_branch(BRANCH, in_two)
+    assert done["status"] == "pushed"  # section 2 is not locked
+    merged = git(repo["b"], "show", f"{done['sha']}:docs/architecture.md") + "\n"
+    in_three = push_branch(repo, "docs/architecture.md", merged.replace("- core\n", "- core\n- branch\n"), start=f"origin/{BRANCH}")
+    push_main(repo, "docs/architecture.md", main_two.replace("- core\n", "- core\n- main\n"))
+    env = _with_lock_tool(env_on(repo, tmp_path), repo["b"])
+    assert env.update_branch(BRANCH, in_three)["paths"] == ["docs/architecture.md"]
+    assert git(repo["origin"], "rev-parse", BRANCH) == in_three
+
+
+def _with_lock_tool(env: ge.GitHubEnv, root: Path) -> ge.GitHubEnv:
+    """The runner's checkout with the real scripts/check_plan_lock.py, whose LOCKED_SECTIONS the resolution reads."""
+    (root / "scripts").mkdir(exist_ok=True)
+    shutil.copy(ROOT / "scripts" / "check_plan_lock.py", root / "scripts" / "check_plan_lock.py")
+    return env
+
+
+# ---- a resync's branch is the reviewed head, main not merged in (D-891)
+
+
+def test_a_resync_branch_starts_at_the_reviewed_head_without_main(repo: dict[str, Path], tmp_path: Path) -> None:
+    reviewed = pushed_attempt(repo, "README.md", "the branch's readme\n")
+    main2 = move_main(repo, "main's readme\n")
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "closed", "merged_at": None, "auto_merge": None}],
+                          runner_closed_prs=[94])
+    note = {"attempt": 1, "from": reviewed, "main": main2, "paths": ["README.md"], "at": "t"}
+    prep = env.prepare_branch(dict(TASK, resync=note), 1, SESSION)
+    assert prep["resync"] is True and prep["branch"] == BRANCH and prep["base_sha"] == reviewed and prep["paths"] == ["README.md"]
+    assert git(repo["b"], "rev-parse", BRANCH) == reviewed and not any("PATCH" in c for c in gh.calls)
+    assert "WITHOUT main merged in" in entry.branch_note(prep) and f"git merge {main2}" in entry.branch_note(prep)
+    moved = dict(note, **{"from": "0" * 40})  # origin's tip is not the reviewed head any more: the D-583 path
+    later = env.prepare_branch(dict(TASK, resync=moved), 1, SESSION)
+    assert not later.get("resync") and later["branch"] == f"{BRANCH}-a2" and later["why"] == "merging main into it conflicted"
+
+
+def test_a_resync_on_a_branch_whose_pull_request_still_has_auto_merge_closes_it_first(repo: dict[str, Path], tmp_path: Path) -> None:
+    reviewed = pushed_attempt(repo, "README.md", "the branch's readme\n")
+    main2 = move_main(repo, "main's readme\n")
+    env, gh = claimed_env(repo, tmp_path, [{"number": 94, "state": "open", "merged_at": None, "auto_merge": {"merge_method": "squash"}}])
+    prep = env.prepare_branch(dict(TASK, resync={"attempt": 1, "from": reviewed, "main": main2, "paths": ["README.md"], "at": "t"}), 1, SESSION)
+    assert prep["resync"] is True and prep["dropped_pr"] == 94 and git(repo["b"], "rev-parse", BRANCH) == reviewed
+    assert ["gh", "api", "-X", "PATCH", "repos/fake-owner/fake-repo/pulls/94", "-f", "state=closed"] in gh.calls
+
+
+# ---- marker-shaped lines and dotted TOML keys are refused (D-891 review)
+
+SETEXT = "Notes\n" + "=" * 40 + "\n"  # a Markdown heading underlined with exactly 40 "="s
+
+
+@pytest.mark.parametrize("char", ["<", "|", "=", ">"])
+@pytest.mark.parametrize("side", ["base", "ours", "main"])
+def test_a_marker_shaped_line_on_any_side_is_never_resolved(tmp_path: Path, char: str, side: str) -> None:
+    """A line whose first word is one of the four 40-character markers could be read as git's own, so
+    `insertions_after_main` refuses when any of the three merged texts holds one."""
+    from runner.update_merge import insertions_after_main  # noqa: PLC0415  # reason: beside its sibling helpers
+    texts = {"base": REVIEW, "ours": REVIEW + "\n## Branch (T003)\n\n- three\n", "main": REVIEW + "\n## Main (T002)\n\n- two\n"}
+    clean = _ours_base_main(tmp_path, texts["base"], texts["ours"], texts["main"])
+    assert insertions_after_main(clean, (texts["ours"], texts["base"], texts["main"])) is not None
+    shaped = "=" * 40 + "\n" if char == "=" else char * 40 + " heading\n"
+    if side == "base":  # every side keeps the base's line, so the conflict is still a pure insertion
+        texts = {k: v.replace(REVIEW, REVIEW + shaped) for k, v in texts.items()}
+    else:
+        texts[side] += shaped
+    merged = _ours_base_main(tmp_path, texts["base"], texts["ours"], texts["main"])
+    assert insertions_after_main(merged, (texts["ours"], texts["base"], texts["main"])) is None
+
+
+def test_without_the_refusal_a_forty_equals_underline_in_mains_block_is_misread(tmp_path: Path) -> None:
+    """Why the refusal exists: read without its sources, a 40-"=" underline in main's block is taken for git's
+    separator and the join comes out wrong; with the sources it is refused."""
+    from runner.update_merge import insertions_after_main  # noqa: PLC0415  # reason: beside its sibling helpers
+    ours, main = REVIEW + "\n## Branch (T003)\n\n- three\n", REVIEW + "\n" + SETEXT + "\n- two\n"
+    merged = _ours_base_main(tmp_path, REVIEW, ours, main)
+    assert insertions_after_main(merged) != main + "\n## Branch (T003)\n\n- three\n"
+    assert insertions_after_main(merged, (ours, REVIEW, main)) is None
+
+
+def test_dotted_keys_are_found_outside_quotes_only() -> None:
+    from runner.update_merge import dotted_key, toml_ok  # noqa: PLC0415  # reason: beside its sibling helpers
+    assert dotted_key('serde.version = "1"\n') and dotted_key("version.workspace = true\n") and dotted_key("'x'.y = 2\n")
+    assert not dotted_key('serde = { version = "1.0" }\n') and not dotted_key('"a.b" = 1\n') and not dotted_key("[a.b]\n")
+    assert not dotted_key("# a.b = 1\n") and not dotted_key("\n") and not dotted_key("plain line\n")
+    assert toml_ok("README.md", "not toml", ["a.b = 1\n"]) and not toml_ok("Cargo.toml", "a.b = 1\n", ["a.b = 1\n"])
+    assert toml_ok("Cargo.toml", "a.b = 1\n", []) and not toml_ok("Cargo.toml", "a = [\n", [])
+
+
+def test_dotted_keys_from_both_sides_stay_a_real_conflict(repo: dict[str, Path], tmp_path: Path) -> None:
+    """The reviewer's case 14: branch `serde.version` and main `serde.features` parse with tomllib into one
+    dependency neither side wrote, so the Cargo.toml guard refuses any inserted dotted key."""
+    push_main(repo, "Cargo.toml", CARGO)
+    reviewed = push_branch(repo, "Cargo.toml", CARGO.replace("axum", 'serde.version = "1.0.0"\naxum'))
+    push_main(repo, "Cargo.toml", CARGO.replace("axum", 'serde.features = ["derive"]\naxum'))
+    env = env_on(repo, tmp_path)
+    assert env.update_branch(BRANCH, reviewed)["paths"] == ["Cargo.toml"]
+    assert git(repo["origin"], "rev-parse", BRANCH) == reviewed
+
+
+def test_a_setext_heading_inside_an_insertion_stays_a_real_conflict_end_to_end(repo: dict[str, Path], tmp_path: Path) -> None:
+    """The reviewer's reproduction: a 40-"=" underline inside main's inserted block. Before the refusal it was
+    misread and `is_update_merge` accepted the corrupted tree; now no tree is made, so nothing is pushed or adopted."""
+    push_main(repo, "docs/for-casey-review.md", REVIEW)
+    reviewed = push_branch(repo, "docs/for-casey-review.md", REVIEW + "\n## Branch (T003)\n\n- three\n")
+    main2 = push_main(repo, "docs/for-casey-review.md", REVIEW + "\n" + SETEXT + "\n- two\n")
+    env = env_on(repo, tmp_path)
+    assert env.updates.commit(reviewed, main2, BRANCH) == (None, ["docs/for-casey-review.md"])
+    forged = git(repo["b"], "commit-tree", f"{main2}^{{tree}}", "-p", reviewed, "-p", main2, "-m", "a hand-made merge")
+    assert env.updates.is_update_merge(reviewed, forged) == (False, main2)
+    assert env.update_branch(BRANCH, reviewed)["status"] == "conflict" and git(repo["origin"], "rev-parse", BRANCH) == reviewed
