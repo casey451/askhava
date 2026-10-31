@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO messaging.webhook_event (source, event_key, received_at) VALUES ($1, $2, $3) ON CONFLICT (source, event_key) DO NOTHING RETURNING event_key",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "event_key",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.webhook_event",
+            "name": "event_key"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7011a4b5e41354bbc0847c7859893ff302c42491844bdb53e530ea1d97569dab"
+}

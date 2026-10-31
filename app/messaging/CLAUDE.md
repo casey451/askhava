@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory. Not here yet: the inbox, opt-outs, retries, delivery statuses, email and letters (later messaging tasks).
+The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses. Not here yet: inbound routing (the scrubbed text and flags), opt-outs, retries, email and letters (later messaging tasks).
 
 ## What it owns
 
@@ -10,9 +10,12 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/templates.rs`: `Registry` (`parse`, `embedded`, `render`, `language_for`, `template`, `ids`), `count_segments`.
 - `area_codes.json`: the area-code table, `{zone: [codes]}`, US, territories and Canada only (D-100, D-139).
 - `src/rules.rs`: pure quiet-hours logic: `AreaCodes`, `decide`, `retry`, `plan_release`, `Kind`, `Outgoing`, `Decision`, `Held`, `Release`.
-- `src/service.rs`: the outbox (`enqueue`, `send`, `may_text`, `NewText`, `Relation`, `To`, `SEND_ACTION`) and the sender directory (`sender_add`, `sender_remove`, `sender_business`).
-- `src/models.rs`: `OutboxError` and the crate-private queries on `messaging.outbox` and `messaging.sender_directory`.
+- `src/service.rs`: the outbox (`enqueue`, `send`, `may_text`, `NewText`, `Relation`, `To`, `SEND_ACTION`), `delivery_status` (TXT-013) and the sender directory (`sender_add`, `sender_remove`, `sender_business`).
+- `src/handlers.rs`: Twilio's webhooks: `receive_inbound`, `receive_status`, `Callback` (`Recorded`, `Repeat`, `Ignored`).
+- `src/status.rs`: `DeliveryStatus` (`from_twilio`, `as_str`, `rank`); every match on it lives here (SEC-031).
+- `src/models.rs`: `OutboxError`, `InboxError` and the crate-private queries on `messaging.outbox`, `messaging.sender_directory`, `messaging.webhook_event`, `messaging.inbox` and `messaging.delivery_event`.
 - Migration `0042_messaging_outbox.sql`: the `messaging` schema and grants, `messaging.outbox` (unique `idempotency_key`, `subject_ids`, `recipient_kind` homeowner/business, `status` queued/sending/sent, `attempts`, `provider_sid`, `body` NULL once sent), `messaging.sender_directory` (blind-index digests per key version, unique per digest).
+- Migration `0043_messaging_inbox_delivery.sql`: `messaging.webhook_event` (source `twilio_inbound` or `twilio_status`, event key, primary key on both), `messaging.inbox` (unique `message_sid`), `messaging.delivery_event` (provider SID, folded status, error code, identity `id` for order). No `received_at` has a default: the caller binds it (D-863).
 - `src/api.rs`: the only public surface: `render`, `template_ids`, the quiet-hours functions, the outbox and sender-directory functions and the re-exported types.
 
 ## Rules it enforces
@@ -30,6 +33,8 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - PRIV-003, PRIV-004: `send` reads a homeowner's phone from the vault (`read_contact`, `Reader::Messaging`, `Purpose::Send`) for the row's `recipient_id`; only a business phone comes from the caller (D-849). Each row stores `recipient_kind` (from the `Relation` at enqueue) and `send` refuses a `To` of the other kind with `RecipientKind`, so a homeowner's row cannot skip the vault read or TXT-009. `NewText`'s `Debug` omits the body.
 - SEC-037: `mark_sent` sets `body` to NULL, so a link token is not kept after the send (D-850).
 - TXT-011, SEC-018: `enqueue` derives the key (`sms.send` over template ID, recipient ID, subject IDs) and inserts `ON CONFLICT DO NOTHING`; `send` claims in one statement, calls the carrier outside any transaction with the key re-derived from the stored IDs, then marks `sent` only if still `sending`; a sent row never reaches the carrier (D-847). Subject IDs are sorted before hashing. No lease: the killed-worker resend and concurrent sends both rely on the carrier's key dedupe, verify with vendor before Gate C. No error makes a row terminal: a TXT-009 or kind refusal leaves it `queued`, a vault or carrier failure leaves it `sending`; the retry task decides when to give up.
+- TXT-012, SEC-017, SEC-039: `receive_inbound` and `receive_status` take a `VerifiedWebhook` (Twilio only) and `now` from the caller's injected `Clock` (each row's `received_at`, never the database's `now()`, D-863), parse MessageSid, MessageStatus and ErrorCode once (`BadWebhook` otherwise, nothing recorded), and insert the event into `messaging.webhook_event` in the transaction of its effect: inbound on its MessageSid (first: one `inbox` row), status on (MessageSid, MessageStatus) (first: one `delivery_event`). A repeat changes nothing (D-861).
+- TXT-013: `delivery_status` is `Queued`/`Sending` from the row until it is sent, then the highest-ranked `delivery_event` for its `provider_sid` (`Sent` if none); a late earlier status never moves it back; a non-outbound status (`received`) is `Callback::Ignored` (D-861).
 - D-492, PRIV-002: `sender_add` normalizes the phone and stores only `IndexPurpose::SenderDir` digests, replacing the phone's earlier ones in one transaction (whatever business they named, so re-adding a `phone_ref` under another business moves it); a number another phone holds is `SenderTaken`.
 
 ## Never break
@@ -47,12 +52,16 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - A homeowner is re-checked at send, texted at her vault number, and a sent row keeps no body: `td_txt_03_a_homeowner_is_rechecked_and_texted_at_her_vault_number`.
 - A row goes only to its recipient kind; subject order does not change the key: `a_row_goes_only_to_its_recipient_kind_and_subject_order_is_one_text`.
 
+- The same inbound MessageSid three times is one inbox row: `tests/integration/tests/inbox.rs::td_txt_04_the_same_inbound_message_id_three_times_is_handled_once`.
+- Each status is recorded once and never moves a text back: `td_txt_04_delivery_statuses_are_recorded`.
+
 ## How to change
 
 - Edit or add a text: change the key in both `en.json` and `es.json`, set `segments` to the new count (the test prints the counted values with `--nocapture`; raising it is a logged decision, TXT-044), run both test commands below.
 - Spanish text: keep `draft: true`; a text that must stay on while the setting is off needs `spanish_stays_on: true` and a back-translation entry in `docs/decisions.md` (TXT-039).
 - Add an area code: put it under every zone it spans in `area_codes.json` (all must be open to send; the parser rejects a repeat within one zone); only US, territory and Canadian codes (D-100); run the quiet-hours tests.
 - Add a night exception: QH-004 first, then `Kind` and `night_exception`, then a case in `td_qh_02_*`.
+- Map a new Twilio status: add it to `DeliveryStatus::from_twilio` (and, for a new variant, `as_str`, `rank` and the migration's check in a new migration), then run the inbox test.
 - Add an ID to a text's identity: put it in `NewText::subject`; never a phone, name or body word (SEC-018). Changing what the key covers changes every key, so it is a logged decision.
 - After changing a query, regenerate `.sqlx/` (`cargo sqlx prepare --workspace -- --all-targets --all-features`, or an online build with `SQLX_OFFLINE_DIR=.sqlx`).
 
@@ -63,3 +72,4 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/tests/quiet_hours.rs` (TD-QH-01, TD-QH-02): `cargo test -p askhava-messaging tests::quiet_hours`.
 - `src/tests/prop_quiet_hours_props.rs` (TD-QH-01 property): `cargo test -p askhava-messaging tests::prop_quiet_hours_props`.
 - `tests/integration/tests/outbox.rs` (TD-TXT-03, TD-TXT-04 TXT-011 cases, D-492): `cargo test -p askhava-integration --test outbox`.
+- `tests/integration/tests/inbox.rs` (TD-TXT-04 TXT-012 and TXT-013 cases, D-861): `cargo test -p askhava-integration --test inbox`.
