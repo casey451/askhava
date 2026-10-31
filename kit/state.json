@@ -6755,7 +6755,16 @@
     950,
     951,
     952
-   ]
+   ],
+   "reviewed_sha": "049258213a6758b25fcd7d1d290d0093857576fb",
+   "review_lease": {
+    "task": "T037",
+    "session": "actions-41177686339",
+    "expires": "2026-10-31T09:45:09Z",
+    "lane": "2"
+   },
+   "branch": "claude/task/T037-licensing-card-lines",
+   "head_check_since": null
   },
   {
    "id": "T038",
@@ -10519,7 +10528,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T06:51:21Z",
+ "updated_at": "2026-10-31T06:59:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -10617,7 +10626,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9fb86401d922f124ac5223c637ac0197ab393d33",
+ "runner_sha": "049258213a6758b25fcd7d1d290d0093857576fb",
  "starter": "actions",
  "smoke_runs": [
   {
