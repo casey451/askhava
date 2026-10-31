@@ -5,18 +5,21 @@
 //! its source and list date; that planted malformed rows (a short row, an unknown status, a bad
 //! date, an unclosed quote, a blank number) are skipped and counted without stopping the import;
 //! that a changed header records nothing; that a second run for the same day records nothing new;
-//! that the class and issue year read back from the state record; that a card goes only to a
-//! business whose latest daily check was Active, pest excepted (LIC-048); that the city list matches
+//! that an empty or mostly malformed list is refused and the previous list stays the latest; that
+//! conflicting repeated rows keep the stricter status and license numbers are normalised; that the
+//! class and issue year read back from the state record; that an ROC-licensed card goes only when
+//! the latest daily check of its covering license was Active and fresh; that the city list matches
 //! a business's own names and drops every contact column; and that imported rows cannot be
 //! rewritten. All names and numbers are fake.
 
 use askhava_integration::set_app_role;
 use askhava_licensing::api::{
-    CityListStanding, CityRecord, DailyCheck, ImportError, ImportSummary, check_license,
-    city_standing, daily_check_allows_card, import_city_list, import_roc_list, parse_roc_list,
-    read_back,
+    CityListStanding, CityRecord, DailyCheck, Freshness, ImportError, ImportSummary, check_license,
+    city_standing, import_city_list, import_roc_list, parse_roc_list, read_back,
+    roc_check_allows_card,
 };
-use jiff::civil::date;
+use jiff::civil::{Date, date};
+use jiff::{SignedDuration, Timestamp};
 use sqlx::PgPool;
 use sqlx::pool::PoolConnection;
 use sqlx::types::Uuid;
@@ -42,6 +45,17 @@ CL-1001,\"Example Pools, LLC\",Sample Pool Care,Pat Placeholder,2018-02-03\n\
 CL-1003,,No Business Name,,\n";
 
 const BUSINESS: Uuid = Uuid::from_u128(0x0000_7e57_0000_0000_0000_0000_0036_0001);
+
+fn since(checked_since: Timestamp, listed_since: Date) -> Freshness {
+    Freshness {
+        checked_since,
+        listed_since,
+    }
+}
+
+fn any_age() -> Freshness {
+    since(Timestamp::UNIX_EPOCH, date(2000, 1, 1))
+}
 
 async fn app(pool: &PgPool) -> PoolConnection<sqlx::Postgres> {
     let mut conn = pool.acquire().await.expect("connection");
@@ -117,7 +131,8 @@ async fn read_back_gives_classes_and_since_year_from_the_record(pool: PgPool) {
     assert_eq!(read_back(&mut conn, "ROC999999").await, Ok(None));
 }
 
-/// A card goes only after an Active latest daily check; pest is attested instead (CARD-015, LIC-048).
+/// An ROC-licensed card goes only after an Active, fresh latest check of its covering license
+/// (CARD-015, LIC-007).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn card_needs_latest_daily_check_active(pool: PgPool) {
     let mut conn = app(&pool).await;
@@ -127,52 +142,46 @@ async fn card_needs_latest_daily_check_active(pool: PgPool) {
         Err(ImportError::NoList),
         "no list, no check recorded"
     );
-    assert!(
-        !daily_check_allows_card(&mut conn, BUSINESS, "pool_repair")
-            .await
-            .expect("allow")
-    );
-    assert!(
-        daily_check_allows_card(&mut conn, BUSINESS, "pest_control")
-            .await
-            .expect("pest")
-    );
+    let allows = roc_check_allows_card(&mut conn, BUSINESS, "ROC900001", any_age()).await;
+    assert_eq!(allows, Ok(false), "no check, no card");
     import_roc_list(&mut conn, date(2026, 10, 29), ROC_DAY_1)
         .await
         .expect("day 1");
     let first = check_license(&mut conn, BUSINESS, "ROC900001").await;
     assert_eq!(first, Ok(DailyCheck::Active));
-    assert!(
-        daily_check_allows_card(&mut conn, BUSINESS, "pool_repair")
-            .await
-            .expect("allow")
+    let allows = roc_check_allows_card(&mut conn, BUSINESS, "roc 900001", any_age()).await;
+    assert_eq!(allows, Ok(true));
+    let uncovered = roc_check_allows_card(&mut conn, BUSINESS, "ROC900003", any_age()).await;
+    assert_eq!(
+        uncovered,
+        Ok(false),
+        "only the covering license's check counts"
     );
+    let later = Timestamp::now() + SignedDuration::from_hours(1);
+    let stale_check = since(later, date(2000, 1, 1));
+    let stale = roc_check_allows_card(&mut conn, BUSINESS, "ROC900001", stale_check).await;
+    assert_eq!(
+        stale,
+        Ok(false),
+        "a check older than the limit sends no card"
+    );
+    let stale_list = since(Timestamp::UNIX_EPOCH, date(2026, 10, 30));
+    let stale = roc_check_allows_card(&mut conn, BUSINESS, "ROC900001", stale_list).await;
+    assert_eq!(stale, Ok(false), "a check of an old list sends no card");
     let other = Uuid::from_u128(BUSINESS.as_u128() + 1);
-    assert_eq!(
-        check_license(&mut conn, other, "ROC900002").await,
-        Ok(DailyCheck::Inactive)
-    );
-    assert_eq!(
-        check_license(&mut conn, other, "ROC999999").await,
-        Ok(DailyCheck::NotListed)
-    );
-    assert!(
-        !daily_check_allows_card(&mut conn, other, "pool_repair")
-            .await
-            .expect("allow")
-    );
+    let inactive = check_license(&mut conn, other, "ROC900002").await;
+    assert_eq!(inactive, Ok(DailyCheck::Inactive));
+    let allows = roc_check_allows_card(&mut conn, other, "ROC900002", any_age()).await;
+    assert_eq!(allows, Ok(false));
+    let absent = check_license(&mut conn, other, "ROC999999").await;
+    assert_eq!(absent, Ok(DailyCheck::NotListed));
     import_roc_list(&mut conn, date(2026, 10, 30), ROC_DAY_2)
         .await
         .expect("day 2");
-    assert_eq!(
-        check_license(&mut conn, BUSINESS, "ROC900001").await,
-        Ok(DailyCheck::Inactive)
-    );
-    assert!(
-        !daily_check_allows_card(&mut conn, BUSINESS, "pool_repair")
-            .await
-            .expect("allow")
-    );
+    let expired = check_license(&mut conn, BUSINESS, "ROC900001").await;
+    assert_eq!(expired, Ok(DailyCheck::Inactive));
+    let allows = roc_check_allows_card(&mut conn, BUSINESS, "ROC900001", any_age()).await;
+    assert_eq!(allows, Ok(false));
     let dates: Vec<String> = sqlx::query_scalar(
         "SELECT list_date::text FROM licensing.license_check WHERE business_id = $1 ORDER BY checked_at",
     )
@@ -181,6 +190,53 @@ async fn card_needs_latest_daily_check_active(pool: PgPool) {
     .await
     .expect("checks");
     assert_eq!(dates, ["2026-10-29", "2026-10-30"]);
+}
+
+/// An empty or mostly malformed list is refused and the previous list stays the latest (LIC-008);
+/// a repeated number and class with conflicting statuses keeps the stricter one.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn truncated_lists_are_refused_and_conflicts_keep_the_stricter_status(pool: PgPool) {
+    let mut conn = app(&pool).await;
+    import_roc_list(&mut conn, date(2026, 10, 29), ROC_DAY_1)
+        .await
+        .expect("day 1");
+    let header_only = format!("{}\n", askhava_licensing::api::ROC_HEADER);
+    for (day, text) in [
+        (30, header_only.as_str()),
+        (
+            31,
+            "license_number,class,status,issued_on\nROC900001,R-37,Active,\nX\nY\n",
+        ),
+    ] {
+        let refused = import_roc_list(&mut conn, date(2026, 10, day), text).await;
+        assert_eq!(refused, Err(ImportError::TooFewRows), "day {day}");
+    }
+    let city = import_city_list(
+        &mut conn,
+        date(2026, 10, 30),
+        CITY.lines().next().expect("h"),
+    )
+    .await;
+    assert_eq!(city.err(), Some(ImportError::TooFewRows));
+    let imports: i64 = sqlx::query_scalar("SELECT count(*) FROM licensing.list_import")
+        .fetch_one(&mut *conn)
+        .await
+        .expect("count");
+    assert_eq!(imports, 1, "a refused list records nothing");
+    let kept = check_license(&mut conn, BUSINESS, "ROC900001").await;
+    assert_eq!(
+        kept,
+        Ok(DailyCheck::Active),
+        "the previous list stays the latest"
+    );
+    let conflict = "license_number,class,status,issued_on\n\
+        ROC900010,R-37,Active,\nroc 900010,r-37,Suspended,\nROC900011,R-37,Active,\n";
+    let done = import_roc_list(&mut conn, date(2026, 11, 1), conflict)
+        .await
+        .expect("day 3");
+    assert_eq!((done.recorded, done.skipped), (2, 1));
+    let strict = check_license(&mut conn, BUSINESS, " Roc900010 ").await;
+    assert_eq!(strict, Ok(DailyCheck::Inactive), "the stricter status wins");
 }
 
 /// The city list keeps names for matching, skips a row without a business name (LIC-010, LIC-011).
@@ -230,8 +286,17 @@ async fn imported_rows_cannot_be_rewritten(pool: PgPool) {
     import_roc_list(&mut conn, date(2026, 10, 30), ROC_DAY_1)
         .await
         .expect("import");
+    import_city_list(&mut conn, date(2026, 10, 30), CITY)
+        .await
+        .expect("city");
+    check_license(&mut conn, BUSINESS, "ROC900001")
+        .await
+        .expect("check");
     for sql in [
         "UPDATE licensing.agency_record SET status = 'active'",
+        "UPDATE licensing.city_license_entry SET business_name = 'Other Test Co'",
+        "DELETE FROM licensing.city_license_entry",
+        "UPDATE licensing.license_check SET status = 'active'",
         "DELETE FROM licensing.list_import",
         "DELETE FROM licensing.license_check",
     ] {

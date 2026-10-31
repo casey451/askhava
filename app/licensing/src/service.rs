@@ -5,15 +5,17 @@
 //! and every row in one transaction, each row with its source and list date; a second run for the
 //! same list and day records nothing (R12). The lists are read only by license number or matched
 //! against one business's own names, never listed out (LIC-010). The daily job calls an import per
-//! list, then `businesses` calls [`check_license`] for every ROC-licensed business.
+//! list, then `businesses` calls [`check_license`] for every ROC-licensed business. The read-back
+//! here is the ROC's only; other agencies' read-back comes with T180's lookup (LIC-027 is partial).
 
+use jiff::Timestamp;
 use jiff::civil::Date;
 use jiff_sqlx::ToSqlx;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::imports::{self, CityRow, ImportError, ParsedList, RocRow};
-use crate::models::{Agency, CityListStanding, CityRecord};
+use crate::models::{CityListStanding, CityRecord};
 use crate::rules::city_list_standing;
 
 fn db<T>(r: Result<T, sqlx::Error>) -> Result<T, ImportError> {
@@ -42,6 +44,15 @@ pub enum DailyCheck {
     NotListed,
 }
 
+/// How fresh a daily check must be for a card; the caller sets both limits (CARD-015, D-056).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Freshness {
+    /// The check must have run at or after this instant.
+    pub checked_since: Timestamp,
+    /// The list the check read must be dated on or after this day.
+    pub listed_since: Date,
+}
+
 /// What a license covers, read back at sign-up from the state record, never typed (LIC-006, LIC-027).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReadBack {
@@ -51,11 +62,13 @@ pub struct ReadBack {
     pub since_year: Option<i32>,
 }
 
-/// Records the day's ROC list (LIC-006, LIC-007). A malformed row is skipped and counted.
+/// Records the day's ROC list (LIC-006, LIC-007). A malformed row is skipped and counted; rows
+/// repeating a number and class keep the stricter status (Inactive over Active).
 ///
 /// # Errors
 ///
-/// [`ImportError::BadHeader`] for a changed layout; [`ImportError::Database`] on a database failure.
+/// [`ImportError::BadHeader`] for a changed layout; [`ImportError::TooFewRows`] for an empty or
+/// mostly malformed list (nothing recorded); [`ImportError::Database`] on a database failure.
 pub async fn import_roc_list(
     conn: &mut PgConnection,
     list_date: Date,
@@ -63,9 +76,11 @@ pub async fn import_roc_list(
 ) -> Result<ImportSummary, ImportError> {
     let mut list = imports::parse_roc_list(text)?;
     let before = list.rows.len();
-    list.rows.sort_by(|a, b| {
-        (&a.license_number, &a.class_code).cmp(&(&b.license_number, &b.class_code))
-    });
+    let key = |r: &RocRow| {
+        let lenient = r.status.is_active();
+        (r.license_number.clone(), r.class_code.clone(), lenient)
+    };
+    list.rows.sort_by_key(key);
     list.rows
         .dedup_by(|a, b| a.license_number == b.license_number && a.class_code == b.class_code);
     let mut tx = db(conn.begin().await)?;
@@ -83,7 +98,8 @@ pub async fn import_roc_list(
 ///
 /// # Errors
 ///
-/// [`ImportError::BadHeader`] for a changed layout; [`ImportError::Database`] on a database failure.
+/// [`ImportError::BadHeader`] for a changed layout; [`ImportError::TooFewRows`] for an empty or
+/// mostly malformed list (nothing recorded); [`ImportError::Database`] on a database failure.
 pub async fn import_city_list(
     conn: &mut PgConnection,
     list_date: Date,
@@ -215,7 +231,7 @@ pub async fn read_back(
         "SELECT class_code, EXTRACT(YEAR FROM issued_on)::int AS year FROM licensing.agency_record \
          WHERE import_id = $1 AND license_number = $2 ORDER BY class_code",
         latest,
-        license_number.trim(),
+        imports::normalise_license_number(license_number),
     )
     .fetch_all(&mut *conn)
     .await)?;
@@ -250,7 +266,7 @@ pub async fn check_license(
     business_id: Uuid,
     license_number: &str,
 ) -> Result<DailyCheck, ImportError> {
-    let number = license_number.trim();
+    let number = imports::normalise_license_number(license_number);
     let latest = latest_import(conn, "roc").await?;
     let statuses = db(sqlx::query_scalar!(
         "SELECT status FROM licensing.agency_record WHERE import_id = $1 AND license_number = $2",
@@ -268,7 +284,7 @@ pub async fn check_license(
         "INSERT INTO licensing.license_check (business_id, source, license_number, list_date, status) \
          SELECT $1, 'roc', $2, list_date, $3 FROM licensing.list_import WHERE id = $4",
         business_id,
-        number,
+        &number,
         code,
         latest,
     )
@@ -277,28 +293,32 @@ pub async fn check_license(
     Ok(check)
 }
 
-/// Whether a business may receive a card in `category` on its daily check: only if its latest check
-/// was Active; a pest-control card skips the check, its license being attested (CARD-015, LIC-048).
+/// Whether the ROC license `license_number` that covers a job lets the business receive its card:
+/// only if the business's latest daily check of that license was Active and is within `fresh`
+/// (CARD-015, LIC-007). For ROC-licensed categories only: a pest card is attested (LIC-048), and
+/// other-agency, no-license and handyman cards are decided by `eligibility`, so none calls this.
 ///
 /// # Errors
 ///
 /// [`ImportError::Database`] on a database failure.
-pub async fn daily_check_allows_card(
+pub async fn roc_check_allows_card(
     conn: &mut PgConnection,
     business_id: Uuid,
-    category: &str,
+    license_number: &str,
+    fresh: Freshness,
 ) -> Result<bool, ImportError> {
-    if category == Agency::PestManagement.category() {
-        return Ok(true);
-    }
-    let latest = db(sqlx::query_scalar!(
-        "SELECT status FROM licensing.license_check WHERE business_id = $1 \
+    let latest = db(sqlx::query!(
+        "SELECT status, checked_at >= $3 AND list_date >= $4 AS \"fresh!\" \
+         FROM licensing.license_check WHERE business_id = $1 AND license_number = $2 \
          ORDER BY checked_at DESC, id DESC LIMIT 1",
         business_id,
+        imports::normalise_license_number(license_number),
+        fresh.checked_since.to_sqlx() as _,
+        fresh.listed_since.to_sqlx() as _,
     )
     .fetch_optional(&mut *conn)
     .await)?;
-    Ok(latest.as_deref() == Some("active"))
+    Ok(latest.is_some_and(|r| r.status == "active" && r.fresh))
 }
 
 /// Matches one business's own names on the latest city list (LIC-010, LIC-011); `Pending` before

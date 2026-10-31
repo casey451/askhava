@@ -11,8 +11,9 @@
 //! (CARD-001) when it chooses recipients.
 //!
 //! The daily lists (T036): [`import_roc_list`] and [`import_city_list`] record the day's lists,
-//! skipping and counting malformed rows; [`check_license`] records a business's daily check and
-//! [`daily_check_allows_card`] lets a card go only after an Active one (CARD-015, LIC-007);
+//! skipping and counting malformed rows and refusing an empty or mostly malformed list;
+//! [`check_license`] records a business's daily check and [`roc_check_allows_card`] lets an
+//! ROC-licensed card go only after a fresh Active check of the covering license (CARD-015, LIC-007);
 //! [`read_back`] gives the sign-up read-back of the classes on the state record (LIC-006, LIC-027);
 //! [`city_standing`] matches a business on the latest city list (LIC-010, LIC-011).
 
@@ -21,8 +22,8 @@ pub use crate::handyman::{
     QuoteRefusal, QuoteSubmission, SPLIT_JOB_WINDOW_DAYS, check_quote, never_handyman, split_job,
 };
 pub use crate::imports::{
-    CITY_HEADER, CityRow, ImportError, ParsedList, ROC_HEADER, RocRow, RocStatus, parse_city_list,
-    parse_roc_list,
+    CITY_HEADER, CityRow, ImportError, ParsedList, ROC_HEADER, RocRow, RocStatus,
+    normalise_license_number, parse_city_list, parse_roc_list,
 };
 pub use crate::models::{
     Agency, CityListStanding, CityRecord, Eligibility, Holder, InspectionFee, Job, LicenseKind,
@@ -30,6 +31,6 @@ pub use crate::models::{
 };
 pub use crate::rules::{city_list_standing, eligibility, eligibility_for_request, inspection_fee};
 pub use crate::service::{
-    DailyCheck, ImportSummary, ReadBack, check_license, city_standing, daily_check_allows_card,
-    import_city_list, import_roc_list, read_back,
+    DailyCheck, Freshness, ImportSummary, ReadBack, check_license, city_standing, import_city_list,
+    import_roc_list, read_back, roc_check_allows_card,
 };

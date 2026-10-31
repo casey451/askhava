@@ -2,9 +2,11 @@
 //!
 //! Pure: text in, rows out; `service` stores them. A list is comma-separated with a fixed header
 //! line (fields may be double-quoted); a wrong header rejects the whole list, so a changed file
-//! layout never changes a status (LIC-008), while a malformed row is skipped and counted. Only the
-//! columns verification needs are read; any other column (an address or a phone) is dropped here
-//! and never stored (LIC-010).
+//! layout never changes a status (LIC-008), while a malformed row is skipped and counted. A list with
+//! no usable row, or with more malformed rows than good ones, is refused whole (a truncated download
+//! must never become the latest list). ROC license numbers are normalised (upper case, no spaces)
+//! here and at every lookup. Only the columns verification needs are read; any other column (an
+//! address or a phone) is dropped here and never stored (LIC-010).
 
 use jiff::civil::Date;
 use thiserror::Error;
@@ -22,6 +24,10 @@ pub enum ImportError {
     /// The first line is not the list's header: the layout changed, so nothing is recorded.
     #[error("the list header is not the expected one")]
     BadHeader,
+    /// The list has no good row, or more malformed rows than good ones: it looks truncated or
+    /// misread, so nothing is recorded and the previous list stays the latest (LIC-008).
+    #[error("the list has too few good rows")]
+    TooFewRows,
     /// No list of this source has been imported yet, so no daily check can run (LIC-008).
     #[error("no list has been imported")]
     NoList,
@@ -49,6 +55,14 @@ impl RocStatus {
         }
     }
 
+    /// Whether this is the lenient standing, so a repeated row keeps the stricter one (LIC-007).
+    pub(crate) const fn is_active(self) -> bool {
+        match self {
+            Self::Active => true,
+            Self::Inactive => false,
+        }
+    }
+
     fn parse(text: &str) -> Option<Self> {
         match text.to_ascii_lowercase().as_str() {
             "active" => Some(Self::Active),
@@ -58,10 +72,19 @@ impl RocStatus {
     }
 }
 
+/// A license number as stored and looked up: upper case with every space removed (LIC-007).
+#[must_use]
+pub fn normalise_license_number(text: &str) -> String {
+    text.chars()
+        .filter(|c| !c.is_whitespace())
+        .collect::<String>()
+        .to_ascii_uppercase()
+}
+
 /// One ROC list row: the state record a business's class comes from (LIC-006).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RocRow {
-    /// The license number, as the list shows it.
+    /// The license number, normalised by [`normalise_license_number`].
     pub license_number: String,
     /// The license class, upper case (such as `CR-37`).
     pub class_code: String,
@@ -94,14 +117,15 @@ pub struct ParsedList<T> {
 ///
 /// # Errors
 ///
-/// [`ImportError::BadHeader`] when the first line is not [`ROC_HEADER`].
+/// [`ImportError::BadHeader`] when the first line is not [`ROC_HEADER`]; [`ImportError::TooFewRows`]
+/// when no row is good or more rows are malformed than good.
 pub fn parse_roc_list(text: &str) -> Result<ParsedList<RocRow>, ImportError> {
     parse(text, ROC_HEADER, |f| {
         let [number, class, status, issued] = f else {
             return None;
         };
         Some(RocRow {
-            license_number: field(number, 64)?,
+            license_number: field(&normalise_license_number(number), 64)?,
             class_code: field(class, 16)?.to_ascii_uppercase(),
             status: RocStatus::parse(status)?,
             issued_on: date(issued)?,
@@ -114,7 +138,8 @@ pub fn parse_roc_list(text: &str) -> Result<ParsedList<RocRow>, ImportError> {
 ///
 /// # Errors
 ///
-/// [`ImportError::BadHeader`] when the first line is not [`CITY_HEADER`].
+/// [`ImportError::BadHeader`] when the first line is not [`CITY_HEADER`]; [`ImportError::TooFewRows`]
+/// as for [`parse_roc_list`].
 pub fn parse_city_list(text: &str) -> Result<ParsedList<CityRow>, ImportError> {
     parse(text, CITY_HEADER, |f| {
         let [number, business, trade, owner, issued] = f else {
@@ -151,6 +176,10 @@ fn parse<T>(
             Some(r) => parsed.rows.push(r),
             None => parsed.skipped += 1,
         }
+    }
+    let good = u32::try_from(parsed.rows.len()).unwrap_or(u32::MAX);
+    if good == 0 || parsed.skipped > good {
+        return Err(ImportError::TooFewRows);
     }
     Ok(parsed)
 }

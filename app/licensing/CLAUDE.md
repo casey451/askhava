@@ -7,8 +7,8 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 ## What it owns
 
 - `src/api.rs`: the only public surface: `eligibility`, `eligibility_for_request`, `city_list_standing`, `inspection_fee`, the `handyman` functions, the list imports and checks below and the types below.
-- `src/imports.rs` (T036, pure): `parse_roc_list`, `parse_city_list`, `ROC_HEADER`, `CITY_HEADER`, `RocRow`, `RocStatus`, `CityRow` (no `Debug`), `ParsedList`, `ImportError`.
-- `src/service.rs` (T036, database): `import_roc_list`, `import_city_list`, `check_license`, `daily_check_allows_card`, `read_back`, `city_standing`, `ImportSummary`, `DailyCheck`, `ReadBack`.
+- `src/imports.rs` (T036, pure): `parse_roc_list`, `parse_city_list`, `ROC_HEADER`, `CITY_HEADER`, `RocRow`, `RocStatus`, `CityRow` (no `Debug`), `ParsedList`, `ImportError`, `normalise_license_number`.
+- `src/service.rs` (T036, database): `import_roc_list`, `import_city_list`, `check_license`, `roc_check_allows_card`, `read_back`, `city_standing`, `ImportSummary`, `DailyCheck`, `ReadBack`, `Freshness`.
 - `src/models.rs`: `LicenseKind` (the catalog's `license.kind`), `Agency` (code, license-map name, its one category), `PestRecordCategory`, `PestAttestation` (checked constructor), `CityListStanding`, `CityRecord` (no `Debug`), `Holder`, `Job`, `Eligibility`, `NoCardReason`, `SaleAnswer`, `InspectionFee`, `LicensingError`.
 - `src/rules.rs`: the pure rules; no database.
 - `src/handyman.rs`: the handyman limits (T035): `never_handyman`, `check_quote`, `split_job`, `QuotePrice`, `QuoteSubmission`, `QuoteRefusal`, `HandymanJob`, `JobRequest`, `NeverHandyman`, `HANDYMAN_CARD_LINE`, `HANDYMAN_LIMIT_CENTS`, `SPLIT_JOB_WINDOW_DAYS`; it compiles in `docs/catalog/gas_keywords.yaml` (D-897).
@@ -28,8 +28,8 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - LIC-015: `rules::agency_only` (certified inspectors) and `rules::inspection_fee` (for a `home_inspection` job, a yes or a fee-free job type is `FeeFree`; any other category is `Normal`).
 - LIC-016: `rules::agency_only` (ADEQ septage hauler).
 - LIC-028, LIC-029, LIC-031: `rules::no_license` (listed no-license job types only; refused ones such as a new outlet or vent reroute are `RefusedJobType`; the handyman category gives `HandymanCard` to a business signed up as a handyman, else `NotHandyman`).
-- CARD-015, LIC-007: `service::check_license` (latest ROC list by date; `active` when any class is Active, `inactive`, `not_listed`) and `service::daily_check_allows_card` (latest check `active`; `pest_control` skips it, LIC-048).
-- LIC-006, LIC-027: `service::read_back` (classes and issue year from the latest ROC list; never typed); `imports::parse_roc_list` (a wrong header rejects the list, a malformed row is skipped and counted).
+- CARD-015, LIC-007: `service::check_license` (latest ROC list by date; `active` when any class is Active, `inactive`, `not_listed`) and `service::roc_check_allows_card` (the latest check of the covering ROC license is `active` and within the caller's `Freshness`; ROC-licensed categories only: pest is attested, LIC-048, and other-agency, no-license and handyman cards never call it).
+- LIC-006, LIC-027: `service::read_back` (classes and issue year from the latest ROC list; never typed); `imports::parse_roc_list` (a wrong header rejects the list, a malformed row is skipped and counted, a list with no good row or more malformed than good rows is refused, `TooFewRows`; license numbers upper case with no spaces; a repeated number and class keeps the stricter status). LIC-027 is partial here: the read-back is the ROC's only; other agencies' come with T180.
 - LIC-010: the lists are read only by license number (`read_back`, `check_license`) or matched against one business's names (`service::city_standing`); no function lists them out and no contact column is stored.
 
 ## Never break
@@ -45,6 +45,7 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - `Holder::roc_covers` means the license map covers this job type (T153); this crate never reads a class name to decide ROC cover.
 - A changed list header records nothing, and a malformed row never stops an import: `tests/integration/tests/license_imports.rs::daily_roc_import_records_rows_and_counts_malformed_ones`.
 - A card needs the latest daily check `active`: `tests/integration/tests/license_imports.rs::card_needs_latest_daily_check_active`.
+- An empty or truncated list never becomes the latest: `tests/integration/tests/license_imports.rs::truncated_lists_are_refused_and_conflicts_keep_the_stricter_status`.
 
 ## How to change
 
