@@ -1,0 +1,160 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, homeowner_id, conversation_id, pick_id, document, version, text_sha256, language, channel, assent_line, inbox_id, accepted_at FROM intake.terms_acceptance WHERE conversation_id = $1 ORDER BY accepted_at, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "homeowner_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "homeowner_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "conversation_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "conversation_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "pick_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "pick_id"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "document",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "document"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "version",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "version"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "text_sha256",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "text_sha256"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "language"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "channel",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "channel"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "assent_line",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "assent_line"
+          }
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "inbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "inbox_id"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "accepted_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "intake.terms_acceptance",
+            "name": "accepted_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "3e0540cfa3ac80d1bf5204a0a4dbc7057cdb977ff648d4093ad1a715a8c2c910"
+}

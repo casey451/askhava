@@ -1,0 +1,112 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, homeowner_id, conversation_id, channel, inbox_id, web_chat_session, consent_version, consented_at FROM intake.consent_record WHERE conversation_id = $1 ORDER BY consented_at, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.consent_record",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "homeowner_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.consent_record",
+            "name": "homeowner_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "conversation_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.consent_record",
+            "name": "conversation_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "channel",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.consent_record",
+            "name": "channel"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "inbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.consent_record",
+            "name": "inbox_id"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "web_chat_session",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.consent_record",
+            "name": "web_chat_session"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "consent_version",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.consent_record",
+            "name": "consent_version"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "consented_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "intake.consent_record",
+            "name": "consented_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "a28699d4bea06e10e6a72d361f42ee9a81bfa65c25a8a5374a28d6899e83ba95"
+}
