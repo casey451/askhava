@@ -1358,19 +1358,18 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Two calls Claude made.** A clean-up task that sweeps the whole app folder is no longer counted as reading every file in it, since it only searches it. The one clean-up task that also runs the full twin check (T126) measures 59%, so clean-up tasks got their own limit of 65%. Three finished twin tasks (T005 to T007) measure 63 to 69%; their numbers are kept as measured under a limit only they can use.
 - **Keeping the numbers honest.** Every plan change now re-checks the numbers strictly before it is committed. Ordinary task merges still only note small drift, because every merge moves some numbers by a point and a task cannot fix the task list itself.
 
-## How intake asks its questions and how sure it is (T156, D-1037 to D-1041, October 31)
-
-- **What was built.** The trade's questions are asked one at a time in the question bank's order, "Not sure" last on every list, never more than 8. A smell answer that doesn't say what kind asks the exact smell question once; "Gas" or "Burning" sends the 911 text. Intake goes on without asking the trade question only when its readings agree and are sure enough; otherwise it asks. None of it is wired into the live conversation yet.
-- **The test set is far from the target.** The app checks itself against the 370 test messages each time the catalog changes. On the current keyword rules it gets 21 of 370 right (5%), against the 90% target. The keyword rules cover few trades and little Spanish, and the build has no real AI to test with yet. The number is shown as it is, not adjusted.
-- **The knowledge base's test file isn't used yet.** `test_set.csv` names its trades and job types in the knowledge base's own words (for example "fridge", "range_oven"), which don't match the catalog's job types. Someone has to map them before those messages can be run.
-- **Two pieces have no owner yet.** When intake can't tell which kind of job it is, the job is marked "Job type not certain" and goes only to businesses licensed for every possibility. But the job card has no line to show that mark, and there is no text yet telling the homeowner "We couldn't tell which kind of <trade> job this is". Both are left for the tasks that own the card and the homeowner wording.
-
 ## Task size numbers no longer churn every plan change (D-1075, October 31)
 
 - **What changed.** Each task's size number moved by a point whenever the shared architecture notes grew (almost every task reads them), so even a one-line plan fix had to rewrite about 90 task prompts. A stored number now stays as long as it is within 3 points of the real measurement and under the task's limit. The limit itself still binds the real measurement: a plan change fails if any task's reading actually goes over it.
 - **Calls Claude made.** 3 points (about 24 KB of reading) was picked so roughly a dozen task merges pass between refreshes. The decisions log was suspected but turned out not to be the cause: prompts only paste the decisions they name. Separately, the PII scanner now prints a warning once the decisions log passes 75% of its size limit; it warns at 75% rather than fails, so a growing log never turns the build red by surprise; past 90% the plan-change check itself refuses to pass until the limit is raised or the file split, so the session that can act must. One task (T156, the intake question bank) sits exactly at its size limit, so the next plan change after it lands will have to give it the same "keep the budget it was built with" allowance three stage-1 tasks already have.
 
+<<<<<<< HEAD
 ## The test that kept turning main red for no reason is fixed (D-1086, October 31)
 
 - **What changed.** A test of the phone-call client failed now and then (about six false alarms, and main went red after T156). The cause was in the test setup, not the app: the test picked a free network port, then started the fake vendor server on it, and another test running at the same moment could grab that port in between. The test now waits for the fake server itself to say it is listening on its port, and starts it on a new port if it could not get the first one.
 - **Calls Claude made.** No test was loosened, skipped or retried, and the app's code did not change. The fake vendor server (a protected file) was left alone. One other crate (the AI tests) has the same setup and is left for a later fix.
+=======
+## T156 was reverted (FIX-MAIN, D-1053, October 31)
+
+- **What happened.** The intake question bank (T156) was reverted because main went red after its merge. Its decisions D-1037 to D-1041 stay in the log but are void until T156 is re-run.
+>>>>>>> origin/main

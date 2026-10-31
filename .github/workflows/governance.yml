@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   checks: write
+  pull-requests: read
 jobs:
   governance:
     # Not named "Governance": a workflow_run job's own check lands on main; the published check run below
@@ -22,7 +23,27 @@ jobs:
       HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
       HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
     steps:
+      - name: Skip a head whose pull request already merged (D-1087)
+        id: merged
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A ci run that finishes after its head was squash-merged (a manual re-run, or a pull_request run
+          # already started when D-1087 landed) would compare the head with a main that already holds its
+          # decision entries and post a false failure; the Governance result from before the merge stands.
+          # Any answer that is not a plain count (an API error prints its body) counts as not merged, so
+          # the rules still run. This assumes a merged head is on main; that is false only when a FIX-MAIN revert
+          # is followed by the same SHA proposed again (a retry merges main first, so it gets a new SHA).
+          merged="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls" \
+            --jq '[.[] | select(.merged_at != null and .head.sha == env.HEAD_SHA)] | length' 2>/dev/null)" || merged=0
+          case "$merged" in ''|*[!0-9]*) merged=0 ;; esac
+          if [ "$merged" != "0" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "head $HEAD_SHA is already merged: Governance not evaluated again"
+          fi
+
       - name: Check out main (the rules)
+        if: steps.merged.outputs.skip != 'true'
         uses: actions/checkout@v4
         with:
           ref: main
@@ -31,10 +52,12 @@ jobs:
           path: rules
 
       - name: Refuse heads from forks
+        if: steps.merged.outputs.skip != 'true'
         run: |
           test "$HEAD_REPO" = "$GITHUB_REPOSITORY" || { echo "head from another repository"; exit 1; }
 
       - name: Fetch the head under test into a worktree
+        if: steps.merged.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -43,13 +66,14 @@ jobs:
           git worktree add ../head "$HEAD_SHA"
 
       - name: Run main's rules against the head
+        if: steps.merged.outputs.skip != 'true'
         run: |
           cd head
           python3 ../rules/scripts/check_plan_lock.py --root .
           python3 ../rules/scripts/check_pr_change.py --root . --base origin/main --branch "$HEAD_BRANCH"
 
       - name: Publish the result on the head commit
-        if: always()
+        if: always() && steps.merged.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           RESULT: ${{ job.status }}
