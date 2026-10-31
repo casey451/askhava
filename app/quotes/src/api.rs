@@ -16,6 +16,9 @@
 //! [`shown_quotes`] lists the confirmed ones the homeowner's page may show; [`run_windows_end`]
 //! is the [`WINDOWS_KIND`] handler that calls `jobs::api::all_windows_ended` (TXT-042, JOB-025);
 //! [`mark_unavailable`] is `picks`' mark on a failed pick's quote (JOB-025, PICK-051).
+//! T186: [`quote_card`] reads a shown quote's [`QuoteCard`], whose [`QuoteCard::lines`] are the
+//! same for homeowner and business (PICK-005, PICK-040, PICK-041, PICK-044); [`check_summary`]
+//! and [`switch_on`] keep AI summaries off unless allowed and claim-free (PICK-003, PICK-004).
 
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
 pub use crate::gate::final_gate;
@@ -27,6 +30,10 @@ pub use crate::intake::{
 pub use crate::models::{
     CardBusiness, CardDecision, CardJob, CardLines, Coverage, OfferTown, OwnerPauses, Pool, Pooled,
     QuotesError, Recipient, Skip,
+};
+pub use crate::quote_card::{
+    CardSource, POLICY_SUMMARY_SENTENCE, Parts, Permit, QuoteCard, QuoteFacts, Spanish, Summary,
+    SummarySetting, SwitchRefused, TripFee, check_summary, quote_card, switch_on,
 };
 pub use crate::service::{card_holders, coverage, send_cards, send_job_cards, send_late_cards};
 
