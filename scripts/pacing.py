@@ -38,8 +38,9 @@ kit/pacing.json has `spread` ({"anchor_at": ISO, "anchor_used_week": tokens,
 "finish_hours_before_reset": hours}), the week window's spend is held to a straight line from the
 anchor reading to the effective week budget at `resets_at` minus the margin: a claim that would put
 `used + estimate` above the line now waits until the line reaches it (`spend_line`), never past the
-reset; a task that fits the line claims as before. The line ends at the reset, so a window that
-rolls over, or a quota reading past the anchor's week, retires it.
+reset; a task that fits the line claims as before. The line is for the anchor's week only: once the
+window's start (its reset minus the week's hours) is later than the anchor, from the ledger's
+roll-over or a quota reading, there is no line until a new anchor is set.
 
 Usage: python3 scripts/pacing.py [--state PATH] [--task ID]
 """
@@ -230,6 +231,9 @@ def spend_line(cfg: dict[str, Any], week: dict[str, Any], need: int, now: dateti
     if not spread or not reset:
         return None
     start, end = parse(str(spread["anchor_at"])), parse(str(reset)) - timedelta(hours=float(spread["finish_hours_before_reset"]))
+    window_start = parse(str(reset)) - timedelta(hours=float(cfg["window_hours"]["week"]))
+    if window_start > start:
+        return None  # the anchor's window has rolled over: the line was for that week only
     if now < start or now >= end or end <= start:
         return None
     base, top = float(spread["anchor_used_week"]), float(week["budget"])

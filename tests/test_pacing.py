@@ -164,6 +164,12 @@ def test_spend_line_holds_the_week_to_a_straight_line_to_the_reset(tmp_path: Pat
                     TASK, root=root, config=cfg, now=NOW + timedelta(days=1))
     assert far[0] == "wait" and NOW + timedelta(days=4) < pc.parse(far[1]) <= week_start + timedelta(days=7) - timedelta(hours=3)
     assert pc.decide(state, TASK, root=root, config=cfg, now=NOW - timedelta(hours=1)) == ("claim", None), "before the anchor"
+    rolled = dict(state, usage={"windows": {"five_hour": {"start": pc.iso(NOW), "tokens": 0},
+                                            "week": {"start": pc.iso(NOW + timedelta(days=5)), "tokens": 3_000_000}}})
+    assert pc.decide(rolled, TASK, root=root, config=cfg, now=NOW + timedelta(days=6)) == ("claim", None), "a rolled-over week has no line"
+    later = {"five_hour": {"utilization": 0.1, "resets_at": pc.iso(NOW + timedelta(days=6, hours=2))},
+             "week": {"utilization": 0.5, "resets_at": pc.iso(NOW + timedelta(days=12))}}
+    assert pc.decide(state, TASK, root=root, config=cfg, now=NOW + timedelta(days=6), quota=later) == ("claim", None), "a quota reading past the anchor's week has no line"
     assert pc.decide(state, TASK, root=root, config=CFG, now=NOW) == ("claim", None), "no spread configured"
     assert pc.decide(spent(899_000), TASK, root=root, config=cfg, now=NOW) == ("wait", pc.iso(NOW + timedelta(hours=5))), "the five-hour wait still wins"
 
